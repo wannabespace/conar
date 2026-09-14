@@ -1,32 +1,59 @@
-import { Key01Icon, LeftToRightListDashIcon } from '@hugeicons/core-free-icons'
-import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { TableCell, TableRow } from '@tamery/ui/components/table'
+import {
+  ArrowRight01Icon,
+  Key01Icon,
+  LeftToRightListDashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
+import { FieldDescription } from '@tamery/ui/components/field'
+import { Switch } from '@tamery/ui/components/switch'
+import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 
-import type { indexesType } from '~/entities/connection/queries/indexes'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
+import { Link } from '~/components/link'
+import type { SectionCapabilities } from '~/entities/connection/capabilities'
+import { createIndexQuery } from '~/entities/connection/queries/indexes/create'
+import { dropIndexQuery } from '~/entities/connection/queries/indexes/drop'
+import type { indexesType } from '~/entities/connection/queries/indexes/list'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
+import { recreateIndexQuery } from '~/entities/connection/queries/indexes/recreate'
+import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
+import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 
 import type { FilterOption } from '../-components/filter-select'
 import { FilterSelect } from '../-components/filter-select'
+import type { SectionInspectorProps } from '../-components/inspector'
 import {
-  DefinitionsHeader,
-  DefinitionsList,
-  DefinitionsToolbar,
-  MutedCell,
-  NameCell,
-} from '../-components/page'
-import { SchemaSelect } from '../-components/schema-select'
+  InspectorDefinition,
+  InspectorFooter,
+  InspectorHeader,
+  InspectorOption,
+  InspectorSection,
+  InspectorSections,
+} from '../-components/inspector'
+import { DefinitionsPage } from '../-components/page'
+import { NameSelect, NamesSelect } from '../-components/pickers'
+import { SchemaField } from '../-components/schema-select'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
+import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import type { DefinitionsColumn } from '../-lib/columns'
+import { HighlightList, Muted, monoColumn, nameColumn } from '../-lib/columns'
+import { sameList } from '../-lib/lists'
 import { matchesSearch } from '../-lib/search'
-
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type IndexItem = typeof indexesType.infer
 type IndexKind = 'primary' | 'unique' | 'regular'
 
-interface GroupedIndex extends Pick<IndexItem, 'name' | 'table' | 'type'> {
+interface GroupedIndex extends Pick<
+  IndexItem,
+  'definition' | 'name' | 'schema' | 'table' | 'type'
+> {
   columns: string[]
   kind: IndexKind
 }
@@ -51,6 +78,13 @@ const filterOptions: FilterOption<IndexKind | 'all'>[] = [
   { label: 'Regular', value: 'regular' },
 ]
 
+const noColumns: string[] = []
+
+const indexKey = (item: GroupedIndex) => `${item.table}.${item.name}`
+
+const typeText = (item: GroupedIndex) =>
+  item.type ? `${kindLabels[item.kind]} · ${item.type}` : kindLabels[item.kind]
+
 const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
   const grouped = new Map<string, GroupedIndex>()
 
@@ -69,8 +103,10 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
     } else {
       grouped.set(key, {
         columns: column ? [column] : [],
+        definition: item.definition,
         kind: kindOf(item),
         name: item.name,
+        schema: item.schema,
         table: item.table,
         type: item.type,
       })
@@ -80,13 +116,405 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
   return [...grouped.values()]
 }
 
-export const Indexes = () => {
-  const { connectionResource } = useRouteContext()
-  const { data: indexes = [], isPending } = useQuery(
-    resourceIndexesQueryOptions({ connectionResource })
+// A primary key's index is owned by its constraint, which PostgreSQL and SQL
+// Server rename along with it; MySQL calls every one of them PRIMARY.
+const RENAMES_PRIMARY = new Set<ConnectionType>([
+  ConnectionType.Postgres,
+  ConnectionType.MSSQL,
+])
+
+interface IndexDraft {
+  columns: string[]
+  name: string
+  schema: string
+  table: string
+  unique: boolean
+}
+
+const suggestedNameOf = (draft: IndexDraft) =>
+  `${draft.table}_${draft.columns.join('_')}_idx`
+
+const finalNameOf = (draft: IndexDraft) =>
+  draft.name.trim() || suggestedNameOf(draft)
+
+const shapeChangedOf = (draft: IndexDraft, item: GroupedIndex | null) =>
+  !!item &&
+  (!sameList(draft.columns, item.columns) ||
+    draft.unique !== (item.kind !== 'regular'))
+
+const saveIndex = ({
+  draft,
+  item,
+  run,
+}: {
+  draft: IndexDraft
+  item: GroupedIndex | null
+  run: RunQuery
+}) => {
+  const name = finalNameOf(draft)
+
+  if (!item) {
+    return run(
+      createIndexQuery({
+        columns: draft.columns,
+        name,
+        schema: draft.schema,
+        table: draft.table,
+        unique: draft.unique,
+      })
+    )
+  }
+
+  return shapeChangedOf(draft, item)
+    ? run(
+        recreateIndexQuery({
+          columns: draft.columns,
+          name: item.name,
+          newName: name,
+          schema: item.schema,
+          table: item.table,
+          unique: draft.unique,
+        })
+      )
+    : run(
+        renameIndexQuery({
+          name: item.name,
+          newName: name,
+          schema: item.schema,
+          table: item.table,
+        })
+      )
+}
+
+const indexErrors = (draft: IndexDraft) => ({
+  columns: draft.columns.length === 0 ? 'Pick at least one column.' : undefined,
+  table: draft.table === '' ? 'Pick the table to index.' : undefined,
+})
+
+const indexState = ({
+  can,
+  draft,
+  item,
+  tableColumns,
+  tables,
+  type,
+}: {
+  can: SectionCapabilities
+  draft: IndexDraft
+  item: GroupedIndex | null
+  tableColumns: string[]
+  tables: string[]
+  type: ConnectionType
+}) => {
+  // A functional index stores an expression where a column name would be, which
+  // the picker cannot represent — only its name can change.
+  const expressionIndex =
+    !!item &&
+    tableColumns.length > 0 &&
+    item.columns.some((column) => !tableColumns.includes(column))
+  const shapeChanged = shapeChangedOf(draft, item)
+  const primary = item?.kind === 'primary'
+  const readOnly = item
+    ? !can.edit || (primary && !RENAMES_PRIMARY.has(type))
+    : !can.create
+
+  return {
+    changed: item ? finalNameOf(draft) !== item.name || shapeChanged : true,
+    description: item ? `${item.schema}.${item.table}` : draft.schema,
+    expressionIndex,
+    namePlaceholder: draft.table ? suggestedNameOf(draft) : 'Index name',
+    primary,
+    readOnly,
+    saveLabel: item ? 'Save' : 'Create index',
+    shapeChanged,
+    shapeLocked: readOnly || expressionIndex || primary,
+    tableOptions: item ? [item.table] : tables,
+    title: item ? item.name : 'New index',
+  }
+}
+
+const IndexNotes = ({
+  constraintKey,
+  expressionIndex,
+  onLeave,
+  primary,
+  resourceId,
+  schema,
+}: {
+  constraintKey: string | undefined
+  expressionIndex: boolean
+  onLeave: () => void
+  primary: boolean
+  resourceId: string
+  schema: string | undefined
+}) => (
+  <AnimatePresence initial={false}>
+    {expressionIndex && (
+      <MotionCollapse gap={16} key="expression">
+        <FieldDescription>
+          Built on an expression, so only its name can change.
+        </FieldDescription>
+      </MotionCollapse>
+    )}
+    {primary && (
+      <MotionCollapse gap={16} key="primary">
+        <FieldDescription>
+          Primary key columns live on its constraint.{' '}
+          <Link
+            to="/connection/$resourceId/$tabId"
+            params={{
+              resourceId,
+              tabId: definitionsTabId('constraints'),
+            }}
+            search={{ open: constraintKey, schema }}
+            onClick={onLeave}
+            className="text-primary font-medium hover:underline"
+          >
+            Open in Constraints
+            <HugeiconsIcon
+              icon={ArrowRight01Icon}
+              strokeWidth={2}
+              className="ml-0.5 inline size-3.5 align-[-2px]"
+            />
+          </Link>
+        </FieldDescription>
+      </MotionCollapse>
+    )}
+  </AnimatePresence>
+)
+
+const IndexInspector = ({
+  can,
+  connectionResource,
+  item,
+  onOpenChange,
+  queryKey,
+  run,
+  schemas,
+  selectedSchema,
+  tablesOf,
+  type,
+}: SectionInspectorProps<GroupedIndex>) => {
+  const mutation = useDefinitionMutation({
+    mutationFn: (draft: IndexDraft) => saveIndex({ draft, item, run }),
+    onSuccess: () => onOpenChange(false),
+    queryKey,
+    success: (draft) => `Index "${finalNameOf(draft)}" saved`,
+  })
+  const form = useAppForm({
+    defaultValues: {
+      columns: item?.columns ?? [],
+      name: item?.name ?? '',
+      schema: item?.schema ?? selectedSchema ?? '',
+      table: item?.table ?? '',
+      unique: item ? item.kind !== 'regular' : false,
+    } satisfies IndexDraft,
+    onSubmit: ({ value }) => {
+      mutation.mutate(value)
+    },
+    validators: {
+      onChange: ({ value }) => ({ fields: indexErrors(value) }),
+      onMount: ({ value }) => ({ fields: indexErrors(value) }),
+    },
+  })
+  const draft = useStore(form.store, (state) => state.values)
+  const { data: columnNames } = useQuery({
+    ...resourceTableColumnIdsQueryOptions({
+      connectionResource,
+      schema: draft.schema,
+      table: draft.table,
+    }),
+    enabled: draft.table !== '',
+  })
+  const state = indexState({
+    can,
+    draft,
+    item,
+    tableColumns: columnNames ?? noColumns,
+    tables: tablesOf(draft.schema),
+    type,
+  })
+
+  return (
+    <>
+      <InspectorHeader description={state.description} title={state.title} />
+      <InspectorSections>
+        <InspectorSection
+          title="General"
+          description="An index speeds up lookups on the columns it covers."
+        >
+          <form.AppField name="schema">
+            {(field) => (
+              <SchemaField
+                id="index-schema"
+                disabled={state.readOnly || !!item}
+                schema={field.state.value}
+                schemas={schemas}
+                onSchemaChange={(next) => {
+                  field.handleChange(next)
+                  form.setFieldValue('table', '', { dontUpdateMeta: true })
+                  form.setFieldValue('columns', [], { dontUpdateMeta: true })
+                }}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="name">
+            {(field) => (
+              <field.Field>
+                <field.Label>Name</field.Label>
+                <field.Input
+                  data-mask
+                  autoFocus
+                  disabled={state.readOnly}
+                  placeholder={state.namePlaceholder}
+                  spellCheck={false}
+                  autoComplete="off"
+                />
+                <FieldDescription>
+                  Leave it empty to use the suggested name.
+                </FieldDescription>
+              </field.Field>
+            )}
+          </form.AppField>
+        </InspectorSection>
+        <InspectorSection
+          title="Target"
+          description="The table and the columns this index covers, in order."
+        >
+          <form.AppField name="table">
+            {(field) => (
+              <field.Field>
+                <field.Label>Table</field.Label>
+                <NameSelect
+                  id={field.name}
+                  disabled={state.readOnly || !!item}
+                  options={state.tableOptions}
+                  placeholder="Choose a table"
+                  value={field.state.value}
+                  onValueChange={(next) => {
+                    field.handleChange(next)
+                    form.setFieldValue('columns', [], { dontUpdateMeta: true })
+                  }}
+                />
+              </field.Field>
+            )}
+          </form.AppField>
+          <form.AppField name="columns">
+            {(field) => (
+              <field.Field>
+                <field.Label>Columns</field.Label>
+                <NamesSelect
+                  id={field.name}
+                  disabled={state.shapeLocked || draft.table === ''}
+                  options={columnNames}
+                  placeholder="Choose columns"
+                  value={field.state.value}
+                  onValueChange={field.handleChange}
+                />
+                <FieldDescription>
+                  A query uses the index when it filters on the leading columns.
+                </FieldDescription>
+              </field.Field>
+            )}
+          </form.AppField>
+          <IndexNotes
+            constraintKey={item ? `${item.table}.${item.name}` : undefined}
+            expressionIndex={state.expressionIndex}
+            onLeave={() => onOpenChange(false)}
+            primary={state.primary}
+            resourceId={connectionResource.id}
+            schema={draft.schema}
+          />
+        </InspectorSection>
+        <InspectorSection title="Options">
+          <form.AppField name="unique">
+            {(field) => (
+              <InspectorOption
+                htmlFor="index-unique"
+                title="Unique"
+                description="Rejects rows repeating a value across the chosen columns."
+              >
+                <Switch
+                  id="index-unique"
+                  size="sm"
+                  disabled={state.shapeLocked}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+              </InspectorOption>
+            )}
+          </form.AppField>
+        </InspectorSection>
+        {item?.definition && <InspectorDefinition code={item.definition} />}
+      </InspectorSections>
+      <InspectorFooter
+        canSave={state.changed}
+        warning={
+          state.shapeChanged
+            ? {
+                action: 'Rebuild index',
+                description: (
+                  <>
+                    <span data-mask className="font-medium">
+                      {item?.name}
+                    </span>{' '}
+                    is dropped and built again with the new shape. Queries run
+                    unindexed while it builds, and a unique index fails to
+                    rebuild if duplicate rows appeared.
+                  </>
+                ),
+              }
+            : undefined
+        }
+        error={mutation.error}
+        form={form}
+        readOnly={state.readOnly}
+        saveLabel={state.saveLabel}
+        saving={mutation.isPending}
+      />
+    </>
   )
-  const { schemas, search, selectedSchema, setSearch, setSelectedSchema } =
-    useDefinitionsState({ connectionResource })
+}
+
+const columns: DefinitionsColumn<GroupedIndex>[] = [
+  nameColumn({
+    iconOf: (item: GroupedIndex) =>
+      item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon,
+    width: 'w-88',
+  }),
+  monoColumn({
+    header: 'Table',
+    valueOf: (item: GroupedIndex) => item.table,
+    width: 'w-48',
+  }),
+  {
+    cell: (item, { search }) => (
+      <span data-mask className="font-mono">
+        <HighlightList values={item.columns} match={search} />
+      </span>
+    ),
+    className: 'whitespace-normal',
+    grow: true,
+    header: 'Columns',
+  },
+  {
+    align: 'end',
+    cell: (item) => <Muted>{typeText(item)}</Muted>,
+    header: 'Type',
+    width: 'w-44',
+  },
+]
+
+export const Indexes = () => {
+  const state = useDefinitionsState({
+    prefetchColumns: true,
+    section: 'indexes',
+  })
+  const { run, search, selectedSchema } = state
+  const query = resourceIndexesQueryOptions({
+    connectionResource: state.connectionResource,
+  })
+  const { data: indexes = [], isPending } = useQuery(query)
   const [kind, setKind] = useState<IndexKind | 'all'>('all')
 
   const inSchema = groupIndexes(indexes, selectedSchema)
@@ -97,70 +525,37 @@ export const Indexes = () => {
   )
 
   return (
-    <>
-      <DefinitionsHeader
-        title="Indexes"
-        count={isPending ? undefined : rows.length}
-        noun="index"
-      />
-      <DefinitionsToolbar
-        placeholder="Search indexes"
-        search={search}
-        onSearchChange={setSearch}
-      >
+    <DefinitionsPage
+      title="Indexes"
+      noun="index"
+      icon={LeftToRightListDashIcon}
+      items={rows}
+      inSchema={inSchema.length}
+      loading={isPending}
+      keyOf={indexKey}
+      nameOf={(item) => item.name}
+      columns={columns}
+      state={state}
+      toolbar={
         <FilterSelect
           options={filterOptions}
           value={kind}
           onValueChange={setKind}
         />
-        <SchemaSelect
-          schemas={schemas}
-          selectedSchema={selectedSchema}
-          setSelectedSchema={setSelectedSchema}
-        />
-      </DefinitionsToolbar>
-      <DefinitionsList
-        icon={LeftToRightListDashIcon}
-        columns={['Name', 'Table', 'Columns', 'Type']}
-        count={rows.length}
-        loading={isPending}
-        emptyTitle={inSchema.length === 0 ? 'No indexes' : 'No matches'}
-        emptyDescription={
-          inSchema.length === 0
-            ? 'This schema has no indexes.'
-            : 'No indexes match the current search and filters.'
-        }
-      >
-        {rows.map((item) => (
-          <TableRow key={`${item.table}.${item.name}`}>
-            <NameCell
-              icon={
-                item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon
-              }
-            >
-              <HighlightText text={item.name} match={search} />
-            </NameCell>
-            <TableCell data-mask>
-              <HighlightText text={item.table} match={search} />
-            </TableCell>
-            <TableCell
-              data-mask
-              className="font-mono text-xs whitespace-normal"
-            >
-              {item.columns.map((column, index) => (
-                <span key={column}>
-                  {index > 0 && ', '}
-                  <HighlightText text={column} match={search} />
-                </span>
-              ))}
-            </TableCell>
-            <MutedCell>
-              {kindLabels[item.kind]}
-              {item.type && ` · ${item.type}`}
-            </MutedCell>
-          </TableRow>
-        ))}
-      </DefinitionsList>
-    </>
+      }
+      canDropItem={(item) => item.kind !== 'primary'}
+      queryKey={query.queryKey}
+      dropItem={(item) =>
+        run(
+          dropIndexQuery({
+            name: item.name,
+            schema: item.schema,
+            table: item.table,
+          })
+        )
+      }
+      Inspector={IndexInspector}
+      inspectorProps={state}
+    />
   )
 }

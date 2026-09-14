@@ -118,7 +118,6 @@ const AccountLayout = () => {
           </ThemeToggle>
           <Button
             variant="outline"
-            disabled
             size="sm"
             render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL} />}
           >

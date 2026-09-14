@@ -1,6 +1,6 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -24,7 +24,7 @@ const ForgotPasswordPage = () => {
       email: '',
     } satisfies typeof emailSchema.infer,
     validators: {
-      onSubmit: emailSchema,
+      onChange: emailSchema,
     },
     onSubmit: async ({ value }) => {
       const { error } = await authClient.requestPasswordReset({
@@ -67,13 +67,7 @@ const ForgotPasswordPage = () => {
           your password.
         </p>
       </div>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-      >
+      <Form className="space-y-4" form={form}>
         <form.AppField name="email">
           {(field) => (
             <field.Field>
@@ -86,7 +80,6 @@ const ForgotPasswordPage = () => {
                 spellCheck={false}
                 autoFocus
               />
-              <field.Error />
             </field.Field>
           )}
         </form.AppField>
@@ -95,7 +88,7 @@ const ForgotPasswordPage = () => {
             Send reset link
           </LoadingContent>
         </Button>
-      </form>
+      </Form>
     </>
   )
 }

@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { customQuery } from '~/entities/connection/queries/custom'
+import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils/helpers'
 

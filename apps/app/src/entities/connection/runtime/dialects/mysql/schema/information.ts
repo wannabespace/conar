@@ -156,6 +156,7 @@ interface Statistics {
   TABLE_NAME: string
   INDEX_NAME: string
   COLUMN_NAME: string
+  SEQ_IN_INDEX: number
   NON_UNIQUE: number
 }
 

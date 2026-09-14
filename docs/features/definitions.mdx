@@ -1,10 +1,10 @@
 ---
 title: 'Schema'
 sidebarTitle: 'Schema'
-description: "Browse enums, indexes, constraints, functions, triggers, and policies in Tamery's Schema list."
+description: "Browse, create, edit, and drop enums, indexes, constraints, functions, triggers, and policies in Tamery's Schema list."
 ---
 
-The **Schema** list in the sidebar covers everything about your database except the table data itself — enums, indexes, constraints, functions, triggers, policies, and the [schema visualizer](/features/schema-visualizer). It adapts to the database engine, showing only the object types that engine supports.
+The **Schema** list in the sidebar covers everything about your database except the table data itself — enums, indexes, constraints, functions, triggers, policies, and the [schema visualizer](/features/schema-visualizer). It adapts to the database engine, showing only the object types that engine supports, and lets you create, edit, and drop them where the engine allows.
 
 ## Definition types
 
@@ -55,7 +55,41 @@ The **Schema** list in the sidebar covers everything about your database except 
     Use the **Schema** dropdown at the top of the list.
   </Step>
   <Step title="Inspect an object">
-    Click an item to expand its details inline — index columns, function bodies,
-    policy rules, etc.
+    Click a row (or press <kbd>↑</kbd>/<kbd>↓</kbd> and <kbd>Enter</kbd> from
+    the search field) to open it in the inspector — index columns, function
+    bodies, policy rules, etc.
   </Step>
 </Steps>
+
+## Editing
+
+The inspector is also the editor. It groups an object into sections — general, what it targets, its options, and the SQL behind it — with a short note beside each section and under the fields that need one. Fields you can change are enabled; the rest are shown read-only.
+
+- **Add** with the **+ Add** button at the top right, or <kbd>⌘</kbd><kbd>N</kbd> in the desktop app. Hold <kbd>⌘</kbd> to reveal every shortcut on the controls that fire it.
+- **Schema** is the first field when you create an enum, index, constraint, or policy. It starts on the schema the list is showing, and choosing another one clears the table and column pickers below it. A database with a single schema hides the field.
+- **Save** with the primary button or <kbd>⌘</kbd><kbd>Enter</kbd>. Errors from the database show inline under the form.
+- **Drop** from the inspector footer, the row's context menu, or
+  <kbd>⌘</kbd>
+  <kbd>D</kbd> on the highlighted row. A confirmation asks first; PostgreSQL
+  types, functions, and constraints can drop dependents with **CASCADE**.
+
+What each engine supports:
+
+| Object | PostgreSQL | MySQL | SQL Server | ClickHouse |
+| --- | --- | --- | --- | --- |
+| Enums | Create, rename, add, rename and remove values, drop | Edit a column's `ENUM`/`SET` values | — | Read only |
+| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Read only |
+| Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Read only |
+| Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — |
+| Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — |
+| Policies | Create, edit, drop | Read only | Read only | Drop |
+
+## Edits that replace the object
+
+Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence.
+
+PostgreSQL and SQL Server run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement.
+
+Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
+
+Functions and triggers open as SQL in an editor: PostgreSQL saves with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER`, and MySQL drops the object before creating it again. PostgreSQL enums can gain and rename values but never lose them.

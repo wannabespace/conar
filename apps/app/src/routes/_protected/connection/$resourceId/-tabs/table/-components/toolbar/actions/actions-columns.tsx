@@ -75,7 +75,8 @@ export const ActionsColumns = () => {
         </TooltipContent>
       </Tooltip>
       <PopoverContent
-        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
+        padding="none"
+        className="w-2xs"
         side="bottom"
         align="end"
       >

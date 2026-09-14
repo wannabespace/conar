@@ -6,9 +6,9 @@ import { EntityContextType, LanguageIdEnum } from 'monaco-sql-languages'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { queryClient } from '~/lib/query-client'
 
-import { resourceTableColumnsQueryOptions } from '../queries/columns'
-import { resourceEnumsQueryOptions } from '../queries/enums'
-import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
+import { resourceEnumsQueryOptions } from '../queries/enums/list'
+import { resourceTableColumnsQueryOptions } from '../queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '../queries/tables/list'
 import { getConnectionResourceStore } from '../store/stores'
 
 export const sqlDialects = {

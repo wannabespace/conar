@@ -59,12 +59,12 @@
   --shadow-xs: 0 2px 4px 0 rgb(0 0 0 / 0.02);
   --shadow-sm: 0 2px 8px -1px rgb(0 0 0 / 0.03), 0 1px 2px 0 rgb(0 0 0 / 0.02);
   --shadow-md:
-    0 6px 16px -2px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+    0 6px 16px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
   --shadow-lg:
-    0 16px 32px -4px rgb(0 0 0 / 0.06), 0 4px 8px -4px rgb(0 0 0 / 0.04);
+    0 16px 32px -4px rgb(0 0 0 / 0.12), 0 4px 8px -4px rgb(0 0 0 / 0.06);
   --shadow-xl:
-    0 28px 56px -8px rgb(0 0 0 / 0.07), 0 8px 16px -8px rgb(0 0 0 / 0.04);
-  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.08);
+    0 28px 56px -8px rgb(0 0 0 / 0.16), 0 8px 16px -8px rgb(0 0 0 / 0.08);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.18);
 }
 
 :root {
@@ -120,6 +120,13 @@
   --info-foreground: oklch(0.21 0.006 285.885);
   --border: oklch(1 0 0 / 5%);
   --input: oklch(0.2733 0.0075 259.64);
+  --shadow-md:
+    0 6px 16px -2px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  --shadow-lg:
+    0 16px 32px -4px rgb(0 0 0 / 0.4), 0 4px 8px -4px rgb(0 0 0 / 0.26);
+  --shadow-xl:
+    0 28px 56px -8px rgb(0 0 0 / 0.5), 0 8px 16px -8px rgb(0 0 0 / 0.3);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.55);
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
@@ -333,6 +340,10 @@
 
 @utility focus-ring {
   @apply ring-ring/50 ring-3;
+}
+
+@utility invalid-ring {
+  @apply ring-destructive/50 ring-3;
 }
 
 @utility hit-area-* {

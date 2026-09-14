@@ -37,6 +37,7 @@ interface SecurityPredicates {
   object_id: number
   predicate_definition: string
   operation: 0 | 1 | 2 | 3 | 4
+  predicate_type_desc: 'FILTER' | 'BLOCK'
   target_object_id: number
 }
 
@@ -160,6 +161,7 @@ interface IndexColumns {
   object_id: number
   index_id: number
   column_id: number
+  key_ordinal: number
 }
 
 /**

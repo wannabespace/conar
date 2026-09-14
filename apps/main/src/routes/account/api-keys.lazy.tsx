@@ -69,7 +69,7 @@ const ApiKeysEmptyState = ({
     </h3>
     <p className="text-muted-foreground mb-6 max-w-sm text-sm">
       Key is shown only once. Use as Bearer or{' '}
-      <code className="bg-muted rounded-sm px-1 py-0.5 font-mono text-[0.7rem]">
+      <code className="bg-muted text-2xs rounded-sm px-1 py-0.5 font-mono">
         x-api-key
       </code>
       .
@@ -80,6 +80,28 @@ const ApiKeysEmptyState = ({
     </Button>
   </div>
 )
+
+const API_KEY_SKELETON_ROWS = 3
+
+const ApiKeysSkeletonRows = () =>
+  Array.from({ length: API_KEY_SKELETON_ROWS }, (_, row) => (
+    // oxlint-disable-next-line react/no-array-index-key
+    <TableRow key={`skeleton-${row}`}>
+      <TableCell>
+        <Skeleton className="h-4 w-32" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-16" />
+      </TableCell>
+      <TableCell />
+    </TableRow>
+  ))
 
 const ApiKeysContent = ({
   apiKeys,
@@ -102,16 +124,7 @@ const ApiKeysContent = ({
   revokeDialogRef: RefObject<ComponentRef<typeof RevokeApiKeyDialog> | null>
   setKeyEnabled: (input: { keyId: string; enabled: boolean }) => void
 }) => {
-  if (isPending) {
-    return (
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    )
-  }
-
-  if (apiKeys.length === 0) {
+  if (!isPending && apiKeys.length === 0) {
     return (
       <ApiKeysEmptyState
         onCreateClick={() => createDialogRef.current?.open()}
@@ -123,14 +136,15 @@ const ApiKeysContent = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead>Last used</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead className="w-[30%]">Name</TableHead>
+          <TableHead className="w-[25%]">Created</TableHead>
+          <TableHead className="w-[25%]">Last used</TableHead>
+          <TableHead className="w-[20%]">Status</TableHead>
           <TableHead className="w-10" />
         </TableRow>
       </TableHeader>
       <TableBody>
+        {isPending && <ApiKeysSkeletonRows />}
         {apiKeys.map((key) => (
           <TableRow key={key.id}>
             <TableCell className="font-medium">

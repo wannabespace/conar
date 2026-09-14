@@ -6,6 +6,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import { useFieldInvalidMark } from '@tamery/ui/components/field'
 import {
   InputGroup,
   InputGroupAddon,
@@ -133,7 +134,7 @@ const ComboboxContent = ({
         data-slot="combobox-content"
         data-chips={!!anchor}
         className={cn(
-          `group/combobox-content bg-popover/70 text-popover-foreground ring-foreground/4 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] origin-(--transform-origin) animate-none! overflow-hidden rounded-2xl shadow-xl ring-[0.5px] ease-[cubic-bezier(0.32,0.72,0,1)] before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 data-closed:duration-100 data-open:duration-150 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
+          `group/combobox-content bg-popover/70 text-popover-foreground ring-foreground/4 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] overflow-hidden rounded-2xl shadow-xl ring-[0.5px] before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
           className
         )}
         {...props}
@@ -238,19 +239,28 @@ const ComboboxSeparator = ({
 )
 
 const ComboboxChips = ({
+  children,
   className,
   ...props
 }: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
-  ComboboxPrimitive.Chips.Props) => (
-  <ComboboxPrimitive.Chips
-    data-slot="combobox-chips"
-    className={cn(
-      `bg-input focus-within:focus-ring has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/30 flex min-h-8 flex-wrap items-center gap-1 rounded-xl border border-transparent bg-clip-padding px-2.5 py-1 text-sm transition-[color,box-shadow] duration-200 has-aria-invalid:ring-3 has-data-[slot=combobox-chip]:px-1`,
-      className
-    )}
-    {...props}
-  />
-)
+  ComboboxPrimitive.Chips.Props) => {
+  const invalidMark = useFieldInvalidMark()
+
+  return (
+    <ComboboxPrimitive.Chips
+      data-slot="combobox-chips"
+      aria-invalid={invalidMark ? true : undefined}
+      className={cn(
+        `bg-input ring-foreground/4 hover:ring-foreground/12 focus-within:focus-ring aria-invalid:invalid-ring flex min-h-8 flex-wrap items-center gap-1 rounded-xl border border-transparent px-2.5 py-1 text-sm shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200 has-data-[slot=combobox-chip]:px-1 has-[input:disabled]:pointer-events-none has-[input:disabled]:opacity-50`,
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {invalidMark}
+    </ComboboxPrimitive.Chips>
+  )
+}
 
 const ComboboxChip = ({
   className,
@@ -263,7 +273,7 @@ const ComboboxChip = ({
   <ComboboxPrimitive.Chip
     data-slot="combobox-chip"
     className={cn(
-      `bg-input/60 text-foreground flex h-[calc(--spacing(5.25))] w-fit items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5`,
+      `bg-foreground/5 text-foreground flex h-[calc(--spacing(5.25))] w-fit items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5`,
       className
     )}
     {...props}
@@ -291,7 +301,10 @@ const ComboboxChipsInput = ({
 }: ComboboxPrimitive.Input.Props) => (
   <ComboboxPrimitive.Input
     data-slot="combobox-chip-input"
-    className={cn('min-w-16 flex-1 outline-none', className)}
+    className={cn(
+      'placeholder:text-muted-foreground min-w-16 flex-1 outline-none',
+      className
+    )}
     {...props}
   />
 )

@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import {
   resourceRowsQueryInfiniteOptions,
   buildWhere,
-} from '~/entities/connection/queries/rows'
+} from '~/entities/connection/queries/rows/list'
 import { dialects } from '~/entities/connection/runtime/dialects'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'

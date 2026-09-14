@@ -2,18 +2,14 @@ import {
   FlashIcon,
   HierarchyIcon,
   Key01Icon,
-  LeftToRightListBulletIcon,
   LeftToRightListDashIcon,
   Search01Icon,
   SecurityCheckIcon,
   SourceCodeIcon,
+  TagsIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import {
-  CONNECTION_TYPES_WITH_FUNCTIONS,
-  CONNECTION_TYPES_WITH_TRIGGERS,
-} from '@tamery/shared/connection-constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
@@ -26,6 +22,7 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
+import { sectionAvailable } from '~/entities/connection/capabilities'
 import type { Connection } from '~/entities/connection/core/sync'
 import {
   openDefinitionsTab,
@@ -51,6 +48,7 @@ interface NavigatorItem {
   Icon: IconSvgElement
   label: string
   open: (resourceId: string, preview: boolean) => void
+  section?: DefinitionsSection
   tabId: string
 }
 
@@ -63,6 +61,7 @@ const sectionItem = (
   label,
   open: (resourceId, preview) =>
     openDefinitionsTab(resourceId, section, preview),
+  section,
   tabId: definitionsTabId(section),
 })
 
@@ -91,7 +90,7 @@ export const schemaGroups = (
     {
       items: [
         sectionItem(
-          LeftToRightListBulletIcon,
+          TagsIcon,
           connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
           'enums'
         ),
@@ -100,12 +99,8 @@ export const schemaGroups = (
     },
     {
       items: [
-        ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
-          ? [sectionItem(SourceCodeIcon, 'Functions', 'functions')]
-          : []),
-        ...(CONNECTION_TYPES_WITH_TRIGGERS.includes(connection.type)
-          ? [sectionItem(FlashIcon, 'Triggers', 'triggers')]
-          : []),
+        sectionItem(SourceCodeIcon, 'Functions', 'functions'),
+        sectionItem(FlashIcon, 'Triggers', 'triggers'),
       ],
       label: 'Logic',
     },
@@ -113,7 +108,14 @@ export const schemaGroups = (
       items: [sectionItem(SecurityCheckIcon, 'Policies', 'policies')],
       label: 'Security',
     },
-  ].filter((group) => group.items.length > 0)
+  ]
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        ({ section }) => !section || sectionAvailable(section, connection.type)
+      ),
+    }))
+    .filter((group) => group.items.length > 0)
 
 export const DefinitionsPanel = () => {
   const { connection, connectionResource } = useRouteContext()
@@ -167,7 +169,7 @@ export const DefinitionsPanel = () => {
                 <SidebarMenuItem key={tabId}>
                   <SidebarMenuButton
                     isActive={isActive}
-                    className="text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default gap-2 rounded-md px-2 text-sm font-[450] data-active:font-[450]"
+                    className="text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default gap-2 rounded-md px-2 text-sm"
                     render={
                       <Link
                         to="/connection/$resourceId/$tabId"

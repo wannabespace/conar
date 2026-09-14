@@ -30,7 +30,7 @@ export const omit = <T extends object, K extends keyof T>(
     Object.entries(obj).filter(([key]) => !keys.includes(key as K))
   ) as Omit<T, K>
 
-// oxlint-disable-next-line eslint/no-empty-function -- intentional no-op callback
+// oxlint-disable-next-line eslint/no-empty-function
 export const noop = () => {}
 
 export const objectEntries = Object.entries as <T extends object>(

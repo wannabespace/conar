@@ -21,7 +21,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { openRunnerTab } from '~/entities/connection/store/helpers/tabs'
 import {
   getConnectionResourceStore,

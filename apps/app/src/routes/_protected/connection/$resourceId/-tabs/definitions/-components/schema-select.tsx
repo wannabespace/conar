@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from '@tamery/ui/components/field'
 import {
   Select,
   SelectContent,
@@ -5,6 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
+
+import { NameSelect } from './pickers'
 
 export const SchemaSelect = ({
   schemas,
@@ -44,5 +47,37 @@ export const SchemaSelect = ({
         ))}
       </SelectContent>
     </Select>
+  )
+}
+
+export const SchemaField = ({
+  disabled,
+  id,
+  onSchemaChange,
+  schema,
+  schemas,
+}: {
+  disabled: boolean
+  id: string
+  onSchemaChange: (schema: string) => void
+  schema: string
+  schemas: string[]
+}) => {
+  if (schemas.length <= 1) {
+    return null
+  }
+
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>Schema</FieldLabel>
+      <NameSelect
+        id={id}
+        disabled={disabled}
+        options={schemas}
+        placeholder="Choose a schema"
+        value={schema}
+        onValueChange={onSchemaChange}
+      />
+    </Field>
   )
 }

@@ -51,19 +51,19 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
+import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
+import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import {
   resourceColumnsQueryKey,
   resourceTableColumnsQueryOptions,
-} from '~/entities/connection/queries/columns'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
-import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
-import { resourcePoliciesQuery } from '~/entities/connection/queries/policies'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
-import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
-import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers'
+} from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import {
   openRunnerTab,
   openTab,
@@ -145,7 +145,7 @@ const DEFINITIONS_QUERY_OPTIONS: Record<
   enums: resourceEnumsQueryOptions,
   functions: resourceFunctionsQueryOptions,
   indexes: resourceIndexesQueryOptions,
-  policies: resourcePoliciesQuery,
+  policies: resourcePoliciesQueryOptions,
   triggers: resourceTriggersQueryOptions,
 }
 
@@ -317,9 +317,9 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
+              tone="muted"
               size="icon-xs"
               aria-label="Go back"
-              className="text-muted-foreground"
               disabled={!canGoBack}
               onClick={() => router.history.back()}
             />
@@ -334,9 +334,9 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
+              tone="muted"
               size="icon-xs"
               aria-label="Go forward"
-              className="text-muted-foreground"
               onClick={() => router.history.forward()}
             />
           }
@@ -376,9 +376,9 @@ const NewTabMenu = ({
         render={
           <Button
             variant="ghost"
+            tone="muted"
             size="icon-xs"
             aria-label="New tab"
-            className="text-muted-foreground"
           />
         }
       >
@@ -473,10 +473,10 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
         render={
           <Button
             variant="ghost"
+            tone="muted"
             size="icon-xs"
             aria-label="AI chat"
             aria-pressed={chatOpened}
-            className="text-muted-foreground"
             onClick={toggleChat}
           />
         }
@@ -916,9 +916,9 @@ export const TabBar = ({ className }: { className?: string }) => {
             render={
               <Button
                 variant="ghost"
+                tone="muted"
                 size="icon-xs"
                 aria-label="Toggle sidebar"
-                className="text-muted-foreground"
                 onClick={() => navigatorOpenValue.set((open) => !open)}
               />
             }

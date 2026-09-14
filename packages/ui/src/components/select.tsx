@@ -5,6 +5,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { useFieldInvalidMark } from '@tamery/ui/components/field'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -35,28 +36,34 @@ const SelectTrigger = ({
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: SelectSize
-}) => (
-  <SelectPrimitive.Trigger
-    data-slot="select-trigger"
-    data-size={size}
-    className={cn(
-      `bg-input ring-foreground/4 hover:text-foreground focus-visible:focus-ring aria-invalid:border-destructive/60 aria-invalid:ring-destructive/30 data-placeholder:text-muted-foreground flex w-fit items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 data-popup-open:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon
-      render={
-        <HugeiconsIcon
-          icon={ArrowDown01Icon}
-          strokeWidth={2}
-          className="text-muted-foreground pointer-events-none size-4"
-        />
-      }
-    />
-  </SelectPrimitive.Trigger>
-)
+}) => {
+  const invalidMark = useFieldInvalidMark()
+
+  return (
+    <SelectPrimitive.Trigger
+      data-slot="select-trigger"
+      data-size={size}
+      aria-invalid={invalidMark ? true : undefined}
+      className={cn(
+        `bg-input ring-foreground/4 hover:ring-foreground/12 data-popup-open:ring-foreground/12 hover:text-foreground focus-visible:focus-ring data-placeholder:text-muted-foreground hover:bg-accent data-popup-open:bg-accent aria-invalid:invalid-ring flex w-fit items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring-[0.5px] transition-[color,background-color,box-shadow] duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {invalidMark}
+      <SelectPrimitive.Icon
+        render={
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground pointer-events-none size-4"
+          />
+        }
+      />
+    </SelectPrimitive.Trigger>
+  )
+}
 
 const SelectScrollUpButton = ({
   className,

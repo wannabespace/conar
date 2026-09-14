@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
-import type { columnType } from '~/entities/connection/queries/columns'
+import type { columnType } from '~/entities/connection/queries/tables/columns'
 
 export interface Column {
   id: string

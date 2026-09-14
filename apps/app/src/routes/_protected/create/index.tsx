@@ -26,7 +26,7 @@ import {
 } from '~/components/stepper'
 import { useCollections } from '~/entities/collections'
 import { createConnectionTransaction } from '~/entities/connection/core/create-connection'
-import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
+import { testConnectionQuery } from '~/entities/connection/queries/connection/test'
 import { useLocalProxyAvailable } from '~/entities/connection/runtime/proxy'
 import { getConnectionStore } from '~/entities/connection/store/stores'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
@@ -237,7 +237,7 @@ const CreateConnectionPage = () => {
   const canSaveInCloud = !!url && canSend
 
   return (
-    <ScrollArea className="py-[10vh]">
+    <ScrollArea className="py-24">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -249,7 +249,8 @@ const CreateConnectionPage = () => {
           <Button
             type="button"
             variant="link"
-            className="text-muted-foreground px-0!"
+            tone="muted"
+            className="px-0!"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon

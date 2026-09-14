@@ -20,9 +20,9 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { deleteRowsQuery } from '~/entities/connection/queries/delete-rows'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
-import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
+import { deleteRowsQuery } from '~/entities/connection/queries/rows/delete'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { queryClient } from '~/lib/query-client'
 

@@ -30,7 +30,7 @@ const InputOTPGroup = ({
   <div
     data-slot="input-otp-group"
     className={cn(
-      `has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/30 flex items-center rounded-2xl has-aria-invalid:ring-3`,
+      `has-aria-invalid:invalid-ring flex items-center rounded-2xl`,
       className
     )}
     {...props}
@@ -52,7 +52,7 @@ const InputOTPSlot = ({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        `border-input bg-input aria-invalid:border-destructive/60 data-[active=true]:focus-ring data-[active=true]:aria-invalid:ring-destructive/30 relative flex size-8 items-center justify-center border-y border-r text-sm transition-[color,box-shadow] duration-200 outline-none first:rounded-l-2xl first:border-l last:rounded-r-2xl data-[active=true]:z-10`,
+        `border-input bg-input data-[active=true]:focus-ring data-[active=true]:aria-invalid:invalid-ring relative flex size-8 items-center justify-center border-y border-r text-sm transition-[color,box-shadow] duration-200 outline-none first:rounded-l-2xl first:border-l last:rounded-r-2xl data-[active=true]:z-10`,
         className
       )}
       {...props}

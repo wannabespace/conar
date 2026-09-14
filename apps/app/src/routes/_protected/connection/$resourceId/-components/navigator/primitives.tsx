@@ -7,7 +7,7 @@ import type { CSSProperties } from 'react'
 import * as React from 'react'
 
 export const sidebarActionRowClassName =
-  'text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]'
+  'text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2'
 
 export const SidebarContent = ({
   className,
@@ -54,7 +54,7 @@ export const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring active:bg-accent active:text-accent-foreground data-active:bg-accent data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring active:bg-accent active:text-accent-foreground data-active:bg-accent data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           className
         ),
       },

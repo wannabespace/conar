@@ -11,18 +11,22 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { useState } from 'react'
 
-export const PasswordInput = (
-  props: Omit<ComponentProps<typeof InputGroupInput>, 'type'>
-) => {
+export const PasswordInput = ({
+  addon,
+  ...props
+}: Omit<ComponentProps<typeof InputGroupInput>, 'type'> & {
+  addon?: ReactNode
+}) => {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
     <InputGroup className="relative">
       <InputGroupInput type={showPassword ? 'text' : 'password'} {...props} />
       <InputGroupAddon align="inline-end">
+        {addon}
         <Tooltip>
           <TooltipTrigger
             render={

@@ -33,6 +33,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
+import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -190,7 +191,14 @@ const LogList = ({
         className="no-scrollbar scroll-fade h-full overflow-auto"
       >
         <div ref={contentRef}>
-          <div style={{ height: virtualItems[0]?.start ?? 0 }} />
+          <div
+            className="h-(--pad-height)"
+            style={
+              {
+                '--pad-height': `${virtualItems[0]?.start ?? 0}px`,
+              } as CSSProperties
+            }
+          />
           {virtualItems.map((virtualItem) => {
             const query = queries[virtualItem.index]
 
@@ -204,7 +212,12 @@ const LogList = ({
             ) : null
           })}
           <div
-            style={{ height: totalSize - (virtualItems.at(-1)?.end ?? 0) }}
+            className="h-(--pad-height)"
+            style={
+              {
+                '--pad-height': `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`,
+              } as CSSProperties
+            }
           />
         </div>
       </div>
@@ -278,8 +291,8 @@ export const QueryLogger = ({
                 <Button
                   size="icon-xs"
                   variant="ghost"
+                  tone="muted"
                   aria-label="Clear log"
-                  className="text-muted-foreground"
                   disabled={queries.length === 0}
                   onClick={clearQueries}
                 />
@@ -307,8 +320,8 @@ export const QueryLogger = ({
                 <Button
                   size="icon-xs"
                   variant="ghost"
+                  tone="muted"
                   aria-label="Close query logger"
-                  className="text-muted-foreground"
                   onClick={() =>
                     store.set(
                       (state) =>
@@ -352,10 +365,9 @@ export const QueryLogger = ({
           </div>
           <div
             className={cn(
-              'flex shrink-0 flex-col overflow-hidden',
-              selected && 'border-l'
+              'flex w-0 shrink-0 flex-col overflow-hidden',
+              selected && 'w-[55%] border-l'
             )}
-            style={{ width: selected ? '55%' : 0 }}
           >
             {selected && activeTab && (
               <TabsList variant="bar" className="shrink-0 after:hidden">

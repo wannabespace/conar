@@ -34,7 +34,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
@@ -610,9 +610,13 @@ export const FilterSearchBar = ({
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim()
 
-  useHotkey('Mod+F', () => {
-    inputRef.current?.focus()
-  })
+  useHotkey(
+    'Mod+F',
+    () => {
+      inputRef.current?.focus()
+    },
+    { conflictBehavior: 'replace' }
+  )
 
   const trimmedQuery = query.trim()
   const columnQuery = trimmedQuery.toLowerCase()

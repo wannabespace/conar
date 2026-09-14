@@ -1,7 +1,8 @@
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
-import { prerender } from '@tamery/vite-prerender'
+import { inlineHtml } from '@tamery/vite-inline-html'
+import { inlineReactHtml } from '@tamery/vite-inline-html/react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -45,11 +46,13 @@ export default defineConfig(({ mode }) => ({
       generatedRouteTree: 'src/routeTree.gen.ts',
       routesDirectory: 'src/routes',
     }),
-    prerender({
+    inlineHtml({
+      scripts: [{ entry: 'src/boot.ts', marker: '<!--boot-->' }],
+    }),
+    inlineReactHtml({
       components: [
         { export: 'Shells', marker: '<!--shell-->', module: '/src/shell.tsx' },
       ],
-      scripts: [{ entry: 'src/boot.ts', marker: '<!--boot-->' }],
     }),
     react(),
     babel({

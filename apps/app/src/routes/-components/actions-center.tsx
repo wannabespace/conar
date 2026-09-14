@@ -5,8 +5,6 @@ import {
   ComputerTerminal01Icon,
   DashboardSquare01Icon,
   Download01Icon,
-  File01Icon,
-  HierarchyIcon,
   HistoryIcon,
   LayoutTable02Icon,
   Moon02Icon,
@@ -18,7 +16,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/connection-constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import {
   Command,
   CommandDialog,
@@ -47,17 +45,16 @@ import type {
   ConnectionResource,
 } from '~/entities/connection/core/sync'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import {
-  openDefinitionsTab,
   openRunnerTab,
   openTableTab,
-  openVisualizerTab,
 } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
+import { schemaGroups } from '~/routes/_protected/connection/$resourceId/-components/navigator/definitions-section'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 const CONNECTION_PAGES = [
@@ -66,18 +63,6 @@ const CONNECTION_PAGES = [
     keywords: ['sql', 'runner'],
     icon: ComputerTerminal01Icon,
     openTab: openRunnerTab,
-  },
-  {
-    label: 'Open Definitions',
-    keywords: [],
-    icon: File01Icon,
-    openTab: (resourceId: string) => openDefinitionsTab(resourceId, 'enums'),
-  },
-  {
-    label: 'Open Visualizer',
-    keywords: [],
-    icon: HierarchyIcon,
-    openTab: openVisualizerTab,
   },
 ]
 
@@ -283,21 +268,42 @@ export const ActionsCenter = () => {
           router.navigate({ to: '/' })
         ),
         ...(current
-          ? CONNECTION_PAGES.map((page) =>
-              actionEntry(
-                page.label,
-                ['open', 'go to', ...page.keywords, page.label],
-                page.icon,
-                () =>
-                  router.navigate({
-                    to: '/connection/$resourceId/$tabId',
-                    params: {
-                      resourceId: current.connectionResource.id,
-                      tabId: page.openTab(current.connectionResource.id),
-                    },
-                  })
-              )
-            )
+          ? [
+              ...CONNECTION_PAGES.map((page) =>
+                actionEntry(
+                  page.label,
+                  ['open', 'go to', ...page.keywords, page.label],
+                  page.icon,
+                  () =>
+                    router.navigate({
+                      to: '/connection/$resourceId/$tabId',
+                      params: {
+                        resourceId: current.connectionResource.id,
+                        tabId: page.openTab(current.connectionResource.id),
+                      },
+                    })
+                )
+              ),
+              ...schemaGroups(current.connection).flatMap((group) =>
+                group.items.map((item) =>
+                  actionEntry(
+                    item.label,
+                    ['open', 'go to', group.label, 'definitions'],
+                    item.Icon,
+                    () => {
+                      item.open(current.connectionResource.id, false)
+                      router.navigate({
+                        to: '/connection/$resourceId/$tabId',
+                        params: {
+                          resourceId: current.connectionResource.id,
+                          tabId: item.tabId,
+                        },
+                      })
+                    }
+                  )
+                )
+              ),
+            ]
           : []),
         actionEntry(
           'Add new connection…',

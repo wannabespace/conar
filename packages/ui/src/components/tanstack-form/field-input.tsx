@@ -1,13 +1,21 @@
 import type { ComponentProps } from 'react'
 
-import { Input } from '../input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../input-group'
 import type { FormInputProps } from './context'
 import { formInputProps, useFieldContext } from './context'
+import { FieldError } from './field-error'
 
 export const FieldInput = (
-  props: Omit<ComponentProps<typeof Input>, keyof FormInputProps>
+  props: Omit<ComponentProps<typeof InputGroupInput>, keyof FormInputProps>
 ) => {
   const field = useFieldContext()
 
-  return <Input {...props} {...formInputProps(field)} />
+  return (
+    <InputGroup>
+      <InputGroupInput {...props} {...formInputProps(field)} />
+      <InputGroupAddon align="inline-end">
+        <FieldError />
+      </InputGroupAddon>
+    </InputGroup>
+  )
 }

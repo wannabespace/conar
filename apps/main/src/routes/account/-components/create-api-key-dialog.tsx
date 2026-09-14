@@ -19,7 +19,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@tamery/ui/components/input-group'
-import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
@@ -43,6 +43,14 @@ const defaultCreateApiKeyFormValues = {
     },
   } satisfies PermissionSelection,
 }
+
+const nameError = (value: string) =>
+  value.trim().length < 2 ? 'Name must be at least 2 characters' : undefined
+
+const permissionsError = (value: PermissionSelection) =>
+  Object.values(value).some((actions) => Object.values(actions).some(Boolean))
+    ? undefined
+    : 'Select at least one permission'
 
 const permissionSelectionToPayload = (selection: PermissionSelection) => {
   const out: {
@@ -120,23 +128,13 @@ export const CreateApiKeyDialog = ({
             </DialogDescription>
           </DialogHeader>
           <div>
-            <form
-              id="create-api-key-form"
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault()
-                form.handleSubmit()
-              }}
-            >
-              <FieldSet className="flex w-full flex-col gap-6">
+            <Form id="create-api-key-form" className="space-y-4" form={form}>
+              <FieldSet className="w-full">
                 <form.AppField
                   name="name"
                   validators={{
-                    onSubmit: ({ value }) => {
-                      if (value.trim().length < 2) {
-                        return 'Name must be at least 2 characters'
-                      }
-                    },
+                    onChange: ({ value }) => nameError(value),
+                    onMount: ({ value }) => nameError(value),
                   }}
                 >
                   {(field) => (
@@ -146,21 +144,14 @@ export const CreateApiKeyDialog = ({
                         placeholder="e.g. local-mcp, ci-bot"
                         maxLength={100}
                       />
-                      <field.Error />
                     </field.Field>
                   )}
                 </form.AppField>
                 <form.AppField
                   name="permissions"
                   validators={{
-                    onSubmit: ({ value }) => {
-                      const atLeastOne = Object.values(value).some((actions) =>
-                        Object.values(actions).some(Boolean)
-                      )
-                      if (!atLeastOne) {
-                        return 'Select at least one permission'
-                      }
-                    },
+                    onChange: ({ value }) => permissionsError(value),
+                    onMount: ({ value }) => permissionsError(value),
                   }}
                 >
                   {(field) => (
@@ -168,7 +159,7 @@ export const CreateApiKeyDialog = ({
                       <field.Label>Permissions</field.Label>
                       {objectEntries(API_KEY_PERMISSIONS).map(
                         ([resource, actions]) => (
-                          <Field key={resource} className="gap-1">
+                          <Field key={resource}>
                             {actions.map((action) => (
                               <label
                                 key={action}
@@ -192,12 +183,11 @@ export const CreateApiKeyDialog = ({
                           </Field>
                         )
                       )}
-                      <field.Error />
                     </field.Field>
                   )}
                 </form.AppField>
               </FieldSet>
-            </form>
+            </Form>
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>

@@ -49,10 +49,10 @@ import { toast } from 'sonner'
 
 import { SidebarButton } from '~/components/sidebar-link'
 import type { Column } from '~/entities/connection/components/table/cell/utils'
-import { distinctQuery } from '~/entities/connection/queries/distinct'
-import { insertQuery } from '~/entities/connection/queries/insert'
-import { resourceRowsQueryKey } from '~/entities/connection/queries/rows'
-import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
+import { distinctQuery } from '~/entities/connection/queries/rows/distinct'
+import { insertQuery } from '~/entities/connection/queries/rows/insert'
+import { resourceRowsQueryKey } from '~/entities/connection/queries/rows/list'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { getValueForEditor } from '~/entities/connection/utils/helpers'
 import type {
@@ -173,7 +173,8 @@ const Preview = ({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className="text-muted-foreground hover:text-foreground"
+                  tone="muted"
+                  className="hover:text-foreground"
                   onClick={() => setValues(sample)}
                 />
               }
@@ -588,7 +589,7 @@ export const SeedPanel = ({
     <div className="flex min-h-0 flex-1 flex-col">
       {!subscription && (
         <div className="border-b p-3">
-          <Alert size="sm">
+          <Alert>
             <HugeiconsIcon
               icon={CrownIcon}
               strokeWidth={2}

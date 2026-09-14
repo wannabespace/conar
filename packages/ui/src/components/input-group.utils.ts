@@ -1,7 +1,23 @@
 import { cva } from 'class-variance-authority'
 
+export const inputGroupVariants = cva(
+  `group/input-group relative flex h-8 w-full min-w-0 items-center transition-shadow duration-200 outline-none has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto data-[size=sm]:h-7 data-[size=xs]:h-6 data-[size=sm]:*:data-[slot=input-group-control]:h-7 data-[size=xs]:*:data-[slot=input-group-control]:h-6 data-[size=xs]:*:data-[slot=input-group-control]:text-xs has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5`,
+  {
+    defaultVariants: {
+      variant: 'default',
+    },
+    variants: {
+      variant: {
+        default: `bg-input ring-foreground/4 hover:ring-foreground/12 has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl border border-transparent shadow-xs ring-[0.5px] focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 data-[size=sm]:rounded-lg data-[size=xs]:rounded-md`,
+        // A full-bleed row inside a grouped list that owns the surface for it
+        flat: `has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring bg-transparent first:rounded-t-xl last:rounded-b-xl`,
+      },
+    },
+  }
+)
+
 export const inputGroupAddonVariants = cva(
-  `text-muted-foreground **:data-[slot=kbd]:bg-muted-foreground/10 flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-md **:data-[slot=kbd]:px-1.5 [&>svg:not([class*='size-'])]:size-4`,
+  `text-muted-foreground **:data-[slot=kbd]:bg-muted-foreground/10 flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-md **:data-[slot=kbd]:px-1.5 [&>svg:not([class*='size-'])]:size-4`,
   {
     defaultVariants: {
       align: 'inline-start',
@@ -26,7 +42,7 @@ export const inputGroupButtonVariants = cva(
     variants: {
       size: {
         'icon-sm': `size-8 p-0 has-[>svg]:p-0`,
-        'icon-xs': `size-6 rounded-md p-0 has-[>svg]:p-0`,
+        'icon-xs': `size-6 rounded-md p-0 has-[>svg]:p-0 [&_svg:not([class*='size-'])]:size-3.5`,
         sm: '',
         xs: `h-6 gap-1 rounded-md px-1.5 [&>svg:not([class*='size-'])]:size-3.5`,
       },

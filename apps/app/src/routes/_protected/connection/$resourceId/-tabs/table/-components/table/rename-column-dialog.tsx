@@ -22,9 +22,9 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
-import { renameColumnQuery } from '~/entities/connection/queries/rename-columns'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { renameColumnQuery } from '~/entities/connection/queries/tables/rename-columns'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { queryClient } from '~/lib/query-client'
 
@@ -100,7 +100,7 @@ export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
             <HugeiconsIcon
               icon={InformationCircleIcon}
               strokeWidth={2}
-              className="size-5 text-blue-500"
+              className="text-info size-5"
             />
             <AlertTitle data-mask>
               Rename column &quot;{column}&quot;

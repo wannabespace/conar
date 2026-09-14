@@ -11,7 +11,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
 import { Link } from '~/components/link'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { createTransformer } from '~/entities/connection/transformers/create-transformer'
 import { TableEmpty } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table-empty'
@@ -177,7 +177,6 @@ export const TableCellTable = ({
           <Button
             variant="outline"
             size="xs"
-            nativeButton={false}
             render={
               <Link
                 to="/connection/$resourceId/$tabId"

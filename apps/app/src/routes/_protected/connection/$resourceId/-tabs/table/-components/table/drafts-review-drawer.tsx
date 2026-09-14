@@ -27,7 +27,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 import { createTransformer } from '~/entities/connection/transformers/create-transformer'
 import { getDisplayValue } from '~/entities/connection/transformers/value-transformer'
 
@@ -196,7 +196,8 @@ export const DraftsReviewDrawer = ({
                             <Button
                               variant="ghost"
                               size="icon-xs"
-                              className="text-muted-foreground shrink-0"
+                              tone="muted"
+                              className="shrink-0"
                               onClick={() => removeRow(primaryKeys)}
                               disabled={isSaving}
                             />
@@ -263,7 +264,8 @@ export const DraftsReviewDrawer = ({
                                   <Button
                                     variant="ghost"
                                     size="icon-xs"
-                                    className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                    tone="muted"
+                                    className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                                     onClick={() =>
                                       removeDraft(primaryKeys, draft.columnId)
                                     }
@@ -293,7 +295,8 @@ export const DraftsReviewDrawer = ({
             variant="ghost"
             onClick={onDiscardAll}
             disabled={isSaving || drafts.length === 0}
-            className="text-muted-foreground mr-auto"
+            tone="muted"
+            className="mr-auto"
           >
             <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
             Discard all

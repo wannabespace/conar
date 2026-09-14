@@ -5,7 +5,7 @@ import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { FieldSet } from '@tamery/ui/components/field'
 import { Separator } from '@tamery/ui/components/separator'
-import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
@@ -120,7 +120,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
         ? { email: '', password: '', name: '' }
         : { email: '', password: '' },
     validators: {
-      onSubmit: authType === 'sign-up' ? signUpSchema : signInSchema,
+      onChange: authType === 'sign-up' ? signUpSchema : signInSchema,
     },
     onSubmit: async ({ value }) => {
       const { error, data } =
@@ -206,14 +206,8 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
           </Link>
         </p>
       </div>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-      >
-        <FieldSet className="flex w-full flex-col gap-6">
+      <Form className="space-y-4" form={form}>
+        <FieldSet className="w-full">
           <form.AppField name="email">
             {(field) => (
               <field.Field>
@@ -227,7 +221,6 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                   required
                   autoFocus
                 />
-                <field.Error />
               </field.Field>
             )}
           </form.AppField>
@@ -242,7 +235,6 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                     spellCheck={false}
                     required
                   />
-                  <field.Error />
                 </field.Field>
               )}
             </form.AppField>
@@ -256,7 +248,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                     <Button
                       variant="link"
                       size="xs"
-                      className="text-muted-foreground"
+                      tone="muted"
                       render={<Link to="/forgot-password" />}
                     >
                       Forgot password?
@@ -267,7 +259,6 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                   autoComplete="password"
                   placeholder="••••••••"
                 />
-                <field.Error />
               </field.Field>
             )}
           </form.AppField>
@@ -278,7 +269,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
             {authType === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
         </FieldSet>
-      </form>
+      </Form>
       <div className="relative">
         <Separator />
         <span className="bg-background text-muted-foreground absolute top-1/2 left-1/2 -translate-1/2 px-4 text-sm">
