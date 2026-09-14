@@ -6,7 +6,7 @@ import {
 } from '@tamery/ai/message'
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
@@ -72,19 +72,32 @@ const Chat = ({
   const chat = chatHistory.find((row) => row.id === chatId)
   const collectionMessages = messagesFromPartRows(transcriptRows)
 
-  // oxlint-disable-next-line react/hook-use-state
-  const [resume] = useState(
-    () => !!chat && collectionMessages.at(-1)?.role !== 'assistant'
-  )
-  const { error, messages, regenerate, sendMessage, status, stop } = useChat({
+  const {
+    error,
+    messages,
+    regenerate,
+    resumeStream,
+    sendMessage,
+    status,
+    stop,
+  } = useChat({
     chat: getChatInstance({ chatId, connectionResourceId }),
-    resume,
   })
   const isStreaming = status === 'submitted' || status === 'streaming'
   const displayMessages = mergeMessages(collectionMessages, messages)
+  const isAwaitingAnswer =
+    !!chat && status === 'ready' && displayMessages.at(-1)?.role === 'user'
   const firstMessage = displayMessages.at(0)
   const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
-  const lastSentId = messages.findLast((message) => message.role === 'user')?.id
+  const lastSentId = displayMessages.findLast(
+    (message) => message.role === 'user'
+  )?.id
+
+  useEffect(() => {
+    if (isAwaitingAnswer) {
+      void resumeStream()
+    }
+  }, [isAwaitingAnswer, resumeStream])
   const retry = () => {
     if (messages.length > 0) {
       void regenerate()

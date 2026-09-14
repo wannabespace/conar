@@ -1,7 +1,8 @@
-import { chatStream } from '@tamery/ai/features'
+import { chatStream, lastAnswer } from '@tamery/ai/features'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
+import { chatPersist } from '~/lib/chat-persist'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const abortStream = orpc
@@ -13,7 +14,18 @@ export const abortStream = orpc
       where: { id: { eq: input.chatId }, userId: { eq: context.user.id } },
     })
 
-    if (owned) {
-      await chatStream.stop(input.chatId)
+    if (!owned) {
+      return
+    }
+
+    await chatStream.stop(input.chatId)
+
+    const messages = await chatPersist.loadMessages({
+      chatId: input.chatId,
+      userId: context.user.id,
+    })
+    const lastMessage = messages.at(-1)
+    if (lastMessage?.role === 'user') {
+      await lastAnswer.mark(input.chatId, lastMessage.id)
     }
   })
