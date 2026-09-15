@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { customQuery } from '~/entities/connection/queries/connection/custom'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
 import { dropTriggerIfExistsQuery } from '~/entities/connection/queries/triggers/drop-if-exists'
@@ -71,8 +72,33 @@ const templates: Record<ConnectionType, (schema: string) => string> = {
 
 type ToggleTrigger = ((item: TriggerItem, enabled: boolean) => void) | undefined
 
+// CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
+const REPLACES_TRIGGERS_FROM = 14
+
+const useDropsFirst = ({
+  connection,
+  type,
+}: Pick<SectionInspectorProps<TriggerItem>, 'connection' | 'type'>) => {
+  const { data: version } = useQuery({
+    ...connectionVersionQueryOptions(connection),
+    enabled: type === ConnectionType.Postgres,
+  })
+
+  if (type === ConnectionType.MySQL) {
+    return true
+  }
+  if (type !== ConnectionType.Postgres) {
+    return false
+  }
+
+  return version === undefined
+    ? undefined
+    : Number(version.split('.')[0]) < REPLACES_TRIGGERS_FROM
+}
+
 const TriggerInspector = ({
   can,
+  connection,
   connectionResource,
   item: snapshot,
   onOpenChange,
@@ -89,6 +115,7 @@ const TriggerInspector = ({
   const item =
     snapshot &&
     (rows.find((row) => triggerKey(row) === triggerKey(snapshot)) ?? snapshot)
+  const dropsFirst = useDropsFirst({ connection, type })
 
   return (
     <>
@@ -119,7 +146,9 @@ const TriggerInspector = ({
           dropFirst={dropTriggerIfExistsQuery({
             name: item.name,
             schema: item.schema,
+            table: item.table,
           })}
+          dropsFirst={dropsFirst}
           name={item.name}
           noun="trigger"
           onSaved={() => onOpenChange(false)}

@@ -23,6 +23,7 @@ import {
   REFERENTIAL_ACTIONS,
   referentialActionsFor,
 } from '~/entities/connection/queries/constraints/shape'
+import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 
 import type { FilterOption } from '../-components/filter-select'
@@ -285,13 +286,18 @@ const constraintState = ({
   const changedShape = !!item && shapeChanged(draft, item)
   const renameOnly = !!item && !changedShape && finalNameOf(draft) !== item.name
   const renameInPlace = !!item && renamesInPlace(draft, item, type)
+  const readOnly = item ? !can.edit : !can.create
 
   return {
     changed: item ? changedShape || renameOnly : true,
     description: item ? `${item.schema}.${item.table}` : draft.schema,
     isForeign: draft.kind === 'foreignKey',
+    // MySQL names every primary key PRIMARY, whatever the ADD says.
+    nameLocked:
+      readOnly ||
+      (item?.type === 'primaryKey' && type === ConnectionType.MySQL),
     namePlaceholder: draft.table ? suggestedNameOf(draft) : 'Constraint name',
-    readOnly: item ? !can.edit : !can.create,
+    readOnly,
     renameOnly,
     saveLabel: item ? 'Save' : 'Create constraint',
     recreates: !!item && (changedShape || renameOnly) && !renameInPlace,
@@ -463,7 +469,7 @@ const ConstraintInspector = ({
                 <field.Input
                   data-mask
                   autoFocus
-                  disabled={state.readOnly}
+                  disabled={state.nameLocked}
                   placeholder={state.namePlaceholder}
                   spellCheck={false}
                   autoComplete="off"
@@ -755,7 +761,7 @@ export const Constraints = () => {
         />
       }
       canCascade
-      queryKey={query.queryKey}
+      queryKey={structureQueryKey(state.connectionResource)}
       dropItem={(item, cascade) =>
         run(
           dropConstraintQuery({

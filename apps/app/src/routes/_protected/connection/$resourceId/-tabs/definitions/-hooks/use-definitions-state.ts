@@ -79,6 +79,7 @@ export const useDefinitionsState = ({
 
   return {
     can: sectionCapabilitiesOf(section, connection.type),
+    connection,
     connectionResource,
     run,
     schemas,

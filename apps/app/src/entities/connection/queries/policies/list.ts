@@ -22,14 +22,6 @@ export const policyType = type({
 
 const REPLACE_SINGLE_QUOTES_REGEX = /'/gu
 
-const mssqlOperationMap = {
-  0: 'ALL',
-  1: 'SELECT',
-  2: 'INSERT',
-  3: 'UPDATE',
-  4: 'DELETE',
-} as const
-
 const query = createQuery({
   query: {
     clickhouse: async (db) => {
@@ -75,7 +67,7 @@ const query = createQuery({
           't.name as table',
           'sp.name',
           'sp.is_enabled',
-          'pr.operation',
+          'pr.operation_desc',
           'pr.predicate_type_desc',
           'pr.predicate_definition',
         ])
@@ -83,11 +75,11 @@ const query = createQuery({
         .execute()
       return rows.map((row) => ({
         check: null,
-        command:
-          mssqlOperationMap[row.operation as keyof typeof mssqlOperationMap] ||
-          'ALL',
+        command: row.operation_desc ?? 'ALL',
         enabled: row.is_enabled,
-        name: `${row.name} - ${row.predicate_type_desc}`,
+        name: [row.name, '-', row.predicate_type_desc, row.operation_desc]
+          .filter(Boolean)
+          .join(' '),
         roles: [],
         schema: row.schema || 'dbo',
         table: row.table ?? '',

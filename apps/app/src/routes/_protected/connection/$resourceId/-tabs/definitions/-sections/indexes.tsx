@@ -19,7 +19,10 @@ import type { SectionCapabilities } from '~/entities/connection/capabilities'
 import { createIndexQuery } from '~/entities/connection/queries/indexes/create'
 import { dropIndexQuery } from '~/entities/connection/queries/indexes/drop'
 import type { indexesType } from '~/entities/connection/queries/indexes/list'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
+import {
+  resourceIndexesQueryOptions,
+  structureQueryKey,
+} from '~/entities/connection/queries/indexes/list'
 import { recreateIndexQuery } from '~/entities/connection/queries/indexes/recreate'
 import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
@@ -52,7 +55,13 @@ type IndexKind = 'primary' | 'unique' | 'regular'
 
 interface GroupedIndex extends Pick<
   IndexItem,
-  'definition' | 'name' | 'schema' | 'table' | 'type'
+  | 'constraintOwned'
+  | 'custom'
+  | 'definition'
+  | 'name'
+  | 'schema'
+  | 'table'
+  | 'type'
 > {
   columns: string[]
   kind: IndexKind
@@ -78,8 +87,6 @@ const filterOptions: FilterOption<IndexKind | 'all'>[] = [
   { label: 'Regular', value: 'regular' },
 ]
 
-const noColumns: string[] = []
-
 const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
   `${item.table}.${item.name}`
 
@@ -101,9 +108,12 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
       if (column && !existing.columns.includes(column)) {
         existing.columns.push(column)
       }
+      existing.custom ||= item.custom
     } else {
       grouped.set(key, {
         columns: column ? [column] : [],
+        constraintOwned: item.constraintOwned,
+        custom: item.custom,
         definition: item.definition,
         kind: kindOf(item),
         name: item.name,
@@ -117,9 +127,9 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
   return [...grouped.values()]
 }
 
-// A primary key's index is owned by its constraint, which PostgreSQL and SQL
-// Server rename along with it; MySQL calls every one of them PRIMARY.
-const RENAMES_PRIMARY = new Set<ConnectionType>([
+// A constraint's index is renamed along with the constraint by PostgreSQL and
+// SQL Server; MySQL calls every primary key PRIMARY.
+const RENAMES_OWNED = new Set<ConnectionType>([
   ConnectionType.Postgres,
   ConnectionType.MSSQL,
 ])
@@ -196,39 +206,32 @@ const indexState = ({
   can,
   draft,
   item,
-  tableColumns,
   tables,
   type,
 }: {
   can: SectionCapabilities
   draft: IndexDraft
   item: GroupedIndex | null
-  tableColumns: string[]
   tables: string[]
   type: ConnectionType
 }) => {
-  // A functional index stores an expression where a column name would be, which
-  // the picker cannot represent — only its name can change.
-  const expressionIndex =
-    !!item &&
-    tableColumns.length > 0 &&
-    item.columns.some((column) => !tableColumns.includes(column))
   const shapeChanged = shapeChangedOf(draft, item)
-  const primary = item?.kind === 'primary'
+  const owned = !!item?.constraintOwned
+  const custom = !!item?.custom
   const readOnly = item
-    ? !can.edit || (primary && !RENAMES_PRIMARY.has(type))
+    ? !can.edit || (owned && !RENAMES_OWNED.has(type))
     : !can.create
 
   return {
     changed: item ? finalNameOf(draft) !== item.name || shapeChanged : true,
+    custom,
     description: item ? `${item.schema}.${item.table}` : draft.schema,
-    expressionIndex,
     namePlaceholder: draft.table ? suggestedNameOf(draft) : 'Index name',
-    primary,
+    owned,
     readOnly,
     saveLabel: item ? 'Save' : 'Create index',
     shapeChanged,
-    shapeLocked: readOnly || expressionIndex || primary,
+    shapeLocked: readOnly || custom || owned,
     tableOptions: item ? [item.table] : tables,
     title: item ? item.name : 'New index',
   }
@@ -236,31 +239,32 @@ const indexState = ({
 
 const IndexNotes = ({
   constraintKey,
-  expressionIndex,
+  custom,
   onLeave,
-  primary,
+  owned,
   resourceId,
   schema,
 }: {
   constraintKey: string | undefined
-  expressionIndex: boolean
+  custom: boolean
   onLeave: () => void
-  primary: boolean
+  owned: boolean
   resourceId: string
   schema: string | undefined
 }) => (
   <AnimatePresence initial={false}>
-    {expressionIndex && (
-      <MotionCollapse gap={16} key="expression">
+    {custom && (
+      <MotionCollapse gap={16} key="custom">
         <FieldDescription>
-          Built on an expression, so only its name can change.
+          Built with an expression, method, predicate or ordering the picker
+          cannot show, so only its name can change.
         </FieldDescription>
       </MotionCollapse>
     )}
-    {primary && (
-      <MotionCollapse gap={16} key="primary">
+    {owned && (
+      <MotionCollapse gap={16} key="owned">
         <FieldDescription>
-          Primary key columns live on its constraint.{' '}
+          This index enforces a constraint, which owns its columns.{' '}
           <Link
             to="/connection/$resourceId/$tabId"
             params={{
@@ -331,7 +335,6 @@ const IndexInspector = ({
     can,
     draft,
     item,
-    tableColumns: columnNames ?? noColumns,
     tables: tablesOf(draft.schema),
     type,
   })
@@ -420,9 +423,9 @@ const IndexInspector = ({
           </form.AppField>
           <IndexNotes
             constraintKey={item ? indexKey(item) : undefined}
-            expressionIndex={state.expressionIndex}
+            custom={state.custom}
             onLeave={() => onOpenChange(false)}
-            primary={state.primary}
+            owned={state.owned}
             resourceId={connectionResource.id}
             schema={draft.schema}
           />
@@ -543,8 +546,8 @@ export const Indexes = () => {
           onValueChange={setKind}
         />
       }
-      canDropItem={(item) => item.kind !== 'primary'}
-      queryKey={query.queryKey}
+      canDropItem={(item) => !item.constraintOwned}
+      queryKey={structureQueryKey(state.connectionResource)}
       dropItem={(item) =>
         run(
           dropIndexQuery({

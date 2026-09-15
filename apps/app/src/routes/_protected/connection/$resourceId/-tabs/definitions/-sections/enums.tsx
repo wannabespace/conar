@@ -25,6 +25,7 @@ import type { enumType } from '~/entities/connection/queries/enums/list'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { recreateEnumQuery } from '~/entities/connection/queries/enums/recreate'
 import { setColumnEnumValuesQuery } from '~/entities/connection/queries/enums/set-column-values'
+import { resourceColumnsQueryKey } from '~/entities/connection/queries/tables/columns'
 import { queryClient } from '~/lib/query-client'
 
 import type {
@@ -124,7 +125,10 @@ const enumPlan = (
     }
   }
 
+  // RENAME VALUE cannot land on a label that still exists, so a swap replaces.
+  const swaps = Object.values(renames).some((value) => original.includes(value))
   const inPlace =
+    !swaps &&
     survivors.length === original.length &&
     survivors.every((id, index) => id === index) &&
     values.slice(survivors.length).join('\n') === additions.join('\n')
@@ -151,6 +155,22 @@ const draftsOf = (item: EnumItem | null) =>
 const valuesOf = (drafts: EditableListItem[]) =>
   drafts.map((draft) => draft.value.trim()).filter(Boolean)
 
+// MODIFY COLUMN restates the default, which has to name a surviving label.
+const migratedDefault = (
+  value: string | null,
+  plan: EnumPlan,
+  isSet: boolean
+) => {
+  if (value === null) {
+    return null
+  }
+  const kept = (isSet ? value.split(',') : [value])
+    .map((label) => plan.renames[label] ?? label)
+    .filter((label) => plan.values.includes(label))
+
+  return kept.length === 0 ? null : kept.join(',')
+}
+
 const enumSchema = arkType({
   drafts: arkType({ id: 'string', value: 'string' })
     .array()
@@ -172,6 +192,13 @@ const enumSchema = arkType({
   ),
   schema: 'string',
 })
+
+// Columns carry the type name, its labels and their defaults, so every write
+// to an enum changes what they show.
+const refreshColumns = (connectionResource: ConnectionResource) =>
+  queryClient.invalidateQueries({
+    queryKey: resourceColumnsQueryKey({ connectionResource }),
+  })
 
 const saveEnum = async ({
   connectionResource,
@@ -203,7 +230,11 @@ const saveEnum = async ({
         collation: metadata.collation ?? null,
         column: metadata.column,
         comment: metadata.comment,
-        defaultValue: metadata.default ?? null,
+        defaultValue: migratedDefault(
+          metadata.default ?? null,
+          plan,
+          !!metadata.isSet
+        ),
         isSet: !!metadata.isSet,
         nullable: !!metadata.nullable,
         schema: item.schema,
@@ -256,14 +287,15 @@ const replaceWarning = (item: EnumItem | null): InspectorWarning => ({
         {item?.name}
       </span>{' '}
       is dropped and created again, and every column that uses it is moved onto
-      the new type. A row still holding a removed value fails the move and
-      nothing is changed.
+      the new type. A row still holding a removed value, or a view or function
+      built on the type, fails the move and nothing is changed.
     </>
   ),
 })
 
-// MySQL matches old list against new by text, so a renamed or removed label is
-// written back as an empty string on every row that still holds it.
+// MySQL matches old list against new by text, so a renamed or removed label
+// fails the rewrite under strict SQL mode and is written back as an empty
+// string otherwise.
 const lostValuesWarning = (
   item: EnumItem | null,
   values: string[]
@@ -286,7 +318,8 @@ const lostValuesWarning = (
         <span data-mask className="font-medium">
           {lost.join(', ')}
         </span>{' '}
-        are written back as an empty string, and nothing restores the old value.
+        fail the rewrite under strict SQL mode, and are written back as an empty
+        string otherwise. Nothing restores the old value.
       </>
     ),
   }
@@ -348,15 +381,17 @@ const EnumInspector = ({
   type,
 }: SectionInspectorProps<EnumItem>) => {
   const mutation = useDefinitionMutation({
-    mutationFn: (draft: EnumDraft) =>
-      saveEnum({
+    mutationFn: async (draft: EnumDraft) => {
+      await saveEnum({
         connectionResource,
         drafts: draft.drafts,
         item,
         name: draft.name.trim(),
         run,
         schema: draft.schema,
-      }),
+      })
+      await refreshColumns(connectionResource)
+    },
     onSuccess: () => onOpenChange(false),
     queryKey,
     success: (draft) =>
@@ -545,9 +580,12 @@ export const Enums = () => {
       state={state}
       canCascade
       queryKey={query.queryKey}
-      dropItem={(item, cascade) =>
-        run(dropEnumQuery({ cascade, name: item.name, schema: item.schema }))
-      }
+      dropItem={async (item, cascade) => {
+        await run(
+          dropEnumQuery({ cascade, name: item.name, schema: item.schema })
+        )
+        await refreshColumns(state.connectionResource)
+      }}
       Inspector={EnumInspector}
       inspectorProps={state}
     />

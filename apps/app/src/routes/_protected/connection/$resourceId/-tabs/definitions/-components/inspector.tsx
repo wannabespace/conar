@@ -30,7 +30,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import { AnimatePresence } from 'motion/react'
-import type { ReactNode } from 'react'
+import type { ReactNode, RefObject } from 'react'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 
@@ -44,10 +44,12 @@ export type SectionInspectorProps<T> = DefinitionsState &
 
 export const InspectorShell = ({
   children,
+  finalFocus,
   onOpenChange,
   open,
 }: {
   children: ReactNode
+  finalFocus: RefObject<HTMLElement | null>
   onOpenChange: (open: boolean) => void
   open: boolean
 }) => (
@@ -57,7 +59,10 @@ export const InspectorShell = ({
     size="sm"
     swipeDirection="right"
   >
-    <DrawerContent className="sm:[--drawer-content-width:36rem]!">
+    <DrawerContent
+      className="sm:[--drawer-content-width:36rem]!"
+      finalFocus={finalFocus}
+    >
       {children}
     </DrawerContent>
   </Drawer>

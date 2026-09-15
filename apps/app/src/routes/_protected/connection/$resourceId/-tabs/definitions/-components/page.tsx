@@ -465,6 +465,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
       </AnimatePresence>
       <InspectorShell
         open={inspector.inspected.open}
+        finalFocus={searchRef}
         onOpenChange={(open) => {
           if (!open) {
             inspector.close()

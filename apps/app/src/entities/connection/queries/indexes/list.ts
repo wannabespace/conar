@@ -13,6 +13,8 @@ export const indexesType = type({
   'custom_expression?': 'string',
   'index_definition?': 'string',
   'index_type?': 'string',
+  'is_constraint?': 'boolean | 1 | 0',
+  'is_custom?': 'boolean | 1 | 0',
   is_primary: 'boolean | 1 | 0',
   is_unique: 'boolean | 1 | 0',
   name: 'string',
@@ -22,12 +24,20 @@ export const indexesType = type({
   ({
     is_unique,
     is_primary,
+    is_constraint,
+    is_custom,
     index_type,
     index_definition,
     custom_expression,
     ...data
   }) => ({
     ...data,
+    // The index enforces a PRIMARY KEY or UNIQUE constraint, so the
+    // constraint owns its shape and its drop.
+    constraintOwned: !!is_primary || !!is_constraint,
+    // Method, predicate, expression, ordering or included columns the picker
+    // cannot show; a rebuild would quietly lose them.
+    custom: !!is_custom,
     customExpression: custom_expression,
     definition: index_definition,
     isPrimary: !!is_primary,
@@ -35,6 +45,12 @@ export const indexesType = type({
     type: index_type,
   })
 )
+
+export const structureQueryKey = (connectionResource: ConnectionResource) => [
+  'connection-resource',
+  connectionResource.id,
+  'structure',
+]
 
 export const resourceIndexesQuery = createQuery({
   query: {
@@ -77,6 +93,10 @@ export const resourceIndexesQuery = createQuery({
           'c.name as column',
           'i.is_unique as is_unique',
           'i.is_primary_key as is_primary',
+          'i.is_unique_constraint as is_constraint',
+          sql<boolean>`CASE WHEN i.type_desc <> 'NONCLUSTERED' OR i.has_filter = 1 OR EXISTS (SELECT 1 FROM sys.index_columns x WHERE x.object_id = i.object_id AND x.index_id = i.index_id AND (x.is_included_column = 1 OR x.is_descending_key = 1)) THEN 1 ELSE 0 END`.as(
+            'is_custom'
+          ),
         ])
         .where('ic.key_ordinal', '>', 0)
         .orderBy('ic.key_ordinal')
@@ -92,6 +112,9 @@ export const resourceIndexesQuery = createQuery({
           'COLUMN_NAME as column',
           (eb) => eb('NON_UNIQUE', '=', 0).as('is_unique'),
           (eb) => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
+          sql<boolean>`COALESCE(INDEX_TYPE <> 'BTREE' OR SUB_PART IS NOT NULL OR COLLATION = 'D' OR COLUMN_NAME IS NULL, 0)`.as(
+            'is_custom'
+          ),
         ])
         .where('TABLE_SCHEMA', 'not in', [
           'mysql',
@@ -123,6 +146,12 @@ export const resourceIndexesQuery = createQuery({
           'ix.indisprimary as is_primary',
           'am.amname as index_type',
           sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
+          sql<boolean>`EXISTS (SELECT 1 FROM pg_catalog.pg_constraint WHERE conindid = ix.indexrelid AND contype IN ('p', 'u', 'x'))`.as(
+            'is_constraint'
+          ),
+          sql<boolean>`am.amname <> 'btree' OR ix.indpred IS NOT NULL OR ix.indnkeyatts <> ix.indnatts OR 0 = ANY(ix.indkey::int2[]) OR EXISTS (SELECT 1 FROM unnest(ix.indoption::int2[]) AS o WHERE o <> 0)`.as(
+            'is_custom'
+          ),
         ])
         .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .where('t.relkind', 'in', ['r', 'p', 'm'])
@@ -162,5 +191,5 @@ export const resourceIndexesQueryOptions = ({
       resourceIndexesQuery.run(
         await connectionResourceToQueryParams(connectionResource)
       ),
-    queryKey: ['connection-resource', connectionResource.id, 'indexes'],
+    queryKey: [...structureQueryKey(connectionResource), 'indexes'],
   })

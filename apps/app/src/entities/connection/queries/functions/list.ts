@@ -139,6 +139,9 @@ const resourceFunctionsQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .where('p.prokind', '!=', 'a')
+        .where(
+          sql<boolean>`NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend d WHERE d.classid = 'pg_catalog.pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e')`
+        )
         .execute(),
   },
   type: functionsType.array(),

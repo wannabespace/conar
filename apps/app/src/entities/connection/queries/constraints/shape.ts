@@ -16,13 +16,16 @@ export const REFERENTIAL_ACTIONS = [
 
 export type ReferentialAction = (typeof REFERENTIAL_ACTIONS)[number]
 
-// SQL Server has no RESTRICT; every other dialect takes all five.
+// SQL Server has no RESTRICT; InnoDB parses SET DEFAULT but rejects the table.
+const withheldAction: Partial<Record<ConnectionType, ReferentialAction>> = {
+  [ConnectionType.MSSQL]: 'RESTRICT',
+  [ConnectionType.MySQL]: 'SET DEFAULT',
+}
+
 export const referentialActionsFor = (
   type: ConnectionType
 ): readonly ReferentialAction[] =>
-  type === ConnectionType.MSSQL
-    ? REFERENTIAL_ACTIONS.filter((action) => action !== 'RESTRICT')
-    : REFERENTIAL_ACTIONS
+  REFERENTIAL_ACTIONS.filter((action) => action !== withheldAction[type])
 
 export interface ConstraintShape {
   columns: string[]

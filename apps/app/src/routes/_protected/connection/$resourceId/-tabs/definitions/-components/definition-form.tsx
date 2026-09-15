@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -93,6 +93,7 @@ export const DefinitionForm = ({
 }
 
 const CREATE = /^(?<lead>\s*)CREATE\s+(?!OR\s+(?:REPLACE|ALTER)\b)/iu
+const DEFINER = /\bDEFINER\s*=\s*(?:`[^`]*`|[^@\s]+)@(?:`[^`]*`|\S+)\s*/iu
 
 const alterKeyword: Partial<Record<ConnectionType, string>> = {
   mssql: '$<lead>CREATE OR ALTER ',
@@ -100,18 +101,24 @@ const alterKeyword: Partial<Record<ConnectionType, string>> = {
 }
 
 // The catalog hands back the original CREATE; saving it has to replace in place
-// instead of failing on a duplicate name. MySQL has no such form.
-const editable = (definition: string, type: ConnectionType) => {
+// instead of failing on a duplicate name, unless the object is dropped first.
+// MySQL's DEFINER clause goes: re-running it needs SUPER or SET_USER_ID.
+const editable = (
+  definition: string,
+  type: ConnectionType,
+  dropsFirst: boolean
+) => {
+  const statement = definition.replace(DEFINER, '')
   const keyword = alterKeyword[type]
 
-  return keyword ? definition.replace(CREATE, keyword) : definition
+  return dropsFirst || !keyword ? statement : statement.replace(CREATE, keyword)
 }
 
 const dropFirstWarning = (noun: string, name: string): InspectorWarning => ({
   action: `Replace ${noun}`,
   description: (
     <>
-      This database has no replace-in-place form, so{' '}
+      This database cannot replace a {noun} in place, so{' '}
       <span data-mask className="font-medium">
         {name}
       </span>{' '}
@@ -123,6 +130,7 @@ const dropFirstWarning = (noun: string, name: string): InspectorWarning => ({
 
 export const ExistingDefinitionForm = ({
   dropFirst,
+  dropsFirst,
   name,
   noun,
   onSaved,
@@ -133,6 +141,9 @@ export const ExistingDefinitionForm = ({
   type,
 }: {
   dropFirst: Parameters<RunQuery>[0]
+  // Undefined while the caller still works out whether the dialect can
+  // replace in place.
+  dropsFirst: boolean | undefined
   name: string
   noun: string
   onSaved: () => void
@@ -143,7 +154,6 @@ export const ExistingDefinitionForm = ({
   type: ConnectionType
 }) => {
   const { data: definition, error } = useQuery(query)
-  const dropsFirst = type === ConnectionType.MySQL
 
   if (error) {
     return (
@@ -153,7 +163,7 @@ export const ExistingDefinitionForm = ({
     )
   }
 
-  if (definition === undefined) {
+  if (definition === undefined || dropsFirst === undefined) {
     return <SqlEditorSkeleton />
   }
 
@@ -167,7 +177,7 @@ export const ExistingDefinitionForm = ({
   return (
     <DefinitionForm
       hint={`Saving replaces the ${noun} with the statement below.`}
-      initial={editable(definition, type)}
+      initial={editable(definition, type, dropsFirst)}
       isNew={false}
       language={sqlDialects[type]}
       onSaved={onSaved}

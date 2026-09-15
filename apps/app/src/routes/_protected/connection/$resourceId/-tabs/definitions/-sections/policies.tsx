@@ -80,6 +80,23 @@ interface PolicyDraft {
 const asCommand = (value: string | undefined): PolicyCommand =>
   POLICY_COMMANDS.find((command) => command === value) ?? 'ALL'
 
+// PostgreSQL takes USING for rows that exist and WITH CHECK for rows a write
+// would produce, so INSERT has no USING and SELECT and DELETE no WITH CHECK.
+const expressionsFor = (command: PolicyCommand) => ({
+  check: command !== 'SELECT' && command !== 'DELETE',
+  using: command !== 'INSERT',
+})
+
+const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
+  const allowed = expressionsFor(draft.command)
+
+  return {
+    ...draft,
+    check: allowed.check ? draft.check : '',
+    using: allowed.using ? draft.using : '',
+  }
+}
+
 const draftOf = (item: PolicyItem | null, pageSchema: string): PolicyDraft => ({
   check: item?.check ?? '',
   command: asCommand(item?.command),
@@ -228,14 +245,17 @@ const PolicyInspector = ({
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? ''),
     onSubmit: ({ value }) => {
-      mutation.mutate(value)
+      mutation.mutate(withAllowedExpressions(value))
     },
     validators: {
       onChange: ({ value }) => ({ fields: policyErrors(value) }),
       onMount: ({ value }) => ({ fields: policyErrors(value) }),
     },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = withAllowedExpressions(
+    useStore(form.store, (state) => state.values)
+  )
+  const expressions = expressionsFor(draft.command)
   const replacing = !!item && replaces(item, draft)
 
   return (
@@ -367,12 +387,14 @@ const PolicyInspector = ({
                 <field.Textarea
                   data-mask
                   mono
-                  disabled={readOnly}
+                  disabled={readOnly || !expressions.using}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}
                 />
                 <FieldDescription>
-                  Checked against rows that already exist.
+                  {expressions.using
+                    ? 'Checked against rows that already exist.'
+                    : 'An insert has no existing rows to check.'}
                 </FieldDescription>
               </field.Field>
             )}
@@ -384,12 +406,14 @@ const PolicyInspector = ({
                 <field.Textarea
                   data-mask
                   mono
-                  disabled={readOnly}
+                  disabled={readOnly || !expressions.check}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}
                 />
                 <FieldDescription>
-                  Checked against rows an insert or update would write.
+                  {expressions.check
+                    ? 'Checked against rows an insert or update would write.'
+                    : `A ${draft.command.toLowerCase()} writes no rows to check.`}
                 </FieldDescription>
               </field.Field>
             )}

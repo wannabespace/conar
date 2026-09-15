@@ -8,6 +8,7 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { structureQueryKey } from '../indexes/list'
 
 const constraintType = type(
   '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
@@ -233,5 +234,5 @@ export const resourceConstraintsQueryOptions = ({
       resourceConstraintsQuery.run(
         await connectionResourceToQueryParams(connectionResource)
       ),
-    queryKey: ['connection-resource', connectionResource.id, 'constraints'],
+    queryKey: [...structureQueryKey(connectionResource), 'constraints'],
   })

@@ -6,9 +6,11 @@ import { unsupported } from '../shared/unsupported'
 export const dropTriggerIfExistsQuery = ({
   name,
   schema,
+  table,
 }: {
   name: string
   schema: string
+  table: string
 }) =>
   createQuery({
     query: {
@@ -16,6 +18,9 @@ export const dropTriggerIfExistsQuery = ({
       mssql: unsupported('Replacing triggers by drop'),
       mysql: (db) =>
         sql`DROP TRIGGER IF EXISTS ${sql.id(schema, name)}`.execute(db),
-      postgres: unsupported('Replacing triggers by drop'),
+      postgres: (db) =>
+        sql`DROP TRIGGER IF EXISTS ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(
+          db
+        ),
     },
   })

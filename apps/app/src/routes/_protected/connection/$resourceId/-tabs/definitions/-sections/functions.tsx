@@ -1,5 +1,5 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -75,6 +75,7 @@ const FunctionInspector = ({
           name: item.name,
           schema: item.schema,
         })}
+        dropsFirst={type === ConnectionType.MySQL}
         name={item.name}
         noun="function"
         onSaved={() => onOpenChange(false)}
