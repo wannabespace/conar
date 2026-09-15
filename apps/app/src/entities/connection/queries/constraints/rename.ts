@@ -1,6 +1,7 @@
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
+import { mssqlQualified } from '../shared/sql-fragments'
 import { unsupported } from '../shared/unsupported'
 
 export const renameConstraintQuery = ({
@@ -18,7 +19,7 @@ export const renameConstraintQuery = ({
     query: {
       clickhouse: unsupported('Constraints'),
       mssql: (db) =>
-        sql`EXEC sp_rename ${sql.lit(`${schema}.${name}`)}, ${sql.lit(newName)}, 'OBJECT'`.execute(
+        sql`EXEC sp_rename ${sql.lit(mssqlQualified(schema, name))}, ${sql.lit(newName)}, 'OBJECT'`.execute(
           db
         ),
       mysql: unsupported('Renaming constraints'),

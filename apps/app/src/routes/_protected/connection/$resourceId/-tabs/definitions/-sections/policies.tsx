@@ -312,9 +312,7 @@ const PolicyInspector = ({
                     options={POLICY_COMMANDS}
                     placeholder="Command"
                     value={field.state.value}
-                    onValueChange={(next) =>
-                      field.handleChange(next as PolicyCommand)
-                    }
+                    onValueChange={field.handleChange}
                   />
                 </field.Field>
               )}
@@ -327,12 +325,10 @@ const PolicyInspector = ({
                     id={field.name}
                     disabled={readOnly}
                     options={kinds}
-                    labelOf={(value) => kindLabels[value as PolicyKind]}
+                    labelOf={(value) => kindLabels[value]}
                     placeholder="Type"
                     value={field.state.value}
-                    onValueChange={(next) =>
-                      field.handleChange(next as PolicyKind)
-                    }
+                    onValueChange={field.handleChange}
                   />
                 </field.Field>
               )}
@@ -370,7 +366,7 @@ const PolicyInspector = ({
                 <field.Label>Using</field.Label>
                 <field.Textarea
                   data-mask
-                  className="font-mono"
+                  mono
                   disabled={readOnly}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}
@@ -387,7 +383,7 @@ const PolicyInspector = ({
                 <field.Label>With check</field.Label>
                 <field.Textarea
                   data-mask
-                  className="font-mono"
+                  mono
                   disabled={readOnly}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}
@@ -492,7 +488,6 @@ export const Policies = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={policyKey}
-      nameOf={(item) => item.name}
       columns={columns}
       state={state}
       toolbar={

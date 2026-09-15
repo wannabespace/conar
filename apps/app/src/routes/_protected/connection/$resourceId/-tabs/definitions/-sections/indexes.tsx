@@ -80,7 +80,8 @@ const filterOptions: FilterOption<IndexKind | 'all'>[] = [
 
 const noColumns: string[] = []
 
-const indexKey = (item: GroupedIndex) => `${item.table}.${item.name}`
+const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
+  `${item.table}.${item.name}`
 
 const typeText = (item: GroupedIndex) =>
   item.type ? `${kindLabels[item.kind]} · ${item.type}` : kindLabels[item.kind]
@@ -92,7 +93,7 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
     if (item.schema !== schema) {
       continue
     }
-    const key = `${item.table}.${item.name}`
+    const key = indexKey(item)
     const column = item.column ?? item.customExpression
     const existing = grouped.get(key)
 
@@ -346,7 +347,7 @@ const IndexInspector = ({
           <form.AppField name="schema">
             {(field) => (
               <SchemaField
-                id="index-schema"
+                id={field.name}
                 disabled={state.readOnly || !!item}
                 schema={field.state.value}
                 schemas={schemas}
@@ -418,7 +419,7 @@ const IndexInspector = ({
             )}
           </form.AppField>
           <IndexNotes
-            constraintKey={item ? `${item.table}.${item.name}` : undefined}
+            constraintKey={item ? indexKey(item) : undefined}
             expressionIndex={state.expressionIndex}
             onLeave={() => onOpenChange(false)}
             primary={state.primary}
@@ -533,7 +534,6 @@ export const Indexes = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={indexKey}
-      nameOf={(item) => item.name}
       columns={columns}
       state={state}
       toolbar={

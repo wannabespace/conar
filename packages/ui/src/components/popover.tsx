@@ -17,7 +17,7 @@ const PopoverContent = ({
   className,
   align = 'center',
   alignOffset = 0,
-  padding = 'default',
+  padding,
   side = 'bottom',
   sideOffset = 4,
   ...props

@@ -28,13 +28,13 @@ export const alterEnumQuery = ({
           const target = sql.id(schema, name)
 
           for (const [value, newValue] of Object.entries(renames)) {
-            // oxlint-disable-next-line no-await-in-loop -- DDL statements depend on each other's order
+            // oxlint-disable-next-line no-await-in-loop
             await sql`ALTER TYPE ${target} RENAME VALUE ${sql.lit(value)} TO ${sql.lit(newValue)}`.execute(
               tx
             )
           }
           for (const value of additions) {
-            // oxlint-disable-next-line no-await-in-loop -- DDL statements depend on each other's order
+            // oxlint-disable-next-line no-await-in-loop
             await sql`ALTER TYPE ${target} ADD VALUE ${sql.lit(value)}`.execute(
               tx
             )

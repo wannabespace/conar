@@ -45,7 +45,6 @@ export const viewportType = type({
 
 export const connectionResourceType = type({
   activeTabId: 'string | null',
-  chatId: 'string | null',
   chatOpened: 'boolean',
   loggerOpened: 'boolean',
   pinnedTables: type({
@@ -63,7 +62,6 @@ export const connectionResourceType = type({
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   activeTabId: null,
-  chatId: null,
   chatOpened: false,
   loggerOpened: false,
   pinnedTables: [],
@@ -80,6 +78,15 @@ export const getConnectionResourceStore = memoize((id: string) =>
     key: connectionResourceStoreKey(id),
     schema: connectionResourceType,
     type: 'localStorage',
+  })
+)
+
+export const getChatStore = memoize((id: string) =>
+  createWebStorageValue({
+    defaultValue: null,
+    key: `connection-resource-chat-${id}`,
+    schema: type('string | null'),
+    type: 'sessionStorage',
   })
 )
 

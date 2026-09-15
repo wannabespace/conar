@@ -250,7 +250,6 @@ const CreateConnectionPage = () => {
             type="button"
             variant="link"
             tone="muted"
-            className="px-0!"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon

@@ -48,8 +48,7 @@ export const SqlEditor = ({
   const submit = useEffectEvent(onSubmit)
 
   useEffect(() => {
-    // Monaco keybindings are bit flags; bitwise OR is required by the API.
-    // oxlint-disable-next-line no-bitwise
+    // oxlint-disable-next-line no-bitwise -- monaco keybindings are bit flags
     const keybinding = KeyMod.CtrlCmd | KeyCode.Enter
     const disposable = ref.current?.addAction({
       id: 'tamery.definitions-save',

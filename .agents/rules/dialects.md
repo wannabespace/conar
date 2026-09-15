@@ -25,3 +25,4 @@ A section entry carries the two states apart: `false` is *no such section* — n
 - Narrow at the *form*, not in the statement. A statement that quietly rewrites what the user chose is worse than an option they were never offered.
 - Prefer one dialect's own syntax over emulating another's. SQL Server swaps a constraint inside a transaction, MySQL does it in a single `ALTER` — that is two implementations of one query, not a shared helper plus branches.
 - A catalog column that only some engines expose belongs in that dialect's schema file under `runtime/dialects/<type>/schema/`, not behind a cast.
+- **SQL Server takes some object names as a string, not as identifiers** — `sp_rename`'s `@objname`, `OBJECT_ID()`. `sql.id` never reaches them, so every part goes through `mssqlQualified` (`queries/shared/sql-fragments.ts`), which brackets each part and doubles a `]`: a name holding a dot otherwise parses as a qualifier.

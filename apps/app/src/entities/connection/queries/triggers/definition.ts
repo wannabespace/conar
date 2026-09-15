@@ -1,5 +1,4 @@
 import { queryOptions } from '@tanstack/react-query'
-import { type } from 'arktype'
 import { sql } from 'kysely'
 
 import type { ConnectionResource } from '../../core/sync'
@@ -7,26 +6,21 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import {
+  definitionType,
+  mssqlObjectDefinition,
+  readDefinition,
+} from '../shared/definition'
 import { unsupported } from '../shared/unsupported'
 import type { triggersType } from './list'
 
 type TriggerItem = typeof triggersType.infer
 
-const definitionType = type({ definition: 'string | null' }).pipe(
-  ({ definition }) => definition ?? ''
-)
-
 const triggerDefinitionQuery = ({ name, oid, schema }: TriggerItem) =>
   createQuery({
     query: {
       clickhouse: unsupported('Triggers'),
-      mssql: async (db) => {
-        const { rows } = await sql<{ definition: string | null }>`
-          SELECT OBJECT_DEFINITION(OBJECT_ID(${sql.lit(`[${schema}].[${name}]`)})) AS definition
-        `.execute(db)
-
-        return { definition: rows[0]?.definition ?? null }
-      },
+      mssql: readDefinition(mssqlObjectDefinition(schema, name)),
       mysql: async (db) => {
         const { rows } = await sql<Record<string, string>>`
           SHOW CREATE TRIGGER ${sql.id(schema, name)}
@@ -34,15 +28,12 @@ const triggerDefinitionQuery = ({ name, oid, schema }: TriggerItem) =>
 
         return { definition: rows[0]?.['SQL Original Statement'] ?? null }
       },
-      postgres: async (db) => {
+      postgres: (db) => {
         if (oid === undefined) {
           throw new Error(`Trigger "${name}" has no oid`)
         }
-        const { rows } = await sql<{ definition: string | null }>`
-          SELECT pg_get_triggerdef(${sql.lit(oid)}, true) AS definition
-        `.execute(db)
 
-        return { definition: rows[0]?.definition ?? null }
+        return readDefinition(sql`pg_get_triggerdef(${sql.lit(oid)}, true)`)(db)
       },
     },
     type: definitionType,

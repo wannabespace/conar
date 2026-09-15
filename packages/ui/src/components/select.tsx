@@ -51,7 +51,6 @@ const SelectTrigger = ({
       {...props}
     >
       {children}
-      {invalidMark}
       <SelectPrimitive.Icon
         render={
           <HugeiconsIcon

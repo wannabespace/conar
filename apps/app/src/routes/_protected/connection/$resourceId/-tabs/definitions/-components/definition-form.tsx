@@ -14,6 +14,9 @@ import type { InspectorWarning } from './inspector'
 import { InspectorFooter, InspectorSection } from './inspector'
 import { SqlEditor, SqlEditorSkeleton } from './sql-editor'
 
+const requireStatement = ({ value }: { value: string }) =>
+  value.trim() === '' ? 'Write a statement to run.' : undefined
+
 export const DefinitionForm = ({
   hint,
   initial,
@@ -55,12 +58,7 @@ export const DefinitionForm = ({
     <>
       <form.AppField
         name="definition"
-        validators={{
-          onChange: ({ value }) =>
-            value.trim() === '' ? 'Write a statement to run.' : undefined,
-          onMount: ({ value }) =>
-            value.trim() === '' ? 'Write a statement to run.' : undefined,
-        }}
+        validators={{ onChange: requireStatement, onMount: requireStatement }}
       >
         {(field) => (
           <InspectorSection
@@ -134,7 +132,7 @@ export const ExistingDefinitionForm = ({
   run,
   type,
 }: {
-  dropFirst: Parameters<RunQuery>[0] | undefined
+  dropFirst: Parameters<RunQuery>[0]
   name: string
   noun: string
   onSaved: () => void
@@ -145,7 +143,7 @@ export const ExistingDefinitionForm = ({
   type: ConnectionType
 }) => {
   const { data: definition, error } = useQuery(query)
-  const dropsFirst = !!dropFirst && type === ConnectionType.MySQL
+  const dropsFirst = type === ConnectionType.MySQL
 
   if (error) {
     return (
@@ -160,7 +158,7 @@ export const ExistingDefinitionForm = ({
   }
 
   const save = async (text: string) => {
-    if (dropFirst && dropsFirst) {
+    if (dropsFirst) {
       await run(dropFirst)
     }
     await run(customQuery({ query: text }))

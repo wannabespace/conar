@@ -150,8 +150,9 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
             <CopyButton
               size="icon-xs"
               variant="ghost"
+              tone="muted"
               aria-label="Copy SQL"
-              className="text-muted-foreground -mt-0.5"
+              className="-mt-0.5"
               text={code}
             />
           }
@@ -160,9 +161,7 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
       </Tooltip>
     }
   >
-    <div className="bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring-[0.5px]">
-      <CodeBlock code={code} language="sql" size="xs" wrap />
-    </div>
+    <CodeBlock code={code} language="sql" size="xs" surface="field" wrap />
   </InspectorSection>
 )
 

@@ -17,10 +17,10 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 
-const identity = (value: string) => value
+const identity = (value: string): string => value
 const noOptions: readonly string[] = []
 
-export const NameSelect = ({
+export const NameSelect = <T extends string>({
   disabled,
   id,
   labelOf = identity,
@@ -31,11 +31,11 @@ export const NameSelect = ({
 }: {
   disabled?: boolean
   id: string
-  labelOf?: (value: string) => string
-  onValueChange: (value: string) => void
-  options: readonly string[]
+  labelOf?: (value: T) => string
+  onValueChange: (value: T) => void
+  options: readonly T[]
   placeholder: string
-  value: string
+  value: T | ''
 }) => (
   <Select
     value={value || null}
@@ -48,7 +48,7 @@ export const NameSelect = ({
   >
     <SelectTrigger id={id} data-mask className="w-full">
       <SelectValue placeholder={placeholder}>
-        {(current: string | null) => (current ? labelOf(current) : placeholder)}
+        {(current: T | null) => (current ? labelOf(current) : placeholder)}
       </SelectValue>
     </SelectTrigger>
     <SelectContent data-mask>

@@ -39,7 +39,7 @@ Exactly two routes: `$resourceId/index.tsx` (empty state, redirects to the activ
 
 ## Connection introspection queries
 
-`entities/connection/queries/<subject>/` — one folder per thing the UI edits (`enums`, `indexes`, `constraints`, `policies`, `triggers`, `functions`, `tables`, `rows`, `connection`), plus `shared/` for what crosses subjects (`unsupported`, `sql-fragments`). Inside a folder the subject prefix is dropped: the catalog read is `list.ts`, the statements are `create.ts`/`drop.ts`/`rename.ts`/`recreate.ts`, and a shape builder shared by that subject's statements is `shape.ts`. **No barrels** — import the leaf file, like everywhere else in `entities/` (`code-style.md`).
+`entities/connection/queries/<subject>/` — one folder per thing the UI edits (`enums`, `indexes`, `constraints`, `policies`, `triggers`, `functions`, `tables`, `rows`, `connection`), plus `shared/` for what crosses subjects (`unsupported`, `sql-fragments`, `definition`). Inside a folder the subject prefix is dropped: the catalog read is `list.ts`, the statements are `create.ts`/`drop.ts`/`rename.ts`/`recreate.ts`, and a shape builder shared by that subject's statements is `shape.ts`. **No barrels** — import the leaf file, like everywhere else in `entities/` (`code-style.md`).
 
 Each file is one statement, as a `createQuery` covering every dialect — what a dialect that cannot run it does, and how the UI keeps users away from it, is `dialects.md`.
 

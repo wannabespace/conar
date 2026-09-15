@@ -49,9 +49,8 @@ const migrateColumn = ({
   return sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${column} TYPE ${columnType(dependent, target)} USING ${using}`
 }
 
-// A default is stored as `'label'::schema.type`, so it is re-applied against the
-// new type carrying any rename. An array literal is only re-cast, so a renamed
-// label inside one still fails the cast and rolls the change back.
+// A `'label'::schema.type` default is re-applied carrying any rename (an array
+// literal only re-cast); any other default stays for ALTER TYPE to cast or reject.
 const restoredDefault = ({
   dependent,
   renames,
@@ -99,36 +98,28 @@ export const recreateEnumQuery = ({
       mysql: unsupported('Editing enums'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
-          const replaced = sql.id(schema, `${name}${RECREATE_SUFFIX}`)
+          const replacedName = `${name}${RECREATE_SUFFIX}`
           const target = sql.id(schema, newName)
+          const statements = [
+            sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`,
+            sql`CREATE TYPE ${target} AS ENUM (${literals(values)})`,
+            ...dependents.flatMap((dependent) => {
+              const restored = restoredDefault({ dependent, renames, target })
 
-          await sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(`${name}${RECREATE_SUFFIX}`)}`.execute(
-            tx
-          )
-          await sql`CREATE TYPE ${target} AS ENUM (${literals(values)})`.execute(
-            tx
-          )
+              return [
+                restored &&
+                  sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${sql.id(dependent.column)} DROP DEFAULT`,
+                migrateColumn({ dependent, renames, target }),
+                restored,
+              ]
+            }),
+            sql`DROP TYPE ${sql.id(schema, replacedName)}`,
+          ]
 
-          for (const dependent of dependents) {
-            if (dependent.default !== null) {
-              // oxlint-disable-next-line no-await-in-loop -- one column at a time, in order
-              await sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${sql.id(dependent.column)} DROP DEFAULT`.execute(
-                tx
-              )
-            }
-
-            // oxlint-disable-next-line no-await-in-loop -- one column at a time, in order
-            await migrateColumn({ dependent, renames, target }).execute(tx)
-
-            const restored = restoredDefault({ dependent, renames, target })
-
-            if (restored) {
-              // oxlint-disable-next-line no-await-in-loop -- one column at a time, in order
-              await restored.execute(tx)
-            }
+          for (const statement of statements) {
+            // oxlint-disable-next-line no-await-in-loop
+            await statement?.execute(tx)
           }
-
-          await sql`DROP TYPE ${replaced}`.execute(tx)
         }),
     },
   })

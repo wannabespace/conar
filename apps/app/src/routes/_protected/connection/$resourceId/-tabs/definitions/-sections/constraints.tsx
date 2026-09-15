@@ -90,7 +90,8 @@ const filterOptions: FilterOption<ConstraintKind | 'all'>[] = [
 
 const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
 
-const constraintKey = (item: GroupedConstraint) => `${item.table}.${item.name}`
+const constraintKey = (item: Pick<ConstraintItem, 'name' | 'table'>) =>
+  `${item.table}.${item.name}`
 
 const noColumns: readonly string[] = []
 
@@ -104,7 +105,7 @@ const groupConstraints = (
     if (item.schema !== schema) {
       continue
     }
-    const key = `${item.table}.${item.name}`
+    const key = constraintKey(item)
     const existing = grouped.get(key)
 
     if (existing) {
@@ -250,19 +251,16 @@ const shapeOf = (draft: ConstraintDraft): ConstraintShape => ({
 const constraintErrors = (draft: ConstraintDraft) => {
   const isForeign = draft.kind === 'foreignKey'
   const mismatched =
-    isForeign && draft.foreignColumns.length !== draft.columns.length
+    isForeign &&
+    draft.foreignTable !== '' &&
+    draft.foreignColumns.length !== draft.columns.length
 
   return {
     columns:
       draft.columns.length === 0 ? 'Pick at least one column.' : undefined,
-    foreignColumns: (() => {
-      if (!isForeign || draft.foreignTable === '') {
-        return
-      }
-      return mismatched
-        ? 'Reference one column per column of this constraint.'
-        : undefined
-    })(),
+    foreignColumns: mismatched
+      ? 'Reference one column per column of this constraint.'
+      : undefined,
     foreignTable:
       isForeign && draft.foreignTable === ''
         ? 'Pick the table this key points at.'
@@ -484,12 +482,10 @@ const ConstraintInspector = ({
                   id={field.name}
                   disabled={state.readOnly}
                   options={kinds}
-                  labelOf={(value) => typeLabels[value as ConstraintKind]}
+                  labelOf={(value) => typeLabels[value]}
                   placeholder="Type"
                   value={field.state.value}
-                  onValueChange={(next) =>
-                    field.handleChange(next as ConstraintKind)
-                  }
+                  onValueChange={field.handleChange}
                 />
                 <FieldDescription>
                   A primary key identifies a row, unique rejects duplicates, a
@@ -545,7 +541,7 @@ const ConstraintInspector = ({
             <form.AppField name="foreignSchema">
               {(field) => (
                 <SchemaField
-                  id="constraint-foreign-schema"
+                  id={field.name}
                   disabled={state.readOnly}
                   schema={field.state.value}
                   schemas={schemas}
@@ -630,9 +626,7 @@ const ConstraintInspector = ({
                       options={referentialActionsFor(type)}
                       placeholder="Action"
                       value={field.state.value}
-                      onValueChange={(next) =>
-                        field.handleChange(next as ReferentialAction)
-                      }
+                      onValueChange={field.handleChange}
                     />
                   </field.Field>
                 )}
@@ -647,9 +641,7 @@ const ConstraintInspector = ({
                       options={referentialActionsFor(type)}
                       placeholder="Action"
                       value={field.state.value}
-                      onValueChange={(next) =>
-                        field.handleChange(next as ReferentialAction)
-                      }
+                      onValueChange={field.handleChange}
                     />
                   </field.Field>
                 )}
@@ -753,7 +745,6 @@ export const Constraints = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={constraintKey}
-      nameOf={(item) => item.name}
       columns={columns}
       state={state}
       toolbar={

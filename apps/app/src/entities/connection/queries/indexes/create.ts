@@ -1,38 +1,35 @@
-import type { Kysely } from 'kysely'
+import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
+import { identifiers } from '../shared/sql-fragments'
 import { unsupported } from '../shared/unsupported'
 
-export const createIndexQuery = ({
-  schema,
-  table,
-  name,
-  columns,
-  unique,
-}: {
+export interface IndexShape {
+  columns: string[]
+  name: string
   schema: string
   table: string
-  name: string
-  columns: string[]
   unique?: boolean
-}) => {
-  // oxlint-disable-next-line ts/no-explicit-any
-  const create = (db: Kysely<any>) => {
-    const query = db
-      .withSchema(schema)
-      .schema.createIndex(name)
-      .on(table)
-      .columns(columns)
+}
 
-    return (unique ? query.unique() : query).execute()
-  }
+export const createIndexStatement = ({
+  columns,
+  name,
+  schema,
+  table,
+  unique,
+}: IndexShape) =>
+  sql`CREATE ${unique ? sql`UNIQUE ` : sql``}INDEX ${sql.id(name)} ON ${sql.id(schema, table)} (${identifiers(columns)})`
+
+export const createIndexQuery = (shape: IndexShape) => {
+  const create = createIndexStatement(shape)
 
   return createQuery({
     query: {
       clickhouse: unsupported('Creating indexes'),
-      mssql: create,
-      mysql: create,
-      postgres: create,
+      mssql: (db) => create.execute(db),
+      mysql: (db) => create.execute(db),
+      postgres: (db) => create.execute(db),
     },
   })
 }

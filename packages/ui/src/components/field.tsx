@@ -9,8 +9,13 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
-import { cva } from 'class-variance-authority'
 import { createContext, use } from 'react'
+
+import {
+  fieldDescriptionVariants,
+  fieldGroupVariants,
+  fieldVariants,
+} from './field.utils'
 
 const FieldInvalidContext = createContext<React.ReactNode>(null)
 
@@ -48,21 +53,6 @@ const FieldLegend = ({
   />
 )
 
-const fieldGroupVariants = cva(
-  `group/field-group @container/field-group flex w-full flex-col data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4`,
-  {
-    defaultVariants: {
-      size: 'default',
-    },
-    variants: {
-      size: {
-        default: 'gap-6',
-        sm: 'gap-4',
-      },
-    },
-  }
-)
-
 const FieldGroup = ({
   className,
   size,
@@ -74,19 +64,6 @@ const FieldGroup = ({
     {...props}
   />
 )
-
-const fieldVariants = cva(`group/field flex w-full`, {
-  defaultVariants: {
-    orientation: 'vertical',
-  },
-  variants: {
-    orientation: {
-      horizontal: `flex-row items-center gap-3 has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px`,
-      responsive: `flex-col gap-1.5 *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:gap-3 @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px`,
-      vertical: `flex-col gap-1.5 *:w-full [&>.sr-only]:w-auto`,
-    },
-  },
-})
 
 const Field = ({
   className,
@@ -143,21 +120,6 @@ const FieldTitle = ({ className, ...props }: React.ComponentProps<'div'>) => (
     )}
     {...props}
   />
-)
-
-const fieldDescriptionVariants = cva(
-  `text-muted-foreground [&>a:hover]:text-primary text-left font-normal group-has-data-[orientation=horizontal]/field:text-balance last:mt-0 nth-last-2:-mt-1 [&>a]:underline [&>a]:underline-offset-4 [[data-variant=legend]+&]:-mt-1.5`,
-  {
-    defaultVariants: {
-      size: 'default',
-    },
-    variants: {
-      size: {
-        default: 'text-sm/normal',
-        sm: 'text-xs/normal',
-      },
-    },
-  }
 )
 
 const FieldDescription = ({
@@ -221,7 +183,7 @@ const FieldError = ({
   children,
   errors,
   ...props
-}: React.ComponentProps<'span'> & {
+}: React.ComponentProps<'button'> & {
   errors?: ({ message?: string } | undefined)[]
 }) => {
   const content = fieldErrorContent(children, errors)
@@ -234,11 +196,11 @@ const FieldError = ({
     <Tooltip>
       <TooltipTrigger
         render={
-          <span
-            role="alert"
+          <button
+            type="button"
             data-slot="field-error"
             className={cn(
-              'text-destructive inline-flex shrink-0 items-center',
+              `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none`,
               className
             )}
             {...props}
@@ -248,8 +210,10 @@ const FieldError = ({
               strokeWidth={2}
               className="size-4"
             />
-            <span className="sr-only">{content}</span>
-          </span>
+            <span role="alert" className="sr-only">
+              {content}
+            </span>
+          </button>
         }
       />
       <TooltipContent>

@@ -159,7 +159,6 @@ export const Functions = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={functionKey}
-      nameOf={(item) => item.name}
       columns={columns}
       state={state}
       toolbar={

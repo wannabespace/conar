@@ -227,7 +227,6 @@ export const Triggers = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={triggerKey}
-      nameOf={(item) => item.name}
       columns={columns}
       state={state}
       toolbar={

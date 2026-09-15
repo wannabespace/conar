@@ -371,7 +371,6 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
             variant="ghost"
             aria-label="Query logger"
             aria-pressed={loggerOpened}
-            className={cn(loggerOpened && 'bg-foreground/10 text-foreground')}
             onClick={toggleLogger}
           />
         }

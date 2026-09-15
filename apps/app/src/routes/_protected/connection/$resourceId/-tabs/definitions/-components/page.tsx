@@ -158,7 +158,7 @@ const useInspector = <T,>({
   }
 }
 
-export const DefinitionsPage = <T, P extends object>({
+export const DefinitionsPage = <T extends { name: string }, P extends object>({
   canCascade = false,
   canDropItem = alwaysDroppable,
   columns,
@@ -170,7 +170,6 @@ export const DefinitionsPage = <T, P extends object>({
   items,
   keyOf,
   loading,
-  nameOf,
   noun,
   queryKey,
   rowMenu,
@@ -191,7 +190,6 @@ export const DefinitionsPage = <T, P extends object>({
   items: T[]
   keyOf: (item: T) => string
   loading: boolean
-  nameOf: (item: T) => string
   noun: string
   queryKey: readonly unknown[]
   rowMenu?: (item: T) => AppMenuNode[]
@@ -239,7 +237,7 @@ export const DefinitionsPage = <T, P extends object>({
       inspector.close()
     },
     queryKey,
-    success: (item) => `${uppercaseFirst(noun)} "${nameOf(item)}" dropped`,
+    success: (item) => `${uppercaseFirst(noun)} "${item.name}" dropped`,
   })
 
   const requestDrop = (item: T) => {
@@ -321,7 +319,7 @@ export const DefinitionsPage = <T, P extends object>({
     {
       label: 'Copy name',
       onSelect: () =>
-        copyToClipboard(nameOf(item), `${uppercaseFirst(noun)} name copied`),
+        copyToClipboard(item.name, `${uppercaseFirst(noun)} name copied`),
     },
     ...(rowMenu?.(item) ?? []),
     ...(canDrop(item)
@@ -496,7 +494,7 @@ export const DefinitionsPage = <T, P extends object>({
             <AlertDialogTitle>Drop {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
               <span data-mask className="text-foreground font-medium">
-                {dropping.item ? nameOf(dropping.item) : ''}
+                {dropping.item?.name}
               </span>{' '}
               will be removed from the database. This cannot be undone.
             </AlertDialogDescription>

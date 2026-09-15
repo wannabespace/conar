@@ -393,7 +393,7 @@ const EnumInspector = ({
           <form.AppField name="schema">
             {(field) => (
               <SchemaField
-                id="enum-schema"
+                id={field.name}
                 disabled={state.readOnly || !!item}
                 schema={field.state.value}
                 schemas={schemas}
@@ -474,7 +474,7 @@ const valuesColumn: DefinitionsColumn<EnumItem> = {
   cell: (item, { search }) => (
     <span data-mask className="flex flex-wrap gap-1">
       {item.values.map((value) => (
-        <Badge key={value} variant="outline" className="font-mono">
+        <Badge key={value} variant="outline" mono>
           <HighlightText text={value} match={search} />
         </Badge>
       ))}
@@ -541,7 +541,6 @@ export const Enums = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={enumKey}
-      nameOf={(item) => item.name}
       columns={columnBound ? columnBoundColumns : typeColumns}
       state={state}
       canCascade

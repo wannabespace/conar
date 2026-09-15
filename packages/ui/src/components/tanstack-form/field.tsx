@@ -28,7 +28,7 @@ export const FieldLabel = ({
   return (
     <FieldLabelPrimitive htmlFor={field.name} {...props}>
       {children}
-      <FieldError className="group-has-[[data-slot=combobox-chips]]/field:hidden group-has-[[data-slot=input-group]]/field:hidden group-has-[[data-slot=select-trigger]]/field:hidden" />
+      <FieldError className="group-has-[[data-slot=combobox-chips]]/field:hidden group-has-[[data-slot=input-group]]/field:hidden" />
     </FieldLabelPrimitive>
   )
 }

@@ -267,7 +267,6 @@ const CellPopoverToolbar = ({
                 size="xs"
                 aria-pressed={isRaw}
                 tone="muted"
-                className={cn(isRaw && 'bg-accent text-foreground')}
                 onClick={() => setIsRaw((prev) => !prev)}
               />
             }

@@ -81,12 +81,18 @@ const codeBlockSizes = {
   xs: 'text-xs/5',
 }
 
+const codeBlockSurfaces = {
+  field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring-[0.5px]',
+  none: '',
+}
+
 const CodeBlock = ({
   className,
   code,
   language,
   lineNumbers = false,
   size = '2xs',
+  surface = 'none',
   wrap = false,
   ...props
 }: ComponentProps<'pre'> & {
@@ -94,6 +100,7 @@ const CodeBlock = ({
   language: string
   lineNumbers?: boolean
   size?: keyof typeof codeBlockSizes
+  surface?: keyof typeof codeBlockSurfaces
   wrap?: boolean
 }) => {
   const lines: Token[][] =
@@ -105,6 +112,7 @@ const CodeBlock = ({
       className={cn(
         'scrollbar-thin overflow-auto px-2 font-mono',
         codeBlockSizes[size],
+        codeBlockSurfaces[surface],
         wrap && 'whitespace-pre-wrap',
         className
       )}
