@@ -17,6 +17,7 @@ import { type as arkType } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { alterEnumQuery } from '~/entities/connection/queries/enums/alter'
 import { createEnumQuery } from '~/entities/connection/queries/enums/create'
@@ -556,7 +557,6 @@ export const Enums = () => {
   })
   const { data: enums = [], isPending } = useQuery(query)
   const columnBound = enums.some((item) => item.metadata?.table)
-  const withSets = state.type === ConnectionType.MySQL
 
   const inSchema = enums.filter((item) => item.schema === selectedSchema)
   const rows = inSchema.filter((item) =>
@@ -571,7 +571,7 @@ export const Enums = () => {
 
   return (
     <DefinitionsPage
-      title={withSets ? 'Enums & Sets' : 'Enums'}
+      title={capabilitiesOf(state.type).enumsLabel}
       noun="enum"
       icon={TagsIcon}
       items={rows}

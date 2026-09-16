@@ -1,5 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
+import type { ReferentialAction } from './queries/constraints/shape'
+import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
 import type { DefinitionsSection } from './store/tabs/types'
 
 export interface SectionCapabilities {
@@ -10,7 +12,9 @@ export interface SectionCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
+  enumsLabel: string
   explain: boolean
+  referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   renameConstraints: boolean
   schemas: boolean
@@ -23,7 +27,9 @@ const full: SectionCapabilities = { create: true, drop: true, edit: true }
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
+    enumsLabel: 'Enums',
     explain: false,
+    referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
     schemas: false,
@@ -38,7 +44,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
+    enumsLabel: 'Enums',
     explain: false,
+    referentialActions: REFERENTIAL_ACTIONS.filter(
+      (action) => action !== 'RESTRICT'
+    ),
     renameColumns: true,
     renameConstraints: true,
     schemas: true,
@@ -53,7 +63,12 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
+    enumsLabel: 'Enums & Sets',
     explain: true,
+    // InnoDB parses SET DEFAULT but rejects the table.
+    referentialActions: REFERENTIAL_ACTIONS.filter(
+      (action) => action !== 'SET DEFAULT'
+    ),
     renameColumns: true,
     renameConstraints: false,
     schemas: true,
@@ -68,7 +83,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
+    enumsLabel: 'Enums',
     explain: true,
+    referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: true,
     schemas: true,

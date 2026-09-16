@@ -25,10 +25,7 @@ import type {
   ConstraintShape,
   ReferentialAction,
 } from '~/entities/connection/queries/constraints/shape'
-import {
-  REFERENTIAL_ACTIONS,
-  referentialActionsFor,
-} from '~/entities/connection/queries/constraints/shape'
+import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/shape'
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
@@ -610,7 +607,7 @@ const ConstraintInspector = ({
                     <NameSelect
                       id={field.name}
                       disabled={state.readOnly}
-                      options={referentialActionsFor(type)}
+                      options={capabilitiesOf(type).referentialActions}
                       placeholder="Action"
                       value={field.state.value}
                       onValueChange={field.handleChange}
@@ -625,7 +622,7 @@ const ConstraintInspector = ({
                     <NameSelect
                       id={field.name}
                       disabled={state.readOnly}
-                      options={referentialActionsFor(type)}
+                      options={capabilitiesOf(type).referentialActions}
                       placeholder="Action"
                       value={field.state.value}
                       onValueChange={field.handleChange}

@@ -10,7 +10,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
@@ -23,7 +22,10 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
-import { sectionAvailable } from '~/entities/connection/capabilities'
+import {
+  capabilitiesOf,
+  sectionAvailable,
+} from '~/entities/connection/capabilities'
 import type { Connection } from '~/entities/connection/core/sync'
 import {
   openDefinitionsTab,
@@ -92,7 +94,7 @@ export const schemaGroups = (
       items: [
         sectionItem(
           TagsIcon,
-          connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
+          capabilitiesOf(connection.type).enumsLabel,
           'enums'
         ),
       ],

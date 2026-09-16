@@ -1,4 +1,3 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
@@ -15,17 +14,6 @@ export const REFERENTIAL_ACTIONS = [
 ] as const
 
 export type ReferentialAction = (typeof REFERENTIAL_ACTIONS)[number]
-
-// SQL Server has no RESTRICT; InnoDB parses SET DEFAULT but rejects the table.
-const withheldAction: Partial<Record<ConnectionType, ReferentialAction>> = {
-  [ConnectionType.MSSQL]: 'RESTRICT',
-  [ConnectionType.MySQL]: 'SET DEFAULT',
-}
-
-export const referentialActionsFor = (
-  type: ConnectionType
-): readonly ReferentialAction[] =>
-  REFERENTIAL_ACTIONS.filter((action) => action !== withheldAction[type])
 
 export interface ConstraintShape {
   columns: string[]
