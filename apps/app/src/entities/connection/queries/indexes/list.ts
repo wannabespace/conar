@@ -10,7 +10,7 @@ import {
 
 export const indexesType = type({
   column: 'string | null',
-  'custom_expression?': 'string',
+  'custom_expression?': 'string | null',
   'index_definition?': 'string',
   'index_type?': 'string',
   'is_constraint?': 'boolean | 1 | 0',
@@ -32,13 +32,9 @@ export const indexesType = type({
     ...data
   }) => ({
     ...data,
-    // The index enforces a PRIMARY KEY or UNIQUE constraint, so the
-    // constraint owns its shape and its drop.
     constraintOwned: !!is_primary || !!is_constraint,
-    // Method, predicate, expression, ordering or included columns the picker
-    // cannot show; a rebuild would quietly lose them.
     custom: !!is_custom,
-    customExpression: custom_expression,
+    customExpression: custom_expression ?? undefined,
     definition: index_definition,
     isPrimary: !!is_primary,
     isUnique: !!is_unique,
@@ -54,22 +50,20 @@ export const structureQueryKey = (connectionResource: ConnectionResource) => [
 
 export const resourceIndexesQuery = createQuery({
   query: {
-    clickhouse: async (db) => {
-      const query = await db
+    clickhouse: (db) =>
+      db
         .selectFrom('system.columns')
-        .select(['database as schema', 'table', 'name as column'])
+        .select([
+          'database as schema',
+          'table',
+          'name as column',
+          sql.lit('primary_key').as('name'),
+          sql.lit(true).as('is_primary'),
+          sql.lit(true).as('is_unique'),
+        ])
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
-        .execute()
-
-      return query.map((row) =>
-        Object.assign(row, {
-          is_primary: true,
-          is_unique: true,
-          name: 'primary_key',
-        })
-      )
-    },
+        .execute(),
 
     mssql: (db) =>
       db
@@ -125,23 +119,34 @@ export const resourceIndexesQuery = createQuery({
         .orderBy('SEQ_IN_INDEX')
         .execute(),
 
-    postgres: async (db) => {
-      const query = await db
+    postgres: (db) =>
+      db
         .selectFrom('pg_catalog.pg_class as t')
         .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
         .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
         .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
+        .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
+        .crossJoinLateral(
+          sql<{
+            key: number
+            ordinality: number
+          }>`unnest(ix.indkey::int2[]) WITH ORDINALITY`.as('key')
+        )
         .leftJoin('pg_catalog.pg_attribute as a', (join) =>
           join
             .onRef('a.attrelid', '=', 't.oid')
-            .on(sql<boolean>`a.attnum = ANY(ix.indkey)`)
+            .onRef('a.attnum', '=', 'key.key')
         )
-        .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
         .select([
           'n.nspname as schema',
           't.relname as table',
           'i.relname as name',
           'a.attname as column',
+          sql<
+            string | null
+          >`CASE WHEN key.key = 0 THEN pg_get_indexdef(ix.indexrelid, key.ordinality::int, true) END`.as(
+            'custom_expression'
+          ),
           'ix.indisunique as is_unique',
           'ix.indisprimary as is_primary',
           'am.amname as index_type',
@@ -155,28 +160,8 @@ export const resourceIndexesQuery = createQuery({
         ])
         .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .where('t.relkind', 'in', ['r', 'p', 'm'])
-        .orderBy(sql<number>`array_position(ix.indkey::int2[], a.attnum)`)
-        .execute()
-
-      return query.map((row) => {
-        // To handle custom indexes like JSONB indexes, vector indexes, etc.
-        const definitionParts = row.index_definition.split(
-          ` USING ${row.index_type} `
-        )
-        let customExpression = row.column
-          ? undefined
-          : definitionParts[1]?.trim()
-
-        if (customExpression?.startsWith('((')) {
-          customExpression = customExpression.slice(1, -1)
-        }
-        if (customExpression?.startsWith('((')) {
-          customExpression = customExpression.slice(1, -1)
-        }
-
-        return Object.assign(row, { custom_expression: customExpression })
-      })
-    },
+        .orderBy('key.ordinality')
+        .execute(),
   },
   type: indexesType.array(),
 })

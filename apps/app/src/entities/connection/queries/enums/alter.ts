@@ -3,8 +3,6 @@ import { sql } from 'kysely'
 import { createQuery } from '../../runtime/query'
 import { unsupported } from '../shared/unsupported'
 
-// ADD VALUE is transactional from PostgreSQL 12 on, as long as the new label is
-// not also used in the same transaction — never the case here.
 export const alterEnumQuery = ({
   additions,
   name,

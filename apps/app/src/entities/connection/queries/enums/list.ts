@@ -45,63 +45,20 @@ export const findEnum = ({
       (column.type && e.name === column.type)
   )
 
-const clickhouseEnumRegex = /^Enum\d+\((?<values>.*)\)$/u
-const clickhouseEnumValueRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/u
-const clickhouseEnumValuePairRegex = /'(?<value>[^']+)' *= *\d+/u
+const clickhouseQuotedRegex = /'(?<value>(?:[^'\\]|\\.)*)'/gu
+const clickhouseEscapeRegex = /\\(?<char>.)/gu
 
-const parseClickhouseEnum = (dataType: string): string[] => {
-  let inner = dataType
-  let changed = true
+const parseClickhouseEnum = (dataType: string) =>
+  Array.from(dataType.matchAll(clickhouseQuotedRegex), (match) =>
+    (match.groups?.value ?? '').replaceAll(clickhouseEscapeRegex, '$1')
+  )
 
-  while (changed) {
-    changed = false
-    if (inner.startsWith('Array(') && inner.endsWith(')')) {
-      inner = inner.slice(6, -1)
-      changed = true
-    }
-    if (inner.startsWith('Nullable(') && inner.endsWith(')')) {
-      inner = inner.slice(9, -1)
-      changed = true
-    }
-    if (inner.startsWith('LowCardinality(') && inner.endsWith(')')) {
-      inner = inner.slice(15, -1)
-      changed = true
-    }
-  }
+const mysqlQuotedRegex = /'(?<value>(?:[^']|'')*)'/gu
 
-  const match = inner.match(clickhouseEnumRegex)
-  const valuesGroup = match?.groups?.values
-
-  if (!valuesGroup) {
-    return []
-  }
-
-  const pairs = valuesGroup.split(clickhouseEnumValueRegex)
-
-  return pairs
-    .map((pair) => {
-      const valMatch = pair.match(clickhouseEnumValuePairRegex)
-      return valMatch?.groups?.value ?? ''
-    })
-    .filter(Boolean)
-}
-
-const mysqlEnumOrSetRegex = /^(?<kind>enum|set)\(/iu
-
-const parseMysqlEnumOrSet = (typeString: string): string[] => {
-  const valuesString = typeString
-    .replace(mysqlEnumOrSetRegex, '')
-    .replace(/\)$/u, '')
-
-  // Split on commas outside single quotes — a value may contain one
-  return valuesString.length === 0
-    ? []
-    : valuesString
-        .split(/,(?=(?:[^']*'[^']*')*[^']*$)/u)
-        .map((v) =>
-          v.trim().replace(/^'/u, '').replace(/'$/u, '').replaceAll("''", "'")
-        )
-}
+const parseMysqlEnumOrSet = (columnType: string) =>
+  Array.from(columnType.matchAll(mysqlQuotedRegex), (match) =>
+    (match.groups?.value ?? '').replaceAll("''", "'")
+  )
 
 const resourceEnumsQuery = createQuery({
   query: {

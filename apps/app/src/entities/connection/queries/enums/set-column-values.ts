@@ -4,7 +4,6 @@ import { createQuery } from '../../runtime/query'
 import { literals } from '../shared/sql-fragments'
 import { unsupported } from '../shared/unsupported'
 
-// MODIFY COLUMN restates the column in full: anything left out is reset.
 export const setColumnEnumValuesQuery = ({
   charset,
   collation,

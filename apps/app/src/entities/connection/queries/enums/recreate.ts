@@ -49,8 +49,6 @@ const migrateColumn = ({
   return sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${column} TYPE ${columnType(dependent, target)} USING ${using}`
 }
 
-// A `'label'::schema.type` default is re-applied carrying any rename (an array
-// literal only re-cast); any other default stays for ALTER TYPE to cast or reject.
 const restoredDefault = ({
   dependent,
   renames,
@@ -74,8 +72,6 @@ const restoredDefault = ({
   return sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${sql.id(dependent.column)} SET DEFAULT ${sql.lit(value)}::${columnType(dependent, target)}`
 }
 
-// PostgreSQL cannot remove or reorder the values of a live enum, so the type is
-// replaced and every dependent column moved onto it.
 export const recreateEnumQuery = ({
   dependents,
   name,

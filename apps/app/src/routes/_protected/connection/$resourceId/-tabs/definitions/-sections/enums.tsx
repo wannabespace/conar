@@ -53,8 +53,6 @@ type EnumItem = typeof enumType.infer
 const enumKey = (item: EnumItem) =>
   `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
 
-// PostgreSQL alters a real enum type, MySQL rewrites the ENUM list stored on a
-// column; anything else is read-only.
 const enumEditable = (item: EnumItem, type: ConnectionType) =>
   item.metadata?.table
     ? type === ConnectionType.MySQL
@@ -90,38 +88,22 @@ interface EnumPlan {
   values: string[]
 }
 
-// A row keeps the index of the value it started as for its id, so a removal, a
-// reorder and a rename stay tellable apart. A row the list adds carries a uuid,
-// which reads back as NaN and counts as an addition.
 const enumPlan = (
   item: EnumItem | null,
   drafts: EditableListItem[]
 ): EnumPlan => {
   const original = item?.values ?? []
+  const rows = drafts
+    .map((draft) => ({ index: Number(draft.id), value: draft.value.trim() }))
+    .filter((row) => row.value)
+  const kept = rows.filter((row) => row.index < original.length)
   const renames: Record<string, string> = {}
-  const survivors: number[] = []
-  const additions: string[] = []
-  const values: string[] = []
 
-  for (const draft of drafts) {
-    const value = draft.value.trim()
+  for (const row of kept) {
+    const before = original[row.index] ?? ''
 
-    if (!value) {
-      continue
-    }
-    values.push(value)
-
-    const originalIndex = Number(draft.id)
-
-    if (originalIndex < original.length) {
-      survivors.push(originalIndex)
-      const before = original[originalIndex]
-
-      if (before && before !== value) {
-        renames[before] = value
-      }
-    } else {
-      additions.push(value)
+    if (before !== row.value) {
+      renames[before] = row.value
     }
   }
 
@@ -129,11 +111,17 @@ const enumPlan = (
   const swaps = Object.values(renames).some((value) => original.includes(value))
   const inPlace =
     !swaps &&
-    survivors.length === original.length &&
-    survivors.every((id, index) => id === index) &&
-    values.slice(survivors.length).join('\n') === additions.join('\n')
+    kept.length === original.length &&
+    original.every((_, index) => rows[index]?.index === index)
 
-  return { additions, kind: inPlace ? 'in-place' : 'recreate', renames, values }
+  return {
+    additions: rows
+      .filter((row) => !kept.includes(row))
+      .map((row) => row.value),
+    kind: inPlace ? 'in-place' : 'recreate',
+    renames,
+    values: rows.map((row) => row.value),
+  }
 }
 
 const enumDescription = (item: EnumItem | null, schema: string) => {
@@ -155,7 +143,6 @@ const draftsOf = (item: EnumItem | null) =>
 const valuesOf = (drafts: EditableListItem[]) =>
   drafts.map((draft) => draft.value.trim()).filter(Boolean)
 
-// MODIFY COLUMN restates the default, which has to name a surviving label.
 const migratedDefault = (
   value: string | null,
   plan: EnumPlan,
@@ -169,6 +156,12 @@ const migratedDefault = (
     .filter((label) => plan.values.includes(label))
 
   return kept.length === 0 ? null : kept.join(',')
+}
+
+interface EnumDraft {
+  drafts: EditableListItem[]
+  name: string
+  schema: string
 }
 
 const enumSchema = arkType({
@@ -193,8 +186,6 @@ const enumSchema = arkType({
   schema: 'string',
 })
 
-// Columns carry the type name, its labels and their defaults, so every write
-// to an enum changes what they show.
 const refreshColumns = (connectionResource: ConnectionResource) =>
   queryClient.invalidateQueries({
     queryKey: resourceColumnsQueryKey({ connectionResource }),
@@ -202,23 +193,22 @@ const refreshColumns = (connectionResource: ConnectionResource) =>
 
 const saveEnum = async ({
   connectionResource,
-  drafts,
+  draft,
   item,
-  name,
   run,
-  schema,
 }: {
   connectionResource: ConnectionResource
-  drafts: EditableListItem[]
+  draft: EnumDraft
   item: EnumItem | null
-  name: string
   run: RunQuery
-  schema: string
 }) => {
-  const plan = enumPlan(item, drafts)
+  const plan = enumPlan(item, draft.drafts)
+  const name = draft.name.trim()
 
   if (!item) {
-    await run(createEnumQuery({ name, schema, values: plan.values }))
+    await run(
+      createEnumQuery({ name, schema: draft.schema, values: plan.values })
+    )
     return
   }
   const { metadata } = item
@@ -246,7 +236,7 @@ const saveEnum = async ({
   }
 
   if (plan.kind === 'recreate') {
-    const dependents = await queryClient.fetchQuery(
+    const dependents = await queryClient.query(
       enumDependentsQueryOptions({
         connectionResource,
         name: item.name,
@@ -325,12 +315,6 @@ const lostValuesWarning = (
   }
 }
 
-interface EnumDraft {
-  drafts: EditableListItem[]
-  name: string
-  schema: string
-}
-
 const enumState = ({
   can,
   draft,
@@ -343,19 +327,15 @@ const enumState = ({
   type: ConnectionType
 }) => {
   const columnBound = !!item?.metadata?.table
-  const original = item?.values ?? []
-  const values = valuesOf(draft.drafts)
-  const plan = enumPlan(item, draft.drafts)
-  const replacesType = !columnBound && plan.kind === 'recreate'
+  const { kind, values } = enumPlan(item, draft.drafts)
+  const replacesType = !columnBound && kind === 'recreate'
 
   return {
-    canRemoveValues: columnBound || type === ConnectionType.Postgres,
     changed: item
-      ? draft.name.trim() !== item.name || !sameList(values, original)
+      ? draft.name.trim() !== item.name || !sameList(values, item.values)
       : true,
     columnBound,
     note: enumNote({ item, recreating: replacesType, type }),
-    original,
     readOnly: item ? !can.edit || !enumEditable(item, type) : !can.create,
     replacesType,
     values,
@@ -382,14 +362,7 @@ const EnumInspector = ({
 }: SectionInspectorProps<EnumItem>) => {
   const mutation = useDefinitionMutation({
     mutationFn: async (draft: EnumDraft) => {
-      await saveEnum({
-        connectionResource,
-        drafts: draft.drafts,
-        item,
-        name: draft.name.trim(),
-        run,
-        schema: draft.schema,
-      })
+      await saveEnum({ connectionResource, draft, item, run })
       await refreshColumns(connectionResource)
     },
     onSuccess: () => onOpenChange(false),
@@ -465,9 +438,6 @@ const EnumInspector = ({
                   items={field.state.value}
                   placeholder="Value"
                   readOnly={state.readOnly}
-                  canRemoveItem={(_, index) =>
-                    state.canRemoveValues || index >= state.original.length
-                  }
                   onItemsChange={field.handleChange}
                 />
                 <AnimatePresence initial={false}>
