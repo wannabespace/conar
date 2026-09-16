@@ -1,5 +1,6 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -16,15 +17,14 @@ import {
   DefinitionForm,
   ExistingDefinitionForm,
 } from '../-components/definition-form'
-import type { FilterOption } from '../-components/filter-select'
-import { FilterSelect } from '../-components/filter-select'
 import type { SectionInspectorProps } from '../-components/inspector'
 import { InspectorHeader } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect } from '../-components/pickers'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { Muted, monoColumn, nameColumn } from '../-lib/columns'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
 type FunctionItem = typeof functionsType.infer
 type FunctionType = FunctionItem['type']
@@ -102,12 +102,12 @@ const FunctionInspector = ({
 )
 
 const columns: DefinitionsColumn<FunctionItem>[] = [
-  nameColumn({ iconOf: () => SourceCodeIcon, width: 'w-68' }),
+  nameColumn({ icon: () => SourceCodeIcon, width: 'w-68' }),
   {
     cell: (item, { search }) => (
-      <Muted>
+      <span className="text-muted-foreground">
         {item.language && <HighlightText text={item.language} match={search} />}
-      </Muted>
+      </span>
     ),
     header: 'Language',
     width: 'w-32',
@@ -120,16 +120,18 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
   {
     align: 'end',
     cell: (item) => (
-      <Muted>
+      <span className="text-muted-foreground">
         <span className="tabular-nums">{item.argumentCount ?? 0}</span>
-      </Muted>
+      </span>
     ),
     header: 'Arguments',
     width: 'w-28',
   },
   {
     align: 'end',
-    cell: (item) => <Muted>{typeLabels[item.type]}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">{typeLabels[item.type]}</span>
+    ),
     header: 'Type',
     width: 'w-36',
   },

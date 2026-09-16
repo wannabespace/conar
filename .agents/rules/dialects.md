@@ -10,10 +10,10 @@ Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`Connect
 
 | Level | Gate | Example |
 | --- | --- | --- |
-| Whole feature | `capabilitiesOf(type)` → `{cascade, explain, renameColumns, schemas}` | Only Postgres offers CASCADE on a drop |
+| Whole feature | `capabilitiesOf(type)` → `{cascade, explain, renameColumns, renameConstraints, schemas}` | Only Postgres offers CASCADE on a drop; only Postgres and SQL Server rename a constraint in place |
 | Whole section | `sectionAvailable(section, type)` | ClickHouse has no Functions or Triggers section |
 | Whole operation | `sectionCapabilitiesOf(section, type)` → `{create, drop, edit}` | Only Postgres drops an enum |
-| One operation | the section's own rule | MySQL renames a constraint through `recreate`; only Postgres/SQL Server toggle a trigger; `enumEditable` splits column-bound enums from type enums; an index that enforces a constraint (`constraintOwned`) or carries options the picker cannot show (`custom`) only renames |
+| One operation | the section's own rule | Only Postgres/SQL Server toggle a trigger; `enumEditable` splits column-bound enums from type enums; an index that enforces a constraint (`constraintOwned`) or carries options the picker cannot show (`custom`) only renames |
 | One option in a form | narrow the option list | `referentialActionsFor` drops `RESTRICT` for SQL Server |
 
 A section entry carries the two states apart: `false` is *no such section* — no list query on this dialect, show nothing; `{}` is *read-only* — the list reads fine and nothing writes, which is what ClickHouse indexes, constraints and enums want. Conflating them hides sections that work.

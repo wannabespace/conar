@@ -5,9 +5,7 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
-  Drawer,
   DrawerClose,
-  DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
@@ -30,7 +28,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import { AnimatePresence } from 'motion/react'
-import type { ReactNode, RefObject } from 'react'
+import type { ReactNode } from 'react'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 
@@ -41,32 +39,6 @@ export interface InspectorProps<T> {
 
 export type SectionInspectorProps<T> = DefinitionsState &
   InspectorProps<T> & { queryKey: readonly unknown[] }
-
-export const InspectorShell = ({
-  children,
-  finalFocus,
-  onOpenChange,
-  open,
-}: {
-  children: ReactNode
-  finalFocus: RefObject<HTMLElement | null>
-  onOpenChange: (open: boolean) => void
-  open: boolean
-}) => (
-  <Drawer
-    open={open}
-    onOpenChange={onOpenChange}
-    size="sm"
-    swipeDirection="right"
-  >
-    <DrawerContent
-      className="sm:[--drawer-content-width:36rem]!"
-      finalFocus={finalFocus}
-    >
-      {children}
-    </DrawerContent>
-  </Drawer>
-)
 
 export const InspectorHeader = ({
   description,

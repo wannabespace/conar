@@ -4,7 +4,12 @@ import {
   LeftToRightListDashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  matchesSearch,
+  pushUnique,
+  sameList,
+} from '@tamery/shared/utils/helpers'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
@@ -16,6 +21,7 @@ import { useState } from 'react'
 
 import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createIndexQuery } from '~/entities/connection/queries/indexes/create'
 import { dropIndexQuery } from '~/entities/connection/queries/indexes/drop'
 import type { indexesType } from '~/entities/connection/queries/indexes/list'
@@ -27,9 +33,8 @@ import { recreateIndexQuery } from '~/entities/connection/queries/indexes/recrea
 import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
+import { groupInSchema } from '~/entities/connection/utils/helpers'
 
-import type { FilterOption } from '../-components/filter-select'
-import { FilterSelect } from '../-components/filter-select'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
   InspectorDefinition,
@@ -40,15 +45,14 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { NameSelect, NamesSelect } from '../-components/pickers'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect, NameSelect, NamesSelect } from '../-components/pickers'
 import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { HighlightList, Muted, monoColumn, nameColumn } from '../-lib/columns'
-import { sameList } from '../-lib/lists'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
 type IndexItem = typeof indexesType.infer
 type IndexKind = 'primary' | 'unique' | 'regular'
@@ -93,46 +97,19 @@ const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
 const typeText = (item: GroupedIndex) =>
   item.type ? `${kindLabels[item.kind]} · ${item.type}` : kindLabels[item.kind]
 
-const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
-  const grouped = new Map<string, GroupedIndex>()
-
-  for (const item of indexes) {
-    if (item.schema !== schema) {
-      continue
-    }
-    const key = indexKey(item)
-    const column = item.column ?? item.customExpression
-    const existing = grouped.get(key)
-
-    if (existing) {
-      if (column && !existing.columns.includes(column)) {
-        existing.columns.push(column)
-      }
-      existing.custom ||= item.custom
-    } else {
-      grouped.set(key, {
-        columns: column ? [column] : [],
-        constraintOwned: item.constraintOwned,
-        custom: item.custom,
-        definition: item.definition,
-        kind: kindOf(item),
-        name: item.name,
-        schema: item.schema,
-        table: item.table,
-        type: item.type,
-      })
-    }
-  }
-
-  return [...grouped.values()]
-}
-
-// A constraint's index is renamed along with the constraint by PostgreSQL and
-// SQL Server; MySQL calls every primary key PRIMARY.
-const RENAMES_OWNED = new Set<ConnectionType>([
-  ConnectionType.Postgres,
-  ConnectionType.MSSQL,
-])
+const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
+  groupInSchema(indexes, schema, {
+    key: indexKey,
+    merge: (group: GroupedIndex, item) => {
+      pushUnique(group.columns, item.column ?? item.customExpression)
+      group.custom ||= item.custom
+    },
+    seed: (item): GroupedIndex => ({
+      ...item,
+      columns: [],
+      kind: kindOf(item),
+    }),
+  })
 
 interface IndexDraft {
   columns: string[]
@@ -219,7 +196,7 @@ const indexState = ({
   const owned = !!item?.constraintOwned
   const custom = !!item?.custom
   const readOnly = item
-    ? !can.edit || (owned && !RENAMES_OWNED.has(type))
+    ? !can.edit || (owned && !capabilitiesOf(type).renameConstraints)
     : !can.create
 
   return {
@@ -482,7 +459,7 @@ const IndexInspector = ({
 
 const columns: DefinitionsColumn<GroupedIndex>[] = [
   nameColumn({
-    iconOf: (item: GroupedIndex) =>
+    icon: (item: GroupedIndex) =>
       item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon,
     width: 'w-88',
   }),
@@ -491,19 +468,16 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
     valueOf: (item: GroupedIndex) => item.table,
     width: 'w-48',
   }),
-  {
-    cell: (item, { search }) => (
-      <span data-mask className="font-mono">
-        <HighlightList values={item.columns} match={search} />
-      </span>
-    ),
-    className: 'whitespace-normal',
+  monoColumn({
     grow: true,
     header: 'Columns',
-  },
+    valueOf: (item: GroupedIndex) => item.columns.join(', '),
+  }),
   {
     align: 'end',
-    cell: (item) => <Muted>{typeText(item)}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">{typeText(item)}</span>
+    ),
     header: 'Type',
     width: 'w-44',
   },

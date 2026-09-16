@@ -12,6 +12,7 @@ interface ConnectionCapabilities {
   cascade: boolean
   explain: boolean
   renameColumns: boolean
+  renameConstraints: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
 }
@@ -24,6 +25,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: false,
     explain: false,
     renameColumns: false,
+    renameConstraints: false,
     schemas: false,
     sections: {
       constraints: readOnly,
@@ -38,6 +40,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: false,
     explain: false,
     renameColumns: true,
+    renameConstraints: true,
     schemas: true,
     sections: {
       constraints: full,
@@ -52,6 +55,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: false,
     explain: true,
     renameColumns: true,
+    renameConstraints: false,
     schemas: true,
     sections: {
       constraints: full,
@@ -66,6 +70,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: true,
     explain: true,
     renameColumns: true,
+    renameConstraints: true,
     schemas: true,
     sections: {
       constraints: full,

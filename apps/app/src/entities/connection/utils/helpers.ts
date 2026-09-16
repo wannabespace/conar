@@ -50,3 +50,32 @@ export const hasDangerousSqlKeywords = (sql: string) => {
   ).join('|')
   return new RegExp(dangerousKeywordsPattern, 'giu').test(uncommentedLines)
 }
+
+export const groupInSchema = <T extends { schema: string }, G>(
+  items: T[],
+  schema: string | undefined,
+  {
+    key,
+    merge,
+    seed,
+  }: {
+    key: (item: T) => string
+    merge: (group: G, item: T) => void
+    seed: (item: T) => G
+  }
+) => {
+  const grouped = new Map<string, G>()
+
+  for (const item of items) {
+    if (item.schema !== schema) {
+      continue
+    }
+    const id = key(item)
+    const group = grouped.get(id) ?? seed(item)
+
+    merge(group, item)
+    grouped.set(id, group)
+  }
+
+  return [...grouped.values()]
+}

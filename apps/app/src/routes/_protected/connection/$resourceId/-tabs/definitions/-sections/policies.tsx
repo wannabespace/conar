@@ -1,5 +1,6 @@
 import { SecurityCheckIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
@@ -22,8 +23,6 @@ import type {
 } from '~/entities/connection/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
 
-import type { FilterOption } from '../-components/filter-select'
-import { FilterSelect } from '../-components/filter-select'
 import type {
   InspectorWarning,
   SectionInspectorProps,
@@ -35,14 +34,14 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { NameSelect } from '../-components/pickers'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect, NameSelect } from '../-components/pickers'
 import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { HighlightList, Muted, monoColumn } from '../-lib/columns'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn } from '../-lib/columns'
 
 type PolicyItem = typeof policyType.infer
 
@@ -456,7 +455,6 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
         {item.check && <Expression keyword="WITH CHECK" value={item.check} />}
       </span>
     ),
-    className: 'whitespace-normal',
     grow: true,
     header: 'Name',
   },
@@ -466,14 +464,16 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
     width: 'w-44',
   }),
   {
-    cell: (item) => <Muted>{item.command}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">{item.command}</span>
+    ),
     header: 'Command',
     width: 'w-32',
   },
   {
     cell: (item, { search }) => (
       <span data-mask className="text-muted-foreground font-mono">
-        <HighlightList values={item.roles} match={search} />
+        <HighlightText text={item.roles.join(', ')} match={search} />
       </span>
     ),
     header: 'Roles',
@@ -481,7 +481,9 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   },
   {
     align: 'end',
-    cell: (item) => <Muted>{kindLabels[item.type]}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">{kindLabels[item.type]}</span>
+    ),
     header: 'Type',
     width: 'w-36',
   },

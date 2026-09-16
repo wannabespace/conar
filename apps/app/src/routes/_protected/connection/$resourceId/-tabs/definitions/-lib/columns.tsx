@@ -12,8 +12,6 @@ export interface DefinitionsColumn<T> {
   align?: 'end'
   cell: (item: T, context: CellContext) => ReactNode
   className?: string
-  // Absorbs the table's slack; every other column states a fixed `width` class,
-  // so the layout holds from skeleton to values.
   grow?: boolean
   header: string
   width?: string
@@ -38,35 +36,17 @@ const NameCell = ({
   </span>
 )
 
-export const Muted = ({ children }: { children: ReactNode }) => (
-  <span className="text-muted-foreground">{children}</span>
-)
-
-export const HighlightList = ({
-  match,
-  values,
-}: {
-  match: string
-  values: string[]
-}) =>
-  values.map((value, index) => (
-    <span key={value}>
-      {index > 0 && ', '}
-      <HighlightText text={value} match={match} />
-    </span>
-  ))
-
 export const nameColumn = <T extends { name: string }>({
   after,
-  iconOf,
+  icon,
   width,
 }: {
   after?: (item: T) => ReactNode
-  iconOf: (item: T) => IconSvgElement
+  icon: (item: T) => IconSvgElement
   width: string
 }): DefinitionsColumn<T> => ({
   cell: (item, { search }) => (
-    <NameCell icon={iconOf(item)}>
+    <NameCell icon={icon(item)}>
       <HighlightText text={item.name} match={search} />
       {after?.(item)}
     </NameCell>
@@ -92,7 +72,6 @@ export const monoColumn = <T,>({
       <HighlightText text={valueOf(item) ?? ''} match={search} />
     </span>
   ),
-  className: grow ? 'whitespace-normal' : undefined,
   grow,
   header,
   width,

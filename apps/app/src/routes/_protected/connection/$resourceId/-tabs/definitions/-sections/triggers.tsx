@@ -1,6 +1,6 @@
 import { FlashIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
 import { useQuery } from '@tanstack/react-query'
@@ -20,8 +20,6 @@ import {
   DefinitionForm,
   ExistingDefinitionForm,
 } from '../-components/definition-form'
-import type { FilterOption } from '../-components/filter-select'
-import { FilterSelect } from '../-components/filter-select'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
   InspectorHeader,
@@ -29,11 +27,12 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect } from '../-components/pickers'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { Muted, monoColumn, nameColumn } from '../-lib/columns'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
 type TriggerItem = typeof triggersType.infer
 
@@ -179,7 +178,7 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
   nameColumn({
     after: (item: TriggerItem) =>
       item.enabled === false && <Badge variant="destructive">Disabled</Badge>,
-    iconOf: () => FlashIcon,
+    icon: () => FlashIcon,
     width: 'w-68',
   }),
   monoColumn({
@@ -188,18 +187,22 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
     width: 'w-44',
   }),
   {
-    cell: (item) => <Muted>{uppercaseFirst(item.timing.toLowerCase())}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">
+        {uppercaseFirst(item.timing.toLowerCase())}
+      </span>
+    ),
     header: 'Timing',
     width: 'w-32',
   },
   {
     cell: (item) => (
-      <Muted>
+      <span className="text-muted-foreground">
         {item.event
           .split(' OR ')
           .map((event) => uppercaseFirst(event.toLowerCase()))
           .join(', ')}
-      </Muted>
+      </span>
     ),
     header: 'Event',
     width: 'w-44',

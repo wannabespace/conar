@@ -1,5 +1,6 @@
 import { LeftToRightListDashIcon, TagsIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch, sameList } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import type { EditableListItem } from '@tamery/ui/components/custom/editable-list'
@@ -44,9 +45,7 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { Muted, monoColumn, nameColumn } from '../-lib/columns'
-import { sameList } from '../-lib/lists'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
 type EnumItem = typeof enumType.infer
 
@@ -500,7 +499,7 @@ const EnumInspector = ({
 }
 
 const enumNameColumn = nameColumn({
-  iconOf: (item: EnumItem) =>
+  icon: (item: EnumItem) =>
     item.metadata?.isSet ? LeftToRightListDashIcon : TagsIcon,
   width: 'w-60',
 })
@@ -515,7 +514,6 @@ const valuesColumn: DefinitionsColumn<EnumItem> = {
       ))}
     </span>
   ),
-  className: 'whitespace-normal',
   grow: true,
   header: 'Values',
 }
@@ -535,7 +533,11 @@ const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
   valuesColumn,
   {
     align: 'end',
-    cell: (item) => <Muted>{item.metadata?.isSet ? 'Set' : 'Enum'}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">
+        {item.metadata?.isSet ? 'Set' : 'Enum'}
+      </span>
+    ),
     header: 'Type',
     width: 'w-24',
   },

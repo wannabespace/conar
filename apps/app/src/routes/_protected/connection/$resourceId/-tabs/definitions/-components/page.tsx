@@ -19,6 +19,7 @@ import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { Drawer, DrawerContent } from '@tamery/ui/components/drawer'
 import { Label } from '@tamery/ui/components/label'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
@@ -46,7 +47,6 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 import type { CellContext, DefinitionsColumn } from '../-lib/columns'
 import type { InspectorProps } from './inspector'
-import { InspectorShell } from './inspector'
 import { SchemaSelect } from './schema-select'
 
 const SKELETON_ROWS = 6
@@ -63,7 +63,10 @@ const columnClass = ({
   align,
   grow,
 }: Pick<DefinitionsColumn<unknown>, 'align' | 'grow'>) =>
-  cn(grow ? 'w-full' : 'truncate', align === 'end' && 'text-right')
+  cn(
+    grow ? 'w-full whitespace-normal' : 'truncate',
+    align === 'end' && 'text-right'
+  )
 
 const alwaysDroppable = () => true
 
@@ -463,27 +466,33 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
           )}
         </motion.div>
       </AnimatePresence>
-      <InspectorShell
+      <Drawer
         open={inspector.inspected.open}
-        finalFocus={searchRef}
+        size="sm"
+        swipeDirection="right"
         onOpenChange={(open) => {
           if (!open) {
             inspector.close()
           }
         }}
       >
-        <Inspector
-          key={inspector.inspected.session}
-          item={inspectedItem}
-          queryKey={queryKey}
-          onOpenChange={(open) => {
-            if (!open) {
-              inspector.close()
-            }
-          }}
-          {...inspectorProps}
-        />
-      </InspectorShell>
+        <DrawerContent
+          className="sm:[--drawer-content-width:36rem]!"
+          finalFocus={searchRef}
+        >
+          <Inspector
+            key={inspector.inspected.session}
+            item={inspectedItem}
+            queryKey={queryKey}
+            onOpenChange={(open) => {
+              if (!open) {
+                inspector.close()
+              }
+            }}
+            {...inspectorProps}
+          />
+        </DrawerContent>
+      </Drawer>
       <AlertDialog
         open={dropping.open}
         onOpenChange={(open) =>

@@ -11,6 +11,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
   InputGroup,
@@ -122,13 +123,10 @@ export const DefinitionsPanel = () => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
 
-  const query = search.trim().toLowerCase()
   const filtered = schemaGroups(connection)
     .map((group) => ({
       ...group,
-      items: group.items.filter(({ label }) =>
-        label.toLowerCase().includes(query)
-      ),
+      items: group.items.filter(({ label }) => matchesSearch(search, label)),
     }))
     .filter((group) => group.items.length > 0)
 

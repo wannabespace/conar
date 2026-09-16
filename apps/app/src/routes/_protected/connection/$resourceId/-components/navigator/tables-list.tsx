@@ -11,6 +11,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
+import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Separator } from '@tamery/ui/components/separator'
@@ -421,10 +422,7 @@ export const TablesList = ({
 
   for (const schema of tablesAndSchemas?.schemas ?? []) {
     const tables = schema.tables
-      .filter(
-        (table) =>
-          !search || table.name.toLowerCase().includes(search.toLowerCase())
-      )
+      .filter((table) => matchesSearch(search, table.name))
       .toSorted((a, b) => a.name.localeCompare(b.name))
 
     if (tables.length === 0) {

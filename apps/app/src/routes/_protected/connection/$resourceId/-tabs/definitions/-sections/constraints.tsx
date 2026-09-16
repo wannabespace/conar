@@ -1,5 +1,10 @@
 import { Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  matchesSearch,
+  pushUnique,
+  sameList,
+} from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -8,6 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
 import { dropConstraintQuery } from '~/entities/connection/queries/constraints/drop'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
@@ -25,9 +31,8 @@ import {
 } from '~/entities/connection/queries/constraints/shape'
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { groupInSchema } from '~/entities/connection/utils/helpers'
 
-import type { FilterOption } from '../-components/filter-select'
-import { FilterSelect } from '../-components/filter-select'
 import type {
   InspectorWarning,
   SectionInspectorProps,
@@ -40,15 +45,14 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { NameSelect, NamesSelect } from '../-components/pickers'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect, NameSelect, NamesSelect } from '../-components/pickers'
 import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { HighlightList, Muted, monoColumn, nameColumn } from '../-lib/columns'
-import { sameList } from '../-lib/lists'
-import { matchesSearch } from '../-lib/search'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
 type ConstraintItem = typeof constraintsType.infer
 
@@ -99,37 +103,19 @@ const noColumns: readonly string[] = []
 const groupConstraints = (
   constraints: ConstraintItem[],
   schema: string | undefined
-) => {
-  const grouped = new Map<string, GroupedConstraint>()
-
-  for (const item of constraints) {
-    if (item.schema !== schema) {
-      continue
-    }
-    const key = constraintKey(item)
-    const existing = grouped.get(key)
-
-    if (existing) {
-      if (item.column && !existing.columns.includes(item.column)) {
-        existing.columns.push(item.column)
-      }
-      if (
-        item.foreignColumn &&
-        !existing.foreignColumns.includes(item.foreignColumn)
-      ) {
-        existing.foreignColumns.push(item.foreignColumn)
-      }
-    } else {
-      grouped.set(key, {
-        ...item,
-        columns: item.column ? [item.column] : [],
-        foreignColumns: item.foreignColumn ? [item.foreignColumn] : [],
-      })
-    }
-  }
-
-  return [...grouped.values()]
-}
+) =>
+  groupInSchema(constraints, schema, {
+    key: constraintKey,
+    merge: (group: GroupedConstraint, item) => {
+      pushUnique(group.columns, item.column)
+      pushUnique(group.foreignColumns, item.foreignColumn)
+    },
+    seed: (item): GroupedConstraint => ({
+      ...item,
+      columns: [],
+      foreignColumns: [],
+    }),
+  })
 
 const referenceRules = (item: GroupedConstraint) =>
   [
@@ -204,11 +190,6 @@ const draftOf = (
       }
     : emptyDraft(pageSchema)
 
-const RENAMES_IN_PLACE = new Set<ConnectionType>([
-  ConnectionType.Postgres,
-  ConnectionType.MSSQL,
-])
-
 const shapeChanged = (draft: ConstraintDraft, item: GroupedConstraint) => {
   const opened = draftOf(item, item.schema)
 
@@ -236,7 +217,7 @@ const renamesInPlace = (
 ) =>
   !shapeChanged(draft, item) &&
   finalNameOf(draft) !== item.name &&
-  RENAMES_IN_PLACE.has(type)
+  capabilitiesOf(type).renameConstraints
 
 const shapeOf = (draft: ConstraintDraft): ConstraintShape => ({
   columns: draft.columns,
@@ -678,7 +659,7 @@ const ConstraintInspector = ({
 
 const columns: DefinitionsColumn<GroupedConstraint>[] = [
   nameColumn({
-    iconOf: (item: GroupedConstraint) =>
+    icon: (item: GroupedConstraint) =>
       item.type === 'foreignKey' ? Link01Icon : Key01Icon,
     width: 'w-68',
   }),
@@ -694,7 +675,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
       return (
         <span data-mask>
           <span className="font-mono text-xs">
-            <HighlightList values={item.columns} match={search} />
+            <HighlightText text={item.columns.join(', ')} match={search} />
           </span>
           {reference && (
             <span className="text-muted-foreground text-xs">
@@ -705,13 +686,14 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
         </span>
       )
     },
-    className: 'whitespace-normal',
     grow: true,
     header: 'Columns',
   },
   {
     align: 'end',
-    cell: (item) => <Muted>{typeLabels[item.type]}</Muted>,
+    cell: (item) => (
+      <span className="text-muted-foreground">{typeLabels[item.type]}</span>
+    ),
     header: 'Type',
     width: 'w-36',
   },

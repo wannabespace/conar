@@ -16,25 +16,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
+import { cn } from '@tamery/ui/lib/utils'
 
 const identity = (value: string): string => value
 const noOptions: readonly string[] = []
 
 export const NameSelect = <T extends string>({
+  className,
   disabled,
   id,
   labelOf = identity,
+  mask = true,
   onValueChange,
   options,
   placeholder,
   value,
 }: {
+  className?: string
   disabled?: boolean
-  id: string
+  id?: string
   labelOf?: (value: T) => string
+  mask?: boolean
   onValueChange: (value: T) => void
   options: readonly T[]
-  placeholder: string
+  placeholder?: string
   value: T | ''
 }) => (
   <Select
@@ -46,12 +51,16 @@ export const NameSelect = <T extends string>({
       }
     }}
   >
-    <SelectTrigger id={id} data-mask className="w-full">
+    <SelectTrigger
+      id={id}
+      data-mask={mask || undefined}
+      className={cn('w-full', className)}
+    >
       <SelectValue placeholder={placeholder}>
         {(current: T | null) => (current ? labelOf(current) : placeholder)}
       </SelectValue>
     </SelectTrigger>
-    <SelectContent data-mask>
+    <SelectContent data-mask={mask || undefined}>
       {options.map((option) => (
         <SelectItem key={option} value={option}>
           {labelOf(option)}
@@ -59,6 +68,32 @@ export const NameSelect = <T extends string>({
       ))}
     </SelectContent>
   </Select>
+)
+
+export interface FilterOption<T extends string> {
+  label: string
+  value: T
+}
+
+export const FilterSelect = <T extends string>({
+  onValueChange,
+  options,
+  value,
+}: {
+  onValueChange: (value: T) => void
+  options: readonly FilterOption<T>[]
+  value: T
+}) => (
+  <NameSelect
+    className="w-40"
+    mask={false}
+    options={options.map((option) => option.value)}
+    labelOf={(current) =>
+      options.find((option) => option.value === current)?.label ?? current
+    }
+    value={value}
+    onValueChange={onValueChange}
+  />
 )
 
 export const NamesSelect = ({
