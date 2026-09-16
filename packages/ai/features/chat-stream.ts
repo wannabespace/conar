@@ -33,14 +33,6 @@ const activeStream = {
   },
 }
 
-export const lastAnswer = {
-  is: async (chatId: string, userMessageId: string) =>
-    (await redis.get(lastAnswer.key(chatId))) === userMessageId,
-  key: (chatId: string) => `ai:chat-last-answer:${chatId}`,
-  mark: (chatId: string, userMessageId: string) =>
-    redis.set(lastAnswer.key(chatId), userMessageId, { EX: 60 * 60 * 24 * 7 }),
-}
-
 const resumable = (streamId: string, abortController?: AbortController) =>
   createResumableUIMessageStream({
     abortController,
@@ -75,9 +67,6 @@ export const chatStream = {
         telemetry: data.telemetry,
       })
 
-      const answeredId = data.messages.findLast(
-        (message) => message.role === 'user'
-      )?.id
       // oxlint-disable-next-line no-invalid-void-type
       const { promise, resolve } = Promise.withResolvers<void>()
       const uiStream = toUIMessageStream({
@@ -85,9 +74,6 @@ export const chatStream = {
         onEnd: async ({ responseMessage }) => {
           try {
             await data.onFinish(responseMessage)
-            if (answeredId) {
-              await lastAnswer.mark(data.chatId, answeredId)
-            }
           } finally {
             resolve()
           }

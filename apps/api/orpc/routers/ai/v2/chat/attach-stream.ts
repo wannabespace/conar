@@ -1,4 +1,4 @@
-import { chatStream, lastAnswer } from '@tamery/ai/features'
+import { chatStream } from '@tamery/ai/features'
 import { AiFeature } from '@tamery/ai/usage'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
@@ -31,11 +31,7 @@ export const attachStream = orpc
       userId: context.user.id,
     })
     const lastMessage = messages.at(-1)
-    if (lastMessage?.role !== 'user') {
-      return
-    }
-
-    if (await lastAnswer.is(input.chatId, lastMessage.id)) {
+    if (lastMessage?.role !== 'user' || lastMessage.metadata?.stopped) {
       return
     }
 

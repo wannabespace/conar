@@ -1,7 +1,11 @@
 import type { UIMessage } from 'ai'
 import { isTextUIPart } from 'ai'
 
-export type AppUIMessage = UIMessage<Record<string, unknown>>
+export interface AppMessageMetadata {
+  stopped?: boolean
+}
+
+export type AppUIMessage = UIMessage<AppMessageMetadata>
 export type AppMessagePart = AppUIMessage['parts'][number]
 
 export const textFromMessage = (message: Pick<AppUIMessage, 'parts'>) =>
@@ -15,7 +19,7 @@ interface MessagePartRow {
   order: number
   part: AppMessagePart
   messageId: string
-  metadata: Record<string, unknown> | null
+  metadata: AppMessageMetadata | null
   role: AppUIMessage['role']
 }
 
