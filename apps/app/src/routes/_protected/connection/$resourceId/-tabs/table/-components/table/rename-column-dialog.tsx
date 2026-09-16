@@ -69,17 +69,23 @@ export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
       )
       setOpen(false)
 
-      await queryClient.invalidateQueries(
-        resourceTableColumnsQueryOptions({ connectionResource, table, schema })
-      )
-      await queryClient.invalidateQueries({
-        queryKey: resourceRowsQueryInfiniteOptions({
-          connectionResource,
-          table,
-          schema,
-          query: { filters: [], orderBy: {} },
-        }).queryKey.slice(0, -1),
-      })
+      await Promise.all([
+        queryClient.invalidateQueries(
+          resourceTableColumnsQueryOptions({
+            connectionResource,
+            table,
+            schema,
+          })
+        ),
+        queryClient.invalidateQueries({
+          queryKey: resourceRowsQueryInfiniteOptions({
+            connectionResource,
+            table,
+            schema,
+            query: { filters: [], orderBy: {} },
+          }).queryKey.slice(0, -1),
+        }),
+      ])
     },
     onError: (error) => {
       toast.error(`Failed to rename column "${error.message}".`)

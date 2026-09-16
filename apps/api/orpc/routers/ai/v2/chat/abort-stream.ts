@@ -18,9 +18,11 @@ export const abortStream = orpc
       return
     }
 
-    await chatStream.stop(input.chatId)
-    await chatPersist.markStopped({
-      chatId: input.chatId,
-      userId: context.user.id,
-    })
+    await Promise.all([
+      chatStream.stop(input.chatId),
+      chatPersist.markStopped({
+        chatId: input.chatId,
+        userId: context.user.id,
+      }),
+    ])
   })

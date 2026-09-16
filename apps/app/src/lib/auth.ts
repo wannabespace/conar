@@ -76,6 +76,5 @@ export const fullSignOut = async () => {
   ])
 
   cleanCollections()
-  await clearDb()
-  await encryptionKey.reset()
+  await Promise.all([clearDb(), encryptionKey.reset()])
 }
