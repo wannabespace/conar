@@ -1,8 +1,8 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
-import { unsupported } from '../shared/unsupported'
 import type { ConstraintKind, ConstraintShape } from './shape'
 import { constraintClause, mysqlDropTarget } from './shape'
 

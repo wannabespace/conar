@@ -1,5 +1,6 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
+
 import { createQuery } from '../../runtime/query'
-import { unsupported } from '../shared/unsupported'
 import type { PolicyShape } from './shape'
 import { policyClause } from './shape'
 

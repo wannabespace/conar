@@ -1,8 +1,8 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 import { identifiers } from '../shared/sql-fragments'
-import { unsupported } from '../shared/unsupported'
 import type { IndexShape } from './create'
 import { createIndexStatement } from './create'
 

@@ -1,3 +1,4 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -7,7 +8,6 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
-import { unsupported } from '../shared/unsupported'
 
 export const functionsType = type({
   'argument_count?': 'number',

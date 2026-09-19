@@ -1,9 +1,9 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import type { RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 import { literals } from '../shared/sql-fragments'
-import { unsupported } from '../shared/unsupported'
 import type { EnumDependent } from './dependents'
 
 const RECREATE_SUFFIX = '_tamery_replaced'

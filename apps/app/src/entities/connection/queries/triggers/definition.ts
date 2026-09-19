@@ -1,3 +1,4 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { sql } from 'kysely'
 
@@ -11,7 +12,6 @@ import {
   mssqlObjectDefinition,
   readDefinition,
 } from '../shared/definition'
-import { unsupported } from '../shared/unsupported'
 import type { triggersType } from './list'
 
 type TriggerItem = typeof triggersType.infer

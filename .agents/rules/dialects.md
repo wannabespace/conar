@@ -1,6 +1,6 @@
 # Database dialects
 
-Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new statement cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `queries/shared/unsupported.ts`, never a hand-thrown `Error`, so the message reads the same everywhere.
+Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new statement cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `@tamery/shared/utils/unsupported`, never a hand-thrown `Error`, so the message reads the same everywhere.
 
 **Every per-dialect capability lives in one table**, `entities/connection/capabilities.ts`: one entry per `ConnectionType`, so what an engine supports reads top to bottom in one place instead of being spread over a set per feature. Adding an engine is one entry the `Record` will not let you omit. A rule that belongs to one screen alone still stays in that screen — this table is for facts two screens would otherwise each encode.
 

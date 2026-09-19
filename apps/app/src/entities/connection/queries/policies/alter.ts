@@ -1,7 +1,7 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
-import { unsupported } from '../shared/unsupported'
 import { expression, roleList } from './shape'
 
 export const alterPolicyQuery = ({
