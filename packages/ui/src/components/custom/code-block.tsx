@@ -82,7 +82,7 @@ const codeBlockSizes = {
 }
 
 const codeBlockSurfaces = {
-  field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring-[0.5px]',
+  field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring',
   none: '',
 }
 

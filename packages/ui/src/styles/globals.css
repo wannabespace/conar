@@ -18,6 +18,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --default-border-width: 0.5px;
+  --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 0.875rem;
   --font-heading: var(--font-sans);

@@ -64,7 +64,7 @@ export const SqlEditor = ({
     <Monaco
       ref={ref}
       data-mask
-      className="ring-foreground/4 min-h-0 flex-1 overflow-hidden rounded-xl ring-[0.5px]"
+      className="ring-foreground/4 min-h-0 flex-1 overflow-hidden rounded-xl ring"
       value={value}
       language={language}
       onChange={onChange}

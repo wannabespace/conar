@@ -35,7 +35,7 @@ export const NumberFieldGroup = ({
 }: NumberFieldPrimitive.Group.Props): React.ReactElement => (
   <NumberFieldPrimitive.Group
     className={cn(
-      `bg-input ring-foreground/4 hover:ring-foreground/12 text-foreground focus-within:focus-ring has-aria-invalid:invalid-ring relative flex h-8 w-full items-center justify-between overflow-hidden rounded-xl border border-transparent text-sm shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none in-data-[size=lg]:h-9 in-data-[size=sm]:h-7 in-data-[size=sm]:rounded-lg data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `bg-input ring-foreground/4 hover:ring-foreground/12 text-foreground focus-within:focus-ring has-aria-invalid:invalid-ring relative flex h-8 w-full items-center justify-between overflow-hidden rounded-xl border border-transparent text-sm shadow-xs ring transition-shadow duration-200 outline-none in-data-[size=lg]:h-9 in-data-[size=sm]:h-7 in-data-[size=sm]:rounded-lg data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     data-slot="number-field-group"

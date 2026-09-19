@@ -8,7 +8,7 @@ export const inputGroupVariants = cva(
     },
     variants: {
       variant: {
-        default: `bg-input ring-foreground/4 hover:ring-foreground/12 has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl border border-transparent shadow-xs ring-[0.5px] focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 data-[size=sm]:rounded-lg data-[size=xs]:rounded-md`,
+        default: `bg-input ring-foreground/4 hover:ring-foreground/12 has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl border border-transparent shadow-xs ring focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 data-[size=sm]:rounded-lg data-[size=xs]:rounded-md`,
         // A full-bleed row inside a grouped list that owns the surface for it
         flat: `has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring bg-transparent first:rounded-t-xl last:rounded-b-xl`,
       },

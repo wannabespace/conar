@@ -134,7 +134,7 @@ const ComboboxContent = ({
         data-slot="combobox-content"
         data-chips={!!anchor}
         className={cn(
-          `group/combobox-content bg-popover/70 text-popover-foreground ring-foreground/4 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] overflow-hidden rounded-2xl shadow-xl ring-[0.5px] before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
+          `group/combobox-content bg-popover/70 text-popover-foreground ring-foreground/4 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] overflow-hidden rounded-2xl shadow-xl ring before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
           className
         )}
         {...props}
@@ -251,7 +251,7 @@ const ComboboxChips = ({
       data-slot="combobox-chips"
       aria-invalid={invalidMark ? true : undefined}
       className={cn(
-        `bg-input ring-foreground/4 hover:ring-foreground/12 focus-within:focus-ring aria-invalid:invalid-ring flex min-h-8 flex-wrap items-center gap-1 rounded-xl border border-transparent px-2.5 py-1 text-sm shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200 has-data-[slot=combobox-chip]:px-1 has-[input:disabled]:pointer-events-none has-[input:disabled]:opacity-50`,
+        `bg-input ring-foreground/4 hover:ring-foreground/12 focus-within:focus-ring aria-invalid:invalid-ring flex min-h-8 flex-wrap items-center gap-1 rounded-xl border border-transparent px-2.5 py-1 text-sm shadow-xs ring transition-[color,box-shadow] duration-200 has-data-[slot=combobox-chip]:px-1 has-[input:disabled]:pointer-events-none has-[input:disabled]:opacity-50`,
         className
       )}
       {...props}

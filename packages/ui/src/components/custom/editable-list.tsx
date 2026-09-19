@@ -314,7 +314,7 @@ export const EditableList = ({
       {rows.length > 0 && (
         <div
           data-invalid={listError ? true : undefined}
-          className="bg-input ring-foreground/4 data-invalid:invalid-ring w-full divide-y rounded-xl shadow-xs ring-[0.5px]"
+          className="bg-input ring-foreground/4 data-invalid:invalid-ring w-full divide-y rounded-xl shadow-xs ring"
         >
           <Reorder.Group
             ref={listRef}
