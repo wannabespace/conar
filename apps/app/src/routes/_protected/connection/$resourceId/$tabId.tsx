@@ -52,10 +52,6 @@ const TabPage = () => {
   useEffect(() => {
     ensureTab(connectionResource.id, tab)
     setActiveTab(connectionResource.id, tab.id)
-
-    if (tab.type === 'definitions' || tab.type === 'visualizer') {
-      setNavigator(connectionResource.id, 'definitions')
-    }
   }, [connectionResource.id, tab])
 
   return (
@@ -96,6 +92,10 @@ export const Route = createFileRoute(
         params: { resourceId: params.resourceId },
         to: '/connection/$resourceId',
       })
+    }
+
+    if (tab.type === 'definitions' || tab.type === 'visualizer') {
+      setNavigator(params.resourceId, 'definitions')
     }
 
     return { tab }
