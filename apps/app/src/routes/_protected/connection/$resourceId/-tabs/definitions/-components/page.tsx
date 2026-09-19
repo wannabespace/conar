@@ -438,7 +438,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
                               (searchFocused && highlighted === key) ||
                               undefined
                             }
-                            className="data-highlighted:bg-foreground/10 transition-none"
+                            className="data-highlighted:bg-foreground/7 transition-none"
                             onClick={() => {
                               setHighlighted(key)
                               inspector.open(item)
