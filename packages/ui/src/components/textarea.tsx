@@ -3,14 +3,12 @@ import * as React from 'react'
 
 const Textarea = ({
   className,
-  mono = false,
   ...props
-}: React.ComponentProps<'textarea'> & { mono?: boolean }) => (
+}: React.ComponentProps<'textarea'>) => (
   <textarea
     data-slot="textarea"
     className={cn(
       `bg-input placeholder:text-muted-foreground focus-visible:focus-ring aria-invalid:invalid-ring flex field-sizing-content min-h-16 w-full resize-none rounded-xl border border-transparent px-2.5 py-2 text-base transition-[color,box-shadow] duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`,
-      mono && 'font-mono',
       className
     )}
     {...props}

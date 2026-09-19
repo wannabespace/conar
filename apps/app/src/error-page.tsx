@@ -120,14 +120,14 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           <div className="mt-7 flex items-center gap-2">
             <Button
               variant="ghost"
-              tone="muted"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => router.history.back()}
             >
               Go back
             </Button>
             <Button
               variant="ghost"
-              tone="muted"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => router.navigate({ to: '/' })}
             >
               Home

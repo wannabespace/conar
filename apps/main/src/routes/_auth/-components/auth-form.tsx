@@ -248,7 +248,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                     <Button
                       variant="link"
                       size="xs"
-                      tone="muted"
+                      className="text-muted-foreground hover:text-foreground"
                       render={<Link to="/forgot-password" />}
                     >
                       Forgot password?

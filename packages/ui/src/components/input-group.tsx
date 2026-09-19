@@ -102,7 +102,7 @@ const InputGroupInput = ({
 const InputGroupTextarea = ({
   className,
   ...props
-}: React.ComponentProps<typeof Textarea>) => (
+}: React.ComponentProps<'textarea'>) => (
   <Textarea
     data-slot="input-group-control"
     className={cn(

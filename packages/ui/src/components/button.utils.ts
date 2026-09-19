@@ -5,7 +5,6 @@ export const buttonVariants = cva(
   {
     defaultVariants: {
       size: 'default',
-      tone: 'default',
       variant: 'default',
     },
     variants: {
@@ -18,10 +17,6 @@ export const buttonVariants = cva(
         lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3`,
         sm: `h-7 gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
-      },
-      tone: {
-        default: '',
-        muted: `text-muted-foreground hover:text-foreground aria-expanded:text-foreground aria-pressed:text-foreground`,
       },
       variant: {
         default: `bg-primary text-primary-foreground hover:bg-primary/80`,

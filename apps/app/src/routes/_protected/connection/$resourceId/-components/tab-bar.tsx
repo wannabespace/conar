@@ -317,7 +317,7 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
-              tone="muted"
+              className="text-muted-foreground hover:text-foreground"
               size="icon-xs"
               aria-label="Go back"
               disabled={!canGoBack}
@@ -334,7 +334,7 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
-              tone="muted"
+              className="text-muted-foreground hover:text-foreground"
               size="icon-xs"
               aria-label="Go forward"
               onClick={() => router.history.forward()}
@@ -376,7 +376,7 @@ const NewTabMenu = ({
         render={
           <Button
             variant="ghost"
-            tone="muted"
+            className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="New tab"
           />
@@ -473,7 +473,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
         render={
           <Button
             variant="ghost"
-            tone="muted"
+            className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="AI chat"
             aria-pressed={chatOpened}
@@ -916,7 +916,7 @@ export const TabBar = ({ className }: { className?: string }) => {
             render={
               <Button
                 variant="ghost"
-                tone="muted"
+                className="text-muted-foreground hover:text-foreground"
                 size="icon-xs"
                 aria-label="Toggle sidebar"
                 onClick={() => navigatorOpenValue.set((open) => !open)}

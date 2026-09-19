@@ -127,9 +127,8 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
             <CopyButton
               size="icon-xs"
               variant="ghost"
-              tone="muted"
+              className="text-muted-foreground hover:text-foreground -mt-0.5"
               aria-label="Copy SQL"
-              className="-mt-0.5"
               text={code}
             />
           }

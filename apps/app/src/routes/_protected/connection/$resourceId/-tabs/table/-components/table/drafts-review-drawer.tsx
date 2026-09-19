@@ -196,8 +196,7 @@ export const DraftsReviewDrawer = ({
                             <Button
                               variant="ghost"
                               size="icon-xs"
-                              tone="muted"
-                              className="shrink-0"
+                              className="text-muted-foreground hover:text-foreground shrink-0"
                               onClick={() => removeRow(primaryKeys)}
                               disabled={isSaving}
                             />
@@ -264,8 +263,7 @@ export const DraftsReviewDrawer = ({
                                   <Button
                                     variant="ghost"
                                     size="icon-xs"
-                                    tone="muted"
-                                    className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                    className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                                     onClick={() =>
                                       removeDraft(primaryKeys, draft.columnId)
                                     }
@@ -295,8 +293,7 @@ export const DraftsReviewDrawer = ({
             variant="ghost"
             onClick={onDiscardAll}
             disabled={isSaving || drafts.length === 0}
-            tone="muted"
-            className="mr-auto"
+            className="text-muted-foreground hover:text-foreground mr-auto"
           >
             <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
             Discard all

@@ -177,8 +177,7 @@ const Visualizer = ({
                         variant="ghost"
                         size="icon-xs"
                         aria-label="Clear table search"
-                        tone="muted"
-                        className="hover:bg-foreground/10 hover:text-foreground"
+                        className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                         onClick={() => setSearchQuery('')}
                       />
                     }

@@ -85,7 +85,7 @@ const RouteComponent = () => {
               </Button>
             }
           />
-          <PopoverContent align="end" padding="sm" className="w-auto">
+          <PopoverContent align="end" className="w-auto gap-2 p-2">
             <Calendar
               autoFocus
               mode="range"

@@ -173,8 +173,7 @@ const Preview = ({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  tone="muted"
-                  className="hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground"
                   onClick={() => setValues(sample)}
                 />
               }

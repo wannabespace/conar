@@ -232,7 +232,7 @@ const CellPopoverToolbar = ({
               <Button
                 variant="outline"
                 size="icon-xs"
-                tone="muted"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsBig((prev) => !prev)}
               />
             }
@@ -266,7 +266,7 @@ const CellPopoverToolbar = ({
                 variant="outline"
                 size="xs"
                 aria-pressed={isRaw}
-                tone="muted"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsRaw((prev) => !prev)}
               />
             }

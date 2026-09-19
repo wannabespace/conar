@@ -54,8 +54,7 @@ const LastOpenedResource = ({
               variant="ghost"
               size="icon-xs"
               aria-label="Remove from recents"
-              tone="muted"
-              className="hover:bg-foreground/10 hover:text-foreground shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 focus-visible:opacity-100"
+              className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 focus-visible:opacity-100"
               onClick={onClose}
             />
           }

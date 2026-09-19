@@ -78,7 +78,7 @@ export const PasswordForm = ({
           <Button
             type="button"
             variant="link"
-            tone="muted"
+            className="text-muted-foreground hover:text-foreground"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon

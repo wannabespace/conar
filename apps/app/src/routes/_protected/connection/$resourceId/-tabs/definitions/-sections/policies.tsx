@@ -385,7 +385,7 @@ const PolicyInspector = ({
                 <field.Label>Using</field.Label>
                 <field.Textarea
                   data-mask
-                  mono
+                  className="font-mono"
                   disabled={readOnly || !expressions.using}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}
@@ -404,7 +404,7 @@ const PolicyInspector = ({
                 <field.Label>With check</field.Label>
                 <field.Textarea
                   data-mask
-                  mono
+                  className="font-mono"
                   disabled={readOnly || !expressions.check}
                   placeholder="user_id = auth.uid()"
                   spellCheck={false}

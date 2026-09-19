@@ -93,7 +93,7 @@ export const FilterChip = ({
           >
             {filter.column}
           </PopoverTrigger>
-          <PopoverContent padding="none">
+          <PopoverContent className="gap-0 p-0">
             <FiltersColumnSelector
               onSelect={(column) => {
                 onEdit({ ...filter, column, values })
@@ -109,7 +109,7 @@ export const FilterChip = ({
           >
             {filter.ref.label}
           </PopoverTrigger>
-          <PopoverContent padding="none">
+          <PopoverContent className="gap-0 p-0">
             <FiltersOperatorSelector
               onSelect={(operator) => {
                 onEdit({ ...filter, ref: operator, values })
@@ -134,10 +134,7 @@ export const FilterChip = ({
                   )}
                 </span>
               </PopoverTrigger>
-              <PopoverContent
-                padding="none"
-                className="max-h-[calc(100vh-10rem)]"
-              >
+              <PopoverContent className="max-h-[calc(100vh-10rem)] gap-0 p-0">
                 <FiltersValueSelector
                   column={filter.column}
                   operator={filter.ref.operator}

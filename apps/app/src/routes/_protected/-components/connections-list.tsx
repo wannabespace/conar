@@ -611,7 +611,11 @@ export const Empty = () => (
       Add a connection and it shows up here — open it in one click.
     </p>
 
-    <Button className="mt-5" render={<Link to="/create" />}>
+    <Button
+      className="mt-5"
+      nativeButton={false}
+      render={<Link to="/create" />}
+    >
       <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-4" />
       New connection
     </Button>
@@ -771,6 +775,7 @@ export const ConnectionsList = () => {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               className="text-foreground"
               render={<Link to="/create" />}
             >

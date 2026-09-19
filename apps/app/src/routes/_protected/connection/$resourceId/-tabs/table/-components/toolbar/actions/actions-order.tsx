@@ -148,7 +148,7 @@ export const ActionsOrder = () => {
               : 'Sort order')}
         </TooltipContent>
       </Tooltip>
-      <PopoverContent padding="none" className="w-72" side="bottom" align="end">
+      <PopoverContent className="w-72 gap-0 p-0" side="bottom" align="end">
         <Command
           value={highlighted}
           onValueChange={setHighlighted}

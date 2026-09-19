@@ -173,8 +173,7 @@ export const UserButton = ({
                     variant="ghost"
                     size="icon-xs"
                     aria-label={social.label}
-                    tone="muted"
-                    className="hover:bg-foreground/10 hover:text-foreground"
+                    className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                     onClick={() => window.open(social.href, '_blank')}
                   />
                 }

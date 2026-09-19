@@ -479,7 +479,7 @@ const valuesColumn: DefinitionsColumn<EnumItem> = {
   cell: (item, { search }) => (
     <span data-mask className="flex flex-wrap gap-1">
       {item.values.map((value) => (
-        <Badge key={value} variant="outline" mono>
+        <Badge key={value} variant="outline" className="font-mono">
           <HighlightText text={value} match={search} />
         </Badge>
       ))}

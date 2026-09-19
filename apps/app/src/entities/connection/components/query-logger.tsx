@@ -291,7 +291,7 @@ export const QueryLogger = ({
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  tone="muted"
+                  className="text-muted-foreground hover:text-foreground"
                   aria-label="Clear log"
                   disabled={queries.length === 0}
                   onClick={clearQueries}
@@ -320,7 +320,7 @@ export const QueryLogger = ({
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  tone="muted"
+                  className="text-muted-foreground hover:text-foreground"
                   aria-label="Close query logger"
                   onClick={() =>
                     store.set(

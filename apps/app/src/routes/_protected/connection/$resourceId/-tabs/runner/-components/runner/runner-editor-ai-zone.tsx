@@ -181,8 +181,7 @@ export const RunnerEditorAIZone = ({
                   '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
                 } as CSSProperties
               }
-              padding="none"
-              className="h-[min(30vh,var(--lines-height))] w-lg"
+              className="h-[min(30vh,var(--lines-height))] w-lg gap-0 p-0"
             >
               <MonacoDiff
                 originalValue={originalSql}

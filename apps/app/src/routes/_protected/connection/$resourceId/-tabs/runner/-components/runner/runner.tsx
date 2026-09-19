@@ -235,7 +235,7 @@ export const Runner = () => {
                       {queriesCount}
                     </span>
                   </PopoverTrigger>
-                  <PopoverContent padding="none" className="min-w-md">
+                  <PopoverContent className="min-w-md gap-0 p-0">
                     <RunnerQueries />
                   </PopoverContent>
                 </Popover>

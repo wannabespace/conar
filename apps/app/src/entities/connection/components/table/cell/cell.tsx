@@ -193,8 +193,7 @@ const CellForeignPopover = ({
       <TooltipContent side="right">See foreign record</TooltipContent>
     </Tooltip>
     <PopoverContent
-      padding="none"
-      className="h-[45vh] w-[80vw] overflow-hidden"
+      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -246,8 +245,7 @@ const CellReferencesPopover = ({
       </TooltipContent>
     </Tooltip>
     <PopoverContent
-      padding="none"
-      className="h-[45vh] w-[80vw] overflow-hidden"
+      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -405,10 +403,9 @@ const InteractiveTableCell = ({
               )}
           </PopoverTrigger>
           <PopoverContent
-            padding="none"
             className={cn(
               // The width fold outlasts the fade, so the properties need separate durations.
-              `w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
+              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
               isBig && `w-[min(50vw,60rem)]`
             )}
             onAnimationEnd={disableInteractIfPossible}

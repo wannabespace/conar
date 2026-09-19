@@ -199,8 +199,7 @@ export const RunnerResultsTable = ({
                       variant="ghost"
                       size="icon-xs"
                       aria-label="Clear search"
-                      tone="muted"
-                      className="hover:bg-foreground/10 hover:text-foreground absolute inset-y-0 right-1.5 my-auto"
+                      className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute inset-y-0 right-1.5 my-auto"
                       onClick={() => setSearch('')}
                     />
                   }
