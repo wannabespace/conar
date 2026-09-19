@@ -5,10 +5,11 @@ import {
   File01Icon,
   Globe02Icon,
   PlusSignIcon,
+  Tick02Icon,
   UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/connection-constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
@@ -32,7 +33,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
-import type { ComponentRef } from 'react'
+import type { CSSProperties, ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -61,14 +62,25 @@ interface ConnectionGroup {
   resources: ConnectionResource[]
 }
 
+const CurrentTick = ({ className }: { className?: string }) => (
+  <HugeiconsIcon
+    icon={Tick02Icon}
+    strokeWidth={2}
+    aria-label="Current"
+    className={cn('text-muted-foreground size-3.5 shrink-0', className)}
+  />
+)
+
 const ConnectionSubMenu = ({
   group: { connection, resources },
   firstResource,
+  currentResourceId,
   onRemove,
   onNavigate,
 }: {
   group: ConnectionGroup
   firstResource: ConnectionResource
+  currentResourceId: string | undefined
   onRemove: (connection: Connection) => void
   onNavigate: () => void
 }) => {
@@ -90,9 +102,12 @@ const ConnectionSubMenu = ({
         {connection.color && (
           <span
             aria-hidden
-            className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: connection.color }}
+            className="size-2 shrink-0 rounded-full bg-(--color)"
+            style={{ '--color': connection.color } as CSSProperties}
           />
+        )}
+        {resources.some((resource) => resource.id === currentResourceId) && (
+          <CurrentTick className="-ml-0.5" />
         )}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="max-h-[60vh] min-w-48 overflow-auto">
@@ -109,6 +124,9 @@ const ConnectionSubMenu = ({
             <span data-mask className="truncate">
               {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
             </span>
+            {resource.id === currentResourceId && (
+              <CurrentTick className="ml-auto" />
+            )}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
@@ -131,10 +149,12 @@ const ConnectionSubMenu = ({
 const ConnectionsDropdown = ({
   groups,
   current,
+  currentResourceId,
   onRemove,
 }: {
   groups: ConnectionGroup[]
   current: Connection | undefined
+  currentResourceId: string | undefined
   onRemove: (connection: Connection) => void
 }) => {
   const [open, setOpen] = useState(false)
@@ -155,8 +175,8 @@ const ConnectionsDropdown = ({
             {current.color && (
               <span
                 aria-hidden
-                className="size-2 shrink-0 rounded-full"
-                style={{ backgroundColor: current.color }}
+                className="size-2 shrink-0 rounded-full bg-(--color)"
+                style={{ '--color': current.color } as CSSProperties}
               />
             )}
           </>
@@ -188,6 +208,7 @@ const ConnectionsDropdown = ({
               key={group.connection.id}
               group={group}
               firstResource={firstResource}
+              currentResourceId={currentResourceId}
               onRemove={onRemove}
               onNavigate={() => setOpen(false)}
             />
@@ -246,6 +267,7 @@ const ResourcesDropdown = ({
           <span data-mask className="truncate">
             {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
           </span>
+          {resource.id === current.id && <CurrentTick className="ml-auto" />}
         </DropdownMenuItem>
       ))}
     </DropdownMenuContent>
@@ -303,6 +325,7 @@ const ConnectionsBreadcrumb = ({
       <ConnectionsDropdown
         groups={groups}
         current={current?.connection}
+        currentResourceId={resourceId}
         onRemove={onRemove}
       />
       {current && currentGroup && (
@@ -348,7 +371,6 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
             variant="ghost"
             aria-label="Query logger"
             aria-pressed={loggerOpened}
-            className={cn(loggerOpened && 'bg-foreground/10 text-foreground')}
             onClick={toggleLogger}
           />
         }

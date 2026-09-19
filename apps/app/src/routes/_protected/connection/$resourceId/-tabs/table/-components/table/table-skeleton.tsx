@@ -7,6 +7,7 @@ import {
 import { useTableContext } from '@tamery/table/hooks'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
+import type { CSSProperties } from 'react'
 
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell/utils'
 
@@ -36,19 +37,29 @@ export const TableHeaderSkeleton = ({
       <div
         // oxlint-disable-next-line react/no-array-index-key
         key={columnIndex}
-        className="flex shrink-0 flex-col justify-center px-2 py-1.5 first:pl-4"
-        style={{ width: `${DEFAULT_COLUMN_WIDTH}px` }}
+        className="flex w-(--column-width) shrink-0 flex-col justify-center px-2 py-1.5 first:pl-4"
+        style={
+          { '--column-width': `${DEFAULT_COLUMN_WIDTH}px` } as CSSProperties
+        }
       >
         <div className="flex h-4 items-center">
           <Skeleton
-            className="h-3 rounded-md"
-            style={{ width: `${25 + pseudoRandom(columnIndex + 40) * 35}%` }}
+            className="h-3 w-(--bar-width) rounded-md"
+            style={
+              {
+                '--bar-width': `${25 + pseudoRandom(columnIndex + 40) * 35}%`,
+              } as CSSProperties
+            }
           />
         </div>
         <div className="flex h-4 items-center">
           <Skeleton
-            className="h-2.5 rounded-md"
-            style={{ width: `${15 + pseudoRandom(columnIndex + 80) * 15}%` }}
+            className="h-2.5 w-(--bar-width) rounded-md"
+            style={
+              {
+                '--bar-width': `${15 + pseudoRandom(columnIndex + 80) * 15}%`,
+              } as CSSProperties
+            }
           />
         </div>
       </div>
@@ -87,13 +98,15 @@ export const TableBodySkeleton = ({
         <div
           key={rowIndex}
           className={cn(
-            'flex w-fit min-w-full items-center',
+            'flex h-(--row-height) w-fit min-w-full items-center opacity-(--row-opacity)',
             rowIndex % 2 === 1 && 'bg-foreground/3'
           )}
-          style={{
-            height: `${DEFAULT_ROW_HEIGHT}px`,
-            opacity: 1 - rowIndex / ROWS_COUNT,
-          }}
+          style={
+            {
+              '--row-height': `${DEFAULT_ROW_HEIGHT}px`,
+              '--row-opacity': 1 - rowIndex / ROWS_COUNT,
+            } as CSSProperties
+          }
         >
           {selectable && (
             <div className="shrink-0 p-2 pl-4">
@@ -106,15 +119,17 @@ export const TableBodySkeleton = ({
           {cols.map((column, columnIndex) => (
             <div
               key={column.id}
-              className="flex h-full shrink-0 items-center px-2 first:pl-4"
-              style={{ width: `${column.size}px` }}
+              className="flex h-full w-(--column-width) shrink-0 items-center px-2 first:pl-4"
+              style={{ '--column-width': `${column.size}px` } as CSSProperties}
             >
               <Skeleton
-                className="h-3.5 rounded-md"
-                style={{
-                  width: `${barWidth(rowIndex, columnIndex)}%`,
-                  animationDelay: `${rowIndex * STAGGER_MS}ms`,
-                }}
+                className="h-3.5 w-(--bar-width) rounded-md"
+                style={
+                  {
+                    '--bar-width': `${barWidth(rowIndex, columnIndex)}%`,
+                    animationDelay: `${rowIndex * STAGGER_MS}ms`,
+                  } as CSSProperties
+                }
               />
             </div>
           ))}

@@ -34,7 +34,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import type { Dispatch, SetStateAction } from 'react'
+import type { CSSProperties, Dispatch, SetStateAction } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { StickToBottomInstance } from 'use-stick-to-bottom'
@@ -232,7 +232,7 @@ const CellPopoverToolbar = ({
               <Button
                 variant="outline"
                 size="icon-xs"
-                className="text-muted-foreground"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsBig((prev) => !prev)}
               />
             }
@@ -266,10 +266,7 @@ const CellPopoverToolbar = ({
                 variant="outline"
                 size="xs"
                 aria-pressed={isRaw}
-                className={cn(
-                  'text-muted-foreground',
-                  isRaw && 'bg-accent text-foreground'
-                )}
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsRaw((prev) => !prev)}
               />
             }
@@ -475,10 +472,10 @@ export const CellPopoverContent = ({
           value={isRaw ? rawValue : String(newValue ?? '')}
           language={monacoLanguageForColumn(column?.type)}
           className={cn(
-            'w-full transition-[height] duration-300',
+            'h-(--compact-height) w-full transition-[height] duration-300',
             isBig && 'h-[min(45vh,40rem)]!'
           )}
-          style={{ height: compactHeight }}
+          style={{ '--compact-height': `${compactHeight}px` } as CSSProperties}
           onChange={isRaw ? setRawValue : setNewValue}
           options={monacoOptions}
         />

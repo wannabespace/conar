@@ -38,11 +38,11 @@ import { useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { ReactFlowNode } from '~/entities/connection/components/react-flow-node'
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
-import type { columnType } from '~/entities/connection/queries/columns'
-import type { constraintsType } from '~/entities/connection/queries/constraints'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import type { constraintsType } from '~/entities/connection/queries/constraints/list'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import type { columnType } from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { setVisualizerViewport } from '~/entities/connection/store/helpers/visualizer'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
@@ -125,9 +125,13 @@ const Visualizer = ({
     recalculateLayoutEvent()
   }, [schema])
 
-  useHotkey('Mod+F', () => {
-    searchRef.current?.focus()
-  })
+  useHotkey(
+    'Mod+F',
+    () => {
+      searchRef.current?.focus()
+    },
+    { conflictBehavior: 'replace' }
+  )
 
   return (
     <div className="relative size-full min-h-0 flex-1 overflow-hidden rounded-lg">

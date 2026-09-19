@@ -6,6 +6,8 @@ import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
+import { sectionAvailable } from '~/entities/connection/capabilities'
+import { setNavigator } from '~/entities/connection/store/helpers/navigator'
 import {
   ensureTab,
   setActiveTab,
@@ -60,7 +62,7 @@ const TabPage = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         initial={{ opacity: 0 }}
-        transition={{ duration: 0.1 }}
+        transition={{ duration: 0.06 }}
       >
         <TabContent tab={tab} />
       </motion.div>
@@ -74,16 +76,26 @@ export const Route = createFileRoute(
   component: TabPage,
   validateSearch: type({
     'filters?': 'object[]' as type.cast<ActiveFilter[]>,
+    'open?': 'string',
     'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
+    'schema?': 'string',
   }),
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ context, params }) => {
     const tab = parseTabId(params.tabId)
 
-    if (!tab) {
+    if (
+      !tab ||
+      (tab.type === 'definitions' &&
+        !sectionAvailable(tab.section, context.connection.type))
+    ) {
       throw redirect({
         params: { resourceId: params.resourceId },
         to: '/connection/$resourceId',
       })
+    }
+
+    if (tab.type === 'definitions' || tab.type === 'visualizer') {
+      setNavigator(params.resourceId, 'definitions')
     }
 
     return { tab }

@@ -117,6 +117,7 @@ interface PgConstraint {
   confkey: number[]
   confdeltype: string
   confupdtype: string
+  conindid: number
 }
 
 /**
@@ -127,6 +128,10 @@ interface PgIndex {
   indrelid: number
   indexrelid: number
   indkey: unknown
+  indoption: unknown
+  indpred: string | null
+  indnatts: number
+  indnkeyatts: number
   indisunique: boolean
   indisprimary: boolean
 }

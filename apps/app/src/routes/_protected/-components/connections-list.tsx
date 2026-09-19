@@ -15,7 +15,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import {
   CONNECTION_RESOURCE_ROOT_LABEL,
   CONNECTION_RESOURCE_ROOT_SYMBOL,
-} from '@tamery/shared/connection-constants'
+} from '@tamery/shared/constants'
 import { connectionLabels } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
@@ -55,8 +55,8 @@ import { useCollections } from '~/entities/collections'
 import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
 import type { Connection } from '~/entities/connection/core/sync'
-import { connectionResourcesQueryOptions } from '~/entities/connection/queries/connection-resources'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
+import { connectionResourcesQueryOptions } from '~/entities/connection/queries/connection/resources'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { getConnectionStore } from '~/entities/connection/store/stores'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
@@ -498,7 +498,7 @@ const ConnectionCard = ({
           'group relative flex h-9 items-center gap-3 pr-2 pl-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
           selectedResource &&
             canOpenResource &&
-            'hover:bg-popover has-[[data-resource-link]:hover]:bg-popover'
+            'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
         )}
       >
         {selectedResource && canOpenResource && (
@@ -798,7 +798,7 @@ export const ConnectionsList = () => {
                   {group.label ?? 'Other'}
                 </h3>
               )}
-              <div className="bg-card ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring-[0.5px]">
+              <div className="bg-card ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
                 <AnimatePresence initial={false} mode="popLayout">
                   {group.connections.map((connection) => (
                     <ConnectionCard

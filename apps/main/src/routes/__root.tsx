@@ -72,7 +72,7 @@ const RootComponent = () => {
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
+      <body className={cn(`bg-body relative`)}>
         <QueryClientProvider client={router.options.context.queryClient}>
           <TooltipProvider>
             <ThemeObserver />

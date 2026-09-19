@@ -31,9 +31,9 @@ import { ExportDataMenu } from '~/components/export-data'
 import {
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
-} from '~/entities/connection/queries/rows'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
-import { resourceTableTotalQueryOptions } from '~/entities/connection/queries/total'
+} from '~/entities/connection/queries/rows/list'
+import { resourceTableTotalQueryOptions } from '~/entities/connection/queries/rows/total'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 

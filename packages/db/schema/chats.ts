@@ -1,4 +1,8 @@
-import type { AppMessagePart, AppUIMessage } from '@tamery/ai/message'
+import type {
+  AppMessagePart,
+  AppMessageMetadata,
+  AppUIMessage,
+} from '@tamery/ai/message'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
   createInsertSchema,
@@ -41,7 +45,7 @@ export const chatsMessages = d.snakeCase.table(
       .uuid()
       .references(() => chats.id, { onDelete: 'cascade' })
       .notNull(),
-    metadata: encryptedJson().$type<Record<string, unknown>>(),
+    metadata: encryptedJson().$type<AppMessageMetadata>(),
     role: d.text().$type<AppUIMessage['role']>().notNull(),
   },
   (t) => [d.index().on(t.chatId), d.index().on(t.role)]

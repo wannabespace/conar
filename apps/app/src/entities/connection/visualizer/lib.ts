@@ -5,8 +5,8 @@ import { Position } from '@xyflow/react'
 import type { NodeType } from '~/entities/connection/components/react-flow-node'
 import type { Column } from '~/entities/connection/components/table/cell/utils'
 import { getColumnUiType } from '~/entities/connection/components/table/cell/utils'
-import type { columnType } from '~/entities/connection/queries/columns'
-import type { constraintsType } from '~/entities/connection/queries/constraints'
+import type { constraintsType } from '~/entities/connection/queries/constraints/list'
+import type { columnType } from '~/entities/connection/queries/tables/columns'
 
 type ForeignKeyConstraint = typeof constraintsType.infer & {
   column: string

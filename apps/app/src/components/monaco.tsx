@@ -50,7 +50,7 @@ const githubTheme = (
 monaco.editor.defineTheme(
   'github-light',
   githubTheme('vs', {
-    background: '#fafafb',
+    background: '#ffffff',
     comment: '#6a737d',
     foreground: '#24292e',
     function: '#6f42c1',
@@ -62,7 +62,7 @@ monaco.editor.defineTheme(
 monaco.editor.defineTheme(
   'github-dark',
   githubTheme('vs-dark', {
-    background: '#1e2023',
+    background: '#26272b',
     comment: '#6a737d',
     foreground: '#e1e4e8',
     function: '#b392f0',

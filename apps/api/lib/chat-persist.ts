@@ -107,6 +107,30 @@ export const chatPersist = {
 
     return messagesFromPartRows(rows)
   },
+  markStopped: async (data: { chatId: string; userId: string }) => {
+    const lastMessage = await db.query.chatsMessages.findFirst({
+      columns: { id: true, metadata: true, role: true },
+      orderBy: { createdAt: 'desc' },
+      where: { chatId: { eq: data.chatId } },
+    })
+
+    if (lastMessage?.role !== 'user') {
+      return
+    }
+
+    const [updated] = await db
+      .update(chatsMessages)
+      .set({ metadata: { ...lastMessage.metadata, stopped: true } })
+      .where(eq(chatsMessages.id, lastMessage.id))
+      .returning()
+
+    if (updated) {
+      chatsMessagesPublisher.publish(data.userId, {
+        type: 'update',
+        value: updated,
+      })
+    }
+  },
   persistMessage: async (data: {
     chatId: string
     message: AppUIMessage

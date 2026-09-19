@@ -48,3 +48,28 @@ export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
 export const API_KEY_PERMISSIONS = {
   connections: ['read', 'write'] as const,
 }
+
+export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol(
+  'CONNECTION_RESOURCE_ROOT'
+)
+export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
+
+export const PROXY_ERROR_MESSAGE =
+  "We can't connect to the proxy, please check your connection and try again."
+
+export const RECONNECT_ERROR_PATTERNS = [
+  'econnreset',
+  'etimedout',
+  'epipe',
+  'econnrefused',
+  'enotfound',
+  'connection lost',
+  'socket hang up',
+  'socketerror',
+  'network',
+  'application failed to respond',
+  'failed to fetch',
+  'connection terminated unexpectedly',
+  'the database system is not yet accepting connections',
+  'the database system is starting up',
+]

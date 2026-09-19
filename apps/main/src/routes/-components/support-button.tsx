@@ -66,14 +66,13 @@ export const SupportButton = () => {
           </DialogDescription>
         </DialogHeader>
         <div>
-          <form onSubmit={handleSubmit} className="space-y-2">
+          <form id="support-form" onSubmit={handleSubmit} className="space-y-2">
             <Field>
               <FieldLabel htmlFor="support-message">Message</FieldLabel>
               <Textarea
                 id="support-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"
               />
@@ -84,7 +83,11 @@ export const SupportButton = () => {
           <DialogClose render={<Button type="button" variant="outline" />}>
             Cancel
           </DialogClose>
-          <Button type="submit" disabled={loading || !message}>
+          <Button
+            type="submit"
+            form="support-form"
+            disabled={loading || !message}
+          >
             <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>
         </DialogFooter>

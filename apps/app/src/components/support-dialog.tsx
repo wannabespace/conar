@@ -65,7 +65,6 @@ export const SupportDialog = ({
                 id="support-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"
               />

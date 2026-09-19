@@ -5,6 +5,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { useFieldInvalidMark } from '@tamery/ui/components/field'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -35,28 +36,33 @@ const SelectTrigger = ({
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: SelectSize
-}) => (
-  <SelectPrimitive.Trigger
-    data-slot="select-trigger"
-    data-size={size}
-    className={cn(
-      `bg-input ring-foreground/4 hover:text-foreground focus-visible:focus-ring aria-invalid:border-destructive/60 aria-invalid:ring-destructive/30 data-placeholder:text-muted-foreground flex w-fit items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 data-popup-open:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon
-      render={
-        <HugeiconsIcon
-          icon={ArrowDown01Icon}
-          strokeWidth={2}
-          className="text-muted-foreground pointer-events-none size-4"
-        />
-      }
-    />
-  </SelectPrimitive.Trigger>
-)
+}) => {
+  const invalidMark = useFieldInvalidMark()
+
+  return (
+    <SelectPrimitive.Trigger
+      data-slot="select-trigger"
+      data-size={size}
+      aria-invalid={invalidMark ? true : undefined}
+      className={cn(
+        `bg-input ring-foreground/4 hover:ring-foreground/12 data-popup-open:ring-foreground/12 hover:text-foreground focus-visible:focus-ring data-placeholder:text-muted-foreground hover:bg-accent data-popup-open:bg-accent aria-invalid:invalid-ring flex w-fit items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring transition-[color,background-color,box-shadow] duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon
+        render={
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground pointer-events-none size-4"
+          />
+        }
+      />
+    </SelectPrimitive.Trigger>
+  )
+}
 
 const SelectScrollUpButton = ({
   className,
@@ -119,7 +125,7 @@ const SelectContent = ({
         data-align-trigger={alignItemWithTrigger}
         data-size={size}
         className={cn(
-          `bg-popover text-popover-foreground ring-foreground/4 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl shadow-xl ring-[0.5px] ease-[cubic-bezier(0.32,0.72,0,1)] data-closed:duration-100 data-open:duration-150 data-[align-trigger=true]:animate-none data-[size=xs]:rounded-lg`,
+          `bg-popover text-popover-foreground ring-foreground/4 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl shadow-xl ring ease-[cubic-bezier(0.32,0.72,0,1)] data-closed:duration-100 data-open:duration-150 data-[align-trigger=true]:animate-none data-[size=xs]:rounded-lg`,
           className
         )}
         {...props}
@@ -151,7 +157,7 @@ const SelectItem = ({
   <SelectPrimitive.Item
     data-slot="select-item"
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm font-[450] tracking-wide outline-hidden select-none in-data-[size=xs]:min-h-6 in-data-[size=xs]:gap-1.5 in-data-[size=xs]:rounded-sm in-data-[size=xs]:py-1 in-data-[size=xs]:pr-7 in-data-[size=xs]:text-xs data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 in-data-[size=xs]:[&_svg:not([class*='size-'])]:size-3 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2`,
+      `focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm outline-hidden select-none in-data-[size=xs]:min-h-6 in-data-[size=xs]:gap-1.5 in-data-[size=xs]:rounded-sm in-data-[size=xs]:py-1 in-data-[size=xs]:pr-7 in-data-[size=xs]:text-xs data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 in-data-[size=xs]:[&_svg:not([class*='size-'])]:size-3 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2`,
       className
     )}
     {...props}

@@ -155,8 +155,12 @@ interface Statistics {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   INDEX_NAME: string
-  COLUMN_NAME: string
+  COLUMN_NAME: string | null
+  SEQ_IN_INDEX: number
   NON_UNIQUE: number
+  SUB_PART: number | null
+  INDEX_TYPE: string
+  COLLATION: string | null
 }
 
 /**

@@ -153,7 +153,7 @@ const AllPlatforms = () => (
 )
 
 const RouteComponent = () => (
-  <div className="flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-[10vh]">
+  <div className="flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-24">
     <div className="mx-auto flex w-full max-w-2xl flex-col items-center text-center">
       <AppLogoSquare className="mb-4 size-24 sm:mb-6 sm:size-32" />
       <h1 className="mb-2 px-2 text-2xl font-medium tracking-tight sm:mb-3 sm:text-3xl md:text-4xl">

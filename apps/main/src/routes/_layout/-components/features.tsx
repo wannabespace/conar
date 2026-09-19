@@ -302,9 +302,7 @@ const CloudSync = () => (
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-          <span className="font-medium text-green-600 dark:text-green-400">
-            Synced
-          </span>
+          <span className="text-success font-medium">Synced</span>
           <span className="text-muted-foreground hidden sm:block">
             without password
           </span>
@@ -328,9 +326,7 @@ const CloudSync = () => (
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1 text-xs">
-          <span className="font-medium text-green-600 dark:text-green-400">
-            Synced
-          </span>
+          <span className="text-success font-medium">Synced</span>
         </div>
       </div>
     </div>

@@ -75,7 +75,7 @@ const Toaster = () => {
             `,
             closeButton: `
               absolute -top-1.5 -left-1.5 flex size-5 items-center justify-center
-              rounded-full bg-popover text-muted-foreground shadow-xs ring-[0.5px]
+              rounded-full bg-popover text-muted-foreground shadow-xs ring
               ring-foreground/4
               hover:text-foreground
             `,

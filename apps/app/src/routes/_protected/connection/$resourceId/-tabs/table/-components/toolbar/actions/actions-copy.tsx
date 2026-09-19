@@ -42,7 +42,7 @@ import type {
   SchemaParams,
 } from '~/entities/connection/generators/types'
 import type { GeneratorFormat } from '~/entities/connection/generators/utils'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
 
 import { useTableColumnsContext } from '../../../-lib/columns'
 import { useTablePageStore } from '../../../-lib/store'

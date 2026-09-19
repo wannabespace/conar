@@ -1,197 +1,302 @@
-import { FlashIcon, LayoutTable02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { FlashIcon } from '@hugeicons/core-free-icons'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
-import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+import { Switch } from '@tamery/ui/components/switch'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers'
+import { customQuery } from '~/entities/connection/queries/connection/custom'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
+import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
+import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
+import { dropTriggerIfExistsQuery } from '~/entities/connection/queries/triggers/drop-if-exists'
+import type { triggersType } from '~/entities/connection/queries/triggers/list'
+import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
+import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
+import { sqlDialects } from '~/entities/connection/utils/monaco'
 
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
-import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
+import {
+  DefinitionForm,
+  ExistingDefinitionForm,
+} from '../-components/definition-form'
+import type { SectionInspectorProps } from '../-components/inspector'
+import {
+  InspectorHeader,
+  InspectorOption,
+  InspectorSection,
+} from '../-components/inspector'
+import { DefinitionsPage } from '../-components/page'
+import type { FilterOption } from '../-components/pickers'
+import { FilterSelect } from '../-components/pickers'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import type { DefinitionsColumn } from '../-lib/columns'
+import { monoColumn, nameColumn } from '../-lib/columns'
 
-const eventFilterOptions = [
-  { label: 'All Events', value: 'all' },
+type TriggerItem = typeof triggersType.infer
+
+const eventOptions: FilterOption<string>[] = [
+  { label: 'All events', value: 'all' },
   { label: 'Insert', value: 'INSERT' },
   { label: 'Update', value: 'UPDATE' },
   { label: 'Delete', value: 'DELETE' },
   { label: 'Truncate', value: 'TRUNCATE' },
 ]
 
-const timingFilterOptions = [
-  { label: 'All Timings', value: 'all' },
+const timingOptions: FilterOption<string>[] = [
+  { label: 'All timings', value: 'all' },
   { label: 'Before', value: 'BEFORE' },
   { label: 'After', value: 'AFTER' },
-  { label: 'Instead Of', value: 'INSTEAD OF' },
+  { label: 'Instead of', value: 'INSTEAD OF' },
 ]
 
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+const triggerKey = (item: TriggerItem) =>
+  `${item.schema}.${item.table}.${item.name}.${item.event}`
 
-export const Triggers = () => {
-  const { connectionResource } = useRouteContext()
-  const { data: triggers, isPending } = useQuery(
-    resourceTriggersQueryOptions({ connectionResource })
-  )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterEvent, setFilterEvent] = useState('all')
-  const [filterTiming, setFilterTiming] = useState('all')
+const TOGGLE_TYPES = new Set<ConnectionType>([
+  ConnectionType.Postgres,
+  ConnectionType.MSSQL,
+])
 
-  const filteredTriggers =
-    triggers?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterEvent === 'all' || item.event.includes(filterEvent)) &&
-        (filterTiming === 'all' || filterTiming === item.timing) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.table.toLowerCase().includes(search.toLowerCase()) ||
-          item.functionName?.toLowerCase().includes(search.toLowerCase()))
-    ) ?? []
+const templates: Record<ConnectionType, (schema: string) => string> = {
+  clickhouse: () => '',
+  mssql: (schema) =>
+    `CREATE OR ALTER TRIGGER [${schema}].[new_trigger]\nON [${schema}].[table_name]\nAFTER INSERT\nAS\nBEGIN\n  SET NOCOUNT ON;\nEND`,
+  mysql: (schema) =>
+    `CREATE TRIGGER \`${schema}\`.\`new_trigger\`\nBEFORE INSERT ON \`${schema}\`.\`table_name\`\nFOR EACH ROW\nBEGIN\n\nEND`,
+  postgres: (schema) =>
+    `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
+}
+
+type ToggleTrigger = ((item: TriggerItem, enabled: boolean) => void) | undefined
+
+// CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
+const REPLACES_TRIGGERS_FROM = 14
+
+const useDropsFirst = ({
+  connection,
+  type,
+}: Pick<SectionInspectorProps<TriggerItem>, 'connection' | 'type'>) => {
+  const { data: version } = useQuery({
+    ...connectionVersionQueryOptions(connection),
+    enabled: type === ConnectionType.Postgres,
+  })
+
+  if (type === ConnectionType.MySQL) {
+    return true
+  }
+  if (type !== ConnectionType.Postgres) {
+    return false
+  }
+
+  return version === undefined
+    ? undefined
+    : Number(version.split('.')[0]) < REPLACES_TRIGGERS_FROM
+}
+
+const TriggerInspector = ({
+  can,
+  connection,
+  connectionResource,
+  item: snapshot,
+  onOpenChange,
+  queryKey,
+  rows,
+  run,
+  selectedSchema,
+  toggle,
+  type,
+}: SectionInspectorProps<TriggerItem> & {
+  rows: TriggerItem[]
+  toggle: ToggleTrigger
+}) => {
+  const item =
+    snapshot &&
+    (rows.find((row) => triggerKey(row) === triggerKey(snapshot)) ?? snapshot)
+  const dropsFirst = useDropsFirst({ connection, type })
 
   return (
     <>
-      <DefinitionsHeader>Triggers</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search triggers"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-        />
-        <Select
-          value={filterEvent}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterEvent(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Event">
-              {(value) =>
-                value
-                  ? eventFilterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Event'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {eventFilterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filterTiming}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterTiming(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Timing">
-              {(value) =>
-                value
-                  ? timingFilterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Timing'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {timingFilterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SchemaSelect
-          schemas={schemas}
-          selectedSchema={selectedSchema}
-          setSelectedSchema={setSelectedSchema}
-        />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredTriggers.length === 0 && (
-          <DefinitionsEmptyState
-            title="No triggers found"
-            description="This schema doesn't have any triggers matching your filter."
-          />
-        )}
-
-        {filteredTriggers.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}-${item.event}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
+      <InspectorHeader
+        description={
+          item ? `${item.schema}.${item.table}` : (selectedSchema ?? '')
+        }
+        title={item ? item.name : 'New trigger'}
+      />
+      {item && toggle && (
+        <InspectorSection title="Status">
+          <InspectorOption
+            htmlFor="trigger-enabled"
+            title="Enabled"
+            description="A disabled trigger stays defined but never fires."
           >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <HugeiconsIcon
-                      icon={FlashIcon}
-                      strokeWidth={2}
-                      className="text-primary size-4"
-                    />
-                    <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">{item.timing}</Badge>
-                    <Badge variant="secondary">{item.event}</Badge>
-                    {!item.enabled && (
-                      <Badge variant="destructive">Disabled</Badge>
-                    )}
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    <Badge variant="outline">
-                      <HugeiconsIcon
-                        icon={LayoutTable02Icon}
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                      <HighlightText text={item.table} match={search} />
-                    </Badge>
-                    {item.functionName && (
-                      <>
-                        <span>calls</span>
-                        <Badge variant="outline">
-                          <HighlightText
-                            text={item.functionName}
-                            match={search}
-                          />
-                        </Badge>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </CardMotion>
-        ))}
-      </DefinitionsGrid>
+            <Switch
+              id="trigger-enabled"
+              size="sm"
+              checked={item.enabled !== false}
+              onCheckedChange={(enabled) => toggle(item, enabled)}
+            />
+          </InspectorOption>
+        </InspectorSection>
+      )}
+      {item ? (
+        <ExistingDefinitionForm
+          dropFirst={dropTriggerIfExistsQuery({
+            name: item.name,
+            schema: item.schema,
+            table: item.table,
+          })}
+          dropsFirst={dropsFirst}
+          name={item.name}
+          noun="trigger"
+          onSaved={() => onOpenChange(false)}
+          query={triggerDefinitionQueryOptions({ connectionResource, item })}
+          queryKey={queryKey}
+          readOnly={!can.edit}
+          run={run}
+          type={type}
+        />
+      ) : (
+        <DefinitionForm
+          hint="A trigger names its table, its timing and the function it runs."
+          initial={templates[type](selectedSchema ?? '')}
+          isNew
+          language={sqlDialects[type]}
+          onSaved={() => onOpenChange(false)}
+          queryKey={queryKey}
+          readOnly={!can.create}
+          save={(text) => run(customQuery({ query: text }))}
+          success="Trigger created"
+        />
+      )}
     </>
+  )
+}
+
+const columns: DefinitionsColumn<TriggerItem>[] = [
+  nameColumn({
+    after: (item: TriggerItem) =>
+      item.enabled === false && <Badge variant="destructive">Disabled</Badge>,
+    icon: () => FlashIcon,
+    width: 'w-68',
+  }),
+  monoColumn({
+    header: 'Table',
+    valueOf: (item: TriggerItem) => item.table,
+    width: 'w-44',
+  }),
+  {
+    cell: (item) => (
+      <span className="text-muted-foreground">
+        {uppercaseFirst(item.timing.toLowerCase())}
+      </span>
+    ),
+    header: 'Timing',
+    width: 'w-32',
+  },
+  {
+    cell: (item) => (
+      <span className="text-muted-foreground">
+        {item.event
+          .split(' OR ')
+          .map((event) => uppercaseFirst(event.toLowerCase()))
+          .join(', ')}
+      </span>
+    ),
+    header: 'Event',
+    width: 'w-44',
+  },
+  monoColumn({
+    grow: true,
+    header: 'Function',
+    valueOf: (item: TriggerItem) => item.functionName,
+  }),
+]
+
+export const Triggers = () => {
+  const state = useDefinitionsState({ section: 'triggers' })
+  const { run, search, selectedSchema } = state
+  const query = resourceTriggersQueryOptions({
+    connectionResource: state.connectionResource,
+  })
+  const { data: triggers = [], isPending } = useQuery(query)
+  const [event, setEvent] = useState('all')
+  const [timing, setTiming] = useState('all')
+
+  const inSchema = triggers.filter((item) => item.schema === selectedSchema)
+  const rows = inSchema.filter(
+    (item) =>
+      (event === 'all' || item.event.includes(event)) &&
+      (timing === 'all' || timing === item.timing) &&
+      matchesSearch(search, item.name, item.table, item.functionName)
+  )
+
+  const toggleMutation = useDefinitionMutation({
+    mutationFn: ({ enabled, item }: { enabled: boolean; item: TriggerItem }) =>
+      run(
+        setTriggerEnabledQuery({
+          enabled,
+          name: item.name,
+          schema: item.schema,
+          table: item.table,
+        })
+      ),
+    queryKey: query.queryKey,
+    success: ({ enabled, item }) =>
+      `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`,
+  })
+  const toggle: ToggleTrigger = TOGGLE_TYPES.has(state.type)
+    ? (item, enabled) => toggleMutation.mutate({ enabled, item })
+    : undefined
+
+  return (
+    <DefinitionsPage
+      title="Triggers"
+      noun="trigger"
+      icon={FlashIcon}
+      items={rows}
+      inSchema={inSchema.length}
+      loading={isPending}
+      keyOf={triggerKey}
+      columns={columns}
+      state={state}
+      toolbar={
+        <>
+          <FilterSelect
+            options={eventOptions}
+            value={event}
+            onValueChange={setEvent}
+          />
+          <FilterSelect
+            options={timingOptions}
+            value={timing}
+            onValueChange={setTiming}
+          />
+        </>
+      }
+      queryKey={query.queryKey}
+      dropItem={(item) =>
+        run(
+          dropTriggerQuery({
+            name: item.name,
+            schema: item.schema,
+            table: item.table,
+          })
+        )
+      }
+      rowMenu={(item) =>
+        toggle
+          ? [
+              {
+                label: item.enabled === false ? 'Enable' : 'Disable',
+                onSelect: () => toggle(item, item.enabled === false),
+              },
+            ]
+          : []
+      }
+      Inspector={TriggerInspector}
+      inspectorProps={{ ...state, rows, toggle }}
+    />
   )
 }

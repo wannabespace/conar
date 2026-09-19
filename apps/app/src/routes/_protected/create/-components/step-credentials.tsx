@@ -43,7 +43,7 @@ export const StepCredentials = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Field className="gap-2">
+        <Field>
           <FieldLabel htmlFor={id}>Connection string</FieldLabel>
           <Input
             id={id}

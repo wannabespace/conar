@@ -34,7 +34,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
@@ -610,9 +610,13 @@ export const FilterSearchBar = ({
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim()
 
-  useHotkey('Mod+F', () => {
-    inputRef.current?.focus()
-  })
+  useHotkey(
+    'Mod+F',
+    () => {
+      inputRef.current?.focus()
+    },
+    { conflictBehavior: 'replace' }
+  )
 
   const trimmedQuery = query.trim()
   const columnQuery = trimmedQuery.toLowerCase()
@@ -714,7 +718,7 @@ export const FilterSearchBar = ({
       onValueChange={setHighlighted}
       className="relative min-w-0 flex-1"
     >
-      <div className="bg-input ring-foreground/4 has-[input:focus]:focus-ring flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200">
+      <div className="bg-input ring-foreground/4 has-[input:focus]:focus-ring flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring transition-[color,box-shadow] duration-200">
         <LoadingContent
           className="text-muted-foreground pointer-events-none mr-1 size-4 shrink-0"
           loading={isPending}
@@ -752,7 +756,7 @@ export const FilterSearchBar = ({
             />
           ))}
           {stage.step !== 'idle' && (
-            <span className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring-[0.5px]">
+            <span className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring">
               <span
                 data-mask
                 className="flex items-center px-1.5 text-xs font-medium"

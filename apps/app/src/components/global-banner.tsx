@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { useDelay } from '@tamery/ui/hooks/use-delay'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -77,6 +78,8 @@ const typeConfig = {
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode; className: string }>
 
+const INITIAL_DELAY = 1000
+
 const bannerDismissedValue = createWebStorageValue({
   defaultValue: [],
   key: 'banner-dismissed',
@@ -118,9 +121,11 @@ export const GlobalBanner = () => {
     selector: (state) => state.isOnline,
   })
   const dismissed = useSubscription(bannerDismissedValue)
+  const delayPassed = useDelay(INITIAL_DELAY)
 
   const { data = [] } = useQuery(
     orpc.banner.queryOptions({
+      enabled: delayPassed,
       refetchInterval: 1000 * 60 * 5,
       select: (bannerItems) => {
         const filtered = bannerItems?.filter(

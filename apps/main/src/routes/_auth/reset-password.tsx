@@ -1,7 +1,7 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { FieldSet } from '@tamery/ui/components/field'
-import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import {
   createFileRoute,
@@ -35,7 +35,7 @@ const ResetPasswordPage = () => {
       confirmPassword: '',
     } satisfies typeof passwordSchema.infer,
     validators: {
-      onSubmit: passwordSchema,
+      onChange: passwordSchema,
     },
     onSubmit: async ({ value }) => {
       const { error, data } = await authClient.resetPassword({
@@ -75,14 +75,8 @@ const ResetPasswordPage = () => {
           Enter your new password below.
         </p>
       </div>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-      >
-        <FieldSet className="flex w-full flex-col gap-6">
+      <Form className="space-y-4" form={form}>
+        <FieldSet className="w-full">
           <form.AppField name="password">
             {(field) => (
               <field.Field>
@@ -91,13 +85,9 @@ const ResetPasswordPage = () => {
                   autoFocus
                   autoComplete="new-password"
                   required
-                  aria-invalid={
-                    field.state.meta.isTouched && !field.state.meta.isValid
-                  }
                   spellCheck={false}
                   autoCapitalize="none"
                 />
-                <field.Error />
               </field.Field>
             )}
           </form.AppField>
@@ -105,7 +95,7 @@ const ResetPasswordPage = () => {
           <form.AppField
             name="confirmPassword"
             validators={{
-              onSubmit: ({ value, fieldApi }) =>
+              onChange: ({ value, fieldApi }) =>
                 value === fieldApi.form.getFieldValue('password')
                   ? undefined
                   : { message: 'Passwords do not match' },
@@ -117,13 +107,9 @@ const ResetPasswordPage = () => {
                 <field.PasswordInput
                   autoComplete="confirm-password"
                   required
-                  aria-invalid={
-                    field.state.meta.isTouched && !field.state.meta.isValid
-                  }
                   spellCheck={false}
                   autoCapitalize="none"
                 />
-                <field.Error />
               </field.Field>
             )}
           </form.AppField>
@@ -133,7 +119,7 @@ const ResetPasswordPage = () => {
             </LoadingContent>
           </Button>
         </FieldSet>
-      </form>
+      </Form>
     </>
   )
 }

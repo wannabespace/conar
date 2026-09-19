@@ -29,14 +29,12 @@ const MainLayout = () => {
       style={{ '--navbar-height': navbarHeightPx } as MotionStyle}
     >
       <div
-        className={cn(
-          `sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100 dark:bg-neutral-950`
-        )}
+        className={cn(`bg-body sticky top-0 z-50 h-(--navbar-height) w-full`)}
       >
         <div className="relative flex size-full items-center">
           <Navbar className="w-full" />
           <div className="pointer-events-none absolute inset-x-0 top-full h-10 w-full overflow-hidden">
-            <div className="h-20 w-full rounded-3xl ring-50 ring-gray-100 dark:ring-neutral-950" />
+            <div className="ring-body h-20 w-full rounded-3xl ring-50" />
           </div>
         </div>
       </div>
@@ -52,9 +50,9 @@ const MainLayout = () => {
         <Outlet />
         <div className="sticky inset-x-0 bottom-0 z-30 w-full">
           <div className="pointer-events-none relative z-20 h-10 w-full overflow-hidden">
-            <div className="absolute inset-x-0 bottom-0 h-20 rounded-3xl ring-50 ring-gray-100 dark:ring-neutral-950" />
+            <div className="ring-body absolute inset-x-0 bottom-0 h-20 rounded-3xl ring-50" />
           </div>
-          <div className="relative z-20 h-4 bg-gray-100 dark:bg-neutral-950" />
+          <div className="bg-body relative z-20 h-4" />
         </div>
       </div>
       <Footer />

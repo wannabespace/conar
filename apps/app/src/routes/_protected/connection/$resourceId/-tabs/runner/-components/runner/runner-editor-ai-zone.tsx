@@ -18,7 +18,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
@@ -181,7 +181,7 @@ export const RunnerEditorAIZone = ({
                   '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
                 } as CSSProperties
               }
-              className="h-[min(30vh,var(--lines-height))] w-lg p-0 **:data-[slot=popover-viewport]:p-0"
+              className="h-[min(30vh,var(--lines-height))] w-lg gap-0 p-0"
             >
               <MonacoDiff
                 originalValue={originalSql}

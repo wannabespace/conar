@@ -18,6 +18,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --default-border-width: 0.5px;
+  --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 0.875rem;
   --font-heading: var(--font-sans);
@@ -59,12 +61,12 @@
   --shadow-xs: 0 2px 4px 0 rgb(0 0 0 / 0.02);
   --shadow-sm: 0 2px 8px -1px rgb(0 0 0 / 0.03), 0 1px 2px 0 rgb(0 0 0 / 0.02);
   --shadow-md:
-    0 6px 16px -2px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+    0 6px 16px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
   --shadow-lg:
-    0 16px 32px -4px rgb(0 0 0 / 0.06), 0 4px 8px -4px rgb(0 0 0 / 0.04);
+    0 16px 32px -4px rgb(0 0 0 / 0.12), 0 4px 8px -4px rgb(0 0 0 / 0.06);
   --shadow-xl:
-    0 28px 56px -8px rgb(0 0 0 / 0.07), 0 8px 16px -8px rgb(0 0 0 / 0.04);
-  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.08);
+    0 28px 56px -8px rgb(0 0 0 / 0.16), 0 8px 16px -8px rgb(0 0 0 / 0.08);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.18);
 }
 
 :root {
@@ -103,13 +105,13 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.2437 0.0059 259.64);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.2733 0.0075 259.64);
+  --popover: oklch(0.2633 0.0075 259.64);
   --popover-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.3 0.007 282.73);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.2 0.007 282.73);
   --muted-foreground: oklch(0.705 0 0);
-  --accent: oklch(1 0 0 / 6%);
+  --accent: oklch(1 0 0 / 5%);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.696 0.17 162.48);
@@ -119,7 +121,14 @@
   --info: oklch(0.707 0.165 254.624);
   --info-foreground: oklch(0.21 0.006 285.885);
   --border: oklch(1 0 0 / 5%);
-  --input: oklch(0.2733 0.0075 259.64);
+  --input: oklch(0.2633 0.0075 259.64);
+  --shadow-md:
+    0 6px 16px -2px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  --shadow-lg:
+    0 16px 32px -4px rgb(0 0 0 / 0.4), 0 4px 8px -4px rgb(0 0 0 / 0.26);
+  --shadow-xl:
+    0 28px 56px -8px rgb(0 0 0 / 0.5), 0 8px 16px -8px rgb(0 0 0 / 0.3);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.55);
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
@@ -333,6 +342,10 @@
 
 @utility focus-ring {
   @apply ring-ring/50 ring-3;
+}
+
+@utility invalid-ring {
+  @apply ring-destructive/50 ring-3;
 }
 
 @utility hit-area-* {

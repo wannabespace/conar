@@ -1,16 +1,34 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { getRouteApi } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { sectionCapabilitiesOf } from '~/entities/connection/capabilities'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import type { QueryParams } from '~/entities/connection/runtime/query'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
+import { queryClient } from '~/lib/query-client'
+
+const resourceRoute = getRouteApi('/_protected/connection/$resourceId')
+const tabRoute = getRouteApi('/_protected/connection/$resourceId/$tabId')
+
+const noTables: string[] = []
+
+export type RunQuery = <T>(query: {
+  run: (params: QueryParams) => Promise<T>
+}) => Promise<T>
 
 export const useDefinitionsState = ({
-  connectionResource,
+  prefetchColumns = false,
+  section,
 }: {
-  connectionResource: ConnectionResource
+  prefetchColumns?: boolean
+  section: DefinitionsSection
 }) => {
+  const { connection, connectionResource } = resourceRoute.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, {
     selector: (state) => state.showSystem,
@@ -19,15 +37,59 @@ export const useDefinitionsState = ({
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
   )
   const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
+  const linkedSchema = tabRoute.useSearch({ select: (search) => search.schema })
+  const [pickedSchema, setPickedSchema] = useState<string | undefined>(
+    linkedSchema
+  )
   const [search, setSearch] = useState('')
+  const selectedSchema =
+    pickedSchema && schemas.includes(pickedSchema) ? pickedSchema : schemas[0]
+  const tablesOf = (schema: string) =>
+    data?.schemas
+      .find(({ name }) => name === schema)
+      ?.tables.filter((table) => table.type === 'table')
+      .map((table) => table.name)
+      .toSorted() ?? noTables
 
-  if (
-    schemas.length > 0 &&
-    (!selectedSchema || !schemas.includes(selectedSchema))
-  ) {
-    setSelectedSchema(schemas[0])
+  // The pickers open on whatever table the user lands on, so the schema's
+  // columns are warmed on entry. Same query, so an in-flight one is reused.
+  useEffect(() => {
+    if (!(prefetchColumns && selectedSchema)) {
+      return
+    }
+    const tables = data?.schemas.find(
+      ({ name }) => name === selectedSchema
+    )?.tables
+
+    for (const table of tables ?? []) {
+      if (table.type === 'table') {
+        queryClient.query(
+          resourceTableColumnsQueryOptions({
+            connectionResource,
+            schema: selectedSchema,
+            table: table.name,
+          })
+        )
+      }
+    }
+  }, [connectionResource, data, prefetchColumns, selectedSchema])
+
+  const run: RunQuery = async (query) =>
+    query.run(await connectionResourceToQueryParams(connectionResource))
+
+  return {
+    can: sectionCapabilitiesOf(section, connection.type),
+    connection,
+    connectionResource,
+    run,
+    schemas,
+    search,
+    selectedSchema,
+    setSearch,
+    setSelectedSchema: setPickedSchema,
+    tablesOf,
+    type: connection.type,
   }
-
-  return { schemas, selectedSchema, setSelectedSchema, search, setSearch }
 }
+
+export type DefinitionsState = ReturnType<typeof useDefinitionsState>

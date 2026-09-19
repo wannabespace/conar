@@ -30,7 +30,7 @@ export const omit = <T extends object, K extends keyof T>(
     Object.entries(obj).filter(([key]) => !keys.includes(key as K))
   ) as Omit<T, K>
 
-// oxlint-disable-next-line eslint/no-empty-function -- intentional no-op callback
+// oxlint-disable-next-line eslint/no-empty-function
 export const noop = () => {}
 
 export const objectEntries = Object.entries as <T extends object>(
@@ -91,6 +91,31 @@ export const pseudoRandom = (seed: number) =>
 
 export const uppercaseFirst = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1)
+
+export const sameList = (left: string[], right: string[]) =>
+  left.length === right.length &&
+  left.every((item, index) => item === right[index])
+
+export const pushUnique = (
+  values: string[],
+  value: string | null | undefined
+) => {
+  if (value && !values.includes(value)) {
+    values.push(value)
+  }
+}
+
+export const matchesSearch = (
+  search: string | undefined,
+  ...fields: (string | null | undefined)[]
+) => {
+  const query = search?.trim().toLowerCase() ?? ''
+
+  return (
+    query.length === 0 ||
+    fields.some((field) => field?.toLowerCase().includes(query))
+  )
+}
 
 export const tryParseJson = <T>(json: string): T | null => {
   try {

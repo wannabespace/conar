@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 
-import { hasDangerousSqlKeywords, wrapExplainQuery } from './helpers'
+import {
+  groupInSchema,
+  hasDangerousSqlKeywords,
+  wrapExplainQuery,
+} from './helpers'
 
 describe('hasDangerousSqlKeywords', () => {
   it('should return true for SQL queries containing DELETE keyword', () => {
@@ -49,5 +53,29 @@ describe('wrapExplainQuery', () => {
     expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe(
       '  EXPLAIN ANALYZE SELECT * FROM users'
     )
+  })
+})
+
+describe('groupInSchema', () => {
+  const rows = [
+    { column: 'a', name: 'pk', schema: 'public' },
+    { column: 'b', name: 'pk', schema: 'public' },
+    { column: 'c', name: 'pk', schema: 'other' },
+    { column: 'd', name: 'uq', schema: 'public' },
+  ]
+  const group = (schema?: string) =>
+    groupInSchema(rows, schema, {
+      key: (row) => row.name,
+      merge: (columns: string[], row) => columns.push(row.column),
+      seed: () => [],
+    })
+
+  it('folds the rows of one object together, in first-seen order', () => {
+    expect(group('public')).toEqual([['a', 'b'], ['d']])
+  })
+
+  it('ignores every other schema', () => {
+    expect(group('other')).toEqual([['c']])
+    expect(group()).toEqual([])
   })
 })

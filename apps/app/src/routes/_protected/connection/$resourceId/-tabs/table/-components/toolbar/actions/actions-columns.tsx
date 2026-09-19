@@ -74,11 +74,7 @@ export const ActionsColumns = () => {
               : `${columns.length} column${columns.length === 1 ? '' : 's'}`)}
         </TooltipContent>
       </Tooltip>
-      <PopoverContent
-        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
-        side="bottom"
-        align="end"
-      >
+      <PopoverContent className="w-2xs gap-0 p-0" side="bottom" align="end">
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">

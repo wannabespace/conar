@@ -1,8 +1,8 @@
 // oxlint-disable jsx-a11y/anchor-has-content, jsx-a11y/no-static-element-interactions
 import type { LinkComponent } from '@tanstack/react-router'
 import { createLink } from '@tanstack/react-router'
-import type { ComponentProps, ForwardedRef } from 'react'
-import { forwardRef, useRef } from 'react'
+import type { ComponentProps } from 'react'
+import { useRef } from 'react'
 
 import { isPlainPress } from '~/lib/press-nav'
 
@@ -10,31 +10,22 @@ interface PressAnchorProps extends ComponentProps<'a'> {
   activateOn?: 'press' | 'click'
 }
 
-const PressAnchorImpl = (
-  {
-    activateOn = 'press',
-    onMouseDown,
-    onClickCapture,
-    ...props
-  }: PressAnchorProps,
-  ref: ForwardedRef<HTMLAnchorElement>
-) => {
+const PressAnchor = ({
+  activateOn = 'press',
+  onMouseDown,
+  onClickCapture,
+  ...props
+}: PressAnchorProps) => {
   const pressNavRef = useRef(false)
 
   if (activateOn === 'click') {
     return (
-      <a
-        ref={ref}
-        onMouseDown={onMouseDown}
-        onClickCapture={onClickCapture}
-        {...props}
-      />
+      <a onMouseDown={onMouseDown} onClickCapture={onClickCapture} {...props} />
     )
   }
 
   return (
     <a
-      ref={ref}
       {...props}
       onMouseDown={(e) => {
         onMouseDown?.(e)
@@ -61,9 +52,6 @@ const PressAnchorImpl = (
     />
   )
 }
-
-const PressAnchor = forwardRef(PressAnchorImpl)
-PressAnchor.displayName = 'PressAnchor'
 
 const CreatedLink = createLink(PressAnchor)
 

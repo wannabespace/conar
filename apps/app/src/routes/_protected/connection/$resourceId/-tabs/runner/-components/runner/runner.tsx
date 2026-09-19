@@ -235,7 +235,7 @@ export const Runner = () => {
                       {queriesCount}
                     </span>
                   </PopoverTrigger>
-                  <PopoverContent className="min-w-md p-0 **:data-[slot=popover-viewport]:p-0">
+                  <PopoverContent className="min-w-md gap-0 p-0">
                     <RunnerQueries />
                   </PopoverContent>
                 </Popover>

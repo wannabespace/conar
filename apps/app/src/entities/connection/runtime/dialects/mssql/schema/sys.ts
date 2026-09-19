@@ -37,6 +37,8 @@ interface SecurityPredicates {
   object_id: number
   predicate_definition: string
   operation: 0 | 1 | 2 | 3 | 4
+  operation_desc: string | null
+  predicate_type_desc: 'FILTER' | 'BLOCK'
   target_object_id: number
 }
 
@@ -131,6 +133,9 @@ interface Indexes {
   name: string
   is_unique: boolean
   is_primary_key: boolean
+  is_unique_constraint: boolean
+  type_desc: string
+  has_filter: boolean
 }
 
 /**
@@ -160,6 +165,9 @@ interface IndexColumns {
   object_id: number
   index_id: number
   column_id: number
+  key_ordinal: number
+  is_included_column: boolean
+  is_descending_key: boolean
 }
 
 /**

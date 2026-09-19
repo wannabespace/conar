@@ -36,7 +36,7 @@ export const DefinitionsTab = ({
       className="min-h-0 flex-1"
       onClick={() => openDefinitionsTab(connectionResource.id, section)}
     >
-      <div className="mx-auto flex w-full max-w-3xl flex-col px-6 py-5">
+      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col gap-3 px-6 py-5">
         <Section />
       </div>
     </ScrollArea>
