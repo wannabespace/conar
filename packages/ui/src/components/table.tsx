@@ -1,17 +1,11 @@
-import { tableVariants } from '@tamery/ui/components/table.utils'
 import { cn } from '@tamery/ui/lib/utils'
-import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
-const Table = ({
-  className,
-  size,
-  ...props
-}: React.ComponentProps<'table'> & VariantProps<typeof tableVariants>) => (
+const Table = ({ className, ...props }: React.ComponentProps<'table'>) => (
   <div data-slot="table-container" className="relative w-full overflow-x-auto">
     <table
       data-slot="table"
-      className={cn(tableVariants({ size }), className)}
+      className={cn('w-full caption-bottom text-sm', className)}
       {...props}
     />
   </div>

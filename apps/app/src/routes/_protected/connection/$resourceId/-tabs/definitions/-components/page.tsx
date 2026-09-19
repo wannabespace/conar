@@ -402,7 +402,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
             />
           ) : (
             <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
-              <Table size="sm" className="table-fixed">
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     {columns.map((column) => (
