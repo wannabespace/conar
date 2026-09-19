@@ -369,9 +369,10 @@ export const resourceTableColumnsQueryOptions = ({
     ],
   })
 
-const columnIds = (columns: (typeof columnType.infer)[]) =>
-  columns.map((column) => column.id)
-
 export const resourceTableColumnIdsQueryOptions = (
   params: Parameters<typeof resourceTableColumnsQueryOptions>[0]
-) => ({ ...resourceTableColumnsQueryOptions(params), select: columnIds })
+) => ({
+  ...resourceTableColumnsQueryOptions(params),
+  select: (columns: (typeof columnType.infer)[]) =>
+    columns.map((column) => column.id),
+})
