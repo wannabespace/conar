@@ -71,7 +71,7 @@ const enumNote = ({
     return null
   }
   if (!enumEditable(item, type)) {
-    return 'Tamery cannot edit enums on this database yet.'
+    return 'We cannot edit enums on this database yet.'
   }
   if (item.metadata?.table) {
     return 'Values live on the column, so saving rewrites the whole list.'
@@ -272,13 +272,12 @@ const replaceWarning = (item: EnumItem | null): InspectorWarning => ({
   action: 'Replace enum',
   description: (
     <>
-      PostgreSQL cannot remove or reorder the values of a live enum, so{' '}
+      Postgres can only append to an enum, so we recreate{' '}
       <span data-mask className="font-medium">
         {item?.name}
       </span>{' '}
-      is dropped and created again, and every column that uses it is moved onto
-      the new type. A row still holding a removed value, or a view or function
-      built on the type, fails the move and nothing is changed.
+      and repoints its columns. A row holding a dropped value, or a view built
+      on the type, rolls it back.
     </>
   ),
 })
@@ -304,12 +303,12 @@ const lostValuesWarning = (
         <span data-mask className="font-medium">
           {item.metadata.table}.{item.metadata.column}
         </span>{' '}
-        still holding{' '}
+        holding{' '}
         <span data-mask className="font-medium">
           {lost.join(', ')}
         </span>{' '}
-        fail the rewrite under strict SQL mode, and are written back as an empty
-        string otherwise. Nothing restores the old value.
+        lose it for good: strict mode fails the rewrite, anything else blanks
+        the cell.
       </>
     ),
   }

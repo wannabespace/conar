@@ -278,20 +278,19 @@ const recreateWarning = (
   action: 'Recreate constraint',
   description: renameOnly ? (
     <>
-      This database cannot rename a constraint in place, so{' '}
+      No rename in place here, so we drop{' '}
       <span data-mask className="font-medium">
         {item?.name}
       </span>{' '}
-      is dropped and added again under the new name. The table is left without
-      the rule until the add succeeds.
+      and adds it back renamed. Nothing enforces it in between.
     </>
   ) : (
     <>
+      We drop{' '}
       <span data-mask className="font-medium">
         {item?.name}
       </span>{' '}
-      is dropped and added again with the new shape. Rows that break the new
-      rule fail the add and nothing is changed.
+      and adds it back reshaped. A row breaking the new rule fails the add.
     </>
   ),
 })

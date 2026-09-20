@@ -148,22 +148,19 @@ const replaceWarning = (
   action: 'Replace policy',
   description: cleared ? (
     <>
-      A policy cannot have an expression removed in place, so{' '}
+      An expression cannot come off a policy in place, so we recreate{' '}
       <span data-mask className="font-medium">
         {item?.name}
       </span>{' '}
-      is dropped and created again without it. The table is left without the
-      policy until the new one exists.
+      without it. The table runs unprotected in between.
     </>
   ) : (
     <>
-      A policy cannot move between commands or between permissive and
-      restrictive, so{' '}
+      Command and permissive/restrictive cannot change in place, so we recreate{' '}
       <span data-mask className="font-medium">
         {item?.name}
-      </span>{' '}
-      is dropped and created again. The table is left without it until the new
-      policy exists.
+      </span>
+      . The table runs unprotected in between.
     </>
   ),
 })

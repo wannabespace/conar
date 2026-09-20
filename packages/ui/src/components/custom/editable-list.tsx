@@ -214,7 +214,6 @@ export const EditableList = ({
 }) => {
   const listRef = React.useRef<HTMLUListElement>(null)
   const pendingFocusId = React.useRef<string | null>(null)
-  // A drag paints many orders before it lands; callers see only the drop.
   const [dragOrder, setDragOrder] = React.useState<EditableListItem[] | null>(
     null
   )

@@ -436,12 +436,12 @@ const IndexInspector = ({
                 action: 'Rebuild index',
                 description: (
                   <>
+                    We drop{' '}
                     <span data-mask className="font-medium">
                       {item?.name}
                     </span>{' '}
-                    is dropped and built again with the new shape. Queries run
-                    unindexed while it builds, and a unique index fails to
-                    rebuild if duplicate rows appeared.
+                    and rebuilds it. Queries run unindexed in between, and
+                    duplicate rows block a unique rebuild.
                   </>
                 ),
               }

@@ -118,12 +118,11 @@ const dropFirstWarning = (noun: string, name: string): InspectorWarning => ({
   action: `Replace ${noun}`,
   description: (
     <>
-      This database cannot replace a {noun} in place, so{' '}
+      No replace-in-place for a {noun} here, so we drop{' '}
       <span data-mask className="font-medium">
         {name}
       </span>{' '}
-      is dropped before the statement below runs. A statement the database
-      rejects leaves the {noun} dropped.
+      first. If the statement below fails, it stays dropped.
     </>
   ),
 })
