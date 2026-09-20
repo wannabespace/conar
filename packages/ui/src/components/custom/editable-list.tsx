@@ -37,20 +37,6 @@ const createItem = (value = ''): EditableListItem => ({
   value,
 })
 
-const splitPasted = (text: string) =>
-  text
-    .split(/\r?\n/u)
-    .map((line) => line.trim())
-    .filter(Boolean)
-
-const duplicatesOf = (items: EditableListItem[]) => {
-  const values = items.map((item) => item.value.trim()).filter(Boolean)
-
-  return new Set(
-    values.filter((value, index) => values.indexOf(value) !== index)
-  )
-}
-
 const EditableListRow = ({
   canRemove,
   error,
@@ -169,7 +155,11 @@ const EditableListRow = ({
           value={item.value}
           onChange={(event) => onChange(event.target.value)}
           onPaste={(event) => {
-            const pasted = splitPasted(event.clipboardData.getData('text'))
+            const pasted = event.clipboardData
+              .getData('text')
+              .split(/\r?\n/u)
+              .map((line) => line.trim())
+              .filter(Boolean)
 
             if (pasted.length < 2) {
               return
@@ -229,7 +219,10 @@ export const EditableList = ({
     null
   )
   const rows = dragOrder ?? items
-  const duplicates = duplicatesOf(items)
+  const trimmed = items.map((item) => item.value.trim())
+  const duplicates = new Set(
+    trimmed.filter((value, index) => value && trimmed.indexOf(value) !== index)
+  )
   const listError = duplicates.size ? undefined : error
 
   const focusRow = (id: string | undefined) => {
