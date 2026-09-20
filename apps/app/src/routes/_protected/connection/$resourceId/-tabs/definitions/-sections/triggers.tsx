@@ -4,7 +4,6 @@ import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
@@ -27,37 +26,18 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { FilterOption } from '../-components/pickers'
-import { FilterSelect } from '../-components/pickers'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { nameColumn, textColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type TriggerItem = typeof triggersType.infer
-
-const eventOptions: FilterOption<string>[] = [
-  { label: 'All events', value: 'all' },
-  { label: 'Insert', value: 'INSERT' },
-  { label: 'Update', value: 'UPDATE' },
-  { label: 'Delete', value: 'DELETE' },
-  { label: 'Truncate', value: 'TRUNCATE' },
-]
-
-const timingOptions: FilterOption<string>[] = [
-  { label: 'All timings', value: 'all' },
-  { label: 'Before', value: 'BEFORE' },
-  { label: 'After', value: 'AFTER' },
-  { label: 'Instead of', value: 'INSTEAD OF' },
-]
 
 const triggerKey = (item: TriggerItem) =>
   `${item.schema}.${item.table}.${item.name}.${item.event}`
 
-const TOGGLE_TYPES = new Set<ConnectionType>([
-  ConnectionType.Postgres,
-  ConnectionType.MSSQL,
-])
+const sentenceCase = (value: string) => uppercaseFirst(value.toLowerCase())
 
 const templates: Record<ConnectionType, (schema: string) => string> = {
   clickhouse: () => '',
@@ -69,10 +49,41 @@ const templates: Record<ConnectionType, (schema: string) => string> = {
     `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
 }
 
-type ToggleTrigger = ((item: TriggerItem, enabled: boolean) => void) | undefined
-
 // CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
 const REPLACES_TRIGGERS_FROM = 14
+
+// Postgres and MSSQL can park a trigger without dropping it; the others
+// cannot, so they get no toggle at all.
+const TOGGLES = new Set<ConnectionType>([
+  ConnectionType.Postgres,
+  ConnectionType.MSSQL,
+])
+
+const useToggle = ({
+  queryKey,
+  run,
+  type,
+}: Pick<SectionInspectorProps<TriggerItem>, 'queryKey' | 'run' | 'type'>) => {
+  const mutation = useDefinitionMutation({
+    mutationFn: ({ enabled, item }: { enabled: boolean; item: TriggerItem }) =>
+      run(
+        setTriggerEnabledQuery({
+          enabled,
+          name: item.name,
+          schema: item.schema,
+          table: item.table,
+        })
+      ),
+    queryKey,
+    success: ({ enabled, item }) =>
+      `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`,
+  })
+
+  return TOGGLES.has(type)
+    ? (item: TriggerItem, enabled: boolean) =>
+        mutation.mutate({ enabled, item })
+    : undefined
+}
 
 const useDropsFirst = ({
   connection,
@@ -102,19 +113,20 @@ const TriggerInspector = ({
   item: snapshot,
   onOpenChange,
   queryKey,
-  rows,
   run,
   selectedSchema,
-  toggle,
   type,
-}: SectionInspectorProps<TriggerItem> & {
-  rows: TriggerItem[]
-  toggle: ToggleTrigger
-}) => {
+}: SectionInspectorProps<TriggerItem>) => {
+  const { data: triggers = [] } = useQuery(
+    resourceTriggersQueryOptions({ connectionResource })
+  )
+  const toggle = useToggle({ queryKey, run, type })
+  const dropsFirst = useDropsFirst({ connection, type })
+  // The toggle writes through the list query, so follow the refreshed row.
   const item =
     snapshot &&
-    (rows.find((row) => triggerKey(row) === triggerKey(snapshot)) ?? snapshot)
-  const dropsFirst = useDropsFirst({ connection, type })
+    (triggers.find((row) => triggerKey(row) === triggerKey(snapshot)) ??
+      snapshot)
 
   return (
     <>
@@ -122,7 +134,8 @@ const TriggerInspector = ({
         description={
           item ? `${item.schema}.${item.table}` : (selectedSchema ?? '')
         }
-        title={item ? item.name : 'New trigger'}
+        item={item}
+        noun="trigger"
       />
       {item && toggle && (
         <InspectorSection title="Status">
@@ -186,27 +199,17 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
     valueOf: (item: TriggerItem) => item.table,
     width: 'w-2/12',
   }),
-  {
-    cell: (item) => (
-      <span className="text-muted-foreground">
-        {uppercaseFirst(item.timing.toLowerCase())}
-      </span>
-    ),
+  labelColumn({
     header: 'Timing',
+    labelOf: (item: TriggerItem) => sentenceCase(item.timing),
     width: 'w-2/12',
-  },
-  {
-    cell: (item) => (
-      <span className="text-muted-foreground">
-        {item.event
-          .split(' OR ')
-          .map((event) => uppercaseFirst(event.toLowerCase()))
-          .join(', ')}
-      </span>
-    ),
+  }),
+  labelColumn({
     header: 'Event',
+    labelOf: (item: TriggerItem) =>
+      item.event.split(' OR ').map(sentenceCase).join(', '),
     width: 'w-2/12',
-  },
+  }),
   textColumn({
     header: 'Function',
     valueOf: (item: TriggerItem) => item.functionName,
@@ -215,39 +218,31 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
 
 export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
-  const { run, search, selectedSchema } = state
-  const query = resourceTriggersQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourceTriggersQueryOptions({ connectionResource })
   const { data: triggers = [], isPending } = useQuery(query)
-  const [event, setEvent] = useState('all')
-  const [timing, setTiming] = useState('all')
+  const eventFilter = useFilter<string>('All events', [
+    { label: 'Insert', value: 'INSERT' },
+    { label: 'Update', value: 'UPDATE' },
+    { label: 'Delete', value: 'DELETE' },
+    { label: 'Truncate', value: 'TRUNCATE' },
+  ])
+  const timingFilter = useFilter<string>('All timings', [
+    { label: 'Before', value: 'BEFORE' },
+    { label: 'After', value: 'AFTER' },
+    { label: 'Instead of', value: 'INSTEAD OF' },
+  ])
 
   const inSchema = triggers.filter((item) => item.schema === selectedSchema)
   const rows = inSchema.filter(
     (item) =>
-      (event === 'all' || item.event.includes(event)) &&
-      (timing === 'all' || timing === item.timing) &&
+      // A Postgres trigger lists every event it answers to in one row.
+      (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
+      timingFilter.matches(item.timing) &&
       matchesSearch(search, item.name, item.table, item.functionName)
   )
 
-  const toggleMutation = useDefinitionMutation({
-    mutationFn: ({ enabled, item }: { enabled: boolean; item: TriggerItem }) =>
-      run(
-        setTriggerEnabledQuery({
-          enabled,
-          name: item.name,
-          schema: item.schema,
-          table: item.table,
-        })
-      ),
-    queryKey: query.queryKey,
-    success: ({ enabled, item }) =>
-      `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`,
-  })
-  const toggle: ToggleTrigger = TOGGLE_TYPES.has(state.type)
-    ? (item, enabled) => toggleMutation.mutate({ enabled, item })
-    : undefined
+  const toggle = useToggle({ queryKey: query.queryKey, run, type: state.type })
 
   return (
     <DefinitionsPage
@@ -262,16 +257,8 @@ export const Triggers = () => {
       state={state}
       toolbar={
         <>
-          <FilterSelect
-            options={eventOptions}
-            value={event}
-            onValueChange={setEvent}
-          />
-          <FilterSelect
-            options={timingOptions}
-            value={timing}
-            onValueChange={setTiming}
-          />
+          {eventFilter.control}
+          {timingFilter.control}
         </>
       }
       queryKey={query.queryKey}
@@ -295,7 +282,6 @@ export const Triggers = () => {
           : []
       }
       Inspector={TriggerInspector}
-      inspectorProps={{ ...state, rows, toggle }}
     />
   )
 }

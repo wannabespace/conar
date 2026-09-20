@@ -39,7 +39,6 @@ export const getWorkspaceSecret = memoize(
       path: ['users', owner.userId],
     })
   },
-  // 5 minutes
   { maxAge: 5 * 60 * 1000 }
 )
 

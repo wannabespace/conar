@@ -29,10 +29,7 @@ const remapped = (
   )} ELSE ${expression} END`
 }
 
-const columnType = (dependent: EnumDependent, target: RawBuilder<unknown>) =>
-  dependent.isArray ? sql`${target}[]` : target
-
-const migrateColumn = ({
+const migrate = ({
   dependent,
   renames,
   target,
@@ -41,27 +38,18 @@ const migrateColumn = ({
   renames: Record<string, string>
   target: RawBuilder<unknown>
 }) => {
+  const table = sql.id(dependent.schema, dependent.table)
   const column = sql.id(dependent.column)
-  const using = dependent.isArray
+  const columnType = dependent.isArray ? sql`${target}[]` : target
+  const cast = dependent.isArray
     ? sql`ARRAY(SELECT ${remapped(sql`value`, renames)}::${target} FROM unnest(${column}::text[]) AS value)`
     : sql`${remapped(sql`${column}::text`, renames)}::${target}`
 
-  return sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${column} TYPE ${columnType(dependent, target)} USING ${using}`
-}
-
-const restoredDefault = ({
-  dependent,
-  renames,
-  target,
-}: {
-  dependent: EnumDependent
-  renames: Record<string, string>
-  target: RawBuilder<unknown>
-}) => {
+  const altered = sql`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${columnType} USING ${cast}`
   const literal = dependent.default?.match(DEFAULT_LITERAL)?.groups?.value
 
   if (literal === undefined) {
-    return null
+    return [altered]
   }
 
   const unescaped = literal.replaceAll("''", "'")
@@ -69,7 +57,11 @@ const restoredDefault = ({
     ? unescaped
     : (renames[unescaped] ?? unescaped)
 
-  return sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${sql.id(dependent.column)} SET DEFAULT ${sql.lit(value)}::${columnType(dependent, target)}`
+  return [
+    sql`ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT`,
+    altered,
+    sql`ALTER TABLE ${table} ALTER COLUMN ${column} SET DEFAULT ${sql.lit(value)}::${columnType}`,
+  ]
 }
 
 export const recreateEnumQuery = ({
@@ -99,22 +91,15 @@ export const recreateEnumQuery = ({
           const statements = [
             sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`,
             sql`CREATE TYPE ${target} AS ENUM (${literals(values)})`,
-            ...dependents.flatMap((dependent) => {
-              const restored = restoredDefault({ dependent, renames, target })
-
-              return [
-                restored &&
-                  sql`ALTER TABLE ${sql.id(dependent.schema, dependent.table)} ALTER COLUMN ${sql.id(dependent.column)} DROP DEFAULT`,
-                migrateColumn({ dependent, renames, target }),
-                restored,
-              ]
-            }),
+            ...dependents.flatMap((dependent) =>
+              migrate({ dependent, renames, target })
+            ),
             sql`DROP TYPE ${sql.id(schema, replacedName)}`,
           ]
 
           for (const statement of statements) {
             // oxlint-disable-next-line no-await-in-loop
-            await statement?.execute(tx)
+            await statement.execute(tx)
           }
         }),
     },

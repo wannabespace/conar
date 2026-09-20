@@ -42,14 +42,16 @@ export type SectionInspectorProps<T> = DefinitionsState &
 
 export const InspectorHeader = ({
   description,
-  title,
+  item,
+  noun,
 }: {
   description: string
-  title: string
+  item: { name: string } | null
+  noun: string
 }) => (
   <DrawerHeader showCloseButton>
     <DrawerTitle data-mask className="truncate">
-      {title}
+      {item ? item.name : `New ${noun}`}
     </DrawerTitle>
     <DrawerDescription data-mask className="truncate">
       {description}

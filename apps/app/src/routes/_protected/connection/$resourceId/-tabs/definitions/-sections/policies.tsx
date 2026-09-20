@@ -8,7 +8,6 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
@@ -23,47 +22,32 @@ import type {
 } from '~/entities/connection/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
 
+import {
+  resetFields,
+  SchemaField,
+  SelectField,
+  SqlField,
+  TextField,
+} from '../-components/fields'
 import type {
   InspectorWarning,
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  InspectorHeader,
   InspectorFooter,
+  InspectorHeader,
   InspectorSection,
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { FilterOption } from '../-components/pickers'
-import { FilterSelect, NameSelect } from '../-components/pickers'
-import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { textColumn } from '../-lib/columns'
+import { labelColumn, textColumn } from '../-lib/columns'
 
 type PolicyItem = typeof policyType.infer
-
-const kindLabels: Record<PolicyKind, string> = {
-  PERMISSIVE: 'Permissive',
-  RESTRICTIVE: 'Restrictive',
-}
-
-const kinds = Object.keys(kindLabels) as PolicyKind[]
-
-const filterOptions: FilterOption<PolicyKind | 'all'>[] = [
-  { label: 'All types', value: 'all' },
-  ...kinds.map((kind) => ({ label: kindLabels[kind], value: kind })),
-]
-
-const policyKey = (item: PolicyItem) => `${item.table}.${item.name}`
-
-const parseRoles = (value: string) =>
-  value
-    .split(',')
-    .map((role) => role.trim())
-    .filter(Boolean)
 
 interface PolicyDraft {
   check: string
@@ -75,6 +59,21 @@ interface PolicyDraft {
   table: string
   using: string
 }
+
+const kindLabels: Record<PolicyKind, string> = {
+  PERMISSIVE: 'Permissive',
+  RESTRICTIVE: 'Restrictive',
+}
+
+const kinds = Object.keys(kindLabels) as PolicyKind[]
+
+const policyKey = (item: PolicyItem) => `${item.table}.${item.name}`
+
+const parseRoles = (value: string) =>
+  value
+    .split(',')
+    .map((role) => role.trim())
+    .filter(Boolean)
 
 const asCommand = (value: string | undefined): PolicyCommand =>
   POLICY_COMMANDS.find((command) => command === value) ?? 'ALL'
@@ -135,30 +134,18 @@ const policyErrors = (draft: PolicyDraft) => ({
   table: draft.table === '' ? 'Pick the table to protect.' : undefined,
 })
 
-const policyChanged = (item: PolicyItem | null, draft: PolicyDraft) =>
-  item
-    ? replaces(item, draft) ||
-      Object.values(changesOf(item, draft)).some((change) => change !== null)
-    : true
-
 const replaceWarning = (
-  item: PolicyItem | null,
-  cleared: boolean
+  item: PolicyItem,
+  draft: PolicyDraft
 ): InspectorWarning => ({
   action: 'Replace policy',
-  description: cleared ? (
+  description: (
     <>
-      An expression cannot come off a policy in place, so we recreate{' '}
+      {clearsExpression(item, draft)
+        ? 'An expression cannot come off a policy in place, so we recreate '
+        : 'Command and permissive/restrictive cannot change in place, so we recreate '}
       <span data-mask className="font-medium">
-        {item?.name}
-      </span>{' '}
-      without it. The table runs unprotected in between.
-    </>
-  ) : (
-    <>
-      Command and permissive/restrictive cannot change in place, so we recreate{' '}
-      <span data-mask className="font-medium">
-        {item?.name}
+        {item.name}
       </span>
       . The table runs unprotected in between.
     </>
@@ -213,13 +200,6 @@ const savePolicy = async ({
   }
 }
 
-const Expression = ({ keyword, value }: { keyword: string; value: string }) => (
-  <span className="flex items-baseline gap-1.5 text-xs">
-    <span className="text-muted-foreground shrink-0">{keyword}</span>
-    <CodeInline data-mask code={value} language="sql" />
-  </span>
-)
-
 const PolicyInspector = ({
   can,
   item,
@@ -230,7 +210,6 @@ const PolicyInspector = ({
   selectedSchema,
   tablesOf,
 }: SectionInspectorProps<PolicyItem>) => {
-  const readOnly = item ? !can.edit : !can.create
   const mutation = useDefinitionMutation({
     mutationFn: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
     onSuccess: () => onOpenChange(false),
@@ -251,14 +230,21 @@ const PolicyInspector = ({
   const draft = withAllowedExpressions(
     useStore(form.store, (state) => state.values)
   )
+
+  const readOnly = item ? !can.edit : !can.create
   const expressions = expressionsFor(draft.command)
   const replacing = !!item && replaces(item, draft)
+  const changed =
+    !item ||
+    replacing ||
+    Object.values(changesOf(item, draft)).some((change) => change !== null)
 
   return (
     <>
       <InspectorHeader
         description={item ? `${item.schema}.${item.table}` : draft.schema}
-        title={item ? item.name : 'New policy'}
+        item={item}
+        noun="policy"
       />
       <InspectorSections>
         <InspectorSection
@@ -268,48 +254,27 @@ const PolicyInspector = ({
           <form.AppField name="schema">
             {(field) => (
               <SchemaField
-                id={field.name}
                 disabled={readOnly || !!item}
-                schema={field.state.value}
                 schemas={schemas}
-                onSchemaChange={(next) => {
+                onValueChange={(next) => {
                   field.handleChange(next)
-                  form.setFieldValue('table', '', { dontUpdateMeta: true })
+                  resetFields(form, { table: '' })
                 }}
               />
             )}
           </form.AppField>
           <form.AppField name="name">
-            {(field) => (
-              <field.Field>
-                <field.Label>Name</field.Label>
-                <field.Input
-                  data-mask
-                  autoFocus
-                  disabled={readOnly}
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-              </field.Field>
-            )}
+            {() => <TextField label="Name" autoFocus disabled={readOnly} />}
           </form.AppField>
           <form.AppField name="table">
-            {(field) => (
-              <field.Field>
-                <field.Label>Table</field.Label>
-                <NameSelect
-                  id={field.name}
-                  disabled={readOnly || !!item}
-                  options={item ? [item.table] : tablesOf(draft.schema)}
-                  placeholder="Choose a table"
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                />
-                <FieldDescription>
-                  The policy only applies while row level security is enabled on
-                  this table.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <SelectField
+                label="Table"
+                description="The policy only applies while row level security is enabled on this table."
+                disabled={readOnly || !!item}
+                options={item ? [item.table] : tablesOf(draft.schema)}
+                placeholder="Choose a table"
+              />
             )}
           </form.AppField>
         </InspectorSection>
@@ -319,34 +284,24 @@ const PolicyInspector = ({
         >
           <div className="grid grid-cols-2 gap-3">
             <form.AppField name="command">
-              {(field) => (
-                <field.Field>
-                  <field.Label>Command</field.Label>
-                  <NameSelect
-                    id={field.name}
-                    disabled={readOnly}
-                    options={POLICY_COMMANDS}
-                    placeholder="Command"
-                    value={field.state.value}
-                    onValueChange={field.handleChange}
-                  />
-                </field.Field>
+              {() => (
+                <SelectField
+                  label="Command"
+                  disabled={readOnly}
+                  options={POLICY_COMMANDS}
+                  placeholder="Command"
+                />
               )}
             </form.AppField>
             <form.AppField name="kind">
-              {(field) => (
-                <field.Field>
-                  <field.Label>Type</field.Label>
-                  <NameSelect
-                    id={field.name}
-                    disabled={readOnly}
-                    options={kinds}
-                    labelOf={(value) => kindLabels[value]}
-                    placeholder="Type"
-                    value={field.state.value}
-                    onValueChange={field.handleChange}
-                  />
-                </field.Field>
+              {() => (
+                <SelectField
+                  label="Type"
+                  disabled={readOnly}
+                  options={kinds}
+                  labelOf={(value) => kindLabels[value]}
+                  placeholder="Type"
+                />
               )}
             </form.AppField>
           </div>
@@ -355,20 +310,13 @@ const PolicyInspector = ({
             restrictive policy must also pass.
           </FieldDescription>
           <form.AppField name="roles">
-            {(field) => (
-              <field.Field>
-                <field.Label>Roles</field.Label>
-                <field.Input
-                  data-mask
-                  disabled={readOnly}
-                  placeholder="public"
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-                <FieldDescription>
-                  Comma-separated. Empty means PUBLIC.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <TextField
+                label="Roles"
+                description="Comma-separated. Empty means PUBLIC."
+                disabled={readOnly}
+                placeholder="public"
+              />
             )}
           </form.AppField>
         </InspectorSection>
@@ -377,52 +325,38 @@ const PolicyInspector = ({
           description="SQL returning true for the rows the policy allows."
         >
           <form.AppField name="using">
-            {(field) => (
-              <field.Field>
-                <field.Label>Using</field.Label>
-                <field.Textarea
-                  data-mask
-                  className="font-mono"
-                  disabled={readOnly || !expressions.using}
-                  placeholder="user_id = auth.uid()"
-                  spellCheck={false}
-                />
-                <FieldDescription>
-                  {expressions.using
+            {() => (
+              <SqlField
+                label="Using"
+                description={
+                  expressions.using
                     ? 'Checked against rows that already exist.'
-                    : 'An insert has no existing rows to check.'}
-                </FieldDescription>
-              </field.Field>
+                    : 'An insert has no existing rows to check.'
+                }
+                disabled={readOnly || !expressions.using}
+                placeholder="user_id = auth.uid()"
+              />
             )}
           </form.AppField>
           <form.AppField name="check">
-            {(field) => (
-              <field.Field>
-                <field.Label>With check</field.Label>
-                <field.Textarea
-                  data-mask
-                  className="font-mono"
-                  disabled={readOnly || !expressions.check}
-                  placeholder="user_id = auth.uid()"
-                  spellCheck={false}
-                />
-                <FieldDescription>
-                  {expressions.check
+            {() => (
+              <SqlField
+                label="With check"
+                description={
+                  expressions.check
                     ? 'Checked against rows an insert or update would write.'
-                    : `A ${draft.command.toLowerCase()} writes no rows to check.`}
-                </FieldDescription>
-              </field.Field>
+                    : `A ${draft.command.toLowerCase()} writes no rows to check.`
+                }
+                disabled={readOnly || !expressions.check}
+                placeholder="user_id = auth.uid()"
+              />
             )}
           </form.AppField>
         </InspectorSection>
       </InspectorSections>
       <InspectorFooter
-        canSave={policyChanged(item, draft)}
-        warning={
-          replacing
-            ? replaceWarning(item, !!item && clearsExpression(item, draft))
-            : undefined
-        }
+        canSave={changed}
+        warning={item && replacing ? replaceWarning(item, draft) : undefined}
         error={mutation.error}
         form={form}
         readOnly={readOnly}
@@ -432,6 +366,13 @@ const PolicyInspector = ({
     </>
   )
 }
+
+const Expression = ({ keyword, value }: { keyword: string; value: string }) => (
+  <span className="flex items-baseline gap-1.5 text-xs">
+    <span className="text-muted-foreground shrink-0">{keyword}</span>
+    <CodeInline data-mask code={value} language="sql" />
+  </span>
+)
 
 const columns: DefinitionsColumn<PolicyItem>[] = [
   {
@@ -459,45 +400,42 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
     valueOf: (item: PolicyItem) => item.table,
     width: 'w-2/12',
   }),
-  {
-    cell: (item) => (
-      <span className="text-muted-foreground">{item.command}</span>
-    ),
+  labelColumn({
     header: 'Command',
+    labelOf: (item: PolicyItem) => item.command,
     width: 'w-2/12',
-  },
-  {
-    cell: (item, { search }) => (
-      <span data-mask className="text-muted-foreground">
+  }),
+  labelColumn({
+    header: 'Roles',
+    labelOf: (item: PolicyItem, { search }) => (
+      <span data-mask>
         <HighlightText text={item.roles.join(', ')} match={search} />
       </span>
     ),
-    header: 'Roles',
     width: 'w-2/12',
-  },
-  {
+  }),
+  labelColumn({
     align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">{kindLabels[item.type]}</span>
-    ),
     header: 'Type',
+    labelOf: (item: PolicyItem) => kindLabels[item.type],
     width: 'w-2/12',
-  },
+  }),
 ]
 
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
-  const { run, search, selectedSchema } = state
-  const query = resourcePoliciesQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
-  const [type, setType] = useState<PolicyKind | 'all'>('all')
+  const kindFilter = useFilter<PolicyKind>(
+    'All types',
+    kinds.map((kind) => ({ label: kindLabels[kind], value: kind }))
+  )
 
   const inSchema = policies.filter((item) => item.schema === selectedSchema)
   const rows = inSchema.filter(
     (item) =>
-      (type === 'all' || type === item.type) &&
+      kindFilter.matches(item.type) &&
       matchesSearch(search, item.name, item.table, item.command, ...item.roles)
   )
 
@@ -512,13 +450,7 @@ export const Policies = () => {
       keyOf={policyKey}
       columns={columns}
       state={state}
-      toolbar={
-        <FilterSelect
-          options={filterOptions}
-          value={type}
-          onValueChange={setType}
-        />
-      }
+      toolbar={kindFilter.control}
       queryKey={query.queryKey}
       dropItem={(item) =>
         run(
@@ -530,7 +462,6 @@ export const Policies = () => {
         )
       }
       Inspector={PolicyInspector}
-      inspectorProps={state}
     />
   )
 }

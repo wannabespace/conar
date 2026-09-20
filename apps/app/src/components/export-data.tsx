@@ -256,7 +256,6 @@ const ExportItems = ({
   </>
 )
 
-// Submenu blocks for embedding inside an existing DropdownMenuContent
 export const ExportDataMenu = ({
   filename,
   getData,

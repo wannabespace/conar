@@ -10,7 +10,6 @@ export const deleteRowsQuery = memoize(
   }: {
     table: string
     schema: string
-    // [{ id: 1, email: 'test@test.com' }, { id: 2, email: 'test2@test.com' }]
     primaryKeys: Record<string, unknown>[]
   }) =>
     createQuery({

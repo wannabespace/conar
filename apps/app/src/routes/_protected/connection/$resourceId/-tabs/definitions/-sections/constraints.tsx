@@ -10,9 +10,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 
-import type { SectionCapabilities } from '~/entities/connection/capabilities'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
 import { dropConstraintQuery } from '~/entities/connection/queries/constraints/drop'
@@ -30,26 +28,32 @@ import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
 
+import {
+  NameSelect,
+  NamesField,
+  resetFields,
+  SchemaField,
+  SelectField,
+  TextField,
+} from '../-components/fields'
 import type {
   InspectorWarning,
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  InspectorHeader,
   InspectorDefinition,
   InspectorFooter,
+  InspectorHeader,
   InspectorSection,
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { FilterOption } from '../-components/pickers'
-import { FilterSelect, NameSelect, NamesSelect } from '../-components/pickers'
-import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { nameColumn, textColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type ConstraintItem = typeof constraintsType.infer
 
@@ -69,6 +73,19 @@ interface GroupedConstraint extends Pick<
   foreignColumns: string[]
 }
 
+interface ConstraintDraft {
+  columns: string[]
+  foreignColumns: string[]
+  foreignSchema: string
+  foreignTable: string
+  kind: ConstraintKind
+  name: string
+  onDelete: ReferentialAction
+  onUpdate: ReferentialAction
+  schema: string
+  table: string
+}
+
 const typeLabels: Record<ConstraintKind, string> = {
   foreignKey: 'Foreign key',
   primaryKey: 'Primary key',
@@ -82,13 +99,6 @@ const nameSuffix: Record<ConstraintKind, string> = {
 }
 
 const kinds = Object.keys(typeLabels) as ConstraintKind[]
-
-const filterOptions: FilterOption<ConstraintKind | 'all'>[] = [
-  { label: 'All types', value: 'all' },
-  { label: 'Primary keys', value: 'primaryKey' },
-  { label: 'Foreign keys', value: 'foreignKey' },
-  { label: 'Unique', value: 'unique' },
-]
 
 const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
 
@@ -114,10 +124,7 @@ const groupConstraints = (
     }),
   })
 
-const referenceText = (item: GroupedConstraint, schema: string | undefined) => {
-  if (!item.foreignTable) {
-    return null
-  }
+const referenceOf = (item: GroupedConstraint, schema: string | undefined) => {
   const table =
     item.foreignSchema && item.foreignSchema !== schema
       ? `${item.foreignSchema}.${item.foreignTable}`
@@ -126,34 +133,8 @@ const referenceText = (item: GroupedConstraint, schema: string | undefined) => {
   return `${table} (${item.foreignColumns.join(', ')})`
 }
 
-interface ConstraintDraft {
-  columns: string[]
-  foreignColumns: string[]
-  foreignSchema: string
-  foreignTable: string
-  kind: ConstraintKind
-  name: string
-  onDelete: ReferentialAction
-  onUpdate: ReferentialAction
-  schema: string
-  table: string
-}
-
 const asAction = (value: string | null): ReferentialAction =>
   REFERENTIAL_ACTIONS.find((action) => action === value) ?? DEFAULT_ACTION
-
-const emptyDraft = (schema: string): ConstraintDraft => ({
-  columns: [],
-  foreignColumns: [],
-  foreignSchema: schema,
-  foreignTable: '',
-  kind: 'unique',
-  name: '',
-  onDelete: DEFAULT_ACTION,
-  onUpdate: DEFAULT_ACTION,
-  schema,
-  table: '',
-})
 
 const draftOf = (
   item: GroupedConstraint | null,
@@ -172,9 +153,20 @@ const draftOf = (
         schema: item.schema,
         table: item.table,
       }
-    : emptyDraft(pageSchema)
+    : {
+        columns: [],
+        foreignColumns: [],
+        foreignSchema: pageSchema,
+        foreignTable: '',
+        kind: 'unique',
+        name: '',
+        onDelete: DEFAULT_ACTION,
+        onUpdate: DEFAULT_ACTION,
+        schema: pageSchema,
+        table: '',
+      }
 
-const shapeChanged = (draft: ConstraintDraft, item: GroupedConstraint) => {
+const reshapes = (draft: ConstraintDraft, item: GroupedConstraint) => {
   const opened = draftOf(item, item.schema)
 
   return (
@@ -189,7 +181,7 @@ const shapeChanged = (draft: ConstraintDraft, item: GroupedConstraint) => {
 }
 
 const suggestedNameOf = (draft: ConstraintDraft) =>
-  `${draft.table}_${draft.columns.join('_')}_${nameSuffix[draft.kind]}`
+  [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
 
 const finalNameOf = (draft: ConstraintDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
@@ -199,20 +191,9 @@ const renamesInPlace = (
   item: GroupedConstraint,
   type: ConnectionType
 ) =>
-  !shapeChanged(draft, item) &&
+  !reshapes(draft, item) &&
   finalNameOf(draft) !== item.name &&
   capabilitiesOf(type).renameConstraints
-
-const shapeOf = (draft: ConstraintDraft): ConstraintShape => ({
-  columns: draft.columns,
-  foreignColumns: draft.foreignColumns,
-  foreignSchema: draft.foreignSchema,
-  foreignTable: draft.foreignTable,
-  kind: draft.kind,
-  name: finalNameOf(draft),
-  onDelete: draft.onDelete,
-  onUpdate: draft.onUpdate,
-})
 
 const constraintErrors = (draft: ConstraintDraft) => {
   const isForeign = draft.kind === 'foreignKey'
@@ -235,44 +216,8 @@ const constraintErrors = (draft: ConstraintDraft) => {
   }
 }
 
-const constraintState = ({
-  can,
-  draft,
-  item,
-  tables,
-  type,
-}: {
-  can: SectionCapabilities
-  draft: ConstraintDraft
-  item: GroupedConstraint | null
-  tables: string[]
-  type: ConnectionType
-}) => {
-  const changedShape = !!item && shapeChanged(draft, item)
-  const renameOnly = !!item && !changedShape && finalNameOf(draft) !== item.name
-  const renameInPlace = !!item && renamesInPlace(draft, item, type)
-  const readOnly = item ? !can.edit : !can.create
-
-  return {
-    changed: item ? changedShape || renameOnly : true,
-    description: item ? `${item.schema}.${item.table}` : draft.schema,
-    isForeign: draft.kind === 'foreignKey',
-    // MySQL names every primary key PRIMARY, whatever the ADD says.
-    nameLocked:
-      readOnly ||
-      (item?.type === 'primaryKey' && type === ConnectionType.MySQL),
-    namePlaceholder: draft.table ? suggestedNameOf(draft) : 'Constraint name',
-    readOnly,
-    renameOnly,
-    saveLabel: item ? 'Save' : 'Create constraint',
-    recreates: !!item && (changedShape || renameOnly) && !renameInPlace,
-    tableOptions: item ? [item.table] : tables,
-    title: item ? item.name : 'New constraint',
-  }
-}
-
 const recreateWarning = (
-  item: GroupedConstraint | null,
+  item: GroupedConstraint,
   renameOnly: boolean
 ): InspectorWarning => ({
   action: 'Recreate constraint',
@@ -280,17 +225,17 @@ const recreateWarning = (
     <>
       No rename in place here, so we drop{' '}
       <span data-mask className="font-medium">
-        {item?.name}
+        {item.name}
       </span>{' '}
-      and adds it back renamed. Nothing enforces it in between.
+      and add it back renamed. Nothing enforces it in between.
     </>
   ) : (
     <>
       We drop{' '}
       <span data-mask className="font-medium">
-        {item?.name}
+        {item.name}
       </span>{' '}
-      and adds it back reshaped. A row breaking the new rule fails the add.
+      and add it back reshaped. A row breaking the new rule fails the add.
     </>
   ),
 })
@@ -306,36 +251,27 @@ const saveConstraint = ({
   run: RunQuery
   type: ConnectionType
 }) => {
-  const shape = shapeOf(draft)
+  const shape: ConstraintShape = {
+    columns: draft.columns,
+    foreignColumns: draft.foreignColumns,
+    foreignSchema: draft.foreignSchema,
+    foreignTable: draft.foreignTable,
+    kind: draft.kind,
+    name: finalNameOf(draft),
+    onDelete: draft.onDelete,
+    onUpdate: draft.onUpdate,
+  }
 
   if (!item) {
     return run(
-      createConstraintQuery({
-        schema: draft.schema,
-        shape,
-        table: draft.table,
-      })
+      createConstraintQuery({ schema: draft.schema, shape, table: draft.table })
     )
   }
+  const target = { name: item.name, schema: item.schema, table: item.table }
 
   return renamesInPlace(draft, item, type)
-    ? run(
-        renameConstraintQuery({
-          name: item.name,
-          newName: shape.name,
-          schema: item.schema,
-          table: item.table,
-        })
-      )
-    : run(
-        recreateConstraintQuery({
-          kind: item.type,
-          name: item.name,
-          schema: item.schema,
-          shape,
-          table: item.table,
-        })
-      )
+    ? run(renameConstraintQuery({ ...target, newName: shape.name }))
+    : run(recreateConstraintQuery({ ...target, kind: item.type, shape }))
 }
 
 const ConstraintInspector = ({
@@ -385,18 +321,21 @@ const ConstraintInspector = ({
     }),
     enabled: draft.foreignTable !== '',
   })
+
+  const readOnly = item ? !can.edit : !can.create
+  const reshaped = !!item && reshapes(draft, item)
+  const renameOnly = !!item && !reshaped && finalNameOf(draft) !== item.name
+  const recreates =
+    !!item && (reshaped || renameOnly) && !renamesInPlace(draft, item, type)
   const singleColumn = draft.columns.length === 1
-  const state = constraintState({
-    can,
-    draft,
-    item,
-    tables: tablesOf(draft.schema),
-    type,
-  })
 
   return (
     <>
-      <InspectorHeader description={state.description} title={state.title} />
+      <InspectorHeader
+        description={item ? `${item.schema}.${item.table}` : draft.schema}
+        item={item}
+        noun="constraint"
+      />
       <InspectorSections>
         <InspectorSection
           title="General"
@@ -405,63 +344,48 @@ const ConstraintInspector = ({
           <form.AppField name="schema">
             {(field) => (
               <SchemaField
-                id={field.name}
-                disabled={state.readOnly || !!item}
-                schema={field.state.value}
+                disabled={readOnly || !!item}
                 schemas={schemas}
-                onSchemaChange={(next) => {
+                onValueChange={(next) => {
                   field.handleChange(next)
-                  form.setFieldValue('table', '', { dontUpdateMeta: true })
-                  form.setFieldValue('columns', [], { dontUpdateMeta: true })
-                  form.setFieldValue('foreignSchema', next, {
-                    dontUpdateMeta: true,
-                  })
-                  form.setFieldValue('foreignTable', '', {
-                    dontUpdateMeta: true,
-                  })
-                  form.setFieldValue('foreignColumns', [], {
-                    dontUpdateMeta: true,
+                  resetFields(form, {
+                    columns: [],
+                    foreignColumns: [],
+                    foreignSchema: next,
+                    foreignTable: '',
+                    table: '',
                   })
                 }}
               />
             )}
           </form.AppField>
           <form.AppField name="name">
-            {(field) => (
-              <field.Field>
-                <field.Label>Name</field.Label>
-                <field.Input
-                  data-mask
-                  autoFocus
-                  disabled={state.nameLocked}
-                  placeholder={state.namePlaceholder}
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-                <FieldDescription>
-                  Leave it empty to use the suggested name.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <TextField
+                label="Name"
+                autoFocus
+                description="Leave it empty to use the suggested name."
+                // MySQL names every primary key PRIMARY, whatever the ADD says.
+                disabled={
+                  readOnly ||
+                  (item?.type === 'primaryKey' && type === ConnectionType.MySQL)
+                }
+                placeholder={
+                  draft.table ? suggestedNameOf(draft) : 'Constraint name'
+                }
+              />
             )}
           </form.AppField>
           <form.AppField name="kind">
-            {(field) => (
-              <field.Field>
-                <field.Label>Type</field.Label>
-                <NameSelect
-                  id={field.name}
-                  disabled={state.readOnly}
-                  options={kinds}
-                  labelOf={(value) => typeLabels[value]}
-                  placeholder="Type"
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                />
-                <FieldDescription>
-                  A primary key identifies a row, unique rejects duplicates, a
-                  foreign key points at another table.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <SelectField
+                label="Type"
+                description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table."
+                disabled={readOnly}
+                options={kinds}
+                labelOf={(value) => typeLabels[value]}
+                placeholder="Type"
+              />
             )}
           </form.AppField>
         </InspectorSection>
@@ -471,39 +395,30 @@ const ConstraintInspector = ({
         >
           <form.AppField name="table">
             {(field) => (
-              <field.Field>
-                <field.Label>Table</field.Label>
-                <NameSelect
-                  id={field.name}
-                  disabled={state.readOnly || !!item}
-                  options={state.tableOptions}
-                  placeholder="Choose a table"
-                  value={field.state.value}
-                  onValueChange={(next) => {
-                    field.handleChange(next)
-                    form.setFieldValue('columns', [], { dontUpdateMeta: true })
-                  }}
-                />
-              </field.Field>
+              <SelectField
+                label="Table"
+                disabled={readOnly || !!item}
+                options={item ? [item.table] : tablesOf(draft.schema)}
+                placeholder="Choose a table"
+                onValueChange={(next) => {
+                  field.handleChange(next)
+                  resetFields(form, { columns: [] })
+                }}
+              />
             )}
           </form.AppField>
           <form.AppField name="columns">
-            {(field) => (
-              <field.Field>
-                <field.Label>Columns</field.Label>
-                <NamesSelect
-                  id={field.name}
-                  disabled={state.readOnly || draft.table === ''}
-                  options={tableColumns}
-                  placeholder="Choose columns"
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                />
-              </field.Field>
+            {() => (
+              <NamesField
+                label="Columns"
+                disabled={readOnly || draft.table === ''}
+                options={tableColumns}
+                placeholder="Choose columns"
+              />
             )}
           </form.AppField>
         </InspectorSection>
-        {state.isForeign && (
+        {draft.kind === 'foreignKey' && (
           <InspectorSection
             title="References"
             description="The rows this key points at, and what happens when one of them changes."
@@ -511,17 +426,13 @@ const ConstraintInspector = ({
             <form.AppField name="foreignSchema">
               {(field) => (
                 <SchemaField
-                  id={field.name}
-                  disabled={state.readOnly}
-                  schema={field.state.value}
+                  disabled={readOnly}
                   schemas={schemas}
-                  onSchemaChange={(next) => {
+                  onValueChange={(next) => {
                     field.handleChange(next)
-                    form.setFieldValue('foreignTable', '', {
-                      dontUpdateMeta: true,
-                    })
-                    form.setFieldValue('foreignColumns', [], {
-                      dontUpdateMeta: true,
+                    resetFields(form, {
+                      foreignColumns: [],
+                      foreignTable: '',
                     })
                   }}
                 />
@@ -529,91 +440,70 @@ const ConstraintInspector = ({
             </form.AppField>
             <form.AppField name="foreignTable">
               {(field) => (
-                <field.Field>
-                  <field.Label>Table</field.Label>
-                  <NameSelect
-                    id={field.name}
-                    disabled={state.readOnly}
-                    options={tablesOf(draft.foreignSchema)}
-                    placeholder="Choose a table"
-                    value={field.state.value}
-                    onValueChange={(next) => {
-                      field.handleChange(next)
-                      form.setFieldValue('foreignColumns', [], {
-                        dontUpdateMeta: true,
-                      })
-                    }}
-                  />
-                </field.Field>
+                <SelectField
+                  label="Table"
+                  disabled={readOnly}
+                  options={tablesOf(draft.foreignSchema)}
+                  placeholder="Choose a table"
+                  onValueChange={(next) => {
+                    field.handleChange(next)
+                    resetFields(form, { foreignColumns: [] })
+                  }}
+                />
               )}
             </form.AppField>
             <form.AppField name="foreignColumns">
-              {(field) => (
-                <field.Field>
-                  <field.Label>
-                    {singleColumn ? 'Column' : 'Columns'}
-                  </field.Label>
-                  {singleColumn ? (
+              {(field) =>
+                singleColumn ? (
+                  <field.Field>
+                    <field.Label>Column</field.Label>
                     <NameSelect
                       id={field.name}
-                      disabled={state.readOnly || draft.foreignTable === ''}
+                      disabled={readOnly || draft.foreignTable === ''}
                       options={foreignColumns ?? noColumns}
                       placeholder="Choose a column"
                       value={field.state.value[0] ?? ''}
                       onValueChange={(next) => field.handleChange([next])}
                     />
-                  ) : (
-                    <NamesSelect
-                      id={field.name}
-                      disabled={
-                        state.readOnly ||
-                        draft.foreignTable === '' ||
-                        draft.columns.length === 0
-                      }
-                      limit={draft.columns.length}
-                      options={foreignColumns}
-                      placeholder="Choose columns"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                    />
-                  )}
-                  <FieldDescription>
-                    {singleColumn
-                      ? 'The column this key points at.'
-                      : `${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
-                  </FieldDescription>
-                </field.Field>
-              )}
+                    <FieldDescription>
+                      The column this key points at.
+                    </FieldDescription>
+                  </field.Field>
+                ) : (
+                  <NamesField
+                    label="Columns"
+                    description={`${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
+                    disabled={
+                      readOnly ||
+                      draft.foreignTable === '' ||
+                      draft.columns.length === 0
+                    }
+                    limit={draft.columns.length}
+                    options={foreignColumns}
+                    placeholder="Choose columns"
+                  />
+                )
+              }
             </form.AppField>
             <div className="grid grid-cols-2 gap-3">
               <form.AppField name="onDelete">
-                {(field) => (
-                  <field.Field>
-                    <field.Label>On delete</field.Label>
-                    <NameSelect
-                      id={field.name}
-                      disabled={state.readOnly}
-                      options={capabilitiesOf(type).referentialActions}
-                      placeholder="Action"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                    />
-                  </field.Field>
+                {() => (
+                  <SelectField
+                    label="On delete"
+                    disabled={readOnly}
+                    options={capabilitiesOf(type).referentialActions}
+                    placeholder="Action"
+                  />
                 )}
               </form.AppField>
               <form.AppField name="onUpdate">
-                {(field) => (
-                  <field.Field>
-                    <field.Label>On update</field.Label>
-                    <NameSelect
-                      id={field.name}
-                      disabled={state.readOnly}
-                      options={capabilitiesOf(type).referentialActions}
-                      placeholder="Action"
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                    />
-                  </field.Field>
+                {() => (
+                  <SelectField
+                    label="On update"
+                    disabled={readOnly}
+                    options={capabilitiesOf(type).referentialActions}
+                    placeholder="Action"
+                  />
                 )}
               </form.AppField>
             </div>
@@ -626,14 +516,14 @@ const ConstraintInspector = ({
         {item?.definition && <InspectorDefinition code={item.definition} />}
       </InspectorSections>
       <InspectorFooter
-        canSave={state.changed}
+        canSave={!item || reshaped || renameOnly}
         warning={
-          state.recreates ? recreateWarning(item, state.renameOnly) : undefined
+          item && recreates ? recreateWarning(item, renameOnly) : undefined
         }
         error={mutation.error}
         form={form}
-        readOnly={state.readOnly}
-        saveLabel={state.saveLabel}
+        readOnly={readOnly}
+        saveLabel={item ? 'Save' : 'Create constraint'}
         saving={mutation.isPending}
       />
     </>
@@ -652,31 +542,25 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
     width: 'w-2/12',
   }),
   {
-    cell: (item, { schema, search }) => {
-      const reference = referenceText(item, schema)
-
-      return (
-        <span data-mask>
-          <HighlightText text={item.columns.join(', ')} match={search} />
-          {reference && (
-            <span className="text-muted-foreground">
-              {' → '}
-              <HighlightText text={reference} match={search} />
-            </span>
-          )}
-        </span>
-      )
-    },
+    cell: (item, { schema, search }) => (
+      <span data-mask>
+        <HighlightText text={item.columns.join(', ')} match={search} />
+        {item.foreignTable && (
+          <span className="text-muted-foreground">
+            {' → '}
+            <HighlightText text={referenceOf(item, schema)} match={search} />
+          </span>
+        )}
+      </span>
+    ),
     header: 'Columns',
   },
-  {
+  labelColumn({
     align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">{typeLabels[item.type]}</span>
-    ),
     header: 'Type',
+    labelOf: (item: GroupedConstraint) => typeLabels[item.type],
     width: 'w-2/12',
-  },
+  }),
 ]
 
 export const Constraints = () => {
@@ -684,17 +568,19 @@ export const Constraints = () => {
     prefetchColumns: true,
     section: 'constraints',
   })
-  const { run, search, selectedSchema } = state
-  const query = resourceConstraintsQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourceConstraintsQueryOptions({ connectionResource })
   const { data: constraints = [], isPending } = useQuery(query)
-  const [type, setType] = useState<ConstraintKind | 'all'>('all')
+  const kindFilter = useFilter<ConstraintKind>('All types', [
+    { label: 'Primary keys', value: 'primaryKey' },
+    { label: 'Foreign keys', value: 'foreignKey' },
+    { label: 'Unique', value: 'unique' },
+  ])
 
   const inSchema = groupConstraints(constraints, selectedSchema)
   const rows = inSchema.filter(
     (item) =>
-      (type === 'all' || type === item.type) &&
+      kindFilter.matches(item.type) &&
       matchesSearch(
         search,
         item.name,
@@ -715,15 +601,9 @@ export const Constraints = () => {
       keyOf={constraintKey}
       columns={columns}
       state={state}
-      toolbar={
-        <FilterSelect
-          options={filterOptions}
-          value={type}
-          onValueChange={setType}
-        />
-      }
+      toolbar={kindFilter.control}
       canCascade
-      queryKey={structureQueryKey(state.connectionResource)}
+      queryKey={structureQueryKey(connectionResource)}
       dropItem={(item, cascade) =>
         run(
           dropConstraintQuery({
@@ -736,7 +616,6 @@ export const Constraints = () => {
         )
       }
       Inspector={ConstraintInspector}
-      inspectorProps={state}
     />
   )
 }

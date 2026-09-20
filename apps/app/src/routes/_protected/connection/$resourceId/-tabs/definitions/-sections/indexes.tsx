@@ -17,7 +17,6 @@ import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
-import { useState } from 'react'
 
 import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
@@ -35,6 +34,13 @@ import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/querie
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
 
+import {
+  NamesField,
+  resetFields,
+  SchemaField,
+  SelectField,
+  TextField,
+} from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
   InspectorDefinition,
@@ -45,14 +51,12 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { FilterOption } from '../-components/pickers'
-import { FilterSelect, NameSelect, NamesSelect } from '../-components/pickers'
-import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { nameColumn, textColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type IndexItem = typeof indexesType.infer
 type IndexKind = 'primary' | 'unique' | 'regular'
@@ -71,11 +75,12 @@ interface GroupedIndex extends Pick<
   kind: IndexKind
 }
 
-const kindOf = (item: IndexItem): IndexKind => {
-  if (item.isPrimary) {
-    return 'primary'
-  }
-  return item.isUnique ? 'unique' : 'regular'
+interface IndexDraft {
+  columns: string[]
+  name: string
+  schema: string
+  table: string
+  unique: boolean
 }
 
 const kindLabels: Record<IndexKind, string> = {
@@ -84,18 +89,16 @@ const kindLabels: Record<IndexKind, string> = {
   unique: 'Unique',
 }
 
-const filterOptions: FilterOption<IndexKind | 'all'>[] = [
-  { label: 'All types', value: 'all' },
-  { label: 'Primary keys', value: 'primary' },
-  { label: 'Unique', value: 'unique' },
-  { label: 'Regular', value: 'regular' },
-]
-
 const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
   `${item.table}.${item.name}`
 
-const typeText = (item: GroupedIndex) =>
-  item.type ? `${kindLabels[item.kind]} · ${item.type}` : kindLabels[item.kind]
+const kindOf = (item: IndexItem): IndexKind => {
+  if (item.isPrimary) {
+    return 'primary'
+  }
+
+  return item.isUnique ? 'unique' : 'regular'
+}
 
 const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
   groupInSchema(indexes, schema, {
@@ -111,21 +114,13 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
     }),
   })
 
-interface IndexDraft {
-  columns: string[]
-  name: string
-  schema: string
-  table: string
-  unique: boolean
-}
-
 const suggestedNameOf = (draft: IndexDraft) =>
-  `${draft.table}_${draft.columns.join('_')}_idx`
+  [draft.table, ...draft.columns, 'idx'].join('_')
 
 const finalNameOf = (draft: IndexDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
 
-const shapeChangedOf = (draft: IndexDraft, item: GroupedIndex | null) =>
+const reshapes = (draft: IndexDraft, item: GroupedIndex | null) =>
   !!item &&
   (!sameList(draft.columns, item.columns) ||
     draft.unique !== (item.kind !== 'regular'))
@@ -152,26 +147,37 @@ const saveIndex = ({
       })
     )
   }
+  const target = { name: item.name, schema: item.schema, table: item.table }
 
-  return shapeChangedOf(draft, item)
+  return reshapes(draft, item)
     ? run(
         recreateIndexQuery({
+          ...target,
           columns: draft.columns,
-          name: item.name,
           newName: name,
-          schema: item.schema,
-          table: item.table,
           unique: draft.unique,
         })
       )
-    : run(
-        renameIndexQuery({
-          name: item.name,
-          newName: name,
-          schema: item.schema,
-          table: item.table,
-        })
-      )
+    : run(renameIndexQuery({ ...target, newName: name }))
+}
+
+// A constraint owns its index's columns, and a custom index has a shape the
+// picker cannot round-trip; both still allow a rename.
+const locksOf = ({
+  can,
+  item,
+  type,
+}: {
+  can: SectionCapabilities
+  item: GroupedIndex | null
+  type: ConnectionType
+}) => {
+  const owned = !!item?.constraintOwned
+  const readOnly = item
+    ? !can.edit || (owned && !capabilitiesOf(type).renameConstraints)
+    : !can.create
+
+  return { readOnly, shape: readOnly || owned || !!item?.custom }
 }
 
 const indexErrors = (draft: IndexDraft) => ({
@@ -179,58 +185,33 @@ const indexErrors = (draft: IndexDraft) => ({
   table: draft.table === '' ? 'Pick the table to index.' : undefined,
 })
 
-const indexState = ({
-  can,
-  draft,
+const rebuildWarning = (item: GroupedIndex | null) => ({
+  action: 'Rebuild index',
+  description: (
+    <>
+      We drop{' '}
+      <span data-mask className="font-medium">
+        {item?.name}
+      </span>{' '}
+      and build it again. Queries run unindexed in between, and duplicate rows
+      block a unique rebuild.
+    </>
+  ),
+})
+
+const ColumnNotes = ({
   item,
-  tables,
-  type,
-}: {
-  can: SectionCapabilities
-  draft: IndexDraft
-  item: GroupedIndex | null
-  tables: string[]
-  type: ConnectionType
-}) => {
-  const shapeChanged = shapeChangedOf(draft, item)
-  const owned = !!item?.constraintOwned
-  const custom = !!item?.custom
-  const readOnly = item
-    ? !can.edit || (owned && !capabilitiesOf(type).renameConstraints)
-    : !can.create
-
-  return {
-    changed: item ? finalNameOf(draft) !== item.name || shapeChanged : true,
-    custom,
-    description: item ? `${item.schema}.${item.table}` : draft.schema,
-    namePlaceholder: draft.table ? suggestedNameOf(draft) : 'Index name',
-    owned,
-    readOnly,
-    saveLabel: item ? 'Save' : 'Create index',
-    shapeChanged,
-    shapeLocked: readOnly || custom || owned,
-    tableOptions: item ? [item.table] : tables,
-    title: item ? item.name : 'New index',
-  }
-}
-
-const IndexNotes = ({
-  constraintKey,
-  custom,
   onLeave,
-  owned,
   resourceId,
   schema,
 }: {
-  constraintKey: string | undefined
-  custom: boolean
+  item: GroupedIndex | null
   onLeave: () => void
-  owned: boolean
   resourceId: string
-  schema: string | undefined
+  schema: string
 }) => (
   <AnimatePresence initial={false}>
-    {custom && (
+    {item?.custom && (
       <MotionCollapse key="custom">
         <FieldDescription>
           Built with an expression, method, predicate or ordering the picker
@@ -238,17 +219,14 @@ const IndexNotes = ({
         </FieldDescription>
       </MotionCollapse>
     )}
-    {owned && (
+    {item?.constraintOwned && (
       <MotionCollapse key="owned">
         <FieldDescription>
           This index enforces a constraint, which owns its columns.{' '}
           <Link
             to="/connection/$resourceId/$tabId"
-            params={{
-              resourceId,
-              tabId: definitionsTabId('constraints'),
-            }}
-            search={{ open: constraintKey, schema }}
+            params={{ resourceId, tabId: definitionsTabId('constraints') }}
+            search={{ open: indexKey(item), schema }}
             onClick={onLeave}
             className="text-primary font-medium hover:underline"
           >
@@ -308,17 +286,17 @@ const IndexInspector = ({
     }),
     enabled: draft.table !== '',
   })
-  const state = indexState({
-    can,
-    draft,
-    item,
-    tables: tablesOf(draft.schema),
-    type,
-  })
+
+  const locked = locksOf({ can, item, type })
+  const reshaped = reshapes(draft, item)
 
   return (
     <>
-      <InspectorHeader description={state.description} title={state.title} />
+      <InspectorHeader
+        description={item ? `${item.schema}.${item.table}` : draft.schema}
+        item={item}
+        noun="index"
+      />
       <InspectorSections>
         <InspectorSection
           title="General"
@@ -327,34 +305,26 @@ const IndexInspector = ({
           <form.AppField name="schema">
             {(field) => (
               <SchemaField
-                id={field.name}
-                disabled={state.readOnly || !!item}
-                schema={field.state.value}
+                disabled={locked.readOnly || !!item}
                 schemas={schemas}
-                onSchemaChange={(next) => {
+                onValueChange={(next) => {
                   field.handleChange(next)
-                  form.setFieldValue('table', '', { dontUpdateMeta: true })
-                  form.setFieldValue('columns', [], { dontUpdateMeta: true })
+                  resetFields(form, { columns: [], table: '' })
                 }}
               />
             )}
           </form.AppField>
           <form.AppField name="name">
-            {(field) => (
-              <field.Field>
-                <field.Label>Name</field.Label>
-                <field.Input
-                  data-mask
-                  autoFocus
-                  disabled={state.readOnly}
-                  placeholder={state.namePlaceholder}
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-                <FieldDescription>
-                  Leave it empty to use the suggested name.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <TextField
+                label="Name"
+                autoFocus
+                description="Leave it empty to use the suggested name."
+                disabled={locked.readOnly}
+                placeholder={
+                  draft.table ? suggestedNameOf(draft) : 'Index name'
+                }
+              />
             )}
           </form.AppField>
         </InspectorSection>
@@ -364,45 +334,32 @@ const IndexInspector = ({
         >
           <form.AppField name="table">
             {(field) => (
-              <field.Field>
-                <field.Label>Table</field.Label>
-                <NameSelect
-                  id={field.name}
-                  disabled={state.readOnly || !!item}
-                  options={state.tableOptions}
-                  placeholder="Choose a table"
-                  value={field.state.value}
-                  onValueChange={(next) => {
-                    field.handleChange(next)
-                    form.setFieldValue('columns', [], { dontUpdateMeta: true })
-                  }}
-                />
-              </field.Field>
+              <SelectField
+                label="Table"
+                disabled={locked.readOnly || !!item}
+                options={item ? [item.table] : tablesOf(draft.schema)}
+                placeholder="Choose a table"
+                onValueChange={(next) => {
+                  field.handleChange(next)
+                  resetFields(form, { columns: [] })
+                }}
+              />
             )}
           </form.AppField>
           <form.AppField name="columns">
-            {(field) => (
-              <field.Field>
-                <field.Label>Columns</field.Label>
-                <NamesSelect
-                  id={field.name}
-                  disabled={state.shapeLocked || draft.table === ''}
-                  options={columnNames}
-                  placeholder="Choose columns"
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                />
-                <FieldDescription>
-                  A query uses the index when it filters on the leading columns.
-                </FieldDescription>
-              </field.Field>
+            {() => (
+              <NamesField
+                label="Columns"
+                description="A query uses the index when it filters on the leading columns."
+                disabled={locked.shape || draft.table === ''}
+                options={columnNames}
+                placeholder="Choose columns"
+              />
             )}
           </form.AppField>
-          <IndexNotes
-            constraintKey={item ? indexKey(item) : undefined}
-            custom={state.custom}
+          <ColumnNotes
+            item={item}
             onLeave={() => onOpenChange(false)}
-            owned={state.owned}
             resourceId={connectionResource.id}
             schema={draft.schema}
           />
@@ -418,7 +375,7 @@ const IndexInspector = ({
                 <Switch
                   id="index-unique"
                   size="sm"
-                  disabled={state.shapeLocked}
+                  disabled={locked.shape}
                   checked={field.state.value}
                   onCheckedChange={field.handleChange}
                 />
@@ -429,28 +386,12 @@ const IndexInspector = ({
         {item?.definition && <InspectorDefinition code={item.definition} />}
       </InspectorSections>
       <InspectorFooter
-        canSave={state.changed}
-        warning={
-          state.shapeChanged
-            ? {
-                action: 'Rebuild index',
-                description: (
-                  <>
-                    We drop{' '}
-                    <span data-mask className="font-medium">
-                      {item?.name}
-                    </span>{' '}
-                    and rebuilds it. Queries run unindexed in between, and
-                    duplicate rows block a unique rebuild.
-                  </>
-                ),
-              }
-            : undefined
-        }
+        canSave={!item || reshaped || finalNameOf(draft) !== item.name}
+        warning={reshaped ? rebuildWarning(item) : undefined}
         error={mutation.error}
         form={form}
-        readOnly={state.readOnly}
-        saveLabel={state.saveLabel}
+        readOnly={locked.readOnly}
+        saveLabel={item ? 'Save' : 'Create index'}
         saving={mutation.isPending}
       />
     </>
@@ -472,14 +413,15 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
     header: 'Columns',
     valueOf: (item: GroupedIndex) => item.columns.join(', '),
   }),
-  {
+  labelColumn({
     align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">{typeText(item)}</span>
-    ),
     header: 'Type',
+    labelOf: (item: GroupedIndex) =>
+      item.type
+        ? `${kindLabels[item.kind]} · ${item.type}`
+        : kindLabels[item.kind],
     width: 'w-3/12',
-  },
+  }),
 ]
 
 export const Indexes = () => {
@@ -487,17 +429,19 @@ export const Indexes = () => {
     prefetchColumns: true,
     section: 'indexes',
   })
-  const { run, search, selectedSchema } = state
-  const query = resourceIndexesQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourceIndexesQueryOptions({ connectionResource })
   const { data: indexes = [], isPending } = useQuery(query)
-  const [kind, setKind] = useState<IndexKind | 'all'>('all')
+  const kindFilter = useFilter<IndexKind>('All types', [
+    { label: 'Primary keys', value: 'primary' },
+    { label: 'Unique', value: 'unique' },
+    { label: 'Regular', value: 'regular' },
+  ])
 
   const inSchema = groupIndexes(indexes, selectedSchema)
   const rows = inSchema.filter(
     (item) =>
-      (kind === 'all' || kind === item.kind) &&
+      kindFilter.matches(item.kind) &&
       matchesSearch(search, item.name, item.table, ...item.columns)
   )
 
@@ -512,15 +456,9 @@ export const Indexes = () => {
       keyOf={indexKey}
       columns={columns}
       state={state}
-      toolbar={
-        <FilterSelect
-          options={filterOptions}
-          value={kind}
-          onValueChange={setKind}
-        />
-      }
+      toolbar={kindFilter.control}
       canDropItem={(item) => !item.constraintOwned}
-      queryKey={structureQueryKey(state.connectionResource)}
+      queryKey={structureQueryKey(connectionResource)}
       dropItem={(item) =>
         run(
           dropIndexQuery({
@@ -531,7 +469,6 @@ export const Indexes = () => {
         )
       }
       Inspector={IndexInspector}
-      inspectorProps={state}
     />
   )
 }

@@ -15,23 +15,6 @@ export interface DefinitionsColumn<T> {
   width?: string
 }
 
-const NameCell = ({
-  children,
-  icon,
-}: {
-  children: ReactNode
-  icon: IconSvgElement
-}) => (
-  <span data-mask className="flex min-w-0 items-center gap-2">
-    <HugeiconsIcon
-      icon={icon}
-      strokeWidth={2}
-      className="text-muted-foreground size-4 shrink-0"
-    />
-    <span className="truncate">{children}</span>
-  </span>
-)
-
 export const nameColumn = <T extends { name: string }>({
   after,
   icon,
@@ -42,10 +25,17 @@ export const nameColumn = <T extends { name: string }>({
   width: string
 }): DefinitionsColumn<T> => ({
   cell: (item, { search }) => (
-    <NameCell icon={icon(item)}>
-      <HighlightText text={item.name} match={search} />
+    <span data-mask className="flex min-w-0 items-center gap-2">
+      <HugeiconsIcon
+        icon={icon(item)}
+        strokeWidth={2}
+        className="text-muted-foreground size-4 shrink-0"
+      />
+      <span className="truncate">
+        <HighlightText text={item.name} match={search} />
+      </span>
       {after?.(item)}
-    </NameCell>
+    </span>
   ),
   header: 'Name',
   width,
@@ -64,6 +54,26 @@ export const textColumn = <T,>({
     <span data-mask>
       <HighlightText text={valueOf(item) ?? ''} match={search} />
     </span>
+  ),
+  header,
+  width,
+})
+
+// Chrome, not user data: a label the app chose for a value, never the value.
+export const labelColumn = <T,>({
+  align,
+  header,
+  labelOf,
+  width,
+}: {
+  align?: 'end'
+  header: string
+  labelOf: (item: T, context: CellContext) => ReactNode
+  width?: string
+}): DefinitionsColumn<T> => ({
+  align,
+  cell: (item, context) => (
+    <span className="text-muted-foreground">{labelOf(item, context)}</span>
   ),
   header,
   width,

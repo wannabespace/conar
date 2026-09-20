@@ -21,6 +21,13 @@ import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { Drawer, DrawerContent } from '@tamery/ui/components/drawer'
 import { Label } from '@tamery/ui/components/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
@@ -46,8 +53,7 @@ import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 import type { CellContext, DefinitionsColumn } from '../-lib/columns'
-import type { InspectorProps } from './inspector'
-import { SchemaSelect } from './schema-select'
+import type { SectionInspectorProps } from './inspector'
 
 const SKELETON_ROWS = 6
 const SKELETON_MIN_WIDTH = 40
@@ -63,6 +69,41 @@ const columnClass = ({ align }: Pick<DefinitionsColumn<unknown>, 'align'>) =>
   cn('truncate', align === 'end' && 'text-right')
 
 const alwaysDroppable = () => true
+
+const SchemaSelect = ({
+  schemas,
+  selectedSchema,
+  setSelectedSchema,
+}: Pick<
+  DefinitionsState,
+  'schemas' | 'selectedSchema' | 'setSelectedSchema'
+>) =>
+  schemas.length > 1 && (
+    <Select
+      value={selectedSchema}
+      onValueChange={(schema) => {
+        if (schema) {
+          setSelectedSchema(schema)
+        }
+      }}
+    >
+      <SelectTrigger data-mask className="max-w-56 min-w-45">
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+          <span className="text-muted-foreground shrink-0">schema</span>
+          <span className="truncate">
+            <SelectValue />
+          </span>
+        </div>
+      </SelectTrigger>
+      <SelectContent data-mask>
+        {schemas.map((schema) => (
+          <SelectItem key={schema} value={schema}>
+            {schema}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
 
 const SkeletonRows = <T,>({ columns }: { columns: DefinitionsColumn<T>[] }) =>
   Array.from({ length: SKELETON_ROWS }, (_, row) => (
@@ -152,7 +193,7 @@ const useInspector = <T,>({
   }
 }
 
-export const DefinitionsPage = <T extends { name: string }, P extends object>({
+export const DefinitionsPage = <T extends { name: string }>({
   canCascade = false,
   canDropItem = alwaysDroppable,
   columns,
@@ -160,7 +201,6 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
   icon,
   inSchema,
   Inspector,
-  inspectorProps,
   items,
   keyOf,
   loading,
@@ -177,10 +217,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
   icon: IconSvgElement
   inSchema: number
-  Inspector: ComponentType<
-    InspectorProps<T> & P & { queryKey: readonly unknown[] }
-  >
-  inspectorProps: P
+  Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
   keyOf: (item: T) => string
   loading: boolean
@@ -470,6 +507,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
         >
           <Inspector
             key={inspector.inspected.session}
+            {...state}
             item={inspectedItem}
             queryKey={queryKey}
             onOpenChange={(open) => {
@@ -477,7 +515,6 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
                 inspector.close()
               }
             }}
-            {...inspectorProps}
           />
         </DrawerContent>
       </Drawer>

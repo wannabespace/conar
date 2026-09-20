@@ -3,7 +3,6 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
@@ -20,11 +19,10 @@ import {
 import type { SectionInspectorProps } from '../-components/inspector'
 import { InspectorHeader } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { FilterOption } from '../-components/pickers'
-import { FilterSelect } from '../-components/pickers'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { nameColumn, textColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type FunctionItem = typeof functionsType.infer
 type FunctionType = FunctionItem['type']
@@ -33,12 +31,6 @@ const typeLabels: Record<FunctionType, string> = {
   function: 'Function',
   procedure: 'Procedure',
 }
-
-const filterOptions: FilterOption<FunctionType | 'all'>[] = [
-  { label: 'All types', value: 'all' },
-  { label: 'Functions', value: 'function' },
-  { label: 'Procedures', value: 'procedure' },
-]
 
 const functionKey = (item: FunctionItem) =>
   `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
@@ -65,8 +57,9 @@ const FunctionInspector = ({
 }: SectionInspectorProps<FunctionItem>) => (
   <>
     <InspectorHeader
-      description={item ? item.schema : (selectedSchema ?? '')}
-      title={item ? item.name : 'New function'}
+      description={item?.schema ?? selectedSchema ?? ''}
+      item={item}
+      noun="function"
     />
     {item ? (
       <ExistingDefinitionForm
@@ -103,52 +96,46 @@ const FunctionInspector = ({
 
 const columns: DefinitionsColumn<FunctionItem>[] = [
   nameColumn({ icon: () => SourceCodeIcon, width: 'w-3/12' }),
-  {
-    cell: (item, { search }) => (
-      <span className="text-muted-foreground">
-        {item.language && <HighlightText text={item.language} match={search} />}
-      </span>
-    ),
+  labelColumn({
     header: 'Language',
+    labelOf: (item: FunctionItem, { search }) =>
+      item.language && <HighlightText text={item.language} match={search} />,
     width: 'w-2/12',
-  },
+  }),
   textColumn({
     header: 'Returns',
     valueOf: (item: FunctionItem) => item.return_type,
   }),
-  {
+  labelColumn({
     align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">
-        <span className="tabular-nums">{item.argumentCount ?? 0}</span>
-      </span>
-    ),
     header: 'Arguments',
-    width: 'w-2/12',
-  },
-  {
-    align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">{typeLabels[item.type]}</span>
+    labelOf: (item: FunctionItem) => (
+      <span className="tabular-nums">{item.argumentCount ?? 0}</span>
     ),
-    header: 'Type',
     width: 'w-2/12',
-  },
+  }),
+  labelColumn({
+    align: 'end',
+    header: 'Type',
+    labelOf: (item: FunctionItem) => typeLabels[item.type],
+    width: 'w-2/12',
+  }),
 ]
 
 export const Functions = () => {
   const state = useDefinitionsState({ section: 'functions' })
-  const { run, search, selectedSchema } = state
-  const query = resourceFunctionsQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourceFunctionsQueryOptions({ connectionResource })
   const { data: functions = [], isPending } = useQuery(query)
-  const [type, setType] = useState<FunctionType | 'all'>('all')
+  const typeFilter = useFilter<FunctionType>('All types', [
+    { label: 'Functions', value: 'function' },
+    { label: 'Procedures', value: 'procedure' },
+  ])
 
   const inSchema = functions.filter((item) => item.schema === selectedSchema)
   const rows = inSchema.filter(
     (item) =>
-      (type === 'all' || type === item.type) &&
+      typeFilter.matches(item.type) &&
       matchesSearch(search, item.name, item.language, item.return_type)
   )
 
@@ -163,13 +150,7 @@ export const Functions = () => {
       keyOf={functionKey}
       columns={columns}
       state={state}
-      toolbar={
-        <FilterSelect
-          options={filterOptions}
-          value={type}
-          onValueChange={setType}
-        />
-      }
+      toolbar={typeFilter.control}
       canCascade
       queryKey={query.queryKey}
       dropItem={(item, cascade) =>
@@ -184,7 +165,6 @@ export const Functions = () => {
         )
       }
       Inspector={FunctionInspector}
-      inspectorProps={state}
     />
   )
 }

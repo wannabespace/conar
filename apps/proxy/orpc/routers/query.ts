@@ -28,7 +28,6 @@ const resolveQueryConnectionString = memoize(
     return apiClient.internal.proxy.resolveConnectionString(input)
   },
   {
-    // 5 minutes
     maxAge: 1000 * 60 * 5,
   }
 )

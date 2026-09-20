@@ -5,7 +5,6 @@ import path from 'node:path'
 const PACKAGE_NAME = 'tamery'
 const CACHE_DIR = path.join(os.homedir(), '.config', 'tamery')
 const CACHE_FILE = path.join(CACHE_DIR, 'update-check.json')
-// 24 hours
 const CHECK_INTERVAL_MS = 1000 * 60 * 60 * 24
 
 interface UpdateCache {

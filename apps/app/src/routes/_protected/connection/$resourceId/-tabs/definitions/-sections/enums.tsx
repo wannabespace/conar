@@ -1,5 +1,4 @@
 import { LeftToRightListDashIcon, TagsIcon } from '@hugeicons/core-free-icons'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameList } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -16,7 +15,6 @@ import { useQuery } from '@tanstack/react-query'
 import { type as arkType } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 
-import type { SectionCapabilities } from '~/entities/connection/capabilities'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { alterEnumQuery } from '~/entities/connection/queries/enums/alter'
@@ -30,55 +28,30 @@ import { setColumnEnumValuesQuery } from '~/entities/connection/queries/enums/se
 import { resourceColumnsQueryKey } from '~/entities/connection/queries/tables/columns'
 import { queryClient } from '~/lib/query-client'
 
+import { SchemaField, TextField } from '../-components/fields'
 import type {
   InspectorWarning,
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  InspectorHeader,
   InspectorFooter,
+  InspectorHeader,
   InspectorSection,
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { SchemaField } from '../-components/schema-select'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { nameColumn, textColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type EnumItem = typeof enumType.infer
 
-const enumKey = (item: EnumItem) =>
-  `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
-
-const enumEditable = (item: EnumItem, type: ConnectionType) =>
-  item.metadata?.table
-    ? type === ConnectionType.MySQL
-    : type === ConnectionType.Postgres
-
-const enumNote = ({
-  item,
-  recreating,
-  type,
-}: {
-  item: EnumItem | null
-  recreating: boolean
-  type: ConnectionType
-}) => {
-  if (!item) {
-    return null
-  }
-  if (!enumEditable(item, type)) {
-    return 'We cannot edit enums on this database yet.'
-  }
-  if (item.metadata?.table) {
-    return 'Values live on the column, so saving rewrites the whole list.'
-  }
-  return recreating
-    ? null
-    : 'Renaming and appending values alter the type in place.'
+interface EnumDraft {
+  drafts: EditableListItem[]
+  name: string
+  schema: string
 }
 
 interface EnumPlan {
@@ -87,6 +60,9 @@ interface EnumPlan {
   renames: Record<string, string>
   values: string[]
 }
+
+const enumKey = (item: EnumItem) =>
+  `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
 
 const enumPlan = (
   item: EnumItem | null,
@@ -124,24 +100,11 @@ const enumPlan = (
   }
 }
 
-const enumDescription = (item: EnumItem | null, schema: string) => {
-  if (!item) {
-    return schema
-  }
-  if (item.metadata?.table) {
-    return `${item.schema}.${item.metadata.table}.${item.metadata.column}`
-  }
-  return item.schema
-}
-
 const draftsOf = (item: EnumItem | null) =>
   (item?.values.length ? item.values : ['']).map((value, index) => ({
     id: String(index),
     value,
   }))
-
-const valuesOf = (drafts: EditableListItem[]) =>
-  drafts.map((draft) => draft.value.trim()).filter(Boolean)
 
 const migratedDefault = (
   value: string | null,
@@ -158,11 +121,8 @@ const migratedDefault = (
   return kept.length === 0 ? null : kept.join(',')
 }
 
-interface EnumDraft {
-  drafts: EditableListItem[]
-  name: string
-  schema: string
-}
+const valuesOf = (drafts: EditableListItem[]) =>
+  drafts.map((draft) => draft.value.trim()).filter(Boolean)
 
 const enumSchema = arkType({
   drafts: arkType({ id: 'string', value: 'string' })
@@ -268,16 +228,16 @@ const saveEnum = async ({
   )
 }
 
-const replaceWarning = (item: EnumItem | null): InspectorWarning => ({
+const replaceWarning = (item: EnumItem): InspectorWarning => ({
   action: 'Replace enum',
   description: (
     <>
       Postgres can only append to an enum, so we recreate{' '}
       <span data-mask className="font-medium">
-        {item?.name}
+        {item.name}
       </span>{' '}
-      and repoints its columns. A row holding a dropped value, or a view built
-      on the type, rolls it back.
+      and repoint its columns. A row holding a dropped value, or a view built on
+      the type, rolls it back.
     </>
   ),
 })
@@ -286,12 +246,12 @@ const replaceWarning = (item: EnumItem | null): InspectorWarning => ({
 // fails the rewrite under strict SQL mode and is written back as an empty
 // string otherwise.
 const lostValuesWarning = (
-  item: EnumItem | null,
+  item: EnumItem,
   values: string[]
 ): InspectorWarning | undefined => {
-  const lost = (item?.values ?? []).filter((value) => !values.includes(value))
+  const lost = item.values.filter((value) => !values.includes(value))
 
-  if (!item?.metadata?.table || lost.length === 0) {
+  if (!item.metadata?.table || lost.length === 0) {
     return undefined
   }
 
@@ -314,38 +274,46 @@ const lostValuesWarning = (
   }
 }
 
-const enumState = ({
-  can,
-  draft,
+const valuesNote = ({
   item,
-  type,
+  readOnly,
+  recreating,
 }: {
-  can: SectionCapabilities
-  draft: EnumDraft
   item: EnumItem | null
-  type: ConnectionType
+  readOnly: boolean
+  recreating: boolean
 }) => {
-  const columnBound = !!item?.metadata?.table
-  const { kind, values } = enumPlan(item, draft.drafts)
-  const replacesType = !columnBound && kind === 'recreate'
-
-  return {
-    changed: item
-      ? draft.name.trim() !== item.name || !sameList(values, item.values)
-      : true,
-    columnBound,
-    note: enumNote({ item, recreating: replacesType, type }),
-    readOnly: item ? !can.edit || !enumEditable(item, type) : !can.create,
-    replacesType,
-    values,
+  if (!item) {
+    return null
   }
+  if (readOnly) {
+    return 'We cannot edit enums on this database yet.'
+  }
+  if (item.metadata?.table) {
+    return 'Values live on the column, so saving rewrites the whole list.'
+  }
+
+  return recreating
+    ? null
+    : 'Renaming and appending values alter the type in place.'
 }
 
 const nameHint = (item: EnumItem | null) => {
   if (!item?.metadata?.table) {
     return 'Recommended to use lowercase and an underscore to separate words.'
   }
+
   return `Column-bound ${item.metadata.isSet ? 'sets' : 'enums'} are named after their column.`
+}
+
+const describe = (item: EnumItem | null, schema: string) => {
+  if (!item) {
+    return schema
+  }
+
+  return item.metadata?.table
+    ? `${item.schema}.${item.metadata.table}.${item.metadata.column}`
+    : item.schema
 }
 
 const EnumInspector = ({
@@ -357,7 +325,6 @@ const EnumInspector = ({
   run,
   schemas,
   selectedSchema,
-  type,
 }: SectionInspectorProps<EnumItem>) => {
   const mutation = useDefinitionMutation({
     mutationFn: async (draft: EnumDraft) => {
@@ -378,19 +345,27 @@ const EnumInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    validators: {
-      onChange: enumSchema,
-      onMount: enumSchema,
-    },
+    validators: { onChange: enumSchema, onMount: enumSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
-  const state = enumState({ can, draft, item, type })
+
+  const columnBound = !!item?.metadata?.table
+  const readOnly = item ? !can.edit : !can.create
+  const { kind, values } = enumPlan(item, draft.drafts)
+  const replacesType = !columnBound && kind === 'recreate'
+  const changed =
+    !item || draft.name.trim() !== item.name || !sameList(values, item.values)
+  const note = valuesNote({ item, readOnly, recreating: replacesType })
+  const warning =
+    item &&
+    (replacesType ? replaceWarning(item) : lostValuesWarning(item, values))
 
   return (
     <>
       <InspectorHeader
-        description={enumDescription(item, draft.schema)}
-        title={item ? item.name : 'New enum'}
+        description={describe(item, draft.schema)}
+        item={item}
+        noun="enum"
       />
       <InspectorSections>
         <InspectorSection
@@ -398,29 +373,18 @@ const EnumInspector = ({
           description="An enum limits a column to a fixed list of values."
         >
           <form.AppField name="schema">
-            {(field) => (
-              <SchemaField
-                id={field.name}
-                disabled={state.readOnly || !!item}
-                schema={field.state.value}
-                schemas={schemas}
-                onSchemaChange={field.handleChange}
-              />
+            {() => (
+              <SchemaField disabled={readOnly || !!item} schemas={schemas} />
             )}
           </form.AppField>
           <form.AppField name="name">
-            {(field) => (
-              <field.Field>
-                <field.Label>Name</field.Label>
-                <field.Input
-                  data-mask
-                  autoFocus={!item}
-                  disabled={state.readOnly || state.columnBound}
-                  spellCheck={false}
-                  autoComplete="off"
-                />
-                <FieldDescription>{nameHint(item)}</FieldDescription>
-              </field.Field>
+            {() => (
+              <TextField
+                label="Name"
+                autoFocus={!item}
+                description={nameHint(item)}
+                disabled={readOnly || columnBound}
+              />
             )}
           </form.AppField>
         </InspectorSection>
@@ -436,13 +400,13 @@ const EnumInspector = ({
                   error={fieldErrorMessage(field)}
                   items={field.state.value}
                   placeholder="Value"
-                  readOnly={state.readOnly}
+                  readOnly={readOnly}
                   onItemsChange={field.handleChange}
                 />
                 <AnimatePresence initial={false}>
-                  {state.note && (
-                    <MotionCollapse key={state.note}>
-                      <FieldDescription>{state.note}</FieldDescription>
+                  {note && (
+                    <MotionCollapse key={note}>
+                      <FieldDescription>{note}</FieldDescription>
                     </MotionCollapse>
                   )}
                 </AnimatePresence>
@@ -452,15 +416,11 @@ const EnumInspector = ({
         </InspectorSection>
       </InspectorSections>
       <InspectorFooter
-        canSave={state.changed}
-        warning={
-          state.replacesType
-            ? replaceWarning(item)
-            : lostValuesWarning(item, state.values)
-        }
+        canSave={changed}
+        warning={warning ?? undefined}
         error={mutation.error}
         form={form}
-        readOnly={state.readOnly}
+        readOnly={readOnly}
         saveLabel={item ? 'Save' : 'Create enum'}
         saving={mutation.isPending}
       />
@@ -500,16 +460,12 @@ const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
     width: 'w-2/12',
   }),
   valuesColumn,
-  {
+  labelColumn({
     align: 'end',
-    cell: (item) => (
-      <span className="text-muted-foreground">
-        {item.metadata?.isSet ? 'Set' : 'Enum'}
-      </span>
-    ),
     header: 'Type',
+    labelOf: (item: EnumItem) => (item.metadata?.isSet ? 'Set' : 'Enum'),
     width: 'w-2/12',
-  },
+  }),
 ]
 
 const typeColumns: DefinitionsColumn<EnumItem>[] = [
@@ -519,12 +475,9 @@ const typeColumns: DefinitionsColumn<EnumItem>[] = [
 
 export const Enums = () => {
   const state = useDefinitionsState({ section: 'enums' })
-  const { run, search, selectedSchema } = state
-  const query = resourceEnumsQueryOptions({
-    connectionResource: state.connectionResource,
-  })
+  const { connectionResource, run, search, selectedSchema } = state
+  const query = resourceEnumsQueryOptions({ connectionResource })
   const { data: enums = [], isPending } = useQuery(query)
-  const columnBound = enums.some((item) => item.metadata?.table)
 
   const inSchema = enums.filter((item) => item.schema === selectedSchema)
   const rows = inSchema.filter((item) =>
@@ -546,7 +499,11 @@ export const Enums = () => {
       inSchema={inSchema.length}
       loading={isPending}
       keyOf={enumKey}
-      columns={columnBound ? columnBoundColumns : typeColumns}
+      columns={
+        enums.some((item) => item.metadata?.table)
+          ? columnBoundColumns
+          : typeColumns
+      }
       state={state}
       canCascade
       queryKey={query.queryKey}
@@ -554,10 +511,9 @@ export const Enums = () => {
         await run(
           dropEnumQuery({ cascade, name: item.name, schema: item.schema })
         )
-        await refreshColumns(state.connectionResource)
+        await refreshColumns(connectionResource)
       }}
       Inspector={EnumInspector}
-      inspectorProps={state}
     />
   )
 }
