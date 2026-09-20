@@ -404,7 +404,6 @@ const InteractiveTableCell = ({
           </PopoverTrigger>
           <PopoverContent
             className={cn(
-              // The width fold outlasts the fade, so the properties need separate durations.
               `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
               isBig && `w-[min(50vw,60rem)]`
             )}
