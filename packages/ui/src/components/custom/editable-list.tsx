@@ -347,11 +347,7 @@ export const EditableList = ({
       )}
       <div className="flex items-center gap-2">
         {!readOnly && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => insertAt(rows.length)}
-          >
+          <Button variant="outline" onClick={() => insertAt(rows.length)}>
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             {addLabel}
           </Button>
