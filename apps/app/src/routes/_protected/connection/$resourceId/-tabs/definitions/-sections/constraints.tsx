@@ -114,18 +114,6 @@ const groupConstraints = (
     }),
   })
 
-const referenceRules = (item: GroupedConstraint) =>
-  [
-    item.onDelete && item.onDelete !== DEFAULT_ACTION
-      ? `on delete ${item.onDelete.toLowerCase()}`
-      : null,
-    item.onUpdate && item.onUpdate !== DEFAULT_ACTION
-      ? `on update ${item.onUpdate.toLowerCase()}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(', ')
-
 const referenceText = (item: GroupedConstraint, schema: string | undefined) => {
   if (!item.foreignTable) {
     return null
@@ -134,9 +122,8 @@ const referenceText = (item: GroupedConstraint, schema: string | undefined) => {
     item.foreignSchema && item.foreignSchema !== schema
       ? `${item.foreignSchema}.${item.foreignTable}`
       : item.foreignTable
-  const rules = referenceRules(item)
 
-  return `${table} (${item.foreignColumns.join(', ')})${rules ? ` · ${rules}` : ''}`
+  return `${table} (${item.foreignColumns.join(', ')})`
 }
 
 interface ConstraintDraft {
