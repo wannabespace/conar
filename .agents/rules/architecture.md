@@ -31,7 +31,7 @@ Every app's entry imports `@tamery/shared/arktype-config` first (`exactOptionalP
 - `main.tsx` exports nothing — it only creates the router and renders. Shared singletons live in leaves so no route or `lib/*` module imports the entry: query clients in `lib/query-client.ts`, the router history in `lib/last-location.ts`. Library code that needs the current URL or a redirect uses that history (`isAuthLocation()`, `history.push`), never the router instance; components use `useRouter()`.
 - The window paints app chrome before any of that: `src/shell.tsx` is server-rendered into `index.html` markers by `@tamery/vite-inline-html/react`, wired in `vite.config.ts` with component/marker pairs (dev and build alike). Keep it hook-free and Node-safe; design rules in the `tamery-ui` skill.
 - `src/lib/warmup.ts` is the entry's first import and the only module that deliberately kicks off heavy chunks — `import()` of the database right away, monaco 1s after `load`. Monaco and `lib/database` must never be static-imported from the entry; posthog-js stays behind the lazy `lib/posthog.ts` facade.
-- npm packages imported only from lazy islands (`@faker-js/faker/locale/en` and `@base-ui/react/number-field` in the seed panel) belong in `optimizeDeps.include` (`apps/app/vite.config.ts`). First `import()` otherwise 504s `Outdated Optimize Dep` and React.lazy's error boundary swallows Vite's reload. Import faker from `locale/en`, never the all-locales barrel.
+- Import faker from `@faker-js/faker/locale/en`, never the all-locales barrel.
 - Verify by walking the dev module graph from `/src/main.tsx`, not by reading imports. The `@hugeicons/core-free-icons` barrel via `packages/ui` `sonner.tsx` is eager in dev only (prod treeshakes it).
 
 ## Connection routes
