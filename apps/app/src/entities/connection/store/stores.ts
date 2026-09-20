@@ -7,6 +7,7 @@ import { createWebStorageValue } from 'seitu/web'
 import { connectionResourceStoreKey } from '~/lib/constants'
 
 import { connectionTabType } from './tabs/types'
+import type { ConnectionTab } from './tabs/types'
 
 const schema = type({
   lastOpenedResourceName: 'string | null',
@@ -90,6 +91,18 @@ export const getChatStore = memoize((id: string) =>
   })
 )
 
-export const getNavigatorStore = memoize((_id: string) =>
-  createStore<'tables' | 'definitions'>('tables')
+export type NavigatorMode = 'tables' | 'definitions'
+
+export const navigatorModeByTab: Record<ConnectionTab['type'], NavigatorMode> =
+  {
+    definitions: 'definitions',
+    runner: 'tables',
+    table: 'tables',
+    visualizer: 'definitions',
+  }
+
+export const getNavigatorStore = memoize(
+  (_id: string, initialMode: NavigatorMode = 'tables') =>
+    createStore(initialMode),
+  { cacheKey: (id) => id }
 )

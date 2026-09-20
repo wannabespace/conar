@@ -9,7 +9,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { setNavigator } from '~/entities/connection/store/helpers/navigator'
 import { getNavigatorStore } from '~/entities/connection/store/stores'
 
 import { sidebarActionRowClassName } from './primitives'
@@ -30,8 +29,7 @@ export const NavigatorSwitcher = () => {
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       className={sidebarActionRowClassName}
       onClick={() =>
-        setNavigator(
-          connectionResource.id,
+        getNavigatorStore(connectionResource.id).set(
           isDefinitions ? 'tables' : 'definitions'
         )
       }
