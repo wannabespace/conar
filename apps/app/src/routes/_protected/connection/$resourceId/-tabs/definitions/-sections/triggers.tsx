@@ -32,7 +32,7 @@ import { FilterSelect } from '../-components/pickers'
 import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn, nameColumn } from '../-lib/columns'
+import { nameColumn, textColumn } from '../-lib/columns'
 
 type TriggerItem = typeof triggersType.infer
 
@@ -179,12 +179,12 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
     after: (item: TriggerItem) =>
       item.enabled === false && <Badge variant="destructive">Disabled</Badge>,
     icon: () => FlashIcon,
-    width: 'w-68',
+    width: 'w-3/12',
   }),
-  monoColumn({
+  textColumn({
     header: 'Table',
     valueOf: (item: TriggerItem) => item.table,
-    width: 'w-44',
+    width: 'w-2/12',
   }),
   {
     cell: (item) => (
@@ -193,7 +193,7 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
       </span>
     ),
     header: 'Timing',
-    width: 'w-32',
+    width: 'w-2/12',
   },
   {
     cell: (item) => (
@@ -205,10 +205,9 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
       </span>
     ),
     header: 'Event',
-    width: 'w-44',
+    width: 'w-2/12',
   },
-  monoColumn({
-    grow: true,
+  textColumn({
     header: 'Function',
     valueOf: (item: TriggerItem) => item.functionName,
   }),

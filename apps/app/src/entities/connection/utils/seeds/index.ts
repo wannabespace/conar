@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker/locale/en'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'

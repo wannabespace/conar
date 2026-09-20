@@ -59,14 +59,8 @@ const { useNavigate, useSearch } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const columnClass = ({
-  align,
-  grow,
-}: Pick<DefinitionsColumn<unknown>, 'align' | 'grow'>) =>
-  cn(
-    grow ? 'w-full whitespace-normal' : 'truncate',
-    align === 'end' && 'text-right'
-  )
+const columnClass = ({ align }: Pick<DefinitionsColumn<unknown>, 'align'>) =>
+  cn('truncate', align === 'end' && 'text-right')
 
 const alwaysDroppable = () => true
 
@@ -78,10 +72,7 @@ const SkeletonRows = <T,>({ columns }: { columns: DefinitionsColumn<T>[] }) =>
       className="hover:bg-transparent"
     >
       {columns.map((column, index) => (
-        <TableCell
-          key={column.header}
-          className={cn(columnClass(column), column.className)}
-        >
+        <TableCell key={column.header} className={columnClass(column)}>
           <Skeleton
             className={cn(
               'h-3 w-(--bar-width) rounded-full',
@@ -402,7 +393,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
             />
           ) : (
             <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
-              <Table className="table-fixed">
+              <Table className="min-w-xl table-fixed">
                 <TableHeader>
                   <TableRow>
                     {columns.map((column) => (
@@ -449,10 +440,7 @@ export const DefinitionsPage = <T extends { name: string }, P extends object>({
                         {columns.map((column) => (
                           <TableCell
                             key={column.header}
-                            className={cn(
-                              columnClass(column),
-                              column.className
-                            )}
+                            className={columnClass(column)}
                           >
                             {column.cell(item, context)}
                           </TableCell>

@@ -11,13 +11,9 @@ export interface CellContext {
 export interface DefinitionsColumn<T> {
   align?: 'end'
   cell: (item: T, context: CellContext) => ReactNode
-  className?: string
-  grow?: boolean
   header: string
   width?: string
 }
-
-const NAME_COLUMN_CLASS = 'font-mono font-medium'
 
 const NameCell = ({
   children,
@@ -51,28 +47,24 @@ export const nameColumn = <T extends { name: string }>({
       {after?.(item)}
     </NameCell>
   ),
-  className: NAME_COLUMN_CLASS,
   header: 'Name',
   width,
 })
 
-export const monoColumn = <T,>({
-  grow,
+export const textColumn = <T,>({
   header,
   valueOf,
   width,
 }: {
-  grow?: boolean
   header: string
   valueOf: (item: T) => string | null | undefined
   width?: string
 }): DefinitionsColumn<T> => ({
   cell: (item, { search }) => (
-    <span data-mask className="font-mono">
+    <span data-mask>
       <HighlightText text={valueOf(item) ?? ''} match={search} />
     </span>
   ),
-  grow,
   header,
   width,
 })

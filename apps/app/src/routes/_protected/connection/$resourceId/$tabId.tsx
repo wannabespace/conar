@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
 import { sectionAvailable } from '~/entities/connection/capabilities'
-import { setNavigator } from '~/entities/connection/store/helpers/navigator'
+import { seedNavigator } from '~/entities/connection/store/helpers/navigator'
 import {
   ensureTab,
   setActiveTab,
@@ -94,9 +94,12 @@ export const Route = createFileRoute(
       })
     }
 
-    if (tab.type === 'definitions' || tab.type === 'visualizer') {
-      setNavigator(params.resourceId, 'definitions')
-    }
+    seedNavigator(
+      params.resourceId,
+      tab.type === 'definitions' || tab.type === 'visualizer'
+        ? 'definitions'
+        : 'tables'
+    )
 
     return { tab }
   },

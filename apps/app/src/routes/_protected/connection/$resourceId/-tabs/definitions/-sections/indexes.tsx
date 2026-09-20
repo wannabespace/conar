@@ -52,7 +52,7 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn, nameColumn } from '../-lib/columns'
+import { nameColumn, textColumn } from '../-lib/columns'
 
 type IndexItem = typeof indexesType.infer
 type IndexKind = 'primary' | 'unique' | 'regular'
@@ -231,7 +231,7 @@ const IndexNotes = ({
 }) => (
   <AnimatePresence initial={false}>
     {custom && (
-      <MotionCollapse gap={16} key="custom">
+      <MotionCollapse key="custom">
         <FieldDescription>
           Built with an expression, method, predicate or ordering the picker
           cannot show, so only its name can change.
@@ -239,7 +239,7 @@ const IndexNotes = ({
       </MotionCollapse>
     )}
     {owned && (
-      <MotionCollapse gap={16} key="owned">
+      <MotionCollapse key="owned">
         <FieldDescription>
           This index enforces a constraint, which owns its columns.{' '}
           <Link
@@ -461,15 +461,14 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
   nameColumn({
     icon: (item: GroupedIndex) =>
       item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon,
-    width: 'w-88',
+    width: 'w-4/12',
   }),
-  monoColumn({
+  textColumn({
     header: 'Table',
     valueOf: (item: GroupedIndex) => item.table,
-    width: 'w-48',
+    width: 'w-2/12',
   }),
-  monoColumn({
-    grow: true,
+  textColumn({
     header: 'Columns',
     valueOf: (item: GroupedIndex) => item.columns.join(', '),
   }),
@@ -479,7 +478,7 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
       <span className="text-muted-foreground">{typeText(item)}</span>
     ),
     header: 'Type',
-    width: 'w-44',
+    width: 'w-3/12',
   },
 ]
 

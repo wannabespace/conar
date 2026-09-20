@@ -24,7 +24,7 @@ import type { FilterOption } from '../-components/pickers'
 import { FilterSelect } from '../-components/pickers'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn, nameColumn } from '../-lib/columns'
+import { nameColumn, textColumn } from '../-lib/columns'
 
 type FunctionItem = typeof functionsType.infer
 type FunctionType = FunctionItem['type']
@@ -102,7 +102,7 @@ const FunctionInspector = ({
 )
 
 const columns: DefinitionsColumn<FunctionItem>[] = [
-  nameColumn({ icon: () => SourceCodeIcon, width: 'w-68' }),
+  nameColumn({ icon: () => SourceCodeIcon, width: 'w-3/12' }),
   {
     cell: (item, { search }) => (
       <span className="text-muted-foreground">
@@ -110,10 +110,9 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
       </span>
     ),
     header: 'Language',
-    width: 'w-32',
+    width: 'w-2/12',
   },
-  monoColumn({
-    grow: true,
+  textColumn({
     header: 'Returns',
     valueOf: (item: FunctionItem) => item.return_type,
   }),
@@ -125,7 +124,7 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
       </span>
     ),
     header: 'Arguments',
-    width: 'w-28',
+    width: 'w-2/12',
   },
   {
     align: 'end',
@@ -133,7 +132,7 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
       <span className="text-muted-foreground">{typeLabels[item.type]}</span>
     ),
     header: 'Type',
-    width: 'w-36',
+    width: 'w-2/12',
   },
 ]
 

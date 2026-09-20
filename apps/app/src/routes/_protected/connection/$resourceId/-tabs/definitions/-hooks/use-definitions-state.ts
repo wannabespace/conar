@@ -51,26 +51,23 @@ export const useDefinitionsState = ({
       .map((table) => table.name)
       .toSorted() ?? noTables
 
-  // The pickers open on whatever table the user lands on, so the schema's
-  // columns are warmed on entry. Same query, so an in-flight one is reused.
   useEffect(() => {
     if (!(prefetchColumns && selectedSchema)) {
       return
     }
-    const tables = data?.schemas.find(
-      ({ name }) => name === selectedSchema
-    )?.tables
+    const tables =
+      data?.schemas
+        .find(({ name }) => name === selectedSchema)
+        ?.tables.filter((t) => t.type === 'table') ?? []
 
-    for (const table of tables ?? []) {
-      if (table.type === 'table') {
-        queryClient.query(
-          resourceTableColumnsQueryOptions({
-            connectionResource,
-            schema: selectedSchema,
-            table: table.name,
-          })
-        )
-      }
+    for (const table of tables) {
+      queryClient.query(
+        resourceTableColumnsQueryOptions({
+          connectionResource,
+          schema: selectedSchema,
+          table: table.name,
+        })
+      )
     }
   }, [connectionResource, data, prefetchColumns, selectedSchema])
 

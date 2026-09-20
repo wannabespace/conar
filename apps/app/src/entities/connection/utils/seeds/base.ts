@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker/locale/en'
 
 import type { Column } from '../../components/table/cell/utils'
 import type { GeneratorDef, GeneratorMap } from './types'

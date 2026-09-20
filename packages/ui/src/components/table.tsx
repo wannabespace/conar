@@ -5,7 +5,7 @@ const Table = ({ className, ...props }: React.ComponentProps<'table'>) => (
   <div data-slot="table-container" className="relative w-full overflow-x-auto">
     <table
       data-slot="table"
-      className={cn('w-full caption-bottom text-xs', className)}
+      className={cn('w-full caption-bottom text-sm', className)}
       {...props}
     />
   </div>
@@ -59,7 +59,7 @@ const TableHead = ({ className, ...props }: React.ComponentProps<'th'>) => (
   <th
     data-slot="table-head"
     className={cn(
-      `text-muted-foreground h-8 px-2 text-left align-middle text-xs font-medium whitespace-nowrap has-[[role=checkbox]]:pr-0`,
+      `text-muted-foreground h-8 px-2 text-left align-middle text-sm font-medium whitespace-nowrap has-[[role=checkbox]]:pr-0`,
       className
     )}
     {...props}

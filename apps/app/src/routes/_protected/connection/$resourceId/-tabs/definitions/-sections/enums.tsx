@@ -46,7 +46,7 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn, nameColumn } from '../-lib/columns'
+import { nameColumn, textColumn } from '../-lib/columns'
 
 type EnumItem = typeof enumType.infer
 
@@ -442,7 +442,7 @@ const EnumInspector = ({
                 />
                 <AnimatePresence initial={false}>
                   {state.note && (
-                    <MotionCollapse gap={6} key={state.note}>
+                    <MotionCollapse key={state.note}>
                       <FieldDescription>{state.note}</FieldDescription>
                     </MotionCollapse>
                   )}
@@ -472,34 +472,33 @@ const EnumInspector = ({
 const enumNameColumn = nameColumn({
   icon: (item: EnumItem) =>
     item.metadata?.isSet ? LeftToRightListDashIcon : TagsIcon,
-  width: 'w-60',
+  width: 'w-3/12',
 })
 
 const valuesColumn: DefinitionsColumn<EnumItem> = {
   cell: (item, { search }) => (
     <span data-mask className="flex flex-wrap gap-1">
       {item.values.map((value) => (
-        <Badge key={value} variant="outline" className="font-mono">
+        <Badge key={value} variant="outline">
           <HighlightText text={value} match={search} />
         </Badge>
       ))}
     </span>
   ),
-  grow: true,
   header: 'Values',
 }
 
 const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
   enumNameColumn,
-  monoColumn({
+  textColumn({
     header: 'Table',
     valueOf: (item: EnumItem) => item.metadata?.table,
-    width: 'w-44',
+    width: 'w-2/12',
   }),
-  monoColumn({
+  textColumn({
     header: 'Column',
     valueOf: (item: EnumItem) => item.metadata?.column,
-    width: 'w-44',
+    width: 'w-2/12',
   }),
   valuesColumn,
   {
@@ -510,7 +509,7 @@ const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
       </span>
     ),
     header: 'Type',
-    width: 'w-24',
+    width: 'w-2/12',
   },
 ]
 

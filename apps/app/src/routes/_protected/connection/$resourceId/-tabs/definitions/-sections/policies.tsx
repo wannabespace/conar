@@ -41,7 +41,7 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn } from '../-lib/columns'
+import { textColumn } from '../-lib/columns'
 
 type PolicyItem = typeof policyType.infer
 
@@ -455,29 +455,28 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
         {item.check && <Expression keyword="WITH CHECK" value={item.check} />}
       </span>
     ),
-    grow: true,
     header: 'Name',
   },
-  monoColumn({
+  textColumn({
     header: 'Table',
     valueOf: (item: PolicyItem) => item.table,
-    width: 'w-44',
+    width: 'w-2/12',
   }),
   {
     cell: (item) => (
       <span className="text-muted-foreground">{item.command}</span>
     ),
     header: 'Command',
-    width: 'w-32',
+    width: 'w-2/12',
   },
   {
     cell: (item, { search }) => (
-      <span data-mask className="text-muted-foreground font-mono">
+      <span data-mask className="text-muted-foreground">
         <HighlightText text={item.roles.join(', ')} match={search} />
       </span>
     ),
     header: 'Roles',
-    width: 'w-48',
+    width: 'w-2/12',
   },
   {
     align: 'end',
@@ -485,7 +484,7 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
       <span className="text-muted-foreground">{kindLabels[item.type]}</span>
     ),
     header: 'Type',
-    width: 'w-36',
+    width: 'w-2/12',
   },
 ]
 

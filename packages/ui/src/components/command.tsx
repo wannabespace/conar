@@ -15,8 +15,9 @@ import * as React from 'react'
 export { Command as CommandPrimitive, defaultFilter } from 'cmdk'
 
 const commandVariants = {
-  // A command list living in a flat pane owns no surface of its own
-  flat: 'text-foreground',
+  // A command list living in a flat pane owns no surface of its own;
+  // items stay at body weight (page-surface rows), headings keep medium
+  flat: 'text-foreground **:data-[slot=command-item]:font-normal',
   // A floating popup's own rounded surface
   popup: 'bg-popover text-popover-foreground rounded-xl',
 }

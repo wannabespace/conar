@@ -30,6 +30,11 @@ export default defineConfig(({ mode }) => ({
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
     'import.meta.env.VITE_TEST': mode === 'test',
   },
+  optimizeDeps: {
+    // Seed panel is a lazy island; without include the first open 504s
+    // "Outdated Optimize Dep" and React.lazy swallows Vite's reload
+    include: ['@base-ui/react/number-field', '@faker-js/faker/locale/en'],
+  },
   plugins: [
     tailwindcss(),
     tanstackRouter({

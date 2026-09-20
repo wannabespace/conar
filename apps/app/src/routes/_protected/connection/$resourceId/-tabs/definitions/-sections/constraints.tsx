@@ -49,7 +49,7 @@ import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
-import { monoColumn, nameColumn } from '../-lib/columns'
+import { nameColumn, textColumn } from '../-lib/columns'
 
 type ConstraintItem = typeof constraintsType.infer
 
@@ -658,12 +658,12 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
   nameColumn({
     icon: (item: GroupedConstraint) =>
       item.type === 'foreignKey' ? Link01Icon : Key01Icon,
-    width: 'w-68',
+    width: 'w-4/12',
   }),
-  monoColumn({
+  textColumn({
     header: 'Table',
     valueOf: (item: GroupedConstraint) => item.table,
-    width: 'w-48',
+    width: 'w-2/12',
   }),
   {
     cell: (item, { schema, search }) => {
@@ -671,11 +671,9 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
 
       return (
         <span data-mask>
-          <span className="font-mono text-xs">
-            <HighlightText text={item.columns.join(', ')} match={search} />
-          </span>
+          <HighlightText text={item.columns.join(', ')} match={search} />
           {reference && (
-            <span className="text-muted-foreground text-xs">
+            <span className="text-muted-foreground">
               {' → '}
               <HighlightText text={reference} match={search} />
             </span>
@@ -683,7 +681,6 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
         </span>
       )
     },
-    grow: true,
     header: 'Columns',
   },
   {
@@ -692,7 +689,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
       <span className="text-muted-foreground">{typeLabels[item.type]}</span>
     ),
     header: 'Type',
-    width: 'w-36',
+    width: 'w-2/12',
   },
 ]
 
