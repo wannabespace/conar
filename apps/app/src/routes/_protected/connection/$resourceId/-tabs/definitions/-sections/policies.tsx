@@ -419,6 +419,8 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   }),
 ]
 
+const policyKey = (item: PolicyItem) => `${item.table}.${item.name}`
+
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
   const { connectionResource, run, search, selectedSchema } = state
@@ -430,36 +432,30 @@ export const Policies = () => {
   )
 
   const inSchema = policies.filter((item) => item.schema === selectedSchema)
+  const matches = (item: PolicyItem) =>
+    kindFilter.matches(item.type) &&
+    matchesSearch(search, item.name, item.table, item.command, ...item.roles)
+  const dropItem = (item: PolicyItem) =>
+    run(
+      dropPolicyQuery({
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        kindFilter.matches(item.type) &&
-        matchesSearch(
-          search,
-          item.name,
-          item.table,
-          item.command,
-          ...item.roles
-        )
-      }
-      loading={isPending}
-      keyOf={(item) => `${item.table}.${item.name}`}
       columns={columns}
+      dropItem={dropItem}
+      Inspector={PolicyInspector}
+      items={inSchema}
+      keyOf={policyKey}
+      loading={isPending}
+      match={matches}
+      queryKey={query.queryKey}
       state={state}
       toolbar={kindFilter.control}
-      queryKey={query.queryKey}
-      dropItem={(item) =>
-        run(
-          dropPolicyQuery({
-            name: item.name,
-            schema: item.schema,
-            table: item.table,
-          })
-        )
-      }
-      Inspector={PolicyInspector}
     />
   )
 }

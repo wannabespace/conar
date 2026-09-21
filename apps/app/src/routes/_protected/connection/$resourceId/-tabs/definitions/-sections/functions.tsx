@@ -120,6 +120,9 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
   }),
 ]
 
+const functionKey = (item: FunctionItem) =>
+  `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
+
 export const Functions = () => {
   const state = useDefinitionsState({ section: 'functions' })
   const { connectionResource, run, search, selectedSchema } = state
@@ -131,34 +134,32 @@ export const Functions = () => {
   ])
 
   const inSchema = functions.filter((item) => item.schema === selectedSchema)
+  const matches = (item: FunctionItem) =>
+    typeFilter.matches(item.type) &&
+    matchesSearch(search, item.name, item.language, item.return_type)
+  const dropItem = (item: FunctionItem, cascade: boolean) =>
+    run(
+      dropFunctionQuery({
+        cascade,
+        identity: item.identity,
+        kind: item.type,
+        name: item.name,
+        schema: item.schema,
+      })
+    )
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        typeFilter.matches(item.type) &&
-        matchesSearch(search, item.name, item.language, item.return_type)
-      }
-      loading={isPending}
-      keyOf={(item) =>
-        `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
-      }
       columns={columns}
+      dropItem={dropItem}
+      Inspector={FunctionInspector}
+      items={inSchema}
+      keyOf={functionKey}
+      loading={isPending}
+      match={matches}
+      queryKey={query.queryKey}
       state={state}
       toolbar={typeFilter.control}
-      queryKey={query.queryKey}
-      dropItem={(item, cascade) =>
-        run(
-          dropFunctionQuery({
-            cascade,
-            identity: item.identity,
-            kind: item.type,
-            name: item.name,
-            schema: item.schema,
-          })
-        )
-      }
-      Inspector={FunctionInspector}
     />
   )
 }

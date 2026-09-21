@@ -236,22 +236,41 @@ export const Triggers = () => {
   ])
 
   const inSchema = triggers.filter((item) => item.schema === selectedSchema)
-
   const toggle = useToggle({ queryKey: query.queryKey, run, type: state.type })
+  const matches = (item: TriggerItem) =>
+    // A Postgres trigger lists every event it answers to in one row.
+    (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
+    timingFilter.matches(item.timing) &&
+    matchesSearch(search, item.name, item.table, item.functionName)
+  const dropItem = (item: TriggerItem) =>
+    run(
+      dropTriggerQuery({
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
+  const rowMenu = (item: TriggerItem) =>
+    toggle
+      ? [
+          {
+            label: item.enabled === false ? 'Enable' : 'Disable',
+            onSelect: () => toggle(item, item.enabled === false),
+          },
+        ]
+      : []
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        // A Postgres trigger lists every event it answers to in one row.
-        (eventFilter.value === 'all' ||
-          item.event.includes(eventFilter.value)) &&
-        timingFilter.matches(item.timing) &&
-        matchesSearch(search, item.name, item.table, item.functionName)
-      }
-      loading={isPending}
-      keyOf={triggerKey}
       columns={columns}
+      dropItem={dropItem}
+      Inspector={TriggerInspector}
+      items={inSchema}
+      keyOf={triggerKey}
+      loading={isPending}
+      match={matches}
+      queryKey={query.queryKey}
+      rowMenu={rowMenu}
       state={state}
       toolbar={
         <>
@@ -259,27 +278,6 @@ export const Triggers = () => {
           {timingFilter.control}
         </>
       }
-      queryKey={query.queryKey}
-      dropItem={(item) =>
-        run(
-          dropTriggerQuery({
-            name: item.name,
-            schema: item.schema,
-            table: item.table,
-          })
-        )
-      }
-      rowMenu={(item) =>
-        toggle
-          ? [
-              {
-                label: item.enabled === false ? 'Enable' : 'Disable',
-                onSelect: () => toggle(item, item.enabled === false),
-              },
-            ]
-          : []
-      }
-      Inspector={TriggerInspector}
     />
   )
 }

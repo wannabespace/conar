@@ -460,6 +460,9 @@ const typeColumns: DefinitionsColumn<EnumItem>[] = [
   valuesColumn,
 ]
 
+const enumKey = (item: EnumItem) =>
+  `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
+
 export const Enums = () => {
   const state = useDefinitionsState({ section: 'enums' })
   const { connectionResource, run, search, selectedSchema } = state
@@ -467,37 +470,33 @@ export const Enums = () => {
   const { data: enums = [], isPending } = useQuery(query)
 
   const inSchema = enums.filter((item) => item.schema === selectedSchema)
+  const columns = enums.some((item) => item.metadata?.table)
+    ? columnBoundColumns
+    : typeColumns
+  const matches = (item: EnumItem) =>
+    matchesSearch(
+      search,
+      item.name,
+      item.metadata?.table,
+      item.metadata?.column,
+      ...item.values
+    )
+  const dropItem = async (item: EnumItem, cascade: boolean) => {
+    await run(dropEnumQuery({ cascade, name: item.name, schema: item.schema }))
+    await refreshColumns(connectionResource)
+  }
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        matchesSearch(
-          search,
-          item.name,
-          item.metadata?.table,
-          item.metadata?.column,
-          ...item.values
-        )
-      }
-      loading={isPending}
-      keyOf={(item) =>
-        `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
-      }
-      columns={
-        enums.some((item) => item.metadata?.table)
-          ? columnBoundColumns
-          : typeColumns
-      }
-      state={state}
-      queryKey={query.queryKey}
-      dropItem={async (item, cascade) => {
-        await run(
-          dropEnumQuery({ cascade, name: item.name, schema: item.schema })
-        )
-        await refreshColumns(connectionResource)
-      }}
+      columns={columns}
+      dropItem={dropItem}
       Inspector={EnumInspector}
+      items={inSchema}
+      keyOf={enumKey}
+      loading={isPending}
+      match={matches}
+      queryKey={query.queryKey}
+      state={state}
     />
   )
 }

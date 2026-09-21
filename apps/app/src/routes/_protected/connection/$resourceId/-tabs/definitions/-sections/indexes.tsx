@@ -422,9 +422,7 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
 ]
 
 export const Indexes = () => {
-  const state = useDefinitionsState({
-    section: 'indexes',
-  })
+  const state = useDefinitionsState({ section: 'indexes' })
   const { connectionResource, run, search, selectedSchema } = state
   const query = resourceIndexesQueryOptions({ connectionResource })
   const { data: indexes = [], isPending } = useQuery(query)
@@ -435,31 +433,31 @@ export const Indexes = () => {
   ])
 
   const inSchema = groupIndexes(indexes, selectedSchema)
+  const matches = (item: GroupedIndex) =>
+    kindFilter.matches(item.kind) &&
+    matchesSearch(search, item.name, item.table, ...item.columns)
+  const dropItem = (item: GroupedIndex) =>
+    run(
+      dropIndexQuery({
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        kindFilter.matches(item.kind) &&
-        matchesSearch(search, item.name, item.table, ...item.columns)
-      }
-      loading={isPending}
-      keyOf={indexKey}
+      canDropItem={(item) => !item.constraintOwned}
       columns={columns}
+      dropItem={dropItem}
+      Inspector={IndexInspector}
+      items={inSchema}
+      keyOf={indexKey}
+      loading={isPending}
+      match={matches}
+      queryKey={structureQueryKey(connectionResource)}
       state={state}
       toolbar={kindFilter.control}
-      canDropItem={(item) => !item.constraintOwned}
-      queryKey={structureQueryKey(connectionResource)}
-      dropItem={(item) =>
-        run(
-          dropIndexQuery({
-            name: item.name,
-            schema: item.schema,
-            table: item.table,
-          })
-        )
-      }
-      Inspector={IndexInspector}
     />
   )
 }

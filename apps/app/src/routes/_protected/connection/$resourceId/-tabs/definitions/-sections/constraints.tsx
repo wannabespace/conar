@@ -568,9 +568,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
 ]
 
 export const Constraints = () => {
-  const state = useDefinitionsState({
-    section: 'constraints',
-  })
+  const state = useDefinitionsState({ section: 'constraints' })
   const { connectionResource, run, search, selectedSchema } = state
   const query = resourceConstraintsQueryOptions({ connectionResource })
   const { data: constraints = [], isPending } = useQuery(query)
@@ -581,38 +579,38 @@ export const Constraints = () => {
   ])
 
   const inSchema = groupConstraints(constraints, selectedSchema)
+  const matches = (item: GroupedConstraint) =>
+    kindFilter.matches(item.type) &&
+    matchesSearch(
+      search,
+      item.name,
+      item.table,
+      item.foreignTable,
+      ...item.columns
+    )
+  const dropItem = (item: GroupedConstraint, cascade: boolean) =>
+    run(
+      dropConstraintQuery({
+        cascade,
+        kind: item.type,
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
 
   return (
     <DefinitionsPage
-      items={inSchema}
-      match={(item) =>
-        kindFilter.matches(item.type) &&
-        matchesSearch(
-          search,
-          item.name,
-          item.table,
-          item.foreignTable,
-          ...item.columns
-        )
-      }
-      loading={isPending}
-      keyOf={constraintKey}
       columns={columns}
+      dropItem={dropItem}
+      Inspector={ConstraintInspector}
+      items={inSchema}
+      keyOf={constraintKey}
+      loading={isPending}
+      match={matches}
+      queryKey={structureQueryKey(connectionResource)}
       state={state}
       toolbar={kindFilter.control}
-      queryKey={structureQueryKey(connectionResource)}
-      dropItem={(item, cascade) =>
-        run(
-          dropConstraintQuery({
-            cascade,
-            kind: item.type,
-            name: item.name,
-            schema: item.schema,
-            table: item.table,
-          })
-        )
-      }
-      Inspector={ConstraintInspector}
     />
   )
 }
