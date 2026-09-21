@@ -1,13 +1,12 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/utils/unsupported'
 import type { Kysely, RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 
-export type DropStatements = Omit<
-  Record<ConnectionType, RawBuilder<unknown>>,
-  ConnectionType.ClickHouse
+export type DropStatements = Record<
+  'mssql' | 'mysql' | 'postgres',
+  RawBuilder<unknown>
 >
 
 export const dropStatementsQuery = (drop: DropStatements, feature: string) =>
