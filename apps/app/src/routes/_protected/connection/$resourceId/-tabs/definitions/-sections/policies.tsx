@@ -378,7 +378,7 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span data-mask className="flex items-center gap-2 font-medium">
+        <span data-mask className="flex items-center gap-2">
           <HugeiconsIcon
             icon={
               item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon

@@ -169,7 +169,7 @@ const ConnectionsDropdown = ({
         {current ? (
           <>
             <ConnectionIcon type={current.type} className="size-4 shrink-0" />
-            <span data-mask className="truncate font-medium">
+            <span data-mask className="truncate">
               {current.name}
             </span>
             {current.color && (
@@ -181,7 +181,7 @@ const ConnectionsDropdown = ({
             )}
           </>
         ) : (
-          <span className="truncate font-medium">Connections</span>
+          <span className="truncate">Connections</span>
         )}
         <HugeiconsIcon
           icon={UnfoldMoreIcon}

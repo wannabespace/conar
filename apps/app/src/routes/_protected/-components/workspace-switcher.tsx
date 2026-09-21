@@ -81,14 +81,12 @@ export const WorkspaceSwitcher = () => {
           {activeWorkspace ? (
             <>
               <WorkspaceGlyph workspace={activeWorkspace} />
-              <span data-mask className="truncate font-medium">
+              <span data-mask className="truncate">
                 {activeWorkspace.name}
               </span>
             </>
           ) : (
-            <span className="text-muted-foreground truncate font-medium">
-              Workspace
-            </span>
+            <span className="text-muted-foreground truncate">Workspace</span>
           )}
           <HugeiconsIcon
             icon={UnfoldMoreIcon}

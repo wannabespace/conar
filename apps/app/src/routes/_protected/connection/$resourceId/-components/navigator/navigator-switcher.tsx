@@ -19,7 +19,8 @@ const TRANSITION = { duration: 0.15, ease: [0.32, 0.72, 0, 1] } as const
 
 export const NavigatorSwitcher = () => {
   const { connectionResource } = useRouteContext()
-  const navigator = useSubscription(getNavigatorStore(connectionResource.id))
+  const navigatorStore = getNavigatorStore(connectionResource.id)
+  const navigator = useSubscription(navigatorStore)
   const isDefinitions = navigator === 'definitions'
 
   return (
@@ -29,9 +30,7 @@ export const NavigatorSwitcher = () => {
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       className={sidebarActionRowClassName}
       onClick={() =>
-        getNavigatorStore(connectionResource.id).set(
-          isDefinitions ? 'tables' : 'definitions'
-        )
+        navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
       }
     >
       <AnimatePresence initial={false} mode="popLayout">

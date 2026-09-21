@@ -15,7 +15,7 @@ export const CellSwitch = ({
     <code
       className={cn(
         'font-mono transition-colors duration-150',
-        checked ? 'text-muted-foreground/60' : 'text-foreground font-medium'
+        checked ? 'text-muted-foreground/60' : 'text-foreground'
       )}
     >
       false
@@ -24,7 +24,7 @@ export const CellSwitch = ({
     <code
       className={cn(
         'font-mono transition-colors duration-150',
-        checked ? 'text-foreground font-medium' : 'text-muted-foreground/60'
+        checked ? 'text-foreground' : 'text-muted-foreground/60'
       )}
     >
       true

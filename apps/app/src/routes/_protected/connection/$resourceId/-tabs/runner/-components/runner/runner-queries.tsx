@@ -107,7 +107,7 @@ export const RunnerQueries = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div data-mask className="truncate text-sm font-medium">
+                  <div data-mask className="truncate text-sm">
                     {query.name}
                   </div>
                   <div

@@ -523,7 +523,7 @@ const ConnectionCard = ({
             <span
               data-mask
               title={connection.name}
-              className="truncate text-sm leading-none font-medium"
+              className="truncate text-sm leading-none"
             >
               {connection.name}
             </span>
