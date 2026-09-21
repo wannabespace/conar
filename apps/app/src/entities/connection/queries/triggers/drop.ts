@@ -1,9 +1,9 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import type { DropStatements } from '../shared/drop'
-import { dropStatementsQuery } from '../shared/drop'
+import { createQuery } from '../../runtime/query'
 
-export const dropTriggerStatements = ({
+export const dropTriggerQuery = ({
   name,
   schema,
   table,
@@ -11,16 +11,18 @@ export const dropTriggerStatements = ({
   name: string
   schema: string
   table: string
-}): DropStatements => {
+}) => {
   const dropByName = sql`DROP TRIGGER ${sql.id(schema, name)}`
 
-  return {
-    mssql: dropByName,
-    mysql: dropByName,
-    postgres: sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`,
-  }
+  return createQuery({
+    query: {
+      clickhouse: unsupported('Triggers'),
+      mssql: (db) => dropByName.execute(db),
+      mysql: (db) => dropByName.execute(db),
+      postgres: (db) =>
+        sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(
+          db
+        ),
+    },
+  })
 }
-
-export const dropTriggerQuery = (
-  params: Parameters<typeof dropTriggerStatements>[0]
-) => dropStatementsQuery(dropTriggerStatements(params), 'Triggers')

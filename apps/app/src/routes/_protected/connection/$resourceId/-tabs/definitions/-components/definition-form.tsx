@@ -12,8 +12,6 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import type { DefinitionsNoun } from '~/entities/connection/capabilities'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
-import type { DropStatements } from '~/entities/connection/queries/shared/drop'
-import { recreateDefinitionQuery } from '~/entities/connection/queries/shared/drop'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
 
@@ -207,7 +205,6 @@ const replaceInPlace: Partial<Record<ConnectionType, string>> = {
 }
 
 export const ExistingDefinitionForm = ({
-  dropStatements,
   dropsFirst,
   name,
   noun,
@@ -215,10 +212,10 @@ export const ExistingDefinitionForm = ({
   query,
   queryKey,
   readOnly,
+  recreateQuery,
   run,
   type: connectionType,
 }: {
-  dropStatements: DropStatements
   // Undefined while the caller still works out whether the dialect can
   // replace in place.
   dropsFirst?: boolean
@@ -227,6 +224,7 @@ export const ExistingDefinitionForm = ({
   onSaved: () => void
   query: UseQueryOptions<string, Error, string, string[]>
   queryKey: readonly unknown[]
+  recreateQuery: (create: string) => Parameters<RunQuery>[0]
   readOnly: boolean
   run: RunQuery
   type: ConnectionType
@@ -261,15 +259,7 @@ export const ExistingDefinitionForm = ({
       queryKey={queryKey}
       readOnly={readOnly}
       save={(text) =>
-        run(
-          dropsFirst
-            ? recreateDefinitionQuery({
-                create: text,
-                drop: dropStatements,
-                feature: uppercaseFirst(noun),
-              })
-            : customQuery({ query: text })
-        )
+        run(dropsFirst ? recreateQuery(text) : customQuery({ query: text }))
       }
       success={`${uppercaseFirst(noun)} "${name}" saved`}
       warning={
