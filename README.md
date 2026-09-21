@@ -60,13 +60,14 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 
 - **🌐 Browser Automation (recommended)**
 
-  [agent-browser](https://www.npmjs.com/package/agent-browser) drives the running app for agents and manual debugging. Install it globally, once per machine:
+  Either CLI drives the running app for agents and manual debugging; they share one command vocabulary, so pick whichever fits the session:
 
   ```bash
-  npm install -g agent-browser && agent-browser install
+  npm install -g agent-browser && agent-browser install   # its own Chrome window
+  brew install --cask terminal-browser                    # renders in a terminal pane
   ```
 
-  It is not a project dependency — agents call its CLI directly (`agent-browser open <url>`, `snapshot`, `click`, `console`); without it, any other browser automation can be used instead.
+  Neither is a project dependency — agents call the CLI directly (`agent-browser open <url>`, `snapshot`, `click`, `console`, or the same commands through `terminal-browser action --`). Without them, any other browser automation works instead.
 
 - **🐳 Start Backing Services**
 

@@ -5,7 +5,6 @@ import { createQuery } from '../../runtime/query'
 import type { PolicyShape } from './shape'
 import { policyClause } from './shape'
 
-// ALTER POLICY never reaches the command or PERMISSIVE/RESTRICTIVE.
 export const recreatePolicyQuery = ({
   name,
   schema,
