@@ -157,8 +157,6 @@ const saveIndex = ({
     : run(renameIndexQuery({ ...target, newName: name }))
 }
 
-// A constraint owns its index's columns, and a custom index has a shape the
-// picker cannot round-trip; both still allow a rename.
 const locksOf = ({
   can,
   item,
