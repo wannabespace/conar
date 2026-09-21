@@ -32,9 +32,40 @@ export const setColumnEnumValuesQuery = ({
       clickhouse: unsupported('Editing enums'),
       mssql: unsupported('Enums'),
       mysql: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} MODIFY COLUMN ${sql.id(column)} ${sql.raw(isSet ? 'SET' : 'ENUM')}(${literals(values)})${charset ? sql` CHARACTER SET ${sql.id(charset)}` : sql``}${collation ? sql` COLLATE ${sql.id(collation)}` : sql``} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}${defaultValue === null ? sql`` : sql` DEFAULT ${sql.lit(defaultValue)}`}${comment ? sql` COMMENT ${sql.lit(comment)}` : sql``}`.execute(
-          db
-        ),
+        db
+          .withSchema(schema)
+          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .schema.alterTable(table)
+          .modifyColumn(
+            column,
+            sql`${sql.raw(isSet ? 'set' : 'enum')}(${literals(values)})`,
+            (build) => {
+              let definition = build
+              if (charset) {
+                definition = definition.modifyFront(
+                  sql`character set ${sql.id(charset)}`
+                )
+              }
+              if (collation) {
+                definition = definition.modifyFront(
+                  sql`collate ${sql.id(collation)}`
+                )
+              }
+              if (defaultValue !== null) {
+                definition = definition.defaultTo(sql.lit(defaultValue))
+              }
+              if (!nullable) {
+                definition = definition.notNull()
+              }
+              if (comment) {
+                definition = definition.modifyEnd(
+                  sql`comment ${sql.lit(comment)}`
+                )
+              }
+              return definition
+            }
+          )
+          .execute(),
       postgres: unsupported('Column-bound enums'),
     },
   })

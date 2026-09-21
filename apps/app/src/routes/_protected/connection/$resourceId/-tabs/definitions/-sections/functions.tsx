@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
-import { dropFunctionIfExistsQuery } from '~/entities/connection/queries/functions/drop-if-exists'
 import type { functionsType } from '~/entities/connection/queries/functions/list'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
@@ -63,7 +62,9 @@ const FunctionInspector = ({
     />
     {item ? (
       <ExistingDefinitionForm
-        dropFirst={dropFunctionIfExistsQuery({
+        dropFirst={dropFunctionQuery({
+          cascade: false,
+          identity: item.identity,
           kind: item.type,
           name: item.name,
           schema: item.schema,

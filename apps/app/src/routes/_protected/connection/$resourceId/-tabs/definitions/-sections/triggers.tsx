@@ -9,7 +9,6 @@ import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
-import { dropTriggerIfExistsQuery } from '~/entities/connection/queries/triggers/drop-if-exists'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
@@ -155,7 +154,7 @@ const TriggerInspector = ({
       )}
       {item ? (
         <ExistingDefinitionForm
-          dropFirst={dropTriggerIfExistsQuery({
+          dropFirst={dropTriggerQuery({
             name: item.name,
             schema: item.schema,
             table: item.table,
