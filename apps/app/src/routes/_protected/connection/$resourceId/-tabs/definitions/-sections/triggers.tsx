@@ -157,7 +157,7 @@ const TriggerInspector = ({
       )}
       {item ? (
         <ExistingDefinitionForm
-          dropFirst={dropTriggerQuery({
+          drop={dropTriggerQuery({
             name: item.name,
             schema: item.schema,
             table: item.table,

@@ -135,7 +135,7 @@ const replaceInPlace: Partial<Record<ConnectionType, string>> = {
 }
 
 export const ExistingDefinitionForm = ({
-  dropFirst,
+  drop,
   dropsFirst,
   name,
   noun,
@@ -146,7 +146,7 @@ export const ExistingDefinitionForm = ({
   run,
   type,
 }: {
-  dropFirst: Parameters<RunQuery>[0]
+  drop: Parameters<RunQuery>[0]
   // Undefined while the caller still works out whether the dialect can
   // replace in place.
   dropsFirst: boolean | undefined
@@ -187,7 +187,7 @@ export const ExistingDefinitionForm = ({
       readOnly={readOnly}
       save={async (text) => {
         if (dropsFirst) {
-          await run(dropFirst)
+          await run(drop)
         }
         await run(customQuery({ query: text }))
       }}
