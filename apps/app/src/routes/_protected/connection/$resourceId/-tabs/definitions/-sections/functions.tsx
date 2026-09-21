@@ -59,7 +59,7 @@ const FunctionInspector = ({
     />
     {item ? (
       <ExistingDefinitionForm
-        drop={dropFunctionQuery({
+        dropQuery={dropFunctionQuery({
           cascade: false,
           identity: item.identity,
           kind: item.type,
