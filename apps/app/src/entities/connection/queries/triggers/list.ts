@@ -9,26 +9,44 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { mssqlModuleBody } from '../shared/definition'
 
 export const triggersType = type({
   'body?': 'string | null',
+  'custom?': 'boolean',
   'enabled?': 'boolean',
+  'enabled_mode?': 'string',
   event: 'string',
   'function_name?': 'string | null',
+  'function_schema?': 'string | null',
   name: 'string',
   'oid?': 'number',
   'orientation?': 'string',
   schema: 'string',
   table: 'string',
   timing: 'string',
-}).pipe(({ body, function_name, enabled, orientation, ...item }) => ({
-  ...item,
-  body: body || '',
-  enabled: enabled ?? null,
-  functionName: function_name || null,
-  orientation:
-    orientation === 'ROW' ? ('ROW' as const) : ('STATEMENT' as const),
-}))
+}).pipe(
+  ({
+    body,
+    custom,
+    enabled,
+    enabled_mode,
+    function_name,
+    function_schema,
+    orientation,
+    ...item
+  }) => ({
+    ...item,
+    body: body ?? null,
+    custom: custom ?? false,
+    enabled: enabled ?? null,
+    enabledMode: enabled_mode || 'O',
+    functionName: function_name || null,
+    functionSchema: function_schema || null,
+    orientation:
+      orientation === 'ROW' ? ('ROW' as const) : ('STATEMENT' as const),
+  })
+)
 
 const resourceTriggersQuery = createQuery({
   query: {
@@ -55,11 +73,7 @@ const resourceTriggersQuery = createQuery({
             .else('AFTER')
             .end()
             .as('timing'),
-          // The catalog keeps the whole CREATE, so the body is what follows
-          // the AS that closes the header.
-          sql<string>`STUFF(sm.definition, 1, CHARINDEX(' AS ', sm.definition) + 3, '')`.as(
-            'body'
-          ),
+          mssqlModuleBody(sql`sm.definition`).as('body'),
           eb
             .case()
             .when('t.is_disabled', '=', false)
@@ -106,6 +120,7 @@ const resourceTriggersQuery = createQuery({
         .innerJoin('pg_catalog.pg_class as c', 't.tgrelid', 'c.oid')
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
         .leftJoin('pg_catalog.pg_proc as p', 't.tgfoid', 'p.oid')
+        .leftJoin('pg_catalog.pg_namespace as fn', 'p.pronamespace', 'fn.oid')
         .select(({ eb }) => [
           'n.nspname as schema',
           'c.relname as table',
@@ -132,6 +147,15 @@ const resourceTriggersQuery = createQuery({
             'orientation'
           ),
           'p.proname as function_name',
+          'fn.nspname as function_schema',
+          't.tgenabled as enabled_mode',
+          sql<boolean>`(
+            t.tgconstraint <> 0
+            OR t.tgnargs > 0
+            OR t.tgqual IS NOT NULL
+            OR pg_get_triggerdef(t.oid) LIKE '%UPDATE OF %'
+            OR pg_get_triggerdef(t.oid) LIKE '%REFERENCING %'
+          )`.as('custom'),
           't.oid as oid',
         ])
         .where('t.tgisinternal', '=', false)

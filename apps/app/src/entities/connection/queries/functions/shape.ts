@@ -27,15 +27,31 @@ export interface FunctionShape {
   securityDefiner: boolean
 }
 
+// Postgres ends the body at the first repeat of the opening tag, so the tag
+// has to be one the body does not already contain.
+const dollarQuoted = (body: string) => {
+  let tag = '$tamery$'
+
+  for (let suffix = 1; body.includes(tag); suffix += 1) {
+    tag = `$tamery${suffix}$`
+  }
+
+  return sql.raw(`${tag}${body}${tag}`)
+}
+
 export const createFunctionStatements = ({
+  replace,
   schema,
   shape,
 }: {
+  replace: boolean
   schema: string
   shape: FunctionShape
 }) => {
   const name = sql.id(schema, shape.name)
   const keyword = routineKeyword(shape.kind)
+  const mssqlCreate = sql.raw(replace ? 'CREATE OR ALTER' : 'CREATE')
+  const postgresCreate = sql.raw(replace ? 'CREATE OR REPLACE' : 'CREATE')
   const args = sql.raw(shape.args)
   const body = sql.raw(shape.body)
   const returns =
@@ -47,10 +63,8 @@ export const createFunctionStatements = ({
   const security = shape.securityDefiner ? sql` SECURITY DEFINER` : sql``
 
   return {
-    mssql: sql`CREATE ${keyword} ${name}(${args})${returns} AS ${body}`,
+    mssql: sql`${mssqlCreate} ${keyword} ${name}(${args})${returns} AS ${body}`,
     mysql: sql`CREATE ${keyword} ${name}(${args})${returns}${behavior}${extras} ${body}`,
-    // A body carrying the same dollar tag would close the quote early, so the
-    // tag stays long enough not to collide with hand-written SQL.
-    postgres: sql`CREATE ${keyword} ${name}(${args})${returns} LANGUAGE ${sql.raw(shape.language)}${behavior}${security}${extras} AS ${sql.raw(`$tamery_body$${shape.body}$tamery_body$`)}`,
+    postgres: sql`${postgresCreate} ${keyword} ${name}(${args})${returns} LANGUAGE ${sql.raw(shape.language)}${behavior}${security}${extras} AS ${dollarQuoted(shape.body)}`,
   }
 }

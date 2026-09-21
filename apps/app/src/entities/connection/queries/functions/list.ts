@@ -8,6 +8,40 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { mssqlModuleBody } from '../shared/definition'
+
+// Types the form has to rebuild verbatim: a parameter that loses its length or
+// precision comes back as varchar(1) or decimal(18,0).
+const mssqlParameterType = sql<string>`CONCAT(
+  TYPE_NAME(pa.user_type_id),
+  CASE
+    WHEN TYPE_NAME(pa.user_type_id) IN ('varchar', 'varbinary', 'char', 'binary')
+      THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length AS varchar(10))), ')')
+    WHEN TYPE_NAME(pa.user_type_id) IN ('nvarchar', 'nchar')
+      THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length / 2 AS varchar(10))), ')')
+    WHEN TYPE_NAME(pa.user_type_id) IN ('decimal', 'numeric')
+      THEN CONCAT('(', pa.precision, ',', pa.scale, ')')
+    WHEN TYPE_NAME(pa.user_type_id) IN ('datetime2', 'datetimeoffset', 'time')
+      THEN CONCAT('(', pa.scale, ')')
+    ELSE ''
+  END
+)`
+
+// GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
+// signature that reaches the cap is treated as unreadable instead of saved back
+// truncated.
+const GROUP_CONCAT_CAP = 1024
+
+const mysqlArguments = sql<string | null>`(
+  SELECT GROUP_CONCAT(
+    CONCAT_WS(' ', NULLIF(pm.PARAMETER_MODE, 'IN'), pm.PARAMETER_NAME, pm.DTD_IDENTIFIER)
+    ORDER BY pm.ORDINAL_POSITION SEPARATOR ', '
+  )
+  FROM information_schema.PARAMETERS pm
+  WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
+    AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
+    AND pm.ORDINAL_POSITION > 0
+)`
 
 export const functionsType = type({
   'args?': 'string | null',
@@ -36,7 +70,7 @@ export const functionsType = type({
     ...item
   }) => ({
     ...item,
-    args: args || '',
+    args: args ?? null,
     argumentCount: argument_count || null,
     behavior: behavior || '',
     body: body || '',
@@ -58,17 +92,13 @@ const resourceFunctionsQuery = createQuery({
         .select(({ eb, or }) => [
           's.name as schema',
           'o.name as name',
-          sql<string>`(
-            SELECT STRING_AGG(CONCAT(pa.name, ' ', TYPE_NAME(pa.user_type_id)), ', ')
+          sql<string>`COALESCE((
+            SELECT STRING_AGG(CONCAT(pa.name, ' ', ${mssqlParameterType}, IIF(pa.is_output = 1, ' OUTPUT', '')), ', ')
               WITHIN GROUP (ORDER BY pa.parameter_id)
             FROM sys.parameters pa
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
-          )`.as('args'),
-          // The catalog keeps the whole CREATE, so the body is what follows
-          // the AS that closes the header.
-          sql<string>`STUFF(sm.definition, 1, CHARINDEX(' AS ', sm.definition) + 3, '')`.as(
-            'body'
-          ),
+          ), '')`.as('args'),
+          mssqlModuleBody(sql`sm.definition`).as('body'),
           eb
             .case()
             .when(
@@ -108,7 +138,7 @@ const resourceFunctionsQuery = createQuery({
             // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
             .then(
               sql<string>`(
-                SELECT TYPE_NAME(pa.user_type_id)
+                SELECT ${mssqlParameterType}
                 FROM sys.parameters pa
                 WHERE pa.object_id = o.object_id AND pa.parameter_id = 0
               )`
@@ -131,16 +161,11 @@ const resourceFunctionsQuery = createQuery({
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
           sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
-          sql<string>`(
-            SELECT GROUP_CONCAT(
-              CONCAT_WS(' ', NULLIF(pm.PARAMETER_MODE, 'IN'), pm.PARAMETER_NAME, pm.DTD_IDENTIFIER)
-              ORDER BY pm.ORDINAL_POSITION SEPARATOR ', '
-            )
-            FROM information_schema.PARAMETERS pm
-            WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
-              AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
-              AND pm.ORDINAL_POSITION > 0
-          )`.as('args'),
+          sql<
+            string | null
+          >`CASE WHEN CHAR_LENGTH(${mysqlArguments}) >= ${sql.lit(GROUP_CONCAT_CAP)} THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
+            'args'
+          ),
           'r.ROUTINE_DEFINITION as body',
           sql<string>`CASE WHEN r.IS_DETERMINISTIC = 'YES' THEN 'DETERMINISTIC' ELSE 'NOT DETERMINISTIC' END`.as(
             'behavior'

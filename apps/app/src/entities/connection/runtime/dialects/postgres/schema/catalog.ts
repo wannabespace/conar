@@ -191,6 +191,9 @@ interface PgTrigger {
   tgtype: number
   tgenabled: string
   tgisinternal: boolean
+  tgconstraint: number
+  tgnargs: number
+  tgqual: string | null
 }
 
 /**

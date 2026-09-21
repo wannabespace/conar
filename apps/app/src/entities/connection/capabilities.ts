@@ -17,10 +17,15 @@ import {
   FUNCTION_VOLATILITIES,
 } from './queries/functions/shape'
 import type {
+  TriggerEvent,
   TriggerOrientation,
   TriggerTiming,
 } from './queries/triggers/shape'
-import { TRIGGER_ORIENTATIONS, TRIGGER_TIMINGS } from './queries/triggers/shape'
+import {
+  TRIGGER_EVENTS,
+  TRIGGER_ORIENTATIONS,
+  TRIGGER_TIMINGS,
+} from './queries/triggers/shape'
 import type { DefinitionsSection } from './store/tabs/types'
 
 export interface SectionCapabilities {
@@ -37,6 +42,7 @@ interface FunctionCapabilities {
 
 interface TriggerCapabilities {
   body: boolean
+  events: readonly TriggerEvent[]
   multipleEvents: boolean
   orientations: readonly TriggerOrientation[]
   timings: readonly TriggerTiming[]
@@ -55,6 +61,9 @@ interface ConnectionCapabilities {
   sections: Record<DefinitionsSection, SectionCapabilities | false>
   triggers: TriggerCapabilities
 }
+
+// Only Postgres fires a trigger on TRUNCATE, and only per statement.
+const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')
 
 const readOnly: SectionCapabilities = {}
 const full: SectionCapabilities = { create: true, drop: true, edit: true }
@@ -79,6 +88,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     triggers: {
       body: false,
+      events: [],
       multipleEvents: false,
       orientations: [],
       timings: [],
@@ -106,6 +116,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     triggers: {
       body: true,
+      events: ROW_EVENTS,
       multipleEvents: true,
       orientations: ['STATEMENT'],
       timings: ['AFTER', 'INSTEAD OF'],
@@ -138,6 +149,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     triggers: {
       body: true,
+      events: ROW_EVENTS,
       multipleEvents: false,
       orientations: ['ROW'],
       timings: ['BEFORE', 'AFTER'],
@@ -167,6 +179,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     triggers: {
       body: false,
+      events: TRIGGER_EVENTS,
       multipleEvents: true,
       orientations: TRIGGER_ORIENTATIONS,
       timings: TRIGGER_TIMINGS,

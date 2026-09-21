@@ -71,6 +71,7 @@ interface TriggerDraft {
   body: string
   events: TriggerEvent[]
   functionName: string
+  functionSchema: string
   name: string
   orientation: TriggerOrientation
   schema: string
@@ -104,6 +105,7 @@ const draftOf = (
       ? TRIGGER_EVENTS.filter((event) => item.event.includes(event))
       : ['INSERT'],
     functionName: item?.functionName ?? '',
+    functionSchema: item?.functionSchema ?? '',
     name: item?.name ?? '',
     orientation: item?.orientation ?? orientations[0] ?? 'ROW',
     timing:
@@ -115,10 +117,42 @@ const draftOf = (
   }
 }
 
+// Postgres refuses FOR EACH ROW on TRUNCATE and anything but ROW on INSTEAD OF,
+// so the draft the form saves is the one the picker already narrowed to.
+const orientationsFor = (
+  draft: TriggerDraft,
+  allowed: readonly TriggerOrientation[]
+) => {
+  if (draft.timing === 'INSTEAD OF') {
+    return allowed.filter((orientation) => orientation === 'ROW')
+  }
+
+  return draft.events.includes('TRUNCATE')
+    ? allowed.filter((orientation) => orientation === 'STATEMENT')
+    : allowed
+}
+
+// A trigger carrying a WHEN clause, a column list, function arguments or a
+// constraint cannot be rebuilt from these fields; it opens read-only.
+const formEditable = (item: TriggerItem, body: boolean) =>
+  !item.custom && (!body || !!item.body)
+
+const withAllowedOrientation = (
+  draft: TriggerDraft,
+  allowed: readonly TriggerOrientation[]
+): TriggerDraft => {
+  const orientations = orientationsFor(draft, allowed)
+
+  return orientations.includes(draft.orientation)
+    ? draft
+    : { ...draft, orientation: orientations[0] ?? draft.orientation }
+}
+
 const shapeOf = (draft: TriggerDraft): TriggerShape => ({
   body: draft.body,
   events: draft.events,
   functionName: draft.functionName,
+  functionSchema: draft.functionSchema || draft.schema,
   name: draft.name.trim(),
   orientation: draft.orientation,
   timing: draft.timing,
@@ -147,6 +181,7 @@ const useToggle = ({
       run(
         setTriggerEnabledQuery({
           enabled,
+          mode: item.enabledMode,
           name: item.name,
           schema: item.schema,
           table: item.table,
@@ -190,6 +225,7 @@ const TriggerInspector = ({
   selectedSchema,
   tablesOf,
   type: connectionType,
+  viewsOf,
 }: SectionInspectorProps<TriggerItem>) => {
   const { data: triggers = [] } = useQuery(
     resourceTriggersQueryOptions({ connectionResource })
@@ -231,13 +267,24 @@ const TriggerInspector = ({
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
     onSubmit: ({ value }) => {
-      mutation.mutate(value)
+      mutation.mutate(withAllowedOrientation(value, options.orientations))
     },
     validators: { onChange: triggerSchema, onMount: triggerSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
 
-  const readOnly = item ? !can.edit : !can.create
+  const readOnly = item
+    ? !can.edit || !formEditable(item, options.body)
+    : !can.create
+  const orientations = orientationsFor(draft, options.orientations)
+  const instead = draft.timing === 'INSTEAD OF'
+  const targets = (() => {
+    if (item) {
+      return [item.table]
+    }
+
+    return instead ? viewsOf(draft.schema) : tablesOf(draft.schema)
+  })()
   const acts = options.body ? !!draft.body.trim() : !!draft.functionName
   const changed =
     !item ||
@@ -287,12 +334,16 @@ const TriggerInspector = ({
           <form.AppField name="table">
             {() => (
               <SelectField
-                label="Table"
-                description="The trigger watches changes on this table."
+                label={instead ? 'View' : 'Table'}
+                description={
+                  instead
+                    ? 'An instead-of trigger stands in for writes to a view.'
+                    : 'The trigger watches changes on this table.'
+                }
                 disabled={readOnly || !!item}
-                empty="This schema has no tables."
-                options={item ? [item.table] : tablesOf(draft.schema)}
-                placeholder="Choose a table"
+                empty={`This schema has no ${instead ? 'views' : 'tables'}.`}
+                options={targets}
+                placeholder={`Choose a ${instead ? 'view' : 'table'}`}
               />
             )}
           </form.AppField>
@@ -312,7 +363,7 @@ const TriggerInspector = ({
                 }
                 disabled={readOnly}
                 limit={options.multipleEvents ? undefined : 1}
-                options={TRIGGER_EVENTS}
+                options={options.events}
                 placeholder="Choose events"
               />
             )}
@@ -329,14 +380,14 @@ const TriggerInspector = ({
                 />
               )}
             </form.AppField>
-            {options.orientations.length > 1 && (
+            {orientations.length > 1 && (
               <form.AppField name="orientation">
                 {() => (
                   <SelectField
                     label="For each"
                     disabled={readOnly}
                     labelOf={sentenceCase}
-                    options={options.orientations}
+                    options={orientations}
                     placeholder="For each"
                   />
                 )}

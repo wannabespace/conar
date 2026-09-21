@@ -40,12 +40,14 @@ export const useDefinitionsState = ({
   const [search, setSearch] = useState('')
   const selectedSchema =
     pickedSchema && schemas.includes(pickedSchema) ? pickedSchema : schemas[0]
-  const tablesOf = (schema: string) =>
+  const namesOf = (schema: string, kind: 'table' | 'view') =>
     data?.schemas
       .find(({ name }) => name === schema)
-      ?.tables.filter((table) => table.type === 'table')
+      ?.tables.filter((table) => table.type === kind)
       .map((table) => table.name)
       .toSorted() ?? noTables
+  const tablesOf = (schema: string) => namesOf(schema, 'table')
+  const viewsOf = (schema: string) => namesOf(schema, 'view')
 
   const run: RunQuery = async (query) =>
     query.run(await connectionResourceToQueryParams(connectionResource))
@@ -63,6 +65,7 @@ export const useDefinitionsState = ({
     setSelectedSchema: setPickedSchema,
     tablesOf,
     type: connection.type,
+    viewsOf,
   }
 }
 

@@ -23,6 +23,7 @@ import { queryClient } from '~/lib/query-client'
 
 import {
   BodyField,
+  resetFields,
   SchemaField,
   SelectField,
   TextField,
@@ -55,10 +56,30 @@ const typeLabels: Record<FunctionType, string> = {
 
 const kinds = Object.keys(typeLabels) as RoutineKind[]
 
-const bodyTemplates: Partial<Record<ConnectionType, string>> = {
-  mssql: 'BEGIN\n  RETURN 0;\nEND',
-  mysql: 'BEGIN\n  RETURN 0;\nEND',
-  postgres: 'BEGIN\n\nEND;',
+const argumentPlaceholders: Partial<Record<ConnectionType, string>> = {
+  mssql: '@id int, @label nvarchar(50)',
+  mysql: 'id INT, label VARCHAR(50)',
+  postgres: 'id integer, label text',
+}
+
+const templateOf = ({
+  connectionType,
+  kind,
+  language,
+}: {
+  connectionType: ConnectionType
+  kind: RoutineKind
+  language: string
+}) => {
+  if (connectionType === ConnectionType.Postgres) {
+    return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
+  }
+
+  if (connectionType === ConnectionType.ClickHouse) {
+    return ''
+  }
+
+  return kind === 'procedure' ? 'BEGIN\n\nEND' : 'BEGIN\n  RETURN 0;\nEND'
 }
 
 interface FunctionDraft {
@@ -95,7 +116,11 @@ const newDraft = (
   return {
     args: '',
     behavior: behaviors[0] ?? '',
-    body: bodyTemplates[connectionType] ?? '',
+    body: templateOf({
+      connectionType,
+      kind: 'function',
+      language: languages[0] ?? '',
+    }),
     extras: '',
     kind: 'function',
     language: languages[0] ?? '',
@@ -116,7 +141,7 @@ const draftOf = (
   return item
     ? {
         ...fallback,
-        args: item.args,
+        args: item.args ?? '',
         behavior: item.behavior || fallback.behavior,
         body: item.body,
         extras: item.extras,
@@ -149,11 +174,20 @@ const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
 
   return (
     !!item.body &&
+    item.args !== null &&
     item.return_type !== 'table' &&
     (item.type === 'procedure' || !!item.return_type) &&
     (languages.length === 0 || languages.includes(item.language ?? ''))
   )
 }
+
+// Postgres and SQL Server keep grants and owner through a replace, but only
+// while the name, arguments, return type and kind stay put.
+const replacesObject = (item: FunctionItem, shape: FunctionShape) =>
+  item.name !== shape.name ||
+  (item.args ?? '') !== shape.args ||
+  (item.return_type ?? '') !== shape.returnType ||
+  item.type !== shape.kind
 
 const replaceWarning = (item: FunctionItem): InspectorWarning => ({
   action: `Replace ${item.type}`,
@@ -183,11 +217,13 @@ const FunctionSql = ({
 
 const ExecutionSection = ({
   form,
+  onLanguageChanged,
   options,
   readOnly,
   returns,
 }: {
   form: ReturnType<typeof useFunctionForm>
+  onLanguageChanged?: (language: string) => void
   options: ReturnType<typeof capabilitiesOf>['functions']
   readOnly: boolean
   returns: boolean
@@ -211,6 +247,7 @@ const ExecutionSection = ({
             <SelectField
               label="Language"
               disabled={readOnly}
+              onChanged={onLanguageChanged}
               options={options.languages}
               placeholder="Language"
             />
@@ -288,6 +325,7 @@ const FunctionInspector = ({
               identity: item.identity,
               kind: item.type,
               name: item.name,
+              replacesObject: replacesObject(item, shapeOf(draft)),
               schema: item.schema,
               shape: shapeOf(draft),
             })
@@ -313,6 +351,15 @@ const FunctionInspector = ({
   const readOnly = item
     ? !can.edit || !formEditable(item, connectionType)
     : !can.create
+  // A starter body only belongs to the shape it was written for, so switching
+  // kind or language swaps it — unless the user has typed their own.
+  const retemplate = (next: FunctionDraft) => {
+    const template = templateOf({ connectionType, ...next })
+
+    if (!item && draft.body === templateOf({ connectionType, ...draft })) {
+      resetFields(form, { body: template })
+    }
+  }
   const returns = draft.kind === 'function'
   const complete =
     !!draft.body.trim() && (!returns || !!draft.returnType.trim())
@@ -348,6 +395,9 @@ const FunctionInspector = ({
                 description="A procedure runs for its effects and returns nothing."
                 disabled={readOnly}
                 labelOf={(value: RoutineKind) => typeLabels[value]}
+                onChanged={(kind: RoutineKind) =>
+                  retemplate({ ...draft, kind })
+                }
                 options={kinds}
                 placeholder="Type"
               />
@@ -364,7 +414,7 @@ const FunctionInspector = ({
                 label="Arguments"
                 description="Written as SQL, the way the routine declares them."
                 disabled={readOnly}
-                placeholder="id integer, label text"
+                placeholder={argumentPlaceholders[connectionType]}
               />
             )}
           </form.AppField>
@@ -382,6 +432,7 @@ const FunctionInspector = ({
         </InspectorSection>
         <ExecutionSection
           form={form}
+          onLanguageChanged={(language) => retemplate({ ...draft, language })}
           options={options}
           readOnly={readOnly}
           returns={returns}

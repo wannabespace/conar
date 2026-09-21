@@ -8,7 +8,7 @@ export const createFunctionQuery = (params: {
   schema: string
   shape: FunctionShape
 }) => {
-  const create = createFunctionStatements(params)
+  const create = createFunctionStatements({ ...params, replace: false })
 
   return createQuery({
     query: {

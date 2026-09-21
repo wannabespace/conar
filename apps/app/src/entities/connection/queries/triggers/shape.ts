@@ -1,6 +1,11 @@
 import { sql } from 'kysely'
 
-export const TRIGGER_EVENTS = ['INSERT', 'UPDATE', 'DELETE'] as const
+export const TRIGGER_EVENTS = [
+  'INSERT',
+  'UPDATE',
+  'DELETE',
+  'TRUNCATE',
+] as const
 export const TRIGGER_ORIENTATIONS = ['ROW', 'STATEMENT'] as const
 export const TRIGGER_TIMINGS = ['BEFORE', 'AFTER', 'INSTEAD OF'] as const
 
@@ -12,6 +17,7 @@ export interface TriggerShape {
   body: string
   events: TriggerEvent[]
   functionName: string
+  functionSchema: string
   name: string
   orientation: TriggerOrientation
   timing: TriggerTiming
@@ -50,6 +56,6 @@ export const createTriggerStatements = ({
   return {
     mssql: sql`CREATE TRIGGER ${name} ON ${target} ${timing} ${events(', ')} AS ${body}`,
     mysql: sql`CREATE TRIGGER ${name} ${timing} ${events(', ')} ON ${target} FOR EACH ROW ${body}`,
-    postgres: sql`CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${events(' OR ')} ON ${target} FOR EACH ${sql.raw(shape.orientation)} EXECUTE FUNCTION ${sql.id(schema, shape.functionName)}()`,
+    postgres: sql`CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${events(' OR ')} ON ${target} FOR EACH ${sql.raw(shape.orientation)} EXECUTE FUNCTION ${sql.id(shape.functionSchema || schema, shape.functionName)}()`,
   }
 }
