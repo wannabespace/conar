@@ -11,7 +11,10 @@ import {
   ensureTab,
   setActiveTab,
 } from '~/entities/connection/store/helpers/tabs'
-import { getNavigatorStore } from '~/entities/connection/store/stores'
+import {
+  getNavigatorStore,
+  navigatorModes,
+} from '~/entities/connection/store/stores'
 import { parseTabId } from '~/entities/connection/store/tabs/ids'
 import { tabFullTitle } from '~/entities/connection/store/tabs/title'
 import type { ConnectionTab } from '~/entities/connection/store/tabs/types'
@@ -94,10 +97,7 @@ export const Route = createFileRoute(
       })
     }
 
-    getNavigatorStore(
-      params.resourceId,
-      tab.type === 'runner' || tab.type === 'table' ? 'tables' : 'definitions'
-    )
+    getNavigatorStore(params.resourceId, navigatorModes[tab.type])
 
     return { tab }
   },
