@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
+import { createTriggerQuery } from '~/entities/connection/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
@@ -140,6 +141,7 @@ const TriggerInspector = ({
       )}
       {item ? (
         <ExistingDefinitionForm
+          createQuery={(create) => createTriggerQuery({ create })}
           recreateQuery={(create) =>
             recreateTriggerQuery({
               create,
@@ -160,6 +162,7 @@ const TriggerInspector = ({
         />
       ) : (
         <NewDefinitionForm
+          createQuery={(create) => createTriggerQuery({ create })}
           noun="trigger"
           onSaved={() => onOpenChange(false)}
           queryKey={queryKey}

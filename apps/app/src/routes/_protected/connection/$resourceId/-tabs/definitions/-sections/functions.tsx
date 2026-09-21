@@ -4,6 +4,7 @@ import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 
+import { createFunctionQuery } from '~/entities/connection/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
 import type { functionsType } from '~/entities/connection/queries/functions/list'
@@ -57,6 +58,7 @@ const FunctionInspector = ({
     />
     {item ? (
       <ExistingDefinitionForm
+        createQuery={(create) => createFunctionQuery({ create })}
         recreateQuery={(create) =>
           recreateFunctionQuery({
             create,
@@ -78,6 +80,7 @@ const FunctionInspector = ({
       />
     ) : (
       <NewDefinitionForm
+        createQuery={(create) => createFunctionQuery({ create })}
         noun="function"
         onSaved={() => onOpenChange(false)}
         queryKey={queryKey}
