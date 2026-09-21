@@ -1,5 +1,17 @@
 # Motion
 
+## Principles
+
+The recipes below are instances of these; a new animation answers to them before it picks a curve. This is a windowed desktop app driven by a pointer and the keyboard — there are no swipes to ride, so the principles land on drags, folds, swaps and key repeats.
+
+- **Every animation is interruptible, because the input that interrupts it is the normal one.** Panes get toggled faster than they fold, tabs switch mid-cross-fade, a drawer is reopened while it is still leaving. The replacement inherits the velocity of what it cut off (motion, never CSS transitions), and no state may be correct only once an animation has finished — an animation is how a change looks, never when it takes effect.
+- **A drag moves its surface from the first pixel.** The app's drags are the pane separators, table column resize, the `EditableList` grip, the reorderable strips and the drawer's swipe-dismiss; each follows the pointer directly, animates nothing while the pointer is down, and stops any fold it interrupts. A threshold decides the *outcome* (a pane past half its `minSize` is closed), never whether the surface has started answering — nothing sits still waiting to be sure the user meant it.
+- **Where a change commits is a function of what it costs.** Reversible and purely visual outcomes resolve live, so backing out is dragging back: a pane collapses the moment the pointer crosses the threshold and reopens if it crosses back, and Escape restores the size the drag started from. Anything that persists or runs — a stored pane size, a reordered list, a query — commits once on release, never per frame.
+- **Motion states where a surface lives.** A surface enters from its own edge and leaves the same way: the inspector and seed drawers from the right, a pane out of its seam, a popup from its anchor, a swapped panel offset along the direction it was pushed. A fade in place gives the user a surface with no address, and an arrival from somewhere it does not live sends them looking in the wrong place next time — which is why the collapse animation of a list is its rows sliding to their new `y`, not rows fading where they stand.
+- **Frequency is the animation budget, and the keyboard sets the ceiling.** Anything a held key repeats gets no animation at all (the highlight walking a definitions list, a row per keystroke); anything opened dozens of times an hour stays at popup weight (150 in, 100 out); a longer curve is affordable only where the moment is rare and page-sized — the auth entrance, once per session. A flourish met twenty times an hour is friction, and on a list it is smear.
+
+## Recipes
+
 - `motion` library for interruptible animation, not CSS transitions (transitions snap under frame drops). Exception: pure color/opacity hovers — `transition-colors` fine.
 - **A `transition-[…]` list must name every property the element's own state variants change.** A surface that hovers its ring *and* its background but lists only `box-shadow` fades the ring while the fill snaps, which reads as two different durations on one control. Rings and shadows are `box-shadow`; `transition-colors` never covers them. Sibling elements that light up on the same pointer event (a button inside an input group, a label tinting when its checkbox fills) share one duration too.
 - House curve `[0.32, 0.72, 0, 1]`, 150–300ms. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.

@@ -6,7 +6,6 @@ import { identifiers } from '../shared/sql-fragments'
 import type { IndexShape } from './create'
 import { createIndexStatement } from './create'
 
-// Columns and uniqueness are fixed once an index exists, so a change replaces it.
 export const recreateIndexQuery = ({
   name,
   newName,
