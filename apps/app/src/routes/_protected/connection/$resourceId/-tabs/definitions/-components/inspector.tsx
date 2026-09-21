@@ -139,7 +139,7 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
       </Tooltip>
     }
   >
-    <CodeBlock code={code} language="sql" size="xs" surface="field" wrap />
+    <CodeBlock code={code} language="sql" size="xs" variant="field" wrap />
   </InspectorSection>
 )
 
