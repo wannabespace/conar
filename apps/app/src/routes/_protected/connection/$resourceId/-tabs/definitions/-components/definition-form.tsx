@@ -1,19 +1,46 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { Skeleton } from '@tamery/ui/components/skeleton'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import type { UseQueryOptions } from '@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type as arkType } from 'arktype'
+import type * as monaco from 'monaco-editor'
+import { toast } from 'sonner'
 
+import { Monaco } from '~/components/monaco'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
+import { queryClient } from '~/lib/query-client'
 
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import type { InspectorWarning } from './inspector'
 import { InspectorFooter, InspectorSection } from './inspector'
-import { SqlEditor, SqlEditorSkeleton } from './sql-editor'
+
+const editorOptions = {
+  fontSize: 12,
+  lineNumbersMinChars: 3,
+  padding: { top: 8 },
+  scrollBeyondLastLine: false,
+  wordWrap: 'on',
+} satisfies monaco.editor.IStandaloneEditorConstructionOptions
+
+const readOnlyEditorOptions = {
+  ...editorOptions,
+  readOnly: true,
+} satisfies monaco.editor.IStandaloneEditorConstructionOptions
+
+const EditorSkeleton = () => (
+  <InspectorSection title="Definition" className="min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <Skeleton className="h-3 w-3/5 rounded-full" />
+      <Skeleton className="h-3 w-2/5 rounded-full" />
+      <Skeleton className="h-3 w-1/2 rounded-full" />
+      <Skeleton className="h-3 w-1/3 rounded-full" />
+    </div>
+  </InspectorSection>
+)
 
 const statementSchema = arkType(/\S/u).configure({
   message: 'Write a statement to run.',
@@ -42,11 +69,13 @@ export const DefinitionForm = ({
   success: string
   warning?: InspectorWarning | undefined
 }) => {
-  const mutation = useDefinitionMutation({
+  const mutation = useMutation({
     mutationFn: (definition: string) => save(definition),
-    onSuccess: onSaved,
-    queryKey,
-    success: () => success,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(success)
+      onSaved()
+    },
   })
   const form = useAppForm({
     defaultValues: { definition: initial },
@@ -70,10 +99,12 @@ export const DefinitionForm = ({
             action={<field.Error />}
           >
             <field.Field className="min-h-0 flex-1">
-              <SqlEditor
+              <Monaco
+                data-mask
+                className="ring-foreground/4 min-h-0 flex-1 overflow-hidden rounded-xl ring"
                 language={language}
                 value={field.state.value}
-                readOnly={readOnly}
+                options={readOnly ? readOnlyEditorOptions : editorOptions}
                 onChange={field.handleChange}
                 onSubmit={() => form.handleSubmit()}
               />
@@ -139,7 +170,7 @@ export const ExistingDefinitionForm = ({
   }
 
   if (definition === undefined || dropsFirst === undefined) {
-    return <SqlEditorSkeleton />
+    return <EditorSkeleton />
   }
 
   const statement = definition.replace(DEFINER, '').trim()

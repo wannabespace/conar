@@ -85,6 +85,7 @@ export const Monaco = ({
   language,
   options,
   onChange = noop,
+  onSubmit,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -93,6 +94,7 @@ export const Monaco = ({
   value: string
   language?: string
   onChange?: (value: string) => void
+  onSubmit?: () => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
 }) => {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -102,6 +104,8 @@ export const Monaco = ({
   const preventTriggerChangeEventRef = useRef(false)
 
   const onChangeEvent = useEffectEvent(onChange)
+  const onSubmitEvent = useEffectEvent(() => onSubmit?.())
+  const submitEnabled = Boolean(onSubmit)
   const getOptionsEvent = useEffectEvent(
     (editorLanguage?: string) =>
       ({
@@ -158,11 +162,22 @@ export const Monaco = ({
       }
     )
 
+    const submitAction = submitEnabled
+      ? monacoInstanceRef.current.addAction({
+          id: 'tamery.monaco-submit',
+          // oxlint-disable-next-line no-bitwise -- monaco keybindings are bit flags
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+          label: 'Submit',
+          run: () => onSubmitEvent(),
+        })
+      : undefined
+
     return () => {
       subscription.dispose()
+      submitAction?.dispose()
       monacoInstanceRef.current?.dispose()
     }
-  }, [language, ref])
+  }, [language, ref, submitEnabled])
 
   useMountedEffect(() => {
     if (!monacoInstanceRef.current || !options) {

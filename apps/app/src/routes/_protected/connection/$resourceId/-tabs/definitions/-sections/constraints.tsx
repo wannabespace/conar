@@ -9,8 +9,9 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type as arkType } from 'arktype'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
@@ -28,6 +29,7 @@ import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/s
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
+import { queryClient } from '~/lib/query-client'
 
 import {
   OptionSelect,
@@ -49,7 +51,6 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -297,13 +298,16 @@ const ConstraintInspector = ({
   tablesOf,
   type,
 }: SectionInspectorProps<GroupedConstraint>) => {
-  const mutation = useDefinitionMutation({
+  const mutation = useMutation({
     mutationFn: (draft: ConstraintDraft) =>
       saveConstraint({ draft, item, run, type }),
-    onSuccess: () => onOpenChange(false),
-    queryKey,
-    success: (draft) =>
-      `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`,
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? ''),

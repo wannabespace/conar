@@ -3,7 +3,8 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
@@ -13,6 +14,7 @@ import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
+import { queryClient } from '~/lib/query-client'
 
 import {
   DefinitionForm,
@@ -25,7 +27,6 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -63,7 +64,7 @@ const useToggle = ({
   run,
   type,
 }: Pick<SectionInspectorProps<TriggerItem>, 'queryKey' | 'run' | 'type'>) => {
-  const mutation = useDefinitionMutation({
+  const mutation = useMutation({
     mutationFn: ({ enabled, item }: { enabled: boolean; item: TriggerItem }) =>
       run(
         setTriggerEnabledQuery({
@@ -73,9 +74,12 @@ const useToggle = ({
           table: item.table,
         })
       ),
-    queryKey,
-    success: ({ enabled, item }) =>
-      `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`,
+    onSuccess: async (_result, { enabled, item }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`
+      )
+    },
   })
 
   return TOGGLES.has(type)

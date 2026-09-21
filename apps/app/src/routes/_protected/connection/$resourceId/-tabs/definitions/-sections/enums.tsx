@@ -11,9 +11,10 @@ import {
   useAppForm,
 } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type as arkType } from 'arktype'
 import { AnimatePresence } from 'motion/react'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
@@ -40,7 +41,6 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -311,15 +311,16 @@ const EnumInspector = ({
   schemas,
   selectedSchema,
 }: SectionInspectorProps<EnumItem>) => {
-  const mutation = useDefinitionMutation({
+  const mutation = useMutation({
     mutationFn: async (draft: EnumDraft) => {
       await saveEnum({ connectionResource, draft, item, run })
       await refreshColumns(connectionResource)
     },
-    onSuccess: () => onOpenChange(false),
-    queryKey,
-    success: (draft) =>
-      `Enum "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(`Enum "${draft.name.trim()}" ${item ? 'saved' : 'created'}`)
+      onOpenChange(false)
+    },
   })
   const form = useAppForm({
     defaultValues: {

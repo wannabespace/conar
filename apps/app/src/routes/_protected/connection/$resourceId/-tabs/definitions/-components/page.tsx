@@ -40,17 +40,19 @@ import {
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
+import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import type { CSSProperties, ComponentType, ReactNode } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { queryClient } from '~/lib/query-client'
 
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 import type { CellContext, DefinitionsColumn } from '../-lib/columns'
 import type { SectionInspectorProps } from './inspector'
@@ -261,14 +263,14 @@ export const DefinitionsPage = <T extends { name: string }>({
   const context: CellContext = { schema: selectedSchema, search }
   const plural = title.toLowerCase()
 
-  const dropMutation = useDefinitionMutation({
+  const dropMutation = useMutation({
     mutationFn: (item: T) => dropItem(item, cascade),
-    onSuccess: () => {
+    onSuccess: async (_result, item) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(`${uppercaseFirst(noun)} "${item.name}" dropped`)
       setDropping((current) => ({ ...current, open: false }))
       inspector.close()
     },
-    queryKey,
-    success: (item) => `${uppercaseFirst(noun)} "${item.name}" dropped`,
   })
 
   const requestDrop = (item: T) => {

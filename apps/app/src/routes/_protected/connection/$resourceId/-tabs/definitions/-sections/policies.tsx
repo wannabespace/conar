@@ -7,8 +7,9 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type as arkType } from 'arktype'
+import { toast } from 'sonner'
 
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
@@ -22,6 +23,7 @@ import type {
   PolicyKind,
 } from '~/entities/connection/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
+import { queryClient } from '~/lib/query-client'
 
 import {
   resetFields,
@@ -41,7 +43,6 @@ import {
   InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -209,12 +210,15 @@ const PolicyInspector = ({
   selectedSchema,
   tablesOf,
 }: SectionInspectorProps<PolicyItem>) => {
-  const mutation = useDefinitionMutation({
+  const mutation = useMutation({
     mutationFn: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
-    onSuccess: () => onOpenChange(false),
-    queryKey,
-    success: (draft) =>
-      `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? ''),
