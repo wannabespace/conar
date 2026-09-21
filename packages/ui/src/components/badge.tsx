@@ -7,6 +7,7 @@ import { badgeVariants } from './badge.utils'
 
 const Badge = ({
   className,
+  size = 'default',
   variant = 'default',
   render,
   ...props
@@ -15,12 +16,13 @@ const Badge = ({
     defaultTagName: 'span',
     props: mergeProps<'span'>(
       {
-        className: cn(badgeVariants({ variant }), className),
+        className: cn(badgeVariants({ size, variant }), className),
       },
       props
     ),
     render,
     state: {
+      size,
       slot: 'badge',
       variant,
     },

@@ -423,9 +423,9 @@ const enumNameColumn = nameColumn({
 
 const valuesColumn: DefinitionsColumn<EnumItem> = {
   cell: (item, { search }) => (
-    <span data-mask className="flex flex-wrap gap-1">
+    <span data-mask className="flex flex-wrap items-center gap-1">
       {item.values.map((value) => (
-        <Badge key={value} variant="outline">
+        <Badge key={value} size="sm" variant="outline">
           <HighlightText text={value} match={search} />
         </Badge>
       ))}

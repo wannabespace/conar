@@ -445,9 +445,6 @@ const NewTabMenu = ({
 
 const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   const store = getConnectionResourceStore(resourceId)
-  const chatOpened = useSubscription(store, {
-    selector: (state) => state.chatOpened,
-  })
   const { isPending, subscription } = useUserSubscription()
 
   const toggleChat = () => {
@@ -476,7 +473,6 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="AI chat"
-            aria-pressed={chatOpened}
             onClick={toggleChat}
           />
         }
