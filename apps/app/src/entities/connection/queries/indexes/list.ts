@@ -63,6 +63,7 @@ export const resourceIndexesQuery = createQuery({
         ])
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
+        .orderBy(['database', 'table', 'position'])
         .execute(),
 
     mssql: (db) =>

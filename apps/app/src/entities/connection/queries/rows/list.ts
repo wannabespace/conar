@@ -1,4 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import type { ExpressionBuilder } from 'kysely'
@@ -34,6 +35,14 @@ const filterValueExpression = (filter: ActiveFilter) => {
   return sql.val(filter.values[0])
 }
 
+const operatorFragment = (operator: string) => {
+  if (!SQL_FILTERS_LIST.some((filter) => filter.operator === operator)) {
+    throw new Error(`Unsupported filter operator "${operator}"`)
+  }
+
+  return sql.raw(operator.toLowerCase())
+}
+
 // oxlint-disable-next-line ts/no-explicit-any
 export const buildWhere = <E extends ExpressionBuilder<any, any>>(
   eb: E,
@@ -47,7 +56,7 @@ export const buildWhere = <E extends ExpressionBuilder<any, any>>(
       sql.join(
         [
           sql.ref(filter.column),
-          sql.raw(filter.ref.operator.toLowerCase()),
+          operatorFragment(filter.ref.operator),
           filterValueExpression(filter),
         ].filter(Boolean),
         sql.raw(' ')
@@ -250,16 +259,18 @@ export const resourceRowsQueryInfiniteOptions = memoize(
     ...props
   }: {
     connectionResource: ConnectionResource
-  } & RowsQueryProps) =>
-    infiniteQueryOptions({
+  } & RowsQueryProps) => {
+    const pageLimit = props.limit ?? DEFAULT_PAGE_LIMIT
+
+    return infiniteQueryOptions({
       getNextPageParam: (
         lastPage: PageResult,
         _allPages: PageResult[],
         lastPageParam: number
       ) =>
-        lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT
+        lastPage.rows.length === 0 || lastPage.rows.length < pageLimit
           ? null
-          : lastPageParam + DEFAULT_PAGE_LIMIT,
+          : lastPageParam + pageLimit,
       initialPageParam: 0,
       queryFn: async ({ pageParam: offset }) => {
         const result = await resourceRowsQuery({
@@ -289,4 +300,5 @@ export const resourceRowsQueryInfiniteOptions = memoize(
       select: (data) => data.pages.flatMap((page) => page.rows),
       throwOnError: false,
     })
+  }
 )

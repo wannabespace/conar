@@ -23,6 +23,9 @@ interface RowPolicies {
   id: string
   is_restrictive: number
   select_filter: string
+  apply_to_all: number
+  apply_to_list: string[]
+  apply_to_except: string[]
 }
 
 /**

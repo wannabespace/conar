@@ -56,7 +56,7 @@ export const resourceTableTotalQuery = memoize(
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
+            .select(sql<number>`count_big(*)`.as('total'))
             .where((eb) => buildWhere(eb, filters))
             .executeTakeFirst()
 

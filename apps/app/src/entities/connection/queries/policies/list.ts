@@ -33,15 +33,20 @@ const query = createQuery({
           'name',
           'is_restrictive',
           'select_filter',
+          'apply_to_all',
+          'apply_to_list',
+          'apply_to_except',
         ])
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
       return rows.map((row) => ({
         check: null,
-        command: 'ALL',
+        command: 'SELECT',
         enabled: true,
         name: row.name,
-        roles: [],
+        roles: row.apply_to_all
+          ? ['ALL', ...row.apply_to_except.map((role) => `EXCEPT ${role}`)]
+          : row.apply_to_list,
         schema: row.database,
         table: row.table,
         type: row.is_restrictive === 1 ? 'RESTRICTIVE' : 'PERMISSIVE',
@@ -119,22 +124,31 @@ const query = createQuery({
     },
     postgres: async (db) => {
       const rows = await db
-        .selectFrom('pg_catalog.pg_policies')
+        .selectFrom('pg_catalog.pg_policies as p')
+        .innerJoin('pg_catalog.pg_namespace as n', (join) =>
+          join.onRef('n.nspname', '=', 'p.schemaname')
+        )
+        .innerJoin('pg_catalog.pg_class as c', (join) =>
+          join
+            .onRef('c.relname', '=', 'p.tablename')
+            .onRef('c.relnamespace', '=', 'n.oid')
+        )
         .select([
-          'schemaname',
-          'tablename',
-          'policyname',
-          'permissive',
-          sql<string[]>`roles::text[]`.as('roles'),
-          'cmd',
-          'qual',
-          'with_check',
+          'p.schemaname',
+          'p.tablename',
+          'p.policyname',
+          'p.permissive',
+          sql<string[]>`p.roles::text[]`.as('roles'),
+          'p.cmd',
+          'p.qual',
+          'p.with_check',
+          'c.relrowsecurity as enabled',
         ])
         .execute()
       return rows.map((row) => ({
         check: row.with_check,
         command: row.cmd,
-        enabled: true,
+        enabled: row.enabled,
         name: row.policyname,
         roles: row.roles,
         schema: row.schemaname,
