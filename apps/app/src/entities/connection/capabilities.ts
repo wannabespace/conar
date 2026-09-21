@@ -29,6 +29,7 @@ interface ConnectionCapabilities {
   renameConstraints: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
+  toggleTriggers: boolean
 }
 
 const readOnly: SectionCapabilities = {}
@@ -51,6 +52,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: { drop: true },
       triggers: false,
     },
+    toggleTriggers: false,
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
@@ -70,6 +72,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
+    toggleTriggers: true,
   },
   [ConnectionType.MySQL]: {
     cascade: false,
@@ -90,6 +93,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
+    toggleTriggers: false,
   },
   [ConnectionType.Postgres]: {
     cascade: true,
@@ -107,6 +111,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: full,
       triggers: full,
     },
+    toggleTriggers: true,
   },
 }
 

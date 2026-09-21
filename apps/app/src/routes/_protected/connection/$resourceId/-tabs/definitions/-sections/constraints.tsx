@@ -151,34 +151,37 @@ const draftOf = (
   }
 }
 
-const reshapes = (draft: ConstraintDraft, item: GroupedConstraint) => {
-  const opened = draftOf(item, item.schema)
-
-  return (
-    draft.kind !== opened.kind ||
-    !sameList(draft.columns, opened.columns) ||
-    draft.foreignSchema !== opened.foreignSchema ||
-    draft.foreignTable !== opened.foreignTable ||
-    !sameList(draft.foreignColumns, opened.foreignColumns) ||
-    draft.onDelete !== opened.onDelete ||
-    draft.onUpdate !== opened.onUpdate
-  )
-}
-
 const suggestedNameOf = (draft: ConstraintDraft) =>
   [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
 
 const finalNameOf = (draft: ConstraintDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
 
-const renamesInPlace = (
+const changeOf = (
   draft: ConstraintDraft,
-  item: GroupedConstraint,
+  item: GroupedConstraint | null,
   connectionType: ConnectionType
-) =>
-  !reshapes(draft, item) &&
-  finalNameOf(draft) !== item.name &&
-  capabilitiesOf(connectionType).renameConstraints
+) => {
+  const opened = item && draftOf(item, item.schema)
+  const reshaped =
+    !!opened &&
+    (draft.kind !== opened.kind ||
+      !sameList(draft.columns, opened.columns) ||
+      draft.foreignSchema !== opened.foreignSchema ||
+      draft.foreignTable !== opened.foreignTable ||
+      !sameList(draft.foreignColumns, opened.foreignColumns) ||
+      draft.onDelete !== opened.onDelete ||
+      draft.onUpdate !== opened.onUpdate)
+  const renameOnly = !!opened && !reshaped && finalNameOf(draft) !== opened.name
+
+  return {
+    recreates:
+      reshaped ||
+      (renameOnly && !capabilitiesOf(connectionType).renameConstraints),
+    renameOnly,
+    reshaped,
+  }
+}
 
 const constraintSchema = type({
   columns: type('string[] >= 1').configure({
@@ -264,9 +267,9 @@ const saveConstraint = ({
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  return renamesInPlace(draft, item, connectionType)
-    ? run(renameConstraintQuery({ ...target, newName: shape.name }))
-    : run(recreateConstraintQuery({ ...target, kind: item.type, shape }))
+  return changeOf(draft, item, connectionType).recreates
+    ? run(recreateConstraintQuery({ ...target, kind: item.type, shape }))
+    : run(renameConstraintQuery({ ...target, newName: shape.name }))
 }
 
 const ConstraintInspector = ({
@@ -318,12 +321,11 @@ const ConstraintInspector = ({
   })
 
   const readOnly = item ? !can.edit : !can.create
-  const reshaped = !!item && reshapes(draft, item)
-  const renameOnly = !!item && !reshaped && finalNameOf(draft) !== item.name
-  const recreates =
-    !!item &&
-    (reshaped || renameOnly) &&
-    !renamesInPlace(draft, item, connectionType)
+  const { recreates, renameOnly, reshaped } = changeOf(
+    draft,
+    item,
+    connectionType
+  )
   const singleColumn = draft.columns.length === 1
 
   return (

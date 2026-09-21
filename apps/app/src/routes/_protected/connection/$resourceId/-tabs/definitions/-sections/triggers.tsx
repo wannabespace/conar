@@ -6,6 +6,7 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
@@ -44,13 +45,6 @@ const dropQueryOf = (item: TriggerItem) =>
 // CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
 const REPLACES_TRIGGERS_FROM = 14
 
-// Postgres and MSSQL can park a trigger without dropping it; the others
-// cannot, so they get no toggle at all.
-const TOGGLES = new Set<ConnectionType>([
-  ConnectionType.Postgres,
-  ConnectionType.MSSQL,
-])
-
 const useToggle = ({
   queryKey,
   run,
@@ -74,7 +68,7 @@ const useToggle = ({
     },
   })
 
-  return TOGGLES.has(type)
+  return capabilitiesOf(type).toggleTriggers
     ? (item: TriggerItem, enabled: boolean) =>
         mutation.mutate({ enabled, item })
     : undefined
