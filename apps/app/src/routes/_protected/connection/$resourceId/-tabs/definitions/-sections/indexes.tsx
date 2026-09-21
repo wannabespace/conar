@@ -16,6 +16,7 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
+import { type as arkType } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 
 import { Link } from '~/components/link'
@@ -35,7 +36,7 @@ import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
 
 import {
-  NamesField,
+  OptionsField,
   resetFields,
   SchemaField,
   SelectField,
@@ -180,9 +181,11 @@ const locksOf = ({
   return { readOnly, shape: readOnly || owned || !!item?.custom }
 }
 
-const indexErrors = (draft: IndexDraft) => ({
-  columns: draft.columns.length === 0 ? 'Pick at least one column.' : undefined,
-  table: draft.table === '' ? 'Pick the table to index.' : undefined,
+const indexSchema = arkType({
+  columns: arkType('string[] >= 1').configure({
+    message: 'Pick at least one column.',
+  }),
+  table: arkType(/\S/u).configure({ message: 'Pick the table to index.' }),
 })
 
 const rebuildWarning = (item: GroupedIndex | null) => ({
@@ -272,10 +275,7 @@ const IndexInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    validators: {
-      onChange: ({ value }) => ({ fields: indexErrors(value) }),
-      onMount: ({ value }) => ({ fields: indexErrors(value) }),
-    },
+    validators: { onChange: indexSchema, onMount: indexSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
   const { data: columnNames } = useQuery({
@@ -348,7 +348,7 @@ const IndexInspector = ({
           </form.AppField>
           <form.AppField name="columns">
             {() => (
-              <NamesField
+              <OptionsField
                 label="Columns"
                 description="A query uses the index when it filters on the leading columns."
                 disabled={locked.shape || draft.table === ''}

@@ -8,6 +8,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
+import { type as arkType } from 'arktype'
 
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
@@ -127,9 +128,9 @@ const replaces = (item: PolicyItem, draft: PolicyDraft) =>
   draft.kind !== item.type ||
   clearsExpression(item, draft)
 
-const policyErrors = (draft: PolicyDraft) => ({
-  name: draft.name.trim() === '' ? 'Give the policy a name.' : undefined,
-  table: draft.table === '' ? 'Pick the table to protect.' : undefined,
+const policySchema = arkType({
+  name: arkType(/\S/u).configure({ message: 'Give the policy a name.' }),
+  table: arkType(/\S/u).configure({ message: 'Pick the table to protect.' }),
 })
 
 const replaceWarning = (
@@ -220,10 +221,7 @@ const PolicyInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
-    validators: {
-      onChange: ({ value }) => ({ fields: policyErrors(value) }),
-      onMount: ({ value }) => ({ fields: policyErrors(value) }),
-    },
+    validators: { onChange: policySchema, onMount: policySchema },
   })
   const draft = withAllowedExpressions(
     useStore(form.store, (state) => state.values)

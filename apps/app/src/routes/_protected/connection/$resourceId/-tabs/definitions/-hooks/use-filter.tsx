@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { NameSelect } from '../-components/fields'
+import { OptionSelect } from '../-components/fields'
 
 export interface FilterOption<T extends string> {
   label: string
@@ -19,7 +19,7 @@ export const useFilter = <T extends string>(
 
   return {
     control: (
-      <NameSelect
+      <OptionSelect
         className="w-40"
         mask={false}
         options={choices.map((choice) => choice.value)}

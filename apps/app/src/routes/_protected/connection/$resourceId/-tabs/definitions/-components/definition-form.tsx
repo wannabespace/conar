@@ -4,6 +4,7 @@ import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
+import { type as arkType } from 'arktype'
 
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
@@ -13,6 +14,10 @@ import type { RunQuery } from '../-hooks/use-definitions-state'
 import type { InspectorWarning } from './inspector'
 import { InspectorFooter, InspectorSection } from './inspector'
 import { SqlEditor, SqlEditorSkeleton } from './sql-editor'
+
+const statementSchema = arkType(/\S/u).configure({
+  message: 'Write a statement to run.',
+})
 
 export const DefinitionForm = ({
   hint,
@@ -55,12 +60,7 @@ export const DefinitionForm = ({
     <>
       <form.AppField
         name="definition"
-        validators={{
-          onChange: ({ value }) =>
-            value.trim() === '' ? 'Write a statement to run.' : undefined,
-          onMount: ({ value }) =>
-            value.trim() === '' ? 'Write a statement to run.' : undefined,
-        }}
+        validators={{ onChange: statementSchema, onMount: statementSchema }}
       >
         {(field) => (
           <InspectorSection
@@ -95,6 +95,7 @@ export const DefinitionForm = ({
 }
 
 const CREATE = /^CREATE\s+(?!OR\s+(?:REPLACE|ALTER)\b)/iu
+// Re-running a captured DEFINER clause needs SUPER or SET_USER_ID.
 const DEFINER = /\bDEFINER\s*=\s*(?:`[^`]*`|[^@\s]+)@(?:`[^`]*`|\S+)\s*/iu
 
 const replaceInPlace: Partial<Record<ConnectionType, string>> = {
@@ -141,9 +142,6 @@ export const ExistingDefinitionForm = ({
     return <SqlEditorSkeleton />
   }
 
-  // The catalog hands back the original CREATE, which collides with the object
-  // that already exists unless the dialect can replace in place or we drop it
-  // first. MySQL's DEFINER goes too: re-running it needs SUPER or SET_USER_ID.
   const statement = definition.replace(DEFINER, '').trim()
   const keyword = dropsFirst ? undefined : replaceInPlace[type]
 

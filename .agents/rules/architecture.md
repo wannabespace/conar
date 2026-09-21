@@ -11,7 +11,7 @@
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
 | Testing | Bun test for unit tests, Playwright for E2E. |
-| Schemas | ArkType everywhere — oRPC inputs, env validation, stores. Zod is legacy, surviving only inside frozen chat v1 (`api.md`). |
+| Schemas | ArkType everywhere — oRPC inputs, env validation, stores, **form validators** (`validators: { onChange: schema, onMount: schema }`; TanStack Form reads the issues only, so a schema covering the checked fields is enough, and `.configure({ message })` replaces ArkType's generated wording). Zod is legacy, surviving only inside frozen chat v1 (`api.md`). |
 | UI components | shadcn registry first — search before writing markup, vendor missing pieces into `packages/ui` in kit style. Hand-rolled re-implementations are a review blocker (`tamery-ui` skill, hard rule 0). |
 | Markdown | Kit `Response` (streamdown) — never react-markdown or a bespoke pipeline. |
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |

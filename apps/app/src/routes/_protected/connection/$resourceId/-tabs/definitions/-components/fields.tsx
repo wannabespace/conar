@@ -32,7 +32,7 @@ import type { ComponentProps, ReactNode } from 'react'
 const identity = (value: string): string => value
 const noOptions: readonly string[] = []
 
-export const NameSelect = <T extends string>({
+export const OptionSelect = <T extends string>({
   className,
   disabled,
   id,
@@ -81,7 +81,7 @@ export const NameSelect = <T extends string>({
   </Select>
 )
 
-const NamesSelect = ({
+const OptionsSelect = ({
   disabled,
   id,
   limit,
@@ -196,7 +196,7 @@ export const SelectField = <T extends string>({
 
   return (
     <Labelled description={description} label={label}>
-      <NameSelect
+      <OptionSelect
         id={field.name}
         value={field.state.value}
         onValueChange={onValueChange ?? field.handleChange}
@@ -206,7 +206,7 @@ export const SelectField = <T extends string>({
   )
 }
 
-export const NamesField = ({
+export const OptionsField = ({
   description,
   label,
   ...select
@@ -220,7 +220,7 @@ export const NamesField = ({
 
   return (
     <Labelled description={description} label={label}>
-      <NamesSelect
+      <OptionsSelect
         id={field.name}
         value={field.state.value}
         onValueChange={field.handleChange}

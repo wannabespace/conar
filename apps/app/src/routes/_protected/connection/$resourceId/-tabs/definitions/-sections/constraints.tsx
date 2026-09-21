@@ -10,6 +10,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
+import { type as arkType } from 'arktype'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
@@ -29,8 +30,8 @@ import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/querie
 import { groupInSchema } from '~/entities/connection/utils/helpers'
 
 import {
-  NameSelect,
-  NamesField,
+  OptionSelect,
+  OptionsField,
   resetFields,
   SchemaField,
   SelectField,
@@ -195,26 +196,36 @@ const renamesInPlace = (
   finalNameOf(draft) !== item.name &&
   capabilitiesOf(type).renameConstraints
 
-const constraintErrors = (draft: ConstraintDraft) => {
-  const isForeign = draft.kind === 'foreignKey'
-  const mismatched =
-    isForeign &&
-    draft.foreignTable !== '' &&
-    draft.foreignColumns.length !== draft.columns.length
-
-  return {
-    columns:
-      draft.columns.length === 0 ? 'Pick at least one column.' : undefined,
-    foreignColumns: mismatched
-      ? 'Reference one column per column of this constraint.'
-      : undefined,
-    foreignTable:
-      isForeign && draft.foreignTable === ''
-        ? 'Pick the table this key points at.'
-        : undefined,
-    table: draft.table === '' ? 'Pick the table to constrain.' : undefined,
+const constraintSchema = arkType({
+  columns: arkType('string[] >= 1').configure({
+    message: 'Pick at least one column.',
+  }),
+  foreignColumns: 'string[]',
+  foreignTable: 'string',
+  kind: 'string',
+  table: arkType(/\S/u).configure({
+    message: 'Pick the table to constrain.',
+  }),
+}).narrow((draft, ctx) => {
+  if (draft.kind !== 'foreignKey') {
+    return true
   }
-}
+
+  if (draft.foreignTable === '') {
+    return ctx.reject({
+      message: 'Pick the table this key points at.',
+      relativePath: ['foreignTable'],
+    })
+  }
+
+  return (
+    draft.foreignColumns.length === draft.columns.length ||
+    ctx.reject({
+      message: 'Reference one column per column of this constraint.',
+      relativePath: ['foreignColumns'],
+    })
+  )
+})
 
 const recreateWarning = (
   item: GroupedConstraint,
@@ -299,10 +310,7 @@ const ConstraintInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    validators: {
-      onChange: ({ value }) => ({ fields: constraintErrors(value) }),
-      onMount: ({ value }) => ({ fields: constraintErrors(value) }),
-    },
+    validators: { onChange: constraintSchema, onMount: constraintSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
   const { data: tableColumns } = useQuery({
@@ -409,7 +417,7 @@ const ConstraintInspector = ({
           </form.AppField>
           <form.AppField name="columns">
             {() => (
-              <NamesField
+              <OptionsField
                 label="Columns"
                 disabled={readOnly || draft.table === ''}
                 options={tableColumns}
@@ -457,7 +465,7 @@ const ConstraintInspector = ({
                 singleColumn ? (
                   <field.Field>
                     <field.Label>Column</field.Label>
-                    <NameSelect
+                    <OptionSelect
                       id={field.name}
                       disabled={readOnly || draft.foreignTable === ''}
                       options={foreignColumns ?? noColumns}
@@ -470,7 +478,7 @@ const ConstraintInspector = ({
                     </FieldDescription>
                   </field.Field>
                 ) : (
-                  <NamesField
+                  <OptionsField
                     label="Columns"
                     description={`${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
                     disabled={

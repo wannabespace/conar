@@ -127,10 +127,7 @@ const enumSchema = arkType({
         ctx.reject({ message: 'Every value has to be different.' })
       )
     }),
-  name: arkType('string').narrow(
-    (name, ctx) =>
-      name.trim() !== '' || ctx.reject({ message: 'Give the enum a name.' })
-  ),
+  name: arkType(/\S/u).configure({ message: 'Give the enum a name.' }),
   schema: 'string',
 })
 
