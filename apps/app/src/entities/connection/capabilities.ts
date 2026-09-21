@@ -110,17 +110,19 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
 }
 
-const sectionMeta: Record<
-  DefinitionsSection,
-  { cascade: boolean; icon: IconSvgElement; noun: string }
-> = {
+const sectionMeta = {
   constraints: { cascade: true, icon: Key01Icon, noun: 'constraint' },
   enums: { cascade: true, icon: TagsIcon, noun: 'enum' },
   functions: { cascade: true, icon: SourceCodeIcon, noun: 'function' },
   indexes: { cascade: false, icon: LeftToRightListDashIcon, noun: 'index' },
   policies: { cascade: false, icon: SecurityCheckIcon, noun: 'policy' },
   triggers: { cascade: false, icon: FlashIcon, noun: 'trigger' },
-}
+} as const satisfies Record<
+  DefinitionsSection,
+  { cascade: boolean; icon: IconSvgElement; noun: string }
+>
+
+export type DefinitionsNoun = (typeof sectionMeta)[DefinitionsSection]['noun']
 
 export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
 

@@ -10,6 +10,7 @@ import type * as monaco from 'monaco-editor'
 import { toast } from 'sonner'
 
 import { Monaco } from '~/components/monaco'
+import type { DefinitionsNoun } from '~/entities/connection/capabilities'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
@@ -150,9 +151,14 @@ const newDefinitions = {
         `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
     },
   },
-} satisfies Record<
-  string,
-  { hint: string; template: Record<ConnectionType, (schema: string) => string> }
+} satisfies Partial<
+  Record<
+    DefinitionsNoun,
+    {
+      hint: string
+      template: Record<ConnectionType, (schema: string) => string>
+    }
+  >
 >
 
 export const NewDefinitionForm = ({
@@ -213,7 +219,7 @@ export const ExistingDefinitionForm = ({
   dropQuery: Parameters<RunQuery>[0]
   // Undefined while the caller still works out whether the dialect can
   // replace in place.
-  dropsFirst: boolean | undefined
+  dropsFirst?: boolean
   name: string
   noun: string
   onSaved: () => void
