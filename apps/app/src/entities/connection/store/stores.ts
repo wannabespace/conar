@@ -6,7 +6,6 @@ import { createWebStorageValue } from 'seitu/web'
 
 import { connectionResourceStoreKey } from '~/lib/constants'
 
-import type { ConnectionTab } from './tabs/types'
 import { connectionTabType } from './tabs/types'
 
 const schema = type({
@@ -92,13 +91,6 @@ export const getChatStore = memoize((id: string) =>
 )
 
 export type NavigatorMode = 'tables' | 'definitions'
-
-export const navigatorModes: Record<ConnectionTab['type'], NavigatorMode> = {
-  definitions: 'definitions',
-  runner: 'tables',
-  table: 'tables',
-  visualizer: 'definitions',
-}
 
 export const getNavigatorStore = memoize(
   (_id: string, initialMode: NavigatorMode = 'tables') =>
