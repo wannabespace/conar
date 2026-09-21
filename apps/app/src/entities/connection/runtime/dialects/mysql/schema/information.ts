@@ -220,6 +220,7 @@ interface Routines {
   ROUTINE_NAME: string
   ROUTINE_TYPE: string
   DATA_TYPE: string
+  DTD_IDENTIFIER: string | null
   ROUTINE_DEFINITION: string | null
   IS_DETERMINISTIC: string
   SQL_DATA_ACCESS: string

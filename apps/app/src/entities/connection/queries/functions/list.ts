@@ -10,20 +10,39 @@ import {
 } from '../../runtime/query'
 
 export const functionsType = type({
+  'args?': 'string | null',
   'argument_count?': 'number',
+  'behavior?': 'string | null',
+  'body?': 'string | null',
   'identity?': 'string',
   'language?': 'string',
   name: 'string',
   'oid?': 'number',
   return_type: 'string | null',
   schema: 'string',
+  'security_definer?': 'boolean',
   type: 'string',
-}).pipe(({ type: fnType, argument_count, language, ...item }) => ({
-  ...item,
-  argumentCount: argument_count || null,
-  language: language || null,
-  type: fnType as 'function' | 'procedure',
-}))
+}).pipe(
+  ({
+    type: fnType,
+    args,
+    argument_count,
+    behavior,
+    body,
+    language,
+    security_definer,
+    ...item
+  }) => ({
+    ...item,
+    args: args || '',
+    argumentCount: argument_count || null,
+    behavior: behavior || '',
+    body: body || '',
+    language: language || null,
+    securityDefiner: security_definer ?? false,
+    type: fnType as 'function' | 'procedure',
+  })
+)
 
 const resourceFunctionsQuery = createQuery({
   query: {
@@ -32,9 +51,21 @@ const resourceFunctionsQuery = createQuery({
       db
         .selectFrom('sys.objects as o')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
+        .leftJoin('sys.sql_modules as sm', 'o.object_id', 'sm.object_id')
         .select(({ eb, or }) => [
           's.name as schema',
           'o.name as name',
+          sql<string>`(
+            SELECT STRING_AGG(CONCAT(pa.name, ' ', TYPE_NAME(pa.user_type_id)), ', ')
+              WITHIN GROUP (ORDER BY pa.parameter_id)
+            FROM sys.parameters pa
+            WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
+          )`.as('args'),
+          // The catalog keeps the whole CREATE, so the body is what follows
+          // the AS that closes the header.
+          sql<string>`STUFF(sm.definition, 1, CHARINDEX(' AS ', sm.definition) + 3, '')`.as(
+            'body'
+          ),
           eb
             .case()
             .when(
@@ -72,16 +103,16 @@ const resourceFunctionsQuery = createQuery({
             .case()
             .when('o.type', '=', 'FN')
             // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('scalar')
+            .then(
+              sql<string>`(
+                SELECT TYPE_NAME(pa.user_type_id)
+                FROM sys.parameters pa
+                WHERE pa.object_id = o.object_id AND pa.parameter_id = 0
+              )`
+            )
             .when(or([eb('o.type', '=', 'IF'), eb('o.type', '=', 'TF')]))
             // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
             .then('table')
-            .when('o.type', '=', 'FS')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('CLR scalar')
-            .when('o.type', '=', 'FT')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('CLR table')
             .else(null)
             .end()
             .as('return_type'),
@@ -97,11 +128,25 @@ const resourceFunctionsQuery = createQuery({
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
           sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
+          sql<string>`(
+            SELECT GROUP_CONCAT(
+              CONCAT_WS(' ', NULLIF(pm.PARAMETER_MODE, 'IN'), pm.PARAMETER_NAME, pm.DTD_IDENTIFIER)
+              ORDER BY pm.ORDINAL_POSITION SEPARATOR ', '
+            )
+            FROM information_schema.PARAMETERS pm
+            WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
+              AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
+              AND pm.ORDINAL_POSITION > 0
+          )`.as('args'),
+          'r.ROUTINE_DEFINITION as body',
+          sql<string>`CASE WHEN r.IS_DETERMINISTIC = 'YES' THEN 'DETERMINISTIC' ELSE 'NOT DETERMINISTIC' END`.as(
+            'behavior'
+          ),
           eb
             .case()
             .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
             // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then(eb.ref('r.DATA_TYPE'))
+            .then(eb.ref('r.DTD_IDENTIFIER'))
             .else(null)
             .end()
             .as('return_type'),
@@ -118,7 +163,6 @@ const resourceFunctionsQuery = createQuery({
         .selectFrom('pg_catalog.pg_proc as p')
         .innerJoin('pg_catalog.pg_namespace as n', 'p.pronamespace', 'n.oid')
         .innerJoin('pg_catalog.pg_language as l', 'p.prolang', 'l.oid')
-        .leftJoin('pg_catalog.pg_type as t', 'p.prorettype', 't.oid')
         .select(({ eb }) => [
           'n.nspname as schema',
           'p.proname as name',
@@ -131,7 +175,13 @@ const resourceFunctionsQuery = createQuery({
             .end()
             .as('type'),
           'l.lanname as language',
-          't.typname as return_type',
+          sql<string>`pg_get_function_result(p.oid)`.as('return_type'),
+          sql<string>`pg_get_function_arguments(p.oid)`.as('args'),
+          'p.prosrc as body',
+          'p.prosecdef as security_definer',
+          sql<string>`CASE p.provolatile WHEN 'i' THEN 'IMMUTABLE' WHEN 's' THEN 'STABLE' ELSE 'VOLATILE' END`.as(
+            'behavior'
+          ),
           'p.pronargs as argument_count',
           'p.oid as oid',
           sql<string>`pg_get_function_identity_arguments(p.oid)`.as('identity'),

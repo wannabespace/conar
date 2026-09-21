@@ -205,6 +205,8 @@ interface PgProc {
   prorettype: number
   prolang: number
   provolatile: string
+  prosecdef: boolean
+  prosrc: string
   pronargs: number
   proargtypes: string
 }

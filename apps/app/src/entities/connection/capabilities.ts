@@ -12,6 +12,10 @@ import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 
 import type { ReferentialAction } from './queries/constraints/shape'
 import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
+import {
+  FUNCTION_DETERMINISM,
+  FUNCTION_VOLATILITIES,
+} from './queries/functions/shape'
 import type {
   TriggerOrientation,
   TriggerTiming,
@@ -23,6 +27,12 @@ export interface SectionCapabilities {
   create?: boolean
   drop?: boolean
   edit?: boolean
+}
+
+interface FunctionCapabilities {
+  behaviors: readonly string[]
+  languages: readonly string[]
+  securityDefiner: boolean
 }
 
 interface TriggerCapabilities {
@@ -37,6 +47,7 @@ interface ConnectionCapabilities {
   cascade: boolean
   enumsLabel: string
   explain: boolean
+  functions: FunctionCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   renameConstraints: boolean
@@ -53,6 +64,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: false,
     enumsLabel: 'Enums',
     explain: false,
+    functions: { behaviors: [], languages: [], securityDefiner: false },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
@@ -77,6 +89,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: false,
     enumsLabel: 'Enums',
     explain: false,
+    functions: { behaviors: [], languages: [], securityDefiner: false },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
     ),
@@ -104,6 +117,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     enumsLabel: 'Enums & Sets',
     explain: true,
     // InnoDB parses SET DEFAULT but rejects the table.
+    functions: {
+      behaviors: FUNCTION_DETERMINISM,
+      languages: [],
+      securityDefiner: false,
+    },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'SET DEFAULT'
     ),
@@ -130,6 +148,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     cascade: true,
     enumsLabel: 'Enums',
     explain: true,
+    functions: {
+      behaviors: FUNCTION_VOLATILITIES,
+      languages: ['plpgsql', 'sql'],
+      securityDefiner: true,
+    },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: true,
@@ -163,8 +186,6 @@ const sectionMeta = {
   DefinitionsSection,
   { cascade: boolean; icon: IconSvgElement; noun: string }
 >
-
-export type DefinitionsNoun = (typeof sectionMeta)[DefinitionsSection]['noun']
 
 export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
 
