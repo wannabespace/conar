@@ -27,11 +27,6 @@ export interface EditableListItem {
   value: string
 }
 
-const REORDER_TRANSITION = {
-  duration: 0.2,
-  ease: [0.32, 0.72, 0, 1],
-} as const
-
 const createItem = (value = ''): EditableListItem => ({
   id: crypto.randomUUID(),
   value,
@@ -110,7 +105,7 @@ const EditableListRow = ({
       dragControls={dragControls}
       dragListener={false}
       layout="position"
-      transition={{ layout: REORDER_TRANSITION }}
+      transition={{ layout: { duration: 0.2, ease: [0.32, 0.72, 0, 1] } }}
       className={cn(
         'relative',
         dragging && 'bg-input z-10 rounded-xl shadow-lg'
@@ -197,7 +192,6 @@ const EditableListRow = ({
 
 export const EditableList = ({
   addLabel = 'Add item',
-  canRemoveItem,
   error,
   items,
   onItemsChange,
@@ -205,7 +199,6 @@ export const EditableList = ({
   readOnly = false,
 }: {
   addLabel?: string
-  canRemoveItem?: (item: EditableListItem, index: number) => boolean
   error?: string | undefined
   items: EditableListItem[]
   onItemsChange: (items: EditableListItem[]) => void
@@ -250,7 +243,7 @@ export const EditableList = ({
   const insertAt = (index: number) => {
     const item = createItem()
 
-    replace([...rows.slice(0, index), item, ...rows.slice(index)], item.id)
+    replace(rows.toSpliced(index, 0, item), item.id)
   }
 
   const pasteAt = (index: number, [first, ...rest]: string[]) => {
@@ -259,19 +252,13 @@ export const EditableList = ({
       position === index ? { ...entry, value: first ?? entry.value } : entry
     )
 
-    replace(
-      [...filled.slice(0, index + 1), ...added, ...filled.slice(index + 1)],
-      added.at(-1)?.id
-    )
+    replace(filled.toSpliced(index + 1, 0, ...added), added.at(-1)?.id)
   }
 
   const removeAt = (index: number) => {
     const neighbour = rows[index - 1] ?? rows[index + 1]
 
-    replace(
-      rows.filter((_, position) => position !== index),
-      neighbour?.id
-    )
+    replace(rows.toSpliced(index, 1), neighbour?.id)
   }
 
   const moveBy = (index: number, delta: number) => {
@@ -281,10 +268,7 @@ export const EditableList = ({
     if (!item || target < 0 || target >= rows.length) {
       return
     }
-    const next = rows.filter((_, position) => position !== index)
-
-    next.splice(target, 0, item)
-    replace(next, item.id)
+    replace(rows.toSpliced(index, 1).toSpliced(target, 0, item), item.id)
   }
 
   const reorder = (nextIds: string[]) => {
@@ -318,9 +302,7 @@ export const EditableList = ({
             {rows.map((item, index) => (
               <EditableListRow
                 key={item.id}
-                canRemove={
-                  rows.length > 1 && (canRemoveItem?.(item, index) ?? true)
-                }
+                canRemove={rows.length > 1}
                 error={duplicates.has(item.value.trim()) ? error : undefined}
                 index={index}
                 item={item}
