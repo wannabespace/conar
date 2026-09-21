@@ -61,9 +61,6 @@ interface EnumPlan {
   values: string[]
 }
 
-const enumKey = (item: EnumItem) =>
-  `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
-
 const enumPlan = (
   item: EnumItem | null,
   drafts: EditableListItem[]
@@ -100,12 +97,6 @@ const enumPlan = (
   }
 }
 
-const draftsOf = (item: EnumItem | null) =>
-  (item?.values.length ? item.values : ['']).map((value, index) => ({
-    id: String(index),
-    value,
-  }))
-
 const migratedDefault = (
   value: string | null,
   plan: EnumPlan,
@@ -121,14 +112,11 @@ const migratedDefault = (
   return kept.length === 0 ? null : kept.join(',')
 }
 
-const valuesOf = (drafts: EditableListItem[]) =>
-  drafts.map((draft) => draft.value.trim()).filter(Boolean)
-
 const enumSchema = arkType({
   drafts: arkType({ id: 'string', value: 'string' })
     .array()
     .narrow((drafts, ctx) => {
-      const values = valuesOf(drafts)
+      const values = drafts.map((draft) => draft.value.trim()).filter(Boolean)
 
       if (values.length === 0) {
         return ctx.reject({ message: 'Add at least one value.' })
@@ -338,7 +326,9 @@ const EnumInspector = ({
   })
   const form = useAppForm({
     defaultValues: {
-      drafts: draftsOf(item),
+      drafts: (item?.values.length ? item.values : ['']).map(
+        (value, index) => ({ id: String(index), value })
+      ),
       name: item?.name ?? '',
       schema: item?.schema ?? selectedSchema ?? '',
     } satisfies EnumDraft,
@@ -498,7 +488,9 @@ export const Enums = () => {
       items={rows}
       inSchema={inSchema.length}
       loading={isPending}
-      keyOf={enumKey}
+      keyOf={(item) =>
+        `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
+      }
       columns={
         enums.some((item) => item.metadata?.table)
           ? columnBoundColumns

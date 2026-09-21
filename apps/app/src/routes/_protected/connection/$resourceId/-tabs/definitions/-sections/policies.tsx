@@ -67,8 +67,6 @@ const kindLabels: Record<PolicyKind, string> = {
 
 const kinds = Object.keys(kindLabels) as PolicyKind[]
 
-const policyKey = (item: PolicyItem) => `${item.table}.${item.name}`
-
 const parseRoles = (value: string) =>
   value
     .split(',')
@@ -447,7 +445,7 @@ export const Policies = () => {
       items={rows}
       inSchema={inSchema.length}
       loading={isPending}
-      keyOf={policyKey}
+      keyOf={(item) => `${item.table}.${item.name}`}
       columns={columns}
       state={state}
       toolbar={kindFilter.control}

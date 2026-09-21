@@ -31,9 +31,6 @@ const typeLabels: Record<FunctionType, string> = {
   procedure: 'Procedure',
 }
 
-const functionKey = (item: FunctionItem) =>
-  `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
-
 const templates: Record<ConnectionType, (schema: string) => string> = {
   clickhouse: () => '',
   mssql: (schema) =>
@@ -148,7 +145,9 @@ export const Functions = () => {
       items={rows}
       inSchema={inSchema.length}
       loading={isPending}
-      keyOf={functionKey}
+      keyOf={(item) =>
+        `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
+      }
       columns={columns}
       state={state}
       toolbar={typeFilter.control}

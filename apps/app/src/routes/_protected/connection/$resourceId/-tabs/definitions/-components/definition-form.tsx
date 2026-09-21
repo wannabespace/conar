@@ -14,9 +14,6 @@ import type { InspectorWarning } from './inspector'
 import { InspectorFooter, InspectorSection } from './inspector'
 import { SqlEditor, SqlEditorSkeleton } from './sql-editor'
 
-const requireStatement = ({ value }: { value: string }) =>
-  value.trim() === '' ? 'Write a statement to run.' : undefined
-
 export const DefinitionForm = ({
   hint,
   initial,
@@ -58,7 +55,12 @@ export const DefinitionForm = ({
     <>
       <form.AppField
         name="definition"
-        validators={{ onChange: requireStatement, onMount: requireStatement }}
+        validators={{
+          onChange: ({ value }) =>
+            value.trim() === '' ? 'Write a statement to run.' : undefined,
+          onMount: ({ value }) =>
+            value.trim() === '' ? 'Write a statement to run.' : undefined,
+        }}
       >
         {(field) => (
           <InspectorSection
@@ -92,40 +94,13 @@ export const DefinitionForm = ({
   )
 }
 
-const CREATE = /^(?<lead>\s*)CREATE\s+(?!OR\s+(?:REPLACE|ALTER)\b)/iu
+const CREATE = /^CREATE\s+(?!OR\s+(?:REPLACE|ALTER)\b)/iu
 const DEFINER = /\bDEFINER\s*=\s*(?:`[^`]*`|[^@\s]+)@(?:`[^`]*`|\S+)\s*/iu
 
-const alterKeyword: Partial<Record<ConnectionType, string>> = {
-  mssql: '$<lead>CREATE OR ALTER ',
-  postgres: '$<lead>CREATE OR REPLACE ',
+const replaceInPlace: Partial<Record<ConnectionType, string>> = {
+  mssql: 'CREATE OR ALTER ',
+  postgres: 'CREATE OR REPLACE ',
 }
-
-// The catalog hands back the original CREATE; saving it has to replace in place
-// instead of failing on a duplicate name, unless the object is dropped first.
-// MySQL's DEFINER clause goes: re-running it needs SUPER or SET_USER_ID.
-const editable = (
-  definition: string,
-  type: ConnectionType,
-  dropsFirst: boolean
-) => {
-  const statement = definition.replace(DEFINER, '')
-  const keyword = alterKeyword[type]
-
-  return dropsFirst || !keyword ? statement : statement.replace(CREATE, keyword)
-}
-
-const dropFirstWarning = (noun: string, name: string): InspectorWarning => ({
-  action: `Replace ${noun}`,
-  description: (
-    <>
-      No replace-in-place for a {noun} here, so we drop{' '}
-      <span data-mask className="font-medium">
-        {name}
-      </span>{' '}
-      first. If the statement below fails, it stays dropped.
-    </>
-  ),
-})
 
 export const ExistingDefinitionForm = ({
   dropFirst,
@@ -166,25 +141,44 @@ export const ExistingDefinitionForm = ({
     return <SqlEditorSkeleton />
   }
 
-  const save = async (text: string) => {
-    if (dropsFirst) {
-      await run(dropFirst)
-    }
-    await run(customQuery({ query: text }))
-  }
+  // The catalog hands back the original CREATE, which collides with the object
+  // that already exists unless the dialect can replace in place or we drop it
+  // first. MySQL's DEFINER goes too: re-running it needs SUPER or SET_USER_ID.
+  const statement = definition.replace(DEFINER, '').trim()
+  const keyword = dropsFirst ? undefined : replaceInPlace[type]
 
   return (
     <DefinitionForm
       hint={`Saving replaces the ${noun} with the statement below.`}
-      initial={editable(definition, type, dropsFirst)}
+      initial={keyword ? statement.replace(CREATE, keyword) : statement}
       isNew={false}
       language={sqlDialects[type]}
       onSaved={onSaved}
       queryKey={queryKey}
       readOnly={readOnly}
-      save={save}
+      save={async (text) => {
+        if (dropsFirst) {
+          await run(dropFirst)
+        }
+        await run(customQuery({ query: text }))
+      }}
       success={`${uppercaseFirst(noun)} "${name}" saved`}
-      warning={dropsFirst ? dropFirstWarning(noun, name) : undefined}
+      warning={
+        dropsFirst
+          ? {
+              action: `Replace ${noun}`,
+              description: (
+                <>
+                  No replace-in-place for a {noun} here, so we drop{' '}
+                  <span data-mask className="font-medium">
+                    {name}
+                  </span>{' '}
+                  first. If the statement below fails, it stays dropped.
+                </>
+              ),
+            }
+          : undefined
+      }
     />
   )
 }
