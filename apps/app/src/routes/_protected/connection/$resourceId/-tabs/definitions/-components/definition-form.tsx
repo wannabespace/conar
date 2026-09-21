@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -12,6 +12,8 @@ import { toast } from 'sonner'
 import { Monaco } from '~/components/monaco'
 import type { DefinitionsNoun } from '~/entities/connection/capabilities'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
+import type { DropStatements } from '~/entities/connection/queries/shared/drop'
+import { recreateDefinitionQuery } from '~/entities/connection/queries/shared/drop'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
 
@@ -205,7 +207,7 @@ const replaceInPlace: Partial<Record<ConnectionType, string>> = {
 }
 
 export const ExistingDefinitionForm = ({
-  dropQuery,
+  dropStatements,
   dropsFirst,
   name,
   noun,
@@ -216,7 +218,7 @@ export const ExistingDefinitionForm = ({
   run,
   type: connectionType,
 }: {
-  dropQuery: Parameters<RunQuery>[0]
+  dropStatements: DropStatements
   // Undefined while the caller still works out whether the dialect can
   // replace in place.
   dropsFirst?: boolean
@@ -245,6 +247,9 @@ export const ExistingDefinitionForm = ({
 
   const statement = definition.replace(DEFINER, '').trim()
   const keyword = dropsFirst ? undefined : replaceInPlace[connectionType]
+  // MySQL commits DDL implicitly, so its drop survives a failed CREATE even
+  // inside the transaction the swap runs in.
+  const dropIsPermanent = dropsFirst && connectionType === ConnectionType.MySQL
 
   return (
     <DefinitionForm
@@ -255,15 +260,20 @@ export const ExistingDefinitionForm = ({
       onSaved={onSaved}
       queryKey={queryKey}
       readOnly={readOnly}
-      save={async (text) => {
-        if (dropsFirst) {
-          await run(dropQuery)
-        }
-        await run(customQuery({ query: text }))
-      }}
+      save={(text) =>
+        run(
+          dropsFirst
+            ? recreateDefinitionQuery({
+                create: text,
+                drop: dropStatements,
+                feature: uppercaseFirst(noun),
+              })
+            : customQuery({ query: text })
+        )
+      }
       success={`${uppercaseFirst(noun)} "${name}" saved`}
       warning={
-        dropsFirst
+        dropIsPermanent
           ? {
               action: `Replace ${noun}`,
               description: (

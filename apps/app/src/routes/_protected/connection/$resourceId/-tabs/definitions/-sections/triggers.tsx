@@ -8,7 +8,10 @@ import { toast } from 'sonner'
 
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
-import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
+import {
+  dropTriggerQuery,
+  dropTriggerStatements,
+} from '~/entities/connection/queries/triggers/drop'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
@@ -37,8 +40,11 @@ const triggerKey = (item: TriggerItem) =>
 
 const sentenceCase = (value: string) => uppercaseFirst(value.toLowerCase())
 
-const dropQueryOf = (item: TriggerItem) =>
-  dropTriggerQuery({ name: item.name, schema: item.schema, table: item.table })
+const dropParamsOf = (item: TriggerItem) => ({
+  name: item.name,
+  schema: item.schema,
+  table: item.table,
+})
 
 // CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
 const REPLACES_TRIGGERS_FROM = 14
@@ -145,7 +151,7 @@ const TriggerInspector = ({
       )}
       {item ? (
         <ExistingDefinitionForm
-          dropQuery={dropQueryOf(item)}
+          dropStatements={dropTriggerStatements(dropParamsOf(item))}
           dropsFirst={dropsFirst}
           name={item.name}
           noun="trigger"
@@ -224,7 +230,8 @@ export const Triggers = () => {
     (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
     timingFilter.matches(item.timing) &&
     matchesSearch(search, item.name, item.table, item.functionName)
-  const dropItem = (item: TriggerItem) => run(dropQueryOf(item))
+  const dropItem = (item: TriggerItem) =>
+    run(dropTriggerQuery(dropParamsOf(item)))
   const rowMenu = (item: TriggerItem) =>
     toggle
       ? [

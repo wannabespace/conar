@@ -190,10 +190,12 @@ const savePolicy = async ({
       alterPolicyQuery({
         ...target,
         check: changes.check,
+        newName: changes.name,
         roles: changes.roles,
         using: changes.using,
       })
     )
+    return
   }
   if (changes.name) {
     await run(renamePolicyQuery({ ...target, newName: changes.name }))

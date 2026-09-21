@@ -5,7 +5,10 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
-import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
+import {
+  dropFunctionQuery,
+  dropFunctionStatements,
+} from '~/entities/connection/queries/functions/drop'
 import type { functionsType } from '~/entities/connection/queries/functions/list'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 
@@ -29,14 +32,13 @@ const typeLabels: Record<FunctionType, string> = {
   procedure: 'Procedure',
 }
 
-const dropQueryOf = (item: FunctionItem, cascade: boolean) =>
-  dropFunctionQuery({
-    cascade,
-    identity: item.identity,
-    kind: item.type,
-    name: item.name,
-    schema: item.schema,
-  })
+const dropParamsOf = (item: FunctionItem, cascade: boolean) => ({
+  cascade,
+  identity: item.identity,
+  kind: item.type,
+  name: item.name,
+  schema: item.schema,
+})
 
 const FunctionInspector = ({
   can,
@@ -56,7 +58,7 @@ const FunctionInspector = ({
     />
     {item ? (
       <ExistingDefinitionForm
-        dropQuery={dropQueryOf(item, false)}
+        dropStatements={dropFunctionStatements(dropParamsOf(item, false))}
         dropsFirst={type === ConnectionType.MySQL}
         name={item.name}
         noun="function"
@@ -127,7 +129,7 @@ export const Functions = () => {
     typeFilter.matches(item.type) &&
     matchesSearch(search, item.name, item.language, item.return_type)
   const dropItem = (item: FunctionItem, cascade: boolean) =>
-    run(dropQueryOf(item, cascade))
+    run(dropFunctionQuery(dropParamsOf(item, cascade)))
 
   return (
     <DefinitionsPage
