@@ -98,6 +98,11 @@ const resourceFunctionsQuery = createQuery({
             FROM sys.parameters pa
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
           ), '')`.as('args'),
+          sql<number>`(
+            SELECT COUNT(*)
+            FROM sys.parameters pa
+            WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
+          )`.as('argument_count'),
           mssqlModuleBody(sql`sm.definition`).as('body'),
           eb
             .case()
@@ -170,9 +175,18 @@ const resourceFunctionsQuery = createQuery({
           sql<string>`CASE WHEN r.IS_DETERMINISTIC = 'YES' THEN 'DETERMINISTIC' ELSE 'NOT DETERMINISTIC' END`.as(
             'behavior'
           ),
-          sql<string>`CONCAT_WS(' ', r.SQL_DATA_ACCESS, CONCAT('SQL SECURITY ', r.SECURITY_TYPE))`.as(
-            'extras'
-          ),
+          sql<string>`CONCAT_WS(' ',
+            r.SQL_DATA_ACCESS,
+            CONCAT('SQL SECURITY ', r.SECURITY_TYPE),
+            CASE WHEN r.ROUTINE_COMMENT <> '' THEN CONCAT('COMMENT ', QUOTE(r.ROUTINE_COMMENT)) END
+          )`.as('extras'),
+          sql<number>`(
+            SELECT COUNT(*)
+            FROM information_schema.PARAMETERS pm
+            WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
+              AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
+              AND pm.ORDINAL_POSITION > 0
+          )`.as('argument_count'),
           eb
             .case()
             .when('r.ROUTINE_TYPE', '=', 'FUNCTION')

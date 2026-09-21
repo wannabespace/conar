@@ -223,6 +223,7 @@ interface Routines {
   DTD_IDENTIFIER: string | null
   ROUTINE_DEFINITION: string | null
   IS_DETERMINISTIC: string
+  ROUTINE_COMMENT: string
   SQL_DATA_ACCESS: string
   SECURITY_TYPE: string
   DEFINER: string
