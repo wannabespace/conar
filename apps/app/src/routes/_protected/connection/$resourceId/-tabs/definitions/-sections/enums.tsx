@@ -16,7 +16,6 @@ import { type as arkType } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { alterEnumQuery } from '~/entities/connection/queries/enums/alter'
 import { createEnumQuery } from '~/entities/connection/queries/enums/create'
@@ -468,23 +467,19 @@ export const Enums = () => {
   const { data: enums = [], isPending } = useQuery(query)
 
   const inSchema = enums.filter((item) => item.schema === selectedSchema)
-  const rows = inSchema.filter((item) =>
-    matchesSearch(
-      search,
-      item.name,
-      item.metadata?.table,
-      item.metadata?.column,
-      ...item.values
-    )
-  )
 
   return (
     <DefinitionsPage
-      title={capabilitiesOf(state.type).enumsLabel}
-      noun="enum"
-      icon={TagsIcon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        matchesSearch(
+          search,
+          item.name,
+          item.metadata?.table,
+          item.metadata?.column,
+          ...item.values
+        )
+      }
       loading={isPending}
       keyOf={(item) =>
         `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
@@ -495,7 +490,6 @@ export const Enums = () => {
           : typeColumns
       }
       state={state}
-      canCascade
       queryKey={query.queryKey}
       dropItem={async (item, cascade) => {
         await run(

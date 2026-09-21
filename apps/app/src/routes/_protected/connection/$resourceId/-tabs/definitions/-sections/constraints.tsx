@@ -32,6 +32,7 @@ import { groupInSchema } from '~/entities/connection/utils/helpers'
 import { queryClient } from '~/lib/query-client'
 
 import {
+  Labelled,
   OptionSelect,
   OptionsField,
   resetFields,
@@ -354,12 +355,11 @@ const ConstraintInspector = ({
           description="A constraint is a rule the database enforces on every write."
         >
           <form.AppField name="schema">
-            {(field) => (
+            {() => (
               <SchemaField
                 disabled={readOnly || !!item}
                 schemas={schemas}
-                onValueChange={(next) => {
-                  field.handleChange(next)
+                onChanged={(next) =>
                   resetFields(form, {
                     columns: [],
                     foreignColumns: [],
@@ -367,7 +367,7 @@ const ConstraintInspector = ({
                     foreignTable: '',
                     table: '',
                   })
-                }}
+                }
               />
             )}
           </form.AppField>
@@ -406,16 +406,13 @@ const ConstraintInspector = ({
           description="The table and the columns this constraint applies to."
         >
           <form.AppField name="table">
-            {(field) => (
+            {() => (
               <SelectField
                 label="Table"
                 disabled={readOnly || !!item}
                 options={item ? [item.table] : tablesOf(draft.schema)}
                 placeholder="Choose a table"
-                onValueChange={(next) => {
-                  field.handleChange(next)
-                  resetFields(form, { columns: [] })
-                }}
+                onChanged={() => resetFields(form, { columns: [] })}
               />
             )}
           </form.AppField>
@@ -436,39 +433,37 @@ const ConstraintInspector = ({
             description="The rows this key points at, and what happens when one of them changes."
           >
             <form.AppField name="foreignSchema">
-              {(field) => (
+              {() => (
                 <SchemaField
                   disabled={readOnly}
                   schemas={schemas}
-                  onValueChange={(next) => {
-                    field.handleChange(next)
+                  onChanged={() =>
                     resetFields(form, {
                       foreignColumns: [],
                       foreignTable: '',
                     })
-                  }}
+                  }
                 />
               )}
             </form.AppField>
             <form.AppField name="foreignTable">
-              {(field) => (
+              {() => (
                 <SelectField
                   label="Table"
                   disabled={readOnly}
                   options={tablesOf(draft.foreignSchema)}
                   placeholder="Choose a table"
-                  onValueChange={(next) => {
-                    field.handleChange(next)
-                    resetFields(form, { foreignColumns: [] })
-                  }}
+                  onChanged={() => resetFields(form, { foreignColumns: [] })}
                 />
               )}
             </form.AppField>
             <form.AppField name="foreignColumns">
               {(field) =>
                 singleColumn ? (
-                  <field.Field>
-                    <field.Label>Column</field.Label>
+                  <Labelled
+                    label="Column"
+                    description="The column this key points at."
+                  >
                     <OptionSelect
                       id={field.name}
                       disabled={readOnly || draft.foreignTable === ''}
@@ -477,10 +472,7 @@ const ConstraintInspector = ({
                       value={field.state.value[0] ?? ''}
                       onValueChange={(next) => field.handleChange([next])}
                     />
-                    <FieldDescription>
-                      The column this key points at.
-                    </FieldDescription>
-                  </field.Field>
+                  </Labelled>
                 ) : (
                   <OptionsField
                     label="Columns"
@@ -589,31 +581,25 @@ export const Constraints = () => {
   ])
 
   const inSchema = groupConstraints(constraints, selectedSchema)
-  const rows = inSchema.filter(
-    (item) =>
-      kindFilter.matches(item.type) &&
-      matchesSearch(
-        search,
-        item.name,
-        item.table,
-        item.foreignTable,
-        ...item.columns
-      )
-  )
 
   return (
     <DefinitionsPage
-      title="Constraints"
-      noun="constraint"
-      icon={Key01Icon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        kindFilter.matches(item.type) &&
+        matchesSearch(
+          search,
+          item.name,
+          item.table,
+          item.foreignTable,
+          ...item.columns
+        )
+      }
       loading={isPending}
       keyOf={constraintKey}
       columns={columns}
       state={state}
       toolbar={kindFilter.control}
-      canCascade
       queryKey={structureQueryKey(connectionResource)}
       dropItem={(item, cascade) =>
         run(

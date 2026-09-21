@@ -252,14 +252,11 @@ const PolicyInspector = ({
           description="A policy decides which rows a role may see or write."
         >
           <form.AppField name="schema">
-            {(field) => (
+            {() => (
               <SchemaField
                 disabled={readOnly || !!item}
                 schemas={schemas}
-                onValueChange={(next) => {
-                  field.handleChange(next)
-                  resetFields(form, { table: '' })
-                }}
+                onChanged={() => resetFields(form, { table: '' })}
               />
             )}
           </form.AppField>
@@ -433,19 +430,20 @@ export const Policies = () => {
   )
 
   const inSchema = policies.filter((item) => item.schema === selectedSchema)
-  const rows = inSchema.filter(
-    (item) =>
-      kindFilter.matches(item.type) &&
-      matchesSearch(search, item.name, item.table, item.command, ...item.roles)
-  )
 
   return (
     <DefinitionsPage
-      title="Policies"
-      noun="policy"
-      icon={SecurityCheckIcon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        kindFilter.matches(item.type) &&
+        matchesSearch(
+          search,
+          item.name,
+          item.table,
+          item.command,
+          ...item.roles
+        )
+      }
       loading={isPending}
       keyOf={(item) => `${item.table}.${item.name}`}
       columns={columns}

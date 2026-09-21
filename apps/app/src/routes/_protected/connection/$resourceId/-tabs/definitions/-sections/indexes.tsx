@@ -306,14 +306,11 @@ const IndexInspector = ({
           description="An index speeds up lookups on the columns it covers."
         >
           <form.AppField name="schema">
-            {(field) => (
+            {() => (
               <SchemaField
                 disabled={locked.readOnly || !!item}
                 schemas={schemas}
-                onValueChange={(next) => {
-                  field.handleChange(next)
-                  resetFields(form, { columns: [], table: '' })
-                }}
+                onChanged={() => resetFields(form, { columns: [], table: '' })}
               />
             )}
           </form.AppField>
@@ -336,16 +333,13 @@ const IndexInspector = ({
           description="The table and the columns this index covers, in order."
         >
           <form.AppField name="table">
-            {(field) => (
+            {() => (
               <SelectField
                 label="Table"
                 disabled={locked.readOnly || !!item}
                 options={item ? [item.table] : tablesOf(draft.schema)}
                 placeholder="Choose a table"
-                onValueChange={(next) => {
-                  field.handleChange(next)
-                  resetFields(form, { columns: [] })
-                }}
+                onChanged={() => resetFields(form, { columns: [] })}
               />
             )}
           </form.AppField>
@@ -441,19 +435,14 @@ export const Indexes = () => {
   ])
 
   const inSchema = groupIndexes(indexes, selectedSchema)
-  const rows = inSchema.filter(
-    (item) =>
-      kindFilter.matches(item.kind) &&
-      matchesSearch(search, item.name, item.table, ...item.columns)
-  )
 
   return (
     <DefinitionsPage
-      title="Indexes"
-      noun="index"
-      icon={LeftToRightListDashIcon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        kindFilter.matches(item.kind) &&
+        matchesSearch(search, item.name, item.table, ...item.columns)
+      }
       loading={isPending}
       keyOf={indexKey}
       columns={columns}

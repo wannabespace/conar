@@ -57,6 +57,7 @@ export const useDefinitionsState = ({
     run,
     schemas,
     search,
+    section,
     selectedSchema,
     setSearch,
     setSelectedSchema: setPickedSchema,

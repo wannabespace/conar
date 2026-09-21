@@ -1,15 +1,7 @@
-import {
-  FlashIcon,
-  HierarchyIcon,
-  Key01Icon,
-  LeftToRightListDashIcon,
-  Search01Icon,
-  SecurityCheckIcon,
-  SourceCodeIcon,
-  TagsIcon,
-} from '@hugeicons/core-free-icons'
+import { HierarchyIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
@@ -23,8 +15,8 @@ import { useState } from 'react'
 
 import { Link } from '~/components/link'
 import {
-  capabilitiesOf,
   sectionAvailable,
+  sectionMetaOf,
 } from '~/entities/connection/capabilities'
 import type { Connection } from '~/entities/connection/core/sync'
 import {
@@ -56,17 +48,20 @@ interface NavigatorItem {
 }
 
 const sectionItem = (
-  Icon: IconSvgElement,
-  label: string,
-  section: DefinitionsSection
-): NavigatorItem => ({
-  Icon,
-  label,
-  open: (resourceId, preview) =>
-    openDefinitionsTab(resourceId, section, preview),
-  section,
-  tabId: definitionsTabId(section),
-})
+  section: DefinitionsSection,
+  type: ConnectionType
+): NavigatorItem => {
+  const { icon, title } = sectionMetaOf(section, type)
+
+  return {
+    Icon: icon,
+    label: title,
+    open: (resourceId, preview) =>
+      openDefinitionsTab(resourceId, section, preview),
+    section,
+    tabId: definitionsTabId(section),
+  }
+}
 
 const visualizerItem: NavigatorItem = {
   Icon: HierarchyIcon,
@@ -85,30 +80,24 @@ export const schemaGroups = (
     },
     {
       items: [
-        sectionItem(LeftToRightListDashIcon, 'Indexes', 'indexes'),
-        sectionItem(Key01Icon, 'Constraints', 'constraints'),
+        sectionItem('indexes', connection.type),
+        sectionItem('constraints', connection.type),
       ],
       label: 'Structure',
     },
     {
-      items: [
-        sectionItem(
-          TagsIcon,
-          capabilitiesOf(connection.type).enumsLabel,
-          'enums'
-        ),
-      ],
+      items: [sectionItem('enums', connection.type)],
       label: 'Types',
     },
     {
       items: [
-        sectionItem(SourceCodeIcon, 'Functions', 'functions'),
-        sectionItem(FlashIcon, 'Triggers', 'triggers'),
+        sectionItem('functions', connection.type),
+        sectionItem('triggers', connection.type),
       ],
       label: 'Logic',
     },
     {
-      items: [sectionItem(SecurityCheckIcon, 'Policies', 'policies')],
+      items: [sectionItem('policies', connection.type)],
       label: 'Security',
     },
   ]

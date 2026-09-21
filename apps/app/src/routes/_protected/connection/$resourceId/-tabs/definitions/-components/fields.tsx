@@ -81,69 +81,12 @@ export const OptionSelect = <T extends string>({
   </Select>
 )
 
-const OptionsSelect = ({
-  disabled,
-  id,
-  limit,
-  onValueChange,
-  options,
-  placeholder,
-  value,
-}: {
-  disabled?: boolean
-  id: string
-  limit?: number
-  onValueChange: (value: string[]) => void
-  options: readonly string[] | undefined
-  placeholder: string
-  value: string[]
-}) => (
-  <Combobox
-    multiple
-    autoHighlight
-    disabled={disabled}
-    items={options ?? noOptions}
-    value={value}
-    onValueChange={(next: string[]) => {
-      if (limit === undefined || next.length <= limit) {
-        onValueChange(next)
-      }
-    }}
-  >
-    <ComboboxChips data-mask>
-      <ComboboxValue>
-        {(selected: string[]) =>
-          selected.map((item) => (
-            <ComboboxChip key={item} aria-label={item}>
-              {item}
-            </ComboboxChip>
-          ))
-        }
-      </ComboboxValue>
-      <ComboboxChipsInput
-        id={id}
-        placeholder={value.length > 0 ? undefined : placeholder}
-      />
-    </ComboboxChips>
-    <ComboboxContent data-mask>
-      <ComboboxEmpty>{options ? 'Nothing found.' : <Spinner />}</ComboboxEmpty>
-      <ComboboxList>
-        {(item: string) => (
-          <ComboboxItem key={item} value={item}>
-            {item}
-          </ComboboxItem>
-        )}
-      </ComboboxList>
-    </ComboboxContent>
-  </Combobox>
-)
-
 interface LabelledProps {
   description?: ReactNode
   label: string
 }
 
-const Labelled = ({
+export const Labelled = ({
   children,
   description,
   label,
@@ -183,12 +126,12 @@ export const SqlField = ({
 export const SelectField = <T extends string>({
   description,
   label,
-  onValueChange,
+  onChanged,
   ...select
 }: LabelledProps & {
   disabled?: boolean
   labelOf?: (value: T) => string
-  onValueChange?: (value: T) => void
+  onChanged?: (value: T) => void
   options: readonly T[]
   placeholder: string
 }) => {
@@ -199,7 +142,10 @@ export const SelectField = <T extends string>({
       <OptionSelect
         id={field.name}
         value={field.state.value}
-        onValueChange={onValueChange ?? field.handleChange}
+        onValueChange={(next) => {
+          field.handleChange(next)
+          onChanged?.(next)
+        }}
         {...select}
       />
     </Labelled>
@@ -208,8 +154,11 @@ export const SelectField = <T extends string>({
 
 export const OptionsField = ({
   description,
+  disabled,
   label,
-  ...select
+  limit,
+  options,
+  placeholder,
 }: LabelledProps & {
   disabled?: boolean
   limit?: number
@@ -217,26 +166,61 @@ export const OptionsField = ({
   placeholder: string
 }) => {
   const field = useFieldContext<string[]>()
+  const selected = field.state.value
 
   return (
     <Labelled description={description} label={label}>
-      <OptionsSelect
-        id={field.name}
-        value={field.state.value}
-        onValueChange={field.handleChange}
-        {...select}
-      />
+      <Combobox
+        multiple
+        autoHighlight
+        disabled={disabled}
+        items={options ?? noOptions}
+        value={selected}
+        onValueChange={(next: string[]) => {
+          if (limit === undefined || next.length <= limit) {
+            field.handleChange(next)
+          }
+        }}
+      >
+        <ComboboxChips data-mask>
+          <ComboboxValue>
+            {(items: string[]) =>
+              items.map((item) => (
+                <ComboboxChip key={item} aria-label={item}>
+                  {item}
+                </ComboboxChip>
+              ))
+            }
+          </ComboboxValue>
+          <ComboboxChipsInput
+            id={field.name}
+            placeholder={selected.length > 0 ? undefined : placeholder}
+          />
+        </ComboboxChips>
+        <ComboboxContent data-mask>
+          <ComboboxEmpty>
+            {options ? 'Nothing found.' : <Spinner />}
+          </ComboboxEmpty>
+          <ComboboxList>
+            {(item: string) => (
+              <ComboboxItem key={item} value={item}>
+                {item}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
     </Labelled>
   )
 }
 
 export const SchemaField = ({
   disabled,
-  onValueChange,
+  onChanged,
   schemas,
 }: {
   disabled: boolean
-  onValueChange?: (schema: string) => void
+  onChanged?: (schema: string) => void
   schemas: string[]
 }) =>
   schemas.length > 1 && (
@@ -245,7 +229,7 @@ export const SchemaField = ({
       label="Schema"
       options={schemas}
       placeholder="Choose a schema"
-      onValueChange={onValueChange}
+      onChanged={onChanged}
     />
   )
 

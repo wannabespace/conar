@@ -236,23 +236,19 @@ export const Triggers = () => {
   ])
 
   const inSchema = triggers.filter((item) => item.schema === selectedSchema)
-  const rows = inSchema.filter(
-    (item) =>
-      // A Postgres trigger lists every event it answers to in one row.
-      (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
-      timingFilter.matches(item.timing) &&
-      matchesSearch(search, item.name, item.table, item.functionName)
-  )
 
   const toggle = useToggle({ queryKey: query.queryKey, run, type: state.type })
 
   return (
     <DefinitionsPage
-      title="Triggers"
-      noun="trigger"
-      icon={FlashIcon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        // A Postgres trigger lists every event it answers to in one row.
+        (eventFilter.value === 'all' ||
+          item.event.includes(eventFilter.value)) &&
+        timingFilter.matches(item.timing) &&
+        matchesSearch(search, item.name, item.table, item.functionName)
+      }
       loading={isPending}
       keyOf={triggerKey}
       columns={columns}

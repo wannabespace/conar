@@ -131,19 +131,14 @@ export const Functions = () => {
   ])
 
   const inSchema = functions.filter((item) => item.schema === selectedSchema)
-  const rows = inSchema.filter(
-    (item) =>
-      typeFilter.matches(item.type) &&
-      matchesSearch(search, item.name, item.language, item.return_type)
-  )
 
   return (
     <DefinitionsPage
-      title="Functions"
-      noun="function"
-      icon={SourceCodeIcon}
-      items={rows}
-      inSchema={inSchema.length}
+      items={inSchema}
+      match={(item) =>
+        typeFilter.matches(item.type) &&
+        matchesSearch(search, item.name, item.language, item.return_type)
+      }
       loading={isPending}
       keyOf={(item) =>
         `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
@@ -151,7 +146,6 @@ export const Functions = () => {
       columns={columns}
       state={state}
       toolbar={typeFilter.control}
-      canCascade
       queryKey={query.queryKey}
       dropItem={(item, cascade) =>
         run(

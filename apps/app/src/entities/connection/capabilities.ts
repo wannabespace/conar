@@ -1,4 +1,14 @@
+import {
+  FlashIcon,
+  Key01Icon,
+  LeftToRightListDashIcon,
+  SecurityCheckIcon,
+  SourceCodeIcon,
+  TagsIcon,
+} from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 
 import type { ReferentialAction } from './queries/constraints/shape'
 import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
@@ -100,7 +110,30 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
 }
 
+const sectionMeta: Record<
+  DefinitionsSection,
+  { cascade: boolean; icon: IconSvgElement; noun: string }
+> = {
+  constraints: { cascade: true, icon: Key01Icon, noun: 'constraint' },
+  enums: { cascade: true, icon: TagsIcon, noun: 'enum' },
+  functions: { cascade: true, icon: SourceCodeIcon, noun: 'function' },
+  indexes: { cascade: false, icon: LeftToRightListDashIcon, noun: 'index' },
+  policies: { cascade: false, icon: SecurityCheckIcon, noun: 'policy' },
+  triggers: { cascade: false, icon: FlashIcon, noun: 'trigger' },
+}
+
 export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
+
+export const sectionMetaOf = (
+  section: DefinitionsSection,
+  type: ConnectionType
+) => ({
+  ...sectionMeta[section],
+  title:
+    section === 'enums'
+      ? capabilities[type].enumsLabel
+      : uppercaseFirst(section),
+})
 
 export const sectionAvailable = (
   section: DefinitionsSection,

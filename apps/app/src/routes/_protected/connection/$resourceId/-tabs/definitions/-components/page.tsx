@@ -1,6 +1,5 @@
 import { PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { IconSvgElement } from '@hugeicons/react'
 import { pseudoRandom, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import {
@@ -50,7 +49,10 @@ import { toast } from 'sonner'
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { PaneEmpty } from '~/components/pane-empty'
-import { capabilitiesOf } from '~/entities/connection/capabilities'
+import {
+  capabilitiesOf,
+  sectionMetaOf,
+} from '~/entities/connection/capabilities'
 import { queryClient } from '~/lib/query-client'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
@@ -69,8 +71,6 @@ const { useNavigate, useSearch } = getRouteApi(
 
 const columnClass = ({ align }: Pick<DefinitionsColumn<unknown>, 'align'>) =>
   cn('truncate', align === 'end' && 'text-right')
-
-const alwaysDroppable = () => true
 
 const SchemaSelect = ({
   schemas,
@@ -194,70 +194,63 @@ const useInspector = <T,>({
 }
 
 export const DefinitionsPage = <T extends { name: string }>({
-  canCascade = false,
-  canDropItem = alwaysDroppable,
+  canDropItem,
   columns,
   dropItem,
-  icon,
-  inSchema,
   Inspector,
   items,
   keyOf,
   loading,
-  noun,
+  match,
   queryKey,
   rowMenu,
   state,
-  title,
   toolbar,
 }: {
-  canCascade?: boolean
   canDropItem?: (item: T) => boolean
   columns: DefinitionsColumn<T>[]
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
-  icon: IconSvgElement
-  inSchema: number
   Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
   keyOf: (item: T) => string
   loading: boolean
-  noun: string
+  match: (item: T) => boolean
   queryKey: readonly unknown[]
   rowMenu?: (item: T) => AppMenuNode[]
   state: DefinitionsState
-  title: string
   toolbar?: ReactNode
 }) => {
   const {
     can,
     schemas,
     search,
+    section,
     selectedSchema,
     setSearch,
     setSelectedSchema,
     type,
   } = state
+  const meta = sectionMetaOf(section, type)
+  const { icon, noun, title } = meta
+  const rows = items.filter(match)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
-  const inspector = useInspector({ items, keyOf, loading })
+  const inspector = useInspector({ items: rows, keyOf, loading })
   const [dropping, setDropping] = useState<{ item: T | null; open: boolean }>({
     item: null,
     open: false,
   })
   const [cascade, setCascade] = useState(false)
-  const cascadable = canCascade && capabilitiesOf(type).cascade
+  const cascadable = meta.cascade && capabilitiesOf(type).cascade
 
-  const highlightedIndex = items.findIndex(
-    (item) => keyOf(item) === highlighted
-  )
+  const highlightedIndex = rows.findIndex((item) => keyOf(item) === highlighted)
   const highlightedItem =
-    highlightedIndex === -1 ? null : items[highlightedIndex]
-  const canDrop = (item: T) => !!can.drop && canDropItem(item)
+    highlightedIndex === -1 ? null : rows[highlightedIndex]
+  const canDrop = (item: T) => !!can.drop && (canDropItem?.(item) ?? true)
   const overlayOpen = inspector.inspected.open || dropping.open
-  const inspectedItem = inspector.inspected.item
-  const empty = !loading && items.length === 0
+  const empty = !loading && rows.length === 0
   const context: CellContext = { schema: selectedSchema, search }
   const plural = title.toLowerCase()
 
@@ -278,15 +271,10 @@ export const DefinitionsPage = <T extends { name: string }>({
   }
 
   const moveHighlight = (delta: number) => {
-    if (items.length === 0) {
-      return
-    }
-    const fallback = delta > 0 ? 0 : items.length - 1
-    const next =
+    const item =
       highlightedIndex === -1
-        ? fallback
-        : Math.min(items.length - 1, Math.max(0, highlightedIndex + delta))
-    const item = items[next]
+        ? rows.at(delta > 0 ? 0 : -1)
+        : rows[Math.min(rows.length - 1, Math.max(0, highlightedIndex + delta))]
 
     if (item) {
       const key = keyOf(item)
@@ -301,7 +289,7 @@ export const DefinitionsPage = <T extends { name: string }>({
       { callback: () => moveHighlight(-1), hotkey: 'ArrowUp' },
       {
         callback: () => {
-          const item = highlightedItem ?? items[0]
+          const item = highlightedItem ?? rows[0]
           if (item) {
             inspector.open(item)
           }
@@ -374,7 +362,7 @@ export const DefinitionsPage = <T extends { name: string }>({
             <Skeleton className="h-3 w-5 self-center rounded-full" />
           ) : (
             <NumberFlow
-              value={items.length}
+              value={rows.length}
               className="text-muted-foreground text-sm font-normal tabular-nums"
             />
           )}
@@ -421,9 +409,9 @@ export const DefinitionsPage = <T extends { name: string }>({
           {empty ? (
             <PaneEmpty
               icon={icon}
-              title={inSchema === 0 ? `No ${plural}` : 'No matches'}
+              title={items.length === 0 ? `No ${plural}` : 'No matches'}
               description={
-                inSchema === 0
+                items.length === 0
                   ? `This schema has no ${plural}.`
                   : `No ${plural} match the current search and filters.`
               }
@@ -445,7 +433,7 @@ export const DefinitionsPage = <T extends { name: string }>({
                 </TableHeader>
                 <TableBody>
                   {loading && <SkeletonRows columns={columns} />}
-                  {items.map((item) => {
+                  {rows.map((item) => {
                     const key = keyOf(item)
 
                     return (
@@ -508,7 +496,7 @@ export const DefinitionsPage = <T extends { name: string }>({
           <Inspector
             key={inspector.inspected.session}
             {...state}
-            item={inspectedItem}
+            item={inspector.inspected.item}
             queryKey={queryKey}
             onOpenChange={(open) => {
               if (!open) {
