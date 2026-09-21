@@ -2,6 +2,7 @@ import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
+import { mssqlQualified } from '../shared/sql-fragments'
 
 export const renameColumnQuery = memoize(
   ({
@@ -25,7 +26,7 @@ export const renameColumnQuery = memoize(
             .renameColumn(oldColumn, newColumn)
             .execute(),
         mssql: async (db) => {
-          await sql`EXEC sp_rename ${sql.val(`${schema}.${table}.${oldColumn}`)}, ${sql.val(newColumn)}, 'COLUMN'`.execute(
+          await sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table, oldColumn))}, ${sql.val(newColumn)}, 'COLUMN'`.execute(
             db
           )
         },
