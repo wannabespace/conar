@@ -125,7 +125,6 @@ const TriggerInspector = ({
   )
   const toggle = useToggle({ queryKey, run, type })
   const dropsFirst = useDropsFirst({ connection, type })
-  // The toggle writes through the list query, so follow the refreshed row.
   const item =
     snapshot &&
     (triggers.find((row) => triggerKey(row) === triggerKey(snapshot)) ??

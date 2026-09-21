@@ -99,7 +99,6 @@ export const createPostgresListTransformer = (
           return toPgArrayLiteral(value)
         }
 
-        // Only enums can have a UI
         throw new Error('Invalid array value')
       },
     },

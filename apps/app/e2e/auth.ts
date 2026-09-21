@@ -10,7 +10,6 @@ export const testWithSignUp = test.extend({
     await page.goto('/')
 
     await page.waitForRequest((r) => r.url().includes('/auth/get-session'))
-    // Loader animation
     await page.waitForTimeout(300)
 
     await page.getByText('Sign up').click()

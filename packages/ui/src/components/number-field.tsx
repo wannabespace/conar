@@ -4,8 +4,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
-// Steppers sit on the group's own fill, so they hover by foreground-mix like
-// every other filled control rather than with the accent tint
 const stepperClassName = `text-muted-foreground hover:text-foreground relative flex h-full shrink-0 items-center justify-center px-2.5 transition-colors hover:bg-accent in-data-[size=sm]:px-2 pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11`
 
 export const NumberField = ({

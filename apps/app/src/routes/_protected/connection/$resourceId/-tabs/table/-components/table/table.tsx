@@ -201,7 +201,6 @@ const TableComponent = ({
         id: column.id,
         size:
           (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
-          // 25 it's a ~size of the button, 6 it's a ~size of the number
           (column.references?.length ? 25 + 6 : 0) +
           (column.foreign ? 25 : 0),
         // oxlint-disable-next-line react/no-unstable-nested-components

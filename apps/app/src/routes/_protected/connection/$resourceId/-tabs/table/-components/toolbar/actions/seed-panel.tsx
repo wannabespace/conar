@@ -654,8 +654,6 @@ export const SeedPanel = ({
                       <HugeiconsIcon
                         icon={Link01Icon}
                         strokeWidth={2}
-                        // SidebarButton paints every icon primary at size-4; a
-                        // row's trailing glyph follows the label instead
                         className="size-3! shrink-0 text-current!"
                       />
                     )}

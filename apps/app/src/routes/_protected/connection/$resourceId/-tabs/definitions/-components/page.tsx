@@ -132,8 +132,6 @@ const SkeletonRows = <T,>({ columns }: { columns: DefinitionsColumn<T>[] }) =>
     </TableRow>
   ))
 
-// A link lands on the tab and the drawer at once; the drawer waits out the
-// tab's cross-fade so the two do not animate over each other.
 const LINKED_OPEN_DELAY = 80
 
 const useInspector = <T,>({

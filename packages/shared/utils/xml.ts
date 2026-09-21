@@ -10,7 +10,6 @@ export const formatXml = (sourceXml: string) => {
         // describes how we want to modify the XML - indent everything
         '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
         '  <xsl:strip-space elements="*"/>',
-        // change to just text() to strip space in text nodes
         '  <xsl:template match="para[content-style][not(text())]">',
         '    <xsl:value-of select="normalize-space(.)"/>',
         '  </xsl:template>',

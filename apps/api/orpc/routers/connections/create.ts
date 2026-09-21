@@ -18,8 +18,6 @@ export const create = orpc
       .and(type({ 'workspaceId?': 'string | null' }))
   )
   .handler(async ({ context, input }) => {
-    // The client sends the workspace that was active on the device; it is
-    // membership-checked, and anything else falls back to the default workspace.
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []

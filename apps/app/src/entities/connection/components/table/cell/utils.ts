@@ -111,10 +111,8 @@ export interface ColumnHandlers {
   onRename?: () => void
 }
 
-// Compact cell-editor sizing: estimate rendered lines (long lines wrap)
 const COMPACT_CHARS_PER_LINE = 48
 const COMPACT_LINE_HEIGHT = 20
-// monaco top/bottom padding + breathing room
 const COMPACT_VERTICAL_CHROME = 36
 const COMPACT_MIN_HEIGHT = 56
 const COMPACT_MAX_HEIGHT = 160

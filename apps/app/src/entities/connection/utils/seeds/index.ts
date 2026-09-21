@@ -52,7 +52,6 @@ export const getGeneratorGroups = memoize(
     }))
 )
 
-// A column left out of the insert must have something the database can fill in.
 // ClickHouse gives every column a zero-value default.
 const canSkipColumn = (column: Column, dialect: ConnectionType) =>
   dialect === ConnectionType.ClickHouse ||
@@ -111,7 +110,6 @@ export const insertBatchSize = (
       )
     : MAX_ROWS_PER_INSERT
 
-// A quarter of the rows exercises null handling without drowning the data
 const NULL_SHARE = 0.25
 const ARRAY_LENGTH = { max: 5, min: 1 }
 const produceNull = (): unknown => null

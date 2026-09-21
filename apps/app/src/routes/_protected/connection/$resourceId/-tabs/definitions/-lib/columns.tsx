@@ -59,7 +59,6 @@ export const textColumn = <T,>({
   width,
 })
 
-// Chrome, not user data: a label the app chose for a value, never the value.
 export const labelColumn = <T,>({
   align,
   header,

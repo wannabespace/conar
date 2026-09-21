@@ -92,7 +92,6 @@ const DATE_NAME_RULES: Rules<GeneratorId> = [
   [['expire', 'expiry', 'due', 'until', 'deadline'], 'date.future'],
 ]
 
-// A sentence sliced to fit a short varchar reads as garbage; a word does not
 const SHORT_TEXT_LIMIT = 32
 
 const match = <T>(value: string, rules: Rules<T>): T | undefined =>

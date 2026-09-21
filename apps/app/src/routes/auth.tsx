@@ -238,7 +238,6 @@ export const Route = createFileRoute('/auth')({
     meta: [{ title: title('Sign in') }],
   }),
   beforeLoad: async () => {
-    // Desktop waits here for the challenge handoff; web has nothing to wait for
     if (window.electron) {
       return
     }

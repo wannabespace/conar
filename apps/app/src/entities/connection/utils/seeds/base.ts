@@ -21,7 +21,6 @@ export const columnTypeName = (column: Column) =>
 export const columnMaxLength = (column: Column) =>
   column.maxLength && column.maxLength > 0 ? column.maxLength : undefined
 
-// Big enough to look like data, small enough for any integer type wider than a byte
 const DEFAULT_MAX = 10_000
 // One-byte integers: ClickHouse Int8/UInt8, MySQL and MSSQL tinyint. Postgres' int8 is a bigint,
 // but only its array label ("int8[]") reaches here and 127 is still a valid bigint.
