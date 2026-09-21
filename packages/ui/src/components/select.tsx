@@ -190,9 +190,21 @@ const SelectSeparator = ({
   />
 )
 
+const SelectEmpty = ({ className, ...props }: React.ComponentProps<'div'>) => (
+  <div
+    data-slot="select-empty"
+    className={cn(
+      'text-muted-foreground w-full py-6 text-center text-sm',
+      className
+    )}
+    {...props}
+  />
+)
+
 export {
   Select,
   SelectContent,
+  SelectEmpty,
   SelectGroup,
   SelectItem,
   SelectLabel,

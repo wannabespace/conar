@@ -65,6 +65,7 @@ interface FunctionDraft {
   args: string
   behavior: string
   body: string
+  extras: string
   kind: RoutineKind
   language: string
   name: string
@@ -95,6 +96,7 @@ const newDraft = (
     args: '',
     behavior: behaviors[0] ?? '',
     body: bodyTemplates[connectionType] ?? '',
+    extras: '',
     kind: 'function',
     language: languages[0] ?? '',
     name: '',
@@ -117,6 +119,7 @@ const draftOf = (
         args: item.args,
         behavior: item.behavior || fallback.behavior,
         body: item.body,
+        extras: item.extras,
         kind: item.type,
         language: item.language || fallback.language,
         name: item.name,
@@ -131,6 +134,7 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   args: draft.args.trim(),
   behavior: draft.kind === 'procedure' ? '' : draft.behavior,
   body: draft.body,
+  extras: draft.extras,
   kind: draft.kind,
   language: draft.language,
   name: draft.name.trim(),
@@ -382,11 +386,7 @@ const FunctionInspector = ({
           readOnly={readOnly}
           returns={returns}
         />
-        <InspectorSection
-          title="Definition"
-          description="The body the database runs."
-          className="min-h-0 flex-1"
-        >
+        <InspectorSection title="Definition">
           <form.AppField name="body">
             {() => (
               <BodyField

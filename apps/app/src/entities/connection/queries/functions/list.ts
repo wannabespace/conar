@@ -14,6 +14,7 @@ export const functionsType = type({
   'argument_count?': 'number',
   'behavior?': 'string | null',
   'body?': 'string | null',
+  'extras?': 'string | null',
   'identity?': 'string',
   'language?': 'string',
   name: 'string',
@@ -29,6 +30,7 @@ export const functionsType = type({
     argument_count,
     behavior,
     body,
+    extras,
     language,
     security_definer,
     ...item
@@ -38,6 +40,7 @@ export const functionsType = type({
     argumentCount: argument_count || null,
     behavior: behavior || '',
     body: body || '',
+    extras: extras || '',
     language: language || null,
     securityDefiner: security_definer ?? false,
     type: fnType as 'function' | 'procedure',
@@ -142,6 +145,9 @@ const resourceFunctionsQuery = createQuery({
           sql<string>`CASE WHEN r.IS_DETERMINISTIC = 'YES' THEN 'DETERMINISTIC' ELSE 'NOT DETERMINISTIC' END`.as(
             'behavior'
           ),
+          sql<string>`CONCAT_WS(' ', r.SQL_DATA_ACCESS, CONCAT('SQL SECURITY ', r.SECURITY_TYPE))`.as(
+            'extras'
+          ),
           eb
             .case()
             .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
@@ -182,6 +188,20 @@ const resourceFunctionsQuery = createQuery({
           sql<string>`CASE p.provolatile WHEN 'i' THEN 'IMMUTABLE' WHEN 's' THEN 'STABLE' ELSE 'VOLATILE' END`.as(
             'behavior'
           ),
+          sql<string>`TRIM(CONCAT_WS(' ',
+            CASE WHEN p.proisstrict THEN 'STRICT' END,
+            CASE WHEN p.proleakproof THEN 'LEAKPROOF' END,
+            CASE p.proparallel WHEN 's' THEN 'PARALLEL SAFE' WHEN 'r' THEN 'PARALLEL RESTRICTED' END,
+            CONCAT('COST ', p.procost::text),
+            CASE WHEN p.proretset THEN CONCAT('ROWS ', p.prorows::text) END,
+            (
+              SELECT string_agg(
+                CONCAT('SET ', split_part(cfg, '=', 1), ' TO ', quote_literal(substr(cfg, strpos(cfg, '=') + 1))),
+                ' '
+              )
+              FROM unnest(COALESCE(p.proconfig, '{}')) AS cfg
+            )
+          ))`.as('extras'),
           'p.pronargs as argument_count',
           'p.oid as oid',
           sql<string>`pg_get_function_identity_arguments(p.oid)`.as('identity'),

@@ -13,6 +13,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import {
   Select,
   SelectContent,
+  SelectEmpty,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -51,6 +52,7 @@ const noOptions: readonly string[] = []
 export const OptionSelect = <T extends string>({
   className,
   disabled,
+  empty = 'Nothing to choose',
   id,
   labelOf = identity,
   mask = true,
@@ -61,6 +63,7 @@ export const OptionSelect = <T extends string>({
 }: {
   className?: string
   disabled?: boolean
+  empty?: ReactNode
   id?: string
   labelOf?: (value: T) => string
   mask?: boolean
@@ -88,11 +91,15 @@ export const OptionSelect = <T extends string>({
       </SelectValue>
     </SelectTrigger>
     <SelectContent data-mask={mask || undefined}>
-      {options.map((option) => (
-        <SelectItem key={option} value={option}>
-          {labelOf(option)}
-        </SelectItem>
-      ))}
+      {options.length === 0 ? (
+        <SelectEmpty>{empty}</SelectEmpty>
+      ) : (
+        options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {labelOf(option)}
+          </SelectItem>
+        ))
+      )}
     </SelectContent>
   </Select>
 )
@@ -168,6 +175,7 @@ export const SelectField = <T extends string>({
   ...select
 }: LabelledProps & {
   disabled?: boolean
+  empty?: ReactNode
   labelOf?: (value: T) => string
   onChanged?: (value: T) => void
   options: readonly T[]

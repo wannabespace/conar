@@ -195,7 +195,7 @@ const TriggerInspector = ({
     resourceTriggersQueryOptions({ connectionResource })
   )
   const options = capabilitiesOf(connectionType).triggers
-  const { data: functions = [] } = useQuery({
+  const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
   })
@@ -290,6 +290,7 @@ const TriggerInspector = ({
                 label="Table"
                 description="The trigger watches changes on this table."
                 disabled={readOnly || !!item}
+                empty="This schema has no tables."
                 options={item ? [item.table] : tablesOf(draft.schema)}
                 placeholder="Choose a table"
               />
@@ -346,7 +347,6 @@ const TriggerInspector = ({
         <InspectorSection
           title="Action"
           description="What the database runs when the trigger fires."
-          className={options.body ? 'min-h-0 flex-1' : undefined}
         >
           {options.body ? (
             <form.AppField name="body">
@@ -364,10 +364,19 @@ const TriggerInspector = ({
               {() => (
                 <SelectField
                   label="Function"
-                  description="Trigger functions in this schema."
+                  description="Functions in this schema that return a trigger."
                   disabled={readOnly}
+                  empty={
+                    functionsPending
+                      ? 'Loading…'
+                      : 'No function here returns a trigger.'
+                  }
                   options={functions
-                    .filter((fn) => fn.schema === draft.schema)
+                    .filter(
+                      (fn) =>
+                        fn.schema === draft.schema &&
+                        fn.return_type === 'trigger'
+                    )
                     .map((fn) => fn.name)}
                   placeholder="Choose a function"
                 />
