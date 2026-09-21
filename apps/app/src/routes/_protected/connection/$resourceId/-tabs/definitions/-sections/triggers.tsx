@@ -6,19 +6,17 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
-import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
 
 import {
-  DefinitionForm,
   ExistingDefinitionForm,
+  NewDefinitionForm,
 } from '../-components/definition-form'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
@@ -38,16 +36,6 @@ const triggerKey = (item: TriggerItem) =>
   `${item.schema}.${item.table}.${item.name}.${item.event}`
 
 const sentenceCase = (value: string) => uppercaseFirst(value.toLowerCase())
-
-const templates: Record<ConnectionType, (schema: string) => string> = {
-  clickhouse: () => '',
-  mssql: (schema) =>
-    `CREATE OR ALTER TRIGGER [${schema}].[new_trigger]\nON [${schema}].[table_name]\nAFTER INSERT\nAS\nBEGIN\n  SET NOCOUNT ON;\nEND`,
-  mysql: (schema) =>
-    `CREATE TRIGGER \`${schema}\`.\`new_trigger\`\nBEFORE INSERT ON \`${schema}\`.\`table_name\`\nFOR EACH ROW\nBEGIN\n\nEND`,
-  postgres: (schema) =>
-    `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
-}
 
 // CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
 const REPLACES_TRIGGERS_FROM = 14
@@ -173,16 +161,14 @@ const TriggerInspector = ({
           type={type}
         />
       ) : (
-        <DefinitionForm
-          hint="A trigger names its table, its timing and the function it runs."
-          initial={templates[type](selectedSchema ?? '')}
-          isNew
-          language={sqlDialects[type]}
+        <NewDefinitionForm
+          noun="trigger"
           onSaved={() => onOpenChange(false)}
           queryKey={queryKey}
           readOnly={!can.create}
-          save={(text) => run(customQuery({ query: text }))}
-          success="Trigger created"
+          run={run}
+          schema={selectedSchema ?? ''}
+          type={type}
         />
       )}
     </>

@@ -125,6 +125,70 @@ export const DefinitionForm = ({
   )
 }
 
+const newDefinitions = {
+  function: {
+    hint: 'A function declares its arguments, what it returns and its body.',
+    template: {
+      clickhouse: () => '',
+      mssql: (schema) =>
+        `CREATE OR ALTER FUNCTION [${schema}].[new_function]()\nRETURNS INT\nAS\nBEGIN\n  RETURN 0;\nEND`,
+      mysql: (schema) =>
+        `CREATE FUNCTION \`${schema}\`.\`new_function\`()\nRETURNS INT\nDETERMINISTIC\nBEGIN\n  RETURN 0;\nEND`,
+      postgres: (schema) =>
+        `CREATE OR REPLACE FUNCTION "${schema}".new_function()\nRETURNS void\nLANGUAGE plpgsql\nAS $$\nBEGIN\n\nEND;\n$$;`,
+    },
+  },
+  trigger: {
+    hint: 'A trigger names its table, its timing and the function it runs.',
+    template: {
+      clickhouse: () => '',
+      mssql: (schema) =>
+        `CREATE OR ALTER TRIGGER [${schema}].[new_trigger]\nON [${schema}].[table_name]\nAFTER INSERT\nAS\nBEGIN\n  SET NOCOUNT ON;\nEND`,
+      mysql: (schema) =>
+        `CREATE TRIGGER \`${schema}\`.\`new_trigger\`\nBEFORE INSERT ON \`${schema}\`.\`table_name\`\nFOR EACH ROW\nBEGIN\n\nEND`,
+      postgres: (schema) =>
+        `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
+    },
+  },
+} satisfies Record<
+  string,
+  { hint: string; template: Record<ConnectionType, (schema: string) => string> }
+>
+
+export const NewDefinitionForm = ({
+  noun,
+  onSaved,
+  queryKey,
+  readOnly,
+  run,
+  schema,
+  type,
+}: {
+  noun: keyof typeof newDefinitions
+  onSaved: () => void
+  queryKey: readonly unknown[]
+  readOnly: boolean
+  run: RunQuery
+  schema: string
+  type: ConnectionType
+}) => {
+  const { hint, template } = newDefinitions[noun]
+
+  return (
+    <DefinitionForm
+      hint={hint}
+      initial={template[type](schema)}
+      isNew
+      language={sqlDialects[type]}
+      onSaved={onSaved}
+      queryKey={queryKey}
+      readOnly={readOnly}
+      save={(text) => run(customQuery({ query: text }))}
+      success={`${uppercaseFirst(noun)} created`}
+    />
+  )
+}
+
 const CREATE = /^CREATE\s+(?!OR\s+(?:REPLACE|ALTER)\b)/iu
 // Re-running a captured DEFINER clause needs SUPER or SET_USER_ID.
 const DEFINER = /\bDEFINER\s*=\s*(?:`[^`]*`|[^@\s]+)@(?:`[^`]*`|\S+)\s*/iu

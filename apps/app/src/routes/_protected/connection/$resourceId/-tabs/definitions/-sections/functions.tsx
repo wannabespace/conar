@@ -4,16 +4,14 @@ import { matchesSearch } from '@tamery/shared/utils/helpers'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 
-import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
 import type { functionsType } from '~/entities/connection/queries/functions/list'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
-import { sqlDialects } from '~/entities/connection/utils/monaco'
 
 import {
-  DefinitionForm,
   ExistingDefinitionForm,
+  NewDefinitionForm,
 } from '../-components/definition-form'
 import type { SectionInspectorProps } from '../-components/inspector'
 import { InspectorHeader } from '../-components/inspector'
@@ -29,16 +27,6 @@ type FunctionType = FunctionItem['type']
 const typeLabels: Record<FunctionType, string> = {
   function: 'Function',
   procedure: 'Procedure',
-}
-
-const templates: Record<ConnectionType, (schema: string) => string> = {
-  clickhouse: () => '',
-  mssql: (schema) =>
-    `CREATE OR ALTER FUNCTION [${schema}].[new_function]()\nRETURNS INT\nAS\nBEGIN\n  RETURN 0;\nEND`,
-  mysql: (schema) =>
-    `CREATE FUNCTION \`${schema}\`.\`new_function\`()\nRETURNS INT\nDETERMINISTIC\nBEGIN\n  RETURN 0;\nEND`,
-  postgres: (schema) =>
-    `CREATE OR REPLACE FUNCTION "${schema}".new_function()\nRETURNS void\nLANGUAGE plpgsql\nAS $$\nBEGIN\n\nEND;\n$$;`,
 }
 
 const FunctionInspector = ({
@@ -77,16 +65,14 @@ const FunctionInspector = ({
         type={type}
       />
     ) : (
-      <DefinitionForm
-        hint="A function declares its arguments, what it returns and its body."
-        initial={templates[type](selectedSchema ?? '')}
-        isNew
-        language={sqlDialects[type]}
+      <NewDefinitionForm
+        noun="function"
         onSaved={() => onOpenChange(false)}
         queryKey={queryKey}
         readOnly={!can.create}
-        save={(text) => run(customQuery({ query: text }))}
-        success="Function created"
+        run={run}
+        schema={selectedSchema ?? ''}
+        type={type}
       />
     )}
   </>
