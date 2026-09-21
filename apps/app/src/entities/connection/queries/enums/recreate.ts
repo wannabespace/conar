@@ -10,7 +10,6 @@ const RECREATE_SUFFIX = '_tamery_replaced'
 
 const DEFAULT_LITERAL = /^'(?<value>(?:[^']|'')*)'::/u
 
-// Rows still hold the old labels, so a renamed value is rewritten as it casts.
 const remapped = (
   expression: RawBuilder<unknown>,
   renames: Record<string, string>
