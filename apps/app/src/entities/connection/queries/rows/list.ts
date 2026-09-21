@@ -35,14 +35,6 @@ const filterValueExpression = (filter: ActiveFilter) => {
   return sql.val(filter.values[0])
 }
 
-const operatorFragment = (operator: string) => {
-  if (!SQL_FILTERS_LIST.some((filter) => filter.operator === operator)) {
-    throw new Error(`Unsupported filter operator "${operator}"`)
-  }
-
-  return sql.raw(operator.toLowerCase())
-}
-
 // oxlint-disable-next-line ts/no-explicit-any
 export const buildWhere = <E extends ExpressionBuilder<any, any>>(
   eb: E,
@@ -52,16 +44,24 @@ export const buildWhere = <E extends ExpressionBuilder<any, any>>(
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
-    filters.map((filter) =>
-      sql.join(
+    filters.map((filter) => {
+      const { operator } = filter.ref
+
+      if (
+        !SQL_FILTERS_LIST.some((sqlFilter) => sqlFilter.operator === operator)
+      ) {
+        throw new Error(`Unsupported filter operator "${operator}"`)
+      }
+
+      return sql.join(
         [
           sql.ref(filter.column),
-          operatorFragment(filter.ref.operator),
+          sql.raw(operator.toLowerCase()),
           filterValueExpression(filter),
         ].filter(Boolean),
         sql.raw(' ')
       )
-    )
+    })
   )
 }
 
