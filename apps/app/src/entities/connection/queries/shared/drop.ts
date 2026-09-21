@@ -1,23 +1,37 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/utils/unsupported'
 import type { Kysely, RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 
-export type DropStatements = Record<
-  'mssql' | 'mysql' | 'postgres',
-  RawBuilder<unknown>
+export type DropStatements = Partial<
+  Record<ConnectionType, RawBuilder<unknown>>
 >
 
-export const dropStatementsQuery = (drop: DropStatements, feature: string) =>
-  createQuery({
+const queryOf = (
+  drop: DropStatements,
+  feature: string,
+  execute: (
+    statement: RawBuilder<unknown>
+    // oxlint-disable-next-line ts/no-explicit-any
+  ) => (db: Kysely<any>) => Promise<unknown>
+) => {
+  const of = (statement: RawBuilder<unknown> | undefined) =>
+    statement ? execute(statement) : unsupported(feature)
+
+  return createQuery({
     query: {
-      clickhouse: unsupported(feature),
-      mssql: (db) => drop.mssql.execute(db),
-      mysql: (db) => drop.mysql.execute(db),
-      postgres: (db) => drop.postgres.execute(db),
+      clickhouse: of(drop.clickhouse),
+      mssql: of(drop.mssql),
+      mysql: of(drop.mysql),
+      postgres: of(drop.postgres),
     },
   })
+}
+
+export const dropStatementsQuery = (drop: DropStatements, feature: string) =>
+  queryOf(drop, feature, (statement) => (db) => statement.execute(db))
 
 export const recreateDefinitionQuery = ({
   create,
@@ -27,22 +41,13 @@ export const recreateDefinitionQuery = ({
   create: string
   drop: DropStatements
   feature: string
-}) => {
-  const swap =
-    (statement: RawBuilder<unknown>) =>
-    // oxlint-disable-next-line ts/no-explicit-any
-    (db: Kysely<any>) =>
+}) =>
+  queryOf(
+    drop,
+    feature,
+    (statement) => (db) =>
       db.transaction().execute(async (tx) => {
         await statement.execute(tx)
         await sql.raw(create).execute(tx)
       })
-
-  return createQuery({
-    query: {
-      clickhouse: unsupported(feature),
-      mssql: swap(drop.mssql),
-      mysql: swap(drop.mysql),
-      postgres: swap(drop.postgres),
-    },
-  })
-}
+  )
