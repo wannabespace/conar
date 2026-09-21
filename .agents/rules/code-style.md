@@ -21,6 +21,7 @@ Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-on
 - A magic number gets a name, not a comment explaining it.
 - Modern built-ins (`toSorted`, `at(-1)`, `Object.groupBy`, `Array.fromAsync`, …) over hand-rolled loops and copy-then-mutate — every runtime here supports them. Only when shorter *and* clearer; don't chain five methods where `for...of` reads better.
 - No `.only`/`.skip` in committed tests.
+- Arktype's builder is imported bare: `import { type } from 'arktype'` — never aliased. A local binding that would shadow it (a `type: ConnectionType` prop) gets renamed instead (`connectionType`), since `no-shadow` is on.
 - `useState` used only to freeze a first-render value keeps the setter plus a `void setThing` line — `hook-use-state` rejects a lone `const [thing] =`. Dropping the setter is a lint error, not a cleanup.
 - Swallowing a failure on purpose (cleanup, best-effort side effect) goes through `silently()` from `@tamery/shared/utils/helpers` — no bare empty `catch`. A failure that needs a fallback value uses `tryCatch`/`tryCatchAsync`.
 - **Related operations around one concept live in one object** — a Redis key and its ops, a model registry, a client's verbs (`const activeStream = { claim, get, key, release }`), not loose top-level functions: the import site names the concept once and the object is the unit of ownership. Group only where functions share state or a key builder; independent pure helpers and single-function modules stay flat. `sort-keys` is on, so keys go alphabetical.

@@ -153,14 +153,16 @@ const useInspector = <T,>({
   const linkedItem = linkedKey
     ? items.find((item) => keyOf(item) === linkedKey)
     : undefined
+  const open = (item: T | null) =>
+    setInspected((current) => ({
+      item,
+      open: true,
+      session: current.session + 1,
+    }))
 
   const openLinked = useEffectEvent(() => {
     if (linkedItem) {
-      setInspected((current) => ({
-        item: linkedItem,
-        open: true,
-        session: current.session + 1,
-      }))
+      open(linkedItem)
     }
     navigate({
       replace: true,
@@ -184,12 +186,7 @@ const useInspector = <T,>({
   return {
     close: () => setInspected((current) => ({ ...current, open: false })),
     inspected,
-    open: (item: T | null) =>
-      setInspected((current) => ({
-        item,
-        open: true,
-        session: current.session + 1,
-      })),
+    open,
   }
 }
 
@@ -230,8 +227,7 @@ export const DefinitionsPage = <T extends { name: string }>({
     setSelectedSchema,
     type,
   } = state
-  const meta = sectionMetaOf(section, type)
-  const { icon, noun, title } = meta
+  const { cascade: cascades, icon, noun, title } = sectionMetaOf(section, type)
   const rows = items.filter(match)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
@@ -243,7 +239,7 @@ export const DefinitionsPage = <T extends { name: string }>({
     open: false,
   })
   const [cascade, setCascade] = useState(false)
-  const cascadable = meta.cascade && capabilitiesOf(type).cascade
+  const cascadable = cascades && capabilitiesOf(type).cascade
 
   const highlightedIndex = rows.findIndex((item) => keyOf(item) === highlighted)
   const highlightedItem =
@@ -263,6 +259,12 @@ export const DefinitionsPage = <T extends { name: string }>({
       inspector.close()
     },
   })
+
+  const closeInspector = (open: boolean) => {
+    if (!open) {
+      inspector.close()
+    }
+  }
 
   const requestDrop = (item: T) => {
     dropMutation.reset()
@@ -483,11 +485,7 @@ export const DefinitionsPage = <T extends { name: string }>({
         open={inspector.inspected.open}
         size="sm"
         swipeDirection="right"
-        onOpenChange={(open) => {
-          if (!open) {
-            inspector.close()
-          }
-        }}
+        onOpenChange={closeInspector}
       >
         <DrawerContent
           className="sm:[--drawer-content-width:36rem]!"
@@ -498,11 +496,7 @@ export const DefinitionsPage = <T extends { name: string }>({
             {...state}
             item={inspector.inspected.item}
             queryKey={queryKey}
-            onOpenChange={(open) => {
-              if (!open) {
-                inspector.close()
-              }
-            }}
+            onOpenChange={closeInspector}
           />
         </DrawerContent>
       </Drawer>

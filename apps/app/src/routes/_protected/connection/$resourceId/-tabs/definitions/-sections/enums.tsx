@@ -12,7 +12,7 @@ import {
 } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { type as arkType } from 'arktype'
+import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import { toast } from 'sonner'
 
@@ -47,72 +47,53 @@ import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type EnumItem = typeof enumType.infer
 
-interface EnumDraft {
-  drafts: EditableListItem[]
-  name: string
-  schema: string
-}
-
-interface EnumPlan {
-  additions: string[]
-  kind: 'in-place' | 'recreate'
-  renames: Record<string, string>
-  values: string[]
-}
-
-const enumPlan = (
-  item: EnumItem | null,
-  drafts: EditableListItem[]
-): EnumPlan => {
+const enumPlan = (item: EnumItem | null, drafts: EditableListItem[]) => {
   const original = item?.values ?? []
   const rows = drafts
     .map((draft) => ({ index: Number(draft.id), value: draft.value.trim() }))
     .filter((row) => row.value)
-  const kept = rows.filter((row) => row.index < original.length)
   const renames: Record<string, string> = {}
 
-  for (const row of kept) {
-    const before = original[row.index] ?? ''
+  for (const { index, value } of rows) {
+    const before = original[index]
 
-    if (before !== row.value) {
-      renames[before] = row.value
+    if (before !== undefined && before !== value) {
+      renames[before] = value
     }
   }
 
-  // RENAME VALUE cannot land on a label that still exists, so a swap replaces.
-  const swaps = Object.values(renames).some((value) => original.includes(value))
-  const inPlace =
-    !swaps &&
-    kept.length === original.length &&
-    original.every((_, index) => rows[index]?.index === index)
-
   return {
     additions: rows
-      .filter((row) => !kept.includes(row))
+      .filter((row) => original[row.index] === undefined)
       .map((row) => row.value),
-    kind: inPlace ? 'in-place' : 'recreate',
+    // RENAME VALUE cannot land on a label that still exists, so a swap replaces.
+    recreate:
+      Object.values(renames).some((value) => original.includes(value)) ||
+      !original.every((_, index) => rows[index]?.index === index),
     renames,
     values: rows.map((row) => row.value),
   }
 }
 
+type EnumPlan = ReturnType<typeof enumPlan>
+
 const migratedDefault = (
   value: string | null,
-  plan: EnumPlan,
+  { renames, values }: EnumPlan,
   isSet: boolean
 ) => {
   if (value === null) {
     return null
   }
   const kept = (isSet ? value.split(',') : [value])
-    .map((label) => plan.renames[label] ?? label)
-    .filter((label) => plan.values.includes(label))
+    .map((label) => renames[label] ?? label)
+    .filter((label) => values.includes(label))
 
-  return kept.length === 0 ? null : kept.join(',')
+  return kept.join(',') || null
 }
 
-const enumSchema = arkType({
-  drafts: arkType({ id: 'string', value: 'string' })
+const enumSchema = type({
+  drafts: type({ id: 'string', value: 'string' })
     .array()
     .narrow((drafts, ctx) => {
       const values = drafts.map((draft) => draft.value.trim()).filter(Boolean)
@@ -126,9 +107,11 @@ const enumSchema = arkType({
         ctx.reject({ message: 'Every value has to be different.' })
       )
     }),
-  name: arkType(/\S/u).configure({ message: 'Give the enum a name.' }),
+  name: type(/\S/u).configure({ message: 'Give the enum a name.' }),
   schema: 'string',
 })
+
+type EnumDraft = typeof enumSchema.infer
 
 const refreshColumns = (connectionResource: ConnectionResource) =>
   queryClient.invalidateQueries({
@@ -179,7 +162,7 @@ const saveEnum = async ({
     return
   }
 
-  if (plan.kind === 'recreate') {
+  if (plan.recreate) {
     const dependents = await queryClient.query(
       enumDependentsQueryOptions({
         connectionResource,
@@ -282,23 +265,15 @@ const valuesNote = ({
     : 'Renaming and appending values alter the type in place.'
 }
 
-const nameHint = (item: EnumItem | null) => {
-  if (!item?.metadata?.table) {
-    return 'Recommended to use lowercase and an underscore to separate words.'
-  }
-
-  return `Column-bound ${item.metadata.isSet ? 'sets' : 'enums'} are named after their column.`
-}
-
-const describe = (item: EnumItem | null, schema: string) => {
-  if (!item) {
-    return schema
-  }
-
-  return item.metadata?.table
+const describe = (item: EnumItem | null, schema: string) =>
+  item?.metadata?.table
     ? `${item.schema}.${item.metadata.table}.${item.metadata.column}`
-    : item.schema
-}
+    : (item?.schema ?? schema)
+
+const nameHint = (item: EnumItem | null) =>
+  item?.metadata?.table
+    ? `Column-bound ${item.metadata.isSet ? 'sets' : 'enums'} are named after their column.`
+    : 'Recommended to use lowercase and an underscore to separate words.'
 
 const EnumInspector = ({
   can,
@@ -338,8 +313,8 @@ const EnumInspector = ({
 
   const columnBound = !!item?.metadata?.table
   const readOnly = item ? !can.edit : !can.create
-  const { kind, values } = enumPlan(item, draft.drafts)
-  const replacesType = !columnBound && kind === 'recreate'
+  const { recreate, values } = enumPlan(item, draft.drafts)
+  const replacesType = !columnBound && recreate
   const changed =
     !item || draft.name.trim() !== item.name || !sameList(values, item.values)
   const note = valuesNote({ item, readOnly, recreating: replacesType })
@@ -460,41 +435,40 @@ const typeColumns: DefinitionsColumn<EnumItem>[] = [
   valuesColumn,
 ]
 
-const enumKey = (item: EnumItem) =>
-  `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
-
 export const Enums = () => {
   const state = useDefinitionsState({ section: 'enums' })
   const { connectionResource, run, search, selectedSchema } = state
   const query = resourceEnumsQueryOptions({ connectionResource })
   const { data: enums = [], isPending } = useQuery(query)
 
-  const inSchema = enums.filter((item) => item.schema === selectedSchema)
-  const columns = enums.some((item) => item.metadata?.table)
-    ? columnBoundColumns
-    : typeColumns
-  const matches = (item: EnumItem) =>
-    matchesSearch(
-      search,
-      item.name,
-      item.metadata?.table,
-      item.metadata?.column,
-      ...item.values
-    )
-  const dropItem = async (item: EnumItem, cascade: boolean) => {
-    await run(dropEnumQuery({ cascade, name: item.name, schema: item.schema }))
-    await refreshColumns(connectionResource)
-  }
-
   return (
     <DefinitionsPage
-      columns={columns}
-      dropItem={dropItem}
+      columns={
+        enums.some((item) => item.metadata?.table)
+          ? columnBoundColumns
+          : typeColumns
+      }
+      dropItem={async (item, cascade) => {
+        await run(
+          dropEnumQuery({ cascade, name: item.name, schema: item.schema })
+        )
+        await refreshColumns(connectionResource)
+      }}
       Inspector={EnumInspector}
-      items={inSchema}
-      keyOf={enumKey}
+      items={enums.filter((item) => item.schema === selectedSchema)}
+      keyOf={(item) =>
+        `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
+      }
       loading={isPending}
-      match={matches}
+      match={(item) =>
+        matchesSearch(
+          search,
+          item.name,
+          item.metadata?.table,
+          item.metadata?.column,
+          ...item.values
+        )
+      }
       queryKey={query.queryKey}
       state={state}
     />

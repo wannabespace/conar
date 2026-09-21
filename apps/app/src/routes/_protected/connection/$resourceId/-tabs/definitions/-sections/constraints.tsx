@@ -10,7 +10,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { type as arkType } from 'arktype'
+import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
@@ -60,17 +60,9 @@ import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
 type ConstraintItem = typeof constraintsType.infer
 
-interface GroupedConstraint extends Pick<
+interface GroupedConstraint extends Omit<
   ConstraintItem,
-  | 'definition'
-  | 'foreignSchema'
-  | 'foreignTable'
-  | 'name'
-  | 'onDelete'
-  | 'onUpdate'
-  | 'schema'
-  | 'table'
-  | 'type'
+  'column' | 'foreignColumn'
 > {
   columns: string[]
   foreignColumns: string[]
@@ -136,38 +128,28 @@ const referenceOf = (item: GroupedConstraint, schema: string | undefined) => {
   return `${table} (${item.foreignColumns.join(', ')})`
 }
 
-const asAction = (value: string | null): ReferentialAction =>
+const asAction = (value: string | null | undefined): ReferentialAction =>
   REFERENTIAL_ACTIONS.find((action) => action === value) ?? DEFAULT_ACTION
 
 const draftOf = (
   item: GroupedConstraint | null,
   pageSchema: string
-): ConstraintDraft =>
-  item
-    ? {
-        columns: item.columns,
-        foreignColumns: item.foreignColumns,
-        foreignSchema: item.foreignSchema ?? item.schema,
-        foreignTable: item.foreignTable ?? '',
-        kind: item.type,
-        name: item.name,
-        onDelete: asAction(item.onDelete),
-        onUpdate: asAction(item.onUpdate),
-        schema: item.schema,
-        table: item.table,
-      }
-    : {
-        columns: [],
-        foreignColumns: [],
-        foreignSchema: pageSchema,
-        foreignTable: '',
-        kind: 'unique',
-        name: '',
-        onDelete: DEFAULT_ACTION,
-        onUpdate: DEFAULT_ACTION,
-        schema: pageSchema,
-        table: '',
-      }
+): ConstraintDraft => {
+  const schema = item?.schema ?? pageSchema
+
+  return {
+    columns: item?.columns ?? [],
+    foreignColumns: item?.foreignColumns ?? [],
+    foreignSchema: item?.foreignSchema ?? schema,
+    foreignTable: item?.foreignTable ?? '',
+    kind: item?.type ?? 'unique',
+    name: item?.name ?? '',
+    onDelete: asAction(item?.onDelete),
+    onUpdate: asAction(item?.onUpdate),
+    schema,
+    table: item?.table ?? '',
+  }
+}
 
 const reshapes = (draft: ConstraintDraft, item: GroupedConstraint) => {
   const opened = draftOf(item, item.schema)
@@ -192,20 +174,20 @@ const finalNameOf = (draft: ConstraintDraft) =>
 const renamesInPlace = (
   draft: ConstraintDraft,
   item: GroupedConstraint,
-  type: ConnectionType
+  connectionType: ConnectionType
 ) =>
   !reshapes(draft, item) &&
   finalNameOf(draft) !== item.name &&
-  capabilitiesOf(type).renameConstraints
+  capabilitiesOf(connectionType).renameConstraints
 
-const constraintSchema = arkType({
-  columns: arkType('string[] >= 1').configure({
+const constraintSchema = type({
+  columns: type('string[] >= 1').configure({
     message: 'Pick at least one column.',
   }),
   foreignColumns: 'string[]',
   foreignTable: 'string',
   kind: 'string',
-  table: arkType(/\S/u).configure({
+  table: type(/\S/u).configure({
     message: 'Pick the table to constrain.',
   }),
 }).narrow((draft, ctx) => {
@@ -257,7 +239,7 @@ const saveConstraint = ({
   draft,
   item,
   run,
-  type,
+  type: connectionType,
 }: {
   draft: ConstraintDraft
   item: GroupedConstraint | null
@@ -282,7 +264,7 @@ const saveConstraint = ({
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  return renamesInPlace(draft, item, type)
+  return renamesInPlace(draft, item, connectionType)
     ? run(renameConstraintQuery({ ...target, newName: shape.name }))
     : run(recreateConstraintQuery({ ...target, kind: item.type, shape }))
 }
@@ -297,11 +279,11 @@ const ConstraintInspector = ({
   schemas,
   selectedSchema,
   tablesOf,
-  type,
+  type: connectionType,
 }: SectionInspectorProps<GroupedConstraint>) => {
   const mutation = useMutation({
     mutationFn: (draft: ConstraintDraft) =>
-      saveConstraint({ draft, item, run, type }),
+      saveConstraint({ draft, item, run, type: connectionType }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
@@ -339,7 +321,9 @@ const ConstraintInspector = ({
   const reshaped = !!item && reshapes(draft, item)
   const renameOnly = !!item && !reshaped && finalNameOf(draft) !== item.name
   const recreates =
-    !!item && (reshaped || renameOnly) && !renamesInPlace(draft, item, type)
+    !!item &&
+    (reshaped || renameOnly) &&
+    !renamesInPlace(draft, item, connectionType)
   const singleColumn = draft.columns.length === 1
 
   return (
@@ -380,7 +364,8 @@ const ConstraintInspector = ({
                 // MySQL names every primary key PRIMARY, whatever the ADD says.
                 disabled={
                   readOnly ||
-                  (item?.type === 'primaryKey' && type === ConnectionType.MySQL)
+                  (item?.type === 'primaryKey' &&
+                    connectionType === ConnectionType.MySQL)
                 }
                 placeholder={
                   draft.table ? suggestedNameOf(draft) : 'Constraint name'
@@ -495,7 +480,7 @@ const ConstraintInspector = ({
                   <SelectField
                     label="On delete"
                     disabled={readOnly}
-                    options={capabilitiesOf(type).referentialActions}
+                    options={capabilitiesOf(connectionType).referentialActions}
                     placeholder="Action"
                   />
                 )}
@@ -505,7 +490,7 @@ const ConstraintInspector = ({
                   <SelectField
                     label="On update"
                     disabled={readOnly}
-                    options={capabilitiesOf(type).referentialActions}
+                    options={capabilitiesOf(connectionType).referentialActions}
                     placeholder="Action"
                   />
                 )}

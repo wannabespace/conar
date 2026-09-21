@@ -37,6 +37,9 @@ const triggerKey = (item: TriggerItem) =>
 
 const sentenceCase = (value: string) => uppercaseFirst(value.toLowerCase())
 
+const dropQueryOf = (item: TriggerItem) =>
+  dropTriggerQuery({ name: item.name, schema: item.schema, table: item.table })
+
 // CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
 const REPLACES_TRIGGERS_FROM = 14
 
@@ -85,11 +88,8 @@ const useDropsFirst = ({
     enabled: type === ConnectionType.Postgres,
   })
 
-  if (type === ConnectionType.MySQL) {
-    return true
-  }
   if (type !== ConnectionType.Postgres) {
-    return false
+    return type === ConnectionType.MySQL
   }
 
   return version === undefined
@@ -145,11 +145,7 @@ const TriggerInspector = ({
       )}
       {item ? (
         <ExistingDefinitionForm
-          dropQuery={dropTriggerQuery({
-            name: item.name,
-            schema: item.schema,
-            table: item.table,
-          })}
+          dropQuery={dropQueryOf(item)}
           dropsFirst={dropsFirst}
           name={item.name}
           noun="trigger"
@@ -228,14 +224,7 @@ export const Triggers = () => {
     (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
     timingFilter.matches(item.timing) &&
     matchesSearch(search, item.name, item.table, item.functionName)
-  const dropItem = (item: TriggerItem) =>
-    run(
-      dropTriggerQuery({
-        name: item.name,
-        schema: item.schema,
-        table: item.table,
-      })
-    )
+  const dropItem = (item: TriggerItem) => run(dropQueryOf(item))
   const rowMenu = (item: TriggerItem) =>
     toggle
       ? [

@@ -5,7 +5,7 @@ import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { type as arkType } from 'arktype'
+import { type } from 'arktype'
 import type * as monaco from 'monaco-editor'
 import { toast } from 'sonner'
 
@@ -42,11 +42,11 @@ const EditorSkeleton = () => (
   </InspectorSection>
 )
 
-const statementSchema = arkType(/\S/u).configure({
+const statementSchema = type(/\S/u).configure({
   message: 'Write a statement to run.',
 })
 
-export const DefinitionForm = ({
+const DefinitionForm = ({
   hint,
   initial,
   isNew,
@@ -162,7 +162,7 @@ export const NewDefinitionForm = ({
   readOnly,
   run,
   schema,
-  type,
+  type: connectionType,
 }: {
   noun: keyof typeof newDefinitions
   onSaved: () => void
@@ -177,9 +177,9 @@ export const NewDefinitionForm = ({
   return (
     <DefinitionForm
       hint={hint}
-      initial={template[type](schema)}
+      initial={template[connectionType](schema)}
       isNew
-      language={sqlDialects[type]}
+      language={sqlDialects[connectionType]}
       onSaved={onSaved}
       queryKey={queryKey}
       readOnly={readOnly}
@@ -208,7 +208,7 @@ export const ExistingDefinitionForm = ({
   queryKey,
   readOnly,
   run,
-  type,
+  type: connectionType,
 }: {
   dropQuery: Parameters<RunQuery>[0]
   // Undefined while the caller still works out whether the dialect can
@@ -238,14 +238,14 @@ export const ExistingDefinitionForm = ({
   }
 
   const statement = definition.replace(DEFINER, '').trim()
-  const keyword = dropsFirst ? undefined : replaceInPlace[type]
+  const keyword = dropsFirst ? undefined : replaceInPlace[connectionType]
 
   return (
     <DefinitionForm
       hint={`Saving replaces the ${noun} with the statement below.`}
       initial={keyword ? statement.replace(CREATE, keyword) : statement}
       isNew={false}
-      language={sqlDialects[type]}
+      language={sqlDialects[connectionType]}
       onSaved={onSaved}
       queryKey={queryKey}
       readOnly={readOnly}

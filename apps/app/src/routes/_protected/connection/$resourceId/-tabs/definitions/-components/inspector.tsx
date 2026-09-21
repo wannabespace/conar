@@ -32,13 +32,11 @@ import type { ReactNode } from 'react'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 
-export interface InspectorProps<T> {
+export type SectionInspectorProps<T> = DefinitionsState & {
   item: T | null
   onOpenChange: (open: boolean) => void
+  queryKey: readonly unknown[]
 }
-
-export type SectionInspectorProps<T> = DefinitionsState &
-  InspectorProps<T> & { queryKey: readonly unknown[] }
 
 export const InspectorHeader = ({
   description,

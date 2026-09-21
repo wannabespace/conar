@@ -16,7 +16,7 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { type as arkType } from 'arktype'
+import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import { toast } from 'sonner'
 
@@ -63,15 +63,9 @@ import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 type IndexItem = typeof indexesType.infer
 type IndexKind = 'primary' | 'unique' | 'regular'
 
-interface GroupedIndex extends Pick<
+interface GroupedIndex extends Omit<
   IndexItem,
-  | 'constraintOwned'
-  | 'custom'
-  | 'definition'
-  | 'name'
-  | 'schema'
-  | 'table'
-  | 'type'
+  'column' | 'customExpression' | 'isPrimary' | 'isUnique'
 > {
   columns: string[]
   kind: IndexKind
@@ -168,7 +162,7 @@ const saveIndex = ({
 const locksOf = ({
   can,
   item,
-  type,
+  type: connectionType,
 }: {
   can: SectionCapabilities
   item: GroupedIndex | null
@@ -176,17 +170,17 @@ const locksOf = ({
 }) => {
   const owned = !!item?.constraintOwned
   const readOnly = item
-    ? !can.edit || (owned && !capabilitiesOf(type).renameConstraints)
+    ? !can.edit || (owned && !capabilitiesOf(connectionType).renameConstraints)
     : !can.create
 
   return { readOnly, shape: readOnly || owned || !!item?.custom }
 }
 
-const indexSchema = arkType({
-  columns: arkType('string[] >= 1').configure({
+const indexSchema = type({
+  columns: type('string[] >= 1').configure({
     message: 'Pick at least one column.',
   }),
-  table: arkType(/\S/u).configure({ message: 'Pick the table to index.' }),
+  table: type(/\S/u).configure({ message: 'Pick the table to index.' }),
 })
 
 const rebuildWarning = (item: GroupedIndex | null) => ({
@@ -257,7 +251,7 @@ const IndexInspector = ({
   schemas,
   selectedSchema,
   tablesOf,
-  type,
+  type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
     mutationFn: (draft: IndexDraft) => saveIndex({ draft, item, run }),
@@ -290,7 +284,7 @@ const IndexInspector = ({
     enabled: draft.table !== '',
   })
 
-  const locked = locksOf({ can, item, type })
+  const locked = locksOf({ can, item, type: connectionType })
   const reshaped = reshapes(draft, item)
 
   return (
@@ -414,9 +408,7 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
     align: 'end',
     header: 'Type',
     labelOf: (item: GroupedIndex) =>
-      item.type
-        ? `${kindLabels[item.kind]} · ${item.type}`
-        : kindLabels[item.kind],
+      [kindLabels[item.kind], item.type].filter(Boolean).join(' · '),
     width: 'w-3/12',
   }),
 ]
@@ -432,29 +424,27 @@ export const Indexes = () => {
     { label: 'Regular', value: 'regular' },
   ])
 
-  const inSchema = groupIndexes(indexes, selectedSchema)
-  const matches = (item: GroupedIndex) =>
-    kindFilter.matches(item.kind) &&
-    matchesSearch(search, item.name, item.table, ...item.columns)
-  const dropItem = (item: GroupedIndex) =>
-    run(
-      dropIndexQuery({
-        name: item.name,
-        schema: item.schema,
-        table: item.table,
-      })
-    )
-
   return (
     <DefinitionsPage
       canDropItem={(item) => !item.constraintOwned}
       columns={columns}
-      dropItem={dropItem}
+      dropItem={(item) =>
+        run(
+          dropIndexQuery({
+            name: item.name,
+            schema: item.schema,
+            table: item.table,
+          })
+        )
+      }
       Inspector={IndexInspector}
-      items={inSchema}
+      items={groupIndexes(indexes, selectedSchema)}
       keyOf={indexKey}
       loading={isPending}
-      match={matches}
+      match={(item) =>
+        kindFilter.matches(item.kind) &&
+        matchesSearch(search, item.name, item.table, ...item.columns)
+      }
       queryKey={structureQueryKey(connectionResource)}
       state={state}
       toolbar={kindFilter.control}

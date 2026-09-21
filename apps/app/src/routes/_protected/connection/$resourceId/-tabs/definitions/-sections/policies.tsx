@@ -8,7 +8,7 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { type as arkType } from 'arktype'
+import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
@@ -129,9 +129,9 @@ const replaces = (item: PolicyItem, draft: PolicyDraft) =>
   draft.kind !== item.type ||
   clearsExpression(item, draft)
 
-const policySchema = arkType({
-  name: arkType(/\S/u).configure({ message: 'Give the policy a name.' }),
-  table: arkType(/\S/u).configure({ message: 'Pick the table to protect.' }),
+const policySchema = type({
+  name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
+  table: type(/\S/u).configure({ message: 'Pick the table to protect.' }),
 })
 
 const replaceWarning = (

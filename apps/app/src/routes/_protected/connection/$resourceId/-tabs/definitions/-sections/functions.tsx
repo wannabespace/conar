@@ -29,6 +29,15 @@ const typeLabels: Record<FunctionType, string> = {
   procedure: 'Procedure',
 }
 
+const dropQueryOf = (item: FunctionItem, cascade: boolean) =>
+  dropFunctionQuery({
+    cascade,
+    identity: item.identity,
+    kind: item.type,
+    name: item.name,
+    schema: item.schema,
+  })
+
 const FunctionInspector = ({
   can,
   connectionResource,
@@ -47,13 +56,7 @@ const FunctionInspector = ({
     />
     {item ? (
       <ExistingDefinitionForm
-        dropQuery={dropFunctionQuery({
-          cascade: false,
-          identity: item.identity,
-          kind: item.type,
-          name: item.name,
-          schema: item.schema,
-        })}
+        dropQuery={dropQueryOf(item, false)}
         dropsFirst={type === ConnectionType.MySQL}
         name={item.name}
         noun="function"
@@ -124,15 +127,7 @@ export const Functions = () => {
     typeFilter.matches(item.type) &&
     matchesSearch(search, item.name, item.language, item.return_type)
   const dropItem = (item: FunctionItem, cascade: boolean) =>
-    run(
-      dropFunctionQuery({
-        cascade,
-        identity: item.identity,
-        kind: item.type,
-        name: item.name,
-        schema: item.schema,
-      })
-    )
+    run(dropQueryOf(item, cascade))
 
   return (
     <DefinitionsPage
