@@ -16,8 +16,6 @@ export const tablesAndSchemasType = type({
   table: 'string',
   type: type.or(
     type.enumerated(...tableTypes),
-    // SAFETY: mapping `toUpperCase` over the literal tuple produces exactly its
-    // uppercase counterparts; TS widens the result to string[] on its own.
     type.enumerated(
       ...(tableTypes.map((t) => t.toUpperCase()) as Uppercase<
         (typeof tableTypes)[number]
@@ -25,8 +23,6 @@ export const tablesAndSchemasType = type({
     )
   ),
 }).pipe(({ type: rawType, ...props }) => {
-  // SAFETY: the schema above accepts only `tableTypes` or their uppercase
-  // spellings, so lowercasing always lands back inside the tuple.
   const formattedType = rawType.toLowerCase() as (typeof tableTypes)[number]
   return {
     ...props,
