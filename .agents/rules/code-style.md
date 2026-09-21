@@ -18,7 +18,7 @@ Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-on
 
 - React 19: `ref` as a prop, no `forwardRef`. No `useMemo`/`useCallback` — React Compiler is on (`architecture.md`).
 - Type narrowing over assertions — a cast is a smell (`architecture.md`).
-- A magic number gets a name **and** a reason; no reason → no constant.
+- A magic number gets a name, not a comment explaining it.
 - Modern built-ins (`toSorted`, `at(-1)`, `Object.groupBy`, `Array.fromAsync`, …) over hand-rolled loops and copy-then-mutate — every runtime here supports them. Only when shorter *and* clearer; don't chain five methods where `for...of` reads better.
 - No `.only`/`.skip` in committed tests.
 - `useState` used only to freeze a first-render value keeps the setter plus a `void setThing` line — `hook-use-state` rejects a lone `const [thing] =`. Dropping the setter is a lint error, not a cleanup.
