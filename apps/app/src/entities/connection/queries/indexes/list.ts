@@ -93,7 +93,7 @@ export const resourceIndexesQuery = createQuery({
             'is_custom'
           ),
         ])
-        .where('ic.key_ordinal', '>', 0)
+        .where('ic.is_included_column', '=', false)
         .orderBy('ic.key_ordinal')
         .execute(),
 

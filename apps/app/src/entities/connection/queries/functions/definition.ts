@@ -67,6 +67,7 @@ export const functionDefinitionQueryOptions = ({
       'function-definition',
       item.schema,
       item.name,
+      item.type,
       item.identity ?? '',
     ],
   })

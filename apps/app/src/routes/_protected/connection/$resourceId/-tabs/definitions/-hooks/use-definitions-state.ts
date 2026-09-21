@@ -1,16 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { sectionCapabilitiesOf } from '~/entities/connection/capabilities'
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import type { QueryParams } from '~/entities/connection/runtime/query'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
-import { queryClient } from '~/lib/query-client'
 
 const resourceRoute = getRouteApi('/_protected/connection/$resourceId')
 const tabRoute = getRouteApi('/_protected/connection/$resourceId/$tabId')
@@ -22,10 +20,8 @@ export type RunQuery = <T>(query: {
 }) => Promise<T>
 
 export const useDefinitionsState = ({
-  prefetchColumns = false,
   section,
 }: {
-  prefetchColumns?: boolean
   section: DefinitionsSection
 }) => {
   const { connection, connectionResource } = resourceRoute.useRouteContext()
@@ -50,26 +46,6 @@ export const useDefinitionsState = ({
       ?.tables.filter((table) => table.type === 'table')
       .map((table) => table.name)
       .toSorted() ?? noTables
-
-  useEffect(() => {
-    if (!(prefetchColumns && selectedSchema)) {
-      return
-    }
-    const tables =
-      data?.schemas
-        .find(({ name }) => name === selectedSchema)
-        ?.tables.filter((t) => t.type === 'table') ?? []
-
-    for (const table of tables) {
-      queryClient.query(
-        resourceTableColumnsQueryOptions({
-          connectionResource,
-          schema: selectedSchema,
-          table: table.name,
-        })
-      )
-    }
-  }, [connectionResource, data, prefetchColumns, selectedSchema])
 
   const run: RunQuery = async (query) =>
     query.run(await connectionResourceToQueryParams(connectionResource))

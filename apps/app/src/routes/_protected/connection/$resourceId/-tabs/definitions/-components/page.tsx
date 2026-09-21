@@ -137,9 +137,11 @@ const LINKED_OPEN_DELAY = 80
 const useInspector = <T,>({
   items,
   keyOf,
+  loading,
 }: {
   items: T[]
   keyOf: (item: T) => string
+  loading: boolean
 }) => {
   const navigate = useNavigate()
   const linkedKey = useSearch({ select: (current) => current.open })
@@ -153,14 +155,13 @@ const useInspector = <T,>({
     : undefined
 
   const openLinked = useEffectEvent(() => {
-    if (!linkedItem) {
-      return
+    if (linkedItem) {
+      setInspected((current) => ({
+        item: linkedItem,
+        open: true,
+        session: current.session + 1,
+      }))
     }
-    setInspected((current) => ({
-      item: linkedItem,
-      open: true,
-      session: current.session + 1,
-    }))
     navigate({
       replace: true,
       search: (current) => ({
@@ -170,16 +171,15 @@ const useInspector = <T,>({
       }),
     })
   })
-  const linkedReady = Boolean(linkedItem)
 
   useEffect(() => {
-    if (!linkedReady) {
+    if (!linkedKey || loading) {
       return
     }
     const timeout = setTimeout(openLinked, LINKED_OPEN_DELAY)
 
     return () => clearTimeout(timeout)
-  }, [linkedReady])
+  }, [linkedKey, loading])
 
   return {
     close: () => setInspected((current) => ({ ...current, open: false })),
@@ -241,7 +241,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
-  const inspector = useInspector({ items, keyOf })
+  const inspector = useInspector({ items, keyOf, loading })
   const [dropping, setDropping] = useState<{ item: T | null; open: boolean }>({
     item: null,
     open: false,

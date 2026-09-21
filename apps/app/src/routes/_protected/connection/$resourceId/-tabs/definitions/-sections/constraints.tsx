@@ -565,7 +565,6 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
 
 export const Constraints = () => {
   const state = useDefinitionsState({
-    prefetchColumns: true,
     section: 'constraints',
   })
   const { connectionResource, run, search, selectedSchema } = state

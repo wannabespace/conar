@@ -426,7 +426,6 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
 
 export const Indexes = () => {
   const state = useDefinitionsState({
-    prefetchColumns: true,
     section: 'indexes',
   })
   const { connectionResource, run, search, selectedSchema } = state

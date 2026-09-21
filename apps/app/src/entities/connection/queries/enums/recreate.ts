@@ -28,11 +28,13 @@ const remapped = (
   )} ELSE ${expression} END`
 }
 
-const migrate = ({
+const migrate = async ({
+  arrayDefault,
   dependent,
   renames,
   target,
 }: {
+  arrayDefault: (literal: string) => Promise<string>
   dependent: EnumDependent
   renames: Record<string, string>
   target: RawBuilder<unknown>
@@ -53,7 +55,7 @@ const migrate = ({
 
   const unescaped = literal.replaceAll("''", "'")
   const value = dependent.isArray
-    ? unescaped
+    ? await arrayDefault(unescaped)
     : (renames[unescaped] ?? unescaped)
 
   return [
@@ -87,12 +89,23 @@ export const recreateEnumQuery = ({
         db.transaction().execute(async (tx) => {
           const replacedName = `${name}${RECREATE_SUFFIX}`
           const target = sql.id(schema, newName)
+          const arrayDefault = async (literal: string) => {
+            const { rows } = await sql<{ value: string }>`
+              SELECT ARRAY(SELECT ${remapped(sql`value`, renames)} FROM unnest(${sql.lit(literal)}::text[]) AS value)::text AS value
+            `.execute(tx)
+            const [row] = rows
+
+            return row?.value ?? literal
+          }
+          const migrations = await Promise.all(
+            dependents.map((dependent) =>
+              migrate({ arrayDefault, dependent, renames, target })
+            )
+          )
           const statements = [
             sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`,
             sql`CREATE TYPE ${target} AS ENUM (${literals(values)})`,
-            ...dependents.flatMap((dependent) =>
-              migrate({ dependent, renames, target })
-            ),
+            ...migrations.flat(),
             sql`DROP TYPE ${sql.id(schema, replacedName)}`,
           ]
 
