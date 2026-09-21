@@ -1,38 +1,37 @@
 import { unsupported } from '@tamery/shared/utils/unsupported'
 import type { Kysely, RawBuilder } from 'kysely'
-import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
+import type { TriggerShape, TriggerTarget } from './shape'
+import { createTriggerStatements, dropTriggerStatements } from './shape'
+
+const swapInTransaction =
+  (statements: { create: RawBuilder<unknown>; drop: RawBuilder<unknown> }) =>
+  // oxlint-disable-next-line ts/no-explicit-any
+  (db: Kysely<any>) =>
+    db.transaction().execute(async (tx) => {
+      await statements.drop.execute(tx)
+      await statements.create.execute(tx)
+    })
 
 export const recreateTriggerQuery = ({
-  create,
   name,
   schema,
+  shape,
   table,
-}: {
-  create: string
-  name: string
-  schema: string
-  table: string
-}) => {
-  const dropByName = sql`DROP TRIGGER ${sql.id(schema, name)}`
-  const swapInTransaction =
-    (drop: RawBuilder<unknown>) =>
-    // oxlint-disable-next-line ts/no-explicit-any
-    (db: Kysely<any>) =>
-      db.transaction().execute(async (tx) => {
-        await drop.execute(tx)
-        await sql.raw(create).execute(tx)
-      })
+}: TriggerTarget & { name: string; shape: TriggerShape }) => {
+  const drop = dropTriggerStatements({ name, schema, table })
+  const create = createTriggerStatements({ schema, shape, table })
 
   return createQuery({
     query: {
       clickhouse: unsupported('Triggers'),
-      mssql: swapInTransaction(dropByName),
-      mysql: swapInTransaction(dropByName),
-      postgres: swapInTransaction(
-        sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`
-      ),
+      mssql: swapInTransaction({ create: create.mssql, drop: drop.mssql }),
+      mysql: swapInTransaction({ create: create.mysql, drop: drop.mysql }),
+      postgres: swapInTransaction({
+        create: create.postgres,
+        drop: drop.postgres,
+      }),
     },
   })
 }

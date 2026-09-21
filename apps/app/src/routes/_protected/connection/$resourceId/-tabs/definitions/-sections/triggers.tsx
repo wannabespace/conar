@@ -3,11 +3,14 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
+import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
+import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { createTriggerQuery } from '~/entities/connection/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
 import { dropTriggerQuery } from '~/entities/connection/queries/triggers/drop'
@@ -15,17 +18,38 @@ import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import { recreateTriggerQuery } from '~/entities/connection/queries/triggers/recreate'
 import { setTriggerEnabledQuery } from '~/entities/connection/queries/triggers/set-enabled'
+import type {
+  TriggerEvent,
+  TriggerOrientation,
+  TriggerShape,
+  TriggerTiming,
+} from '~/entities/connection/queries/triggers/shape'
+import {
+  TRIGGER_EVENTS,
+  TRIGGER_TIMINGS,
+} from '~/entities/connection/queries/triggers/shape'
+import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
 
 import {
-  ExistingDefinitionForm,
-  NewDefinitionForm,
-} from '../-components/definition-form'
-import type { SectionInspectorProps } from '../-components/inspector'
+  BodyField,
+  OptionsField,
+  resetFields,
+  SchemaField,
+  SelectField,
+  TextField,
+} from '../-components/fields'
+import type {
+  InspectorWarning,
+  SectionInspectorProps,
+} from '../-components/inspector'
 import {
+  InspectorDefinition,
+  InspectorFooter,
   InspectorHeader,
   InspectorOption,
   InspectorSection,
+  InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
@@ -43,13 +67,80 @@ const sentenceCase = (value: string) => uppercaseFirst(value.toLowerCase())
 const dropQueryOf = (item: TriggerItem) =>
   dropTriggerQuery({ name: item.name, schema: item.schema, table: item.table })
 
-// CREATE OR REPLACE TRIGGER arrived in PostgreSQL 14; MySQL never had one.
-const REPLACES_TRIGGERS_FROM = 14
+interface TriggerDraft {
+  body: string
+  events: TriggerEvent[]
+  functionName: string
+  name: string
+  orientation: TriggerOrientation
+  schema: string
+  table: string
+  timing: TriggerTiming
+}
+
+const bodyTemplates: Partial<Record<ConnectionType, string>> = {
+  mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
+  mysql: 'BEGIN\n\nEND',
+}
+
+const triggerSchema = type({
+  events: type('string[] >= 1').configure({
+    message: 'Pick at least one event.',
+  }),
+  name: type(/\S/u).configure({ message: 'Give the trigger a name.' }),
+  table: type(/\S/u).configure({ message: 'Pick the table to watch.' }),
+})
+
+const draftOf = (
+  item: TriggerItem | null,
+  pageSchema: string,
+  connectionType: ConnectionType
+): TriggerDraft => {
+  const { orientations, timings } = capabilitiesOf(connectionType).triggers
+
+  return {
+    body: item?.body || bodyTemplates[connectionType] || '',
+    events: item
+      ? TRIGGER_EVENTS.filter((event) => item.event.includes(event))
+      : ['INSERT'],
+    functionName: item?.functionName ?? '',
+    name: item?.name ?? '',
+    orientation: item?.orientation ?? orientations[0] ?? 'ROW',
+    timing:
+      TRIGGER_TIMINGS.find((timing) => timing === item?.timing) ??
+      timings[0] ??
+      'AFTER',
+    schema: item?.schema ?? pageSchema,
+    table: item?.table ?? '',
+  }
+}
+
+const shapeOf = (draft: TriggerDraft): TriggerShape => ({
+  body: draft.body,
+  events: draft.events,
+  functionName: draft.functionName,
+  name: draft.name.trim(),
+  orientation: draft.orientation,
+  timing: draft.timing,
+})
+
+const replaceWarning = (item: TriggerItem): InspectorWarning => ({
+  action: 'Replace trigger',
+  description: (
+    <>
+      MySQL cannot roll DDL back, so we drop{' '}
+      <span data-mask className="font-medium">
+        {item.name}
+      </span>{' '}
+      and create it again. If the new statement fails, it stays dropped.
+    </>
+  ),
+})
 
 const useToggle = ({
   queryKey,
   run,
-  type,
+  type: connectionType,
 }: Pick<SectionInspectorProps<TriggerItem>, 'queryKey' | 'run' | 'type'>) => {
   const mutation = useMutation({
     mutationFn: ({ enabled, item }: { enabled: boolean; item: TriggerItem }) =>
@@ -69,109 +160,238 @@ const useToggle = ({
     },
   })
 
-  return capabilitiesOf(type).toggleTriggers
+  return capabilitiesOf(connectionType).triggers.toggle
     ? (item: TriggerItem, enabled: boolean) =>
         mutation.mutate({ enabled, item })
     : undefined
 }
 
-const useDropsFirst = ({
-  connection,
-  type,
-}: Pick<SectionInspectorProps<TriggerItem>, 'connection' | 'type'>) => {
-  const { data: version } = useQuery({
-    ...connectionVersionQueryOptions(connection),
-    enabled: type === ConnectionType.Postgres,
-  })
+const TriggerSql = ({
+  connectionResource,
+  item,
+}: Pick<SectionInspectorProps<TriggerItem>, 'connectionResource'> & {
+  item: TriggerItem
+}) => {
+  const { data: definition } = useQuery(
+    triggerDefinitionQueryOptions({ connectionResource, item })
+  )
 
-  if (type !== ConnectionType.Postgres) {
-    return type === ConnectionType.MySQL
-  }
-
-  return version === undefined
-    ? undefined
-    : Number(version.split('.')[0]) < REPLACES_TRIGGERS_FROM
+  return definition ? <InspectorDefinition code={definition} /> : null
 }
 
 const TriggerInspector = ({
   can,
-  connection,
   connectionResource,
   item: snapshot,
   onOpenChange,
   queryKey,
   run,
+  schemas,
   selectedSchema,
-  type,
+  tablesOf,
+  type: connectionType,
 }: SectionInspectorProps<TriggerItem>) => {
   const { data: triggers = [] } = useQuery(
     resourceTriggersQueryOptions({ connectionResource })
   )
-  const toggle = useToggle({ queryKey, run, type })
-  const dropsFirst = useDropsFirst({ connection, type })
+  const options = capabilitiesOf(connectionType).triggers
+  const { data: functions = [] } = useQuery({
+    ...resourceFunctionsQueryOptions({ connectionResource }),
+    enabled: !options.body,
+  })
+  const toggle = useToggle({ queryKey, run, type: connectionType })
   const item =
     snapshot &&
     (triggers.find((row) => triggerKey(row) === triggerKey(snapshot)) ??
       snapshot)
+  const mutation = useMutation({
+    mutationFn: (draft: TriggerDraft) =>
+      run(
+        item
+          ? recreateTriggerQuery({
+              name: item.name,
+              schema: item.schema,
+              shape: shapeOf(draft),
+              table: item.table,
+            })
+          : createTriggerQuery({
+              schema: draft.schema,
+              shape: shapeOf(draft),
+              table: draft.table,
+            })
+      ),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Trigger "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
+  })
+  const form = useAppForm({
+    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    onSubmit: ({ value }) => {
+      mutation.mutate(value)
+    },
+    validators: { onChange: triggerSchema, onMount: triggerSchema },
+  })
+  const draft = useStore(form.store, (state) => state.values)
+
+  const readOnly = item ? !can.edit : !can.create
+  const acts = options.body ? !!draft.body.trim() : !!draft.functionName
+  const changed =
+    !item ||
+    JSON.stringify(shapeOf(draft)) !==
+      JSON.stringify(shapeOf(draftOf(item, draft.schema, connectionType)))
 
   return (
     <>
       <InspectorHeader
-        description={
-          item ? `${item.schema}.${item.table}` : (selectedSchema ?? '')
-        }
+        description={item ? `${item.schema}.${item.table}` : draft.schema}
         item={item}
         noun="trigger"
       />
-      {item && toggle && (
-        <InspectorSection title="Status">
-          <InspectorOption
-            htmlFor="trigger-enabled"
-            title="Enabled"
-            description="A disabled trigger stays defined but never fires."
-          >
-            <Switch
-              id="trigger-enabled"
-              size="sm"
-              checked={item.enabled !== false}
-              onCheckedChange={(enabled) => toggle(item, enabled)}
-            />
-          </InspectorOption>
+      <InspectorSections>
+        {item && toggle && (
+          <InspectorSection title="Status">
+            <InspectorOption
+              htmlFor="trigger-enabled"
+              title="Enabled"
+              description="A disabled trigger stays defined but never fires."
+            >
+              <Switch
+                id="trigger-enabled"
+                size="sm"
+                checked={item.enabled !== false}
+                onCheckedChange={(enabled) => toggle(item, enabled)}
+              />
+            </InspectorOption>
+          </InspectorSection>
+        )}
+        <InspectorSection
+          title="General"
+          description="A trigger runs whenever its table changes."
+        >
+          <form.AppField name="schema">
+            {() => (
+              <SchemaField
+                disabled={readOnly || !!item}
+                schemas={schemas}
+                onChanged={() => resetFields(form, { table: '' })}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="name">
+            {() => <TextField label="Name" autoFocus disabled={readOnly} />}
+          </form.AppField>
+          <form.AppField name="table">
+            {() => (
+              <SelectField
+                label="Table"
+                description="The trigger watches changes on this table."
+                disabled={readOnly || !!item}
+                options={item ? [item.table] : tablesOf(draft.schema)}
+                placeholder="Choose a table"
+              />
+            )}
+          </form.AppField>
         </InspectorSection>
-      )}
-      {item ? (
-        <ExistingDefinitionForm
-          createQuery={(create) => createTriggerQuery({ create })}
-          recreateQuery={(create) =>
-            recreateTriggerQuery({
-              create,
-              name: item.name,
-              schema: item.schema,
-              table: item.table,
-            })
-          }
-          dropsFirst={dropsFirst}
-          name={item.name}
-          noun="trigger"
-          onSaved={() => onOpenChange(false)}
-          query={triggerDefinitionQueryOptions({ connectionResource, item })}
-          queryKey={queryKey}
-          readOnly={!can.edit}
-          run={run}
-          type={type}
-        />
-      ) : (
-        <NewDefinitionForm
-          createQuery={(create) => createTriggerQuery({ create })}
-          noun="trigger"
-          onSaved={() => onOpenChange(false)}
-          queryKey={queryKey}
-          readOnly={!can.create}
-          run={run}
-          schema={selectedSchema ?? ''}
-          type={type}
-        />
-      )}
+        <InspectorSection
+          title="Firing"
+          description="Which changes wake the trigger, and when it runs."
+        >
+          <form.AppField name="events">
+            {() => (
+              <OptionsField
+                label="Events"
+                description={
+                  options.multipleEvents
+                    ? 'Only the events chosen here fire the trigger.'
+                    : 'A trigger here answers to a single event.'
+                }
+                disabled={readOnly}
+                limit={options.multipleEvents ? undefined : 1}
+                options={TRIGGER_EVENTS}
+                placeholder="Choose events"
+              />
+            )}
+          </form.AppField>
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name="timing">
+              {() => (
+                <SelectField
+                  label="Timing"
+                  disabled={readOnly}
+                  labelOf={sentenceCase}
+                  options={options.timings}
+                  placeholder="Timing"
+                />
+              )}
+            </form.AppField>
+            {options.orientations.length > 1 && (
+              <form.AppField name="orientation">
+                {() => (
+                  <SelectField
+                    label="For each"
+                    disabled={readOnly}
+                    labelOf={sentenceCase}
+                    options={options.orientations}
+                    placeholder="For each"
+                  />
+                )}
+              </form.AppField>
+            )}
+          </div>
+        </InspectorSection>
+        <InspectorSection
+          title="Action"
+          description="What the database runs when the trigger fires."
+          className={options.body ? 'min-h-0 flex-1' : undefined}
+        >
+          {options.body ? (
+            <form.AppField name="body">
+              {() => (
+                <BodyField
+                  label="Body"
+                  description="Runs for every change the trigger answers to."
+                  disabled={readOnly}
+                  language={sqlDialects[connectionType]}
+                />
+              )}
+            </form.AppField>
+          ) : (
+            <form.AppField name="functionName">
+              {() => (
+                <SelectField
+                  label="Function"
+                  description="Trigger functions in this schema."
+                  disabled={readOnly}
+                  options={functions
+                    .filter((fn) => fn.schema === draft.schema)
+                    .map((fn) => fn.name)}
+                  placeholder="Choose a function"
+                />
+              )}
+            </form.AppField>
+          )}
+        </InspectorSection>
+        {item && (
+          <TriggerSql connectionResource={connectionResource} item={item} />
+        )}
+      </InspectorSections>
+      <InspectorFooter
+        canSave={changed && acts}
+        error={mutation.error}
+        form={form}
+        readOnly={readOnly}
+        saveLabel={item ? 'Save' : 'Create trigger'}
+        saving={mutation.isPending}
+        warning={
+          item && connectionType === ConnectionType.MySQL
+            ? replaceWarning(item)
+            : undefined
+        }
+      />
     </>
   )
 }

@@ -12,12 +12,25 @@ import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 
 import type { ReferentialAction } from './queries/constraints/shape'
 import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
+import type {
+  TriggerOrientation,
+  TriggerTiming,
+} from './queries/triggers/shape'
+import { TRIGGER_ORIENTATIONS, TRIGGER_TIMINGS } from './queries/triggers/shape'
 import type { DefinitionsSection } from './store/tabs/types'
 
 export interface SectionCapabilities {
   create?: boolean
   drop?: boolean
   edit?: boolean
+}
+
+interface TriggerCapabilities {
+  body: boolean
+  multipleEvents: boolean
+  orientations: readonly TriggerOrientation[]
+  timings: readonly TriggerTiming[]
+  toggle: boolean
 }
 
 interface ConnectionCapabilities {
@@ -29,7 +42,7 @@ interface ConnectionCapabilities {
   renameConstraints: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
-  toggleTriggers: boolean
+  triggers: TriggerCapabilities
 }
 
 const readOnly: SectionCapabilities = {}
@@ -52,7 +65,13 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: { drop: true },
       triggers: false,
     },
-    toggleTriggers: false,
+    triggers: {
+      body: false,
+      multipleEvents: false,
+      orientations: [],
+      timings: [],
+      toggle: false,
+    },
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
@@ -72,7 +91,13 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
-    toggleTriggers: true,
+    triggers: {
+      body: true,
+      multipleEvents: true,
+      orientations: ['STATEMENT'],
+      timings: ['AFTER', 'INSTEAD OF'],
+      toggle: true,
+    },
   },
   [ConnectionType.MySQL]: {
     cascade: false,
@@ -93,7 +118,13 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
-    toggleTriggers: false,
+    triggers: {
+      body: true,
+      multipleEvents: false,
+      orientations: ['ROW'],
+      timings: ['BEFORE', 'AFTER'],
+      toggle: false,
+    },
   },
   [ConnectionType.Postgres]: {
     cascade: true,
@@ -111,7 +142,13 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: full,
       triggers: full,
     },
-    toggleTriggers: true,
+    triggers: {
+      body: false,
+      multipleEvents: true,
+      orientations: TRIGGER_ORIENTATIONS,
+      timings: TRIGGER_TIMINGS,
+      toggle: true,
+    },
   },
 }
 

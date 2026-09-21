@@ -6,7 +6,6 @@ import { useStore } from '@tanstack/react-form'
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
-import type * as monaco from 'monaco-editor'
 import { toast } from 'sonner'
 
 import { Monaco } from '~/components/monaco'
@@ -15,21 +14,9 @@ import { sqlDialects } from '~/entities/connection/utils/monaco'
 import { queryClient } from '~/lib/query-client'
 
 import type { RunQuery } from '../-hooks/use-definitions-state'
+import { editorOptions, readOnlyEditorOptions } from './fields'
 import type { InspectorWarning } from './inspector'
 import { InspectorFooter, InspectorSection } from './inspector'
-
-const editorOptions = {
-  fontSize: 12,
-  lineNumbersMinChars: 3,
-  padding: { top: 8 },
-  scrollBeyondLastLine: false,
-  wordWrap: 'on',
-} satisfies monaco.editor.IStandaloneEditorConstructionOptions
-
-const readOnlyEditorOptions = {
-  ...editorOptions,
-  readOnly: true,
-} satisfies monaco.editor.IStandaloneEditorConstructionOptions
 
 const EditorSkeleton = () => (
   <InspectorSection title="Definition" className="min-h-0 flex-1">
@@ -136,18 +123,6 @@ const newDefinitions = {
         `CREATE FUNCTION \`${schema}\`.\`new_function\`()\nRETURNS INT\nDETERMINISTIC\nBEGIN\n  RETURN 0;\nEND`,
       postgres: (schema) =>
         `CREATE OR REPLACE FUNCTION "${schema}".new_function()\nRETURNS void\nLANGUAGE plpgsql\nAS $$\nBEGIN\n\nEND;\n$$;`,
-    },
-  },
-  trigger: {
-    hint: 'A trigger names its table, its timing and the function it runs.',
-    template: {
-      clickhouse: () => '',
-      mssql: (schema) =>
-        `CREATE OR ALTER TRIGGER [${schema}].[new_trigger]\nON [${schema}].[table_name]\nAFTER INSERT\nAS\nBEGIN\n  SET NOCOUNT ON;\nEND`,
-      mysql: (schema) =>
-        `CREATE TRIGGER \`${schema}\`.\`new_trigger\`\nBEFORE INSERT ON \`${schema}\`.\`table_name\`\nFOR EACH ROW\nBEGIN\n\nEND`,
-      postgres: (schema) =>
-        `CREATE TRIGGER new_trigger\nBEFORE INSERT ON "${schema}".table_name\nFOR EACH ROW\nEXECUTE FUNCTION "${schema}".function_name();`,
     },
   },
 } satisfies Partial<

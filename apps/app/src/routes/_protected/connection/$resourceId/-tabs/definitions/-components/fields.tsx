@@ -27,7 +27,23 @@ import {
 } from '@tamery/ui/components/tanstack-form'
 import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
+import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
+
+import { Monaco } from '~/components/monaco'
+
+export const editorOptions = {
+  fontSize: 12,
+  lineNumbersMinChars: 3,
+  padding: { top: 8 },
+  scrollBeyondLastLine: false,
+  wordWrap: 'on',
+} satisfies monaco.editor.IStandaloneEditorConstructionOptions
+
+export const readOnlyEditorOptions = {
+  ...editorOptions,
+  readOnly: true,
+} satisfies monaco.editor.IStandaloneEditorConstructionOptions
 
 const identity = (value: string): string => value
 const noOptions: readonly string[] = []
@@ -122,6 +138,28 @@ export const SqlField = ({
     />
   </Labelled>
 )
+
+export const BodyField = ({
+  description,
+  disabled,
+  label,
+  language,
+}: LabelledProps & { disabled?: boolean; language: string }) => {
+  const field = useFieldContext<string>()
+
+  return (
+    <Labelled description={description} label={label}>
+      <Monaco
+        data-mask
+        className="ring-foreground/4 h-56 overflow-hidden rounded-xl ring"
+        language={language}
+        value={field.state.value}
+        options={disabled ? readOnlyEditorOptions : editorOptions}
+        onChange={field.handleChange}
+      />
+    </Labelled>
+  )
+}
 
 export const SelectField = <T extends string>({
   description,

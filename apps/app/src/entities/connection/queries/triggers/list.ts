@@ -11,18 +11,23 @@ import {
 } from '../../runtime/query'
 
 export const triggersType = type({
+  'body?': 'string | null',
   'enabled?': 'boolean',
   event: 'string',
   'function_name?': 'string | null',
   name: 'string',
   'oid?': 'number',
+  'orientation?': 'string',
   schema: 'string',
   table: 'string',
   timing: 'string',
-}).pipe(({ function_name, enabled, ...item }) => ({
+}).pipe(({ body, function_name, enabled, orientation, ...item }) => ({
   ...item,
+  body: body || '',
   enabled: enabled ?? null,
   functionName: function_name || null,
+  orientation:
+    orientation === 'ROW' ? ('ROW' as const) : ('STATEMENT' as const),
 }))
 
 const resourceTriggersQuery = createQuery({
@@ -34,6 +39,7 @@ const resourceTriggersQuery = createQuery({
         .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
         .leftJoin('sys.trigger_events as te', 't.object_id', 'te.object_id')
+        .leftJoin('sys.sql_modules as sm', 't.object_id', 'sm.object_id')
         .select(({ eb }) => [
           's.name as schema',
           'o.name as table',
@@ -49,6 +55,11 @@ const resourceTriggersQuery = createQuery({
             .else('AFTER')
             .end()
             .as('timing'),
+          // The catalog keeps the whole CREATE, so the body is what follows
+          // the AS that closes the header.
+          sql<string>`STUFF(sm.definition, 1, CHARINDEX(' AS ', sm.definition) + 3, '')`.as(
+            'body'
+          ),
           eb
             .case()
             .when('t.is_disabled', '=', false)
@@ -67,6 +78,7 @@ const resourceTriggersQuery = createQuery({
           't.name',
           't.is_instead_of_trigger',
           't.is_disabled',
+          'sm.definition',
         ])
         .execute(),
     mysql: (db) =>
@@ -78,6 +90,8 @@ const resourceTriggersQuery = createQuery({
           't.TRIGGER_NAME as name',
           't.EVENT_MANIPULATION as event',
           't.ACTION_TIMING as timing',
+          't.ACTION_ORIENTATION as orientation',
+          't.ACTION_STATEMENT as body',
         ])
         .where('t.TRIGGER_SCHEMA', 'not in', [
           'mysql',
@@ -114,6 +128,9 @@ const resourceTriggersQuery = createQuery({
             .end()
             .as('timing'),
           sql<boolean>`t.tgenabled != 'D'`.as('enabled'),
+          sql<string>`CASE WHEN (t.tgtype::int & 1) != 0 THEN 'ROW' ELSE 'STATEMENT' END`.as(
+            'orientation'
+          ),
           'p.proname as function_name',
           't.oid as oid',
         ])
