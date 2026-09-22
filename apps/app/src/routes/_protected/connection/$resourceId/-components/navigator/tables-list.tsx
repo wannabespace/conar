@@ -379,11 +379,8 @@ export const TablesList = ({
 }) => {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas, isPending } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const pinnedTables = useSubscription(store, {
     selector: (state) => state.pinnedTables,

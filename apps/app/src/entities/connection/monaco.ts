@@ -8,11 +8,7 @@ import { queryClient } from '~/lib/query-client'
 
 import { resourceEnumsQueryOptions } from './queries/enums/list'
 import { resourceTableColumnsQueryOptions } from './queries/tables/columns'
-import {
-  hideSystemSchemas,
-  resourceTablesAndSchemasQueryOptions,
-} from './queries/tables/list'
-import { getConnectionResourceStore } from './store/stores'
+import { resourceTablesAndSchemasQueryOptions } from './queries/tables/list'
 
 export const sqlDialects = {
   clickhouse: LanguageIdEnum.MYSQL,
@@ -54,7 +50,6 @@ const dotMatchesRegex = /(?<tableRef>\w+(?:\.\w+)*)\.\s*$/gu
 export const connectionCompletionService = (
   connectionResource: ConnectionResource
 ): CompletionService => {
-  const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -86,13 +81,9 @@ export const connectionCompletionService = (
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient
-        .ensureQueryData(
-          resourceTablesAndSchemasQueryOptions({ connectionResource })
-        )
-        .then((data) =>
-          store.get().showSystem ? data : hideSystemSchemas(data)
-        ),
+      queryClient.ensureQueryData(
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
+      ),
       queryClient.ensureQueryData(
         resourceEnumsQueryOptions({ connectionResource })
       ),

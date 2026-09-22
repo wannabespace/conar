@@ -12,6 +12,7 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { getConnectionResourceStore } from '../../store/stores'
 
 const tableTypes = ['base table', 'view', 'materialized view'] as const
 
@@ -134,16 +135,10 @@ export const resourceTablesAndSchemasQuery = memoize(
     })
 )
 
-export const hideSystemSchemas = <T extends { schemas: { system: boolean }[] }>(
-  data: T
-): T => ({ ...data, schemas: data.schemas.filter((schema) => !schema.system) })
-
 export const resourceTablesAndSchemasQueryOptions = ({
   connectionResource,
-  showSystem,
 }: {
   connectionResource: ConnectionResource
-  showSystem?: boolean
 }) =>
   queryOptions({
     queryFn: async () => {
@@ -161,14 +156,18 @@ export const resourceTablesAndSchemasQueryOptions = ({
       if (defaultSchema) {
         bySchema[defaultSchema] ??= []
       }
-      const schemas = Object.entries(bySchema).map(([schema, tables = []]) => ({
-        name: schema,
-        system: systemSchemas.includes(schema),
-        tables: tables.map((table) => ({
-          name: table.table,
-          type: table.type,
-        })),
-      }))
+      const { showSystem } = getConnectionResourceStore(
+        connectionResource.id
+      ).get()
+      const schemas = Object.entries(bySchema)
+        .filter(([schema]) => showSystem || !systemSchemas.includes(schema))
+        .map(([schema, tables = []]) => ({
+          name: schema,
+          tables: tables.map((table) => ({
+            name: table.table,
+            type: table.type,
+          })),
+        }))
 
       return {
         schemas: schemas.toSorted((a, b) => {
@@ -187,5 +186,4 @@ export const resourceTablesAndSchemasQueryOptions = ({
       connectionResource.id,
       'tables-and-schemas',
     ],
-    select: showSystem === false ? hideSystemSchemas : undefined,
   })

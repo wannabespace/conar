@@ -758,11 +758,8 @@ const Tab = ({
 export const TabBar = ({ className }: { className?: string }) => {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()

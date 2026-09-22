@@ -230,9 +230,6 @@ export const ActionsCenter = () => {
     ...(current
       ? resourceTablesAndSchemasQueryOptions({
           connectionResource: current.connectionResource,
-          showSystem: getConnectionResourceStore(
-            current.connectionResource.id
-          ).get().showSystem,
         })
       : { queryKey: ['actions-center-tables-none'], queryFn: skipToken }),
     throwOnError: false,

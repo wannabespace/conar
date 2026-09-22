@@ -35,7 +35,6 @@ import {
 } from '@xyflow/react'
 import type { CSSProperties } from 'react'
 import { useEffectEvent, useRef, useState } from 'react'
-import { useSubscription } from 'seitu/react'
 
 import { defaultSchemaOf } from '~/entities/connection/capabilities'
 import { ReactFlowNode } from '~/entities/connection/components/react-flow-node'
@@ -43,10 +42,7 @@ import type { constraintsType } from '~/entities/connection/queries/constraints/
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import type { columnType } from '~/entities/connection/queries/tables/columns'
-import {
-  hideSystemSchemas,
-  resourceTablesAndSchemasQueryOptions,
-} from '~/entities/connection/queries/tables/list'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { setVisualizerViewport } from '~/entities/connection/store/helpers/visualizer'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
@@ -279,16 +275,11 @@ const Visualizer = ({
 
 export const VisualizerTab = () => {
   const { connection, connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
     select: (data) =>
-      (showSystem ? data : hideSystemSchemas(data)).schemas.flatMap(
-        ({ name, tables }) =>
-          tables.map((table) => ({ schema: name, table: table.name }))
+      data.schemas.flatMap(({ name, tables }) =>
+        tables.map((table) => ({ schema: name, table: table.name }))
       ),
   })
   const columnsQueries = useQueries({

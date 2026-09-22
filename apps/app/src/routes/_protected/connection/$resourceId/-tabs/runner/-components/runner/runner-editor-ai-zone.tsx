@@ -18,11 +18,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
-import {
-  hideSystemSchemas,
-  resourceTablesAndSchemasQueryOptions,
-} from '~/entities/connection/queries/tables/list'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
@@ -98,13 +94,7 @@ export const RunnerEditorAIZone = ({
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(
-            getConnectionResourceStore(connectionResource.id).get().showSystem
-              ? tablesAndSchemas
-              : hideSystemSchemas(tablesAndSchemas),
-            null,
-            2
-          ),
+          JSON.stringify(tablesAndSchemas, null, 2),
         ].join('\n'),
       })
     }

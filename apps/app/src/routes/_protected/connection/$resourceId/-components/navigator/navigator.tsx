@@ -39,9 +39,6 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const TablesPanel = () => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const search = useSubscription(store, {
     selector: (state) => state.tablesSearch,
   })
@@ -49,9 +46,7 @@ const TablesPanel = () => {
     refetch: refetchTablesAndSchemas,
     isFetching: isRefreshingTablesAndSchemas,
     dataUpdatedAt,
-  } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
-  )
+  } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource }))
 
   return (
     <>

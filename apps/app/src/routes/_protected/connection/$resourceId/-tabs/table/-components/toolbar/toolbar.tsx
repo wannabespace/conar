@@ -35,7 +35,6 @@ import {
 import { resourceTableTotalQueryOptions } from '~/entities/connection/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
 import { useTableSessionStore } from '../../-lib/session-store'
 import { useTablePageStore } from '../../-lib/store'
@@ -184,12 +183,8 @@ export const TableToolbar = ({
   const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
   const [codeOpen, setCodeOpen] = useState(false)
-  const connectionStore = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(connectionStore, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const tableType =
     tablesAndSchemas?.schemas
