@@ -9,6 +9,7 @@ import {
   createQuery,
 } from '../../runtime/query'
 import { structureQueryKey } from '../indexes/list'
+import { clickhouseConstraintsOf } from './shape'
 
 const constraintType = type(
   '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
@@ -18,6 +19,7 @@ const neededConstraintTypes = [
   'PRIMARY KEY',
   'UNIQUE',
   'FOREIGN KEY',
+  'CHECK',
 ] as const satisfies (typeof constraintType.infer)[]
 
 const constraintTypeLabelMap = {
@@ -31,6 +33,7 @@ const constraintTypeLabelMap = {
 export const constraintsType = type({
   column: 'string | null',
   'definition?': 'string',
+  'expression?': 'string | null',
   foreign_column: 'string | null',
   foreign_schema: 'string | null',
   foreign_table: 'string | null',
@@ -73,17 +76,45 @@ export const resourceConstraintsQuery = createQuery({
         .orderBy(['database', 'table', 'position'])
         .execute()
 
-      return query.map((row) =>
-        Object.assign(row, {
-          foreign_column: null,
-          foreign_schema: null,
-          foreign_table: null,
-          name: 'primary_key',
-          onDelete: null,
-          onUpdate: null,
-          type: 'PRIMARY KEY' as const,
-        })
-      )
+      const tables = await db
+        .selectFrom('system.tables')
+        .select(['database', 'name', 'create_table_query'])
+        .where('database', 'not in', ['system', 'information_schema'])
+        .where('engine', 'not like', '%View')
+        .where('create_table_query', 'like', '%CONSTRAINT%')
+        .execute()
+      const noReference = {
+        foreign_column: null,
+        foreign_schema: null,
+        foreign_table: null,
+        onDelete: null,
+        onUpdate: null,
+      }
+
+      return [
+        ...query.map((row) =>
+          Object.assign(row, {
+            ...noReference,
+            name: 'primary_key',
+            type: 'PRIMARY KEY' as const,
+          })
+        ),
+        ...tables.flatMap((table) =>
+          clickhouseConstraintsOf(table.create_table_query).map(
+            (constraint) => ({
+              ...noReference,
+              column: null,
+              expression: constraint.expression,
+              // ASSUME only guides the optimizer; the form writes CHECK.
+              is_custom: constraint.assume,
+              name: constraint.name,
+              schema: table.database,
+              table: table.name,
+              type: 'CHECK' as const,
+            })
+          )
+        ),
+      ]
     },
     mssql: (db) =>
       db
@@ -99,6 +130,11 @@ export const resourceConstraintsQuery = createQuery({
           join
             .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
+        )
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
         )
         .leftJoin(
           'information_schema.KEY_COLUMN_USAGE as referenced_kcu',
@@ -131,31 +167,53 @@ export const resourceConstraintsQuery = createQuery({
           'referenced_kcu.COLUMN_NAME as foreign_column',
           'rc.DELETE_RULE as onDelete',
           'rc.UPDATE_RULE as onUpdate',
-          // A disabled, untrusted or not-for-replication key comes back plain
-          // from a drop-and-add, so the form only renames it.
+          'cc.CHECK_CLAUSE as expression',
+          // A disabled, untrusted or not-for-replication key or check comes
+          // back plain from a drop-and-add, so the form only renames it.
           (eb) =>
             eb
               .case()
               .when(
-                eb.exists(
-                  eb
-                    .selectFrom('sys.foreign_keys as fk')
-                    .innerJoin(
-                      'sys.schemas as fs',
-                      'fs.schema_id',
-                      'fk.schema_id'
-                    )
-                    .select(sql.lit(1).as('one'))
-                    .whereRef('fk.name', '=', 'tc.CONSTRAINT_NAME')
-                    .whereRef('fs.name', '=', 'tc.CONSTRAINT_SCHEMA')
-                    .where((sub) =>
-                      sub.or([
-                        sub('fk.is_disabled', '=', true),
-                        sub('fk.is_not_trusted', '=', true),
-                        sub('fk.is_not_for_replication', '=', true),
-                      ])
-                    )
-                )
+                eb.or([
+                  eb.exists(
+                    eb
+                      .selectFrom('sys.foreign_keys as fk')
+                      .innerJoin(
+                        'sys.schemas as fs',
+                        'fs.schema_id',
+                        'fk.schema_id'
+                      )
+                      .select(sql.lit(1).as('one'))
+                      .whereRef('fk.name', '=', 'tc.CONSTRAINT_NAME')
+                      .whereRef('fs.name', '=', 'tc.CONSTRAINT_SCHEMA')
+                      .where((sub) =>
+                        sub.or([
+                          sub('fk.is_disabled', '=', true),
+                          sub('fk.is_not_trusted', '=', true),
+                          sub('fk.is_not_for_replication', '=', true),
+                        ])
+                      )
+                  ),
+                  eb.exists(
+                    eb
+                      .selectFrom('sys.check_constraints as ck')
+                      .innerJoin(
+                        'sys.schemas as ks',
+                        'ks.schema_id',
+                        'ck.schema_id'
+                      )
+                      .select(sql.lit(1).as('one'))
+                      .whereRef('ck.name', '=', 'tc.CONSTRAINT_NAME')
+                      .whereRef('ks.name', '=', 'tc.CONSTRAINT_SCHEMA')
+                      .where((sub) =>
+                        sub.or([
+                          sub('ck.is_disabled', '=', true),
+                          sub('ck.is_not_trusted', '=', true),
+                          sub('ck.is_not_for_replication', '=', true),
+                        ])
+                      )
+                  ),
+                ])
               )
               .then(1)
               .else(0)
@@ -183,6 +241,11 @@ export const resourceConstraintsQuery = createQuery({
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
             .onRef('tc.TABLE_NAME', '=', 'rc.TABLE_NAME')
         )
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
+        )
         .select([
           'tc.TABLE_SCHEMA as schema',
           'tc.TABLE_NAME as table',
@@ -194,6 +257,7 @@ export const resourceConstraintsQuery = createQuery({
           'kcu.REFERENCED_COLUMN_NAME as foreign_column',
           'rc.DELETE_RULE as onDelete',
           'rc.UPDATE_RULE as onUpdate',
+          'cc.CHECK_CLAUSE as expression',
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
         .where('tc.TABLE_SCHEMA', 'not in', [
@@ -209,7 +273,8 @@ export const resourceConstraintsQuery = createQuery({
         .selectFrom('pg_catalog.pg_constraint as con')
         .innerJoin('pg_catalog.pg_class as c', 'con.conrelid', 'c.oid')
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
-        .innerJoin('pg_catalog.pg_attribute as a', (join) =>
+        // A check naming no column has no conkey, and still lists.
+        .leftJoin('pg_catalog.pg_attribute as a', (join) =>
           join
             .onRef('a.attrelid', '=', 'con.conrelid')
             .on(sql<boolean>`a.attnum = ANY(con.conkey)`)
@@ -238,6 +303,8 @@ export const resourceConstraintsQuery = createQuery({
               .then('UNIQUE')
               .when('f')
               .then('FOREIGN KEY')
+              .when('c')
+              .then('CHECK')
               .end()
               .as('type'),
           'a.attname as column',
@@ -275,13 +342,21 @@ export const resourceConstraintsQuery = createQuery({
               .end()
               .as('onUpdate'),
           sql<string>`pg_get_constraintdef(con.oid)`.as('definition'),
-          // DEFERRABLE, NOT VALID and MATCH FULL have no field in the form, and
-          // a drop-and-add would leave them behind.
+          sql<string | null>`pg_get_expr(con.conbin, con.conrelid)`.as(
+            'expression'
+          ),
+          // DEFERRABLE, NOT VALID, NO INHERIT and MATCH FULL have no field in
+          // the form, and a drop-and-add would leave them behind.
           (eb) =>
             eb
               .or([
                 eb('con.condeferrable', '=', true),
                 eb('con.convalidated', '=', false),
+                // Key constraints report connoinherit too; only a check's is a choice.
+                eb.and([
+                  eb('con.contype', '=', 'c'),
+                  eb('con.connoinherit', '=', true),
+                ]),
                 eb.and([
                   eb('con.contype', '=', 'f'),
                   eb('con.confmatchtype', '!=', 's'),
@@ -290,7 +365,7 @@ export const resourceConstraintsQuery = createQuery({
               .as('is_custom'),
         ])
         .$narrowType<{ type: typeof constraintType.infer }>()
-        .where('con.contype', 'in', ['p', 'u', 'f'])
+        .where('con.contype', 'in', ['p', 'u', 'f', 'c'])
         // A partition's copy of its parent's constraint neither drops nor
         // renames on its own, and the parent's row already stands for it.
         .where('con.coninhcount', '=', 0)

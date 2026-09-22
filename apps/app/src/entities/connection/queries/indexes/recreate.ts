@@ -1,30 +1,31 @@
-import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 import { identifiers } from '../shared/sql-fragments'
 import type { IndexShape } from './shape'
-import { createIndexStatement } from './shape'
+import {
+  addSkipIndexStatement,
+  createIndexStatement,
+  dropSkipIndexStatement,
+  materializeIndexStatement,
+} from './shape'
 
 export const recreateIndexQuery = ({
-  columns,
   name,
   newName,
-  schema,
-  table,
-  unique,
+  ...shape
 }: IndexShape & { newName: string }) => {
-  const create = createIndexStatement({
-    columns,
-    name: newName,
-    schema,
-    table,
-    unique,
-  })
+  const { columns, schema, table, unique } = shape
+  const replacement = { ...shape, name: newName }
+  const create = createIndexStatement(replacement)
 
   return createQuery({
     query: {
-      clickhouse: unsupported('Editing indexes'),
+      clickhouse: async (db) => {
+        await dropSkipIndexStatement({ name, schema, table }).execute(db)
+        await addSkipIndexStatement(replacement).execute(db)
+        await materializeIndexStatement(replacement).execute(db)
+      },
       mssql: (db) =>
         db.transaction().execute(async (tx) => {
           await sql`DROP INDEX ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(

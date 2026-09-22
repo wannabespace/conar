@@ -92,6 +92,7 @@ interface PgConstraint {
   confmatchtype: string
   condeferrable: boolean
   convalidated: boolean
+  connoinherit: boolean
   conindid: number
   coninhcount: number
 }

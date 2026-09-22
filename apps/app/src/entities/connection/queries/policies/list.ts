@@ -1,3 +1,4 @@
+import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -91,36 +92,7 @@ const query = createQuery({
         using: row.predicate_definition || null,
       }))
     },
-    mysql: async (db) => {
-      // MySQL doesn't support regular RLS, but we can show table privileges
-      const rows = await db
-        .selectFrom('information_schema.TABLE_PRIVILEGES')
-        .select([
-          'TABLE_SCHEMA',
-          'TABLE_NAME',
-          'GRANTEE',
-          'PRIVILEGE_TYPE',
-          'IS_GRANTABLE',
-        ])
-        .where('TABLE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
-        .execute()
-      return rows.map((row) => ({
-        check: null,
-        command: row.PRIVILEGE_TYPE,
-        enabled: true,
-        name: `${row.GRANTEE} - ${row.PRIVILEGE_TYPE}`,
-        roles: [row.GRANTEE],
-        schema: row.TABLE_SCHEMA,
-        table: row.TABLE_NAME,
-        type: 'PERMISSIVE',
-        using: null,
-      }))
-    },
+    mysql: unsupported('Row policies'),
     postgres: async (db) => {
       const rows = await db
         .selectFrom('pg_catalog.pg_policies as p')

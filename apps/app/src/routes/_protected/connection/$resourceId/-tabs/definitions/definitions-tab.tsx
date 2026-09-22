@@ -9,6 +9,7 @@ import { Enums } from './-sections/enums'
 import { Functions } from './-sections/functions'
 import { Indexes } from './-sections/indexes'
 import { Policies } from './-sections/policies'
+import { Privileges } from './-sections/privileges'
 import { Triggers } from './-sections/triggers'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -19,6 +20,7 @@ const SECTIONS = {
   functions: Functions,
   indexes: Indexes,
   policies: Policies,
+  privileges: Privileges,
   triggers: Triggers,
 }
 

@@ -1,16 +1,20 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import type { ConnectionResource } from '../../core/sync'
+import type { Database as ClickhouseDatabase } from '../../runtime/dialects/clickhouse/schema'
 import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { SKIP_INDEX_TYPES, skipIndexColumnsOf } from './shape'
 
 export const indexesType = type({
   column: 'string | null',
   'custom_expression?': 'string | null',
+  'granularity?': 'number',
   'index_definition?': 'string',
   'index_type?': 'string',
   'is_constraint?': 'boolean | 1 | 0',
@@ -48,10 +52,39 @@ export const structureQueryKey = (connectionResource: ConnectionResource) => [
   'structure',
 ]
 
+const clickhouseSkipIndexes = async (db: Kysely<ClickhouseDatabase>) => {
+  const rows = await db
+    .selectFrom('system.data_skipping_indices')
+    .select(['database', 'table', 'name', 'type_full', 'expr', 'granularity'])
+    .where('database', 'not in', ['system', 'information_schema'])
+    .execute()
+
+  return rows.flatMap((row) => {
+    const columns = skipIndexColumnsOf(row.expr)
+    const custom =
+      !columns ||
+      !SKIP_INDEX_TYPES.some((skipType) => skipType === row.type_full)
+    const index = {
+      custom_expression: columns ? null : row.expr,
+      granularity: row.granularity,
+      index_definition: `INDEX ${row.name} ${row.expr} TYPE ${row.type_full} GRANULARITY ${row.granularity}`,
+      index_type: row.type_full,
+      is_custom: custom,
+      is_primary: false,
+      is_unique: false,
+      name: row.name,
+      schema: row.database,
+      table: row.table,
+    }
+
+    return (columns ?? [null]).map((column) => ({ ...index, column }))
+  })
+}
+
 export const resourceIndexesQuery = createQuery({
   query: {
-    clickhouse: (db) =>
-      db
+    clickhouse: async (db) => [
+      ...(await db
         .selectFrom('system.columns')
         .select([
           'database as schema',
@@ -65,7 +98,9 @@ export const resourceIndexesQuery = createQuery({
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
         .orderBy(['database', 'table', 'position'])
-        .execute(),
+        .execute()),
+      ...(await clickhouseSkipIndexes(db)),
+    ],
 
     mssql: (db) =>
       db

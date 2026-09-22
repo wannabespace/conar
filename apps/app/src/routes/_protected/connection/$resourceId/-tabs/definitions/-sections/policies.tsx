@@ -1,5 +1,6 @@
 import { SecurityCheckIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { CodeInline } from '@tamery/ui/components/custom/code-block'
@@ -97,9 +98,15 @@ const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
   }
 }
 
-const draftOf = (item: PolicyItem | null, pageSchema: string): PolicyDraft => ({
+const draftOf = (
+  item: PolicyItem | null,
+  pageSchema: string,
+  connectionType: ConnectionType
+): PolicyDraft => ({
   check: item?.check ?? '',
-  command: asCommand(item?.command),
+  command: item
+    ? asCommand(item.command)
+    : (capabilitiesOf(connectionType).policies.commands[0] ?? 'ALL'),
   kind: item?.type ?? 'PERMISSIVE',
   name: item?.name ?? '',
   roles: item?.roles.join(', ') ?? '',
@@ -115,6 +122,7 @@ const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
 
   return {
     check: check === (item.check ?? '') ? null : check,
+    kind: draft.kind === item.type ? null : draft.kind,
     name: draft.name.trim() === item.name ? null : draft.name.trim(),
     roles: roles.join(',') === item.roles.join(',') ? null : roles,
     using: using === (item.using ?? '') ? null : using,
@@ -126,10 +134,15 @@ const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
   (item.using !== null && draft.using.trim() === '') ||
   (item.check !== null && draft.check.trim() === '')
 
-const replaces = (item: PolicyItem, draft: PolicyDraft) =>
-  draft.command !== asCommand(item.command) ||
-  draft.kind !== item.type ||
-  clearsExpression(item, draft)
+const replaces = (
+  item: PolicyItem,
+  draft: PolicyDraft,
+  connectionType: ConnectionType
+) =>
+  !capabilitiesOf(connectionType).policies.alterInPlace &&
+  (draft.command !== asCommand(item.command) ||
+    draft.kind !== item.type ||
+    clearsExpression(item, draft))
 
 const policySchema = type({
   name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
@@ -155,10 +168,12 @@ const replaceWarning = (
 })
 
 const savePolicy = async ({
+  connectionType,
   draft,
   item,
   run,
 }: {
+  connectionType: ConnectionType
   draft: PolicyDraft
   item: PolicyItem | null
   run: RunQuery
@@ -180,18 +195,24 @@ const savePolicy = async ({
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  if (replaces(item, draft)) {
+  if (replaces(item, draft, connectionType)) {
     await run(recreatePolicyQuery({ ...target, shape }))
     return
   }
 
   const changes = changesOf(item, draft)
 
-  if (changes.roles || changes.using || changes.check) {
+  if (
+    changes.roles ||
+    changes.using !== null ||
+    changes.check ||
+    changes.kind
+  ) {
     await run(
       alterPolicyQuery({
         ...target,
         check: changes.check,
+        kind: changes.kind,
         newName: changes.name,
         roles: changes.roles,
         using: changes.using,
@@ -216,7 +237,8 @@ const PolicyInspector = ({
   type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
-    mutationFn: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
+    mutationFn: (draft: PolicyDraft) =>
+      savePolicy({ connectionType, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
@@ -247,7 +269,7 @@ const PolicyInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? ''),
+    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
@@ -258,8 +280,13 @@ const PolicyInspector = ({
   )
 
   const readOnly = item ? !can.edit : !can.create
+  const { policies: options, rowLevelSecurity: rlsTables } =
+    capabilitiesOf(connectionType)
   const expressions = expressionsFor(draft.command)
-  const replacing = !!item && replaces(item, draft)
+  const checks = options.commands.some(
+    (command) => expressionsFor(command).check
+  )
+  const replacing = !!item && replaces(item, draft, connectionType)
   const changed =
     !item ||
     replacing ||
@@ -276,7 +303,7 @@ const PolicyInspector = ({
       readOnly={readOnly}
       warning={item && replacing ? replaceWarning(item, draft) : undefined}
     >
-      {item && capabilitiesOf(connectionType).rowLevelSecurity && (
+      {item && rlsTables && (
         <InspectorSection title="Status">
           <InspectorOption
             htmlFor="policy-row-level-security"
@@ -315,7 +342,11 @@ const PolicyInspector = ({
           {() => (
             <SelectField
               label="Table"
-              description="The policy only applies while row level security is enabled on this table."
+              description={
+                rlsTables
+                  ? 'The policy only applies while row level security is enabled on this table.'
+                  : undefined
+              }
               disabled={readOnly || !!item}
               options={
                 item ? [item.table] : relationNamesOf(draft.schema, 'table')
@@ -335,7 +366,7 @@ const PolicyInspector = ({
               <SelectField
                 label="Command"
                 disabled={readOnly}
-                options={POLICY_COMMANDS}
+                options={options.commands}
                 placeholder="Command"
               />
             )}
@@ -360,9 +391,9 @@ const PolicyInspector = ({
           {() => (
             <TextField
               label="Roles"
-              description="Comma-separated. Empty means PUBLIC."
+              description={`Comma-separated. Empty means ${options.everyone}.`}
               disabled={readOnly}
-              placeholder="public"
+              placeholder={options.everyone.toLowerCase()}
             />
           )}
         </form.AppField>
@@ -385,20 +416,22 @@ const PolicyInspector = ({
             />
           )}
         </form.AppField>
-        <form.AppField name="check">
-          {() => (
-            <SqlField
-              label="With check"
-              description={
-                expressions.check
-                  ? 'Checked against rows an insert or update would write.'
-                  : `A ${draft.command.toLowerCase()} writes no rows to check.`
-              }
-              disabled={readOnly || !expressions.check}
-              placeholder="user_id = auth.uid()"
-            />
-          )}
-        </form.AppField>
+        {checks && (
+          <form.AppField name="check">
+            {() => (
+              <SqlField
+                label="With check"
+                description={
+                  expressions.check
+                    ? 'Checked against rows an insert or update would write.'
+                    : `A ${draft.command.toLowerCase()} writes no rows to check.`
+                }
+                disabled={readOnly || !expressions.check}
+                placeholder="user_id = auth.uid()"
+              />
+            )}
+          </form.AppField>
+        )}
       </InspectorSection>
     </Inspector>
   )

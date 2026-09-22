@@ -3,7 +3,10 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { sectionCapabilitiesOf } from '~/entities/connection/capabilities'
+import {
+  defaultSchemaOf,
+  sectionCapabilitiesOf,
+} from '~/entities/connection/capabilities'
 import type { RelationKind } from '~/entities/connection/queries/tables/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import type { QueryParams } from '~/entities/connection/runtime/query'
@@ -40,9 +43,11 @@ export const useDefinitionsState = ({
   // A link names the schema its row lives in, so it outranks the pick a
   // mounted tab already made — until the page consumes it.
   const selectedSchema =
-    [linkedSchema, pickedSchema].find(
-      (schema) => schema && schemas.includes(schema)
-    ) ?? schemas[0]
+    [
+      linkedSchema,
+      pickedSchema,
+      defaultSchemaOf(connection.type, connectionResource.name),
+    ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
   const relationNamesOf = (schema: string, kind: RelationKind) =>
     data?.schemas
       .find(({ name }) => name === schema)

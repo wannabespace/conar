@@ -1,4 +1,5 @@
-import { FlashIcon } from '@hugeicons/core-free-icons'
+import { ArrowRight01Icon, FlashIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
@@ -9,6 +10,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
+import { Link } from '~/components/link'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { sqlDialects } from '~/entities/connection/monaco'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
@@ -32,6 +34,7 @@ import {
   triggerEventsFor,
   triggerOrientationsFor,
 } from '~/entities/connection/queries/triggers/shape'
+import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -250,19 +253,20 @@ const TriggerInspector = ({
     : !can.create
   const orientations = triggerOrientationsFor(draft, options.orientations)
   const instead = draft.timing === 'INSTEAD OF'
-  const targets = (() => {
+  const targetsFor = (timing: TriggerTiming) => {
     if (item) {
       return [item.table]
     }
 
-    if (!instead) {
+    if (timing !== 'INSTEAD OF') {
       return relationNamesOf(draft.schema, 'table')
     }
 
     return options.insteadOfTargets.flatMap((target) =>
       relationNamesOf(draft.schema, target)
     )
-  })()
+  }
+  const targets = targetsFor(draft.timing)
   const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
   const changed = !saved || !sameShape(shapeOf(draft), saved)
 
@@ -378,7 +382,9 @@ const TriggerInspector = ({
                 onChanged={(timing: TriggerTiming) =>
                   resetFields(form, {
                     events: triggerEventsFor(timing, draft.events),
-                    ...(item ? {} : { table: '' }),
+                    ...(targetsFor(timing).includes(draft.table)
+                      ? {}
+                      : { table: '' }),
                   })
                 }
               />
@@ -475,11 +481,12 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
       item.event.split(' OR ').map(sentenceCase).join(', '),
     width: 'w-2/12',
   }),
-  textColumn({
-    header: 'Function',
-    valueOf: (item: TriggerItem) => item.functionName,
-  }),
 ]
+
+const functionColumn = textColumn({
+  header: 'Function',
+  valueOf: (item: TriggerItem) => item.functionName,
+})
 
 export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
@@ -524,9 +531,29 @@ export const Triggers = () => {
       (fn) => fn.schema === schema && fn.return_type === 'trigger'
     )
 
-    return options.body || functionsPending || hasTriggerFunction
-      ? undefined
-      : 'No function here returns a trigger.'
+    return options.body ||
+      functionsPending ||
+      hasTriggerFunction ? undefined : (
+      <>
+        A trigger runs a function, and none here returns a trigger.{' '}
+        <Link
+          to="/connection/$resourceId/$tabId"
+          params={{
+            resourceId: connectionResource.id,
+            tabId: definitionsTabId('functions'),
+          }}
+          search={{ create: 'trigger', schema }}
+          className="text-primary font-medium hover:underline"
+        >
+          Create trigger function
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
+            className="ml-0.5 inline size-3.5 align-[-2px]"
+          />
+        </Link>
+      </>
+    )
   })()
   const rowMenu = (item: TriggerItem) =>
     options.toggle
@@ -541,7 +568,7 @@ export const Triggers = () => {
 
   return (
     <DefinitionsPage
-      columns={columns}
+      columns={options.body ? columns : [...columns, functionColumn]}
       createBlocked={createBlocked}
       dropItem={(item) =>
         run(

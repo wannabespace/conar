@@ -2,7 +2,10 @@ import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 
-import { capabilitiesOf } from '~/entities/connection/capabilities'
+import {
+  capabilitiesOf,
+  defaultSchemaOf,
+} from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 
 import {
@@ -60,15 +63,27 @@ export const resourceTablesAndSchemasQuery = memoize(
             .where('database', '=', database)
             .where('is_temporary', '=', 0)
             .execute(),
+        // information_schema cannot tell the tables SQL Server ships in master
+        // (spt_*, MSreplication_options) from the user's own.
         mssql: (db) =>
           db
-            .selectFrom('information_schema.TABLES')
+            .selectFrom('sys.objects as o')
+            .innerJoin('sys.schemas as s', 's.schema_id', 'o.schema_id')
             .select([
-              'TABLE_SCHEMA as schema',
-              'TABLE_NAME as table',
-              'TABLE_TYPE as type',
+              's.name as schema',
+              'o.name as table',
+              (eb) =>
+                eb
+                  .case()
+                  .when('o.type', '=', 'V')
+                  .then('VIEW')
+                  .else('BASE TABLE')
+                  .end()
+                  .as('type'),
             ])
-            .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+            .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
+            .where('o.type', 'in', ['U', 'V'])
+            .where('o.is_ms_shipped', '=', false)
             .execute(),
         mysql: (db) =>
           db
@@ -137,9 +152,16 @@ export const resourceTablesAndSchemasQueryOptions = ({
       const results = await resourceTablesAndSchemasQuery({
         database: connectionResource.name,
       }).run(params)
-      const schemas = Object.entries(
-        Object.groupBy(results, (table) => table.schema)
-      ).map(([schema, tables = []]) => ({
+      const bySchema = Object.groupBy(results, (table) => table.schema)
+      const defaultSchema = defaultSchemaOf(
+        params.type,
+        connectionResource.name
+      )
+
+      if (defaultSchema) {
+        bySchema[defaultSchema] ??= []
+      }
+      const schemas = Object.entries(bySchema).map(([schema, tables = []]) => ({
         name: schema,
         system: systemSchemas.includes(schema),
         tables: tables.map((table) => ({

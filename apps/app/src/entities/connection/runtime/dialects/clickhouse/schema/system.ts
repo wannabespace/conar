@@ -5,6 +5,16 @@ export interface System {
   one: One
   tables: Tables
   row_policies: RowPolicies
+  data_skipping_indices: DataSkippingIndices
+}
+
+interface DataSkippingIndices {
+  database: string
+  table: string
+  name: string
+  type_full: string
+  expr: string
+  granularity: number
 }
 
 interface RowPolicies {
@@ -23,6 +33,7 @@ interface RowPolicies {
 interface Tables {
   database: string
   name: string
+  create_table_query: string
   engine: string
   is_temporary: number
 }

@@ -1,4 +1,9 @@
-import { Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
+import {
+  CheckmarkSquare02Icon,
+  Key01Icon,
+  Link01Icon,
+} from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
@@ -34,6 +39,7 @@ import {
   resetFields,
   SchemaField,
   SelectField,
+  SqlField,
   TextField,
 } from '../-components/fields'
 import type {
@@ -63,6 +69,7 @@ interface GroupedConstraint extends Omit<
 
 interface ConstraintDraft {
   columns: string[]
+  expression: string
   foreignColumns: string[]
   foreignSchema: string
   foreignTable: string
@@ -75,18 +82,23 @@ interface ConstraintDraft {
 }
 
 const typeLabels: Record<ConstraintKind, string> = {
+  check: 'Check',
   foreignKey: 'Foreign key',
   primaryKey: 'Primary key',
   unique: 'Unique',
 }
 
+const typeIcons: Partial<Record<ConstraintKind, IconSvgElement>> = {
+  check: CheckmarkSquare02Icon,
+  foreignKey: Link01Icon,
+}
+
 const nameSuffix: Record<ConstraintKind, string> = {
+  check: 'check',
   foreignKey: 'fkey',
   primaryKey: 'pkey',
   unique: 'key',
 }
-
-const kinds = Object.keys(typeLabels) as ConstraintKind[]
 
 const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
 
@@ -125,25 +137,33 @@ const referenceOf = (item: GroupedConstraint, schema: string | undefined) => {
 const asAction = (value: string | null | undefined): ReferentialAction =>
   REFERENTIAL_ACTIONS.find((action) => action === value) ?? DEFAULT_ACTION
 
-const draftOf = (
-  item: GroupedConstraint | null,
-  pageSchema: string
-): ConstraintDraft => {
-  const schema = item?.schema ?? pageSchema
+const newDraft = (schema: string, kind: ConstraintKind): ConstraintDraft => ({
+  columns: [],
+  expression: '',
+  foreignColumns: [],
+  foreignSchema: schema,
+  foreignTable: '',
+  kind,
+  name: '',
+  onDelete: DEFAULT_ACTION,
+  onUpdate: DEFAULT_ACTION,
+  schema,
+  table: '',
+})
 
-  return {
-    columns: item?.columns ?? [],
-    foreignColumns: item?.foreignColumns ?? [],
-    foreignSchema: item?.foreignSchema ?? schema,
-    foreignTable: item?.foreignTable ?? '',
-    kind: item?.type ?? 'unique',
-    name: item?.name ?? '',
-    onDelete: asAction(item?.onDelete),
-    onUpdate: asAction(item?.onUpdate),
-    schema,
-    table: item?.table ?? '',
-  }
-}
+const draftOf = (item: GroupedConstraint): ConstraintDraft => ({
+  columns: item.columns,
+  expression: item.expression ?? '',
+  foreignColumns: item.foreignColumns,
+  foreignSchema: item.foreignSchema ?? item.schema,
+  foreignTable: item.foreignTable ?? '',
+  kind: item.type,
+  name: item.name,
+  onDelete: asAction(item.onDelete),
+  onUpdate: asAction(item.onUpdate),
+  schema: item.schema,
+  table: item.table,
+})
 
 const suggestedNameOf = (draft: ConstraintDraft) =>
   [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
@@ -159,11 +179,13 @@ const changeOf = (
   item: GroupedConstraint | null,
   connectionType: ConnectionType
 ) => {
-  const opened = item && draftOf(item, item.schema)
+  const opened = item && draftOf(item)
   const reshaped =
     !!opened &&
     (draft.kind !== opened.kind ||
       !sameList(draft.columns, opened.columns) ||
+      (draft.kind === 'check' &&
+        draft.expression.trim() !== opened.expression) ||
       draft.foreignSchema !== opened.foreignSchema ||
       draft.foreignTable !== opened.foreignTable ||
       !sameList(draft.foreignColumns, opened.foreignColumns) ||
@@ -181,9 +203,8 @@ const changeOf = (
 }
 
 const constraintSchema = type({
-  columns: type('string[] >= 1').configure({
-    message: 'Pick at least one column.',
-  }),
+  columns: 'string[]',
+  expression: 'string',
   foreignColumns: 'string[]',
   foreignTable: 'string',
   kind: 'string',
@@ -191,6 +212,23 @@ const constraintSchema = type({
     message: 'Pick the table to constrain.',
   }),
 }).narrow((draft, ctx) => {
+  if (draft.kind === 'check') {
+    return (
+      /\S/u.test(draft.expression) ||
+      ctx.reject({
+        message: 'Write the condition every row must meet.',
+        relativePath: ['expression'],
+      })
+    )
+  }
+
+  if (draft.columns.length === 0) {
+    return ctx.reject({
+      message: 'Pick at least one column.',
+      relativePath: ['columns'],
+    })
+  }
+
   if (draft.kind !== 'foreignKey') {
     return true
   }
@@ -247,10 +285,12 @@ const ConstraintInspector = ({
   selectedSchema,
   type: connectionType,
 }: SectionInspectorProps<GroupedConstraint>) => {
+  const kinds = capabilitiesOf(connectionType).constraintKinds
   const mutation = useMutation({
     mutationFn: (draft: ConstraintDraft) => {
       const shape: ConstraintShape = {
         columns: draft.columns,
+        expression: draft.expression.trim(),
         foreignColumns: draft.foreignColumns,
         foreignSchema: draft.foreignSchema,
         foreignTable: draft.foreignTable,
@@ -286,7 +326,9 @@ const ConstraintInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? ''),
+    defaultValues: item
+      ? draftOf(item)
+      : newDraft(selectedSchema ?? '', kinds[0] ?? 'unique'),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -310,7 +352,7 @@ const ConstraintInspector = ({
     enabled: draft.foreignTable !== '',
   })
 
-  const readOnly = item ? !can.edit : !can.create
+  const readOnly = item ? !can.edit || !kinds.includes(item.type) : !can.create
   const shapeLocked = readOnly || !!item?.custom
   const { recreates, renameOnly, reshaped } = changeOf(
     draft,
@@ -371,7 +413,7 @@ const ConstraintInspector = ({
           {() => (
             <SelectField
               label="Type"
-              description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table."
+              description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table, a check holds every row to a condition."
               disabled={shapeLocked}
               options={kinds}
               labelOf={(value) => typeLabels[value]}
@@ -397,20 +439,33 @@ const ConstraintInspector = ({
             />
           )}
         </form.AppField>
-        <form.AppField name="columns">
-          {() => (
-            <OptionsField
-              label="Columns"
-              disabled={shapeLocked || draft.table === ''}
-              options={tableColumns}
-              placeholder="Choose columns"
-            />
-          )}
-        </form.AppField>
+        {draft.kind === 'check' ? (
+          <form.AppField name="expression">
+            {() => (
+              <SqlField
+                label="Condition"
+                description="SQL every row must make true."
+                disabled={shapeLocked}
+                placeholder="price > 0"
+              />
+            )}
+          </form.AppField>
+        ) : (
+          <form.AppField name="columns">
+            {() => (
+              <OptionsField
+                label="Columns"
+                disabled={shapeLocked || draft.table === ''}
+                options={tableColumns}
+                placeholder="Choose columns"
+              />
+            )}
+          </form.AppField>
+        )}
         {item?.custom && (
           <FieldDescription>
-            Carries a rule the picker cannot show — deferrable, not validated or
-            a match type — so only its name can change.
+            Carries a rule the form cannot show — deferrable, not validated, not
+            inherited, disabled or a match type — so only its name can change.
           </FieldDescription>
         )}
       </InspectorSection>
@@ -511,8 +566,7 @@ const ConstraintInspector = ({
 
 const columns: DefinitionsColumn<GroupedConstraint>[] = [
   nameColumn({
-    icon: (item: GroupedConstraint) =>
-      item.type === 'foreignKey' ? Link01Icon : Key01Icon,
+    icon: (item: GroupedConstraint) => typeIcons[item.type] ?? Key01Icon,
     width: 'w-4/12',
   }),
   textColumn({
@@ -523,7 +577,10 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
   {
     cell: (item, { schema, search }) => (
       <span data-mask>
-        <HighlightText text={item.columns.join(', ')} match={search} />
+        <HighlightText
+          text={item.expression ?? item.columns.join(', ')}
+          match={search}
+        />
         {item.foreignTable && (
           <span className="text-muted-foreground">
             {' → '}
@@ -552,6 +609,7 @@ export const Constraints = () => {
     { label: 'Primary keys', value: 'primaryKey' },
     { label: 'Foreign keys', value: 'foreignKey' },
     { label: 'Unique', value: 'unique' },
+    { label: 'Checks', value: 'check' },
   ])
 
   const inSchema = groupConstraints(constraints, selectedSchema)
@@ -562,6 +620,7 @@ export const Constraints = () => {
       item.name,
       item.table,
       item.foreignTable,
+      item.expression,
       ...item.columns
     )
   const dropItem = (item: GroupedConstraint, cascade: boolean) =>
@@ -582,6 +641,9 @@ export const Constraints = () => {
         relationNamesOf(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to constrain.'
           : undefined
+      }
+      canDropItem={(item) =>
+        capabilitiesOf(state.type).constraintKinds.includes(item.type)
       }
       dropItem={dropItem}
       Inspector={ConstraintInspector}

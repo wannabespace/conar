@@ -1,4 +1,3 @@
-import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
@@ -21,7 +20,12 @@ export const recreateConstraintQuery = ({
 
   return createQuery({
     query: {
-      clickhouse: unsupported('Constraints'),
+      clickhouse: (db) =>
+        sql`
+          ALTER TABLE ${sql.id(schema, table)}
+          DROP ${mysqlDropKey(kind, name)},
+          ADD ${constraintClause(shape)}
+        `.execute(db),
       mssql: (db) =>
         db.transaction().execute(async (tx) => {
           await dropConstraint(tx, target).execute()

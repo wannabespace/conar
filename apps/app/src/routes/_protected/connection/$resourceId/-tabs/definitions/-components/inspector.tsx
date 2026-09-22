@@ -50,6 +50,8 @@ const FORM_ID = 'definition-inspector'
 export type SectionInspectorProps<T> = DefinitionsState & {
   item: T | null
   onOpenChange: (open: boolean) => void
+  // Set by a `?create=` link: which starter the new-item form opens on.
+  preset?: string
   queryKey: readonly unknown[]
 }
 

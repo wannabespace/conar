@@ -1,7 +1,6 @@
 import { HierarchyIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
@@ -47,11 +46,8 @@ interface NavigatorItem {
   tabId: string
 }
 
-const sectionItem = (
-  section: DefinitionsSection,
-  type: ConnectionType
-): NavigatorItem => {
-  const { icon, title } = sectionMetaOf(section, type)
+const sectionItem = (section: DefinitionsSection): NavigatorItem => {
+  const { icon, title } = sectionMetaOf(section)
 
   return {
     Icon: icon,
@@ -79,25 +75,19 @@ export const schemaGroups = (
       label: 'Overview',
     },
     {
-      items: [
-        sectionItem('indexes', connection.type),
-        sectionItem('constraints', connection.type),
-      ],
+      items: [sectionItem('indexes'), sectionItem('constraints')],
       label: 'Structure',
     },
     {
-      items: [sectionItem('enums', connection.type)],
+      items: [sectionItem('enums')],
       label: 'Types',
     },
     {
-      items: [
-        sectionItem('functions', connection.type),
-        sectionItem('triggers', connection.type),
-      ],
+      items: [sectionItem('functions'), sectionItem('triggers')],
       label: 'Logic',
     },
     {
-      items: [sectionItem('policies', connection.type)],
+      items: [sectionItem('policies'), sectionItem('privileges')],
       label: 'Security',
     },
   ]
@@ -168,8 +158,7 @@ export const DefinitionsPanel = () => {
                           resourceId: connectionResource.id,
                           tabId,
                         }}
-                        preload="intent"
-                        preloadDelay={200}
+                        preload="viewport"
                         onClick={() => open(connectionResource.id, true)}
                         onDoubleClick={() => open(connectionResource.id, false)}
                       />

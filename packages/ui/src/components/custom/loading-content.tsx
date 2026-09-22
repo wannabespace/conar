@@ -24,6 +24,7 @@ export const LoadingContent = ({
     )}
   >
     <span
+      aria-hidden={!loading}
       className={cn(
         loading ? '-translate-y-1/2' : 'translate-y-5',
         'absolute top-1/2 left-1/2 flex -translate-x-1/2 items-center justify-center duration-150'
@@ -32,6 +33,7 @@ export const LoadingContent = ({
       {spinner}
     </span>
     <span
+      aria-hidden={loading}
       className={cn(
         'flex items-center gap-2 duration-150',
         loading ? '-translate-y-5' : 'translate-y-0',

@@ -2,7 +2,7 @@ import { unsupported } from '@tamery/shared/unsupported'
 
 import { createQuery } from '../../runtime/query'
 import type { PolicyShape } from './shape'
-import { createPolicyStatement } from './shape'
+import { createPolicyStatement, createRowPolicyStatement } from './shape'
 
 export const createPolicyQuery = ({
   schema,
@@ -15,7 +15,8 @@ export const createPolicyQuery = ({
 }) =>
   createQuery({
     query: {
-      clickhouse: unsupported('Row policies'),
+      clickhouse: (db) =>
+        createRowPolicyStatement({ schema, shape, table }).execute(db),
       mssql: unsupported('Row policies'),
       mysql: unsupported('Row policies'),
       postgres: (db) =>

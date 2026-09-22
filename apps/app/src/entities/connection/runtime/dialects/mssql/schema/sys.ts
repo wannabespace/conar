@@ -1,6 +1,7 @@
 export interface Sys {
   indexes: Indexes
   foreign_keys: ForeignKeys
+  check_constraints: CheckConstraints
   tables: Tables
   schemas: Schemas
   index_columns: IndexColumns
@@ -135,6 +136,14 @@ interface Schemas {
 }
 
 interface ForeignKeys {
+  name: string
+  schema_id: number
+  is_disabled: boolean
+  is_not_trusted: boolean
+  is_not_for_replication: boolean
+}
+
+interface CheckConstraints {
   name: string
   schema_id: number
   is_disabled: boolean

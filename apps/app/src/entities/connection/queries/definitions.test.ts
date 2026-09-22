@@ -13,10 +13,19 @@ import {
 } from 'kysely'
 
 import type { ConstraintShape } from './constraints/shape'
-import { addConstraint, constraintClause } from './constraints/shape'
+import {
+  addConstraint,
+  clickhouseConstraintsOf,
+  constraintClause,
+} from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
-import { createIndexStatement } from './indexes/shape'
-import { createPolicyStatement } from './policies/shape'
+import {
+  addSkipIndexStatement,
+  createIndexStatement,
+  skipIndexColumnsOf,
+} from './indexes/shape'
+import { clickhouseRoleList, createPolicyStatement } from './policies/shape'
+import { accountOf, privilegeOn } from './privileges/shape'
 import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
 import {
   createTriggerStatements,
@@ -172,6 +181,7 @@ describe('trigger statements', () => {
 describe('a foreign key names its columns in order', () => {
   const shape: ConstraintShape = {
     columns: ['a', 'b'],
+    expression: '',
     foreignColumns: ['x', 'y'],
     foreignSchema: 'ref',
     foreignTable: 'other',
@@ -196,6 +206,36 @@ describe('a foreign key names its columns in order', () => {
   test('as the MySQL clause', () => {
     expect(compiled(constraintClause(shape))).toBe(
       'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
+    )
+  })
+})
+
+describe('a check wraps its condition', () => {
+  const shape: ConstraintShape = {
+    columns: [],
+    expression: 'price > 0',
+    foreignColumns: [],
+    foreignSchema: '',
+    foreignTable: '',
+    kind: 'check',
+    name: 'ck',
+    onDelete: 'NO ACTION',
+    onUpdate: 'NO ACTION',
+  }
+
+  test('through the builder', () => {
+    expect(
+      addConstraint(
+        compilers.postgres,
+        { schema: 's', table: 't' },
+        shape
+      ).compile().sql
+    ).toBe('alter table "s"."t" add constraint "ck" check (price > 0)')
+  })
+
+  test('as the MySQL clause', () => {
+    expect(compiled(constraintClause(shape))).toBe(
+      'CONSTRAINT "ck" CHECK (price > 0)'
     )
   })
 })
@@ -298,5 +338,69 @@ describe('mssqlModuleBody', () => {
     expect(
       mssqlModuleParts('CREATE PROCEDURE dbo.p @a int AS SELECT 1')?.header
     ).toBe('CREATE PROCEDURE dbo.p @a int AS ')
+  })
+})
+
+describe('ClickHouse', () => {
+  test('reads constraints out of the table DDL', () => {
+    expect(
+      clickhouseConstraintsOf(
+        "CREATE TABLE db.t (`id` UInt64, `note` String DEFAULT 'a, b', CONSTRAINT positive CHECK id > 0, CONSTRAINT `odd name` ASSUME length(note) < (10)) ENGINE = MergeTree ORDER BY id"
+      )
+    ).toEqual([
+      { assume: false, expression: 'id > 0', name: 'positive' },
+      { assume: true, expression: 'length(note) < (10)', name: 'odd name' },
+    ])
+  })
+
+  test('adds a skip index over a tuple of columns', () => {
+    expect(
+      compiled(
+        addSkipIndexStatement({
+          columns: ['a', 'b'],
+          granularity: 4,
+          name: 'i',
+          schema: 's',
+          skipType: 'minmax',
+          table: 't',
+        }),
+        'mysql'
+      )
+    ).toBe(
+      'ALTER TABLE `s`.`t` ADD INDEX `i` (`a`, `b`) TYPE minmax GRANULARITY 4'
+    )
+  })
+
+  test('reads skip index columns back, or none for an expression', () => {
+    expect(skipIndexColumnsOf('tuple(a, `b c`)')).toEqual(['a', 'b c'])
+    expect(skipIndexColumnsOf('lower(a)')).toBeNull()
+  })
+
+  test('round-trips a row policy audience', () => {
+    expect(compiled(clickhouseRoleList(['ALL', 'EXCEPT bob']), 'mysql')).toBe(
+      'ALL EXCEPT `bob`'
+    )
+    expect(compiled(clickhouseRoleList([]), 'mysql')).toBe('ALL')
+  })
+})
+
+describe('a MySQL privilege', () => {
+  test('reads the account the way the catalog and a user write it', () => {
+    expect(compiled(accountOf("'bob'@'%'"), 'mysql')).toBe("'bob'@'%'")
+    expect(compiled(accountOf('bob@localhost'), 'mysql')).toBe(
+      "'bob'@'localhost'"
+    )
+    expect(compiled(accountOf('bob'), 'mysql')).toBe("'bob'@'%'")
+  })
+
+  test('covers a database or one table', () => {
+    const target = { grantee: 'bob', privilege: 'SELECT', schema: 'app' }
+
+    expect(compiled(privilegeOn({ ...target, table: '*' }), 'mysql')).toBe(
+      'SELECT ON `app`.*'
+    )
+    expect(compiled(privilegeOn({ ...target, table: 't' }), 'mysql')).toBe(
+      'SELECT ON `app`.`t`'
+    )
   })
 })

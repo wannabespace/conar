@@ -72,38 +72,52 @@ interface FunctionDraft {
 const functionSchema = type({
   body: type(/\S/u).configure({ message: 'Write the routine body.' }),
   kind: 'string',
-  name: type(/\S/u).configure({ message: 'Give the function a name.' }),
+  name: 'string',
   returnType: 'string',
-}).narrow(
-  (draft, ctx) =>
+}).narrow((draft, ctx) => {
+  const named =
+    /\S/u.test(draft.name) ||
+    ctx.reject({
+      message: `Give the ${draft.kind} a name.`,
+      relativePath: ['name'],
+    })
+  const returns =
     draft.kind === 'procedure' ||
     /\S/u.test(draft.returnType) ||
     ctx.reject({
       message: 'Say what the function returns.',
       relativePath: ['returnType'],
     })
-)
+
+  return named && returns
+})
+
+const TRIGGER_FUNCTION_BODY = 'BEGIN\n  RETURN NEW;\nEND;'
 
 const newDraft = (
   pageSchema: string,
-  connectionType: ConnectionType
+  connectionType: ConnectionType,
+  preset?: string
 ): FunctionDraft => {
   const { behaviors, languages } = capabilitiesOf(connectionType).functions
   const language = languages[0] ?? ''
+  const trigger = preset === 'trigger'
 
   return {
     args: '',
     behavior: behaviors[0] ?? '',
-    body: functionBodyTemplateOf({
-      connectionType,
-      kind: 'function',
-      language,
-    }),
+    body: trigger
+      ? TRIGGER_FUNCTION_BODY
+      : functionBodyTemplateOf({
+          connectionType,
+          kind: 'function',
+          language,
+        }),
     extras: '',
     kind: 'function',
     language,
     name: '',
-    returnType: '',
+    returnType: trigger ? 'trigger' : '',
     schema: pageSchema,
     securityDefiner: false,
   }
@@ -112,9 +126,10 @@ const newDraft = (
 const draftOf = (
   item: FunctionItem | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  connectionType: ConnectionType,
+  preset?: string
 ): FunctionDraft => {
-  const fallback = newDraft(pageSchema, connectionType)
+  const fallback = newDraft(pageSchema, connectionType, preset)
 
   return item
     ? {
@@ -166,6 +181,7 @@ const FunctionInspector = ({
   connectionResource,
   item,
   onOpenChange,
+  preset,
   queryKey,
   run,
   schemas,
@@ -208,7 +224,7 @@ const FunctionInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: draftOf(item, selectedSchema ?? '', connectionType, preset),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -246,9 +262,8 @@ const FunctionInspector = ({
       form={form}
       item={item}
       mutation={mutation}
-      noun="function"
+      noun={draft.kind}
       readOnly={readOnly}
-      saveLabel={item ? undefined : `Create ${draft.kind}`}
       warning={
         item
           ? replaceWarning({ connectionType, name: item.name, noun: item.type })

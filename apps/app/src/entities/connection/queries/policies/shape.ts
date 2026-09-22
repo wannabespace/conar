@@ -44,12 +44,46 @@ export const roleList = (roles: string[]) =>
         )
       )
 
+const EXCEPT_PREFIX = /^EXCEPT\s+/iu
+
+// The list query reads ClickHouse's audience back as "ALL" plus "EXCEPT <role>"
+// entries, so the same strings round-trip into TO.
+export const clickhouseRoleList = (roles: string[]) => {
+  const excepted = roles
+    .filter((role) => EXCEPT_PREFIX.test(role))
+    .map((role) => sql.id(role.replace(EXCEPT_PREFIX, '')))
+
+  if (excepted.length > 0) {
+    return sql`ALL EXCEPT ${sql.join(excepted)}`
+  }
+  const named = roles
+    .filter((role) => role.toUpperCase() !== 'ALL')
+    .map((role) => sql.id(role))
+
+  return named.length > 0 ? sql.join(named) : sql`ALL`
+}
+
 // User-authored SQL, sent verbatim like a runner query
 export const expression = (keyword: string, value: string | null) =>
   value?.trim() ? sql` ${sql.raw(keyword)} (${sql.raw(value.trim())})` : sql``
 
 export const policyOn = ({ name, schema, table }: PolicyTarget) =>
   sql`${sql.id(name)} ON ${sql.id(schema, table)}`
+
+export const createRowPolicyStatement = ({
+  schema,
+  shape,
+  table,
+}: {
+  schema: string
+  shape: PolicyShape
+  table: string
+}) =>
+  sql`
+    CREATE ROW POLICY ${policyOn({ name: shape.name, schema, table })}
+    FOR SELECT ${expression('USING', shape.using)}
+    AS ${sql.raw(shape.kind)} TO ${clickhouseRoleList(shape.roles)}
+  `
 
 export const createPolicyStatement = ({
   schema,

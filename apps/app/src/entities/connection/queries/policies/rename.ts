@@ -11,7 +11,10 @@ export const renamePolicyQuery = ({
 }: PolicyTarget & { newName: string }) =>
   createQuery({
     query: {
-      clickhouse: unsupported('Row policies'),
+      clickhouse: (db) =>
+        sql`ALTER ROW POLICY ${policyOn(target)} RENAME TO ${sql.id(newName)}`.execute(
+          db
+        ),
       mssql: unsupported('Row policies'),
       mysql: unsupported('Row policies'),
       postgres: (db) =>

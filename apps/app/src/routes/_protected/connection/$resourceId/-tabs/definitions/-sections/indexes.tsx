@@ -67,8 +67,10 @@ interface GroupedIndex extends Omit<
 
 interface IndexDraft {
   columns: string[]
+  granularity: string
   name: string
   schema: string
+  skipType: string
   table: string
   unique: boolean
 }
@@ -111,31 +113,72 @@ const suggestedNameOf = (draft: IndexDraft) =>
 const finalNameOf = (draft: IndexDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
 
-const reshapes = (draft: IndexDraft, item: GroupedIndex | null) =>
-  !!item &&
-  (!sameList(draft.columns, item.columns) ||
-    draft.unique !== (item.kind !== 'regular'))
+const draftOf = (
+  item: GroupedIndex | null,
+  pageSchema: string,
+  connectionType: ConnectionType
+): IndexDraft => ({
+  columns: item?.columns ?? [],
+  granularity: String(item?.granularity ?? 1),
+  name: item?.name ?? '',
+  schema: item?.schema ?? pageSchema,
+  skipType:
+    item?.type ?? capabilitiesOf(connectionType).indexes.skipTypes[0] ?? '',
+  table: item?.table ?? '',
+  unique: item ? item.kind !== 'regular' : false,
+})
+
+const reshapes = (
+  draft: IndexDraft,
+  item: GroupedIndex | null,
+  connectionType: ConnectionType
+) => {
+  if (!item) {
+    return false
+  }
+  const opened = draftOf(item, item.schema, connectionType)
+
+  return (
+    !sameList(draft.columns, opened.columns) ||
+    draft.unique !== opened.unique ||
+    draft.skipType !== opened.skipType ||
+    draft.granularity !== opened.granularity ||
+    (!capabilitiesOf(connectionType).indexes.rename &&
+      finalNameOf(draft) !== item.name)
+  )
+}
 
 const saveIndex = ({
+  connectionType,
   draft,
   item,
   run,
 }: {
+  connectionType: ConnectionType
   draft: IndexDraft
   item: GroupedIndex | null
   run: RunQuery
 }) => {
-  const { columns, schema, table, unique } = draft
+  const { columns, schema, skipType, table, unique } = draft
+  const shape = {
+    columns,
+    granularity: Number(draft.granularity),
+    schema,
+    skipType,
+    table,
+    unique,
+  }
   const name = finalNameOf(draft)
 
   if (!item) {
-    return run(createIndexQuery({ columns, name, schema, table, unique }))
+    return run(createIndexQuery({ ...shape, name }))
   }
+
   const target = { name: item.name, schema: item.schema, table: item.table }
 
   return run(
-    reshapes(draft, item)
-      ? recreateIndexQuery({ ...target, columns, newName: name, unique })
+    reshapes(draft, item, connectionType)
+      ? recreateIndexQuery({ ...shape, ...target, newName: name })
       : renameIndexQuery({ ...target, newName: name })
   )
 }
@@ -152,8 +195,11 @@ const locksOf = ({
   type: ConnectionType
 }) => {
   const owned = !!item?.constraintOwned
+  const { indexes, renameConstraints } = capabilitiesOf(connectionType)
   const readOnly = item
-    ? !can.edit || (owned && !capabilitiesOf(connectionType).renameConstraints)
+    ? !can.edit ||
+      (owned && !renameConstraints) ||
+      (!!item.custom && !indexes.rename)
     : !can.create
 
   return { readOnly, shape: readOnly || owned || !!item?.custom }
@@ -162,6 +208,9 @@ const locksOf = ({
 const indexSchema = type({
   columns: type('string[] >= 1').configure({
     message: 'Pick at least one column.',
+  }),
+  granularity: type(/^[1-9]\d*$/u).configure({
+    message: 'Use a whole number of granules, 1 or more.',
   }),
   table: type(/\S/u).configure({ message: 'Pick the table to index.' }),
 })
@@ -237,7 +286,8 @@ const IndexInspector = ({
   type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
-    mutationFn: (draft: IndexDraft) => saveIndex({ draft, item, run }),
+    mutationFn: (draft: IndexDraft) =>
+      saveIndex({ connectionType, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(`Index "${finalNameOf(draft)}" saved`)
@@ -245,13 +295,7 @@ const IndexInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: {
-      columns: item?.columns ?? [],
-      name: item?.name ?? '',
-      schema: item?.schema ?? selectedSchema ?? '',
-      table: item?.table ?? '',
-      unique: item ? item.kind !== 'regular' : false,
-    } satisfies IndexDraft,
+    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -268,7 +312,8 @@ const IndexInspector = ({
   })
 
   const locked = locksOf({ can, item, type: connectionType })
-  const reshaped = reshapes(draft, item)
+  const reshaped = reshapes(draft, item, connectionType)
+  const { skipTypes } = capabilitiesOf(connectionType).indexes
 
   return (
     <Inspector
@@ -327,7 +372,11 @@ const IndexInspector = ({
           {() => (
             <OptionsField
               label="Columns"
-              description="A query uses the index when it filters on the leading columns."
+              description={
+                skipTypes.length > 0
+                  ? 'A read skips blocks of rows whose values cannot match a filter on these columns.'
+                  : 'A query uses the index when it filters on the leading columns.'
+              }
               disabled={locked.shape || draft.table === ''}
               options={columnNames}
               placeholder="Choose columns"
@@ -341,25 +390,54 @@ const IndexInspector = ({
           schema={draft.schema}
         />
       </InspectorSection>
-      <InspectorSection title="Options">
-        <form.AppField name="unique">
-          {(field) => (
-            <InspectorOption
-              htmlFor="index-unique"
-              title="Unique"
-              description="Rejects rows repeating a value across the chosen columns."
-            >
-              <Switch
-                id="index-unique"
-                size="sm"
-                disabled={locked.shape}
-                checked={field.state.value}
-                onCheckedChange={field.handleChange}
-              />
-            </InspectorOption>
-          )}
-        </form.AppField>
-      </InspectorSection>
+      {skipTypes.length > 0 ? (
+        <InspectorSection
+          title="Options"
+          description="What the index keeps per block of granules. Existing rows are indexed in the background."
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name="skipType">
+              {() => (
+                <SelectField
+                  label="Type"
+                  disabled={locked.shape}
+                  options={skipTypes}
+                  placeholder="Type"
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="granularity">
+              {() => (
+                <TextField
+                  label="Granularity"
+                  disabled={locked.shape}
+                  inputMode="numeric"
+                />
+              )}
+            </form.AppField>
+          </div>
+        </InspectorSection>
+      ) : (
+        <InspectorSection title="Options">
+          <form.AppField name="unique">
+            {(field) => (
+              <InspectorOption
+                htmlFor="index-unique"
+                title="Unique"
+                description="Rejects rows repeating a value across the chosen columns."
+              >
+                <Switch
+                  id="index-unique"
+                  size="sm"
+                  disabled={locked.shape}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+              </InspectorOption>
+            )}
+          </form.AppField>
+        </InspectorSection>
+      )}
       {item?.definition && <InspectorDefinition code={item.definition} />}
     </Inspector>
   )

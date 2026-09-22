@@ -36,11 +36,6 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
@@ -153,44 +148,52 @@ const useInspector = <T,>({
   const navigate = useNavigate()
   const linkedKey = useSearch({ select: (current) => current.open })
   const linkedSchema = useSearch({ select: (current) => current.schema })
+  const linkedPreset = useSearch({ select: (current) => current.create })
   const [inspected, setInspected] = useState<{
     item: T | null
     open: boolean
+    preset?: string
     session: number
   }>({ item: null, open: false, session: 0 })
   const linkedItem = linkedKey
     ? items.find((item) => keyOf(item) === linkedKey)
     : undefined
-  const open = (item: T | null) =>
+  const open = (item: T | null, preset?: string) =>
     setInspected((current) => ({
       item,
       open: true,
+      preset,
       session: current.session + 1,
     }))
 
   const openLinked = useEffectEvent(() => {
     if (linkedItem) {
       open(linkedItem)
+    } else if (linkedPreset) {
+      open(null, linkedPreset)
     }
     keepSchema(linkedSchema)
     navigate({
       replace: true,
       search: (current) => ({
         ...current,
+        create: undefined,
         open: undefined,
         schema: undefined,
       }),
     })
   })
 
+  const linked = !!(linkedKey || linkedPreset)
+
   useEffect(() => {
-    if (!linkedKey || loading) {
+    if (!linked || loading) {
       return
     }
     const timeout = setTimeout(openLinked, LINKED_OPEN_DELAY)
 
     return () => clearTimeout(timeout)
-  }, [linkedKey, loading])
+  }, [linked, loading])
 
   // A toggle inside the drawer refetches the list, so the live row outranks
   // the snapshot the drawer opened on.
@@ -224,7 +227,7 @@ export const DefinitionsPage = <T extends { name: string }>({
 }: {
   canDropItem?: (item: T) => boolean
   columns: DefinitionsColumn<T>[]
-  createBlocked?: string
+  createBlocked?: ReactNode
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
   Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
@@ -248,7 +251,7 @@ export const DefinitionsPage = <T extends { name: string }>({
     type,
   } = state
   const createBlocked = structurePending ? undefined : blockReason
-  const { cascade: cascades, icon, noun, title } = sectionMetaOf(section, type)
+  const { cascade: cascades, icon, noun, title } = sectionMetaOf(section)
   const rows = items.filter(match)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
@@ -276,6 +279,9 @@ export const DefinitionsPage = <T extends { name: string }>({
   const empty = !loading && rows.length === 0
   const context: CellContext = { schema: selectedSchema, search }
   const plural = title.toLowerCase()
+  const addNote = can.create
+    ? createBlocked
+    : `Tamery can’t add ${plural} to this database yet.`
 
   const dropMutation = useMutation({
     mutationFn: (item: T) => dropItem(item, cascade),
@@ -386,7 +392,6 @@ export const DefinitionsPage = <T extends { name: string }>({
     <Button
       variant="outline"
       disabled={!canCreate}
-      focusableWhenDisabled={!!createBlocked}
       onClick={() => inspector.open(null)}
     >
       <HugeiconsIcon
@@ -412,17 +417,12 @@ export const DefinitionsPage = <T extends { name: string }>({
             />
           )}
         </h2>
-        {can.create &&
-          (createBlocked ? (
-            <Tooltip>
-              <TooltipTrigger render={addButton} />
-              <TooltipContent>
-                <span className="block text-pretty">{createBlocked}</span>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            addButton
-          ))}
+        <div className="flex items-center gap-3">
+          <p className="text-muted-foreground text-xs text-pretty empty:hidden">
+            {addNote}
+          </p>
+          {can.create && addButton}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <SearchInput
@@ -541,6 +541,7 @@ export const DefinitionsPage = <T extends { name: string }>({
             key={inspector.inspected.session}
             {...state}
             item={inspector.item}
+            preset={inspector.inspected.preset}
             queryKey={queryKey}
             onOpenChange={closeInspector}
           />

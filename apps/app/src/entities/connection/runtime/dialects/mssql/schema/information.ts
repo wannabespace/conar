@@ -3,6 +3,7 @@ export interface InformationSchema {
   COLUMNS: Columns
   VIEWS: Views
   TABLE_CONSTRAINTS: TableConstraints
+  CHECK_CONSTRAINTS: CheckConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
   CONSTRAINT_COLUMN_USAGE: ConstraintColumnUsage
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
@@ -56,9 +57,15 @@ interface TableConstraints {
   CONSTRAINT_NAME: string
   TABLE_SCHEMA: string
   TABLE_NAME: string
-  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY'
+  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK'
   IS_DEFERRABLE: 'YES' | 'NO'
   INITIALLY_DEFERRED: 'YES' | 'NO'
+}
+
+interface CheckConstraints {
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  CHECK_CLAUSE: string
 }
 
 interface KeyColumnUsage {

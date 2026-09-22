@@ -3,6 +3,7 @@ export interface InformationSchema {
   COLUMNS: Columns
   VIEWS: Views
   TABLE_CONSTRAINTS: TableConstraints
+  CHECK_CONSTRAINTS: CheckConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
   STATISTICS: Statistics
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
@@ -10,6 +11,14 @@ export interface InformationSchema {
   TRIGGERS: Triggers
   ROUTINES: Routines
   TABLE_PRIVILEGES: TablePrivileges
+  SCHEMA_PRIVILEGES: SchemaPrivileges
+}
+
+interface SchemaPrivileges {
+  GRANTEE: string
+  TABLE_SCHEMA: string
+  PRIVILEGE_TYPE: string
+  IS_GRANTABLE: string
 }
 
 interface TablePrivileges {
@@ -96,8 +105,14 @@ interface TableConstraints {
   CONSTRAINT_NAME: string
   TABLE_SCHEMA: string
   TABLE_NAME: string
-  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY'
+  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK'
   ENFORCED: 'YES' | 'NO'
+}
+
+interface CheckConstraints {
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  CHECK_CLAUSE: string
 }
 
 interface KeyColumnUsage {

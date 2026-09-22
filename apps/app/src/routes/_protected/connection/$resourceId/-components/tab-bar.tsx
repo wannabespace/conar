@@ -57,6 +57,7 @@ import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/l
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
+import { resourcePrivilegesQueryOptions } from '~/entities/connection/queries/privileges/list'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import {
@@ -146,6 +147,7 @@ const DEFINITIONS_QUERY_OPTIONS: Record<
   functions: resourceFunctionsQueryOptions,
   indexes: resourceIndexesQueryOptions,
   policies: resourcePoliciesQueryOptions,
+  privileges: resourcePrivilegesQueryOptions,
   triggers: resourceTriggersQueryOptions,
 }
 
@@ -160,9 +162,14 @@ const DefinitionsRefresh = ({ section }: { section: DefinitionsSection }) => {
   const handleRefresh = () => {
     setIsUserRefreshing(true)
 
-    return queryClient
-      .invalidateQueries({ queryKey })
-      .finally(() => setIsUserRefreshing(false))
+    // The pickers and "no tables" notes read the table list, not the section.
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey }),
+      queryClient.invalidateQueries({
+        queryKey: resourceTablesAndSchemasQueryOptions({ connectionResource })
+          .queryKey,
+      }),
+    ]).finally(() => setIsUserRefreshing(false))
   }
 
   useRefreshHotkey(handleRefresh, isFetching)

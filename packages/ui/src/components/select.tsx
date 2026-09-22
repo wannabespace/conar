@@ -44,13 +44,17 @@ const SelectTrigger = ({
       data-slot="select-trigger"
       data-size={size}
       aria-invalid={invalidMark ? true : undefined}
+      // A div, not a button: the invalid mark inside is a button of its own.
+      nativeButton={false}
+      render={<div />}
       className={cn(
-        `bg-input ring-foreground/4 hover:ring-foreground/12 data-popup-open:ring-foreground/12 hover:text-foreground focus-visible:focus-ring data-placeholder:text-muted-foreground hover:bg-accent data-popup-open:bg-accent aria-invalid:invalid-ring flex w-fit items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring transition-[color,background-color,box-shadow] duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
+        `bg-input ring-foreground/4 hover:ring-foreground/12 data-popup-open:ring-foreground/12 hover:text-foreground focus-visible:focus-ring data-placeholder:text-muted-foreground hover:bg-accent data-popup-open:bg-accent aria-invalid:invalid-ring flex w-fit cursor-default items-center justify-between gap-1.5 rounded-xl border border-transparent px-3 text-sm whitespace-nowrap shadow-xs ring transition-[color,background-color,box-shadow] duration-200 outline-none select-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md data-[size=xs]:px-2.5 data-[size=xs]:text-xs *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:overflow-hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[size=xs]:[&_svg:not([class*='size-'])]:size-3`,
         className
       )}
       {...props}
     >
       {children}
+      {invalidMark && <span className="ml-auto flex">{invalidMark}</span>}
       <SelectPrimitive.Icon
         render={
           <HugeiconsIcon

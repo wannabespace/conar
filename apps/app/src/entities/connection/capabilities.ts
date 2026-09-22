@@ -2,6 +2,7 @@ import {
   FlashIcon,
   Key01Icon,
   LeftToRightListDashIcon,
+  LockKeyIcon,
   SecurityCheckIcon,
   SourceCodeIcon,
   TagsIcon,
@@ -14,11 +15,17 @@ import type {
   ConstraintKind,
   ReferentialAction,
 } from './queries/constraints/shape'
-import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
+import {
+  CONSTRAINT_KINDS,
+  REFERENTIAL_ACTIONS,
+} from './queries/constraints/shape'
 import {
   FUNCTION_DETERMINISM,
   FUNCTION_VOLATILITIES,
 } from './queries/functions/shape'
+import { SKIP_INDEX_TYPES } from './queries/indexes/shape'
+import type { PolicyCommand } from './queries/policies/shape'
+import { POLICY_COMMANDS } from './queries/policies/shape'
 import type { RelationKind } from './queries/tables/list'
 import type {
   TriggerEvent,
@@ -45,6 +52,19 @@ interface FunctionCapabilities {
   securityDefiner: boolean
 }
 
+interface IndexCapabilities {
+  rename: boolean
+  // Data-skipping index types; offering any swaps Unique for Type and Granularity.
+  skipTypes: readonly string[]
+}
+
+interface PolicyCapabilities {
+  // ClickHouse's ALTER ROW POLICY rewrites every clause, so nothing recreates.
+  alterInPlace: boolean
+  commands: readonly PolicyCommand[]
+  everyone: string
+}
+
 interface TriggerCapabilities {
   body: boolean
   events: readonly TriggerEvent[]
@@ -57,11 +77,15 @@ interface TriggerCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
+  constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
-  enumsLabel: string
+  // null: the connection's database is the schema
+  defaultSchema: string | null
   explain: boolean
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
+  indexes: IndexCapabilities
+  policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   rowLevelSecurity: boolean
@@ -78,11 +102,19 @@ const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')
 const readOnly: SectionCapabilities = {}
 const full: SectionCapabilities = { create: true, drop: true, edit: true }
 
+const btreeIndexes: IndexCapabilities = { rename: true, skipTypes: [] }
+const noPolicies: PolicyCapabilities = {
+  alterInPlace: false,
+  commands: [],
+  everyone: '',
+}
+
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
+    constraintKinds: ['check'],
     ddlRollback: false,
-    enumsLabel: 'Enums',
+    defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
     functions: {
@@ -91,17 +123,24 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       languages: [],
       securityDefiner: false,
     },
+    indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
+    policies: {
+      alterInPlace: true,
+      commands: ['SELECT'],
+      everyone: 'ALL',
+    },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
     rowLevelSecurity: false,
     schemas: false,
     sections: {
-      constraints: readOnly,
+      constraints: full,
       enums: readOnly,
       functions: false,
-      indexes: readOnly,
-      policies: { drop: true },
+      indexes: full,
+      policies: full,
+      privileges: false,
       triggers: false,
     },
     systemSchemas: [],
@@ -117,8 +156,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
+    constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
-    enumsLabel: 'Enums',
+    defaultSchema: 'dbo',
     explain: false,
     fixedConstraintNames: {},
     functions: {
@@ -127,6 +167,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       languages: [],
       securityDefiner: false,
     },
+    indexes: btreeIndexes,
+    policies: noPolicies,
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
     ),
@@ -140,6 +182,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       functions: full,
       indexes: full,
       policies: readOnly,
+      privileges: false,
       triggers: full,
     },
     systemSchemas: ['sys', 'INFORMATION_SCHEMA'],
@@ -155,9 +198,10 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
+    constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
-    enumsLabel: 'Enums & Sets',
+    defaultSchema: null,
     explain: true,
     // MySQL names every primary key PRIMARY, whatever the ADD says.
     fixedConstraintNames: { primaryKey: 'PRIMARY' },
@@ -167,6 +211,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       languages: [],
       securityDefiner: false,
     },
+    indexes: btreeIndexes,
+    policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'SET DEFAULT'
@@ -177,10 +223,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     schemas: true,
     sections: {
       constraints: full,
-      enums: { edit: true },
+      enums: false,
       functions: full,
       indexes: full,
-      policies: readOnly,
+      policies: false,
+      privileges: { create: true, drop: true },
       triggers: full,
     },
     systemSchemas: ['mysql', 'information_schema', 'performance_schema', 'sys'],
@@ -196,8 +243,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
+    constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
-    enumsLabel: 'Enums',
+    defaultSchema: 'public',
     explain: true,
     fixedConstraintNames: {},
     functions: {
@@ -205,6 +253,12 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       behaviors: FUNCTION_VOLATILITIES,
       languages: ['plpgsql', 'sql'],
       securityDefiner: true,
+    },
+    indexes: btreeIndexes,
+    policies: {
+      alterInPlace: false,
+      commands: POLICY_COMMANDS,
+      everyone: 'PUBLIC',
     },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
@@ -217,6 +271,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       functions: full,
       indexes: full,
       policies: full,
+      privileges: false,
       triggers: full,
     },
     systemSchemas: ['pg_catalog', 'information_schema'],
@@ -238,6 +293,7 @@ const sectionMeta = {
   functions: { cascade: true, icon: SourceCodeIcon, noun: 'function' },
   indexes: { cascade: false, icon: LeftToRightListDashIcon, noun: 'index' },
   policies: { cascade: false, icon: SecurityCheckIcon, noun: 'policy' },
+  privileges: { cascade: false, icon: LockKeyIcon, noun: 'privilege' },
   triggers: { cascade: false, icon: FlashIcon, noun: 'trigger' },
 } as const satisfies Record<
   DefinitionsSection,
@@ -246,15 +302,14 @@ const sectionMeta = {
 
 export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
 
-export const sectionMetaOf = (
-  section: DefinitionsSection,
-  type: ConnectionType
-) => ({
+export const defaultSchemaOf = (
+  type: ConnectionType,
+  database: string | null
+) => capabilities[type].defaultSchema ?? database
+
+export const sectionMetaOf = (section: DefinitionsSection) => ({
   ...sectionMeta[section],
-  title:
-    section === 'enums'
-      ? capabilities[type].enumsLabel
-      : uppercaseFirst(section),
+  title: uppercaseFirst(section),
 })
 
 export const sectionAvailable = (

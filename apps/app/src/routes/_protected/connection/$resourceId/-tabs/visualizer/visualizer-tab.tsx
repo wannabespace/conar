@@ -37,12 +37,16 @@ import type { CSSProperties } from 'react'
 import { useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { defaultSchemaOf } from '~/entities/connection/capabilities'
 import { ReactFlowNode } from '~/entities/connection/components/react-flow-node'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import type { columnType } from '~/entities/connection/queries/tables/columns'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import {
+  hideSystemSchemas,
+  resourceTablesAndSchemasQueryOptions,
+} from '~/entities/connection/queries/tables/list'
 import { setVisualizerViewport } from '~/entities/connection/store/helpers/visualizer'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
@@ -70,10 +74,15 @@ const Visualizer = ({
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
-  const initialSchema = schemas[0] ?? ''
+  const defaultSchema = defaultSchemaOf(
+    connection.type,
+    connectionResource.name
+  )
+  const initialSchema =
+    schemas.find((name) => name === defaultSchema) ?? schemas[0] ?? ''
   const [schema, setSchema] = useState(initialSchema)
   const savedViewport = store.get().visualizerViewports?.[schema]
   const [searchQuery, setSearchQuery] = useState('')
@@ -277,8 +286,9 @@ export const VisualizerTab = () => {
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
     select: (data) =>
-      data.schemas.flatMap(({ name, tables }) =>
-        tables.map((table) => ({ schema: name, table: table.name }))
+      (showSystem ? data : hideSystemSchemas(data)).schemas.flatMap(
+        ({ name, tables }) =>
+          tables.map((table) => ({ schema: name, table: table.name }))
       ),
   })
   const columnsQueries = useQueries({
