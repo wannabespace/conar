@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 
 import {
@@ -33,13 +34,7 @@ export const tablesAndSchemasType = type({
 })
 
 export const resourceTablesAndSchemasQuery = memoize(
-  ({
-    database,
-    showSystem,
-  }: {
-    database: string | null
-    showSystem: boolean
-  }) =>
+  ({ database }: { database: string | null }) =>
     createQuery({
       query: {
         clickhouse: (db) =>
@@ -74,9 +69,6 @@ export const resourceTablesAndSchemasQuery = memoize(
               'TABLE_TYPE as type',
             ])
             .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
-            .$if(!showSystem, (qb) =>
-              qb.where('TABLE_SCHEMA', 'not in', ['sys', 'INFORMATION_SCHEMA'])
-            )
             .execute(),
         mysql: (db) =>
           db
@@ -88,16 +80,6 @@ export const resourceTablesAndSchemasQuery = memoize(
             ])
             .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
-            .$if(!showSystem, (qb) =>
-              qb.where((eb) =>
-                eb('TABLE_SCHEMA', 'not in', [
-                  'mysql',
-                  'information_schema',
-                  'performance_schema',
-                  'sys',
-                ])
-              )
-            )
             .execute(),
         postgres: (db) =>
           db
@@ -131,39 +113,35 @@ export const resourceTablesAndSchemasQuery = memoize(
                 not(eb('n.nspname', 'like', 'pg_temp%')),
               ])
             )
-            .$if(!showSystem, (qb) =>
-              qb.where('n.nspname', 'not in', [
-                'pg_catalog',
-                'information_schema',
-              ])
-            )
             .execute(),
       },
       type: tablesAndSchemasType.array(),
     })
 )
 
+export const hideSystemSchemas = <T extends { schemas: { system: boolean }[] }>(
+  data: T
+): T => ({ ...data, schemas: data.schemas.filter((schema) => !schema.system) })
+
 export const resourceTablesAndSchemasQueryOptions = ({
   connectionResource,
   showSystem,
 }: {
   connectionResource: ConnectionResource
-  showSystem: boolean
+  showSystem?: boolean
 }) =>
   queryOptions({
-    placeholderData: (previousData, previousQuery) =>
-      previousQuery?.queryKey[1] === connectionResource.id
-        ? previousData
-        : undefined,
     queryFn: async () => {
+      const params = await connectionResourceToQueryParams(connectionResource)
+      const { systemSchemas } = capabilitiesOf(params.type)
       const results = await resourceTablesAndSchemasQuery({
         database: connectionResource.name,
-        showSystem,
-      }).run(await connectionResourceToQueryParams(connectionResource))
+      }).run(params)
       const schemas = Object.entries(
         Object.groupBy(results, (table) => table.schema)
       ).map(([schema, tables = []]) => ({
         name: schema,
+        system: systemSchemas.includes(schema),
         tables: tables.map((table) => ({
           name: table.table,
           type: table.type,
@@ -180,17 +158,12 @@ export const resourceTablesAndSchemasQueryOptions = ({
           }
           return a.name.localeCompare(b.name)
         }),
-        totalSchemas: schemas.length,
-        totalTables: schemas.reduce(
-          (acc, schema) => acc + schema.tables.length,
-          0
-        ),
       }
     },
     queryKey: [
       'connection-resource',
       connectionResource.id,
       'tables-and-schemas',
-      showSystem,
     ],
+    select: showSystem === false ? hideSystemSchemas : undefined,
   })

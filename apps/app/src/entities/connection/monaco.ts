@@ -8,7 +8,10 @@ import { queryClient } from '~/lib/query-client'
 
 import { resourceEnumsQueryOptions } from './queries/enums/list'
 import { resourceTableColumnsQueryOptions } from './queries/tables/columns'
-import { resourceTablesAndSchemasQueryOptions } from './queries/tables/list'
+import {
+  hideSystemSchemas,
+  resourceTablesAndSchemasQueryOptions,
+} from './queries/tables/list'
 import { getConnectionResourceStore } from './store/stores'
 
 export const sqlDialects = {
@@ -53,10 +56,7 @@ export const connectionCompletionService = (
 ): CompletionService => {
   const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(
-    resourceTablesAndSchemasQueryOptions({
-      connectionResource,
-      showSystem: store.get().showSystem,
-    })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
 
@@ -86,12 +86,13 @@ export const connectionCompletionService = (
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(
-        resourceTablesAndSchemasQueryOptions({
-          connectionResource,
-          showSystem: store.get().showSystem,
-        })
-      ),
+      queryClient
+        .ensureQueryData(
+          resourceTablesAndSchemasQueryOptions({ connectionResource })
+        )
+        .then((data) =>
+          store.get().showSystem ? data : hideSystemSchemas(data)
+        ),
       queryClient.ensureQueryData(
         resourceEnumsQueryOptions({ connectionResource })
       ),

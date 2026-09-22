@@ -18,7 +18,10 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import {
+  hideSystemSchemas,
+  resourceTablesAndSchemasQueryOptions,
+} from '~/entities/connection/queries/tables/list'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
@@ -86,6 +89,9 @@ export const RunnerEditorAIZone = ({
       onUpdate(aiSuggestion)
       fullClose()
     } else {
+      const tablesAndSchemas = await queryClient.ensureQueryData(
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
+      )
       updateSQL({
         sql,
         prompt,
@@ -93,14 +99,9 @@ export const RunnerEditorAIZone = ({
         context: [
           'Database schemas and tables:',
           JSON.stringify(
-            await queryClient.ensureQueryData(
-              resourceTablesAndSchemasQueryOptions({
-                connectionResource,
-                showSystem: getConnectionResourceStore(
-                  connectionResource.id
-                ).get().showSystem,
-              })
-            ),
+            getConnectionResourceStore(connectionResource.id).get().showSystem
+              ? tablesAndSchemas
+              : hideSystemSchemas(tablesAndSchemas),
             null,
             2
           ),

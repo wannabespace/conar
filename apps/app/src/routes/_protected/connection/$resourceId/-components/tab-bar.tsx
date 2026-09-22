@@ -178,13 +178,8 @@ const DefinitionsRefresh = ({ section }: { section: DefinitionsSection }) => {
 
 const VisualizerRefresh = () => {
   const { connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const tablesAndSchemasKey = resourceTablesAndSchemasQueryOptions({
     connectionResource,
-    showSystem,
   }).queryKey
   const columnsKey = resourceColumnsQueryKey({ connectionResource })
   const constraintsKey = resourceConstraintsQueryOptions({

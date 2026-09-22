@@ -68,6 +68,7 @@ interface ConnectionCapabilities {
   renameConstraints: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
+  systemSchemas: readonly string[]
   triggers: TriggerCapabilities
 }
 
@@ -103,6 +104,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: { drop: true },
       triggers: false,
     },
+    systemSchemas: [],
     triggers: {
       body: false,
       events: [],
@@ -140,6 +142,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
+    systemSchemas: ['sys', 'INFORMATION_SCHEMA'],
     triggers: {
       body: true,
       events: ROW_EVENTS,
@@ -180,6 +183,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: readOnly,
       triggers: full,
     },
+    systemSchemas: ['mysql', 'information_schema', 'performance_schema', 'sys'],
     triggers: {
       body: true,
       events: ROW_EVENTS,
@@ -215,6 +219,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       policies: full,
       triggers: full,
     },
+    systemSchemas: ['pg_catalog', 'information_schema'],
     triggers: {
       body: false,
       events: TRIGGER_EVENTS,

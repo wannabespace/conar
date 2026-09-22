@@ -28,7 +28,6 @@ import { dropTableQuery } from '~/entities/connection/queries/tables/drop'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { pinnedTable } from '~/entities/connection/store/helpers/tables'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -43,7 +42,6 @@ interface DropTableDialogProps {
 export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   const { connection, connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
-  const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
@@ -75,10 +73,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
       setCascade(false)
 
       queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({
-          connectionResource,
-          showSystem: store.get().showSystem,
-        })
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
       )
 
       if (isCurrentTable) {

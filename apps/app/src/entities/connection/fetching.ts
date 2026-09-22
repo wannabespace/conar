@@ -18,7 +18,7 @@ import { resourceTableTotalQueryOptions } from './queries/rows/total'
 import { resourceTableColumnsQueryOptions } from './queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from './queries/tables/list'
 import { useLocalProxyAvailable } from './runtime/proxy'
-import { getConnectionResourceStore, getConnectionStore } from './store/stores'
+import { getConnectionStore } from './store/stores'
 
 export const prefetchConnectionResourceCore = async (
   connectionResource: ConnectionResource
@@ -37,13 +37,9 @@ export const prefetchConnectionResourceCore = async (
     return
   }
 
-  const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
     queryClient.query(
-      resourceTablesAndSchemasQueryOptions({
-        connectionResource,
-        showSystem: store.get().showSystem,
-      })
+      resourceTablesAndSchemasQueryOptions({ connectionResource })
     ),
     queryClient.query(resourceEnumsQueryOptions({ connectionResource })),
     queryClient.query(resourceConstraintsQueryOptions({ connectionResource })),
