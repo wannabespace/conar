@@ -9,7 +9,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
-import { createContext, use } from 'react'
+import { createContext, use, useEffect, useState } from 'react'
 
 import {
   fieldDescriptionVariants,
@@ -175,6 +175,8 @@ const fieldErrorContent = (
   return messages?.length ? [...new Set(messages)].join(' · ') : null
 }
 
+const ERROR_PEEK_MS = 3000
+
 const FieldError = ({
   className,
   children,
@@ -184,18 +186,38 @@ const FieldError = ({
   errors?: ({ message?: string } | undefined)[]
 }) => {
   const content = fieldErrorContent(children, errors)
+  const [seen, setSeen] = useState<React.ReactNode>(null)
+  const [hovered, setHovered] = useState(false)
+
+  useEffect(() => {
+    if (hovered) {
+      return
+    }
+    const timeout = setTimeout(() => setSeen(content), ERROR_PEEK_MS)
+
+    return () => clearTimeout(timeout)
+  }, [content, hovered])
 
   if (!content) {
     return null
   }
 
+  const engage = (next: boolean) => {
+    setHovered(next)
+    if (!next) {
+      setSeen(content)
+    }
+  }
+
   return (
-    <Tooltip>
+    <Tooltip open={hovered || seen !== content} onOpenChange={engage}>
       <TooltipTrigger
         render={
           <button
             type="button"
             data-slot="field-error"
+            onPointerEnter={() => engage(true)}
+            onPointerLeave={() => engage(false)}
             className={cn(
               `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none`,
               className
