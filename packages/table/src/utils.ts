@@ -1,8 +1,7 @@
 import type { CSSProperties } from 'react'
 
-// setProperty stores a custom property name verbatim while var() unescapes it,
-// so only the var() reference may pass the id through CSS.escape.
-export const columnWidthProperty = (id: string) => `--table-column-width-${id}`
+export const columnWidthProperty = (id: string) =>
+  `--table-column-width-${CSS.escape(id)}`
 
 export const getBaseColumnStyle = ({
   id,
@@ -13,7 +12,7 @@ export const getBaseColumnStyle = ({
 }): CSSProperties => ({
   flexShrink: 0,
   height: '100%',
-  width: `var(${columnWidthProperty(CSS.escape(id))}, ${defaultSize}px)`,
+  width: `var(${columnWidthProperty(id)}, ${defaultSize}px)`,
 })
 
 export type ColumnPosition = 'first' | 'last' | 'middle'
