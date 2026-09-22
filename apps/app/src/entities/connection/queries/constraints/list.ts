@@ -291,6 +291,9 @@ export const resourceConstraintsQuery = createQuery({
         ])
         .$narrowType<{ type: typeof constraintType.infer }>()
         .where('con.contype', 'in', ['p', 'u', 'f'])
+        // A partition's copy of its parent's constraint neither drops nor
+        // renames on its own, and the parent's row already stands for it.
+        .where('con.coninhcount', '=', 0)
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .orderBy(sql<number>`array_position(con.conkey, a.attnum)`)

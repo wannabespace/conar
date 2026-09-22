@@ -25,7 +25,7 @@ const parameterName = /@\w+$/u
 // `EXECUTE AS caller` and a parameter's `@p AS int` read as the header's
 // closing AS and are skipped; an AS inside a header comment still wins. Null
 // means the body cannot be read back, and the caller opens it read-only.
-export const mssqlModuleBody = (definition: string | null) => {
+export const mssqlModuleParts = (definition: string | null) => {
   if (!definition) {
     return null
   }
@@ -40,12 +40,16 @@ export const mssqlModuleBody = (definition: string | null) => {
     ) {
       continue
     }
+    const end = match.index + matched.length
 
-    return definition.slice(match.index + matched.length)
+    return { body: definition.slice(end), header: definition.slice(0, end) }
   }
 
   return null
 }
+
+export const mssqlModuleBody = (definition: string | null) =>
+  mssqlModuleParts(definition)?.body ?? null
 
 export const mssqlObjectDefinition = (schema: string, name: string) =>
   sql<

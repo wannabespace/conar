@@ -76,7 +76,14 @@ const templateOf = ({
     return ''
   }
 
-  return kind === 'procedure' ? 'BEGIN\n\nEND' : 'BEGIN\n  RETURN 0;\nEND'
+  if (kind === 'function') {
+    return 'BEGIN\n  RETURN 0;\nEND'
+  }
+
+  // T-SQL rejects a block holding no statement; MySQL takes one.
+  return connectionType === ConnectionType.MSSQL
+    ? 'BEGIN\n  SET NOCOUNT ON;\nEND'
+    : 'BEGIN\n\nEND'
 }
 
 interface FunctionDraft {
@@ -164,12 +171,14 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   securityDefiner: draft.securityDefiner,
 })
 
-// A catalog row the form cannot rebuild — a CLR or table-valued routine, or a
-// language we do not write — would lose what it cannot express on save.
+// A catalog row the form cannot rebuild — a CLR or table-valued routine, a
+// language we do not write, or a header option only the definition text
+// carries — loses on save whatever these fields cannot express.
 const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
   const { languages } = capabilitiesOf(connectionType).functions
 
   return (
+    !item.custom &&
     !!item.body &&
     item.args !== null &&
     item.return_type !== 'table' &&
@@ -178,13 +187,20 @@ const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
   )
 }
 
-// Postgres and SQL Server keep grants and owner through a replace, but only
-// while the name, arguments, return type and kind stay put.
-const replacesObject = (item: FunctionItem, shape: FunctionShape) =>
+// Dropping loses the routine's grants and owner, and fails while a view or
+// another routine depends on it. Postgres only replaces in place while the
+// whole signature stays put; SQL Server's CREATE OR ALTER also rewrites the
+// arguments and the return type.
+const replacesObject = (
+  item: FunctionItem,
+  shape: FunctionShape,
+  connectionType: ConnectionType
+) =>
   item.name !== shape.name ||
-  (item.args ?? '') !== shape.args ||
-  (item.return_type ?? '') !== shape.returnType ||
-  item.type !== shape.kind
+  item.type !== shape.kind ||
+  (connectionType !== ConnectionType.MSSQL &&
+    ((item.args ?? '') !== shape.args ||
+      (item.return_type ?? '') !== shape.returnType))
 
 const FunctionInspector = ({
   can,
@@ -206,7 +222,11 @@ const FunctionInspector = ({
               identity: item.identity,
               kind: item.type,
               name: item.name,
-              replacesObject: replacesObject(item, shapeOf(draft)),
+              replacesObject: replacesObject(
+                item,
+                shapeOf(draft),
+                connectionType
+              ),
               schema: item.schema,
               shape: shapeOf(draft),
             })

@@ -60,26 +60,43 @@ export const recreateEnumQuery = ({
               ? sql`ARRAY(SELECT ${remapped(sql`value`)}::${target} FROM unnest(${column}::text[]) AS value)`
               : sql`${remapped(sql`${column}::text`)}::${target}`
             const altered = sql`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${columnType} USING ${cast}`
-            const literal =
-              dependent.default?.match(DEFAULT_LITERAL)?.groups?.value
+            const current = dependent.default
 
-            if (literal === undefined) {
+            if (current === null) {
               return [altered]
             }
+            // A default the old type still owns blocks the column's type
+            // change, so every default comes off and goes back on.
+            const dropped = sql`ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT`
+            const restore = (expression: RawBuilder<unknown>) =>
+              sql`ALTER TABLE ${table} ALTER COLUMN ${column} SET DEFAULT ${expression}`
+            const literal = current.match(DEFAULT_LITERAL)?.groups?.value
 
+            if (literal === undefined) {
+              // An expression the literal form does not cover names the type,
+              // and the new type takes that name, so it goes back verbatim.
+              return [dropped, altered, restore(sql.raw(current))]
+            }
             const unescaped = literal.replaceAll("''", "'")
             const value = dependent.isArray
               ? await remappedArray(unescaped)
               : (renames[unescaped] ?? unescaped)
 
             return [
-              sql`ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT`,
+              dropped,
               altered,
-              sql`ALTER TABLE ${table} ALTER COLUMN ${column} SET DEFAULT ${sql.lit(value)}::${columnType}`,
+              restore(sql`${sql.lit(value)}::${columnType}`),
             ]
           }
 
-          const migrations = await Promise.all(dependents.map(migrate))
+          // One transaction is one connection, so the reads that build an
+          // array default run in turn rather than all at once.
+          const migrations: RawBuilder<unknown>[][] = []
+
+          for (const dependent of dependents) {
+            // oxlint-disable-next-line no-await-in-loop
+            migrations.push(await migrate(dependent))
+          }
 
           await sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`.execute(
             tx

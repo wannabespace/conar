@@ -5,7 +5,6 @@ import type { FunctionShape, RoutineTarget } from './shape'
 import { createFunctionStatements, dropRoutineStatements } from './shape'
 
 // replacesObject marks a signature the engine cannot replace in place.
-// Dropping loses the routine's grants and owner, so it only happens then.
 export const recreateFunctionQuery = ({
   replacesObject,
   shape,

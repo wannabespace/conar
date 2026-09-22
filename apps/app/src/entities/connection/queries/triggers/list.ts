@@ -129,9 +129,33 @@ const resourceTriggersQuery = createQuery({
           't.ACTION_TIMING as timing',
           't.ACTION_ORIENTATION as orientation',
           't.ACTION_STATEMENT as body',
-          // A trigger placed with FOLLOWS/PRECEDES loses its place in a
-          // drop-and-create, and the form cannot say where it belongs.
-          sql<1 | 0>`t.ACTION_ORDER > 1`.as('custom'),
+          // A drop-and-create puts the trigger back last among its event's
+          // triggers, so one that another already follows cannot keep its place.
+          (eb) =>
+            eb
+              .exists(
+                eb
+                  .selectFrom('information_schema.TRIGGERS as later')
+                  .select(sql.lit(1).as('one'))
+                  .whereRef(
+                    'later.EVENT_OBJECT_SCHEMA',
+                    '=',
+                    't.EVENT_OBJECT_SCHEMA'
+                  )
+                  .whereRef(
+                    'later.EVENT_OBJECT_TABLE',
+                    '=',
+                    't.EVENT_OBJECT_TABLE'
+                  )
+                  .whereRef(
+                    'later.EVENT_MANIPULATION',
+                    '=',
+                    't.EVENT_MANIPULATION'
+                  )
+                  .whereRef('later.ACTION_TIMING', '=', 't.ACTION_TIMING')
+                  .whereRef('later.ACTION_ORDER', '>', 't.ACTION_ORDER')
+              )
+              .as('custom'),
         ])
         .where('t.TRIGGER_SCHEMA', 'not in', [
           'mysql',

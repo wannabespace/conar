@@ -172,7 +172,7 @@ const resourceTableColumnsQuery = memoize(
                 OR EXTRA LIKE '%VIRTUAL GENERATED%'
                 OR EXTRA LIKE '%STORED GENERATED%'
             `.as('isGenerated'),
-              sql<1 | 0>`IIF(IS_NULLABLE = 'YES', 1, 0)`.as('nullable'),
+              sql<1 | 0>`IS_NULLABLE = 'YES'`.as('nullable'),
             ])
             .where(({ and, eb }) =>
               and([

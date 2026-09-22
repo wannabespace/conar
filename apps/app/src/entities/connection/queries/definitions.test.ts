@@ -17,7 +17,7 @@ import { addConstraint, constraintClause } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import { createIndexStatement } from './indexes/shape'
 import { createPolicyStatement } from './policies/shape'
-import { mssqlModuleBody } from './shared/definition'
+import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
 import {
   createTriggerStatements,
   setTriggerEnabledStatements,
@@ -282,5 +282,23 @@ describe('mssqlModuleBody', () => {
   test('a header that never closes reads back as nothing', () => {
     expect(mssqlModuleBody('CREATE PROCEDURE dbo.p')).toBeNull()
     expect(mssqlModuleBody(null)).toBeNull()
+  })
+
+  // The header carries what sys.parameters does not, and the list query reads
+  // the routine read-only from it.
+  test('the header keeps a parameter default and a WITH option', () => {
+    expect(
+      mssqlModuleParts(
+        'CREATE FUNCTION dbo.f (@a int = 5) RETURNS int WITH SCHEMABINDING AS BEGIN RETURN @a END'
+      )?.header
+    ).toBe(
+      'CREATE FUNCTION dbo.f (@a int = 5) RETURNS int WITH SCHEMABINDING AS '
+    )
+  })
+
+  test('a plain header carries neither', () => {
+    expect(
+      mssqlModuleParts('CREATE PROCEDURE dbo.p @a int AS SELECT 1')?.header
+    ).toBe('CREATE PROCEDURE dbo.p @a int AS ')
   })
 })

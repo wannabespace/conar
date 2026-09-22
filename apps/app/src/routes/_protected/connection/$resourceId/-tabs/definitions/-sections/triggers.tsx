@@ -441,6 +441,11 @@ const TriggerInspector = ({
                   )
                   .map((fn) => fn.name)}
                 placeholder="Choose a function"
+                // The picker only offers this schema, so a pick moves the
+                // function off the schema the opened trigger named.
+                onChanged={() =>
+                  resetFields(form, { functionSchema: draft.schema })
+                }
               />
             )}
           </form.AppField>

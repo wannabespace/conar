@@ -121,6 +121,7 @@ interface PgConstraint {
   condeferrable: boolean
   convalidated: boolean
   conindid: number
+  coninhcount: number
 }
 
 /**

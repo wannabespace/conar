@@ -8,7 +8,7 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
-import { mssqlModuleBody } from '../shared/definition'
+import { mssqlModuleParts } from '../shared/definition'
 
 const mssqlType = sql<string>`TYPE_NAME(pa.user_type_id)`
 
@@ -21,6 +21,10 @@ const mssqlParameterType = sql<string>`CONCAT(${mssqlType}, CASE
   WHEN ${mssqlType} IN ('datetime2', 'datetimeoffset', 'time') THEN CONCAT('(', pa.scale, ')')
   ELSE ''
 END)`
+
+// A parameter default, a READONLY parameter and every WITH option live in the
+// header text alone, so a signature rebuilt from the catalog would drop them.
+const mssqlHeaderOptions = /[=]|\bREADONLY\b|\bWITH\b/iu
 
 // GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
 // signature that reaches the cap reads as unreadable instead of saving back
@@ -41,6 +45,7 @@ export const functionsType = type({
   'args?': 'string | null',
   'behavior?': 'string | null',
   'body?': 'string | null',
+  'custom?': 'boolean | 1 | 0',
   'extras?': 'string | null',
   'identity?': 'string',
   'language?': 'string',
@@ -50,11 +55,12 @@ export const functionsType = type({
   schema: 'string',
   'security_definer?': 'boolean',
   type: '"function" | "procedure"',
-}).pipe(({ security_definer, ...item }) => ({
+}).pipe(({ custom, security_definer, ...item }) => ({
   ...item,
   args: item.args ?? null,
   behavior: item.behavior || '',
   body: item.body || '',
+  custom: !!custom,
   extras: item.extras || '',
   language: item.language || null,
   securityDefiner: security_definer ?? false,
@@ -94,7 +100,15 @@ const resourceFunctionsQuery = createQuery({
         .where('s.name', 'not in', ['sys', 'INFORMATION_SCHEMA'])
         .execute()
 
-      return rows.map((row) => ({ ...row, body: mssqlModuleBody(row.body) }))
+      return rows.map((row) => {
+        const module = mssqlModuleParts(row.body)
+
+        return {
+          ...row,
+          body: module?.body ?? null,
+          custom: mssqlHeaderOptions.test(module?.header ?? ''),
+        }
+      })
     },
     mysql: (db) =>
       db
@@ -105,7 +119,7 @@ const resourceFunctionsQuery = createQuery({
           sql<'function' | 'procedure'>`LOWER(r.ROUTINE_TYPE)`.as('type'),
           sql<
             string | null
-          >`CASE WHEN CHAR_LENGTH(${mysqlArguments}) >= @@group_concat_max_len THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
+          >`CASE WHEN LENGTH(${mysqlArguments}) >= @@group_concat_max_len THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
             'args'
           ),
           'r.ROUTINE_DEFINITION as body',
@@ -169,11 +183,13 @@ const resourceFunctionsQuery = createQuery({
               .end()
               .as('behavior'),
           sql<string>`TRIM(CONCAT_WS(' ',
-            CASE WHEN p.proisstrict THEN 'STRICT' END,
-            CASE WHEN p.proleakproof THEN 'LEAKPROOF' END,
-            CASE p.proparallel WHEN 's' THEN 'PARALLEL SAFE' WHEN 'r' THEN 'PARALLEL RESTRICTED' END,
-            CONCAT('COST ', p.procost::text),
-            CASE WHEN p.proretset THEN CONCAT('ROWS ', p.prorows::text) END,
+            CASE WHEN p.prokind <> 'p' THEN CONCAT_WS(' ',
+              CASE WHEN p.proisstrict THEN 'STRICT' END,
+              CASE WHEN p.proleakproof THEN 'LEAKPROOF' END,
+              CASE p.proparallel WHEN 's' THEN 'PARALLEL SAFE' WHEN 'r' THEN 'PARALLEL RESTRICTED' END,
+              CONCAT('COST ', p.procost::text),
+              CASE WHEN p.proretset THEN CONCAT('ROWS ', p.prorows::text) END
+            ) END,
             (
               SELECT string_agg(
                 CONCAT('SET ', split_part(cfg, '=', 1), ' TO ', quote_literal(substr(cfg, strpos(cfg, '=') + 1))),
