@@ -1,6 +1,7 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { statementQuery } from '../shared/statements'
+import { createQuery } from '../../runtime/query'
 import type { PolicyTarget } from './shape'
 import { expression, policyOn, roleList } from './shape'
 
@@ -18,12 +19,26 @@ export const alterPolicyQuery = ({
 }) => {
   const policy = policyOn(target)
 
-  return statementQuery('Row policies', {
-    postgres: [
-      sql`ALTER POLICY ${policy}${roles ? sql` TO ${roleList(roles)}` : sql``}${expression('USING', using)}${expression('WITH CHECK', check)}`,
-      newName
-        ? sql`ALTER POLICY ${policy} RENAME TO ${sql.id(newName)}`
-        : undefined,
-    ],
+  return createQuery({
+    query: {
+      clickhouse: unsupported('Row policies'),
+      mssql: unsupported('Row policies'),
+      mysql: unsupported('Row policies'),
+      postgres: (db) =>
+        db.transaction().execute(async (tx) => {
+          await sql`
+            ALTER POLICY ${policy}
+            ${roles ? sql`TO ${roleList(roles)}` : sql``}
+            ${expression('USING', using)}
+            ${expression('WITH CHECK', check)}
+          `.execute(tx)
+
+          if (newName) {
+            await sql`ALTER POLICY ${policy} RENAME TO ${sql.id(newName)}`.execute(
+              tx
+            )
+          }
+        }),
+    },
   })
 }

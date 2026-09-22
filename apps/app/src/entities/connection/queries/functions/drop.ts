@@ -1,6 +1,7 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { statementQuery } from '../shared/statements'
+import { createQuery } from '../../runtime/query'
 import type { RoutineTarget } from './shape'
 import { dropRoutineStatements } from './shape'
 
@@ -10,9 +11,13 @@ export const dropFunctionQuery = ({
 }: RoutineTarget & { cascade: boolean }) => {
   const drop = dropRoutineStatements(target)
 
-  return statementQuery('Functions', {
-    mssql: drop.byName,
-    mysql: drop.byName,
-    postgres: cascade ? sql`${drop.postgres} CASCADE` : drop.postgres,
+  return createQuery({
+    query: {
+      clickhouse: unsupported('Functions'),
+      mssql: (db) => drop.mssql.execute(db),
+      mysql: (db) => drop.mysql.execute(db),
+      postgres: (db) =>
+        (cascade ? sql`${drop.postgres} CASCADE` : drop.postgres).execute(db),
+    },
   })
 }

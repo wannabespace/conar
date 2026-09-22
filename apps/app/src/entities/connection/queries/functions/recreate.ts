@@ -1,4 +1,6 @@
-import { statementQuery } from '../shared/statements'
+import { unsupported } from '@tamery/shared/utils/unsupported'
+
+import { createQuery } from '../../runtime/query'
 import type { FunctionShape, RoutineTarget } from './shape'
 import { createFunctionStatements, dropRoutineStatements } from './shape'
 
@@ -16,9 +18,28 @@ export const recreateFunctionQuery = ({
   })
   const drop = dropRoutineStatements(target)
 
-  return statementQuery('Functions', {
-    mssql: [replacesObject ? drop.byName : undefined, create.mssql],
-    mysql: [drop.byName, create.mysql],
-    postgres: [replacesObject ? drop.postgres : undefined, create.postgres],
+  return createQuery({
+    query: {
+      clickhouse: unsupported('Functions'),
+      mssql: (db) =>
+        db.transaction().execute(async (tx) => {
+          if (replacesObject) {
+            await drop.mssql.execute(tx)
+          }
+          await create.mssql.execute(tx)
+        }),
+      mysql: (db) =>
+        db.transaction().execute(async (tx) => {
+          await drop.mysql.execute(tx)
+          await create.mysql.execute(tx)
+        }),
+      postgres: (db) =>
+        db.transaction().execute(async (tx) => {
+          if (replacesObject) {
+            await drop.postgres.execute(tx)
+          }
+          await create.postgres.execute(tx)
+        }),
+    },
   })
 }

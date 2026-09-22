@@ -1,4 +1,3 @@
-import type { RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
 import { identifiers } from '../shared/sql-fragments'
@@ -26,32 +25,40 @@ export interface ConstraintShape {
   onUpdate: ReferentialAction
 }
 
-const kindKeyword: Record<ConstraintKind, string> = {
-  foreignKey: 'FOREIGN KEY',
-  primaryKey: 'PRIMARY KEY',
-  unique: 'UNIQUE',
-}
-
-export const mysqlDropTarget: Record<
-  ConstraintKind,
-  (name: string) => RawBuilder<unknown>
-> = {
-  foreignKey: (name) => sql`FOREIGN KEY ${sql.id(name)}`,
-  primaryKey: () => sql`PRIMARY KEY`,
-  unique: (name) => sql`INDEX ${sql.id(name)}`,
-}
-
-export const constraintClause = (shape: ConstraintShape) => {
-  const references =
-    shape.kind === 'foreignKey'
-      ? sql` REFERENCES ${sql.id(shape.foreignSchema, shape.foreignTable)} (${identifiers(shape.foreignColumns)}) ON DELETE ${sql.raw(shape.onDelete)} ON UPDATE ${sql.raw(shape.onUpdate)}`
-      : sql``
-
-  return sql`CONSTRAINT ${sql.id(shape.name)} ${sql.raw(kindKeyword[shape.kind])} (${identifiers(shape.columns)})${references}`
-}
-
 export interface ConstraintTarget {
   name: string
   schema: string
   table: string
 }
+
+export const constraintClause = ({
+  columns,
+  foreignColumns,
+  foreignSchema,
+  foreignTable,
+  kind,
+  name,
+  onDelete,
+  onUpdate,
+}: ConstraintShape) => {
+  const keyword = {
+    foreignKey: sql`FOREIGN KEY`,
+    primaryKey: sql`PRIMARY KEY`,
+    unique: sql`UNIQUE`,
+  }[kind]
+  const constraint = sql`CONSTRAINT ${sql.id(name)} ${keyword} (${identifiers(columns)})`
+
+  if (kind !== 'foreignKey') {
+    return constraint
+  }
+
+  return sql`${constraint} REFERENCES ${sql.id(foreignSchema, foreignTable)} (${identifiers(foreignColumns)}) ON DELETE ${sql.raw(onDelete)} ON UPDATE ${sql.raw(onUpdate)}`
+}
+
+// MySQL has no DROP CONSTRAINT for keys; each kind drops through its own clause.
+export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
+  ({
+    foreignKey: sql`FOREIGN KEY ${sql.id(name)}`,
+    primaryKey: sql`PRIMARY KEY`,
+    unique: sql`INDEX ${sql.id(name)}`,
+  })[kind]

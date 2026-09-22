@@ -28,16 +28,38 @@ export interface TriggerTarget {
   table: string
 }
 
+export const createTriggerStatements = ({
+  schema,
+  shape,
+  table,
+}: TriggerTarget & { shape: TriggerShape }) => {
+  const target = sql.id(schema, table)
+  const name = sql.id(schema, shape.name)
+  const timing = sql.raw(shape.timing)
+  const events = sql.raw(shape.events.join(', '))
+  const body = sql.raw(shape.body)
+
+  return {
+    mssql: sql`CREATE TRIGGER ${name} ON ${target} ${timing} ${events} AS ${body}`,
+    mysql: sql`CREATE TRIGGER ${name} ${timing} ${events} ON ${target} FOR EACH ROW ${body}`,
+    postgres: sql`
+      CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${sql.raw(shape.events.join(' OR '))} ON ${target}
+      FOR EACH ${sql.raw(shape.orientation)}
+      EXECUTE FUNCTION ${sql.id(shape.functionSchema || schema, shape.functionName)}()
+    `,
+  }
+}
+
 export const dropTriggerStatements = ({
   name,
   schema,
   table,
 }: TriggerTarget & { name: string }) => {
-  const dropByName = sql`DROP TRIGGER ${sql.id(schema, name)}`
+  const drop = sql`DROP TRIGGER ${sql.id(schema, name)}`
 
   return {
-    mssql: dropByName,
-    mysql: dropByName,
+    mssql: drop,
+    mysql: drop,
     postgres: sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`,
   }
 }
@@ -46,10 +68,10 @@ export const dropTriggerStatements = ({
 // always; a plain ENABLE would quietly move a replica trigger to the origin.
 const postgresEnableVerb = (enabled: boolean, mode: string) => {
   if (!enabled) {
-    return 'DISABLE'
+    return sql`DISABLE`
   }
 
-  return { A: 'ENABLE ALWAYS', R: 'ENABLE REPLICA' }[mode] ?? 'ENABLE'
+  return { A: sql`ENABLE ALWAYS`, R: sql`ENABLE REPLICA` }[mode] ?? sql`ENABLE`
 }
 
 export const setTriggerEnabledStatements = ({
@@ -59,24 +81,6 @@ export const setTriggerEnabledStatements = ({
   schema,
   table,
 }: TriggerTarget & { enabled: boolean; mode: string; name: string }) => ({
-  mssql: sql`${sql.raw(enabled ? 'ENABLE' : 'DISABLE')} TRIGGER ${sql.id(schema, name)} ON ${sql.id(schema, table)}`,
-  postgres: sql`ALTER TABLE ${sql.id(schema, table)} ${sql.raw(postgresEnableVerb(enabled, mode))} TRIGGER ${sql.id(name)}`,
+  mssql: sql`${enabled ? sql`ENABLE` : sql`DISABLE`} TRIGGER ${sql.id(schema, name)} ON ${sql.id(schema, table)}`,
+  postgres: sql`ALTER TABLE ${sql.id(schema, table)} ${postgresEnableVerb(enabled, mode)} TRIGGER ${sql.id(name)}`,
 })
-
-export const createTriggerStatements = ({
-  schema,
-  shape,
-  table,
-}: TriggerTarget & { shape: TriggerShape }) => {
-  const target = sql.id(schema, table)
-  const name = sql.id(schema, shape.name)
-  const timing = sql.raw(shape.timing)
-  const body = sql.raw(shape.body)
-  const events = (separator: string) => sql.raw(shape.events.join(separator))
-
-  return {
-    mssql: sql`CREATE TRIGGER ${name} ON ${target} ${timing} ${events(', ')} AS ${body}`,
-    mysql: sql`CREATE TRIGGER ${name} ${timing} ${events(', ')} ON ${target} FOR EACH ROW ${body}`,
-    postgres: sql`CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${events(' OR ')} ON ${target} FOR EACH ${sql.raw(shape.orientation)} EXECUTE FUNCTION ${sql.id(shape.functionSchema || schema, shape.functionName)}()`,
-  }
-}

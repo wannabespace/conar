@@ -27,6 +27,14 @@ export interface FunctionShape {
   securityDefiner: boolean
 }
 
+export interface RoutineTarget {
+  // pg_get_function_identity_arguments output, the form DROP expects
+  identity: string | undefined
+  kind: RoutineKind
+  name: string
+  schema: string
+}
+
 // Postgres ends the body at the first repeat of the opening tag, so the tag
 // has to be one the body does not already contain.
 const dollarQuoted = (body: string) => {
@@ -48,34 +56,32 @@ export const createFunctionStatements = ({
   schema: string
   shape: FunctionShape
 }) => {
-  const name = sql.id(schema, shape.name)
-  const keyword = routineKeyword(shape.kind)
-  const mssqlCreate = sql.raw(replace ? 'CREATE OR ALTER' : 'CREATE')
-  const postgresCreate = sql.raw(replace ? 'CREATE OR REPLACE' : 'CREATE')
+  const routine = sql`${routineKeyword(shape.kind)} ${sql.id(schema, shape.name)}`
   const args = sql.raw(shape.args)
   const body = sql.raw(shape.body)
+  const behavior = sql.raw(shape.behavior)
+  const extras = sql.raw(shape.extras)
   const returns =
-    shape.kind === 'function' && shape.returnType
-      ? sql` RETURNS ${sql.raw(shape.returnType)}`
+    shape.kind === 'function'
+      ? sql`RETURNS ${sql.raw(shape.returnType)}`
       : sql``
-  const behavior = shape.behavior ? sql` ${sql.raw(shape.behavior)}` : sql``
-  const extras = shape.extras ? sql` ${sql.raw(shape.extras)}` : sql``
-  const security = shape.securityDefiner ? sql` SECURITY DEFINER` : sql``
-  // T-SQL takes procedure parameters bare; empty parentheses are a syntax error.
-  const mssqlArgs = shape.kind === 'function' ? sql`(${args})` : sql` ${args}`
 
   return {
-    mssql: sql`${mssqlCreate} ${keyword} ${name}${mssqlArgs}${returns} AS ${body}`,
-    mysql: sql`CREATE ${keyword} ${name}(${args})${returns}${behavior}${extras} ${body}`,
-    postgres: sql`${postgresCreate} ${keyword} ${name}(${args})${returns} LANGUAGE ${sql.raw(shape.language)}${behavior}${security}${extras} AS ${dollarQuoted(shape.body)}`,
+    // T-SQL takes procedure parameters bare; empty parentheses are a syntax error.
+    mssql: sql`
+      ${replace ? sql`CREATE OR ALTER` : sql`CREATE`} ${routine} ${shape.kind === 'function' ? sql`(${args})` : args} ${returns}
+      AS ${body}
+    `,
+    mysql: sql`
+      CREATE ${routine}(${args}) ${returns} ${behavior} ${extras}
+      ${body}
+    `,
+    postgres: sql`
+      ${replace ? sql`CREATE OR REPLACE` : sql`CREATE`} ${routine}(${args}) ${returns}
+      LANGUAGE ${sql.raw(shape.language)} ${behavior} ${shape.securityDefiner ? sql`SECURITY DEFINER` : sql``} ${extras}
+      AS ${dollarQuoted(shape.body)}
+    `,
   }
-}
-
-export interface RoutineTarget {
-  identity: string | undefined
-  kind: RoutineKind
-  name: string
-  schema: string
 }
 
 export const dropRoutineStatements = ({
@@ -84,11 +90,12 @@ export const dropRoutineStatements = ({
   name,
   schema,
 }: RoutineTarget) => {
-  const byName = sql`DROP ${routineKeyword(kind)} ${sql.id(schema, name)}`
+  const drop = sql`DROP ${routineKeyword(kind)} ${sql.id(schema, name)}`
 
   return {
-    byName,
-    // identity is pg_get_function_identity_arguments output, the form DROP expects
-    postgres: sql`${byName}(${sql.raw(identity ?? '')})`,
+    mssql: drop,
+    mysql: drop,
+    // Postgres overloads by signature, so the drop names the arguments too.
+    postgres: sql`${drop}(${sql.raw(identity ?? '')})`,
   }
 }

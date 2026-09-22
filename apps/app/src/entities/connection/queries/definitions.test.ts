@@ -15,7 +15,7 @@ import {
 import { constraintClause } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import { createIndexStatement } from './indexes/shape'
-import { policyClause } from './policies/shape'
+import { createPolicyStatement } from './policies/shape'
 import {
   createTriggerStatements,
   setTriggerEnabledStatements,
@@ -56,7 +56,7 @@ const compilers = {
 const compiled = (
   statement: RawBuilder<unknown>,
   dialect: keyof typeof compilers = 'postgres'
-) => statement.compile(compilers[dialect]).sql
+) => statement.compile(compilers[dialect]).sql.replaceAll(/\s+/gu, ' ').trim()
 
 const routine = (
   overrides: Partial<Parameters<typeof createFunctionStatements>[0]['shape']>
@@ -108,7 +108,7 @@ describe('routine statements', () => {
 
   test('SQL Server functions keep their parentheses and return type', () => {
     expect(compiled(routine({ args: 'id int' }).mssql, 'mssql')).toBe(
-      'CREATE OR ALTER FUNCTION "app"."f"(id int) RETURNS integer AS BEGIN END'
+      'CREATE OR ALTER FUNCTION "app"."f" (id int) RETURNS integer AS BEGIN END'
     )
   })
 
@@ -203,7 +203,7 @@ test('a unique index covers its columns in order', () => {
 describe('policy statements', () => {
   const policy = (roles: string[], using: string | null) =>
     compiled(
-      policyClause({
+      createPolicyStatement({
         schema: 's',
         shape: {
           check: null,

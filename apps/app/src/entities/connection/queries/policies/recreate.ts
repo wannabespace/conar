@@ -1,16 +1,22 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { statementQuery } from '../shared/statements'
+import { createQuery } from '../../runtime/query'
 import type { PolicyShape, PolicyTarget } from './shape'
-import { policyClause, policyOn } from './shape'
+import { createPolicyStatement, policyOn } from './shape'
 
-export const recreatePolicyQuery = ({
-  shape,
-  ...target
-}: PolicyTarget & { shape: PolicyShape }) =>
-  statementQuery('Row policies', {
-    postgres: [
-      sql`DROP POLICY ${policyOn(target)}`,
-      policyClause({ schema: target.schema, shape, table: target.table }),
-    ],
+export const recreatePolicyQuery = (
+  target: PolicyTarget & { shape: PolicyShape }
+) =>
+  createQuery({
+    query: {
+      clickhouse: unsupported('Row policies'),
+      mssql: unsupported('Row policies'),
+      mysql: unsupported('Row policies'),
+      postgres: (db) =>
+        db.transaction().execute(async (tx) => {
+          await sql`DROP POLICY ${policyOn(target)}`.execute(tx)
+          await createPolicyStatement(target).execute(tx)
+        }),
+    },
   })

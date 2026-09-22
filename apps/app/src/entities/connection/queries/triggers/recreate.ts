@@ -1,4 +1,6 @@
-import { statementQuery } from '../shared/statements'
+import { unsupported } from '@tamery/shared/utils/unsupported'
+
+import { createQuery } from '../../runtime/query'
 import type { TriggerShape, TriggerTarget } from './shape'
 import {
   createTriggerStatements,
@@ -23,7 +25,7 @@ export const recreateTriggerQuery = ({
   const create = createTriggerStatements({ schema, shape, table })
   // A created trigger fires on the origin; one that did not comes back as it was.
   const restore =
-    enabled === false || mode === 'R' || mode === 'A'
+    enabled === false || mode !== 'O'
       ? setTriggerEnabledStatements({
           enabled: enabled !== false,
           mode,
@@ -33,9 +35,26 @@ export const recreateTriggerQuery = ({
         })
       : undefined
 
-  return statementQuery('Triggers', {
-    mssql: [drop.mssql, create.mssql, restore?.mssql],
-    mysql: [drop.mysql, create.mysql],
-    postgres: [drop.postgres, create.postgres, restore?.postgres],
+  return createQuery({
+    query: {
+      clickhouse: unsupported('Triggers'),
+      mssql: (db) =>
+        db.transaction().execute(async (tx) => {
+          await drop.mssql.execute(tx)
+          await create.mssql.execute(tx)
+          await restore?.mssql.execute(tx)
+        }),
+      mysql: (db) =>
+        db.transaction().execute(async (tx) => {
+          await drop.mysql.execute(tx)
+          await create.mysql.execute(tx)
+        }),
+      postgres: (db) =>
+        db.transaction().execute(async (tx) => {
+          await drop.postgres.execute(tx)
+          await create.postgres.execute(tx)
+          await restore?.postgres.execute(tx)
+        }),
+    },
   })
 }

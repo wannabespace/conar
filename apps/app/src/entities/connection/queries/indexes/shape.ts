@@ -10,6 +10,12 @@ export interface IndexShape {
   unique?: boolean
 }
 
+export interface IndexTarget {
+  name: string
+  schema: string
+  table: string
+}
+
 export const createIndexStatement = ({
   columns,
   name,
@@ -17,10 +23,4 @@ export const createIndexStatement = ({
   table,
   unique,
 }: IndexShape) =>
-  sql`CREATE ${unique ? sql`UNIQUE ` : sql``}INDEX ${sql.id(name)} ON ${sql.id(schema, table)} (${identifiers(columns)})`
-
-export interface IndexTarget {
-  name: string
-  schema: string
-  table: string
-}
+  sql`CREATE ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(name)} ON ${sql.id(schema, table)} (${identifiers(columns)})`

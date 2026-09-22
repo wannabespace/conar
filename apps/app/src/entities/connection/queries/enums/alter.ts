@@ -1,6 +1,7 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { statementQuery } from '../shared/statements'
+import { createQuery } from '../../runtime/query'
 
 export const alterEnumQuery = ({
   additions,
@@ -14,21 +15,35 @@ export const alterEnumQuery = ({
   newName: string
   renames: Record<string, string>
   schema: string
-}) => {
-  const target = sql.id(schema, name)
+}) =>
+  createQuery({
+    query: {
+      clickhouse: unsupported('Editing enums'),
+      mssql: unsupported('Editing enums'),
+      mysql: unsupported('Editing enums'),
+      postgres: (db) =>
+        db.transaction().execute(async (tx) => {
+          const target = sql.id(schema, name)
+          const statements = [
+            ...Object.entries(renames).map(
+              ([from, to]) =>
+                sql`ALTER TYPE ${target} RENAME VALUE ${sql.lit(from)} TO ${sql.lit(to)}`
+            ),
+            ...additions.map(
+              (value) => sql`ALTER TYPE ${target} ADD VALUE ${sql.lit(value)}`
+            ),
+          ]
 
-  return statementQuery('Editing enums', {
-    postgres: [
-      ...Object.entries(renames).map(
-        ([value, renamed]) =>
-          sql`ALTER TYPE ${target} RENAME VALUE ${sql.lit(value)} TO ${sql.lit(renamed)}`
-      ),
-      ...additions.map(
-        (value) => sql`ALTER TYPE ${target} ADD VALUE ${sql.lit(value)}`
-      ),
-      newName === name
-        ? undefined
-        : sql`ALTER TYPE ${target} RENAME TO ${sql.id(newName)}`,
-    ],
+          if (newName !== name) {
+            statements.push(
+              sql`ALTER TYPE ${target} RENAME TO ${sql.id(newName)}`
+            )
+          }
+
+          for (const statement of statements) {
+            // oxlint-disable-next-line no-await-in-loop
+            await statement.execute(tx)
+          }
+        }),
+    },
   })
-}

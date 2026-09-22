@@ -1,6 +1,7 @@
+import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { statementQuery } from '../shared/statements'
+import { createQuery } from '../../runtime/query'
 
 export const dropEnumQuery = ({
   cascade,
@@ -11,6 +12,14 @@ export const dropEnumQuery = ({
   name: string
   schema: string
 }) =>
-  statementQuery('Editing enums', {
-    postgres: sql`DROP TYPE ${sql.id(schema, name)}${cascade ? sql` CASCADE` : sql``}`,
+  createQuery({
+    query: {
+      clickhouse: unsupported('Editing enums'),
+      mssql: unsupported('Editing enums'),
+      mysql: unsupported('Editing enums'),
+      postgres: (db) =>
+        sql`DROP TYPE ${sql.id(schema, name)}${cascade ? sql` CASCADE` : sql``}`.execute(
+          db
+        ),
+    },
   })
