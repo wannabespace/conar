@@ -234,6 +234,8 @@ interface PgType {
   oid: number
   typname: string
   typnamespace: number
+  typelem: number
+  typarray: number
 }
 
 /**

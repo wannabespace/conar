@@ -1,5 +1,4 @@
 import { unsupported } from '@tamery/shared/unsupported'
-import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 
@@ -18,8 +17,10 @@ export const dropEnumQuery = ({
       mssql: unsupported('Editing enums'),
       mysql: unsupported('Editing enums'),
       postgres: (db) =>
-        sql`DROP TYPE ${sql.id(schema, name)}${cascade ? sql` CASCADE` : sql``}`.execute(
-          db
-        ),
+        db
+          .withSchema(schema)
+          .schema.dropType(name)
+          .$call((qb) => (cascade ? qb.cascade() : qb))
+          .execute(),
     },
   })

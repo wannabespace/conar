@@ -3,67 +3,9 @@ import type { RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
-import { literals } from '../shared/sql-fragments'
 import type { EnumDependent } from './dependents'
 
-const RECREATE_SUFFIX = '_tamery_replaced'
-
 const DEFAULT_LITERAL = /^'(?<value>(?:[^']|'')*)'::/u
-
-const remapped = (
-  expression: RawBuilder<unknown>,
-  renames: Record<string, string>
-) => {
-  const entries = Object.entries(renames)
-
-  if (entries.length === 0) {
-    return expression
-  }
-
-  return sql`CASE ${expression}${sql.join(
-    entries.map(
-      ([from, to]) => sql` WHEN ${sql.lit(from)} THEN ${sql.lit(to)}`
-    ),
-    sql``
-  )} ELSE ${expression} END`
-}
-
-const migrate = async ({
-  arrayDefault,
-  dependent,
-  renames,
-  target,
-}: {
-  arrayDefault: (literal: string) => Promise<string>
-  dependent: EnumDependent
-  renames: Record<string, string>
-  target: RawBuilder<unknown>
-}) => {
-  const table = sql.id(dependent.schema, dependent.table)
-  const column = sql.id(dependent.column)
-  const columnType = dependent.isArray ? sql`${target}[]` : target
-  const cast = dependent.isArray
-    ? sql`ARRAY(SELECT ${remapped(sql`value`, renames)}::${target} FROM unnest(${column}::text[]) AS value)`
-    : sql`${remapped(sql`${column}::text`, renames)}::${target}`
-
-  const altered = sql`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${columnType} USING ${cast}`
-  const literal = dependent.default?.match(DEFAULT_LITERAL)?.groups?.value
-
-  if (literal === undefined) {
-    return [altered]
-  }
-
-  const unescaped = literal.replaceAll("''", "'")
-  const value = dependent.isArray
-    ? await arrayDefault(unescaped)
-    : (renames[unescaped] ?? unescaped)
-
-  return [
-    sql`ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT`,
-    altered,
-    sql`ALTER TABLE ${table} ALTER COLUMN ${column} SET DEFAULT ${sql.lit(value)}::${columnType}`,
-  ]
-}
 
 export const recreateEnumQuery = ({
   dependents,
@@ -87,32 +29,73 @@ export const recreateEnumQuery = ({
       mysql: unsupported('Editing enums'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
-          const replacedName = `${name}${RECREATE_SUFFIX}`
           const target = sql.id(schema, newName)
-          const arrayDefault = async (literal: string) => {
-            const { rows } = await sql<{ value: string }>`
-              SELECT ARRAY(SELECT ${remapped(sql`value`, renames)} FROM unnest(${sql.lit(literal)}::text[]) AS value)::text AS value
-            `.execute(tx)
-            const [row] = rows
+          const replacedName = `${name}_tamery_replaced`
 
-            return row?.value ?? literal
-          }
-          const migrations = await Promise.all(
-            dependents.map((dependent) =>
-              migrate({ arrayDefault, dependent, renames, target })
+          const remapped = (expression: RawBuilder<unknown>) => {
+            const cases = Object.entries(renames).map(
+              ([from, to]) => sql` WHEN ${sql.lit(from)} THEN ${sql.lit(to)}`
             )
-          )
-          const statements = [
-            sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`,
-            sql`CREATE TYPE ${target} AS ENUM (${literals(values)})`,
-            ...migrations.flat(),
-            sql`DROP TYPE ${sql.id(schema, replacedName)}`,
-          ]
 
-          for (const statement of statements) {
+            return cases.length === 0
+              ? expression
+              : sql`CASE ${expression}${sql.join(cases, sql``)} ELSE ${expression} END`
+          }
+
+          // A DEFAULT expression cannot hold a subquery, so an array default is
+          // remapped by the server before it goes back into SET DEFAULT.
+          const remappedArray = async (literal: string) => {
+            const { rows } = await sql<{ value: string }>`
+              SELECT ARRAY(SELECT ${remapped(sql`value`)} FROM unnest(${sql.lit(literal)}::text[]) AS value)::text AS value
+            `.execute(tx)
+
+            return rows[0]?.value ?? literal
+          }
+
+          const migrate = async (dependent: EnumDependent) => {
+            const table = sql.id(dependent.schema, dependent.table)
+            const column = sql.id(dependent.column)
+            const columnType = dependent.isArray ? sql`${target}[]` : target
+            const cast = dependent.isArray
+              ? sql`ARRAY(SELECT ${remapped(sql`value`)}::${target} FROM unnest(${column}::text[]) AS value)`
+              : sql`${remapped(sql`${column}::text`)}::${target}`
+            const altered = sql`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${columnType} USING ${cast}`
+            const literal =
+              dependent.default?.match(DEFAULT_LITERAL)?.groups?.value
+
+            if (literal === undefined) {
+              return [altered]
+            }
+
+            const unescaped = literal.replaceAll("''", "'")
+            const value = dependent.isArray
+              ? await remappedArray(unescaped)
+              : (renames[unescaped] ?? unescaped)
+
+            return [
+              sql`ALTER TABLE ${table} ALTER COLUMN ${column} DROP DEFAULT`,
+              altered,
+              sql`ALTER TABLE ${table} ALTER COLUMN ${column} SET DEFAULT ${sql.lit(value)}::${columnType}`,
+            ]
+          }
+
+          const migrations = await Promise.all(dependents.map(migrate))
+
+          await sql`ALTER TYPE ${sql.id(schema, name)} RENAME TO ${sql.id(replacedName)}`.execute(
+            tx
+          )
+          await tx
+            .withSchema(schema)
+            .schema.createType(newName)
+            .asEnum(values)
+            .execute()
+
+          for (const statement of migrations.flat()) {
             // oxlint-disable-next-line no-await-in-loop
             await statement.execute(tx)
           }
+
+          await tx.withSchema(schema).schema.dropType(replacedName).execute()
         }),
     },
   })

@@ -15,10 +15,9 @@ const readVersion =
   (expression: RawBuilder<string>) =>
   // oxlint-disable-next-line ts/no-explicit-any
   async (db: Kysely<any>) => {
-    const { rows } = await sql<{
-      version: string
-    }>`SELECT ${expression} AS version`.execute(db)
-    const [row] = rows
+    const row = await db
+      .selectNoFrom(expression.as('version'))
+      .executeTakeFirst()
 
     if (!row) {
       throw new Error('Failed to read database version')

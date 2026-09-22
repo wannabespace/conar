@@ -24,32 +24,45 @@ const dependentsQuery = ({ name, schema }: { name: string; schema: string }) =>
       clickhouse: () => Promise.resolve([]),
       mssql: () => Promise.resolve([]),
       mysql: () => Promise.resolve([]),
-      postgres: async (db) => {
-        const { rows } = await sql<EnumDependent>`
-          SELECT
-            n.nspname AS schema,
-            c.relname AS "table",
-            a.attname AS column,
-            (at.typelem = e.oid) AS "isArray",
-            pg_get_expr(d.adbin, d.adrelid) AS "default"
-          FROM pg_catalog.pg_type e
-          JOIN pg_catalog.pg_namespace en ON en.oid = e.typnamespace
-          JOIN pg_catalog.pg_attribute a ON a.atttypid = e.oid OR a.atttypid = e.typarray
-          JOIN pg_catalog.pg_type at ON at.oid = a.atttypid
-          JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
-          JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-          LEFT JOIN pg_catalog.pg_attrdef d
-            ON d.adrelid = a.attrelid AND d.adnum = a.attnum
-          WHERE e.typname = ${sql.lit(name)}
-            AND en.nspname = ${sql.lit(schema)}
-            AND a.attnum > 0
-            AND NOT a.attisdropped
-            AND c.relkind IN ('r', 'p')
-            AND NOT c.relispartition
-        `.execute(db)
-
-        return rows
-      },
+      postgres: (db) =>
+        db
+          .selectFrom('pg_catalog.pg_type as e')
+          .innerJoin(
+            'pg_catalog.pg_namespace as en',
+            'en.oid',
+            'e.typnamespace'
+          )
+          .innerJoin('pg_catalog.pg_attribute as a', (join) =>
+            join.on((eb) =>
+              eb.or([
+                eb('a.atttypid', '=', eb.ref('e.oid')),
+                eb('a.atttypid', '=', eb.ref('e.typarray')),
+              ])
+            )
+          )
+          .innerJoin('pg_catalog.pg_type as at', 'at.oid', 'a.atttypid')
+          .innerJoin('pg_catalog.pg_class as c', 'c.oid', 'a.attrelid')
+          .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
+          .leftJoin('pg_catalog.pg_attrdef as d', (join) =>
+            join
+              .onRef('d.adrelid', '=', 'a.attrelid')
+              .onRef('d.adnum', '=', 'a.attnum')
+          )
+          .select([
+            'n.nspname as schema',
+            'c.relname as table',
+            'a.attname as column',
+            (eb) => eb('at.typelem', '=', eb.ref('e.oid')).as('isArray'),
+            sql<string | null>`pg_get_expr(d.adbin, d.adrelid)`.as('default'),
+          ])
+          .$narrowType<{ isArray: boolean }>()
+          .where('e.typname', '=', name)
+          .where('en.nspname', '=', schema)
+          .where('a.attnum', '>', 0)
+          .where('a.attisdropped', '=', false)
+          .where('c.relkind', 'in', ['r', 'p'])
+          .where('c.relispartition', '=', false)
+          .execute(),
     },
     type: enumDependentType.array(),
   })

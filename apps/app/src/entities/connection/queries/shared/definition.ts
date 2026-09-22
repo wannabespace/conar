@@ -9,14 +9,14 @@ export const definitionType = type({ definition: 'string | null' }).pipe(
 )
 
 export const readDefinition =
-  (expression: RawBuilder<unknown>) =>
+  (expression: RawBuilder<string | null>) =>
   // oxlint-disable-next-line ts/no-explicit-any
   async (db: Kysely<any>) => {
-    const { rows } = await sql<{
-      definition: string | null
-    }>`SELECT ${expression} AS definition`.execute(db)
+    const row = await db
+      .selectNoFrom(expression.as('definition'))
+      .executeTakeFirst()
 
-    return { definition: rows[0]?.definition ?? null }
+    return { definition: row?.definition ?? null }
   }
 
 // The catalog hands back the whole CREATE, so a module's body is what follows
@@ -32,4 +32,6 @@ export const mssqlModuleBody = (definition: RawBuilder<unknown>) => {
 }
 
 export const mssqlObjectDefinition = (schema: string, name: string) =>
-  sql`OBJECT_DEFINITION(OBJECT_ID(${sql.lit(mssqlQualified(schema, name))}))`
+  sql<
+    string | null
+  >`OBJECT_DEFINITION(OBJECT_ID(${sql.lit(mssqlQualified(schema, name))}))`
