@@ -93,6 +93,14 @@ const actionEntry = (
   ),
 })
 
+const resourceName = (connectionResource: ConnectionResource) =>
+  connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL
+
+const connectionTitle = (
+  connection: Connection,
+  connectionResource: ConnectionResource
+) => `${connection.name} - ${resourceName(connectionResource)}`
+
 const ConnectionItem = ({
   connection,
   connectionResource,
@@ -105,7 +113,7 @@ const ConnectionItem = ({
 
   return (
     <CommandItem
-      value={`${connection.name} - ${connectionResource.name}`}
+      value={connectionTitle(connection, connectionResource)}
       onSelect={run(() => {
         prefetchConnectionResourceCore(connectionResource)
         router.navigate(params)
@@ -116,7 +124,7 @@ const ConnectionItem = ({
         {connection.name}
         <span className="text-muted-foreground">
           {' '}
-          - {connectionResource.name}
+          - {resourceName(connectionResource)}
         </span>
       </span>
       {connection.label && (
@@ -238,7 +246,7 @@ export const ActionsCenter = () => {
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
 
   const connections = data.map(({ connection, connectionResource }) => ({
-    value: `${connection.name} - ${connectionResource.name}`,
+    value: connectionTitle(connection, connectionResource),
     keywords: connection.label ? [connection.label] : undefined,
     node: (
       <ConnectionItem
@@ -370,7 +378,7 @@ export const ActionsCenter = () => {
     ...(current && tables.length > 0
       ? [
           {
-            heading: `${current.connection.name} - ${current.connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL} Tables`,
+            heading: `${connectionTitle(current.connection, current.connectionResource)} Tables`,
             entries: tables,
           },
         ]
