@@ -10,22 +10,17 @@ import {
 } from '../../runtime/query'
 import { mssqlModuleBody } from '../shared/definition'
 
+const mssqlType = sql<string>`TYPE_NAME(pa.user_type_id)`
+
 // Types the form has to rebuild verbatim: a parameter that loses its length or
 // precision comes back as varchar(1) or decimal(18,0).
-const mssqlParameterType = sql<string>`CONCAT(
-  TYPE_NAME(pa.user_type_id),
-  CASE
-    WHEN TYPE_NAME(pa.user_type_id) IN ('varchar', 'varbinary', 'char', 'binary')
-      THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length AS varchar(10))), ')')
-    WHEN TYPE_NAME(pa.user_type_id) IN ('nvarchar', 'nchar')
-      THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length / 2 AS varchar(10))), ')')
-    WHEN TYPE_NAME(pa.user_type_id) IN ('decimal', 'numeric')
-      THEN CONCAT('(', pa.precision, ',', pa.scale, ')')
-    WHEN TYPE_NAME(pa.user_type_id) IN ('datetime2', 'datetimeoffset', 'time')
-      THEN CONCAT('(', pa.scale, ')')
-    ELSE ''
-  END
-)`
+const mssqlParameterType = sql<string>`CONCAT(${mssqlType}, CASE
+  WHEN ${mssqlType} IN ('varchar', 'varbinary', 'char', 'binary') THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length AS varchar(10))), ')')
+  WHEN ${mssqlType} IN ('nvarchar', 'nchar') THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length / 2 AS varchar(10))), ')')
+  WHEN ${mssqlType} IN ('decimal', 'numeric') THEN CONCAT('(', pa.precision, ',', pa.scale, ')')
+  WHEN ${mssqlType} IN ('datetime2', 'datetimeoffset', 'time') THEN CONCAT('(', pa.scale, ')')
+  ELSE ''
+END)`
 
 // GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
 // signature that reaches the cap reads as unreadable instead of saving back
@@ -54,28 +49,16 @@ export const functionsType = type({
   return_type: 'string | null',
   schema: 'string',
   'security_definer?': 'boolean',
-  type: 'string',
-}).pipe(
-  ({
-    type: fnType,
-    args,
-    behavior,
-    body,
-    extras,
-    language,
-    security_definer,
-    ...item
-  }) => ({
-    ...item,
-    args: args ?? null,
-    behavior: behavior || '',
-    body: body || '',
-    extras: extras || '',
-    language: language || null,
-    securityDefiner: security_definer ?? false,
-    type: fnType as 'function' | 'procedure',
-  })
-)
+  type: '"function" | "procedure"',
+}).pipe(({ security_definer, ...item }) => ({
+  ...item,
+  args: item.args ?? null,
+  behavior: item.behavior || '',
+  body: item.body || '',
+  extras: item.extras || '',
+  language: item.language || null,
+  securityDefiner: security_definer ?? false,
+}))
 
 const resourceFunctionsQuery = createQuery({
   query: {
@@ -95,18 +78,14 @@ const resourceFunctionsQuery = createQuery({
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
           ), '')`.as('args'),
           mssqlModuleBody(sql`sm.definition`).as('body'),
-          sql<string>`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as(
-            'type'
-          ),
+          sql<
+            'function' | 'procedure'
+          >`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as('type'),
           sql<string>`IIF(o.type IN ('FS', 'FT', 'PC'), 'CLR', 'SQL')`.as(
             'language'
           ),
           sql<string | null>`CASE
-            WHEN o.type = 'FN' THEN (
-              SELECT ${mssqlParameterType}
-              FROM sys.parameters pa
-              WHERE pa.object_id = o.object_id AND pa.parameter_id = 0
-            )
+            WHEN o.type = 'FN' THEN (SELECT ${mssqlParameterType} FROM sys.parameters pa WHERE pa.object_id = o.object_id AND pa.parameter_id = 0)
             WHEN o.type IN ('IF', 'TF') THEN 'table'
           END`.as('return_type'),
         ])
@@ -120,7 +99,7 @@ const resourceFunctionsQuery = createQuery({
         .select([
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
-          sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
+          sql<'function' | 'procedure'>`LOWER(r.ROUTINE_TYPE)`.as('type'),
           sql<
             string | null
           >`CASE WHEN CHAR_LENGTH(${mysqlArguments}) >= @@group_concat_max_len THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
@@ -203,6 +182,7 @@ const resourceFunctionsQuery = createQuery({
           'p.oid as oid',
           sql<string>`pg_get_function_identity_arguments(p.oid)`.as('identity'),
         ])
+        .$narrowType<{ type: 'function' | 'procedure' }>()
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .where('p.prokind', '!=', 'a')
