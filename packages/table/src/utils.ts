@@ -1,10 +1,8 @@
 import type { CSSProperties } from 'react'
 
-const SPACE_DOT_REGEX = /[\s.]+/gu
-const prepareColumnId = (id: string) => id.trim().replace(SPACE_DOT_REGEX, '_')
-
-export const columnWidthProperty = (id: string) =>
-  `--table-column-width-${prepareColumnId(id)}`
+// setProperty stores a custom property name verbatim while var() unescapes it,
+// so only the var() reference may pass the id through CSS.escape.
+export const columnWidthProperty = (id: string) => `--table-column-width-${id}`
 
 export const getBaseColumnStyle = ({
   id,
@@ -15,7 +13,7 @@ export const getBaseColumnStyle = ({
 }): CSSProperties => ({
   flexShrink: 0,
   height: '100%',
-  width: `var(${columnWidthProperty(id)}, ${defaultSize}px)`,
+  width: `var(${columnWidthProperty(CSS.escape(id))}, ${defaultSize}px)`,
 })
 
 export type ColumnPosition = 'first' | 'last' | 'middle'
