@@ -7,13 +7,13 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import {
   downloadFile,
   recordsToMarkdownTable,
   toCSV,
-} from '@tamery/shared/utils/files'
+} from '@tamery/shared/files'
+import type { ActiveFilter } from '@tamery/shared/filters'
+import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import {
   DropdownMenu,
   DropdownMenuContent,

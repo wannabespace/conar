@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-import { silently } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils'
 
 import type { QueryExecutor } from '.'
 import { handleQueryError } from '.'

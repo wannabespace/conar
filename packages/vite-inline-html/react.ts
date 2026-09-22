@@ -2,7 +2,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { Plugin, ViteDevServer } from 'vite'
 
-import { PLUGIN_NAME, replaceMarkers } from './shared.ts'
+import { PLUGIN_NAME, replaceMarkers } from './utils.ts'
 
 const REACT_PLUGIN_NAME = `${PLUGIN_NAME}:react`
 

@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 
 import { useCollections } from '~/entities/collections'
 import type { Connection } from '~/entities/connection/core/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{

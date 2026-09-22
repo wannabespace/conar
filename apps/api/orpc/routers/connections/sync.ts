@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { connections, connectionsSelectSchema } from '@tamery/db/schema'
-import { decrypt } from '@tamery/shared/utils/crypto-node'
+import { decrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'

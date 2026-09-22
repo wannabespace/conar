@@ -1,12 +1,16 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
-import { title } from '@tamery/shared/utils/title'
+import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
 import { sectionAvailable } from '~/entities/connection/capabilities'
+import {
+  prefetchConnectionResourceCore,
+  prefetchConnectionResourceTableCore,
+} from '~/entities/connection/fetching'
 import {
   ensureTab,
   setActiveTab,
@@ -15,10 +19,6 @@ import { getNavigatorStore } from '~/entities/connection/store/stores'
 import { parseTabId } from '~/entities/connection/store/tabs/ids'
 import { tabFullTitle } from '~/entities/connection/store/tabs/title'
 import type { ConnectionTab } from '~/entities/connection/store/tabs/types'
-import {
-  prefetchConnectionResourceCore,
-  prefetchConnectionResourceTableCore,
-} from '~/entities/connection/utils/fetching'
 
 import { DefinitionsTab } from './-tabs/definitions/definitions-tab'
 import { RunnerTab } from './-tabs/runner/runner-tab'

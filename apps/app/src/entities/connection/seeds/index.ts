@@ -3,7 +3,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import type { Column } from '../../components/table/cell/utils'
+import type { Column } from '../components/table/cell/utils'
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
 import { clickhouseSeedConfig } from './clickhouse'
 import { detectGenerator } from './detect'

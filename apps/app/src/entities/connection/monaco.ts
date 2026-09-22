@@ -6,10 +6,10 @@ import { EntityContextType, LanguageIdEnum } from 'monaco-sql-languages'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { queryClient } from '~/lib/query-client'
 
-import { resourceEnumsQueryOptions } from '../queries/enums/list'
-import { resourceTableColumnsQueryOptions } from '../queries/tables/columns'
-import { resourceTablesAndSchemasQueryOptions } from '../queries/tables/list'
-import { getConnectionResourceStore } from '../store/stores'
+import { resourceEnumsQueryOptions } from './queries/enums/list'
+import { resourceTableColumnsQueryOptions } from './queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from './queries/tables/list'
+import { getConnectionResourceStore } from './store/stores'
 
 export const sqlDialects = {
   clickhouse: LanguageIdEnum.MYSQL,

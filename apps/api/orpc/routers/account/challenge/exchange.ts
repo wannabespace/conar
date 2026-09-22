@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { sessions } from '@tamery/db/schema'
-import { challenge } from '@tamery/shared/utils/challenge'
+import { challenge } from '@tamery/shared/challenge'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 

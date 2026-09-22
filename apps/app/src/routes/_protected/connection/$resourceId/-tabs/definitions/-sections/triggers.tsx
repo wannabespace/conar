@@ -1,6 +1,6 @@
 import { FlashIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { sqlDialects } from '~/entities/connection/monaco'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { createTriggerQuery } from '~/entities/connection/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
@@ -27,7 +28,6 @@ import {
   TRIGGER_EVENTS,
   TRIGGER_TIMINGS,
 } from '~/entities/connection/queries/triggers/shape'
-import { sqlDialects } from '~/entities/connection/utils/monaco'
 
 import {
   BodyField,

@@ -1,5 +1,5 @@
 import { LeftToRightListDashIcon, TagsIcon } from '@hugeicons/core-free-icons'
-import { matchesSearch, sameList } from '@tamery/shared/utils/helpers'
+import { matchesSearch, sameList } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import type { EditableListItem } from '@tamery/ui/components/custom/editable-list'

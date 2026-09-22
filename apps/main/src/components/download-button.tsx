@@ -1,6 +1,6 @@
 import { AppleIcon, WindowsNewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { OS } from '@tamery/shared/utils/os'
+import type { OS } from '@tamery/shared/os'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,

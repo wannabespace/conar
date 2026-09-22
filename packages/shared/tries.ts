@@ -1,4 +1,4 @@
-import type { MaybePromise } from './helpers'
+import type { MaybePromise } from './utils'
 
 type EmptyParams = Record<string, never>
 type Fn<T, P extends object = EmptyParams> = (params: P) => MaybePromise<T>

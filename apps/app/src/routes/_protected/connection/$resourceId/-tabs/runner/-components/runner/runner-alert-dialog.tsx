@@ -13,7 +13,7 @@ import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
-import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils/helpers'
+import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils'
 
 const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(
   (keyword) => `\\b${keyword}\\b`

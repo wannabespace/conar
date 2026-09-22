@@ -1,6 +1,6 @@
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
-import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
+import { setupPortlessEnvs } from '@tamery/shared/portless-env'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { nitro } from 'nitro/vite'

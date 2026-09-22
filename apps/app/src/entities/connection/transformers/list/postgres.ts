@@ -1,7 +1,7 @@
 import type { Column } from '../../components/table/cell/utils'
 import type { ValueTransformer } from '../value-transformer'
 import { getDisplayValue } from '../value-transformer'
-import { parseToArray } from './shared'
+import { parseToArray } from './parse'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/u
 // quoted element (handles \" and \\) OR bare element up to next comma

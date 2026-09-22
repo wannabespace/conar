@@ -1,4 +1,4 @@
-import type { Column } from '../../components/table/cell/utils'
+import type { Column } from '../components/table/cell/utils'
 import { columnMaxLength } from './base'
 import type { GeneratorId } from './registry'
 

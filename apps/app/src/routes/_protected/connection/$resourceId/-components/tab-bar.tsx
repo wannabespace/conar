@@ -51,6 +51,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
+import { prefetchConnectionResourceTableCore } from '~/entities/connection/fetching'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
@@ -81,7 +82,6 @@ import type {
   DefinitionsSection,
 } from '~/entities/connection/store/tabs/types'
 import { isPreviewTab } from '~/entities/connection/store/tabs/types'
-import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils/fetching'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { pressNavProps } from '~/lib/press-nav'

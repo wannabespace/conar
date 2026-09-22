@@ -1,4 +1,4 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
+import { unsupported } from '@tamery/shared/unsupported'
 import type { RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 

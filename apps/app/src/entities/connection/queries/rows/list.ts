@@ -12,7 +12,7 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
-import { DEFAULT_PAGE_LIMIT } from '../../utils/helpers'
+import { DEFAULT_PAGE_LIMIT } from '../../utils'
 
 const rowType = type('Record<string, unknown>')
 

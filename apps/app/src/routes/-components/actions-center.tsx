@@ -44,6 +44,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
+import { prefetchConnectionResourceCore } from '~/entities/connection/fetching'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import {
@@ -51,7 +52,6 @@ import {
   openTableTab,
 } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
 import { schemaGroups } from '~/routes/_protected/connection/$resourceId/-components/navigator/definitions-section'

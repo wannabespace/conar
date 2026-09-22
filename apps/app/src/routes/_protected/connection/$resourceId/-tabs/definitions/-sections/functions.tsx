@@ -1,6 +1,6 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { matchesSearch } from '@tamery/shared/utils/helpers'
+import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { sqlDialects } from '~/entities/connection/monaco'
 import { createFunctionQuery } from '~/entities/connection/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
@@ -17,7 +18,6 @@ import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/fun
 import { recreateFunctionQuery } from '~/entities/connection/queries/functions/recreate'
 import type { RoutineKind } from '~/entities/connection/queries/functions/routine-kind'
 import type { FunctionShape } from '~/entities/connection/queries/functions/shape'
-import { sqlDialects } from '~/entities/connection/utils/monaco'
 
 import {
   BodyField,

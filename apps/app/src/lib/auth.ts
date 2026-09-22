@@ -1,4 +1,4 @@
-import { tryCatchAsync } from '@tamery/shared/utils/helpers'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'

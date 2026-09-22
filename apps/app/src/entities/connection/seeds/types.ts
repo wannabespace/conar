@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { Column } from '../../components/table/cell/utils'
+import type { Column } from '../components/table/cell/utils'
 
 export const SKIP_GENERATOR = 'skip-generator'
 export const NULL_GENERATOR = 'null'

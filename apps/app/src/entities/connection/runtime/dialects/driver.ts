@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
-import { silently } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils'
 import type {
   CompiledQuery,
   DatabaseConnection,
@@ -11,8 +11,8 @@ import type {
 import { getCollections } from '~/entities/collections'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
 
+import { fetchingConfig } from '../../fetching-config'
 import { getConnectionStore } from '../../store/stores'
-import { fetchingConfig } from '../../utils/fetching-config'
 
 export interface DialectOptions {
   connectionString: string

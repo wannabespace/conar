@@ -17,7 +17,7 @@ import type {
   ConnectionResource,
 } from '~/entities/connection/core/sync'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 
 const LastOpenedResource = ({

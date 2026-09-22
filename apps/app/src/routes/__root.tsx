@@ -1,4 +1,4 @@
-import { title } from '@tamery/shared/utils/title'
+import { title } from '@tamery/shared/title'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'

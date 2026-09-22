@@ -1,8 +1,8 @@
 import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
+import { encrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { encrypt } from '@tamery/shared/utils/crypto-node'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
 
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'

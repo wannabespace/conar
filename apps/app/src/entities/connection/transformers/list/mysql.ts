@@ -1,6 +1,6 @@
 import type { ValueTransformer } from '../value-transformer'
 import { getDisplayValue } from '../value-transformer'
-import { parseToArray } from './shared'
+import { parseToArray } from './parse'
 
 const parseMysqlSet = (value: string): string[] | undefined => {
   if (value.includes(',')) {

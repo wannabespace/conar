@@ -4,7 +4,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { sleep } from '@tamery/shared/utils/helpers'
+import { sleep } from '@tamery/shared/utils'
 import type { TableCellProps } from '@tamery/table'
 import {
   AlertDialog,

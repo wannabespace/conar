@@ -4,7 +4,7 @@ import {
   groupInSchema,
   hasDangerousSqlKeywords,
   wrapExplainQuery,
-} from './helpers'
+} from './utils'
 
 describe('hasDangerousSqlKeywords', () => {
   it('should return true for SQL queries containing DELETE keyword', () => {

@@ -1,6 +1,6 @@
 import { isLocalhostConnectionString } from '@tamery/connection/utils'
-import { decryptWithKey, encryptWithKey } from '@tamery/shared/utils/crypto-web'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import type { Collection } from '@tanstack/react-db'
 import { BasicIndex, createCollection } from '@tanstack/react-db'

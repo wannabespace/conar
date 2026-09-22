@@ -1,4 +1,4 @@
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { uppercaseFirst } from '@tamery/shared/utils'
 
 import type { ConnectionTab } from './types'
 

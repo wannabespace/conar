@@ -5,7 +5,7 @@ import {
   SaveIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { pick } from '@tamery/shared/utils/helpers'
+import { pick } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {

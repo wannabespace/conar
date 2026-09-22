@@ -1,9 +1,9 @@
 import path from 'node:path'
 
 import { resetTransactions } from '@tamery/connection/queries/transactions'
+import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
-import { isConnectionError } from '@tamery/shared/utils/connections'
-import type { UpdatesStatus } from '@tamery/shared/utils/updates'
+import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'

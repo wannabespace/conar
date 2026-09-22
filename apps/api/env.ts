@@ -1,7 +1,7 @@
 import process from 'node:process'
 
 import { envType as dbEnvType } from '@tamery/db/env'
-import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
+import { setupPortlessEnvs } from '@tamery/shared/portless-env'
 import { type } from 'arktype'
 
 export const nodeEnv = type('"production" | "development" | "test"').assert(

@@ -2,7 +2,7 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { Connection } from '~/entities/connection/core/sync'
 
-import { isLocalProxyAvailable } from '../runtime/proxy'
+import { isLocalProxyAvailable } from './runtime/proxy'
 
 type FetchingType =
   | 'cloud-proxy'

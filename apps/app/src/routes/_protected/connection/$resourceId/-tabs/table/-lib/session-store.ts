@@ -1,4 +1,4 @@
-import { omit } from '@tamery/shared/utils/helpers'
+import { omit } from '@tamery/shared/utils'
 import type { ShiftSelectionState } from '@tamery/table/hooks'
 import { INITIAL_SHIFT_SELECTION_STATE } from '@tamery/table/hooks'
 import { memoize } from 'memoza'

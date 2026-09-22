@@ -1,5 +1,5 @@
+import { placeholderMap } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { placeholderMap } from '@tamery/shared/utils/connections'
 import {
   Card,
   CardContent,

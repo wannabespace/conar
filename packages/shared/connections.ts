@@ -1,5 +1,5 @@
-import { RECONNECT_ERROR_PATTERNS } from '../constants'
-import { ConnectionType } from '../enums/connection-type'
+import { RECONNECT_ERROR_PATTERNS } from './constants'
+import { ConnectionType } from './enums/connection-type'
 
 export const placeholderMap: Record<ConnectionType, string> = {
   [ConnectionType.Postgres]:

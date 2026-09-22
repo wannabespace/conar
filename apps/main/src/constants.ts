@@ -1,4 +1,4 @@
-import type { OS } from '@tamery/shared/utils/os'
+import type { OS } from '@tamery/shared/os'
 
 export const DOWNLOAD_LINKS = {
   linux: {

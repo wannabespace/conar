@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 
-import { PLUGIN_NAME, replaceMarkers } from './shared.ts'
+import { PLUGIN_NAME, replaceMarkers } from './utils.ts'
 
 interface InlineHtmlOptions {
   scripts: { marker: string; entry: string }[]

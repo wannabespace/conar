@@ -54,11 +54,7 @@ import { insertQuery } from '~/entities/connection/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/entities/connection/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
-import { getValueForEditor } from '~/entities/connection/utils/helpers'
-import type {
-  GeneratorGroup,
-  Generators,
-} from '~/entities/connection/utils/seeds'
+import type { GeneratorGroup, Generators } from '~/entities/connection/seeds'
 import {
   autoDetectGenerator,
   generateRows,
@@ -66,22 +62,23 @@ import {
   getGenerators,
   insertBatchSize,
   isGeneratorAvailable,
-} from '~/entities/connection/utils/seeds'
+} from '~/entities/connection/seeds'
 import type {
   Generator,
   GeneratorId,
-} from '~/entities/connection/utils/seeds/registry'
+} from '~/entities/connection/seeds/registry'
 import {
   CUSTOM_GENERATOR,
   NULL_GENERATOR,
   REFERENCE_GENERATOR,
   SKIP_GENERATOR,
-} from '~/entities/connection/utils/seeds/types'
+} from '~/entities/connection/seeds/types'
 import {
   FREE_SEED_LIMIT,
   incrementSeedUsage,
   seedUsageValue,
-} from '~/entities/connection/utils/seeds/usage'
+} from '~/entities/connection/seeds/usage'
+import { getValueForEditor } from '~/entities/connection/utils'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { queryClient } from '~/lib/query-client'
 import { setIsSubscriptionDialogOpen } from '~/store'

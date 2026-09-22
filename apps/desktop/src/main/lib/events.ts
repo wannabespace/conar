@@ -3,8 +3,8 @@ import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
+import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 

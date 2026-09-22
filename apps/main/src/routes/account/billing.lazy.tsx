@@ -1,6 +1,6 @@
 import { LinkSquare02Icon, Wallet01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,

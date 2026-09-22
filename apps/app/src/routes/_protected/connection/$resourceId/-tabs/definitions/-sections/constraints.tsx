@@ -1,10 +1,6 @@
 import { Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import {
-  matchesSearch,
-  pushUnique,
-  sameList,
-} from '@tamery/shared/utils/helpers'
+import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -27,7 +23,7 @@ import type {
 import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/shape'
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
-import { groupInSchema } from '~/entities/connection/utils/helpers'
+import { groupInSchema } from '~/entities/connection/utils'
 
 import {
   Labelled,

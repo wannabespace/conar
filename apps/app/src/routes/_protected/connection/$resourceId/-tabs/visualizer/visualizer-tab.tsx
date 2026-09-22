@@ -48,7 +48,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
   applySearchHighlight,
   getVisualizerLayout,
-} from '~/entities/connection/visualizer/lib'
+} from '~/entities/connection/visualizer'
 
 import { VisualizerSkeleton } from './visualizer-skeleton'
 

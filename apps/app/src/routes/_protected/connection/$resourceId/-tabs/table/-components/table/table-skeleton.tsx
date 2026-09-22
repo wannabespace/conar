@@ -1,5 +1,5 @@
 /* oxlint-disable react/no-array-index-key */
-import { pseudoRandom } from '@tamery/shared/utils/helpers'
+import { pseudoRandom } from '@tamery/shared/utils'
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,

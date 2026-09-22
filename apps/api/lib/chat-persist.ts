@@ -5,7 +5,7 @@ import { messagesFromPartRows } from '@tamery/ai/message'
 import { AiFeature } from '@tamery/ai/usage'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
-import { silently } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils'
 import { and, asc, eq, isNull } from 'drizzle-orm'
 
 import { aiUsage } from '~/lib/ai-usage'

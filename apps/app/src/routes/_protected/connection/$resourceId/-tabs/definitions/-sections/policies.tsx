@@ -1,6 +1,6 @@
 import { SecurityCheckIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { matchesSearch } from '@tamery/shared/utils/helpers'
+import { matchesSearch } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'

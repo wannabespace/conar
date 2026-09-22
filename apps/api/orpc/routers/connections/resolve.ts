@@ -1,5 +1,5 @@
 import { db } from '@tamery/db'
-import { decrypt } from '@tamery/shared/utils/crypto-node'
+import { decrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 
 import { authMiddleware, orpc } from '~/orpc'

@@ -1,4 +1,4 @@
-import { pseudoRandom } from '@tamery/shared/utils/helpers'
+import { pseudoRandom } from '@tamery/shared/utils'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import type { CSSProperties } from 'react'
 

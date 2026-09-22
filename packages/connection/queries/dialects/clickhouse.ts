@@ -1,8 +1,8 @@
 import { createRequire } from 'node:module'
 
 import type * as ClickHouse from '@clickhouse/client'
-import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import { tryParseJson } from '@tamery/shared/utils/helpers'
+import type { AnyFunction } from '@tamery/shared/utils'
+import { tryParseJson } from '@tamery/shared/utils'
 import { memoize } from 'memoza'
 
 import type { QueryExecutor } from '..'

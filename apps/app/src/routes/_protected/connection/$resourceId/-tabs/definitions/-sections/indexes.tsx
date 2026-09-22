@@ -5,11 +5,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import {
-  matchesSearch,
-  pushUnique,
-  sameList,
-} from '@tamery/shared/utils/helpers'
+import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
@@ -33,7 +29,7 @@ import { recreateIndexQuery } from '~/entities/connection/queries/indexes/recrea
 import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
-import { groupInSchema } from '~/entities/connection/utils/helpers'
+import { groupInSchema } from '~/entities/connection/utils'
 
 import {
   OptionsField,

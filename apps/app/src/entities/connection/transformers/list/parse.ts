@@ -1,4 +1,4 @@
-import { tryParseJson } from '@tamery/shared/utils/helpers'
+import { tryParseJson } from '@tamery/shared/utils'
 
 export const parseToArray = <T>(
   value: T,

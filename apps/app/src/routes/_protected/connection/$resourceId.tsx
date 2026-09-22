@@ -1,4 +1,4 @@
-import { title } from '@tamery/shared/utils/title'
+import { title } from '@tamery/shared/title'
 import {
   ResizableGroup,
   ResizableSeparator,
@@ -16,12 +16,12 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
 import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
-} from '~/entities/connection/utils/fetching'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+} from '~/entities/connection/fetching'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { workspaceSelection } from '~/entities/workspace/utils'
 import {
   CHAT_DEFAULT_WIDTH,

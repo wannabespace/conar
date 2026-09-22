@@ -1,6 +1,6 @@
 # Database dialects
 
-Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new read cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `@tamery/shared/utils/unsupported`, never a hand-thrown `Error`, so the message reads the same everywhere.
+Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new read cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `@tamery/shared/unsupported`, never a hand-thrown `Error`, so the message reads the same everywhere.
 
 **A write is a `createQuery` too** — raw `sql` executed per dialect, `unsupported(feature)` for the engines that cannot write it. Each dialect spells out its own execution: no shared wrapper stands between the statement and `createQuery`, so a file reads as the statements it runs. One write is one file (`architecture.md`), and a statement two of them share is built in the subject's `shape.ts`.
 

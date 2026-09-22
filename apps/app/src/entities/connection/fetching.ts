@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { noop } from '@tamery/shared/utils/helpers'
+import { noop } from '@tamery/shared/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
@@ -10,15 +10,15 @@ import type {
 } from '~/entities/connection/core/sync'
 import { queryClient } from '~/lib/query-client'
 
-import { resourceConstraintsQueryOptions } from '../queries/constraints/list'
-import { resourceEnumsQueryOptions } from '../queries/enums/list'
-import { resourceRowsQueryInfiniteOptions } from '../queries/rows/list'
-import { resourceTableTotalQueryOptions } from '../queries/rows/total'
-import { resourceTableColumnsQueryOptions } from '../queries/tables/columns'
-import { resourceTablesAndSchemasQueryOptions } from '../queries/tables/list'
-import { useLocalProxyAvailable } from '../runtime/proxy'
-import { getConnectionResourceStore, getConnectionStore } from '../store/stores'
 import { fetchingConfig } from './fetching-config'
+import { resourceConstraintsQueryOptions } from './queries/constraints/list'
+import { resourceEnumsQueryOptions } from './queries/enums/list'
+import { resourceRowsQueryInfiniteOptions } from './queries/rows/list'
+import { resourceTableTotalQueryOptions } from './queries/rows/total'
+import { resourceTableColumnsQueryOptions } from './queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from './queries/tables/list'
+import { useLocalProxyAvailable } from './runtime/proxy'
+import { getConnectionResourceStore, getConnectionStore } from './store/stores'
 
 export const prefetchConnectionResourceCore = async (
   connectionResource: ConnectionResource

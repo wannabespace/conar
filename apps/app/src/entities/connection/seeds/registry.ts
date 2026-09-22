@@ -1,4 +1,4 @@
-import type { Column } from '../../components/table/cell/utils'
+import type { Column } from '../components/table/cell/utils'
 import type { BASE_GENERATORS } from './base'
 import type { MSSQL_GENERATORS } from './mssql/generators'
 import type { MYSQL_GENERATORS } from './mysql/generators'

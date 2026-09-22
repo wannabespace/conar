@@ -1,4 +1,4 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
+import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'

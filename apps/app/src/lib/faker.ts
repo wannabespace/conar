@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker/locale/en'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { uppercaseFirst } from '@tamery/shared/utils'
 
 export const generateRandomName = () => {
   const color = faker.color.human()

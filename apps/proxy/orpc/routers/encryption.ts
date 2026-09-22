@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
+import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 
 import { authMiddleware, orpc } from '~/orpc'

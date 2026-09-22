@@ -8,7 +8,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { uppercaseFirst } from '@tamery/shared/utils'
 
 import type { ReferentialAction } from './queries/constraints/shape'
 import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'

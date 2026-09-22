@@ -31,7 +31,7 @@ import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
-import { wrapExplainQuery } from '~/entities/connection/utils/helpers'
+import { wrapExplainQuery } from '~/entities/connection/utils'
 import { queryClient } from '~/lib/query-client'
 
 import { runnerQueryOptions } from '../../-lib/runner-query'

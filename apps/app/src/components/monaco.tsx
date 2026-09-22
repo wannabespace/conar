@@ -1,6 +1,6 @@
 import '~/lib/monaco-worker'
-import { noop } from '@tamery/shared/utils/helpers'
-import { formatXml } from '@tamery/shared/utils/xml'
+import { noop } from '@tamery/shared/utils'
+import { formatXml } from '@tamery/shared/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedTheme } from '@tamery/ui/theme-store'
 import * as monaco from 'monaco-editor'

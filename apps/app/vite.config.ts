@@ -1,6 +1,6 @@
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
-import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
+import { setupPortlessEnvs } from '@tamery/shared/portless-env'
 import { inlineHtml } from '@tamery/vite-inline-html'
 import { inlineReactHtml } from '@tamery/vite-inline-html/react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'

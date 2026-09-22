@@ -1,7 +1,7 @@
+import { isConnectionError } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { isConnectionError } from '@tamery/shared/utils/connections'
-import { noop, sleep } from '@tamery/shared/utils/helpers'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { noop, sleep } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
@@ -13,7 +13,7 @@ import type {
   ConnectionResource,
 } from '~/entities/connection/core/sync'
 
-import { getConnectionStringToShow } from '../utils/helpers'
+import { getConnectionStringToShow } from '../utils'
 import { dialects } from './dialects'
 import { logQuery } from './log'
 import { watchForSlowQuery } from './slow-queries'

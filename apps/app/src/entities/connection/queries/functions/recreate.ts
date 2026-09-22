@@ -1,4 +1,4 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
+import { unsupported } from '@tamery/shared/unsupported'
 
 import { createQuery } from '../../runtime/query'
 import type { FunctionShape, RoutineTarget } from './shape'

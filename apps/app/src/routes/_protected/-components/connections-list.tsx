@@ -18,7 +18,7 @@ import {
 } from '@tamery/shared/constants'
 import { connectionLabels } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
   Select,
@@ -55,11 +55,11 @@ import { useCollections } from '~/entities/collections'
 import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
 import type { Connection } from '~/entities/connection/core/sync'
+import { useFetchingConfig } from '~/entities/connection/fetching'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries/connection/resources'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
 import { getConnectionStore } from '~/entities/connection/store/stores'
-import { useFetchingConfig } from '~/entities/connection/utils/fetching'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { openNewWindow } from '~/lib/new-window'
 

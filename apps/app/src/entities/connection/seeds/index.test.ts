@@ -8,7 +8,7 @@ import {
   getGeneratorGroups,
   insertBatchSize,
 } from '.'
-import type { Column } from '../../components/table/cell/utils'
+import type { Column } from '../components/table/cell/utils'
 import { REFERENCE_GENERATOR, SKIP_GENERATOR } from './types'
 
 const column = (partial: Partial<Column> & { id: string }): Column => ({

@@ -1,6 +1,6 @@
 import { PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { pseudoRandom, uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { pseudoRandom, uppercaseFirst } from '@tamery/shared/utils'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import {
   AlertDialog,

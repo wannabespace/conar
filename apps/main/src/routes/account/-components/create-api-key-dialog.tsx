@@ -1,5 +1,5 @@
 import { API_KEY_PERMISSIONS } from '@tamery/shared/constants'
-import { objectEntries } from '@tamery/shared/utils/helpers'
+import { objectEntries } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'

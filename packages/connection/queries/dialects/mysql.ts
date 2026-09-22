@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 
-import { tries } from '@tamery/shared/utils/tries'
+import { tries } from '@tamery/shared/tries'
 import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
