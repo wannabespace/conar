@@ -57,7 +57,7 @@ const TabPage = () => {
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.div
-        key={tab.id}
+        key={`${connectionResource.id}:${tab.id}`}
         className="flex min-h-0 flex-1 flex-col"
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
