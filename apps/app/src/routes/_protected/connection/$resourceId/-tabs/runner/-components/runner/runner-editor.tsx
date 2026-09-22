@@ -9,7 +9,7 @@ import { Monaco } from '~/components/monaco'
 import {
   connectionCompletionService,
   sqlDialects,
-} from '~/entities/connection/utils/monaco'
+} from '~/entities/connection/monaco'
 
 import { useEditorQueriesComputed, useRunnerPageStore } from '../../-lib/store'
 import { runnerHooks } from '../../-page'

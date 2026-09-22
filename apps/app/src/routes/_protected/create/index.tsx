@@ -3,9 +3,9 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { isLocalhostConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { tryCatch } from '@tamery/shared/utils/helpers'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
-import { title } from '@tamery/shared/utils/title'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { title } from '@tamery/shared/title'
+import { tryCatch } from '@tamery/shared/utils'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -26,11 +26,11 @@ import {
 } from '~/components/stepper'
 import { useCollections } from '~/entities/collections'
 import { createConnectionTransaction } from '~/entities/connection/core/create-connection'
-import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
+import { prefetchConnectionResourceCore } from '~/entities/connection/fetching'
+import { fetchingConfig } from '~/entities/connection/fetching-config'
+import { testConnectionQuery } from '~/entities/connection/queries/connection/test'
 import { useLocalProxyAvailable } from '~/entities/connection/runtime/proxy'
 import { getConnectionStore } from '~/entities/connection/store/stores'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
-import { fetchingConfig } from '~/entities/connection/utils/fetching-config'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
@@ -237,7 +237,7 @@ const CreateConnectionPage = () => {
   const canSaveInCloud = !!url && canSend
 
   return (
-    <ScrollArea className="py-[10vh]">
+    <ScrollArea className="py-24">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -249,7 +249,7 @@ const CreateConnectionPage = () => {
           <Button
             type="button"
             variant="link"
-            className="text-muted-foreground px-0!"
+            className="text-muted-foreground hover:text-foreground"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon

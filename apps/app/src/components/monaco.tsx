@@ -1,6 +1,6 @@
 import '~/lib/monaco-worker'
-import { noop } from '@tamery/shared/utils/helpers'
-import { formatXml } from '@tamery/shared/utils/xml'
+import { noop } from '@tamery/shared/utils'
+import { formatXml } from '@tamery/shared/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedTheme } from '@tamery/ui/theme-store'
 import * as monaco from 'monaco-editor'
@@ -50,7 +50,7 @@ const githubTheme = (
 monaco.editor.defineTheme(
   'github-light',
   githubTheme('vs', {
-    background: '#fafafb',
+    background: '#ffffff',
     comment: '#6a737d',
     foreground: '#24292e',
     function: '#6f42c1',
@@ -62,7 +62,7 @@ monaco.editor.defineTheme(
 monaco.editor.defineTheme(
   'github-dark',
   githubTheme('vs-dark', {
-    background: '#1e2023',
+    background: '#26272b',
     comment: '#6a737d',
     foreground: '#e1e4e8',
     function: '#b392f0',
@@ -85,6 +85,7 @@ export const Monaco = ({
   language,
   options,
   onChange = noop,
+  onSubmit,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -93,6 +94,7 @@ export const Monaco = ({
   value: string
   language?: string
   onChange?: (value: string) => void
+  onSubmit?: () => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
 }) => {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -102,6 +104,8 @@ export const Monaco = ({
   const preventTriggerChangeEventRef = useRef(false)
 
   const onChangeEvent = useEffectEvent(onChange)
+  const onSubmitEvent = useEffectEvent(() => onSubmit?.())
+  const submitEnabled = Boolean(onSubmit)
   const getOptionsEvent = useEffectEvent(
     (editorLanguage?: string) =>
       ({
@@ -158,11 +162,22 @@ export const Monaco = ({
       }
     )
 
+    const submitAction = submitEnabled
+      ? monacoInstanceRef.current.addAction({
+          id: 'tamery.monaco-submit',
+          // oxlint-disable-next-line no-bitwise -- monaco keybindings are bit flags
+          keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+          label: 'Submit',
+          run: () => onSubmitEvent(),
+        })
+      : undefined
+
     return () => {
       subscription.dispose()
+      submitAction?.dispose()
       monacoInstanceRef.current?.dispose()
     }
-  }, [language, ref])
+  }, [language, ref, submitEnabled])
 
   useMountedEffect(() => {
     if (!monacoInstanceRef.current || !options) {

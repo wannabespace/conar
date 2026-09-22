@@ -84,9 +84,15 @@ export const stream = orpc
       }),
     })
 
-    if (!str) {
+    if (str) {
+      yield* str
+      return
+    }
+
+    const active = await chatStream.resume(input.chatId)
+    if (!active) {
       throw errors.CONFLICT()
     }
 
-    yield* str
+    yield* active
   })

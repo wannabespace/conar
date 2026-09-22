@@ -1,16 +1,8 @@
-/**
- * @name public
- * @type schema
- */
 export interface Public {
   pg_type: PgType
   pg_enum: PgEnum
 }
 
-/**
- * @name pg_type
- * @type table
- */
 interface PgType {
   oid: number
   typname: string
@@ -46,10 +38,6 @@ interface PgType {
   typacl: string | null
 }
 
-/**
- * @name pg_enum
- * @type table
- */
 interface PgEnum {
   oid: number
   enumtypid: number

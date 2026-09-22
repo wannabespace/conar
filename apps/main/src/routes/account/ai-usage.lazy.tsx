@@ -85,7 +85,7 @@ const RouteComponent = () => {
               </Button>
             }
           />
-          <PopoverContent align="end" className="w-auto p-2">
+          <PopoverContent align="end" className="w-auto gap-2 p-2">
             <Calendar
               autoFocus
               mode="range"
@@ -112,11 +112,15 @@ const RouteComponent = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Month</TableHead>
-                  <TableHead className="text-right">Requests</TableHead>
-                  <TableHead className="text-right">Input tokens</TableHead>
-                  <TableHead className="text-right">Output tokens</TableHead>
-                  <TableHead className="text-right">Cost</TableHead>
+                  <TableHead className="w-[28%]">Month</TableHead>
+                  <TableHead className="w-[15%] text-right">Requests</TableHead>
+                  <TableHead className="w-[19%] text-right">
+                    Input tokens
+                  </TableHead>
+                  <TableHead className="w-[19%] text-right">
+                    Output tokens
+                  </TableHead>
+                  <TableHead className="w-[19%] text-right">Cost</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

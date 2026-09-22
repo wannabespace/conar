@@ -32,14 +32,11 @@ export const getWorkspaceSecret = memoize(
       throw new ORPCError('NOT_FOUND', { message: 'Workspace not found' })
     }
 
-    // The secret still lives at the owner's Infisical user path; moving it to
-    // ['workspaces', workspaceId] later only changes this lookup.
     return infisical.secrets.get({
       name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
       path: ['users', owner.userId],
     })
   },
-  // 5 minutes
   { maxAge: 5 * 60 * 1000 }
 )
 

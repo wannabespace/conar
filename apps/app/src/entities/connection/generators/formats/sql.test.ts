@@ -8,7 +8,7 @@ import { generateQueryKysely } from './kysely'
 import { generateSchemaPrisma } from './prisma'
 import { generateSchemaTypeScript } from './typescript'
 
-mock.module('../../queries/rows', () => ({ buildWhere: () => null }))
+mock.module('../../queries/rows/list', () => ({ buildWhere: () => null }))
 mock.module('../../runtime/dialects', () => ({ coldDialects: {} }))
 const { generateSchemaSQL } = await import('./sql')
 

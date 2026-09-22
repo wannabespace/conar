@@ -15,7 +15,7 @@ export const ChatError = ({
   onRetry: () => void
 }) => (
   <div className="shrink-0 px-2">
-    <Alert variant="destructive" size="sm">
+    <Alert variant="destructive">
       <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
       <AlertDescription>{error.message}</AlertDescription>
       <AlertAction>

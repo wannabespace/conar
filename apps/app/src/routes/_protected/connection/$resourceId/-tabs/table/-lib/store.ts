@@ -1,11 +1,11 @@
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
-import { omit } from '@tamery/shared/utils/helpers'
+import { omit } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createWebStorageValue } from 'seitu/web'
 
-import type { GeneratorId } from '~/entities/connection/utils/seeds/registry'
+import type { GeneratorId } from '~/entities/connection/seeds/registry'
 
 export const tablePageType = type({
   filters: type({

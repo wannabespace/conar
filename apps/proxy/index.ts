@@ -3,7 +3,7 @@ import process from 'node:process'
 
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
-import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
+import { sanitizeLogData } from '@tamery/shared/sanitize-log'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 

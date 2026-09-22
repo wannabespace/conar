@@ -17,7 +17,7 @@ import type {
   ConnectionResource,
 } from '~/entities/connection/core/sync'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 
 const LastOpenedResource = ({
@@ -32,7 +32,7 @@ const LastOpenedResource = ({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group hover:bg-accent flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm">
+    <div className="group hover:bg-accent flex h-8 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
       <Link
         className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5"
         preload={false}

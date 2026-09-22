@@ -37,7 +37,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
-import { hasDangerousSqlKeywords } from '~/entities/connection/utils/helpers'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import {
   RUNNER_RESULTS_DEFAULT_HEIGHT,
   RUNNER_RESULTS_MAX_HEIGHT,
@@ -235,7 +235,7 @@ export const Runner = () => {
                       {queriesCount}
                     </span>
                   </PopoverTrigger>
-                  <PopoverContent className="min-w-md p-0 **:data-[slot=popover-viewport]:p-0">
+                  <PopoverContent className="min-w-md gap-0 p-0">
                     <RunnerQueries />
                   </PopoverContent>
                 </Popover>

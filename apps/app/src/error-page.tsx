@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react'
 import { EventsProvider } from '~/components/events-provider'
 import { posthog } from '~/lib/posthog'
 
-// User specific errors that we don't want to track
 const CONNECTION_ERRORS = [
   'ERR_TIMED_OUT',
   'ETIMEDOUT',
@@ -120,14 +119,14 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           <div className="mt-7 flex items-center gap-2">
             <Button
               variant="ghost"
-              className="text-muted-foreground"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => router.history.back()}
             >
               Go back
             </Button>
             <Button
               variant="ghost"
-              className="text-muted-foreground"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => router.navigate({ to: '/' })}
             >
               Home

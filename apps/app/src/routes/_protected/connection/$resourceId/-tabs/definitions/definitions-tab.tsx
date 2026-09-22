@@ -9,6 +9,7 @@ import { Enums } from './-sections/enums'
 import { Functions } from './-sections/functions'
 import { Indexes } from './-sections/indexes'
 import { Policies } from './-sections/policies'
+import { Privileges } from './-sections/privileges'
 import { Triggers } from './-sections/triggers'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -19,6 +20,7 @@ const SECTIONS = {
   functions: Functions,
   indexes: Indexes,
   policies: Policies,
+  privileges: Privileges,
   triggers: Triggers,
 }
 
@@ -36,7 +38,7 @@ export const DefinitionsTab = ({
       className="min-h-0 flex-1"
       onClick={() => openDefinitionsTab(connectionResource.id, section)}
     >
-      <div className="mx-auto flex w-full max-w-3xl flex-col px-6 py-5">
+      <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col gap-3 px-6 py-5">
         <Section />
       </div>
     </ScrollArea>

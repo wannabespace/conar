@@ -1,0 +1,44 @@
+import { sql } from 'kysely'
+import { memoize } from 'memoza'
+
+import { createQuery } from '../../runtime/query'
+import { mssqlQualified } from '../shared/sql-fragments'
+
+export const renameTableQuery = memoize(
+  ({
+    schema,
+    oldTable,
+    newTable,
+  }: {
+    schema: string
+    oldTable: string
+    newTable: string
+  }) =>
+    createQuery({
+      query: {
+        clickhouse: (db) =>
+          sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(
+            db
+          ),
+        mssql: async (db) => {
+          await sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, oldTable))}, ${sql.val(newTable)}`.execute(
+            db
+          )
+        },
+        mysql: (db) =>
+          db
+            .withSchema(schema)
+            .$extendTables<{ [oldTable]: Record<string, unknown> }>()
+            .schema.alterTable(oldTable)
+            .renameTo(newTable)
+            .execute(),
+        postgres: (db) =>
+          db
+            .withSchema(schema)
+            .$extendTables<{ [oldTable]: Record<string, unknown> }>()
+            .schema.alterTable(oldTable)
+            .renameTo(newTable)
+            .execute(),
+      },
+    })
+)

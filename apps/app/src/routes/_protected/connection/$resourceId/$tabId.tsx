@@ -1,22 +1,24 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
-import { title } from '@tamery/shared/utils/title'
+import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
+import { sectionAvailable } from '~/entities/connection/capabilities'
+import {
+  prefetchConnectionResourceCore,
+  prefetchConnectionResourceTableCore,
+} from '~/entities/connection/fetching'
 import {
   ensureTab,
   setActiveTab,
 } from '~/entities/connection/store/helpers/tabs'
+import { getNavigatorStore } from '~/entities/connection/store/stores'
 import { parseTabId } from '~/entities/connection/store/tabs/ids'
 import { tabFullTitle } from '~/entities/connection/store/tabs/title'
 import type { ConnectionTab } from '~/entities/connection/store/tabs/types'
-import {
-  prefetchConnectionResourceCore,
-  prefetchConnectionResourceTableCore,
-} from '~/entities/connection/utils/fetching'
 
 import { DefinitionsTab } from './-tabs/definitions/definitions-tab'
 import { RunnerTab } from './-tabs/runner/runner-tab'
@@ -55,12 +57,12 @@ const TabPage = () => {
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.div
-        key={tab.id}
+        key={`${connectionResource.id}:${tab.id}`}
         className="flex min-h-0 flex-1 flex-col"
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         initial={{ opacity: 0 }}
-        transition={{ duration: 0.1 }}
+        transition={{ duration: 0.06 }}
       >
         <TabContent tab={tab} />
       </motion.div>
@@ -73,18 +75,30 @@ export const Route = createFileRoute(
 )({
   component: TabPage,
   validateSearch: type({
+    'create?': 'string',
     'filters?': 'object[]' as type.cast<ActiveFilter[]>,
+    'open?': 'string',
     'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
+    'schema?': 'string',
   }),
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ context, params }) => {
     const tab = parseTabId(params.tabId)
 
-    if (!tab) {
+    if (
+      !tab ||
+      (tab.type === 'definitions' &&
+        !sectionAvailable(tab.section, context.connection.type))
+    ) {
       throw redirect({
         params: { resourceId: params.resourceId },
         to: '/connection/$resourceId',
       })
     }
+
+    getNavigatorStore(
+      params.resourceId,
+      tab.type === 'runner' || tab.type === 'table' ? 'tables' : 'definitions'
+    )
 
     return { tab }
   },

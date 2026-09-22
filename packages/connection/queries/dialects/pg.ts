@@ -1,7 +1,6 @@
 import { createRequire } from 'node:module'
 
-import { silently } from '@tamery/shared/utils/helpers'
-import { tries } from '@tamery/shared/utils/tries'
+import { tries } from '@tamery/shared/tries'
 import { memoize } from 'memoza'
 import type { PoolConfig } from 'pg'
 import type * as PgModule from 'pg'
@@ -11,11 +10,7 @@ import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
 import { defaultSSLConfig, parseSSLConfig } from '../../ssl/pg'
-import {
-  disposeTransaction,
-  getTransaction,
-  registerTransaction,
-} from '../transactions'
+import { registerTransaction, transactionQueries } from '../transactions'
 
 const pg = createRequire(import.meta.url)('pg') as typeof PgModule
 
@@ -59,6 +54,8 @@ const getPool = memoize((connectionString: string) => {
 })
 
 export const query = {
+  ...transactionQueries,
+
   beginTransaction: handleQueryError(
     async ({
       connectionString,
@@ -104,20 +101,6 @@ export const query = {
       return { txId }
     }
   ),
-  commitTransaction: handleQueryError(
-    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
-      const handle = disposeTransaction(txId, ownerId)
-      if (!handle) {
-        return
-      }
-
-      try {
-        await handle.commit()
-      } finally {
-        await silently(() => handle.release())
-      }
-    }
-  ),
   execute: handleQueryError(
     async ({ connectionString, query: sqlText, values = [] }) => {
       const pool = await getPool(connectionString)
@@ -127,40 +110,6 @@ export const query = {
       return {
         duration: performance.now() - start,
         result: result.rows as unknown,
-      }
-    }
-  ),
-  executeTransaction: handleQueryError(
-    ({
-      txId,
-      query: sqlText,
-      values,
-      ownerId,
-    }: {
-      txId: string
-      query: string
-      values: unknown[]
-      ownerId?: string
-    }) => {
-      const handle = getTransaction(txId, ownerId)
-      if (!handle) {
-        throw new Error(`No active transaction found for id: ${txId}`)
-      }
-
-      return handle.execute(sqlText, values)
-    }
-  ),
-  rollbackTransaction: handleQueryError(
-    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
-      const handle = disposeTransaction(txId, ownerId)
-      if (!handle) {
-        return
-      }
-
-      try {
-        await handle.rollback()
-      } finally {
-        await silently(() => handle.release())
       }
     }
   ),

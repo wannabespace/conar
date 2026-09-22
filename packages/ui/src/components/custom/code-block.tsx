@@ -1,6 +1,8 @@
 import type { HighlightOptions } from '@streamdown/code'
 import { code as highlighter } from '@streamdown/code'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
 import type { ComponentProps, CSSProperties } from 'react'
 import { useRef, useSyncExternalStore } from 'react'
 
@@ -76,39 +78,49 @@ const CodeInline = ({
   )
 }
 
-const codeBlockSizes = {
-  '2xs': 'text-2xs/5',
-  xs: 'text-xs/5',
-}
+const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
+  defaultVariants: {
+    size: '2xs',
+    variant: 'ghost',
+  },
+  variants: {
+    size: {
+      '2xs': 'text-2xs/5',
+      xs: 'text-xs/5',
+    },
+    variant: {
+      field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring',
+      ghost: '',
+    },
+    wrap: {
+      true: 'whitespace-pre-wrap',
+    },
+  },
+})
 
 const CodeBlock = ({
   className,
   code,
   language,
   lineNumbers = false,
-  size = '2xs',
+  size,
+  variant,
   wrap = false,
   ...props
-}: ComponentProps<'pre'> & {
-  code: string
-  language: string
-  lineNumbers?: boolean
-  size?: keyof typeof codeBlockSizes
-  wrap?: boolean
-}) => {
+}: ComponentProps<'pre'> &
+  VariantProps<typeof codeBlockVariants> & {
+    code: string
+    language: string
+    lineNumbers?: boolean
+  }) => {
   const lines: Token[][] =
     useTokens(code, language) ??
     code.split('\n').map((line) => [{ content: line }])
 
   return (
     <pre
-      className={cn(
-        'scrollbar-thin overflow-auto px-2 font-mono',
-        codeBlockSizes[size],
-        wrap && 'whitespace-pre-wrap',
-        className
-      )}
       data-slot="code-block"
+      className={cn(codeBlockVariants({ size, variant, wrap }), className)}
       {...props}
     >
       <code data-mask className={cn(lineNumbers && '[counter-reset:line]')}>

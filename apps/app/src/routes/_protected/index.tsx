@@ -1,4 +1,4 @@
-import { title } from '@tamery/shared/utils/title'
+import { title } from '@tamery/shared/title'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { createFileRoute } from '@tanstack/react-router'
 

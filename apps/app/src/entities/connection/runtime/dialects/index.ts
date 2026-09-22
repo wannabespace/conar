@@ -1,5 +1,5 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { AnyFunction } from '@tamery/shared/utils/helpers'
+import type { AnyFunction } from '@tamery/shared/utils'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 

@@ -22,11 +22,10 @@ import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { renameTableQuery } from '~/entities/connection/queries/rename-table'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import { renameTableQuery } from '~/entities/connection/queries/tables/rename'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { pinnedTable } from '~/entities/connection/store/helpers/tables'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -41,7 +40,6 @@ interface RenameTableDialogProps {
 export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   const { connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
-  const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
@@ -73,10 +71,7 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
       setOpen(false)
 
       await queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({
-          connectionResource,
-          showSystem: store.get().showSystem,
-        })
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
       )
       pinnedTable.rename(connectionResource.id, schema, table, newTableName)
 

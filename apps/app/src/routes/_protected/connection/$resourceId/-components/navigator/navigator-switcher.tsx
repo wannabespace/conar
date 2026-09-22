@@ -9,7 +9,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { setNavigator } from '~/entities/connection/store/helpers/navigator'
 import { getNavigatorStore } from '~/entities/connection/store/stores'
 
 import { sidebarActionRowClassName } from './primitives'
@@ -20,7 +19,8 @@ const TRANSITION = { duration: 0.15, ease: [0.32, 0.72, 0, 1] } as const
 
 export const NavigatorSwitcher = () => {
   const { connectionResource } = useRouteContext()
-  const navigator = useSubscription(getNavigatorStore(connectionResource.id))
+  const navigatorStore = getNavigatorStore(connectionResource.id)
+  const navigator = useSubscription(navigatorStore)
   const isDefinitions = navigator === 'definitions'
 
   return (
@@ -30,10 +30,7 @@ export const NavigatorSwitcher = () => {
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       className={sidebarActionRowClassName}
       onClick={() =>
-        setNavigator(
-          connectionResource.id,
-          isDefinitions ? 'tables' : 'definitions'
-        )
+        navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
       }
     >
       <AnimatePresence initial={false} mode="popLayout">

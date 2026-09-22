@@ -1,4 +1,4 @@
-import { sleep } from '@tamery/shared/utils/helpers'
+import { sleep } from '@tamery/shared/utils'
 import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'

@@ -51,19 +51,21 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
+import { prefetchConnectionResourceTableCore } from '~/entities/connection/fetching'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
+import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
+import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
+import { resourcePrivilegesQueryOptions } from '~/entities/connection/queries/privileges/list'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/rows/total'
 import {
   resourceColumnsQueryKey,
   resourceTableColumnsQueryOptions,
-} from '~/entities/connection/queries/columns'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
-import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
-import { resourcePoliciesQuery } from '~/entities/connection/queries/policies'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
-import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
-import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers'
+} from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
 import {
   openRunnerTab,
   openTab,
@@ -81,7 +83,6 @@ import type {
   DefinitionsSection,
 } from '~/entities/connection/store/tabs/types'
 import { isPreviewTab } from '~/entities/connection/store/tabs/types'
-import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils/fetching'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { pressNavProps } from '~/lib/press-nav'
@@ -145,7 +146,8 @@ const DEFINITIONS_QUERY_OPTIONS: Record<
   enums: resourceEnumsQueryOptions,
   functions: resourceFunctionsQueryOptions,
   indexes: resourceIndexesQueryOptions,
-  policies: resourcePoliciesQuery,
+  policies: resourcePoliciesQueryOptions,
+  privileges: resourcePrivilegesQueryOptions,
   triggers: resourceTriggersQueryOptions,
 }
 
@@ -160,9 +162,14 @@ const DefinitionsRefresh = ({ section }: { section: DefinitionsSection }) => {
   const handleRefresh = () => {
     setIsUserRefreshing(true)
 
-    return queryClient
-      .invalidateQueries({ queryKey })
-      .finally(() => setIsUserRefreshing(false))
+    // The pickers and "no tables" notes read the table list, not the section.
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey }),
+      queryClient.invalidateQueries({
+        queryKey: resourceTablesAndSchemasQueryOptions({ connectionResource })
+          .queryKey,
+      }),
+    ]).finally(() => setIsUserRefreshing(false))
   }
 
   useRefreshHotkey(handleRefresh, isFetching)
@@ -178,13 +185,8 @@ const DefinitionsRefresh = ({ section }: { section: DefinitionsSection }) => {
 
 const VisualizerRefresh = () => {
   const { connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const tablesAndSchemasKey = resourceTablesAndSchemasQueryOptions({
     connectionResource,
-    showSystem,
   }).queryKey
   const columnsKey = resourceColumnsQueryKey({ connectionResource })
   const constraintsKey = resourceConstraintsQueryOptions({
@@ -317,9 +319,9 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
               size="icon-xs"
               aria-label="Go back"
-              className="text-muted-foreground"
               disabled={!canGoBack}
               onClick={() => router.history.back()}
             />
@@ -334,9 +336,9 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
               size="icon-xs"
               aria-label="Go forward"
-              className="text-muted-foreground"
               onClick={() => router.history.forward()}
             />
           }
@@ -376,9 +378,9 @@ const NewTabMenu = ({
         render={
           <Button
             variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="New tab"
-            className="text-muted-foreground"
           />
         }
       >
@@ -445,9 +447,6 @@ const NewTabMenu = ({
 
 const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   const store = getConnectionResourceStore(resourceId)
-  const chatOpened = useSubscription(store, {
-    selector: (state) => state.chatOpened,
-  })
   const { isPending, subscription } = useUserSubscription()
 
   const toggleChat = () => {
@@ -473,10 +472,9 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
         render={
           <Button
             variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="AI chat"
-            aria-pressed={chatOpened}
-            className="text-muted-foreground"
             onClick={toggleChat}
           />
         }
@@ -760,11 +758,8 @@ const Tab = ({
 export const TabBar = ({ className }: { className?: string }) => {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
@@ -916,9 +911,9 @@ export const TabBar = ({ className }: { className?: string }) => {
             render={
               <Button
                 variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
                 size="icon-xs"
                 aria-label="Toggle sidebar"
-                className="text-muted-foreground"
                 onClick={() => navigatorOpenValue.set((open) => !open)}
               />
             }

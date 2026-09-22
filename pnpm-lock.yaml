@@ -229,8 +229,8 @@ catalogs:
       specifier: ^1.1.1
       version: 1.1.1
     cn:
-      specifier: ^0.2.4
-      version: 0.2.4
+      specifier: ^0.2.6
+      version: 0.2.6
     consola:
       specifier: ^3.4.2
       version: 3.4.2
@@ -286,8 +286,8 @@ catalogs:
       specifier: ^13.2.0
       version: 13.2.0
     motion-panels:
-      specifier: ^0.4.0
-      version: 0.4.0
+      specifier: ^0.5.2
+      version: 0.5.2
     mssql:
       specifier: ^12.7.0
       version: 12.7.0
@@ -789,9 +789,9 @@ importers:
       '@tamery/query-proxy':
         specifier: workspace:*
         version: link:../../packages/query-proxy
-      '@tamery/vite-prerender':
+      '@tamery/vite-inline-html':
         specifier: workspace:*
-        version: link:../../packages/vite-prerender
+        version: link:../../packages/vite-inline-html
       '@tanstack/react-devtools':
         specifier: 'catalog:'
         version: 0.10.12(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(solid-js@1.9.14)
@@ -1386,7 +1386,7 @@ importers:
         version: 1.1.1(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       cn:
         specifier: 'catalog:'
-        version: 0.2.4
+        version: 0.2.6
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
@@ -1398,7 +1398,7 @@ importers:
         version: 13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       motion-panels:
         specifier: 'catalog:'
-        version: 0.4.0(motion@13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+        version: 0.5.2(motion@13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -1434,7 +1434,7 @@ importers:
         specifier: 'catalog:'
         version: 4.20.1(supports-color@7.2.0)(typescript@7.0.2)
 
-  packages/vite-prerender:
+  packages/vite-inline-html:
     dependencies:
       vite:
         specifier: 'catalog:'
@@ -5771,8 +5771,8 @@ packages:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
 
-  cn@0.2.4:
-    resolution: {integrity: sha512-SzQvoh5FwizWtQg9+JueKdjWhlfCZMdu5DqNHm9q1wUlRVmKb9WXlepR9bTTbPwzEOyX1ujJ6lcCppmn3bNUCg==}
+  cn@0.2.6:
+    resolution: {integrity: sha512-+i4L0zUGgRcEnhsxueVrP7iBGxBx5iD0WOTYg1MwFEu2ZyCmH5Ov2V1cul2Ht5UchRQQgftCf4be/RxspuW6QQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -7915,8 +7915,8 @@ packages:
   motion-dom@13.2.0:
     resolution: {integrity: sha512-N6gdSoWRDk0Rh/fVtlqUtLs+fEN3ELFZI3cn3IQE9Mnf3E+Mh8wjO6MstzCOPFh4Yf0L1as5m2eUyYWj8ylVSQ==}
 
-  motion-panels@0.4.0:
-    resolution: {integrity: sha512-yNubrMR5vGCLX/8dxyn+u6uzlYN0QaVlIDfb3g1ahvol0TXD5FjVyZPbxLhbZ1CHU5qBPEkaEx+BHwN010FgUg==}
+  motion-panels@0.5.2:
+    resolution: {integrity: sha512-1uADco/umHHWyy+iV8HXgP1v3LZRpbmU7LfAWhM2tHx9JU1RRBpnmxcEZfdsJAp6zCS1sJlb5xKi2GYm94nz8Q==}
     engines: {node: '>=20'}
     peerDependencies:
       motion: '>=12'
@@ -14874,7 +14874,7 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  cn@0.2.4: {}
+  cn@0.2.6: {}
 
   code-block-writer@13.0.3: {}
 
@@ -17077,7 +17077,7 @@ snapshots:
     dependencies:
       motion-utils: 13.0.0
 
-  motion-panels@0.4.0(motion@13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
+  motion-panels@0.5.2(motion@13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8):
     dependencies:
       motion: 13.2.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     optionalDependencies:

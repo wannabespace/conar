@@ -1,4 +1,3 @@
-# .github/workflows/aur-publish.yml
 name: Publish to AUR
 
 on:

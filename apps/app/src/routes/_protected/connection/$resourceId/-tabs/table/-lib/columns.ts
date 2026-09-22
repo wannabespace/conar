@@ -4,12 +4,12 @@ import { createContext, use } from 'react'
 import type { Column } from '~/entities/connection/components/table/cell/utils'
 import { getColumnUiType } from '~/entities/connection/components/table/cell/utils'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import {
   findEnum,
   resourceEnumsQueryOptions,
-} from '~/entities/connection/queries/enums'
+} from '~/entities/connection/queries/enums/list'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 
 export const useTableColumnsQuery = ({
   connectionResource,

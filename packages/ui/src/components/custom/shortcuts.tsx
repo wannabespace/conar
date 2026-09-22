@@ -4,7 +4,7 @@ import {
   CornerDownLeftIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getOS } from '@tamery/shared/utils/os'
+import { getOS } from '@tamery/shared/os'
 import type { ComponentProps } from 'react'
 
 import { Kbd } from '../kbd'

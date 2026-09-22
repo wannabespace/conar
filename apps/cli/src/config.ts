@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { tryCatch } from '@tamery/shared/utils/helpers'
+import { tryCatch } from '@tamery/shared/utils'
 
 const CONFIG_DIR = path.join(os.homedir(), '.config', 'tamery')
 const CONFIG_FILE = path.join(CONFIG_DIR, 'cli.json')

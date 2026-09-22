@@ -35,20 +35,20 @@ import {
 } from '@xyflow/react'
 import type { CSSProperties } from 'react'
 import { useEffectEvent, useRef, useState } from 'react'
-import { useSubscription } from 'seitu/react'
 
+import { defaultSchemaOf } from '~/entities/connection/capabilities'
 import { ReactFlowNode } from '~/entities/connection/components/react-flow-node'
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
-import type { columnType } from '~/entities/connection/queries/columns'
-import type { constraintsType } from '~/entities/connection/queries/constraints'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import type { constraintsType } from '~/entities/connection/queries/constraints/list'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import type { columnType } from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { setVisualizerViewport } from '~/entities/connection/store/helpers/visualizer'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
   applySearchHighlight,
   getVisualizerLayout,
-} from '~/entities/connection/visualizer/lib'
+} from '~/entities/connection/visualizer'
 
 import { VisualizerSkeleton } from './visualizer-skeleton'
 
@@ -70,10 +70,15 @@ const Visualizer = ({
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
-  const initialSchema = schemas[0] ?? ''
+  const defaultSchema = defaultSchemaOf(
+    connection.type,
+    connectionResource.name
+  )
+  const initialSchema =
+    schemas.find((name) => name === defaultSchema) ?? schemas[0] ?? ''
   const [schema, setSchema] = useState(initialSchema)
   const savedViewport = store.get().visualizerViewports?.[schema]
   const [searchQuery, setSearchQuery] = useState('')
@@ -125,9 +130,13 @@ const Visualizer = ({
     recalculateLayoutEvent()
   }, [schema])
 
-  useHotkey('Mod+F', () => {
-    searchRef.current?.focus()
-  })
+  useHotkey(
+    'Mod+F',
+    () => {
+      searchRef.current?.focus()
+    },
+    { conflictBehavior: 'replace' }
+  )
 
   return (
     <div className="relative size-full min-h-0 flex-1 overflow-hidden rounded-lg">
@@ -266,12 +275,8 @@ const Visualizer = ({
 
 export const VisualizerTab = () => {
   const { connection, connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
     select: (data) =>
       data.schemas.flatMap(({ name, tables }) =>
         tables.map((table) => ({ schema: name, table: table.name }))

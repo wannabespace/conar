@@ -1,12 +1,10 @@
 import type { Column } from '../../components/table/cell/utils'
 import type { ValueTransformer } from '../value-transformer'
 import { getDisplayValue } from '../value-transformer'
-import { parseToArray } from './shared'
+import { parseToArray } from './parse'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/u
-// quoted element (handles \" and \\) OR bare element up to next comma
 const PG_ARRAY_ELEMENT_RE = /"(?:[^"\\]|\\.)*"|[^,]+/gu
-// \" → " , \\ → \
 const PG_UNESCAPE_RE = /\\(?<char>.)/gu
 const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/u
 const BACKSLASH_RE = /\\/gu
@@ -46,7 +44,6 @@ export const toPgArrayLiteral = (items: string[], separator = ','): string => {
   return `{${escaped.join(separator)}}`
 }
 
-// Possible values: null, string[], string {enum1,enum2}
 export const createPostgresListTransformer = (
   column: Column
 ): ValueTransformer<string[]> => {
@@ -99,7 +96,6 @@ export const createPostgresListTransformer = (
           return toPgArrayLiteral(value)
         }
 
-        // Only enums can have a UI
         throw new Error('Invalid array value')
       },
     },

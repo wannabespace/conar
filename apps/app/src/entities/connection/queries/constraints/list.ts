@@ -1,0 +1,391 @@
+import { queryOptions } from '@tanstack/react-query'
+import { type } from 'arktype'
+import { sql } from 'kysely'
+
+import type { ConnectionResource } from '~/entities/connection/core/sync'
+
+import {
+  connectionResourceToQueryParams,
+  createQuery,
+} from '../../runtime/query'
+import { structureQueryKey } from '../indexes/list'
+import { clickhouseConstraintsOf } from './shape'
+
+const constraintType = type(
+  '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
+)
+
+const neededConstraintTypes = [
+  'PRIMARY KEY',
+  'UNIQUE',
+  'FOREIGN KEY',
+  'CHECK',
+] as const satisfies (typeof constraintType.infer)[]
+
+const constraintTypeLabelMap = {
+  CHECK: 'check',
+  EXCLUSION: 'exclusion',
+  'FOREIGN KEY': 'foreignKey',
+  'PRIMARY KEY': 'primaryKey',
+  UNIQUE: 'unique',
+} as const satisfies Record<typeof constraintType.infer, string>
+
+export const constraintsType = type({
+  column: 'string | null',
+  'definition?': 'string',
+  'expression?': 'string | null',
+  foreign_column: 'string | null',
+  foreign_schema: 'string | null',
+  foreign_table: 'string | null',
+  'is_custom?': 'boolean | 1 | 0',
+  name: 'string',
+  onDelete: 'string | null',
+  onUpdate: 'string | null',
+  schema: 'string',
+  table: 'string',
+  type: constraintType,
+}).pipe(
+  ({
+    type: constraintKind,
+    foreign_column,
+    foreign_table,
+    foreign_schema,
+    is_custom,
+    ...item
+  }) => ({
+    ...item,
+    custom: !!is_custom,
+    foreignColumn: foreign_column,
+    foreignSchema: foreign_schema,
+    foreignTable: foreign_table,
+    type: constraintTypeLabelMap[
+      constraintKind as (typeof neededConstraintTypes)[number]
+    ],
+  })
+)
+
+export const resourceConstraintsQuery = createQuery({
+  query: {
+    clickhouse: async (db) => {
+      // ClickHouse has no constraints beyond the primary key
+      const query = await db
+        .selectFrom('system.columns')
+        .select(['database as schema', 'table', 'name as column'])
+        .where('is_in_primary_key', '=', 1)
+        .where('database', 'not in', ['system', 'information_schema'])
+        .orderBy(['database', 'table', 'position'])
+        .execute()
+
+      const tables = await db
+        .selectFrom('system.tables')
+        .select(['database', 'name', 'create_table_query'])
+        .where('database', 'not in', ['system', 'information_schema'])
+        .where('engine', 'not like', '%View')
+        .where('create_table_query', 'like', '%CONSTRAINT%')
+        .execute()
+      const noReference = {
+        foreign_column: null,
+        foreign_schema: null,
+        foreign_table: null,
+        onDelete: null,
+        onUpdate: null,
+      }
+
+      return [
+        ...query.map((row) =>
+          Object.assign(row, {
+            ...noReference,
+            name: 'primary_key',
+            type: 'PRIMARY KEY' as const,
+          })
+        ),
+        ...tables.flatMap((table) =>
+          clickhouseConstraintsOf(table.create_table_query).map(
+            (constraint) => ({
+              ...noReference,
+              column: null,
+              expression: constraint.expression,
+              // ASSUME only guides the optimizer; the form writes CHECK.
+              is_custom: constraint.assume,
+              name: constraint.name,
+              schema: table.database,
+              table: table.name,
+              type: 'CHECK' as const,
+            })
+          )
+        ),
+      ]
+    },
+    mssql: (db) =>
+      db
+        .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
+        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
+            .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
+            .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME')
+        )
+        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
+        )
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
+        )
+        .leftJoin(
+          'information_schema.KEY_COLUMN_USAGE as referenced_kcu',
+          (join) =>
+            join
+              .onRef(
+                'rc.UNIQUE_CONSTRAINT_NAME',
+                '=',
+                'referenced_kcu.CONSTRAINT_NAME'
+              )
+              .onRef(
+                'rc.UNIQUE_CONSTRAINT_SCHEMA',
+                '=',
+                'referenced_kcu.CONSTRAINT_SCHEMA'
+              )
+              .onRef(
+                'kcu.ORDINAL_POSITION',
+                '=',
+                'referenced_kcu.ORDINAL_POSITION'
+              )
+        )
+        .select([
+          'tc.TABLE_SCHEMA as schema',
+          'tc.TABLE_NAME as table',
+          'tc.CONSTRAINT_NAME as name',
+          'tc.CONSTRAINT_TYPE as type',
+          'kcu.COLUMN_NAME as column',
+          'referenced_kcu.TABLE_SCHEMA as foreign_schema',
+          'referenced_kcu.TABLE_NAME as foreign_table',
+          'referenced_kcu.COLUMN_NAME as foreign_column',
+          'rc.DELETE_RULE as onDelete',
+          'rc.UPDATE_RULE as onUpdate',
+          'cc.CHECK_CLAUSE as expression',
+          // A disabled, untrusted or not-for-replication key or check comes
+          // back plain from a drop-and-add, so the form only renames it.
+          (eb) =>
+            eb
+              .case()
+              .when(
+                eb.or([
+                  eb.exists(
+                    eb
+                      .selectFrom('sys.foreign_keys as fk')
+                      .innerJoin(
+                        'sys.schemas as fs',
+                        'fs.schema_id',
+                        'fk.schema_id'
+                      )
+                      .select(sql.lit(1).as('one'))
+                      .whereRef('fk.name', '=', 'tc.CONSTRAINT_NAME')
+                      .whereRef('fs.name', '=', 'tc.CONSTRAINT_SCHEMA')
+                      .where((sub) =>
+                        sub.or([
+                          sub('fk.is_disabled', '=', true),
+                          sub('fk.is_not_trusted', '=', true),
+                          sub('fk.is_not_for_replication', '=', true),
+                        ])
+                      )
+                  ),
+                  eb.exists(
+                    eb
+                      .selectFrom('sys.check_constraints as ck')
+                      .innerJoin(
+                        'sys.schemas as ks',
+                        'ks.schema_id',
+                        'ck.schema_id'
+                      )
+                      .select(sql.lit(1).as('one'))
+                      .whereRef('ck.name', '=', 'tc.CONSTRAINT_NAME')
+                      .whereRef('ks.name', '=', 'tc.CONSTRAINT_SCHEMA')
+                      .where((sub) =>
+                        sub.or([
+                          sub('ck.is_disabled', '=', true),
+                          sub('ck.is_not_trusted', '=', true),
+                          sub('ck.is_not_for_replication', '=', true),
+                        ])
+                      )
+                  ),
+                ])
+              )
+              .then(1)
+              .else(0)
+              .end()
+              .as('is_custom'),
+        ])
+        .$narrowType<{ is_custom: 1 | 0 }>()
+        .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+        .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
+        .orderBy('kcu.ORDINAL_POSITION')
+        .execute(),
+    mysql: (db) =>
+      db
+        .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
+        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
+            .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
+            .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME')
+        )
+        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
+            .onRef('tc.TABLE_NAME', '=', 'rc.TABLE_NAME')
+        )
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
+        )
+        .select([
+          'tc.TABLE_SCHEMA as schema',
+          'tc.TABLE_NAME as table',
+          'tc.CONSTRAINT_NAME as name',
+          'tc.CONSTRAINT_TYPE as type',
+          'kcu.COLUMN_NAME as column',
+          'kcu.REFERENCED_TABLE_SCHEMA as foreign_schema',
+          'kcu.REFERENCED_TABLE_NAME as foreign_table',
+          'kcu.REFERENCED_COLUMN_NAME as foreign_column',
+          'rc.DELETE_RULE as onDelete',
+          'rc.UPDATE_RULE as onUpdate',
+          'cc.CHECK_CLAUSE as expression',
+        ])
+        .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
+        .where('tc.TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
+        .orderBy('kcu.ORDINAL_POSITION')
+        .execute(),
+    postgres: (db) =>
+      db
+        .selectFrom('pg_catalog.pg_constraint as con')
+        .innerJoin('pg_catalog.pg_class as c', 'con.conrelid', 'c.oid')
+        .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
+        // A check naming no column has no conkey, and still lists.
+        .leftJoin('pg_catalog.pg_attribute as a', (join) =>
+          join
+            .onRef('a.attrelid', '=', 'con.conrelid')
+            .on(sql<boolean>`a.attnum = ANY(con.conkey)`)
+        )
+        .leftJoin('pg_catalog.pg_class as fc', 'con.confrelid', 'fc.oid')
+        .leftJoin('pg_catalog.pg_namespace as fn', (join) =>
+          join.onRef('fn.oid', '=', 'fc.relnamespace')
+        )
+        .leftJoin('pg_catalog.pg_attribute as fa', (join) =>
+          join
+            .onRef('fa.attrelid', '=', 'con.confrelid')
+            .on(
+              sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`
+            )
+        )
+        .select([
+          'n.nspname as schema',
+          'c.relname as table',
+          'con.conname as name',
+          (eb) =>
+            eb
+              .case('con.contype')
+              .when('p')
+              .then('PRIMARY KEY')
+              .when('u')
+              .then('UNIQUE')
+              .when('f')
+              .then('FOREIGN KEY')
+              .when('c')
+              .then('CHECK')
+              .end()
+              .as('type'),
+          'a.attname as column',
+          'fn.nspname as foreign_schema',
+          'fc.relname as foreign_table',
+          'fa.attname as foreign_column',
+          (eb) =>
+            eb
+              .case('con.confdeltype')
+              .when('a')
+              .then('NO ACTION')
+              .when('r')
+              .then('RESTRICT')
+              .when('c')
+              .then('CASCADE')
+              .when('n')
+              .then('SET NULL')
+              .when('d')
+              .then('SET DEFAULT')
+              .end()
+              .as('onDelete'),
+          (eb) =>
+            eb
+              .case('con.confupdtype')
+              .when('a')
+              .then('NO ACTION')
+              .when('r')
+              .then('RESTRICT')
+              .when('c')
+              .then('CASCADE')
+              .when('n')
+              .then('SET NULL')
+              .when('d')
+              .then('SET DEFAULT')
+              .end()
+              .as('onUpdate'),
+          sql<string>`pg_get_constraintdef(con.oid)`.as('definition'),
+          sql<string | null>`pg_get_expr(con.conbin, con.conrelid)`.as(
+            'expression'
+          ),
+          // DEFERRABLE, NOT VALID, NO INHERIT and MATCH FULL have no field in
+          // the form, and a drop-and-add would leave them behind.
+          (eb) =>
+            eb
+              .or([
+                eb('con.condeferrable', '=', true),
+                eb('con.convalidated', '=', false),
+                // Key constraints report connoinherit too; only a check's is a choice.
+                eb.and([
+                  eb('con.contype', '=', 'c'),
+                  eb('con.connoinherit', '=', true),
+                ]),
+                eb.and([
+                  eb('con.contype', '=', 'f'),
+                  eb('con.confmatchtype', '!=', 's'),
+                ]),
+              ])
+              .as('is_custom'),
+        ])
+        .$narrowType<{ type: typeof constraintType.infer }>()
+        .where('con.contype', 'in', ['p', 'u', 'f', 'c'])
+        // A partition's copy of its parent's constraint neither drops nor
+        // renames on its own, and the parent's row already stands for it.
+        .where('con.coninhcount', '=', 0)
+        .where('n.nspname', 'not like', 'pg_%')
+        .where('n.nspname', '!=', 'information_schema')
+        .orderBy(sql<number>`array_position(con.conkey, a.attnum)`)
+        .execute(),
+  },
+  type: constraintsType.array(),
+})
+
+export const resourceConstraintsQueryOptions = ({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) =>
+  queryOptions({
+    queryFn: async () =>
+      resourceConstraintsQuery.run(
+        await connectionResourceToQueryParams(connectionResource)
+      ),
+    queryKey: [...structureQueryKey(connectionResource), 'constraints'],
+  })

@@ -1,4 +1,4 @@
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 
 export interface Config {
   user?: string

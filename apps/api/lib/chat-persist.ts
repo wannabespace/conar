@@ -5,7 +5,7 @@ import { messagesFromPartRows } from '@tamery/ai/message'
 import { AiFeature } from '@tamery/ai/usage'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
-import { silently } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils'
 import { and, asc, eq, isNull } from 'drizzle-orm'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -106,6 +106,30 @@ export const chatPersist = {
       .orderBy(asc(chatsMessages.createdAt), asc(chatsMessagesParts.order))
 
     return messagesFromPartRows(rows)
+  },
+  markStopped: async (data: { chatId: string; userId: string }) => {
+    const lastMessage = await db.query.chatsMessages.findFirst({
+      columns: { id: true, metadata: true, role: true },
+      orderBy: { createdAt: 'desc' },
+      where: { chatId: { eq: data.chatId } },
+    })
+
+    if (lastMessage?.role !== 'user') {
+      return
+    }
+
+    const [updated] = await db
+      .update(chatsMessages)
+      .set({ metadata: { ...lastMessage.metadata, stopped: true } })
+      .where(eq(chatsMessages.id, lastMessage.id))
+      .returning()
+
+    if (updated) {
+      chatsMessagesPublisher.publish(data.userId, {
+        type: 'update',
+        value: updated,
+      })
+    }
   },
   persistMessage: async (data: {
     chatId: string

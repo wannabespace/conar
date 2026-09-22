@@ -1,8 +1,8 @@
 import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
+import { encrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { encrypt } from '@tamery/shared/utils/crypto-node'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
 
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
@@ -18,8 +18,6 @@ export const create = orpc
       .and(type({ 'workspaceId?': 'string | null' }))
   )
   .handler(async ({ context, input }) => {
-    // The client sends the workspace that was active on the device; it is
-    // membership-checked, and anything else falls back to the default workspace.
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []

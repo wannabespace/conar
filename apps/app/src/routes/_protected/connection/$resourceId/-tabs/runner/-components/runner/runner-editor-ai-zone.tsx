@@ -18,8 +18,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
@@ -86,24 +85,16 @@ export const RunnerEditorAIZone = ({
       onUpdate(aiSuggestion)
       fullClose()
     } else {
+      const tablesAndSchemas = await queryClient.ensureQueryData(
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
+      )
       updateSQL({
         sql,
         prompt,
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(
-            await queryClient.ensureQueryData(
-              resourceTablesAndSchemasQueryOptions({
-                connectionResource,
-                showSystem: getConnectionResourceStore(
-                  connectionResource.id
-                ).get().showSystem,
-              })
-            ),
-            null,
-            2
-          ),
+          JSON.stringify(tablesAndSchemas, null, 2),
         ].join('\n'),
       })
     }
@@ -143,7 +134,6 @@ export const RunnerEditorAIZone = ({
               }}
               className={cn(
                 `field-sizing-content flex-1 resize-none border-none px-2 py-1.5 pb-8 text-sm`,
-                // Disable monaco default styles
                 `focus:border-border! focus-visible:border-border! focus-visible:ring-0! focus-visible:outline-none!`
               )}
               placeholder={
@@ -181,7 +171,7 @@ export const RunnerEditorAIZone = ({
                   '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
                 } as CSSProperties
               }
-              className="h-[min(30vh,var(--lines-height))] w-lg p-0 **:data-[slot=popover-viewport]:p-0"
+              className="h-[min(30vh,var(--lines-height))] w-lg gap-0 p-0"
             >
               <MonacoDiff
                 originalValue={originalSql}

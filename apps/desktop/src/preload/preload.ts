@@ -1,6 +1,6 @@
 import { replaceErrorPrefix } from '@tamery/connection/queries'
-import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import type { UpdatesStatus } from '@tamery/shared/utils/updates'
+import type { UpdatesStatus } from '@tamery/shared/updates'
+import type { AnyFunction } from '@tamery/shared/utils'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { electron } from '../main/lib/events'

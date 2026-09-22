@@ -1,7 +1,7 @@
 import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 import {
   Tooltip,
   TooltipContent,

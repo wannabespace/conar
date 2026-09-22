@@ -1,17 +1,13 @@
 import { createRequire } from 'node:module'
 
 import type * as ClickHouse from '@clickhouse/client'
-import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import { silently, tryParseJson } from '@tamery/shared/utils/helpers'
+import type { AnyFunction } from '@tamery/shared/utils'
+import { tryParseJson } from '@tamery/shared/utils'
 import { memoize } from 'memoza'
 
 import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
-import {
-  disposeTransaction,
-  getTransaction,
-  registerTransaction,
-} from '../transactions'
+import { registerTransaction, transactionQueries } from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)(
   '@clickhouse/client'
@@ -64,6 +60,8 @@ const emptyAsync = async () => {
 }
 
 export const query = {
+  ...transactionQueries,
+
   beginTransaction: handleQueryError(
     ({
       connectionString,
@@ -85,19 +83,6 @@ export const query = {
       return Promise.resolve({ txId })
     }
   ),
-
-  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
-    if (!handle) {
-      return
-    }
-
-    try {
-      await handle.commit()
-    } finally {
-      await silently(() => handle.release())
-    }
-  }),
 
   execute: wrapClickhouseError(
     async ({
@@ -125,36 +110,4 @@ export const query = {
       return { duration: performance.now() - start, result: [] }
     }
   ),
-
-  executeTransaction: handleQueryError(
-    ({
-      txId,
-      query: queryText,
-      values,
-    }: {
-      txId: string
-      query: string
-      values: unknown[]
-    }) => {
-      const handle = getTransaction(txId)
-      if (!handle) {
-        throw new Error(`No active transaction found for id: ${txId}`)
-      }
-
-      return handle.execute(queryText, values)
-    }
-  ),
-
-  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
-    if (!handle) {
-      return
-    }
-
-    try {
-      await handle.rollback()
-    } finally {
-      await silently(() => handle.release())
-    }
-  }),
 } satisfies QueryExecutor

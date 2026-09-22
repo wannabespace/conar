@@ -39,7 +39,7 @@ export type NodeType = Node<
 export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
   <div
     className={cn(
-      `bg-card w-66 rounded-xl font-mono shadow-[0_0.0625rem_0.0625rem_rgba(0,0,0,0.02),0_0.125rem_0.125rem_rgba(0,0,0,0.02),0_0.25rem_0.25rem_rgba(0,0,0,0.02),0_0.5rem_0.5rem_rgba(0,0,0,0.02),0_1rem_1rem_rgba(0,0,0,0.02),0_2rem_2rem_rgba(0,0,0,0.02)] transition-opacity`,
+      `bg-card w-66 rounded-xl font-mono shadow-md transition-opacity`,
       data.searchActive && data.tableSearchMatched && `ring-primary/60 ring-1`,
       data.searchActive &&
         !data.tableSearchMatched &&

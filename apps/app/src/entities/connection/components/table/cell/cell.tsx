@@ -4,7 +4,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { sleep } from '@tamery/shared/utils/helpers'
+import { sleep } from '@tamery/shared/utils'
 import type { TableCellProps } from '@tamery/table'
 import {
   AlertDialog,
@@ -193,7 +193,7 @@ const CellForeignPopover = ({
       <TooltipContent side="right">See foreign record</TooltipContent>
     </Tooltip>
     <PopoverContent
-      className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -245,7 +245,7 @@ const CellReferencesPopover = ({
       </TooltipContent>
     </Tooltip>
     <PopoverContent
-      className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -404,7 +404,7 @@ const InteractiveTableCell = ({
           </PopoverTrigger>
           <PopoverContent
             className={cn(
-              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s] **:data-[slot=popover-viewport]:p-0`,
+              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
               isBig && `w-[min(50vw,60rem)]`
             )}
             onAnimationEnd={disableInteractIfPossible}

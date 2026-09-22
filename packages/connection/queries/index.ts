@@ -1,8 +1,5 @@
-import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import {
-  handleAggregateError,
-  uppercaseFirst,
-} from '@tamery/shared/utils/helpers'
+import type { AnyFunction } from '@tamery/shared/utils'
+import { handleAggregateError, uppercaseFirst } from '@tamery/shared/utils'
 
 export interface QueryExecuteResult {
   result: unknown

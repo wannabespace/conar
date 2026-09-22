@@ -27,11 +27,9 @@ const ChatEmpty = () => (
 
 export const ChatMessages = ({
   isPending,
-  lastSentId,
   messages,
 }: {
   isPending: boolean
-  lastSentId: string | undefined
   messages: AppUIMessage[]
 }) => {
   if (messages.length === 0) {
@@ -48,11 +46,7 @@ export const ChatMessages = ({
             className="gap-4 py-3"
           >
             {messages.map((message) => (
-              <MessageScrollerItem
-                key={message.id}
-                messageId={message.id}
-                scrollAnchor={message.id === lastSentId}
-              >
+              <MessageScrollerItem key={message.id} messageId={message.id}>
                 {message.role === 'user' ? (
                   <Message align="end">
                     <MessageContent>

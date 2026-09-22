@@ -1,10 +1,7 @@
 import type { CSSProperties } from 'react'
 
-const SPACE_DOT_REGEX = /[\s.]+/gu
-const prepareColumnId = (id: string) => id.trim().replace(SPACE_DOT_REGEX, '_')
-
 export const columnWidthProperty = (id: string) =>
-  `--table-column-width-${prepareColumnId(id)}`
+  `--table-column-width-${CSS.escape(id)}`
 
 export const getBaseColumnStyle = ({
   id,

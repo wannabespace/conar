@@ -53,8 +53,6 @@
 }
 
 @layer base {
-  /* Chat-scale prose: same rules, tightened for a 400px panel where the
-     document scale reads oversized and loose. */
   .typography-sm:not(.typography-disabled) h1 {
     @apply text-base;
   }

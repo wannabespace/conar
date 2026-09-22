@@ -1,7 +1,7 @@
 import process from 'node:process'
 
 import { boolean, command } from '@drizzle-team/brocli'
-import { challenge } from '@tamery/shared/utils/challenge'
+import { challenge } from '@tamery/shared/challenge'
 import { consola } from 'consola'
 import open from 'open'
 import ora from 'ora'

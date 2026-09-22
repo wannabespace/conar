@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 
 export const dialogContentVariants = cva(
-  `bg-card text-foreground ring-foreground/4 fixed top-1/2 left-1/2 z-50 w-full max-w-[calc(100%-2rem)] -translate-1/2 rounded-[min(var(--radius-4xl),24px)] text-sm shadow-xl ring-[0.5px] duration-100 outline-none`,
+  `bg-card text-foreground ring-foreground/4 fixed top-1/2 left-1/2 z-50 w-full max-w-[calc(100%-2rem)] -translate-1/2 rounded-[min(var(--radius-4xl),24px)] text-sm shadow-xl ring duration-100 outline-none`,
   {
     defaultVariants: {
       variant: 'default',

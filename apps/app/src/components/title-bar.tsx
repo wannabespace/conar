@@ -1,4 +1,4 @@
-import { getOS } from '@tamery/shared/utils/os'
+import { getOS } from '@tamery/shared/os'
 import { cn } from '@tamery/ui/lib/utils'
 import { useEffect, useState } from 'react'
 

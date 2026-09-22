@@ -39,8 +39,6 @@ const ProtectedLayout = () => {
         <div
           className={cn(
             'min-h-0 flex-1',
-            // Let route pages fill the area below the title bar, matching the
-            // full-height behavior the root layout provides to its last child.
             '*:last:h-full *:last:min-h-[inherit] *:last:flex-1'
           )}
         >

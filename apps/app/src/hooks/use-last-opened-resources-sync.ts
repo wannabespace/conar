@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 import { useCollections } from '~/entities/collections'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 
 export const useLastOpenedResourcesSync = () => {
   const collections = useCollections()

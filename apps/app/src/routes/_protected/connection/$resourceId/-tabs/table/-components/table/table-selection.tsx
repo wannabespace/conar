@@ -38,8 +38,10 @@ const IndeterminateCheckbox = ({
     <HugeiconsIcon
       icon={MinusSignIcon}
       strokeWidth={2}
-      className="text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100"
-      style={{ opacity: !props.checked && indeterminate ? 1 : 0 }}
+      className={cn(
+        `text-primary-foreground pointer-events-none absolute size-3 transition-opacity duration-100`,
+        !props.checked && indeterminate ? 'opacity-100' : 'opacity-0'
+      )}
     />
   </div>
 )

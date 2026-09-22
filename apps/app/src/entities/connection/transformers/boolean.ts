@@ -1,4 +1,4 @@
-import { getValueForEditor } from '~/entities/connection/utils/helpers'
+import { getValueForEditor } from '~/entities/connection/utils'
 
 import type { ValueTransformer } from './value-transformer'
 import { getDisplayValue } from './value-transformer'

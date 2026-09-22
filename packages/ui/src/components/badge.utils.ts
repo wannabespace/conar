@@ -1,12 +1,17 @@
 import { cva } from 'class-variance-authority'
 
 export const badgeVariants = cva(
-  `group/badge focus-visible:focus-ring aria-invalid:border-destructive/60 aria-invalid:ring-destructive/30 inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-md border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!`,
+  `group/badge focus-visible:focus-ring aria-invalid:invalid-ring inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-md border border-transparent font-medium whitespace-nowrap transition-all has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!`,
   {
     defaultVariants: {
+      size: 'default',
       variant: 'default',
     },
     variants: {
+      size: {
+        default: `h-5 px-2 text-xs`,
+        sm: `text-2xs h-4 px-1.5`,
+      },
       variant: {
         default: `bg-primary text-primary-foreground [a]:hover:bg-primary/80`,
         destructive: `bg-destructive/15 text-destructive [a]:hover:bg-destructive/25`,

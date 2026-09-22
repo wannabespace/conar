@@ -6,12 +6,15 @@ import {
 } from '@tamery/ai/message'
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
 import { useCollections } from '~/entities/collections'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import {
+  getChatStore,
+  getConnectionResourceStore,
+} from '~/entities/connection/store/stores'
 import { orpc } from '~/lib/orpc'
 import { resourcePanelClassName } from '~/shell'
 
@@ -34,8 +37,7 @@ const Chat = ({
   onNewChat: () => void
 }) => {
   const store = getConnectionResourceStore(connectionResourceId)
-  const setChatId = (id: string | null) =>
-    store.set((state) => ({ ...state, chatId: id }) satisfies typeof state)
+  const chatStore = getChatStore(connectionResourceId)
   const {
     chatsCollection,
     chatsMessagesCollection,
@@ -72,28 +74,38 @@ const Chat = ({
   const chat = chatHistory.find((row) => row.id === chatId)
   const collectionMessages = messagesFromPartRows(transcriptRows)
 
-  // oxlint-disable-next-line react/hook-use-state
-  const [resume] = useState(
-    () => !!chat && collectionMessages.at(-1)?.role !== 'assistant'
-  )
-  const { error, messages, regenerate, sendMessage, status, stop } = useChat({
+  const {
+    error,
+    messages,
+    regenerate,
+    resumeStream,
+    sendMessage,
+    status,
+    stop,
+  } = useChat({
     chat: getChatInstance({ chatId, connectionResourceId }),
-    resume,
   })
   const isStreaming = status === 'submitted' || status === 'streaming'
   const displayMessages = mergeMessages(collectionMessages, messages)
+  const isAwaitingAnswer =
+    !!chat && status === 'ready' && displayMessages.at(-1)?.role === 'user'
   const firstMessage = displayMessages.at(0)
   const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
-  const lastSentId = messages.findLast((message) => message.role === 'user')?.id
+  const lastAsked = displayMessages.findLast(
+    (message) => message.role === 'user'
+  )
+
+  useEffect(() => {
+    if (isAwaitingAnswer) {
+      void resumeStream()
+    }
+  }, [isAwaitingAnswer, resumeStream])
   const retry = () => {
     if (messages.length > 0) {
       void regenerate()
       return
     }
 
-    const lastAsked = displayMessages.findLast(
-      (message) => message.role === 'user'
-    )
     if (lastAsked) {
       void sendMessage(lastAsked)
     }
@@ -111,18 +123,14 @@ const Chat = ({
           )
         }
         onNewChat={onNewChat}
-        onSelectChat={setChatId}
+        onSelectChat={(id) => chatStore.set(id)}
       />
-      <ChatMessages
-        isPending={isStreaming}
-        messages={displayMessages}
-        lastSentId={lastSentId}
-      />
+      <ChatMessages isPending={isStreaming} messages={displayMessages} />
       {error && <ChatError error={error} onRetry={retry} />}
       <ChatInput
         isStreaming={isStreaming}
         onSend={(text) => {
-          setChatId(chatId)
+          chatStore.set(chatId)
           void sendMessage({
             id: v7(),
             parts: [{ text, type: 'text' }],
@@ -140,10 +148,8 @@ const Chat = ({
 
 export const ChatPanel = () => {
   const { connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const chatId = useSubscription(store, {
-    selector: (state) => state.chatId ?? null,
-  })
+  const chatStore = getChatStore(connectionResource.id)
+  const chatId = useSubscription(chatStore)
   const [draftId, setDraftId] = useState(() => v7())
 
   const openBlankChat = () => {
@@ -151,7 +157,7 @@ export const ChatPanel = () => {
       return
     }
     setDraftId(v7())
-    store.set((state) => ({ ...state, chatId: null }) satisfies typeof state)
+    chatStore.set(null)
   }
 
   return (

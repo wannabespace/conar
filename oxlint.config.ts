@@ -10,6 +10,13 @@ export default defineConfig({
   extends: [core, react, tanstack],
   ignorePatterns: [...(core.ignorePatterns || []), ...ignorePatterns],
   jsPlugins: ['oxlint-tailwindcss'],
+  overrides: [
+    {
+      files: ['apps/app/src/entities/connection/**'],
+      // Kysely's case builder spells its branches .then(); no promise involved.
+      rules: { 'promise/prefer-await-to-then': 'off' },
+    },
+  ],
   rules: {
     // react-compiler memoizes context values; manual useMemo is redundant here.
     'react/jsx-no-constructed-context-values': 'off',

@@ -1,6 +1,6 @@
 import { LinkSquare02Icon, Wallet01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,
@@ -76,12 +76,10 @@ const RouteComponent = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead style={{ width: '35%' }}>Date</TableHead>
-                  <TableHead style={{ width: '25%' }}>Amount</TableHead>
-                  <TableHead style={{ width: '20%' }}>Status</TableHead>
-                  <TableHead style={{ width: '20%' }} className="text-right">
-                    Actions
-                  </TableHead>
+                  <TableHead className="w-[35%]">Date</TableHead>
+                  <TableHead className="w-[25%]">Amount</TableHead>
+                  <TableHead className="w-[20%]">Status</TableHead>
+                  <TableHead className="w-[20%] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -89,32 +87,30 @@ const RouteComponent = () => {
                   ? Array.from({ length: 5 }).map((_, index) => (
                       // oxlint-disable-next-line react/no-array-index-key
                       <TableRow key={`skeleton-${index}`}>
-                        <TableCell style={{ width: '35%' }}>
+                        <TableCell>
                           <Skeleton className="h-4 w-40" />
                         </TableCell>
-                        <TableCell style={{ width: '25%' }}>
+                        <TableCell>
                           <Skeleton className="h-4 w-20" />
                         </TableCell>
-                        <TableCell style={{ width: '20%' }}>
+                        <TableCell>
                           <Skeleton className="h-4 w-16" />
                         </TableCell>
-                        <TableCell style={{ width: '20%' }}>
+                        <TableCell>
                           <Skeleton className="ml-auto h-4 w-12" />
                         </TableCell>
                       </TableRow>
                     ))
                   : invoices.map((invoice) => (
                       <TableRow key={invoice.id}>
-                        <TableCell style={{ width: '35%' }}>
+                        <TableCell>
                           {format(invoice.createdAt, 'MMMM d, yyyy')}
                         </TableCell>
-                        <TableCell style={{ width: '25%' }}>
-                          {formatCurrency(invoice.amount)}
-                        </TableCell>
-                        <TableCell style={{ width: '20%' }}>
+                        <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+                        <TableCell>
                           {uppercaseFirst(invoice.status ?? 'unknown')}
                         </TableCell>
-                        <TableCell style={{ width: '20%' }}>
+                        <TableCell>
                           {invoice.url ? (
                             <div className="flex justify-end">
                               <a

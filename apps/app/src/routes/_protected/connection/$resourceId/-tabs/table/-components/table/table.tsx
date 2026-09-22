@@ -1,4 +1,3 @@
-import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/connection-constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import type { ColumnRenderer, TableCellProps } from '@tamery/table'
@@ -11,6 +10,7 @@ import type { ComponentRef } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { TableCell } from '~/entities/connection/components/table/cell/cell'
 import {
   INTERNAL_COLUMN_IDS,
@@ -21,7 +21,7 @@ import type {
   ColumnHandlers,
 } from '~/entities/connection/components/table/cell/utils'
 import { TableError } from '~/entities/connection/components/table/table-error'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 
 import { useTableColumnsContext } from '../../-lib/columns'
 import {
@@ -128,13 +128,13 @@ const TableComponent = ({
   const columnSizes = useSubscription(store, {
     selector: (state) => state.columnSizes,
   })
-  const filters = useSubscription(store, {
-    selector: (state) => enabledFilters(state.filters),
-    isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+  const activeFilters = useSubscription(store, {
+    selector: (state) => state.filters,
   })
   const orderBy = useSubscription(store, {
     selector: (state) => state.orderBy,
   })
+  const filters = enabledFilters(activeFilters)
   const {
     data: rows = [],
     error,
@@ -186,8 +186,7 @@ const TableComponent = ({
       )
     },
     onRename:
-      !column.primaryKey &&
-      !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
+      !column.primaryKey && capabilitiesOf(connection.type).renameColumns
         ? () => {
             renameColumnRef.current?.rename(schema, table, column.id)
           }
@@ -202,7 +201,6 @@ const TableComponent = ({
         id: column.id,
         size:
           (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
-          // 25 it's a ~size of the button, 6 it's a ~size of the number
           (column.references?.length ? 25 + 6 : 0) +
           (column.foreign ? 25 : 0),
         // oxlint-disable-next-line react/no-unstable-nested-components

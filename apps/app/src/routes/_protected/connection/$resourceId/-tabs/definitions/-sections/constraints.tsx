@@ -1,218 +1,659 @@
 import {
-  DatabaseIcon,
+  CheckmarkSquare02Icon,
   Key01Icon,
-  LayoutTable02Icon,
-  LayoutThreeColumnIcon,
   Link01Icon,
 } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
+import type { IconSvgElement } from '@hugeicons/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { FieldDescription } from '@tamery/ui/components/field'
+import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { useStore } from '@tanstack/react-form'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { type } from 'arktype'
+import { toast } from 'sonner'
+
+import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
+import { dropConstraintQuery } from '~/entities/connection/queries/constraints/drop'
+import type { constraintsType } from '~/entities/connection/queries/constraints/list'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
+import { recreateConstraintQuery } from '~/entities/connection/queries/constraints/recreate'
+import { renameConstraintQuery } from '~/entities/connection/queries/constraints/rename'
+import type {
+  ConstraintKind,
+  ConstraintShape,
+  ReferentialAction,
+} from '~/entities/connection/queries/constraints/shape'
+import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/shape'
+import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
+import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { groupInSchema } from '~/entities/connection/utils'
+import { queryClient } from '~/lib/query-client'
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
-import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
-import { useState } from 'react'
-
-import type { constraintsType } from '~/entities/connection/queries/constraints'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
-
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
-import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
+  Labelled,
+  OptionSelect,
+  OptionsField,
+  resetFields,
+  SchemaField,
+  SelectField,
+  SqlField,
+  TextField,
+} from '../-components/fields'
+import type {
+  InspectorWarning,
+  SectionInspectorProps,
+} from '../-components/inspector'
+import {
+  InspectorDefinition,
+  Inspector,
+  InspectorSection,
+} from '../-components/inspector'
+import { DefinitionsPage } from '../-components/page'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
+import type { DefinitionsColumn } from '../-lib/columns'
+import { labelColumn, nameColumn, textColumn } from '../-lib/columns'
 
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+type ConstraintItem = typeof constraintsType.infer
 
-type ConstraintType = (typeof constraintsType.infer)['type']
+interface GroupedConstraint extends Omit<
+  ConstraintItem,
+  'column' | 'foreignColumn'
+> {
+  columns: string[]
+  foreignColumns: string[]
+}
 
-const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
-  { label: 'All Types', value: 'all' },
-  { label: 'Primary Key', value: 'primaryKey' },
-  { label: 'Foreign Key', value: 'foreignKey' },
-  { label: 'Unique', value: 'unique' },
-]
+interface ConstraintDraft {
+  columns: string[]
+  expression: string
+  foreignColumns: string[]
+  foreignSchema: string
+  foreignTable: string
+  kind: ConstraintKind
+  name: string
+  onDelete: ReferentialAction
+  onUpdate: ReferentialAction
+  schema: string
+  table: string
+}
 
-const getIcon = (type: ConstraintType) => {
-  switch (type) {
-    case 'primaryKey':
-    case 'unique': {
-      return (
-        <HugeiconsIcon
-          icon={Key01Icon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
-    case 'foreignKey': {
-      return (
-        <HugeiconsIcon
-          icon={Link01Icon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
-    default: {
-      return (
-        <HugeiconsIcon
-          icon={DatabaseIcon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
+const typeLabels: Record<ConstraintKind, string> = {
+  check: 'Check',
+  foreignKey: 'Foreign key',
+  primaryKey: 'Primary key',
+  unique: 'Unique',
+}
+
+const typeIcons: Partial<Record<ConstraintKind, IconSvgElement>> = {
+  check: CheckmarkSquare02Icon,
+  foreignKey: Link01Icon,
+}
+
+const nameSuffix: Record<ConstraintKind, string> = {
+  check: 'check',
+  foreignKey: 'fkey',
+  primaryKey: 'pkey',
+  unique: 'key',
+}
+
+const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
+
+// Keyed like an index, so a constraint-owned index links straight to its row.
+const constraintKey = (item: Pick<ConstraintItem, 'name' | 'table'>) =>
+  JSON.stringify([item.table, item.name])
+
+const noColumns: readonly string[] = []
+
+const groupConstraints = (
+  constraints: ConstraintItem[],
+  schema: string | undefined
+) =>
+  groupInSchema(constraints, schema, {
+    key: constraintKey,
+    merge: (group: GroupedConstraint, item) => {
+      pushUnique(group.columns, item.column)
+      pushUnique(group.foreignColumns, item.foreignColumn)
+    },
+    seed: (item): GroupedConstraint => ({
+      ...item,
+      columns: [],
+      foreignColumns: [],
+    }),
+  })
+
+const referenceOf = (item: GroupedConstraint, schema: string | undefined) => {
+  const table =
+    item.foreignSchema && item.foreignSchema !== schema
+      ? `${item.foreignSchema}.${item.foreignTable}`
+      : item.foreignTable
+
+  return `${table} (${item.foreignColumns.join(', ')})`
+}
+
+const asAction = (value: string | null | undefined): ReferentialAction =>
+  REFERENTIAL_ACTIONS.find((action) => action === value) ?? DEFAULT_ACTION
+
+const newDraft = (schema: string, kind: ConstraintKind): ConstraintDraft => ({
+  columns: [],
+  expression: '',
+  foreignColumns: [],
+  foreignSchema: schema,
+  foreignTable: '',
+  kind,
+  name: '',
+  onDelete: DEFAULT_ACTION,
+  onUpdate: DEFAULT_ACTION,
+  schema,
+  table: '',
+})
+
+const draftOf = (item: GroupedConstraint): ConstraintDraft => ({
+  columns: item.columns,
+  expression: item.expression ?? '',
+  foreignColumns: item.foreignColumns,
+  foreignSchema: item.foreignSchema ?? item.schema,
+  foreignTable: item.foreignTable ?? '',
+  kind: item.type,
+  name: item.name,
+  onDelete: asAction(item.onDelete),
+  onUpdate: asAction(item.onUpdate),
+  schema: item.schema,
+  table: item.table,
+})
+
+const suggestedNameOf = (draft: ConstraintDraft) =>
+  [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
+
+const finalNameOf = (draft: ConstraintDraft) =>
+  draft.name.trim() || suggestedNameOf(draft)
+
+const fixedNameOf = (draft: ConstraintDraft, connectionType: ConnectionType) =>
+  capabilitiesOf(connectionType).fixedConstraintNames[draft.kind]
+
+const changeOf = (
+  draft: ConstraintDraft,
+  item: GroupedConstraint | null,
+  connectionType: ConnectionType
+) => {
+  const opened = item && draftOf(item)
+  const reshaped =
+    !!opened &&
+    (draft.kind !== opened.kind ||
+      !sameList(draft.columns, opened.columns) ||
+      (draft.kind === 'check' &&
+        draft.expression.trim() !== opened.expression) ||
+      draft.foreignSchema !== opened.foreignSchema ||
+      draft.foreignTable !== opened.foreignTable ||
+      !sameList(draft.foreignColumns, opened.foreignColumns) ||
+      draft.onDelete !== opened.onDelete ||
+      draft.onUpdate !== opened.onUpdate)
+  const renameOnly = !!opened && !reshaped && finalNameOf(draft) !== opened.name
+
+  return {
+    recreates:
+      reshaped ||
+      (renameOnly && !capabilitiesOf(connectionType).renameConstraints),
+    renameOnly,
+    reshaped,
   }
 }
 
-export const Constraints = () => {
-  const { connectionResource } = useRouteContext()
-  const { data: constraints, isPending } = useQuery(
-    resourceConstraintsQueryOptions({ connectionResource })
-  )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterType, setFilterType] =
-    useState<(typeof filterOptions)[number]['value']>('all')
+const constraintSchema = type({
+  columns: 'string[]',
+  expression: 'string',
+  foreignColumns: 'string[]',
+  foreignTable: 'string',
+  kind: 'string',
+  table: type(/\S/u).configure({
+    message: 'Pick the table to constrain.',
+  }),
+}).narrow((draft, ctx) => {
+  if (draft.kind === 'check') {
+    return (
+      /\S/u.test(draft.expression) ||
+      ctx.reject({
+        message: 'Write the condition every row must meet.',
+        relativePath: ['expression'],
+      })
+    )
+  }
 
-  const filteredConstraints =
-    constraints?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterType === 'all' || filterType === item.type) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.table.toLowerCase().includes(search.toLowerCase()) ||
-          (item.column &&
-            item.column.toLowerCase().includes(search.toLowerCase())) ||
-          (item.type && item.type.toLowerCase().includes(search.toLowerCase())))
-    ) ?? []
+  if (draft.columns.length === 0) {
+    return ctx.reject({
+      message: 'Pick at least one column.',
+      relativePath: ['columns'],
+    })
+  }
+
+  if (draft.kind !== 'foreignKey') {
+    return true
+  }
+
+  if (draft.foreignTable === '') {
+    return ctx.reject({
+      message: 'Pick the table this key points at.',
+      relativePath: ['foreignTable'],
+    })
+  }
 
   return (
-    <>
-      <DefinitionsHeader>Constraints</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search constraints"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-        />
-        <Select
-          value={filterType}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterType(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? filterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Type'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {filterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SchemaSelect
-          schemas={schemas}
-          selectedSchema={selectedSchema}
-          setSelectedSchema={setSelectedSchema}
-        />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredConstraints.length === 0 && (
-          <DefinitionsEmptyState
-            title="No constraints found"
-            description="This schema doesn't have any constraints matching your filter."
-          />
-        )}
+    draft.foreignColumns.length === draft.columns.length ||
+    ctx.reject({
+      message: 'Reference one column per column of this constraint.',
+      relativePath: ['foreignColumns'],
+    })
+  )
+})
 
-        {filteredConstraints.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
-          >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {getIcon(item.type)}
-                    <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">
-                      {
-                        filterOptions.find(
-                          (option) => option.value === item.type
-                        )?.label
-                      }
-                    </Badge>
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    <Badge variant="outline">
-                      <HugeiconsIcon
-                        icon={LayoutTable02Icon}
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                      <HighlightText text={item.table} match={search} />
-                    </Badge>
-                    {item.column && (
-                      <>
-                        <span>on</span>
-                        <Badge variant="outline">
-                          <HugeiconsIcon
-                            icon={LayoutThreeColumnIcon}
-                            strokeWidth={2}
-                            className="size-3"
-                          />
-                          <HighlightText text={item.column} match={search} />
-                        </Badge>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            {item.type === 'foreignKey' && (
-              <CardContent className="bg-muted/10 border-t px-4 py-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">References:</span>
-                  <Badge variant="outline">
-                    {item.foreignSchema}.{item.foreignTable}
-                  </Badge>
-                  column
-                  <Badge variant="outline">{item.foreignColumn}</Badge>
-                </div>
-              </CardContent>
-            )}
-          </CardMotion>
-        ))}
-      </DefinitionsGrid>
+const recreateWarning = (
+  item: GroupedConstraint,
+  renameOnly: boolean
+): InspectorWarning => ({
+  action: 'Recreate constraint',
+  description: renameOnly ? (
+    <>
+      No rename in place here, so we drop{' '}
+      <span data-mask className="font-medium">
+        {item.name}
+      </span>{' '}
+      and add it back renamed in one statement.
     </>
+  ) : (
+    <>
+      We drop{' '}
+      <span data-mask className="font-medium">
+        {item.name}
+      </span>{' '}
+      and add it back reshaped. A row breaking the new rule fails the add.
+    </>
+  ),
+})
+
+const ConstraintInspector = ({
+  can,
+  connectionResource,
+  item,
+  relationNamesOf,
+  onOpenChange,
+  queryKey,
+  run,
+  schemas,
+  selectedSchema,
+  type: connectionType,
+}: SectionInspectorProps<GroupedConstraint>) => {
+  const kinds = capabilitiesOf(connectionType).constraintKinds
+  const mutation = useMutation({
+    mutationFn: (draft: ConstraintDraft) => {
+      const shape: ConstraintShape = {
+        columns: draft.columns,
+        expression: draft.expression.trim(),
+        foreignColumns: draft.foreignColumns,
+        foreignSchema: draft.foreignSchema,
+        foreignTable: draft.foreignTable,
+        kind: draft.kind,
+        name: finalNameOf(draft),
+        onDelete: draft.onDelete,
+        onUpdate: draft.onUpdate,
+      }
+
+      if (!item) {
+        return run(
+          createConstraintQuery({
+            schema: draft.schema,
+            shape,
+            table: draft.table,
+          })
+        )
+      }
+      const target = { name: item.name, schema: item.schema, table: item.table }
+
+      return run(
+        changeOf(draft, item, connectionType).recreates
+          ? recreateConstraintQuery({ ...target, kind: item.type, shape })
+          : renameConstraintQuery({ ...target, newName: shape.name })
+      )
+    },
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Constraint "${fixedNameOf(draft, connectionType) ?? finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
+  })
+  const form = useAppForm({
+    defaultValues: item
+      ? draftOf(item)
+      : newDraft(selectedSchema ?? '', kinds[0] ?? 'unique'),
+    onSubmit: ({ value }) => {
+      mutation.mutate(value)
+    },
+    validators: { onChange: constraintSchema, onMount: constraintSchema },
+  })
+  const draft = useStore(form.store, (state) => state.values)
+  const { data: tableColumns } = useQuery({
+    ...resourceTableColumnIdsQueryOptions({
+      connectionResource,
+      schema: draft.schema,
+      table: draft.table,
+    }),
+    enabled: draft.table !== '',
+  })
+  const { data: foreignColumns } = useQuery({
+    ...resourceTableColumnIdsQueryOptions({
+      connectionResource,
+      schema: draft.foreignSchema,
+      table: draft.foreignTable,
+    }),
+    enabled: draft.foreignTable !== '',
+  })
+
+  const readOnly = item ? !can.edit || !kinds.includes(item.type) : !can.create
+  const shapeLocked = readOnly || !!item?.custom
+  const { recreates, renameOnly, reshaped } = changeOf(
+    draft,
+    item,
+    connectionType
+  )
+  const singleColumn = draft.columns.length === 1
+
+  return (
+    <Inspector
+      canSave={!item || reshaped || renameOnly}
+      description={item ? `${item.schema}.${item.table}` : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="constraint"
+      readOnly={readOnly}
+      warning={
+        item && recreates ? recreateWarning(item, renameOnly) : undefined
+      }
+    >
+      <InspectorSection
+        title="General"
+        description="A constraint is a rule the database enforces on every write."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField
+              disabled={readOnly || !!item}
+              schemas={schemas}
+              onChanged={(next) =>
+                resetFields(form, {
+                  columns: [],
+                  foreignColumns: [],
+                  foreignSchema: next,
+                  foreignTable: '',
+                  table: '',
+                })
+              }
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => (
+            <TextField
+              label="Name"
+              autoFocus
+              description="Leave it empty to use the suggested name."
+              disabled={readOnly || !!fixedNameOf(draft, connectionType)}
+              placeholder={
+                fixedNameOf(draft, connectionType) ??
+                (draft.table ? suggestedNameOf(draft) : 'Constraint name')
+              }
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="kind">
+          {() => (
+            <SelectField
+              label="Type"
+              description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table, a check holds every row to a condition."
+              disabled={shapeLocked}
+              options={kinds}
+              labelOf={(value) => typeLabels[value]}
+              placeholder="Type"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Target"
+        description="The table and the columns this constraint applies to."
+      >
+        <form.AppField name="table">
+          {() => (
+            <SelectField
+              label="Table"
+              disabled={readOnly || !!item}
+              options={
+                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+              }
+              placeholder="Choose a table"
+              onChanged={() => resetFields(form, { columns: [] })}
+            />
+          )}
+        </form.AppField>
+        {draft.kind === 'check' ? (
+          <form.AppField name="expression">
+            {() => (
+              <SqlField
+                label="Condition"
+                description="SQL every row must make true."
+                disabled={shapeLocked}
+                placeholder="price > 0"
+              />
+            )}
+          </form.AppField>
+        ) : (
+          <form.AppField name="columns">
+            {() => (
+              <OptionsField
+                label="Columns"
+                disabled={shapeLocked || draft.table === ''}
+                options={tableColumns}
+                placeholder="Choose columns"
+              />
+            )}
+          </form.AppField>
+        )}
+        {item?.custom && (
+          <FieldDescription>
+            Carries a rule the form cannot show — deferrable, not validated, not
+            inherited, disabled or a match type — so only its name can change.
+          </FieldDescription>
+        )}
+      </InspectorSection>
+      {draft.kind === 'foreignKey' && (
+        <InspectorSection
+          title="References"
+          description="The rows this key points at, and what happens when one of them changes."
+        >
+          <form.AppField name="foreignSchema">
+            {() => (
+              <SchemaField
+                disabled={shapeLocked}
+                schemas={schemas}
+                onChanged={() =>
+                  resetFields(form, {
+                    foreignColumns: [],
+                    foreignTable: '',
+                  })
+                }
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="foreignTable">
+            {() => (
+              <SelectField
+                label="Table"
+                disabled={shapeLocked}
+                options={relationNamesOf(draft.foreignSchema, 'table')}
+                placeholder="Choose a table"
+                onChanged={() => resetFields(form, { foreignColumns: [] })}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="foreignColumns">
+            {(field) =>
+              singleColumn ? (
+                <Labelled
+                  label="Column"
+                  description="The column this key points at."
+                >
+                  <OptionSelect
+                    id={field.name}
+                    disabled={shapeLocked || draft.foreignTable === ''}
+                    options={foreignColumns ?? noColumns}
+                    placeholder="Choose a column"
+                    value={field.state.value[0] ?? ''}
+                    onValueChange={(next) => field.handleChange([next])}
+                  />
+                </Labelled>
+              ) : (
+                <OptionsField
+                  label="Columns"
+                  description={`${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
+                  disabled={
+                    shapeLocked ||
+                    draft.foreignTable === '' ||
+                    draft.columns.length === 0
+                  }
+                  limit={draft.columns.length}
+                  options={foreignColumns}
+                  placeholder="Choose columns"
+                />
+              )
+            }
+          </form.AppField>
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name="onDelete">
+              {() => (
+                <SelectField
+                  label="On delete"
+                  disabled={shapeLocked}
+                  options={capabilitiesOf(connectionType).referentialActions}
+                  placeholder="Action"
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="onUpdate">
+              {() => (
+                <SelectField
+                  label="On update"
+                  disabled={shapeLocked}
+                  options={capabilitiesOf(connectionType).referentialActions}
+                  placeholder="Action"
+                />
+              )}
+            </form.AppField>
+          </div>
+          <FieldDescription>
+            What the database does to these rows when a referenced row is
+            deleted or its key is updated.
+          </FieldDescription>
+        </InspectorSection>
+      )}
+      {item?.definition && <InspectorDefinition code={item.definition} />}
+    </Inspector>
+  )
+}
+
+const columns: DefinitionsColumn<GroupedConstraint>[] = [
+  nameColumn({
+    icon: (item: GroupedConstraint) => typeIcons[item.type] ?? Key01Icon,
+    width: 'w-4/12',
+  }),
+  textColumn({
+    header: 'Table',
+    valueOf: (item: GroupedConstraint) => item.table,
+    width: 'w-2/12',
+  }),
+  {
+    cell: (item, { schema, search }) => (
+      <span data-mask>
+        <HighlightText
+          text={item.expression ?? item.columns.join(', ')}
+          match={search}
+        />
+        {item.foreignTable && (
+          <span className="text-muted-foreground">
+            {' → '}
+            <HighlightText text={referenceOf(item, schema)} match={search} />
+          </span>
+        )}
+      </span>
+    ),
+    header: 'Columns',
+  },
+  labelColumn({
+    align: 'end',
+    header: 'Type',
+    labelOf: (item: GroupedConstraint) => typeLabels[item.type],
+    width: 'w-2/12',
+  }),
+]
+
+export const Constraints = () => {
+  const state = useDefinitionsState({ section: 'constraints' })
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+    state
+  const query = resourceConstraintsQueryOptions({ connectionResource })
+  const { data: constraints = [], isPending } = useQuery(query)
+  const kindFilter = useFilter<ConstraintKind>('All types', [
+    { label: 'Primary keys', value: 'primaryKey' },
+    { label: 'Foreign keys', value: 'foreignKey' },
+    { label: 'Unique', value: 'unique' },
+    { label: 'Checks', value: 'check' },
+  ])
+
+  const inSchema = groupConstraints(constraints, selectedSchema)
+  const matches = (item: GroupedConstraint) =>
+    kindFilter.matches(item.type) &&
+    matchesSearch(
+      search,
+      item.name,
+      item.table,
+      item.foreignTable,
+      item.expression,
+      ...item.columns
+    )
+  const dropItem = (item: GroupedConstraint, cascade: boolean) =>
+    run(
+      dropConstraintQuery({
+        cascade,
+        kind: item.type,
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
+
+  return (
+    <DefinitionsPage
+      columns={columns}
+      createBlocked={
+        relationNamesOf(selectedSchema ?? '', 'table').length === 0
+          ? 'This schema has no tables to constrain.'
+          : undefined
+      }
+      canDropItem={(item) =>
+        capabilitiesOf(state.type).constraintKinds.includes(item.type)
+      }
+      dropItem={dropItem}
+      Inspector={ConstraintInspector}
+      items={inSchema}
+      keyOf={constraintKey}
+      loading={isPending}
+      match={matches}
+      queryKey={structureQueryKey(connectionResource)}
+      state={state}
+      toolbar={kindFilter.control}
+    />
   )
 }

@@ -1,6 +1,5 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_TYPES_WITH_CASCADE_DROP } from '@tamery/shared/connection-constants'
 import {
   Alert,
   AlertDescription,
@@ -24,11 +23,11 @@ import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { dropTableQuery } from '~/entities/connection/queries/drop-table'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { dropTableQuery } from '~/entities/connection/queries/tables/drop'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { pinnedTable } from '~/entities/connection/store/helpers/tables'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -43,7 +42,6 @@ interface DropTableDialogProps {
 export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   const { connection, connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
-  const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
@@ -75,10 +73,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
       setCascade(false)
 
       queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({
-          connectionResource,
-          showSystem: store.get().showSystem,
-        })
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
       )
 
       if (isCurrentTable) {
@@ -134,7 +129,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {CONNECTION_TYPES_WITH_CASCADE_DROP.includes(connection.type) && (
+          {capabilitiesOf(connection.type).cascade && (
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="cascade"

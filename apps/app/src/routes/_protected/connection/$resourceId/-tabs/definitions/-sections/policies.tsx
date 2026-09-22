@@ -1,220 +1,540 @@
-import {
-  LayoutTable02Icon,
-  SecurityCheckIcon,
-  ViewIcon,
-  ViewOffSlashIcon,
-} from '@hugeicons/core-free-icons'
+import { SecurityCheckIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
+import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { FieldDescription } from '@tamery/ui/components/field'
+import { Switch } from '@tamery/ui/components/switch'
+import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { useStore } from '@tanstack/react-form'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { type } from 'arktype'
+import { toast } from 'sonner'
+
+import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
+import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
+import { dropPolicyQuery } from '~/entities/connection/queries/policies/drop'
+import type { policyType } from '~/entities/connection/queries/policies/list'
+import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
+import { recreatePolicyQuery } from '~/entities/connection/queries/policies/recreate'
+import { renamePolicyQuery } from '~/entities/connection/queries/policies/rename'
+import { setRowLevelSecurityQuery } from '~/entities/connection/queries/policies/set-row-level-security'
+import type {
+  PolicyCommand,
+  PolicyKind,
+} from '~/entities/connection/queries/policies/shape'
+import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
+import { queryClient } from '~/lib/query-client'
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
-import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
-import { useState } from 'react'
-
-import type { policyType } from '~/entities/connection/queries/policies'
-import { resourcePoliciesQuery } from '~/entities/connection/queries/policies'
-import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/empty-state'
-import { DefinitionsGrid } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/grid'
-import { DefinitionsHeader } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/header'
-import { MOTION_BLOCK_PROPS } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-constants'
-
+  resetFields,
+  SchemaField,
+  SelectField,
+  SqlField,
+  TextField,
+} from '../-components/fields'
+import type {
+  InspectorWarning,
+  SectionInspectorProps,
+} from '../-components/inspector'
+import {
+  Inspector,
+  InspectorOption,
+  InspectorSection,
+} from '../-components/inspector'
+import { DefinitionsPage } from '../-components/page'
+import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { useFilter } from '../-hooks/use-filter'
+import type { DefinitionsColumn } from '../-lib/columns'
+import { labelColumn, textColumn } from '../-lib/columns'
 
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+type PolicyItem = typeof policyType.infer
 
-type PolicyType = (typeof policyType.infer)['type']
+interface PolicyDraft {
+  check: string
+  command: PolicyCommand
+  kind: PolicyKind
+  name: string
+  roles: string
+  schema: string
+  table: string
+  using: string
+}
 
-const formatType = (type: PolicyType) => uppercaseFirst(type.toLowerCase())
+const kindLabels: Record<PolicyKind, string> = {
+  PERMISSIVE: 'Permissive',
+  RESTRICTIVE: 'Restrictive',
+}
 
-const getIcon = (type: PolicyType) => {
-  switch (type) {
-    case 'PERMISSIVE': {
-      return (
-        <HugeiconsIcon
-          icon={ViewIcon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
-    case 'RESTRICTIVE': {
-      return (
-        <HugeiconsIcon
-          icon={ViewOffSlashIcon}
-          strokeWidth={2}
-          className="text-destructive size-4"
-        />
-      )
-    }
-    default: {
-      return (
-        <HugeiconsIcon
-          icon={SecurityCheckIcon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
+const kinds = Object.keys(kindLabels) as PolicyKind[]
+
+const parseRoles = (value: string) =>
+  value
+    .split(',')
+    .map((role) => role.trim())
+    .filter(Boolean)
+
+const asCommand = (value: string | undefined): PolicyCommand =>
+  POLICY_COMMANDS.find((command) => command === value) ?? 'ALL'
+
+// PostgreSQL takes USING for rows that exist and WITH CHECK for rows a write
+// would produce, so INSERT has no USING and SELECT and DELETE no WITH CHECK.
+const expressionsFor = (command: PolicyCommand) => ({
+  check: command !== 'SELECT' && command !== 'DELETE',
+  using: command !== 'INSERT',
+})
+
+const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
+  const allowed = expressionsFor(draft.command)
+
+  return {
+    ...draft,
+    check: allowed.check ? draft.check : '',
+    using: allowed.using ? draft.using : '',
   }
 }
 
-export const Policies = () => {
-  const { connectionResource } = useRouteContext()
-  const { data: policies, isPending } = useQuery(
-    resourcePoliciesQuery({ connectionResource })
-  )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterType, setFilterType] = useState<PolicyType | 'all'>('all')
+const draftOf = (
+  item: PolicyItem | null,
+  pageSchema: string,
+  connectionType: ConnectionType
+): PolicyDraft => ({
+  check: item?.check ?? '',
+  command: item
+    ? asCommand(item.command)
+    : (capabilitiesOf(connectionType).policies.commands[0] ?? 'ALL'),
+  kind: item?.type ?? 'PERMISSIVE',
+  name: item?.name ?? '',
+  roles: item?.roles.join(', ') ?? '',
+  schema: item?.schema ?? pageSchema,
+  table: item?.table ?? '',
+  using: item?.using ?? '',
+})
 
-  const filteredPolicies =
-    policies?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterType === 'all' || filterType === item.type) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.table.toLowerCase().includes(search.toLowerCase()) ||
-          (item.command &&
-            item.command.toLowerCase().includes(search.toLowerCase())))
-    ) ?? []
+const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
+  const check = draft.check.trim()
+  const using = draft.using.trim()
+  const roles = parseRoles(draft.roles)
+
+  return {
+    check: check === (item.check ?? '') ? null : check,
+    kind: draft.kind === item.type ? null : draft.kind,
+    name: draft.name.trim() === item.name ? null : draft.name.trim(),
+    roles: roles.join(',') === item.roles.join(',') ? null : roles,
+    using: using === (item.using ?? '') ? null : using,
+  }
+}
+
+// ALTER POLICY has no form that removes an expression the policy already has.
+const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
+  (item.using !== null && draft.using.trim() === '') ||
+  (item.check !== null && draft.check.trim() === '')
+
+const replaces = (
+  item: PolicyItem,
+  draft: PolicyDraft,
+  connectionType: ConnectionType
+) =>
+  !capabilitiesOf(connectionType).policies.alterInPlace &&
+  (draft.command !== asCommand(item.command) ||
+    draft.kind !== item.type ||
+    clearsExpression(item, draft))
+
+const policySchema = type({
+  name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
+  table: type(/\S/u).configure({ message: 'Pick the table to protect.' }),
+})
+
+const replaceWarning = (
+  item: PolicyItem,
+  draft: PolicyDraft
+): InspectorWarning => ({
+  action: 'Replace policy',
+  description: (
+    <>
+      {clearsExpression(item, draft)
+        ? 'An expression cannot come off a policy in place, so we recreate '
+        : 'Command and permissive/restrictive cannot change in place, so we recreate '}
+      <span data-mask className="font-medium">
+        {item.name}
+      </span>{' '}
+      in one transaction. Its comment and any grants on it do not come back.
+    </>
+  ),
+})
+
+const savePolicy = async ({
+  connectionType,
+  draft,
+  item,
+  run,
+}: {
+  connectionType: ConnectionType
+  draft: PolicyDraft
+  item: PolicyItem | null
+  run: RunQuery
+}) => {
+  const shape = {
+    check: draft.check.trim() || null,
+    command: draft.command,
+    kind: draft.kind,
+    name: draft.name.trim(),
+    roles: parseRoles(draft.roles),
+    using: draft.using.trim() || null,
+  }
+
+  if (!item) {
+    await run(
+      createPolicyQuery({ schema: draft.schema, shape, table: draft.table })
+    )
+    return
+  }
+  const target = { name: item.name, schema: item.schema, table: item.table }
+
+  if (replaces(item, draft, connectionType)) {
+    await run(recreatePolicyQuery({ ...target, shape }))
+    return
+  }
+
+  const changes = changesOf(item, draft)
+
+  if (
+    changes.roles ||
+    changes.using !== null ||
+    changes.check ||
+    changes.kind
+  ) {
+    await run(
+      alterPolicyQuery({
+        ...target,
+        check: changes.check,
+        kind: changes.kind,
+        newName: changes.name,
+        roles: changes.roles,
+        using: changes.using,
+      })
+    )
+    return
+  }
+  if (changes.name) {
+    await run(renamePolicyQuery({ ...target, newName: changes.name }))
+  }
+}
+
+const PolicyInspector = ({
+  can,
+  item,
+  relationNamesOf,
+  onOpenChange,
+  queryKey,
+  run,
+  schemas,
+  selectedSchema,
+  type: connectionType,
+}: SectionInspectorProps<PolicyItem>) => {
+  const mutation = useMutation({
+    mutationFn: (draft: PolicyDraft) =>
+      savePolicy({ connectionType, draft, item, run }),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
+  })
+  const rowLevelSecurity = useMutation({
+    mutationFn: ({ enabled }: { enabled: boolean }) =>
+      run(
+        setRowLevelSecurityQuery({
+          enabled,
+          schema: item?.schema ?? '',
+          table: item?.table ?? '',
+        })
+      ),
+    onError: (error, { enabled }) =>
+      toast.error(
+        `Failed to ${enabled ? 'enable' : 'disable'} row level security on "${item?.table}"`,
+        { description: error.message }
+      ),
+    onSuccess: async (_result, { enabled }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`
+      )
+    },
+  })
+  const form = useAppForm({
+    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    onSubmit: ({ value }) => {
+      mutation.mutate(withAllowedExpressions(value))
+    },
+    validators: { onChange: policySchema, onMount: policySchema },
+  })
+  const draft = withAllowedExpressions(
+    useStore(form.store, (state) => state.values)
+  )
+
+  const readOnly = item ? !can.edit : !can.create
+  const { policies: options, rowLevelSecurity: rlsTables } =
+    capabilitiesOf(connectionType)
+  const expressions = expressionsFor(draft.command)
+  const checks = options.commands.some(
+    (command) => expressionsFor(command).check
+  )
+  const replacing = !!item && replaces(item, draft, connectionType)
+  const changed =
+    !item ||
+    replacing ||
+    Object.values(changesOf(item, draft)).some((change) => change !== null)
 
   return (
-    <>
-      <DefinitionsHeader>Policies</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search policies"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-        />
-        <Select
-          value={filterType}
-          onValueChange={(v) => setFilterType(v as PolicyType | 'all')}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="PERMISSIVE">Permissive</SelectItem>
-            <SelectItem value="RESTRICTIVE">Restrictive</SelectItem>
-          </SelectContent>
-        </Select>
-        {schemas.length > 1 && (
-          <Select
-            value={selectedSchema ?? ''}
-            onValueChange={(v) => {
-              if (v) {
-                setSelectedSchema(v)
+    <Inspector
+      canSave={changed}
+      description={item ? `${item.schema}.${item.table}` : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="policy"
+      readOnly={readOnly}
+      warning={item && replacing ? replaceWarning(item, draft) : undefined}
+    >
+      {item && rlsTables && (
+        <InspectorSection title="Status">
+          <InspectorOption
+            htmlFor="policy-row-level-security"
+            title="Row level security"
+            description="Off, the table ignores every policy on it."
+          >
+            <Switch
+              id="policy-row-level-security"
+              size="sm"
+              disabled={rowLevelSecurity.isPending}
+              checked={item.enabled}
+              onCheckedChange={(enabled) =>
+                rowLevelSecurity.mutate({ enabled })
               }
-            }}
-          >
-            <SelectTrigger className="w-45">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">schema</span>
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {schemas.map((schema) => (
-                <SelectItem key={schema} value={schema}>
-                  {schema}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredPolicies.length === 0 && (
-          <DefinitionsEmptyState
-            title="No policies found"
-            description="This schema doesn't have any policies matching your filter."
-          />
-        )}
-
-        {filteredPolicies.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
-          >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {getIcon(item.type)}
-                    <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">{formatType(item.type)}</Badge>
-                    <Badge variant="secondary">{item.command}</Badge>
-                    {!item.enabled && (
-                      <Badge variant="destructive">Disabled</Badge>
-                    )}
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    <Badge variant="outline">
-                      <HugeiconsIcon
-                        icon={LayoutTable02Icon}
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                      <HighlightText text={item.table} match={search} />
-                    </Badge>
-                    {item.roles.length > 0 && (
-                      <>
-                        <span>to</span>
-                        {item.roles.map((role) => (
-                          <Badge key={role} variant="outline">
-                            {role}
-                          </Badge>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            {(item.using || item.check) && (
-              <CardContent className="bg-muted/10 border-t px-4 py-3 text-sm">
-                <div className="text-muted-foreground flex flex-col gap-1.5 text-xs">
-                  {item.using && (
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-foreground font-medium">
-                        USING:
-                      </span>
-                      <code>{item.using}</code>
-                    </div>
-                  )}
-                  {item.check && (
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-foreground font-medium">
-                        CHECK:
-                      </span>
-                      <code>{item.check}</code>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
+            />
+          </InspectorOption>
+        </InspectorSection>
+      )}
+      <InspectorSection
+        title="General"
+        description="A policy decides which rows a role may see or write."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField
+              disabled={readOnly || !!item}
+              schemas={schemas}
+              onChanged={() => resetFields(form, { table: '' })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => <TextField label="Name" autoFocus disabled={readOnly} />}
+        </form.AppField>
+        <form.AppField name="table">
+          {() => (
+            <SelectField
+              label="Table"
+              description={
+                rlsTables
+                  ? 'The policy only applies while row level security is enabled on this table.'
+                  : undefined
+              }
+              disabled={readOnly || !!item}
+              options={
+                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+              }
+              placeholder="Choose a table"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Scope"
+        description="Which statements the policy answers for, and who it answers for."
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <form.AppField name="command">
+            {() => (
+              <SelectField
+                label="Command"
+                disabled={readOnly}
+                options={options.commands}
+                placeholder="Command"
+              />
             )}
-          </CardMotion>
-        ))}
-      </DefinitionsGrid>
-    </>
+          </form.AppField>
+          <form.AppField name="kind">
+            {() => (
+              <SelectField
+                label="Type"
+                disabled={readOnly}
+                options={kinds}
+                labelOf={(value) => kindLabels[value]}
+                placeholder="Type"
+              />
+            )}
+          </form.AppField>
+        </div>
+        <FieldDescription>
+          Permissive policies widen access, restrictive ones narrow it — every
+          restrictive policy must also pass.
+        </FieldDescription>
+        <form.AppField name="roles">
+          {() => (
+            <TextField
+              label="Roles"
+              description={`Comma-separated. Empty means ${options.everyone}.`}
+              disabled={readOnly}
+              placeholder={options.everyone.toLowerCase()}
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Expressions"
+        description="SQL returning true for the rows the policy allows."
+      >
+        <form.AppField name="using">
+          {() => (
+            <SqlField
+              label="Using"
+              description={
+                expressions.using
+                  ? 'Checked against rows that already exist.'
+                  : 'An insert has no existing rows to check.'
+              }
+              disabled={readOnly || !expressions.using}
+              placeholder="user_id = auth.uid()"
+            />
+          )}
+        </form.AppField>
+        {checks && (
+          <form.AppField name="check">
+            {() => (
+              <SqlField
+                label="With check"
+                description={
+                  expressions.check
+                    ? 'Checked against rows an insert or update would write.'
+                    : `A ${draft.command.toLowerCase()} writes no rows to check.`
+                }
+                disabled={readOnly || !expressions.check}
+                placeholder="user_id = auth.uid()"
+              />
+            )}
+          </form.AppField>
+        )}
+      </InspectorSection>
+    </Inspector>
+  )
+}
+
+const Expression = ({ keyword, value }: { keyword: string; value: string }) => (
+  <span className="flex items-baseline gap-1.5 text-xs">
+    <span className="text-muted-foreground shrink-0">{keyword}</span>
+    <CodeInline data-mask code={value} language="sql" />
+  </span>
+)
+
+const columns: DefinitionsColumn<PolicyItem>[] = [
+  {
+    cell: (item, { search }) => (
+      <span className="flex flex-col gap-1">
+        <span data-mask className="flex items-center gap-2">
+          <HugeiconsIcon
+            icon={
+              item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
+            }
+            strokeWidth={2}
+            className="text-muted-foreground size-4 shrink-0"
+          />
+          <HighlightText text={item.name} match={search} />
+          {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
+        </span>
+        {item.using && <Expression keyword="USING" value={item.using} />}
+        {item.check && <Expression keyword="WITH CHECK" value={item.check} />}
+      </span>
+    ),
+    header: 'Name',
+  },
+  textColumn({
+    header: 'Table',
+    valueOf: (item: PolicyItem) => item.table,
+    width: 'w-2/12',
+  }),
+  labelColumn({
+    header: 'Command',
+    labelOf: (item: PolicyItem) => item.command,
+    width: 'w-2/12',
+  }),
+  labelColumn({
+    header: 'Roles',
+    labelOf: (item: PolicyItem, { search }) => (
+      <span data-mask>
+        <HighlightText text={item.roles.join(', ')} match={search} />
+      </span>
+    ),
+    width: 'w-2/12',
+  }),
+  labelColumn({
+    align: 'end',
+    header: 'Type',
+    labelOf: (item: PolicyItem) => kindLabels[item.type],
+    width: 'w-2/12',
+  }),
+]
+
+const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
+
+export const Policies = () => {
+  const state = useDefinitionsState({ section: 'policies' })
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+    state
+  const query = resourcePoliciesQueryOptions({ connectionResource })
+  const { data: policies = [], isPending } = useQuery(query)
+  const kindFilter = useFilter<PolicyKind>(
+    'All types',
+    kinds.map((kind) => ({ label: kindLabels[kind], value: kind }))
+  )
+
+  const inSchema = policies.filter((item) => item.schema === selectedSchema)
+  const matches = (item: PolicyItem) =>
+    kindFilter.matches(item.type) &&
+    matchesSearch(search, item.name, item.table, item.command, ...item.roles)
+  const dropItem = (item: PolicyItem) =>
+    run(
+      dropPolicyQuery({
+        name: item.name,
+        schema: item.schema,
+        table: item.table,
+      })
+    )
+
+  return (
+    <DefinitionsPage
+      columns={columns}
+      createBlocked={
+        relationNamesOf(selectedSchema ?? '', 'table').length === 0
+          ? 'This schema has no tables to protect.'
+          : undefined
+      }
+      dropItem={dropItem}
+      Inspector={PolicyInspector}
+      items={inSchema}
+      keyOf={policyKey}
+      loading={isPending}
+      match={matches}
+      queryKey={query.queryKey}
+      state={state}
+      toolbar={kindFilter.control}
+    />
   )
 }

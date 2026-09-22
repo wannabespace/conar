@@ -21,7 +21,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { openRunnerTab } from '~/entities/connection/store/helpers/tabs'
 import {
   getConnectionResourceStore,
@@ -39,9 +39,6 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const TablesPanel = () => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const search = useSubscription(store, {
     selector: (state) => state.tablesSearch,
   })
@@ -49,9 +46,7 @@ const TablesPanel = () => {
     refetch: refetchTablesAndSchemas,
     isFetching: isRefreshingTablesAndSchemas,
     dataUpdatedAt,
-  } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
-  )
+  } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource }))
 
   return (
     <>

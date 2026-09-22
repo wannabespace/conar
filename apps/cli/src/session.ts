@@ -1,6 +1,6 @@
 import process from 'node:process'
 
-import { silently } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils'
 import { consola } from 'consola'
 import ora from 'ora'
 

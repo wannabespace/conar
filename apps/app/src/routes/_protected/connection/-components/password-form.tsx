@@ -1,10 +1,6 @@
-import {
-  ArrowLeft01Icon,
-  ViewIcon,
-  ViewOffSlashIcon,
-} from '@hugeicons/core-free-icons'
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,
@@ -15,12 +11,7 @@ import {
   CardTitle,
 } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Input } from '@tamery/ui/components/input'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { PasswordInput } from '@tamery/ui/components/custom/password-input'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -31,7 +22,7 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
-import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
+import { testConnectionQuery } from '~/entities/connection/queries/connection/test'
 
 export const PasswordForm = ({
   connection,
@@ -43,7 +34,6 @@ export const PasswordForm = ({
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
 
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (passwordValue: string) => {
@@ -88,7 +78,7 @@ export const PasswordForm = ({
           <Button
             type="button"
             variant="link"
-            className="text-muted-foreground px-0!"
+            className="text-muted-foreground hover:text-foreground"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon
@@ -114,55 +104,22 @@ export const PasswordForm = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="relative w-full">
-                  <Input
-                    placeholder="••••••••"
-                    value={password}
-                    disabled={status === 'pending'}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type={showPassword ? 'text' : 'password'}
-                    autoCapitalize="none"
-                    autoFocus
-                    className="pe-10"
-                    autoComplete="password"
-                    spellCheck="false"
-                    required
-                  />
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label={
-                            showPassword ? 'Hide password' : 'Show password'
-                          }
-                          className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute inset-y-0 right-2 my-auto size-7"
-                          onClick={() => setShowPassword(!showPassword)}
-                          tabIndex={-1}
-                        />
-                      }
-                    >
-                      <HugeiconsIcon
-                        icon={showPassword ? ViewOffSlashIcon : ViewIcon}
-                        strokeWidth={2}
-                        className="size-4"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      {showPassword ? 'Hide password' : 'Show password'}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </div>
+              <PasswordInput
+                placeholder="••••••••"
+                value={password}
+                disabled={status === 'pending'}
+                onChange={(e) => setPassword(e.target.value)}
+                autoCapitalize="none"
+                autoFocus
+                autoComplete="password"
+                spellCheck="false"
+              />
             </CardContent>
             <CardFooter>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={status === 'pending'}
+                disabled={status === 'pending' || password === ''}
               >
                 <LoadingContent loading={status === 'pending'}>
                   {status === 'error'

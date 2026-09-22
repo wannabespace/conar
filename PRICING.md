@@ -72,62 +72,16 @@ Commitments we don't walk back — churning these breaks trust:
 - `SyncType: Local` — data never leaving the device is a right, not a plan feature.
 - Anything already shipped as free. Limits may apply to _new_ accounts, but features don't move behind the paywall retroactively.
 
-## Current enforcement map (as of 2026-08)
+## Planned reworks
 
-What the code actually gates today, per router middleware:
+Where today's wiring contradicts the framework. Read the routers for the current state; this is the direction, in priority order, each naming the principle it serves.
 
-| Surface | Gating today | Target per framework |
-| --- | --- | --- |
-| `ai/chat`, `ai/enhance-prompt`, `ai/fix-sql`, `ai/update-sql` | Hard-gated (`subscriptionMiddleware`) | Metered free cap + Pro unlimited (question 2) |
-| `ai/filters` | Metered: `optionalSubscriptionMiddleware` + Redis monthly counter, `FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50` | Already correct — this is the reference implementation |
-| `chats/*`, `chats-messages/*` (create/update/remove) | Hard-gated (`subscriptionMiddleware`) | Follows AI chat: metered with it, not gated separately |
-| `connections/*`, `connections-resources/*`, `queries/*` | Free (`authMiddleware`) | Free CRUD; connection _count_ limit when tiers go live |
-| Workspace creation | Subscription-gated (`allowUserToCreateOrganization`, `apps/api/lib/auth.ts`) | Correct — quantity gate (1 free personal workspace) |
-| Sync/events streams | Free (auth) | Free — sync is a property of the data, limits live on the data itself |
-
-Known mismatch: AI chat is a hard paywall today but the framework says metered. Migrating it to the `ai/filters` pattern is the intended direction.
-
-## Recommended reworks
-
-Places where the current setup contradicts the framework, in priority order. Each one names the violated principle so the fix isn't a matter of taste.
-
-### 1. Replace the AI hard paywall with one pooled monthly quota
-
-**Today:** `ai/chat`, `ai/enhance-prompt`, `ai/fix-sql`, `ai/update-sql` are hard-gated; `ai/filters` has its own separate 50/month counter.
-
-**Problems:** the hard gate hides the product's best conversion surface from free users (violates "free users experience the value before paying"), and per-feature counters produce a plan nobody can describe — "50 filters but zero chats" is not explainable.
-
-**Proposed:** one pooled quota — `FREE_AI_USAGE_MONTHLY_LIMIT`, Redis key `ai:usage:{userId}:{yyyy-MM}` — shared by every AI endpoint. All AI routers move to `optionalSubscriptionMiddleware` and increment the same counter; subscription skips it. The user-facing story becomes one sentence: "N AI requests per month free, unlimited on Pro." Retire `FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT` in favor of the pooled constant.
-
-### 2. Stop gating chat persistence — gate only generation
-
-**Today:** `chats/*` and `chats-messages/*` mutations require a subscription.
-
-**Problems:** storing a few rows of chat history costs nothing (fails question 2), and a lapsed subscriber loses the ability to edit or delete their own chat history (violates "downgrade must never lock users out of their data" and the hostage-feature test).
-
-**Proposed:** drop `subscriptionMiddleware` from all chats/chats-messages mutations down to `authMiddleware`. The expensive step — the model call in `ai/chat` — is already the enforcement point once rework 1 lands. History retention limits, if ever needed, are a quantity limit per the framework, not a mutation gate.
-
-### 3. Implement the connection limit before tiers launch
-
-**Today:** connections are unlimited for everyone, which means the model's primary quantity lever doesn't exist yet — the only real gates are AI and workspaces.
-
-**Proposed:** enforce `FREE_CONNECTIONS_LIMIT` (3) in `connections/create` per implementation rule 6: count server-side, block only new creates, existing over-limit connections stay fully usable. Ship the UI mirror (counter + upgrade prompt near the create button) in the same release — a silent server rejection here would feel like a bug, not a plan.
-
-### 4. Add BYOK as the free-tier AI escape hatch
-
-**Today:** no BYOK path; AI cost is always ours, which is what forced AI behind a paywall in the first place.
-
-**Proposed:** let a user store their own provider API key (per-user secret in Infisical, same `['users', userId]` path as encryption secrets). When a key is present, AI endpoints route to it and skip the quota entirely. This makes the free tier's AI story honest ("limited on our key, unlimited on yours"), serves privacy-sensitive users, and removes token cost as an argument for hard gates. `packages/ai` provider env helpers are the natural seam.
-
-### 5. Standardize every limit error on the `{ max, remaining, resetAt }` shape
-
-**Today:** `ai/filters` returns typed FORBIDDEN data; the hard-gated AI routers return a bare message string.
-
-**Proposed:** once reworks 1–3 land, every limit rejection in the API uses the typed shape from implementation rule 3, and clients get one shared upgrade-prompt component that renders any of them. One error contract, one UI, no per-feature paywall screens.
-
-### 6. Leave workspace gating as is — but re-anchor it when Team ships
-
-The current gate (`allowUserToCreateOrganization` requires a subscription) is framework-correct: 1 free personal workspace is a quantity limit. When members/invitations ship, resist moving _collaboration_ under Pro — per the framework (question 3) multi-player belongs to a per-seat Team tier, and Pro stays a single-player scale upgrade. Deciding this now avoids re-gating workspaces twice.
+1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI requests per month free, unlimited on Pro."
+2. **Gate generation, never chat persistence.** Storing chat rows costs nothing, and a lapsed subscriber must not lose the ability to edit or delete their own history. Chats and messages mutations belong on `authMiddleware`; the model call is the enforcement point. Retention, if ever needed, is a quantity limit.
+3. **Implement the connection limit before tiers launch** — it is the model's primary quantity lever. Count server-side in `connections/create`, block only new creates, and ship the UI mirror in the same release: a silent server rejection reads as a bug, not a plan.
+4. **BYOK is the free tier's AI escape hatch.** A user-stored provider key (per-user secret in Infisical, same path as encryption secrets) routes AI calls to it and skips the quota entirely — which makes the free story honest, serves privacy-sensitive users, and removes token cost as an argument for hard gates.
+5. **One limit-error contract.** Every limit rejection carries the typed `{ max, remaining, resetAt }` shape, so clients share one upgrade-prompt component instead of per-feature paywall screens.
+6. **Workspace gating stays as it is** — one free personal workspace is a quantity limit. When members and invitations ship, resist moving _collaboration_ under Pro: multi-player belongs to a per-seat Team tier and Pro stays a single-player scale upgrade. Deciding this now avoids re-gating workspaces twice.
 
 ## Implementation rules
 

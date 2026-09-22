@@ -1,9 +1,7 @@
-/**
- * @name sys
- * @type schema
- */
 export interface Sys {
   indexes: Indexes
+  foreign_keys: ForeignKeys
+  check_constraints: CheckConstraints
   tables: Tables
   schemas: Schemas
   index_columns: IndexColumns
@@ -17,10 +15,6 @@ export interface Sys {
   security_predicates: SecurityPredicates
 }
 
-/**
- * @name security_policies
- * @type table
- */
 interface SecurityPolicies {
   object_id: number
   schema_id: number
@@ -29,21 +23,15 @@ interface SecurityPolicies {
   is_not_for_replication: boolean
 }
 
-/**
- * @name security_predicates
- * @type table
- */
 interface SecurityPredicates {
   object_id: number
   predicate_definition: string
   operation: 0 | 1 | 2 | 3 | 4
+  operation_desc: string | null
+  predicate_type_desc: 'FILTER' | 'BLOCK'
   target_object_id: number
 }
 
-/**
- * @name databases
- * @type table
- */
 interface Databases {
   name: string
   database_id: number
@@ -121,61 +109,63 @@ interface Databases {
   is_mixed_page_allocation_on: boolean | null
 }
 
-/**
- * @name indexes
- * @type table
- */
 interface Indexes {
   object_id: number
   index_id: number
   name: string
   is_unique: boolean
   is_primary_key: boolean
+  is_unique_constraint: boolean
+  type_desc: string
+  has_filter: boolean
+  is_disabled: boolean
+  ignore_dup_key: boolean
+  is_padded: boolean
+  fill_factor: number
 }
 
-/**
- * @name tables
- * @type table
- */
 interface Tables {
   object_id: number
   schema_id: number
   name: string
 }
 
-/**
- * @name schemas
- * @type table
- */
 interface Schemas {
   schema_id: number
   name: string
 }
 
-/**
- * @name index_columns
- * @type table
- */
+interface ForeignKeys {
+  name: string
+  schema_id: number
+  is_disabled: boolean
+  is_not_trusted: boolean
+  is_not_for_replication: boolean
+}
+
+interface CheckConstraints {
+  name: string
+  schema_id: number
+  is_disabled: boolean
+  is_not_trusted: boolean
+  is_not_for_replication: boolean
+}
+
 interface IndexColumns {
   object_id: number
   index_id: number
   column_id: number
+  key_ordinal: number
+  is_included_column: boolean
+  is_descending_key: boolean
 }
 
-/**
- * @name columns
- * @type table
- */
 interface Columns {
   object_id: number
   column_id: number
   name: string
 }
 
-/**
- * @name triggers
- * @type table
- */
 interface Triggers {
   name: string
   object_id: number
@@ -192,10 +182,6 @@ interface Triggers {
   is_instead_of_trigger: boolean
 }
 
-/**
- * @name trigger_events
- * @type table
- */
 interface TriggerEvents {
   object_id: number
   type: number
@@ -206,10 +192,6 @@ interface TriggerEvents {
   event_group_type_desc: string | null
 }
 
-/**
- * @name objects
- * @type table
- */
 interface Objects {
   name: string
   object_id: number
@@ -220,14 +202,11 @@ interface Objects {
   is_ms_shipped: boolean
 }
 
-/**
- * @name sql_modules
- * @type table
- */
 interface SqlModules {
   object_id: number
   definition: string | null
   uses_ansi_nulls: boolean | null
   uses_quoted_identifier: boolean | null
   is_schema_bound: boolean
+  execute_as_principal_id: number | null
 }

@@ -6,7 +6,7 @@ import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { AnyFunction, Prettify } from '@tamery/shared/utils/helpers'
+import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
 export type AnyBuilder = BuilderWithMiddlewares<any, any, any, any, any, any>

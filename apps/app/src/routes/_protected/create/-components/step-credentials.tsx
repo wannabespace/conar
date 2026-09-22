@@ -1,5 +1,5 @@
+import { placeholderMap } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { placeholderMap } from '@tamery/shared/utils/connections'
 import {
   Card,
   CardContent,
@@ -43,7 +43,7 @@ export const StepCredentials = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Field className="gap-2">
+        <Field>
           <FieldLabel htmlFor={id}>Connection string</FieldLabel>
           <Input
             id={id}

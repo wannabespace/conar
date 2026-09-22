@@ -1,20 +1,7 @@
-import {
-  FlashIcon,
-  HierarchyIcon,
-  Key01Icon,
-  LeftToRightListBulletIcon,
-  LeftToRightListDashIcon,
-  Search01Icon,
-  SecurityCheckIcon,
-  SourceCodeIcon,
-} from '@hugeicons/core-free-icons'
+import { HierarchyIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import {
-  CONNECTION_TYPES_WITH_FUNCTIONS,
-  CONNECTION_TYPES_WITH_TRIGGERS,
-} from '@tamery/shared/connection-constants'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {
   InputGroup,
@@ -26,7 +13,9 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
+import { sectionAvailable } from '~/entities/connection/capabilities'
 import type { Connection } from '~/entities/connection/core/sync'
+import { sectionMetaOf } from '~/entities/connection/sections'
 import {
   openDefinitionsTab,
   openVisualizerTab,
@@ -51,20 +40,22 @@ interface NavigatorItem {
   Icon: IconSvgElement
   label: string
   open: (resourceId: string, preview: boolean) => void
+  section?: DefinitionsSection
   tabId: string
 }
 
-const sectionItem = (
-  Icon: IconSvgElement,
-  label: string,
-  section: DefinitionsSection
-): NavigatorItem => ({
-  Icon,
-  label,
-  open: (resourceId, preview) =>
-    openDefinitionsTab(resourceId, section, preview),
-  tabId: definitionsTabId(section),
-})
+const sectionItem = (section: DefinitionsSection): NavigatorItem => {
+  const { icon, title } = sectionMetaOf(section)
+
+  return {
+    Icon: icon,
+    label: title,
+    open: (resourceId, preview) =>
+      openDefinitionsTab(resourceId, section, preview),
+    section,
+    tabId: definitionsTabId(section),
+  }
+}
 
 const visualizerItem: NavigatorItem = {
   Icon: HierarchyIcon,
@@ -82,51 +73,39 @@ export const schemaGroups = (
       label: 'Overview',
     },
     {
-      items: [
-        sectionItem(LeftToRightListDashIcon, 'Indexes', 'indexes'),
-        sectionItem(Key01Icon, 'Constraints', 'constraints'),
-      ],
+      items: [sectionItem('indexes'), sectionItem('constraints')],
       label: 'Structure',
     },
     {
-      items: [
-        sectionItem(
-          LeftToRightListBulletIcon,
-          connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
-          'enums'
-        ),
-      ],
+      items: [sectionItem('enums')],
       label: 'Types',
     },
     {
-      items: [
-        ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
-          ? [sectionItem(SourceCodeIcon, 'Functions', 'functions')]
-          : []),
-        ...(CONNECTION_TYPES_WITH_TRIGGERS.includes(connection.type)
-          ? [sectionItem(FlashIcon, 'Triggers', 'triggers')]
-          : []),
-      ],
+      items: [sectionItem('functions'), sectionItem('triggers')],
       label: 'Logic',
     },
     {
-      items: [sectionItem(SecurityCheckIcon, 'Policies', 'policies')],
+      items: [sectionItem('policies'), sectionItem('privileges')],
       label: 'Security',
     },
-  ].filter((group) => group.items.length > 0)
+  ]
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        ({ section }) => !section || sectionAvailable(section, connection.type)
+      ),
+    }))
+    .filter((group) => group.items.length > 0)
 
 export const DefinitionsPanel = () => {
   const { connection, connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
 
-  const query = search.trim().toLowerCase()
   const filtered = schemaGroups(connection)
     .map((group) => ({
       ...group,
-      items: group.items.filter(({ label }) =>
-        label.toLowerCase().includes(query)
-      ),
+      items: group.items.filter(({ label }) => matchesSearch(search, label)),
     }))
     .filter((group) => group.items.length > 0)
 
@@ -142,8 +121,10 @@ export const DefinitionsPanel = () => {
             />
           </InputGroupAddon>
           <InputGroupInput
+            data-mask
             placeholder="Search"
             className="text-sm"
+            aria-label="Search definitions"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -167,7 +148,7 @@ export const DefinitionsPanel = () => {
                 <SidebarMenuItem key={tabId}>
                   <SidebarMenuButton
                     isActive={isActive}
-                    className="text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default gap-2 rounded-md px-2 text-sm font-[450] data-active:font-[450]"
+                    className="text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default gap-2 rounded-md px-2 text-sm"
                     render={
                       <Link
                         to="/connection/$resourceId/$tabId"
@@ -175,8 +156,7 @@ export const DefinitionsPanel = () => {
                           resourceId: connectionResource.id,
                           tabId,
                         }}
-                        preload="intent"
-                        preloadDelay={200}
+                        preload="viewport"
                         onClick={() => open(connectionResource.id, true)}
                         onDoubleClick={() => open(connectionResource.id, false)}
                       />

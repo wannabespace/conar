@@ -1,12 +1,9 @@
-/**
- * @name information_schema
- * @type schema
- */
 export interface InformationSchema {
   TABLES: Tables
   COLUMNS: Columns
   VIEWS: Views
   TABLE_CONSTRAINTS: TableConstraints
+  CHECK_CONSTRAINTS: CheckConstraints
   KEY_COLUMN_USAGE: KeyColumnUsage
   STATISTICS: Statistics
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
@@ -14,12 +11,16 @@ export interface InformationSchema {
   TRIGGERS: Triggers
   ROUTINES: Routines
   TABLE_PRIVILEGES: TablePrivileges
+  SCHEMA_PRIVILEGES: SchemaPrivileges
 }
 
-/**
- * @name TABLE_PRIVILEGES
- * @type table
- */
+interface SchemaPrivileges {
+  GRANTEE: string
+  TABLE_SCHEMA: string
+  PRIVILEGE_TYPE: string
+  IS_GRANTABLE: string
+}
+
 interface TablePrivileges {
   GRANTEE: string
   TABLE_SCHEMA: string
@@ -28,10 +29,6 @@ interface TablePrivileges {
   IS_GRANTABLE: string
 }
 
-/**
- * @name SCHEMATA
- * @type table
- */
 interface Schemata {
   CATALOG_NAME: string
   SCHEMA_NAME: string
@@ -40,10 +37,6 @@ interface Schemata {
   SQL_PATH: string | null
 }
 
-/**
- * @name TABLES
- * @type table
- */
 interface Tables {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -68,10 +61,6 @@ interface Tables {
   TABLE_COMMENT: string | null
 }
 
-/**
- * @name VIEWS
- * @type table
- */
 interface Views {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -85,10 +74,6 @@ interface Views {
   COLLATION_CONNECTION: string
 }
 
-/**
- * @name COLUMNS
- * @type table
- */
 interface Columns {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -114,24 +99,22 @@ interface Columns {
   SRS_ID: number
 }
 
-/**
- * @name TABLE_CONSTRAINTS
- * @type table
- */
 interface TableConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
   CONSTRAINT_NAME: string
   TABLE_SCHEMA: string
   TABLE_NAME: string
-  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY'
+  CONSTRAINT_TYPE: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK'
   ENFORCED: 'YES' | 'NO'
 }
 
-/**
- * @name KEY_COLUMN_USAGE
- * @type table
- */
+interface CheckConstraints {
+  CONSTRAINT_SCHEMA: string
+  CONSTRAINT_NAME: string
+  CHECK_CLAUSE: string
+}
+
 interface KeyColumnUsage {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -147,22 +130,18 @@ interface KeyColumnUsage {
   REFERENCED_COLUMN_NAME: string | null
 }
 
-/**
- * @name STATISTICS
- * @type table
- */
 interface Statistics {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   INDEX_NAME: string
-  COLUMN_NAME: string
+  COLUMN_NAME: string | null
+  SEQ_IN_INDEX: number
   NON_UNIQUE: number
+  SUB_PART: number | null
+  INDEX_TYPE: string
+  COLLATION: string | null
 }
 
-/**
- * @name REFERENTIAL_CONSTRAINTS
- * @type table
- */
 interface ReferentialConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -177,10 +156,6 @@ interface ReferentialConstraints {
   REFERENCED_TABLE_NAME: string
 }
 
-/**
- * @name TRIGGERS
- * @type table
- */
 interface Triggers {
   TRIGGER_CATALOG: string
   TRIGGER_SCHEMA: string
@@ -206,18 +181,16 @@ interface Triggers {
   DATABASE_COLLATION: string
 }
 
-/**
- * @name ROUTINES
- * @type table
- */
 interface Routines {
   ROUTINE_CATALOG: string
   ROUTINE_SCHEMA: string
   ROUTINE_NAME: string
   ROUTINE_TYPE: string
   DATA_TYPE: string
+  DTD_IDENTIFIER: string | null
   ROUTINE_DEFINITION: string | null
   IS_DETERMINISTIC: string
+  ROUTINE_COMMENT: string
   SQL_DATA_ACCESS: string
   SECURITY_TYPE: string
   DEFINER: string

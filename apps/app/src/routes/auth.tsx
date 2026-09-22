@@ -1,7 +1,7 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { challenge } from '@tamery/shared/utils/challenge'
-import { title } from '@tamery/shared/utils/title'
+import { challenge } from '@tamery/shared/challenge'
+import { title } from '@tamery/shared/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
@@ -238,7 +238,6 @@ export const Route = createFileRoute('/auth')({
     meta: [{ title: title('Sign in') }],
   }),
   beforeLoad: async () => {
-    // Desktop waits here for the challenge handoff; web has nothing to wait for
     if (window.electron) {
       return
     }

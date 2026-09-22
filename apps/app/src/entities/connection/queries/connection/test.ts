@@ -1,0 +1,12 @@
+import { sql } from 'kysely'
+
+import { createQuery } from '../../runtime/query'
+
+export const testConnectionQuery = createQuery({
+  query: {
+    clickhouse: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
+    mssql: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
+    mysql: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
+    postgres: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
+  },
+})

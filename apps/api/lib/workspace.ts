@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { members, workspaces } from '@tamery/db/schema'
-import { slugify } from '@tamery/shared/utils/slugify'
+import { slugify } from '@tamery/shared/slugify'
 import {
   isDefaultWorkspaceMetadata,
   serializeWorkspaceMetadata,

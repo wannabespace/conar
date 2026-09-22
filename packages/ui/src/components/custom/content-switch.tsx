@@ -1,4 +1,4 @@
-import { noop } from '@tamery/shared/utils/helpers'
+import { noop } from '@tamery/shared/utils'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffectEvent, useState } from 'react'

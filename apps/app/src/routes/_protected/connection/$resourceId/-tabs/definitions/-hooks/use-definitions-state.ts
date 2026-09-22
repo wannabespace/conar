@@ -1,33 +1,72 @@
 import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
 
-import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import {
+  defaultSchemaOf,
+  sectionCapabilitiesOf,
+} from '~/entities/connection/capabilities'
+import type { RelationKind } from '~/entities/connection/queries/tables/list'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import type { QueryParams } from '~/entities/connection/runtime/query'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
+
+const resourceRoute = getRouteApi('/_protected/connection/$resourceId')
+const tabRoute = getRouteApi('/_protected/connection/$resourceId/$tabId')
+
+const noTables: string[] = []
+
+export type RunQuery = <T>(query: {
+  run: (params: QueryParams) => Promise<T>
+}) => Promise<T>
 
 export const useDefinitionsState = ({
-  connectionResource,
+  section,
 }: {
-  connectionResource: ConnectionResource
+  section: DefinitionsSection
 }) => {
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
-  const { data } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+  const { connection, connectionResource } = resourceRoute.useRouteContext()
+  const { data, isPending: structurePending } = useQuery(
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
+  const linkedSchema = tabRoute.useSearch({ select: (search) => search.schema })
+  const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
+  // A link names the schema its row lives in, so it outranks the pick a
+  // mounted tab already made — until the page consumes it.
+  const selectedSchema =
+    [
+      linkedSchema,
+      pickedSchema,
+      defaultSchemaOf(connection.type, connectionResource.name),
+    ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
+  const relationNamesOf = (schema: string, kind: RelationKind) =>
+    data?.schemas
+      .find(({ name }) => name === schema)
+      ?.tables.filter((table) => table.type === kind)
+      .map((table) => table.name)
+      .toSorted() ?? noTables
 
-  if (
-    schemas.length > 0 &&
-    (!selectedSchema || !schemas.includes(selectedSchema))
-  ) {
-    setSelectedSchema(schemas[0])
+  const run: RunQuery = async (query) =>
+    query.run(await connectionResourceToQueryParams(connectionResource))
+
+  return {
+    can: sectionCapabilitiesOf(section, connection.type),
+    connection,
+    connectionResource,
+    relationNamesOf,
+    run,
+    schemas,
+    search,
+    section,
+    selectedSchema,
+    setSearch,
+    setSelectedSchema: setPickedSchema,
+    structurePending,
+    type: connection.type,
   }
-
-  return { schemas, selectedSchema, setSelectedSchema, search, setSearch }
 }
+
+export type DefinitionsState = ReturnType<typeof useDefinitionsState>

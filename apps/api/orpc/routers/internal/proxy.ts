@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
+import { decrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { decrypt } from '@tamery/shared/utils/crypto-node'
 import { type } from 'arktype'
 
 import { env } from '~/env'

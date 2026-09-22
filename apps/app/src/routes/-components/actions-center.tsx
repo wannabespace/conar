@@ -5,8 +5,6 @@ import {
   ComputerTerminal01Icon,
   DashboardSquare01Icon,
   Download01Icon,
-  File01Icon,
-  HierarchyIcon,
   HistoryIcon,
   LayoutTable02Icon,
   Moon02Icon,
@@ -18,7 +16,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/connection-constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import {
   Command,
   CommandDialog,
@@ -46,18 +44,17 @@ import type {
   Connection,
   ConnectionResource,
 } from '~/entities/connection/core/sync'
+import { prefetchConnectionResourceCore } from '~/entities/connection/fetching'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import {
-  openDefinitionsTab,
   openRunnerTab,
   openTableTab,
-  openVisualizerTab,
 } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
+import { schemaGroups } from '~/routes/_protected/connection/$resourceId/-components/navigator/definitions-section'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 const CONNECTION_PAGES = [
@@ -66,18 +63,6 @@ const CONNECTION_PAGES = [
     keywords: ['sql', 'runner'],
     icon: ComputerTerminal01Icon,
     openTab: openRunnerTab,
-  },
-  {
-    label: 'Open Definitions',
-    keywords: [],
-    icon: File01Icon,
-    openTab: (resourceId: string) => openDefinitionsTab(resourceId, 'enums'),
-  },
-  {
-    label: 'Open Visualizer',
-    keywords: [],
-    icon: HierarchyIcon,
-    openTab: openVisualizerTab,
   },
 ]
 
@@ -108,6 +93,14 @@ const actionEntry = (
   ),
 })
 
+const resourceName = (connectionResource: ConnectionResource) =>
+  connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL
+
+const connectionTitle = (
+  connection: Connection,
+  connectionResource: ConnectionResource
+) => `${connection.name} - ${resourceName(connectionResource)}`
+
 const ConnectionItem = ({
   connection,
   connectionResource,
@@ -120,7 +113,7 @@ const ConnectionItem = ({
 
   return (
     <CommandItem
-      value={`${connection.name} - ${connectionResource.name}`}
+      value={connectionTitle(connection, connectionResource)}
       onSelect={run(() => {
         prefetchConnectionResourceCore(connectionResource)
         router.navigate(params)
@@ -131,7 +124,7 @@ const ConnectionItem = ({
         {connection.name}
         <span className="text-muted-foreground">
           {' '}
-          - {connectionResource.name}
+          - {resourceName(connectionResource)}
         </span>
       </span>
       {connection.label && (
@@ -245,9 +238,6 @@ export const ActionsCenter = () => {
     ...(current
       ? resourceTablesAndSchemasQueryOptions({
           connectionResource: current.connectionResource,
-          showSystem: getConnectionResourceStore(
-            current.connectionResource.id
-          ).get().showSystem,
         })
       : { queryKey: ['actions-center-tables-none'], queryFn: skipToken }),
     throwOnError: false,
@@ -256,7 +246,7 @@ export const ActionsCenter = () => {
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
 
   const connections = data.map(({ connection, connectionResource }) => ({
-    value: `${connection.name} - ${connectionResource.name}`,
+    value: connectionTitle(connection, connectionResource),
     keywords: connection.label ? [connection.label] : undefined,
     node: (
       <ConnectionItem
@@ -283,21 +273,42 @@ export const ActionsCenter = () => {
           router.navigate({ to: '/' })
         ),
         ...(current
-          ? CONNECTION_PAGES.map((page) =>
-              actionEntry(
-                page.label,
-                ['open', 'go to', ...page.keywords, page.label],
-                page.icon,
-                () =>
-                  router.navigate({
-                    to: '/connection/$resourceId/$tabId',
-                    params: {
-                      resourceId: current.connectionResource.id,
-                      tabId: page.openTab(current.connectionResource.id),
-                    },
-                  })
-              )
-            )
+          ? [
+              ...CONNECTION_PAGES.map((page) =>
+                actionEntry(
+                  page.label,
+                  ['open', 'go to', ...page.keywords, page.label],
+                  page.icon,
+                  () =>
+                    router.navigate({
+                      to: '/connection/$resourceId/$tabId',
+                      params: {
+                        resourceId: current.connectionResource.id,
+                        tabId: page.openTab(current.connectionResource.id),
+                      },
+                    })
+                )
+              ),
+              ...schemaGroups(current.connection).flatMap((group) =>
+                group.items.map((item) =>
+                  actionEntry(
+                    item.label,
+                    ['open', 'go to', group.label, 'definitions'],
+                    item.Icon,
+                    () => {
+                      item.open(current.connectionResource.id, false)
+                      router.navigate({
+                        to: '/connection/$resourceId/$tabId',
+                        params: {
+                          resourceId: current.connectionResource.id,
+                          tabId: item.tabId,
+                        },
+                      })
+                    }
+                  )
+                )
+              ),
+            ]
           : []),
         actionEntry(
           'Add new connection…',
@@ -367,7 +378,7 @@ export const ActionsCenter = () => {
     ...(current && tables.length > 0
       ? [
           {
-            heading: `${current.connection.name} - ${current.connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL} Tables`,
+            heading: `${connectionTitle(current.connection, current.connectionResource)} Tables`,
             entries: tables,
           },
         ]

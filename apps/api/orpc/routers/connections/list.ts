@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { connections } from '@tamery/db/schema'
-import { decrypt } from '@tamery/shared/utils/crypto-node'
+import { decrypt } from '@tamery/shared/crypto-node'
 import { desc, eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'

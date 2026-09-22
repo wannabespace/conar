@@ -1,7 +1,6 @@
 import { createRequire } from 'node:module'
 
-import { silently } from '@tamery/shared/utils/helpers'
-import { tries } from '@tamery/shared/utils/tries'
+import { tries } from '@tamery/shared/tries'
 import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
@@ -11,11 +10,7 @@ import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
 import { defaultSSLConfig, parseSSLConfig } from '../../ssl/mysql'
-import {
-  disposeTransaction,
-  getTransaction,
-  registerTransaction,
-} from '../transactions'
+import { registerTransaction, transactionQueries } from '../transactions'
 
 const mysql2 = createRequire(import.meta.url)(
   'mysql2/promise'
@@ -53,8 +48,16 @@ const getPool = memoize((connectionString: string) => {
 })
 
 export const query = {
+  ...transactionQueries,
+
   beginTransaction: handleQueryError(
-    async ({ connectionString }: { connectionString: string }) => {
+    async ({
+      connectionString,
+      ownerId,
+    }: {
+      connectionString: string
+      ownerId?: string
+    }) => {
       const pool = await getPool(connectionString)
       const connection = await pool.getConnection()
 
@@ -65,43 +68,33 @@ export const query = {
         throw error
       }
 
-      const txId = registerTransaction({
-        commit: async () => {
-          await connection.commit()
+      const txId = registerTransaction(
+        {
+          commit: async () => {
+            await connection.commit()
+          },
+          execute: async (sql, values) => {
+            const start = performance.now()
+            const [rows] = await connection.query(sql, values)
+            return {
+              duration: performance.now() - start,
+              result: rows as unknown,
+            }
+          },
+          release: () => {
+            connection.release()
+            return Promise.resolve()
+          },
+          rollback: async () => {
+            await connection.rollback()
+          },
         },
-        execute: async (sql, values) => {
-          const start = performance.now()
-          const [rows] = await connection.query(sql, values)
-          return {
-            duration: performance.now() - start,
-            result: rows as unknown,
-          }
-        },
-        release: () => {
-          connection.release()
-          return Promise.resolve()
-        },
-        rollback: async () => {
-          await connection.rollback()
-        },
-      })
+        ownerId
+      )
 
       return { txId }
     }
   ),
-
-  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
-    if (!handle) {
-      return
-    }
-
-    try {
-      await handle.commit()
-    } finally {
-      await silently(() => handle.release())
-    }
-  }),
 
   execute: handleQueryError(
     async ({ connectionString, query: sql, values = [] }) => {
@@ -112,36 +105,4 @@ export const query = {
       return { duration: performance.now() - start, result: result as unknown }
     }
   ),
-
-  executeTransaction: handleQueryError(
-    ({
-      txId,
-      query: sql,
-      values,
-    }: {
-      txId: string
-      query: string
-      values: unknown[]
-    }) => {
-      const handle = getTransaction(txId)
-      if (!handle) {
-        throw new Error(`No active transaction found for id: ${txId}`)
-      }
-
-      return handle.execute(sql, values)
-    }
-  ),
-
-  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
-    if (!handle) {
-      return
-    }
-
-    try {
-      await handle.rollback()
-    } finally {
-      await silently(() => handle.release())
-    }
-  }),
 } satisfies QueryExecutor

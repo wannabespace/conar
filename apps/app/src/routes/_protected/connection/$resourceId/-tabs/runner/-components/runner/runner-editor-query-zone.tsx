@@ -4,7 +4,6 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/connection-constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
@@ -28,10 +27,11 @@ import { useIsFetching, useMutation } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { customQuery } from '~/entities/connection/queries/custom'
+import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
-import { wrapExplainQuery } from '~/entities/connection/utils/helpers'
+import { wrapExplainQuery } from '~/entities/connection/utils'
 import { queryClient } from '~/lib/query-client'
 
 import { runnerQueryOptions } from '../../-lib/runner-query'
@@ -201,7 +201,7 @@ export const RunnerEditorQueryZone = ({
               const key = `query-run-${connectionResource.id}-${lineNumber}-${idx}`
               return (
                 <Fragment key={key}>
-                  {CONNECTION_TYPES_WITH_EXPLAIN.includes(connectionType) && (
+                  {capabilitiesOf(connectionType).explain && (
                     <Popover open={explainOpen} onOpenChange={setExplainOpen}>
                       <Tooltip>
                         <TooltipTrigger

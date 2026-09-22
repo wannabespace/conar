@@ -1,17 +1,9 @@
-/**
- * @name information_schema
- * @type schema
- */
 export interface InformationSchema {
   tables: Tables
   columns: Columns
   views: Views
 }
 
-/**
- * @name tables
- * @type table
- */
 interface Tables {
   table_catalog: string
   table_schema: string
@@ -24,10 +16,6 @@ interface Tables {
   table_comment: string | null
 }
 
-/**
- * @name views
- * @type table
- */
 interface Views {
   table_catalog: string
   table_schema: string
@@ -41,10 +29,6 @@ interface Views {
   is_trigger_insertable_into: boolean
 }
 
-/**
- * @name columns
- * @type table
- */
 interface Columns {
   table_catalog: string
   table_schema: string

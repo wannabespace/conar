@@ -8,12 +8,13 @@ import {
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
 import { eq, queryOnce } from '@tanstack/react-db'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/entities/collections'
 import type { Connection } from '~/entities/connection/core/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{
@@ -25,6 +26,8 @@ export const RemoveConnectionDialog = ({
   ref,
 }: RemoveConnectionDialogProps) => {
   const collections = useCollections()
+  const navigate = useNavigate()
+  const { resourceId } = useParams({ strict: false })
   const [open, setOpen] = useState(false)
   const [connection, setConnection] = useState<Connection | null>(null)
 
@@ -63,6 +66,10 @@ export const RemoveConnectionDialog = ({
     lastOpenedResourcesStorageValue.set((prev) =>
       prev.filter((resource) => !resourcesIds.includes(resource))
     )
+
+    if (resourceId && resourcesIds.includes(resourceId)) {
+      await navigate({ to: '/' })
+    }
 
     connectionsCollection.delete(connection.id)
 

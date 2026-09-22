@@ -2,6 +2,7 @@ import { chatStream } from '@tamery/ai/features'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
+import { chatPersist } from '~/lib/chat-persist'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const abortStream = orpc
@@ -13,7 +14,15 @@ export const abortStream = orpc
       where: { id: { eq: input.chatId }, userId: { eq: context.user.id } },
     })
 
-    if (owned) {
-      await chatStream.stop(input.chatId)
+    if (!owned) {
+      return
     }
+
+    await Promise.all([
+      chatStream.stop(input.chatId),
+      chatPersist.markStopped({
+        chatId: input.chatId,
+        userId: context.user.id,
+      }),
+    ])
   })

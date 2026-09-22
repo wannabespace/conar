@@ -11,7 +11,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { CONNECTION_TYPES_WITHOUT_SCHEMAS } from '@tamery/shared/connection-constants'
+import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Separator } from '@tamery/ui/components/separator'
@@ -26,15 +26,16 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import type { ComponentRef, ReactNode } from 'react'
+import type { CSSProperties, ComponentRef, ReactNode } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
-import type { tablesAndSchemasType } from '~/entities/connection/queries/tables-and-schemas'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
+import type { tablesAndSchemasType } from '~/entities/connection/queries/tables/list'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { pinnedTable } from '~/entities/connection/store/helpers/tables'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
@@ -251,7 +252,7 @@ const TableRow = ({
       <SidebarMenuButton
         isActive={isActive}
         className={cn(
-          `text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default rounded-md pl-2 text-sm font-[450] data-active:font-[450]`,
+          `text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default rounded-md pl-2 text-sm`,
           row.pinned && 'pr-8'
         )}
         render={
@@ -378,11 +379,8 @@ export const TablesList = ({
 }) => {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, {
-    selector: (state) => state.showSystem,
-  })
   const { data: tablesAndSchemas, isPending } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const pinnedTables = useSubscription(store, {
     selector: (state) => state.pinnedTables,
@@ -398,9 +396,7 @@ export const TablesList = ({
     useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
-  const showSchemaRows = !CONNECTION_TYPES_WITHOUT_SCHEMAS.includes(
-    connection.type
-  )
+  const showSchemaRows = capabilitiesOf(connection.type).schemas
 
   useEffect(() => {
     if (!tablesAndSchemas) {
@@ -423,10 +419,7 @@ export const TablesList = ({
 
   for (const schema of tablesAndSchemas?.schemas ?? []) {
     const tables = schema.tables
-      .filter(
-        (table) =>
-          !search || table.name.toLowerCase().includes(search.toLowerCase())
-      )
+      .filter((table) => matchesSearch(search, table.name))
       .toSorted((a, b) => a.name.localeCompare(b.name))
 
     if (tables.length === 0) {
@@ -578,8 +571,8 @@ export const TablesList = ({
       <RenameTableDialog ref={renameTableDialogRef} />
       <SidebarMenu
         data-mask
-        className="relative w-full gap-0"
-        style={{ height: totalSize }}
+        className="relative h-(--total-size) w-full gap-0"
+        style={{ '--total-size': `${totalSize}px` } as CSSProperties}
       >
         {virtualItems.map((virtualRow) => {
           const row = rows[virtualRow.index]
@@ -630,8 +623,10 @@ export const TablesList = ({
                   ? { duration: 0 }
                   : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
               }
-              className="group/menu-item absolute inset-x-0 top-0"
-              style={{ height: `${virtualRow.size}px` }}
+              className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
+              style={
+                { '--row-height': `${virtualRow.size}px` } as CSSProperties
+              }
             >
               {rowContent}
             </motion.li>

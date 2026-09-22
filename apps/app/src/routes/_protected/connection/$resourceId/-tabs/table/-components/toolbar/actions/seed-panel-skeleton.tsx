@@ -1,5 +1,6 @@
-import { pseudoRandom } from '@tamery/shared/utils/helpers'
+import { pseudoRandom } from '@tamery/shared/utils'
 import { Skeleton } from '@tamery/ui/components/skeleton'
+import type { CSSProperties } from 'react'
 
 import { SidebarButton } from '~/components/sidebar-link'
 import type { Column } from '~/entities/connection/components/table/cell/utils'
@@ -33,8 +34,12 @@ export const SeedPanelSkeleton = ({ columns }: { columns: Column[] }) => (
             className="flex h-7 items-center px-2"
           >
             <Skeleton
-              className="h-2.5 rounded-full"
-              style={{ width: `${30 + pseudoRandom(index) * 40}%` }}
+              className="h-2.5 w-(--bar-width) rounded-full"
+              style={
+                {
+                  '--bar-width': `${30 + pseudoRandom(index) * 40}%`,
+                } as CSSProperties
+              }
             />
           </div>
         ))}

@@ -36,7 +36,7 @@ import type {
   Column,
   ColumnHandlers,
 } from '~/entities/connection/components/table/cell/utils'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 
 import type { tablePageType } from '../../-lib/store'
 import { useTablePageStore } from '../../-lib/store'

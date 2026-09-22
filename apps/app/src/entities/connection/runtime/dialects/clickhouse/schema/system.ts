@@ -1,7 +1,3 @@
-/**
- * @name system
- * @type schema
- */
 export interface System {
   databases: Databases
   columns: Columns
@@ -9,12 +5,18 @@ export interface System {
   one: One
   tables: Tables
   row_policies: RowPolicies
+  data_skipping_indices: DataSkippingIndices
 }
 
-/**
- * @name row_policies
- * @type table
- */
+interface DataSkippingIndices {
+  database: string
+  table: string
+  name: string
+  type_full: string
+  expr: string
+  granularity: number
+}
+
 interface RowPolicies {
   name: string
   short_name: string
@@ -23,31 +25,23 @@ interface RowPolicies {
   id: string
   is_restrictive: number
   select_filter: string
+  apply_to_all: number
+  apply_to_list: string[]
+  apply_to_except: string[]
 }
 
-/**
- * @name tables
- * @type table
- */
 interface Tables {
   database: string
   name: string
+  create_table_query: string
   engine: string
   is_temporary: number
 }
 
-/**
- * @name one
- * @type table
- */
 interface One {
   dummy: number
 }
 
-/**
- * @name databases
- * @type table
- */
 interface Databases {
   name: string
   engine: string
@@ -57,10 +51,6 @@ interface Databases {
   comment: string
 }
 
-/**
- * @name columns
- * @type table
- */
 interface Columns {
   database: string
   table: string
@@ -72,10 +62,6 @@ interface Columns {
   is_in_primary_key: number
 }
 
-/**
- * @name parts
- * @type table
- */
 interface Parts {
   database: string
   table: string

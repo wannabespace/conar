@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { sessions } from '@tamery/db/schema'
-import { challenge } from '@tamery/shared/utils/challenge'
+import { challenge } from '@tamery/shared/challenge'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
@@ -44,13 +44,15 @@ export const exchange = orpc
     const { token, id } = await context.internalAdapter.createSession(
       data.userId
     )
-    await codeChallengeRedis.delete(input.codeChallenge)
-    await db
-      .update(sessions)
-      .set({
-        ipAddress: headers.get('X-Forwarded-For'),
-        userAgent: headers.get('User-Agent'),
-      })
-      .where(eq(sessions.id, id))
+    await Promise.all([
+      codeChallengeRedis.delete(input.codeChallenge),
+      db
+        .update(sessions)
+        .set({
+          ipAddress: headers.get('X-Forwarded-For'),
+          userAgent: headers.get('User-Agent'),
+        })
+        .where(eq(sessions.id, id)),
+    ])
     return { newUser: data.newUser, token }
   })

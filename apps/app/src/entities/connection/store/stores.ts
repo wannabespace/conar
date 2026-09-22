@@ -1,4 +1,4 @@
-import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/connection-constants'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
@@ -45,7 +45,6 @@ export const viewportType = type({
 
 export const connectionResourceType = type({
   activeTabId: 'string | null',
-  chatId: 'string | null',
   chatOpened: 'boolean',
   loggerOpened: 'boolean',
   pinnedTables: type({
@@ -63,7 +62,6 @@ export const connectionResourceType = type({
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   activeTabId: null,
-  chatId: null,
   chatOpened: false,
   loggerOpened: false,
   pinnedTables: [],
@@ -83,6 +81,19 @@ export const getConnectionResourceStore = memoize((id: string) =>
   })
 )
 
-export const getNavigatorStore = memoize((_id: string) =>
-  createStore<'tables' | 'definitions'>('tables')
+export const getChatStore = memoize((id: string) =>
+  createWebStorageValue({
+    defaultValue: null,
+    key: `connection-resource-chat-${id}`,
+    schema: type('string | null'),
+    type: 'sessionStorage',
+  })
+)
+
+export type NavigatorMode = 'tables' | 'definitions'
+
+export const getNavigatorStore = memoize(
+  (_id: string, initialMode: NavigatorMode = 'tables') =>
+    createStore(initialMode),
+  { cacheKey: (id) => id }
 )
