@@ -17,6 +17,7 @@ import { addConstraint, constraintClause } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import { createIndexStatement } from './indexes/shape'
 import { createPolicyStatement } from './policies/shape'
+import { mssqlModuleBody } from './shared/definition'
 import {
   createTriggerStatements,
   setTriggerEnabledStatements,
@@ -246,5 +247,40 @@ describe('policy statements', () => {
     expect(policy([], "id = current_setting('x')::int")).toInclude(
       "USING (id = current_setting('x')::int)"
     )
+  })
+})
+
+describe('mssqlModuleBody', () => {
+  test('a body starts after the AS that closes the header', () => {
+    expect(mssqlModuleBody('CREATE PROCEDURE dbo.p @a int AS SELECT 1')).toBe(
+      'SELECT 1'
+    )
+  })
+
+  test('EXECUTE AS is not the header end', () => {
+    expect(
+      mssqlModuleBody(
+        'CREATE PROCEDURE dbo.p WITH EXECUTE AS OWNER AS BEGIN SELECT 1 END'
+      )
+    ).toBe('BEGIN SELECT 1 END')
+  })
+
+  test('a parameter declared with AS is not the header end', () => {
+    expect(
+      mssqlModuleBody(
+        'CREATE FUNCTION dbo.f (@a AS int) RETURNS int AS BEGIN RETURN @a END'
+      )
+    ).toBe('BEGIN RETURN @a END')
+  })
+
+  test('a lowercase as closes the header too', () => {
+    expect(
+      mssqlModuleBody('create trigger t on dbo.x after insert\nas\nselect 1')
+    ).toBe('select 1')
+  })
+
+  test('a header that never closes reads back as nothing', () => {
+    expect(mssqlModuleBody('CREATE PROCEDURE dbo.p')).toBeNull()
+    expect(mssqlModuleBody(null)).toBeNull()
   })
 })

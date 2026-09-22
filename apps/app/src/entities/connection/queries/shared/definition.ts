@@ -19,16 +19,32 @@ export const readDefinition =
     return { definition: row?.definition ?? null }
   }
 
-// The catalog hands back the whole CREATE, so a module's body is what follows
-// the AS that closes the header — which may sit on a line of its own. No match
-// means the body cannot be read back, and the caller opens the object
-// read-only rather than saving a mangled one.
-export const mssqlModuleBody = (definition: RawBuilder<unknown>) => {
-  const separator = sql.raw(
-    "'%[' + CHAR(9) + CHAR(10) + CHAR(13) + ' ]AS[' + CHAR(9) + CHAR(10) + CHAR(13) + ' ]%'"
-  )
+const headerEnd = /(?<preceding>\S+)\s+AS\s/giu
+const parameterName = /@\w+$/u
 
-  return sql<string>`CASE WHEN PATINDEX(${separator}, ${definition}) > 0 THEN SUBSTRING(${definition}, PATINDEX(${separator}, ${definition}) + 4, LEN(${definition})) END`
+// `EXECUTE AS caller` and a parameter's `@p AS int` read as the header's
+// closing AS and are skipped; an AS inside a header comment still wins. Null
+// means the body cannot be read back, and the caller opens it read-only.
+export const mssqlModuleBody = (definition: string | null) => {
+  if (!definition) {
+    return null
+  }
+
+  for (const match of definition.matchAll(headerEnd)) {
+    const [matched] = match
+    const preceding = match.groups?.preceding ?? ''
+
+    if (
+      parameterName.test(preceding) ||
+      preceding.toUpperCase() === 'EXECUTE'
+    ) {
+      continue
+    }
+
+    return definition.slice(match.index + matched.length)
+  }
+
+  return null
 }
 
 export const mssqlObjectDefinition = (schema: string, name: string) =>

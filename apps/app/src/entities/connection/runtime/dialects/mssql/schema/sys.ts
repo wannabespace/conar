@@ -255,4 +255,5 @@ interface SqlModules {
   uses_ansi_nulls: boolean | null
   uses_quoted_identifier: boolean | null
   is_schema_bound: boolean
+  execute_as_principal_id: number | null
 }

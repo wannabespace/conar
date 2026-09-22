@@ -1,6 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
@@ -47,12 +46,20 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               'database as schema',
               'name as table',
-              sql<'base table' | 'materialized view' | 'view'>`CASE
-                WHEN engine = 'MaterializedView' THEN 'materialized view'
-                WHEN engine ILIKE '%View%' THEN 'view'
-                ELSE 'base table'
-              END`.as('type'),
+              (eb) =>
+                eb
+                  .case()
+                  .when('engine', '=', 'MaterializedView')
+                  .then('materialized view')
+                  .when('engine', 'ilike', '%View%')
+                  .then('view')
+                  .else('base table')
+                  .end()
+                  .as('type'),
             ])
+            .$narrowType<{
+              type: 'base table' | 'materialized view' | 'view'
+            }>()
             .where('database', '=', database)
             .where('is_temporary', '=', 0)
             .execute(),

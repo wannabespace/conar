@@ -63,8 +63,8 @@ export const functionsType = type({
 const resourceFunctionsQuery = createQuery({
   query: {
     clickhouse: unsupported('Functions'),
-    mssql: (db) =>
-      db
+    mssql: async (db) => {
+      const rows = await db
         .selectFrom('sys.objects as o')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
         .leftJoin('sys.sql_modules as sm', 'o.object_id', 'sm.object_id')
@@ -77,7 +77,7 @@ const resourceFunctionsQuery = createQuery({
             FROM sys.parameters pa
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
           ), '')`.as('args'),
-          mssqlModuleBody(sql`sm.definition`).as('body'),
+          'sm.definition as body',
           sql<
             'function' | 'procedure'
           >`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as('type'),
@@ -92,7 +92,10 @@ const resourceFunctionsQuery = createQuery({
         .where('o.type', 'in', ['FN', 'IF', 'TF', 'FS', 'FT', 'P', 'PC'])
         .where('o.is_ms_shipped', '=', false)
         .where('s.name', 'not in', ['sys', 'INFORMATION_SCHEMA'])
-        .execute(),
+        .execute()
+
+      return rows.map((row) => ({ ...row, body: mssqlModuleBody(row.body) }))
+    },
     mysql: (db) =>
       db
         .selectFrom('information_schema.ROUTINES as r')

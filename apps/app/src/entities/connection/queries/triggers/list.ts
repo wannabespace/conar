@@ -51,8 +51,8 @@ export const triggersType = type({
 const resourceTriggersQuery = createQuery({
   query: {
     clickhouse: unsupported('Triggers'),
-    mssql: (db) =>
-      db
+    mssql: async (db) => {
+      const rows = await db
         .selectFrom('sys.triggers as t')
         .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
@@ -65,19 +65,41 @@ const resourceTriggersQuery = createQuery({
           sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as(
             'event'
           ),
-          sql<string>`IIF(t.is_instead_of_trigger = 1, 'INSTEAD OF', 'AFTER')`.as(
-            'timing'
-          ),
-          mssqlModuleBody(sql`sm.definition`).as('body'),
-          sql<1 | 0>`IIF(t.is_disabled = 0, 1, 0)`.as('enabled'),
+          (eb) =>
+            eb
+              .case()
+              .when('t.is_instead_of_trigger', '=', true)
+              .then('INSTEAD OF')
+              .else('AFTER')
+              .end()
+              .as('timing'),
+          'sm.definition as body',
+          (eb) =>
+            eb
+              .case()
+              .when('t.is_disabled', '=', false)
+              .then(1)
+              .else(0)
+              .end()
+              .as('enabled'),
           // Replication, schema binding and EXECUTE AS live in the header the
           // form rewrites, and the body is what follows it.
-          sql<1 | 0>`IIF(
-            t.is_not_for_replication = 1
-            OR sm.is_schema_bound = 1
-            OR sm.execute_as_principal_id IS NOT NULL
-          , 1, 0)`.as('custom'),
+          (eb) =>
+            eb
+              .case()
+              .when(
+                eb.or([
+                  eb('t.is_not_for_replication', '=', true),
+                  eb('sm.is_schema_bound', '=', true),
+                  eb('sm.execute_as_principal_id', 'is not', null),
+                ])
+              )
+              .then(1)
+              .else(0)
+              .end()
+              .as('custom'),
         ])
+        .$narrowType<{ custom: 1 | 0; enabled: 1 | 0 }>()
         .where('t.is_ms_shipped', '=', false)
         .where('t.parent_class', '=', 1)
         .where('s.name', '!=', 'sys')
@@ -90,9 +112,12 @@ const resourceTriggersQuery = createQuery({
           't.is_not_for_replication',
           'sm.definition',
           'sm.is_schema_bound',
-          sql`sm.execute_as_principal_id`,
+          'sm.execute_as_principal_id',
         ])
-        .execute(),
+        .execute()
+
+      return rows.map((row) => ({ ...row, body: mssqlModuleBody(row.body) }))
+    },
     mysql: (db) =>
       db
         .selectFrom('information_schema.TRIGGERS as t')
@@ -122,37 +147,63 @@ const resourceTriggersQuery = createQuery({
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
         .leftJoin('pg_catalog.pg_proc as p', 't.tgfoid', 'p.oid')
         .leftJoin('pg_catalog.pg_namespace as fn', 'p.pronamespace', 'fn.oid')
-        .select([
-          'n.nspname as schema',
-          'c.relname as table',
-          't.tgname as name',
-          sql<string>`NULLIF(CONCAT_WS(' OR ',
-          CASE WHEN (t.tgtype::int & 4) != 0 THEN 'INSERT' END,
-          CASE WHEN (t.tgtype::int & 8) != 0 THEN 'DELETE' END,
-          CASE WHEN (t.tgtype::int & 16) != 0 THEN 'UPDATE' END,
-          CASE WHEN (t.tgtype::int & 32) != 0 THEN 'TRUNCATE' END
-        ), '')`.as('event'),
-          sql<string>`CASE
-            WHEN (t.tgtype::int & 2) != 0 THEN 'BEFORE'
-            WHEN (t.tgtype::int & 64) != 0 THEN 'INSTEAD OF'
-            ELSE 'AFTER'
-          END`.as('timing'),
-          sql<boolean>`t.tgenabled != 'D'`.as('enabled'),
-          sql<string>`CASE WHEN (t.tgtype::int & 1) != 0 THEN 'ROW' ELSE 'STATEMENT' END`.as(
-            'orientation'
-          ),
-          'p.proname as function_name',
-          'fn.nspname as function_schema',
-          't.tgenabled as enabled_mode',
-          sql<boolean>`(
-            t.tgconstraint <> 0
-            OR t.tgnargs > 0
-            OR t.tgqual IS NOT NULL
-            OR pg_get_triggerdef(t.oid) LIKE '%UPDATE OF %'
-            OR pg_get_triggerdef(t.oid) LIKE '%REFERENCING %'
-          )`.as('custom'),
-          't.oid as oid',
-        ])
+        .select((eb) => {
+          const typeHas = (bit: number) =>
+            eb(eb(eb.cast<number>('t.tgtype', 'integer'), '&', bit), '!=', 0)
+          const eventWhenSet = (bit: number, event: string) =>
+            eb.case().when(typeHas(bit)).then(event).end()
+          const triggerDefinition = eb.fn<string>('pg_get_triggerdef', [
+            't.oid',
+          ])
+
+          return [
+            'n.nspname as schema',
+            'c.relname as table',
+            't.tgname as name',
+            eb
+              .fn<string>('nullif', [
+                eb.fn('concat_ws', [
+                  eb.val(' OR '),
+                  eventWhenSet(4, 'INSERT'),
+                  eventWhenSet(8, 'DELETE'),
+                  eventWhenSet(16, 'UPDATE'),
+                  eventWhenSet(32, 'TRUNCATE'),
+                ]),
+                eb.val(''),
+              ])
+              .as('event'),
+            eb
+              .case()
+              .when(typeHas(2))
+              .then('BEFORE')
+              .when(typeHas(64))
+              .then('INSTEAD OF')
+              .else('AFTER')
+              .end()
+              .as('timing'),
+            eb('t.tgenabled', '!=', 'D').as('enabled'),
+            eb
+              .case()
+              .when(typeHas(1))
+              .then('ROW')
+              .else('STATEMENT')
+              .end()
+              .as('orientation'),
+            'p.proname as function_name',
+            'fn.nspname as function_schema',
+            't.tgenabled as enabled_mode',
+            eb
+              .or([
+                eb('t.tgconstraint', '<>', 0),
+                eb('t.tgnargs', '>', 0),
+                eb('t.tgqual', 'is not', null),
+                eb(triggerDefinition, 'like', '%UPDATE OF %'),
+                eb(triggerDefinition, 'like', '%REFERENCING %'),
+              ])
+              .as('custom'),
+            't.oid as oid',
+          ]
+        })
         .where('t.tgisinternal', '=', false)
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
