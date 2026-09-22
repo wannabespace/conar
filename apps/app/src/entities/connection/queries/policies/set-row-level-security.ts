@@ -3,7 +3,6 @@ import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 
-// A policy only decides anything once its table enforces row level security.
 export const setRowLevelSecurityQuery = ({
   enabled,
   schema,
