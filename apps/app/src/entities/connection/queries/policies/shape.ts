@@ -52,3 +52,12 @@ export const policyClause = ({
   table: string
 }) =>
   sql`CREATE POLICY ${sql.id(shape.name)} ON ${sql.id(schema, table)} AS ${sql.raw(shape.kind)} FOR ${sql.raw(shape.command)} TO ${roleList(shape.roles)}${expression('USING', shape.using)}${expression('WITH CHECK', shape.check)}`
+
+export interface PolicyTarget {
+  name: string
+  schema: string
+  table: string
+}
+
+export const policyOn = ({ name, schema, table }: PolicyTarget) =>
+  sql`${sql.id(name)} ON ${sql.id(schema, table)}`

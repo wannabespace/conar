@@ -1,6 +1,4 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
-
-import { createQuery } from '../../runtime/query'
+import { statementQuery } from '../shared/statements'
 import type { PolicyShape } from './shape'
 import { policyClause } from './shape'
 
@@ -13,11 +11,6 @@ export const createPolicyQuery = ({
   shape: PolicyShape
   table: string
 }) =>
-  createQuery({
-    query: {
-      clickhouse: unsupported('Creating row policies'),
-      mssql: unsupported('Creating security policies'),
-      mysql: unsupported('Creating privileges'),
-      postgres: (db) => policyClause({ schema, shape, table }).execute(db),
-    },
+  statementQuery('Row policies', {
+    postgres: policyClause({ schema, shape, table }),
   })

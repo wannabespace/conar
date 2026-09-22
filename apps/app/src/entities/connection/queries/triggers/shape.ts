@@ -42,6 +42,27 @@ export const dropTriggerStatements = ({
   }
 }
 
+// Postgres remembers whether a trigger fires on the origin, on a replica or
+// always; a plain ENABLE would quietly move a replica trigger to the origin.
+const postgresEnableVerb = (enabled: boolean, mode: string) => {
+  if (!enabled) {
+    return 'DISABLE'
+  }
+
+  return { A: 'ENABLE ALWAYS', R: 'ENABLE REPLICA' }[mode] ?? 'ENABLE'
+}
+
+export const setTriggerEnabledStatements = ({
+  enabled,
+  mode,
+  name,
+  schema,
+  table,
+}: TriggerTarget & { enabled: boolean; mode: string; name: string }) => ({
+  mssql: sql`${sql.raw(enabled ? 'ENABLE' : 'DISABLE')} TRIGGER ${sql.id(schema, name)} ON ${sql.id(schema, table)}`,
+  postgres: sql`ALTER TABLE ${sql.id(schema, table)} ${sql.raw(postgresEnableVerb(enabled, mode))} TRIGGER ${sql.id(name)}`,
+})
+
 export const createTriggerStatements = ({
   schema,
   shape,

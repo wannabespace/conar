@@ -1,28 +1,11 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { createQuery } from '../../runtime/query'
+import { statementQuery } from '../shared/statements'
+import type { PolicyTarget } from './shape'
+import { policyOn } from './shape'
 
-export const dropPolicyQuery = ({
-  name,
-  schema,
-  table,
-}: {
-  name: string
-  schema: string
-  table: string
-}) =>
-  createQuery({
-    query: {
-      clickhouse: (db) =>
-        sql`DROP ROW POLICY ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(
-          db
-        ),
-      mssql: unsupported('Dropping security policies'),
-      mysql: unsupported('Dropping privileges'),
-      postgres: (db) =>
-        sql`DROP POLICY ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(
-          db
-        ),
-    },
+export const dropPolicyQuery = (target: PolicyTarget) =>
+  statementQuery('Row policies', {
+    clickhouse: sql`DROP ROW POLICY ${policyOn(target)}`,
+    postgres: sql`DROP POLICY ${policyOn(target)}`,
   })

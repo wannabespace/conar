@@ -13,8 +13,8 @@ import { mssqlModuleBody } from '../shared/definition'
 
 export const triggersType = type({
   'body?': 'string | null',
-  'custom?': 'boolean',
-  'enabled?': 'boolean',
+  'custom?': 'boolean | 1 | 0',
+  'enabled?': 'boolean | 1 | 0',
   'enabled_mode?': 'string',
   event: 'string',
   'function_name?': 'string | null',
@@ -38,8 +38,8 @@ export const triggersType = type({
   }) => ({
     ...item,
     body: body ?? null,
-    custom: custom ?? false,
-    enabled: enabled ?? null,
+    custom: !!custom,
+    enabled: enabled === undefined ? null : !!enabled,
     enabledMode: enabled_mode || 'O',
     functionName: function_name || null,
     functionSchema: function_schema || null,
@@ -58,30 +58,25 @@ const resourceTriggersQuery = createQuery({
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
         .leftJoin('sys.trigger_events as te', 't.object_id', 'te.object_id')
         .leftJoin('sys.sql_modules as sm', 't.object_id', 'sm.object_id')
-        .select(({ eb }) => [
+        .select([
           's.name as schema',
           'o.name as table',
           't.name as name',
           sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as(
             'event'
           ),
-          eb
-            .case()
-            .when('t.is_instead_of_trigger', '=', true)
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('INSTEAD OF')
-            .else('AFTER')
-            .end()
-            .as('timing'),
+          sql<string>`IIF(t.is_instead_of_trigger = 1, 'INSTEAD OF', 'AFTER')`.as(
+            'timing'
+          ),
           mssqlModuleBody(sql`sm.definition`).as('body'),
-          eb
-            .case()
-            .when('t.is_disabled', '=', false)
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then(true)
-            .else(false)
-            .end()
-            .as('enabled'),
+          sql<1 | 0>`IIF(t.is_disabled = 0, 1, 0)`.as('enabled'),
+          // Replication, schema binding and EXECUTE AS live in the header the
+          // form rewrites, and the body is what follows it.
+          sql<1 | 0>`IIF(
+            t.is_not_for_replication = 1
+            OR sm.is_schema_bound = 1
+            OR sm.execute_as_principal_id IS NOT NULL
+          , 1, 0)`.as('custom'),
         ])
         .where('t.is_ms_shipped', '=', false)
         .where('t.parent_class', '=', 1)
@@ -92,7 +87,10 @@ const resourceTriggersQuery = createQuery({
           't.name',
           't.is_instead_of_trigger',
           't.is_disabled',
+          't.is_not_for_replication',
           'sm.definition',
+          'sm.is_schema_bound',
+          sql`sm.execute_as_principal_id`,
         ])
         .execute(),
     mysql: (db) =>
@@ -106,6 +104,9 @@ const resourceTriggersQuery = createQuery({
           't.ACTION_TIMING as timing',
           't.ACTION_ORIENTATION as orientation',
           't.ACTION_STATEMENT as body',
+          // A trigger placed with FOLLOWS/PRECEDES loses its place in a
+          // drop-and-create, and the form cannot say where it belongs.
+          sql<1 | 0>`t.ACTION_ORDER > 1`.as('custom'),
         ])
         .where('t.TRIGGER_SCHEMA', 'not in', [
           'mysql',
@@ -121,7 +122,7 @@ const resourceTriggersQuery = createQuery({
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
         .leftJoin('pg_catalog.pg_proc as p', 't.tgfoid', 'p.oid')
         .leftJoin('pg_catalog.pg_namespace as fn', 'p.pronamespace', 'fn.oid')
-        .select(({ eb }) => [
+        .select([
           'n.nspname as schema',
           'c.relname as table',
           't.tgname as name',
@@ -131,17 +132,11 @@ const resourceTriggersQuery = createQuery({
           CASE WHEN (t.tgtype::int & 16) != 0 THEN 'UPDATE' END,
           CASE WHEN (t.tgtype::int & 32) != 0 THEN 'TRUNCATE' END
         ), '')`.as('event'),
-          eb
-            .case()
-            .when(sql<boolean>`(t.tgtype::int & 2) != 0`)
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('BEFORE')
-            .when(sql<boolean>`(t.tgtype::int & 64) != 0`)
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('INSTEAD OF')
-            .else('AFTER')
-            .end()
-            .as('timing'),
+          sql<string>`CASE
+            WHEN (t.tgtype::int & 2) != 0 THEN 'BEFORE'
+            WHEN (t.tgtype::int & 64) != 0 THEN 'INSTEAD OF'
+            ELSE 'AFTER'
+          END`.as('timing'),
           sql<boolean>`t.tgenabled != 'D'`.as('enabled'),
           sql<string>`CASE WHEN (t.tgtype::int & 1) != 0 THEN 'ROW' ELSE 'STATEMENT' END`.as(
             'orientation'

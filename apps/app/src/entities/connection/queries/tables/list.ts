@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
@@ -43,20 +44,14 @@ export const resourceTablesAndSchemasQuery = memoize(
         clickhouse: (db) =>
           db
             .selectFrom('system.tables')
-            .select((eb) => [
+            .select([
               'database as schema',
               'name as table',
-              eb
-                .case()
-                .when('engine', '=', 'MaterializedView')
-                // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely case expression
-                .then('materialized view' as const)
-                .when('engine', 'ilike', '%View%')
-                // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely case expression
-                .then('view' as const)
-                .else('base table' as const)
-                .end()
-                .as('type'),
+              sql<'base table' | 'materialized view' | 'view'>`CASE
+                WHEN engine = 'MaterializedView' THEN 'materialized view'
+                WHEN engine ILIKE '%View%' THEN 'view'
+                ELSE 'base table'
+              END`.as('type'),
             ])
             .where('database', '=', database)
             .where('is_temporary', '=', 0)
@@ -103,20 +98,14 @@ export const resourceTablesAndSchemasQuery = memoize(
               'n.oid',
               'c.relnamespace'
             )
-            .select((eb) => [
+            .select([
               'n.nspname as schema',
               'c.relname as table',
-              eb
-                .case('c.relkind')
-                .when('v')
-                // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely case expression
-                .then('view' as const)
-                .when('m')
-                // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely case expression
-                .then('materialized view' as const)
-                .else('base table' as const)
-                .end()
-                .as('type'),
+              sql<'base table' | 'materialized view' | 'view'>`CASE c.relkind
+                WHEN 'v' THEN 'view'
+                WHEN 'm' THEN 'materialized view'
+                ELSE 'base table'
+              END`.as('type'),
             ])
             .where('c.relkind', 'in', ['r', 'p', 'v', 'm'])
             .where(({ eb, and, not }) =>

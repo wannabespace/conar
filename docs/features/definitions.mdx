@@ -69,6 +69,7 @@ The inspector is also the editor. It groups an object into sections — general,
 - **Schema** is the first field when you create an enum, index, constraint, or policy. It starts on the schema the list is showing, and choosing another one clears the table and column pickers below it. A database with a single schema hides the field.
 - **Save** with the primary button or <kbd>⌘</kbd><kbd>Enter</kbd>. Errors from the database show inline under the form.
 - **Drop** from the row's context menu, or <kbd>⌘</kbd><kbd>D</kbd> on the highlighted row. A confirmation asks first; PostgreSQL types, functions, and constraints can drop dependents with **CASCADE**.
+- **Row level security** is a switch at the top of a PostgreSQL policy. A table that does not enforce it ignores every policy on it, so a policy on such a table shows as **Disabled** in the list.
 
 What each engine supports:
 
@@ -79,14 +80,14 @@ What each engine supports:
 | Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Read only |
 | Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — |
 | Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — |
-| Policies | Create, edit, drop | Read only | Read only | Drop |
+| Policies | Create, edit, drop, enable/disable row level security | Read only | Read only | Drop |
 
 ## Edits that replace the object
 
-Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence. An index that enforces a constraint, or one built with a method, predicate, expression or ordering the picker cannot show, only changes its name — its shape is edited where it is defined.
+Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence. An index that enforces a constraint, or one built with a method, predicate, expression or ordering the picker cannot show, only changes its name — its shape is edited where it is defined. A constraint carrying a rule with no field in the form — deferrable, not validated, a match type, or on SQL Server disabled, untrusted or not for replication — is name-only for the same reason.
 
 PostgreSQL and SQL Server run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement.
 
 Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
 
-Functions and triggers open as SQL in an editor: PostgreSQL saves with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER`, and MySQL drops the object before creating it again, as does PostgreSQL before 14 for triggers. PostgreSQL enums can gain and rename values but never lose them.
+Functions and triggers open as fields, with only the body as SQL in an editor. A function saves in place — PostgreSQL with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER` — as long as its name, arguments, return type and kind stay put; change one of those and it is dropped and created again, which loses its grants and owner. A trigger is always dropped and created again, keeping whether it was disabled. PostgreSQL enums can gain and rename values but never lose them.

@@ -56,6 +56,7 @@ interface ConnectionCapabilities {
   functions: FunctionCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
+  rowLevelSecurity: boolean
   renameConstraints: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
@@ -77,6 +78,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
+    rowLevelSecurity: false,
     schemas: false,
     sections: {
       constraints: readOnly,
@@ -105,6 +107,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: true,
+    rowLevelSecurity: false,
     schemas: true,
     sections: {
       constraints: full,
@@ -138,6 +141,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: false,
+    rowLevelSecurity: false,
     schemas: true,
     sections: {
       constraints: full,
@@ -168,6 +172,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: true,
+    rowLevelSecurity: true,
     schemas: true,
     sections: {
       constraints: full,

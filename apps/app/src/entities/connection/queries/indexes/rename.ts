@@ -1,34 +1,17 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { createQuery } from '../../runtime/query'
 import { mssqlQualified } from '../shared/sql-fragments'
+import { statementQuery } from '../shared/statements'
+import type { IndexTarget } from './shape'
 
 export const renameIndexQuery = ({
   name,
   newName,
   schema,
   table,
-}: {
-  name: string
-  newName: string
-  schema: string
-  table: string
-}) =>
-  createQuery({
-    query: {
-      clickhouse: unsupported('Renaming indexes'),
-      mssql: (db) =>
-        sql`EXEC sp_rename ${sql.lit(mssqlQualified(schema, table, name))}, ${sql.lit(newName)}, 'INDEX'`.execute(
-          db
-        ),
-      mysql: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} RENAME INDEX ${sql.id(name)} TO ${sql.id(newName)}`.execute(
-          db
-        ),
-      postgres: (db) =>
-        sql`ALTER INDEX ${sql.id(schema, name)} RENAME TO ${sql.id(newName)}`.execute(
-          db
-        ),
-    },
+}: IndexTarget & { newName: string }) =>
+  statementQuery('Renaming indexes', {
+    mssql: sql`EXEC sp_rename ${sql.lit(mssqlQualified(schema, table, name))}, ${sql.lit(newName)}, 'INDEX'`,
+    mysql: sql`ALTER TABLE ${sql.id(schema, table)} RENAME INDEX ${sql.id(name)} TO ${sql.id(newName)}`,
+    postgres: sql`ALTER INDEX ${sql.id(schema, name)} RENAME TO ${sql.id(newName)}`,
   })

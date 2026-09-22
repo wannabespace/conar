@@ -9,9 +9,8 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
@@ -29,7 +28,6 @@ import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/s
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
-import { queryClient } from '~/lib/query-client'
 
 import {
   Labelled,
@@ -45,14 +43,13 @@ import type {
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
+  focusInvalidField,
   InspectorDefinition,
-  InspectorFooter,
-  InspectorHeader,
+  Inspector,
   InspectorSection,
-  InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import type { RunQuery } from '../-hooks/use-definitions-state'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -97,8 +94,9 @@ const kinds = Object.keys(typeLabels) as ConstraintKind[]
 
 const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
 
+// Keyed like an index, so a constraint-owned index links straight to its row.
 const constraintKey = (item: Pick<ConstraintItem, 'name' | 'table'>) =>
-  `${item.table}.${item.name}`
+  JSON.stringify([item.table, item.name])
 
 const noColumns: readonly string[] = []
 
@@ -225,7 +223,7 @@ const recreateWarning = (
       <span data-mask className="font-medium">
         {item.name}
       </span>{' '}
-      and add it back renamed. Nothing enforces it in between.
+      and add it back renamed in one statement.
     </>
   ) : (
     <>
@@ -237,40 +235,6 @@ const recreateWarning = (
     </>
   ),
 })
-
-const saveConstraint = ({
-  draft,
-  item,
-  run,
-  type: connectionType,
-}: {
-  draft: ConstraintDraft
-  item: GroupedConstraint | null
-  run: RunQuery
-  type: ConnectionType
-}) => {
-  const shape: ConstraintShape = {
-    columns: draft.columns,
-    foreignColumns: draft.foreignColumns,
-    foreignSchema: draft.foreignSchema,
-    foreignTable: draft.foreignTable,
-    kind: draft.kind,
-    name: finalNameOf(draft),
-    onDelete: draft.onDelete,
-    onUpdate: draft.onUpdate,
-  }
-
-  if (!item) {
-    return run(
-      createConstraintQuery({ schema: draft.schema, shape, table: draft.table })
-    )
-  }
-  const target = { name: item.name, schema: item.schema, table: item.table }
-
-  return changeOf(draft, item, connectionType).recreates
-    ? run(recreateConstraintQuery({ ...target, kind: item.type, shape }))
-    : run(renameConstraintQuery({ ...target, newName: shape.name }))
-}
 
 const ConstraintInspector = ({
   can,
@@ -284,15 +248,39 @@ const ConstraintInspector = ({
   tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedConstraint>) => {
-  const mutation = useMutation({
-    mutationFn: (draft: ConstraintDraft) =>
-      saveConstraint({ draft, item, run, type: connectionType }),
-    onSuccess: async (_result, draft) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+  const mutation = useDefinitionMutation({
+    message: (draft: ConstraintDraft) =>
+      `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`,
+    onOpenChange,
+    queryKey,
+    save: (draft: ConstraintDraft) => {
+      const shape: ConstraintShape = {
+        columns: draft.columns,
+        foreignColumns: draft.foreignColumns,
+        foreignSchema: draft.foreignSchema,
+        foreignTable: draft.foreignTable,
+        kind: draft.kind,
+        name: finalNameOf(draft),
+        onDelete: draft.onDelete,
+        onUpdate: draft.onUpdate,
+      }
+
+      if (!item) {
+        return run(
+          createConstraintQuery({
+            schema: draft.schema,
+            shape,
+            table: draft.table,
+          })
+        )
+      }
+      const target = { name: item.name, schema: item.schema, table: item.table }
+
+      return run(
+        changeOf(draft, item, connectionType).recreates
+          ? recreateConstraintQuery({ ...target, kind: item.type, shape })
+          : renameConstraintQuery({ ...target, newName: shape.name })
       )
-      onOpenChange(false)
     },
   })
   const form = useAppForm({
@@ -300,6 +288,7 @@ const ConstraintInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
+    onSubmitInvalid: focusInvalidField,
     validators: { onChange: constraintSchema, onMount: constraintSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -321,6 +310,7 @@ const ConstraintInspector = ({
   })
 
   const readOnly = item ? !can.edit : !can.create
+  const shapeLocked = readOnly || !!item?.custom
   const { recreates, renameOnly, reshaped } = changeOf(
     draft,
     item,
@@ -329,195 +319,194 @@ const ConstraintInspector = ({
   const singleColumn = draft.columns.length === 1
 
   return (
-    <>
-      <InspectorHeader
-        description={item ? `${item.schema}.${item.table}` : draft.schema}
-        item={item}
-        noun="constraint"
-      />
-      <InspectorSections>
+    <Inspector
+      canSave={!item || reshaped || renameOnly}
+      description={item ? `${item.schema}.${item.table}` : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="constraint"
+      readOnly={readOnly}
+      warning={
+        item && recreates ? recreateWarning(item, renameOnly) : undefined
+      }
+    >
+      <InspectorSection
+        title="General"
+        description="A constraint is a rule the database enforces on every write."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField
+              disabled={readOnly || !!item}
+              schemas={schemas}
+              onChanged={(next) =>
+                resetFields(form, {
+                  columns: [],
+                  foreignColumns: [],
+                  foreignSchema: next,
+                  foreignTable: '',
+                  table: '',
+                })
+              }
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => (
+            <TextField
+              label="Name"
+              autoFocus
+              description="Leave it empty to use the suggested name."
+              // MySQL names every primary key PRIMARY, whatever the ADD says.
+              disabled={
+                readOnly ||
+                (item?.type === 'primaryKey' &&
+                  connectionType === ConnectionType.MySQL)
+              }
+              placeholder={
+                draft.table ? suggestedNameOf(draft) : 'Constraint name'
+              }
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="kind">
+          {() => (
+            <SelectField
+              label="Type"
+              description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table."
+              disabled={shapeLocked}
+              options={kinds}
+              labelOf={(value) => typeLabels[value]}
+              placeholder="Type"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Target"
+        description="The table and the columns this constraint applies to."
+      >
+        <form.AppField name="table">
+          {() => (
+            <SelectField
+              label="Table"
+              disabled={readOnly || !!item}
+              options={item ? [item.table] : tablesOf(draft.schema)}
+              placeholder="Choose a table"
+              onChanged={() => resetFields(form, { columns: [] })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="columns">
+          {() => (
+            <OptionsField
+              label="Columns"
+              disabled={shapeLocked || draft.table === ''}
+              options={tableColumns}
+              placeholder="Choose columns"
+            />
+          )}
+        </form.AppField>
+        {item?.custom && (
+          <FieldDescription>
+            Carries a rule the picker cannot show — deferrable, not validated or
+            a match type — so only its name can change.
+          </FieldDescription>
+        )}
+      </InspectorSection>
+      {draft.kind === 'foreignKey' && (
         <InspectorSection
-          title="General"
-          description="A constraint is a rule the database enforces on every write."
+          title="References"
+          description="The rows this key points at, and what happens when one of them changes."
         >
-          <form.AppField name="schema">
+          <form.AppField name="foreignSchema">
             {() => (
               <SchemaField
-                disabled={readOnly || !!item}
+                disabled={shapeLocked}
                 schemas={schemas}
-                onChanged={(next) =>
+                onChanged={() =>
                   resetFields(form, {
-                    columns: [],
                     foreignColumns: [],
-                    foreignSchema: next,
                     foreignTable: '',
-                    table: '',
                   })
                 }
               />
             )}
           </form.AppField>
-          <form.AppField name="name">
-            {() => (
-              <TextField
-                label="Name"
-                autoFocus
-                description="Leave it empty to use the suggested name."
-                // MySQL names every primary key PRIMARY, whatever the ADD says.
-                disabled={
-                  readOnly ||
-                  (item?.type === 'primaryKey' &&
-                    connectionType === ConnectionType.MySQL)
-                }
-                placeholder={
-                  draft.table ? suggestedNameOf(draft) : 'Constraint name'
-                }
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="kind">
-            {() => (
-              <SelectField
-                label="Type"
-                description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table."
-                disabled={readOnly}
-                options={kinds}
-                labelOf={(value) => typeLabels[value]}
-                placeholder="Type"
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Target"
-          description="The table and the columns this constraint applies to."
-        >
-          <form.AppField name="table">
+          <form.AppField name="foreignTable">
             {() => (
               <SelectField
                 label="Table"
-                disabled={readOnly || !!item}
-                options={item ? [item.table] : tablesOf(draft.schema)}
+                disabled={shapeLocked}
+                options={tablesOf(draft.foreignSchema)}
                 placeholder="Choose a table"
-                onChanged={() => resetFields(form, { columns: [] })}
+                onChanged={() => resetFields(form, { foreignColumns: [] })}
               />
             )}
           </form.AppField>
-          <form.AppField name="columns">
-            {() => (
-              <OptionsField
-                label="Columns"
-                disabled={readOnly || draft.table === ''}
-                options={tableColumns}
-                placeholder="Choose columns"
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        {draft.kind === 'foreignKey' && (
-          <InspectorSection
-            title="References"
-            description="The rows this key points at, and what happens when one of them changes."
-          >
-            <form.AppField name="foreignSchema">
-              {() => (
-                <SchemaField
-                  disabled={readOnly}
-                  schemas={schemas}
-                  onChanged={() =>
-                    resetFields(form, {
-                      foreignColumns: [],
-                      foreignTable: '',
-                    })
+          <form.AppField name="foreignColumns">
+            {(field) =>
+              singleColumn ? (
+                <Labelled
+                  label="Column"
+                  description="The column this key points at."
+                >
+                  <OptionSelect
+                    id={field.name}
+                    disabled={shapeLocked || draft.foreignTable === ''}
+                    options={foreignColumns ?? noColumns}
+                    placeholder="Choose a column"
+                    value={field.state.value[0] ?? ''}
+                    onValueChange={(next) => field.handleChange([next])}
+                  />
+                </Labelled>
+              ) : (
+                <OptionsField
+                  label="Columns"
+                  description={`${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
+                  disabled={
+                    shapeLocked ||
+                    draft.foreignTable === '' ||
+                    draft.columns.length === 0
                   }
+                  limit={draft.columns.length}
+                  options={foreignColumns}
+                  placeholder="Choose columns"
                 />
-              )}
-            </form.AppField>
-            <form.AppField name="foreignTable">
+              )
+            }
+          </form.AppField>
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name="onDelete">
               {() => (
                 <SelectField
-                  label="Table"
-                  disabled={readOnly}
-                  options={tablesOf(draft.foreignSchema)}
-                  placeholder="Choose a table"
-                  onChanged={() => resetFields(form, { foreignColumns: [] })}
+                  label="On delete"
+                  disabled={shapeLocked}
+                  options={capabilitiesOf(connectionType).referentialActions}
+                  placeholder="Action"
                 />
               )}
             </form.AppField>
-            <form.AppField name="foreignColumns">
-              {(field) =>
-                singleColumn ? (
-                  <Labelled
-                    label="Column"
-                    description="The column this key points at."
-                  >
-                    <OptionSelect
-                      id={field.name}
-                      disabled={readOnly || draft.foreignTable === ''}
-                      options={foreignColumns ?? noColumns}
-                      placeholder="Choose a column"
-                      value={field.state.value[0] ?? ''}
-                      onValueChange={(next) => field.handleChange([next])}
-                    />
-                  </Labelled>
-                ) : (
-                  <OptionsField
-                    label="Columns"
-                    description={`${draft.columns.length} referenced columns, one per column of this constraint, in the same order.`}
-                    disabled={
-                      readOnly ||
-                      draft.foreignTable === '' ||
-                      draft.columns.length === 0
-                    }
-                    limit={draft.columns.length}
-                    options={foreignColumns}
-                    placeholder="Choose columns"
-                  />
-                )
-              }
+            <form.AppField name="onUpdate">
+              {() => (
+                <SelectField
+                  label="On update"
+                  disabled={shapeLocked}
+                  options={capabilitiesOf(connectionType).referentialActions}
+                  placeholder="Action"
+                />
+              )}
             </form.AppField>
-            <div className="grid grid-cols-2 gap-3">
-              <form.AppField name="onDelete">
-                {() => (
-                  <SelectField
-                    label="On delete"
-                    disabled={readOnly}
-                    options={capabilitiesOf(connectionType).referentialActions}
-                    placeholder="Action"
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name="onUpdate">
-                {() => (
-                  <SelectField
-                    label="On update"
-                    disabled={readOnly}
-                    options={capabilitiesOf(connectionType).referentialActions}
-                    placeholder="Action"
-                  />
-                )}
-              </form.AppField>
-            </div>
-            <FieldDescription>
-              What the database does to these rows when a referenced row is
-              deleted or its key is updated.
-            </FieldDescription>
-          </InspectorSection>
-        )}
-        {item?.definition && <InspectorDefinition code={item.definition} />}
-      </InspectorSections>
-      <InspectorFooter
-        canSave={!item || reshaped || renameOnly}
-        warning={
-          item && recreates ? recreateWarning(item, renameOnly) : undefined
-        }
-        error={mutation.error}
-        form={form}
-        readOnly={readOnly}
-        saveLabel={item ? 'Save' : 'Create constraint'}
-        saving={mutation.isPending}
-      />
-    </>
+          </div>
+          <FieldDescription>
+            What the database does to these rows when a referenced row is
+            deleted or its key is updated.
+          </FieldDescription>
+        </InspectorSection>
+      )}
+      {item?.definition && <InspectorDefinition code={item.definition} />}
+    </Inspector>
   )
 }
 

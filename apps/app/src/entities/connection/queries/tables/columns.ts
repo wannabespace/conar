@@ -113,7 +113,7 @@ const resourceTableColumnsQuery = memoize(
         mssql: async (db) => {
           const query = await db
             .selectFrom('information_schema.COLUMNS')
-            .select((eb) => [
+            .select([
               'TABLE_SCHEMA as schema',
               'TABLE_NAME as table',
               'COLUMN_NAME as name',
@@ -135,14 +135,7 @@ const resourceTableColumnsQuery = memoize(
                 'IsIdentity'
               )
             `.as('isIdentity'),
-              eb
-                .case('IS_NULLABLE')
-                .when('YES')
-                .then(1)
-                .else(0)
-                .end()
-                .$castTo<1 | 0>()
-                .as('nullable'),
+              sql<1 | 0>`IIF(IS_NULLABLE = 'YES', 1, 0)`.as('nullable'),
             ])
             .where(({ and, eb }) =>
               and([
@@ -165,7 +158,7 @@ const resourceTableColumnsQuery = memoize(
         mysql: async (db) => {
           const query = await db
             .selectFrom('information_schema.COLUMNS')
-            .select((eb) => [
+            .select([
               'TABLE_SCHEMA as schema',
               'TABLE_NAME as table',
               'COLUMN_NAME as id',
@@ -179,14 +172,7 @@ const resourceTableColumnsQuery = memoize(
                 OR EXTRA LIKE '%VIRTUAL GENERATED%'
                 OR EXTRA LIKE '%STORED GENERATED%'
             `.as('isGenerated'),
-              eb
-                .case('IS_NULLABLE')
-                .when('YES')
-                .then(1)
-                .else(0)
-                .end()
-                .$castTo<1 | 0>()
-                .as('nullable'),
+              sql<1 | 0>`IIF(IS_NULLABLE = 'YES', 1, 0)`.as('nullable'),
             ])
             .where(({ and, eb }) =>
               and([
@@ -213,7 +199,7 @@ const resourceTableColumnsQuery = memoize(
         postgres: async (db) => {
           const query = await db
             .selectFrom('information_schema.columns')
-            .select((eb) => [
+            .select([
               'table_schema as schema',
               'table_name as table',
               'column_name as id',
@@ -226,27 +212,9 @@ const resourceTableColumnsQuery = memoize(
               sql<boolean>`is_identity = 'YES' OR is_generated = 'ALWAYS'`.as(
                 'isGenerated'
               ),
-              eb
-                .case('is_nullable')
-                .when('YES')
-                .then(true)
-                .else(false)
-                .end()
-                .as('nullable'),
-              eb
-                .case('is_updatable')
-                .when('YES')
-                .then(true)
-                .else(false)
-                .end()
-                .as('editable'),
-              eb
-                .case('is_identity')
-                .when('YES')
-                .then(true)
-                .else(false)
-                .end()
-                .as('isIdentity'),
+              sql<boolean>`is_nullable = 'YES'`.as('nullable'),
+              sql<boolean>`is_updatable = 'YES'`.as('editable'),
+              sql<boolean>`is_identity = 'YES'`.as('isIdentity'),
             ])
             .where(({ and, eb }) =>
               and([

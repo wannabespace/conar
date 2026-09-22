@@ -45,6 +45,7 @@ const dependentsQuery = ({ name, schema }: { name: string; schema: string }) =>
             AND a.attnum > 0
             AND NOT a.attisdropped
             AND c.relkind IN ('r', 'p')
+            AND NOT c.relispartition
         `.execute(db)
 
         return rows

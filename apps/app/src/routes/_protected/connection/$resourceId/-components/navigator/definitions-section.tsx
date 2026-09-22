@@ -133,8 +133,10 @@ export const DefinitionsPanel = () => {
             />
           </InputGroupAddon>
           <InputGroupInput
+            data-mask
             placeholder="Search"
             className="text-sm"
+            aria-label="Search definitions"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

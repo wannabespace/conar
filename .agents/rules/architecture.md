@@ -39,7 +39,7 @@ Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the act
 
 ## Connection introspection queries
 
-`entities/connection/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`, `shape.ts`). **No barrels** — import the leaf file. A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's.
+`entities/connection/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped and **every query is its own file** (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`), each exporting one `<verb><Subject>Query`; the statement builders they share sit in `shape.ts` (`dialects.md`). **No barrels** — import the leaf file. A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's.
 
 Each file is one statement, as a `createQuery` covering every dialect — what a dialect that cannot run it does is `dialects.md`.
 

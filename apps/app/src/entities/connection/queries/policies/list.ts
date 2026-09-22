@@ -20,8 +20,6 @@ export const policyType = type({
   using: 'string | null',
 })
 
-const REPLACE_SINGLE_QUOTES_REGEX = /'/gu
-
 const query = createQuery({
   query: {
     clickhouse: async (db) => {
@@ -30,7 +28,8 @@ const query = createQuery({
         .select([
           'database',
           'table',
-          'name',
+          // name is "<policy> ON <db>.<table>"; DROP takes the short name.
+          'short_name as name',
           'is_restrictive',
           'select_filter',
           'apply_to_all',
@@ -115,7 +114,7 @@ const query = createQuery({
         command: row.PRIVILEGE_TYPE,
         enabled: true,
         name: `${row.GRANTEE} - ${row.PRIVILEGE_TYPE}`,
-        roles: [row.GRANTEE.replace(REPLACE_SINGLE_QUOTES_REGEX, '')],
+        roles: [row.GRANTEE],
         schema: row.TABLE_SCHEMA,
         table: row.TABLE_NAME,
         type: 'PERMISSIVE',

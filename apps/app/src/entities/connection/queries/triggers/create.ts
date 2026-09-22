@@ -1,20 +1,7 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
-
-import { createQuery } from '../../runtime/query'
+import { statementQuery } from '../shared/statements'
 import type { TriggerShape, TriggerTarget } from './shape'
 import { createTriggerStatements } from './shape'
 
 export const createTriggerQuery = (
   params: TriggerTarget & { shape: TriggerShape }
-) => {
-  const create = createTriggerStatements(params)
-
-  return createQuery({
-    query: {
-      clickhouse: unsupported('Triggers'),
-      mssql: (db) => create.mssql.execute(db),
-      mysql: (db) => create.mysql.execute(db),
-      postgres: (db) => create.postgres.execute(db),
-    },
-  })
-}
+) => statementQuery('Triggers', createTriggerStatements(params))

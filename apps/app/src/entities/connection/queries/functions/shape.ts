@@ -61,10 +61,34 @@ export const createFunctionStatements = ({
   const behavior = shape.behavior ? sql` ${sql.raw(shape.behavior)}` : sql``
   const extras = shape.extras ? sql` ${sql.raw(shape.extras)}` : sql``
   const security = shape.securityDefiner ? sql` SECURITY DEFINER` : sql``
+  // T-SQL takes procedure parameters bare; empty parentheses are a syntax error.
+  const mssqlArgs = shape.kind === 'function' ? sql`(${args})` : sql` ${args}`
 
   return {
-    mssql: sql`${mssqlCreate} ${keyword} ${name}(${args})${returns} AS ${body}`,
+    mssql: sql`${mssqlCreate} ${keyword} ${name}${mssqlArgs}${returns} AS ${body}`,
     mysql: sql`CREATE ${keyword} ${name}(${args})${returns}${behavior}${extras} ${body}`,
     postgres: sql`${postgresCreate} ${keyword} ${name}(${args})${returns} LANGUAGE ${sql.raw(shape.language)}${behavior}${security}${extras} AS ${dollarQuoted(shape.body)}`,
+  }
+}
+
+export interface RoutineTarget {
+  identity: string | undefined
+  kind: RoutineKind
+  name: string
+  schema: string
+}
+
+export const dropRoutineStatements = ({
+  identity,
+  kind,
+  name,
+  schema,
+}: RoutineTarget) => {
+  const byName = sql`DROP ${routineKeyword(kind)} ${sql.id(schema, name)}`
+
+  return {
+    byName,
+    // identity is pg_get_function_identity_arguments output, the form DROP expects
+    postgres: sql`${byName}(${sql.raw(identity ?? '')})`,
   }
 }

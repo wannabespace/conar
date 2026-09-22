@@ -59,7 +59,8 @@ export const resourceIndexesQuery = createQuery({
           'name as column',
           sql.lit('primary_key').as('name'),
           sql.lit(true).as('is_primary'),
-          sql.lit(true).as('is_unique'),
+          // A ClickHouse sorting key orders rows; it enforces nothing.
+          sql.lit(false).as('is_unique'),
         ])
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
@@ -89,9 +90,20 @@ export const resourceIndexesQuery = createQuery({
           'i.is_unique as is_unique',
           'i.is_primary_key as is_primary',
           'i.is_unique_constraint as is_constraint',
-          sql<boolean>`CASE WHEN i.type_desc <> 'NONCLUSTERED' OR i.has_filter = 1 OR EXISTS (SELECT 1 FROM sys.index_columns x WHERE x.object_id = i.object_id AND x.index_id = i.index_id AND (x.is_included_column = 1 OR x.is_descending_key = 1)) THEN 1 ELSE 0 END`.as(
-            'is_custom'
-          ),
+          'i.type_desc as index_type',
+          sql<boolean>`CASE WHEN
+            i.type_desc <> 'NONCLUSTERED'
+            OR i.has_filter = 1
+            OR i.is_disabled = 1
+            OR i.ignore_dup_key = 1
+            OR i.is_padded = 1
+            OR i.fill_factor <> 0
+            OR EXISTS (
+              SELECT 1 FROM sys.index_columns x
+              WHERE x.object_id = i.object_id AND x.index_id = i.index_id
+                AND (x.is_included_column = 1 OR x.is_descending_key = 1)
+            )
+          THEN 1 ELSE 0 END`.as('is_custom'),
         ])
         .where('ic.is_included_column', '=', false)
         .orderBy('ic.key_ordinal')
@@ -107,6 +119,7 @@ export const resourceIndexesQuery = createQuery({
           'COLUMN_NAME as column',
           (eb) => eb('NON_UNIQUE', '=', 0).as('is_unique'),
           (eb) => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
+          'INDEX_TYPE as index_type',
           sql<boolean>`COALESCE(INDEX_TYPE <> 'BTREE' OR SUB_PART IS NOT NULL OR COLLATION = 'D' OR COLUMN_NAME IS NULL, 0)`.as(
             'is_custom'
           ),
@@ -155,12 +168,18 @@ export const resourceIndexesQuery = createQuery({
           sql<boolean>`EXISTS (SELECT 1 FROM pg_catalog.pg_constraint WHERE conindid = ix.indexrelid AND contype IN ('p', 'u', 'x'))`.as(
             'is_constraint'
           ),
-          sql<boolean>`am.amname <> 'btree' OR ix.indpred IS NOT NULL OR ix.indnkeyatts <> ix.indnatts OR 0 = ANY(ix.indkey::int2[]) OR EXISTS (SELECT 1 FROM unnest(ix.indoption::int2[]) AS o WHERE o <> 0)`.as(
-            'is_custom'
-          ),
+          sql<boolean>`
+            am.amname <> 'btree'
+            OR ix.indpred IS NOT NULL
+            OR ix.indnkeyatts <> ix.indnatts
+            OR 0 = ANY(ix.indkey::int2[])
+            OR EXISTS (SELECT 1 FROM unnest(ix.indoption::int2[]) AS o WHERE o <> 0)
+            OR COALESCE((to_jsonb(ix)->>'indnullsnotdistinct')::boolean, false)
+          `.as('is_custom'),
         ])
         .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .where('t.relkind', 'in', ['r', 'p', 'm'])
+        .where(sql<boolean>`key.ordinality <= ix.indnkeyatts`)
         .orderBy('key.ordinality')
         .execute(),
   },

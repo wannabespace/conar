@@ -1,37 +1,41 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
-import type { Kysely, RawBuilder } from 'kysely'
-
-import { createQuery } from '../../runtime/query'
+import { statementQuery } from '../shared/statements'
 import type { TriggerShape, TriggerTarget } from './shape'
-import { createTriggerStatements, dropTriggerStatements } from './shape'
-
-const swapInTransaction =
-  (statements: { create: RawBuilder<unknown>; drop: RawBuilder<unknown> }) =>
-  // oxlint-disable-next-line ts/no-explicit-any
-  (db: Kysely<any>) =>
-    db.transaction().execute(async (tx) => {
-      await statements.drop.execute(tx)
-      await statements.create.execute(tx)
-    })
+import {
+  createTriggerStatements,
+  dropTriggerStatements,
+  setTriggerEnabledStatements,
+} from './shape'
 
 export const recreateTriggerQuery = ({
+  enabled,
+  mode,
   name,
   schema,
   shape,
   table,
-}: TriggerTarget & { name: string; shape: TriggerShape }) => {
+}: TriggerTarget & {
+  enabled: boolean | null
+  mode: string
+  name: string
+  shape: TriggerShape
+}) => {
   const drop = dropTriggerStatements({ name, schema, table })
   const create = createTriggerStatements({ schema, shape, table })
+  // A created trigger fires on the origin; one that did not comes back as it was.
+  const restore =
+    enabled === false || mode === 'R' || mode === 'A'
+      ? setTriggerEnabledStatements({
+          enabled: enabled !== false,
+          mode,
+          name: shape.name,
+          schema,
+          table,
+        })
+      : undefined
 
-  return createQuery({
-    query: {
-      clickhouse: unsupported('Triggers'),
-      mssql: swapInTransaction({ create: create.mssql, drop: drop.mssql }),
-      mysql: swapInTransaction({ create: create.mysql, drop: drop.mysql }),
-      postgres: swapInTransaction({
-        create: create.postgres,
-        drop: drop.postgres,
-      }),
-    },
+  return statementQuery('Triggers', {
+    mssql: [drop.mssql, create.mssql, restore?.mssql],
+    mysql: [drop.mysql, create.mysql],
+    postgres: [drop.postgres, create.postgres, restore?.postgres],
   })
 }

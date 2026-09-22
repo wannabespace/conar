@@ -1,8 +1,7 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { createQuery } from '../../runtime/query'
 import { literals } from '../shared/sql-fragments'
+import { statementQuery } from '../shared/statements'
 
 export const createEnumQuery = ({
   name,
@@ -13,14 +12,6 @@ export const createEnumQuery = ({
   schema: string
   values: string[]
 }) =>
-  createQuery({
-    query: {
-      clickhouse: unsupported('Creating enums'),
-      mssql: unsupported('Enums'),
-      mysql: unsupported('Creating enums'),
-      postgres: (db) =>
-        sql`CREATE TYPE ${sql.id(schema, name)} AS ENUM (${literals(values)})`.execute(
-          db
-        ),
-    },
+  statementQuery('Editing enums', {
+    postgres: sql`CREATE TYPE ${sql.id(schema, name)} AS ENUM (${literals(values)})`,
   })

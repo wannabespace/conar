@@ -34,12 +34,14 @@ export const useDefinitionsState = ({
   )
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const linkedSchema = tabRoute.useSearch({ select: (search) => search.schema })
-  const [pickedSchema, setPickedSchema] = useState<string | undefined>(
-    linkedSchema
-  )
+  const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
+  // A link names the schema its row lives in, so it outranks the pick a
+  // mounted tab already made — until the page consumes it.
   const selectedSchema =
-    pickedSchema && schemas.includes(pickedSchema) ? pickedSchema : schemas[0]
+    [linkedSchema, pickedSchema].find(
+      (schema) => schema && schemas.includes(schema)
+    ) ?? schemas[0]
   const namesOf = (schema: string, kind: 'table' | 'view') =>
     data?.schemas
       .find(({ name }) => name === schema)

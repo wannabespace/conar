@@ -11,10 +11,9 @@ import {
   useAppForm,
 } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
-import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { alterEnumQuery } from '~/entities/connection/queries/enums/alter'
@@ -34,12 +33,12 @@ import type {
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  InspectorFooter,
-  InspectorHeader,
+  focusInvalidField,
+  Inspector,
   InspectorSection,
-  InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -285,15 +284,14 @@ const EnumInspector = ({
   schemas,
   selectedSchema,
 }: SectionInspectorProps<EnumItem>) => {
-  const mutation = useMutation({
-    mutationFn: async (draft: EnumDraft) => {
+  const mutation = useDefinitionMutation({
+    message: (draft: EnumDraft) =>
+      `Enum "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
+    onOpenChange,
+    queryKey,
+    save: async (draft: EnumDraft) => {
       await saveEnum({ connectionResource, draft, item, run })
       await refreshColumns(connectionResource)
-    },
-    onSuccess: async (_result, draft) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(`Enum "${draft.name.trim()}" ${item ? 'saved' : 'created'}`)
-      onOpenChange(false)
     },
   })
   const form = useAppForm({
@@ -307,6 +305,7 @@ const EnumInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
+    onSubmitInvalid: focusInvalidField,
     validators: { onChange: enumSchema, onMount: enumSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -323,70 +322,63 @@ const EnumInspector = ({
     (replacesType ? replaceWarning(item) : lostValuesWarning(item, values))
 
   return (
-    <>
-      <InspectorHeader
-        description={describe(item, draft.schema)}
-        item={item}
-        noun="enum"
-      />
-      <InspectorSections>
-        <InspectorSection
-          title="General"
-          description="An enum limits a column to a fixed list of values."
-        >
-          <form.AppField name="schema">
-            {() => (
-              <SchemaField disabled={readOnly || !!item} schemas={schemas} />
-            )}
-          </form.AppField>
-          <form.AppField name="name">
-            {() => (
-              <TextField
-                label="Name"
-                autoFocus={!item}
-                description={nameHint(item)}
-                disabled={readOnly || columnBound}
+    <Inspector
+      canSave={changed}
+      description={describe(item, draft.schema)}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="enum"
+      readOnly={readOnly}
+      warning={warning ?? undefined}
+    >
+      <InspectorSection
+        title="General"
+        description="An enum limits a column to a fixed list of values."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField disabled={readOnly || !!item} schemas={schemas} />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => (
+            <TextField
+              label="Name"
+              autoFocus={!item}
+              description={nameHint(item)}
+              disabled={readOnly || columnBound}
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Values"
+        description="Every value a column of this type may hold, in order."
+      >
+        <form.AppField name="drafts">
+          {(field) => (
+            <field.Field>
+              <EditableList
+                addLabel="Add value"
+                error={fieldErrorMessage(field)}
+                items={field.state.value}
+                placeholder="Value"
+                readOnly={readOnly}
+                onItemsChange={field.handleChange}
               />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Values"
-          description="Every value a column of this type may hold, in order."
-        >
-          <form.AppField name="drafts">
-            {(field) => (
-              <field.Field>
-                <EditableList
-                  addLabel="Add value"
-                  error={fieldErrorMessage(field)}
-                  items={field.state.value}
-                  placeholder="Value"
-                  readOnly={readOnly}
-                  onItemsChange={field.handleChange}
-                />
-                <AnimatePresence initial={false}>
-                  {note && (
-                    <MotionCollapse key={note}>
-                      <FieldDescription>{note}</FieldDescription>
-                    </MotionCollapse>
-                  )}
-                </AnimatePresence>
-              </field.Field>
-            )}
-          </form.AppField>
-        </InspectorSection>
-      </InspectorSections>
-      <InspectorFooter
-        canSave={changed}
-        warning={warning ?? undefined}
-        error={mutation.error}
-        form={form}
-        readOnly={readOnly}
-        saveLabel={item ? 'Save' : 'Create enum'}
-        saving={mutation.isPending}
-      />
-    </>
+              <AnimatePresence initial={false}>
+                {note && (
+                  <MotionCollapse key={note}>
+                    <FieldDescription>{note}</FieldDescription>
+                  </MotionCollapse>
+                )}
+              </AnimatePresence>
+            </field.Field>
+          )}
+        </form.AppField>
+      </InspectorSection>
+    </Inspector>
   )
 }
 
@@ -457,7 +449,12 @@ export const Enums = () => {
       Inspector={EnumInspector}
       items={enums.filter((item) => item.schema === selectedSchema)}
       keyOf={(item) =>
-        `${item.schema}.${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`
+        JSON.stringify([
+          item.schema,
+          item.name,
+          item.metadata?.table ?? '',
+          item.metadata?.column ?? '',
+        ])
       }
       loading={isPending}
       match={(item) =>

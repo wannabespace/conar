@@ -1,6 +1,8 @@
 # Database dialects
 
-Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new statement cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `@tamery/shared/utils/unsupported`, never a hand-thrown `Error`, so the message reads the same everywhere.
+Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`ConnectionType`). Every `createQuery` supplies all four — the type demands it, so a new read cannot quietly skip one. A dialect that cannot express the statement gets `unsupported('<Feature>')` from `@tamery/shared/utils/unsupported`, never a hand-thrown `Error`, so the message reads the same everywhere.
+
+**A write is a `statementQuery(feature, statements)`** (`queries/shared/statements.ts`): raw statements per dialect, a list of them running as one transaction, and `unsupported(feature)` for every dialect left out. One write is one file (`architecture.md`), and a statement two of them share is built in the subject's `shape.ts`.
 
 **Every per-dialect capability lives in one table**, `entities/connection/capabilities.ts`: one entry per `ConnectionType`, so what an engine supports reads top to bottom in one place instead of being spread over a set per feature. Adding an engine is one entry the `Record` will not let you omit. A rule that belongs to one screen alone stays in that screen — this table is for facts two screens would otherwise each encode.
 
@@ -24,7 +26,9 @@ A section entry carries two states apart: `false` is *no such section* — no li
 
 - Narrow at the *form*, not in the statement. A statement that quietly rewrites what the user chose is worse than an option they were never offered.
 - Prefer one dialect's own syntax over emulating another's. SQL Server swaps a constraint inside a transaction, MySQL does it in a single `ALTER` — that is two implementations of one query, not a shared helper plus branches.
-- **A save that needs more than one statement runs them in one transaction** — Postgres and SQL Server roll the whole swap back, so a failed `CREATE` leaves the old object standing. MySQL commits DDL implicitly and rolls nothing back, so it is the one engine whose drop-then-create still warns the user.
+- **A save that needs more than one statement is a list** — `statementQuery` runs it in one transaction — Postgres and SQL Server roll the whole swap back, so a failed `CREATE` leaves the old object standing. MySQL commits DDL implicitly and rolls nothing back, so it is the one engine whose drop-then-create still warns the user.
 - A catalog column only some engines expose belongs in that dialect's schema file under `runtime/dialects/<type>/schema/`, not behind a cast.
+- **A catalog `CASE` is raw `sql` too.** Kysely's `eb.case()` spells its branches `.then()`, which reads as a promise, needs a lint escape hatch and buries the shape of the expression in builder calls; the SQL text says it in one line.
+- **A write never retries on reconnect.** `createQuery` reconnects and retries only the queries that declare a result `type` — a read. A lost response to a statement that writes may still have committed, and DDL is not idempotent.
 - **DDL is raw `sql` with `sql.id`, not Kysely's schema builders.** Kysely covers table, index, schema, type and view only — no function, procedure, trigger or policy — and its `alterType` rename methods type their argument to `never`. Where a builder does exist it parses a dot in a name as a qualifier, which `sql.id(schema, name)` does not. Rows, table drop/rename and every catalog list stay on the builders.
 - **SQL Server takes some object names as a string, not as identifiers** (`sp_rename`'s `@objname`, `OBJECT_ID()`), so `sql.id` never reaches them: every part goes through `mssqlQualified`, which brackets each part and doubles a `]`. A name holding a dot otherwise parses as a qualifier.

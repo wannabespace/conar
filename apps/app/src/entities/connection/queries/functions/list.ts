@@ -28,10 +28,8 @@ const mssqlParameterType = sql<string>`CONCAT(
 )`
 
 // GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
-// signature that reaches the cap is treated as unreadable instead of saved back
+// signature that reaches the cap reads as unreadable instead of saving back
 // truncated.
-const GROUP_CONCAT_CAP = 1024
-
 const mysqlArguments = sql<string | null>`(
   SELECT GROUP_CONCAT(
     CONCAT_WS(' ', NULLIF(pm.PARAMETER_MODE, 'IN'), pm.PARAMETER_NAME, pm.DTD_IDENTIFIER)
@@ -40,12 +38,12 @@ const mysqlArguments = sql<string | null>`(
   FROM information_schema.PARAMETERS pm
   WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
     AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
+    AND pm.ROUTINE_TYPE = r.ROUTINE_TYPE
     AND pm.ORDINAL_POSITION > 0
 )`
 
 export const functionsType = type({
   'args?': 'string | null',
-  'argument_count?': 'number',
   'behavior?': 'string | null',
   'body?': 'string | null',
   'extras?': 'string | null',
@@ -61,7 +59,6 @@ export const functionsType = type({
   ({
     type: fnType,
     args,
-    argument_count,
     behavior,
     body,
     extras,
@@ -71,7 +68,6 @@ export const functionsType = type({
   }) => ({
     ...item,
     args: args ?? null,
-    argumentCount: argument_count || null,
     behavior: behavior || '',
     body: body || '',
     extras: extras || '',
@@ -89,7 +85,7 @@ const resourceFunctionsQuery = createQuery({
         .selectFrom('sys.objects as o')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
         .leftJoin('sys.sql_modules as sm', 'o.object_id', 'sm.object_id')
-        .select(({ eb, or }) => [
+        .select([
           's.name as schema',
           'o.name as name',
           sql<string>`COALESCE((
@@ -98,62 +94,21 @@ const resourceFunctionsQuery = createQuery({
             FROM sys.parameters pa
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
           ), '')`.as('args'),
-          sql<number>`(
-            SELECT COUNT(*)
-            FROM sys.parameters pa
-            WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
-          )`.as('argument_count'),
           mssqlModuleBody(sql`sm.definition`).as('body'),
-          eb
-            .case()
-            .when(
-              or([
-                eb('o.type', '=', 'FN'),
-                eb('o.type', '=', 'IF'),
-                eb('o.type', '=', 'TF'),
-                eb('o.type', '=', 'FS'),
-                eb('o.type', '=', 'FT'),
-              ])
+          sql<string>`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as(
+            'type'
+          ),
+          sql<string>`IIF(o.type IN ('FS', 'FT', 'PC'), 'CLR', 'SQL')`.as(
+            'language'
+          ),
+          sql<string | null>`CASE
+            WHEN o.type = 'FN' THEN (
+              SELECT ${mssqlParameterType}
+              FROM sys.parameters pa
+              WHERE pa.object_id = o.object_id AND pa.parameter_id = 0
             )
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('function')
-            .when(or([eb('o.type', '=', 'P'), eb('o.type', '=', 'PC')]))
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('procedure')
-            .else('function')
-            .end()
-            .as('type'),
-          eb
-            .case()
-            .when(
-              or([
-                eb('o.type', '=', 'FS'),
-                eb('o.type', '=', 'FT'),
-                eb('o.type', '=', 'PC'),
-              ])
-            )
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('CLR')
-            .else('SQL')
-            .end()
-            .as('language'),
-          eb
-            .case()
-            .when('o.type', '=', 'FN')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then(
-              sql<string>`(
-                SELECT ${mssqlParameterType}
-                FROM sys.parameters pa
-                WHERE pa.object_id = o.object_id AND pa.parameter_id = 0
-              )`
-            )
-            .when(or([eb('o.type', '=', 'IF'), eb('o.type', '=', 'TF')]))
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('table')
-            .else(null)
-            .end()
-            .as('return_type'),
+            WHEN o.type IN ('IF', 'TF') THEN 'table'
+          END`.as('return_type'),
         ])
         .where('o.type', 'in', ['FN', 'IF', 'TF', 'FS', 'FT', 'P', 'PC'])
         .where('o.is_ms_shipped', '=', false)
@@ -162,13 +117,13 @@ const resourceFunctionsQuery = createQuery({
     mysql: (db) =>
       db
         .selectFrom('information_schema.ROUTINES as r')
-        .select(({ eb }) => [
+        .select([
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
           sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
           sql<
             string | null
-          >`CASE WHEN CHAR_LENGTH(${mysqlArguments}) >= ${sql.lit(GROUP_CONCAT_CAP)} THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
+          >`CASE WHEN CHAR_LENGTH(${mysqlArguments}) >= @@group_concat_max_len THEN NULL ELSE COALESCE(${mysqlArguments}, '') END`.as(
             'args'
           ),
           'r.ROUTINE_DEFINITION as body',
@@ -180,21 +135,11 @@ const resourceFunctionsQuery = createQuery({
             CONCAT('SQL SECURITY ', r.SECURITY_TYPE),
             CASE WHEN r.ROUTINE_COMMENT <> '' THEN CONCAT('COMMENT ', QUOTE(r.ROUTINE_COMMENT)) END
           )`.as('extras'),
-          sql<number>`(
-            SELECT COUNT(*)
-            FROM information_schema.PARAMETERS pm
-            WHERE pm.SPECIFIC_SCHEMA = r.ROUTINE_SCHEMA
-              AND pm.SPECIFIC_NAME = r.ROUTINE_NAME
-              AND pm.ORDINAL_POSITION > 0
-          )`.as('argument_count'),
-          eb
-            .case()
-            .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then(eb.ref('r.DTD_IDENTIFIER'))
-            .else(null)
-            .end()
-            .as('return_type'),
+          sql<
+            string | null
+          >`CASE WHEN r.ROUTINE_TYPE = 'FUNCTION' THEN r.DTD_IDENTIFIER END`.as(
+            'return_type'
+          ),
         ])
         .where('r.ROUTINE_SCHEMA', 'not in', [
           'mysql',
@@ -208,17 +153,12 @@ const resourceFunctionsQuery = createQuery({
         .selectFrom('pg_catalog.pg_proc as p')
         .innerJoin('pg_catalog.pg_namespace as n', 'p.pronamespace', 'n.oid')
         .innerJoin('pg_catalog.pg_language as l', 'p.prolang', 'l.oid')
-        .select(({ eb }) => [
+        .select([
           'n.nspname as schema',
           'p.proname as name',
-          eb
-            .case('p.prokind')
-            .when('p')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('procedure')
-            .else('function')
-            .end()
-            .as('type'),
+          sql<string>`CASE p.prokind WHEN 'p' THEN 'procedure' ELSE 'function' END`.as(
+            'type'
+          ),
           'l.lanname as language',
           sql<string>`pg_get_function_result(p.oid)`.as('return_type'),
           sql<string>`pg_get_function_arguments(p.oid)`.as('args'),
@@ -241,7 +181,6 @@ const resourceFunctionsQuery = createQuery({
               FROM unnest(COALESCE(p.proconfig, '{}')) AS cfg
             )
           ))`.as('extras'),
-          'p.pronargs as argument_count',
           'p.oid as oid',
           sql<string>`pg_get_function_identity_arguments(p.oid)`.as('identity'),
         ])

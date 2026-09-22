@@ -34,6 +34,7 @@ export const constraintsType = type({
   foreign_column: 'string | null',
   foreign_schema: 'string | null',
   foreign_table: 'string | null',
+  'is_custom?': 'boolean | 1 | 0',
   name: 'string',
   onDelete: 'string | null',
   onUpdate: 'string | null',
@@ -46,9 +47,11 @@ export const constraintsType = type({
     foreign_column,
     foreign_table,
     foreign_schema,
+    is_custom,
     ...item
   }) => ({
     ...item,
+    custom: !!is_custom,
     foreignColumn: foreign_column,
     foreignSchema: foreign_schema,
     foreignTable: foreign_table,
@@ -128,6 +131,16 @@ export const resourceConstraintsQuery = createQuery({
           'referenced_kcu.COLUMN_NAME as foreign_column',
           'rc.DELETE_RULE as onDelete',
           'rc.UPDATE_RULE as onUpdate',
+          // A disabled, untrusted or not-for-replication key comes back plain
+          // from a drop-and-add, so the form only renames it.
+          sql<1 | 0>`CASE WHEN EXISTS (
+            SELECT 1
+            FROM sys.foreign_keys fk
+            JOIN sys.schemas fs ON fs.schema_id = fk.schema_id
+            WHERE fk.name = tc.CONSTRAINT_NAME
+              AND fs.name = tc.CONSTRAINT_SCHEMA
+              AND (fk.is_disabled = 1 OR fk.is_not_trusted = 1 OR fk.is_not_for_replication = 1)
+          ) THEN 1 ELSE 0 END`.as('is_custom'),
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
         .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
@@ -215,6 +228,13 @@ export const resourceConstraintsQuery = createQuery({
             'onUpdate'
           ),
           sql<string>`pg_get_constraintdef(con.oid)`.as('definition'),
+          // DEFERRABLE, NOT VALID and MATCH FULL have no field in the form, and
+          // a drop-and-add would leave them behind.
+          sql<boolean>`
+            con.condeferrable
+            OR NOT con.convalidated
+            OR (con.contype = 'f' AND con.confmatchtype <> 's')
+          `.as('is_custom'),
         ])
         .where('con.contype', 'in', ['p', 'u', 'f'])
         .where('n.nspname', 'not like', 'pg_%')

@@ -1,9 +1,7 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
-import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
-import { createQuery } from '../../runtime/query'
-import type { ConstraintKind, ConstraintShape } from './shape'
+import { statementQuery } from '../shared/statements'
+import type { ConstraintKind, ConstraintShape, ConstraintTarget } from './shape'
 import { constraintClause, mysqlDropTarget } from './shape'
 
 export const recreateConstraintQuery = ({
@@ -12,32 +10,17 @@ export const recreateConstraintQuery = ({
   schema,
   shape,
   table,
-}: {
-  kind: ConstraintKind
-  name: string
-  schema: string
-  shape: ConstraintShape
-  table: string
-}) => {
+}: ConstraintTarget & { kind: ConstraintKind; shape: ConstraintShape }) => {
   const target = sql.id(schema, table)
-  const dropConstraint = sql`ALTER TABLE ${target} DROP CONSTRAINT ${sql.id(name)}`
-  const addConstraint = sql`ALTER TABLE ${target} ADD ${constraintClause(shape)}`
-  // oxlint-disable-next-line ts/no-explicit-any
-  const swapInTransaction = (db: Kysely<any>) =>
-    db.transaction().execute(async (tx) => {
-      await dropConstraint.execute(tx)
-      await addConstraint.execute(tx)
-    })
+  const swap = [
+    sql`ALTER TABLE ${target} DROP CONSTRAINT ${sql.id(name)}`,
+    sql`ALTER TABLE ${target} ADD ${constraintClause(shape)}`,
+  ]
 
-  return createQuery({
-    query: {
-      clickhouse: unsupported('Constraints'),
-      mssql: swapInTransaction,
-      mysql: (db) =>
-        sql`ALTER TABLE ${target} DROP ${mysqlDropTarget[kind](name)}, ADD ${constraintClause(shape)}`.execute(
-          db
-        ),
-      postgres: swapInTransaction,
-    },
+  return statementQuery('Constraints', {
+    mssql: swap,
+    // One ALTER drops and adds at once, which InnoDB applies atomically.
+    mysql: sql`ALTER TABLE ${target} DROP ${mysqlDropTarget[kind](name)}, ADD ${constraintClause(shape)}`,
+    postgres: swap,
   })
 }

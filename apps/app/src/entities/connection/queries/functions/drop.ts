@@ -1,35 +1,18 @@
-import { unsupported } from '@tamery/shared/utils/unsupported'
 import { sql } from 'kysely'
 
-import { createQuery } from '../../runtime/query'
-import type { RoutineKind } from './routine-kind'
-import { routineKeyword } from './routine-kind'
+import { statementQuery } from '../shared/statements'
+import type { RoutineTarget } from './shape'
+import { dropRoutineStatements } from './shape'
 
 export const dropFunctionQuery = ({
   cascade,
-  identity,
-  kind,
-  name,
-  schema,
-}: {
-  cascade: boolean
-  identity: string | undefined
-  kind: RoutineKind
-  name: string
-  schema: string
-}) => {
-  const dropByName = sql`DROP ${routineKeyword(kind)} ${sql.id(schema, name)}`
+  ...target
+}: RoutineTarget & { cascade: boolean }) => {
+  const drop = dropRoutineStatements(target)
 
-  return createQuery({
-    query: {
-      clickhouse: unsupported('Functions'),
-      mssql: (db) => dropByName.execute(db),
-      mysql: (db) => dropByName.execute(db),
-      // identity is pg_get_function_identity_arguments output, the form DROP expects
-      postgres: (db) =>
-        sql`${dropByName}(${sql.raw(identity ?? '')})${cascade ? sql` CASCADE` : sql``}`.execute(
-          db
-        ),
-    },
+  return statementQuery('Functions', {
+    mssql: drop.byName,
+    mysql: drop.byName,
+    postgres: cascade ? sql`${drop.postgres} CASCADE` : drop.postgres,
   })
 }

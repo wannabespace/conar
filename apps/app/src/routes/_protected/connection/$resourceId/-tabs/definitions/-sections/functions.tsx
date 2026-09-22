@@ -5,9 +5,8 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createFunctionQuery } from '~/entities/connection/queries/functions/create'
@@ -19,7 +18,6 @@ import { recreateFunctionQuery } from '~/entities/connection/queries/functions/r
 import type { RoutineKind } from '~/entities/connection/queries/functions/routine-kind'
 import type { FunctionShape } from '~/entities/connection/queries/functions/shape'
 import { sqlDialects } from '~/entities/connection/utils/monaco'
-import { queryClient } from '~/lib/query-client'
 
 import {
   BodyField,
@@ -28,19 +26,17 @@ import {
   SelectField,
   TextField,
 } from '../-components/fields'
-import type {
-  InspectorWarning,
-  SectionInspectorProps,
-} from '../-components/inspector'
+import type { SectionInspectorProps } from '../-components/inspector'
 import {
-  InspectorDefinition,
-  InspectorFooter,
-  InspectorHeader,
+  focusInvalidField,
+  Inspector,
   InspectorOption,
   InspectorSection,
-  InspectorSections,
+  InspectorSql,
+  mysqlReplaceWarning,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -96,34 +92,34 @@ interface FunctionDraft {
 }
 
 const functionSchema = type({
+  body: type(/\S/u).configure({ message: 'Write the routine body.' }),
+  kind: 'string',
   name: type(/\S/u).configure({ message: 'Give the function a name.' }),
-})
-
-const dropParamsOf = (item: FunctionItem, cascade: boolean) => ({
-  cascade,
-  identity: item.identity,
-  kind: item.type,
-  name: item.name,
-  schema: item.schema,
-})
+  returnType: 'string',
+}).narrow(
+  (draft, ctx) =>
+    draft.kind === 'procedure' ||
+    /\S/u.test(draft.returnType) ||
+    ctx.reject({
+      message: 'Say what the function returns.',
+      relativePath: ['returnType'],
+    })
+)
 
 const newDraft = (
   pageSchema: string,
   connectionType: ConnectionType
 ): FunctionDraft => {
   const { behaviors, languages } = capabilitiesOf(connectionType).functions
+  const language = languages[0] ?? ''
 
   return {
     args: '',
     behavior: behaviors[0] ?? '',
-    body: templateOf({
-      connectionType,
-      kind: 'function',
-      language: languages[0] ?? '',
-    }),
+    body: templateOf({ connectionType, kind: 'function', language }),
     extras: '',
     kind: 'function',
-    language: languages[0] ?? '',
+    language,
     name: '',
     returnType: '',
     schema: pageSchema,
@@ -189,122 +185,6 @@ const replacesObject = (item: FunctionItem, shape: FunctionShape) =>
   (item.return_type ?? '') !== shape.returnType ||
   item.type !== shape.kind
 
-const replaceWarning = (item: FunctionItem): InspectorWarning => ({
-  action: `Replace ${item.type}`,
-  description: (
-    <>
-      MySQL cannot roll DDL back, so we drop{' '}
-      <span data-mask className="font-medium">
-        {item.name}
-      </span>{' '}
-      and create it again. If the new statement fails, it stays dropped.
-    </>
-  ),
-})
-
-const FunctionSql = ({
-  connectionResource,
-  item,
-}: Pick<SectionInspectorProps<FunctionItem>, 'connectionResource'> & {
-  item: FunctionItem
-}) => {
-  const { data: definition } = useQuery(
-    functionDefinitionQueryOptions({ connectionResource, item })
-  )
-
-  return definition ? <InspectorDefinition code={definition} /> : null
-}
-
-const ExecutionSection = ({
-  form,
-  onLanguageChanged,
-  options,
-  readOnly,
-  returns,
-}: {
-  form: ReturnType<typeof useFunctionForm>
-  onLanguageChanged?: (language: string) => void
-  options: ReturnType<typeof capabilitiesOf>['functions']
-  readOnly: boolean
-  returns: boolean
-}) => {
-  if (
-    options.languages.length === 0 &&
-    options.behaviors.length === 0 &&
-    !options.securityDefiner
-  ) {
-    return null
-  }
-
-  return (
-    <InspectorSection
-      title="Execution"
-      description="How the database plans and runs the body."
-    >
-      {options.languages.length > 0 && (
-        <form.AppField name="language">
-          {() => (
-            <SelectField
-              label="Language"
-              disabled={readOnly}
-              onChanged={onLanguageChanged}
-              options={options.languages}
-              placeholder="Language"
-            />
-          )}
-        </form.AppField>
-      )}
-      {returns && options.behaviors.length > 0 && (
-        <form.AppField name="behavior">
-          {() => (
-            <SelectField
-              label="Behavior"
-              description="Tells the planner how far it may cache the result."
-              disabled={readOnly}
-              options={options.behaviors}
-              placeholder="Behavior"
-            />
-          )}
-        </form.AppField>
-      )}
-      {options.securityDefiner && (
-        <form.AppField name="securityDefiner">
-          {(field) => (
-            <InspectorOption
-              htmlFor="function-security-definer"
-              title="Security definer"
-              description="Runs with the owner's rights instead of the caller's."
-            >
-              <Switch
-                id="function-security-definer"
-                size="sm"
-                disabled={readOnly}
-                checked={field.state.value as boolean}
-                onCheckedChange={(checked) => field.handleChange(checked)}
-              />
-            </InspectorOption>
-          )}
-        </form.AppField>
-      )}
-    </InspectorSection>
-  )
-}
-
-const useFunctionForm = ({
-  defaultValues,
-  onSubmit,
-}: {
-  defaultValues: FunctionDraft
-  onSubmit: (draft: FunctionDraft) => void
-}) =>
-  useAppForm({
-    defaultValues,
-    onSubmit: ({ value }) => {
-      onSubmit(value)
-    },
-    validators: { onChange: functionSchema, onMount: functionSchema },
-  })
-
 const FunctionInspector = ({
   can,
   connectionResource,
@@ -317,8 +197,12 @@ const FunctionInspector = ({
   type: connectionType,
 }: SectionInspectorProps<FunctionItem>) => {
   const options = capabilitiesOf(connectionType).functions
-  const mutation = useMutation({
-    mutationFn: (draft: FunctionDraft) =>
+  const mutation = useDefinitionMutation({
+    message: (draft: FunctionDraft) =>
+      `${typeLabels[draft.kind]} "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
+    onOpenChange,
+    queryKey,
+    save: (draft: FunctionDraft) =>
       run(
         item
           ? recreateFunctionQuery({
@@ -334,23 +218,24 @@ const FunctionInspector = ({
               shape: shapeOf(draft),
             })
       ),
-    onSuccess: async (_result, draft) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `${typeLabels[draft.kind]} "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
-      )
-      onOpenChange(false)
-    },
   })
-  const form = useFunctionForm({
+  const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
-    onSubmit: (draft) => mutation.mutate(draft),
+    onSubmit: ({ value }) => {
+      mutation.mutate(value)
+    },
+    onSubmitInvalid: focusInvalidField,
+    validators: { onChange: functionSchema, onMount: functionSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
 
   const readOnly = item
     ? !can.edit || !formEditable(item, connectionType)
     : !can.create
+  const execution =
+    options.languages.length > 0 ||
+    options.behaviors.length > 0 ||
+    options.securityDefiner
   // A starter body only belongs to the shape it was written for, so switching
   // kind or language swaps it — unless the user has typed their own.
   const retemplate = (next: FunctionDraft) => {
@@ -361,111 +246,150 @@ const FunctionInspector = ({
     }
   }
   const returns = draft.kind === 'function'
-  const complete =
-    !!draft.body.trim() && (!returns || !!draft.returnType.trim())
   const changed =
     !item ||
     JSON.stringify(shapeOf(draft)) !==
       JSON.stringify(shapeOf(draftOf(item, draft.schema, connectionType)))
 
   return (
-    <>
-      <InspectorHeader
-        description={item?.schema ?? draft.schema}
-        item={item}
-        noun="function"
-      />
-      <InspectorSections>
-        <InspectorSection
-          title="General"
-          description="A routine the database stores and runs on demand."
-        >
-          <form.AppField name="schema">
-            {() => (
-              <SchemaField disabled={readOnly || !!item} schemas={schemas} />
-            )}
-          </form.AppField>
-          <form.AppField name="name">
-            {() => <TextField label="Name" autoFocus disabled={readOnly} />}
-          </form.AppField>
-          <form.AppField name="kind">
-            {() => (
-              <SelectField
-                label="Type"
-                description="A procedure runs for its effects and returns nothing."
-                disabled={readOnly}
-                labelOf={(value: RoutineKind) => typeLabels[value]}
-                onChanged={(kind: RoutineKind) =>
-                  retemplate({ ...draft, kind })
-                }
-                options={kinds}
-                placeholder="Type"
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Signature"
-          description="What callers pass in, and what comes back."
-        >
-          <form.AppField name="args">
+    <Inspector
+      canSave={changed}
+      description={item?.schema ?? draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="function"
+      readOnly={readOnly}
+      saveLabel={item ? undefined : `Create ${draft.kind}`}
+      warning={
+        item && connectionType === ConnectionType.MySQL
+          ? mysqlReplaceWarning({ name: item.name, noun: item.type })
+          : undefined
+      }
+    >
+      <InspectorSection
+        title="General"
+        description="A routine the database stores and runs on demand."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField disabled={readOnly || !!item} schemas={schemas} />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => <TextField label="Name" autoFocus disabled={readOnly} />}
+        </form.AppField>
+        <form.AppField name="kind">
+          {() => (
+            <SelectField
+              label="Type"
+              description="A procedure runs for its effects and returns nothing."
+              disabled={readOnly}
+              labelOf={(value: RoutineKind) => typeLabels[value]}
+              onChanged={(kind: RoutineKind) => retemplate({ ...draft, kind })}
+              options={kinds}
+              placeholder="Type"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Signature"
+        description="What callers pass in, and what comes back."
+      >
+        <form.AppField name="args">
+          {() => (
+            <TextField
+              label="Arguments"
+              description="Written as SQL, the way the routine declares them."
+              disabled={readOnly}
+              placeholder={argumentPlaceholders[connectionType]}
+            />
+          )}
+        </form.AppField>
+        {returns && (
+          <form.AppField name="returnType">
             {() => (
               <TextField
-                label="Arguments"
-                description="Written as SQL, the way the routine declares them."
+                label="Returns"
                 disabled={readOnly}
-                placeholder={argumentPlaceholders[connectionType]}
+                placeholder="integer"
               />
             )}
           </form.AppField>
-          {returns && (
-            <form.AppField name="returnType">
+        )}
+      </InspectorSection>
+      {execution && (
+        <InspectorSection
+          title="Execution"
+          description="How the database plans and runs the body."
+        >
+          {options.languages.length > 0 && (
+            <form.AppField name="language">
               {() => (
-                <TextField
-                  label="Returns"
+                <SelectField
+                  label="Language"
                   disabled={readOnly}
-                  placeholder="integer"
+                  options={options.languages}
+                  placeholder="Language"
+                  onChanged={(language: string) =>
+                    retemplate({ ...draft, language })
+                  }
                 />
               )}
             </form.AppField>
           )}
+          {returns && options.behaviors.length > 0 && (
+            <form.AppField name="behavior">
+              {() => (
+                <SelectField
+                  label="Behavior"
+                  description="Tells the planner how far it may cache the result."
+                  disabled={readOnly}
+                  options={options.behaviors}
+                  placeholder="Behavior"
+                />
+              )}
+            </form.AppField>
+          )}
+          {options.securityDefiner && (
+            <form.AppField name="securityDefiner">
+              {(field) => (
+                <InspectorOption
+                  htmlFor="function-security-definer"
+                  title="Security definer"
+                  description="Runs with the owner's rights instead of the caller's."
+                >
+                  <Switch
+                    id="function-security-definer"
+                    size="sm"
+                    disabled={readOnly}
+                    checked={field.state.value as boolean}
+                    onCheckedChange={(checked) => field.handleChange(checked)}
+                  />
+                </InspectorOption>
+              )}
+            </form.AppField>
+          )}
         </InspectorSection>
-        <ExecutionSection
-          form={form}
-          onLanguageChanged={(language) => retemplate({ ...draft, language })}
-          options={options}
-          readOnly={readOnly}
-          returns={returns}
+      )}
+      <InspectorSection title="Definition">
+        <form.AppField name="body">
+          {() => (
+            <BodyField
+              label="Body"
+              disabled={readOnly}
+              language={sqlDialects[connectionType]}
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      {item && (
+        <InspectorSql
+          query={functionDefinitionQueryOptions({ connectionResource, item })}
         />
-        <InspectorSection title="Definition">
-          <form.AppField name="body">
-            {() => (
-              <BodyField
-                label="Body"
-                disabled={readOnly}
-                language={sqlDialects[connectionType]}
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        {item && (
-          <FunctionSql connectionResource={connectionResource} item={item} />
-        )}
-      </InspectorSections>
-      <InspectorFooter
-        canSave={changed && complete}
-        error={mutation.error}
-        form={form}
-        readOnly={readOnly}
-        saveLabel={item ? 'Save' : `Create ${draft.kind}`}
-        saving={mutation.isPending}
-        warning={
-          item && connectionType === ConnectionType.MySQL
-            ? replaceWarning(item)
-            : undefined
-        }
-      />
-    </>
+      )}
+    </Inspector>
   )
 }
 
@@ -481,13 +405,10 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
     header: 'Returns',
     valueOf: (item: FunctionItem) => item.return_type,
   }),
-  labelColumn({
-    align: 'end',
+  textColumn({
     header: 'Arguments',
-    labelOf: (item: FunctionItem) => (
-      <span className="tabular-nums">{item.argumentCount ?? 0}</span>
-    ),
-    width: 'w-2/12',
+    valueOf: (item: FunctionItem) => item.args,
+    width: 'w-3/12',
   }),
   labelColumn({
     align: 'end',
@@ -498,7 +419,7 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
 ]
 
 const functionKey = (item: FunctionItem) =>
-  `${item.schema}.${item.name}(${item.identity ?? item.argumentCount ?? ''}).${item.type}`
+  JSON.stringify([item.schema, item.name, item.identity ?? '', item.type])
 
 export const Functions = () => {
   const state = useDefinitionsState({ section: 'functions' })
@@ -514,13 +435,21 @@ export const Functions = () => {
   const matches = (item: FunctionItem) =>
     typeFilter.matches(item.type) &&
     matchesSearch(search, item.name, item.language, item.return_type)
-  const dropItem = (item: FunctionItem, cascade: boolean) =>
-    run(dropFunctionQuery(dropParamsOf(item, cascade)))
 
   return (
     <DefinitionsPage
       columns={columns}
-      dropItem={dropItem}
+      dropItem={(item, cascade) =>
+        run(
+          dropFunctionQuery({
+            cascade,
+            identity: item.identity,
+            kind: item.type,
+            name: item.name,
+            schema: item.schema,
+          })
+        )
+      }
       Inspector={FunctionInspector}
       items={inSchema}
       keyOf={functionKey}

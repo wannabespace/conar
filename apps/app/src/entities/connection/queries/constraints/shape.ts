@@ -49,3 +49,9 @@ export const constraintClause = (shape: ConstraintShape) => {
 
   return sql`CONSTRAINT ${sql.id(shape.name)} ${sql.raw(kindKeyword[shape.kind])} (${identifiers(shape.columns)})${references}`
 }
+
+export interface ConstraintTarget {
+  name: string
+  schema: string
+  table: string
+}

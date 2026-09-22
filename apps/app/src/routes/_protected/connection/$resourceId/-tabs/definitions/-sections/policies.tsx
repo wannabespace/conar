@@ -5,12 +5,13 @@ import { Badge } from '@tamery/ui/components/badge'
 import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
+import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { toast } from 'sonner'
 
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
 import { dropPolicyQuery } from '~/entities/connection/queries/policies/drop'
@@ -18,12 +19,12 @@ import type { policyType } from '~/entities/connection/queries/policies/list'
 import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
 import { recreatePolicyQuery } from '~/entities/connection/queries/policies/recreate'
 import { renamePolicyQuery } from '~/entities/connection/queries/policies/rename'
+import { setRowLevelSecurityQuery } from '~/entities/connection/queries/policies/set-row-level-security'
 import type {
   PolicyCommand,
   PolicyKind,
 } from '~/entities/connection/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
-import { queryClient } from '~/lib/query-client'
 
 import {
   resetFields,
@@ -37,12 +38,13 @@ import type {
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  InspectorFooter,
-  InspectorHeader,
+  focusInvalidField,
+  Inspector,
+  InspectorOption,
   InspectorSection,
-  InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -146,8 +148,8 @@ const replaceWarning = (
         : 'Command and permissive/restrictive cannot change in place, so we recreate '}
       <span data-mask className="font-medium">
         {item.name}
-      </span>
-      . The table runs unprotected in between.
+      </span>{' '}
+      in one transaction. Its comment and any grants on it do not come back.
     </>
   ),
 })
@@ -211,22 +213,34 @@ const PolicyInspector = ({
   schemas,
   selectedSchema,
   tablesOf,
+  type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
-  const mutation = useMutation({
-    mutationFn: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
-    onSuccess: async (_result, draft) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
-      )
-      onOpenChange(false)
-    },
+  const mutation = useDefinitionMutation({
+    message: (draft: PolicyDraft) =>
+      `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
+    onOpenChange,
+    queryKey,
+    save: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
+  })
+  const rowLevelSecurity = useDefinitionMutation({
+    message: ({ enabled }: { enabled: boolean }) =>
+      `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`,
+    queryKey,
+    save: ({ enabled }: { enabled: boolean }) =>
+      run(
+        setRowLevelSecurityQuery({
+          enabled,
+          schema: item?.schema ?? '',
+          table: item?.table ?? '',
+        })
+      ),
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? ''),
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
+    onSubmitInvalid: focusInvalidField,
     validators: { onChange: policySchema, onMount: policySchema },
   })
   const draft = withAllowedExpressions(
@@ -242,127 +256,138 @@ const PolicyInspector = ({
     Object.values(changesOf(item, draft)).some((change) => change !== null)
 
   return (
-    <>
-      <InspectorHeader
-        description={item ? `${item.schema}.${item.table}` : draft.schema}
-        item={item}
-        noun="policy"
-      />
-      <InspectorSections>
-        <InspectorSection
-          title="General"
-          description="A policy decides which rows a role may see or write."
-        >
-          <form.AppField name="schema">
-            {() => (
-              <SchemaField
-                disabled={readOnly || !!item}
-                schemas={schemas}
-                onChanged={() => resetFields(form, { table: '' })}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="name">
-            {() => <TextField label="Name" autoFocus disabled={readOnly} />}
-          </form.AppField>
-          <form.AppField name="table">
+    <Inspector
+      canSave={changed}
+      description={item ? `${item.schema}.${item.table}` : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="policy"
+      readOnly={readOnly}
+      warning={item && replacing ? replaceWarning(item, draft) : undefined}
+    >
+      {item && capabilitiesOf(connectionType).rowLevelSecurity && (
+        <InspectorSection title="Status">
+          <InspectorOption
+            htmlFor="policy-row-level-security"
+            title="Row level security"
+            description="Off, the table ignores every policy on it."
+          >
+            <Switch
+              id="policy-row-level-security"
+              size="sm"
+              checked={item.enabled}
+              onCheckedChange={(enabled) =>
+                rowLevelSecurity.mutate({ enabled })
+              }
+            />
+          </InspectorOption>
+        </InspectorSection>
+      )}
+      <InspectorSection
+        title="General"
+        description="A policy decides which rows a role may see or write."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField
+              disabled={readOnly || !!item}
+              schemas={schemas}
+              onChanged={() => resetFields(form, { table: '' })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => <TextField label="Name" autoFocus disabled={readOnly} />}
+        </form.AppField>
+        <form.AppField name="table">
+          {() => (
+            <SelectField
+              label="Table"
+              description="The policy only applies while row level security is enabled on this table."
+              disabled={readOnly || !!item}
+              options={item ? [item.table] : tablesOf(draft.schema)}
+              placeholder="Choose a table"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Scope"
+        description="Which statements the policy answers for, and who it answers for."
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <form.AppField name="command">
             {() => (
               <SelectField
-                label="Table"
-                description="The policy only applies while row level security is enabled on this table."
-                disabled={readOnly || !!item}
-                options={item ? [item.table] : tablesOf(draft.schema)}
-                placeholder="Choose a table"
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Scope"
-          description="Which statements the policy answers for, and who it answers for."
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <form.AppField name="command">
-              {() => (
-                <SelectField
-                  label="Command"
-                  disabled={readOnly}
-                  options={POLICY_COMMANDS}
-                  placeholder="Command"
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="kind">
-              {() => (
-                <SelectField
-                  label="Type"
-                  disabled={readOnly}
-                  options={kinds}
-                  labelOf={(value) => kindLabels[value]}
-                  placeholder="Type"
-                />
-              )}
-            </form.AppField>
-          </div>
-          <FieldDescription>
-            Permissive policies widen access, restrictive ones narrow it — every
-            restrictive policy must also pass.
-          </FieldDescription>
-          <form.AppField name="roles">
-            {() => (
-              <TextField
-                label="Roles"
-                description="Comma-separated. Empty means PUBLIC."
+                label="Command"
                 disabled={readOnly}
-                placeholder="public"
+                options={POLICY_COMMANDS}
+                placeholder="Command"
               />
             )}
           </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Expressions"
-          description="SQL returning true for the rows the policy allows."
-        >
-          <form.AppField name="using">
+          <form.AppField name="kind">
             {() => (
-              <SqlField
-                label="Using"
-                description={
-                  expressions.using
-                    ? 'Checked against rows that already exist.'
-                    : 'An insert has no existing rows to check.'
-                }
-                disabled={readOnly || !expressions.using}
-                placeholder="user_id = auth.uid()"
+              <SelectField
+                label="Type"
+                disabled={readOnly}
+                options={kinds}
+                labelOf={(value) => kindLabels[value]}
+                placeholder="Type"
               />
             )}
           </form.AppField>
-          <form.AppField name="check">
-            {() => (
-              <SqlField
-                label="With check"
-                description={
-                  expressions.check
-                    ? 'Checked against rows an insert or update would write.'
-                    : `A ${draft.command.toLowerCase()} writes no rows to check.`
-                }
-                disabled={readOnly || !expressions.check}
-                placeholder="user_id = auth.uid()"
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-      </InspectorSections>
-      <InspectorFooter
-        canSave={changed}
-        warning={item && replacing ? replaceWarning(item, draft) : undefined}
-        error={mutation.error}
-        form={form}
-        readOnly={readOnly}
-        saveLabel={item ? 'Save' : 'Create policy'}
-        saving={mutation.isPending}
-      />
-    </>
+        </div>
+        <FieldDescription>
+          Permissive policies widen access, restrictive ones narrow it — every
+          restrictive policy must also pass.
+        </FieldDescription>
+        <form.AppField name="roles">
+          {() => (
+            <TextField
+              label="Roles"
+              description="Comma-separated. Empty means PUBLIC."
+              disabled={readOnly}
+              placeholder="public"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Expressions"
+        description="SQL returning true for the rows the policy allows."
+      >
+        <form.AppField name="using">
+          {() => (
+            <SqlField
+              label="Using"
+              description={
+                expressions.using
+                  ? 'Checked against rows that already exist.'
+                  : 'An insert has no existing rows to check.'
+              }
+              disabled={readOnly || !expressions.using}
+              placeholder="user_id = auth.uid()"
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="check">
+          {() => (
+            <SqlField
+              label="With check"
+              description={
+                expressions.check
+                  ? 'Checked against rows an insert or update would write.'
+                  : `A ${draft.command.toLowerCase()} writes no rows to check.`
+              }
+              disabled={readOnly || !expressions.check}
+              placeholder="user_id = auth.uid()"
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+    </Inspector>
   )
 }
 
@@ -421,7 +446,7 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   }),
 ]
 
-const policyKey = (item: PolicyItem) => `${item.table}.${item.name}`
+const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
 
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })

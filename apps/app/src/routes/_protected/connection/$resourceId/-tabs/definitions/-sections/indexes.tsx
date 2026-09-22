@@ -15,10 +15,9 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
-import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
@@ -35,7 +34,6 @@ import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { groupInSchema } from '~/entities/connection/utils/helpers'
-import { queryClient } from '~/lib/query-client'
 
 import {
   OptionsField,
@@ -46,14 +44,14 @@ import {
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
+  focusInvalidField,
   InspectorDefinition,
-  InspectorFooter,
-  InspectorHeader,
+  Inspector,
   InspectorOption,
   InspectorSection,
-  InspectorSections,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
+import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -85,8 +83,9 @@ const kindLabels: Record<IndexKind, string> = {
   unique: 'Unique',
 }
 
+// A name may hold the separator of any string key, so the key is the tuple.
 const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
-  `${item.table}.${item.name}`
+  JSON.stringify([item.table, item.name])
 
 const kindOf = (item: IndexItem): IndexKind => {
   if (item.isPrimary) {
@@ -130,33 +129,23 @@ const saveIndex = ({
   item: GroupedIndex | null
   run: RunQuery
 }) => {
+  const { columns, schema, table, unique } = draft
   const name = finalNameOf(draft)
 
   if (!item) {
-    return run(
-      createIndexQuery({
-        columns: draft.columns,
-        name,
-        schema: draft.schema,
-        table: draft.table,
-        unique: draft.unique,
-      })
-    )
+    return run(createIndexQuery({ columns, name, schema, table, unique }))
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  return reshapes(draft, item)
-    ? run(
-        recreateIndexQuery({
-          ...target,
-          columns: draft.columns,
-          newName: name,
-          unique: draft.unique,
-        })
-      )
-    : run(renameIndexQuery({ ...target, newName: name }))
+  return run(
+    reshapes(draft, item)
+      ? recreateIndexQuery({ ...target, columns, newName: name, unique })
+      : renameIndexQuery({ ...target, newName: name })
+  )
 }
 
+// A constraint owns its index's columns, and an engine that cannot rename a
+// constraint cannot touch its index at all.
 const locksOf = ({
   can,
   item,
@@ -251,13 +240,11 @@ const IndexInspector = ({
   tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
-  const mutation = useMutation({
-    mutationFn: (draft: IndexDraft) => saveIndex({ draft, item, run }),
-    onSuccess: async (_result, draft) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(`Index "${finalNameOf(draft)}" saved`)
-      onOpenChange(false)
-    },
+  const mutation = useDefinitionMutation({
+    message: (draft: IndexDraft) => `Index "${finalNameOf(draft)}" saved`,
+    onOpenChange,
+    queryKey,
+    save: (draft: IndexDraft) => saveIndex({ draft, item, run }),
   })
   const form = useAppForm({
     defaultValues: {
@@ -270,6 +257,7 @@ const IndexInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
+    onSubmitInvalid: focusInvalidField,
     validators: { onChange: indexSchema, onMount: indexSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -286,104 +274,95 @@ const IndexInspector = ({
   const reshaped = reshapes(draft, item)
 
   return (
-    <>
-      <InspectorHeader
-        description={item ? `${item.schema}.${item.table}` : draft.schema}
-        item={item}
-        noun="index"
-      />
-      <InspectorSections>
-        <InspectorSection
-          title="General"
-          description="An index speeds up lookups on the columns it covers."
-        >
-          <form.AppField name="schema">
-            {() => (
-              <SchemaField
-                disabled={locked.readOnly || !!item}
-                schemas={schemas}
-                onChanged={() => resetFields(form, { columns: [], table: '' })}
+    <Inspector
+      canSave={!item || reshaped || finalNameOf(draft) !== item.name}
+      description={item ? `${item.schema}.${item.table}` : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="index"
+      readOnly={locked.readOnly}
+      warning={reshaped ? rebuildWarning(item) : undefined}
+    >
+      <InspectorSection
+        title="General"
+        description="An index speeds up lookups on the columns it covers."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField
+              disabled={locked.readOnly || !!item}
+              schemas={schemas}
+              onChanged={() => resetFields(form, { columns: [], table: '' })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => (
+            <TextField
+              label="Name"
+              autoFocus
+              description="Leave it empty to use the suggested name."
+              disabled={locked.readOnly}
+              placeholder={draft.table ? suggestedNameOf(draft) : 'Index name'}
+            />
+          )}
+        </form.AppField>
+      </InspectorSection>
+      <InspectorSection
+        title="Target"
+        description="The table and the columns this index covers, in order."
+      >
+        <form.AppField name="table">
+          {() => (
+            <SelectField
+              label="Table"
+              disabled={locked.readOnly || !!item}
+              options={item ? [item.table] : tablesOf(draft.schema)}
+              placeholder="Choose a table"
+              onChanged={() => resetFields(form, { columns: [] })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="columns">
+          {() => (
+            <OptionsField
+              label="Columns"
+              description="A query uses the index when it filters on the leading columns."
+              disabled={locked.shape || draft.table === ''}
+              options={columnNames}
+              placeholder="Choose columns"
+            />
+          )}
+        </form.AppField>
+        <ColumnNotes
+          item={item}
+          onLeave={() => onOpenChange(false)}
+          resourceId={connectionResource.id}
+          schema={draft.schema}
+        />
+      </InspectorSection>
+      <InspectorSection title="Options">
+        <form.AppField name="unique">
+          {(field) => (
+            <InspectorOption
+              htmlFor="index-unique"
+              title="Unique"
+              description="Rejects rows repeating a value across the chosen columns."
+            >
+              <Switch
+                id="index-unique"
+                size="sm"
+                disabled={locked.shape}
+                checked={field.state.value}
+                onCheckedChange={field.handleChange}
               />
-            )}
-          </form.AppField>
-          <form.AppField name="name">
-            {() => (
-              <TextField
-                label="Name"
-                autoFocus
-                description="Leave it empty to use the suggested name."
-                disabled={locked.readOnly}
-                placeholder={
-                  draft.table ? suggestedNameOf(draft) : 'Index name'
-                }
-              />
-            )}
-          </form.AppField>
-        </InspectorSection>
-        <InspectorSection
-          title="Target"
-          description="The table and the columns this index covers, in order."
-        >
-          <form.AppField name="table">
-            {() => (
-              <SelectField
-                label="Table"
-                disabled={locked.readOnly || !!item}
-                options={item ? [item.table] : tablesOf(draft.schema)}
-                placeholder="Choose a table"
-                onChanged={() => resetFields(form, { columns: [] })}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="columns">
-            {() => (
-              <OptionsField
-                label="Columns"
-                description="A query uses the index when it filters on the leading columns."
-                disabled={locked.shape || draft.table === ''}
-                options={columnNames}
-                placeholder="Choose columns"
-              />
-            )}
-          </form.AppField>
-          <ColumnNotes
-            item={item}
-            onLeave={() => onOpenChange(false)}
-            resourceId={connectionResource.id}
-            schema={draft.schema}
-          />
-        </InspectorSection>
-        <InspectorSection title="Options">
-          <form.AppField name="unique">
-            {(field) => (
-              <InspectorOption
-                htmlFor="index-unique"
-                title="Unique"
-                description="Rejects rows repeating a value across the chosen columns."
-              >
-                <Switch
-                  id="index-unique"
-                  size="sm"
-                  disabled={locked.shape}
-                  checked={field.state.value}
-                  onCheckedChange={field.handleChange}
-                />
-              </InspectorOption>
-            )}
-          </form.AppField>
-        </InspectorSection>
-        {item?.definition && <InspectorDefinition code={item.definition} />}
-      </InspectorSections>
-      <InspectorFooter
-        canSave={!item || reshaped || finalNameOf(draft) !== item.name}
-        warning={reshaped ? rebuildWarning(item) : undefined}
-        error={mutation.error}
-        form={form}
-        readOnly={locked.readOnly}
-        saveLabel={item ? 'Save' : 'Create index'}
-        saving={mutation.isPending}
-      />
-    </>
+            </InspectorOption>
+          )}
+        </form.AppField>
+      </InspectorSection>
+      {item?.definition && <InspectorDefinition code={item.definition} />}
+    </Inspector>
   )
 }
 

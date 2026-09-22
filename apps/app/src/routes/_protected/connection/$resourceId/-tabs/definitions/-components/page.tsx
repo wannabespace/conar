@@ -136,15 +136,18 @@ const LINKED_OPEN_DELAY = 80
 
 const useInspector = <T,>({
   items,
+  keepSchema,
   keyOf,
   loading,
 }: {
   items: T[]
+  keepSchema: (schema: string | undefined) => void
   keyOf: (item: T) => string
   loading: boolean
 }) => {
   const navigate = useNavigate()
   const linkedKey = useSearch({ select: (current) => current.open })
+  const linkedSchema = useSearch({ select: (current) => current.schema })
   const [inspected, setInspected] = useState<{
     item: T | null
     open: boolean
@@ -164,6 +167,7 @@ const useInspector = <T,>({
     if (linkedItem) {
       open(linkedItem)
     }
+    keepSchema(linkedSchema)
     navigate({
       replace: true,
       search: (current) => ({
@@ -233,7 +237,12 @@ export const DefinitionsPage = <T extends { name: string }>({
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
-  const inspector = useInspector({ items: rows, keyOf, loading })
+  const inspector = useInspector({
+    items: rows,
+    keepSchema: setSelectedSchema,
+    keyOf,
+    loading,
+  })
   const [dropping, setDropping] = useState<{ item: T | null; open: boolean }>({
     item: null,
     open: false,
@@ -245,6 +254,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   const highlightedItem =
     highlightedIndex === -1 ? null : rows[highlightedIndex]
   const canDrop = (item: T) => !!can.drop && (canDropItem?.(item) ?? true)
+  const canCreate = !!can.create && !!selectedSchema
   const overlayOpen = inspector.inspected.open || dropping.open
   const empty = !loading && rows.length === 0
   const context: CellContext = { schema: selectedSchema, search }
@@ -317,7 +327,7 @@ export const DefinitionsPage = <T extends { name: string }>({
       {
         callback: () => inspector.open(null),
         hotkey: 'Mod+N',
-        options: { enabled: !overlayOpen && !!can.create },
+        options: { enabled: !overlayOpen && canCreate },
       },
       {
         callback: () => {
@@ -370,7 +380,11 @@ export const DefinitionsPage = <T extends { name: string }>({
           )}
         </h2>
         {can.create && (
-          <Button variant="outline" onClick={() => inspector.open(null)}>
+          <Button
+            variant="outline"
+            disabled={!canCreate}
+            onClick={() => inspector.open(null)}
+          >
             <HugeiconsIcon
               icon={PlusSignIcon}
               strokeWidth={2}
@@ -383,7 +397,9 @@ export const DefinitionsPage = <T extends { name: string }>({
       <div className="flex items-center gap-2">
         <SearchInput
           ref={searchRef}
+          data-mask
           className="flex-1"
+          aria-label={`Search ${plural}`}
           placeholder={`Search ${plural}`}
           autoFocus
           value={search}

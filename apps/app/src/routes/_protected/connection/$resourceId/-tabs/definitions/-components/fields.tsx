@@ -25,6 +25,7 @@ import {
   FieldLabel,
   FieldTextarea,
   useFieldContext,
+  useFormContext,
 } from '@tamery/ui/components/tanstack-form'
 import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
@@ -153,6 +154,7 @@ export const BodyField = ({
   language,
 }: LabelledProps & { disabled?: boolean; language: string }) => {
   const field = useFieldContext<string>()
+  const form = useFormContext()
 
   return (
     <Labelled description={description} label={label}>
@@ -161,7 +163,12 @@ export const BodyField = ({
         className="ring-foreground/4 h-56 overflow-hidden rounded-xl ring"
         language={language}
         value={field.state.value}
-        options={disabled ? readOnlyEditorOptions : editorOptions}
+        options={{
+          ...(disabled ? readOnlyEditorOptions : editorOptions),
+          ariaLabel: label,
+        }}
+        // Monaco swallows its own keys, so the editor carries the save shortcut.
+        onSubmit={disabled ? undefined : () => form.handleSubmit()}
         onChange={field.handleChange}
       />
     </Labelled>
