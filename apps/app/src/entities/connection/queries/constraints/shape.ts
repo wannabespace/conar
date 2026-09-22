@@ -1,3 +1,4 @@
+import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
 import { identifiers } from '../shared/sql-fragments'
@@ -13,6 +14,14 @@ export const REFERENTIAL_ACTIONS = [
 ] as const
 
 export type ReferentialAction = (typeof REFERENTIAL_ACTIONS)[number]
+
+const foreignActions: Record<ReferentialAction, OnModifyForeignAction> = {
+  CASCADE: 'cascade',
+  'NO ACTION': 'no action',
+  RESTRICT: 'restrict',
+  'SET DEFAULT': 'set default',
+  'SET NULL': 'set null',
+}
 
 export interface ConstraintShape {
   columns: string[]
@@ -31,6 +40,47 @@ export interface ConstraintTarget {
   table: string
 }
 
+export const addConstraint = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { schema, table }: Omit<ConstraintTarget, 'name'>,
+  {
+    columns,
+    foreignColumns,
+    foreignSchema,
+    foreignTable,
+    kind,
+    name,
+    onDelete,
+    onUpdate,
+  }: ConstraintShape
+) => {
+  const alter = db.withSchema(schema).schema.alterTable(table)
+
+  return {
+    foreignKey: () =>
+      alter
+        .addForeignKeyConstraint(
+          name,
+          columns,
+          `${foreignSchema}.${foreignTable}`,
+          foreignColumns
+        )
+        .onDelete(foreignActions[onDelete])
+        .onUpdate(foreignActions[onUpdate]),
+    primaryKey: () => alter.addPrimaryKeyConstraint(name, columns),
+    unique: () => alter.addUniqueConstraint(name, columns),
+  }[kind]()
+}
+
+export const dropConstraint = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { name, schema, table }: ConstraintTarget
+) => db.withSchema(schema).schema.alterTable(table).dropConstraint(name)
+
+// MySQL swaps a key in one ALTER, which no builder spells, so it keeps the
+// clause as SQL text.
 export const constraintClause = ({
   columns,
   foreignColumns,

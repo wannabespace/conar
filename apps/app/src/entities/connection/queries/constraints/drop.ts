@@ -3,7 +3,7 @@ import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 import type { ConstraintKind, ConstraintTarget } from './shape'
-import { mysqlDropKey } from './shape'
+import { dropConstraint, mysqlDropKey } from './shape'
 
 export const dropConstraintQuery = ({
   cascade,
@@ -12,16 +12,20 @@ export const dropConstraintQuery = ({
   schema,
   table,
 }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }) => {
-  const target = sql.id(schema, table)
-  const drop = sql`ALTER TABLE ${target} DROP CONSTRAINT ${sql.id(name)}`
+  const target = { name, schema, table }
 
   return createQuery({
     query: {
       clickhouse: unsupported('Constraints'),
-      mssql: (db) => drop.execute(db),
+      mssql: (db) => dropConstraint(db, target).execute(),
       mysql: (db) =>
-        sql`ALTER TABLE ${target} DROP ${mysqlDropKey(kind, name)}`.execute(db),
-      postgres: (db) => (cascade ? sql`${drop} CASCADE` : drop).execute(db),
+        sql`ALTER TABLE ${sql.id(schema, table)} DROP ${mysqlDropKey(kind, name)}`.execute(
+          db
+        ),
+      postgres: (db) => {
+        const drop = dropConstraint(db, target)
+        return (cascade ? drop.cascade() : drop).execute()
+      },
     },
   })
 }

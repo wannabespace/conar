@@ -1,9 +1,8 @@
 import { unsupported } from '@tamery/shared/utils/unsupported'
-import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
 import type { ConstraintShape } from './shape'
-import { constraintClause } from './shape'
+import { addConstraint } from './shape'
 
 export const createConstraintQuery = ({
   schema,
@@ -13,15 +12,12 @@ export const createConstraintQuery = ({
   schema: string
   shape: ConstraintShape
   table: string
-}) => {
-  const add = sql`ALTER TABLE ${sql.id(schema, table)} ADD ${constraintClause(shape)}`
-
-  return createQuery({
+}) =>
+  createQuery({
     query: {
       clickhouse: unsupported('Constraints'),
-      mssql: (db) => add.execute(db),
-      mysql: (db) => add.execute(db),
-      postgres: (db) => add.execute(db),
+      mssql: (db) => addConstraint(db, { schema, table }, shape).execute(),
+      mysql: (db) => addConstraint(db, { schema, table }, shape).execute(),
+      postgres: (db) => addConstraint(db, { schema, table }, shape).execute(),
     },
   })
-}

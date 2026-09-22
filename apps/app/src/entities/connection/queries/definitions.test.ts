@@ -12,7 +12,8 @@ import {
   PostgresQueryCompiler,
 } from 'kysely'
 
-import { constraintClause } from './constraints/shape'
+import type { ConstraintShape } from './constraints/shape'
+import { addConstraint, constraintClause } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import { createIndexStatement } from './indexes/shape'
 import { createPolicyStatement } from './policies/shape'
@@ -167,23 +168,35 @@ describe('trigger statements', () => {
   })
 })
 
-test('a foreign key names its columns in order', () => {
-  expect(
-    compiled(
-      constraintClause({
-        columns: ['a', 'b'],
-        foreignColumns: ['x', 'y'],
-        foreignSchema: 'ref',
-        foreignTable: 'other',
-        kind: 'foreignKey',
-        name: 'fk',
-        onDelete: 'CASCADE',
-        onUpdate: 'NO ACTION',
-      })
+describe('a foreign key names its columns in order', () => {
+  const shape: ConstraintShape = {
+    columns: ['a', 'b'],
+    foreignColumns: ['x', 'y'],
+    foreignSchema: 'ref',
+    foreignTable: 'other',
+    kind: 'foreignKey',
+    name: 'fk',
+    onDelete: 'CASCADE',
+    onUpdate: 'NO ACTION',
+  }
+
+  test('through the builder', () => {
+    expect(
+      addConstraint(
+        compilers.postgres,
+        { schema: 's', table: 't' },
+        shape
+      ).compile().sql
+    ).toBe(
+      'alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y") on delete cascade on update no action'
     )
-  ).toBe(
-    'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
-  )
+  })
+
+  test('as the MySQL clause', () => {
+    expect(compiled(constraintClause(shape))).toBe(
+      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
+    )
+  })
 })
 
 test('a unique index covers its columns in order', () => {

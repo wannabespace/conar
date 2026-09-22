@@ -20,8 +20,10 @@ export const renameConstraintQuery = ({
         ),
       mysql: unsupported('Renaming constraints'),
       postgres: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} RENAME CONSTRAINT ${sql.id(name)} TO ${sql.id(newName)}`.execute(
-          db
-        ),
+        db
+          .withSchema(schema)
+          .schema.alterTable(table)
+          .renameConstraint(name, newName)
+          .execute(),
     },
   })
