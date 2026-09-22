@@ -128,13 +128,13 @@ const TableComponent = ({
   const columnSizes = useSubscription(store, {
     selector: (state) => state.columnSizes,
   })
-  const filters = useSubscription(store, {
-    selector: (state) => enabledFilters(state.filters),
-    isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+  const activeFilters = useSubscription(store, {
+    selector: (state) => state.filters,
   })
   const orderBy = useSubscription(store, {
     selector: (state) => state.orderBy,
   })
+  const filters = enabledFilters(activeFilters)
   const {
     data: rows = [],
     error,

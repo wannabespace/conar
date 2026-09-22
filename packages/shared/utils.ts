@@ -96,6 +96,10 @@ export const sameList = (left: string[], right: string[]) =>
   left.length === right.length &&
   left.every((item, index) => item === right[index])
 
+// Key order decides the result, so both sides have to come from one builder.
+export const sameShape = (left: object, right: object) =>
+  JSON.stringify(left) === JSON.stringify(right)
+
 export const pushUnique = (
   values: string[],
   value: string | null | undefined
