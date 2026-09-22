@@ -192,9 +192,17 @@ const useInspector = <T,>({
     return () => clearTimeout(timeout)
   }, [linkedKey, loading])
 
+  // A toggle inside the drawer refetches the list, so the live row outranks
+  // the snapshot the drawer opened on.
+  const snapshot = inspected.item
+  const liveItem =
+    snapshot &&
+    (items.find((item) => keyOf(item) === keyOf(snapshot)) ?? snapshot)
+
   return {
     close: () => setInspected((current) => ({ ...current, open: false })),
     inspected,
+    item: liveItem,
     open,
   }
 }
@@ -202,7 +210,7 @@ const useInspector = <T,>({
 export const DefinitionsPage = <T extends { name: string }>({
   canDropItem,
   columns,
-  createBlocked,
+  createBlocked: blockReason,
   dropItem,
   Inspector,
   items,
@@ -236,8 +244,10 @@ export const DefinitionsPage = <T extends { name: string }>({
     selectedSchema,
     setSearch,
     setSelectedSchema,
+    structurePending,
     type,
   } = state
+  const createBlocked = structurePending ? undefined : blockReason
   const { cascade: cascades, icon, noun, title } = sectionMetaOf(section, type)
   const rows = items.filter(match)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -258,9 +268,9 @@ export const DefinitionsPage = <T extends { name: string }>({
   const cascadable = cascades && capabilitiesOf(type).cascade
 
   const highlightedIndex = rows.findIndex((item) => keyOf(item) === highlighted)
-  const highlightedItem =
-    highlightedIndex === -1 ? null : rows[highlightedIndex]
-  const canDrop = (item: T) => !!can.drop && (canDropItem?.(item) ?? true)
+  const highlightedItem: T | undefined = rows[highlightedIndex]
+  const canDrop = (item?: T): item is T =>
+    !!item && !!can.drop && (canDropItem?.(item) ?? true)
   const canCreate = !!can.create && !!selectedSchema && !createBlocked
   const overlayOpen = inspector.inspected.open || dropping.open
   const empty = !loading && rows.length === 0
@@ -338,12 +348,12 @@ export const DefinitionsPage = <T extends { name: string }>({
       },
       {
         callback: () => {
-          if (highlightedItem && canDrop(highlightedItem)) {
+          if (canDrop(highlightedItem)) {
             requestDrop(highlightedItem)
           }
         },
         hotkey: 'Mod+D',
-        options: { enabled: !overlayOpen && !!can.drop },
+        options: { enabled: !overlayOpen && canDrop(highlightedItem) },
       },
     ],
     { conflictBehavior: 'replace', preventDefault: true }
@@ -530,7 +540,7 @@ export const DefinitionsPage = <T extends { name: string }>({
           <Inspector
             key={inspector.inspected.session}
             {...state}
-            item={inspector.inspected.item}
+            item={inspector.item}
             queryKey={queryKey}
             onOpenChange={closeInspector}
           />

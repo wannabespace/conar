@@ -1,3 +1,4 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import type { RoutineKind } from './routine-kind'
@@ -26,6 +27,53 @@ export interface FunctionShape {
   returnType: string
   securityDefiner: boolean
 }
+
+export const functionBodyTemplateOf = ({
+  connectionType,
+  kind,
+  language,
+}: {
+  connectionType: ConnectionType
+  kind: RoutineKind
+  language: string
+}) => {
+  if (connectionType === ConnectionType.Postgres) {
+    return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
+  }
+
+  if (connectionType === ConnectionType.ClickHouse) {
+    return ''
+  }
+
+  if (kind === 'function') {
+    return 'BEGIN\n  RETURN 0;\nEND'
+  }
+
+  // T-SQL rejects a block holding no statement; MySQL takes one.
+  return connectionType === ConnectionType.MSSQL
+    ? 'BEGIN\n  SET NOCOUNT ON;\nEND'
+    : 'BEGIN\n\nEND'
+}
+
+// Dropping loses the routine's grants and owner, and fails while a view or
+// another routine depends on it. Postgres only replaces in place while the
+// whole signature stays put; SQL Server's CREATE OR ALTER also rewrites the
+// arguments and the return type.
+export const replacesRoutine = (
+  saved: {
+    args: string | null
+    kind: RoutineKind
+    name: string
+    returnType: string | null
+  },
+  shape: FunctionShape,
+  connectionType: ConnectionType
+) =>
+  saved.name !== shape.name ||
+  saved.kind !== shape.kind ||
+  (connectionType !== ConnectionType.MSSQL &&
+    ((saved.args ?? '') !== shape.args ||
+      (saved.returnType ?? '') !== shape.returnType))
 
 export interface RoutineTarget {
   // pg_get_function_identity_arguments output, the form DROP expects

@@ -1,3 +1,4 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 export const TRIGGER_EVENTS = [
@@ -21,6 +22,32 @@ export interface TriggerShape {
   name: string
   orientation: TriggerOrientation
   timing: TriggerTiming
+}
+
+export const triggerBodyTemplates: Partial<Record<ConnectionType, string>> = {
+  mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
+  mysql: 'BEGIN\n\nEND',
+}
+
+// Postgres has no INSTEAD OF TRUNCATE, so a timing pick prunes the events.
+export const triggerEventsFor = (
+  timing: TriggerTiming,
+  events: readonly TriggerEvent[]
+) =>
+  events.filter((event) => !(timing === 'INSTEAD OF' && event === 'TRUNCATE'))
+
+// Postgres refuses FOR EACH ROW on TRUNCATE and anything but ROW on INSTEAD OF.
+export const triggerOrientationsFor = (
+  { events, timing }: Pick<TriggerShape, 'events' | 'timing'>,
+  allowed: readonly TriggerOrientation[]
+) => {
+  if (timing === 'INSTEAD OF') {
+    return allowed.filter((orientation) => orientation === 'ROW')
+  }
+
+  return events.includes('TRUNCATE')
+    ? allowed.filter((orientation) => orientation === 'STATEMENT')
+    : allowed
 }
 
 export interface TriggerTarget {

@@ -1,3 +1,4 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -32,6 +33,8 @@ import type { UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
+
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'
 
@@ -83,7 +86,7 @@ export const Inspector = ({
         options: { enabled: saveEnabled },
       },
     ],
-    { preventDefault: true }
+    { conflictBehavior: 'replace', preventDefault: true }
   )
 
   const saveButton = (
@@ -149,24 +152,29 @@ export const Inspector = ({
   )
 }
 
-export const mysqlReplaceWarning = ({
+export const replaceWarning = ({
+  connectionType,
   name,
   noun,
 }: {
+  connectionType: ConnectionType
   name: string
   noun: string
-}): InspectorWarning => ({
-  action: `Replace ${noun}`,
-  description: (
-    <>
-      MySQL cannot roll DDL back, so we drop{' '}
-      <span data-mask className="font-medium">
-        {name}
-      </span>{' '}
-      and create it again. If the new statement fails, it stays dropped.
-    </>
-  ),
-})
+}): InspectorWarning | undefined =>
+  capabilitiesOf(connectionType).ddlRollback
+    ? undefined
+    : {
+        action: `Replace ${noun}`,
+        description: (
+          <>
+            This database cannot roll DDL back, so we drop{' '}
+            <span data-mask className="font-medium">
+              {name}
+            </span>{' '}
+            and create it again. If the new statement fails, it stays dropped.
+          </>
+        ),
+      }
 
 export const InspectorSection = ({
   action,

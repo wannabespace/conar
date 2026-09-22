@@ -11,6 +11,8 @@ import {
 
 const tableTypes = ['base table', 'view', 'materialized view'] as const
 
+export type RelationKind = 'table' | 'view'
+
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',

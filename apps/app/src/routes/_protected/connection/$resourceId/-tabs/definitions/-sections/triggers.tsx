@@ -1,5 +1,5 @@
 import { FlashIcon } from '@hugeicons/core-free-icons'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
@@ -28,6 +28,9 @@ import type {
 import {
   TRIGGER_EVENTS,
   TRIGGER_TIMINGS,
+  triggerBodyTemplates,
+  triggerEventsFor,
+  triggerOrientationsFor,
 } from '~/entities/connection/queries/triggers/shape'
 import { queryClient } from '~/lib/query-client'
 
@@ -47,7 +50,7 @@ import {
   InspectorOption,
   InspectorSection,
   InspectorSql,
-  mysqlReplaceWarning,
+  replaceWarning,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
@@ -72,11 +75,6 @@ interface TriggerDraft {
   schema: string
   table: string
   timing: TriggerTiming
-}
-
-const bodyTemplates: Partial<Record<ConnectionType, string>> = {
-  mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
-  mysql: 'BEGIN\n\nEND',
 }
 
 const triggerSchemaOf = (usesBody: boolean) =>
@@ -121,7 +119,7 @@ const draftOf = (
   const { orientations, timings } = capabilitiesOf(connectionType).triggers
 
   return {
-    body: item?.body || bodyTemplates[connectionType] || '',
+    body: item?.body || triggerBodyTemplates[connectionType] || '',
     events: item
       ? TRIGGER_EVENTS.filter((event) => item.event.includes(event))
       : ['INSERT'],
@@ -136,20 +134,6 @@ const draftOf = (
     schema: item?.schema ?? pageSchema,
     table: item?.table ?? '',
   }
-}
-
-// Postgres refuses FOR EACH ROW on TRUNCATE and anything but ROW on INSTEAD OF.
-const orientationsFor = (
-  draft: TriggerDraft,
-  allowed: readonly TriggerOrientation[]
-) => {
-  if (draft.timing === 'INSTEAD OF') {
-    return allowed.filter((orientation) => orientation === 'ROW')
-  }
-
-  return draft.events.includes('TRUNCATE')
-    ? allowed.filter((orientation) => orientation === 'STATEMENT')
-    : allowed
 }
 
 // A trigger carrying a WHEN clause, a column list, function arguments, an
@@ -187,6 +171,11 @@ const useToggle = ({
           table: item.table,
         })
       ),
+    onError: (error, { enabled, item }) =>
+      toast.error(
+        `Failed to ${enabled ? 'enable' : 'disable'} trigger "${item.name}"`,
+        { description: error.message }
+      ),
     onSuccess: async (_result, { enabled, item }) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
@@ -198,29 +187,21 @@ const useToggle = ({
 const TriggerInspector = ({
   can,
   connectionResource,
-  item: snapshot,
+  item,
+  relationNamesOf,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  tablesOf,
   type: connectionType,
-  viewsOf,
 }: SectionInspectorProps<TriggerItem>) => {
-  const { data: triggers = [] } = useQuery(
-    resourceTriggersQueryOptions({ connectionResource })
-  )
   const options = capabilitiesOf(connectionType).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
   })
   const toggle = useToggle({ queryKey, run })
-  const item =
-    snapshot &&
-    (triggers.find((row) => triggerKey(row) === triggerKey(snapshot)) ??
-      snapshot)
   const mutation = useMutation({
     mutationFn: (draft: TriggerDraft) =>
       run(
@@ -252,7 +233,7 @@ const TriggerInspector = ({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
     onSubmit: ({ value }) => {
       // The picker narrows the orientation, and a hidden one still has to be legal.
-      const allowed = orientationsFor(value, options.orientations)
+      const allowed = triggerOrientationsFor(value, options.orientations)
 
       mutation.mutate(
         allowed.includes(value.orientation)
@@ -267,14 +248,20 @@ const TriggerInspector = ({
   const readOnly = item
     ? !can.edit || !formEditable(item, options.body)
     : !can.create
-  const orientations = orientationsFor(draft, options.orientations)
+  const orientations = triggerOrientationsFor(draft, options.orientations)
   const instead = draft.timing === 'INSTEAD OF'
   const targets = (() => {
     if (item) {
       return [item.table]
     }
 
-    return instead ? viewsOf(draft.schema) : tablesOf(draft.schema)
+    if (!instead) {
+      return relationNamesOf(draft.schema, 'table')
+    }
+
+    return options.insteadOfTargets.flatMap((target) =>
+      relationNamesOf(draft.schema, target)
+    )
   })()
   const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
   const changed = !saved || !sameShape(shapeOf(draft), saved)
@@ -289,8 +276,8 @@ const TriggerInspector = ({
       noun="trigger"
       readOnly={readOnly}
       warning={
-        item && connectionType === ConnectionType.MySQL
-          ? mysqlReplaceWarning({ name: item.name, noun: 'trigger' })
+        item
+          ? replaceWarning({ connectionType, name: item.name, noun: 'trigger' })
           : undefined
       }
     >
@@ -304,6 +291,7 @@ const TriggerInspector = ({
             <Switch
               id="trigger-enabled"
               size="sm"
+              disabled={toggle.isPending}
               checked={item.enabled !== false}
               onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
             />
@@ -356,7 +344,7 @@ const TriggerInspector = ({
                 label="Events"
                 description="Only the events chosen here fire the trigger."
                 disabled={readOnly}
-                options={options.events}
+                options={triggerEventsFor(draft.timing, options.events)}
                 placeholder="Choose events"
               />
             ) : (
@@ -367,7 +355,7 @@ const TriggerInspector = ({
                 <OptionSelect
                   id={field.name}
                   disabled={readOnly}
-                  options={options.events}
+                  options={triggerEventsFor(draft.timing, options.events)}
                   placeholder="Choose an event"
                   value={field.state.value[0] ?? ''}
                   onValueChange={(event: TriggerEvent) =>
@@ -387,6 +375,12 @@ const TriggerInspector = ({
                 labelOf={sentenceCase}
                 options={options.timings}
                 placeholder="Timing"
+                onChanged={(timing: TriggerTiming) =>
+                  resetFields(form, {
+                    events: triggerEventsFor(timing, draft.events),
+                    ...(item ? {} : { table: '' }),
+                  })
+                }
               />
             )}
           </form.AppField>
@@ -489,7 +483,7 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
 
 export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
-  const { connectionResource, run, search, selectedSchema, tablesOf, viewsOf } =
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
     state
   const options = capabilitiesOf(state.type).triggers
   const query = resourceTriggersQueryOptions({ connectionResource })
@@ -518,11 +512,11 @@ export const Triggers = () => {
     timingFilter.matches(item.timing) &&
     matchesSearch(search, item.name, item.table, item.functionName)
   const schema = selectedSchema ?? ''
-  const watchable = options.timings.includes('INSTEAD OF')
-    ? [...tablesOf(schema), ...viewsOf(schema)]
-    : tablesOf(schema)
+  const watchable = ['table' as const, ...options.insteadOfTargets].some(
+    (kind) => relationNamesOf(schema, kind).length > 0
+  )
   const createBlocked = (() => {
-    if (watchable.length === 0) {
+    if (!watchable) {
       return 'This schema has no tables to watch.'
     }
 

@@ -4,7 +4,7 @@ Four engines behind one UI: `postgres`, `mysql`, `mssql`, `clickhouse` (`Connect
 
 **A write is a `createQuery` too** — raw `sql` executed per dialect, `unsupported(feature)` for the engines that cannot write it. Each dialect spells out its own execution: no shared wrapper stands between the statement and `createQuery`, so a file reads as the statements it runs. One write is one file (`architecture.md`), and a statement two of them share is built in the subject's `shape.ts`.
 
-**Every per-dialect capability lives in one table**, `entities/connection/capabilities.ts`: one entry per `ConnectionType`, so what an engine supports reads top to bottom in one place instead of being spread over a set per feature. Adding an engine is one entry the `Record` will not let you omit. A rule that belongs to one screen alone stays in that screen — this table is for facts two screens would otherwise each encode.
+**Every per-dialect capability lives in one table**, `entities/connection/capabilities.ts`: one entry per `ConnectionType`, so what an engine supports reads top to bottom in one place instead of being spread over a set per feature. Adding an engine is one entry the `Record` will not let you omit. **A `.tsx` never compares `ConnectionType`**: a per-engine fact is a capability entry, and a per-engine rule that needs logic (a body template, a grammar restriction, a replace-versus-recreate decision) lives in the subject's `shape.ts` beside the statements it protects.
 
 ## Never offer what the dialect cannot do
 

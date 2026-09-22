@@ -1,5 +1,5 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Switch } from '@tamery/ui/components/switch'
@@ -19,6 +19,10 @@ import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/fun
 import { recreateFunctionQuery } from '~/entities/connection/queries/functions/recreate'
 import type { RoutineKind } from '~/entities/connection/queries/functions/routine-kind'
 import type { FunctionShape } from '~/entities/connection/queries/functions/shape'
+import {
+  functionBodyTemplateOf,
+  replacesRoutine,
+} from '~/entities/connection/queries/functions/shape'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -34,7 +38,7 @@ import {
   InspectorOption,
   InspectorSection,
   InspectorSql,
-  mysqlReplaceWarning,
+  replaceWarning,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
@@ -51,39 +55,6 @@ const typeLabels: Record<FunctionType, string> = {
 }
 
 const kinds = Object.keys(typeLabels) as RoutineKind[]
-
-const argumentPlaceholders: Partial<Record<ConnectionType, string>> = {
-  mssql: '@id int, @label nvarchar(50)',
-  mysql: 'id INT, label VARCHAR(50)',
-  postgres: 'id integer, label text',
-}
-
-const templateOf = ({
-  connectionType,
-  kind,
-  language,
-}: {
-  connectionType: ConnectionType
-  kind: RoutineKind
-  language: string
-}) => {
-  if (connectionType === ConnectionType.Postgres) {
-    return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
-  }
-
-  if (connectionType === ConnectionType.ClickHouse) {
-    return ''
-  }
-
-  if (kind === 'function') {
-    return 'BEGIN\n  RETURN 0;\nEND'
-  }
-
-  // T-SQL rejects a block holding no statement; MySQL takes one.
-  return connectionType === ConnectionType.MSSQL
-    ? 'BEGIN\n  SET NOCOUNT ON;\nEND'
-    : 'BEGIN\n\nEND'
-}
 
 interface FunctionDraft {
   args: string
@@ -123,7 +94,11 @@ const newDraft = (
   return {
     args: '',
     behavior: behaviors[0] ?? '',
-    body: templateOf({ connectionType, kind: 'function', language }),
+    body: functionBodyTemplateOf({
+      connectionType,
+      kind: 'function',
+      language,
+    }),
     extras: '',
     kind: 'function',
     language,
@@ -186,21 +161,6 @@ const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
   )
 }
 
-// Dropping loses the routine's grants and owner, and fails while a view or
-// another routine depends on it. Postgres only replaces in place while the
-// whole signature stays put; SQL Server's CREATE OR ALTER also rewrites the
-// arguments and the return type.
-const replacesObject = (
-  item: FunctionItem,
-  shape: FunctionShape,
-  connectionType: ConnectionType
-) =>
-  item.name !== shape.name ||
-  item.type !== shape.kind ||
-  (connectionType !== ConnectionType.MSSQL &&
-    ((item.args ?? '') !== shape.args ||
-      (item.return_type ?? '') !== shape.returnType))
-
 const FunctionInspector = ({
   can,
   connectionResource,
@@ -221,8 +181,13 @@ const FunctionInspector = ({
               identity: item.identity,
               kind: item.type,
               name: item.name,
-              replacesObject: replacesObject(
-                item,
+              replacesObject: replacesRoutine(
+                {
+                  args: item.args ?? null,
+                  kind: item.type,
+                  name: item.name,
+                  returnType: item.return_type,
+                },
                 shapeOf(draft),
                 connectionType
               ),
@@ -261,9 +226,12 @@ const FunctionInspector = ({
   // A starter body only belongs to the shape it was written for, so switching
   // kind or language swaps it — unless the user has typed their own.
   const retemplate = (next: FunctionDraft) => {
-    const template = templateOf({ connectionType, ...next })
+    const template = functionBodyTemplateOf({ connectionType, ...next })
 
-    if (!item && draft.body === templateOf({ connectionType, ...draft })) {
+    if (
+      !item &&
+      draft.body === functionBodyTemplateOf({ connectionType, ...draft })
+    ) {
       resetFields(form, { body: template })
     }
   }
@@ -282,8 +250,8 @@ const FunctionInspector = ({
       readOnly={readOnly}
       saveLabel={item ? undefined : `Create ${draft.kind}`}
       warning={
-        item && connectionType === ConnectionType.MySQL
-          ? mysqlReplaceWarning({ name: item.name, noun: item.type })
+        item
+          ? replaceWarning({ connectionType, name: item.name, noun: item.type })
           : undefined
       }
     >
@@ -323,7 +291,7 @@ const FunctionInspector = ({
               label="Arguments"
               description="Written as SQL, the way the routine declares them."
               disabled={readOnly}
-              placeholder={argumentPlaceholders[connectionType]}
+              placeholder={options.argumentPlaceholder}
             />
           )}
         </form.AppField>

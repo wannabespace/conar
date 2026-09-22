@@ -10,12 +10,16 @@ import type { IconSvgElement } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils'
 
-import type { ReferentialAction } from './queries/constraints/shape'
+import type {
+  ConstraintKind,
+  ReferentialAction,
+} from './queries/constraints/shape'
 import { REFERENTIAL_ACTIONS } from './queries/constraints/shape'
 import {
   FUNCTION_DETERMINISM,
   FUNCTION_VOLATILITIES,
 } from './queries/functions/shape'
+import type { RelationKind } from './queries/tables/list'
 import type {
   TriggerEvent,
   TriggerOrientation,
@@ -35,6 +39,7 @@ export interface SectionCapabilities {
 }
 
 interface FunctionCapabilities {
+  argumentPlaceholder: string
   behaviors: readonly string[]
   languages: readonly string[]
   securityDefiner: boolean
@@ -43,6 +48,7 @@ interface FunctionCapabilities {
 interface TriggerCapabilities {
   body: boolean
   events: readonly TriggerEvent[]
+  insteadOfTargets: readonly RelationKind[]
   multipleEvents: boolean
   orientations: readonly TriggerOrientation[]
   timings: readonly TriggerTiming[]
@@ -51,8 +57,10 @@ interface TriggerCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
+  ddlRollback: boolean
   enumsLabel: string
   explain: boolean
+  fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
@@ -72,9 +80,16 @@ const full: SectionCapabilities = { create: true, drop: true, edit: true }
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
+    ddlRollback: false,
     enumsLabel: 'Enums',
     explain: false,
-    functions: { behaviors: [], languages: [], securityDefiner: false },
+    fixedConstraintNames: {},
+    functions: {
+      argumentPlaceholder: '',
+      behaviors: [],
+      languages: [],
+      securityDefiner: false,
+    },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
@@ -91,6 +106,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     triggers: {
       body: false,
       events: [],
+      insteadOfTargets: [],
       multipleEvents: false,
       orientations: [],
       timings: [],
@@ -99,9 +115,16 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
+    ddlRollback: true,
     enumsLabel: 'Enums',
     explain: false,
-    functions: { behaviors: [], languages: [], securityDefiner: false },
+    fixedConstraintNames: {},
+    functions: {
+      argumentPlaceholder: '@id int, @label nvarchar(50)',
+      behaviors: [],
+      languages: [],
+      securityDefiner: false,
+    },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
     ),
@@ -120,6 +143,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     triggers: {
       body: true,
       events: ROW_EVENTS,
+      insteadOfTargets: ['table', 'view'],
       multipleEvents: true,
       orientations: ['STATEMENT'],
       timings: ['AFTER', 'INSTEAD OF'],
@@ -128,14 +152,19 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
+    // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
+    ddlRollback: false,
     enumsLabel: 'Enums & Sets',
     explain: true,
-    // InnoDB parses SET DEFAULT but rejects the table.
+    // MySQL names every primary key PRIMARY, whatever the ADD says.
+    fixedConstraintNames: { primaryKey: 'PRIMARY' },
     functions: {
+      argumentPlaceholder: 'id INT, label VARCHAR(50)',
       behaviors: FUNCTION_DETERMINISM,
       languages: [],
       securityDefiner: false,
     },
+    // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'SET DEFAULT'
     ),
@@ -154,6 +183,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     triggers: {
       body: true,
       events: ROW_EVENTS,
+      insteadOfTargets: [],
       multipleEvents: false,
       orientations: ['ROW'],
       timings: ['BEFORE', 'AFTER'],
@@ -162,9 +192,12 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
+    ddlRollback: true,
     enumsLabel: 'Enums',
     explain: true,
+    fixedConstraintNames: {},
     functions: {
+      argumentPlaceholder: 'id integer, label text',
       behaviors: FUNCTION_VOLATILITIES,
       languages: ['plpgsql', 'sql'],
       securityDefiner: true,
@@ -185,6 +218,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     triggers: {
       body: false,
       events: TRIGGER_EVENTS,
+      insteadOfTargets: ['view'],
       multipleEvents: true,
       orientations: TRIGGER_ORIENTATIONS,
       timings: TRIGGER_TIMINGS,

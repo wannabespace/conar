@@ -1,5 +1,5 @@
 import { Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
@@ -151,6 +151,9 @@ const suggestedNameOf = (draft: ConstraintDraft) =>
 const finalNameOf = (draft: ConstraintDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
 
+const fixedNameOf = (draft: ConstraintDraft, connectionType: ConnectionType) =>
+  capabilitiesOf(connectionType).fixedConstraintNames[draft.kind]
+
 const changeOf = (
   draft: ConstraintDraft,
   item: GroupedConstraint | null,
@@ -236,12 +239,12 @@ const ConstraintInspector = ({
   can,
   connectionResource,
   item,
+  relationNamesOf,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedConstraint>) => {
   const mutation = useMutation({
@@ -277,7 +280,7 @@ const ConstraintInspector = ({
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+        `Constraint "${fixedNameOf(draft, connectionType) ?? finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -356,14 +359,10 @@ const ConstraintInspector = ({
               label="Name"
               autoFocus
               description="Leave it empty to use the suggested name."
-              // MySQL names every primary key PRIMARY, whatever the ADD says.
-              disabled={
-                readOnly ||
-                (item?.type === 'primaryKey' &&
-                  connectionType === ConnectionType.MySQL)
-              }
+              disabled={readOnly || !!fixedNameOf(draft, connectionType)}
               placeholder={
-                draft.table ? suggestedNameOf(draft) : 'Constraint name'
+                fixedNameOf(draft, connectionType) ??
+                (draft.table ? suggestedNameOf(draft) : 'Constraint name')
               }
             />
           )}
@@ -390,7 +389,9 @@ const ConstraintInspector = ({
             <SelectField
               label="Table"
               disabled={readOnly || !!item}
-              options={item ? [item.table] : tablesOf(draft.schema)}
+              options={
+                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+              }
               placeholder="Choose a table"
               onChanged={() => resetFields(form, { columns: [] })}
             />
@@ -437,7 +438,7 @@ const ConstraintInspector = ({
               <SelectField
                 label="Table"
                 disabled={shapeLocked}
-                options={tablesOf(draft.foreignSchema)}
+                options={relationNamesOf(draft.foreignSchema, 'table')}
                 placeholder="Choose a table"
                 onChanged={() => resetFields(form, { foreignColumns: [] })}
               />
@@ -543,7 +544,8 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
 
 export const Constraints = () => {
   const state = useDefinitionsState({ section: 'constraints' })
-  const { connectionResource, run, search, selectedSchema, tablesOf } = state
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+    state
   const query = resourceConstraintsQueryOptions({ connectionResource })
   const { data: constraints = [], isPending } = useQuery(query)
   const kindFilter = useFilter<ConstraintKind>('All types', [
@@ -577,7 +579,7 @@ export const Constraints = () => {
     <DefinitionsPage
       columns={columns}
       createBlocked={
-        tablesOf(selectedSchema ?? '').length === 0
+        relationNamesOf(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to constrain.'
           : undefined
       }

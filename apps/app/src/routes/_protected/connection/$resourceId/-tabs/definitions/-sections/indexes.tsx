@@ -228,12 +228,12 @@ const IndexInspector = ({
   can,
   connectionResource,
   item,
+  relationNamesOf,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
@@ -315,7 +315,9 @@ const IndexInspector = ({
             <SelectField
               label="Table"
               disabled={locked.readOnly || !!item}
-              options={item ? [item.table] : tablesOf(draft.schema)}
+              options={
+                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+              }
               placeholder="Choose a table"
               onChanged={() => resetFields(form, { columns: [] })}
             />
@@ -389,7 +391,8 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
 
 export const Indexes = () => {
   const state = useDefinitionsState({ section: 'indexes' })
-  const { connectionResource, run, search, selectedSchema, tablesOf } = state
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+    state
   const query = resourceIndexesQueryOptions({ connectionResource })
   const { data: indexes = [], isPending } = useQuery(query)
   const kindFilter = useFilter<IndexKind>('All types', [
@@ -403,7 +406,7 @@ export const Indexes = () => {
       canDropItem={(item) => !item.constraintOwned}
       columns={columns}
       createBlocked={
-        tablesOf(selectedSchema ?? '').length === 0
+        relationNamesOf(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to index.'
           : undefined
       }

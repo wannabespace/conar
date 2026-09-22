@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { sectionCapabilitiesOf } from '~/entities/connection/capabilities'
+import type { RelationKind } from '~/entities/connection/queries/tables/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import type { QueryParams } from '~/entities/connection/runtime/query'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
@@ -29,7 +30,7 @@ export const useDefinitionsState = ({
   const showSystem = useSubscription(store, {
     selector: (state) => state.showSystem,
   })
-  const { data } = useQuery(
+  const { data, isPending: structurePending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
   )
   const schemas = data?.schemas.map(({ name }) => name) ?? []
@@ -42,14 +43,12 @@ export const useDefinitionsState = ({
     [linkedSchema, pickedSchema].find(
       (schema) => schema && schemas.includes(schema)
     ) ?? schemas[0]
-  const namesOf = (schema: string, kind: 'table' | 'view') =>
+  const relationNamesOf = (schema: string, kind: RelationKind) =>
     data?.schemas
       .find(({ name }) => name === schema)
       ?.tables.filter((table) => table.type === kind)
       .map((table) => table.name)
       .toSorted() ?? noTables
-  const tablesOf = (schema: string) => namesOf(schema, 'table')
-  const viewsOf = (schema: string) => namesOf(schema, 'view')
 
   const run: RunQuery = async (query) =>
     query.run(await connectionResourceToQueryParams(connectionResource))
@@ -58,6 +57,7 @@ export const useDefinitionsState = ({
     can: sectionCapabilitiesOf(section, connection.type),
     connection,
     connectionResource,
+    relationNamesOf,
     run,
     schemas,
     search,
@@ -65,9 +65,8 @@ export const useDefinitionsState = ({
     selectedSchema,
     setSearch,
     setSelectedSchema: setPickedSchema,
-    tablesOf,
+    structurePending,
     type: connection.type,
-    viewsOf,
   }
 }
 

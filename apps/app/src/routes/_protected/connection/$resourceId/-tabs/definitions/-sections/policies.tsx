@@ -207,12 +207,12 @@ const savePolicy = async ({
 const PolicyInspector = ({
   can,
   item,
+  relationNamesOf,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  tablesOf,
   type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
@@ -233,6 +233,11 @@ const PolicyInspector = ({
           schema: item?.schema ?? '',
           table: item?.table ?? '',
         })
+      ),
+    onError: (error, { enabled }) =>
+      toast.error(
+        `Failed to ${enabled ? 'enable' : 'disable'} row level security on "${item?.table}"`,
+        { description: error.message }
       ),
     onSuccess: async (_result, { enabled }) => {
       await queryClient.invalidateQueries({ queryKey })
@@ -281,6 +286,7 @@ const PolicyInspector = ({
             <Switch
               id="policy-row-level-security"
               size="sm"
+              disabled={rowLevelSecurity.isPending}
               checked={item.enabled}
               onCheckedChange={(enabled) =>
                 rowLevelSecurity.mutate({ enabled })
@@ -311,7 +317,9 @@ const PolicyInspector = ({
               label="Table"
               description="The policy only applies while row level security is enabled on this table."
               disabled={readOnly || !!item}
-              options={item ? [item.table] : tablesOf(draft.schema)}
+              options={
+                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+              }
               placeholder="Choose a table"
             />
           )}
@@ -455,7 +463,8 @@ const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
 
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
-  const { connectionResource, run, search, selectedSchema, tablesOf } = state
+  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+    state
   const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
   const kindFilter = useFilter<PolicyKind>(
@@ -480,7 +489,7 @@ export const Policies = () => {
     <DefinitionsPage
       columns={columns}
       createBlocked={
-        tablesOf(selectedSchema ?? '').length === 0
+        relationNamesOf(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to protect.'
           : undefined
       }
