@@ -13,11 +13,9 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
-import {
-  sectionAvailable,
-  sectionMetaOf,
-} from '~/entities/connection/capabilities'
+import { sectionAvailable } from '~/entities/connection/capabilities'
 import type { Connection } from '~/entities/connection/core/sync'
+import { sectionMetaOf } from '~/entities/connection/sections'
 import {
   openDefinitionsTab,
   openVisualizerTab,

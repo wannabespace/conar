@@ -49,10 +49,8 @@ import { toast } from 'sonner'
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { PaneEmpty } from '~/components/pane-empty'
-import {
-  capabilitiesOf,
-  sectionMetaOf,
-} from '~/entities/connection/capabilities'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { sectionMetaOf } from '~/entities/connection/sections'
 import { queryClient } from '~/lib/query-client'
 
 import type { DefinitionsState } from '../-hooks/use-definitions-state'

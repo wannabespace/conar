@@ -1,15 +1,4 @@
-import {
-  FlashIcon,
-  Key01Icon,
-  LeftToRightListDashIcon,
-  LockKeyIcon,
-  SecurityCheckIcon,
-  SourceCodeIcon,
-  TagsIcon,
-} from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { uppercaseFirst } from '@tamery/shared/utils'
 
 import type {
   ConstraintKind,
@@ -103,10 +92,25 @@ const readOnly: SectionCapabilities = {}
 const full: SectionCapabilities = { create: true, drop: true, edit: true }
 
 const btreeIndexes: IndexCapabilities = { rename: true, skipTypes: [] }
+const noFunctions: FunctionCapabilities = {
+  argumentPlaceholder: '',
+  behaviors: [],
+  languages: [],
+  securityDefiner: false,
+}
 const noPolicies: PolicyCapabilities = {
   alterInPlace: false,
   commands: [],
   everyone: '',
+}
+const noTriggers: TriggerCapabilities = {
+  body: false,
+  events: [],
+  insteadOfTargets: [],
+  multipleEvents: false,
+  orientations: [],
+  timings: [],
+  toggle: false,
 }
 
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
@@ -117,12 +121,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
-    functions: {
-      argumentPlaceholder: '',
-      behaviors: [],
-      languages: [],
-      securityDefiner: false,
-    },
+    functions: noFunctions,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     policies: {
       alterInPlace: true,
@@ -144,15 +143,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       triggers: false,
     },
     systemSchemas: [],
-    triggers: {
-      body: false,
-      events: [],
-      insteadOfTargets: [],
-      multipleEvents: false,
-      orientations: [],
-      timings: [],
-      toggle: false,
-    },
+    triggers: noTriggers,
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
@@ -287,30 +278,12 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
 }
 
-const sectionMeta = {
-  constraints: { cascade: true, icon: Key01Icon, noun: 'constraint' },
-  enums: { cascade: true, icon: TagsIcon, noun: 'enum' },
-  functions: { cascade: true, icon: SourceCodeIcon, noun: 'function' },
-  indexes: { cascade: false, icon: LeftToRightListDashIcon, noun: 'index' },
-  policies: { cascade: false, icon: SecurityCheckIcon, noun: 'policy' },
-  privileges: { cascade: false, icon: LockKeyIcon, noun: 'privilege' },
-  triggers: { cascade: false, icon: FlashIcon, noun: 'trigger' },
-} as const satisfies Record<
-  DefinitionsSection,
-  { cascade: boolean; icon: IconSvgElement; noun: string }
->
-
 export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
 
 export const defaultSchemaOf = (
   type: ConnectionType,
   database: string | null
 ) => capabilities[type].defaultSchema ?? database
-
-export const sectionMetaOf = (section: DefinitionsSection) => ({
-  ...sectionMeta[section],
-  title: uppercaseFirst(section),
-})
 
 export const sectionAvailable = (
   section: DefinitionsSection,
