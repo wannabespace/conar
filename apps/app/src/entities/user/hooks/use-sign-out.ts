@@ -5,6 +5,8 @@ import { fullSignOut } from '~/lib/auth'
 import { handleError } from '~/lib/error'
 import { queryClient } from '~/lib/query-client'
 
+const AUTH_PAGE_TRANSITION_MS = 1000
+
 export const useSignOut = () => {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationFn: async () => {
@@ -15,10 +17,9 @@ export const useSignOut = () => {
     onSuccess: () => {
       toast.success('You have been signed out successfully.')
 
-      // Timeout to wait transition to auth page
       setTimeout(() => {
         queryClient.removeQueries()
-      }, 1000)
+      }, AUTH_PAGE_TRANSITION_MS)
     },
   })
 

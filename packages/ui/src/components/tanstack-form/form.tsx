@@ -1,8 +1,6 @@
 import type { AnyFormApi } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 
-// Submitting owns the trip to the problem, so a form that refuses to submit
-// moves focus to the first field that said no.
 const focusInvalidField = (element: HTMLFormElement, form: AnyFormApi) => {
   const invalid = Object.keys(form.state.fieldMeta).find(
     (name) => !form.state.fieldMeta[name]?.isValid

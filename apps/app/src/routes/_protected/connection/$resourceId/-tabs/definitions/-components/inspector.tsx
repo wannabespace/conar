@@ -246,8 +246,6 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
   </InspectorSection>
 )
 
-// What the database stored, fetched per object; sections with the definition
-// already in the row render InspectorDefinition straight.
 export const InspectorSql = ({
   query,
 }: {

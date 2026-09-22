@@ -1,7 +1,3 @@
-/**
- * @name information_schema
- * @type schema
- */
 export interface InformationSchema {
   TABLES: Tables
   COLUMNS: Columns
@@ -16,10 +12,6 @@ export interface InformationSchema {
   TABLE_PRIVILEGES: TablePrivileges
 }
 
-/**
- * @name TABLE_PRIVILEGES
- * @type table
- */
 interface TablePrivileges {
   GRANTEE: string
   TABLE_SCHEMA: string
@@ -28,10 +20,6 @@ interface TablePrivileges {
   IS_GRANTABLE: string
 }
 
-/**
- * @name SCHEMATA
- * @type table
- */
 interface Schemata {
   CATALOG_NAME: string
   SCHEMA_NAME: string
@@ -40,10 +28,6 @@ interface Schemata {
   SQL_PATH: string | null
 }
 
-/**
- * @name TABLES
- * @type table
- */
 interface Tables {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -68,10 +52,6 @@ interface Tables {
   TABLE_COMMENT: string | null
 }
 
-/**
- * @name VIEWS
- * @type table
- */
 interface Views {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -85,10 +65,6 @@ interface Views {
   COLLATION_CONNECTION: string
 }
 
-/**
- * @name COLUMNS
- * @type table
- */
 interface Columns {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -114,10 +90,6 @@ interface Columns {
   SRS_ID: number
 }
 
-/**
- * @name TABLE_CONSTRAINTS
- * @type table
- */
 interface TableConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -128,10 +100,6 @@ interface TableConstraints {
   ENFORCED: 'YES' | 'NO'
 }
 
-/**
- * @name KEY_COLUMN_USAGE
- * @type table
- */
 interface KeyColumnUsage {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -147,10 +115,6 @@ interface KeyColumnUsage {
   REFERENCED_COLUMN_NAME: string | null
 }
 
-/**
- * @name STATISTICS
- * @type table
- */
 interface Statistics {
   TABLE_SCHEMA: string
   TABLE_NAME: string
@@ -163,10 +127,6 @@ interface Statistics {
   COLLATION: string | null
 }
 
-/**
- * @name REFERENTIAL_CONSTRAINTS
- * @type table
- */
 interface ReferentialConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -181,10 +141,6 @@ interface ReferentialConstraints {
   REFERENCED_TABLE_NAME: string
 }
 
-/**
- * @name TRIGGERS
- * @type table
- */
 interface Triggers {
   TRIGGER_CATALOG: string
   TRIGGER_SCHEMA: string
@@ -210,10 +166,6 @@ interface Triggers {
   DATABASE_COLLATION: string
 }
 
-/**
- * @name ROUTINES
- * @type table
- */
 interface Routines {
   ROUTINE_CATALOG: string
   ROUTINE_SCHEMA: string

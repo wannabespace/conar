@@ -1,7 +1,3 @@
-/**
- * @name system
- * @type schema
- */
 export interface System {
   databases: Databases
   columns: Columns
@@ -11,10 +7,6 @@ export interface System {
   row_policies: RowPolicies
 }
 
-/**
- * @name row_policies
- * @type table
- */
 interface RowPolicies {
   name: string
   short_name: string
@@ -28,10 +20,6 @@ interface RowPolicies {
   apply_to_except: string[]
 }
 
-/**
- * @name tables
- * @type table
- */
 interface Tables {
   database: string
   name: string
@@ -39,18 +27,10 @@ interface Tables {
   is_temporary: number
 }
 
-/**
- * @name one
- * @type table
- */
 interface One {
   dummy: number
 }
 
-/**
- * @name databases
- * @type table
- */
 interface Databases {
   name: string
   engine: string
@@ -60,10 +40,6 @@ interface Databases {
   comment: string
 }
 
-/**
- * @name columns
- * @type table
- */
 interface Columns {
   database: string
   table: string
@@ -75,10 +51,6 @@ interface Columns {
   is_in_primary_key: number
 }
 
-/**
- * @name parts
- * @type table
- */
 interface Parts {
   database: string
   table: string

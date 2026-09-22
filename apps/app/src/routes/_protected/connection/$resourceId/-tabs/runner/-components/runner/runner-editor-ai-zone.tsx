@@ -143,7 +143,6 @@ export const RunnerEditorAIZone = ({
               }}
               className={cn(
                 `field-sizing-content flex-1 resize-none border-none px-2 py-1.5 pb-8 text-sm`,
-                // Disable monaco default styles
                 `focus:border-border! focus-visible:border-border! focus-visible:ring-0! focus-visible:outline-none!`
               )}
               placeholder={

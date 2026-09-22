@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react'
 import { EventsProvider } from '~/components/events-provider'
 import { posthog } from '~/lib/posthog'
 
-// User specific errors that we don't want to track
 const CONNECTION_ERRORS = [
   'ERR_TIMED_OUT',
   'ETIMEDOUT',

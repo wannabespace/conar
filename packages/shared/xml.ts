@@ -1,4 +1,3 @@
-// https://stackoverflow.com/a/47317538/25689393
 export const formatXml = (sourceXml: string) => {
   try {
     const xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml')
@@ -7,7 +6,6 @@ export const formatXml = (sourceXml: string) => {
     }
     const xsltDoc = new DOMParser().parseFromString(
       [
-        // describes how we want to modify the XML - indent everything
         '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
         '  <xsl:strip-space elements="*"/>',
         '  <xsl:template match="para[content-style][not(text())]">',

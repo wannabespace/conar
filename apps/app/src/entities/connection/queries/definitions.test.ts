@@ -284,8 +284,6 @@ describe('mssqlModuleBody', () => {
     expect(mssqlModuleBody(null)).toBeNull()
   })
 
-  // The header carries what sys.parameters does not, and the list query reads
-  // the routine read-only from it.
   test('the header keeps a parameter default and a WITH option', () => {
     expect(
       mssqlModuleParts(

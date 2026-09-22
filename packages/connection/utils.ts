@@ -1,6 +1,5 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 
-/** IPv4 addresses in 127.0.0.0/8 (often used like localhost). */
 const LOCALHOST_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
 
 export const isLocalhostConnectionString = (

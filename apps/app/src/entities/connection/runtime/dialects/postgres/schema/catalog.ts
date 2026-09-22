@@ -1,7 +1,3 @@
-/**
- * @name pg_catalog
- * @type schema
- */
 export interface PgCatalog {
   pg_namespace: PgNamespace
   pg_class: PgClass
@@ -19,10 +15,6 @@ export interface PgCatalog {
   pg_attrdef: PgAttrdef
 }
 
-/**
- * @name pg_policies
- * @type view
- */
 interface PgPolicies {
   schemaname: string
   tablename: string
@@ -34,28 +26,16 @@ interface PgPolicies {
   with_check: string | null
 }
 
-/**
- * @name pg_database
- * @type table
- */
 interface PgDatabase {
   datname: string
   datistemplate: boolean
 }
 
-/**
- * @name pg_settings
- * @type table
- */
 interface PgSettings {
   name: string
   setting: string
 }
 
-/**
- * @name pg_namespace
- * @type table
- */
 interface PgNamespace {
   oid: number
   nspname: string
@@ -63,10 +43,6 @@ interface PgNamespace {
   nspacl: string | null
 }
 
-/**
- * @name pg_class
- * @type table
- */
 interface PgClass {
   oid: number
   relname: string
@@ -102,10 +78,6 @@ interface PgClass {
   relpartbound: null
 }
 
-/**
- * @name pg_constraint
- * @type table
- */
 interface PgConstraint {
   oid: number
   conname: string
@@ -124,10 +96,6 @@ interface PgConstraint {
   coninhcount: number
 }
 
-/**
- * @name pg_index
- * @type table
- */
 interface PgIndex {
   indrelid: number
   indexrelid: number
@@ -140,10 +108,6 @@ interface PgIndex {
   indisprimary: boolean
 }
 
-/**
- * @name pg_attribute
- * @type table
- */
 interface PgAttribute {
   attrelid: number
   attname: string
@@ -172,10 +136,6 @@ interface PgAttribute {
   attmissingval: unknown | null
 }
 
-/**
- * @name pg_am
- * @type table
- */
 interface PgAm {
   oid: number
   amname: string
@@ -183,10 +143,6 @@ interface PgAm {
   amtype: string
 }
 
-/**
- * @name pg_trigger
- * @type table
- */
 interface PgTrigger {
   oid: number
   tgrelid: number
@@ -200,10 +156,6 @@ interface PgTrigger {
   tgqual: string | null
 }
 
-/**
- * @name pg_proc
- * @type table
- */
 interface PgProc {
   oid: number
   proname: string
@@ -218,19 +170,11 @@ interface PgProc {
   proargtypes: string
 }
 
-/**
- * @name pg_language
- * @type table
- */
 interface PgLanguage {
   oid: number
   lanname: string
 }
 
-/**
- * @name pg_type
- * @type table
- */
 interface PgType {
   oid: number
   typname: string
@@ -239,10 +183,6 @@ interface PgType {
   typarray: number
 }
 
-/**
- * @name pg_attrdef
- * @type table
- */
 interface PgAttrdef {
   oid: number
   adrelid: number

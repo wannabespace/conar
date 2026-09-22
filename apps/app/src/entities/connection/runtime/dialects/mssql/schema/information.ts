@@ -1,7 +1,3 @@
-/**
- * @name information_schema
- * @type schema
- */
 export interface InformationSchema {
   TABLES: Tables
   COLUMNS: Columns
@@ -12,10 +8,6 @@ export interface InformationSchema {
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
 }
 
-/**
- * @name TABLES
- * @type table
- */
 interface Tables {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -23,10 +15,6 @@ interface Tables {
   TABLE_TYPE: 'BASE TABLE' | 'VIEW'
 }
 
-/**
- * @name VIEWS
- * @type table
- */
 interface Views {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -36,10 +24,6 @@ interface Views {
   IS_UPDATABLE: 'YES' | 'NO'
 }
 
-/**
- * @name COLUMNS
- * @type table
- */
 interface Columns {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -66,10 +50,6 @@ interface Columns {
   DOMAIN_NAME: string | null
 }
 
-/**
- * @name TABLE_CONSTRAINTS
- * @type table
- */
 interface TableConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -81,10 +61,6 @@ interface TableConstraints {
   INITIALLY_DEFERRED: 'YES' | 'NO'
 }
 
-/**
- * @name KEY_COLUMN_USAGE
- * @type table
- */
 interface KeyColumnUsage {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string
@@ -96,10 +72,6 @@ interface KeyColumnUsage {
   ORDINAL_POSITION: number
 }
 
-/**
- * @name CONSTRAINT_COLUMN_USAGE
- * @type table
- */
 interface ConstraintColumnUsage {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
@@ -110,10 +82,6 @@ interface ConstraintColumnUsage {
   CONSTRAINT_NAME: string
 }
 
-/**
- * @name REFERENTIAL_CONSTRAINTS
- * @type table
- */
 interface ReferentialConstraints {
   CONSTRAINT_CATALOG: string
   CONSTRAINT_SCHEMA: string

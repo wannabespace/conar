@@ -145,7 +145,6 @@ export const createConnectionStringsCollection =
               return null
             }
 
-            // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
             if (result.status === 'not-found') {
               return collection.utils.decrypt(connectionId)
             }

@@ -1,7 +1,3 @@
-/**
- * @name information_schema
- * @type schema
- */
 export interface InformationSchema {
   tables: Tables
   columns: Columns
@@ -11,10 +7,6 @@ export interface InformationSchema {
   referential_constraints: ReferentialConstraints
 }
 
-/**
- * @name tables
- * @type table
- */
 interface Tables {
   table_catalog: string
   table_schema: string
@@ -30,10 +22,6 @@ interface Tables {
   commit_action: string
 }
 
-/**
- * @name columns
- * @type table
- */
 interface Columns {
   table_catalog: string
   table_schema: string
@@ -80,10 +68,6 @@ interface Columns {
   is_updatable: 'YES' | 'NO'
 }
 
-/**
- * @name table_constraints
- * @type table
- */
 interface TableConstraints {
   constraint_catalog: string
   constraint_schema: string
@@ -103,10 +87,6 @@ interface TableConstraints {
   nulls_distinct: 'YES' | 'NO' | null
 }
 
-/**
- * @name constraint_column_usage
- * @type table
- */
 interface ConstraintColumnUsage {
   table_catalog: string
   table_schema: string
@@ -117,10 +97,6 @@ interface ConstraintColumnUsage {
   constraint_name: string
 }
 
-/**
- * @name key_column_usage
- * @type table
- */
 interface KeyColumnUsage {
   constraint_catalog: string
   constraint_schema: string
@@ -133,10 +109,6 @@ interface KeyColumnUsage {
   position_in_unique_constraint: number | null
 }
 
-/**
- * @name referential_constraints
- * @type table
- */
 interface ReferentialConstraints {
   constraint_catalog: string
   constraint_schema: string
