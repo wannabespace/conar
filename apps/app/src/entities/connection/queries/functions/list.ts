@@ -127,19 +127,26 @@ const resourceFunctionsQuery = createQuery({
             'args'
           ),
           'r.ROUTINE_DEFINITION as body',
-          sql<string>`CASE WHEN r.IS_DETERMINISTIC = 'YES' THEN 'DETERMINISTIC' ELSE 'NOT DETERMINISTIC' END`.as(
-            'behavior'
-          ),
+          (eb) =>
+            eb
+              .case('r.IS_DETERMINISTIC')
+              .when('YES')
+              .then('DETERMINISTIC')
+              .else('NOT DETERMINISTIC')
+              .end()
+              .as('behavior'),
           sql<string>`CONCAT_WS(' ',
             r.SQL_DATA_ACCESS,
             CONCAT('SQL SECURITY ', r.SECURITY_TYPE),
             CASE WHEN r.ROUTINE_COMMENT <> '' THEN CONCAT('COMMENT ', QUOTE(r.ROUTINE_COMMENT)) END
           )`.as('extras'),
-          sql<
-            string | null
-          >`CASE WHEN r.ROUTINE_TYPE = 'FUNCTION' THEN r.DTD_IDENTIFIER END`.as(
-            'return_type'
-          ),
+          (eb) =>
+            eb
+              .case('r.ROUTINE_TYPE')
+              .when('FUNCTION')
+              .thenRef('r.DTD_IDENTIFIER')
+              .end()
+              .as('return_type'),
         ])
         .where('r.ROUTINE_SCHEMA', 'not in', [
           'mysql',
@@ -156,17 +163,29 @@ const resourceFunctionsQuery = createQuery({
         .select([
           'n.nspname as schema',
           'p.proname as name',
-          sql<string>`CASE p.prokind WHEN 'p' THEN 'procedure' ELSE 'function' END`.as(
-            'type'
-          ),
+          (eb) =>
+            eb
+              .case('p.prokind')
+              .when('p')
+              .then('procedure')
+              .else('function')
+              .end()
+              .as('type'),
           'l.lanname as language',
           sql<string>`pg_get_function_result(p.oid)`.as('return_type'),
           sql<string>`pg_get_function_arguments(p.oid)`.as('args'),
           'p.prosrc as body',
           'p.prosecdef as security_definer',
-          sql<string>`CASE p.provolatile WHEN 'i' THEN 'IMMUTABLE' WHEN 's' THEN 'STABLE' ELSE 'VOLATILE' END`.as(
-            'behavior'
-          ),
+          (eb) =>
+            eb
+              .case('p.provolatile')
+              .when('i')
+              .then('IMMUTABLE')
+              .when('s')
+              .then('STABLE')
+              .else('VOLATILE')
+              .end()
+              .as('behavior'),
           sql<string>`TRIM(CONCAT_WS(' ',
             CASE WHEN p.proisstrict THEN 'STRICT' END,
             CASE WHEN p.proleakproof THEN 'LEAKPROOF' END,

@@ -117,6 +117,9 @@ interface PgConstraint {
   confkey: number[]
   confdeltype: string
   confupdtype: string
+  confmatchtype: string
+  condeferrable: boolean
+  convalidated: boolean
   conindid: number
 }
 

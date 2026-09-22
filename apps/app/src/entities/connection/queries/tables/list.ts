@@ -101,12 +101,20 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               'n.nspname as schema',
               'c.relname as table',
-              sql<'base table' | 'materialized view' | 'view'>`CASE c.relkind
-                WHEN 'v' THEN 'view'
-                WHEN 'm' THEN 'materialized view'
-                ELSE 'base table'
-              END`.as('type'),
+              (eb) =>
+                eb
+                  .case('c.relkind')
+                  .when('v')
+                  .then('view')
+                  .when('m')
+                  .then('materialized view')
+                  .else('base table')
+                  .end()
+                  .as('type'),
             ])
+            .$narrowType<{
+              type: 'base table' | 'materialized view' | 'view'
+            }>()
             .where('c.relkind', 'in', ['r', 'p', 'v', 'm'])
             .where(({ eb, and, not }) =>
               and([

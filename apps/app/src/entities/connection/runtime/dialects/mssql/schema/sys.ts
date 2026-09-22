@@ -4,6 +4,7 @@
  */
 export interface Sys {
   indexes: Indexes
+  foreign_keys: ForeignKeys
   tables: Tables
   schemas: Schemas
   index_columns: IndexColumns
@@ -136,6 +137,10 @@ interface Indexes {
   is_unique_constraint: boolean
   type_desc: string
   has_filter: boolean
+  is_disabled: boolean
+  ignore_dup_key: boolean
+  is_padded: boolean
+  fill_factor: number
 }
 
 /**
@@ -155,6 +160,18 @@ interface Tables {
 interface Schemas {
   schema_id: number
   name: string
+}
+
+/**
+ * @name foreign_keys
+ * @type table
+ */
+interface ForeignKeys {
+  name: string
+  schema_id: number
+  is_disabled: boolean
+  is_not_trusted: boolean
+  is_not_for_replication: boolean
 }
 
 /**

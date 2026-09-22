@@ -91,20 +91,38 @@ export const resourceIndexesQuery = createQuery({
           'i.is_primary_key as is_primary',
           'i.is_unique_constraint as is_constraint',
           'i.type_desc as index_type',
-          sql<boolean>`CASE WHEN
-            i.type_desc <> 'NONCLUSTERED'
-            OR i.has_filter = 1
-            OR i.is_disabled = 1
-            OR i.ignore_dup_key = 1
-            OR i.is_padded = 1
-            OR i.fill_factor <> 0
-            OR EXISTS (
-              SELECT 1 FROM sys.index_columns x
-              WHERE x.object_id = i.object_id AND x.index_id = i.index_id
-                AND (x.is_included_column = 1 OR x.is_descending_key = 1)
-            )
-          THEN 1 ELSE 0 END`.as('is_custom'),
+          (eb) =>
+            eb
+              .case()
+              .when(
+                eb.or([
+                  eb('i.type_desc', '!=', 'NONCLUSTERED'),
+                  eb('i.has_filter', '=', true),
+                  eb('i.is_disabled', '=', true),
+                  eb('i.ignore_dup_key', '=', true),
+                  eb('i.is_padded', '=', true),
+                  eb('i.fill_factor', '!=', 0),
+                  eb.exists(
+                    eb
+                      .selectFrom('sys.index_columns as x')
+                      .select(sql.lit(1).as('one'))
+                      .whereRef('x.object_id', '=', 'i.object_id')
+                      .whereRef('x.index_id', '=', 'i.index_id')
+                      .where((sub) =>
+                        sub.or([
+                          sub('x.is_included_column', '=', true),
+                          sub('x.is_descending_key', '=', true),
+                        ])
+                      )
+                  ),
+                ])
+              )
+              .then(1)
+              .else(0)
+              .end()
+              .as('is_custom'),
         ])
+        .$narrowType<{ is_custom: 1 | 0 }>()
         .where('ic.is_included_column', '=', false)
         .orderBy('ic.key_ordinal')
         .execute(),
@@ -156,18 +174,29 @@ export const resourceIndexesQuery = createQuery({
           't.relname as table',
           'i.relname as name',
           'a.attname as column',
-          sql<
-            string | null
-          >`CASE WHEN key.key = 0 THEN pg_get_indexdef(ix.indexrelid, key.ordinality::int, true) END`.as(
-            'custom_expression'
-          ),
+          (eb) =>
+            eb
+              .case()
+              .when('key.key', '=', 0)
+              .then(
+                sql<string>`pg_get_indexdef(ix.indexrelid, key.ordinality::int, true)`
+              )
+              .end()
+              .as('custom_expression'),
           'ix.indisunique as is_unique',
           'ix.indisprimary as is_primary',
           'am.amname as index_type',
           sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
-          sql<boolean>`EXISTS (SELECT 1 FROM pg_catalog.pg_constraint WHERE conindid = ix.indexrelid AND contype IN ('p', 'u', 'x'))`.as(
-            'is_constraint'
-          ),
+          (eb) =>
+            eb
+              .exists(
+                eb
+                  .selectFrom('pg_catalog.pg_constraint')
+                  .select(sql.lit(1).as('one'))
+                  .whereRef('conindid', '=', 'ix.indexrelid')
+                  .where('contype', 'in', ['p', 'u', 'x'])
+              )
+              .as('is_constraint'),
           sql<boolean>`
             am.amname <> 'btree'
             OR ix.indpred IS NOT NULL

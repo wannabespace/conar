@@ -133,15 +133,36 @@ export const resourceConstraintsQuery = createQuery({
           'rc.UPDATE_RULE as onUpdate',
           // A disabled, untrusted or not-for-replication key comes back plain
           // from a drop-and-add, so the form only renames it.
-          sql<1 | 0>`CASE WHEN EXISTS (
-            SELECT 1
-            FROM sys.foreign_keys fk
-            JOIN sys.schemas fs ON fs.schema_id = fk.schema_id
-            WHERE fk.name = tc.CONSTRAINT_NAME
-              AND fs.name = tc.CONSTRAINT_SCHEMA
-              AND (fk.is_disabled = 1 OR fk.is_not_trusted = 1 OR fk.is_not_for_replication = 1)
-          ) THEN 1 ELSE 0 END`.as('is_custom'),
+          (eb) =>
+            eb
+              .case()
+              .when(
+                eb.exists(
+                  eb
+                    .selectFrom('sys.foreign_keys as fk')
+                    .innerJoin(
+                      'sys.schemas as fs',
+                      'fs.schema_id',
+                      'fk.schema_id'
+                    )
+                    .select(sql.lit(1).as('one'))
+                    .whereRef('fk.name', '=', 'tc.CONSTRAINT_NAME')
+                    .whereRef('fs.name', '=', 'tc.CONSTRAINT_SCHEMA')
+                    .where((sub) =>
+                      sub.or([
+                        sub('fk.is_disabled', '=', true),
+                        sub('fk.is_not_trusted', '=', true),
+                        sub('fk.is_not_for_replication', '=', true),
+                      ])
+                    )
+                )
+              )
+              .then(1)
+              .else(0)
+              .end()
+              .as('is_custom'),
         ])
+        .$narrowType<{ is_custom: 1 | 0 }>()
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
         .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
         .orderBy('kcu.ORDINAL_POSITION')
@@ -208,34 +229,67 @@ export const resourceConstraintsQuery = createQuery({
           'n.nspname as schema',
           'c.relname as table',
           'con.conname as name',
-          sql<
-            typeof constraintType.infer
-          >`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as(
-            'type'
-          ),
-          sql<string | null>`a.attname`.as('column'),
+          (eb) =>
+            eb
+              .case('con.contype')
+              .when('p')
+              .then('PRIMARY KEY')
+              .when('u')
+              .then('UNIQUE')
+              .when('f')
+              .then('FOREIGN KEY')
+              .end()
+              .as('type'),
+          'a.attname as column',
           'fn.nspname as foreign_schema',
           'fc.relname as foreign_table',
           'fa.attname as foreign_column',
-          sql<
-            string | null
-          >`CASE con.confdeltype WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END`.as(
-            'onDelete'
-          ),
-          sql<
-            string | null
-          >`CASE con.confupdtype WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END`.as(
-            'onUpdate'
-          ),
+          (eb) =>
+            eb
+              .case('con.confdeltype')
+              .when('a')
+              .then('NO ACTION')
+              .when('r')
+              .then('RESTRICT')
+              .when('c')
+              .then('CASCADE')
+              .when('n')
+              .then('SET NULL')
+              .when('d')
+              .then('SET DEFAULT')
+              .end()
+              .as('onDelete'),
+          (eb) =>
+            eb
+              .case('con.confupdtype')
+              .when('a')
+              .then('NO ACTION')
+              .when('r')
+              .then('RESTRICT')
+              .when('c')
+              .then('CASCADE')
+              .when('n')
+              .then('SET NULL')
+              .when('d')
+              .then('SET DEFAULT')
+              .end()
+              .as('onUpdate'),
           sql<string>`pg_get_constraintdef(con.oid)`.as('definition'),
           // DEFERRABLE, NOT VALID and MATCH FULL have no field in the form, and
           // a drop-and-add would leave them behind.
-          sql<boolean>`
-            con.condeferrable
-            OR NOT con.convalidated
-            OR (con.contype = 'f' AND con.confmatchtype <> 's')
-          `.as('is_custom'),
+          (eb) =>
+            eb
+              .or([
+                eb('con.condeferrable', '=', true),
+                eb('con.convalidated', '=', false),
+                eb.and([
+                  eb('con.contype', '=', 'f'),
+                  eb('con.confmatchtype', '!=', 's'),
+                ]),
+              ])
+              .as('is_custom'),
         ])
+        .$narrowType<{ type: typeof constraintType.infer }>()
         .where('con.contype', 'in', ['p', 'u', 'f'])
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
