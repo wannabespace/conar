@@ -36,6 +36,11 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
@@ -197,6 +202,7 @@ const useInspector = <T,>({
 export const DefinitionsPage = <T extends { name: string }>({
   canDropItem,
   columns,
+  createBlocked,
   dropItem,
   Inspector,
   items,
@@ -210,6 +216,7 @@ export const DefinitionsPage = <T extends { name: string }>({
 }: {
   canDropItem?: (item: T) => boolean
   columns: DefinitionsColumn<T>[]
+  createBlocked?: string
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
   Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
@@ -254,7 +261,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   const highlightedItem =
     highlightedIndex === -1 ? null : rows[highlightedIndex]
   const canDrop = (item: T) => !!can.drop && (canDropItem?.(item) ?? true)
-  const canCreate = !!can.create && !!selectedSchema
+  const canCreate = !!can.create && !!selectedSchema && !createBlocked
   const overlayOpen = inspector.inspected.open || dropping.open
   const empty = !loading && rows.length === 0
   const context: CellContext = { schema: selectedSchema, search }
@@ -365,6 +372,22 @@ export const DefinitionsPage = <T extends { name: string }>({
       : []),
   ]
 
+  const addButton = (
+    <Button
+      variant="outline"
+      disabled={!canCreate}
+      focusableWhenDisabled={!!createBlocked}
+      onClick={() => inspector.open(null)}
+    >
+      <HugeiconsIcon
+        icon={PlusSignIcon}
+        strokeWidth={2}
+        data-icon="inline-start"
+      />
+      Add {noun}
+    </Button>
+  )
+
   return (
     <>
       <div className="flex items-center justify-between gap-3">
@@ -379,20 +402,17 @@ export const DefinitionsPage = <T extends { name: string }>({
             />
           )}
         </h2>
-        {can.create && (
-          <Button
-            variant="outline"
-            disabled={!canCreate}
-            onClick={() => inspector.open(null)}
-          >
-            <HugeiconsIcon
-              icon={PlusSignIcon}
-              strokeWidth={2}
-              data-icon="inline-start"
-            />
-            Add {noun}
-          </Button>
-        )}
+        {can.create &&
+          (createBlocked ? (
+            <Tooltip>
+              <TooltipTrigger render={addButton} />
+              <TooltipContent>
+                <span className="block text-pretty">{createBlocked}</span>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            addButton
+          ))}
       </div>
       <div className="flex items-center gap-2">
         <SearchInput

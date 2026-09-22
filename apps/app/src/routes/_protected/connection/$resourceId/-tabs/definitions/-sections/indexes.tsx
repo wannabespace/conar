@@ -42,7 +42,6 @@ import {
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
-  focusInvalidField,
   InspectorDefinition,
   Inspector,
   InspectorOption,
@@ -256,7 +255,6 @@ const IndexInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: indexSchema, onMount: indexSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -391,7 +389,7 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
 
 export const Indexes = () => {
   const state = useDefinitionsState({ section: 'indexes' })
-  const { connectionResource, run, search, selectedSchema } = state
+  const { connectionResource, run, search, selectedSchema, tablesOf } = state
   const query = resourceIndexesQueryOptions({ connectionResource })
   const { data: indexes = [], isPending } = useQuery(query)
   const kindFilter = useFilter<IndexKind>('All types', [
@@ -404,6 +402,11 @@ export const Indexes = () => {
     <DefinitionsPage
       canDropItem={(item) => !item.constraintOwned}
       columns={columns}
+      createBlocked={
+        tablesOf(selectedSchema ?? '').length === 0
+          ? 'This schema has no tables to index.'
+          : undefined
+      }
       dropItem={(item) =>
         run(
           dropIndexQuery({

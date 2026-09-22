@@ -30,7 +30,6 @@ import {
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
-  focusInvalidField,
   Inspector,
   InspectorOption,
   InspectorSection,
@@ -248,7 +247,6 @@ const FunctionInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: functionSchema, onMount: functionSchema },
   })
   const draft = useStore(form.store, (state) => state.values)

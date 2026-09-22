@@ -41,7 +41,6 @@ import type {
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  focusInvalidField,
   InspectorDefinition,
   Inspector,
   InspectorSection,
@@ -288,7 +287,6 @@ const ConstraintInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: constraintSchema, onMount: constraintSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -545,7 +543,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
 
 export const Constraints = () => {
   const state = useDefinitionsState({ section: 'constraints' })
-  const { connectionResource, run, search, selectedSchema } = state
+  const { connectionResource, run, search, selectedSchema, tablesOf } = state
   const query = resourceConstraintsQueryOptions({ connectionResource })
   const { data: constraints = [], isPending } = useQuery(query)
   const kindFilter = useFilter<ConstraintKind>('All types', [
@@ -578,6 +576,11 @@ export const Constraints = () => {
   return (
     <DefinitionsPage
       columns={columns}
+      createBlocked={
+        tablesOf(selectedSchema ?? '').length === 0
+          ? 'This schema has no tables to constrain.'
+          : undefined
+      }
       dropItem={dropItem}
       Inspector={ConstraintInspector}
       items={inSchema}

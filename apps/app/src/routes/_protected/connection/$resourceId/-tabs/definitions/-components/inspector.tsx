@@ -149,18 +149,6 @@ export const Inspector = ({
   )
 }
 
-// Submitting owns the trip to the problem, so a form that refuses to submit
-// moves focus to the first field that said no.
-export const focusInvalidField = ({ formApi }: { formApi: AnyFormApi }) => {
-  const invalid = Object.keys(formApi.state.fieldMeta).find(
-    (name) => !formApi.state.fieldMeta[name]?.isValid
-  )
-
-  if (invalid) {
-    document.querySelector<HTMLElement>(`#${invalid}`)?.focus()
-  }
-}
-
 export const mysqlReplaceWarning = ({
   name,
   noun,

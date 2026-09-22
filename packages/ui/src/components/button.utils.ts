@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 
 export const buttonVariants = cva(
-  `group/button focus-visible:focus-ring aria-invalid:invalid-ring inline-flex shrink-0 cursor-default items-center justify-center rounded-xl border border-transparent text-sm whitespace-nowrap transition-[transform,box-shadow,color,background-color,border-color] outline-none select-none active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+  `group/button focus-visible:focus-ring aria-invalid:invalid-ring inline-flex shrink-0 cursor-default items-center justify-center rounded-xl border border-transparent text-sm whitespace-nowrap transition-[transform,box-shadow,color,background-color,border-color] outline-none select-none active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:opacity-50 active:aria-disabled:translate-y-0 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
   {
     defaultVariants: {
       size: 'default',

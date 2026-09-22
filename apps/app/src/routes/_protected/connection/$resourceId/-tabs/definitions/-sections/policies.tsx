@@ -40,7 +40,6 @@ import type {
   SectionInspectorProps,
 } from '../-components/inspector'
 import {
-  focusInvalidField,
   Inspector,
   InspectorOption,
   InspectorSection,
@@ -247,7 +246,6 @@ const PolicyInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: policySchema, onMount: policySchema },
   })
   const draft = withAllowedExpressions(
@@ -457,7 +455,7 @@ const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
 
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
-  const { connectionResource, run, search, selectedSchema } = state
+  const { connectionResource, run, search, selectedSchema, tablesOf } = state
   const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
   const kindFilter = useFilter<PolicyKind>(
@@ -481,6 +479,11 @@ export const Policies = () => {
   return (
     <DefinitionsPage
       columns={columns}
+      createBlocked={
+        tablesOf(selectedSchema ?? '').length === 0
+          ? 'This schema has no tables to protect.'
+          : undefined
+      }
       dropItem={dropItem}
       Inspector={PolicyInspector}
       items={inSchema}

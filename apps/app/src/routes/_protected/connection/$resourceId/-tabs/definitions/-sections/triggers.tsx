@@ -43,7 +43,6 @@ import {
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
-  focusInvalidField,
   Inspector,
   InspectorOption,
   InspectorSection,
@@ -261,7 +260,6 @@ const TriggerInspector = ({
           : { ...value, orientation: allowed[0] ?? value.orientation }
       )
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: schema, onMount: schema },
   })
   const draft = useStore(form.store, (state) => state.values)
@@ -491,9 +489,15 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
 
 export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
-  const { connectionResource, run, search, selectedSchema } = state
+  const { connectionResource, run, search, selectedSchema, tablesOf, viewsOf } =
+    state
+  const options = capabilitiesOf(state.type).triggers
   const query = resourceTriggersQueryOptions({ connectionResource })
   const { data: triggers = [], isPending } = useQuery(query)
+  const { data: functions = [], isPending: functionsPending } = useQuery({
+    ...resourceFunctionsQueryOptions({ connectionResource }),
+    enabled: !options.body,
+  })
   const eventFilter = useFilter<string>('All events', [
     { label: 'Insert', value: 'INSERT' },
     { label: 'Update', value: 'UPDATE' },
@@ -513,8 +517,25 @@ export const Triggers = () => {
     (eventFilter.value === 'all' || item.event.includes(eventFilter.value)) &&
     timingFilter.matches(item.timing) &&
     matchesSearch(search, item.name, item.table, item.functionName)
+  const schema = selectedSchema ?? ''
+  const watchable = options.timings.includes('INSTEAD OF')
+    ? [...tablesOf(schema), ...viewsOf(schema)]
+    : tablesOf(schema)
+  const createBlocked = (() => {
+    if (watchable.length === 0) {
+      return 'This schema has no tables to watch.'
+    }
+
+    const hasTriggerFunction = functions.some(
+      (fn) => fn.schema === schema && fn.return_type === 'trigger'
+    )
+
+    return options.body || functionsPending || hasTriggerFunction
+      ? undefined
+      : 'No function here returns a trigger.'
+  })()
   const rowMenu = (item: TriggerItem) =>
-    capabilitiesOf(state.type).triggers.toggle
+    options.toggle
       ? [
           {
             label: item.enabled === false ? 'Enable' : 'Disable',
@@ -527,6 +548,7 @@ export const Triggers = () => {
   return (
     <DefinitionsPage
       columns={columns}
+      createBlocked={createBlocked}
       dropItem={(item) =>
         run(
           dropTriggerQuery({

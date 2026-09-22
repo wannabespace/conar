@@ -33,11 +33,7 @@ import type {
   InspectorWarning,
   SectionInspectorProps,
 } from '../-components/inspector'
-import {
-  focusInvalidField,
-  Inspector,
-  InspectorSection,
-} from '../-components/inspector'
+import { Inspector, InspectorSection } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
@@ -306,7 +302,6 @@ const EnumInspector = ({
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
-    onSubmitInvalid: focusInvalidField,
     validators: { onChange: enumSchema, onMount: enumSchema },
   })
   const draft = useStore(form.store, (state) => state.values)
