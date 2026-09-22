@@ -5,8 +5,9 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { createConstraintQuery } from '~/entities/connection/queries/constraints/create'
@@ -24,6 +25,7 @@ import { REFERENTIAL_ACTIONS } from '~/entities/connection/queries/constraints/s
 import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { groupInSchema } from '~/entities/connection/utils'
+import { queryClient } from '~/lib/query-client'
 
 import {
   Labelled,
@@ -45,7 +47,6 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -244,12 +245,8 @@ const ConstraintInspector = ({
   tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedConstraint>) => {
-  const mutation = useDefinitionMutation({
-    message: (draft: ConstraintDraft) =>
-      `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`,
-    onOpenChange,
-    queryKey,
-    save: (draft: ConstraintDraft) => {
+  const mutation = useMutation({
+    mutationFn: (draft: ConstraintDraft) => {
       const shape: ConstraintShape = {
         columns: draft.columns,
         foreignColumns: draft.foreignColumns,
@@ -277,6 +274,13 @@ const ConstraintInspector = ({
           ? recreateConstraintQuery({ ...target, kind: item.type, shape })
           : renameConstraintQuery({ ...target, newName: shape.name })
       )
+    },
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Constraint "${finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
     },
   })
   const form = useAppForm({

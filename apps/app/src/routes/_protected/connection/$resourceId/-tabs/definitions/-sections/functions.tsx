@@ -1,12 +1,13 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { matchesSearch } from '@tamery/shared/utils'
+import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { sqlDialects } from '~/entities/connection/monaco'
@@ -18,6 +19,7 @@ import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/fun
 import { recreateFunctionQuery } from '~/entities/connection/queries/functions/recreate'
 import type { RoutineKind } from '~/entities/connection/queries/functions/routine-kind'
 import type { FunctionShape } from '~/entities/connection/queries/functions/shape'
+import { queryClient } from '~/lib/query-client'
 
 import {
   BodyField,
@@ -36,7 +38,6 @@ import {
   mysqlReplaceWarning,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -197,12 +198,8 @@ const FunctionInspector = ({
   type: connectionType,
 }: SectionInspectorProps<FunctionItem>) => {
   const options = capabilitiesOf(connectionType).functions
-  const mutation = useDefinitionMutation({
-    message: (draft: FunctionDraft) =>
-      `${typeLabels[draft.kind]} "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
-    onOpenChange,
-    queryKey,
-    save: (draft: FunctionDraft) =>
+  const mutation = useMutation({
+    mutationFn: (draft: FunctionDraft) =>
       run(
         item
           ? recreateFunctionQuery({
@@ -218,6 +215,13 @@ const FunctionInspector = ({
               shape: shapeOf(draft),
             })
       ),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `${typeLabels[draft.kind]} "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
@@ -246,10 +250,8 @@ const FunctionInspector = ({
     }
   }
   const returns = draft.kind === 'function'
-  const changed =
-    !item ||
-    JSON.stringify(shapeOf(draft)) !==
-      JSON.stringify(shapeOf(draftOf(item, draft.schema, connectionType)))
+  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
+  const changed = !saved || !sameShape(shapeOf(draft), saved)
 
   return (
     <Inspector

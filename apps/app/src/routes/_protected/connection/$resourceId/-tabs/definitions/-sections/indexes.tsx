@@ -11,9 +11,10 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
+import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/entities/connection/capabilities'
@@ -30,6 +31,7 @@ import { renameIndexQuery } from '~/entities/connection/queries/indexes/rename'
 import { resourceTableColumnIdsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { groupInSchema } from '~/entities/connection/utils'
+import { queryClient } from '~/lib/query-client'
 
 import {
   OptionsField,
@@ -47,7 +49,6 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -236,11 +237,13 @@ const IndexInspector = ({
   tablesOf,
   type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
-  const mutation = useDefinitionMutation({
-    message: (draft: IndexDraft) => `Index "${finalNameOf(draft)}" saved`,
-    onOpenChange,
-    queryKey,
-    save: (draft: IndexDraft) => saveIndex({ draft, item, run }),
+  const mutation = useMutation({
+    mutationFn: (draft: IndexDraft) => saveIndex({ draft, item, run }),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(`Index "${finalNameOf(draft)}" saved`)
+      onOpenChange(false)
+    },
   })
   const form = useAppForm({
     defaultValues: {

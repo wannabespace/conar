@@ -1,12 +1,13 @@
 import { FlashIcon } from '@hugeicons/core-free-icons'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { matchesSearch, uppercaseFirst } from '@tamery/shared/utils'
+import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { sqlDialects } from '~/entities/connection/monaco'
@@ -28,6 +29,7 @@ import {
   TRIGGER_EVENTS,
   TRIGGER_TIMINGS,
 } from '~/entities/connection/queries/triggers/shape'
+import { queryClient } from '~/lib/query-client'
 
 import {
   BodyField,
@@ -49,7 +51,6 @@ import {
   mysqlReplaceWarning,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
 import type { DefinitionsColumn } from '../-lib/columns'
@@ -176,11 +177,8 @@ const useToggle = ({
   queryKey,
   run,
 }: Pick<SectionInspectorProps<TriggerItem>, 'queryKey' | 'run'>) =>
-  useDefinitionMutation({
-    message: ({ enabled, item }: TriggerToggle) =>
-      `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`,
-    queryKey,
-    save: ({ enabled, item }: TriggerToggle) =>
+  useMutation({
+    mutationFn: ({ enabled, item }: TriggerToggle) =>
       run(
         setTriggerEnabledQuery({
           enabled,
@@ -190,6 +188,12 @@ const useToggle = ({
           table: item.table,
         })
       ),
+    onSuccess: async (_result, { enabled, item }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Trigger "${item.name}" ${enabled ? 'enabled' : 'disabled'}`
+      )
+    },
   })
 
 const TriggerInspector = ({
@@ -218,12 +222,8 @@ const TriggerInspector = ({
     snapshot &&
     (triggers.find((row) => triggerKey(row) === triggerKey(snapshot)) ??
       snapshot)
-  const mutation = useDefinitionMutation({
-    message: (draft: TriggerDraft) =>
-      `Trigger "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
-    onOpenChange,
-    queryKey,
-    save: (draft: TriggerDraft) =>
+  const mutation = useMutation({
+    mutationFn: (draft: TriggerDraft) =>
       run(
         item
           ? recreateTriggerQuery({
@@ -240,6 +240,13 @@ const TriggerInspector = ({
               table: draft.table,
             })
       ),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Trigger "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
   })
   const schema = triggerSchemas[options.body ? 'body' : 'function']
   const form = useAppForm({
@@ -271,10 +278,8 @@ const TriggerInspector = ({
 
     return instead ? viewsOf(draft.schema) : tablesOf(draft.schema)
   })()
-  const changed =
-    !item ||
-    JSON.stringify(shapeOf(draft)) !==
-      JSON.stringify(shapeOf(draftOf(item, draft.schema, connectionType)))
+  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
+  const changed = !saved || !sameShape(shapeOf(draft), saved)
 
   return (
     <Inspector

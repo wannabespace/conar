@@ -8,8 +8,9 @@ import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
@@ -25,6 +26,7 @@ import type {
   PolicyKind,
 } from '~/entities/connection/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
+import { queryClient } from '~/lib/query-client'
 
 import {
   resetFields,
@@ -44,7 +46,6 @@ import {
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
-import { useDefinitionMutation } from '../-hooks/use-definition-mutation'
 import type { RunQuery } from '../-hooks/use-definitions-state'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -215,18 +216,18 @@ const PolicyInspector = ({
   tablesOf,
   type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
-  const mutation = useDefinitionMutation({
-    message: (draft: PolicyDraft) =>
-      `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`,
-    onOpenChange,
-    queryKey,
-    save: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
+  const mutation = useMutation({
+    mutationFn: (draft: PolicyDraft) => savePolicy({ draft, item, run }),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
   })
-  const rowLevelSecurity = useDefinitionMutation({
-    message: ({ enabled }: { enabled: boolean }) =>
-      `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`,
-    queryKey,
-    save: ({ enabled }: { enabled: boolean }) =>
+  const rowLevelSecurity = useMutation({
+    mutationFn: ({ enabled }: { enabled: boolean }) =>
       run(
         setRowLevelSecurityQuery({
           enabled,
@@ -234,6 +235,12 @@ const PolicyInspector = ({
           table: item?.table ?? '',
         })
       ),
+    onSuccess: async (_result, { enabled }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`
+      )
+    },
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? ''),
