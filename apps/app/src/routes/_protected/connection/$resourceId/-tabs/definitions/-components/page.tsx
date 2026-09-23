@@ -367,7 +367,7 @@ export const DefinitionsPage = <T extends { name: string }>({
         options: { enabled: !overlayOpen && canDrop(highlightedItem) },
       },
     ],
-    { conflictBehavior: 'replace', preventDefault: true }
+    { preventDefault: true }
   )
 
   const rowMenuItems = (item: T): AppMenuNode[] => [

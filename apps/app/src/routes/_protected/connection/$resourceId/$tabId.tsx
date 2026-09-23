@@ -3,8 +3,8 @@ import { enabledFilters } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { AnimatePresence, motion } from 'motion/react'
-import { useEffect } from 'react'
+import { AnimateView } from 'motion/react-animate-view'
+import { useDeferredValue, useEffect } from 'react'
 
 import { sectionAvailable } from '~/entities/connection/capabilities'
 import {
@@ -54,19 +54,19 @@ const TabPage = () => {
     setActiveTab(connectionResource.id, tab.id)
   }, [connectionResource.id, tab])
 
+  // Router state commits through useSyncExternalStore, which never starts a view transition; the deferred re-render does.
+  const shownResourceId = useDeferredValue(connectionResource.id)
+  const shownTab = useDeferredValue(tab)
+
   return (
-    <AnimatePresence initial={false} mode="popLayout">
-      <motion.div
-        key={`${connectionResource.id}:${tab.id}`}
-        className="flex min-h-0 flex-1 flex-col"
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        initial={{ opacity: 0 }}
-        transition={{ duration: 0.06 }}
-      >
-        <TabContent tab={tab} />
-      </motion.div>
-    </AnimatePresence>
+    <AnimateView
+      key={`${shownResourceId}:${shownTab.id}`}
+      transition={{ duration: 0.06 }}
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+        <TabContent tab={shownTab} />
+      </div>
+    </AnimateView>
   )
 }
 
