@@ -100,3 +100,57 @@ export const createPolicyStatement = ({
     ${expression('USING', shape.using)}
     ${expression('WITH CHECK', shape.check)}
   `
+
+export const BLOCK_OPERATIONS = [
+  'AFTER INSERT',
+  'AFTER UPDATE',
+  'BEFORE UPDATE',
+  'BEFORE DELETE',
+] as const
+
+export type BlockOperation = (typeof BLOCK_OPERATIONS)[number]
+
+export interface SecurityPredicate {
+  arguments: string
+  functionName: string
+  functionSchema: string
+  kind: 'FILTER' | 'BLOCK'
+  // null blocks every write
+  operation: BlockOperation | null
+  schema: string
+  table: string
+}
+
+export interface SecurityPolicyTarget {
+  name: string
+  schema: string
+}
+
+const bracketed = String.raw`\[((?:[^\]]|\]\])+)\]`
+// SQL Server stores a predicate as "([schema].[function](arguments))".
+const PREDICATE_CALL = new RegExp(
+  String.raw`^\(${bracketed}\.${bracketed}\((.*)\)\)$`,
+  'su'
+)
+
+export const securityPredicate = {
+  add: (predicate: SecurityPredicate) =>
+    sql`ADD ${sql.raw(predicate.kind)} PREDICATE ${sql.id(predicate.functionSchema, predicate.functionName)}(${sql.raw(predicate.arguments)}) ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
+  drop: (predicate: SecurityPredicate) =>
+    sql`DROP ${sql.raw(predicate.kind)} PREDICATE ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
+  parse: (definition: string) => {
+    const [, functionSchema, functionName, args] =
+      PREDICATE_CALL.exec(definition) ?? []
+
+    return functionSchema && functionName && args !== undefined
+      ? {
+          arguments: args,
+          functionName: functionName.replaceAll(']]', ']'),
+          functionSchema: functionSchema.replaceAll(']]', ']'),
+        }
+      : null
+  },
+}
+
+export const securityPolicyOf = ({ name, schema }: SecurityPolicyTarget) =>
+  sql.id(schema, name)

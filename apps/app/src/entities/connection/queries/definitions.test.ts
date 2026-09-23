@@ -24,7 +24,11 @@ import {
   createIndexStatement,
   skipIndexColumnsOf,
 } from './indexes/shape'
-import { clickhouseRoleList, createPolicyStatement } from './policies/shape'
+import {
+  clickhouseRoleList,
+  createPolicyStatement,
+  securityPredicate,
+} from './policies/shape'
 import { accountOf, privilegeOn } from './privileges/shape'
 import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
 import {
@@ -84,6 +88,7 @@ const routine = (
       language: 'plpgsql',
       name: 'f',
       returnType: 'integer',
+      schemaBound: false,
       securityDefiner: false,
       ...overrides,
     },
@@ -120,6 +125,21 @@ describe('routine statements', () => {
   test('SQL Server functions keep their parentheses and return type', () => {
     expect(compiled(routine({ args: 'id int' }).mssql, 'mssql')).toBe(
       'CREATE OR ALTER FUNCTION "app"."f" (id int) RETURNS integer AS BEGIN END'
+    )
+  })
+
+  test('SQL Server binds a function to its schema before AS', () => {
+    expect(
+      compiled(
+        routine({
+          body: 'RETURN (SELECT 1 AS ok)',
+          returnType: 'TABLE',
+          schemaBound: true,
+        }).mssql,
+        'mssql'
+      )
+    ).toBe(
+      'CREATE OR ALTER FUNCTION "app"."f" () RETURNS TABLE WITH SCHEMABINDING AS RETURN (SELECT 1 AS ok)'
     )
   })
 
@@ -287,6 +307,38 @@ describe('policy statements', () => {
     expect(policy([], "id = current_setting('x')::int")).toInclude(
       "USING (id = current_setting('x')::int)"
     )
+  })
+})
+
+describe('security predicates', () => {
+  const predicate = {
+    arguments: 'TenantId',
+    functionName: 'fn_tenant',
+    functionSchema: 'Security',
+    kind: 'BLOCK' as const,
+    operation: 'AFTER INSERT' as const,
+    schema: 'dbo',
+    table: 'Orders',
+  }
+
+  test('a block operation follows the table', () => {
+    expect(compiled(securityPredicate.add(predicate), 'mssql')).toBe(
+      'ADD BLOCK PREDICATE "Security"."fn_tenant"(TenantId) ON "dbo"."Orders" AFTER INSERT'
+    )
+    expect(compiled(securityPredicate.drop(predicate), 'mssql')).toBe(
+      'DROP BLOCK PREDICATE ON "dbo"."Orders" AFTER INSERT'
+    )
+  })
+
+  test('parses the definition SQL Server stores', () => {
+    expect(
+      securityPredicate.parse('([Sec]]urity].[fn.tenant]([TenantId], 1))')
+    ).toEqual({
+      arguments: '[TenantId], 1',
+      functionName: 'fn.tenant',
+      functionSchema: 'Sec]urity',
+    })
+    expect(securityPredicate.parse('(1 = 1)')).toBeNull()
   })
 })
 

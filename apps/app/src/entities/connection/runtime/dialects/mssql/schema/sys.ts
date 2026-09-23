@@ -1,3 +1,5 @@
+import type { BlockOperation } from '../../../../queries/policies/shape'
+
 export interface Sys {
   indexes: Indexes
   foreign_keys: ForeignKeys
@@ -25,9 +27,10 @@ interface SecurityPolicies {
 
 interface SecurityPredicates {
   object_id: number
+  security_predicate_id: number
   predicate_definition: string
-  operation: 0 | 1 | 2 | 3 | 4
-  operation_desc: string | null
+  operation: 1 | 2 | 3 | 4 | null
+  operation_desc: BlockOperation | null
   predicate_type_desc: 'FILTER' | 'BLOCK'
   target_object_id: number
 }
@@ -36,7 +39,7 @@ interface Databases {
   name: string
   database_id: number
   source_database_id: number | null
-  owner_sid: string
+  owner_sid: Uint8Array
   create_date: Date
   compatibility_level: number
   collation_name: string | null
@@ -112,7 +115,7 @@ interface Databases {
 interface Indexes {
   object_id: number
   index_id: number
-  name: string
+  name: string | null
   is_unique: boolean
   is_primary_key: boolean
   is_unique_constraint: boolean

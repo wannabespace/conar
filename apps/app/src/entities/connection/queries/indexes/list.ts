@@ -66,7 +66,7 @@ const clickhouseSkipIndexes = async (db: Kysely<ClickhouseDatabase>) => {
       !SKIP_INDEX_TYPES.some((skipType) => skipType === row.type_full)
     const index = {
       custom_expression: columns ? null : row.expr,
-      granularity: row.granularity,
+      granularity: Number(row.granularity),
       index_definition: `INDEX ${row.name} ${row.expr} TYPE ${row.type_full} GRANULARITY ${row.granularity}`,
       index_type: row.type_full,
       is_custom: custom,
@@ -157,7 +157,8 @@ export const resourceIndexesQuery = createQuery({
               .end()
               .as('is_custom'),
         ])
-        .$narrowType<{ is_custom: 1 | 0 }>()
+        .where('i.name', 'is not', null)
+        .$narrowType<{ is_custom: 1 | 0; name: string }>()
         .where('ic.is_included_column', '=', false)
         .orderBy('ic.key_ordinal')
         .execute(),

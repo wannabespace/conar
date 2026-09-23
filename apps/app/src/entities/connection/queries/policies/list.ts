@@ -8,12 +8,20 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
+import { BLOCK_OPERATIONS } from './shape'
 
 export const policyType = type({
   check: 'string | null',
   command: 'string',
   enabled: 'boolean',
   name: 'string',
+  'predicates?': type({
+    definition: 'string',
+    kind: '"FILTER" | "BLOCK"',
+    operation: type.enumerated(...BLOCK_OPERATIONS).or('null'),
+    schema: 'string',
+    table: 'string',
+  }).array(),
   roles: 'string[]',
   schema: 'string',
   table: 'string',
@@ -56,6 +64,7 @@ const query = createQuery({
     mssql: async (db) => {
       const rows = await db
         .selectFrom('sys.security_policies as sp')
+        .innerJoin('sys.schemas as s', 'sp.schema_id', 's.schema_id')
         .leftJoin(
           'sys.security_predicates as pr',
           'sp.object_id',
@@ -68,29 +77,46 @@ const query = createQuery({
           'table_schema.schema_id'
         )
         .select([
-          'table_schema.name as schema',
-          't.name as table',
+          'sp.object_id',
+          's.name as policySchema',
           'sp.name',
           'sp.is_enabled',
-          'pr.operation_desc',
-          'pr.predicate_type_desc',
-          'pr.predicate_definition',
+          'pr.predicate_type_desc as kind',
+          'pr.operation_desc as operation',
+          'pr.predicate_definition as definition',
+          'table_schema.name as schema',
+          't.name as table',
         ])
-        .where('t.name', 'is not', null)
+        .orderBy(['sp.object_id', 'pr.security_predicate_id'])
         .execute()
-      return rows.map((row) => ({
-        check: null,
-        command: row.operation_desc ?? 'ALL',
-        enabled: row.is_enabled,
-        name: [row.name, '-', row.predicate_type_desc, row.operation_desc]
-          .filter(Boolean)
-          .join(' '),
-        roles: [],
-        schema: row.schema || 'dbo',
-        table: row.table ?? '',
-        type: 'RESTRICTIVE',
-        using: row.predicate_definition || null,
-      }))
+
+      return [...Map.groupBy(rows, (row) => row.object_id).values()].map(
+        (group) => {
+          const predicates = group.flatMap(
+            ({ definition, kind, operation, schema, table }) =>
+              definition && kind && schema && table
+                ? [{ definition, kind, operation, schema, table }]
+                : []
+          )
+
+          return {
+            check: null,
+            command: [...new Set(predicates.map(({ kind }) => kind))].join(
+              ', '
+            ),
+            enabled: group[0]?.is_enabled ?? false,
+            name: group[0]?.name ?? '',
+            predicates,
+            roles: [],
+            schema: group[0]?.policySchema ?? '',
+            table: [...new Set(predicates.map(({ table }) => table))].join(
+              ', '
+            ),
+            type: 'RESTRICTIVE' as const,
+            using: null,
+          }
+        }
+      )
     },
     mysql: unsupported('Row policies'),
     postgres: async (db) => {

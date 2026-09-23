@@ -723,7 +723,7 @@ export const ConnectionsList = () => {
                     ?.label ?? grouping}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent size="sm">
                 {groupOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -751,7 +751,7 @@ export const ConnectionsList = () => {
                     sort}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent size="sm">
                 {sortOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

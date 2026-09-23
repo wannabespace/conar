@@ -38,6 +38,7 @@ interface FunctionCapabilities {
   argumentPlaceholder: string
   behaviors: readonly string[]
   languages: readonly string[]
+  schemaBinding: boolean
   securityDefiner: boolean
 }
 
@@ -52,6 +53,8 @@ interface PolicyCapabilities {
   alterInPlace: boolean
   commands: readonly PolicyCommand[]
   everyone: string
+  // SQL Server: one policy binds predicate functions to tables, with no roles or expressions.
+  predicates: boolean
 }
 
 interface TriggerCapabilities {
@@ -96,12 +99,14 @@ const noFunctions: FunctionCapabilities = {
   argumentPlaceholder: '',
   behaviors: [],
   languages: [],
+  schemaBinding: false,
   securityDefiner: false,
 }
 const noPolicies: PolicyCapabilities = {
   alterInPlace: false,
   commands: [],
   everyone: '',
+  predicates: false,
 }
 const noTriggers: TriggerCapabilities = {
   body: false,
@@ -127,6 +132,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       alterInPlace: true,
       commands: ['SELECT'],
       everyone: 'ALL',
+      predicates: false,
     },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
@@ -156,10 +162,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       argumentPlaceholder: '@id int, @label nvarchar(50)',
       behaviors: [],
       languages: [],
+      schemaBinding: true,
       securityDefiner: false,
     },
     indexes: btreeIndexes,
-    policies: noPolicies,
+    policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
     ),
@@ -172,7 +179,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       enums: false,
       functions: full,
       indexes: full,
-      policies: readOnly,
+      policies: full,
       privileges: false,
       triggers: full,
     },
@@ -200,6 +207,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       argumentPlaceholder: 'id INT, label VARCHAR(50)',
       behaviors: FUNCTION_DETERMINISM,
       languages: [],
+      schemaBinding: false,
       securityDefiner: false,
     },
     indexes: btreeIndexes,
@@ -243,6 +251,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       argumentPlaceholder: 'id integer, label text',
       behaviors: FUNCTION_VOLATILITIES,
       languages: ['plpgsql', 'sql'],
+      schemaBinding: false,
       securityDefiner: true,
     },
     indexes: btreeIndexes,
@@ -250,6 +259,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
       everyone: 'PUBLIC',
+      predicates: false,
     },
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,

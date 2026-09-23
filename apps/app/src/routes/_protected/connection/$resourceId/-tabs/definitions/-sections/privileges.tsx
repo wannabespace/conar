@@ -1,5 +1,4 @@
 import { matchesSearch } from '@tamery/shared/utils'
-import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -21,14 +20,11 @@ import {
   resetFields,
   SchemaField,
   SelectField,
+  SwitchField,
   TextField,
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
-import {
-  Inspector,
-  InspectorOption,
-  InspectorSection,
-} from '../-components/inspector'
+import { Inspector, InspectorSection } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 import { useFilter } from '../-hooks/use-filter'
@@ -150,20 +146,12 @@ const PrivilegeInspector = ({
       </InspectorSection>
       <InspectorSection title="Options">
         <form.AppField name="grantable">
-          {(field) => (
-            <InspectorOption
-              htmlFor="privilege-grantable"
+          {() => (
+            <SwitchField
               title="Can grant"
               description="The account may pass this privilege on to others."
-            >
-              <Switch
-                id="privilege-grantable"
-                size="sm"
-                disabled={readOnly}
-                checked={field.state.value}
-                onCheckedChange={field.handleChange}
-              />
-            </InspectorOption>
+              disabled={readOnly}
+            />
           )}
         </form.AppField>
       </InspectorSection>
