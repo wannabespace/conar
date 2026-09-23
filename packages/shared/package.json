@@ -12,6 +12,7 @@
     "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
+    "kysely": "catalog:",
     "nanoid": "catalog:",
     "sf-symbols-typescript": "catalog:"
   }

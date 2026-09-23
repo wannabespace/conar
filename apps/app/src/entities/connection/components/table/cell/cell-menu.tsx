@@ -17,7 +17,7 @@ import type { Filter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
   FILTER_GROUPS,
-  SQL_FILTERS_GROUPED,
+  FILTERS_GROUPED,
 } from '@tamery/shared/filters'
 import { useTableContext } from '@tamery/table/hooks'
 import { copy } from '@tamery/ui/lib/copy'
@@ -95,7 +95,7 @@ export const TableCellContextMenu = ({
 
     if (onAddFilter) {
       const filterItems: AppMenuNode[] = []
-      for (const [index, filterGroup] of SQL_FILTERS_GROUPED.entries()) {
+      for (const [index, filterGroup] of FILTERS_GROUPED.entries()) {
         const { group, filters } = filterGroup
         if (index > 0) {
           filterItems.push({ type: 'separator' })
@@ -105,7 +105,7 @@ export const TableCellContextMenu = ({
           filterItems.push({
             disabled: isDisabledFilter(filter, value),
             label: filter.label,
-            nativeLabel: `${filter.label} (${filter.operator})`,
+            nativeLabel: `${filter.label} (${filter.symbol})`,
             onSelect: () => {
               onAddFilter({
                 column: column.id,
@@ -116,7 +116,7 @@ export const TableCellContextMenu = ({
             },
             trailing: (
               <span className="text-muted-foreground ml-auto pl-2 text-xs">
-                {filter.operator}
+                {filter.symbol}
               </span>
             ),
           })

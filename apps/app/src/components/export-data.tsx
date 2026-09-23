@@ -13,7 +13,7 @@ import {
   toCSV,
 } from '@tamery/shared/files'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,19 +88,12 @@ const ExportDataDropdownMenuSubContent = ({
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
 }) => {
-  const equalFilter = SQL_FILTERS_LIST.find((filter) => filter.operator === '=')
-  const filters = equalFilter
-    ? selected?.flatMap((row) =>
-        Object.entries(row).map(
-          ([column, value]) =>
-            ({
-              column,
-              ref: equalFilter,
-              values: [value],
-            }) satisfies ActiveFilter
-        )
-      )
-    : undefined
+  const filters = selected?.flatMap((row) =>
+    Object.entries(row).map(
+      ([column, value]) =>
+        ({ column, ref: EQUAL_FILTER, values: [value] }) satisfies ActiveFilter
+    )
+  )
 
   let selectedLabel = 'Selected rows'
   if (selected && selected.length === 1) {

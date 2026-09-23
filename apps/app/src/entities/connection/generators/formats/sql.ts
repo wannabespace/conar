@@ -1,9 +1,9 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { toKyselyFilter } from '@tamery/shared/filters'
 
 import { formatSql } from '~/lib/formatter'
 
 import type { Column } from '../../components/table/cell/utils'
-import { buildWhere } from '../../queries/rows/list'
 import { coldDialects } from '../../runtime/dialects'
 import * as templates from '../templates'
 import type { QueryParams, SchemaParams } from '../types'
@@ -43,7 +43,7 @@ export const generateQuerySQL = ({
     .selectFrom(table)
     .selectAll()
   const query =
-    filters.length > 0 ? base.where((eb) => buildWhere(eb, filters)) : base
+    filters.length > 0 ? base.where((eb) => toKyselyFilter(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }

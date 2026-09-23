@@ -21,7 +21,7 @@ export const cellToFilterValues = (
     return raw === '' ? [''] : [raw]
   }
 
-  if (filter.operator.includes('LIKE')) {
+  if (filter.operator.toLowerCase().includes('like')) {
     if (raw === '') {
       return ['%']
     }

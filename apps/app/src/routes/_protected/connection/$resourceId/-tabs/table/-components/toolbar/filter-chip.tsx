@@ -137,7 +137,7 @@ export const FilterChip = ({
               <PopoverContent className="max-h-[calc(100vh-10rem)] gap-0 p-0">
                 <FiltersValueSelector
                   column={filter.column}
-                  operator={filter.ref.operator}
+                  operator={filter.ref.symbol}
                   isArray={filter.ref.isArray ?? false}
                   values={values}
                   onChange={setValues}

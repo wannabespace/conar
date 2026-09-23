@@ -1,4 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
 import * as templates from '../templates'
@@ -43,53 +44,20 @@ const SERIAL_BY_INT_TYPE: Record<string, string> = {
 
 const resolveRefTable = (table: string): string => camelCase(table)
 
-const filterOpToDrizzle = (
-  op: string,
-  col: string,
-  val: string,
-  arrVal: string
-): string | undefined => {
-  switch (op) {
-    case '=': {
-      return `eq(${col}, ${val})`
-    }
-    case '!=': {
-      return `ne(${col}, ${val})`
-    }
-    case '>': {
-      return `gt(${col}, ${val})`
-    }
-    case '>=': {
-      return `gte(${col}, ${val})`
-    }
-    case '<': {
-      return `lt(${col}, ${val})`
-    }
-    case '<=': {
-      return `lte(${col}, ${val})`
-    }
-    case 'IS NULL': {
-      return `isNull(${col})`
-    }
-    case 'IS NOT NULL': {
-      return `isNotNull(${col})`
-    }
-    case 'IN': {
-      return `inArray(${col}, ${arrVal})`
-    }
-    case 'NOT IN': {
-      return `notInArray(${col}, ${arrVal})`
-    }
-    case 'LIKE': {
-      return `like(${col}, ${val})`
-    }
-    case 'ILIKE': {
-      return `ilike(${col}, ${val})`
-    }
-    default: {
-      return undefined
-    }
-  }
+const DRIZZLE_FUNCTIONS: Record<FilterOperator, string> = {
+  eq: 'eq',
+  gt: 'gt',
+  gte: 'gte',
+  ilike: 'ilike',
+  in: 'inArray',
+  isNotNull: 'isNotNull',
+  isNull: 'isNull',
+  like: 'like',
+  lt: 'lt',
+  lte: 'lte',
+  ne: 'ne',
+  notIn: 'notInArray',
+  notLike: 'notLike',
 }
 
 export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
@@ -97,13 +65,14 @@ export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
 
   const conditions = filters
     .map((f) => {
-      const op = f.ref.operator.toUpperCase()
+      const fn = DRIZZLE_FUNCTIONS[f.ref.operator]
       const col = `${varName}.${camelCase(f.column)}`
-      const val = JSON.stringify(f.values[0])
-      const arrVal = JSON.stringify(f.values)
-      return filterOpToDrizzle(op, col, val, arrVal)
+      if (f.ref.hasValue === false) {
+        return `${fn}(${col})`
+      }
+      const value = f.ref.isArray ? f.values : f.values[0]
+      return `${fn}(${col}, ${JSON.stringify(value)})`
     })
-    .filter(Boolean)
     .join(',\n    ')
 
   return templates.drizzleQueryTemplate(varName, conditions)

@@ -1,8 +1,7 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import type { ExpressionBuilder } from 'kysely'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -15,55 +14,6 @@ import {
 import { DEFAULT_PAGE_LIMIT } from '../../utils'
 
 const rowType = type('Record<string, unknown>')
-
-const filterValueExpression = (filter: ActiveFilter) => {
-  if (filter.ref.hasValue === false) {
-    return null
-  }
-
-  if (filter.ref.isArray) {
-    return sql.join(
-      [
-        sql.raw('('),
-        sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
-        sql.raw(')'),
-      ],
-      sql.raw('')
-    )
-  }
-
-  return sql.val(filter.values[0])
-}
-
-// oxlint-disable-next-line ts/no-explicit-any
-export const buildWhere = <E extends ExpressionBuilder<any, any>>(
-  eb: E,
-  filters: ActiveFilter[],
-  concatOperator: 'AND' | 'OR' = 'AND'
-) => {
-  const concat = concatOperator === 'AND' ? eb.and : eb.or
-
-  return concat(
-    filters.map((filter) => {
-      const { operator } = filter.ref
-
-      if (
-        !SQL_FILTERS_LIST.some((sqlFilter) => sqlFilter.operator === operator)
-      ) {
-        throw new Error(`Unsupported filter operator "${operator}"`)
-      }
-
-      return sql.join(
-        [
-          sql.ref(filter.column),
-          sql.raw(operator.toLowerCase()),
-          filterValueExpression(filter),
-        ].filter(Boolean),
-        sql.raw(' ')
-      )
-    })
-  )
-}
 
 interface PageResult {
   rows: (typeof rowType.inferIn)[]
@@ -112,7 +62,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -144,7 +94,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -180,7 +130,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -212,7 +162,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 

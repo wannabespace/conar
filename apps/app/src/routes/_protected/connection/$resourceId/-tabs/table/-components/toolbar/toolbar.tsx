@@ -101,18 +101,20 @@ const COMPACT_COUNT_FORMAT = {
 
 const TableStats = ({
   exact,
+  failed,
   isTotalFetching,
   onRequestExact,
   total,
   totalUpdatedAt,
 }: {
   exact: boolean
+  failed: boolean
   isTotalFetching: boolean
   onRequestExact: () => void
   total?: { count: number; isEstimated?: boolean }
   totalUpdatedAt: number
 }) => {
-  const canRequestExact = !exact && total?.isEstimated === true
+  const canRequestExact = !failed && !exact && total?.isEstimated === true
 
   return (
     <Tooltip>
@@ -135,7 +137,8 @@ const TableStats = ({
                 'decoration-muted-foreground/50 underline decoration-dotted underline-offset-2'
             )}
           >
-            {total ? (
+            {failed && <span className="text-muted-foreground">–</span>}
+            {!failed && total && (
               <NumberFlow
                 value={total.count}
                 format={COMPACT_COUNT_FORMAT}
@@ -145,14 +148,16 @@ const TableStats = ({
                 )}
                 prefix={total.isEstimated ? '~' : ''}
               />
-            ) : (
+            )}
+            {!failed && !total && (
               <Skeleton className="h-2.5 w-6 rounded-full" />
             )}
           </span>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="top">
-        {total ? (
+        {failed && 'No row count — the query failed.'}
+        {!failed && total && (
           <div className="flex flex-col gap-0.5">
             <span>
               {total.isEstimated ? '~' : ''}
@@ -163,9 +168,8 @@ const TableStats = ({
               Updated: {new Date(totalUpdatedAt).toLocaleTimeString()}
             </span>
           </div>
-        ) : (
-          'Counting rows…'
         )}
+        {!failed && !total && 'Counting rows…'}
       </TooltipContent>
     </Tooltip>
   )
@@ -202,19 +206,12 @@ export const TableToolbar = ({
   const [exact, setExact] = useState(false)
 
   const {
-    data: total,
-    isFetching: isTotalFetching,
-    dataUpdatedAt: totalUpdatedAt,
-  } = useQuery(
-    resourceTableTotalQueryOptions({
-      connectionResource,
-      table,
-      schema,
-      query: { filters, exact },
-    })
-  )
-
-  const { data: rows = [], isPending } = useInfiniteQuery(
+    data: rows = [],
+    isError: isRowsError,
+    isPending,
+    isPlaceholderData: isRowsPlaceholder,
+    isSuccess: isRowsSuccess,
+  } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
@@ -222,6 +219,20 @@ export const TableToolbar = ({
       query: { filters, orderBy },
     })
   )
+
+  const {
+    data: total,
+    isFetching: isTotalFetching,
+    dataUpdatedAt: totalUpdatedAt,
+  } = useQuery({
+    ...resourceTableTotalQueryOptions({
+      connectionResource,
+      table,
+      schema,
+      query: { filters, exact },
+    }),
+    enabled: isRowsSuccess && !isRowsPlaceholder,
+  })
 
   const getData = async ({
     limit,
@@ -258,6 +269,7 @@ export const TableToolbar = ({
     <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
       <TableStats
         exact={exact}
+        failed={isRowsError}
         isTotalFetching={isTotalFetching}
         onRequestExact={() => setExact(true)}
         total={total}

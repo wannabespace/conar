@@ -1,4 +1,4 @@
-import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTER_OPERATORS, FILTERS_GROUPED } from '@tamery/shared/filters'
 import type { TelemetryOptions } from 'ai'
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
@@ -17,7 +17,7 @@ const filtersInstructions = (tableContext: string) =>
     '- Choose the most appropriate operator for each condition',
     '- Format values correctly based on column types (strings, numbers, dates, etc.)',
     '- For enum columns, ensure values match the available options',
-    '- For exact days use >= and <= operators',
+    '- For exact days use gte and lte operators',
     "- If user asks 'empty' and the column is a string, use empty string as item in values array",
     '- If context already contains a filter, you can use it as reference to generate a new filter',
     '- User can paste only the value, you should try to understand to which column the value belongs',
@@ -30,7 +30,7 @@ const filtersInstructions = (tableContext: string) =>
     '- If no ordering is specified in the prompt, return an empty orderBy array.',
     '',
     `Current time: ${new Date().toISOString()}`,
-    `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
+    `Available operators: ${JSON.stringify(FILTERS_GROUPED, null, 2)}`,
     '',
     'Table context:',
     tableContext,
@@ -39,9 +39,7 @@ const filtersInstructions = (tableContext: string) =>
 const filtersOutputSchema = type({
   filters: type({
     column: 'string',
-    operator: type.enumerated(
-      ...SQL_FILTERS_LIST.map((filter) => filter.operator)
-    ),
+    operator: type.enumerated(...FILTER_OPERATORS),
     values: 'string[]',
   }).array(),
   orderBy: type({

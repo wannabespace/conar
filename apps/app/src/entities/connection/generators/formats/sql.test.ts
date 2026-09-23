@@ -8,7 +8,6 @@ import { generateQueryKysely } from './kysely'
 import { generateSchemaPrisma } from './prisma'
 import { generateSchemaTypeScript } from './typescript'
 
-mock.module('../../queries/rows/list', () => ({ buildWhere: () => null }))
 mock.module('../../runtime/dialects', () => ({ coldDialects: {} }))
 const { generateSchemaSQL } = await import('./sql')
 
@@ -162,12 +161,17 @@ describe('generators (postgres)', () => {
       filters: [
         {
           column: 'user_id',
-          ref: { hasValue: false, label: 'Is null', operator: 'IS NULL' },
+          ref: {
+            hasValue: false,
+            label: 'Is null',
+            operator: 'isNull',
+            symbol: 'IS NULL',
+          },
           values: [],
         },
         {
           column: 'id',
-          ref: { isArray: true, label: 'In', operator: 'IN' },
+          ref: { isArray: true, label: 'In', operator: 'in', symbol: 'IN' },
           values: [1, 2],
         },
       ],

@@ -1,5 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterOperator } from '@tamery/shared/filters'
 import { camelCase, pascalCase } from 'change-case'
 
 import * as templates from '../templates'
@@ -24,47 +24,37 @@ type PrismaFilterValue =
 const isPrismaFilterValue = (v: unknown): v is PrismaFilterValue =>
   v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 
-const PRISMA_OP_MAP: Record<string, string> = {
-  '!=': 'not',
-  '<': 'lt',
-  '<=': 'lte',
-  '=': 'equals',
-  '>': 'gt',
-  '>=': 'gte',
-  ILIKE: 'contains',
-  LIKE: 'contains',
+const PRISMA_OPERATORS: Record<FilterOperator, string | null> = {
+  eq: 'equals',
+  gt: 'gt',
+  gte: 'gte',
+  ilike: 'contains',
+  in: 'in',
+  isNotNull: 'not',
+  isNull: 'equals',
+  like: 'contains',
+  lt: 'lt',
+  lte: 'lte',
+  ne: 'not',
+  notIn: 'notIn',
+  notLike: null,
 }
 
 const singleFilterToPrisma = (
   filter: ActiveFilter
 ): PrismaFilterValue | null => {
-  const op = filter.ref.operator.toUpperCase()
-  const [value] = filter.values
-
-  if (filter.ref.isArray) {
-    if (op === 'IN') {
-      return { in: filter.values.filter(isPrismaFilterValue) }
-    }
-    if (op === 'NOT IN') {
-      return { notIn: filter.values.filter(isPrismaFilterValue) }
-    }
+  const prismaOp = PRISMA_OPERATORS[filter.ref.operator]
+  if (!prismaOp) {
     return null
   }
   if (filter.ref.hasValue === false) {
-    if (op === 'IS NULL') {
-      return null
-    }
-    if (op === 'IS NOT NULL') {
-      return { not: null }
-    }
-    return null
+    return { [prismaOp]: null }
   }
+  if (filter.ref.isArray) {
+    return { [prismaOp]: filter.values.filter(isPrismaFilterValue) }
+  }
+  const [value] = filter.values
   if (!isPrismaFilterValue(value)) {
-    return null
-  }
-
-  const prismaOp = PRISMA_OP_MAP[op]
-  if (!prismaOp) {
     return null
   }
   return prismaOp === 'equals' ? value : { [prismaOp]: value }

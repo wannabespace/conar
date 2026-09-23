@@ -1,8 +1,8 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
-import { buildWhere } from './list'
 
 export const deleteByFiltersQuery = memoize(
   ({
@@ -23,28 +23,28 @@ export const deleteByFiltersQuery = memoize(
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where((eb) => buildWhere(eb, filters, filtersConcatOperator))
+            .where((eb) => toKyselyFilter(eb, filters, filtersConcatOperator))
             .execute(),
         mssql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where((eb) => buildWhere(eb, filters, filtersConcatOperator))
+            .where((eb) => toKyselyFilter(eb, filters, filtersConcatOperator))
             .execute(),
         mysql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where((eb) => buildWhere(eb, filters, filtersConcatOperator))
+            .where((eb) => toKyselyFilter(eb, filters, filtersConcatOperator))
             .execute(),
         postgres: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where((eb) => buildWhere(eb, filters, filtersConcatOperator))
+            .where((eb) => toKyselyFilter(eb, filters, filtersConcatOperator))
             .execute(),
       },
     })

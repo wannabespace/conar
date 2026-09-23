@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -18,10 +18,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import {
-  resourceRowsQueryInfiniteOptions,
-  buildWhere,
-} from '~/entities/connection/queries/rows/list'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 import { dialects } from '~/entities/connection/runtime/dialects'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
@@ -105,11 +102,6 @@ export const DraftsActions = ({
       const allRows = cachedData.pages.flatMap((page) => page.rows)
       const rowEntries = [...rowsWithDrafts.values()]
 
-      const equalFilter = SQL_FILTERS_LIST.find((f) => f.operator === '=')
-      if (!equalFilter) {
-        throw new Error('Equal filter operator is not configured')
-      }
-
       for (const rowDrafts of rowEntries) {
         const [firstDraft] = rowDrafts
         if (!firstDraft) {
@@ -159,7 +151,7 @@ export const DraftsActions = ({
 
             const sqlFilters: ActiveFilter[] = primaryColumns.map((column) => ({
               column,
-              ref: equalFilter,
+              ref: EQUAL_FILTER,
               values: [row[column]],
             }))
 
@@ -174,7 +166,7 @@ export const DraftsActions = ({
               .$extendTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              .where((eb) => buildWhere(eb, sqlFilters))
+              .where((eb) => toKyselyFilter(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
@@ -266,7 +258,7 @@ export const DraftsActions = ({
                 .$extendTables<{ [table]: Record<string, unknown> }>()
                 .selectFrom(table)
                 .select(modifiedColumns)
-                .where((eb) => buildWhere(eb, updatedFilters))
+                .where((eb) => toKyselyFilter(eb, updatedFilters))
                 .execute()
                 .then((rows) => rows[0])
                 .catch(() => {

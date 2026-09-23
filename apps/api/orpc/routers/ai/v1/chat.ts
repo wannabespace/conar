@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai'
 import { webSearch } from '@exalabs/ai-sdk'
 import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTER_OPERATORS } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import type { InferUITools, ToolSet, UIDataTypes, UIMessage } from 'ai'
 import {
@@ -89,12 +89,7 @@ const tools: ToolSet = {
       whereFilters: z.array(
         z.object({
           column: z.string(),
-          operator: z.enum(
-            SQL_FILTERS_LIST.map((filter) => filter.operator) as [
-              string,
-              ...string[],
-            ]
-          ),
+          operator: z.enum(FILTER_OPERATORS as [string, ...string[]]),
           values: z.array(z.string()),
         })
       ),

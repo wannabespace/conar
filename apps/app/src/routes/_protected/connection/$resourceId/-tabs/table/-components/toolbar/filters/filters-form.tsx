@@ -47,7 +47,7 @@ export const FilterForm = ({
         <FiltersValueSelector
           ref={(element) => element?.focus()}
           column={column.id}
-          operator={selectedFilter.operator}
+          operator={selectedFilter.symbol}
           isArray={selectedFilter.isArray ?? false}
           values={values}
           onChange={setValues}

@@ -512,6 +512,8 @@ const getQueryOpts = (
   }
 }
 
+const isElectron = !!window.electron
+
 const REORDER_TRANSITION = {
   duration: 0.2,
   ease: [0.32, 0.72, 0, 1],
@@ -596,8 +598,10 @@ const Tab = ({
     {
       label: 'Close',
       icon: Cancel01Icon,
-      accelerator: 'CmdOrCtrl+W',
-      shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
+      ...(isElectron && {
+        accelerator: 'CmdOrCtrl+W',
+        shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
+      }),
       onSelect: onClose,
     },
     { type: 'separator' },
@@ -862,13 +866,17 @@ export const TabBar = ({ className }: { className?: string }) => {
     removeTab(connectionResource.id, tabId)
   }
 
-  useHotkey('Mod+W', (e) => {
-    e.preventDefault()
+  useHotkey(
+    'Mod+W',
+    (e) => {
+      e.preventDefault()
 
-    if (activeTabId) {
-      closeTab(activeTabId)
-    }
-  })
+      if (activeTabId) {
+        closeTab(activeTabId)
+      }
+    },
+    { enabled: isElectron }
+  )
 
   useHotkey('Mod+B', (e) => {
     e.preventDefault()

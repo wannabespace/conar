@@ -1,9 +1,9 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
-import { buildWhere } from './list'
 
 export const selectQuery = memoize(
   ({
@@ -25,7 +25,7 @@ export const selectQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         mssql: (db) =>
           db
@@ -33,7 +33,7 @@ export const selectQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         mysql: (db) =>
           db
@@ -41,7 +41,7 @@ export const selectQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         postgres: (db) =>
           db
@@ -49,7 +49,7 @@ export const selectQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
       },
       type: type('Record<string, unknown>[]'),

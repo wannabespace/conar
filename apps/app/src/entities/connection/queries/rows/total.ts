@@ -1,4 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -9,7 +10,6 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '../../runtime/query'
-import { buildWhere } from './list'
 
 export const resourceTableTotalQuery = memoize(
   ({
@@ -46,7 +46,7 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
@@ -57,7 +57,7 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(sql<number>`count_big(*)`.as('total'))
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .executeTakeFirst()
 
           return {
@@ -84,7 +84,7 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
@@ -116,7 +116,7 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .where((eb) => buildWhere(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
