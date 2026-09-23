@@ -51,6 +51,7 @@ export const functionsType = type({
   'custom?': 'boolean | 1 | 0',
   'extras?': 'string | null',
   'identity?': 'string',
+  'inline?': 'boolean | 1 | 0',
   'language?': 'string',
   name: 'string',
   'oid?': 'number',
@@ -59,13 +60,14 @@ export const functionsType = type({
   'schema_bound?': 'boolean | null',
   'security_definer?': 'boolean',
   type: '"function" | "procedure"',
-}).pipe(({ custom, schema_bound, security_definer, ...item }) => ({
+}).pipe(({ custom, inline, schema_bound, security_definer, ...item }) => ({
   ...item,
   args: item.args ?? null,
   behavior: item.behavior || '',
   body: item.body || '',
   custom: !!custom,
   extras: item.extras || '',
+  inline: !!inline,
   language: item.language || null,
   schemaBound: !!schema_bound,
   securityDefiner: security_definer ?? false,
@@ -90,6 +92,7 @@ const resourceFunctionsQuery = createQuery({
           ), '')`.as('args'),
           'sm.definition as body',
           'sm.is_schema_bound as schema_bound',
+          sql<1 | 0>`IIF(o.type = 'IF', 1, 0)`.as('inline'),
           sql<
             'function' | 'procedure'
           >`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as('type'),

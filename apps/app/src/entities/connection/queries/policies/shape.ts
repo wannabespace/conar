@@ -16,6 +16,8 @@ export interface PolicyShape {
   command: PolicyCommand
   kind: PolicyKind
   name: string
+  // SQL Server's policy is only these; it has no roles, command or expressions.
+  predicates: PolicyPredicate[]
   roles: string[]
   using: string | null
 }
@@ -110,7 +112,7 @@ export const BLOCK_OPERATIONS = [
 
 export type BlockOperation = (typeof BLOCK_OPERATIONS)[number]
 
-export interface SecurityPredicate {
+export interface PolicyPredicate {
   arguments: string
   functionName: string
   functionSchema: string
@@ -121,26 +123,24 @@ export interface SecurityPredicate {
   table: string
 }
 
-export interface SecurityPolicyTarget {
-  name: string
-  schema: string
-}
-
 const bracketed = String.raw`\[((?:[^\]]|\]\])+)\]`
-// SQL Server stores a predicate as "([schema].[function](arguments))".
 const PREDICATE_CALL = new RegExp(
-  String.raw`^\(${bracketed}\.${bracketed}\((.*)\)\)$`,
+  String.raw`^${bracketed}\.${bracketed}\((.*)\)$`,
   'su'
 )
 
-export const securityPredicate = {
-  add: (predicate: SecurityPredicate) =>
+export const policyPredicate = {
+  add: (predicate: PolicyPredicate) =>
     sql`ADD ${sql.raw(predicate.kind)} PREDICATE ${sql.id(predicate.functionSchema, predicate.functionName)}(${sql.raw(predicate.arguments)}) ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
-  drop: (predicate: SecurityPredicate) =>
+  drop: (predicate: PolicyPredicate) =>
     sql`DROP ${sql.raw(predicate.kind)} PREDICATE ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
   parse: (definition: string) => {
+    // Servers differ on wrapping the stored call in parentheses.
+    const call = definition.startsWith('(')
+      ? definition.slice(1, -1)
+      : definition
     const [, functionSchema, functionName, args] =
-      PREDICATE_CALL.exec(definition) ?? []
+      PREDICATE_CALL.exec(call) ?? []
 
     return functionSchema && functionName && args !== undefined
       ? {
@@ -151,6 +151,3 @@ export const securityPredicate = {
       : null
   },
 }
-
-export const securityPolicyOf = ({ name, schema }: SecurityPolicyTarget) =>
-  sql.id(schema, name)

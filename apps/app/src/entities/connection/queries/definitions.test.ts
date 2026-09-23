@@ -27,7 +27,7 @@ import {
 import {
   clickhouseRoleList,
   createPolicyStatement,
-  securityPredicate,
+  policyPredicate,
 } from './policies/shape'
 import { accountOf, privilegeOn } from './privileges/shape'
 import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
@@ -284,6 +284,7 @@ describe('policy statements', () => {
           command: 'SELECT',
           kind: 'PERMISSIVE',
           name: 'p',
+          predicates: [],
           roles,
           using,
         },
@@ -322,23 +323,28 @@ describe('security predicates', () => {
   }
 
   test('a block operation follows the table', () => {
-    expect(compiled(securityPredicate.add(predicate), 'mssql')).toBe(
+    expect(compiled(policyPredicate.add(predicate), 'mssql')).toBe(
       'ADD BLOCK PREDICATE "Security"."fn_tenant"(TenantId) ON "dbo"."Orders" AFTER INSERT'
     )
-    expect(compiled(securityPredicate.drop(predicate), 'mssql')).toBe(
+    expect(compiled(policyPredicate.drop(predicate), 'mssql')).toBe(
       'DROP BLOCK PREDICATE ON "dbo"."Orders" AFTER INSERT'
     )
   })
 
   test('parses the definition SQL Server stores', () => {
     expect(
-      securityPredicate.parse('([Sec]]urity].[fn.tenant]([TenantId], 1))')
+      policyPredicate.parse('([Sec]]urity].[fn.tenant]([TenantId], 1))')
     ).toEqual({
       arguments: '[TenantId], 1',
       functionName: 'fn.tenant',
       functionSchema: 'Sec]urity',
     })
-    expect(securityPredicate.parse('(1 = 1)')).toBeNull()
+    expect(policyPredicate.parse('[dbo].[fn]([TenantId])')).toEqual({
+      arguments: '[TenantId]',
+      functionName: 'fn',
+      functionSchema: 'dbo',
+    })
+    expect(policyPredicate.parse('(1 = 1)')).toBeNull()
   })
 })
 

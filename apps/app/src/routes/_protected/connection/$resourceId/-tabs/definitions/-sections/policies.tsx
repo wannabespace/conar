@@ -27,26 +27,23 @@ import { toast } from 'sonner'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
-import { alterSecurityPolicyQuery } from '~/entities/connection/queries/policies/alter-security-policy'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
-import { createSecurityPolicyQuery } from '~/entities/connection/queries/policies/create-security-policy'
 import { dropPolicyQuery } from '~/entities/connection/queries/policies/drop'
 import type { policyType } from '~/entities/connection/queries/policies/list'
 import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
 import { recreatePolicyQuery } from '~/entities/connection/queries/policies/recreate'
 import { renamePolicyQuery } from '~/entities/connection/queries/policies/rename'
 import { setRowLevelSecurityQuery } from '~/entities/connection/queries/policies/set-row-level-security'
-import { setSecurityPolicyEnabledQuery } from '~/entities/connection/queries/policies/set-security-policy-enabled'
 import type {
   BlockOperation,
   PolicyCommand,
   PolicyKind,
-  SecurityPredicate,
+  PolicyPredicate,
 } from '~/entities/connection/queries/policies/shape'
 import {
   BLOCK_OPERATIONS,
   POLICY_COMMANDS,
-  securityPredicate,
+  policyPredicate,
 } from '~/entities/connection/queries/policies/shape'
 import { queryClient } from '~/lib/query-client'
 
@@ -204,6 +201,7 @@ const savePolicy = async ({
     command: draft.command,
     kind: draft.kind,
     name: draft.name.trim(),
+    predicates: [],
     roles: parseRoles(draft.roles),
     using: draft.using.trim() || null,
   }
@@ -273,6 +271,7 @@ const PolicyInspector = ({
       run(
         setRowLevelSecurityQuery({
           enabled,
+          name: item?.name ?? '',
           schema: item?.schema ?? '',
           table: item?.table ?? '',
         })
@@ -464,12 +463,12 @@ interface PredicateDraft {
   arguments: string
   // qualifiedKey of the function and of the table
   function: string
-  kind: SecurityPredicate['kind']
+  kind: PolicyPredicate['kind']
   operation: BlockOperation | 'ALL'
   table: string
 }
 
-interface SecurityPolicyDraft {
+interface PredicatePolicyDraft {
   name: string
   predicates: PredicateDraft[]
   schema: string
@@ -497,7 +496,7 @@ const newPredicate: PredicateDraft = {
 }
 
 const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
-  const call = securityPredicate.parse(predicate.definition)
+  const call = policyPredicate.parse(predicate.definition)
 
   return {
     arguments: call?.arguments ?? '',
@@ -508,16 +507,16 @@ const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
   }
 }
 
-const securityDraftOf = (
+const predicatePolicyDraftOf = (
   item: PolicyItem | null,
   pageSchema: string
-): SecurityPolicyDraft => ({
+): PredicatePolicyDraft => ({
   name: item?.name ?? '',
   predicates: item?.predicates?.map(predicateDraftOf) ?? [newPredicate],
   schema: item?.schema ?? pageSchema,
 })
 
-const predicateOf = (draft: PredicateDraft): SecurityPredicate => {
+const predicateOf = (draft: PredicateDraft): PolicyPredicate => {
   const [functionSchema, functionName] = qualifiedName.assert(draft.function)
   const [schema, table] = qualifiedName.assert(draft.table)
 
@@ -535,8 +534,10 @@ const predicateOf = (draft: PredicateDraft): SecurityPredicate => {
   }
 }
 
-const securityPlanOf = (item: PolicyItem, draft: SecurityPolicyDraft) => {
-  const before = securityDraftOf(item, item.schema).predicates.map(predicateOf)
+const predicatePlanOf = (item: PolicyItem, draft: PredicatePolicyDraft) => {
+  const before = predicatePolicyDraftOf(item, item.schema).predicates.map(
+    predicateOf
+  )
   const after = draft.predicates.map(predicateOf)
   const name = draft.name.trim()
 
@@ -549,7 +550,7 @@ const securityPlanOf = (item: PolicyItem, draft: SecurityPolicyDraft) => {
   }
 }
 
-const securityPolicySchema = type({
+const predicatePolicySchema = type({
   name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
   predicates: type({
     function: type(/\S/u).configure({
@@ -559,7 +560,7 @@ const securityPolicySchema = type({
   }).array(),
 })
 
-const SecurityPolicyInspector = ({
+const PredicatePolicyInspector = ({
   can,
   connectionResource,
   item,
@@ -574,24 +575,37 @@ const SecurityPolicyInspector = ({
     resourceFunctionsQueryOptions({ connectionResource })
   )
   const mutation = useMutation({
-    mutationFn: (draft: SecurityPolicyDraft) =>
+    mutationFn: (draft: PredicatePolicyDraft) =>
       run(
         item
-          ? alterSecurityPolicyQuery({
-              ...securityPlanOf(item, draft),
+          ? alterPolicyQuery({
+              ...predicatePlanOf(item, draft),
+              check: null,
+              kind: null,
               name: item.name,
+              roles: null,
               schema: item.schema,
+              table: item.table,
+              using: null,
             })
-          : createSecurityPolicyQuery({
-              name: draft.name.trim(),
-              predicates: draft.predicates.map(predicateOf),
+          : createPolicyQuery({
               schema: draft.schema,
+              shape: {
+                check: null,
+                command: 'ALL',
+                kind: 'RESTRICTIVE',
+                name: draft.name.trim(),
+                predicates: draft.predicates.map(predicateOf),
+                roles: [],
+                using: null,
+              },
+              table: '',
             })
       ),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Security policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -599,51 +613,53 @@ const SecurityPolicyInspector = ({
   const state = useMutation({
     mutationFn: ({ enabled }: { enabled: boolean }) =>
       run(
-        setSecurityPolicyEnabledQuery({
+        setRowLevelSecurityQuery({
           enabled,
           name: item?.name ?? '',
           schema: item?.schema ?? '',
+          table: item?.table ?? '',
         })
       ),
     onError: (error, { enabled }) =>
       toast.error(
-        `Failed to ${enabled ? 'enable' : 'disable'} security policy "${item?.name}"`,
+        `Failed to ${enabled ? 'enable' : 'disable'} policy "${item?.name}"`,
         { description: error.message }
       ),
     onSuccess: async (_result, { enabled }) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Security policy "${item?.name}" ${enabled ? 'enabled' : 'disabled'}`
+        `Policy "${item?.name}" ${enabled ? 'enabled' : 'disabled'}`
       )
     },
   })
   const form = useAppForm({
-    defaultValues: securityDraftOf(item, selectedSchema ?? ''),
+    defaultValues: predicatePolicyDraftOf(item, selectedSchema ?? ''),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
     validators: {
-      onChange: securityPolicySchema,
-      onMount: securityPolicySchema,
+      onChange: predicatePolicySchema,
+      onMount: predicatePolicySchema,
     },
   })
   const draft = useStore(form.store, (store) => store.values)
 
   // A predicate whose definition is not a plain function call has no fields to show.
   const readable = !!item?.predicates?.every(
-    (predicate) => securityPredicate.parse(predicate.definition) !== null
+    (predicate) => policyPredicate.parse(predicate.definition) !== null
   )
   const readOnly = item ? !can.edit || !readable : !can.create
   const tables = schemas.flatMap((schema) =>
     relationNamesOf(schema, 'table').map((table) => qualifiedKey(schema, table))
   )
   const predicateFunctions = functions
-    .filter((fn) => fn.return_type === 'table')
+    .filter((fn) => fn.inline && fn.schemaBound)
     .map((fn) => qualifiedKey(fn.schema, fn.name))
   const complete = draft.predicates.every(
     (predicate) => predicate.function && predicate.table
   )
-  const plan = item && readable && complete ? securityPlanOf(item, draft) : null
+  const plan =
+    item && readable && complete ? predicatePlanOf(item, draft) : null
   const changed =
     !item ||
     !plan ||
@@ -658,18 +674,18 @@ const SecurityPolicyInspector = ({
       form={form}
       item={item}
       mutation={mutation}
-      noun="security policy"
+      noun="policy"
       readOnly={readOnly}
     >
       {item && (
         <InspectorSection title="Status">
           <InspectorOption
-            htmlFor="security-policy-enabled"
+            htmlFor="policy-enabled"
             title="Enabled"
             description="A disabled policy keeps its predicates but filters and blocks nothing."
           >
             <Switch
-              id="security-policy-enabled"
+              id="policy-enabled"
               size="sm"
               disabled={state.isPending}
               checked={item.enabled}
@@ -680,7 +696,7 @@ const SecurityPolicyInspector = ({
       )}
       <InspectorSection
         title="General"
-        description="A security policy binds predicate functions to tables, and SQL Server calls them for every row."
+        description="A policy binds predicate functions to tables, and SQL Server calls them for every row."
       >
         <form.AppField name="schema">
           {() => (
@@ -769,7 +785,7 @@ const SecurityPolicyInspector = ({
                 empty={
                   functionsPending
                     ? 'Loading…'
-                    : 'No function here returns a table.'
+                    : 'No schema-bound inline table-valued function here.'
                 }
                 labelOf={qualifiedLabel}
                 options={predicateFunctions}
@@ -861,7 +877,7 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
 
 const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
 
-const securityColumns: DefinitionsColumn<PolicyItem>[] = [
+const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
@@ -946,17 +962,17 @@ export const Policies = () => {
     }
 
     return functionsPending ||
-      functions.some((fn) => fn.return_type === 'table')
+      functions.some((fn) => fn.inline && fn.schemaBound)
       ? undefined
-      : 'A security policy calls an inline table-valued function, and none exists yet.'
+      : 'A policy calls a schema-bound inline table-valued function, and none exists yet.'
   })()
 
   return (
     <DefinitionsPage
-      columns={predicates ? securityColumns : columns}
+      columns={predicates ? predicateColumns : columns}
       createBlocked={createBlocked}
       dropItem={dropItem}
-      Inspector={predicates ? SecurityPolicyInspector : PolicyInspector}
+      Inspector={predicates ? PredicatePolicyInspector : PolicyInspector}
       items={inSchema}
       keyOf={policyKey}
       loading={isPending}

@@ -378,7 +378,7 @@ const FunctionInspector = ({
               {() => (
                 <SwitchField
                   title="Schema bound"
-                  description="Locks the tables it reads against changes. Security policy predicates require it."
+                  description="Locks the tables it reads against changes. Policy predicates require it."
                   disabled={readOnly}
                 />
               )}
