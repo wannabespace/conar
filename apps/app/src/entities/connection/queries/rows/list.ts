@@ -1,8 +1,7 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_OPERATORS } from '@tamery/shared/filters'
+import { toSqlFilter } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import type { ExpressionBuilder } from 'kysely'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -15,47 +14,6 @@ import {
 import { DEFAULT_PAGE_LIMIT } from '../../utils'
 
 const rowType = type('Record<string, unknown>')
-
-const filterValueExpression = (filter: ActiveFilter) => {
-  if (filter.ref.hasValue === false) {
-    return null
-  }
-
-  if (filter.ref.isArray) {
-    return sql.join(
-      [
-        sql.raw('('),
-        sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
-        sql.raw(')'),
-      ],
-      sql.raw('')
-    )
-  }
-
-  return sql.val(filter.values[0])
-}
-
-// oxlint-disable-next-line ts/no-explicit-any
-export const buildWhere = <E extends ExpressionBuilder<any, any>>(
-  eb: E,
-  filters: ActiveFilter[],
-  concatOperator: 'AND' | 'OR' = 'AND'
-) => {
-  const concat = concatOperator === 'AND' ? eb.and : eb.or
-
-  return concat(
-    filters.map((filter) =>
-      sql.join(
-        [
-          sql.ref(filter.column),
-          sql.raw(SQL_OPERATORS[filter.ref.operator]),
-          filterValueExpression(filter),
-        ].filter(Boolean),
-        sql.raw(' ')
-      )
-    )
-  )
-}
 
 interface PageResult {
   rows: (typeof rowType.inferIn)[]
@@ -104,7 +62,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toSqlFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -136,7 +94,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toSqlFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -172,7 +130,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toSqlFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -204,7 +162,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              buildWhere(eb, activeFilters, filtersConcatOperator)
+              toSqlFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 

@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { EQUAL_FILTER } from '@tamery/shared/filters'
+import { EQUAL_FILTER, toSqlFilter } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -18,10 +18,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import {
-  resourceRowsQueryInfiniteOptions,
-  buildWhere,
-} from '~/entities/connection/queries/rows/list'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
 import { dialects } from '~/entities/connection/runtime/dialects'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
@@ -169,7 +166,7 @@ export const DraftsActions = ({
               .$extendTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              .where((eb) => buildWhere(eb, sqlFilters))
+              .where((eb) => toSqlFilter(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
@@ -261,7 +258,7 @@ export const DraftsActions = ({
                 .$extendTables<{ [table]: Record<string, unknown> }>()
                 .selectFrom(table)
                 .select(modifiedColumns)
-                .where((eb) => buildWhere(eb, updatedFilters))
+                .where((eb) => toSqlFilter(eb, updatedFilters))
                 .execute()
                 .then((rows) => rows[0])
                 .catch(() => {
