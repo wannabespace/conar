@@ -123,9 +123,10 @@ export interface PolicyPredicate {
   table: string
 }
 
-const bracketed = String.raw`\[((?:[^\]]|\]\])+)\]`
+// A part is bracketed ("]" doubled inside) or, in some catalog output, bare.
+const namePart = String.raw`(?:\[((?:[^\]]|\]\])+)\]|([^.[\]()\s]+))`
 const PREDICATE_CALL = new RegExp(
-  String.raw`^${bracketed}\.${bracketed}\((.*)\)$`,
+  String.raw`^${namePart}\.${namePart}\((.*)\)$`,
   'su'
 )
 
@@ -139,15 +140,13 @@ export const policyPredicate = {
     const call = definition.startsWith('(')
       ? definition.slice(1, -1)
       : definition
-    const [, functionSchema, functionName, args] =
+    const [, bracketedSchema, bareSchema, bracketedName, bareName, args] =
       PREDICATE_CALL.exec(call) ?? []
+    const functionSchema = bracketedSchema?.replaceAll(']]', ']') ?? bareSchema
+    const functionName = bracketedName?.replaceAll(']]', ']') ?? bareName
 
     return functionSchema && functionName && args !== undefined
-      ? {
-          arguments: args,
-          functionName: functionName.replaceAll(']]', ']'),
-          functionSchema: functionSchema.replaceAll(']]', ']'),
-        }
+      ? { arguments: args, functionName, functionSchema }
       : null
   },
 }

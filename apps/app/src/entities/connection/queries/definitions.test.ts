@@ -366,6 +366,11 @@ describe('security predicates', () => {
       functionName: 'fn',
       functionSchema: 'dbo',
     })
+    expect(policyPredicate.parse('(Security.fn_tenant(TenantId))')).toEqual({
+      arguments: 'TenantId',
+      functionName: 'fn_tenant',
+      functionSchema: 'Security',
+    })
     expect(policyPredicate.parse('(1 = 1)')).toBeNull()
   })
 })

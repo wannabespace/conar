@@ -461,11 +461,10 @@ type SavedPredicate = NonNullable<PolicyItem['predicates']>[number]
 
 interface PredicateDraft {
   arguments: string
-  // qualifiedKey of the function and of the table
-  function: string
+  functionKey: string
   kind: PolicyPredicate['kind']
   operation: BlockOperation | 'ALL'
-  table: string
+  tableKey: string
 }
 
 interface PredicatePolicyDraft {
@@ -489,10 +488,10 @@ const operationLabel = (operation: BlockOperation | 'ALL') =>
 
 const newPredicate: PredicateDraft = {
   arguments: '',
-  function: '',
+  functionKey: '',
   kind: 'FILTER',
   operation: 'ALL',
-  table: '',
+  tableKey: '',
 }
 
 const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
@@ -500,10 +499,12 @@ const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
 
   return {
     arguments: call?.arguments ?? '',
-    function: call ? qualifiedKey(call.functionSchema, call.functionName) : '',
+    functionKey: call
+      ? qualifiedKey(call.functionSchema, call.functionName)
+      : '',
     kind: predicate.kind,
     operation: predicate.operation ?? 'ALL',
-    table: qualifiedKey(predicate.schema, predicate.table),
+    tableKey: qualifiedKey(predicate.schema, predicate.table),
   }
 }
 
@@ -517,8 +518,8 @@ const predicatePolicyDraftOf = (
 })
 
 const predicateOf = (draft: PredicateDraft): PolicyPredicate => {
-  const [functionSchema, functionName] = qualifiedName.assert(draft.function)
-  const [schema, table] = qualifiedName.assert(draft.table)
+  const [functionSchema, functionName] = qualifiedName.assert(draft.functionKey)
+  const [schema, table] = qualifiedName.assert(draft.tableKey)
 
   return {
     arguments: draft.arguments.trim(),
@@ -553,10 +554,12 @@ const predicatePlanOf = (item: PolicyItem, draft: PredicatePolicyDraft) => {
 const predicatePolicySchema = type({
   name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
   predicates: type({
-    function: type(/\S/u).configure({
+    functionKey: type(/\S/u).configure({
       message: 'Pick the predicate function.',
     }),
-    table: type(/\S/u).configure({ message: 'Pick the table to protect.' }),
+    tableKey: type(/\S/u).configure({
+      message: 'Pick the table to protect.',
+    }),
   }).array(),
 })
 
@@ -656,7 +659,7 @@ const PredicatePolicyInspector = ({
     .filter((fn) => fn.inline && fn.schemaBound)
     .map((fn) => qualifiedKey(fn.schema, fn.name))
   const complete = draft.predicates.every(
-    (predicate) => predicate.function && predicate.table
+    (predicate) => predicate.functionKey && predicate.tableKey
   )
   const plan =
     item && readable && complete ? predicatePlanOf(item, draft) : null
@@ -717,8 +720,7 @@ const PredicatePolicyInspector = ({
               : 'Refuses writes that leave a row the function returns nothing for.'
           }
           action={
-            !readOnly &&
-            draft.predicates.length > 1 && (
+            !readOnly && (
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -764,7 +766,7 @@ const PredicatePolicyInspector = ({
               </form.AppField>
             )}
           </div>
-          <form.AppField name={`predicates[${index}].table`}>
+          <form.AppField name={`predicates[${index}].tableKey`}>
             {() => (
               <SelectField
                 label="Table"
@@ -776,7 +778,7 @@ const PredicatePolicyInspector = ({
               />
             )}
           </form.AppField>
-          <form.AppField name={`predicates[${index}].function`}>
+          <form.AppField name={`predicates[${index}].functionKey`}>
             {() => (
               <SelectField
                 label="Function"
@@ -831,7 +833,7 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span data-mask className="flex items-center gap-2">
+        <span className="flex items-center gap-2">
           <HugeiconsIcon
             icon={
               item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
@@ -839,7 +841,9 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
             strokeWidth={2}
             className="text-muted-foreground size-4 shrink-0"
           />
-          <HighlightText text={item.name} match={search} />
+          <span data-mask>
+            <HighlightText text={item.name} match={search} />
+          </span>
           {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
         </span>
         {item.using && <Expression keyword="USING" value={item.using} />}
@@ -881,13 +885,15 @@ const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span data-mask className="flex items-center gap-2">
+        <span className="flex items-center gap-2">
           <HugeiconsIcon
             icon={SecurityCheckIcon}
             strokeWidth={2}
             className="text-muted-foreground size-4 shrink-0"
           />
-          <HighlightText text={item.name} match={search} />
+          <span data-mask>
+            <HighlightText text={item.name} match={search} />
+          </span>
           {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
         </span>
         {item.predicates?.map((predicate) => (
