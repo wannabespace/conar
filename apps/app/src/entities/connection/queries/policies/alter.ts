@@ -14,22 +14,22 @@ import {
 
 export const alterPolicyQuery = ({
   added = [],
-  check,
+  check = null,
   dropped = [],
-  kind,
+  kind = null,
   newName,
-  roles,
-  using,
+  roles = null,
+  using = null,
   ...target
 }: PolicyTarget & {
-  // SQL Server alters only predicates and the name.
+  // SQL Server alters only predicates and the name; the rest is Postgres and ClickHouse.
   added?: PolicyPredicate[]
-  check: string | null
+  check?: string | null
   dropped?: PolicyPredicate[]
-  kind: PolicyKind | null
+  kind?: PolicyKind | null
   newName: string | null
-  roles: string[] | null
-  using: string | null
+  roles?: string[] | null
+  using?: string | null
 }) => {
   const policy = policyOn(target)
 

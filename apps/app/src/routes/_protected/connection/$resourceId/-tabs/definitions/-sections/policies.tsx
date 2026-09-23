@@ -244,6 +244,36 @@ const savePolicy = async ({
   }
 }
 
+const useEnabledToggle = ({
+  item,
+  queryKey,
+  run,
+  subject,
+}: Pick<SectionInspectorProps<PolicyItem>, 'item' | 'queryKey' | 'run'> & {
+  subject: string
+}) =>
+  useMutation({
+    mutationFn: ({ enabled }: { enabled: boolean }) =>
+      run(
+        setRowLevelSecurityQuery({
+          enabled,
+          name: item?.name ?? '',
+          schema: item?.schema ?? '',
+          table: item?.table ?? '',
+        })
+      ),
+    onError: (error, { enabled }) =>
+      toast.error(`Failed to ${enabled ? 'enable' : 'disable'} ${subject}`, {
+        description: error.message,
+      }),
+    onSuccess: async (_result, { enabled }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `${uppercaseFirst(subject)} ${enabled ? 'enabled' : 'disabled'}`
+      )
+    },
+  })
+
 const PolicyInspector = ({
   can,
   item,
@@ -266,27 +296,11 @@ const PolicyInspector = ({
       onOpenChange(false)
     },
   })
-  const rowLevelSecurity = useMutation({
-    mutationFn: ({ enabled }: { enabled: boolean }) =>
-      run(
-        setRowLevelSecurityQuery({
-          enabled,
-          name: item?.name ?? '',
-          schema: item?.schema ?? '',
-          table: item?.table ?? '',
-        })
-      ),
-    onError: (error, { enabled }) =>
-      toast.error(
-        `Failed to ${enabled ? 'enable' : 'disable'} row level security on "${item?.table}"`,
-        { description: error.message }
-      ),
-    onSuccess: async (_result, { enabled }) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`
-      )
-    },
+  const rowLevelSecurity = useEnabledToggle({
+    item,
+    queryKey,
+    run,
+    subject: `row level security on "${item?.table}"`,
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
@@ -583,13 +597,9 @@ const PredicatePolicyInspector = ({
         item
           ? alterPolicyQuery({
               ...predicatePlanOf(item, draft),
-              check: null,
-              kind: null,
               name: item.name,
-              roles: null,
               schema: item.schema,
               table: item.table,
-              using: null,
             })
           : createPolicyQuery({
               schema: draft.schema,
@@ -613,27 +623,11 @@ const PredicatePolicyInspector = ({
       onOpenChange(false)
     },
   })
-  const state = useMutation({
-    mutationFn: ({ enabled }: { enabled: boolean }) =>
-      run(
-        setRowLevelSecurityQuery({
-          enabled,
-          name: item?.name ?? '',
-          schema: item?.schema ?? '',
-          table: item?.table ?? '',
-        })
-      ),
-    onError: (error, { enabled }) =>
-      toast.error(
-        `Failed to ${enabled ? 'enable' : 'disable'} policy "${item?.name}"`,
-        { description: error.message }
-      ),
-    onSuccess: async (_result, { enabled }) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `Policy "${item?.name}" ${enabled ? 'enabled' : 'disabled'}`
-      )
-    },
+  const state = useEnabledToggle({
+    item,
+    queryKey,
+    run,
+    subject: `policy "${item?.name}"`,
   })
   const form = useAppForm({
     defaultValues: predicatePolicyDraftOf(item, selectedSchema ?? ''),
@@ -658,17 +652,8 @@ const PredicatePolicyInspector = ({
   const predicateFunctions = functions
     .filter((fn) => fn.inline && fn.schemaBound)
     .map((fn) => qualifiedKey(fn.schema, fn.name))
-  const complete = draft.predicates.every(
-    (predicate) => predicate.functionKey && predicate.tableKey
-  )
-  const plan =
-    item && readable && complete ? predicatePlanOf(item, draft) : null
   const changed =
-    !item ||
-    !plan ||
-    plan.added.length > 0 ||
-    plan.dropped.length > 0 ||
-    plan.newName !== null
+    !item || !sameShape(draft, predicatePolicyDraftOf(item, item.schema))
 
   return (
     <Inspector
@@ -822,6 +807,28 @@ const PredicatePolicyInspector = ({
   )
 }
 
+const PolicyName = ({
+  icon = SecurityCheckIcon,
+  item,
+  search,
+}: {
+  icon?: typeof SecurityCheckIcon
+  item: PolicyItem
+  search: string
+}) => (
+  <span className="flex items-center gap-2">
+    <HugeiconsIcon
+      icon={icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-4 shrink-0"
+    />
+    <span data-mask>
+      <HighlightText text={item.name} match={search} />
+    </span>
+    {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
+  </span>
+)
+
 const Expression = ({ keyword, value }: { keyword: string; value: string }) => (
   <span className="flex items-baseline gap-1.5 text-xs">
     <span className="text-muted-foreground shrink-0">{keyword}</span>
@@ -833,19 +840,13 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span className="flex items-center gap-2">
-          <HugeiconsIcon
-            icon={
-              item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
-            }
-            strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
-          />
-          <span data-mask>
-            <HighlightText text={item.name} match={search} />
-          </span>
-          {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
-        </span>
+        <PolicyName
+          icon={
+            item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
+          }
+          item={item}
+          search={search}
+        />
         {item.using && <Expression keyword="USING" value={item.using} />}
         {item.check && <Expression keyword="WITH CHECK" value={item.check} />}
       </span>
@@ -885,25 +886,10 @@ const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span className="flex items-center gap-2">
-          <HugeiconsIcon
-            icon={SecurityCheckIcon}
-            strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
-          />
-          <span data-mask>
-            <HighlightText text={item.name} match={search} />
-          </span>
-          {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
-        </span>
-        {item.predicates?.map((predicate) => (
+        <PolicyName item={item} search={search} />
+        {item.predicates?.map((predicate, index) => (
           <Expression
-            key={JSON.stringify([
-              predicate.kind,
-              predicate.operation,
-              predicate.schema,
-              predicate.table,
-            ])}
+            key={index}
             keyword={[predicate.kind, predicate.operation]
               .filter(Boolean)
               .join(' ')}
