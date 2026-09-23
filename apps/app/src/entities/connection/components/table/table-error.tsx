@@ -1,6 +1,15 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { Button } from '@tamery/ui/components/button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 
@@ -37,60 +46,60 @@ export const TableError = ({ error }: { error: Error }) => {
   const hasDetails = details !== summary
 
   return (
-    <div className="pointer-events-none sticky left-0 flex h-full items-center justify-center overflow-hidden p-6 pb-16">
+    <div className="pointer-events-none sticky left-0 flex h-full overflow-hidden pb-12">
       <motion.div
-        initial={{ opacity: 0, scale: 0.98, y: 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-        className="pointer-events-auto relative flex w-full max-w-lg flex-col items-center"
+        className="pointer-events-auto flex min-w-0 flex-1"
       >
-        <div className="border-destructive/10 bg-destructive/10 mb-5 flex size-14 items-center justify-center rounded-2xl border">
-          <HugeiconsIcon
-            icon={Alert02Icon}
-            strokeWidth={2}
-            className="text-destructive size-7"
-          />
-        </div>
+        <Empty className="p-4 md:p-4">
+          <EmptyHeader className="max-w-md gap-1">
+            <EmptyMedia
+              variant="icon"
+              className="bg-destructive/10 text-destructive mb-3 size-14 rounded-2xl [&_svg]:size-7"
+            >
+              <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
+            </EmptyMedia>
+            <EmptyTitle className="text-sm font-medium tracking-normal">
+              Query failed
+            </EmptyTitle>
+            <EmptyDescription
+              data-mask
+              className="font-mono text-xs wrap-break-word select-text"
+            >
+              {summary}
+            </EmptyDescription>
+          </EmptyHeader>
 
-        <h2 className="text-base font-semibold tracking-tight">Query failed</h2>
-        <p className="text-muted-foreground mt-1.5 text-center text-sm">
-          Check your filters and try again.
-        </p>
-
-        <p
-          data-mask
-          className="text-2xs text-muted-foreground/70 mt-4 max-w-md text-center font-mono leading-relaxed"
-        >
-          {summary}
-        </p>
-
-        {hasDetails && (
-          <button
-            type="button"
-            className="text-muted-foreground/70 hover:text-foreground focus-visible:text-foreground mt-5 cursor-default rounded-md px-1.5 py-0.5 text-xs outline-none"
-            onClick={() => setShowDetails((prev) => !prev)}
-          >
-            {showDetails ? 'Hide details' : 'Show details'}
-          </button>
-        )}
-
-        {hasDetails && (
-          <motion.div
-            initial={false}
-            animate={{ gridTemplateRows: showDetails ? '1fr' : '0fr' }}
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="grid w-full"
-          >
-            <div className="min-h-0 overflow-hidden">
-              <ScrollArea
-                data-mask
-                className="text-2xs text-muted-foreground/80 mt-4 max-h-56 border-t pt-4 text-left font-mono leading-relaxed whitespace-pre-wrap"
+          {hasDetails && (
+            <EmptyContent className="max-w-lg gap-2">
+              <Button
+                variant="ghost"
+                size="xs"
+                className="text-muted-foreground"
+                onClick={() => setShowDetails((prev) => !prev)}
               >
-                {details}
-              </ScrollArea>
-            </div>
-          </motion.div>
-        )}
+                {showDetails ? 'Hide details' : 'Show details'}
+              </Button>
+              <motion.div
+                initial={false}
+                animate={{ gridTemplateRows: showDetails ? '1fr' : '0fr' }}
+                transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+                className="grid w-full"
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <ScrollArea
+                    data-mask
+                    className="bg-muted/60 text-2xs text-muted-foreground max-h-56 rounded-lg p-3 text-left font-mono leading-relaxed whitespace-pre-wrap select-text"
+                  >
+                    {details}
+                  </ScrollArea>
+                </div>
+              </motion.div>
+            </EmptyContent>
+          )}
+        </Empty>
       </motion.div>
     </div>
   )

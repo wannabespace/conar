@@ -1,7 +1,7 @@
 import { CornerRightUpIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTERS_LIST } from '@tamery/shared/filters'
 import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
@@ -24,12 +24,12 @@ import { TableError } from '../table-error'
 import { TableCellContent } from './cell-content'
 import { getColumnSize } from './utils'
 
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const equalsFilter = SQL_FILTERS_LIST.find((filter) => filter.operator === '=')
-if (!equalsFilter) {
-  throw new Error('Equals filter definition is missing')
+const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
+if (!equalFilter) {
+  throw new Error('Equal filter is missing')
 }
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const renderForeignTableBody = ({
   isRowsPending,
@@ -102,7 +102,7 @@ export const TableCellTable = ({
   const filters = [
     {
       column,
-      ref: equalsFilter,
+      ref: equalFilter,
       values: [value],
     } satisfies ActiveFilter,
   ]

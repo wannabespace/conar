@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { SQL_OPERATORS } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import type { ExpressionBuilder } from 'kysely'
@@ -44,24 +44,16 @@ export const buildWhere = <E extends ExpressionBuilder<any, any>>(
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
-    filters.map((filter) => {
-      const { operator } = filter.ref
-
-      if (
-        !SQL_FILTERS_LIST.some((sqlFilter) => sqlFilter.operator === operator)
-      ) {
-        throw new Error(`Unsupported filter operator "${operator}"`)
-      }
-
-      return sql.join(
+    filters.map((filter) =>
+      sql.join(
         [
           sql.ref(filter.column),
-          sql.raw(operator.toLowerCase()),
+          sql.raw(SQL_OPERATORS[filter.ref.operator]),
           filterValueExpression(filter),
         ].filter(Boolean),
         sql.raw(' ')
       )
-    })
+    )
   )
 }
 

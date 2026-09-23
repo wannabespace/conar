@@ -1,3 +1,5 @@
+import { SQL_OPERATORS } from '@tamery/shared/filters'
+
 import * as templates from '../templates'
 import type { QueryParams, SchemaParams } from '../types'
 import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '../utils'
@@ -5,10 +7,10 @@ import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '../utils'
 export const generateQueryKysely = ({ table, filters }: QueryParams) => {
   const conditions = filters
     .map((f) => {
-      const op = f.ref.operator.toLowerCase()
       if (f.ref.hasValue === false) {
-        return `'${f.column}', '${op === 'is null' ? 'is' : 'is not'}', null`
+        return `'${f.column}', '${f.ref.operator === 'isNull' ? 'is' : 'is not'}', null`
       }
+      const op = SQL_OPERATORS[f.ref.operator]
       const value = f.ref.isArray ? f.values : f.values[0]
       return `'${f.column}', '${op}', ${JSON.stringify(value)}`
     })

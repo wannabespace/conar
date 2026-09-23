@@ -10,8 +10,8 @@ import { isDefinedError } from '@orpc/client'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import {
   FILTER_GROUPS,
-  SQL_FILTERS_GROUPED,
-  SQL_FILTERS_LIST,
+  FILTERS_GROUPED,
+  FILTERS_LIST,
 } from '@tamery/shared/filters'
 import {
   CommandGroup,
@@ -57,7 +57,7 @@ const splitParts = (value: string) =>
 
 const operatorMatches = (filter: Filter, text: string) =>
   filter.label.toLowerCase().includes(text) ||
-  filter.operator.toLowerCase().includes(text)
+  filter.symbol.toLowerCase().includes(text)
 
 const getFilterPlaceholder = ({
   isOnline,
@@ -78,15 +78,13 @@ const getFilterPlaceholder = ({
   return 'Filter or ask AI…'
 }
 
-const firstFilterOperator = SQL_FILTERS_LIST[0]?.operator.toLowerCase() ?? ''
-
 const highlightForStage = (stage: Stage, value: string) => {
   const trimmed = value.trim().toLowerCase()
   if (stage.step === 'operator') {
-    const first = SQL_FILTERS_LIST.find((filter) =>
+    const first = FILTERS_LIST.find((filter) =>
       operatorMatches(filter, trimmed)
     )
-    return first ? `operator:${first.operator.toLowerCase()}` : ''
+    return first ? `operator:${first.operator}` : ''
   }
   if (stage.step === 'value') {
     return 'apply-value'
@@ -149,7 +147,7 @@ const mapGeneratedFilters = (
       (filter) =>
         ({
           column: filter.column,
-          ref: SQL_FILTERS_LIST.find((f) => f.operator === filter.operator),
+          ref: FILTERS_LIST.find((f) => f.operator === filter.operator),
           values: filter.values,
         }) satisfies Omit<ActiveFilter, 'ref'> & {
           ref?: ActiveFilter['ref']
@@ -400,11 +398,11 @@ const FilterCommandList = ({
           {group.filters.map((filter) => (
             <CommandItem
               key={filter.operator}
-              value={`operator:${filter.operator.toLowerCase()}`}
+              value={`operator:${filter.operator}`}
               onSelect={() => pickOperator(filter)}
             >
               <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-              <CommandShortcut>{filter.operator}</CommandShortcut>
+              <CommandShortcut>{filter.symbol}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -440,7 +438,7 @@ const FilterCommandList = ({
           <CommandItem value="apply-value" onSelect={applyValue}>
             <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
             <span data-mask className="min-w-0 flex-1 truncate">
-              Apply: {stage.column} {stage.ref.operator}{' '}
+              Apply: {stage.column} {stage.ref.symbol}{' '}
               {query === '' ? '(empty)' : query}
             </span>
             <CommandShortcut>
@@ -654,7 +652,7 @@ export const FilterSearchBar = ({
   const pickColumn = (columnId: string) => {
     setStage({ step: 'operator', column: columnId })
     setPrompt('')
-    setHighlighted(`operator:${firstFilterOperator}`)
+    setHighlighted('operator:eq')
     focusSearchInput()
   }
 
@@ -697,7 +695,7 @@ export const FilterSearchBar = ({
     })
   }
 
-  const matchingOperators = SQL_FILTERS_GROUPED.map((group) => ({
+  const matchingOperators = FILTERS_GROUPED.map((group) => ({
     ...group,
     filters: group.filters.filter((filter) =>
       operatorMatches(filter, trimmedQuery.toLowerCase())
@@ -763,7 +761,7 @@ export const FilterSearchBar = ({
                 <>
                   <span aria-hidden className="bg-border w-px shrink-0" />
                   <span className="text-muted-foreground flex items-center px-1.5 text-xs">
-                    {stage.ref.operator}
+                    {stage.ref.symbol}
                   </span>
                 </>
               )}

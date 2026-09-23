@@ -13,7 +13,7 @@ import {
   toCSV,
 } from '@tamery/shared/files'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTERS_LIST } from '@tamery/shared/filters'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,11 @@ import { formatDate } from 'date-fns'
 import { toast } from 'sonner'
 
 import { handleError } from '~/lib/error'
+
+const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
+if (!equalFilter) {
+  throw new Error('Equal filter is missing')
+}
 
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
 const EXPORT_TOAST_ID = 'export-data'
@@ -88,19 +93,12 @@ const ExportDataDropdownMenuSubContent = ({
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
 }) => {
-  const equalFilter = SQL_FILTERS_LIST.find((filter) => filter.operator === '=')
-  const filters = equalFilter
-    ? selected?.flatMap((row) =>
-        Object.entries(row).map(
-          ([column, value]) =>
-            ({
-              column,
-              ref: equalFilter,
-              values: [value],
-            }) satisfies ActiveFilter
-        )
-      )
-    : undefined
+  const filters = selected?.flatMap((row) =>
+    Object.entries(row).map(
+      ([column, value]) =>
+        ({ column, ref: equalFilter, values: [value] }) satisfies ActiveFilter
+    )
+  )
 
   let selectedLabel = 'Selected rows'
   if (selected && selected.length === 1) {

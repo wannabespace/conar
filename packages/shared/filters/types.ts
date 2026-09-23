@@ -1,6 +1,22 @@
+export type FilterOperator =
+  | 'eq'
+  | 'ne'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'like'
+  | 'ilike'
+  | 'notLike'
+  | 'in'
+  | 'notIn'
+  | 'isNull'
+  | 'isNotNull'
+
 export interface Filter {
   label: string
-  operator: string
+  operator: FilterOperator
+  symbol: string
   isArray?: boolean
   hasValue?: boolean
 }

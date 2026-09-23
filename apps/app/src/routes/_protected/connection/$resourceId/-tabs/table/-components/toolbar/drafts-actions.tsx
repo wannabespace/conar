@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTERS_LIST } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -37,6 +37,11 @@ import {
 } from '../../-lib/session-store'
 import { useTablePageStore } from '../../-lib/store'
 import { DraftsReviewDrawer } from '../table/drafts-review-drawer'
+
+const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
+if (!equalFilter) {
+  throw new Error('Equal filter is missing')
+}
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -104,11 +109,6 @@ export const DraftsActions = ({
 
       const allRows = cachedData.pages.flatMap((page) => page.rows)
       const rowEntries = [...rowsWithDrafts.values()]
-
-      const equalFilter = SQL_FILTERS_LIST.find((f) => f.operator === '=')
-      if (!equalFilter) {
-        throw new Error('Equal filter operator is not configured')
-      }
 
       for (const rowDrafts of rowEntries) {
         const [firstDraft] = rowDrafts

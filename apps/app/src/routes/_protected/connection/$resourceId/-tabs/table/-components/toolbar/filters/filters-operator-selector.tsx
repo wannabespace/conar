@@ -1,5 +1,5 @@
 import type { Filter } from '@tamery/shared/filters'
-import { FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
+import { FILTER_GROUPS, FILTERS_GROUPED } from '@tamery/shared/filters'
 import {
   Command,
   CommandEmpty,
@@ -32,17 +32,17 @@ export const FiltersOperatorSelector = ({
     />
     <CommandList className="h-fit max-h-[70vh]">
       <CommandEmpty>No operators found.</CommandEmpty>
-      {SQL_FILTERS_GROUPED.map(({ group, filters }) => (
+      {FILTERS_GROUPED.map(({ group, filters }) => (
         <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
           {filters.map((filter) => (
             <CommandItem
               key={filter.operator}
               value={filter.operator}
-              keywords={[filter.label, filter.operator]}
+              keywords={[filter.label, filter.symbol]}
               onSelect={() => onSelect(filter)}
             >
               <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-              <CommandShortcut>{filter.operator}</CommandShortcut>
+              <CommandShortcut>{filter.symbol}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>
