@@ -39,7 +39,6 @@ export type NativeMenuNode =
 
 export interface MenuPopupRequest {
   items: NativeMenuNode[]
-  /** Window-relative CSS px; omitted = at the cursor. */
   position?: { x: number; y: number }
 }
 
