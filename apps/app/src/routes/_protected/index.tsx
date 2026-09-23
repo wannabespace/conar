@@ -16,8 +16,6 @@ const connectionRouteIds = [
 const DashboardPage = () => {
   const router = useRouter()
 
-  // Connection links skip preload (it would run the resource loader's queries),
-  // so without this the first open waits on the code-split route chunks.
   useEffect(() => {
     for (const id of connectionRouteIds) {
       void router.loadRouteChunk(router.routesById[id])
