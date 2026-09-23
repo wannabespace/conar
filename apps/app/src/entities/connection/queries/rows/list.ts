@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { toSqlFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -62,7 +62,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              toSqlFilter(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -94,7 +94,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              toSqlFilter(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -130,7 +130,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              toSqlFilter(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 
@@ -162,7 +162,7 @@ export const resourceRowsQuery = memoize(
 
           if (activeFilters !== undefined) {
             query = query.where((eb) =>
-              toSqlFilter(eb, activeFilters, filtersConcatOperator)
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
             )
           }
 

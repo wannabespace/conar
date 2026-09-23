@@ -39,7 +39,7 @@ const filterValueExpression = (filter: ActiveFilter) => {
 }
 
 // oxlint-disable-next-line ts/no-explicit-any
-export const toSqlFilter = <E extends ExpressionBuilder<any, any>>(
+export const toKyselyFilter = <E extends ExpressionBuilder<any, any>>(
   eb: E,
   filters: ActiveFilter[],
   concatOperator: 'AND' | 'OR' = 'AND'

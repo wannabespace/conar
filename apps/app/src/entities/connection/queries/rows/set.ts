@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { toSqlFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
@@ -24,7 +24,7 @@ export const setQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => toSqlFilter(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         mssql: (db) =>
           db
@@ -32,7 +32,7 @@ export const setQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => toSqlFilter(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         mysql: (db) =>
           db
@@ -40,7 +40,7 @@ export const setQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => toSqlFilter(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
         postgres: (db) =>
           db
@@ -48,7 +48,7 @@ export const setQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => toSqlFilter(eb, filters))
+            .where((eb) => toKyselyFilter(eb, filters))
             .execute(),
       },
     })

@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { EQUAL_FILTER, toSqlFilter } from '@tamery/shared/filters'
+import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -166,7 +166,7 @@ export const DraftsActions = ({
               .$extendTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              .where((eb) => toSqlFilter(eb, sqlFilters))
+              .where((eb) => toKyselyFilter(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
@@ -258,7 +258,7 @@ export const DraftsActions = ({
                 .$extendTables<{ [table]: Record<string, unknown> }>()
                 .selectFrom(table)
                 .select(modifiedColumns)
-                .where((eb) => toSqlFilter(eb, updatedFilters))
+                .where((eb) => toKyselyFilter(eb, updatedFilters))
                 .execute()
                 .then((rows) => rows[0])
                 .catch(() => {

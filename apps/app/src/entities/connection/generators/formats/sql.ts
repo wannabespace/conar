@@ -1,5 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { toSqlFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
 
 import { formatSql } from '~/lib/formatter'
 
@@ -43,7 +43,7 @@ export const generateQuerySQL = ({
     .selectFrom(table)
     .selectAll()
   const query =
-    filters.length > 0 ? base.where((eb) => toSqlFilter(eb, filters)) : base
+    filters.length > 0 ? base.where((eb) => toKyselyFilter(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }
