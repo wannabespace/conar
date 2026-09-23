@@ -27,7 +27,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 - **Reorderable strips**: `Reorder.Group`, `layout="position"`, animate layout only while dragging — no drift when labels change width. Value identity rules in [gotchas.md](gotchas.md).
 - Scroll-edge cues never use JS scroll listeners — `scroll-fade` (CSS mask) for plain scrollers, `table-fade` for the data table ([gotchas.md](gotchas.md)).
 - **Refetching values pulse; only first load gets a skeleton.** A displayed number whose query is refetching keeps its value and dims + `animate-pulse` — gate on `isFetching`, since `isLoading` is first-load-only and a refetch would show stale data with no cue.
-- **`GrainBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
+- **`MeshBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
 
 ## Pane folds
 

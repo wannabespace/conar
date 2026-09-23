@@ -6,7 +6,7 @@ import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
-import { GrainBackground } from '@tamery/ui/components/custom/grain-background'
+import { MeshBackground } from '@tamery/ui/components/custom/mesh-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
@@ -48,7 +48,7 @@ const AuthSidePanel = () => {
   }, [])
 
   return (
-    <div className="bg-body text-foreground relative hidden flex-col overflow-hidden border-r p-10 lg:flex">
+    <div className="bg-body relative hidden flex-col overflow-hidden border-r p-10 text-white lg:flex">
       {isShaderMounted && (
         <motion.div
           className="absolute inset-0"
@@ -56,7 +56,7 @@ const AuthSidePanel = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2 }}
         >
-          <GrainBackground />
+          <MeshBackground />
         </motion.div>
       )}
       <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
