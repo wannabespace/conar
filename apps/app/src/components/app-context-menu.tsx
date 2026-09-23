@@ -34,6 +34,7 @@ import type {
   MenuPopupRequest,
   MenuPopupResult,
   NativeMenuNode,
+  SFSymbol,
 } from '@tamery/shared/context-menu'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -149,7 +150,7 @@ interface AppContextMenuProps {
   }
 }
 
-const sfSymbols = new Map<IconSvgElement, string>([
+const sfSymbols = new Map<IconSvgElement, SFSymbol>([
   [AppWindowIcon, 'macwindow'],
   [ArrowDown02Icon, 'arrow.down'],
   [ArrowLeftRightIcon, 'arrow.left.and.right'],

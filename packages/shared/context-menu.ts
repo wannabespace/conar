@@ -1,3 +1,7 @@
+import type { SFSymbol } from 'sf-symbols-typescript'
+
+export type { SFSymbol } from 'sf-symbols-typescript'
+
 export interface NativeMenuActionItem {
   type: 'item'
   id: string
@@ -6,8 +10,8 @@ export interface NativeMenuActionItem {
   kind?: 'normal' | 'checkbox' | 'radio'
   checked?: boolean
   accelerator?: string
-  /** SF Symbol name; macOS only. */
-  symbol?: string
+  /** macOS only. */
+  symbol?: SFSymbol
 }
 
 export interface NativeMenuSeparator {
@@ -23,7 +27,7 @@ export interface NativeMenuSubmenu {
   type: 'submenu'
   label: string
   enabled?: boolean
-  symbol?: string
+  symbol?: SFSymbol
   items: NativeMenuNode[]
 }
 
