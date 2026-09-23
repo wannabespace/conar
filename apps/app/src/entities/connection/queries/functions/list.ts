@@ -25,6 +25,9 @@ END)`
 // A parameter default, a READONLY parameter and every WITH option live in the
 // header text alone, so a signature rebuilt from the catalog would drop them.
 const mssqlHeaderOptions = /[=]|\bREADONLY\b|\bWITH\b/iu
+// SCHEMABINDING alone is read back from sys.sql_modules, so it is no option the
+// form would drop.
+const mssqlSchemaBindingOnly = /\bWITH\s+SCHEMABINDING(?=\s+AS\s*$)/iu
 
 // GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
 // signature that reaches the cap reads as unreadable instead of saving back
@@ -48,21 +51,25 @@ export const functionsType = type({
   'custom?': 'boolean | 1 | 0',
   'extras?': 'string | null',
   'identity?': 'string',
+  'inline?': 'boolean | 1 | 0',
   'language?': 'string',
   name: 'string',
   'oid?': 'number',
   return_type: 'string | null',
   schema: 'string',
+  'schema_bound?': 'boolean | null',
   'security_definer?': 'boolean',
   type: '"function" | "procedure"',
-}).pipe(({ custom, security_definer, ...item }) => ({
+}).pipe(({ custom, inline, schema_bound, security_definer, ...item }) => ({
   ...item,
   args: item.args ?? null,
   behavior: item.behavior || '',
   body: item.body || '',
   custom: !!custom,
   extras: item.extras || '',
+  inline: !!inline,
   language: item.language || null,
+  schemaBound: !!schema_bound,
   securityDefiner: security_definer ?? false,
 }))
 
@@ -84,6 +91,8 @@ const resourceFunctionsQuery = createQuery({
             WHERE pa.object_id = o.object_id AND pa.parameter_id > 0
           ), '')`.as('args'),
           'sm.definition as body',
+          'sm.is_schema_bound as schema_bound',
+          sql<1 | 0>`IIF(o.type = 'IF', 1, 0)`.as('inline'),
           sql<
             'function' | 'procedure'
           >`IIF(o.type IN ('P', 'PC'), 'procedure', 'function')`.as('type'),
@@ -106,7 +115,9 @@ const resourceFunctionsQuery = createQuery({
         return {
           ...row,
           body: module?.body ?? null,
-          custom: mssqlHeaderOptions.test(module?.header ?? ''),
+          custom: mssqlHeaderOptions.test(
+            (module?.header ?? '').replace(mssqlSchemaBindingOnly, '')
+          ),
         }
       })
     },

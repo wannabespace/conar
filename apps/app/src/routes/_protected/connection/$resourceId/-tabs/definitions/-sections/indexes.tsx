@@ -8,7 +8,6 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
-import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -38,13 +37,13 @@ import {
   resetFields,
   SchemaField,
   SelectField,
+  SwitchField,
   TextField,
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
   InspectorDefinition,
   Inspector,
-  InspectorOption,
   InspectorSection,
 } from '../-components/inspector'
 import { DefinitionsPage } from '../-components/page'
@@ -420,20 +419,12 @@ const IndexInspector = ({
       ) : (
         <InspectorSection title="Options">
           <form.AppField name="unique">
-            {(field) => (
-              <InspectorOption
-                htmlFor="index-unique"
+            {() => (
+              <SwitchField
                 title="Unique"
                 description="Rejects rows repeating a value across the chosen columns."
-              >
-                <Switch
-                  id="index-unique"
-                  size="sm"
-                  disabled={locked.shape}
-                  checked={field.state.value}
-                  onCheckedChange={field.handleChange}
-                />
-              </InspectorOption>
+                disabled={locked.shape}
+              />
             )}
           </form.AppField>
         </InspectorSection>

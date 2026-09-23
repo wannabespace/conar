@@ -2,22 +2,34 @@ import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
-import type { PolicyKind, PolicyTarget } from './shape'
-import { clickhouseRoleList, expression, policyOn, roleList } from './shape'
+import { mssqlQualified } from '../shared/sql-fragments'
+import type { PolicyKind, PolicyTarget, PolicyPredicate } from './shape'
+import {
+  clickhouseRoleList,
+  expression,
+  policyOn,
+  roleList,
+  policyPredicate,
+} from './shape'
 
 export const alterPolicyQuery = ({
-  check,
-  kind,
+  added = [],
+  check = null,
+  dropped = [],
+  kind = null,
   newName,
-  roles,
-  using,
+  roles = null,
+  using = null,
   ...target
 }: PolicyTarget & {
-  check: string | null
-  kind: PolicyKind | null
+  // SQL Server alters only predicates and the name; the rest is Postgres and ClickHouse.
+  added?: PolicyPredicate[]
+  check?: string | null
+  dropped?: PolicyPredicate[]
+  kind?: PolicyKind | null
   newName: string | null
-  roles: string[] | null
-  using: string | null
+  roles?: string[] | null
+  using?: string | null
 }) => {
   const policy = policyOn(target)
 
@@ -32,7 +44,28 @@ export const alterPolicyQuery = ({
           ${using === '' ? sql`USING NONE` : expression('USING', using)}
           ${roles ? sql`TO ${clickhouseRoleList(roles)}` : sql``}
         `.execute(db),
-      mssql: unsupported('Row policies'),
+      mssql: (db) =>
+        db.transaction().execute(async (tx) => {
+          const policyName = sql.id(target.schema, target.name)
+
+          // A table holds one predicate per kind and operation, so a changed
+          // predicate drops before its replacement adds.
+          if (dropped.length > 0) {
+            await sql`ALTER SECURITY POLICY ${policyName} ${sql.join(dropped.map(policyPredicate.drop))}`.execute(
+              tx
+            )
+          }
+          if (added.length > 0) {
+            await sql`ALTER SECURITY POLICY ${policyName} ${sql.join(added.map(policyPredicate.add))}`.execute(
+              tx
+            )
+          }
+          if (newName) {
+            await sql`EXEC sp_rename ${sql.val(mssqlQualified(target.schema, target.name))}, ${sql.val(newName)}`.execute(
+              tx
+            )
+          }
+        }),
       mysql: unsupported('Row policies'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {

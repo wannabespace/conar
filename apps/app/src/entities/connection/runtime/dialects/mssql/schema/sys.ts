@@ -1,6 +1,12 @@
+import type { BlockOperation } from '../../../../queries/policies/shape'
+
 export interface Sys {
   indexes: Indexes
+  partitions: Partitions
+  stats: Stats
+  data_spaces: DataSpaces
   foreign_keys: ForeignKeys
+  foreign_key_columns: ForeignKeyColumns
   check_constraints: CheckConstraints
   tables: Tables
   schemas: Schemas
@@ -25,9 +31,10 @@ interface SecurityPolicies {
 
 interface SecurityPredicates {
   object_id: number
+  security_predicate_id: number
   predicate_definition: string
-  operation: 0 | 1 | 2 | 3 | 4
-  operation_desc: string | null
+  operation: 1 | 2 | 3 | 4 | null
+  operation_desc: BlockOperation | null
   predicate_type_desc: 'FILTER' | 'BLOCK'
   target_object_id: number
 }
@@ -36,7 +43,7 @@ interface Databases {
   name: string
   database_id: number
   source_database_id: number | null
-  owner_sid: string
+  owner_sid: Uint8Array
   create_date: Date
   compatibility_level: number
   collation_name: string | null
@@ -112,7 +119,7 @@ interface Databases {
 interface Indexes {
   object_id: number
   index_id: number
-  name: string
+  name: string | null
   is_unique: boolean
   is_primary_key: boolean
   is_unique_constraint: boolean
@@ -122,6 +129,26 @@ interface Indexes {
   ignore_dup_key: boolean
   is_padded: boolean
   fill_factor: number
+  allow_row_locks: boolean
+  allow_page_locks: boolean
+  data_space_id: number
+}
+
+interface Partitions {
+  object_id: number
+  index_id: number
+  data_compression: number
+}
+
+interface Stats {
+  object_id: number
+  stats_id: number
+  no_recompute: boolean
+}
+
+interface DataSpaces {
+  data_space_id: number
+  is_default: boolean
 }
 
 interface Tables {
@@ -136,11 +163,19 @@ interface Schemas {
 }
 
 interface ForeignKeys {
+  object_id: number
   name: string
   schema_id: number
   is_disabled: boolean
   is_not_trusted: boolean
   is_not_for_replication: boolean
+}
+
+interface ForeignKeyColumns {
+  constraint_object_id: number
+  constraint_column_id: number
+  referenced_object_id: number
+  referenced_column_id: number
 }
 
 interface CheckConstraints {

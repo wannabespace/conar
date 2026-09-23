@@ -2,20 +2,22 @@ import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
+import type { PolicyTarget } from './shape'
 
+// Postgres switches row level security per table, SQL Server per policy.
 export const setRowLevelSecurityQuery = ({
   enabled,
+  name,
   schema,
   table,
-}: {
-  enabled: boolean
-  schema: string
-  table: string
-}) =>
+}: PolicyTarget & { enabled: boolean }) =>
   createQuery({
     query: {
       clickhouse: unsupported('Row level security'),
-      mssql: unsupported('Row level security'),
+      mssql: (db) =>
+        sql`ALTER SECURITY POLICY ${sql.id(schema, name)} WITH (STATE = ${sql.raw(enabled ? 'ON' : 'OFF')})`.execute(
+          db
+        ),
       mysql: unsupported('Row level security'),
       postgres: (db) =>
         sql`ALTER TABLE ${sql.id(schema, table)} ${enabled ? sql`ENABLE` : sql`DISABLE`} ROW LEVEL SECURITY`.execute(

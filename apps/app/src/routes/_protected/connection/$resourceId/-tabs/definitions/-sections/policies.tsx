@@ -1,19 +1,31 @@
-import { SecurityCheckIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
+import {
+  Delete02Icon,
+  PlusSignIcon,
+  SecurityCheckIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { matchesSearch } from '@tamery/shared/utils'
+import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
+import { Button } from '@tamery/ui/components/button'
 import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { alterPolicyQuery } from '~/entities/connection/queries/policies/alter'
 import { createPolicyQuery } from '~/entities/connection/queries/policies/create'
 import { dropPolicyQuery } from '~/entities/connection/queries/policies/drop'
@@ -23,10 +35,16 @@ import { recreatePolicyQuery } from '~/entities/connection/queries/policies/recr
 import { renamePolicyQuery } from '~/entities/connection/queries/policies/rename'
 import { setRowLevelSecurityQuery } from '~/entities/connection/queries/policies/set-row-level-security'
 import type {
+  BlockOperation,
   PolicyCommand,
   PolicyKind,
+  PolicyPredicate,
 } from '~/entities/connection/queries/policies/shape'
-import { POLICY_COMMANDS } from '~/entities/connection/queries/policies/shape'
+import {
+  BLOCK_OPERATIONS,
+  POLICY_COMMANDS,
+  policyPredicate,
+} from '~/entities/connection/queries/policies/shape'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -183,6 +201,7 @@ const savePolicy = async ({
     command: draft.command,
     kind: draft.kind,
     name: draft.name.trim(),
+    predicates: [],
     roles: parseRoles(draft.roles),
     using: draft.using.trim() || null,
   }
@@ -225,6 +244,36 @@ const savePolicy = async ({
   }
 }
 
+const useEnabledToggle = ({
+  item,
+  queryKey,
+  run,
+  subject,
+}: Pick<SectionInspectorProps<PolicyItem>, 'item' | 'queryKey' | 'run'> & {
+  subject: string
+}) =>
+  useMutation({
+    mutationFn: ({ enabled }: { enabled: boolean }) =>
+      run(
+        setRowLevelSecurityQuery({
+          enabled,
+          name: item?.name ?? '',
+          schema: item?.schema ?? '',
+          table: item?.table ?? '',
+        })
+      ),
+    onError: (error, { enabled }) =>
+      toast.error(`Failed to ${enabled ? 'enable' : 'disable'} ${subject}`, {
+        description: error.message,
+      }),
+    onSuccess: async (_result, { enabled }) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `${uppercaseFirst(subject)} ${enabled ? 'enabled' : 'disabled'}`
+      )
+    },
+  })
+
 const PolicyInspector = ({
   can,
   item,
@@ -247,26 +296,11 @@ const PolicyInspector = ({
       onOpenChange(false)
     },
   })
-  const rowLevelSecurity = useMutation({
-    mutationFn: ({ enabled }: { enabled: boolean }) =>
-      run(
-        setRowLevelSecurityQuery({
-          enabled,
-          schema: item?.schema ?? '',
-          table: item?.table ?? '',
-        })
-      ),
-    onError: (error, { enabled }) =>
-      toast.error(
-        `Failed to ${enabled ? 'enable' : 'disable'} row level security on "${item?.table}"`,
-        { description: error.message }
-      ),
-    onSuccess: async (_result, { enabled }) => {
-      await queryClient.invalidateQueries({ queryKey })
-      toast.success(
-        `Row level security ${enabled ? 'enabled' : 'disabled'} on "${item?.table}"`
-      )
-    },
+  const rowLevelSecurity = useEnabledToggle({
+    item,
+    queryKey,
+    run,
+    subject: `row level security on "${item?.table}"`,
   })
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
@@ -437,6 +471,364 @@ const PolicyInspector = ({
   )
 }
 
+type SavedPredicate = NonNullable<PolicyItem['predicates']>[number]
+
+interface PredicateDraft {
+  arguments: string
+  functionKey: string
+  kind: PolicyPredicate['kind']
+  operation: BlockOperation | 'ALL'
+  tableKey: string
+}
+
+interface PredicatePolicyDraft {
+  name: string
+  predicates: PredicateDraft[]
+  schema: string
+}
+
+const qualifiedKey = (schema: string, name: string) =>
+  JSON.stringify([schema, name])
+
+const qualifiedName = type('string.json.parse').to(['string', 'string'])
+
+const qualifiedLabel = (key: string) => qualifiedName.assert(key).join('.')
+
+const predicateKinds = ['FILTER', 'BLOCK'] as const
+const blockOperations = ['ALL', ...BLOCK_OPERATIONS] as const
+
+const operationLabel = (operation: BlockOperation | 'ALL') =>
+  operation === 'ALL' ? 'Every write' : uppercaseFirst(operation.toLowerCase())
+
+const newPredicate: PredicateDraft = {
+  arguments: '',
+  functionKey: '',
+  kind: 'FILTER',
+  operation: 'ALL',
+  tableKey: '',
+}
+
+const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
+  const call = policyPredicate.parse(predicate.definition)
+
+  return {
+    arguments: call?.arguments ?? '',
+    functionKey: call
+      ? qualifiedKey(call.functionSchema, call.functionName)
+      : '',
+    kind: predicate.kind,
+    operation: predicate.operation ?? 'ALL',
+    tableKey: qualifiedKey(predicate.schema, predicate.table),
+  }
+}
+
+const predicatePolicyDraftOf = (
+  item: PolicyItem | null,
+  pageSchema: string
+): PredicatePolicyDraft => ({
+  name: item?.name ?? '',
+  predicates: item?.predicates?.map(predicateDraftOf) ?? [newPredicate],
+  schema: item?.schema ?? pageSchema,
+})
+
+const predicateOf = (draft: PredicateDraft): PolicyPredicate => {
+  const [functionSchema, functionName] = qualifiedName.assert(draft.functionKey)
+  const [schema, table] = qualifiedName.assert(draft.tableKey)
+
+  return {
+    arguments: draft.arguments.trim(),
+    functionName,
+    functionSchema,
+    kind: draft.kind,
+    operation:
+      draft.kind === 'BLOCK' && draft.operation !== 'ALL'
+        ? draft.operation
+        : null,
+    schema,
+    table,
+  }
+}
+
+const predicatePlanOf = (item: PolicyItem, draft: PredicatePolicyDraft) => {
+  const before = predicatePolicyDraftOf(item, item.schema).predicates.map(
+    predicateOf
+  )
+  const after = draft.predicates.map(predicateOf)
+  const name = draft.name.trim()
+
+  return {
+    added: after.filter((next) => !before.some((old) => sameShape(old, next))),
+    dropped: before.filter(
+      (old) => !after.some((next) => sameShape(old, next))
+    ),
+    newName: name === item.name ? null : name,
+  }
+}
+
+const predicatePolicySchema = type({
+  name: type(/\S/u).configure({ message: 'Give the policy a name.' }),
+  predicates: type({
+    functionKey: type(/\S/u).configure({
+      message: 'Pick the predicate function.',
+    }),
+    tableKey: type(/\S/u).configure({
+      message: 'Pick the table to protect.',
+    }),
+  }).array(),
+})
+
+const PredicatePolicyInspector = ({
+  can,
+  connectionResource,
+  item,
+  relationNamesOf,
+  onOpenChange,
+  queryKey,
+  run,
+  schemas,
+  selectedSchema,
+}: SectionInspectorProps<PolicyItem>) => {
+  const { data: functions = [], isPending: functionsPending } = useQuery(
+    resourceFunctionsQueryOptions({ connectionResource })
+  )
+  const mutation = useMutation({
+    mutationFn: (draft: PredicatePolicyDraft) =>
+      run(
+        item
+          ? alterPolicyQuery({
+              ...predicatePlanOf(item, draft),
+              name: item.name,
+              schema: item.schema,
+              table: item.table,
+            })
+          : createPolicyQuery({
+              schema: draft.schema,
+              shape: {
+                check: null,
+                command: 'ALL',
+                kind: 'RESTRICTIVE',
+                name: draft.name.trim(),
+                predicates: draft.predicates.map(predicateOf),
+                roles: [],
+                using: null,
+              },
+              table: '',
+            })
+      ),
+    onSuccess: async (_result, draft) => {
+      await queryClient.invalidateQueries({ queryKey })
+      toast.success(
+        `Policy "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+      )
+      onOpenChange(false)
+    },
+  })
+  const state = useEnabledToggle({
+    item,
+    queryKey,
+    run,
+    subject: `policy "${item?.name}"`,
+  })
+  const form = useAppForm({
+    defaultValues: predicatePolicyDraftOf(item, selectedSchema ?? ''),
+    onSubmit: ({ value }) => {
+      mutation.mutate(value)
+    },
+    validators: {
+      onChange: predicatePolicySchema,
+      onMount: predicatePolicySchema,
+    },
+  })
+  const draft = useStore(form.store, (store) => store.values)
+
+  // A predicate whose definition is not a plain function call has no fields to show.
+  const readable = !!item?.predicates?.every(
+    (predicate) => policyPredicate.parse(predicate.definition) !== null
+  )
+  const readOnly = item ? !can.edit || !readable : !can.create
+  const tables = schemas.flatMap((schema) =>
+    relationNamesOf(schema, 'table').map((table) => qualifiedKey(schema, table))
+  )
+  const predicateFunctions = functions
+    .filter((fn) => fn.inline && fn.schemaBound)
+    .map((fn) => qualifiedKey(fn.schema, fn.name))
+  const changed =
+    !item || !sameShape(draft, predicatePolicyDraftOf(item, item.schema))
+
+  return (
+    <Inspector
+      canSave={changed}
+      description={item ? item.schema : draft.schema}
+      form={form}
+      item={item}
+      mutation={mutation}
+      noun="policy"
+      readOnly={readOnly}
+    >
+      {item && (
+        <InspectorSection title="Status">
+          <InspectorOption
+            htmlFor="policy-enabled"
+            title="Enabled"
+            description="A disabled policy keeps its predicates but filters and blocks nothing."
+          >
+            <Switch
+              id="policy-enabled"
+              size="sm"
+              disabled={state.isPending}
+              checked={item.enabled}
+              onCheckedChange={(enabled) => state.mutate({ enabled })}
+            />
+          </InspectorOption>
+        </InspectorSection>
+      )}
+      <InspectorSection
+        title="General"
+        description="A policy binds predicate functions to tables, and SQL Server calls them for every row."
+      >
+        <form.AppField name="schema">
+          {() => (
+            <SchemaField disabled={readOnly || !!item} schemas={schemas} />
+          )}
+        </form.AppField>
+        <form.AppField name="name">
+          {() => <TextField label="Name" autoFocus disabled={readOnly} />}
+        </form.AppField>
+      </InspectorSection>
+      {draft.predicates.map((predicate, index) => (
+        <InspectorSection
+          key={index}
+          title={`Predicate ${index + 1}`}
+          description={
+            predicate.kind === 'FILTER'
+              ? 'Hides the rows the function returns nothing for.'
+              : 'Refuses writes that leave a row the function returns nothing for.'
+          }
+          action={
+            !readOnly && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="icon-xs"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-foreground -mt-0.5"
+                      aria-label="Remove predicate"
+                      onClick={() => form.removeFieldValue('predicates', index)}
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                    </Button>
+                  }
+                />
+                <TooltipContent side="left">Remove predicate</TooltipContent>
+              </Tooltip>
+            )
+          }
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name={`predicates[${index}].kind`}>
+              {() => (
+                <SelectField
+                  label="Type"
+                  disabled={readOnly}
+                  labelOf={(kind) => uppercaseFirst(kind.toLowerCase())}
+                  options={predicateKinds}
+                  placeholder="Type"
+                />
+              )}
+            </form.AppField>
+            {predicate.kind === 'BLOCK' && (
+              <form.AppField name={`predicates[${index}].operation`}>
+                {() => (
+                  <SelectField
+                    label="Operation"
+                    disabled={readOnly}
+                    labelOf={operationLabel}
+                    options={blockOperations}
+                    placeholder="Operation"
+                  />
+                )}
+              </form.AppField>
+            )}
+          </div>
+          <form.AppField name={`predicates[${index}].tableKey`}>
+            {() => (
+              <SelectField
+                label="Table"
+                disabled={readOnly}
+                empty="This database has no tables."
+                labelOf={qualifiedLabel}
+                options={tables}
+                placeholder="Choose a table"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name={`predicates[${index}].functionKey`}>
+            {() => (
+              <SelectField
+                label="Function"
+                description="An inline table-valued function, created schema bound."
+                disabled={readOnly}
+                empty={
+                  functionsPending
+                    ? 'Loading…'
+                    : 'No schema-bound inline table-valued function here.'
+                }
+                labelOf={qualifiedLabel}
+                options={predicateFunctions}
+                placeholder="Choose a function"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name={`predicates[${index}].arguments`}>
+            {() => (
+              <TextField
+                label="Arguments"
+                description="Columns of the table, in the order the function takes them."
+                disabled={readOnly}
+                placeholder="TenantId"
+              />
+            )}
+          </form.AppField>
+        </InspectorSection>
+      ))}
+      {!readOnly && (
+        <div className="p-4">
+          <Button
+            variant="outline"
+            onClick={() => form.pushFieldValue('predicates', newPredicate)}
+          >
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            Add predicate
+          </Button>
+        </div>
+      )}
+    </Inspector>
+  )
+}
+
+const PolicyName = ({
+  icon = SecurityCheckIcon,
+  item,
+  search,
+}: {
+  icon?: typeof SecurityCheckIcon
+  item: PolicyItem
+  search: string
+}) => (
+  <span className="flex items-center gap-2">
+    <HugeiconsIcon
+      icon={icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-4 shrink-0"
+    />
+    <span data-mask>
+      <HighlightText text={item.name} match={search} />
+    </span>
+    {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
+  </span>
+)
+
 const Expression = ({ keyword, value }: { keyword: string; value: string }) => (
   <span className="flex items-baseline gap-1.5 text-xs">
     <span className="text-muted-foreground shrink-0">{keyword}</span>
@@ -448,17 +840,13 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   {
     cell: (item, { search }) => (
       <span className="flex flex-col gap-1">
-        <span data-mask className="flex items-center gap-2">
-          <HugeiconsIcon
-            icon={
-              item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
-            }
-            strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
-          />
-          <HighlightText text={item.name} match={search} />
-          {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
-        </span>
+        <PolicyName
+          icon={
+            item.type === 'RESTRICTIVE' ? ViewOffSlashIcon : SecurityCheckIcon
+          }
+          item={item}
+          search={search}
+        />
         {item.using && <Expression keyword="USING" value={item.using} />}
         {item.check && <Expression keyword="WITH CHECK" value={item.check} />}
       </span>
@@ -494,12 +882,48 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
 
 const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
 
+const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
+  {
+    cell: (item, { search }) => (
+      <span className="flex flex-col gap-1">
+        <PolicyName item={item} search={search} />
+        {item.predicates?.map((predicate, index) => (
+          <Expression
+            key={index}
+            keyword={[predicate.kind, predicate.operation]
+              .filter(Boolean)
+              .join(' ')}
+            value={`${predicate.definition} ON ${predicate.schema}.${predicate.table}`}
+          />
+        ))}
+      </span>
+    ),
+    header: 'Name',
+  },
+  textColumn({
+    header: 'Tables',
+    valueOf: (item: PolicyItem) => item.table,
+    width: 'w-3/12',
+  }),
+]
+
 export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
-  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
-    state
+  const {
+    connectionResource,
+    relationNamesOf,
+    run,
+    schemas,
+    search,
+    selectedSchema,
+  } = state
+  const { predicates } = capabilitiesOf(state.type).policies
   const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
+  const { data: functions = [], isPending: functionsPending } = useQuery({
+    ...resourceFunctionsQueryOptions({ connectionResource }),
+    enabled: predicates,
+  })
   const kindFilter = useFilter<PolicyKind>(
     'All types',
     kinds.map((kind) => ({ label: kindLabels[kind], value: kind }))
@@ -517,24 +941,37 @@ export const Policies = () => {
         table: item.table,
       })
     )
+  const createBlocked = (() => {
+    if (!predicates) {
+      return relationNamesOf(selectedSchema ?? '', 'table').length === 0
+        ? 'This schema has no tables to protect.'
+        : undefined
+    }
+    if (
+      schemas.every((schema) => relationNamesOf(schema, 'table').length === 0)
+    ) {
+      return 'This database has no tables to protect.'
+    }
+
+    return functionsPending ||
+      functions.some((fn) => fn.inline && fn.schemaBound)
+      ? undefined
+      : 'A policy calls a schema-bound inline table-valued function, and none exists yet.'
+  })()
 
   return (
     <DefinitionsPage
-      columns={columns}
-      createBlocked={
-        relationNamesOf(selectedSchema ?? '', 'table').length === 0
-          ? 'This schema has no tables to protect.'
-          : undefined
-      }
+      columns={predicates ? predicateColumns : columns}
+      createBlocked={createBlocked}
       dropItem={dropItem}
-      Inspector={PolicyInspector}
+      Inspector={predicates ? PredicatePolicyInspector : PolicyInspector}
       items={inSchema}
       keyOf={policyKey}
       loading={isPending}
       match={matches}
       queryKey={query.queryKey}
       state={state}
-      toolbar={kindFilter.control}
+      toolbar={predicates ? undefined : kindFilter.control}
     />
   )
 }

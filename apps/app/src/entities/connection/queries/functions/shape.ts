@@ -1,6 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
+import { mysqlDefiner } from '../shared/sql-fragments'
 import type { RoutineKind } from './routine-kind'
 import { routineKeyword } from './routine-kind'
 
@@ -25,6 +26,7 @@ export interface FunctionShape {
   language: string
   name: string
   returnType: string
+  schemaBound: boolean
   securityDefiner: boolean
 }
 
@@ -32,10 +34,12 @@ export const functionBodyTemplateOf = ({
   connectionType,
   kind,
   language,
+  returnType,
 }: {
   connectionType: ConnectionType
   kind: RoutineKind
   language: string
+  returnType: string
 }) => {
   if (connectionType === ConnectionType.Postgres) {
     return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
@@ -43,6 +47,16 @@ export const functionBodyTemplateOf = ({
 
   if (connectionType === ConnectionType.ClickHouse) {
     return ''
+  }
+
+  // An inline table-valued function is one RETURN of a SELECT; T-SQL rejects a
+  // BEGIN block around it.
+  if (
+    connectionType === ConnectionType.MSSQL &&
+    kind === 'function' &&
+    /^table$/iu.test(returnType.trim())
+  ) {
+    return 'RETURN (\n  SELECT 1 AS allowed\n)'
   }
 
   if (kind === 'function') {
@@ -96,10 +110,12 @@ const dollarQuoted = (body: string) => {
 }
 
 export const createFunctionStatements = ({
+  definer,
   replace,
   schema,
   shape,
 }: {
+  definer?: string
   replace: boolean
   schema: string
   shape: FunctionShape
@@ -118,10 +134,10 @@ export const createFunctionStatements = ({
     // T-SQL takes procedure parameters bare; empty parentheses are a syntax error.
     mssql: sql`
       ${replace ? sql`CREATE OR ALTER` : sql`CREATE`} ${routine} ${shape.kind === 'function' ? sql`(${args})` : args} ${returns}
-      AS ${body}
+      ${shape.schemaBound ? sql`WITH SCHEMABINDING` : sql``} AS ${body}
     `,
     mysql: sql`
-      CREATE ${routine}(${args}) ${returns} ${behavior} ${extras}
+      CREATE ${mysqlDefiner(definer)} ${routine}(${args}) ${returns} ${behavior} ${extras}
       ${body}
     `,
     postgres: sql`

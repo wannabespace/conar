@@ -1,6 +1,8 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
+import { mysqlDefiner } from '../shared/sql-fragments'
+
 export const TRIGGER_EVENTS = [
   'INSERT',
   'UPDATE',
@@ -56,10 +58,11 @@ export interface TriggerTarget {
 }
 
 export const createTriggerStatements = ({
+  definer,
   schema,
   shape,
   table,
-}: TriggerTarget & { shape: TriggerShape }) => {
+}: TriggerTarget & { definer?: string; shape: TriggerShape }) => {
   const target = sql.id(schema, table)
   const name = sql.id(schema, shape.name)
   const timing = sql.raw(shape.timing)
@@ -68,7 +71,7 @@ export const createTriggerStatements = ({
 
   return {
     mssql: sql`CREATE TRIGGER ${name} ON ${target} ${timing} ${events} AS ${body}`,
-    mysql: sql`CREATE TRIGGER ${name} ${timing} ${events} ON ${target} FOR EACH ROW ${body}`,
+    mysql: sql`CREATE ${mysqlDefiner(definer)} TRIGGER ${name} ${timing} ${events} ON ${target} FOR EACH ROW ${body}`,
     postgres: sql`
       CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${sql.raw(shape.events.join(' OR '))} ON ${target}
       FOR EACH ${sql.raw(shape.orientation)}

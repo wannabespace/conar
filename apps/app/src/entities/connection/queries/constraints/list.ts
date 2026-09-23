@@ -136,25 +136,41 @@ export const resourceConstraintsQuery = createQuery({
             .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
         )
+        // A key may reference a unique index rather than a constraint, which
+        // KEY_COLUMN_USAGE never lists, so the referenced side comes from sys.
+        .leftJoin('sys.schemas as fs', 'fs.name', 'tc.CONSTRAINT_SCHEMA')
+        .leftJoin('sys.foreign_keys as fk', (join) =>
+          join
+            .onRef('fk.name', '=', 'tc.CONSTRAINT_NAME')
+            .onRef('fk.schema_id', '=', 'fs.schema_id')
+        )
+        .leftJoin('sys.foreign_key_columns as fkc', (join) =>
+          join
+            .onRef('fkc.constraint_object_id', '=', 'fk.object_id')
+            .onRef('fkc.constraint_column_id', '=', 'kcu.ORDINAL_POSITION')
+        )
+        .leftJoin('sys.columns as referenced_column', (join) =>
+          join
+            .onRef(
+              'referenced_column.object_id',
+              '=',
+              'fkc.referenced_object_id'
+            )
+            .onRef(
+              'referenced_column.column_id',
+              '=',
+              'fkc.referenced_column_id'
+            )
+        )
         .leftJoin(
-          'information_schema.KEY_COLUMN_USAGE as referenced_kcu',
-          (join) =>
-            join
-              .onRef(
-                'rc.UNIQUE_CONSTRAINT_NAME',
-                '=',
-                'referenced_kcu.CONSTRAINT_NAME'
-              )
-              .onRef(
-                'rc.UNIQUE_CONSTRAINT_SCHEMA',
-                '=',
-                'referenced_kcu.CONSTRAINT_SCHEMA'
-              )
-              .onRef(
-                'kcu.ORDINAL_POSITION',
-                '=',
-                'referenced_kcu.ORDINAL_POSITION'
-              )
+          'sys.tables as referenced_table',
+          'referenced_table.object_id',
+          'fkc.referenced_object_id'
+        )
+        .leftJoin(
+          'sys.schemas as referenced_schema',
+          'referenced_schema.schema_id',
+          'referenced_table.schema_id'
         )
         .select([
           'tc.TABLE_SCHEMA as schema',
@@ -162,9 +178,9 @@ export const resourceConstraintsQuery = createQuery({
           'tc.CONSTRAINT_NAME as name',
           'tc.CONSTRAINT_TYPE as type',
           'kcu.COLUMN_NAME as column',
-          'referenced_kcu.TABLE_SCHEMA as foreign_schema',
-          'referenced_kcu.TABLE_NAME as foreign_table',
-          'referenced_kcu.COLUMN_NAME as foreign_column',
+          'referenced_schema.name as foreign_schema',
+          'referenced_table.name as foreign_table',
+          'referenced_column.name as foreign_column',
           'rc.DELETE_RULE as onDelete',
           'rc.UPDATE_RULE as onUpdate',
           'cc.CHECK_CLAUSE as expression',

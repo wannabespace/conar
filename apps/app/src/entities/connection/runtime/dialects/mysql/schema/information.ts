@@ -42,18 +42,18 @@ interface Tables {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   TABLE_TYPE: 'BASE TABLE' | 'VIEW' | 'SYSTEM VIEW'
-  ENGINE: string
-  VERSION: number
-  ROW_FORMAT: string
-  TABLE_ROWS: number
-  AVG_ROW_LENGTH: number
-  DATA_LENGTH: number
-  MAX_DATA_LENGTH: number
-  INDEX_LENGTH: number
-  DATA_FREE: number
+  ENGINE: string | null
+  VERSION: number | null
+  ROW_FORMAT: string | null
+  TABLE_ROWS: number | null
+  AVG_ROW_LENGTH: number | null
+  DATA_LENGTH: number | null
+  MAX_DATA_LENGTH: number | null
+  INDEX_LENGTH: number | null
+  DATA_FREE: number | null
   AUTO_INCREMENT: number | null
   CREATE_TIME: string
-  UPDATE_TIME: string
+  UPDATE_TIME: string | null
   CHECK_TIME: string | null
   TABLE_COLLATION: string | null
   CHECKSUM: number | null
@@ -66,7 +66,7 @@ interface Views {
   TABLE_SCHEMA: string
   TABLE_NAME: string
   VIEW_DEFINITION: string
-  CHECK_OPTION: 'NONE' | 'CASCADE' | 'LOCAL'
+  CHECK_OPTION: 'NONE' | 'CASCADED' | 'LOCAL'
   IS_UPDATABLE: 'YES' | 'NO'
   DEFINER: string
   SECURITY_TYPE: 'DEFINER' | 'INVOKER'
@@ -96,7 +96,7 @@ interface Columns {
   PRIVILEGES: string
   COLUMN_COMMENT: string
   GENERATION_EXPRESSION: string
-  SRS_ID: number
+  SRS_ID: number | null
 }
 
 interface TableConstraints {

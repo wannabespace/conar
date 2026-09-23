@@ -21,8 +21,7 @@ The **Schema** list in the sidebar covers everything about your database except 
     referencing/referenced columns and check conditions.
   </Card>
   <Card title="Policies" icon="shield-halved" href="/features/definitions">
-    PostgreSQL RLS policies, SQL Server security predicates, ClickHouse row
-    policies.
+    PostgreSQL RLS policies, SQL Server policies, ClickHouse row policies.
   </Card>
   <Card title="Privileges" icon="lock" href="/features/definitions">
     MySQL grants on a database or a table: the account, the privilege, and
@@ -75,6 +74,7 @@ The inspector is also the editor. It groups an object into sections — general,
 - **Save** with the primary button or <kbd>⌘</kbd><kbd>Enter</kbd>. Errors from the database show inline under the form.
 - **Drop** from the row's context menu, or <kbd>⌘</kbd><kbd>D</kbd> on the highlighted row; for a MySQL privilege this revokes it. A confirmation asks first; PostgreSQL types, functions, and constraints can drop dependents with **CASCADE**.
 - **Row level security** is a switch at the top of a PostgreSQL policy. A table that does not enforce it ignores every policy on it, so a policy on such a table shows as **Disabled** in the list.
+- **SQL Server policies** bind one or more predicates to tables. Each predicate is a filter (hides rows) or a block (refuses writes, on every write or one operation), and calls an inline table-valued function with columns of its table as arguments. SQL Server only accepts a schema-bound function, so turn on **Schema bound** when you create it in **Functions**. Setting the return type to `TABLE` fills in an inline table-valued starter body. Add and remove predicates in the inspector; saving drops the changed ones and adds their replacements in one transaction. The **Enabled** switch turns the policy on or off without touching its predicates.
 
 What each engine supports:
 
@@ -85,14 +85,14 @@ What each engine supports:
 | Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks |
 | Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — |
 | Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — |
-| Policies | Create, edit, drop, enable/disable row level security | — | Read only | Create, edit, drop row policies |
+| Policies | Create, edit, drop, enable/disable row level security | — | Create, edit predicates, rename, enable/disable, drop | Create, edit, drop row policies |
 | Privileges | — | Grant, revoke | — | — |
 
 ## Edits that replace the object
 
 Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence. An index that enforces a constraint, or one built with a method, predicate, expression or ordering the picker cannot show, only changes its name — its shape is edited where it is defined. A constraint carrying a rule with no field in the form — deferrable, not validated, not inherited, a match type, or on SQL Server disabled, untrusted or not for replication — is name-only for the same reason.
 
-PostgreSQL and SQL Server run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement.
+PostgreSQL and SQL Server run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement. A MySQL trigger or function has no such statement, so Tamery saves its definition first and recreates it if the new one fails. Either way it keeps its original definer.
 
 Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
 

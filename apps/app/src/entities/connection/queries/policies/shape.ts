@@ -16,6 +16,8 @@ export interface PolicyShape {
   command: PolicyCommand
   kind: PolicyKind
   name: string
+  // SQL Server's policy is only these; it has no roles, command or expressions.
+  predicates: PolicyPredicate[]
   roles: string[]
   using: string | null
 }
@@ -100,3 +102,51 @@ export const createPolicyStatement = ({
     ${expression('USING', shape.using)}
     ${expression('WITH CHECK', shape.check)}
   `
+
+export const BLOCK_OPERATIONS = [
+  'AFTER INSERT',
+  'AFTER UPDATE',
+  'BEFORE UPDATE',
+  'BEFORE DELETE',
+] as const
+
+export type BlockOperation = (typeof BLOCK_OPERATIONS)[number]
+
+export interface PolicyPredicate {
+  arguments: string
+  functionName: string
+  functionSchema: string
+  kind: 'FILTER' | 'BLOCK'
+  // null blocks every write
+  operation: BlockOperation | null
+  schema: string
+  table: string
+}
+
+// A part is bracketed ("]" doubled inside) or, in some catalog output, bare.
+const namePart = String.raw`(?:\[((?:[^\]]|\]\])+)\]|([^.[\]()\s]+))`
+const PREDICATE_CALL = new RegExp(
+  String.raw`^${namePart}\.${namePart}\((.*)\)$`,
+  'su'
+)
+
+export const policyPredicate = {
+  add: (predicate: PolicyPredicate) =>
+    sql`ADD ${sql.raw(predicate.kind)} PREDICATE ${sql.id(predicate.functionSchema, predicate.functionName)}(${sql.raw(predicate.arguments)}) ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
+  drop: (predicate: PolicyPredicate) =>
+    sql`DROP ${sql.raw(predicate.kind)} PREDICATE ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
+  parse: (definition: string) => {
+    // Servers differ on wrapping the stored call in parentheses.
+    const call = definition.startsWith('(')
+      ? definition.slice(1, -1)
+      : definition
+    const [, bracketedSchema, bareSchema, bracketedName, bareName, args] =
+      PREDICATE_CALL.exec(call) ?? []
+    const functionSchema = bracketedSchema?.replaceAll(']]', ']') ?? bareSchema
+    const functionName = bracketedName?.replaceAll(']]', ']') ?? bareName
+
+    return functionSchema && functionName && args !== undefined
+      ? { arguments: args, functionName, functionSchema }
+      : null
+  },
+}

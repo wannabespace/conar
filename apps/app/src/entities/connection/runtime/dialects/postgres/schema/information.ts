@@ -11,14 +11,14 @@ interface Tables {
   table_catalog: string
   table_schema: string
   table_name: string
-  table_type: 'BASE TABLE' | 'VIEW'
+  table_type: 'BASE TABLE' | 'VIEW' | 'FOREIGN' | 'LOCAL TEMPORARY'
   self_referencing_column_name: string | null
   reference_generation: string
   user_defined_type_catalog: string | null
   user_defined_type_schema: string | null
   user_defined_type_name: string | null
-  is_insertable_into: boolean
-  is_typed: boolean
+  is_insertable_into: 'YES' | 'NO'
+  is_typed: 'YES' | 'NO'
   commit_action: string
 }
 
@@ -27,7 +27,7 @@ interface Columns {
   table_schema: string
   table_name: string
   column_name: string
-  ordinal_position: number | null
+  ordinal_position: number
   column_default: string | null
   is_nullable: 'YES' | 'NO'
   data_type: string
@@ -58,12 +58,12 @@ interface Columns {
   is_self_referencing: 'YES' | 'NO'
   is_identity: 'YES' | 'NO'
   identity_generation: string | null
-  identity_start: number | null
-  identity_increment: number | null
-  identity_maximum: number | null
-  identity_minimum: number | null
+  identity_start: string | null
+  identity_increment: string | null
+  identity_maximum: string | null
+  identity_minimum: string | null
   identity_cycle: 'YES' | 'NO'
-  is_generated: string | null
+  is_generated: 'ALWAYS' | 'NEVER'
   generation_expression: string | null
   is_updatable: 'YES' | 'NO'
 }
@@ -75,12 +75,7 @@ interface TableConstraints {
   table_catalog: string
   table_schema: string
   table_name: string
-  constraint_type:
-    | 'PRIMARY KEY'
-    | 'UNIQUE'
-    | 'FOREIGN KEY'
-    | 'CHECK'
-    | 'EXCLUSION'
+  constraint_type: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK'
   is_deferrable: 'YES' | 'NO'
   initially_deferred: 'YES' | 'NO'
   enforced: 'YES' | 'NO'
