@@ -1,6 +1,6 @@
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
-import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
+import { GrainBackground } from '@tamery/ui/components/custom/grain-background'
 import {
   createFileRoute,
   Link,
@@ -21,7 +21,7 @@ const AuthLayout = () => {
     <div className="bg-background flex min-h-screen flex-col">
       <div className="relative grid flex-1 shrink-0 items-center justify-center lg:grid-cols-2">
         <div className="bg-body text-foreground relative hidden h-full flex-col border-r p-10 lg:flex">
-          <DitherBackground />
+          <GrainBackground />
           <Link
             to="/"
             className="relative z-20 flex items-center text-lg font-medium"

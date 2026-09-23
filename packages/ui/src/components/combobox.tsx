@@ -97,6 +97,7 @@ const ComboboxInput = ({
           size="icon-xs"
           variant="ghost"
           render={<ComboboxTrigger />}
+          nativeButton
           data-slot="input-group-button"
           className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
           disabled={disabled}

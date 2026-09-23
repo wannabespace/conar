@@ -1,4 +1,9 @@
-import { ArrowRight01Icon, FlashIcon } from '@hugeicons/core-free-icons'
+import {
+  ArrowRight01Icon,
+  FlashIcon,
+  PauseIcon,
+  PlayIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
@@ -560,6 +565,7 @@ export const Triggers = () => {
       ? [
           {
             label: item.enabled === false ? 'Enable' : 'Disable',
+            icon: item.enabled === false ? PlayIcon : PauseIcon,
             onSelect: () =>
               toggle.mutate({ enabled: item.enabled === false, item }),
           },

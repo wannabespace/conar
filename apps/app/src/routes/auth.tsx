@@ -6,7 +6,7 @@ import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
-import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
+import { GrainBackground } from '@tamery/ui/components/custom/grain-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
@@ -33,7 +33,7 @@ const signInUrl = (type: 'web' | 'desktop') => {
   }
 }
 
-const SHADER_MOUNT_DELAY = 700
+const SHADER_MOUNT_DELAY = 500
 
 const AuthSidePanel = () => {
   const [isShaderMounted, setIsShaderMounted] = useState(false)
@@ -56,7 +56,7 @@ const AuthSidePanel = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2 }}
         >
-          <DitherBackground />
+          <GrainBackground />
         </motion.div>
       )}
       <div className="relative z-20 flex items-center gap-2 text-lg font-medium">

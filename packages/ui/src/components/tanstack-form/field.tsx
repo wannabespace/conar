@@ -5,12 +5,12 @@ import {
   FieldInvalidProvider,
   FieldLabel as FieldLabelPrimitive,
 } from '../field'
-import { useFieldContext } from './context'
+import { isFieldInvalid, useFieldContext } from './context'
 import { FieldError } from './field-error'
 
 export const Field = (props: ComponentProps<typeof FieldPrimitive>) => {
   const field = useFieldContext()
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+  const isInvalid = isFieldInvalid(field)
 
   return (
     <FieldInvalidProvider value={isInvalid ? <FieldError /> : null}>

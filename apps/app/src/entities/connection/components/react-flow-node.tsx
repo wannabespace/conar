@@ -70,7 +70,6 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
               size="icon-xs"
               variant="outline"
               aria-label="Open table"
-              nativeButton={false}
               render={
                 <Link
                   to="/connection/$resourceId/$tabId"

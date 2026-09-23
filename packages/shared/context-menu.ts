@@ -6,6 +6,8 @@ export interface NativeMenuActionItem {
   kind?: 'normal' | 'checkbox' | 'radio'
   checked?: boolean
   accelerator?: string
+  /** SF Symbol name; macOS only. */
+  symbol?: string
 }
 
 export interface NativeMenuSeparator {
@@ -21,6 +23,7 @@ export interface NativeMenuSubmenu {
   type: 'submenu'
   label: string
   enabled?: boolean
+  symbol?: string
   items: NativeMenuNode[]
 }
 
@@ -32,6 +35,8 @@ export type NativeMenuNode =
 
 export interface MenuPopupRequest {
   items: NativeMenuNode[]
+  /** Window-relative CSS px; omitted = at the cursor. */
+  position?: { x: number; y: number }
 }
 
 export type MenuPopupResult = string | null

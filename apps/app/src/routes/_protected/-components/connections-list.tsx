@@ -49,7 +49,7 @@ import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
-import { AppContextMenu } from '~/components/app-context-menu'
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
 import { useCollections } from '~/entities/collections'
 import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
@@ -201,39 +201,27 @@ const buildConnectionMenuItems = ({
 }): AppMenuNode[] => [
   {
     label: 'Open in New Window',
-    icon: (
-      <HugeiconsIcon icon={AppWindowIcon} strokeWidth={2} className="size-4" />
-    ),
+    icon: AppWindowIcon,
     disabled: !onOpenInNewWindow,
     onSelect: () => onOpenInNewWindow?.(),
   },
   { type: 'separator' },
   {
     label: 'Refresh',
-    icon: (
-      <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} className="size-4" />
-    ),
+    icon: Refresh01Icon,
     disabled: !canSend,
     onSelect: onRefresh,
   },
   {
     label: 'Copy connection string',
-    icon: (
-      <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
-    ),
+    icon: Copy01Icon,
     onSelect: onCopy,
   },
   ...(connection.syncType === SyncType.CloudWithoutPassword
     ? ([
         {
           label: 'Clear password',
-          icon: (
-            <HugeiconsIcon
-              icon={SquareUnlock01Icon}
-              strokeWidth={2}
-              className="size-4 shrink-0"
-            />
-          ),
+          icon: SquareUnlock01Icon,
           className: 'whitespace-nowrap',
           disabled: !isPasswordPopulated,
           onSelect: onClearPassword,
@@ -243,9 +231,7 @@ const buildConnectionMenuItems = ({
   { type: 'separator' },
   {
     label: 'Remove',
-    icon: (
-      <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4" />
-    ),
+    icon: Delete02Icon,
     variant: 'destructive',
     onSelect: onRemove,
   },
@@ -495,7 +481,7 @@ const ConnectionCard = ({
         items={items}
         contentProps={{ className: 'min-w-44' }}
         className={cn(
-          'group relative flex h-9 items-center gap-3 pr-2 pl-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
+          'group relative flex h-9 items-center gap-3 pr-2 pl-3',
           selectedResource &&
             canOpenResource &&
             'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
@@ -542,6 +528,11 @@ const ConnectionCard = ({
           isResourcesShown={isResourcesShown}
           resources={resources}
           selectedResourceName={selectedResourceName}
+        />
+        <AppMenuButton
+          items={items}
+          contentProps={{ className: 'min-w-44' }}
+          className="relative z-10"
         />
       </AppContextMenu>
     </motion.div>
@@ -611,11 +602,7 @@ export const Empty = () => (
       Add a connection and it shows up here — open it in one click.
     </p>
 
-    <Button
-      className="mt-5"
-      nativeButton={false}
-      render={<Link to="/create" />}
-    >
+    <Button className="mt-5" render={<Link to="/create" />}>
       <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-4" />
       New connection
     </Button>
@@ -775,7 +762,6 @@ export const ConnectionsList = () => {
             <Button
               variant="outline"
               size="sm"
-              nativeButton={false}
               className="text-foreground"
               render={<Link to="/create" />}
             >

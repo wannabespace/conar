@@ -31,7 +31,7 @@ import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
-import { AppContextMenu } from '~/components/app-context-menu'
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { tablesAndSchemasType } from '~/entities/connection/queries/tables/list'
@@ -160,9 +160,11 @@ const TableRow = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const router = useRouter()
-  const activeTable = useActiveTable()
-  const isActive =
-    activeTable?.schema === row.schema && activeTable?.table === row.table.name
+  const tabId = tableTabId(row.schema, row.table.name)
+  const isActive = useParams({
+    select: (params) => params.tabId === tabId,
+    strict: false,
+  })
   const isReadOnly = row.table.type !== 'table'
   const Icon = tableTypeIcon[row.table.type]
   const store = tableSessionStore({
@@ -175,11 +177,7 @@ const TableRow = ({
   })
 
   const openInNewWindow = () => {
-    const tabId = openTableTab(
-      connectionResource.id,
-      row.schema,
-      row.table.name
-    )
+    openTableTab(connectionResource.id, row.schema, row.table.name)
 
     openNewWindow(
       router.buildLocation({
@@ -192,51 +190,31 @@ const TableRow = ({
   const items: AppMenuNode[] = [
     {
       label: 'Open in New Window',
-      icon: (
-        <HugeiconsIcon
-          icon={AppWindowIcon}
-          strokeWidth={2}
-          className="size-4"
-        />
-      ),
+      icon: AppWindowIcon,
       onSelect: openInNewWindow,
     },
     { type: 'separator' },
     {
       label: 'Copy Name',
-      icon: (
-        <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
-      ),
+      icon: Copy01Icon,
       onSelect: () => copyToClipboard(row.table.name, 'Table name copied'),
     },
     {
       label: row.pinned ? 'Unpin' : 'Pin',
-      icon: row.pinned ? (
-        <HugeiconsIcon icon={PinIcon} strokeWidth={2} className="size-4" />
-      ) : (
-        <HugeiconsIcon icon={PinIcon} strokeWidth={2} className="size-4" />
-      ),
+      icon: row.pinned ? PinOffIcon : PinIcon,
       onSelect: () =>
         pinnedTable.toggle(connectionResource.id, row.schema, row.table.name),
     },
     { type: 'separator' },
     {
       label: 'Rename',
-      icon: (
-        <HugeiconsIcon
-          icon={PencilEdit01Icon}
-          strokeWidth={2}
-          className="size-4"
-        />
-      ),
+      icon: PencilEdit01Icon,
       disabled: isReadOnly,
       onSelect: onRename,
     },
     {
       label: 'Drop',
-      icon: (
-        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4" />
-      ),
+      icon: Delete02Icon,
       variant: 'destructive',
       disabled: isReadOnly,
       onSelect: onDrop,
@@ -260,7 +238,7 @@ const TableRow = ({
             to="/connection/$resourceId/$tabId"
             params={{
               resourceId: connectionResource.id,
-              tabId: tableTabId(row.schema, row.table.name),
+              tabId,
             }}
             preload="intent"
             preloadDelay={200}
@@ -303,13 +281,28 @@ const TableRow = ({
         <span
           className={cn(
             'min-w-0 flex-1 truncate',
-            !row.pinned &&
-              `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.5rem),transparent_calc(100%-1.25rem))]`
+            row.pinned
+              ? `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.25rem),transparent_calc(100%-1rem))]`
+              : `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
           )}
         >
           <HighlightText text={row.table.name} match={search} />
         </span>
       </SidebarMenuButton>
+      <AppMenuButton
+        items={items}
+        contentProps={{ className: 'min-w-48' }}
+        render={
+          <SidebarMenuAction
+            showOnHover
+            className={cn(
+              'hover:bg-foreground/10 top-1! right-6 rounded-md',
+              isActive &&
+                'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
+            )}
+          />
+        }
+      />
       <Tooltip>
         <TooltipTrigger
           render={
@@ -486,19 +479,13 @@ export const TablesList = ({
     overscan: 12,
   })
 
-  const activeTable = useActiveTable()
-  const schemaParam = activeTable?.schema
-  const tableParam = activeTable?.table
+  const router = useRouter()
   const scrollToActiveEvent = useEffectEvent(() => {
-    if (!schemaParam || !tableParam) {
-      return
-    }
-
+    const params = router.state.matches.at(-1)?.params
+    const tabId = params && 'tabId' in params ? params.tabId : undefined
     const index = rows.findIndex(
       (row) =>
-        row.kind === 'table' &&
-        row.schema === schemaParam &&
-        row.table.name === tableParam
+        row.kind === 'table' && tableTabId(row.schema, row.table.name) === tabId
     )
 
     if (index !== -1) {

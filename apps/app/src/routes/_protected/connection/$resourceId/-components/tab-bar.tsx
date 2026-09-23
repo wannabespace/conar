@@ -2,13 +2,18 @@ import {
   AiChat01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  ArrowRight02Icon,
   Cancel01Icon,
+  CancelCircleIcon,
+  CancelSquareIcon,
   HierarchyIcon,
   LayoutTable02Icon,
+  PencilEdit01Icon,
   PlayIcon,
   PlusSignIcon,
   SecurityCheckIcon,
   SidebarLeftIcon,
+  Undo02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { enabledFilters } from '@tamery/shared/filters'
@@ -575,12 +580,14 @@ const Tab = ({
   const items: AppMenuNode[] = [
     {
       label: 'Rename',
+      icon: PencilEdit01Icon,
       onSelect: startRename,
     },
     ...(tab.title
       ? [
           {
             label: 'Reset Name',
+            icon: Undo02Icon,
             onSelect: () => renameTab(connectionResource.id, tab.id, null),
           },
         ]
@@ -588,6 +595,7 @@ const Tab = ({
     { type: 'separator' },
     {
       label: 'Close',
+      icon: Cancel01Icon,
       accelerator: 'CmdOrCtrl+W',
       shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
       onSelect: onClose,
@@ -595,16 +603,23 @@ const Tab = ({
     { type: 'separator' },
     {
       label: 'Close Others',
+      icon: CancelSquareIcon,
       disabled: totalTabs <= 1,
       onSelect: onCloseOthers,
     },
     {
       label: 'Close to the Right',
+      icon: ArrowRight02Icon,
       disabled: currentTabIndex >= totalTabs - 1,
       onSelect: onCloseToTheRight,
     },
     { type: 'separator' },
-    { label: 'Close All', disabled: totalTabs === 0, onSelect: onCloseAll },
+    {
+      label: 'Close All',
+      icon: CancelCircleIcon,
+      disabled: totalTabs === 0,
+      onSelect: onCloseAll,
+    },
   ]
 
   useEffect(() => {

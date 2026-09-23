@@ -1,4 +1,10 @@
-import { PlusSignIcon } from '@hugeicons/core-free-icons'
+import {
+  Copy01Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  PlusSignIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { pseudoRandom, uppercaseFirst } from '@tamery/shared/utils'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
@@ -47,7 +53,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
-import { AppContextMenu } from '~/components/app-context-menu'
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { sectionMetaOf } from '~/entities/connection/sections'
@@ -127,6 +133,7 @@ const SkeletonRows = <T,>({ columns }: { columns: DefinitionsColumn<T>[] }) =>
           />
         </TableCell>
       ))}
+      <TableCell />
     </TableRow>
   ))
 
@@ -366,10 +373,12 @@ export const DefinitionsPage = <T extends { name: string }>({
   const rowMenuItems = (item: T): AppMenuNode[] => [
     {
       label: can.edit ? 'Edit' : 'Inspect',
+      icon: can.edit ? PencilEdit01Icon : ViewIcon,
       onSelect: () => inspector.open(item),
     },
     {
       label: 'Copy name',
+      icon: Copy01Icon,
       onSelect: () =>
         copyToClipboard(item.name, `${uppercaseFirst(noun)} name copied`),
     },
@@ -379,6 +388,7 @@ export const DefinitionsPage = <T extends { name: string }>({
           { type: 'separator' },
           {
             label: `Drop ${noun}`,
+            icon: Delete02Icon,
             onSelect: () => requestDrop(item),
             variant: 'destructive',
           },
@@ -475,6 +485,7 @@ export const DefinitionsPage = <T extends { name: string }>({
                         {column.header}
                       </TableHead>
                     ))}
+                    <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -500,7 +511,7 @@ export const DefinitionsPage = <T extends { name: string }>({
                               (searchFocused && highlighted === key) ||
                               undefined
                             }
-                            className="data-highlighted:bg-foreground/7 transition-none"
+                            className="group/row data-highlighted:bg-foreground/7 transition-none"
                             onClick={() => {
                               setHighlighted(key)
                               inspector.open(item)
@@ -516,6 +527,12 @@ export const DefinitionsPage = <T extends { name: string }>({
                             {column.cell(item, context)}
                           </TableCell>
                         ))}
+                        <TableCell className="text-right">
+                          <AppMenuButton
+                            items={() => rowMenuItems(item)}
+                            className="-my-0.5"
+                          />
+                        </TableCell>
                       </AppContextMenu>
                     )
                   })}

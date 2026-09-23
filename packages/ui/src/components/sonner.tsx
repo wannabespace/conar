@@ -6,15 +6,24 @@ import {
   MultiplicationSignCircleIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { noop } from '@tamery/shared/utils'
+import { useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 
 import { useTheme } from '../theme-store'
 
+const subscribeNever = () => noop
+
 const Toaster = () => {
   const theme = useTheme()
+  const isClient = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false
+  )
 
-  if (typeof window === 'undefined') {
+  if (!isClient) {
     return null
   }
 

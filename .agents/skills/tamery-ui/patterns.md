@@ -22,12 +22,13 @@
 
 ## Popups and menus
 
-- Context menus are always `AppContextMenu` (data-driven node tree; base-ui on web, native menu over IPC on desktop), never raw kit menu primitives. Destructive item last, after a separator.
+- Context menus are always `AppContextMenu` (data-driven node tree; base-ui on web, native menu over IPC on desktop), never raw kit menu primitives. Destructive item last, after a separator. Every action item and submenu carries an `icon` (hugeicons data, not a node); native menus show its SF Symbol twin from the `sfSymbols` map in `AppContextMenu` (macOS `nativeImage.createMenuSymbol`) — a new icon needs a map entry or it renders web-only. Leaf lists that read as options (filter operators, radio choices) stay icon-less.
 - **Open in New Window** is the first item of any row menu standing for a route, above a separator. The target must exist before the window opens (a table registers its tab first); `openNewWindow` takes the route href. Secondary desktop windows open offset and never restore maximized — landing on top of the window you came from reads as nothing happened.
 - Popups keep the kit's density and radius — don't re-inflate or shrink. `PopoverContent` owns padding through its `padding` prop (`none` also flattens the base-ui viewport slot); a call site writing `p-0` plus a slot override is the prop going unused.
 - Popovers size to content (`w-auto min-w-40`), menus cap at `max-w-80`; only `Select` and `Combobox` match `--anchor-width`, since a menu row is usually longer than its trigger. `CommandInput` only at ~8+ items; hide a sole group heading.
 - **Command popups**: state lives as rows in the one `CommandList` — a pinned block outside it is invisible to filter and arrows. The row is the button (state = glyph on the row), a two-state control is one flipping icon, and a picker belongs in the same popover's body, never a child popover. A hover-only ✕ is never the only way out; a nested trailing control `stopPropagation`s on `onPointerDown` *and* `onClick` (cmdk selects on click) and sits absolutely inside the row.
 - A hidden control still holds its space, and a control that only appears on hover never moves out from under the pointer.
+- The `AppMenuButton` ⋯ is always visible in dashboard rows, definitions tables and column headers. Only the navigator's sidebar rows reveal it on hover, because the row's pin can take its place there.
 
 ## Lists and tables
 
@@ -165,10 +166,11 @@ Lives in the search field: ↑/↓ move the highlight, Enter opens the highlight
 - **Visualizer loading** is a canvas skeleton, not a spinner: dotted background, the real controls, ghost cards at the real node geometry. **Nothing about it varies** — identical cards, evenly spaced, one shared pulse. The data table earns ragged widths because a wall of identical bars reads as a rendering bug; a few cards on open canvas have nowhere to hide noise, so jitter reads as debris.
 - Markdown is kit `Response` only; the chat does **not** pass `streaming` (per-block memoization restarts the word fade every block). Fenced code and inline code both go through `ResponseCodeBlock` via `components={{ code }}`, tool-part JSON included. A reasoning part with no text renders nothing — Anthropic returns signature-only parts, which would otherwise put an empty disclosure above every answer.
 - **Calendar / date range**: kit `Calendar` (registry `@shadcn/calendar`, vendored in kit style). The day cell is a grid square on the kit `Button`, so hover, focus ring and press come from the kit; range ends take `bg-primary` and the middle the latched tint, never `bg-muted`, which vanishes on a popover. `today` is weight and colour only, so it never competes with a selection. Pages import `DateRange` from the kit's re-export, never from `react-day-picker`. A range picker is `Button` + `Popover` + `Calendar mode="range" numberOfMonths={2}`, and needs `w-auto` on the popover.
-- Dither shader: **auth layout only** — an animated background never sits under a card, and each instance is a WebGL context. Dithering governs entrances, never resting chrome (grain on a resting surface reads as dirt).
+- Grain shader (`GrainBackground`): **auth layout only** — an animated background never sits under a card, and each instance is a WebGL context. Dithering governs entrances, never resting chrome (grain on a resting surface reads as dirt).
 - Floating scroll-to-end control: `variant="outline"`, circle, lifts on hover — the shadow is the feedback; a flat tint over text reads as grime.
 
 ## Two principles behind the rest
 
 - **The target is the whole surface, not the glyph inside it.** A row's hit area is the row, a strip button's is its hover square, a separator's is the grab strip around its line. A control whose clickable area is its ink is a control the user has to aim at.
 - **Anticipate the pointer, not the click.** Work the user has visibly committed to is warmed when the intent shows, so the click finds it ready. Hover is for *revealing* — it never navigates, selects, saves or opens a window, because crossing a surface is not a decision. Pressing is, which is why nav fires on mousedown.
+- **Shader backgrounds are transparent over the panel token.** Paper shaders parse only hex/rgb/hsl, never our oklch tokens — pass `colorBack` transparent and let the panel's `bg-body` show, so the shader always matches the theme. Cap `minPixelRatio={1}` + `maxPixelCount`: a full-DPR fragment loop janks the page.
