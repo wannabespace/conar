@@ -1,7 +1,42 @@
+import {
+  AppWindowIcon,
+  ArrowDown02Icon,
+  ArrowLeftRightIcon,
+  ArrowRight02Icon,
+  ArrowUp02Icon,
+  Cancel01Icon,
+  CancelCircleIcon,
+  CancelSquareIcon,
+  CodeIcon,
+  Copy01Icon,
+  Csv01Icon,
+  Delete02Icon,
+  EraserIcon,
+  FilterAddIcon,
+  MoreHorizontalIcon,
+  PauseIcon,
+  PencilEdit01Icon,
+  PencilEdit02Icon,
+  PinIcon,
+  PinOffIcon,
+  PlayIcon,
+  Refresh01Icon,
+  Sorting01Icon,
+  SquareUnlock01Icon,
+  TextIcon,
+  Undo02Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type {
+  MenuPopupRequest,
   MenuPopupResult,
   NativeMenuNode,
+  SFSymbol,
 } from '@tamery/shared/context-menu'
+import { Button } from '@tamery/ui/components/button'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,8 +51,28 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@tamery/ui/components/context-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { cn } from '@tamery/ui/lib/utils'
-import type { CSSProperties, MouseEvent, ReactElement, ReactNode } from 'react'
+import type {
+  CSSProperties,
+  HTMLAttributes,
+  MouseEvent,
+  ReactElement,
+  ReactNode,
+} from 'react'
 import { cloneElement, useState } from 'react'
 
 export interface AppMenuItem {
@@ -28,8 +83,8 @@ export interface AppMenuItem {
   variant?: 'default' | 'destructive'
   /** Native only: renders a checkbox-style checkmark. Web styles via `className`/`icon`. */
   checked?: boolean
-  /** Web only. */
-  icon?: ReactNode
+  /** Native menus show its `sfSymbols` twin; unmapped icons render web-only. */
+  icon?: IconSvgElement
   /** Web only: right-aligned shortcut hint. */
   shortcut?: ReactNode
   /** Web only: raw right-aligned node. */
@@ -61,6 +116,7 @@ export interface AppMenuSub {
   type: 'sub'
   label: string
   disabled?: boolean
+  icon?: IconSvgElement
   items: AppMenuNode[]
 }
 
@@ -94,39 +150,100 @@ interface AppContextMenuProps {
   }
 }
 
+const sfSymbols = new Map<IconSvgElement, SFSymbol>([
+  [AppWindowIcon, 'macwindow'],
+  [ArrowDown02Icon, 'arrow.down'],
+  [ArrowLeftRightIcon, 'arrow.left.and.right'],
+  [ArrowRight02Icon, 'arrow.right'],
+  [ArrowUp02Icon, 'arrow.up'],
+  [Cancel01Icon, 'xmark'],
+  [CancelCircleIcon, 'xmark.circle'],
+  [CancelSquareIcon, 'xmark.square'],
+  [CodeIcon, 'curlybraces'],
+  [Copy01Icon, 'doc.on.doc'],
+  [Csv01Icon, 'tablecells'],
+  [Delete02Icon, 'trash'],
+  [EraserIcon, 'eraser'],
+  [FilterAddIcon, 'line.3.horizontal.decrease'],
+  [PauseIcon, 'pause'],
+  [PencilEdit01Icon, 'pencil'],
+  [PencilEdit02Icon, 'pencil'],
+  [PinIcon, 'pin'],
+  [PinOffIcon, 'pin.slash'],
+  [PlayIcon, 'play'],
+  [Refresh01Icon, 'arrow.clockwise'],
+  [Sorting01Icon, 'arrow.up.arrow.down'],
+  [SquareUnlock01Icon, 'lock.open'],
+  [TextIcon, 'text.alignleft'],
+  [Undo02Icon, 'arrow.uturn.backward'],
+  [ViewIcon, 'eye'],
+  [ViewOffSlashIcon, 'eye.slash'],
+])
+
+const menuIcon = (icon?: IconSvgElement) =>
+  icon && <HugeiconsIcon icon={icon} strokeWidth={2} />
+
 const isNativeAvailable = () => !!window.electron?.menu?.popup
 
-const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
+const contextMenuParts = {
+  Group: ContextMenuGroup,
+  Item: ContextMenuItem,
+  Label: ContextMenuLabel,
+  RadioGroup: ContextMenuRadioGroup,
+  RadioItem: ContextMenuRadioItem,
+  Separator: ContextMenuSeparator,
+  Sub: ContextMenuSub,
+  SubContent: ContextMenuSubContent,
+  SubTrigger: ContextMenuSubTrigger,
+}
+
+const dropdownMenuParts: typeof contextMenuParts = {
+  Group: DropdownMenuGroup,
+  Item: DropdownMenuItem,
+  Label: DropdownMenuLabel,
+  RadioGroup: DropdownMenuRadioGroup,
+  RadioItem: DropdownMenuRadioItem,
+  Separator: DropdownMenuSeparator,
+  Sub: DropdownMenuSub,
+  SubContent: DropdownMenuSubContent,
+  SubTrigger: DropdownMenuSubTrigger,
+}
+
+const renderWebNodes = (
+  nodes: AppMenuNode[],
+  parts: typeof contextMenuParts
+): ReactNode =>
   nodes.map((node, index) => {
     switch (node.type) {
       case 'separator': {
         // oxlint-disable-next-line react/no-array-index-key
-        return <ContextMenuSeparator key={index} />
+        return <parts.Separator key={index} />
       }
       case 'label': {
         // oxlint-disable-next-line react/no-array-index-key
-        return <ContextMenuLabel key={index}>{node.label}</ContextMenuLabel>
+        return <parts.Label key={index}>{node.label}</parts.Label>
       }
       case 'group': {
         return (
           // oxlint-disable-next-line react/no-array-index-key
-          <ContextMenuGroup key={index}>
-            {node.label && <ContextMenuLabel>{node.label}</ContextMenuLabel>}
-            {renderWebNodes(node.items)}
-          </ContextMenuGroup>
+          <parts.Group key={index}>
+            {node.label && <parts.Label>{node.label}</parts.Label>}
+            {renderWebNodes(node.items, parts)}
+          </parts.Group>
         )
       }
       case 'sub': {
         return (
           // oxlint-disable-next-line react/no-array-index-key
-          <ContextMenuSub key={index}>
-            <ContextMenuSubTrigger disabled={node.disabled}>
+          <parts.Sub key={index}>
+            <parts.SubTrigger disabled={node.disabled}>
+              {menuIcon(node.icon)}
               {node.label}
-            </ContextMenuSubTrigger>
-            <ContextMenuSubContent>
-              {renderWebNodes(node.items)}
-            </ContextMenuSubContent>
-          </ContextMenuSub>
+            </parts.SubTrigger>
+            <parts.SubContent>
+              {renderWebNodes(node.items, parts)}
+            </parts.SubContent>
+          </parts.Sub>
         )
       }
       case 'radio': {
@@ -134,22 +251,22 @@ const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
           node.onValueChange(value)
         }
         return (
-          <ContextMenuRadioGroup
+          <parts.RadioGroup
             // oxlint-disable-next-line react/no-array-index-key
             key={index}
             value={node.value}
             onValueChange={handleValueChange}
           >
             {node.options.map((option) => (
-              <ContextMenuRadioItem
+              <parts.RadioItem
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
               >
                 {option.label}
-              </ContextMenuRadioItem>
+              </parts.RadioItem>
             ))}
-          </ContextMenuRadioGroup>
+          </parts.RadioGroup>
         )
       }
       default: {
@@ -157,7 +274,7 @@ const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
           node.onSelect()
         }
         return (
-          <ContextMenuItem
+          <parts.Item
             // oxlint-disable-next-line react/no-array-index-key
             key={index}
             disabled={node.disabled}
@@ -165,10 +282,10 @@ const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
             className={node.className}
             onClick={handleSelect}
           >
-            {node.icon}
+            {menuIcon(node.icon)}
             {node.label}
             {node.trailing}
-          </ContextMenuItem>
+          </parts.Item>
         )
       }
     }
@@ -178,10 +295,12 @@ const popupNativeMenu = async ({
   nativeItems,
   handlers,
   onClose,
+  position,
 }: {
   nativeItems: NativeMenuNode[]
   handlers: Map<string, () => void>
   onClose: () => void
+  position?: MenuPopupRequest['position']
 }) => {
   let clickedId: MenuPopupResult = null
   try {
@@ -189,7 +308,7 @@ const popupNativeMenu = async ({
     if (!electronMenu) {
       throw new Error('Native menu is not available')
     }
-    clickedId = await electronMenu.popup({ items: nativeItems })
+    clickedId = await electronMenu.popup({ items: nativeItems, position })
   } finally {
     if (clickedId !== null) {
       handlers.get(clickedId)?.()
@@ -232,6 +351,7 @@ const toNativeMenu = (
             enabled: !node.disabled,
             items: walk(node.items),
             label: node.label,
+            symbol: node.icon && sfSymbols.get(node.icon),
             type: 'submenu',
           })
           break
@@ -261,6 +381,7 @@ const toNativeMenu = (
             id,
             kind: node.checked === undefined ? 'normal' : 'checkbox',
             label: node.nativeLabel ?? node.label,
+            symbol: node.icon && sfSymbols.get(node.icon),
             type: 'item',
           })
         }
@@ -294,7 +415,7 @@ export const AppContextMenu = ({
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent {...contentProps}>
-          {renderWebNodes(resolved)}
+          {renderWebNodes(resolved, contextMenuParts)}
         </ContextMenuContent>
       </ContextMenu>
     )
@@ -342,5 +463,71 @@ export const AppContextMenu = ({
     >
       {children}
     </div>
+  )
+}
+
+const stopPropagation = (e: MouseEvent) => e.stopPropagation()
+
+const defaultMenuButton = <Button variant="ghost" size="icon-xs" />
+
+export const AppMenuButton = ({
+  items,
+  className,
+  contentProps,
+  render = defaultMenuButton,
+}: Pick<AppContextMenuProps, 'items' | 'className' | 'contentProps'> & {
+  render?: ReactElement<HTMLAttributes<HTMLElement>>
+}) => {
+  const [isNativeOpen, setIsNativeOpen] = useState(false)
+  const resolve = () => (typeof items === 'function' ? items() : items)
+  const icon = <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
+  // oxlint-disable-next-line react/no-clone-element
+  const trigger = cloneElement(render, {
+    'aria-label': 'More actions',
+    className: cn('text-muted-foreground', render.props.className, className),
+    onClick: stopPropagation,
+    onMouseDown: stopPropagation,
+  })
+
+  if (!isNativeAvailable()) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger render={trigger}>{icon}</DropdownMenuTrigger>
+        <DropdownMenuContent align="end" {...contentProps}>
+          {renderWebNodes(resolve(), dropdownMenuParts)}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  const handleClick = async (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation()
+
+    if (isNativeOpen) {
+      return
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const { nativeItems, handlers } = toNativeMenu(resolve())
+
+    setIsNativeOpen(true)
+
+    await popupNativeMenu({
+      handlers,
+      nativeItems,
+      onClose: () => setIsNativeOpen(false),
+      position: { x: rect.left, y: rect.bottom + 4 },
+    })
+  }
+
+  // oxlint-disable-next-line react/no-clone-element
+  return cloneElement(
+    trigger,
+    {
+      'aria-expanded': isNativeOpen,
+      'aria-haspopup': 'menu',
+      onClick: handleClick,
+    },
+    icon
   )
 }

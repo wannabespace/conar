@@ -9,5 +9,5 @@ export const connectionLabels: Record<ConnectionType, string> = {
   [ConnectionType.Postgres]: 'PostgreSQL',
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
-  [ConnectionType.ClickHouse]: 'ClickHouse (beta)',
+  [ConnectionType.ClickHouse]: 'ClickHouse',
 }

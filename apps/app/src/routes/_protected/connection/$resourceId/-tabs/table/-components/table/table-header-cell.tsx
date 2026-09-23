@@ -31,7 +31,7 @@ import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
-import { AppContextMenu } from '~/components/app-context-menu'
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type {
   Column,
   ColumnHandlers,
@@ -240,27 +240,15 @@ const buildSortMenuItems = (
   const items: AppMenuNode[] = [
     {
       checked: order === 'ASC' ? true : undefined,
-      className: cn(order === 'ASC' && 'text-primary'),
-      icon: (
-        <HugeiconsIcon
-          icon={ArrowUp02Icon}
-          strokeWidth={2}
-          className={cn('size-4', order === 'ASC' && 'text-primary')}
-        />
-      ),
+      className: cn(order === 'ASC' && 'text-primary *:[svg]:text-primary'),
+      icon: ArrowUp02Icon,
       label: 'Sort Ascending',
       onSelect: () => (order === 'ASC' ? onOrder(null) : onOrder('ASC')),
     },
     {
       checked: order === 'DESC' ? true : undefined,
-      className: cn(order === 'DESC' && 'text-primary'),
-      icon: (
-        <HugeiconsIcon
-          icon={ArrowDown02Icon}
-          strokeWidth={2}
-          className={cn('size-4', order === 'DESC' && 'text-primary')}
-        />
-      ),
+      className: cn(order === 'DESC' && 'text-primary *:[svg]:text-primary'),
+      icon: ArrowDown02Icon,
       label: 'Sort Descending',
       onSelect: () => (order === 'DESC' ? onOrder(null) : onOrder('DESC')),
     },
@@ -268,9 +256,7 @@ const buildSortMenuItems = (
 
   if (order !== null) {
     items.push({
-      icon: (
-        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="size-4" />
-      ),
+      icon: Cancel01Icon,
       label: 'Clear Sort',
       onSelect: () => onOrder(null),
     })
@@ -309,13 +295,7 @@ const buildHeaderMenuItems = ({
 
   if (onRename) {
     items.push({
-      icon: (
-        <HugeiconsIcon
-          icon={PencilEdit02Icon}
-          strokeWidth={2}
-          className="size-4"
-        />
-      ),
+      icon: PencilEdit02Icon,
       label: 'Rename Column',
       onSelect: onRename,
     })
@@ -323,21 +303,13 @@ const buildHeaderMenuItems = ({
 
   items.push(
     {
-      icon: (
-        <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
-      ),
+      icon: Copy01Icon,
       label: 'Copy Name',
       onSelect: () => copyToClipboard(columnId, 'Column name copied'),
     },
     { type: 'separator' },
     {
-      icon: (
-        <HugeiconsIcon
-          icon={ViewOffSlashIcon}
-          strokeWidth={2}
-          className="size-4"
-        />
-      ),
+      icon: ViewOffSlashIcon,
       label: 'Hide Column',
       onSelect: onHideColumn,
     }
@@ -345,13 +317,7 @@ const buildHeaderMenuItems = ({
 
   if (hasCustomSize && onResize) {
     items.push({
-      icon: (
-        <HugeiconsIcon
-          icon={ArrowLeftRightIcon}
-          strokeWidth={2}
-          className="size-4"
-        />
-      ),
+      icon: ArrowLeftRightIcon,
       label: 'Reset Width',
       onSelect: onRemoveSize,
     })
@@ -500,6 +466,11 @@ export const TableHeaderCell = ({
             />
           </span>
         )}
+        <AppMenuButton
+          items={items}
+          contentProps={{ align: 'start', className: 'min-w-52' }}
+          className="self-center"
+        />
         {onResize && (
           <ResizeHandle
             aria-label="Resize column"

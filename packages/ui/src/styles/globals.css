@@ -135,6 +135,12 @@
   --surface-alpha: 0.4;
 }
 
+.electron.mac:not(.dark):not(.window-fullscreen):not(
+    :has([data-slot$='-overlay'])
+  ) {
+  --accent: oklch(0.89 0.0013 282.73);
+}
+
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
   --surface-alpha: 0.5;
 }

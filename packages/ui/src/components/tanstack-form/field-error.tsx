@@ -1,14 +1,14 @@
 import type { ComponentProps } from 'react'
 
 import { FieldError as FieldErrorPrimitive } from '../field'
-import { useFieldContext } from './context'
+import { isFieldInvalid, useFieldContext } from './context'
 
 export const FieldError = (
   props: Omit<ComponentProps<typeof FieldErrorPrimitive>, 'errors'>
 ) => {
   const field = useFieldContext()
 
-  if (!(field.state.meta.isTouched && !field.state.meta.isValid)) {
+  if (!isFieldInvalid(field)) {
     return null
   }
 

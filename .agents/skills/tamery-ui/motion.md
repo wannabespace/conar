@@ -15,6 +15,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 - `motion` library for interruptible animation, not CSS transitions (transitions snap under frame drops). Exception: pure colour/opacity hovers.
 - House curve `[0.32, 0.72, 0, 1]`, 150–300ms. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.
 - **A `transition-[…]` list must name every property the element's own state variants change.** A surface hovering both its ring and its fill but listing only `box-shadow` reads as two durations on one control. Rings and shadows are `box-shadow`; `transition-colors` never covers them. Siblings lighting up on the same pointer event share one duration.
+- **Ghost buttons hover instantly.** Toolbar and breadcrumb triggers sit in rows the pointer sweeps across; a fading fill trails behind the cursor. The ghost variant transitions `transform` only (press nudge).
 - **Anything keyed to the highlighted row of a keyboard list has no transition** — the highlight jumps a row per keystroke and a fade smears indicators down the list. Hover-only reveals inside one row may still fade.
 - **Definition rows do not animate at all.** Schema picks, searches and filters replace the whole row set, so per-row enter/exit leaves old rows holding their place while new ones mount below — the table doubles its height and snaps back. Row-level `AnimatePresence` is for rows arriving in a list that stays the same list; the only animation there is the skeleton→content swap around it, whose exit runs at `duration: 0` so `mode="wait"` does not hold an empty pane.
 - **Virtualized reorder** (navigator tables): motion `layout` cannot work with tanstack-virtual — stable `getItemKey` + `motion.li` `initial={false} animate={{ y: virtualRow.start }}`. Rows sliding to a new `y` *is* the collapse animation; `{ duration: 0 }` while search filters, since churn per keystroke reads as noise.
@@ -26,7 +27,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 - **Reorderable strips**: `Reorder.Group`, `layout="position"`, animate layout only while dragging — no drift when labels change width. Value identity rules in [gotchas.md](gotchas.md).
 - Scroll-edge cues never use JS scroll listeners — `scroll-fade` (CSS mask) for plain scrollers, `table-fade` for the data table ([gotchas.md](gotchas.md)).
 - **Refetching values pulse; only first load gets a skeleton.** A displayed number whose query is refetching keeps its value and dims + `animate-pulse` — gate on `isFetching`, since `isLoading` is first-load-only and a refetch would show stale data with no cue.
-- **`DitherBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
+- **`MeshBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
 
 ## Pane folds
 

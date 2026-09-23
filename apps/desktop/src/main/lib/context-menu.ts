@@ -4,14 +4,19 @@ import type {
   NativeMenuNode,
 } from '@tamery/shared/context-menu'
 import type { IpcMainInvokeEvent, MenuItemConstructorOptions } from 'electron'
-import { BrowserWindow, Menu } from 'electron'
+import { BrowserWindow, Menu, nativeImage } from 'electron'
 
 // `click` can fire after the close `callback` on some platforms; give a late
 // click time to win before resolving the dismissal as "nothing selected".
 const CLOSE_RESOLVE_DELAY_MS = 150
 
+const symbolIcon = (symbol?: string) =>
+  symbol && process.platform === 'darwin'
+    ? nativeImage.createMenuSymbol(symbol)
+    : undefined
+
 export const popupNativeContextMenu = (
-  { items }: MenuPopupRequest,
+  { items, position }: MenuPopupRequest,
   event?: IpcMainInvokeEvent
 ): Promise<MenuPopupResult> =>
   // Electron Menu.popup resolves via callback; Promise constructor is required.
@@ -42,6 +47,7 @@ export const popupNativeContextMenu = (
           case 'submenu': {
             return {
               enabled: node.enabled !== false,
+              icon: symbolIcon(node.symbol),
               label: node.label,
               submenu: toTemplate(node.items),
             }
@@ -52,6 +58,7 @@ export const popupNativeContextMenu = (
               checked: node.checked,
               click: () => settle(node.id),
               enabled: node.enabled !== false,
+              icon: symbolIcon(node.symbol),
               label: node.label,
               registerAccelerator: false,
               type: node.kind ?? 'normal',
@@ -70,8 +77,14 @@ export const popupNativeContextMenu = (
       BrowserWindow.getFocusedWindow() ??
       undefined
 
+    const zoom = event?.sender.getZoomFactor() ?? 1
+
     Menu.buildFromTemplate(toTemplate(items)).popup({
       callback: () => setTimeout(() => settle(null), CLOSE_RESOLVE_DELAY_MS),
       window: window ?? undefined,
+      ...(position && {
+        x: Math.round(position.x * zoom),
+        y: Math.round(position.y * zoom),
+      }),
     })
   })

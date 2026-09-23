@@ -177,7 +177,6 @@ export const TableCellTable = ({
           <Button
             variant="outline"
             size="xs"
-            nativeButton={false}
             render={
               <Link
                 to="/connection/$resourceId/$tabId"

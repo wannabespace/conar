@@ -1,4 +1,14 @@
 import {
+  CodeIcon,
+  Copy01Icon,
+  Csv01Icon,
+  EraserIcon,
+  FilterAddIcon,
+  PencilEdit02Icon,
+  Sorting01Icon,
+  TextIcon,
+} from '@hugeicons/core-free-icons'
+import {
   formatValueForPlainCell,
   recordToMarkdownTable,
   toCSV,
@@ -51,6 +61,7 @@ export const TableCellContextMenu = ({
     {
       items: [
         {
+          icon: Copy01Icon,
           label: 'Copy value',
           onSelect: () =>
             copy(formatValueForPlainCell(value), 'Cell value copied'),
@@ -59,6 +70,7 @@ export const TableCellContextMenu = ({
           ? [
               {
                 disabled: value === null,
+                icon: EraserIcon,
                 label: 'Set null',
                 onSelect: onSetNull,
               } as const,
@@ -74,7 +86,11 @@ export const TableCellContextMenu = ({
     const columnItems: AppMenuNode[] = []
 
     if (onRename) {
-      columnItems.push({ label: 'Rename', onSelect: onRename })
+      columnItems.push({
+        icon: PencilEdit02Icon,
+        label: 'Rename',
+        onSelect: onRename,
+      })
     }
 
     if (onAddFilter) {
@@ -107,6 +123,7 @@ export const TableCellContextMenu = ({
         }
       }
       columnItems.push({
+        icon: FilterAddIcon,
         items: filterItems,
         label: 'Add filter',
         type: 'sub',
@@ -115,6 +132,7 @@ export const TableCellContextMenu = ({
 
     if (onOrder) {
       columnItems.push({
+        icon: Sorting01Icon,
         items: [
           {
             onValueChange: (nextValue) => {
@@ -148,15 +166,18 @@ export const TableCellContextMenu = ({
       items: [
         {
           disabled: rowCopyDisabled,
+          icon: Copy01Icon,
           items: [
             {
               disabled: rowCopyDisabled,
+              icon: CodeIcon,
               label: 'JSON',
               onSelect: () =>
                 copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
             },
             {
               disabled: rowCopyDisabled,
+              icon: Csv01Icon,
               label: 'CSV',
               onSelect: () =>
                 copy(
@@ -169,6 +190,7 @@ export const TableCellContextMenu = ({
             },
             {
               disabled: rowCopyDisabled,
+              icon: TextIcon,
               label: 'Markdown table',
               onSelect: () =>
                 copy(

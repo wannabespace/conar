@@ -2,8 +2,12 @@ import type { AnyFieldApi } from '@tanstack/react-form'
 import { createFormHookContexts } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 
+export const isFieldInvalid = (field: AnyFieldApi) =>
+  !field.state.meta.isValid &&
+  (field.state.meta.isBlurred || field.form.state.submissionAttempts > 0)
+
 export const fieldErrorMessage = (field: AnyFieldApi) => {
-  if (field.state.meta.isValid || !field.state.meta.isTouched) {
+  if (!isFieldInvalid(field)) {
     return
   }
 
@@ -13,7 +17,7 @@ export const fieldErrorMessage = (field: AnyFieldApi) => {
 }
 
 export const formInputProps = (field: AnyFieldApi) => {
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+  const isInvalid = isFieldInvalid(field)
 
   return {
     'aria-describedby': isInvalid ? `${field.name}-error` : undefined,

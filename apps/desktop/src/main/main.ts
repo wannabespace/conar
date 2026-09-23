@@ -1,4 +1,5 @@
 import path from 'node:path'
+import process from 'node:process'
 
 import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { isConnectionError } from '@tamery/shared/connections'
@@ -187,7 +188,7 @@ export const createWindow = (route?: string) => {
     )
   } else {
     win.webContents.openDevTools()
-    win.loadURL(`https://app.local.tamery.app${route ? `#${route}` : ''}`)
+    win.loadURL(`${process.env.WEB_URL}${route ? `#${route}` : ''}`)
   }
 
   return win

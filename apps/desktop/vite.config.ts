@@ -1,8 +1,11 @@
+import { setupPortlessEnvs } from '@tamery/shared/portless-env'
 import type { InlineConfig } from 'vite'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
 
 import packageJson from './package.json' with { type: 'json' }
+
+setupPortlessEnvs({ WEB_URL: 'app.local.tamery' })
 
 const rolldownOptions: NonNullable<
   NonNullable<InlineConfig['build']>['rolldownOptions']

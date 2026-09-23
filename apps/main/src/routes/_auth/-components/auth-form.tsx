@@ -83,7 +83,7 @@ const SocialAuthForm = () => {
     <div className="grid grid-cols-2 gap-4">
       <Button
         variant="outline"
-        className="w-full"
+        className="relative w-full"
         onClick={() => googleSignIn()}
         disabled={isGoogleSignInPending || isGithubSignInPending}
       >
@@ -95,7 +95,7 @@ const SocialAuthForm = () => {
       </Button>
       <Button
         variant="outline"
-        className="w-full"
+        className="relative w-full"
         disabled={isGithubSignInPending || isGoogleSignInPending}
         onClick={() => githubSignIn()}
       >

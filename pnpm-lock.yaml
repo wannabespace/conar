@@ -360,6 +360,9 @@ catalogs:
     serve:
       specifier: ^14.2.6
       version: 14.2.6
+    sf-symbols-typescript:
+      specifier: ^2.2.0
+      version: 2.2.0
     shadcn:
       specifier: ^4.20.1
       version: 4.20.1
@@ -1284,6 +1287,9 @@ importers:
       nanoid:
         specifier: 'catalog:'
         version: 6.0.1
+      sf-symbols-typescript:
+        specifier: 'catalog:'
+        version: 2.2.0
 
   packages/table:
     dependencies:
@@ -9052,6 +9058,10 @@ packages:
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
+
+  sf-symbols-typescript@2.2.0:
+    resolution: {integrity: sha512-TPbeg0b7ylrswdGCji8FRGFAKuqbpQlLbL8SOle3j1iHSs5Ob5mhvMAxWN2UItOjgALAB5Zp3fmMfj8mbWvXKw==}
+    engines: {node: '>=10'}
 
   shadcn@4.20.1:
     resolution: {integrity: sha512-gq3Z2MNeGpiPvMkiy0bTc24KIUcl3gVHS/aoWCmlkoychQHL38KSx3CkD7+7DHcFjyPvy8fzmynfmUFf7fejeg==}
@@ -18418,6 +18428,8 @@ snapshots:
   set-cookie-parser@3.1.2: {}
 
   setprototypeof@1.2.0: {}
+
+  sf-symbols-typescript@2.2.0: {}
 
   shadcn@4.20.1(supports-color@7.2.0)(typescript@7.0.2):
     dependencies:
