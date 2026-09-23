@@ -88,7 +88,7 @@ export const Inspector = ({
         options: { enabled: saveEnabled },
       },
     ],
-    { conflictBehavior: 'replace', preventDefault: true }
+    { preventDefault: true }
   )
 
   const saveButton = (

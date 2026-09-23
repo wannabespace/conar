@@ -1,4 +1,5 @@
 /* oxlint-disable no-console */
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -27,15 +28,37 @@ const findEnvExampleFiles = (dir: string, r: string[] = []) => {
   return r
 }
 
-const createEnvFile = (envExamplePath: string) => {
+const mainCheckoutRoot = (repoRoot: string) =>
+  path.dirname(
+    path.resolve(
+      repoRoot,
+      execFileSync('git', ['rev-parse', '--git-common-dir'], {
+        cwd: repoRoot,
+        encoding: 'utf-8',
+      }).trim()
+    )
+  )
+
+// A worktree copies the main checkout's real .env; .env.example points at localhost services that don't exist
+const createEnvFile = (
+  envExamplePath: string,
+  repoRoot: string,
+  mainRoot: string
+) => {
   const envPath = path.join(path.dirname(envExamplePath), '.env')
+  const mainEnvPath = path.join(mainRoot, path.relative(repoRoot, envPath))
 
   if (fs.existsSync(envPath)) {
     return false
   }
 
   try {
-    fs.copyFileSync(envExamplePath, envPath)
+    fs.copyFileSync(
+      mainRoot !== repoRoot && fs.existsSync(mainEnvPath)
+        ? mainEnvPath
+        : envExamplePath,
+      envPath
+    )
     return true
   } catch (error) {
     console.error(
@@ -48,6 +71,7 @@ const createEnvFile = (envExamplePath: string) => {
 
 const setupDev = () => {
   const repoRoot = path.join(__dirname, '..')
+  const mainRoot = mainCheckoutRoot(repoRoot)
   const appsDir = path.join(repoRoot, 'apps')
 
   if (!fs.existsSync(appsDir)) {
@@ -55,7 +79,10 @@ const setupDev = () => {
     process.exit(1)
   }
 
-  const envExampleFiles = findEnvExampleFiles(appsDir)
+  const envExampleFiles = [
+    ...findEnvExampleFiles(appsDir),
+    ...findEnvExampleFiles(path.join(repoRoot, 'packages')),
+  ]
   const rootEnvExample = path.join(repoRoot, '.env.example')
 
   if (fs.existsSync(rootEnvExample)) {
@@ -66,7 +93,9 @@ const setupDev = () => {
     return
   }
 
-  const created = envExampleFiles.map(createEnvFile)
+  const created = envExampleFiles.map((file) =>
+    createEnvFile(file, repoRoot, mainRoot)
+  )
 
   if (created.some(Boolean)) {
     console.log(`Development environment setup complete!`)

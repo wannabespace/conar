@@ -130,13 +130,9 @@ const Visualizer = ({
     recalculateLayoutEvent()
   }, [schema])
 
-  useHotkey(
-    'Mod+F',
-    () => {
-      searchRef.current?.focus()
-    },
-    { conflictBehavior: 'replace' }
-  )
+  useHotkey('Mod+F', () => {
+    searchRef.current?.focus()
+  })
 
   return (
     <div className="relative size-full min-h-0 flex-1 overflow-hidden rounded-lg">

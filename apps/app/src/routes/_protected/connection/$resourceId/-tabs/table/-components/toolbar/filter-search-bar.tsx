@@ -610,13 +610,9 @@ export const FilterSearchBar = ({
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim()
 
-  useHotkey(
-    'Mod+F',
-    () => {
-      inputRef.current?.focus()
-    },
-    { conflictBehavior: 'replace' }
-  )
+  useHotkey('Mod+F', () => {
+    inputRef.current?.focus()
+  })
 
   const trimmedQuery = query.trim()
   const columnQuery = trimmedQuery.toLowerCase()

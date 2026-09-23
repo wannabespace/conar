@@ -17,6 +17,7 @@ Setup and the command list live in `README.md` and the root `package.json`. Not 
 
 - `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
 - Portless dev URLs live only while `dev` runs. In a linked git worktree portless prefixes the branch name, so worktrees run alongside the main checkout.
+- `.env` files are gitignored and created by `scripts/setup-dev.ts` on install, never overwritten. A linked worktree copies them from the main checkout, because `.env.example` points at localhost services that don't run here. To resync a stale `.env`, delete it and re-run `bun scripts/setup-dev.ts`.
 - Cross-service dev URLs are not in `.env` — `setupPortlessEnvs(...)` fills them at startup, worktree-aware, and each app declares its own env-key map. Precedence: existing env var > portless > declared default.
 
 ## Opening the running app in a browser
