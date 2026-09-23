@@ -1,6 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
+import { mysqlDefiner } from '../shared/sql-fragments'
 import type { RoutineKind } from './routine-kind'
 import { routineKeyword } from './routine-kind'
 
@@ -109,10 +110,12 @@ const dollarQuoted = (body: string) => {
 }
 
 export const createFunctionStatements = ({
+  definer,
   replace,
   schema,
   shape,
 }: {
+  definer?: string
   replace: boolean
   schema: string
   shape: FunctionShape
@@ -134,7 +137,7 @@ export const createFunctionStatements = ({
       ${shape.schemaBound ? sql`WITH SCHEMABINDING` : sql``} AS ${body}
     `,
     mysql: sql`
-      CREATE ${routine}(${args}) ${returns} ${behavior} ${extras}
+      CREATE ${mysqlDefiner(definer)} ${routine}(${args}) ${returns} ${behavior} ${extras}
       ${body}
     `,
     postgres: sql`

@@ -1,6 +1,8 @@
 import { unsupported } from '@tamery/shared/unsupported'
+import { sql } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
+import { routineKeyword } from './routine-kind'
 import type { FunctionShape, RoutineTarget } from './shape'
 import { createFunctionStatements, dropRoutineStatements } from './shape'
 
@@ -27,11 +29,46 @@ export const recreateFunctionQuery = ({
           }
           await create.mssql.execute(tx)
         }),
-      mysql: (db) =>
-        db.transaction().execute(async (tx) => {
-          await drop.mysql.execute(tx)
-          await create.mysql.execute(tx)
-        }),
+      mysql: async (db) => {
+        const saved = await db
+          .selectFrom('information_schema.ROUTINES')
+          .select('DEFINER')
+          .where('ROUTINE_SCHEMA', '=', target.schema)
+          .where('ROUTINE_NAME', '=', target.name)
+          .where(
+            'ROUTINE_TYPE',
+            '=',
+            target.kind === 'procedure' ? 'PROCEDURE' : 'FUNCTION'
+          )
+          .executeTakeFirst()
+        const column =
+          target.kind === 'procedure' ? 'Create Procedure' : 'Create Function'
+        const {
+          rows: [original],
+        } = await sql<
+          Record<string, string | null>
+        >`SHOW CREATE ${routineKeyword(target.kind)} ${sql.id(target.schema, target.name)}`.execute(
+          db
+        )
+
+        await drop.mysql.execute(db)
+        try {
+          await createFunctionStatements({
+            definer: saved?.DEFINER,
+            replace: true,
+            schema: target.schema,
+            shape,
+          }).mysql.execute(db)
+        } catch (error) {
+          // MySQL commits the drop at once, so only its saved statement brings the routine back.
+          const statement = original?.[column]
+
+          if (statement) {
+            await sql.raw(statement).execute(db)
+          }
+          throw error
+        }
+      },
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           if (replacesObject) {

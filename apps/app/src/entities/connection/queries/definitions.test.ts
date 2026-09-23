@@ -157,6 +157,28 @@ describe('routine statements', () => {
 })
 
 describe('trigger statements', () => {
+  test('MySQL keeps the definer, splitting at the last @', () => {
+    expect(
+      compiled(
+        createTriggerStatements({
+          definer: 'ops@team@%',
+          schema: 'app',
+          shape: {
+            body: 'SET NEW.a = 1',
+            events: ['INSERT'],
+            functionName: '',
+            functionSchema: '',
+            name: 't',
+            orientation: 'ROW',
+            timing: 'BEFORE',
+          },
+          table: 'users',
+        }).mysql,
+        'mysql'
+      )
+    ).toStartWith("CREATE DEFINER = 'ops@team'@'%' TRIGGER")
+  })
+
   test('Postgres calls the function in the schema it lives in', () => {
     expect(
       compiled(

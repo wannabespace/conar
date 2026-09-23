@@ -2,7 +2,11 @@ import type { BlockOperation } from '../../../../queries/policies/shape'
 
 export interface Sys {
   indexes: Indexes
+  partitions: Partitions
+  stats: Stats
+  data_spaces: DataSpaces
   foreign_keys: ForeignKeys
+  foreign_key_columns: ForeignKeyColumns
   check_constraints: CheckConstraints
   tables: Tables
   schemas: Schemas
@@ -125,6 +129,26 @@ interface Indexes {
   ignore_dup_key: boolean
   is_padded: boolean
   fill_factor: number
+  allow_row_locks: boolean
+  allow_page_locks: boolean
+  data_space_id: number
+}
+
+interface Partitions {
+  object_id: number
+  index_id: number
+  data_compression: number
+}
+
+interface Stats {
+  object_id: number
+  stats_id: number
+  no_recompute: boolean
+}
+
+interface DataSpaces {
+  data_space_id: number
+  is_default: boolean
 }
 
 interface Tables {
@@ -139,11 +163,19 @@ interface Schemas {
 }
 
 interface ForeignKeys {
+  object_id: number
   name: string
   schema_id: number
   is_disabled: boolean
   is_not_trusted: boolean
   is_not_for_replication: boolean
+}
+
+interface ForeignKeyColumns {
+  constraint_object_id: number
+  constraint_column_id: number
+  referenced_object_id: number
+  referenced_column_id: number
 }
 
 interface CheckConstraints {

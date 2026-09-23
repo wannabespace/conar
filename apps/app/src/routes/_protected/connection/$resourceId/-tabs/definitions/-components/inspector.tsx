@@ -173,7 +173,8 @@ export const replaceWarning = ({
             <span data-mask className="font-medium">
               {name}
             </span>{' '}
-            and create it again. If the new statement fails, it stays dropped.
+            and create it again. If the new statement fails, we recreate the old
+            one from its saved definition.
           </>
         ),
       }
