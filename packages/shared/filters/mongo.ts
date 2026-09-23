@@ -6,10 +6,9 @@ const escapeRegex = (text: string) =>
 const LIKE_WILDCARDS: Record<string, string> = { '%': '.*', _: '.' }
 
 const likeToRegex = (pattern: unknown) =>
-  `^${String(pattern).replaceAll(/\\?[\s\S]/gu, (token) =>
-    token.length === 2
-      ? escapeRegex(token.slice(1))
-      : (LIKE_WILDCARDS[token] ?? escapeRegex(token))
+  `^${String(pattern).replaceAll(
+    /\\?[\s\S]/gu,
+    (token) => LIKE_WILDCARDS[token] ?? escapeRegex(token.slice(-1))
   )}$`
 
 const MONGO_CONDITIONS: Record<
