@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { FILTERS_LIST } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -37,11 +37,6 @@ import {
 } from '../../-lib/session-store'
 import { useTablePageStore } from '../../-lib/store'
 import { DraftsReviewDrawer } from '../table/drafts-review-drawer'
-
-const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
-if (!equalFilter) {
-  throw new Error('Equal filter is missing')
-}
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -159,7 +154,7 @@ export const DraftsActions = ({
 
             const sqlFilters: ActiveFilter[] = primaryColumns.map((column) => ({
               column,
-              ref: equalFilter,
+              ref: EQUAL_FILTER,
               values: [row[column]],
             }))
 

@@ -1,7 +1,7 @@
 import { CornerRightUpIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { FILTERS_LIST } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
@@ -23,11 +23,6 @@ import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId
 import { TableError } from '../table-error'
 import { TableCellContent } from './cell-content'
 import { getColumnSize } from './utils'
-
-const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
-if (!equalFilter) {
-  throw new Error('Equal filter is missing')
-}
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -102,7 +97,7 @@ export const TableCellTable = ({
   const filters = [
     {
       column,
-      ref: equalFilter,
+      ref: EQUAL_FILTER,
       values: [value],
     } satisfies ActiveFilter,
   ]

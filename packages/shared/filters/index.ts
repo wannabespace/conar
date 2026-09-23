@@ -1,4 +1,9 @@
-export { FILTER_OPERATORS, FILTERS_GROUPED, FILTERS_LIST } from './list'
+export {
+  EQUAL_FILTER,
+  FILTER_OPERATORS,
+  FILTERS_GROUPED,
+  FILTERS_LIST,
+} from './list'
 export { toMongoFilter } from './mongo'
 export { SQL_OPERATORS } from './sql'
 export { cellToFilterValues } from './transformers'

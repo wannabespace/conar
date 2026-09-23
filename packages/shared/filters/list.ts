@@ -1,9 +1,15 @@
 import type { Filter, FilterGroup } from './types'
 
+export const EQUAL_FILTER = {
+  label: 'Equal',
+  operator: 'eq',
+  symbol: '=',
+} as const satisfies Filter
+
 export const FILTERS_GROUPED = [
   {
     filters: [
-      { label: 'Equal', operator: 'eq', symbol: '=' },
+      EQUAL_FILTER,
       { label: 'Not equal', operator: 'ne', symbol: '!=' },
       { label: 'Greater than', operator: 'gt', symbol: '>' },
       { label: 'Greater than or equal', operator: 'gte', symbol: '>=' },

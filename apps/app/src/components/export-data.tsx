@@ -13,7 +13,7 @@ import {
   toCSV,
 } from '@tamery/shared/files'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { FILTERS_LIST } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,11 +35,6 @@ import { formatDate } from 'date-fns'
 import { toast } from 'sonner'
 
 import { handleError } from '~/lib/error'
-
-const equalFilter = FILTERS_LIST.find((filter) => filter.operator === 'eq')
-if (!equalFilter) {
-  throw new Error('Equal filter is missing')
-}
 
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
 const EXPORT_TOAST_ID = 'export-data'
@@ -96,7 +91,7 @@ const ExportDataDropdownMenuSubContent = ({
   const filters = selected?.flatMap((row) =>
     Object.entries(row).map(
       ([column, value]) =>
-        ({ column, ref: equalFilter, values: [value] }) satisfies ActiveFilter
+        ({ column, ref: EQUAL_FILTER, values: [value] }) satisfies ActiveFilter
     )
   )
 
