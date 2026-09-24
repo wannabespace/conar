@@ -123,9 +123,10 @@ export const proxyCommand = command({
       })
     )
 
-    const router = createQueryRouter(authed, (input) =>
-      resolveConnectionString(input)
-    )
+    const router = createQueryRouter(authed, {
+      connectionString: (input) => resolveConnectionString(input),
+      owner: () => session.user.id,
+    })
 
     consola.start('Fetching connections...')
     const count = await fetchConnections()

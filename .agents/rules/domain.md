@@ -43,6 +43,7 @@ Tabs live in `connectionResourceStore.tabs`, persisted per resource in `localSto
 - A tab id is readable, self-describing, and the single route path param; `parseTabId` turns one back into a tab, so deep links work. Runner is the **only** multi-instance type.
 - `$tabId`'s `beforeLoad` must stay **pure** — it runs on hover preload and must not touch the store; a component effect calls `ensureTab` + `setActiveTab`.
 - `tabLabels` derives the whole strip at once, since qualification and numbering depend on the other open tabs.
+- Activating a table tab records it in `recentTables` (last 5); the empty pane lists the ones still present in the catalog.
 - Table tabs carry `preview`: single click is a preview (italic, reused), double click promotes it. A tab may also carry an optional user `title`, cleared when emptied or equal to the derived label.
 
 ## Navigator

@@ -2,13 +2,14 @@ import { randomUUID } from 'node:crypto'
 
 import { silently } from '@tamery/shared/utils'
 
-import type { QueryExecutor } from '.'
+import type { QueryExecutor, RunOptions } from '.'
 import { handleQueryError } from '.'
 
 export interface TxHandle {
   execute: (
     query: string,
-    values: unknown[]
+    values: unknown[],
+    options: RunOptions
   ) => Promise<{ result: unknown; duration: number }>
   commit: () => Promise<void>
   rollback: () => Promise<void>
@@ -102,16 +103,17 @@ export const transactionQueries = {
       txId,
       values,
       ownerId,
+      ...options
     }: {
       txId: string
       query: string
       values: unknown[]
       ownerId?: string
-    }) => {
+    } & RunOptions) => {
       const entry = requireTransaction(txId, ownerId)
       entry.keepAlive()
       try {
-        return await entry.handle.execute(query, values)
+        return await entry.handle.execute(query, values, options)
       } finally {
         entry.keepAlive()
       }

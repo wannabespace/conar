@@ -141,6 +141,8 @@ export const resourceTablesAndSchemasQueryOptions = ({
   connectionResource: ConnectionResource
 }) =>
   queryOptions({
+    // The key changes only between resources, so the global keepPreviousData would show the previous connection's tables.
+    placeholderData: undefined,
     queryFn: async () => {
       const params = await connectionResourceToQueryParams(connectionResource)
       const { systemSchemas } = capabilitiesOf(params.type)

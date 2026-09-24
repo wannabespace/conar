@@ -10,7 +10,6 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { sqlDialects } from '~/entities/connection/monaco'
 import { createFunctionQuery } from '~/entities/connection/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
@@ -23,6 +22,7 @@ import {
   functionBodyTemplateOf,
   replacesRoutine,
 } from '~/entities/connection/queries/functions/shape'
+import { sqlLanguageIds } from '~/entities/connection/sql-language'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -382,7 +382,7 @@ const FunctionInspector = ({
             <BodyField
               label="Body"
               disabled={readOnly}
-              language={sqlDialects[connectionType]}
+              language={sqlLanguageIds[connectionType]}
             />
           )}
         </form.AppField>

@@ -15,6 +15,8 @@ import type {
 
 import { getConnectionStringToShow } from '../utils'
 import { dialects } from './dialects'
+import type { DialectOptions } from './dialects/driver'
+import { createDialectProvider } from './dialects/driver'
 import { logQuery } from './log'
 import { watchForSlowQuery } from './slow-queries'
 
@@ -63,6 +65,7 @@ export interface QueryParams {
   type: ConnectionType
   resourceId?: string
   connectionId?: string
+  resultSets?: DialectOptions['resultSets']
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -72,6 +75,14 @@ export interface QueryParams {
     values?: unknown[]
   }) => void
 }
+
+/** Stops a query started with these params, identified by its compiled query's `queryId`. */
+export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
+  createDialectProvider(queryParams.type, {
+    connectionId: queryParams.connectionId,
+    connectionString: queryParams.connectionString,
+    resourceId: queryParams.resourceId,
+  }).cancel(queryId)
 
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
@@ -87,8 +98,13 @@ export const reconnectingPromises = createStore<
   >
 >({})
 
+/** Held so a fast answer does not flash its loading state. */
+const MIN_QUERY_DURATION = 300
+
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
+  /** Answer no sooner than this; the runner passes 0 so its timings and scripts are not padded. */
+  minDuration?: number
   query: {
     [D in ConnectionType]: (
       dialect: ReturnType<(typeof dialects)[D]>
@@ -104,6 +120,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
       connectionString: queryParams.connectionString,
       log: queryParams.log,
       resourceId: queryParams.resourceId,
+      resultSets: queryParams.resultSets,
     })
     const queryFn = options.query[queryParams.type]
 
@@ -179,7 +196,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
           },
         }
       ),
-      sleep(300),
+      sleep(options.minDuration ?? MIN_QUERY_DURATION),
     ])
 
     stopSlowQueryWatch()

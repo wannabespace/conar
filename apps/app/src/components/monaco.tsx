@@ -23,7 +23,8 @@ const githubTheme = (
   colors: {
     'editor.background': c.background,
     'editor.foreground': c.foreground,
-    // Sync with packages/ui/src/styles/monaco.css
+    'editor.lineHighlightBackground': base === 'vs' ? '#00000005' : '#ffffff06',
+    'editor.lineHighlightBorder': '#00000000',
     'editor.selectionBackground': '#5081f150',
     'editorGutter.background': c.background,
   },
@@ -62,7 +63,7 @@ monaco.editor.defineTheme(
 monaco.editor.defineTheme(
   'github-dark',
   githubTheme('vs-dark', {
-    background: '#26272b',
+    background: '#222528',
     comment: '#6a737d',
     foreground: '#e1e4e8',
     function: '#b392f0',

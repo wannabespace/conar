@@ -17,7 +17,6 @@ import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { sqlDialects } from '~/entities/connection/monaco'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { createTriggerQuery } from '~/entities/connection/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
@@ -39,6 +38,7 @@ import {
   triggerEventsFor,
   triggerOrientationsFor,
 } from '~/entities/connection/queries/triggers/shape'
+import { sqlLanguageIds } from '~/entities/connection/sql-language'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -421,7 +421,7 @@ const TriggerInspector = ({
                 label="Body"
                 description="Runs for every change the trigger answers to."
                 disabled={readOnly}
-                language={sqlDialects[connectionType]}
+                language={sqlLanguageIds[connectionType]}
               />
             )}
           </form.AppField>

@@ -13,40 +13,35 @@ import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
-import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils'
-
-const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(
-  (keyword) => `\\b${keyword}\\b`
-).join('|')
-
 export const RunnerAlertDialog = ({
   ref,
+  onOpenChange,
 }: {
   ref: React.RefObject<{
-    confirm: (queries: string[], callback: () => void) => void
+    confirm: (keywords: string[], onConfirmed: () => void) => void
   } | null>
+  /** The runner turns its own ⌘⇧↩ off while this is open, or one press would confirm and ask again. */
+  onOpenChange: (open: boolean) => void
 }) => {
   const [open, setOpen] = useState(false)
-  const [queries, setQueries] = useState<string[]>([])
-  const dangerousKeywords = queries.flatMap(
-    (query) => query.match(new RegExp(dangerousKeywordsPattern, 'giu')) || []
-  )
-  const uniqueDangerousKeywords = [
-    ...new Set(dangerousKeywords.map((k) => k.toUpperCase())),
-  ]
+  const changeOpen = (next: boolean) => {
+    setOpen(next)
+    onOpenChange(next)
+  }
+  const [keywords, setKeywords] = useState<string[]>([])
   const callbackRef = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
-    confirm: (pendingQueries, c) => {
-      setQueries(pendingQueries)
-      setOpen(true)
-      callbackRef.current = c
+    confirm: (pendingKeywords, onConfirmed) => {
+      setKeywords(pendingKeywords)
+      changeOpen(true)
+      callbackRef.current = onConfirmed
     },
   }))
 
   const onConfirm = () => {
     callbackRef.current?.()
-    setOpen(false)
+    changeOpen(false)
   }
 
   useHotkey('Mod+Shift+Enter', onConfirm, { enabled: open })
@@ -55,7 +50,7 @@ export const RunnerAlertDialog = ({
     <AlertDialog
       open={open}
       onOpenChange={(nextOpen) => {
-        setOpen(nextOpen)
+        changeOpen(nextOpen)
         if (!nextOpen) {
           callbackRef.current = null
         }
@@ -69,27 +64,21 @@ export const RunnerAlertDialog = ({
               strokeWidth={2}
               className="text-warning size-5"
             />
-            Potentially Dangerous SQL Query
+            This changes data
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="border-warning/20 bg-warning/10 mb-3 block rounded-md border p-3">
-              Your query contains potentially dangerous SQL keywords:
-              <span className="text-warning font-semibold">
-                {' '}
-                {uniqueDangerousKeywords.join(', ')}
-              </span>
+            The statements run{' '}
+            <span className="text-warning font-semibold">
+              {keywords.join(', ')}
             </span>
-            <span className="mt-2">
-              These operations could modify or delete data in your database.
-              Proceed if you understand the impact of these changes.
-            </span>
+            , which can modify or delete data in the database.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogCancel variant="warning" onClick={onConfirm}>
             <span className="flex items-center gap-2">
-              Run Anyway
+              Run anyway
               <KbdShiftCtrlEnter
                 userAgent={navigator.userAgent}
                 className="text-white"

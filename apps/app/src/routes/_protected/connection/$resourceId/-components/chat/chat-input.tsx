@@ -10,7 +10,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useState } from 'react'
+import { getRouteApi } from '@tanstack/react-router'
+import { useEffect, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
+
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const ChatInput = ({
   isStreaming,
@@ -21,7 +27,19 @@ export const ChatInput = ({
   onSend: (text: string) => void
   onStop: () => void
 }) => {
+  const { connectionResource } = useRouteContext()
+  const isOpened = useSubscription(
+    getConnectionResourceStore(connectionResource.id),
+    { selector: (state) => state.chatOpened }
+  )
   const [value, setValue] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isOpened) {
+      textareaRef.current?.focus()
+    }
+  }, [isOpened])
 
   const submit = () => {
     const text = value.trim()
@@ -42,6 +60,7 @@ export const ChatInput = ({
     >
       <InputGroup className="relative">
         <InputGroupTextarea
+          ref={textareaRef}
           data-mask
           aria-label="Message"
           placeholder="Ask about your database…"

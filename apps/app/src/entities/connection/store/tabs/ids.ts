@@ -16,9 +16,6 @@ export const VISUALIZER_TAB_ID = 'visualizer'
 export const runnerStoreKey = (resourceId: string, tabId: string) =>
   `${resourceId}.${tabId}.store`
 
-export const runnerLayoutKey = (resourceId: string, tabId: string) =>
-  `sql-layout-${resourceId}-${tabId}`
-
 export const parseTabId = (id: string): ConnectionTab | null => {
   const [kind, first, second, ...extra] = id.split(':')
 

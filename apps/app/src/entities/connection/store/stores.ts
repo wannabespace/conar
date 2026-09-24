@@ -43,14 +43,17 @@ export const viewportType = type({
   zoom: 'number',
 })
 
+const tableRefType = type({
+  schema: 'string',
+  table: 'string',
+})
+
 export const connectionResourceType = type({
   activeTabId: 'string | null',
   chatOpened: 'boolean',
   loggerOpened: 'boolean',
-  pinnedTables: type({
-    schema: 'string',
-    table: 'string',
-  }).array(),
+  pinnedTables: tableRefType.array(),
+  recentTables: tableRefType.array(),
   showSystem: 'boolean',
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
@@ -65,6 +68,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   chatOpened: false,
   loggerOpened: false,
   pinnedTables: [],
+  recentTables: [],
   showSystem: false,
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,

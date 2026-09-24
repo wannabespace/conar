@@ -16,16 +16,18 @@ import { Button } from '../button'
 
 export const SearchInput = ({
   className,
+  size,
   value,
   onClear,
   ...props
-}: React.ComponentProps<'input'> & {
-  onClear: () => void
-}) => {
+}: Omit<React.ComponentProps<'input'>, 'size'> &
+  Pick<React.ComponentProps<typeof InputGroup>, 'size'> & {
+    onClear: () => void
+  }) => {
   const hasValue = typeof value === 'string' ? value.length > 0 : Boolean(value)
 
   return (
-    <InputGroup className={className}>
+    <InputGroup className={className} size={size}>
       <InputGroupInput value={value} {...props} />
       {hasValue && (
         <InputGroupAddon align="inline-end">

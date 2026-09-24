@@ -18,6 +18,8 @@ export interface DialectOptions {
   connectionString: string
   connectionId?: string
   resourceId?: string
+  /** Every statement answers with `ResultSet[]` in place of row objects — the runner's shape. */
+  resultSets?: { maxRows: number }
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -41,6 +43,8 @@ const resolveProxyIdParams = (options: DialectOptions) => {
 interface QueryPayload {
   query: string
   values: unknown[]
+  /** Kysely's own id for the compiled query, so a caller holding it can cancel the run. */
+  queryId?: string
 }
 
 interface TxQueryPayload extends QueryPayload {
@@ -92,6 +96,16 @@ export const createDialectProvider = (
       }
       return t.proxy.beginTransaction(resolveProxyIdParams(options))
     },
+    cancel(queryId: string) {
+      const t = resolveTransport()
+      if (t.kind === 'electron') {
+        return t.electron.cancel({
+          connectionString: options.connectionString,
+          queryId,
+        })
+      }
+      return t.proxy.cancel({ ...resolveProxyIdParams(options), queryId })
+    },
     commitTransaction(params: { txId: string }) {
       const t = resolveTransport()
       return t.kind === 'electron'
@@ -100,19 +114,26 @@ export const createDialectProvider = (
     },
     execute(payload: QueryPayload) {
       const t = resolveTransport()
+      const { resultSets } = options
       if (t.kind === 'electron') {
         return t.electron.execute({
           connectionString: options.connectionString,
           ...payload,
+          resultSets,
         })
       }
-      return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
+      return t.proxy.execute({
+        ...resolveProxyIdParams(options),
+        ...payload,
+        resultSets,
+      })
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()
+      const payload = { ...params, resultSets: options.resultSets }
       return t.kind === 'electron'
-        ? t.electron.executeTransaction(params)
-        : t.proxy.executeTransaction(params)
+        ? t.electron.executeTransaction(payload)
+        : t.proxy.executeTransaction(payload)
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -138,7 +159,10 @@ export const createKyselyDriver = ({
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
   const executeAndLog = (compiledQuery: CompiledQuery) => {
-    const payload = transformQuery(compiledQuery)
+    const payload = {
+      ...transformQuery(compiledQuery),
+      queryId: compiledQuery.queryId.queryId,
+    }
     const promise = provider.execute(payload)
     logger?.({
       promise,
@@ -149,7 +173,10 @@ export const createKyselyDriver = ({
   }
 
   const executeInTxAndLog = (txId: string, compiledQuery: CompiledQuery) => {
-    const payload = transformQuery(compiledQuery)
+    const payload = {
+      ...transformQuery(compiledQuery),
+      queryId: compiledQuery.queryId.queryId,
+    }
     const promise = provider.executeTransaction({ txId, ...payload })
     logger?.({
       promise,

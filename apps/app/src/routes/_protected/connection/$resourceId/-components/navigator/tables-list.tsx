@@ -85,7 +85,7 @@ const ROW_HEIGHTS = {
   separator: 13,
 } satisfies Record<TreeRow['kind'], number>
 
-const tableTypeIcon = {
+export const tableTypeIcon = {
   table: LayoutTable02Icon,
   view: ViewIcon,
   'materialized view': ViewIcon,

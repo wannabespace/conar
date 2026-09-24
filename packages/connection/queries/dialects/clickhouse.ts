@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
 
 import type * as ClickHouse from '@clickhouse/client'
@@ -5,8 +6,9 @@ import type { AnyFunction } from '@tamery/shared/utils'
 import { tryParseJson } from '@tamery/shared/utils'
 import { memoize } from 'memoza'
 
-import type { QueryExecutor } from '..'
-import { handleQueryError } from '..'
+import type { QueryExecutor, RunOptions } from '..'
+import { handleQueryError, resultSet } from '..'
+import { cancellable, cancellationQueries } from '../cancellation'
 import { registerTransaction, transactionQueries } from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)(
@@ -61,6 +63,7 @@ const emptyAsync = async () => {
 
 export const query = {
   ...transactionQueries,
+  ...cancellationQueries,
 
   beginTransaction: handleQueryError(
     ({
@@ -73,7 +76,8 @@ export const query = {
       const txId = registerTransaction(
         {
           commit: emptyAsync,
-          execute: (q) => query.execute({ connectionString, query: q }),
+          execute: (q, _values, options) =>
+            query.execute({ connectionString, query: q, ...options }),
           release: emptyAsync,
           rollback: emptyAsync,
         },
@@ -85,29 +89,84 @@ export const query = {
   ),
 
   execute: wrapClickhouseError(
-    async ({
+    ({
       connectionString,
       query: queryText,
+      queryId,
+      resultSets,
     }: {
       connectionString: string
       query: string
-    }) => {
+    } & RunOptions) => {
       const client = getClient(connectionString)
-
-      if (isSelectLikeQuery(queryText)) {
-        const start = performance.now()
-        const response = await client.query({
-          format: 'JSONEachRow',
-          query: queryText,
-        })
-        const rows = await response.json()
-        return { duration: performance.now() - start, result: rows }
-      }
-
+      const controller = new AbortController()
+      // ClickHouse keeps running a query whose HTTP request was dropped, so a cancel kills it by id.
+      const clickhouseQueryId = randomUUID()
       const start = performance.now()
-      await client.exec({ query: queryText })
 
-      return { duration: performance.now() - start, result: [] }
+      return cancellable(
+        {
+          cancel: async () => {
+            await client.command({
+              query: 'KILL QUERY WHERE query_id = {id:String}',
+              query_params: { id: clickhouseQueryId },
+            })
+            controller.abort()
+          },
+          connectionString,
+          queryId,
+        },
+        async () => {
+          if (isSelectLikeQuery(queryText) && resultSets) {
+            const response = await client.query({
+              abort_signal: controller.signal,
+              // One row past the cap is how `truncated` finds out there were more.
+              clickhouse_settings: {
+                max_result_rows: String(resultSets.maxRows + 1),
+                result_overflow_mode: 'break',
+              },
+              format: 'JSONCompact',
+              query: queryText,
+              query_id: clickhouseQueryId,
+            })
+            const { data, meta = [] } = await response.json<unknown[]>()
+            return {
+              duration: performance.now() - start,
+              result: [
+                resultSet(
+                  {
+                    affectedRows: null,
+                    columns: meta.map((column) => column.name),
+                    rows: data,
+                  },
+                  resultSets.maxRows
+                ),
+              ],
+            }
+          }
+          if (isSelectLikeQuery(queryText)) {
+            const response = await client.query({
+              abort_signal: controller.signal,
+              format: 'JSONEachRow',
+              query: queryText,
+              query_id: clickhouseQueryId,
+            })
+            const rows = await response.json()
+            return { duration: performance.now() - start, result: rows }
+          }
+          await client.exec({
+            abort_signal: controller.signal,
+            query: queryText,
+            query_id: clickhouseQueryId,
+          })
+          return {
+            duration: performance.now() - start,
+            result: resultSets
+              ? [resultSet({ affectedRows: null, columns: [], rows: [] }, 0)]
+              : [],
+          }
+        }
+      )
     }
   ),
 } satisfies QueryExecutor

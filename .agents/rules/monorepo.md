@@ -5,6 +5,7 @@
 `ls apps packages` for the list. Non-obvious placements:
 
 - `apps/proxy` — separate Hono process executing DB queries; clients connect to **the proxy**, not `apps/api`. `packages/query-proxy` holds the oRPC router factory both share.
+- `packages/sql` — the SQL language behind the editor: per-dialect tokenizer (also Monaco's tokens provider), statement splitter, catalog-aware diagnostics and completion, destructive-keyword check. Pure and Monaco-free; `entities/connection/sql-language.ts` is the only place that binds it to Monaco.
 - `packages/connection` — driver wrappers, connection-string parsers, SSL/SSH utils. **No Drizzle** (that is `packages/db`, cloud PostgreSQL only).
 - `packages/ai` — everything AI that needs no db/auth/oRPC: models, resumable chat stream, `UIMessage` helpers, one module per generation feature. New prompts and models go here, not `apps/api`. Folder barrels only, each re-exporting by name (`code-style.md`), so the client never pulls server-only modules.
 - `@tamery/vite-inline-html` — Vite plugins that fill `index.html` markers in dev and build (the root entry inlines bundled IIFE scripts, the `/react` entry server-renders components). It knows nothing about shells, boot or CSS; every target is passed from the app's `vite.config.ts`.

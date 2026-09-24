@@ -12,6 +12,9 @@ catalogs:
     '@ai-sdk/google':
       specifier: ^4.0.63
       version: 4.0.63
+    '@ai-sdk/mistral':
+      specifier: 4.0.39
+      version: 4.0.39
     '@ai-sdk/openai':
       specifier: ^4.0.57
       version: 4.0.57
@@ -277,11 +280,8 @@ catalogs:
       specifier: ^1.3.1
       version: 1.3.1
     monaco-editor:
-      specifier: ^0.54.0
-      version: 0.54.0
-    monaco-sql-languages:
-      specifier: ^0.15.1
-      version: 0.15.2
+      specifier: ^0.56.0
+      version: 0.56.0
     motion:
       specifier: ^13.4.0
       version: 13.4.0
@@ -656,6 +656,9 @@ importers:
       '@tamery/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@tamery/sql':
+        specifier: workspace:*
+        version: link:../../packages/sql
       '@tamery/table':
         specifier: workspace:*
         version: link:../../packages/table
@@ -733,10 +736,7 @@ importers:
         version: 1.3.1
       monaco-editor:
         specifier: 'catalog:'
-        version: 0.54.0
-      monaco-sql-languages:
-        specifier: 'catalog:'
-        version: 0.15.2(antlr4ng-cli@1.0.7)(monaco-editor@0.54.0)
+        version: 0.56.0
       motion:
         specifier: 'catalog:'
         version: 13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -1126,6 +1126,9 @@ importers:
       '@ai-sdk/google':
         specifier: 'catalog:'
         version: 4.0.63(zod@4.5.4)
+      '@ai-sdk/mistral':
+        specifier: 'catalog:'
+        version: 4.0.39(zod@4.5.4)
       '@ai-sdk/openai':
         specifier: 'catalog:'
         version: 4.0.57(zod@4.5.4)
@@ -1293,6 +1296,15 @@ importers:
       sf-symbols-typescript:
         specifier: 'catalog:'
         version: 2.2.0
+
+  packages/sql:
+    dependencies:
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/table:
     dependencies:
@@ -1490,6 +1502,12 @@ packages:
 
   '@ai-sdk/mcp@2.0.43':
     resolution: {integrity: sha512-So38w39jxz9caWiovSbJ1UMxJquPJl6x8eVkO9Aej+7QDHoCktvVi6ir8VLpsazAwyxvbsHSY/2p4B61Be5v5w==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/mistral@4.0.39':
+    resolution: {integrity: sha512-tigadr/BzilmL3cxUA5BWWPZ4/O0iPnneWQBBRxFUVCZ3naVEc78B2XxuDWL83R3ic+nqevHMlkyNjyiTRPPPQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -5287,19 +5305,6 @@ packages:
     resolution: {integrity: sha512-BJ8/l4R5LRE7hW9WdSuGYrLSHi2ynxeFpDFbH0K/CgNeY/tyhk+vO6TYxXC5r5CpUhNVX310xzPsN/H9lCdfOA==}
     engines: {node: '>=14'}
 
-  antlr4-c3@3.3.7:
-    resolution: {integrity: sha512-F3ndE38wwA6z6AjUbL3heSdEGl4TxulGDPf9xB0/IY4dbRHWBh6XNaqFwur8vHKQk9FS5yNABHeg2wqlqIYO0w==}
-
-  antlr4ng-cli@1.0.7:
-    resolution: {integrity: sha512-qN2FsDBmLvsQcA5CWTrPz8I8gNXeS1fgXBBhI78VyxBSBV/EJgqy8ks6IDTC9jyugpl40csCQ4sL5K4i2YZ/2w==}
-    deprecated: 'This package is deprecated and will no longer be updated. Please use the new antlr-ng package instead: https://github.com/mike-lischke/antlr-ng'
-    hasBin: true
-
-  antlr4ng@2.0.11:
-    resolution: {integrity: sha512-9jM91VVtHSqHkAHQsXHaoaiewFETMvUTI1/tXvwTiFw4f7zke3IGlwEyoKN9NS0FqIwDKFvUNW2e1cKPniTkVQ==}
-    peerDependencies:
-      antlr4ng-cli: 1.0.7
-
   any-promise@1.3.0:
     resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}
 
@@ -6172,11 +6177,11 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.1.7:
-    resolution: {integrity: sha512-VaTstWtsneJY8xzy7DekmYWEOZcmzIe3Qb3zPd4STve1OBTa+e+WmS1ITQec1fZYXI3HCsOZZiSMpG6oxoWMWQ==}
-
   dompurify@3.4.13:
     resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
+
+  dompurify@3.4.8:
+    resolution: {integrity: sha512-yb1cEmaOum7wFvOCSQxyfgVlv5D47Rc30iZWoMpbDIWTnJ6grDDQyu2KFJzB2k7u0pMuJcQ1zphH//fFnw2tjQ==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -6346,10 +6351,6 @@ packages:
   dset@3.1.4:
     resolution: {integrity: sha512-2QF/g9/zTaPDc3BjNcVTGoBbXBgYfMTTceLaYcFJ/W9kggFUkhxD/hMEeuLKbugyef9SqAx8cpgwlIP/jinUTA==}
     engines: {node: '>=4'}
-
-  dt-sql-parser@4.4.2:
-    resolution: {integrity: sha512-NpfSeCetxDICs5NNOHKO/e/PTQ/EFnGW0QBo11e5nmuWqVRACZkArcBH9/LKnoe1Mdtql45U5h0aU9GOqhBLWg==}
-    engines: {node: '>=18'}
 
   dtrace-provider@0.8.8:
     resolution: {integrity: sha512-b7Z7cNtHPhH9EJhNNbbeqTcXB8LGFFZhq1PGgEvpeHlzd36bhbdTWoE/Ba/YguqpBSlAPKnARWhVlhunCMwfxg==}
@@ -7909,14 +7910,8 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
-  monaco-editor@0.54.0:
-    resolution: {integrity: sha512-hx45SEUoLatgWxHKCmlLJH81xBo0uXP4sRkESUpmDQevfi+e7K1VuiSprK6UpQ8u4zOcKNiH0pMvHvlMWA/4cw==}
-
-  monaco-sql-languages@0.15.2:
-    resolution: {integrity: sha512-KjLtpcw8cSYv+3CjgM/2nr9Hq6g2biimp8xwPaJiILbZn1rrdGuSrJlSn+yPb7ZOApPKS5wDn3C4yVC0fpMMDg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      monaco-editor: '>=0.31.0'
+  monaco-editor@0.56.0:
+    resolution: {integrity: sha512-sXboRm3BeBeLm938eaiyLMe0OxzfXIlZvbv4ir/jVgQy1zDhWjgmny0WoN45fuDKhCCQsYMbBJrv/A6jd8aCUg==}
 
   moo@0.5.3:
     resolution: {integrity: sha512-m2fmM2dDm7GZQsY7KK2cme8agi+AAljILjQnof7p1ZMDe6dQ4bdnSMx0cPppudoeNv5hEFQirN6u+O4fDE0IWA==}
@@ -10176,6 +10171,12 @@ snapshots:
       '@ai-sdk/provider-utils': 5.0.36(zod@4.5.4)
       cross-spawn: 7.0.6
       pkce-challenge: 5.0.1
+      zod: 4.5.4
+
+  '@ai-sdk/mistral@4.0.39(zod@4.5.4)':
+    dependencies:
+      '@ai-sdk/provider': 4.0.10
+      '@ai-sdk/provider-utils': 5.0.36(zod@4.5.4)
       zod: 4.5.4
 
   '@ai-sdk/openai@4.0.57(zod@4.5.4)':
@@ -14363,18 +14364,6 @@ snapshots:
 
   ansis@4.3.1: {}
 
-  antlr4-c3@3.3.7(antlr4ng-cli@1.0.7):
-    dependencies:
-      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
-    transitivePeerDependencies:
-      - antlr4ng-cli
-
-  antlr4ng-cli@1.0.7: {}
-
-  antlr4ng@2.0.11(antlr4ng-cli@1.0.7):
-    dependencies:
-      antlr4ng-cli: 1.0.7
-
   any-promise@1.3.0: {}
 
   anymatch@3.1.3:
@@ -15216,9 +15205,11 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.1.7: {}
-
   dompurify@3.4.13:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
+  dompurify@3.4.8:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -15258,13 +15249,6 @@ snapshots:
       zod: 4.5.4
 
   dset@3.1.4: {}
-
-  dt-sql-parser@4.4.2(antlr4ng-cli@1.0.7):
-    dependencies:
-      antlr4-c3: 3.3.7(antlr4ng-cli@1.0.7)
-      antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
-    transitivePeerDependencies:
-      - antlr4ng-cli
 
   dtrace-provider@0.8.8:
     dependencies:
@@ -17072,17 +17056,10 @@ snapshots:
   moment@2.30.1:
     optional: true
 
-  monaco-editor@0.54.0:
+  monaco-editor@0.56.0:
     dependencies:
-      dompurify: 3.1.7
+      dompurify: 3.4.8
       marked: 14.0.0
-
-  monaco-sql-languages@0.15.2(antlr4ng-cli@1.0.7)(monaco-editor@0.54.0):
-    dependencies:
-      dt-sql-parser: 4.4.2(antlr4ng-cli@1.0.7)
-      monaco-editor: 0.54.0
-    transitivePeerDependencies:
-      - antlr4ng-cli
 
   moo@0.5.3: {}
 
