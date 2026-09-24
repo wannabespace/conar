@@ -16,7 +16,7 @@ const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<voi
   ['customer.subscription.updated', subscriptionUpdated],
 ])
 
-const conarPrices = new Set([env.STRIPE_MONTH_PRICE_ID, env.STRIPE_ANNUAL_PRICE_ID])
+const prices = new Set([env.STRIPE_MONTH_PRICE_ID, env.STRIPE_ANNUAL_PRICE_ID])
 
 export const stripe = orpc.handler(async ({ context }) => {
   try {
@@ -32,7 +32,7 @@ export const stripe = orpc.handler(async ({ context }) => {
 
     if (
       subscription.object === 'subscription' &&
-      !subscription.items.data.some(item => conarPrices.has(item.price.id))
+      !subscription.items.data.some(item => prices.has(item.price.id))
     ) {
       return true
     }
