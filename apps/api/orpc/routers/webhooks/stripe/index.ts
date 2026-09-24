@@ -26,6 +26,18 @@ export const stripe = orpc.handler(async ({ context }) => {
       throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
     }
 
+    // The Stripe account is shared with other products, so their subscriptions
+    // arrive here too. Only Conar's prices are ours to handle.
+    const conarPrices = new Set([env.STRIPE_MONTH_PRICE_ID, env.STRIPE_ANNUAL_PRICE_ID])
+    const subscription = event.data.object
+
+    if (
+      subscription.object === 'subscription' &&
+      !subscription.items.data.some(item => conarPrices.has(item.price.id))
+    ) {
+      return true
+    }
+
     await handler(event).catch(async error => {
       if (env.ALERTS_EMAIL) {
         await sendEmail({
