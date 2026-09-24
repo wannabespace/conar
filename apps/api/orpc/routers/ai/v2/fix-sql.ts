@@ -12,6 +12,7 @@ export const fixSQL = orpc
   .input(
     type({
       context: type.string.atMostLength(AI_SQL_LIMITS.context),
+      editor: type.string.atMostLength(AI_SQL_LIMITS.sql),
       error: type.string.atMostLength(AI_SQL_LIMITS.error),
       sql: type.string.atMostLength(AI_SQL_LIMITS.sql),
       type: type.valueOf(ConnectionType),
@@ -21,6 +22,7 @@ export const fixSQL = orpc
     fixSql({
       connectionType: input.type,
       context: input.context,
+      editor: input.editor,
       error: input.error,
       signal,
       sql: input.sql,

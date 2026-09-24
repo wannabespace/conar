@@ -18,7 +18,6 @@ export interface StatementScope {
 }
 
 export const TABLE_INTRODUCERS = ['FROM', 'JOIN', 'INTO', 'UPDATE', 'TABLE']
-// Keywords that may sit between the introducer and the table name.
 const TABLE_MODIFIERS = ['ONLY', 'LATERAL', 'IGNORE', 'IF', 'NOT', 'EXISTS']
 
 const readQualifiedName = (tokens: Token[], from: number) => {
@@ -38,7 +37,7 @@ const readQualifiedName = (tokens: Token[], from: number) => {
   return { next: from + parts.length * 2 - 1, parts }
 }
 
-export const tableRefAt = (
+const tableRefAt = (
   tokens: Token[],
   from: number,
   // In FROM/JOIN a name followed by `(` is a function; after INTO it is a column list.
@@ -71,11 +70,6 @@ export const tableRefAt = (
   }
 }
 
-const isCallParen = (before: Token | undefined) =>
-  before?.kind === 'function' ||
-  before?.kind === 'identifier' ||
-  before?.kind === 'type'
-
 const derivedAlias = (tokens: Token[], index: number) => {
   const alias = isKeyword(tokens[index + 1], 'AS')
     ? tokens[index + 2]
@@ -83,7 +77,6 @@ const derivedAlias = (tokens: Token[], index: number) => {
   return alias?.kind === 'identifier' ? identifierName(alias) : null
 }
 
-/** `name [(columns)] AS [NOT] [MATERIALIZED] (` after `WITH`, `RECURSIVE` or `,`. */
 const isCteName = (tokens: Token[], index: number) => {
   if (
     tokens[index]?.kind !== 'identifier' ||
@@ -122,7 +115,6 @@ const introducesTable = (tokens: Token[], index: number) => {
   return isKeyword(tokens[index], ...TABLE_INTRODUCERS)
 }
 
-/** The tables named after one introducer; `FROM a, b` names several. */
 const sourcesAfter = (tokens: Token[], index: number) => {
   const introducer = tokens[index]
   const clause = isKeyword(introducer, 'FROM', 'JOIN')
@@ -161,7 +153,11 @@ export const statementScope = (tokens: Token[]): StatementScope => {
 
   for (const [index, token] of tokens.entries()) {
     if (isPunctuation(token, '(')) {
-      parens.push(isCallParen(tokens[index - 1]))
+      parens.push(
+        ['function', 'identifier', 'type'].includes(
+          tokens[index - 1]?.kind ?? ''
+        )
+      )
     } else if (isPunctuation(token, ')')) {
       parens.pop()
       const alias = derivedAlias(tokens, index)

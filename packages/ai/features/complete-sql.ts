@@ -1,8 +1,12 @@
-import type { TelemetryOptions } from 'ai'
+import type { LanguageModelUsage, TelemetryOptions } from 'ai'
 import { generateText } from 'ai'
+import { type } from 'arktype'
 
+import { env } from '../env'
 import { models } from '../models/list'
-import { section } from './prompt'
+import { MATCH_USER_STYLE, section } from './prompt'
+
+const CARET = '<CARET>'
 
 const completeSqlInstructions = (data: {
   connectionType: string
@@ -11,30 +15,34 @@ const completeSqlInstructions = (data: {
   [
     'You are an inline SQL completion engine inside a SQL editor.',
     `The database type is "${data.connectionType}".`,
-    'You get the text before the caret and the text after it.',
-    'Return only the text to insert at the caret: no explanations, markdown or fences.',
-    'Never repeat what is already before the caret; continue it in the same style and casing.',
-    'Your text is inserted directly at the caret: start with a space when it begins a new word after a finished one.',
+    "Values are the user's job, structure is yours. You complete SQL structure only: keywords, operators, functions, and table, column and enum names from the schema. A string, number, date or time value may appear in your text only if it is an enum value from the schema or the user already wrote it; any other value is unknown to you, so end your text right before it, without its opening quote, and let the user type it.",
+    `You get the text before the caret and the text after it, each marked with ${CARET} on the caret side.`,
+    `Return only the text to insert at ${CARET}: no explanations, markdown or fences.`,
+    `Never repeat text that is already before or after ${CARET}; your text goes between them.`,
+    MATCH_USER_STYLE,
+    `Your text is inserted at ${CARET} exactly as returned, character for character, and the editor adds no whitespace: when the character right before ${CARET} ends a token and your text starts the next one, begin with the whitespace the user puts between tokens.`,
     'Finish only the current statement, at most a few lines, and stop at its end: never start another statement. Use only tables and columns from the schema.',
-    'The SQL runs as typed, with nothing bound: never use placeholders or bind parameters ($1, ?, :name, @p1). Write literal values; when the value is unknown, use a realistic example literal the user can edit.',
+    'Never use placeholders or bind parameters.',
     'Return an empty response when nothing useful can be suggested.',
     '',
     'Database schema:',
     data.context,
   ].join('\n')
 
-export const completeSql = async (data: {
+interface CompleteSqlInput {
   connectionType: string
   context: string
+  /** Usage of calls made outside the AI SDK, which `telemetry` cannot see. */
+  onUsage: (modelId: string, usage: LanguageModelUsage) => Promise<void>
   prefix: string
   signal?: AbortSignal
   suffix: string
   telemetry?: TelemetryOptions
-}) => {
+}
+
+const chatCompleteSql = async (data: CompleteSqlInput) => {
   const { text } = await generateText({
     abortSignal: data.signal,
-    // The instructions and schema repeat on every keystroke's request; Anthropic caches them so a
-    // fallback answer reads only the lines around the caret. Other providers ignore the option.
     instructions: {
       content: completeSqlInstructions(data),
       providerOptions: {
@@ -43,12 +51,76 @@ export const completeSql = async (data: {
       role: 'system',
     },
     maxOutputTokens: 200,
-    model: models.completion,
+    model: models.fast,
     prompt: [
-      section('TEXT BEFORE CARET', data.prefix),
-      section('TEXT AFTER CARET', data.suffix),
+      section('TEXT BEFORE CARET', `${data.prefix}${CARET}`),
+      section('TEXT AFTER CARET', `${CARET}${data.suffix}`),
     ].join('\n'),
     telemetry: data.telemetry,
   })
   return text
+}
+
+const FIM_MODEL = 'codestral-latest'
+
+const fimResponseType = type({
+  choices: type({ message: { content: 'string' } })
+    .array()
+    .atLeastLength(1),
+  usage: { completion_tokens: 'number', prompt_tokens: 'number' },
+})
+
+const fimCompleteSql = async (data: CompleteSqlInput) => {
+  const response = await fetch('https://api.mistral.ai/v1/fim/completions', {
+    body: JSON.stringify({
+      max_tokens: 200,
+      model: FIM_MODEL,
+      prompt: [
+        `-- Database: ${data.connectionType}`,
+        ...data.context.split('\n').map((line) => `-- ${line}`),
+        '',
+        data.prefix,
+      ].join('\n'),
+      stop: ['\n\n'],
+      suffix: data.suffix,
+      temperature: 0,
+    }),
+    headers: {
+      authorization: `Bearer ${env.MISTRAL_API_KEY}`,
+      'content-type': 'application/json',
+    },
+    method: 'POST',
+    signal: data.signal,
+  })
+  if (!response.ok) {
+    throw new Error(`Codestral fill-in-the-middle failed: ${response.status}`)
+  }
+  const { choices, usage } = fimResponseType.assert(await response.json())
+  // Recording writes to the database; the keystroke's answer must not wait on it.
+  void data.onUsage(FIM_MODEL, {
+    inputTokenDetails: {
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      noCacheTokens: usage.prompt_tokens,
+    },
+    inputTokens: usage.prompt_tokens,
+    outputTokenDetails: {
+      reasoningTokens: 0,
+      textTokens: usage.completion_tokens,
+    },
+    outputTokens: usage.completion_tokens,
+    totalTokens: usage.prompt_tokens + usage.completion_tokens,
+  })
+  return choices[0]?.message.content ?? ''
+}
+
+export const completeSql = async (data: CompleteSqlInput) => {
+  try {
+    return await fimCompleteSql(data)
+  } catch (error) {
+    if (data.signal?.aborted) {
+      throw error
+    }
+    return chatCompleteSql(data)
+  }
 }

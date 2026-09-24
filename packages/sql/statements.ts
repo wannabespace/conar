@@ -42,7 +42,6 @@ const onOwnLine = (text: string, token: Token, previous: Token | undefined) => {
 const upperTexts = (tokens: Token[]) =>
   tokens.map((token) => token.text.toUpperCase())
 
-/** `BEGIN` opens a transaction unless a block follows it; `START TRANSACTION` always does. */
 const opensTransactionAt = (tokens: Token[], index: number) => {
   const [word, next, after] = upperTexts(tokens.slice(index, index + 3))
   if (word === 'START') {
@@ -57,10 +56,7 @@ const opensTransactionAt = (tokens: Token[], index: number) => {
   )
 }
 
-/**
- * The word a statement closes a transaction with, if it does. `ROLLBACK TO` a savepoint does not;
- * Postgres' `END` and `ABORT` count only as a whole statement.
- */
+// `ROLLBACK TO` a savepoint closes nothing; Postgres' `END` and `ABORT` close only as a whole statement.
 const transactionEnd = (tokens: Token[]) => {
   const words = upperTexts(tokens.slice(0, 3))
   const [word, next, after] = words
@@ -76,10 +72,6 @@ const transactionEnd = (tokens: Token[]) => {
   }
 }
 
-/**
- * Whether the text opens a transaction and never closes it — sent as it is, the transaction would
- * stay open on the connection. A SQL Server batch holding its own `BEGIN TRAN … COMMIT` closes it.
- */
 export const leavesTransactionOpen = (text: string, dialect: DialectSpec) => {
   const tokens = tokenize(text, dialect).tokens.filter(
     (token) => token.kind !== 'comment'
@@ -162,20 +154,18 @@ export const parseStatements = (
   return statements
 }
 
-export const splitStatements = (text: string, dialect: DialectSpec) =>
-  parseStatements(text, tokenize(text, dialect).tokens, dialect)
+export const splitStatements = (
+  text: string,
+  dialect: DialectSpec,
+  options?: { groupTransactions?: boolean }
+) => parseStatements(text, tokenize(text, dialect).tokens, dialect, options)
 
-/**
- * A `BEGIN … COMMIT|ROLLBACK` group taken apart, so each inner statement runs on its own inside a
- * driver transaction — drivers without multi-statement support reject the group as one string.
- */
+// Drivers without multi-statement support reject a `BEGIN … COMMIT` group sent as one string.
 export const transactionParts = (text: string, dialect: DialectSpec) => {
   if (!dialect.transactions) {
     return null
   }
-  const parts = parseStatements(text, tokenize(text, dialect).tokens, dialect, {
-    groupTransactions: false,
-  })
+  const parts = splitStatements(text, dialect, { groupTransactions: false })
   const [first] = parts
   const ending = transactionEnd(parts.at(-1)?.tokens ?? [])
   if (!(first && ending && opensTransactionAt(first.tokens, 0))) {

@@ -17,19 +17,15 @@ const mysql2 = createRequire(import.meta.url)(
   'mysql2/promise'
 ) as typeof mysql2Promise
 
-const poolConfig = (connectionString: string): PoolOptions => {
+const getPool = memoize((connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
-  return {
+  const conf: PoolOptions = {
     ...config,
     connectionLimit: 1,
     dateStrings: true,
     ...(ssl ? { ssl: readSSLFiles(ssl) } : {}),
   }
-}
-
-const getPool = memoize((connectionString: string) => {
-  const conf = poolConfig(connectionString)
   const hasSsl = conf.ssl !== undefined
 
   return tries(

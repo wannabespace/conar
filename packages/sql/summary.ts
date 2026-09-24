@@ -2,10 +2,6 @@ import { AI_SQL_LIMITS } from '@tamery/shared/constants'
 
 import type { SqlCatalog } from './catalog'
 
-/**
- * One line per table (`schema.table(col type, …)`), the shape a model reads best, cut to what the AI
- * routes accept. Tables whose columns are loaded are the ones in use, so they go first.
- */
 export const catalogSummary = (catalog: SqlCatalog) => {
   const tables = catalog.schemas.flatMap((schema) =>
     schema.tables.map((table) => ({

@@ -8,7 +8,6 @@
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:",
     "@ai-sdk/google": "catalog:",
-    "@ai-sdk/mistral": "catalog:",
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/xai": "catalog:",
     "@tamery/shared": "workspace:*",

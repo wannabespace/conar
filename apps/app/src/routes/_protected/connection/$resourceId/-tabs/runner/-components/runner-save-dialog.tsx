@@ -28,11 +28,7 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-/**
- * `statement` saves a copy; `tab` saves the whole tab and, when the tab came from a saved query,
- * offers to update it; `rename` only renames an existing one.
- */
-export type SaveRequest =
+type SaveRequest =
   | { kind: 'statement'; sql: string }
   | { kind: 'tab'; sql: string; linked: Query | undefined }
   | { kind: 'rename'; query: Query }
@@ -67,7 +63,6 @@ const primaryLabel = (
   return linked ? 'Update' : 'Save'
 }
 
-/** Why the tab offers an update: shown under the name, or why nothing can be saved. */
 const SaveHint = ({
   empty,
   linked,

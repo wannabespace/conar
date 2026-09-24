@@ -1,7 +1,7 @@
-import { SparklesIcon } from '@hugeicons/core-free-icons'
+import { AiIdeaIcon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { AI_SQL_LIMITS } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { catalogSummary } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
 import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { Kbd } from '@tamery/ui/components/kbd'
@@ -13,7 +13,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { sqlCatalogOf } from '~/entities/connection/sql-language'
+import { catalogSummaryFor } from '~/entities/connection/sql-language'
 import { orpc } from '~/lib/orpc'
 
 // Room for the card's shadow: the gutter layer paints over anything left of the content.
@@ -21,7 +21,21 @@ const ZONE_HEIGHT = 44
 
 type Phase =
   | { kind: 'prompt'; busy: boolean }
-  | { kind: 'review'; original: string; applied: string }
+  | { kind: 'fixing'; error: string }
+  | { kind: 'review'; original: string; applied: string; fix: boolean }
+
+const RejectButton = ({
+  label,
+  onClick,
+}: {
+  label: string
+  onClick: () => void
+}) => (
+  <Button size="xs" variant="ghost" onClick={onClick}>
+    {label}
+    <span className="text-muted-foreground text-2xs font-normal">Esc</span>
+  </Button>
+)
 
 /** Detached React root inside a Monaco view zone: props only, no context reaches it. */
 const AiEditZone = ({
@@ -55,21 +69,29 @@ const AiEditZone = ({
       }}
     >
       <HugeiconsIcon
-        icon={SparklesIcon}
+        icon={
+          phase.kind === 'fixing' || (phase.kind === 'review' && phase.fix)
+            ? AiIdeaIcon
+            : SparklesIcon
+        }
         strokeWidth={2}
         className="text-muted-foreground size-3.5 shrink-0"
       />
-      {phase.kind === 'review' ? (
+      {phase.kind === 'fixing' && (
         <>
           <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
-            Review the rewrite
+            Fixing <span data-mask>{phase.error}</span>
           </span>
-          <Button size="xs" variant="ghost" onClick={onClose}>
-            Reject
-            <span className="text-muted-foreground text-2xs font-normal">
-              Esc
-            </span>
-          </Button>
+          <Spinner className="text-muted-foreground size-3.5" />
+          <RejectButton label="Cancel" onClick={onClose} />
+        </>
+      )}
+      {phase.kind === 'review' && (
+        <>
+          <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+            {phase.fix ? 'Review the fix' : 'Review the rewrite'}
+          </span>
+          <RejectButton label="Reject" onClick={onClose} />
           <Button size="xs" onClick={onAccept}>
             Accept
             <span className="text-primary-foreground/70 flex items-center">
@@ -78,7 +100,8 @@ const AiEditZone = ({
             </span>
           </Button>
         </>
-      ) : (
+      )}
+      {phase.kind === 'prompt' && (
         <>
           <input
             ref={inputRef}
@@ -108,7 +131,6 @@ const AiEditZone = ({
   )
 }
 
-/** ⌘K rewrite and "Fix with AI": the rewrite lands in the editor with a band and Accept/Reject above it. */
 export const useAiEdit = ({
   editorRef,
   connectionResource,
@@ -190,7 +212,7 @@ export const useAiEdit = ({
     closeAndFocus()
   }
 
-  const review = (original: string, text: string) => {
+  const review = (original: string, text: string, fix: boolean) => {
     const editor = editorRef.current
     const model = editor?.getModel()
     const range = target()
@@ -199,6 +221,11 @@ export const useAiEdit = ({
     }
     if (model.getValueInRange(range) !== original) {
       toast.info('The statement changed while the AI was working')
+      closeAndFocus()
+      return
+    }
+    if (text.trim() === original.trim()) {
+      toast.info(fix ? 'The AI found nothing to fix' : 'Nothing to change')
       closeAndFocus()
       return
     }
@@ -212,28 +239,51 @@ export const useAiEdit = ({
       ),
       true
     )
-    setPhase({ applied: text, kind: 'review', original })
+    setPhase({ applied: text, fix, kind: 'review', original })
     // The prompt input unmounts on review; without focus back in the editor ⌘↩ and Esc reach nothing.
     editor.focus()
   }
 
   const request = async (
     range: Range,
-    call: (sql: string, signal: AbortSignal) => Promise<string>
+    pending: Phase,
+    call: (
+      input: {
+        context: string
+        editor: string
+        sql: string
+        type: ConnectionType
+      },
+      signal: AbortSignal
+    ) => Promise<string>
   ) => {
-    const original = editorRef.current?.getModel()?.getValueInRange(range)
-    if (original === undefined) {
+    const model = editorRef.current?.getModel()
+    if (!model) {
       return
     }
+    const original = model.getValueInRange(range)
     requestRef.current?.abort()
     const controller = new AbortController()
     requestRef.current = controller
     track(range, false)
-    setPhase({ busy: true, kind: 'prompt' })
+    setPhase(pending)
     try {
-      const text = await call(original, controller.signal)
+      const context = await catalogSummaryFor(
+        connectionResource,
+        connectionType,
+        original
+      )
+      const text = await call(
+        {
+          context,
+          editor: model.getValue().slice(0, AI_SQL_LIMITS.sql),
+          sql: original,
+          type: connectionType,
+        },
+        controller.signal
+      )
       if (requestRef.current === controller) {
-        review(original, text)
+        review(original, text, pending.kind === 'fixing')
       }
     } catch (error) {
       if (requestRef.current === controller) {
@@ -251,18 +301,10 @@ export const useAiEdit = ({
 
   const fix = (range: Range, error: string) => {
     close()
-    return request(range, (sql, signal) =>
-      orpc.ai.fixSQL.call(
-        {
-          context: catalogSummary(
-            sqlCatalogOf(connectionResource, connectionType)
-          ),
-          error,
-          sql,
-          type: connectionType,
-        },
-        { signal }
-      )
+    // Fixing has no input to hold focus, so Esc reaches the editor's reject binding instead.
+    editorRef.current?.focus()
+    return request(range, { error, kind: 'fixing' }, (input, signal) =>
+      orpc.ai.fixSQL.call({ ...input, error }, { signal })
     )
   }
 
@@ -275,18 +317,8 @@ export const useAiEdit = ({
   const submit = (prompt: string) => {
     const range = target()
     if (range) {
-      request(range, (sql, signal) =>
-        orpc.ai.updateSQL.call(
-          {
-            context: catalogSummary(
-              sqlCatalogOf(connectionResource, connectionType)
-            ),
-            prompt,
-            sql,
-            type: connectionType,
-          },
-          { signal }
-        )
+      request(range, { busy: true, kind: 'prompt' }, (input, signal) =>
+        orpc.ai.updateSQL.call({ ...input, prompt }, { signal })
       )
     }
   }
@@ -323,6 +355,27 @@ export const useAiEdit = ({
     })
   })
 
+  const closeIfDeleted = useEffectEvent(() => {
+    const range = target()
+    if (
+      range &&
+      !editorRef.current?.getModel()?.getValueInRange(range).trim()
+    ) {
+      close()
+    }
+  })
+  const active = phase !== null
+  useEffect(() => {
+    if (!active) {
+      return
+    }
+    // Deferred: the AI's own rewrite collapses the tracked range until `review` re-tracks it.
+    const listener = editorRef.current?.onDidChangeModelContent(() =>
+      queueMicrotask(closeIfDeleted)
+    )
+    return () => listener?.dispose()
+  }, [active, editorRef])
+
   const discardOnUnmount = useEffectEvent(() => {
     revert()
     close()
@@ -337,6 +390,6 @@ export const useAiEdit = ({
     fix,
     open,
     reject,
-    reviewing: phase?.kind === 'review',
+    reviewing: phase?.kind === 'review' || phase?.kind === 'fixing',
   }
 }

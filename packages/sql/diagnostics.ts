@@ -8,7 +8,7 @@ import { parseStatements } from './statements'
 import type { Token } from './tokenizer'
 import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
-export interface Diagnostic {
+interface Diagnostic {
   start: number
   end: number
   message: string
@@ -81,7 +81,6 @@ const STATEMENT_STARTERS = new Set([
   'WITH',
 ])
 
-const OPEN_TO_CLOSE: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
 const CLOSE_TO_OPEN: Record<string, string> = { ')': '(', ']': '[', '}': '{' }
 
 const spanOf = ({ start, end }: Token) => ({ end, start })
@@ -108,7 +107,7 @@ const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
     if (token.kind !== 'punctuation') {
       continue
     }
-    if (token.text in OPEN_TO_CLOSE) {
+    if (Object.values(CLOSE_TO_OPEN).includes(token.text)) {
       open.push(token)
     } else if (token.text in CLOSE_TO_OPEN) {
       const last = open.at(-1)
@@ -133,31 +132,29 @@ const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
   return diagnostics
 }
 
-const starterDiagnostic = (statement: Statement): Diagnostic | null => {
+const starterDiagnostics = (statement: Statement): Diagnostic[] => {
   const [first] = statement.tokens
-  if (!first || first.kind !== 'identifier' || first.quoted) {
-    return null
+  if (
+    !first ||
+    first.kind !== 'identifier' ||
+    first.quoted ||
+    STATEMENT_STARTERS.has(first.text.toUpperCase())
+  ) {
+    return []
   }
-  if (STATEMENT_STARTERS.has(first.text.toUpperCase())) {
-    return null
-  }
-  return {
-    ...spanOf(first),
-    message: `Unknown statement \`${first.text}\``,
-    severity: 'error',
-  }
+  return [
+    {
+      ...spanOf(first),
+      message: `Unknown statement \`${first.text}\``,
+      severity: 'error',
+    },
+  ]
 }
 
 // Row pseudo-tables: ON CONFLICT (`excluded`), OUTPUT (`inserted`/`deleted`), triggers (`new`/`old`).
 const PSEUDO_TABLES = new Set(['excluded', 'inserted', 'deleted', 'new', 'old'])
 // Only these read qualifiers against a FROM list; DDL qualifies by schema.
 const QUERY_VERBS = ['SELECT', 'WITH', 'UPDATE', 'DELETE', 'INSERT']
-
-const scopeNames = (scope: StatementScope) => [
-  ...scope.tables.map((table) => table.alias ?? table.name),
-  ...scope.ctes,
-  ...scope.derived,
-]
 
 const isKnownQualifier = (
   scope: StatementScope,
@@ -179,7 +176,11 @@ const unknownQualifier = (
   qualifier: Token,
   scope: StatementScope
 ): Diagnostic => {
-  const available = scopeNames(scope).map((name) => `\`${name}\``)
+  const available = [
+    ...scope.tables.map((table) => table.alias ?? table.name),
+    ...scope.ctes,
+    ...scope.derived,
+  ].map((name) => `\`${name}\``)
   return {
     ...spanOf(qualifier),
     message: `\`${identifierName(qualifier)}\` is not a table or alias in this statement${
@@ -203,12 +204,11 @@ const resolveQualifier = (
 }
 
 const qualifiedColumnDiagnostics = (
-  statement: Statement,
+  tokens: Token[],
   scope: StatementScope,
   catalog: SqlCatalog
 ): Diagnostic[] => {
   const diagnostics: Diagnostic[] = []
-  const { tokens } = statement
   const refTokens = new Set(scope.tables.map((table) => table.token))
   const checksQualifiers = isKeyword(tokens[0], ...QUERY_VERBS)
   for (const [index, token] of tokens.entries()) {
@@ -246,7 +246,6 @@ const qualifiedColumnDiagnostics = (
   return diagnostics
 }
 
-// Words that sit where a column would inside date and string expressions.
 const FUNCTION_ARGUMENT_WORDS = new Set([
   'at',
   'both',
@@ -267,13 +266,11 @@ const FUNCTION_ARGUMENT_WORDS = new Set([
   'zone',
 ])
 
-/** Bare column names, checked only when every source's columns are known. */
 const unqualifiedColumnDiagnostics = (
-  statement: Statement,
+  tokens: Token[],
   scope: StatementScope,
   catalog: SqlCatalog
 ): Diagnostic[] => {
-  const { tokens } = statement
   const tables = scope.tables.map((ref) =>
     findTable(catalog, ref.name, ref.schema)
   )
@@ -332,7 +329,6 @@ const unqualifiedColumnDiagnostics = (
 
 const LOCK_STRENGTHS = new Set(['KEY', 'NO', 'SHARE', 'UPDATE'])
 
-/** A locking clause (`FOR UPDATE OF t SKIP LOCKED`) names options and tables already in scope, up to the end of its query. */
 const withoutLockingClauses = (tokens: Token[]) => {
   let locking = false
   return tokens.filter((token, index) => {
@@ -349,53 +345,44 @@ const withoutLockingClauses = (tokens: Token[]) => {
 }
 
 const catalogDiagnostics = (
-  { tokens: allTokens, ...span }: Statement,
+  statement: Statement,
   catalog: SqlCatalog
 ): Diagnostic[] => {
-  const diagnostics: Diagnostic[] = []
-  const statement = { ...span, tokens: withoutLockingClauses(allTokens) }
-  const scope = statementScope(statement.tokens)
+  const tokens = withoutLockingClauses(statement.tokens)
+  const scope = statementScope(tokens)
   const ctes = new Set(scope.ctes.map((name) => name.toLowerCase()))
-
-  for (const ref of scope.tables) {
-    if (ctes.has(ref.name.toLowerCase()) && !ref.schema) {
-      continue
-    }
-    if (!findTable(catalog, ref.name, ref.schema)) {
-      diagnostics.push({
+  return [
+    ...scope.tables
+      .filter(
+        (ref) =>
+          !(ctes.has(ref.name.toLowerCase()) && !ref.schema) &&
+          !findTable(catalog, ref.name, ref.schema)
+      )
+      .map((ref): Diagnostic => ({
         ...spanOf(ref.token),
         message: `Unknown table \`${ref.schema ? `${ref.schema}.` : ''}${ref.name}\``,
         severity: 'warning',
-      })
-    }
-  }
-
-  diagnostics.push(
-    ...qualifiedColumnDiagnostics(statement, scope, catalog),
-    ...unqualifiedColumnDiagnostics(statement, scope, catalog)
-  )
-
-  return diagnostics
+      })),
+    ...qualifiedColumnDiagnostics(tokens, scope, catalog),
+    ...unqualifiedColumnDiagnostics(tokens, scope, catalog),
+  ]
 }
 
 export const diagnose = (
   text: string,
   dialect: DialectSpec,
-  catalog: SqlCatalog | null = null
+  catalog: SqlCatalog | null
 ): Diagnostic[] => {
   const { tokens } = tokenize(text, dialect)
   const statements = parseStatements(text, tokens, dialect)
   return [
     ...unclosedDiagnostics(tokens),
-    ...statements.flatMap((statement) => {
-      const starter = starterDiagnostic(statement)
-      return [
-        ...bracketDiagnostics(statement),
-        ...(starter ? [starter] : []),
-        ...(catalog && catalog.schemas.length > 0
-          ? catalogDiagnostics(statement, catalog)
-          : []),
-      ]
-    }),
+    ...statements.flatMap((statement) => [
+      ...bracketDiagnostics(statement),
+      ...starterDiagnostics(statement),
+      ...(catalog && catalog.schemas.length > 0
+        ? catalogDiagnostics(statement, catalog)
+        : []),
+    ]),
   ].toSorted((a, b) => a.start - b.start)
 }

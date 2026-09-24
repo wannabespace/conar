@@ -12,7 +12,6 @@ const entryType = type({
 
 export type HistoryEntry = typeof entryType.infer
 
-/** Enough to find last week's statement while one resource's history stays a few hundred KB of localStorage. */
 const HISTORY_LIMIT = 200
 
 const storeOf = memoize((resourceId: string) =>
@@ -24,7 +23,6 @@ const storeOf = memoize((resourceId: string) =>
   })
 )
 
-/** Statements run against a resource, newest first; re-running one moves it to the top. */
 export const runHistory = {
   add: (resourceId: string, runs: Omit<HistoryEntry, 'id'>[]) => {
     const added = runs
@@ -40,4 +38,8 @@ export const runHistory = {
   },
   clear: (resourceId: string) => storeOf(resourceId).set([]),
   of: storeOf,
+  remove: (resourceId: string, id: string) =>
+    storeOf(resourceId).set((history) =>
+      history.filter((entry) => entry.id !== id)
+    ),
 }

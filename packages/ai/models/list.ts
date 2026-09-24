@@ -1,6 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
-import { mistral } from '@ai-sdk/mistral'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
 import { createRetryableModel } from 'ai-retry/language-model'
@@ -13,11 +12,6 @@ export const models = {
       xai('grok-latest'),
       google('gemini-pro-latest'),
     ],
-  }),
-  // Codestral is trained for completing code at the cursor and answers fast; Haiku covers its outages.
-  completion: createRetryableModel({
-    model: mistral('codestral-latest'),
-    retries: [anthropic('claude-haiku-4-5')],
   }),
   fast: createRetryableModel({
     model: anthropic('claude-haiku-4-5'),

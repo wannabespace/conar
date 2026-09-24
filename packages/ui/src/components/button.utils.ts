@@ -9,10 +9,9 @@ export const buttonVariants = cva(
     },
     variants: {
       size: {
-        '2xs': `text-2xs h-4.5 gap-0.5 rounded-sm px-1.5 [&_svg:not([class*='size-'])]:size-2.5`,
         default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5`,
         icon: 'size-8',
-        'icon-2xs': `size-4.5 rounded-sm [&_svg:not([class*='size-'])]:size-2.5`,
+        'icon-2xs': `size-5 rounded-sm [&_svg:not([class*='size-'])]:size-3.5`,
         'icon-lg': 'size-9',
         'icon-sm': 'size-7 rounded-lg',
         'icon-xs': `size-6 rounded-md [&_svg:not([class*='size-'])]:size-3.5`,

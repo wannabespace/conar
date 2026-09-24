@@ -11,7 +11,6 @@ export interface ResultSet {
   rows: unknown[][]
   /** Rows a write changed; `null` for a statement that returned rows. */
   affectedRows: number | null
-  /** More rows came back than `maxRows`; the rest were dropped. */
   truncated: boolean
 }
 

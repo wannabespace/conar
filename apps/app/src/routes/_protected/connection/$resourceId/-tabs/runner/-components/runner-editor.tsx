@@ -1,4 +1,5 @@
 import {
+  AiIdeaIcon,
   Cancel01Icon,
   PlayIcon,
   SaveIcon,
@@ -21,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
 import { editor as monacoEditor, KeyCode, KeyMod } from 'monaco-editor'
@@ -36,11 +38,14 @@ import {
   attachGhostTextEscape,
   attachSqlDiagnostics,
   bindSqlModel,
+  GHOST_TEXT_SELECTOR,
   sqlLanguageIds,
 } from '~/entities/connection/sql-language'
 
 import type { RunnerActions } from '../-lib/actions'
 import { useRunnerActions } from '../-lib/actions'
+import type { RunnerResult } from '../-lib/run'
+import { runnerResultsOptions } from '../-lib/run'
 import {
   runnerStatements,
   setQuery,
@@ -55,25 +60,37 @@ const { useRouteContext } = getRouteApi(
 const MONACO_OPTIONS = {
   contextmenu: false,
   folding: false,
-  // The accept/dismiss controls are ours, drawn beside the ghost text.
-  inlineSuggest: { enabled: true, showToolbar: 'never' },
+  inlineSuggest: {
+    enabled: true,
+    // The accept/dismiss controls are ours, drawn beside the ghost text.
+    showToolbar: 'never',
+    // Untyped in 0.56's d.ts. Without it, focusing a list row hides ghost text that does not extend the row.
+    ...({ experimental: { showOnSuggestConflict: 'always' } } as object),
+  },
   lineNumbersMinChars: 3,
-  padding: { top: 8 },
-  // Monaco 0.56 defaults `other` to 'offWhenInlineCompletions', which holds the list back
-  // until the AI ghost-text provider answers — a network round trip on every keystroke.
+  // `other` defaults to 'offWhenInlineCompletions': the list would wait on the AI ghost-text request.
   quickSuggestions: { comments: 'off', other: 'on', strings: 'off' },
   quickSuggestionsDelay: 0,
+  renderLineHighlight: 'none',
   scrollBeyondLastLine: false,
-  suggest: { showWords: false },
+  // `preview` stays off: the row's own preview draws as ghost text and would read as an AI suggestion.
+  suggest: {
+    preview: false,
+    selectionMode: 'whenQuickSuggestion',
+    showWords: false,
+  },
   wordWrap: 'on',
 } satisfies editor.IStandaloneEditorConstructionOptions
 
 const AI_REVIEW_CONTEXT_KEY = 'tameryAiReview'
+const FAILED_CONTEXT_KEY = 'tameryFailedStatement'
 
 // Monaco keybindings are bit flags; bitwise OR is required by the API.
 /* oxlint-disable no-bitwise */
 const KEYBINDINGS = {
   askAi: KeyMod.CtrlCmd | KeyCode.KeyK,
+  // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
+  fixAi: KeyMod.CtrlCmd | KeyCode.KeyI,
   // Monaco's own ⌘. is Quick Fix, which the SQL language never offers.
   openStatementMenu: KeyMod.CtrlCmd | KeyCode.Period,
   reject: KeyCode.Escape,
@@ -84,11 +101,7 @@ const KEYBINDINGS = {
 }
 /* oxlint-enable no-bitwise */
 
-/**
- * Window-level shortcuts the editor would otherwise keep: Monaco claims ⌘L (expand line selection)
- * and swallows keys typed into it, so the navigator (⌘B), chat (⌘L) and query logger (⌘J) stopped
- * toggling while the cursor was in a query. The editor hands them back to the app's own listeners.
- */
+// Monaco swallows keys typed into it (and claims ⌘L), so the app's panel toggles are re-dispatched.
 const APP_SHORTCUTS = [
   { keyCode: KeyCode.KeyB, letter: 'b' },
   { keyCode: KeyCode.KeyJ, letter: 'j' },
@@ -112,6 +125,8 @@ const useEditorActions = (
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>,
   actions: RunnerActions & {
     reviewing: boolean
+    failing: boolean
+    fixAi: () => void
     acceptAi: () => void
     rejectAi: () => void
     openStatementMenu: () => void
@@ -125,6 +140,7 @@ const useEditorActions = (
         | 'saveCurrent'
         | 'saveAll'
         | 'askAi'
+        | 'fixAi'
         | 'rejectAi'
         | 'openStatementMenu'
     ) =>
@@ -134,6 +150,7 @@ const useEditorActions = (
   )
 
   const reviewKeyRef = useRef<editor.IContextKey<boolean>>(null)
+  const failedKeyRef = useRef<editor.IContextKey<boolean>>(null)
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -142,6 +159,8 @@ const useEditorActions = (
     }
     const reviewKey = codeEditor.createContextKey(AI_REVIEW_CONTEXT_KEY, false)
     reviewKeyRef.current = reviewKey
+    const failedKey = codeEditor.createContextKey(FAILED_CONTEXT_KEY, false)
+    failedKeyRef.current = failedKey
     const register = (
       id: string,
       label: string,
@@ -182,6 +201,13 @@ const useEditorActions = (
         invoke('askAi')
       ),
       register(
+        'fix-ai',
+        'Fix with AI',
+        KEYBINDINGS.fixAi,
+        () => invoke('fixAi'),
+        FAILED_CONTEXT_KEY
+      ),
+      register(
         'statement-menu',
         'Statement actions',
         KEYBINDINGS.openStatementMenu,
@@ -200,31 +226,29 @@ const useEditorActions = (
         disposable.dispose()
       }
       reviewKey.reset()
+      failedKey.reset()
     }
   }, [editorRef])
 
   useEffect(() => {
     reviewKeyRef.current?.set(actions.reviewing)
   }, [actions.reviewing])
+
+  useEffect(() => {
+    failedKeyRef.current?.set(actions.failing)
+  }, [actions.failing])
 }
 
-/** Paints the band under the caret's statement and reports where its first line sits, for the run button. */
 // Injected after the statement's last line so typed text pushes the Run button along instead of running under it.
 const RUN_SLOT = '\u00A0'.repeat(8)
 const RUN_SLOT_GAP = 12
 // Sync with the kit button's `icon-2xs` height; a translate would fight the press nudge.
-const RUN_BUTTON_HEIGHT = 18
+const RUN_BUTTON_HEIGHT = 20
 const RUN_SLOT_CLASS = 'sql-run-slot'
 
-// Monaco's own classes for inline-completion ghost text: inline spans on the caret's line, then a
-// block for further lines. The controls trail the piece drawn last — lowest, then rightmost.
+// The controls trail the ghost-text piece drawn last: lowest, then rightmost.
 const ghostText = (codeEditor: editor.IStandaloneCodeEditor) =>
-  [
-    ...(codeEditor.getDomNode()?.querySelectorAll(
-      // `-preview` is the variant drawn while the suggestion list is open beside it.
-      '.ghost-text-decoration, .ghost-text-decoration-preview, .ghost-text'
-    ) ?? []),
-  ]
+  [...(codeEditor.getDomNode()?.querySelectorAll(GHOST_TEXT_SELECTOR) ?? [])]
     .map((element) => ({ element, rect: element.getBoundingClientRect() }))
     .filter(({ rect }) => rect.width > 0)
     .toSorted(
@@ -235,11 +259,12 @@ const ghostText = (codeEditor: editor.IStandaloneCodeEditor) =>
 interface RunAnchor {
   top: number
   left: number
-  /** The anchor trails an AI ghost suggestion, which the controls then offer to accept. */
-  suggestion: boolean
+  /** The caret's statement, matched against the last run by start and source. */
+  start: number
+  source: string
+  suggestion: { left: number; top: number } | null
 }
 
-/** The inline group's ⋯ menu: every statement action but Run, which keeps its own button. */
 const statementMenuItems = (
   actions: RunnerActions,
   canExplain: boolean
@@ -269,10 +294,7 @@ const statementMenuItems = (
   },
 ]
 
-/**
- * Opens a menu trigger from a shortcut and hands it the keyboard. Monaco keeps focus in its own
- * input after running an action, so the popup is focused explicitly or arrows keep moving the caret.
- */
+// Monaco keeps focus after running an action, so the popup is focused explicitly or arrows move the caret.
 const openMenuFromKeyboard = (trigger: HTMLButtonElement | null) => {
   if (!trigger) {
     return
@@ -307,6 +329,7 @@ const useStatementBand = (
     }
     const band = codeEditor.createDecorationsCollection()
     let frame = 0
+    let active = { source: '', start: 0 }
 
     // The slot may wrap to its own visual row and the ghost text re-renders as it streams in,
     // so read where Monaco actually drew whichever anchors the controls.
@@ -318,15 +341,24 @@ const useStatementBand = (
           .getDomNode()
           ?.querySelector(`.${RUN_SLOT_CLASS}`)
         const root = codeEditor.getDomNode()?.getBoundingClientRect()
-        const rect = (suggestion ?? slot)?.getBoundingClientRect()
+        if (!root) {
+          return
+        }
+        const spot = (rect: DOMRect, left: number) => ({
+          left: left - root.left,
+          top: rect.top + (rect.height - RUN_BUTTON_HEIGHT) / 2 - root.top,
+        })
+        const suggestionRect = suggestion?.getBoundingClientRect()
+        const suggestionSpot = suggestionRect
+          ? spot(suggestionRect, suggestionRect.right)
+          : null
+        const slotRect = slot?.getBoundingClientRect()
+        const statementSpot = slotRect
+          ? spot(slotRect, slotRect.left)
+          : suggestionSpot
         move(
-          root && rect
-            ? {
-                left: (suggestion ? rect.right : rect.left) - root.left,
-                suggestion: suggestion !== null,
-                top:
-                  rect.top + (rect.height - RUN_BUTTON_HEIGHT) / 2 - root.top,
-              }
+          statementSpot
+            ? { ...active, ...statementSpot, suggestion: suggestionSpot }
             : null
         )
       })
@@ -350,6 +382,7 @@ const useStatementBand = (
         band.clear()
         return
       }
+      active = { source: statement.text, start: statement.start }
       const startLine = model.getPositionAt(statement.start).lineNumber
       const endLine = model.getPositionAt(statement.terminatorEnd).lineNumber
       const endColumn = model.getLineMaxColumn(endLine)
@@ -364,9 +397,11 @@ const useStatementBand = (
             startLineNumber: startLine,
           },
         },
-        // Ghost text renders after injected text at the same column, so the slot yields to it
-        // and the button follows the suggestion instead.
-        ...(ghost
+        // Ghost text at the statement's end renders after injected text at the same column, so the
+        // slot yields to it and the buttons follow the suggestion; mid-line ghost text keeps the slot.
+        ...(ghost &&
+        position.lineNumber === endLine &&
+        position.column === endColumn
           ? []
           : [
               {
@@ -432,6 +467,67 @@ const useStatementBand = (
   }, [editorRef, statements])
 }
 
+const SuggestionControls = ({
+  editorRef,
+}: {
+  editorRef: RefObject<editor.IStandaloneCodeEditor | null>
+}) => (
+  <Group>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon-2xs"
+            aria-label="Accept suggestion"
+            onClick={() =>
+              editorRef.current?.trigger(
+                'runner',
+                'editor.action.inlineSuggest.commit',
+                null
+              )
+            }
+          />
+        }
+      >
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
+      </TooltipTrigger>
+      <TooltipContent>
+        Accept suggestion
+        <Kbd>Tab</Kbd>
+      </TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon-2xs"
+            variant="outline"
+            aria-label="Dismiss suggestion"
+            onClick={() =>
+              editorRef.current?.trigger(
+                'runner',
+                'editor.action.inlineSuggest.hide',
+                null
+              )
+            }
+          />
+        }
+      >
+        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+      </TooltipTrigger>
+      <TooltipContent>
+        Dismiss suggestion
+        <Kbd>Esc</Kbd>
+      </TooltipContent>
+    </Tooltip>
+  </Group>
+)
+
+const sameSpot = (
+  a: { left: number; top: number } | null | undefined,
+  b: { left: number; top: number } | null | undefined
+) => a?.left === b?.left && a?.top === b?.top
+
 export const RunnerEditor = ({
   editorRef,
   editing,
@@ -450,26 +546,44 @@ export const RunnerEditor = ({
   const store = useRunnerPageStore()
   const query = useSubscription(store, { selector: (state) => state.query })
   const actions = useRunnerActions()
+  const { data: run } = useQuery(runnerResultsOptions(useRunnerTab()))
 
   const [runAnchor, setRunAnchor] = useState<RunAnchor | null>(null)
-  // The ⋯ trigger opens its own menu on click, native or web, and the web menu takes arrow keys.
   const statementMenuRef = useRef<HTMLButtonElement>(null)
+  const suggestionHere = sameSpot(runAnchor?.suggestion, runAnchor)
+
+  const failed = runAnchor
+    ? run?.results.find(
+        (result): result is RunnerResult & { error: string } =>
+          result.error !== null &&
+          result.start === runAnchor.start &&
+          result.source === runAnchor.source
+      )
+    : undefined
+
   useEditorActions(editorRef, {
     ...actions,
     acceptAi,
+    failing: failed !== undefined,
+    fixAi: () => failed && actions.fixWithAi(failed),
     openStatementMenu: () => openMenuFromKeyboard(statementMenuRef.current),
     rejectAi,
     reviewing,
   })
   useStatementBand(editorRef, (anchor) =>
     setRunAnchor((current) =>
-      current?.left === anchor?.left &&
-      current?.top === anchor?.top &&
-      current?.suggestion === anchor?.suggestion
+      sameSpot(current, anchor) &&
+      sameSpot(current?.suggestion, anchor?.suggestion) &&
+      current?.start === anchor?.start &&
+      current?.source === anchor?.source
         ? current
         : anchor
     )
   )
+
+  useEffect(() => {
+    editorRef.current?.focus()
+  }, [editorRef])
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -501,107 +615,97 @@ export const RunnerEditor = ({
         className="size-full"
         options={MONACO_OPTIONS}
       />
-      {runAnchor && !editing && (
-        <Group
+      {runAnchor?.suggestion && !suggestionHere && !editing && (
+        <div
           className="absolute"
+          style={{
+            left: runAnchor.suggestion.left + RUN_SLOT_GAP,
+            top: runAnchor.suggestion.top,
+          }}
+        >
+          <SuggestionControls editorRef={editorRef} />
+        </div>
+      )}
+      {runAnchor && !editing && (
+        <div
+          className="absolute flex gap-1.5"
           style={{ left: runAnchor.left + RUN_SLOT_GAP, top: runAnchor.top }}
         >
-          {runAnchor.suggestion && (
-            <>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      size="icon-2xs"
-                      aria-label="Accept suggestion"
-                      onClick={() =>
-                        editorRef.current?.trigger(
-                          'runner',
-                          'editor.action.inlineSuggest.commit',
-                          null
-                        )
-                      }
-                    />
-                  }
-                >
-                  <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  Accept suggestion
-                  <Kbd>Tab</Kbd>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      size="icon-2xs"
-                      variant="outline"
-                      aria-label="Dismiss suggestion"
-                      onClick={() =>
-                        editorRef.current?.trigger(
-                          'runner',
-                          'editor.action.inlineSuggest.hide',
-                          null
-                        )
-                      }
-                    />
-                  }
-                >
-                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-                </TooltipTrigger>
-                <TooltipContent>
-                  Dismiss suggestion
-                  <Kbd>Esc</Kbd>
-                </TooltipContent>
-              </Tooltip>
-            </>
+          {runAnchor.suggestion && suggestionHere && (
+            <SuggestionControls editorRef={editorRef} />
           )}
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  size="icon-2xs"
-                  variant="outline"
-                  aria-label="Run statement"
-                  onClick={() => actions.runCurrent()}
-                />
-              }
-            >
-              <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
-            </TooltipTrigger>
-            <TooltipContent>
-              Run statement
-              <KbdCtrlEnter userAgent={navigator.userAgent} />
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <AppMenuButton
-              render={
+          <Group>
+            {failed && (
+              <Tooltip>
                 <TooltipTrigger
                   render={
                     <Button
-                      ref={statementMenuRef}
                       size="icon-2xs"
                       variant="outline"
+                      aria-label="Fix with AI"
+                      onClick={() => actions.fixWithAi(failed)}
                     />
                   }
-                />
-              }
-              contentProps={{ align: 'start' }}
-              items={() =>
-                statementMenuItems(
-                  actions,
-                  capabilitiesOf(connection.type).explain
-                )
-              }
-            />
-            <TooltipContent>
-              More actions
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="." />
-            </TooltipContent>
-          </Tooltip>
-        </Group>
+                >
+                  <HugeiconsIcon
+                    icon={AiIdeaIcon}
+                    strokeWidth={2}
+                    className="size-3"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  Fix with AI
+                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
+                </TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    size="icon-2xs"
+                    variant="outline"
+                    aria-label="Run statement"
+                    onClick={() => actions.runCurrent()}
+                  />
+                }
+              >
+                <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
+              </TooltipTrigger>
+              <TooltipContent>
+                Run statement
+                <KbdCtrlEnter userAgent={navigator.userAgent} />
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <AppMenuButton
+                render={
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        ref={statementMenuRef}
+                        size="icon-2xs"
+                        variant="outline"
+                      />
+                    }
+                  />
+                }
+                className="text-foreground"
+                contentProps={{ align: 'start' }}
+                items={() =>
+                  statementMenuItems(
+                    actions,
+                    capabilitiesOf(connection.type).explain
+                  )
+                }
+              />
+              <TooltipContent>
+                More actions
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="." />
+              </TooltipContent>
+            </Tooltip>
+          </Group>
+        </div>
       )}
     </div>
   )

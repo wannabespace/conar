@@ -1,9 +1,12 @@
-import { Delete02Icon, HistoryIcon } from '@hugeicons/core-free-icons'
+import {
+  Cancel01Icon,
+  Delete02Icon,
+  HistoryIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -15,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { formatDistanceToNowStrict } from 'date-fns'
 import { useState } from 'react'
@@ -22,15 +26,13 @@ import { useSubscription } from 'seitu/react'
 
 import { useRunnerActions } from '../-lib/actions'
 import { runHistory } from '../-lib/history'
-import { setQuery, useRunnerPageStore } from '../-lib/store'
+import { appendQuery, useRunnerPageStore } from '../-lib/store'
+import { ListEmpty, RowAction, SEARCH_FROM } from './popover-list'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const SEARCH_FROM = 8
-
-/** Statements run against this resource, newest first; picking one appends it to the tab. */
 export const RunHistoryButton = () => {
   const { connectionResource } = useRouteContext()
   const store = useRunnerPageStore()
@@ -39,15 +41,22 @@ export const RunHistoryButton = () => {
   const [open, setOpen] = useState(false)
 
   const append = (sql: string) => {
-    const existing = store.get().query.trimEnd()
-    setQuery(store, existing ? `${existing}\n\n${sql};` : `${sql};`)
+    appendQuery(store, `${sql};`)
     setOpen(false)
     focus()
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={<Button variant="ghost" size="sm" />}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
         <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
         History
       </PopoverTrigger>
@@ -57,24 +66,30 @@ export const RunHistoryButton = () => {
             <CommandInput placeholder="Search history" autoFocus />
           )}
           <CommandList>
-            <CommandEmpty className="text-muted-foreground flex flex-col items-center gap-2 py-8 text-xs">
-              <HugeiconsIcon
-                icon={HistoryIcon}
-                strokeWidth={2}
-                className="size-5"
-              />
+            <ListEmpty icon={HistoryIcon}>
               {history.length === 0
                 ? 'Statements you run show up here'
                 : 'No matching statements'}
-            </CommandEmpty>
+            </ListEmpty>
             <CommandGroup>
               {history.map((entry) => (
                 <CommandItem
                   key={entry.id}
                   value={entry.id}
                   keywords={[entry.sql]}
+                  className="pr-8"
                   onSelect={() => append(entry.sql)}
                 >
+                  <span
+                    className={cn(
+                      'mt-1.25 size-1.5 shrink-0 self-start rounded-full',
+                      entry.error !== null && 'bg-destructive'
+                    )}
+                  >
+                    {entry.error !== null && (
+                      <span className="sr-only">Failed</span>
+                    )}
+                  </span>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span data-mask className="truncate font-mono text-xs">
                       {entry.sql}
@@ -83,14 +98,19 @@ export const RunHistoryButton = () => {
                       {formatDistanceToNowStrict(entry.ranAt, {
                         addSuffix: true,
                       })}
-                      {' · '}
-                      {entry.error === null ? (
-                        `${entry.duration.toFixed(0)} ms`
-                      ) : (
-                        <span className="text-destructive">Failed</span>
-                      )}
+                      {entry.error === null &&
+                        ` · ${entry.duration.toFixed(0)} ms`}
                     </span>
                   </div>
+                  <RowAction
+                    destructive
+                    icon={Cancel01Icon}
+                    label="Remove from history"
+                    className="absolute inset-y-0 right-1 my-auto"
+                    onClick={() =>
+                      runHistory.remove(connectionResource.id, entry.id)
+                    }
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>

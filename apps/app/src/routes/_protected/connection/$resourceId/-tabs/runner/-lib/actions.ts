@@ -4,9 +4,7 @@ import type { Query } from '~/entities/query/sync'
 
 import type { RunnerResult } from './run'
 
-/** What the editor exposes to the toolbar, results and menus. */
 export interface RunnerActions {
-  /** Runs the selection when there is one, else the statement under the caret. */
   runCurrent: () => void
   runAll: () => void
   explainCurrent: () => void
@@ -15,7 +13,6 @@ export interface RunnerActions {
   renameSaved: (query: Query) => void
   format: () => void
   askAi: () => void
-  /** Puts an AI rewrite of `statement` in the editor for review. */
   fixWithAi: (result: RunnerResult & { error: string }) => void
   focus: () => void
 }

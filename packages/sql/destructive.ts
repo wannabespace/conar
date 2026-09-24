@@ -26,9 +26,8 @@ const DESTRUCTIVE = new Set([
 ])
 
 /**
- * Keywords that change or remove existing data, uppercased and deduplicated. Additive writes
- * (INSERT, CREATE) are left out on purpose. A statement's first word counts whatever it tokenized
- * as, since MySQL's `REPLACE INTO` and `MERGE` are not keywords in every dialect's list.
+ * Additive writes (INSERT, CREATE) are left out on purpose. A first word counts whatever it tokenized
+ * as: MySQL's `REPLACE INTO` and `MERGE` are not keywords in every dialect's list.
  */
 export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
   ...new Set(
@@ -57,7 +56,6 @@ const SCHEMA_CHANGES = new Set([
   'TRUNCATE',
 ])
 
-/** Whether the text changes the schema, so cached tables, columns and enums are stale after it runs. */
 export const changesSchema = (text: string, dialect: DialectSpec) =>
   splitStatements(text, dialect).some(
     (statement) =>

@@ -2,7 +2,10 @@ import {
   ArrowUp02Icon,
   BrushCleaningIcon,
   SaveIcon,
+  PanelBottomCloseIcon,
+  PanelBottomOpenIcon,
   Bookmark02Icon,
+  PlayIcon,
   StopIcon,
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
@@ -75,12 +78,6 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const rangeOf = (model: editor.ITextModel, statement: Statement) =>
-  Range.fromPositions(
-    model.getPositionAt(statement.start),
-    model.getPositionAt(statement.end)
-  )
-
 const toRunnerStatement = (statement: Statement): RunnerStatement => ({
   end: statement.end,
   source: statement.text,
@@ -95,7 +92,13 @@ const ToolbarButton = ({
   <Tooltip>
     <TooltipTrigger
       render={
-        <Button variant="ghost" size="icon-sm" aria-label={label} {...props} />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          className="text-muted-foreground hover:text-foreground"
+          {...props}
+        />
       }
     />
     <TooltipContent>{label}</TooltipContent>
@@ -119,13 +122,19 @@ const SavedQueriesButton = () => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={<Button variant="ghost" size="sm" />}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
         <HugeiconsIcon icon={Bookmark02Icon} strokeWidth={2} />
         Saved
         {queriesCount > 0 && (
-          <span className="text-muted-foreground tabular-nums">
-            {queriesCount}
-          </span>
+          <span className="text-muted-foreground/70">{queriesCount}</span>
         )}
       </PopoverTrigger>
       <PopoverContent align="end" padding="none" className="w-80">
@@ -172,7 +181,6 @@ export const Runner = () => {
     editorRef,
   })
 
-  /** The selection when there is one, else the statement under the caret. */
   const current = (): {
     statements: RunnerStatement[]
     range: Range | null
@@ -207,7 +215,6 @@ export const Runner = () => {
     if (!statement) {
       return { range: null, statements: [] }
     }
-    // Statements sharing a line read as one unit (`select 1; select 2;`), so they run together.
     const lineOf = (offset: number) => model.getPositionAt(offset).lineNumber
     const first = lineOf(statement.start)
     const last = lineOf(statement.terminatorEnd)
@@ -217,16 +224,11 @@ export const Runner = () => {
         (item) =>
           lineOf(item.start) <= last && lineOf(item.terminatorEnd) >= first
       )
-    const [head] = sameLines
-    const tail = sameLines.at(-1)
     return {
-      range:
-        head && tail
-          ? Range.fromPositions(
-              model.getPositionAt(head.start),
-              model.getPositionAt(tail.end)
-            )
-          : rangeOf(model, statement),
+      range: Range.fromPositions(
+        model.getPositionAt((sameLines[0] ?? statement).start),
+        model.getPositionAt((sameLines.at(-1) ?? statement).end)
+      ),
       statements: sameLines.map(toRunnerStatement),
     }
   }
@@ -328,20 +330,21 @@ export const Runner = () => {
     <RunnerActionsContext value={actions}>
       <ResizableGroup orientation="vertical">
         <ResizablePanel className="flex min-h-0 flex-col">
-          <div className="flex h-10 shrink-0 items-center gap-1 px-2">
+          <div className="flex shrink-0 items-center gap-2 px-3 py-2">
             {running ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => stopRun(tab)}
-              >
+              <Button size="sm" variant="outline" onClick={() => stopRun(tab)}>
                 <HugeiconsIcon icon={StopIcon} strokeWidth={2} />
                 Stop
               </Button>
             ) : (
-              <Button size="sm" onClick={() => actions.runAll()}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => actions.runAll()}
+              >
+                <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
                 Run all
-                <span className="text-primary-foreground/70 flex items-center">
+                <span className="text-muted-foreground flex items-center">
                   <Ctrl className="size-2.5" userAgent={navigator.userAgent} />
                   <HugeiconsIcon
                     icon={ArrowUp02Icon}
@@ -352,34 +355,48 @@ export const Runner = () => {
                 </span>
               </Button>
             )}
-            <div className="flex-1" />
-            <ToolbarButton label="Format" onClick={() => actions.format()}>
-              <ContentSwitch
-                active={formatted}
-                activeContent={
-                  <HugeiconsIcon
-                    icon={Tick02Icon}
-                    strokeWidth={2}
-                    className="text-success"
-                  />
+            <div className="ml-auto flex shrink-0 items-center gap-1">
+              <ToolbarButton label="Format" onClick={() => actions.format()}>
+                <ContentSwitch
+                  active={formatted}
+                  activeContent={
+                    <HugeiconsIcon
+                      icon={Tick02Icon}
+                      strokeWidth={2}
+                      className="text-success"
+                    />
+                  }
+                  onSwitchEnd={() => setFormatted(false)}
+                >
+                  <HugeiconsIcon icon={BrushCleaningIcon} strokeWidth={2} />
+                </ContentSwitch>
+              </ToolbarButton>
+              <ToolbarButton
+                label={
+                  linkedQuery
+                    ? `Update “${linkedQuery.name}”`
+                    : 'Save tab as query'
                 }
-                onSwitchEnd={() => setFormatted(false)}
+                onClick={() => actions.saveAll()}
               >
-                <HugeiconsIcon icon={BrushCleaningIcon} strokeWidth={2} />
-              </ContentSwitch>
-            </ToolbarButton>
-            <ToolbarButton
-              label={
-                linkedQuery
-                  ? `Update “${linkedQuery.name}”`
-                  : 'Save tab as query'
-              }
-              onClick={() => actions.saveAll()}
-            >
-              <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />
-            </ToolbarButton>
-            <RunHistoryButton />
-            <SavedQueriesButton />
+                <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />
+              </ToolbarButton>
+              <RunHistoryButton />
+              <SavedQueriesButton />
+              <ToolbarButton
+                label={resultsVisible ? 'Hide results' : 'Show results'}
+                onClick={() =>
+                  setLayout(store, { resultsVisible: !resultsVisible })
+                }
+              >
+                <HugeiconsIcon
+                  icon={
+                    resultsVisible ? PanelBottomCloseIcon : PanelBottomOpenIcon
+                  }
+                  strokeWidth={2}
+                />
+              </ToolbarButton>
+            </div>
           </div>
           <div className="relative min-h-0 flex-1">
             <RunnerEditor
@@ -408,7 +425,9 @@ export const Runner = () => {
             setLayout(store, { resultsVisible: !collapsed })
           }
         >
-          <RunnerResults />
+          <div className="size-full border-t">
+            <RunnerResults />
+          </div>
         </ResizablePanel>
       </ResizableGroup>
     </RunnerActionsContext>

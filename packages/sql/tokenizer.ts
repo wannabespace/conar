@@ -1,6 +1,6 @@
 import type { DialectSpec } from './dialect'
 
-export type TokenKind =
+type TokenKind =
   | 'comment'
   | 'function'
   | 'identifier'
@@ -121,7 +121,6 @@ const scanUntil = (
   return { end: text.length, unclosed: true }
 }
 
-/** What opens at `index`, or nothing when the character starts no enclosed construct. */
 const openingAt = (
   text: string,
   index: number,
@@ -188,7 +187,6 @@ const wordKind = (
   return 'identifier'
 }
 
-/** The single token starting at `index`, or nothing for whitespace and unknown characters. */
 const tokenAt = (
   text: string,
   index: number,

@@ -45,10 +45,7 @@ const runRequest = async (
   const start = performance.now()
   const result = await cancellable(
     {
-      cancel: () => {
-        request.cancel()
-        return Promise.resolve()
-      },
+      cancel: () => Promise.resolve(request.cancel()),
       connectionString,
       queryId,
     },
@@ -60,8 +57,7 @@ const runRequest = async (
       result: result.recordset as unknown,
     }
   }
-  // Array row mode puts each recordset's columns, in order and with duplicates, on `result.columns`;
-  // the typings do not know the field.
+  // Array row mode puts each recordset's columns on `result.columns`, which the typings lack.
   const columnSets: unknown[] =
     'columns' in result && Array.isArray(result.columns) ? result.columns : []
   const sets = result.recordsets.map((rows, index) => {

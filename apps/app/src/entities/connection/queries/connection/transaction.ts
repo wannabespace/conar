@@ -6,7 +6,6 @@ import { createQuery } from '../../runtime/query'
 import type { ResultSet } from './custom'
 import { resultSetsType } from './custom'
 
-/** User-written statements run one by one in one driver transaction; returns every statement's sets. */
 export const transactionQuery = ({
   commit,
   statements,

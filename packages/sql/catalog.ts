@@ -11,12 +11,12 @@ export interface SqlTable {
   columns: SqlColumn[] | null
 }
 
-export interface SqlSchema {
+interface SqlSchema {
   name: string
   tables: SqlTable[]
 }
 
-export interface SqlEnum {
+interface SqlEnum {
   name: string
   values: string[]
   /** Set for engines whose enum lives on one column (MySQL, ClickHouse) rather than as a named type. */
@@ -37,7 +37,7 @@ const same = (a: string, b: string) => collator.compare(a, b) === 0
 export const findSchema = (catalog: SqlCatalog, name: string) =>
   catalog.schemas.find((schema) => same(schema.name, name))
 
-/** Unqualified names resolve through the default schema first, then anywhere; returns where it was found. */
+/** Unqualified names resolve through the default schema first, then anywhere. */
 export const locateTable = (
   catalog: SqlCatalog,
   name: string,
@@ -68,7 +68,6 @@ export const findTable = (
 export const findColumn = (table: SqlTable, name: string) =>
   table.columns?.find((column) => same(column.name, name))
 
-/** The enum a column takes: bound to the column itself, else the named type the column is declared as. */
 export const findEnum = (
   catalog: SqlCatalog,
   table: string,

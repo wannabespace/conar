@@ -1,4 +1,5 @@
 import { type } from 'arktype'
+import type { Kysely } from 'kysely'
 import { CompiledQuery } from 'kysely'
 
 import { createQuery } from '../../runtime/query'
@@ -17,11 +18,7 @@ export const resultSetsType = type({ rows: resultSetType.array() }).pipe(
   ({ rows }) => rows
 )
 
-/**
- * A user-written statement, run with `resultSets` query params. No result `type` on purpose: it may
- * write, and a write must not retry on reconnect, so the sets are checked inside instead. `queryId`
- * lets the caller cancel it.
- */
+// No result `type` on purpose: it would opt a write into retries on reconnect, so the sets are checked inside.
 export const customQuery = ({
   query,
   values,
@@ -30,19 +27,12 @@ export const customQuery = ({
   values?: unknown[]
 }) => {
   const compiled = CompiledQuery.raw(query, values)
+  const run = async <DB>(db: Kysely<DB>) =>
+    resultSetsType.assert(await db.executeQuery(compiled))
   return {
     ...createQuery({
       minDuration: 0,
-      query: {
-        clickhouse: async (db) =>
-          resultSetsType.assert(await db.executeQuery(compiled)),
-        mssql: async (db) =>
-          resultSetsType.assert(await db.executeQuery(compiled)),
-        mysql: async (db) =>
-          resultSetsType.assert(await db.executeQuery(compiled)),
-        postgres: async (db) =>
-          resultSetsType.assert(await db.executeQuery(compiled)),
-      },
+      query: { clickhouse: run, mssql: run, mysql: run, postgres: run },
     }),
     queryId: compiled.queryId.queryId,
   }

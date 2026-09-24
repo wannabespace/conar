@@ -141,13 +141,10 @@ const COMMON_TYPES = [
 export interface DialectSpec {
   /** Characters that open a quoted identifier: `"` → `"`, `` ` `` → `` ` ``, `[` → `]`. */
   identifierQuotes: readonly string[]
-  /** Postgres `$$ ... $$` and `$tag$ ... $tag$` bodies. */
   dollarQuotes: boolean
   /** Backslash escapes inside `'...'` (MySQL/ClickHouse); Postgres and SQL Server only double the quote. */
   backslashEscapes: boolean
-  /** `#` starts a line comment (MySQL/ClickHouse) beside the universal `--`. */
   hashComments: boolean
-  /** `@name` session/local variables (MySQL, SQL Server). */
   atVariables: boolean
   /** Line holding only `GO` ends a batch (SQL Server). */
   goBatches: boolean

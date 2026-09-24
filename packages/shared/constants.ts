@@ -74,10 +74,6 @@ export const RECONNECT_ERROR_PATTERNS = [
   'the database system is starting up',
 ]
 
-/**
- * Longest text, in characters, each SQL AI route accepts. `context` (the schema summary, about four
- * characters a token) leaves room for a thousand tables with columns; the client trims to fit it.
- */
 export const AI_SQL_LIMITS = {
   context: 60_000,
   error: 4000,

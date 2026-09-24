@@ -12,6 +12,7 @@ export const updateSQL = orpc
   .input(
     type({
       context: type.string.atMostLength(AI_SQL_LIMITS.context),
+      editor: type.string.atMostLength(AI_SQL_LIMITS.sql),
       prompt: type.string.atMostLength(AI_SQL_LIMITS.prompt),
       sql: type.string.atMostLength(AI_SQL_LIMITS.sql),
       type: type.valueOf(ConnectionType),
@@ -21,6 +22,7 @@ export const updateSQL = orpc
     updateSql({
       connectionType: input.type,
       context: input.context,
+      editor: input.editor,
       prompt: input.prompt,
       signal,
       sql: input.sql,

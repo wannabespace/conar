@@ -1,8 +1,9 @@
 import {
+  AiIdeaIcon,
+  Alert02Icon,
   FileExportIcon,
   StopIcon,
   PlayIcon,
-  SparklesIcon,
   TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -11,6 +12,7 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
 import {
   createPopoverHandle,
   Popover,
@@ -44,7 +46,13 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-/** Duplicate names (`a.id`, `b.id`) get a counter, so every column keeps its own key. */
+const running = (
+  <div className="flex h-full flex-col items-center justify-center gap-2">
+    <Spinner className="text-muted-foreground size-6" />
+    <span className="text-muted-foreground text-xs">Running…</span>
+  </div>
+)
+
 const uniqueColumns = (columns: string[]) => {
   const seen = new Map<string, number>()
   return columns.map((name) => {
@@ -62,21 +70,23 @@ const ResultError = ({
   const { fixWithAi } = useRunnerActions()
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3">
-      <PaneEmpty
-        icon={TableIcon}
-        title="The statement failed"
-        description={result.error}
-      />
+    <PaneEmpty
+      icon={Alert02Icon}
+      title="The statement failed"
+      description={result.error}
+    >
       <Button size="sm" variant="outline" onClick={() => fixWithAi(result)}>
-        <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />
+        <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
         Fix with AI
+        <span className="text-muted-foreground flex items-center">
+          <Ctrl className="size-2.5" userAgent={navigator.userAgent} />
+          <span className="text-2xs">I</span>
+        </span>
       </Button>
-    </div>
+    </PaneEmpty>
   )
 }
 
-/** The set as grid records keyed by unique column names, narrowed to rows holding the search text. */
 const gridOf = (set: ResultSet | null, needle: string) => {
   const columns = uniqueColumns(set?.columns ?? [])
   const records = (set?.rows ?? []).map((row) =>
@@ -104,12 +114,7 @@ const ResultBody = ({
   const { connection } = useRouteContext()
 
   if (result.pending) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2">
-        <Spinner className="text-primary size-6" />
-        <span className="text-muted-foreground text-xs">Running…</span>
-      </div>
-    )
+    return running
   }
   if (result.stopped) {
     return (
@@ -180,7 +185,6 @@ export const RunnerResults = () => {
   const tab = useRunnerTab()
   const { data: run } = useQuery(runnerResultsOptions(tab))
   const results = run?.results ?? []
-  // The pick belongs to one run; a new run starts back on its first result.
   const [picked, setPicked] = useState({ index: 0, run: '' })
   const [search, setSearch] = useState('')
   // oxlint-disable-next-line react/hook-use-state -- a stable handle per mount, never set
@@ -193,15 +197,6 @@ export const RunnerResults = () => {
   const result = results[activeIndex]
   const needle = useDeferredValue(search).trim().toLowerCase()
   const { columns, rows } = gridOf(result?.set ?? null, needle)
-
-  if (run?.running && results.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2">
-        <Spinner className="text-primary size-6" />
-        <span className="text-muted-foreground text-xs">Running…</span>
-      </div>
-    )
-  }
 
   if (!result) {
     return (

@@ -4,21 +4,13 @@ import {
   PlayListAddIcon,
   Bookmark02Icon,
 } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
 } from '@tamery/ui/components/command'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
@@ -30,18 +22,18 @@ import type { Query } from '~/entities/query/sync'
 
 import { useRunnerActions } from '../-lib/actions'
 import {
+  appendQuery,
   linkSavedQuery,
   runnerPageStore,
   setQuery,
   useRunnerPageStore,
 } from '../-lib/store'
+import { ListEmpty, RowAction, SEARCH_FROM } from './popover-list'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
-
-const SEARCH_FROM = 8
 
 export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
   const { connectionResource } = useRouteContext()
@@ -75,12 +67,6 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
     })
   }
 
-  const appendHere = (query: Query) => {
-    const existing = store.get().query.trimEnd()
-    setQuery(store, existing ? `${existing}\n\n${query.query}` : query.query)
-    onPicked()
-  }
-
   return (
     <Command loop>
       <RemoveQueryDialog ref={removeDialogRef} />
@@ -88,16 +74,11 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
         <CommandInput placeholder="Search saved queries" autoFocus />
       )}
       <CommandList>
-        <CommandEmpty className="text-muted-foreground flex flex-col items-center gap-2 py-8 text-xs">
-          <HugeiconsIcon
-            icon={Bookmark02Icon}
-            strokeWidth={2}
-            className="size-5"
-          />
+        <ListEmpty icon={Bookmark02Icon}>
           {queries.length === 0
             ? 'No saved queries yet'
             : 'No matching queries'}
-        </CommandEmpty>
+        </ListEmpty>
         <CommandGroup>
           {queries.map((query) => (
             <CommandItem
@@ -119,79 +100,28 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
                 </span>
               </div>
               <div className="absolute inset-y-0 right-1 my-auto flex h-fit items-center">
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label="Append to this tab"
-                        tabIndex={-1}
-                        className="text-muted-foreground/60 hover:text-foreground"
-                        onPointerDown={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          appendHere(query)
-                        }}
-                      />
-                    }
-                  >
-                    <HugeiconsIcon icon={PlayListAddIcon} strokeWidth={2} />
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Append to this tab</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label="Rename"
-                        tabIndex={-1}
-                        className="text-muted-foreground/60 hover:text-foreground"
-                        onPointerDown={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          onPicked()
-                          renameSaved(query)
-                        }}
-                      />
-                    }
-                  >
-                    <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} />
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Rename</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label="Delete"
-                        tabIndex={-1}
-                        className="text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive"
-                        onPointerDown={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          removeDialogRef.current?.remove(query)
-                        }}
-                      />
-                    }
-                  >
-                    <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Delete</TooltipContent>
-                </Tooltip>
+                <RowAction
+                  icon={PlayListAddIcon}
+                  label="Append to this tab"
+                  onClick={() => {
+                    appendQuery(store, query.query)
+                    onPicked()
+                  }}
+                />
+                <RowAction
+                  icon={PencilEdit02Icon}
+                  label="Rename"
+                  onClick={() => {
+                    onPicked()
+                    renameSaved(query)
+                  }}
+                />
+                <RowAction
+                  destructive
+                  icon={Delete02Icon}
+                  label="Delete"
+                  onClick={() => removeDialogRef.current?.remove(query)}
+                />
               </div>
             </CommandItem>
           ))}

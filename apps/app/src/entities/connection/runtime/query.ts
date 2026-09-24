@@ -76,7 +76,6 @@ export interface QueryParams {
   }) => void
 }
 
-/** Stops a query started with these params, identified by its compiled query's `queryId`. */
 export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
   createDialectProvider(queryParams.type, {
     connectionId: queryParams.connectionId,
@@ -98,12 +97,10 @@ export const reconnectingPromises = createStore<
   >
 >({})
 
-/** Held so a fast answer does not flash its loading state. */
 const MIN_QUERY_DURATION = 300
 
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
-  /** Answer no sooner than this; the runner passes 0 so its timings and scripts are not padded. */
   minDuration?: number
   query: {
     [D in ConnectionType]: (

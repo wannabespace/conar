@@ -1,7 +1,4 @@
-import {
-  ACTIVE_SUBSCRIPTION_STATUSES,
-  AI_SQL_LIMITS,
-} from '@tamery/shared/constants'
+import { AI_SQL_LIMITS } from '@tamery/shared/constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { noop, silently, sleep, tryCatchAsync } from '@tamery/shared/utils'
 import type {
@@ -21,7 +18,7 @@ import {
   needsLeadingSpace,
   withinStatement,
   INITIAL_STATE,
-  parseStatements,
+  splitStatements,
   statementAt,
   statementScope,
   tokenize,
@@ -39,6 +36,7 @@ import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import { isActiveSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 import { queryClient, subscriptionQueryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
@@ -97,7 +95,7 @@ const COMPLETION_KINDS: Record<CompletionKind, languages.CompletionItemKind> = {
   view: languages.CompletionItemKind.Interface,
 }
 
-/** Which connection resource a SQL model belongs to; unbound models get keywords only. */
+/** Unbound models get keywords only. */
 const boundResources = new WeakMap<editor.ITextModel, ConnectionResource>()
 
 export const bindSqlModel = (
@@ -105,10 +103,10 @@ export const bindSqlModel = (
   connectionResource: ConnectionResource
 ) => {
   boundResources.set(model, connectionResource)
+  queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
   queryClient.prefetchQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
-  queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
 }
 
 const EMPTY_CATALOG: SqlCatalog = {
@@ -154,7 +152,8 @@ export const sqlCatalogOf = (
             ?.map((column) => ({
               name: column.id,
               nullable: column.isNullable,
-              type: column.type,
+              // Postgres reports enum columns as `USER-DEFINED`; the label names the enum.
+              type: column.typeLabel,
             })) ?? null,
         kind: table.type,
         name: table.name,
@@ -163,7 +162,6 @@ export const sqlCatalogOf = (
   }
 }
 
-/** Fetches the columns of every table a statement reads, so catalog lookups can see them. */
 const loadColumns = (
   connectionResource: ConnectionResource,
   catalog: SqlCatalog,
@@ -205,34 +203,18 @@ const rangeOf = (
 const hasSubscription = () =>
   subscriptionQueryClient
     .getQueryData(orpc.account.subscription.list.queryOptions().queryKey)
-    ?.some((item) =>
-      ACTIVE_SUBSCRIPTION_STATUSES.includes(
-        item.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
-      )
-    ) ?? false
+    ?.some(isActiveSubscription) ?? false
 
 const GHOST_TEXT_DELAY = 150
-/** The text as it would read with the highlighted suggestion accepted, and where the ghost text starts. */
-const textWithPick = (
-  model: editor.ITextModel,
-  position: Position,
-  selected: languages.SelectedSuggestionInfo | undefined
-) => {
-  const typed = model.getValue()
-  const caret = model.getOffsetAt(position)
-  if (!selected) {
-    return { offset: caret, start: position, text: typed }
-  }
-  const start = Range.lift(selected.range).getStartPosition()
-  const pickStart = model.getOffsetAt(start)
-  return {
-    offset: pickStart + selected.text.length,
-    start,
-    text: typed.slice(0, pickStart) + selected.text + typed.slice(caret),
-  }
-}
 
-/** A caret past a finished statement has nothing to continue. */
+/** Escape pressed over ghost text: no new ghost text until the user types again. */
+const ghostTextSuppressed = new WeakSet<editor.ITextModel>()
+
+const ghostTextOff = (model: editor.ITextModel) =>
+  ghostTextSuppressed.has(model) ||
+  !appStore.get().isOnline ||
+  !hasSubscription()
+
 const continuesStatement = (statement: Statement | undefined, offset: number) =>
   statement !== undefined &&
   statement.tokens.length > 0 &&
@@ -240,19 +222,22 @@ const continuesStatement = (statement: Statement | undefined, offset: number) =>
     offset >= statement.terminatorEnd && statement.terminatorEnd > statement.end
   )
 
-/** Ghost text last offered on top of a highlighted list row, valid only for the text it was made for. */
-const pickPreviews = new WeakMap<
+/**
+ * The ghost text last offered, valid only for the text it was made for: Tab takes it over the list's
+ * row while both show, Escape over it stops suggesting. Every request clears it first, so a stale
+ * entry never claims ghost text that a newer request dropped.
+ */
+const offeredGhostText = new WeakMap<
   editor.ITextModel,
-  { start: Position; text: string; versionId: number }
+  { text: string; versionId: number }
 >()
 
-/** The last ghost text per editor, so typing along with it keeps it on screen without a new request. */
+/** Typing along with the last ghost text keeps it on screen without a new request. */
 const lastGhostText = new WeakMap<
   editor.ITextModel,
   { before: string; after: string; text: string }
 >()
 
-/** What is left of the last suggestion when the user typed its beginning, else nothing. */
 const rememberedGhostText = (
   model: editor.ITextModel,
   typed: string,
@@ -260,44 +245,57 @@ const rememberedGhostText = (
 ) => {
   const last = lastGhostText.get(model)
   const before = typed.slice(0, offset)
-  if (
-    !last ||
-    typed.slice(offset) !== last.after ||
-    !before.startsWith(last.before)
-  ) {
+  const after = typed.slice(offset)
+  if (!last || !before.startsWith(last.before) || !after.endsWith(last.after)) {
     return
   }
   const typedAlong = before.slice(last.before.length)
+  // Typing a quote or bracket auto-closes it after the caret; the suggestion already holds the closer.
+  const autoClosed = after.slice(0, after.length - last.after.length)
+  const rest = last.text.slice(typedAlong.length)
   return last.text.startsWith(typedAlong) &&
-    typedAlong.length < last.text.length
-    ? last.text.slice(typedAlong.length)
+    rest.endsWith(autoClosed) &&
+    rest.length > autoClosed.length
+    ? rest.slice(0, rest.length - autoClosed.length)
     : undefined
 }
 
 /**
  * Monaco's default range swallows the rest of the line (an auto-closed quote, a `;`) and drops a
- * suggestion that does not end with it. Replace the rest only when the suggestion repeats it.
+ * suggestion that does not end with it. A suggestion that repeats the rest is cut back to the new
+ * text, so accepting it leaves the caret right after what was inserted, not at the line's end.
  */
 const ghostItem = (
   model: editor.ITextModel,
   position: Position,
-  start: Position,
   insertText: string
 ) => {
   const restOfLine = model
     .getLineContent(position.lineNumber)
     .slice(position.column - 1)
-  const lineEnd = position.with(
-    undefined,
-    model.getLineMaxColumn(position.lineNumber)
-  )
+  const repeatsRest = restOfLine !== '' && insertText.endsWith(restOfLine)
   return {
-    insertText,
-    range: Range.fromPositions(
-      start,
-      restOfLine && insertText.endsWith(restOfLine) ? lineEnd : position
-    ),
+    insertText: repeatsRest
+      ? insertText.slice(0, insertText.length - restOfLine.length)
+      : insertText,
+    range: Range.fromPositions(position),
   }
+}
+
+const typedAlongItem = (model: editor.ITextModel, position: Position) => {
+  const remembered = rememberedGhostText(
+    model,
+    model.getValue(),
+    model.getOffsetAt(position)
+  )
+  if (!remembered) {
+    return
+  }
+  offeredGhostText.set(model, {
+    text: remembered,
+    versionId: model.getVersionId(),
+  })
+  return ghostItem(model, position, remembered)
 }
 
 const neighbourhood = (
@@ -314,23 +312,32 @@ const neighbourhood = (
     start: statements[index - 1]?.start ?? 0,
   }
 }
+
 const ASK_GHOST_TEXT = {
   id: 'editor.action.inlineSuggest.trigger',
   title: 'Suggest',
 }
 
-/** Models whose user just pressed Escape: no new ghost text until they type again. */
-const ghostTextSuppressed = new WeakSet<editor.ITextModel>()
+/** Monaco's classes for drawn ghost text; `-preview` is the variant drawn while the suggestion list is open. */
+export const GHOST_TEXT_SELECTOR =
+  '.ghost-text-decoration, .ghost-text-decoration-preview, .ghost-text'
 
-/** Escape means "stop suggesting" — Monaco would otherwise ask for a fresh ghost text the moment the list closes. */
+/** Our ghost text is the one on screen, not the list's row preview. */
+const ghostTextLive = (
+  codeEditor: editor.IStandaloneCodeEditor,
+  model: editor.ITextModel
+) =>
+  offeredGhostText.get(model)?.versionId === model.getVersionId() &&
+  Boolean(codeEditor.getDomNode()?.querySelector(GHOST_TEXT_SELECTOR))
+
 /**
- * The ghost text drawn while the list is open continues the highlighted row, so Tab takes both:
- * Monaco alone would insert only the row. Runs before Monaco's own Tab binding.
+ * Ghost text shown beside the open list is not the highlighted row, so Tab takes the ghost text:
+ * Monaco alone would insert the row. Runs before Monaco's own Tab binding.
  */
-const acceptPickWithGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
+const acceptGhostTextOverList = (codeEditor: editor.IStandaloneCodeEditor) => {
   const model = codeEditor.getModel()
   const position = codeEditor.getPosition()
-  const preview = model && pickPreviews.get(model)
+  const preview = model && offeredGhostText.get(model)
   const shown = codeEditor
     .getDomNode()
     ?.querySelector('.suggest-widget.visible .monaco-list-row.focused')
@@ -339,15 +346,12 @@ const acceptPickWithGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
     !position ||
     !preview ||
     !shown ||
-    preview.versionId !== model.getVersionId() ||
-    !codeEditor
-      .getDomNode()
-      ?.querySelector('.ghost-text-decoration-preview, .ghost-text-decoration')
+    !ghostTextLive(codeEditor, model)
   ) {
     return false
   }
   codeEditor.trigger('runner', 'hideSuggestWidget', null)
-  const item = ghostItem(model, position, preview.start, preview.text)
+  const item = ghostItem(model, position, preview.text)
   codeEditor.executeEdits('ai-ghost-text', [
     { forceMoveMarkers: true, range: item.range, text: item.insertText },
   ])
@@ -360,10 +364,16 @@ export const attachGhostTextEscape = (
 ) => {
   const keyListener = codeEditor.onKeyDown((event) => {
     const model = codeEditor.getModel()
-    if (event.keyCode === KeyCode.Escape && model) {
+    // Escape over a shown suggestion means "stop suggesting" — Monaco would otherwise ask again the
+    // moment the list closes. With only the list open, Escape closes the list and the request goes on.
+    if (
+      event.keyCode === KeyCode.Escape &&
+      model &&
+      ghostTextLive(codeEditor, model)
+    ) {
       ghostTextSuppressed.add(model)
     }
-    if (event.keyCode === KeyCode.Tab && acceptPickWithGhostText(codeEditor)) {
+    if (event.keyCode === KeyCode.Tab && acceptGhostTextOverList(codeEditor)) {
       event.preventDefault()
       event.stopPropagation()
     }
@@ -379,15 +389,30 @@ export const attachGhostTextEscape = (
     contentListener.dispose()
   }
 }
-// The model sometimes answers "There's nothing to add…" instead of an empty reply; a sentence is never SQL.
-// Sentence punctuation never occurs in SQL a model would continue with: a period, question or
-// colon followed by a space or ending the text means it explained instead of completing.
-const PROSE = /[.!?:…]\s|[.!?:…]$/u
 
-const catalogSummaryOf = (
+// A reply that is a sentence ("There's nothing to add.") explained instead of completing.
+// `?` stays out: it is Postgres's jsonb key-exists operator.
+const PROSE = /[.!:…]\s|[.!:…]$/u
+
+const tablesIn = (text: string, connectionType: ConnectionType) =>
+  splitStatements(text, dialects[connectionType]).flatMap(
+    (statement) => statementScope(statement.tokens).tables
+  )
+
+export const catalogSummaryFor = async (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
-) => catalogSummary(sqlCatalogOf(connectionResource, connectionType))
+  connectionType: ConnectionType,
+  sql: string
+) => {
+  await silently(() =>
+    loadColumns(
+      connectionResource,
+      sqlCatalogOf(connectionResource, connectionType),
+      tablesIn(sql, connectionType)
+    )
+  )
+  return catalogSummary(sqlCatalogOf(connectionResource, connectionType))
+}
 
 const registerSqlLanguage = (connectionType: ConnectionType) => {
   const id = sqlLanguageIds[connectionType]
@@ -440,11 +465,9 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
       const context = completionContext(text, offset, dialect)
       // A space or paren opens the list only where something specific is expected
       // (`FROM `, `WHERE `, `IN (`), not after every word.
-      if (
-        (trigger.triggerCharacter === ' ' ||
-          trigger.triggerCharacter === '(') &&
-        context.expects === 'any'
-      ) {
+      const openedByGap =
+        trigger.triggerCharacter === ' ' || trigger.triggerCharacter === '('
+      if (openedByGap && context.expects === 'any') {
         return { suggestions: [] }
       }
       const connectionResource = boundResources.get(model)
@@ -474,10 +497,21 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
           void silently(() => loadColumns(connectionResource, catalog, refs))
         }
       }
+      const items = completionItems(context, catalog, dialect)
+      // In a value slot (`col = `, `IN (`) the gap opens the list only for the values the column
+      // takes; a bare list of columns there reads as the value to type.
+      if (
+        openedByGap &&
+        context.expects === 'column' &&
+        context.subject &&
+        !items.some((item) => item.kind === 'enum' || item.kind === 'value')
+      ) {
+        return { incomplete: missingColumns, suggestions: [] }
+      }
       const range = rangeOf(model, context.replaceStart, context.replaceEnd)
       return {
         incomplete: missingColumns,
-        suggestions: completionItems(context, catalog, dialect).map((item) => ({
+        suggestions: items.map((item) => ({
           // Accepting a pick is a good moment for ghost text to continue the statement.
           command: ASK_GHOST_TEXT,
           detail: item.detail,
@@ -499,38 +533,49 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
     disposeInlineCompletions: noop,
     provideInlineCompletions: async (model, position, context, token) => {
       const connectionResource = boundResources.get(model)
-      // With the suggestion list open, Monaco shows only ghost text that continues the highlighted
-      // row, and Tab still accepts that row. So the request is made as if the row were accepted.
-      const selected = context.selectedSuggestionInfo
-      if (
-        selected?.isSnippetText ||
-        !connectionResource ||
-        ghostTextSuppressed.has(model) ||
-        !appStore.get().isOnline ||
-        !hasSubscription()
-      ) {
+      offeredGhostText.delete(model)
+      if (!connectionResource || ghostTextOff(model)) {
         return { items: [] }
       }
-      const typed = model.getValue()
-      const remembered = selected
-        ? undefined
-        : rememberedGhostText(model, typed, model.getOffsetAt(position))
-      if (remembered) {
-        return { items: [ghostItem(model, position, position, remembered)] }
+      const typedAlong = typedAlongItem(model, position)
+      if (typedAlong) {
+        return { items: [typedAlong] }
       }
-      const { offset, start, text } = textWithPick(model, position, selected)
-      const statements = parseStatements(
-        text,
-        tokenize(text, dialect).tokens,
-        dialect
-      )
+      // Monaco asks again on every move through the list and shows only ghost text that extends the
+      // highlighted row; ghost text already on screen stays through `showOnSuggestConflict` instead.
+      if (context.selectedSuggestionInfo) {
+        return { items: [] }
+      }
+      const text = model.getValue()
+      const offset = model.getOffsetAt(position)
+      const statements = splitStatements(text, dialect)
       const statement = statementAt(statements, offset, text)
       // The model sees the statement being written and one on each side for style, not the whole tab.
       const window = neighbourhood(statements, statement, text.length)
-      if (!continuesStatement(statement, offset)) {
+      // Codestral reads an auto-closed `''` as a finished value and writes past it.
+      if (
+        !continuesStatement(statement, offset) ||
+        tokenize(text.slice(0, offset), dialect).state.kind === 'string'
+      ) {
         return { items: [] }
       }
       await sleep(GHOST_TEXT_DELAY)
+      if (token.isCancellationRequested) {
+        return { items: [] }
+      }
+      const prefix = text.slice(
+        Math.max(window.start, offset - AI_SQL_LIMITS.sql),
+        offset
+      )
+      const suffix = text.slice(
+        offset,
+        Math.min(window.end, offset + AI_SQL_LIMITS.sql)
+      )
+      const schema = await catalogSummaryFor(
+        connectionResource,
+        connectionType,
+        prefix + suffix
+      )
       if (token.isCancellationRequested) {
         return { items: [] }
       }
@@ -539,18 +584,7 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
       // A keystroke cancels the request mid-flight; that is not an error to surface.
       const { data: reply } = await tryCatchAsync(() =>
         orpc.ai.completeSQL.call(
-          {
-            context: catalogSummaryOf(connectionResource, connectionType),
-            prefix: text.slice(
-              Math.max(window.start, offset - AI_SQL_LIMITS.sql),
-              offset
-            ),
-            suffix: text.slice(
-              offset,
-              Math.min(window.end, offset + AI_SQL_LIMITS.sql)
-            ),
-            type: connectionType,
-          },
+          { context: schema, prefix, suffix, type: connectionType },
           { context: { silent: true }, signal: controller.signal }
         )
       )
@@ -558,31 +592,24 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
         return { items: [] }
       }
       const suggestion = withinStatement(text.slice(0, offset), reply, dialect)
-      const continuation = needsLeadingSpace(
+      const insertText = needsLeadingSpace(
         text.slice(0, offset),
         suggestion,
-        Boolean(selected) ||
-          context.triggerKind ===
-            languages.InlineCompletionTriggerKind.Explicit,
+        context.triggerKind === languages.InlineCompletionTriggerKind.Explicit,
         dialect
       )
         ? ` ${suggestion}`
         : suggestion
-      const insertText = (selected?.text ?? '') + continuation
-      if (selected) {
-        pickPreviews.set(model, {
-          start,
-          text: insertText,
-          versionId: model.getVersionId(),
-        })
-      } else {
-        lastGhostText.set(model, {
-          after: typed.slice(offset),
-          before: typed.slice(0, offset),
-          text: insertText,
-        })
-      }
-      return { items: [ghostItem(model, position, start, insertText)] }
+      offeredGhostText.set(model, {
+        text: insertText,
+        versionId: model.getVersionId(),
+      })
+      lastGhostText.set(model, {
+        after: text.slice(offset),
+        before: text.slice(0, offset),
+        text: insertText,
+      })
+      return { items: [ghostItem(model, position, insertText)] }
     },
   })
 
@@ -609,7 +636,6 @@ const MARKER_SEVERITIES = {
   warning: MarkerSeverity.Warning,
 }
 
-/** Keeps the editor's markers in step with its text and with what the catalog learns. */
 export const attachSqlDiagnostics = (
   codeEditor: editor.IStandaloneCodeEditor,
   connectionResource: ConnectionResource,
@@ -626,13 +652,7 @@ export const attachSqlDiagnostics = (
     const text = model.getValue()
     const catalog = sqlCatalogOf(connectionResource, connectionType)
     silently(() =>
-      loadColumns(
-        connectionResource,
-        catalog,
-        parseStatements(text, tokenize(text, dialect).tokens, dialect).flatMap(
-          (statement) => statementScope(statement.tokens).tables
-        )
-      )
+      loadColumns(connectionResource, catalog, tablesIn(text, connectionType))
     )
     const markers = diagnose(text, dialect, catalog).map((diagnostic) => ({
       ...rangeOf(model, diagnostic.start, diagnostic.end),

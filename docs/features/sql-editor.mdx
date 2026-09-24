@@ -48,9 +48,9 @@ Results appear below the editor. A run of several statements shows one numbered 
 
 Results stay with their tab while you switch tabs, and go when you close it.
 
-**History** in the toolbar lists the statements you ran on this connection, newest first, with when they ran, how long they took and whether they failed. Picking one appends it to the tab. History stays on this device.
+**History** in the toolbar lists the statements you ran on this connection, newest first, with when they ran, how long they took and whether they failed. Picking one appends it to the tab; the ✕ on a row removes just that statement, and **Clear history** removes them all. History stays on this device.
 
-On error, the database's own message shows in the results pane with **Fix with AI**: the corrected statement lands in the editor with a tint and **Accept**/**Reject** above it.
+On error, the database's own message shows in the results pane with **Fix with AI**, which also sits after the failed statement in the editor (<kbd>⌘</kbd>+<kbd>I</kbd> with the caret in it): the corrected statement lands in the editor with a tint and **Accept**/**Reject** above it.
 
 ## Saving queries
 
@@ -83,7 +83,7 @@ Saved queries are stored per connection and listed under **Saved** in the toolba
   </Card>
 </CardGroup>
 
-Edit with AI, Fix with AI and ghost text all get your schema (tables, columns, enums), so they use real names. While the AI works, <kbd>Esc</kbd> cancels the request. See the [AI assistant](/features/ai-assistant).
+Edit with AI, Fix with AI and ghost text all get your schema (tables, columns, enums), so they use real names. Edit with AI and Fix with AI also see the rest of the tab, to match its style. While the AI works, <kbd>Esc</kbd> cancels the request. See the [AI assistant](/features/ai-assistant).
 
 ## Query logger
 

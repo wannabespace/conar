@@ -27,38 +27,30 @@ import { queryClient } from '~/lib/query-client'
 import { runHistory } from './history'
 import type { RunnerTab } from './store'
 
-/** A statement to run and where its source sat in the editor when the run started. */
 export interface RunnerStatement {
-  /** What is sent — the source, or a wrapped form of it such as `EXPLAIN …`. */
+  /** What is sent: the source, or a wrapped form of it such as `EXPLAIN …`. */
   text: string
   source: string
   start: number
   end: number
 }
 
-/** One result set of a statement; a statement answering with several sets yields one each. */
 export interface RunnerResult extends Omit<RunnerStatement, 'text'> {
   duration: number
   set: ResultSet | null
   error: string | null
-  /** Stop came before this statement finished — cancelled mid-flight or never started. */
   stopped: boolean
-  /** Not run yet: every statement of a run is listed from its start, filled in as it finishes. */
   pending: boolean
 }
 
 export interface RunnerRun {
-  /** Tells one run from the next, so a view keyed to it resets. */
   id: string
-  /** One entry per statement from the start (pending), replaced as each finishes. */
   results: RunnerResult[]
   running: boolean
 }
 
-/** Rows the grid keeps per result: past this the page slows and the proxy's answer grows to tens of MB. */
 const MAX_RESULT_ROWS = 10_000
 
-/** Observes the last run; `runStatements` is the only writer. */
 export const runnerResultsOptions = ({ resourceId, tabId }: RunnerTab) =>
   queryOptions<RunnerRun>({
     // Results outlive the view: switching tabs must not drop them. Closing the tab removes them.
@@ -67,16 +59,13 @@ export const runnerResultsOptions = ({ resourceId, tabId }: RunnerTab) =>
     queryKey: ['query-runner', resourceId, tabId],
   })
 
-/** The in-flight run per tab, so Stop and closing the tab reach it. */
 const runs = new Map<string, AbortController>()
-/** Tabs whose results are cached, each watched until it closes. */
 const watchedTabs = new Set<string>()
 const runKey = ({ resourceId, tabId }: RunnerTab) => `${resourceId}\n${tabId}`
 
 const messageOf = (error: unknown) =>
   error instanceof Error ? error.message : String(error)
 
-/** Closing the tab stops its run and drops its results; the database work would otherwise outlive the UI. */
 const watchTab = (tab: RunnerTab) => {
   const key = runKey(tab)
   if (watchedTabs.has(key)) {
@@ -115,7 +104,6 @@ const queryFor = (text: string, connectionType: ConnectionType) => {
   return { queryIds: [single.queryId], run: single.run }
 }
 
-/** Stop cancels the statement on the server too — aborting the request alone leaves it running. */
 const runOne = async (
   params: QueryParams,
   statement: RunnerStatement,
@@ -132,7 +120,6 @@ const runOne = async (
       }
     }
     signal.addEventListener('abort', cancel, { once: true })
-    // The queries check their sets themselves but declare no `type`, which would opt a write into retries.
     const sets = resultSetType.array().assert(await run(params))
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) => ({
@@ -174,12 +161,6 @@ const stoppedResult = (statement: RunnerStatement): RunnerResult => ({
   stopped: true,
 })
 
-const pendingResult = (statement: RunnerStatement): RunnerResult => ({
-  ...stoppedResult(statement),
-  pending: true,
-  stopped: false,
-})
-
 export const runStatements = async ({
   connectionResource,
   statements,
@@ -200,8 +181,9 @@ export const runStatements = async ({
   // A newer run on the tab owns its results; this one finishes quietly.
   const current = () => runs.get(key) === controller
   const run: RunnerRun = { id: crypto.randomUUID(), results: [], running: true }
-  // One slot per statement, so the result tabs are all there from the first frame.
-  const slots = statements.map((statement) => [pendingResult(statement)])
+  const slots = statements.map((statement) => [
+    { ...stoppedResult(statement), pending: true, stopped: false },
+  ])
   const publish = () => {
     run.results = slots.flat()
     if (current()) {

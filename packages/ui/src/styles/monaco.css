@@ -4,7 +4,7 @@
 
 /* Statement under the caret — what ⌘↩ runs. */
 .monaco-editor .sql-active-band {
-  background-color: color-mix(in oklch, var(--foreground) 3%, transparent);
+  background-color: color-mix(in oklch, var(--foreground) 6%, transparent);
 }
 
 /* Text an AI rewrite just replaced, awaiting Accept/Reject. */

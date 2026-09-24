@@ -17,16 +17,15 @@ export const completeSQL = orpc
       type: type.valueOf(ConnectionType),
     })
   )
-  .handler(({ context, input, signal }) =>
-    completeSql({
+  .handler(({ context, input, signal }) => {
+    const scope = { feature: AiFeature.CompleteSql, userId: context.user.id }
+    return completeSql({
       connectionType: input.type,
       context: input.context,
+      onUsage: (modelId, usage) => aiUsage.record(scope, modelId, usage),
       prefix: input.prefix,
       signal,
       suffix: input.suffix,
-      telemetry: aiUsage.telemetry({
-        feature: AiFeature.CompleteSql,
-        userId: context.user.id,
-      }),
+      telemetry: aiUsage.telemetry(scope),
     })
-  )
+  })

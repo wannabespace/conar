@@ -124,7 +124,7 @@ export const proxyCommand = command({
     )
 
     const router = createQueryRouter(authed, {
-      connectionString: (input) => resolveConnectionString(input),
+      connectionString: resolveConnectionString,
       owner: () => session.user.id,
     })
 

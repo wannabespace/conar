@@ -1,5 +1,5 @@
 import type { SqlCatalog, SqlColumn, SqlTable } from './catalog'
-import { findEnum, findSchema, findTable } from './catalog'
+import { findColumn, findEnum, findSchema, findTable } from './catalog'
 import type { DialectSpec } from './dialect'
 import type { StatementScope, TableRef } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
@@ -18,7 +18,7 @@ export type CompletionKind =
   | 'value'
   | 'view'
 
-export interface CompletionItem {
+interface CompletionItem {
   label: string
   kind: CompletionKind
   insertText: string
@@ -34,7 +34,7 @@ interface Subject {
   name: string
 }
 
-export interface CompletionContext {
+interface CompletionContext {
   /** Text of the word under the caret up to the caret. */
   prefix: string
   replaceStart: number
@@ -58,7 +58,6 @@ export interface CompletionContext {
   selected: string[]
   /** Keywords insert in the case the user is already writing in. */
   keywordCase: 'upper' | 'lower'
-  /** Caret sits inside a string or comment — nothing to suggest. */
   inLiteral: boolean
   scope: StatementScope
 }
@@ -106,7 +105,6 @@ const KEYWORD_PRIORITY = [
   'DROP',
 ]
 
-// What may follow a finished term, keyed by the clause it sits in.
 const NEXT_CLAUSES: Record<string, string[]> = {
   AND: ['AND', 'OR', 'GROUP BY', 'ORDER BY', 'LIMIT'],
   BY: ['ASC', 'DESC', 'HAVING', 'ORDER BY', 'LIMIT'],
@@ -158,7 +156,6 @@ const OPERATORS = [
   'BETWEEN',
 ]
 const LIMITS = ['10', '50', '100', '1000']
-// Nothing before the caret in its statement: only a verb can come first, most used first.
 const STATEMENT_VERBS = [
   'SELECT',
   'INSERT INTO',
@@ -207,7 +204,6 @@ const clausesAfter = (
   )
 }
 
-/** `WHERE status |` — a column waiting for its comparison. */
 const awaitsOperator = (
   previous: Token | undefined,
   beforePrevious: Token | undefined,
@@ -257,7 +253,6 @@ const subjectAt = (tokens: Token[], index: number): Subject | null => {
   }
 }
 
-/** The column a value at the caret compares against: `col = |`, `col IN (|`, `col BETWEEN |`. */
 const valueSubject = (before: Token[], cursor: number) => {
   const previous = before[cursor]
   if (previous?.kind === 'operator') {
@@ -275,7 +270,6 @@ const valueSubject = (before: Token[], cursor: number) => {
   return null
 }
 
-/** Bare columns of the SELECT list — what GROUP BY repeats. */
 const selectedColumns = (statementTokens: Token[]) => {
   const start = statementTokens.findIndex((token) => isKeyword(token, 'SELECT'))
   if (start === -1) {
@@ -360,9 +354,6 @@ const slotAfter = (
   return null
 }
 
-const hasLowercaseLetters = (text: string) =>
-  text !== text.toUpperCase() && text === text.toLowerCase()
-
 export const completionContext = (
   text: string,
   offset: number,
@@ -412,7 +403,11 @@ export const completionContext = (
     clauses,
     expects,
     inLiteral,
-    keywordCase: hasLowercaseLetters(caseSample) ? 'lower' : 'upper',
+    keywordCase:
+      caseSample === caseSample.toLowerCase() &&
+      caseSample !== caseSample.toUpperCase()
+        ? 'lower'
+        : 'upper',
     prefix,
     qualifier,
     replaceEnd: word?.end ?? offset,
@@ -452,9 +447,7 @@ const resolveSubject = (
     ? [scopeTable(scope, catalog, subject.qualifier)]
     : scope.tables.map((ref) => findTable(catalog, ref.name, ref.schema))
   for (const table of tables) {
-    const column = table?.columns?.find(
-      (item) => item.name.toLowerCase() === subject.name.toLowerCase()
-    )
+    const column = table && findColumn(table, subject.name)
     if (table && column) {
       return { column, table }
     }
@@ -563,7 +556,6 @@ const qualifiedItems = (
   )
 }
 
-/** Operators for the column at the caret, most likely first by its type. */
 const operatorItems = (
   resolved: ReturnType<typeof resolveSubject>
 ): CompletionItem[] => {
@@ -579,7 +571,6 @@ const operatorItems = (
   )
 }
 
-/** Literal values the column at the caret takes: its enum members, booleans. */
 const valueItems = (
   resolved: ReturnType<typeof resolveSubject>,
   catalog: SqlCatalog
@@ -612,7 +603,6 @@ const singular = (name: string) => {
   return name.endsWith('s') ? name.slice(0, -1) : name
 }
 
-/** `a.user_id = b.id` pairs guessed from column names, for the table just joined. */
 const joinConditionItems = (
   scope: StatementScope,
   catalog: SqlCatalog
@@ -639,10 +629,7 @@ const joinConditionItems = (
     for (const [from, to] of [
       [left, right],
       [right, left],
-    ]) {
-      if (!from || !to) {
-        continue
-      }
+    ] as const) {
       const key = `${singular(to.table?.name ?? '').toLowerCase()}_id`
       if (from.columns.includes(key) && to.columns.includes('id')) {
         pairs.push(`${from.prefix}.${key} = ${to.prefix}.id`)
@@ -696,7 +683,6 @@ const scopeColumnItems = (
     const table = findTable(catalog, ref.name, ref.schema)
     return table ? [{ qualifier: ref.alias ?? table.name, table }] : []
   })
-  // One table reads best bare; several are told apart by their alias.
   const qualify = known.length > 1
   const seen = new Set<string>()
   return known.flatMap(({ qualifier, table }) =>

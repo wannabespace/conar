@@ -61,7 +61,7 @@ const TabPage = () => {
   return (
     <AnimateView
       key={`${shownResourceId}:${shownTab.id}`}
-      transition={{ duration: 0.06 }}
+      transition={{ duration: 0.04 }}
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <TabContent tab={shownTab} />

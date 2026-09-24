@@ -12,9 +12,6 @@ catalogs:
     '@ai-sdk/google':
       specifier: ^4.0.63
       version: 4.0.63
-    '@ai-sdk/mistral':
-      specifier: 4.0.39
-      version: 4.0.39
     '@ai-sdk/openai':
       specifier: ^4.0.57
       version: 4.0.57
@@ -286,8 +283,8 @@ catalogs:
       specifier: ^13.4.0
       version: 13.4.0
     motion-panels:
-      specifier: ^0.5.2
-      version: 0.5.2
+      specifier: ^0.6.1
+      version: 0.6.1
     mssql:
       specifier: ^12.7.0
       version: 12.7.0
@@ -1126,9 +1123,6 @@ importers:
       '@ai-sdk/google':
         specifier: 'catalog:'
         version: 4.0.63(zod@4.5.4)
-      '@ai-sdk/mistral':
-        specifier: 'catalog:'
-        version: 4.0.39(zod@4.5.4)
       '@ai-sdk/openai':
         specifier: 'catalog:'
         version: 4.0.57(zod@4.5.4)
@@ -1419,7 +1413,7 @@ importers:
         version: 13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       motion-panels:
         specifier: 'catalog:'
-        version: 0.5.2(motion@13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+        version: 0.6.1(motion@13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -1502,12 +1496,6 @@ packages:
 
   '@ai-sdk/mcp@2.0.43':
     resolution: {integrity: sha512-So38w39jxz9caWiovSbJ1UMxJquPJl6x8eVkO9Aej+7QDHoCktvVi6ir8VLpsazAwyxvbsHSY/2p4B61Be5v5w==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/mistral@4.0.39':
-    resolution: {integrity: sha512-tigadr/BzilmL3cxUA5BWWPZ4/O0iPnneWQBBRxFUVCZ3naVEc78B2XxuDWL83R3ic+nqevHMlkyNjyiTRPPPQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -7919,8 +7907,8 @@ packages:
   motion-dom@13.3.0:
     resolution: {integrity: sha512-AmAnB6pHdZ1vHGzWzuzteG6Q3j1lHKeX/lbST6jGlgm0cjvLUgaCk1xhOuPMOy5SgovN6wnnUdwFrkcsus7Ftg==}
 
-  motion-panels@0.5.2:
-    resolution: {integrity: sha512-1uADco/umHHWyy+iV8HXgP1v3LZRpbmU7LfAWhM2tHx9JU1RRBpnmxcEZfdsJAp6zCS1sJlb5xKi2GYm94nz8Q==}
+  motion-panels@0.6.1:
+    resolution: {integrity: sha512-J54v7wRlShT8ltS4WLBJhxgYSxxaOflearP3fJu0SbBP4mw5kncbEWgwlSfvVX5nEY1BBroKvdN7NFLT+ctCFw==}
     engines: {node: '>=20'}
     peerDependencies:
       motion: '>=12'
@@ -10171,12 +10159,6 @@ snapshots:
       '@ai-sdk/provider-utils': 5.0.36(zod@4.5.4)
       cross-spawn: 7.0.6
       pkce-challenge: 5.0.1
-      zod: 4.5.4
-
-  '@ai-sdk/mistral@4.0.39(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.10
-      '@ai-sdk/provider-utils': 5.0.36(zod@4.5.4)
       zod: 4.5.4
 
   '@ai-sdk/openai@4.0.57(zod@4.5.4)':
@@ -17067,7 +17049,7 @@ snapshots:
     dependencies:
       motion-utils: 13.3.0
 
-  motion-panels@0.5.2(motion@13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0):
+  motion-panels@0.6.1(motion@13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0):
     dependencies:
       motion: 13.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     optionalDependencies:

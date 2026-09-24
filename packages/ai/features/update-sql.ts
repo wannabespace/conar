@@ -2,7 +2,7 @@ import type { TelemetryOptions } from 'ai'
 import { generateText } from 'ai'
 
 import { models } from '../models/list'
-import { section, sqlOutputRules } from './prompt'
+import { EDITOR_CONTEXT, section, sqlOutputRules } from './prompt'
 
 const updateSqlInstructions = (data: {
   connectionType: string
@@ -13,6 +13,7 @@ const updateSqlInstructions = (data: {
     'Given the selected SQL and a request, return the updated query.',
     'When only a minor change is needed (a WHERE clause, a column, a value), change just that part.',
     'The selection can contain several queries; update all of them.',
+    EDITOR_CONTEXT,
     ...sqlOutputRules(data.connectionType),
     '',
     'Database context:',
@@ -22,6 +23,7 @@ const updateSqlInstructions = (data: {
 export const updateSql = async (data: {
   connectionType: string
   context: string
+  editor: string
   prompt: string
   signal?: AbortSignal
   sql: string
@@ -32,6 +34,7 @@ export const updateSql = async (data: {
     instructions: updateSqlInstructions(data),
     model: models.sql,
     prompt: [
+      section('WHOLE EDITOR', data.editor),
       section('SELECTED SQL QUERY', data.sql),
       section('PROMPT', data.prompt),
     ].join('\n'),

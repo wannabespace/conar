@@ -653,7 +653,8 @@ const Tab = ({
     })
 
   const tabClasses = cn(
-    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap`,
+    // Sync `duration-40` (here and on the icon) with the tab content cross-fade in `$tabId.tsx`.
+    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-40`,
     isActive &&
       `bg-background text-foreground hover:bg-background border-b-transparent`,
     isPreview && 'italic'
@@ -664,7 +665,7 @@ const Tab = ({
       icon={Icon}
       strokeWidth={2}
       className={cn(
-        'text-muted-foreground/60 size-3.5 shrink-0',
+        'text-muted-foreground/60 size-3.5 shrink-0 transition-colors duration-40',
         isActive && 'text-primary'
       )}
     />

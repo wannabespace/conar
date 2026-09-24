@@ -107,11 +107,14 @@ export const query = {
       return cancellable(
         {
           cancel: async () => {
-            await client.command({
-              query: 'KILL QUERY WHERE query_id = {id:String}',
-              query_params: { id: clickhouseQueryId },
-            })
-            controller.abort()
+            try {
+              await client.command({
+                query: 'KILL QUERY WHERE query_id = {id:String}',
+                query_params: { id: clickhouseQueryId },
+              })
+            } finally {
+              controller.abort()
+            }
           },
           connectionString,
           queryId,
