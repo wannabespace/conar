@@ -16,6 +16,8 @@ const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<voi
   ['customer.subscription.updated', subscriptionUpdated],
 ])
 
+const prices = new Set([env.STRIPE_MONTH_PRICE_ID, env.STRIPE_ANNUAL_PRICE_ID])
+
 export const stripe = orpc.handler(async ({ context }) => {
   try {
     const event = await validateRequest(context.request)
@@ -24,6 +26,15 @@ export const stripe = orpc.handler(async ({ context }) => {
 
     if (!handler) {
       throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
+    }
+
+    const subscription = event.data.object
+
+    if (
+      subscription.object === 'subscription' &&
+      !subscription.items.data.some(item => prices.has(item.price.id))
+    ) {
+      return true
     }
 
     await handler(event).catch(async error => {
