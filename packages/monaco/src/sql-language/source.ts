@@ -7,7 +7,8 @@ import {
   splitStatements,
   statementScope,
 } from '@tamery/sql'
-import type { editor, IRange } from 'monaco-editor'
+import type { editor } from 'monaco-editor'
+import { Range } from 'monaco-editor'
 
 export interface TableRef {
   name: string
@@ -41,20 +42,8 @@ export const EMPTY_CATALOG: SqlCatalog = {
   schemas: [],
 }
 
-export const rangeOf = (
-  model: editor.ITextModel,
-  start: number,
-  end: number
-): IRange => {
-  const from = model.getPositionAt(start)
-  const to = model.getPositionAt(end)
-  return {
-    endColumn: to.column,
-    endLineNumber: to.lineNumber,
-    startColumn: from.column,
-    startLineNumber: from.lineNumber,
-  }
-}
+export const rangeOf = (model: editor.ITextModel, start: number, end: number) =>
+  Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
 
 export const tablesIn = (text: string, connectionType: ConnectionType) =>
   splitStatements(text, dialects[connectionType]).flatMap(
