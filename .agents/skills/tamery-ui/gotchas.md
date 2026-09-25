@@ -51,7 +51,7 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 - **Never clear a React-managed inline style to `''` imperatively** — React only patches keys whose prop value changed, so a width it set once and an effect later blanks stays blank forever. Restore the value React rendered, or pin through a property React does not own (`minWidth`/`maxWidth`).
 - A 1px line cannot be centred in an even gutter with whole-pixel padding — centre with layout, not padding.
 - `content-visibility: auto` breaks a scroller's scroll math (skipped items measure as estimates) — use real virtualization.
-- Scroll-edge fades must never cover the scrollbar: masks clip it and overlay siblings paint over it. The data table puts gradients inside the scroller as sticky zero-height anchors; `scroll-fade` (mask) only with `no-scrollbar`.
+- Scroll-edge fades must never cover the scrollbar: masks clip it and overlay siblings paint over it. The data table puts gradients inside the scroller as sticky zero-height anchors; `scroll-fade` (mask) only with `no-scrollbar`. A faded scroller whose children draw a hairline border (tab strip `border-b`) unions a 1px layer into `--scroll-fade-mask` with `mask-composite: add` (plus `-webkit-mask-composite: source-over`), else the line fades with the content.
 - **`scrollAnchor` pins a turn to the top and releases only when the answer fills the viewport**, so the same chat in two window heights un-pins at different moments and the scrolls drift apart. Its pass also fires on equal-count mutations and scrolls to the oldest unhandled anchor. The chat anchors nothing and lets provider `autoScroll` hold the bottom.
 
 ## Panes (`motion-panels`)

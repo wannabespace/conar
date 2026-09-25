@@ -964,7 +964,10 @@ export const TabBar = ({ className }: { className?: string }) => {
         <TabRefresh tab={activeTab} />
       </div>
       {tabs.length > 0 && (
-        <ScrollArea className="h-full min-w-0 flex-1">
+        <ScrollArea
+          className="h-full min-w-0 flex-1"
+          viewportClassName="scroll-fade-x [--scroll-fade-mask:linear-gradient(to_top,#000_1px,transparent_1px),var(--scroll-fade-inline)] [-webkit-mask-composite:source-over]! [mask-composite:add]!"
+        >
           <div className="flex h-8 w-max min-w-full items-stretch">
             <Reorder.Group
               axis="x"
