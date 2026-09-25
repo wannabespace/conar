@@ -26,13 +26,6 @@ const askedWithList = new WeakMap<editor.ITextModel, number>()
 const ghostTextOff = (model: editor.ITextModel, source: SqlSource) =>
   ghostTextSuppressed.has(model) || !source.ghostTextEnabled()
 
-const continuesStatement = (statement: Statement | undefined, offset: number) =>
-  statement !== undefined &&
-  statement.tokens.length > 0 &&
-  !(
-    offset >= statement.terminatorEnd && statement.terminatorEnd > statement.end
-  )
-
 /**
  * The ghost text last offered, valid only for the text it was made for: Tab takes it over the list's
  * row while both show, Escape over it stops suggesting. Every request clears it first, so a stale
@@ -232,6 +225,8 @@ export const attachGhostTextEscape = (
 // `?` stays out: it is Postgres's jsonb key-exists operator.
 const PROSE = /[.!:…]\s|[.!:…]$/u
 
+const LEADING_BLANK_LINES = /^\s*\n/u
+
 export const registerGhostText = (id: string, dialect: DialectSpec) =>
   languages.registerInlineCompletionsProvider(id, {
     disposeInlineCompletions: noop,
@@ -263,11 +258,9 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const statement = statementAt(statements, offset, text)
       // The model sees the statement being written and one on each side for style, not the whole tab.
       const window = neighbourhood(statements, statement, text.length)
-      // Codestral reads an auto-closed `''` as a finished value and writes past it.
-      if (
-        !continuesStatement(statement, offset) ||
-        tokenize(text.slice(0, offset), dialect).state.kind === 'string'
-      ) {
+      const { state } = tokenize(text.slice(0, offset), dialect)
+      // Codestral reads an auto-closed `''` as a finished value and writes past it. A `$$` body is code.
+      if (state.kind === 'string' && !state.close.startsWith('$')) {
         return { items: [] }
       }
       await sleep(GHOST_TEXT_DELAY)
@@ -296,10 +289,23 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const { data: reply } = await tryCatchAsync(() =>
         source.complete({ context: schema, prefix, suffix }, controller.signal)
       )
-      if (!reply?.trim() || PROSE.test(reply.trim())) {
+      if (!reply) {
         return { items: [] }
       }
-      const suggestion = withinStatement(text.slice(0, offset), reply, dialect)
+      const blankLine = !model
+        .getLineContent(position.lineNumber)
+        .slice(0, position.column - 1)
+        .trim()
+      // Judged after the cut: what follows the statement (echoed schema comments) is never shown.
+      const suggestion = withinStatement(
+        text.slice(0, offset),
+        // On a blank line Codestral opens with the blank line it leaves between statements.
+        blankLine ? reply.replace(LEADING_BLANK_LINES, '') : reply,
+        dialect
+      )
+      if (!suggestion.trim() || PROSE.test(suggestion.trim())) {
+        return { items: [] }
+      }
       const insertText = needsLeadingSpace(
         text.slice(0, offset),
         suggestion,

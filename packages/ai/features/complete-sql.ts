@@ -73,6 +73,17 @@ const fimResponseType = type({
   usage: { completion_tokens: 'number', prompt_tokens: 'number' },
 })
 
+const TABLE_LINE = /^(?<name>[^\s(]+)(?:\((?<columns>.*)\))?$/u
+
+/** Codestral takes a bare word under comment-only context for the start of Lua or JS; DDL makes the file read as SQL. */
+const schemaAsDdl = (context: string) =>
+  context.split('\n').map((line) => {
+    const table = TABLE_LINE.exec(line)?.groups
+    return table
+      ? `create table ${table.name} (${table.columns ?? ''});`
+      : `-- ${line}`
+  })
+
 const fimCompleteSql = async (data: CompleteSqlInput) => {
   const response = await fetch('https://api.mistral.ai/v1/fim/completions', {
     body: JSON.stringify({
@@ -80,7 +91,7 @@ const fimCompleteSql = async (data: CompleteSqlInput) => {
       model: FIM_MODEL,
       prompt: [
         `-- Database: ${data.connectionType}`,
-        ...data.context.split('\n').map((line) => `-- ${line}`),
+        ...schemaAsDdl(data.context),
         '',
         data.prefix,
       ].join('\n'),
