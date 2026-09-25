@@ -97,7 +97,7 @@ const queryFor = (text: string, connectionType: ConnectionType) => {
         : 'This database has no transactions. Run the statements without BEGIN.'
     )
   }
-  const single = customQuery(text)
+  const single = customQuery({ query: text })
   return { queryIds: [single.queryId], run: single.run }
 }
 

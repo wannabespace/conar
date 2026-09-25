@@ -35,7 +35,12 @@ export const transactionQuery = ({
 
   return {
     ...createQuery<Type<ResultSet[]>>({
-      query: { clickhouse: run, mssql: run, mysql: run, postgres: run },
+      query: {
+        clickhouse: run,
+        mssql: run,
+        mysql: run,
+        postgres: run,
+      },
     }),
     queryIds: compiled.map((query) => query.queryId.queryId),
   }
