@@ -13,6 +13,7 @@ const updateSqlInstructions = (data: {
     'Given the selected SQL and a request, return the updated query.',
     'When only a minor change is needed (a WHERE clause, a column, a value), change just that part.',
     'The selection can contain several queries; update all of them.',
+    'Attached images are screenshots the user refers to; with no written prompt, they are the request.',
     EDITOR_CONTEXT,
     ...sqlOutputRules(data.connectionType),
     '',
@@ -24,6 +25,7 @@ export const updateSql = async (data: {
   connectionType: string
   context: string
   editor: string
+  images: File[]
   prompt: string
   signal?: AbortSignal
   sql: string
@@ -34,10 +36,27 @@ export const updateSql = async (data: {
     instructions: updateSqlInstructions(data),
     model: models.sql,
     prompt: [
-      section('WHOLE EDITOR', data.editor),
-      section('SELECTED SQL QUERY', data.sql),
-      section('PROMPT', data.prompt),
-    ].join('\n'),
+      {
+        content: [
+          {
+            text: [
+              section('WHOLE EDITOR', data.editor),
+              section('SELECTED SQL QUERY', data.sql),
+              section('PROMPT', data.prompt),
+            ].join('\n'),
+            type: 'text',
+          },
+          ...(await Promise.all(
+            data.images.map(async (image) => ({
+              data: new Uint8Array(await image.arrayBuffer()),
+              mediaType: image.type,
+              type: 'file' as const,
+            }))
+          )),
+        ],
+        role: 'user',
+      },
+    ],
     telemetry: data.telemetry,
   })
   return text

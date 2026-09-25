@@ -27,6 +27,8 @@ const githubTheme = (
     'editor.lineHighlightBorder': '#00000000',
     'editor.selectionBackground': '#5081f150',
     'editorGutter.background': c.background,
+    // Monaco outlines any focused button, input or textarea inside the editor, over Tailwind's `outline-none`.
+    focusBorder: '#00000000',
   },
   inherit: false,
   rules: [

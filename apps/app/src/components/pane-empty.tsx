@@ -20,7 +20,7 @@ export const PaneEmpty = ({
   icon: IconSvgElement
   title: string
 }) => (
-  <Empty className="min-h-0 flex-1 p-4 md:p-4">
+  <Empty className="min-h-0 flex-1 overflow-y-auto p-4 md:p-4">
     <EmptyHeader className="gap-1">
       <EmptyMedia
         variant="icon"

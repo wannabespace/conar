@@ -1,29 +1,105 @@
-import { AiIdeaIcon, SparklesIcon } from '@hugeicons/core-free-icons'
+import {
+  AiIdeaIcon,
+  Cancel01Icon,
+  SparklesIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { catalogSummaryFor } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+} from '@tamery/ui/components/attachment'
 import { Button } from '@tamery/ui/components/button'
 import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'
-import { Kbd } from '@tamery/ui/components/kbd'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from '@tamery/ui/components/input-group'
 import { Spinner } from '@tamery/ui/components/spinner'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { renderWithRoot } from '@tamery/ui/lib/render'
+import { cn } from '@tamery/ui/lib/utils'
 import { editor as monacoEditor, Range } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { sqlSourceFor } from '~/entities/connection/sql-source'
 import { orpc } from '~/lib/orpc'
 
-// Room for the card's shadow: the gutter layer paints over anything left of the content.
-const ZONE_HEIGHT = 44
+const CARD_HEIGHT = 32
+const SHADOW_ROOM = 12
 
 type Phase =
   | { kind: 'prompt'; busy: boolean }
   | { kind: 'fixing'; error: string }
   | { kind: 'review'; original: string; applied: string; fix: boolean }
+
+const sizeFormats = {
+  kilobyte: new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 0,
+    style: 'unit',
+    unit: 'kilobyte',
+  }),
+  megabyte: new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 1,
+    style: 'unit',
+    unit: 'megabyte',
+  }),
+}
+
+const fileSize = (bytes: number) =>
+  bytes < 1_000_000
+    ? sizeFormats.kilobyte.format(Math.max(1, bytes / 1000))
+    : sizeFormats.megabyte.format(bytes / 1_000_000)
+
+const PastedImage = ({
+  image,
+  onRemove,
+}: {
+  image: File
+  onRemove: () => void
+}) => {
+  const url = useMemo(() => URL.createObjectURL(image), [image])
+  useEffect(() => () => URL.revokeObjectURL(url), [url])
+
+  return (
+    <Attachment size="xs" className="max-w-52">
+      <AttachmentMedia variant="image">
+        <img data-mask src={url} alt="" />
+      </AttachmentMedia>
+      <AttachmentContent>
+        <Tooltip>
+          <TooltipTrigger render={<AttachmentTitle data-mask />}>
+            {image.name}
+          </TooltipTrigger>
+          <TooltipContent data-mask>{image.name}</TooltipContent>
+        </Tooltip>
+        <AttachmentDescription>{fileSize(image.size)}</AttachmentDescription>
+      </AttachmentContent>
+      <AttachmentActions>
+        <AttachmentAction aria-label="Remove image" onClick={onRemove}>
+          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+        </AttachmentAction>
+      </AttachmentActions>
+    </Attachment>
+  )
+}
 
 const RejectButton = ({
   label,
@@ -38,19 +114,23 @@ const RejectButton = ({
   </Button>
 )
 
-/** Detached React root inside a Monaco view zone: props only, no context reaches it. */
 const AiEditZone = ({
   phase,
   onAccept,
   onClose,
+  onResize,
   onSubmit,
 }: {
   phase: Phase
   onAccept: () => void
   onClose: () => void
-  onSubmit: (prompt: string) => void
+  onResize: (height: number) => void
+  onSubmit: (prompt: string, images: File[]) => void
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [images, setImages] = useState<{ file: File; id: string }[]>([])
+  const formRef = useRef<HTMLFormElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const resize = useEffectEvent(onResize)
 
   useEffect(() => {
     if (phase.kind === 'prompt') {
@@ -58,28 +138,140 @@ const AiEditZone = ({
     }
   }, [phase.kind])
 
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) {
+        resize(entry.borderBoxSize[0]?.blockSize ?? CARD_HEIGHT)
+      }
+    })
+    if (formRef.current) {
+      observer.observe(formRef.current)
+    }
+    return () => observer.disconnect()
+  }, [])
+
+  const icon = (
+    <HugeiconsIcon
+      icon={
+        phase.kind === 'fixing' || (phase.kind === 'review' && phase.fix)
+          ? AiIdeaIcon
+          : SparklesIcon
+      }
+      strokeWidth={2}
+      className="text-muted-foreground size-3.5 shrink-0"
+    />
+  )
+
   return (
     <form
-      className="bg-popover ring-foreground/4 mt-1.5 ml-3 flex h-8 w-lg max-w-[calc(100%-2.5rem)] items-center gap-2 rounded-xl pr-1.5 pl-2.5 shadow-md ring"
+      ref={formRef}
+      className={cn(
+        'mt-1.5 ml-3 w-lg max-w-[calc(100%-2.5rem)]',
+        phase.kind !== 'prompt' &&
+          'bg-popover ring-foreground/4 flex h-8 items-center gap-2 rounded-xl pr-1.5 pl-2.5 shadow-md ring'
+      )}
       onSubmit={(event) => {
         event.preventDefault()
-        const prompt = inputRef.current?.value.trim()
-        if (prompt) {
-          onSubmit(prompt)
+        const prompt = inputRef.current?.value.trim() ?? ''
+        if (prompt || images.length > 0) {
+          onSubmit(
+            prompt,
+            images.map(({ file }) => file)
+          )
         }
       }}
     >
-      <HugeiconsIcon
-        icon={
-          phase.kind === 'fixing' || (phase.kind === 'review' && phase.fix)
-            ? AiIdeaIcon
-            : SparklesIcon
-        }
-        strokeWidth={2}
-        className="text-muted-foreground size-3.5 shrink-0"
-      />
+      {phase.kind === 'prompt' && (
+        <InputGroup className="shadow-md">
+          <InputGroupTextarea
+            ref={inputRef}
+            data-mask
+            rows={1}
+            className="max-h-32 min-h-8 py-1.5 pr-10 pl-8 read-only:opacity-50"
+            placeholder="Describe how to change this statement…"
+            // Read-only, not disabled: a disabled input drops focus, and Esc must still cancel the request.
+            readOnly={phase.busy}
+            spellCheck={false}
+            onPaste={(event) => {
+              const pasted = [...event.clipboardData.files].filter((file) =>
+                file.type.startsWith('image/')
+              )
+              if (pasted.length === 0) {
+                return
+              }
+              event.preventDefault()
+              const fitting = pasted.filter(
+                (file) => file.size <= AI_SQL_LIMITS.imageBytes
+              )
+              if (fitting.length < pasted.length) {
+                toast.error('Images over 5 MB are left out')
+              }
+              setImages((current) =>
+                [
+                  ...current,
+                  ...fitting.map((file) => ({ file, id: crypto.randomUUID() })),
+                ].slice(0, AI_SQL_LIMITS.images)
+              )
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.stopPropagation()
+                onClose()
+              }
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault()
+                formRef.current?.requestSubmit()
+              }
+            }}
+          />
+          {images.length > 0 && (
+            <InputGroupAddon align="block-end" className="pr-9 pl-8">
+              <AttachmentGroup className="w-full">
+                {images.map(({ file, id }) => (
+                  <PastedImage
+                    key={id}
+                    image={file}
+                    onRemove={() =>
+                      setImages((current) =>
+                        current.filter((item) => item.id !== id)
+                      )
+                    }
+                  />
+                ))}
+              </AttachmentGroup>
+            </InputGroupAddon>
+          )}
+          <div className="absolute top-2.25 left-2.5 flex">{icon}</div>
+          <div className="absolute right-1 bottom-1 flex">
+            {phase.busy ? (
+              <Spinner className="text-muted-foreground m-1.25 size-3.5" />
+            ) : (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <InputGroupButton
+                      type="submit"
+                      size="icon-xs"
+                      aria-label="Send"
+                      className="text-muted-foreground hover:text-foreground"
+                    />
+                  }
+                >
+                  <EnterIcon />
+                </TooltipTrigger>
+                <TooltipContent>Send</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </InputGroup>
+      )}
       {phase.kind === 'fixing' && (
         <>
+          {icon}
           <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
             Fixing <span data-mask>{phase.error}</span>
           </span>
@@ -89,6 +281,7 @@ const AiEditZone = ({
       )}
       {phase.kind === 'review' && (
         <>
+          {icon}
           <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
             {phase.fix ? 'Review the fix' : 'Review the rewrite'}
           </span>
@@ -100,32 +293,6 @@ const AiEditZone = ({
               <EnterIcon className="size-2.5" />
             </span>
           </Button>
-        </>
-      )}
-      {phase.kind === 'prompt' && (
-        <>
-          <input
-            ref={inputRef}
-            data-mask
-            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none read-only:opacity-50"
-            placeholder="Describe how to change this statement…"
-            // Read-only, not disabled: a disabled input drops focus, and Esc must still cancel the request.
-            readOnly={phase.busy}
-            spellCheck={false}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                event.stopPropagation()
-                onClose()
-              }
-            }}
-          />
-          {phase.busy ? (
-            <Spinner className="text-muted-foreground size-3.5" />
-          ) : (
-            <Kbd>
-              <EnterIcon />
-            </Kbd>
-          )}
         </>
       )}
     </form>
@@ -145,6 +312,7 @@ export const useAiEdit = ({
   const zoneRef = useRef<{
     id: string
     root: ReturnType<typeof renderWithRoot>['root']
+    zone: monacoEditor.IViewZone
   } | null>(null)
   // A decoration, not a stored Range: it moves with edits made elsewhere while the AI works.
   const targetRef = useRef<monacoEditor.IEditorDecorationsCollection | null>(
@@ -314,13 +482,23 @@ export const useAiEdit = ({
     }
   }
 
-  const submit = (prompt: string) => {
+  const submit = (prompt: string, images: File[]) => {
     const range = target()
     if (range) {
       request(range, { busy: true, kind: 'prompt' }, (input, signal) =>
-        orpc.ai.updateSQL.call({ ...input, prompt }, { signal })
+        orpc.ai.updateSQL.call({ ...input, images, prompt }, { signal })
       )
     }
+  }
+
+  const resizeZone = (cardHeight: number) => {
+    const editor = editorRef.current
+    const { current } = zoneRef
+    if (!editor || !current) {
+      return
+    }
+    current.zone.heightInPx = cardHeight + SHADOW_ROOM
+    editor.changeViewZones((accessor) => accessor.layoutZone(current.id))
   }
 
   useEffect(() => {
@@ -334,6 +512,7 @@ export const useAiEdit = ({
         phase={phase}
         onAccept={accept}
         onClose={reject}
+        onResize={resizeZone}
         onSubmit={submit}
       />
     )
@@ -343,15 +522,13 @@ export const useAiEdit = ({
     }
     const { domNode, root } = renderWithRoot(element)
     domNode.style.zIndex = '10'
+    const zone = {
+      afterLineNumber: range.startLineNumber - 1,
+      domNode,
+      heightInPx: CARD_HEIGHT + SHADOW_ROOM,
+    }
     editor.changeViewZones((accessor) => {
-      zoneRef.current = {
-        id: accessor.addZone({
-          afterLineNumber: range.startLineNumber - 1,
-          domNode,
-          heightInPx: ZONE_HEIGHT,
-        }),
-        root,
-      }
+      zoneRef.current = { id: accessor.addZone(zone), root, zone }
     })
   })
 
@@ -364,12 +541,13 @@ export const useAiEdit = ({
       close()
     }
   })
+
   const active = phase !== null
+
   useEffect(() => {
     if (!active) {
       return
     }
-    // Deferred: the AI's own rewrite collapses the tracked range until `review` re-tracks it.
     const listener = editorRef.current?.onDidChangeModelContent(() =>
       queueMicrotask(closeIfDeleted)
     )
@@ -380,8 +558,7 @@ export const useAiEdit = ({
     revert()
     close()
   })
-  // Leaving the tab mid-edit must not strand the zone's React root, apply a late reply or keep an
-  // unreviewed rewrite. Runs before the editor below is disposed: React unmounts parents first.
+
   useEffect(() => () => discardOnUnmount(), [])
 
   return {
