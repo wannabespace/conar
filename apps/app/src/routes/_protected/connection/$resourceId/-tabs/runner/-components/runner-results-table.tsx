@@ -94,7 +94,7 @@ export const RunnerResultsTable = ({
     )}
   >
     <Table className="h-full">
-      <TableHeader className="bg-background rounded-none inset-shadow-[0_-1px_0_0_var(--color-border)] inset-ring-0" />
+      <TableHeader />
       <TableBody data-mask zebra className="bg-transparent" />
     </Table>
   </TableProvider>
