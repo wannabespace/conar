@@ -1,4 +1,3 @@
-import type { QueryExecuteResult } from '@tamery/connection/queries'
 import { rowObjects } from '@tamery/connection/queries'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
@@ -68,14 +67,6 @@ export const createDialectProvider = (
     : null
 
   const maxRows = options.resultSets?.maxRows
-  const shaped = async (promise: Promise<QueryExecuteResult>) => {
-    const { duration, result } = await promise
-    return {
-      duration,
-      result: options.resultSets ? result : rowObjects(result),
-    }
-  }
-
   const resolveTransport = () => {
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
@@ -125,28 +116,24 @@ export const createDialectProvider = (
     },
     execute(payload: QueryPayload) {
       const t = resolveTransport()
-      return shaped(
-        t.kind === 'electron'
-          ? t.electron.execute({
-              connectionString: options.connectionString,
-              ...payload,
-              maxRows,
-            })
-          : t.proxy.execute({
-              ...resolveProxyIdParams(options),
-              ...payload,
-              maxRows,
-            })
-      )
+      return t.kind === 'electron'
+        ? t.electron.execute({
+            connectionString: options.connectionString,
+            ...payload,
+            maxRows,
+          })
+        : t.proxy.execute({
+            ...resolveProxyIdParams(options),
+            ...payload,
+            maxRows,
+          })
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()
       const payload = { ...params, maxRows }
-      return shaped(
-        t.kind === 'electron'
-          ? t.electron.executeTransaction(payload)
-          : t.proxy.executeTransaction(payload)
-      )
+      return t.kind === 'electron'
+        ? t.electron.executeTransaction(payload)
+        : t.proxy.executeTransaction(payload)
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -157,41 +144,31 @@ export const createDialectProvider = (
   }
 }
 
-export const createKyselyDriver = ({
-  provider,
-  logger,
-  transformQuery = (compiledQuery) => ({
+export const createKyselyDriver = (
+  type: ConnectionType,
+  options: DialectOptions,
+  transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
-  }),
-}: {
-  provider: ReturnType<typeof createDialectProvider>
-  logger?: DialectOptions['log']
-  transformQuery?: (compiledQuery: CompiledQuery) => QueryPayload
-}) => {
+  })
+) => {
+  const provider = createDialectProvider(type, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
-  const executeAndLog = (compiledQuery: CompiledQuery) => {
+  const executeAndLog = (compiledQuery: CompiledQuery, txId: string | null) => {
     const payload = {
       ...transformQuery(compiledQuery),
       queryId: compiledQuery.queryId.queryId,
     }
-    const promise = provider.execute(payload)
-    logger?.({
-      promise,
-      query: compiledQuery.sql,
-      values: compiledQuery.parameters as unknown[],
-    })
-    return promise
-  }
-
-  const executeInTxAndLog = (txId: string, compiledQuery: CompiledQuery) => {
-    const payload = {
-      ...transformQuery(compiledQuery),
-      queryId: compiledQuery.queryId.queryId,
-    }
-    const promise = provider.executeTransaction({ txId, ...payload })
-    logger?.({
+    const promise = (
+      txId
+        ? provider.executeTransaction({ txId, ...payload })
+        : provider.execute(payload)
+    ).then(({ duration, result }) => ({
+      duration,
+      result: options.resultSets ? result : rowObjects(result),
+    }))
+    options.log?.({
       promise,
       query: compiledQuery.sql,
       values: compiledQuery.parameters as unknown[],
@@ -206,10 +183,8 @@ export const createKyselyDriver = ({
         executeQuery: async <R>(
           compiledQuery: CompiledQuery
         ): Promise<QueryResult<R>> => {
-          const { result } = state.txId
-            ? await executeInTxAndLog(state.txId, compiledQuery)
-            : await executeAndLog(compiledQuery)
-          return { rows: Array.isArray(result) ? (result as R[]) : [] }
+          const { result } = await executeAndLog(compiledQuery, state.txId)
+          return { rows: result as R[] }
         },
         streamQuery() {
           throw new Error('Not implemented')

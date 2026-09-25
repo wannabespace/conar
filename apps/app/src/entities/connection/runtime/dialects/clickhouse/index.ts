@@ -4,7 +4,7 @@ import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '../driver'
-import { createDialectProvider, createKyselyDriver } from '../driver'
+import { createKyselyDriver } from '../driver'
 
 const escapeSqlStringRegex = /[\\']/gu
 
@@ -76,14 +76,14 @@ export const clickhouseDialect = (options: DialectOptions) =>
   ({
     createAdapter: clickhouseAdapter,
     createDriver: () =>
-      createKyselyDriver({
-        logger: options.log,
-        provider: createDialectProvider(ConnectionType.ClickHouse, options),
-        transformQuery: (compiledQuery) => ({
+      createKyselyDriver(
+        ConnectionType.ClickHouse,
+        options,
+        (compiledQuery) => ({
           query: prepareQuery(compiledQuery),
           values: [],
-        }),
-      }),
+        })
+      ),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
