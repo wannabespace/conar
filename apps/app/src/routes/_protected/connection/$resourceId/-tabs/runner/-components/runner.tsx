@@ -80,10 +80,13 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const toRunnerStatement = (statement: Statement): RunnerStatement => ({
-  end: statement.end,
+const toRunnerStatement = (
+  statement: Statement,
+  offset = 0
+): RunnerStatement => ({
+  end: offset + statement.end,
   source: statement.text,
-  start: statement.start,
+  start: offset + statement.start,
   text: statement.text,
 })
 
@@ -166,7 +169,6 @@ export const Runner = () => {
   })
   const dialect = dialects[connection.type]
   const aiEdit = useAiEdit({
-    connectionResource,
     connectionType: connection.type,
     editorRef,
   })
@@ -189,12 +191,7 @@ export const Runner = () => {
         statements: splitStatements(
           model.getValueInRange(selection),
           dialect
-        ).map((statement) => ({
-          end: offset + statement.end,
-          source: statement.text,
-          start: offset + statement.start,
-          text: statement.text,
-        })),
+        ).map((statement) => toRunnerStatement(statement, offset)),
       }
     }
     const statement = statementAt(
@@ -219,7 +216,7 @@ export const Runner = () => {
         model.getPositionAt((sameLines[0] ?? statement).start),
         model.getPositionAt((sameLines.at(-1) ?? statement).end)
       ),
-      statements: sameLines.map(toRunnerStatement),
+      statements: sameLines.map((item) => toRunnerStatement(item)),
     }
   }
 
@@ -280,7 +277,8 @@ export const Runner = () => {
       setQuery(store, formatSql(store.get().query, connection.type))
       setFormatted(true)
     },
-    runAll: () => run(statements.get().map(toRunnerStatement)),
+    runAll: () =>
+      run(statements.get().map((statement) => toRunnerStatement(statement))),
     runCurrent: () => run(current().statements),
     renameSaved: (query) =>
       saveDialogRef.current?.open({ kind: 'rename', query }),

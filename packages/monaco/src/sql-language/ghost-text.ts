@@ -289,7 +289,7 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
         offset,
         Math.min(window.end, offset + AI_SQL_LIMITS.sql)
       )
-      const schema = await catalogSummaryFor(source, prefix + suffix)
+      const schema = await catalogSummaryFor(model, prefix + suffix)
       if (!requestCurrent(model, source, token)) {
         return { items: [] }
       }

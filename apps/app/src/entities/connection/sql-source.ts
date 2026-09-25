@@ -1,4 +1,4 @@
-import type { SqlSource, TableRef } from '@tamery/monaco/sql-language'
+import type { SqlSource } from '@tamery/monaco/sql-language'
 import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
@@ -62,29 +62,6 @@ const sqlCatalogOf = (
   }
 }
 
-const loadColumns = (
-  connectionResource: ConnectionResource,
-  catalog: SqlCatalog,
-  refs: TableRef[]
-) =>
-  Promise.all(
-    refs.flatMap((ref) => {
-      // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
-      const found = locateTable(catalog, ref.name, ref.schema)
-      return found?.table.columns === null
-        ? [
-            queryClient.ensureQueryData(
-              resourceTableColumnsQueryOptions({
-                connectionResource,
-                schema: found.schema,
-                table: found.table.name,
-              })
-            ),
-          ]
-        : []
-    })
-  )
-
 export const sqlSourceFor = (
   connectionResource: ConnectionResource,
   connectionType: ConnectionType
@@ -102,7 +79,26 @@ export const sqlSourceFor = (
         { context: { silent: true }, signal }
       ),
     ghostTextEnabled: () => appStore.get().isOnline && hasSubscription(),
-    loadColumns: (refs) => loadColumns(connectionResource, catalog(), refs),
+    loadColumns: (refs) => {
+      const current = catalog()
+      return Promise.all(
+        refs.flatMap((ref) => {
+          // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
+          const found = locateTable(current, ref.name, ref.schema)
+          return found?.table.columns === null
+            ? [
+                queryClient.ensureQueryData(
+                  resourceTableColumnsQueryOptions({
+                    connectionResource,
+                    schema: found.schema,
+                    table: found.table.name,
+                  })
+                ),
+              ]
+            : []
+        })
+      )
+    },
     onCatalogChange: (listener) =>
       queryClient.getQueryCache().subscribe((event) => {
         if (

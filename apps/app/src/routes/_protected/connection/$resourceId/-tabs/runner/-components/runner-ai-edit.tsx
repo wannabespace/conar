@@ -38,8 +38,6 @@ import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { sqlSourceFor } from '~/entities/connection/sql-source'
 import { orpc } from '~/lib/orpc'
 
 const CARD_HEIGHT = 32
@@ -301,11 +299,9 @@ const AiEditZone = ({
 
 export const useAiEdit = ({
   editorRef,
-  connectionResource,
   connectionType,
 }: {
   editorRef: RefObject<monacoEditor.IStandaloneCodeEditor | null>
-  connectionResource: ConnectionResource
   connectionType: ConnectionType
 }) => {
   const [phase, setPhase] = useState<Phase | null>(null)
@@ -437,10 +433,7 @@ export const useAiEdit = ({
     track(range, false)
     setPhase(pending)
     try {
-      const context = await catalogSummaryFor(
-        sqlSourceFor(connectionResource, connectionType),
-        original
-      )
+      const context = await catalogSummaryFor(model, original)
       const text = await call(
         {
           context,

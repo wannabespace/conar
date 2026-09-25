@@ -105,12 +105,26 @@ const queryFor = (
   return { queryIds: [single.queryId], run: single.run }
 }
 
+const resultOf = (
+  statement: RunnerStatement,
+  patch: Partial<RunnerResult> = {}
+): RunnerResult => ({
+  duration: 0,
+  end: statement.end,
+  error: null,
+  pending: false,
+  set: null,
+  source: statement.source,
+  start: statement.start,
+  stopped: false,
+  ...patch,
+})
+
 const runOne = async (
   params: QueryParams,
   statement: RunnerStatement,
   signal: AbortSignal
 ): Promise<RunnerResult[]> => {
-  const { end, source, start } = statement
   const startedAt = performance.now()
   let cancel = noop
   try {
@@ -123,44 +137,21 @@ const runOne = async (
     signal.addEventListener('abort', cancel, { once: true })
     const sets = await run(params)
     const duration = performance.now() - startedAt
-    return (sets.length > 0 ? sets : [null]).map((set) => ({
-      duration,
-      end,
-      error: null,
-      set,
-      pending: false,
-      source,
-      start,
-      stopped: false,
-    }))
+    return (sets.length > 0 ? sets : [null]).map((set) =>
+      resultOf(statement, { duration, set })
+    )
   } catch (error) {
     return [
-      {
+      resultOf(statement, {
         duration: performance.now() - startedAt,
-        end,
         error: signal.aborted ? null : messageOf(error),
-        set: null,
-        pending: false,
-        source,
-        start,
         stopped: signal.aborted,
-      },
+      }),
     ]
   } finally {
     signal.removeEventListener('abort', cancel)
   }
 }
-
-const stoppedResult = (statement: RunnerStatement): RunnerResult => ({
-  duration: 0,
-  end: statement.end,
-  error: null,
-  set: null,
-  pending: false,
-  source: statement.source,
-  start: statement.start,
-  stopped: true,
-})
 
 export const runStatements = async ({
   connectionResource,
@@ -183,7 +174,7 @@ export const runStatements = async ({
   const current = () => runs.get(key) === controller
   const run: RunnerRun = { id: crypto.randomUUID(), results: [], running: true }
   const slots = statements.map((statement) => [
-    { ...stoppedResult(statement), pending: true, stopped: false },
+    resultOf(statement, { pending: true }),
   ])
   const publish = () => {
     run.results = slots.flat()
@@ -200,7 +191,7 @@ export const runStatements = async ({
   }))
   if (error && first) {
     slots.splice(0, slots.length, [
-      { ...stoppedResult(first), error: messageOf(error), stopped: false },
+      resultOf(first, { error: messageOf(error) }),
     ])
   }
   const ran: Parameters<typeof runHistory.add>[1] = []
@@ -208,7 +199,7 @@ export const runStatements = async ({
   if (params) {
     for (const [index, statement] of statements.entries()) {
       if (signal.aborted || failedAt !== undefined) {
-        slots[index] = [stoppedResult(statement)]
+        slots[index] = [resultOf(statement, { stopped: true })]
         continue
       }
       const ranAt = Date.now()

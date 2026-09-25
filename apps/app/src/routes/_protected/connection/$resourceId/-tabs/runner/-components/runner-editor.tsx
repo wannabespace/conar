@@ -89,18 +89,52 @@ const FAILED_CONTEXT_KEY = 'tameryFailedStatement'
 
 // Monaco keybindings are bit flags; bitwise OR is required by the API.
 /* oxlint-disable no-bitwise */
-const KEYBINDINGS = {
-  askAi: KeyMod.CtrlCmd | KeyCode.KeyK,
-  // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
-  fixAi: KeyMod.CtrlCmd | KeyCode.KeyI,
-  // Monaco's own ⌘. is Quick Fix, which the SQL language never offers.
-  openStatementMenu: KeyMod.CtrlCmd | KeyCode.Period,
-  reject: KeyCode.Escape,
-  runAll: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
-  runCurrent: KeyMod.CtrlCmd | KeyCode.Enter,
-  saveAll: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyS,
-  saveCurrent: KeyMod.CtrlCmd | KeyCode.KeyS,
-}
+const EDITOR_ACTIONS = [
+  {
+    keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
+    label: 'Run statement',
+    name: 'runCurrent',
+  },
+  {
+    keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
+    label: 'Run all',
+    name: 'runAll',
+  },
+  {
+    keybinding: KeyMod.CtrlCmd | KeyCode.KeyS,
+    label: 'Save statement',
+    name: 'saveCurrent',
+  },
+  {
+    keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyS,
+    label: 'Save all',
+    name: 'saveAll',
+  },
+  {
+    keybinding: KeyMod.CtrlCmd | KeyCode.KeyK,
+    label: 'Edit with AI',
+    name: 'askAi',
+  },
+  {
+    // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
+    keybinding: KeyMod.CtrlCmd | KeyCode.KeyI,
+    label: 'Fix with AI',
+    name: 'fixAi',
+    precondition: FAILED_CONTEXT_KEY,
+  },
+  {
+    // Monaco's own ⌘. is Quick Fix, which the SQL language never offers.
+    keybinding: KeyMod.CtrlCmd | KeyCode.Period,
+    label: 'Statement actions',
+    name: 'openStatementMenu',
+  },
+  {
+    keybinding: KeyCode.Escape,
+    label: 'Reject AI edit',
+    name: 'rejectAi',
+    precondition: AI_REVIEW_CONTEXT_KEY,
+  },
+] as const
 /* oxlint-enable no-bitwise */
 
 // Monaco swallows keys typed into it (and claims ⌘L), so the app's panel toggles are re-dispatched.
@@ -135,17 +169,7 @@ const useEditorActions = (
   }
 ) => {
   const invoke = useEffectEvent(
-    (
-      name:
-        | 'runCurrent'
-        | 'runAll'
-        | 'saveCurrent'
-        | 'saveAll'
-        | 'askAi'
-        | 'fixAi'
-        | 'rejectAi'
-        | 'openStatementMenu'
-    ) =>
+    (name: (typeof EDITOR_ACTIONS)[number]['name']) =>
       name === 'runCurrent' && actions.reviewing
         ? actions.acceptAi()
         : actions[name]()
@@ -163,64 +187,23 @@ const useEditorActions = (
     reviewKeyRef.current = reviewKey
     const failedKey = codeEditor.createContextKey(FAILED_CONTEXT_KEY, false)
     failedKeyRef.current = failedKey
-    const register = (
-      id: string,
-      label: string,
-      keybinding: number,
-      run: () => void,
-      precondition?: string
-    ) =>
-      codeEditor.addAction({
-        id: `tamery.${id}`,
-        keybindings: [keybinding],
-        label,
-        precondition,
-        run,
-      })
     const disposables = [
       ...APP_SHORTCUTS.map(({ keyCode, letter }) =>
-        register(
-          `app-${letter}`,
-          `Toggle panel (${letter.toUpperCase()})`,
+        codeEditor.addAction({
+          id: `tamery.app-${letter}`,
           // oxlint-disable-next-line no-bitwise -- Monaco keybindings are bit flags
-          KeyMod.CtrlCmd | keyCode,
-          () => forwardToApp(letter)
-        )
+          keybindings: [KeyMod.CtrlCmd | keyCode],
+          label: `Toggle panel (${letter.toUpperCase()})`,
+          run: () => forwardToApp(letter),
+        })
       ),
-      register('run-current', 'Run statement', KEYBINDINGS.runCurrent, () =>
-        invoke('runCurrent')
-      ),
-      register('run-all', 'Run all', KEYBINDINGS.runAll, () =>
-        invoke('runAll')
-      ),
-      register('save-current', 'Save statement', KEYBINDINGS.saveCurrent, () =>
-        invoke('saveCurrent')
-      ),
-      register('save-all', 'Save all', KEYBINDINGS.saveAll, () =>
-        invoke('saveAll')
-      ),
-      register('ask-ai', 'Edit with AI', KEYBINDINGS.askAi, () =>
-        invoke('askAi')
-      ),
-      register(
-        'fix-ai',
-        'Fix with AI',
-        KEYBINDINGS.fixAi,
-        () => invoke('fixAi'),
-        FAILED_CONTEXT_KEY
-      ),
-      register(
-        'statement-menu',
-        'Statement actions',
-        KEYBINDINGS.openStatementMenu,
-        () => invoke('openStatementMenu')
-      ),
-      register(
-        'reject-ai',
-        'Reject AI edit',
-        KEYBINDINGS.reject,
-        () => invoke('rejectAi'),
-        AI_REVIEW_CONTEXT_KEY
+      ...EDITOR_ACTIONS.map(({ keybinding, name, ...action }) =>
+        codeEditor.addAction({
+          ...action,
+          id: `tamery.${name}`,
+          keybindings: [keybinding],
+          run: () => invoke(name),
+        })
       ),
     ]
     return () => {

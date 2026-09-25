@@ -44,7 +44,14 @@ export const tablesIn = (text: string, connectionType: ConnectionType) =>
     (statement) => statementScope(statement.tokens).tables
   )
 
-export const catalogSummaryFor = async (source: SqlSource, sql: string) => {
+export const catalogSummaryFor = async (
+  model: editor.ITextModel,
+  sql: string
+) => {
+  const source = boundSources.get(model)
+  if (!source) {
+    return ''
+  }
   await silently(() => source.loadColumns(tablesIn(sql, source.type)))
   return catalogSummary(source.catalog())
 }
