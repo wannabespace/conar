@@ -24,6 +24,8 @@ describe('needsLeadingSpace', () => {
 
   it('always separates after a completion pick', () => {
     expect(needsLeadingSpace('select * from users', 'u', true, pg)).toBe(true)
+    expect(needsLeadingSpace('select', '* from users', true, pg)).toBe(true)
+    expect(needsLeadingSpace('select', ' * from users', true, pg)).toBe(false)
   })
 })
 

@@ -3,6 +3,7 @@ import { splitStatements } from './statements'
 
 const TRAILING_WORD = /\w+$/u
 const LEADING_WORD = /^\w+/u
+const LEADING_SPACE = /^\s/u
 
 /**
  * The model often omits the space (`accountsWHERE`): add one when the suggestion was asked for, or when the reply
@@ -15,12 +16,16 @@ export const needsLeadingSpace = (
   dialect: DialectSpec
 ) => {
   const typed = TRAILING_WORD.exec(before)?.[0]
-  const next = LEADING_WORD.exec(reply)?.[0]
-  if (!typed || !next) {
+  if (!typed) {
     return false
   }
+  // An explicit ask sends the model a space after the word, so its reply, `*` included, follows one.
   if (explicit) {
-    return true
+    return !LEADING_SPACE.test(reply)
+  }
+  const next = LEADING_WORD.exec(reply)?.[0]
+  if (!next) {
+    return false
   }
   const known = (word: string) => {
     const upper = word.toUpperCase()
