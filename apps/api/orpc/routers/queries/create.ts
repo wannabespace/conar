@@ -13,7 +13,6 @@ export const create = orpc
     NOT_FOUND: { message: 'Connection resource not found' },
   })
   .handler(async ({ context, errors, input }) => {
-    // The foreign key proves the resource exists, not that this user may attach queries to it.
     const resource = await db.query.connectionsResources.findFirst({
       columns: { id: true },
       where: {
