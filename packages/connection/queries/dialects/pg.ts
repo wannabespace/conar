@@ -5,7 +5,7 @@ import { memoize } from 'memoza'
 import type { Pool, PoolClient, PoolConfig } from 'pg'
 import type * as PgModule from 'pg'
 
-import type { QueryExecutor, RunOptions } from '..'
+import type { QueryExecutor, RunOptions, TransactionSettings } from '..'
 import { handleQueryError, resultSet } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
@@ -123,17 +123,27 @@ export const query = {
 
   beginTransaction: handleQueryError(
     async ({
+      accessMode,
       connectionString,
+      isolationLevel,
       ownerId,
     }: {
       connectionString: string
       ownerId?: string
-    }) => {
+    } & TransactionSettings) => {
       const pool = await getPool(connectionString)
       const client = await pool.connect()
 
       try {
-        await client.query('BEGIN')
+        await client.query(
+          [
+            'BEGIN',
+            isolationLevel && `ISOLATION LEVEL ${isolationLevel}`,
+            accessMode,
+          ]
+            .filter(Boolean)
+            .join(' ')
+        )
       } catch (error) {
         client.release()
         throw error

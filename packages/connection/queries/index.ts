@@ -39,6 +39,12 @@ export const rowObjects = ([first]: ResultSet[]) =>
       )
     : []
 
+/** Kysely's `TransactionSettings`, lowercase as Kysely validates them. Interpolated into the opener. */
+export interface TransactionSettings {
+  accessMode?: string
+  isolationLevel?: string
+}
+
 export interface QueryExecutor {
   execute: (
     args: {
@@ -47,10 +53,12 @@ export interface QueryExecutor {
       values?: unknown[]
     } & RunOptions
   ) => Promise<QueryExecuteResult>
-  beginTransaction: (args: {
-    connectionString: string
-    ownerId?: string
-  }) => Promise<{ txId: string }>
+  beginTransaction: (
+    args: {
+      connectionString: string
+      ownerId?: string
+    } & TransactionSettings
+  ) => Promise<{ txId: string }>
   executeTransaction: (
     args: {
       txId: string

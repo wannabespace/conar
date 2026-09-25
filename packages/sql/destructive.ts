@@ -25,6 +25,9 @@ const DESTRUCTIVE = new Set([
   'UPDATE',
 ])
 
+// A body the tokenizer sees as one string (`DO $$ … $$`, `EXEC 'DROP …'`) or a procedure could drop anything.
+const OPAQUE = new Set(['CALL', 'DO', 'EXEC', 'EXECUTE'])
+
 /**
  * Additive writes (INSERT, CREATE) are left out on purpose. A first word counts whatever it tokenized
  * as: MySQL's `REPLACE INTO` and `MERGE` are not keywords in every dialect's list.
@@ -40,9 +43,10 @@ export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
         }
         return words.filter(
           (word, index) =>
-            (tokens[index]?.kind === 'keyword' || index === 0) &&
-            DESTRUCTIVE.has(word) &&
-            !locksOrReferences(words, index)
+            (index === 0 && OPAQUE.has(word)) ||
+            ((tokens[index]?.kind === 'keyword' || index === 0) &&
+              DESTRUCTIVE.has(word) &&
+              !locksOrReferences(words, index))
         )
       })
   ),
@@ -62,7 +66,8 @@ export const changesSchema = (text: string, dialect: DialectSpec) =>
       !onlyExplains(statement) &&
       statement.tokens.some(
         (token, index) =>
-          (token.kind === 'keyword' || index === 0) &&
-          SCHEMA_CHANGES.has(token.text.toUpperCase())
+          (index === 0 && OPAQUE.has(token.text.toUpperCase())) ||
+          ((token.kind === 'keyword' || index === 0) &&
+            SCHEMA_CHANGES.has(token.text.toUpperCase()))
       )
   )

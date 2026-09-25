@@ -24,6 +24,21 @@ describe('destructiveKeywords', () => {
     ).toEqual(['UPDATE', 'DELETE'])
   })
 
+  it('flags code it cannot see into', () => {
+    expect(
+      destructiveKeywords('DO $$ BEGIN DROP TABLE users; END $$', pg)
+    ).toEqual(['DO'])
+    expect(
+      destructiveKeywords(
+        "EXEC('DROP TABLE users')",
+        dialects[ConnectionType.MSSQL]
+      )
+    ).toEqual(['EXEC'])
+    expect(
+      destructiveKeywords('INSERT INTO t VALUES (1) ON CONFLICT DO NOTHING', pg)
+    ).toEqual([])
+  })
+
   it('ignores reads, additive writes, strings, comments and the REPLACE function', () => {
     expect(
       destructiveKeywords(
@@ -77,6 +92,9 @@ describe('destructiveKeywords', () => {
     expect(changesSchema('create table t (id int)', mysql)).toBe(true)
     expect(changesSchema('SELECT 1; ALTER TABLE t ADD c int', mysql)).toBe(true)
     expect(changesSchema("UPDATE t SET a = 'DROP'", mysql)).toBe(false)
+    expect(changesSchema('DO $$ BEGIN CREATE TABLE t (); END $$', pg)).toBe(
+      true
+    )
     expect(changesSchema('EXPLAIN CREATE TABLE t AS SELECT 1', pg)).toBe(false)
     expect(
       changesSchema('EXPLAIN ANALYZE CREATE TABLE t AS SELECT 1', pg)

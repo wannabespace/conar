@@ -7,6 +7,7 @@ import type {
   DatabaseConnection,
   Driver,
   QueryResult,
+  TransactionSettings,
 } from 'kysely'
 
 import { getCollections } from '~/entities/collections'
@@ -89,14 +90,18 @@ export const createDialectProvider = (
   }
 
   return {
-    beginTransaction() {
+    beginTransaction(settings: TransactionSettings) {
       const t = resolveTransport()
       if (t.kind === 'electron') {
         return t.electron.beginTransaction({
           connectionString: options.connectionString,
+          ...settings,
         })
       }
-      return t.proxy.beginTransaction(resolveProxyIdParams(options))
+      return t.proxy.beginTransaction({
+        ...resolveProxyIdParams(options),
+        ...settings,
+      })
     },
     cancel(queryId: string) {
       const t = resolveTransport()
@@ -193,13 +198,13 @@ export const createKyselyDriver = (
       txStates.set(connection, state)
       return Promise.resolve(connection)
     },
-    async beginTransaction(connection) {
+    async beginTransaction(connection, settings) {
       const state = txStates.get(connection)
       if (!state) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const { txId } = await provider.beginTransaction()
+      const { txId } = await provider.beginTransaction(settings)
       state.txId = txId
     },
     async commitTransaction(connection) {
@@ -207,9 +212,8 @@ export const createKyselyDriver = (
       if (!state?.txId) {
         return
       }
-      const { txId } = state
+      await provider.commitTransaction({ txId: state.txId })
       state.txId = null
-      await provider.commitTransaction({ txId })
     },
     destroy() {
       return Promise.resolve()

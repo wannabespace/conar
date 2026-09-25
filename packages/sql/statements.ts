@@ -27,6 +27,15 @@ const TRANSACTION_OPENERS = new Set([
 const WHOLE_STATEMENT_ENDINGS = new Set([undefined, 'TRANSACTION', 'WORK'])
 // `END IF` / `END LOOP` close constructs that never opened a depth level.
 const END_QUALIFIERS = ['IF', 'LOOP', 'WHILE', 'REPEAT']
+// Kysely's transaction settings; any other opener option (DEFERRABLE, WITH CONSISTENT SNAPSHOT) is dropped.
+const ACCESS_MODES = ['read only', 'read write'] as const
+const ISOLATION_LEVELS = [
+  'read uncommitted',
+  'read committed',
+  'repeatable read',
+  'serializable',
+  'snapshot',
+] as const
 
 const onOwnLine = (text: string, token: Token, previous: Token | undefined) => {
   const before = text.slice(previous?.end ?? 0, token.start)
@@ -71,6 +80,12 @@ const transactionEnd = (tokens: Token[]) => {
     return word
   }
 }
+
+// Postgres and MySQL leave BEGIN unreserved, so `SELECT begin, …` is a column, not a block.
+const namesColumn = (previous: Token | undefined) =>
+  isKeyword(previous, 'SELECT') ||
+  isPunctuation(previous, ',') ||
+  isPunctuation(previous, '(')
 
 export const leavesTransactionOpen = (text: string, dialect: DialectSpec) => {
   const tokens = tokenize(text, dialect).tokens.filter(
@@ -133,7 +148,10 @@ export const parseStatements = (
 
     if (opensTransactionAt(significant, index)) {
       inTransaction = groups
-    } else if (isKeyword(token, 'BEGIN', 'CASE')) {
+    } else if (
+      isKeyword(token, 'CASE') ||
+      (isKeyword(token, 'BEGIN') && !namesColumn(significant[index - 1]))
+    ) {
       depth += 1
     } else if (isKeyword(token, 'END') && !isKeyword(next, ...END_QUALIFIERS)) {
       depth = Math.max(0, depth - 1)
@@ -171,8 +189,13 @@ export const transactionParts = (text: string, dialect: DialectSpec) => {
   if (!(first && ending && opensTransactionAt(first.tokens, 0))) {
     return null
   }
+  const opener = first.text.toLowerCase().replaceAll(/\s+/gu, ' ')
   return {
+    accessMode: ACCESS_MODES.find((mode) => opener.includes(mode)),
     commit: ending === 'COMMIT' || ending === 'END',
+    isolationLevel: ISOLATION_LEVELS.find((level) =>
+      opener.includes(`isolation level ${level}`)
+    ),
     statements: parts.slice(1, -1).map((part) => part.text),
   }
 }

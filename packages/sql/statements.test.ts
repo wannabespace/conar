@@ -64,22 +64,44 @@ COMMIT`
         'BEGIN;\nUPDATE a SET x = 1;\nDELETE FROM b;\nCOMMIT',
         pg
       )
-    ).toEqual({
+    ).toMatchObject({
       commit: true,
       statements: ['UPDATE a SET x = 1', 'DELETE FROM b'],
     })
     expect(
       transactionParts('START TRANSACTION; DELETE FROM t; ROLLBACK', pg)
-    ).toEqual({ commit: false, statements: ['DELETE FROM t'] })
+    ).toMatchObject({ commit: false, statements: ['DELETE FROM t'] })
     expect(transactionParts('SELECT 1', pg)).toBeNull()
     expect(transactionParts('BEGIN; SELECT 1', pg)).toBeNull()
+  })
+
+  it('keeps the isolation level and access mode the opener asks for', () => {
+    expect(
+      transactionParts(
+        'BEGIN ISOLATION LEVEL READ COMMITTED, READ ONLY; SELECT 1; COMMIT',
+        pg
+      )
+    ).toMatchObject({
+      accessMode: 'read only',
+      isolationLevel: 'read committed',
+    })
+    expect(
+      transactionParts('START TRANSACTION READ WRITE; SELECT 1; COMMIT', mysql)
+    ).toMatchObject({ accessMode: 'read write', isolationLevel: undefined })
+  })
+
+  it('reads an unreserved begin as a column, not a block', () => {
+    expect(texts('SELECT begin, end FROM t; SELECT 2', mysql)).toEqual([
+      'SELECT begin, end FROM t',
+      'SELECT 2',
+    ])
   })
 
   it('keeps a rollback to a savepoint inside its transaction', () => {
     const tx =
       'BEGIN; UPDATE a SET x=1; SAVEPOINT s; UPDATE b SET y=1; ROLLBACK TO SAVEPOINT s; UPDATE c SET z=1; COMMIT'
     expect(texts(`${tx};`)).toEqual([tx])
-    expect(transactionParts(`${tx};`, pg)).toEqual({
+    expect(transactionParts(`${tx};`, pg)).toMatchObject({
       commit: true,
       statements: [
         'UPDATE a SET x=1',
@@ -122,8 +144,8 @@ COMMIT`
     ])
     expect(
       transactionParts('BEGIN; DELETE FROM t; END TRANSACTION', pg)
-    ).toEqual({ commit: true, statements: ['DELETE FROM t'] })
-    expect(transactionParts('BEGIN; DELETE FROM t; ABORT', pg)).toEqual({
+    ).toMatchObject({ commit: true, statements: ['DELETE FROM t'] })
+    expect(transactionParts('BEGIN; DELETE FROM t; ABORT', pg)).toMatchObject({
       commit: false,
       statements: ['DELETE FROM t'],
     })

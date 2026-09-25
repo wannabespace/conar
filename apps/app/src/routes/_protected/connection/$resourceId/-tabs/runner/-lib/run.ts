@@ -84,11 +84,15 @@ const watchTab = (tab: RunnerTab) => {
   )
 }
 
-const queryFor = (text: string, connectionType: ConnectionType) => {
+const queryFor = (
+  text: string,
+  connectionType: ConnectionType,
+  signal: AbortSignal
+) => {
   const dialect = dialects[connectionType]
   const transaction = transactionParts(text, dialect)
   if (transaction) {
-    return transactionQuery(transaction)
+    return transactionQuery(transaction, signal)
   }
   if (leavesTransactionOpen(text, dialect)) {
     throw new Error(
@@ -110,7 +114,7 @@ const runOne = async (
   const startedAt = performance.now()
   let cancel = noop
   try {
-    const { queryIds, run } = queryFor(statement.text, params.type)
+    const { queryIds, run } = queryFor(statement.text, params.type, signal)
     cancel = () => {
       for (const queryId of queryIds) {
         void silently(() => cancelQuery(params, queryId))
@@ -200,9 +204,10 @@ export const runStatements = async ({
     ])
   }
   const ran: Parameters<typeof runHistory.add>[1] = []
+  let failedAt: number | undefined
   if (params) {
     for (const [index, statement] of statements.entries()) {
-      if (signal.aborted) {
+      if (signal.aborted || failedAt !== undefined) {
         slots[index] = [stoppedResult(statement)]
         continue
       }
@@ -212,6 +217,9 @@ export const runStatements = async ({
       const results = await runOne(params, statement, signal)
       slots[index] = results
       const [head] = results
+      if (head?.error) {
+        failedAt = index
+      }
       if (head && !head.stopped) {
         ran.push({
           duration: head.duration,
@@ -244,11 +252,12 @@ export const runStatements = async ({
     return
   }
   runs.delete(key)
-  const failed = run.results.filter((result) => result.error !== null).length
   if (signal.aborted) {
     toast.info('Run stopped')
-  } else if (failed > 0 && statements.length > 1) {
-    toast.warning(`${failed} of ${statements.length} statements failed`)
+  } else if (failedAt !== undefined && failedAt < statements.length - 1) {
+    toast.warning(
+      `Statement ${failedAt + 1} of ${statements.length} failed — the rest did not run`
+    )
   }
 }
 

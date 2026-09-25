@@ -5,7 +5,7 @@ import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
-import type { QueryExecutor, RunOptions } from '..'
+import type { QueryExecutor, RunOptions, TransactionSettings } from '..'
 import { handleQueryError, resultSet } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
@@ -115,17 +115,21 @@ export const query = {
 
   beginTransaction: handleQueryError(
     async ({
+      accessMode,
       connectionString,
       ownerId,
     }: {
       connectionString: string
       ownerId?: string
-    }) => {
+    } & TransactionSettings) => {
       const { conf, pool } = await getPool(connectionString)
       const connection = await pool.getConnection()
 
       try {
-        await connection.beginTransaction()
+        // `isolationLevel` is ignored: MySQL's START TRANSACTION cannot carry one.
+        await connection.query(
+          accessMode ? `START TRANSACTION ${accessMode}` : 'START TRANSACTION'
+        )
       } catch (error) {
         connection.release()
         throw error

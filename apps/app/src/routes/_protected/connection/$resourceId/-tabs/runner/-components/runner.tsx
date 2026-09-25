@@ -16,6 +16,7 @@ import {
   dialects,
   splitStatements,
   statementAt,
+  transactionParts,
 } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -252,10 +253,13 @@ export const Runner = () => {
     },
     explainCurrent: () =>
       run(
-        current().statements.map((statement) => ({
-          ...statement,
-          text: wrapExplainQuery(statement.source),
-        }))
+        current().statements.flatMap((statement) =>
+          (
+            transactionParts(statement.source, dialect)?.statements ?? [
+              statement.source,
+            ]
+          ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
+        )
       ),
     fixWithAi: ({ end, error, source, start }) => {
       const model = editorRef.current?.getModel()
