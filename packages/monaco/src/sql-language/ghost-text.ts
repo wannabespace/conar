@@ -270,6 +270,9 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       if (state.kind === 'string' && !state.close.startsWith('$')) {
         return { items: [] }
       }
+      if (!text.slice(window.start, window.end).trim()) {
+        return { items: [] }
+      }
       await sleep(GHOST_TEXT_DELAY)
       if (!requestCurrent(model, source, token)) {
         return { items: [] }
