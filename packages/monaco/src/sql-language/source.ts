@@ -15,7 +15,6 @@ export interface TableRef {
   schema: string | null
 }
 
-/** What the editor needs from the connection behind a model; the app backs it with its query cache. */
 export interface SqlSource {
   /** The catalog as far as the cache knows it — columns stay `null` until a table's columns were fetched. */
   catalog: () => SqlCatalog
@@ -29,7 +28,6 @@ export interface SqlSource {
   type: ConnectionType
 }
 
-/** Unbound models get keywords only. */
 export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
 
 export const EMPTY_CATALOG: SqlCatalog = {

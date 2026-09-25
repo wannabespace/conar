@@ -641,7 +641,6 @@ const PredicatePolicyInspector = ({
   })
   const draft = useStore(form.store, (store) => store.values)
 
-  // A predicate whose definition is not a plain function call has no fields to show.
   const readable = !!item?.predicates?.every(
     (predicate) => policyPredicate.parse(predicate.definition) !== null
   )

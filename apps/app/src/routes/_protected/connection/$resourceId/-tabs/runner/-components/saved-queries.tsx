@@ -5,9 +5,7 @@ import {
   Bookmark02Icon,
 } from '@hugeicons/core-free-icons'
 import {
-  Command,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@tamery/ui/components/command'
@@ -27,7 +25,7 @@ import {
   setQuery,
   useRunnerPageStore,
 } from '../-lib/store'
-import { ListEmpty, RowAction, SEARCH_FROM } from './popover-list'
+import { ListEmpty, PopoverCommand, RowAction } from './popover-list'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 const { useRouteContext } = getRouteApi(
@@ -66,11 +64,11 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
   }
 
   return (
-    <Command loop>
+    <PopoverCommand
+      count={queries.length}
+      searchPlaceholder="Search saved queries"
+    >
       <RemoveQueryDialog ref={removeDialogRef} />
-      {queries.length >= SEARCH_FROM && (
-        <CommandInput placeholder="Search saved queries" autoFocus />
-      )}
       <CommandList>
         <ListEmpty icon={Bookmark02Icon}>
           {queries.length === 0
@@ -124,6 +122,6 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
           ))}
         </CommandGroup>
       </CommandList>
-    </Command>
+    </PopoverCommand>
   )
 }

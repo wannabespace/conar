@@ -3,14 +3,15 @@ import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { locateTable } from '@tamery/sql'
+import { matchQuery } from '@tanstack/react-query'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
-import { isActiveSubscription } from '~/entities/user/hooks/use-subscription'
+import { hasSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
-import { queryClient, subscriptionQueryClient } from '~/lib/query-client'
+import { queryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
 
 import { defaultSchemaOf } from './capabilities'
@@ -84,11 +85,6 @@ const loadColumns = (
     })
   )
 
-const hasSubscription = () =>
-  subscriptionQueryClient
-    .getQueryData(orpc.account.subscription.list.queryOptions().queryKey)
-    ?.some(isActiveSubscription) ?? false
-
 export const sqlSourceFor = (
   connectionResource: ConnectionResource,
   connectionType: ConnectionType
@@ -111,7 +107,10 @@ export const sqlSourceFor = (
       queryClient.getQueryCache().subscribe((event) => {
         if (
           event.type === 'updated' &&
-          event.query.queryKey[1] === connectionResource.id
+          matchQuery(
+            { queryKey: ['connection-resource', connectionResource.id] },
+            event.query
+          )
         ) {
           listener()
         }

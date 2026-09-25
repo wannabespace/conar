@@ -65,7 +65,6 @@ const MONACO_OPTIONS = {
   folding: false,
   inlineSuggest: {
     enabled: true,
-    // The accept/dismiss controls are ours, drawn beside the ghost text.
     showToolbar: 'never',
     // Untyped in 0.56's d.ts. Without it, focusing a list row hides ghost text that does not extend the row.
     ...({ experimental: { showOnSuggestConflict: 'always' } } as object),
@@ -249,7 +248,6 @@ const RUN_SLOT_GAP = 12
 const RUN_BUTTON_HEIGHT = 20
 const RUN_SLOT_CLASS = 'sql-run-slot'
 
-// The controls trail the ghost-text piece drawn last: lowest, then rightmost.
 const ghostText = (codeEditor: editor.IStandaloneCodeEditor) =>
   [...(codeEditor.getDomNode()?.querySelectorAll(GHOST_TEXT_SELECTOR) ?? [])]
     .map((element) => ({ element, rect: element.getBoundingClientRect() }))
@@ -539,7 +537,6 @@ export const RunnerEditor = ({
   rejectAi,
 }: {
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>
-  /** An AI prompt or rewrite card is open — the inline Run button steps aside for it. */
   editing: boolean
   reviewing: boolean
   acceptAi: () => void

@@ -15,7 +15,6 @@ export interface ResultSet {
 }
 
 export interface RunOptions {
-  /** Registers the run so `cancel` can stop it on the server. */
   queryId?: string
   maxRows?: number
 }

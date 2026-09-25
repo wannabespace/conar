@@ -6,6 +6,7 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 
 - `CommandDialog` is only a Dialog shell — wrap contents in `<Command>` or cmdk crashes.
 - `CommandItem` appends an `ml-auto` check that takes space only on items setting `data-checked` (true or false), so a checkable list keeps its column and every other row runs to its edge. Right-aligned meta goes in `CommandShortcut` (which hides the check); row actions sit in flow after a `flex-1 min-w-0` text block, never absolute over padding. Items that can mount mid-search need an explicit `value`.
+- cmdk reads arrows from keydown on its own root, so a `Command` popup without a `CommandInput` leaves focus on the trigger and the arrows dead: focus the root on mount (the runner's `PopoverCommand`). The kit root is `outline-none`, since a keyboard-opened popup would otherwise ring the whole list.
 - A focusable control inside a `CommandItem` steals the keyboard's place — give it `tabIndex={-1}` + `preventDefault` on pointerdown, and refocus `CommandInput` in `onSelect`.
 - cmdk 1.1.1 group filtering is broken (groups never reorder by score) — bypass with `shouldFilter={false}` plus own scoring via cmdk's `defaultFilter`.
 - `PopoverContent` defaults to a padded `w-72` form box — menu-like popovers need the `padding` prop and usually `w-auto`.

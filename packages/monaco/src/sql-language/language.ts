@@ -10,7 +10,6 @@ export const sqlLanguageIds = {
   [ConnectionType.Postgres]: 'sql-postgres',
 } satisfies Record<ConnectionType, string>
 
-// Theme rule names in editor.tsx.
 type TokenKind = ReturnType<typeof tokenize>['tokens'][number]['kind']
 
 const SCOPES: Partial<Record<TokenKind, string>> = {

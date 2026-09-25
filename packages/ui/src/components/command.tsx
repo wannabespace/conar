@@ -29,7 +29,7 @@ export const Command = ({
   <CommandPrimitive
     data-slot="command"
     className={cn(
-      'flex size-full flex-col overflow-hidden',
+      'flex size-full flex-col overflow-hidden outline-none',
       commandVariants[variant],
       className
     )}

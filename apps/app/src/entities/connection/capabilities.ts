@@ -53,7 +53,6 @@ interface PolicyCapabilities {
   alterInPlace: boolean
   commands: readonly PolicyCommand[]
   everyone: string
-  // SQL Server: one policy binds predicate functions to tables, with no roles or expressions.
   predicates: boolean
 }
 

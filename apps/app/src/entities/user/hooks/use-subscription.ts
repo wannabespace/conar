@@ -5,10 +5,15 @@ import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { subscriptionQueryClient } from '~/lib/query-client'
 
-export const isActiveSubscription = ({ status }: { status: string | null }) =>
+const isActiveSubscription = ({ status }: { status: string | null }) =>
   ACTIVE_SUBSCRIPTION_STATUSES.includes(
     status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
   )
+
+export const hasSubscription = () =>
+  subscriptionQueryClient
+    .getQueryData(orpc.account.subscription.list.queryOptions().queryKey)
+    ?.some(isActiveSubscription) ?? false
 
 export const useSubscription = () => {
   const { data } = authClient.useSession()

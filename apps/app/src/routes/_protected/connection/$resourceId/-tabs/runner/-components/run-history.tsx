@@ -6,9 +6,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
-  Command,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
@@ -27,7 +25,7 @@ import { useSubscription } from 'seitu/react'
 import { useRunnerActions } from '../-lib/actions'
 import { runHistory } from '../-lib/history'
 import { appendQuery, useRunnerPageStore } from '../-lib/store'
-import { ListEmpty, RowAction, SEARCH_FROM } from './popover-list'
+import { ListEmpty, PopoverCommand, RowAction } from './popover-list'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -61,10 +59,10 @@ export const RunHistoryButton = () => {
         History
       </PopoverTrigger>
       <PopoverContent align="end" padding="none" className="w-96">
-        <Command loop>
-          {history.length >= SEARCH_FROM && (
-            <CommandInput placeholder="Search history" autoFocus />
-          )}
+        <PopoverCommand
+          count={history.length}
+          searchPlaceholder="Search history"
+        >
           <CommandList>
             <ListEmpty icon={HistoryIcon}>
               {history.length === 0
@@ -127,7 +125,7 @@ export const RunHistoryButton = () => {
               </>
             )}
           </CommandList>
-        </Command>
+        </PopoverCommand>
       </PopoverContent>
     </Popover>
   )
