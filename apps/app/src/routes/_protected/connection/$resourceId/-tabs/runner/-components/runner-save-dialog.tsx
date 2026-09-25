@@ -22,15 +22,13 @@ import { v7 } from 'uuid'
 import { useCollections } from '~/entities/collections'
 import type { Query } from '~/entities/query/sync'
 
-import { linkSavedQuery, useRunnerPageStore } from '../-lib/store'
-
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
 type SaveRequest =
   | { kind: 'statement'; sql: string }
-  | { kind: 'tab'; sql: string; linked: Query | undefined }
+  | { kind: 'tab'; sql: string }
   | { kind: 'rename'; query: Query }
 
 const TITLES: Record<SaveRequest['kind'], string> = {
@@ -46,44 +44,6 @@ const DESCRIPTIONS: Record<SaveRequest['kind'], string> = {
   tab: 'Saves everything in this tab as one query for this connection. Open it later from Saved in the toolbar.',
 }
 
-const linkedQueryOf = (request: SaveRequest | null) => {
-  if (request?.kind === 'tab') {
-    return request.linked
-  }
-  return request?.kind === 'rename' ? request.query : undefined
-}
-
-const primaryLabel = (
-  request: SaveRequest | null,
-  linked: Query | undefined
-) => {
-  if (request?.kind === 'rename') {
-    return 'Rename'
-  }
-  return linked ? 'Update' : 'Save'
-}
-
-const SaveHint = ({
-  empty,
-  linked,
-}: {
-  empty: boolean
-  linked: Query | undefined
-}) => {
-  if (empty) {
-    return <FieldDescription>There is no SQL to save yet.</FieldDescription>
-  }
-  if (!linked) {
-    return null
-  }
-  return (
-    <FieldDescription>
-      This tab was opened from <span data-mask>“{linked.name}”</span>. Update
-      it, or save a separate copy.
-    </FieldDescription>
-  )
-}
-
 export const RunnerSaveDialog = ({
   ref,
 }: {
@@ -91,61 +51,42 @@ export const RunnerSaveDialog = ({
 }) => {
   const { queriesCollection } = useCollections()
   const { connectionResource } = useRouteContext()
-  const store = useRunnerPageStore()
   const [request, setRequest] = useState<SaveRequest | null>(null)
   const [name, setName] = useState('')
 
   useImperativeHandle(ref, () => ({
     open: (next) => {
       setRequest(next)
-      if (next.kind === 'rename') {
-        setName(next.query.name)
-      } else {
-        setName(next.kind === 'tab' ? (next.linked?.name ?? '') : '')
-      }
+      setName(next.kind === 'rename' ? next.query.name : '')
     },
   }))
 
   const sql = request && request.kind !== 'rename' ? request.sql : ''
-  const linked = linkedQueryOf(request)
   const empty = request?.kind !== 'rename' && !sql.trim()
   const canConfirm = Boolean(name.trim()) && !empty
 
   const close = () => setRequest(null)
 
-  const create = () => {
-    const id = v7()
-    queriesCollection.insert({
-      connectionResourceId: connectionResource.id,
-      createdAt: new Date(),
-      id,
-      name: name.trim(),
-      query: sql,
-      updatedAt: new Date(),
-    })
-    if (request?.kind === 'tab') {
-      linkSavedQuery(store, id)
+  const confirm = () => {
+    if (request?.kind === 'rename') {
+      queriesCollection.update(request.query.id, (draft) => {
+        draft.name = name.trim()
+        draft.updatedAt = new Date()
+      })
+      toast.success(`Renamed to "${name.trim()}"`)
+    } else {
+      queriesCollection.insert({
+        connectionResourceId: connectionResource.id,
+        createdAt: new Date(),
+        id: v7(),
+        name: name.trim(),
+        query: sql,
+        updatedAt: new Date(),
+      })
+      toast.success(`Saved "${name.trim()}"`)
     }
-    toast.success(`Saved "${name.trim()}"`)
     close()
   }
-
-  const update = () => {
-    if (!linked) {
-      return
-    }
-    queriesCollection.update(linked.id, (draft) => {
-      draft.name = name.trim()
-      if (request?.kind === 'tab') {
-        draft.query = sql
-      }
-      draft.updatedAt = new Date()
-    })
-    toast.success(`Updated "${name.trim()}"`)
-    close()
-  }
-
-  const primary = linked ? update : create
 
   return (
     <Dialog open={request !== null} onOpenChange={(open) => !open && close()}>
@@ -169,26 +110,20 @@ export const RunnerSaveDialog = ({
             onChange={(event) => setName(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && canConfirm) {
-                primary()
+                confirm()
               }
             }}
           />
-          <SaveHint
-            empty={empty}
-            linked={request?.kind === 'tab' ? linked : undefined}
-          />
+          {empty && (
+            <FieldDescription>There is no SQL to save yet.</FieldDescription>
+          )}
         </Field>
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
-          {linked && request?.kind === 'tab' && (
-            <Button variant="outline" disabled={!canConfirm} onClick={create}>
-              Save as new
-            </Button>
-          )}
-          <Button disabled={!canConfirm} onClick={primary}>
-            {primaryLabel(request, linked)}
+          <Button disabled={!canConfirm} onClick={confirm}>
+            {request?.kind === 'rename' ? 'Rename' : 'Save'}
           </Button>
         </DialogFooter>
       </DialogContent>

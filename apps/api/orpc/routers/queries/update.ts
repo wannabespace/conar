@@ -12,7 +12,7 @@ export const update = orpc
   .use(authMiddleware)
   .input(
     type.and(
-      queriesUpdateSchema.pick('name', 'query'),
+      queriesUpdateSchema.pick('name'),
       queriesUpdateSchema.pick('id').required()
     )
   )

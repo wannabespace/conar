@@ -148,18 +148,6 @@ export const Runner = () => {
   const { connection, connectionResource } = useRouteContext()
   const tab = useRunnerTab()
   const store = useRunnerPageStore()
-  const { queriesCollection } = useCollections()
-  const savedQueryId = useSubscription(store, {
-    selector: (state) => state.savedQueryId,
-  })
-  const { data: linkedQuery } = useLiveQuery(
-    (q) =>
-      q
-        .from({ queries: queriesCollection })
-        .where(({ queries }) => eq(queries.id, savedQueryId ?? ''))
-        .findOne(),
-    [savedQueryId]
-  )
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
@@ -294,7 +282,6 @@ export const Runner = () => {
     saveAll: () => {
       saveDialogRef.current?.open({
         kind: 'tab',
-        linked: linkedQuery,
         sql: statements.get().length > 0 ? store.get().query : '',
       })
     },
@@ -372,11 +359,7 @@ export const Runner = () => {
                 </ContentSwitch>
               </ToolbarButton>
               <ToolbarButton
-                label={
-                  linkedQuery
-                    ? `Update “${linkedQuery.name}”`
-                    : 'Save tab as query'
-                }
+                label="Save tab as query"
                 onClick={() => actions.saveAll()}
               >
                 <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />

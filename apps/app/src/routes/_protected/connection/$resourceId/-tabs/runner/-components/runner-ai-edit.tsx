@@ -1,6 +1,6 @@
 import { AiIdeaIcon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { AI_SQL_LIMITS } from '@tamery/shared/constants'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'

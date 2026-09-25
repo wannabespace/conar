@@ -1,6 +1,6 @@
 import { updateSql } from '@tamery/ai/features'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
-import { AI_SQL_LIMITS } from '@tamery/shared/constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
@@ -11,10 +11,10 @@ export const updateSQL = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      context: type.string.atMostLength(AI_SQL_LIMITS.context),
-      editor: type.string.atMostLength(AI_SQL_LIMITS.sql),
-      prompt: type.string.atMostLength(AI_SQL_LIMITS.prompt),
-      sql: type.string.atMostLength(AI_SQL_LIMITS.sql),
+      context: `string <= ${AI_SQL_LIMITS.context}`,
+      editor: `string <= ${AI_SQL_LIMITS.sql}`,
+      prompt: `string <= ${AI_SQL_LIMITS.prompt}`,
+      sql: `string <= ${AI_SQL_LIMITS.sql}`,
       type: type.valueOf(ConnectionType),
     })
   )

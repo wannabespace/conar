@@ -1,6 +1,6 @@
 import { completeSql } from '@tamery/ai/features'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
-import { AI_SQL_LIMITS } from '@tamery/shared/constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
@@ -11,9 +11,9 @@ export const completeSQL = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      context: type.string.atMostLength(AI_SQL_LIMITS.context),
-      prefix: type.string.atMostLength(AI_SQL_LIMITS.sql),
-      suffix: type.string.atMostLength(AI_SQL_LIMITS.sql),
+      context: `string <= ${AI_SQL_LIMITS.context}`,
+      prefix: `string <= ${AI_SQL_LIMITS.sql}`,
+      suffix: `string <= ${AI_SQL_LIMITS.sql}`,
       type: type.valueOf(ConnectionType),
     })
   )
@@ -26,6 +26,5 @@ export const completeSQL = orpc
       prefix: input.prefix,
       signal,
       suffix: input.suffix,
-      telemetry: aiUsage.telemetry(scope),
     })
   })

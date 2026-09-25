@@ -1,7 +1,7 @@
 import { isConnectionError } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
-import { noop, sleep } from '@tamery/shared/utils'
+import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
@@ -97,11 +97,8 @@ export const reconnectingPromises = createStore<
   >
 >({})
 
-const MIN_QUERY_DURATION = 300
-
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
-  minDuration?: number
   query: {
     [D in ConnectionType]: (
       dialect: ReturnType<(typeof dialects)[D]>
@@ -141,60 +138,57 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
       ? watchForSlowQuery(queryParams.resourceId)
       : noop
 
-    const [result] = await Promise.all([
-      Result.tryPromise(
-        {
-          catch: (error) => {
-            if (isConnectionError(error)) {
-              attempt += 1
+    const result = await Result.tryPromise(
+      {
+        catch: (error) => {
+          if (isConnectionError(error)) {
+            attempt += 1
 
-              reconnectingPromises.set((state) => {
-                const existing = state[queryParams.connectionString]
+            reconnectingPromises.set((state) => {
+              const existing = state[queryParams.connectionString]
 
-                return {
-                  ...state,
-                  [queryParams.connectionString]: existing
-                    ? {
-                        ...existing,
-                        attempt,
-                      }
-                    : {
-                        attempt,
-                        promise: resolvers.promise,
-                        resourceId: queryParams.resourceId,
-                      },
-                }
-              })
-            }
+              return {
+                ...state,
+                [queryParams.connectionString]: existing
+                  ? {
+                      ...existing,
+                      attempt,
+                    }
+                  : {
+                      attempt,
+                      promise: resolvers.promise,
+                      resourceId: queryParams.resourceId,
+                    },
+              }
+            })
+          }
 
-            return error
-          },
-          try: async () => {
-            const retryPromise =
-              reconnectingPromises.get()[queryParams.connectionString]
-
-            if (attempt === 0 && retryPromise) {
-              await retryPromise.promise
-            }
-
-            // oxlint-disable-next-line ts/no-explicit-any
-            return queryFn(instance as any)
-          },
+          return error
         },
-        {
-          retry: {
-            backoff: 'constant',
-            delayMs: RECONNECTION_DELAY,
-            // A write is not idempotent — a lost response may still have
-            // committed — so only queries reading a result reconnect and retry.
-            shouldRetry: (error) =>
-              Boolean(options.type) && isConnectionError(error),
-            times: MAX_RECONNECTION_ATTEMPTS,
-          },
-        }
-      ),
-      sleep(options.minDuration ?? MIN_QUERY_DURATION),
-    ])
+        try: async () => {
+          const retryPromise =
+            reconnectingPromises.get()[queryParams.connectionString]
+
+          if (attempt === 0 && retryPromise) {
+            await retryPromise.promise
+          }
+
+          // oxlint-disable-next-line ts/no-explicit-any
+          return queryFn(instance as any)
+        },
+      },
+      {
+        retry: {
+          backoff: 'constant',
+          delayMs: RECONNECTION_DELAY,
+          // A write is not idempotent — a lost response may still have
+          // committed — so only queries reading a result reconnect and retry.
+          shouldRetry: (error) =>
+            Boolean(options.type) && isConnectionError(error),
+          times: MAX_RECONNECTION_ATTEMPTS,
+        },
+      }
+    )
 
     stopSlowQueryWatch()
 

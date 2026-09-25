@@ -73,10 +73,3 @@ export const RECONNECT_ERROR_PATTERNS = [
   'the database system is not yet accepting connections',
   'the database system is starting up',
 ]
-
-export const AI_SQL_LIMITS = {
-  context: 60_000,
-  error: 4000,
-  prompt: 2000,
-  sql: 30_000,
-}

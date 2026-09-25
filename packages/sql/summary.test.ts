@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { AI_SQL_LIMITS } from '@tamery/shared/constants'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 
 import type { SqlCatalog } from './catalog'
 import { catalogSummary } from './summary'

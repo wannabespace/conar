@@ -1,4 +1,4 @@
-import type { LanguageModelUsage, TelemetryOptions } from 'ai'
+import type { LanguageModelUsage } from 'ai'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 
@@ -32,12 +32,10 @@ const completeSqlInstructions = (data: {
 interface CompleteSqlInput {
   connectionType: string
   context: string
-  /** Usage of calls made outside the AI SDK, which `telemetry` cannot see. */
   onUsage: (modelId: string, usage: LanguageModelUsage) => Promise<void>
   prefix: string
   signal?: AbortSignal
   suffix: string
-  telemetry?: TelemetryOptions
 }
 
 const chatCompleteSql = async (data: CompleteSqlInput) => {
@@ -56,7 +54,12 @@ const chatCompleteSql = async (data: CompleteSqlInput) => {
       section('TEXT BEFORE CARET', `${data.prefix}${CARET}`),
       section('TEXT AFTER CARET', `${CARET}${data.suffix}`),
     ].join('\n'),
-    telemetry: data.telemetry,
+    telemetry: {
+      integrations: {
+        onLanguageModelCallEnd: ({ modelId, usage }) =>
+          data.onUsage(modelId, usage),
+      },
+    },
   })
   return text
 }

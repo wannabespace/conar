@@ -90,7 +90,7 @@ Suggestion order is JSX order (`shouldFilter={false}`) — the literal answer fi
 - The results pane is a 32px strip over the table: numbered `TabsList variant="bar"` cells when several statements ran (error cells destructive, SQL in the tooltip), row count and duration in `text-2xs`, then a `SearchInput size="xs"` and a ghost export button on the right.
 - History is a `Command` popup (`w-96`) beside Saved: a row per statement run on the resource, mono SQL over muted `text-2xs` meta (relative time · duration, or a destructive `Failed`), newest first; picking a row appends it to the tab. Clearing is the list's last row after a separator, not a header button.
 - A write's result is its affected-row count as a `PaneEmpty` title, never an empty table; a result set with columns but no rows keeps its header row, so the shape still reads.
-- Saved queries are a `Command` popup (`w-80`): a row per query with its name over a mono preview, append, rename and delete as in-row controls. Saving lives on the toolbar, never in this list. A tab opened from a saved query stays linked to it: the toolbar save turns into **Update “name”** and its dialog offers Update or Save as new. `CommandInput` only from 8 queries.
+- Saved queries are a `Command` popup (`w-80`): a row per query with its name over a mono preview, append, rename and delete as in-row controls. Saving lives on the toolbar, never in this list. `CommandInput` only from 8 queries.
 
 ## Query logger
 

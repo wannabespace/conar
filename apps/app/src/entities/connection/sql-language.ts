@@ -1,4 +1,4 @@
-import { AI_SQL_LIMITS } from '@tamery/shared/constants'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { noop, silently, sleep, tryCatchAsync } from '@tamery/shared/utils'
 import type {

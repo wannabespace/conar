@@ -1,4 +1,5 @@
 import { silently } from '@tamery/shared/utils'
+import type { Type } from 'arktype'
 import type { Kysely } from 'kysely'
 import { CompiledQuery } from 'kysely'
 
@@ -33,8 +34,7 @@ export const transactionQuery = ({
   }
 
   return {
-    ...createQuery({
-      minDuration: 0,
+    ...createQuery<Type<ResultSet[]>>({
       query: { clickhouse: run, mssql: run, mysql: run, postgres: run },
     }),
     queryIds: compiled.map((query) => query.queryId.queryId),

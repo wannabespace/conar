@@ -23,7 +23,6 @@ import type { Query } from '~/entities/query/sync'
 import { useRunnerActions } from '../-lib/actions'
 import {
   appendQuery,
-  linkSavedQuery,
   runnerPageStore,
   setQuery,
   useRunnerPageStore,
@@ -59,7 +58,6 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
       tabId,
     })
     setQuery(tabStore, query.query)
-    linkSavedQuery(tabStore, query.id)
     onPicked()
     router.navigate({
       params: { resourceId: connectionResource.id, tabId },

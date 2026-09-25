@@ -11,10 +11,7 @@ import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
 import type { ResultSet } from '~/entities/connection/queries/connection/custom'
-import {
-  customQuery,
-  resultSetType,
-} from '~/entities/connection/queries/connection/custom'
+import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { transactionQuery } from '~/entities/connection/queries/connection/transaction'
 import type { QueryParams } from '~/entities/connection/runtime/query'
 import {
@@ -100,7 +97,7 @@ const queryFor = (text: string, connectionType: ConnectionType) => {
         : 'This database has no transactions. Run the statements without BEGIN.'
     )
   }
-  const single = customQuery({ query: text })
+  const single = customQuery(text)
   return { queryIds: [single.queryId], run: single.run }
 }
 
@@ -120,7 +117,7 @@ const runOne = async (
       }
     }
     signal.addEventListener('abort', cancel, { once: true })
-    const sets = resultSetType.array().assert(await run(params))
+    const sets = await run(params)
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) => ({
       duration,

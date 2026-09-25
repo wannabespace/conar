@@ -15,8 +15,6 @@ export const runnerPageType = type({
     resultsVisible: 'boolean',
   },
   query: 'string',
-  /** The saved query this tab was opened from; saving the tab then updates it. */
-  'savedQueryId?': 'string',
 })
 
 const defaultState: typeof runnerPageType.infer = {
@@ -75,16 +73,6 @@ export const setQuery = (store: RunnerPageStore, query: string) => {
 export const appendQuery = (store: RunnerPageStore, sql: string) => {
   const existing = store.get().query.trimEnd()
   setQuery(store, existing ? `${existing}\n\n${sql}` : sql)
-}
-
-export const linkSavedQuery = (
-  store: RunnerPageStore,
-  savedQueryId: string | undefined
-) => {
-  store.set((state) => {
-    const { savedQueryId: _previous, ...rest } = state
-    return savedQueryId ? { ...rest, savedQueryId } : rest
-  })
 }
 
 export const setLayout = (

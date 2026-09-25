@@ -44,7 +44,6 @@ export const createQueriesCollection = () =>
               orpc.queries.update.call({
                 id: m.key,
                 name: m.changes.name,
-                query: m.changes.query,
               })
             )
           )
