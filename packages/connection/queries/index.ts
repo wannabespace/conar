@@ -2,7 +2,7 @@ import type { AnyFunction } from '@tamery/shared/utils'
 import { handleAggregateError, uppercaseFirst } from '@tamery/shared/utils'
 
 export interface QueryExecuteResult {
-  result: unknown
+  result: ResultSet[]
   duration: number
 }
 
@@ -17,20 +17,27 @@ export interface ResultSet {
 export interface RunOptions {
   /** Registers the run so `cancel` can stop it on the server. */
   queryId?: string
-  /** Answer with `ResultSet[]` — column order, duplicate names, affected rows — instead of row objects. */
-  resultSets?: { maxRows: number }
+  maxRows?: number
 }
 
 // ponytail: rows are fetched whole and cut here; stream through a cursor if proxy memory matters.
 export const resultSet = (
   { affectedRows, columns, rows }: Omit<ResultSet, 'truncated'>,
-  maxRows: number
+  maxRows = Infinity
 ): ResultSet => ({
   affectedRows,
   columns,
   rows: rows.slice(0, maxRows),
   truncated: rows.length > maxRows,
 })
+
+/** The first set as row objects; a duplicate column name keeps its last value. */
+export const rowObjects = ([first]: ResultSet[]) =>
+  first
+    ? first.rows.map((row) =>
+        Object.fromEntries(first.columns.map((column, i) => [column, row[i]]))
+      )
+    : []
 
 export interface QueryExecutor {
   execute: (

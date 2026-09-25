@@ -45,3 +45,32 @@ export const withinStatement = (
     ? reply.slice(0, statement.terminatorEnd - before.length)
     : reply
 }
+
+/** Ghost text offered for the text around the caret: `before` and `after` it at the time. */
+export interface GhostTextOffer {
+  after: string
+  before: string
+  text: string
+}
+
+/** What is left of an offer once the user typed some of it, or `undefined` once they typed past or off it. */
+export const typedAlong = (
+  offer: GhostTextOffer,
+  typed: string,
+  offset: number
+) => {
+  const before = typed.slice(0, offset)
+  const after = typed.slice(offset)
+  if (!before.startsWith(offer.before) || !after.endsWith(offer.after)) {
+    return
+  }
+  const typedPart = before.slice(offer.before.length)
+  // Typing a quote or bracket auto-closes it after the caret; the suggestion already holds the closer.
+  const autoClosed = after.slice(0, after.length - offer.after.length)
+  const rest = offer.text.slice(typedPart.length)
+  return offer.text.startsWith(typedPart) &&
+    rest.endsWith(autoClosed) &&
+    rest.length > autoClosed.length
+    ? rest.slice(0, rest.length - autoClosed.length)
+    : undefined
+}

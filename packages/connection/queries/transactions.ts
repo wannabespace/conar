@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import { silently } from '@tamery/shared/utils'
 
-import type { QueryExecutor, RunOptions } from '.'
+import type { QueryExecuteResult, QueryExecutor, RunOptions } from '.'
 import { handleQueryError } from '.'
 
 export interface TxHandle {
@@ -10,7 +10,7 @@ export interface TxHandle {
     query: string,
     values: unknown[],
     options: RunOptions
-  ) => Promise<{ result: unknown; duration: number }>
+  ) => Promise<QueryExecuteResult>
   commit: () => Promise<void>
   rollback: () => Promise<void>
   release: () => Promise<void>

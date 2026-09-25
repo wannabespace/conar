@@ -1,3 +1,4 @@
+import { Monaco } from '@tamery/monaco/editor'
 import {
   Combobox,
   ComboboxChip,
@@ -31,8 +32,6 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
 import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
-
-import { Monaco } from '~/components/monaco'
 
 export const editorOptions = {
   fontSize: 12,

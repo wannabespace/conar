@@ -1,4 +1,5 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
+import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
@@ -22,7 +23,6 @@ import {
   functionBodyTemplateOf,
   replacesRoutine,
 } from '~/entities/connection/queries/functions/shape'
-import { sqlLanguageIds } from '~/entities/connection/sql-language'
 import { queryClient } from '~/lib/query-client'
 
 import {

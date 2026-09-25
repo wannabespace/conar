@@ -93,18 +93,11 @@ const runOn = async (
   }: { client: PoolClient; connectionString: string; pool: Pool },
   sqlText: string,
   values: unknown[],
-  { queryId, resultSets }: RunOptions
+  { maxRows, queryId }: RunOptions
 ) => {
   const pid = queryId ? await backendPid(client) : undefined
   const cancel = () => cancelBackend(pool, pid)
   const start = performance.now()
-  if (!resultSets) {
-    const result = await cancellable(
-      { cancel, connectionString, queryId },
-      () => client.query(sqlText, values)
-    )
-    return { duration: performance.now() - start, result: result.rows }
-  }
   const result = await cancellable({ cancel, connectionString, queryId }, () =>
     client.query({ rowMode: 'array', text: sqlText, values })
   )
@@ -118,7 +111,7 @@ const runOn = async (
           columns: item.fields.map((field) => field.name),
           rows: item.rows,
         },
-        resultSets.maxRows
+        maxRows
       )
     ),
   }

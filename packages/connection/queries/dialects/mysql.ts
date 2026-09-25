@@ -64,7 +64,7 @@ const affectedRowsOf = (header: unknown) =>
     ? header.affectedRows
     : null
 
-const setOf = (rows: unknown, fields: unknown, maxRows: number) =>
+const setOf = (rows: unknown, fields: unknown, maxRows?: number) =>
   resultSet(
     Array.isArray(rows) && Array.isArray(fields)
       ? {
@@ -89,7 +89,7 @@ const runOn = async (
     sql: string
     values: unknown[]
   },
-  { queryId, resultSets }: RunOptions
+  { maxRows, queryId }: RunOptions
 ) => {
   const start = performance.now()
   const [rows, fields] = await cancellable(
@@ -98,19 +98,14 @@ const runOn = async (
       connectionString,
       queryId,
     },
-    () => connection.query({ rowsAsArray: Boolean(resultSets), sql }, values)
+    () => connection.query({ rowsAsArray: true, sql }, values)
   )
-  if (!resultSets) {
-    return { duration: performance.now() - start, result: rows as unknown }
-  }
   const fieldSets: unknown[] = fields ?? []
   // `CALL` answers with one row set per SELECT inside the procedure, then a status header.
   const sets =
     Array.isArray(rows) && Array.isArray(fieldSets[0])
-      ? rows.map((item, index) =>
-          setOf(item, fieldSets[index], resultSets.maxRows)
-        )
-      : [setOf(rows, fields, resultSets.maxRows)]
+      ? rows.map((item, index) => setOf(item, fieldSets[index], maxRows))
+      : [setOf(rows, fields, maxRows)]
   return { duration: performance.now() - start, result: sets }
 }
 

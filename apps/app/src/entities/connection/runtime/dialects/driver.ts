@@ -1,3 +1,5 @@
+import type { QueryExecuteResult } from '@tamery/connection/queries'
+import { rowObjects } from '@tamery/connection/queries'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
 import { silently } from '@tamery/shared/utils'
@@ -65,6 +67,15 @@ export const createDialectProvider = (
     ? connectionsCollection.get(connectionId)
     : null
 
+  const maxRows = options.resultSets?.maxRows
+  const shaped = async (promise: Promise<QueryExecuteResult>) => {
+    const { duration, result } = await promise
+    return {
+      duration,
+      result: options.resultSets ? result : rowObjects(result),
+    }
+  }
+
   const resolveTransport = () => {
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
@@ -114,26 +125,28 @@ export const createDialectProvider = (
     },
     execute(payload: QueryPayload) {
       const t = resolveTransport()
-      const { resultSets } = options
-      if (t.kind === 'electron') {
-        return t.electron.execute({
-          connectionString: options.connectionString,
-          ...payload,
-          resultSets,
-        })
-      }
-      return t.proxy.execute({
-        ...resolveProxyIdParams(options),
-        ...payload,
-        resultSets,
-      })
+      return shaped(
+        t.kind === 'electron'
+          ? t.electron.execute({
+              connectionString: options.connectionString,
+              ...payload,
+              maxRows,
+            })
+          : t.proxy.execute({
+              ...resolveProxyIdParams(options),
+              ...payload,
+              maxRows,
+            })
+      )
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()
-      const payload = { ...params, resultSets: options.resultSets }
-      return t.kind === 'electron'
-        ? t.electron.executeTransaction(payload)
-        : t.proxy.executeTransaction(payload)
+      const payload = { ...params, maxRows }
+      return shaped(
+        t.kind === 'electron'
+          ? t.electron.executeTransaction(payload)
+          : t.proxy.executeTransaction(payload)
+      )
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()

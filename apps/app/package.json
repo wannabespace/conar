@@ -25,6 +25,7 @@
     "@paper-design/shaders-react": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tamery/ai": "workspace:*",
+    "@tamery/monaco": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tamery/sql": "workspace:*",
     "@tamery/table": "workspace:*",

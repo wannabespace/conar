@@ -5,6 +5,7 @@ import {
   PlayIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
@@ -38,7 +39,6 @@ import {
   triggerEventsFor,
   triggerOrientationsFor,
 } from '~/entities/connection/queries/triggers/shape'
-import { sqlLanguageIds } from '~/entities/connection/sql-language'
 import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 

@@ -8,6 +8,14 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { Monaco } from '@tamery/monaco/editor'
+import {
+  attachGhostTextEscape,
+  attachSqlDiagnostics,
+  bindSqlModel,
+  GHOST_TEXT_SELECTOR,
+  sqlLanguageIds,
+} from '@tamery/monaco/sql-language'
 import { getOS } from '@tamery/shared/os'
 import { statementAt } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
@@ -32,15 +40,8 @@ import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppMenuButton } from '~/components/app-context-menu'
-import { Monaco } from '~/components/monaco'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import {
-  attachGhostTextEscape,
-  attachSqlDiagnostics,
-  bindSqlModel,
-  GHOST_TEXT_SELECTOR,
-  sqlLanguageIds,
-} from '~/entities/connection/sql-language'
+import { sqlSourceFor } from '~/entities/connection/sql-source'
 
 import type { RunnerActions } from '../-lib/actions'
 import { useRunnerActions } from '../-lib/actions'
@@ -591,12 +592,9 @@ export const RunnerEditor = ({
     if (!codeEditor || !model) {
       return
     }
-    bindSqlModel(model, connectionResource)
-    const detachDiagnostics = attachSqlDiagnostics(
-      codeEditor,
-      connectionResource,
-      connection.type
-    )
+    const source = sqlSourceFor(connectionResource, connection.type)
+    bindSqlModel(model, source)
+    const detachDiagnostics = attachSqlDiagnostics(codeEditor, source)
     const detachEscape = attachGhostTextEscape(codeEditor)
     return () => {
       detachDiagnostics()

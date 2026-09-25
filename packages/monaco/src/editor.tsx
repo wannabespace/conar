@@ -1,4 +1,4 @@
-import '~/lib/monaco-worker'
+import './worker'
 import { noop } from '@tamery/shared/utils'
 import { formatXml } from '@tamery/shared/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'

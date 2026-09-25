@@ -36,12 +36,12 @@ const runRequest = async (
     sql,
     values,
   }: { connectionString: string; sql: string; values: unknown[] },
-  { queryId, resultSets }: RunOptions
+  { maxRows, queryId }: RunOptions
 ) => {
   for (const [index, value] of values.entries()) {
     request.input(`${index + 1}`, value)
   }
-  request.arrayRowMode = Boolean(resultSets)
+  request.arrayRowMode = true
   const start = performance.now()
   const result = await cancellable(
     {
@@ -51,12 +51,6 @@ const runRequest = async (
     },
     () => request.query<unknown[][]>(sql)
   )
-  if (!resultSets) {
-    return {
-      duration: performance.now() - start,
-      result: result.recordset as unknown,
-    }
-  }
   // Array row mode puts each recordset's columns on `result.columns`, which the typings lack.
   const columnSets: unknown[] =
     'columns' in result && Array.isArray(result.columns) ? result.columns : []
@@ -70,7 +64,7 @@ const runRequest = async (
           : [],
         rows,
       },
-      resultSets.maxRows
+      maxRows
     )
   })
   return {
@@ -88,7 +82,7 @@ const runRequest = async (
                 columns: [],
                 rows: [],
               },
-              resultSets.maxRows
+              maxRows
             ),
           ],
   }

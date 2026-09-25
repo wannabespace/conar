@@ -1,6 +1,7 @@
 import { AiIdeaIcon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
+import { catalogSummaryFor } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'
@@ -13,7 +14,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
-import { catalogSummaryFor } from '~/entities/connection/sql-language'
+import { sqlSourceFor } from '~/entities/connection/sql-source'
 import { orpc } from '~/lib/orpc'
 
 // Room for the card's shadow: the gutter layer paints over anything left of the content.
@@ -269,8 +270,7 @@ export const useAiEdit = ({
     setPhase(pending)
     try {
       const context = await catalogSummaryFor(
-        connectionResource,
-        connectionType,
+        sqlSourceFor(connectionResource, connectionType),
         original
       )
       const text = await call(

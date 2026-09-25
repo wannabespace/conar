@@ -1,0 +1,67 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { silently } from '@tamery/shared/utils'
+import type { SqlCatalog } from '@tamery/sql'
+import {
+  catalogSummary,
+  dialects,
+  splitStatements,
+  statementScope,
+} from '@tamery/sql'
+import type { editor, IRange } from 'monaco-editor'
+
+export interface TableRef {
+  name: string
+  schema: string | null
+}
+
+/** What the editor needs from the connection behind a model; the app backs it with its query cache. */
+export interface SqlSource {
+  /** The catalog as far as the cache knows it — columns stay `null` until a table's columns were fetched. */
+  catalog: () => SqlCatalog
+  complete: (
+    input: { context: string; prefix: string; suffix: string },
+    signal: AbortSignal
+  ) => Promise<string>
+  ghostTextEnabled: () => boolean
+  loadColumns: (refs: TableRef[]) => Promise<unknown>
+  onCatalogChange: (listener: () => void) => () => void
+  type: ConnectionType
+}
+
+/** Unbound models get keywords only. */
+export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
+
+export const bindSqlModel = (model: editor.ITextModel, source: SqlSource) => {
+  boundSources.set(model, source)
+}
+
+export const EMPTY_CATALOG: SqlCatalog = {
+  defaultSchema: null,
+  enums: [],
+  schemas: [],
+}
+
+export const rangeOf = (
+  model: editor.ITextModel,
+  start: number,
+  end: number
+): IRange => {
+  const from = model.getPositionAt(start)
+  const to = model.getPositionAt(end)
+  return {
+    endColumn: to.column,
+    endLineNumber: to.lineNumber,
+    startColumn: from.column,
+    startLineNumber: from.lineNumber,
+  }
+}
+
+export const tablesIn = (text: string, connectionType: ConnectionType) =>
+  splitStatements(text, dialects[connectionType]).flatMap(
+    (statement) => statementScope(statement.tokens).tables
+  )
+
+export const catalogSummaryFor = async (source: SqlSource, sql: string) => {
+  await silently(() => source.loadColumns(tablesIn(sql, source.type)))
+  return catalogSummary(source.catalog())
+}
