@@ -68,18 +68,57 @@ const ghostItem = (
   }
 }
 
-const typedAlongItem = (model: editor.ITextModel, position: Position) => {
-  const last = lastGhostText.get(model)
-  const remembered =
-    last && typedAlong(last, model.getValue(), model.getOffsetAt(position))
-  if (!remembered) {
-    return
+const drawnDecorations = new WeakMap<editor.ITextModel, string[]>()
+
+/**
+ * With a list row highlighted, Monaco draws only ghost text that continues the row, so ghost text
+ * offered then is drawn here instead: an injected decoration at the caret, one line long because
+ * injected text cannot break lines. Tab takes it through `acceptGhostTextOverList`.
+ */
+const drawnGhostText = {
+  clear: (model: editor.ITextModel) => {
+    model.deltaDecorations(drawnDecorations.get(model) ?? [], [])
+    drawnDecorations.delete(model)
+  },
+  draw: (model: editor.ITextModel, position: Position, text: string) => {
+    drawnDecorations.set(
+      model,
+      model.deltaDecorations(drawnDecorations.get(model) ?? [], [
+        {
+          options: {
+            after: { content: text, inlineClassName: 'ghost-text-decoration' },
+            showIfCollapsed: true,
+          },
+          range: Range.fromPositions(position),
+        },
+      ])
+    )
+  },
+}
+
+const offer = (
+  model: editor.ITextModel,
+  position: Position,
+  text: string,
+  listOpen: boolean
+) => {
+  const item = ghostItem(
+    model,
+    position,
+    listOpen ? (text.split('\n')[0] ?? '') : text
+  )
+  if (!item.insertText) {
+    return { items: [] }
   }
   offeredGhostText.set(model, {
-    text: remembered,
+    text: item.insertText,
     versionId: model.getVersionId(),
   })
-  return ghostItem(model, position, remembered)
+  if (!listOpen) {
+    return { items: [item] }
+  }
+  drawnGhostText.draw(model, position, item.insertText)
+  return { items: [] }
 }
 
 const neighbourhood = (
@@ -109,34 +148,46 @@ const ghostTextLive = (
   offeredGhostText.get(model)?.versionId === model.getVersionId() &&
   Boolean(codeEditor.getDomNode()?.querySelector(GHOST_TEXT_SELECTOR))
 
-/**
- * Ghost text shown beside the open list is not the highlighted row, so Tab takes the ghost text:
- * Monaco alone would insert the row. Runs before Monaco's own Tab binding.
- */
-const acceptGhostTextOverList = (codeEditor: editor.IStandaloneCodeEditor) => {
+/** Inserts the offered ghost text, whichever of Monaco or `drawnGhostText` drew it. */
+export const acceptGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
   const model = codeEditor.getModel()
   const position = codeEditor.getPosition()
-  const preview = model && offeredGhostText.get(model)
-  // Any open list counts: one opened by a trigger character has no highlighted row, and Tab would indent.
-  const shown = codeEditor
-    .getDomNode()
-    ?.querySelector('.suggest-widget.visible')
-  if (
-    !model ||
-    !position ||
-    !preview ||
-    !shown ||
-    !ghostTextLive(codeEditor, model)
-  ) {
+  const offered = model && offeredGhostText.get(model)
+  if (!model || !position || offered?.versionId !== model.getVersionId()) {
     return false
   }
   codeEditor.trigger('runner', 'hideSuggestWidget', null)
-  const item = ghostItem(model, position, preview.text)
+  const item = ghostItem(model, position, offered.text)
   codeEditor.executeEdits('ai-ghost-text', [
     { forceMoveMarkers: true, range: item.range, text: item.insertText },
   ])
   codeEditor.pushUndoStop()
   return true
+}
+
+export const dismissGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
+  const model = codeEditor.getModel()
+  if (model) {
+    ghostTextSuppressed.add(model)
+    drawnGhostText.clear(model)
+  }
+  codeEditor.trigger('runner', 'editor.action.inlineSuggest.hide', null)
+}
+
+/**
+ * With the list open, Tab would insert the highlighted row (or indent when none is), never the ghost
+ * text beside it. Runs before Monaco's own Tab binding.
+ */
+const acceptGhostTextOverList = (codeEditor: editor.IStandaloneCodeEditor) => {
+  const model = codeEditor.getModel()
+  return (
+    Boolean(
+      codeEditor.getDomNode()?.querySelector('.suggest-widget.visible')
+    ) &&
+    model !== null &&
+    ghostTextLive(codeEditor, model) &&
+    acceptGhostText(codeEditor)
+  )
 }
 
 export const attachGhostTextEscape = (
@@ -158,6 +209,12 @@ export const attachGhostTextEscape = (
       event.stopPropagation()
     }
   })
+  const cursorListener = codeEditor.onDidChangeCursorPosition(() => {
+    const model = codeEditor.getModel()
+    if (model) {
+      drawnGhostText.clear(model)
+    }
+  })
   const contentListener = codeEditor.onDidChangeModelContent(() => {
     const model = codeEditor.getModel()
     if (model) {
@@ -166,6 +223,7 @@ export const attachGhostTextEscape = (
   })
   return () => {
     keyListener.dispose()
+    cursorListener.dispose()
     contentListener.dispose()
   }
 }
@@ -180,16 +238,20 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
     provideInlineCompletions: async (model, position, context, token) => {
       const source = boundSources.get(model)
       offeredGhostText.delete(model)
+      drawnGhostText.clear(model)
       if (!source || ghostTextOff(model, source)) {
         return { items: [] }
       }
-      const remembered = typedAlongItem(model, position)
+      const listOpen = context.selectedSuggestionInfo !== undefined
+      const last = lastGhostText.get(model)
+      const remembered =
+        last && typedAlong(last, model.getValue(), model.getOffsetAt(position))
       if (remembered) {
-        return { items: [remembered] }
+        return offer(model, position, remembered, listOpen)
       }
       // Monaco asks again on every move through the list, with the text unchanged: an answer comes back
-      // through `typedAlongItem` above, and a version already asked about is not sent to the AI again.
-      if (context.selectedSuggestionInfo) {
+      // through `remembered` above, and a version already asked about is not sent to the AI again.
+      if (listOpen) {
         if (askedWithList.get(model) === model.getVersionId()) {
           return { items: [] }
         }
@@ -246,15 +308,11 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       )
         ? ` ${suggestion}`
         : suggestion
-      offeredGhostText.set(model, {
-        text: insertText,
-        versionId: model.getVersionId(),
-      })
       lastGhostText.set(model, {
         after: text.slice(offset),
         before: text.slice(0, offset),
         text: insertText,
       })
-      return { items: [ghostItem(model, position, insertText)] }
+      return offer(model, position, insertText, listOpen)
     },
   })

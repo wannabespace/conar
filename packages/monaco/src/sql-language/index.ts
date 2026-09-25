@@ -7,7 +7,12 @@ import { registerGhostText } from './ghost-text'
 import { registerLanguage, sqlLanguageIds } from './language'
 
 export { attachSqlDiagnostics } from './diagnostics'
-export { attachGhostTextEscape, GHOST_TEXT_SELECTOR } from './ghost-text'
+export {
+  acceptGhostText,
+  attachGhostTextEscape,
+  dismissGhostText,
+  GHOST_TEXT_SELECTOR,
+} from './ghost-text'
 export { sqlLanguageIds } from './language'
 export type { SqlSource, TableRef } from './source'
 export { bindSqlModel, catalogSummaryFor, EMPTY_CATALOG } from './source'

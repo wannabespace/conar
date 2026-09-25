@@ -10,9 +10,11 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Monaco } from '@tamery/monaco/editor'
 import {
+  acceptGhostText,
   attachGhostTextEscape,
   attachSqlDiagnostics,
   bindSqlModel,
+  dismissGhostText,
   GHOST_TEXT_SELECTOR,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
@@ -480,13 +482,13 @@ const SuggestionControls = ({
           <Button
             size="icon-2xs"
             aria-label="Accept suggestion"
-            onClick={() =>
-              editorRef.current?.trigger(
-                'runner',
-                'editor.action.inlineSuggest.commit',
-                null
-              )
-            }
+            onClick={() => {
+              const codeEditor = editorRef.current
+              if (codeEditor) {
+                acceptGhostText(codeEditor)
+                codeEditor.focus()
+              }
+            }}
           />
         }
       >
@@ -504,13 +506,13 @@ const SuggestionControls = ({
             size="icon-2xs"
             variant="outline"
             aria-label="Dismiss suggestion"
-            onClick={() =>
-              editorRef.current?.trigger(
-                'runner',
-                'editor.action.inlineSuggest.hide',
-                null
-              )
-            }
+            onClick={() => {
+              const codeEditor = editorRef.current
+              if (codeEditor) {
+                dismissGhostText(codeEditor)
+                codeEditor.focus()
+              }
+            }}
           />
         }
       >
