@@ -563,10 +563,14 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
       if (token.isCancellationRequested) {
         return { items: [] }
       }
-      const prefix = text.slice(
-        Math.max(window.start, offset - AI_SQL_LIMITS.sql),
-        offset
-      )
+      const explicit =
+        context.triggerKind === languages.InlineCompletionTriggerKind.Explicit
+      const before = text.slice(window.start, offset)
+      // An explicit ask treats the word before the caret as finished (see `needsLeadingSpace`); without the
+      // space Codestral reads `from accounts` as a whole statement and only closes it with `;`.
+      const prefix = (
+        explicit && /\w$/u.test(before) ? `${before} ` : before
+      ).slice(-AI_SQL_LIMITS.sql)
       const suffix = text.slice(
         offset,
         Math.min(window.end, offset + AI_SQL_LIMITS.sql)
@@ -595,7 +599,7 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
       const insertText = needsLeadingSpace(
         text.slice(0, offset),
         suggestion,
-        context.triggerKind === languages.InlineCompletionTriggerKind.Explicit,
+        explicit,
         dialect
       )
         ? ` ${suggestion}`
