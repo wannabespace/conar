@@ -20,7 +20,6 @@ export interface DialectOptions {
   connectionString: string
   connectionId?: string
   resourceId?: string
-  /** Every statement answers with `ResultSet[]` in place of row objects — the runner's shape. */
   resultSets?: { maxRows: number }
   log?: (params: {
     promise: Promise<{
@@ -45,7 +44,6 @@ const resolveProxyIdParams = (options: DialectOptions) => {
 interface QueryPayload {
   query: string
   values: unknown[]
-  /** Kysely's own id for the compiled query, so a caller holding it can cancel the run. */
   queryId?: string
 }
 
