@@ -1,6 +1,7 @@
 import {
   AiChat01Icon,
   ArrowLeft01Icon,
+  ArrowLeft02Icon,
   ArrowRight01Icon,
   ArrowRight02Icon,
   Cancel01Icon,
@@ -529,6 +530,7 @@ const Tab = ({
   onDragStateChange,
   onClose,
   onCloseAll,
+  onCloseToTheLeft,
   onCloseToTheRight,
   onCloseOthers,
   currentTabIndex,
@@ -543,6 +545,7 @@ const Tab = ({
   connectionResource: ConnectionResource
   onClose: VoidFunction
   onCloseAll: VoidFunction
+  onCloseToTheLeft: VoidFunction
   onCloseToTheRight: VoidFunction
   onCloseOthers: VoidFunction
   currentTabIndex: number
@@ -610,6 +613,12 @@ const Tab = ({
       icon: CancelSquareIcon,
       disabled: totalTabs <= 1,
       onSelect: onCloseOthers,
+    },
+    {
+      label: 'Close to the Left',
+      icon: ArrowLeft02Icon,
+      disabled: currentTabIndex === 0,
+      onSelect: onCloseToTheLeft,
     },
     {
       label: 'Close to the Right',
@@ -822,14 +831,16 @@ export const TabBar = ({ className }: { className?: string }) => {
     }
   }
 
-  const closeTabsToTheRight = async (tabId: string) => {
+  const closeTabsBeside = async (tabId: string, side: 'left' | 'right') => {
     const currentIndex = tabs.findIndex((tab) => tab.id === tabId)
+    const tabsToClose =
+      side === 'left'
+        ? tabs.slice(0, currentIndex)
+        : tabs.slice(currentIndex + 1)
 
-    if (currentIndex === -1 || currentIndex >= tabs.length - 1) {
+    if (currentIndex === -1 || tabsToClose.length === 0) {
       return
     }
-
-    const tabsToClose = tabs.slice(currentIndex + 1)
 
     if (tabsToClose.some((tab) => tab.id === activeTabId)) {
       await goToTab(tabId)
@@ -981,7 +992,8 @@ export const TabBar = ({ className }: { className?: string }) => {
                   connectionResource={connectionResource}
                   onClose={() => closeTab(tab.id)}
                   onCloseAll={closeAllTabs}
-                  onCloseToTheRight={() => closeTabsToTheRight(tab.id)}
+                  onCloseToTheLeft={() => closeTabsBeside(tab.id, 'left')}
+                  onCloseToTheRight={() => closeTabsBeside(tab.id, 'right')}
                   onCloseOthers={() => closeOtherTabs(tab.id)}
                   currentTabIndex={index}
                   totalTabs={tabs.length}
