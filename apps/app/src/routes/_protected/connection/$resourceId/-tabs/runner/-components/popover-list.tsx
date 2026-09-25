@@ -25,13 +25,11 @@ export const ListEmpty = ({
 )
 
 export const RowAction = ({
-  className,
   destructive = false,
   icon,
   label,
   onClick,
 }: {
-  className?: string
   destructive?: boolean
   icon: IconSvgElement
   label: string
@@ -49,8 +47,7 @@ export const RowAction = ({
             'text-muted-foreground/60',
             destructive
               ? 'hover:bg-destructive/10 hover:text-destructive'
-              : 'hover:text-foreground',
-            className
+              : 'hover:text-foreground'
           )}
           onPointerDown={(event) => {
             event.preventDefault()

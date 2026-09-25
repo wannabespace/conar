@@ -77,7 +77,6 @@ export const RunHistoryButton = () => {
                   key={entry.id}
                   value={entry.id}
                   keywords={[entry.sql]}
-                  className="pr-8"
                   onSelect={() => append(entry.sql)}
                 >
                   <span
@@ -91,7 +90,7 @@ export const RunHistoryButton = () => {
                     )}
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span data-mask className="truncate font-mono text-xs">
+                    <span data-mask className="truncate">
                       {entry.sql}
                     </span>
                     <span className="text-2xs text-muted-foreground tabular-nums">
@@ -106,7 +105,6 @@ export const RunHistoryButton = () => {
                     destructive
                     icon={Cancel01Icon}
                     label="Remove from history"
-                    className="absolute inset-y-0 right-1 my-auto"
                     onClick={() =>
                       runHistory.remove(connectionResource.id, entry.id)
                     }

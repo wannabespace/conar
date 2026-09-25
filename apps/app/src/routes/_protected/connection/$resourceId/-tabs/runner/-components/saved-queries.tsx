@@ -83,7 +83,6 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
               key={query.id}
               value={query.id}
               keywords={[query.name, query.query]}
-              className="pr-14"
               onSelect={() => openInNewTab(query)}
             >
               <div className="flex min-w-0 flex-1 flex-col">
@@ -92,12 +91,12 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
                 </span>
                 <span
                   data-mask
-                  className="text-2xs text-muted-foreground truncate font-mono"
+                  className="text-2xs text-muted-foreground truncate"
                 >
                   {query.query}
                 </span>
               </div>
-              <div className="absolute inset-y-0 right-1 my-auto flex h-fit items-center">
+              <div className="flex shrink-0 items-center">
                 <RowAction
                   icon={PlayListAddIcon}
                   label="Append to this tab"

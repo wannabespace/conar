@@ -30,6 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { Separator } from '@tamery/ui/components/separator'
 import {
   Tooltip,
   TooltipContent,
@@ -364,8 +365,10 @@ export const Runner = () => {
               >
                 <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />
               </ToolbarButton>
+              <Separator orientation="vertical" className="mx-0.5 h-4!" />
               <RunHistoryButton />
               <SavedQueriesButton />
+              <Separator orientation="vertical" className="mx-0.5 h-4!" />
               <ToolbarButton
                 label={resultsVisible ? 'Hide results' : 'Show results'}
                 onClick={() =>
@@ -381,7 +384,7 @@ export const Runner = () => {
               </ToolbarButton>
             </div>
           </div>
-          <div className="relative min-h-0 flex-1">
+          <div className="relative min-h-0 flex-1 border-t">
             <RunnerEditor
               editorRef={editorRef}
               editing={aiEdit.editing}
