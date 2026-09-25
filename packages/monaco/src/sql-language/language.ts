@@ -11,18 +11,12 @@ export const sqlLanguageIds = {
 } satisfies Record<ConnectionType, string>
 
 // Theme rule names in editor.tsx.
-const SCOPES = {
-  comment: 'comment',
+type TokenKind = ReturnType<typeof tokenize>['tokens'][number]['kind']
+
+const SCOPES: Partial<Record<TokenKind, string>> = {
   function: 'predefined',
-  identifier: 'identifier',
-  keyword: 'keyword',
-  number: 'number',
-  operator: 'operator',
   punctuation: 'delimiter',
-  string: 'string',
-  type: 'type',
-  variable: 'variable',
-} as const
+}
 
 class LineState implements languages.IState {
   readonly state: TokenizerState
@@ -77,7 +71,7 @@ export const registerLanguage = (id: string, dialect: DialectSpec) => {
       return {
         endState: new LineState(state),
         tokens: tokens.map((token) => ({
-          scopes: SCOPES[token.kind],
+          scopes: SCOPES[token.kind] ?? token.kind,
           startIndex: token.start,
         })),
       }

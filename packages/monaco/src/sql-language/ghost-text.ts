@@ -9,7 +9,7 @@ import {
   typedAlong,
   withinStatement,
 } from '@tamery/sql'
-import type { editor, Position } from 'monaco-editor'
+import type { CancellationToken, editor, Position } from 'monaco-editor'
 import { KeyCode, languages, Range } from 'monaco-editor'
 
 import type { SqlSource } from './source'
@@ -17,33 +17,25 @@ import { boundSources, catalogSummaryFor } from './source'
 
 const GHOST_TEXT_DELAY = 150
 
-/** Escape pressed over ghost text: no new ghost text until the user types again. */
 const ghostTextSuppressed = new WeakSet<editor.ITextModel>()
 
-/** The text version last sent to the AI while a list row was highlighted. */
 const askedWithList = new WeakMap<editor.ITextModel, number>()
 
-const ghostTextOff = (model: editor.ITextModel, source: SqlSource) =>
-  ghostTextSuppressed.has(model) || !source.ghostTextEnabled()
-
-/**
- * The ghost text last offered, valid only for the text it was made for: Tab takes it over the list's
- * row while both show, Escape over it stops suggesting. Every request clears it first, so a stale
- * entry never claims ghost text that a newer request dropped.
- */
+/** Cleared before each request so Tab never accepts an offer the request dropped. */
 const offeredGhostText = new WeakMap<
   editor.ITextModel,
   { text: string; versionId: number }
 >()
 
-/** Typing along with the last ghost text keeps it on screen without a new request. */
 const lastGhostText = new WeakMap<editor.ITextModel, GhostTextOffer>()
 
-/**
- * Monaco's default range swallows the rest of the line (an auto-closed quote, a `;`) and drops a
- * suggestion that does not end with it. A suggestion that repeats the rest is cut back to the new
- * text, so accepting it leaves the caret right after what was inserted, not at the line's end.
- */
+const requestCurrent = (
+  model: editor.ITextModel,
+  source: SqlSource,
+  token: CancellationToken
+) => !token.isCancellationRequested && boundSources.get(model) === source
+
+/** Monaco's default range swallows the rest of the line, including auto-closed quotes and `;`. */
 const ghostItem = (
   model: editor.ITextModel,
   position: Position,
@@ -63,15 +55,14 @@ const ghostItem = (
 
 const drawnDecorations = new WeakMap<editor.ITextModel, string[]>()
 
-/**
- * With a list row highlighted, Monaco draws only ghost text that continues the row, so ghost text
- * offered then is drawn here instead: an injected decoration at the caret, one line long because
- * injected text cannot break lines. Tab takes it through `acceptGhostTextOverList`.
- */
+/** Monaco hides unrelated ghost text behind a selected list row; injected text cannot cross lines. */
 const drawnGhostText = {
   clear: (model: editor.ITextModel) => {
-    model.deltaDecorations(drawnDecorations.get(model) ?? [], [])
-    drawnDecorations.delete(model)
+    const decorations = drawnDecorations.get(model)
+    if (decorations) {
+      model.deltaDecorations(decorations, [])
+      drawnDecorations.delete(model)
+    }
   },
   draw: (model: editor.ITextModel, position: Position, text: string) => {
     drawnDecorations.set(
@@ -87,6 +78,15 @@ const drawnGhostText = {
       ])
     )
   },
+}
+
+export const bindSqlModel = (model: editor.ITextModel, source: SqlSource) => {
+  drawnGhostText.clear(model)
+  offeredGhostText.delete(model)
+  lastGhostText.delete(model)
+  askedWithList.delete(model)
+  ghostTextSuppressed.delete(model)
+  boundSources.set(model, source)
 }
 
 const offer = (
@@ -114,6 +114,28 @@ const offer = (
   return { items: [] }
 }
 
+const cachedOffer = (
+  model: editor.ITextModel,
+  position: Position,
+  listOpen: boolean
+) => {
+  const last = lastGhostText.get(model)
+  const remembered =
+    last && typedAlong(last, model.getValue(), model.getOffsetAt(position))
+  if (remembered) {
+    return offer(model, position, remembered, listOpen)
+  }
+  if (!listOpen) {
+    return
+  }
+  // Monaco asks again on every list-row move without changing the text.
+  const versionId = model.getVersionId()
+  if (askedWithList.get(model) === versionId) {
+    return { items: [] }
+  }
+  askedWithList.set(model, versionId)
+}
+
 const neighbourhood = (
   statements: Statement[],
   statement: Statement | undefined,
@@ -125,7 +147,8 @@ const neighbourhood = (
   }
   return {
     end: statements[index + 1]?.terminatorEnd ?? length,
-    start: statements[index - 1]?.start ?? 0,
+    // From the end of the statement before, so comments leading into the previous one come along.
+    start: statements[index - 2]?.terminatorEnd ?? 0,
   }
 }
 
@@ -141,7 +164,6 @@ const ghostTextLive = (
   offeredGhostText.get(model)?.versionId === model.getVersionId() &&
   Boolean(codeEditor.getDomNode()?.querySelector(GHOST_TEXT_SELECTOR))
 
-/** Inserts the offered ghost text, whichever of Monaco or `drawnGhostText` drew it. */
 export const acceptGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
   const model = codeEditor.getModel()
   const position = codeEditor.getPosition()
@@ -167,22 +189,6 @@ export const dismissGhostText = (codeEditor: editor.IStandaloneCodeEditor) => {
   codeEditor.trigger('runner', 'editor.action.inlineSuggest.hide', null)
 }
 
-/**
- * With the list open, Tab would insert the highlighted row (or indent when none is), never the ghost
- * text beside it. Runs before Monaco's own Tab binding.
- */
-const acceptGhostTextOverList = (codeEditor: editor.IStandaloneCodeEditor) => {
-  const model = codeEditor.getModel()
-  return (
-    Boolean(
-      codeEditor.getDomNode()?.querySelector('.suggest-widget.visible')
-    ) &&
-    model !== null &&
-    ghostTextLive(codeEditor, model) &&
-    acceptGhostText(codeEditor)
-  )
-}
-
 export const attachGhostTextEscape = (
   codeEditor: editor.IStandaloneCodeEditor
 ) => {
@@ -197,7 +203,14 @@ export const attachGhostTextEscape = (
     ) {
       ghostTextSuppressed.add(model)
     }
-    if (event.keyCode === KeyCode.Tab && acceptGhostTextOverList(codeEditor)) {
+    // With the list open, Monaco's Tab accepts its row before the adjacent AI text.
+    if (
+      event.keyCode === KeyCode.Tab &&
+      model &&
+      codeEditor.getDomNode()?.querySelector('.suggest-widget.visible') &&
+      ghostTextLive(codeEditor, model) &&
+      acceptGhostText(codeEditor)
+    ) {
       event.preventDefault()
       event.stopPropagation()
     }
@@ -234,29 +247,23 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const source = boundSources.get(model)
       offeredGhostText.delete(model)
       drawnGhostText.clear(model)
-      if (!source || ghostTextOff(model, source)) {
+      if (
+        !source ||
+        ghostTextSuppressed.has(model) ||
+        !source.ghostTextEnabled()
+      ) {
         return { items: [] }
       }
       const listOpen = context.selectedSuggestionInfo !== undefined
-      const last = lastGhostText.get(model)
-      const remembered =
-        last && typedAlong(last, model.getValue(), model.getOffsetAt(position))
-      if (remembered) {
-        return offer(model, position, remembered, listOpen)
-      }
-      // Monaco asks again on every move through the list, with the text unchanged: an answer comes back
-      // through `remembered` above, and a version already asked about is not sent to the AI again.
-      if (listOpen) {
-        if (askedWithList.get(model) === model.getVersionId()) {
-          return { items: [] }
-        }
-        askedWithList.set(model, model.getVersionId())
+      const cached = cachedOffer(model, position, listOpen)
+      if (cached) {
+        return cached
       }
       const text = model.getValue()
+      const versionId = model.getVersionId()
       const offset = model.getOffsetAt(position)
       const statements = splitStatements(text, dialect)
       const statement = statementAt(statements, offset, text)
-      // The model sees the statement being written and one on each side for style, not the whole tab.
       const window = neighbourhood(statements, statement, text.length)
       const { state } = tokenize(text.slice(0, offset), dialect)
       // Codestral reads an auto-closed `''` as a finished value and writes past it. A `$$` body is code.
@@ -264,7 +271,7 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
         return { items: [] }
       }
       await sleep(GHOST_TEXT_DELAY)
-      if (token.isCancellationRequested) {
+      if (!requestCurrent(model, source, token)) {
         return { items: [] }
       }
       const explicit =
@@ -280,16 +287,23 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
         Math.min(window.end, offset + AI_SQL_LIMITS.sql)
       )
       const schema = await catalogSummaryFor(source, prefix + suffix)
-      if (token.isCancellationRequested) {
+      if (!requestCurrent(model, source, token)) {
         return { items: [] }
       }
       const controller = new AbortController()
-      token.onCancellationRequested(() => controller.abort())
+      const cancellation = token.onCancellationRequested(() =>
+        controller.abort()
+      )
       // A keystroke cancels the request mid-flight; that is not an error to surface.
       const { data: reply } = await tryCatchAsync(() =>
         source.complete({ context: schema, prefix, suffix }, controller.signal)
       )
-      if (!reply) {
+      cancellation.dispose()
+      if (
+        !reply ||
+        !requestCurrent(model, source, token) ||
+        model.getVersionId() !== versionId
+      ) {
         return { items: [] }
       }
       const blankLine = !model

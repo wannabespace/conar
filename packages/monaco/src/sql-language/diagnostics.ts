@@ -8,11 +8,6 @@ import { rangeOf, tablesIn } from './source'
 const DIAGNOSTICS_DELAY = 250
 const MARKER_OWNER = 'tamery-sql'
 
-const MARKER_SEVERITIES = {
-  error: MarkerSeverity.Error,
-  warning: MarkerSeverity.Warning,
-}
-
 export const attachSqlDiagnostics = (
   codeEditor: editor.IStandaloneCodeEditor,
   source: SqlSource
@@ -31,7 +26,10 @@ export const attachSqlDiagnostics = (
     const markers = diagnose(text, dialect, catalog).map((diagnostic) => ({
       ...rangeOf(model, diagnostic.start, diagnostic.end),
       message: diagnostic.message,
-      severity: MARKER_SEVERITIES[diagnostic.severity],
+      severity:
+        diagnostic.severity === 'error'
+          ? MarkerSeverity.Error
+          : MarkerSeverity.Warning,
     }))
     editor.setModelMarkers(model, MARKER_OWNER, markers)
   }

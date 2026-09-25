@@ -32,10 +32,6 @@ export interface SqlSource {
 /** Unbound models get keywords only. */
 export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
 
-export const bindSqlModel = (model: editor.ITextModel, source: SqlSource) => {
-  boundSources.set(model, source)
-}
-
 export const EMPTY_CATALOG: SqlCatalog = {
   defaultSchema: null,
   enums: [],

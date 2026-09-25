@@ -10,12 +10,13 @@ export { attachSqlDiagnostics } from './diagnostics'
 export {
   acceptGhostText,
   attachGhostTextEscape,
+  bindSqlModel,
   dismissGhostText,
   GHOST_TEXT_SELECTOR,
 } from './ghost-text'
 export { sqlLanguageIds } from './language'
 export type { SqlSource, TableRef } from './source'
-export { bindSqlModel, catalogSummaryFor, EMPTY_CATALOG } from './source'
+export { catalogSummaryFor, EMPTY_CATALOG } from './source'
 
 const registerSqlLanguage = (connectionType: ConnectionType) => {
   const id = sqlLanguageIds[connectionType]

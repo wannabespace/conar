@@ -1,5 +1,5 @@
 import './worker'
-import { noop } from '@tamery/shared/utils'
+import { noop, tryCatch } from '@tamery/shared/utils'
 import { formatXml } from '@tamery/shared/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedTheme } from '@tamery/ui/theme-store'
@@ -107,36 +107,24 @@ export const Monaco = ({
   const onChangeEvent = useEffectEvent(onChange)
   const onSubmitEvent = useEffectEvent(() => onSubmit?.())
   const submitEnabled = Boolean(onSubmit)
-  const getOptionsEvent = useEffectEvent(
-    (editorLanguage?: string) =>
-      ({
-        automaticLayout: true,
-        fontFamily: '"Geist Mono Variable", monospace',
-        language: editorLanguage,
-        minimap: { enabled: false },
-        tabSize: 2,
-        value: (() => {
-          if (editorLanguage?.includes('json')) {
-            try {
-              return JSON.stringify(JSON.parse(value), null, 2)
-            } catch {
-              return value
-            }
-          }
-
-          if (editorLanguage?.includes('xml')) {
-            try {
-              return formatXml(value)
-            } catch {
-              return value
-            }
-          }
-
-          return value
-        })(),
-        ...options,
-      }) satisfies monaco.editor.IStandaloneEditorConstructionOptions
-  )
+  const getOptionsEvent = useEffectEvent((editorLanguage?: string) => {
+    let initialValue = value
+    if (editorLanguage?.includes('json')) {
+      initialValue =
+        tryCatch(() => JSON.stringify(JSON.parse(value), null, 2)).data ?? value
+    } else if (editorLanguage?.includes('xml')) {
+      initialValue = tryCatch(() => formatXml(value)).data ?? value
+    }
+    return {
+      automaticLayout: true,
+      fontFamily: '"Geist Mono Variable", monospace',
+      language: editorLanguage,
+      minimap: { enabled: false },
+      tabSize: 2,
+      value: initialValue,
+      ...options,
+    } satisfies monaco.editor.IStandaloneEditorConstructionOptions
+  })
 
   useEffect(() => {
     if (!elementRef.current) {
@@ -177,6 +165,10 @@ export const Monaco = ({
       subscription.dispose()
       submitAction?.dispose()
       monacoInstanceRef.current?.dispose()
+      monacoInstanceRef.current = null
+      if (ref) {
+        ref.current = null
+      }
     }
   }, [language, ref, submitEnabled])
 

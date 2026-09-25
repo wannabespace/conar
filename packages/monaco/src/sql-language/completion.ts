@@ -3,6 +3,7 @@ import type { CompletionKind, DialectSpec } from '@tamery/sql'
 import { completionContext, completionItems, findTable } from '@tamery/sql'
 import { languages } from 'monaco-editor'
 
+import type { TableRef } from './source'
 import { boundSources, EMPTY_CATALOG, rangeOf } from './source'
 
 const COMPLETION_KINDS: Record<CompletionKind, languages.CompletionItemKind> = {
@@ -43,16 +44,14 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
         // Never wait on the network: answer from the cache, start loading what a column
         // position needs, and mark the list incomplete so the next keystroke asks again.
         const [first, second] = context.qualifier
-        const refs = [
-          ...context.scope.tables,
-          ...(first === undefined
-            ? []
-            : [
-                second === undefined
-                  ? { name: first, schema: null }
-                  : { name: second, schema: first },
-              ]),
-        ]
+        const refs: TableRef[] = [...context.scope.tables]
+        if (first !== undefined) {
+          refs.push(
+            second === undefined
+              ? { name: first, schema: null }
+              : { name: second, schema: first }
+          )
+        }
         missingColumns =
           (context.expects === 'column' || first !== undefined) &&
           refs.some(
@@ -77,7 +76,6 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       return {
         incomplete: missingColumns,
         suggestions: items.map((item) => ({
-          // Accepting a pick is a good moment for ghost text to continue the statement.
           command: ASK_GHOST_TEXT,
           detail: item.detail,
           insertText: item.insertText,
