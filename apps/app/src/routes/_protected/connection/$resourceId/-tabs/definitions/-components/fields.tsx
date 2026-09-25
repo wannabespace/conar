@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { Spinner } from '@tamery/ui/components/spinner'
+import { Switch } from '@tamery/ui/components/switch'
 import {
   Field,
   FieldInput,
@@ -32,6 +33,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
 import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
+
+import { InspectorOption } from './inspector'
 
 export const editorOptions = {
   fontSize: 12,
@@ -293,4 +296,32 @@ export const resetFields = (
     form.setFieldValue(name, value, { dontUpdateMeta: true })
     form.setFieldMeta(name, (meta) => ({ ...meta, isTouched: false }))
   }
+}
+
+export const SwitchField = ({
+  description,
+  disabled,
+  title,
+}: {
+  description: string
+  disabled: boolean
+  title: string
+}) => {
+  const field = useFieldContext<boolean>()
+
+  return (
+    <InspectorOption
+      htmlFor={field.name}
+      title={title}
+      description={description}
+    >
+      <Switch
+        id={field.name}
+        size="sm"
+        disabled={disabled}
+        checked={field.state.value}
+        onCheckedChange={field.handleChange}
+      />
+    </InspectorOption>
+  )
 }

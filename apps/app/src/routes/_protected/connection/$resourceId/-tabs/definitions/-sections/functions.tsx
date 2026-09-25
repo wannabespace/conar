@@ -3,7 +3,6 @@ import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -30,12 +29,12 @@ import {
   resetFields,
   SchemaField,
   SelectField,
+  SwitchField,
   TextField,
 } from '../-components/fields'
 import type { SectionInspectorProps } from '../-components/inspector'
 import {
   Inspector,
-  InspectorOption,
   InspectorSection,
   InspectorSql,
   replaceWarning,
@@ -66,6 +65,7 @@ interface FunctionDraft {
   name: string
   returnType: string
   schema: string
+  schemaBound: boolean
   securityDefiner: boolean
 }
 
@@ -112,6 +112,7 @@ const newDraft = (
           connectionType,
           kind: 'function',
           language,
+          returnType: '',
         }),
     extras: '',
     kind: 'function',
@@ -119,6 +120,7 @@ const newDraft = (
     name: '',
     returnType: trigger ? 'trigger' : '',
     schema: pageSchema,
+    schemaBound: false,
     securityDefiner: false,
   }
 }
@@ -143,6 +145,7 @@ const draftOf = (
         name: item.name,
         returnType: item.return_type ?? '',
         schema: item.schema,
+        schemaBound: item.schemaBound,
         securityDefiner: item.securityDefiner,
       }
     : fallback
@@ -157,6 +160,7 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   language: draft.language,
   name: draft.name.trim(),
   returnType: draft.returnType.trim(),
+  schemaBound: draft.kind === 'function' && draft.schemaBound,
   securityDefiner: draft.securityDefiner,
 })
 
@@ -175,6 +179,17 @@ const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
     (languages.length === 0 || languages.includes(item.language ?? ''))
   )
 }
+
+const hasExecutionOptions = ({
+  behaviors,
+  languages,
+  schemaBinding,
+  securityDefiner,
+}: ReturnType<typeof capabilitiesOf>['functions']) =>
+  languages.length > 0 ||
+  behaviors.length > 0 ||
+  schemaBinding ||
+  securityDefiner
 
 const FunctionInspector = ({
   can,
@@ -235,12 +250,9 @@ const FunctionInspector = ({
   const readOnly = item
     ? !can.edit || !formEditable(item, connectionType)
     : !can.create
-  const execution =
-    options.languages.length > 0 ||
-    options.behaviors.length > 0 ||
-    options.securityDefiner
+  const execution = hasExecutionOptions(options)
   // A starter body only belongs to the shape it was written for, so switching
-  // kind or language swaps it — unless the user has typed their own.
+  // kind, language or return type swaps it — unless the user has typed their own.
   const retemplate = (next: FunctionDraft) => {
     const template = functionBodyTemplateOf({ connectionType, ...next })
 
@@ -311,7 +323,13 @@ const FunctionInspector = ({
           )}
         </form.AppField>
         {returns && (
-          <form.AppField name="returnType">
+          <form.AppField
+            name="returnType"
+            listeners={{
+              onChange: ({ value }) =>
+                retemplate({ ...draft, returnType: value }),
+            }}
+          >
             {() => (
               <TextField
                 label="Returns"
@@ -355,22 +373,25 @@ const FunctionInspector = ({
               )}
             </form.AppField>
           )}
+          {returns && options.schemaBinding && (
+            <form.AppField name="schemaBound">
+              {() => (
+                <SwitchField
+                  title="Schema bound"
+                  description="Locks the tables it reads against changes. Policy predicates require it."
+                  disabled={readOnly}
+                />
+              )}
+            </form.AppField>
+          )}
           {options.securityDefiner && (
             <form.AppField name="securityDefiner">
-              {(field) => (
-                <InspectorOption
-                  htmlFor="function-security-definer"
+              {() => (
+                <SwitchField
                   title="Security definer"
                   description="Runs with the owner's rights instead of the caller's."
-                >
-                  <Switch
-                    id="function-security-definer"
-                    size="sm"
-                    disabled={readOnly}
-                    checked={field.state.value as boolean}
-                    onCheckedChange={(checked) => field.handleChange(checked)}
-                  />
-                </InspectorOption>
+                  disabled={readOnly}
+                />
               )}
             </form.AppField>
           )}

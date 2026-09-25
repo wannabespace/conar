@@ -8,10 +8,15 @@ interface Tables {
   table_catalog: string
   table_schema: string
   table_name: string
-  table_type: 'BASE TABLE' | 'VIEW' | 'SYSTEM VIEW'
-  table_rows: number | null
-  data_length: number
-  index_length: number
+  table_type:
+    | 'BASE TABLE'
+    | 'VIEW'
+    | 'SYSTEM VIEW'
+    | 'LOCAL TEMPORARY'
+    | 'FOREIGN TABLE'
+  table_rows: string | null
+  data_length: string | null
+  index_length: string | null
   table_collation: string | null
   table_comment: string | null
 }
@@ -21,12 +26,12 @@ interface Views {
   table_schema: string
   table_name: string
   view_definition: string
-  check_option: 'NONE' | 'CASCADE' | 'LOCAL'
+  check_option: 'NONE'
   is_updatable: 'YES' | 'NO'
-  is_insertable_into: boolean
-  is_trigger_updatable: boolean
-  is_trigger_deletable: boolean
-  is_trigger_insertable_into: boolean
+  is_insertable_into: 'YES' | 'NO'
+  is_trigger_updatable: 'YES' | 'NO'
+  is_trigger_deletable: 'YES' | 'NO'
+  is_trigger_insertable_into: 'YES' | 'NO'
 }
 
 interface Columns {
@@ -34,16 +39,16 @@ interface Columns {
   table_schema: string
   table_name: string
   column_name: string
-  ordinal_position: number | null
+  ordinal_position: string
   column_default: string
-  is_nullable: 1 | 0
+  is_nullable: '1' | '0'
   data_type: string
-  character_maximum_length: number | null
-  character_octet_length: number | null
-  numeric_precision: number | null
-  numeric_precision_radix: number | null
-  numeric_scale: number | null
-  datetime_precision: number | null
+  character_maximum_length: string | null
+  character_octet_length: string | null
+  numeric_precision: string | null
+  numeric_precision_radix: string | null
+  numeric_scale: string | null
+  datetime_precision: string | null
   character_set_catalog: string | null
   character_set_schema: string | null
   character_set_name: string | null
@@ -53,7 +58,7 @@ interface Columns {
   domain_catalog: string | null
   domain_schema: string | null
   domain_name: string | null
-  extra: string
+  extra: string | null
   column_comment: string
   column_type: string
 }

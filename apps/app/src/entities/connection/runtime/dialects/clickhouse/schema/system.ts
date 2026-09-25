@@ -14,7 +14,7 @@ interface DataSkippingIndices {
   name: string
   type_full: string
   expr: string
-  granularity: number
+  granularity: string
 }
 
 interface RowPolicies {
@@ -24,7 +24,7 @@ interface RowPolicies {
   table: string
   id: string
   is_restrictive: number
-  select_filter: string
+  select_filter: string | null
   apply_to_all: number
   apply_to_list: string[]
   apply_to_except: string[]
@@ -56,7 +56,7 @@ interface Columns {
   table: string
   name: string
   type: string
-  position: number
+  position: string
   default_kind: string
   default_expression: string
   is_in_primary_key: number
@@ -65,6 +65,6 @@ interface Columns {
 interface Parts {
   database: string
   table: string
-  rows: number
+  rows: string
   active: number
 }

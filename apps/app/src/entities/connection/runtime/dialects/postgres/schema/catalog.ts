@@ -75,7 +75,7 @@ interface PgClass {
   relfrozenxid: string
   relminmxid: string
   relacl: string | null
-  relpartbound: null
+  relpartbound: string | null
 }
 
 interface PgConstraint {
@@ -85,8 +85,8 @@ interface PgConstraint {
   contype: string
   conrelid: number
   confrelid: number
-  conkey: number[]
-  confkey: number[]
+  conkey: number[] | null
+  confkey: number[] | null
   confdeltype: string
   confupdtype: string
   confmatchtype: string
@@ -115,11 +115,10 @@ interface PgAttribute {
   atttypid: number
   attlen: number
   attnum: number
-  attcacheoff: number
   atttypmod: number
   attndims: number
   attbyval: boolean
-  attalign: number
+  attalign: string
   attstorage: string
   attcompression: string
   attnotnull: boolean
