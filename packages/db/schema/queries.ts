@@ -1,4 +1,3 @@
-import type { Type } from 'arktype'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
   createInsertSchema,
@@ -27,11 +26,8 @@ export const queries = d.snakeCase.table('queries', {
 })
 
 export const queriesSelectSchema = createSelectSchema(queries)
-const notBlank = <Schema extends Type>(schema: Schema) => schema.and(/\S/u)
-const namedAndWritten = { name: notBlank, query: notBlank }
-
-export const queriesInsertSchema = createInsertSchema(queries, namedAndWritten)
-export const queriesUpdateSchema = createUpdateSchema(queries, namedAndWritten)
+export const queriesInsertSchema = createInsertSchema(queries)
+export const queriesUpdateSchema = createUpdateSchema(queries)
 
 export const queriesRelations = defineRelationsPart(
   { connectionsResources, queries, users },
