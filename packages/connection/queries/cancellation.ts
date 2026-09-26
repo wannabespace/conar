@@ -1,4 +1,3 @@
-import type { QueryExecutor } from '.'
 import { handleQueryError } from '.'
 
 /** Keyed by connection too, so cancelling needs access to the connection that runs the query, not just its id. */
@@ -30,16 +29,14 @@ export const cancellable = async <T>(
   }
 }
 
-export const cancellationQueries = {
-  cancel: handleQueryError(
-    async ({
-      connectionString,
-      queryId,
-    }: {
-      connectionString: string
-      queryId: string
-    }) => {
-      await running.get(key(connectionString, queryId))?.()
-    }
-  ),
-} satisfies Pick<QueryExecutor, 'cancel'>
+export const cancel = handleQueryError(
+  async ({
+    connectionString,
+    queryId,
+  }: {
+    connectionString: string
+    queryId: string
+  }) => {
+    await running.get(key(connectionString, queryId))?.()
+  }
+)
