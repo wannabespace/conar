@@ -131,17 +131,11 @@
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.4;
-}
-
-.electron.mac:not(.dark):not(.window-fullscreen):not(
-    :has([data-slot$='-overlay'])
-  ) {
-  --accent: oklch(0.89 0.0013 282.73);
+  --surface-alpha: 0.55;
 }
 
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.5;
+  --surface-alpha: 0.65;
 }
 
 .electron.window-blurred {

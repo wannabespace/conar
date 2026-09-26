@@ -122,7 +122,7 @@ const SchemaRow = ({
           onClick={onToggle}
         />
       }
-      className="group hover:bg-accent h-full w-full gap-1 px-1.5"
+      className="group hover:bg-foreground/5 h-full w-full gap-1 px-1.5"
     >
       <HugeiconsIcon
         icon={ArrowRight01Icon}
@@ -296,7 +296,7 @@ const TableRow = ({
           <SidebarMenuAction
             showOnHover
             className={cn(
-              'hover:bg-foreground/10 top-1! right-6 rounded-md',
+              'top-1! right-6 rounded-md',
               isActive &&
                 'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
             )}
@@ -310,7 +310,7 @@ const TableRow = ({
               showOnHover={!row.pinned}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className={cn(
-                'group/pin hover:bg-foreground/10 top-1! rounded-md',
+                'group/pin top-1! rounded-md',
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>

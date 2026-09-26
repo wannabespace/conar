@@ -7,7 +7,7 @@ import type { CSSProperties } from 'react'
 import * as React from 'react'
 
 export const sidebarActionRowClassName =
-  'text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2'
+  'text-foreground h-7 w-full justify-start gap-2 rounded-md px-2'
 
 export const SidebarContent = ({
   className,
@@ -54,7 +54,7 @@ export const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring active:bg-accent active:text-accent-foreground data-active:bg-accent data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button hover:bg-foreground/5 hover:text-accent-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground data-active:bg-foreground/10 data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           className
         ),
       },
@@ -82,7 +82,7 @@ export const SidebarMenuAction = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-foreground/10 hover:text-accent-foreground focus-visible:focus-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           showOnHover &&
             `peer-data-active/menu-button:text-accent-foreground opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100`,
           className

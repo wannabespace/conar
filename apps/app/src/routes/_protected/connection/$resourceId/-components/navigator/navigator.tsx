@@ -120,7 +120,7 @@ const NavigatorFooter = () => {
   return (
     <div className="flex shrink-0 flex-col gap-0.5 pt-1.5 pb-0.5 pl-2">
       <Button
-        variant="ghost"
+        variant="ghost-row"
         size="sm"
         className={sidebarActionRowClassName}
         {...pressNavProps(openNewQuery)}
@@ -133,7 +133,7 @@ const NavigatorFooter = () => {
         New query
       </Button>
       <Button
-        variant="ghost"
+        variant="ghost-row"
         size="sm"
         disabled
         className={sidebarActionRowClassName}
