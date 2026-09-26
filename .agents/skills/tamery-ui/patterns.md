@@ -49,6 +49,7 @@
 - **Sidebar holds no action icons** — an action belongs to the surface it changes, not the surface you were looking at. New tab → the tab strip's `+`; window-spanning toggles → the title bar. The footer is labeled rows, never icon buttons. **A menu with a single item is just a button with an extra click.**
 - Navigator sections pad `pl-2` only; the right inset is the pane's own gutter.
 - Navigator and definitions rows use muted icons, not primary — distinct glyphs in blue read as noise.
+- **Navigator status marks** (a table's row level security) sit inline right after the name as a `size-3!` muted glyph (the `!` beats `SidebarMenuButton`'s `[&_svg]:size-4`) with a kit `Tooltip` (never a native `title`), inside the name's flex span so the hover mask still fades them. Only the non-default state is marked; a mark on every row is noise.
 - Title-bar switchers: the workspace menu lists workspaces only; connections and resources are reached through the breadcrumb dropdowns beside it (one menu, one axis). Subscription-gated actions render enabled and route to the upsell modal — the modal is the gate, not a greyed item.
 
 ## Messages, alerts, and status
