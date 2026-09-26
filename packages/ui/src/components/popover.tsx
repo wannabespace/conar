@@ -28,7 +28,7 @@ const PopoverContent = ({
     'align' | 'alignOffset' | 'side' | 'sideOffset'
   > & {
     padding?: 'default' | 'none'
-    /** Only with `createPopoverHandle` triggers. Wraps children in a clipping Viewport (no `gap`) and animates position, so a single-trigger popover would lag its anchor. */
+    /** Only for popovers opened through `createPopoverHandle`. */
     detached?: boolean
   }) => (
   <PopoverPrimitive.Portal>
