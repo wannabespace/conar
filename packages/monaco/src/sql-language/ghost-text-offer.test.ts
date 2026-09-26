@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { dialects } from '@tamery/sql'
 
-import { dialects } from './dialect'
-import { needsLeadingSpace, typedAlong, withinStatement } from './ghost-text'
+import {
+  needsLeadingSpace,
+  typedAlong,
+  withinStatement,
+} from './ghost-text-offer'
 
 const pg = dialects[ConnectionType.Postgres]
 

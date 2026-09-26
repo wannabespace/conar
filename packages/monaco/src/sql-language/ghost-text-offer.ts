@@ -1,5 +1,5 @@
-import type { DialectSpec } from './dialect'
-import { splitStatements } from './statements'
+import type { DialectSpec } from '@tamery/sql'
+import { splitStatements } from '@tamery/sql'
 
 const TRAILING_WORD = /\w+$/u
 const LEADING_WORD = /^\w+/u

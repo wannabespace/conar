@@ -8,7 +8,8 @@
     "./sql-language": "./src/sql-language/index.ts"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsc",
+    "test": "bun test"
   },
   "dependencies": {
     "@tamery/ai": "workspace:*",

@@ -1,14 +1,11 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { silently } from '@tamery/shared/utils'
 import type { SqlCatalog } from '@tamery/sql'
-import {
-  catalogSummary,
-  dialects,
-  splitStatements,
-  statementScope,
-} from '@tamery/sql'
+import { dialects, splitStatements, statementScope } from '@tamery/sql'
 import type { editor } from 'monaco-editor'
 import { Range } from 'monaco-editor'
+
+import { catalogSummary } from './catalog-summary'
 
 export interface TableRef {
   name: string

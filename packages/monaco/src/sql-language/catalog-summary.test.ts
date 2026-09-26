@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
+import type { SqlCatalog } from '@tamery/sql'
 
-import type { SqlCatalog } from './catalog'
-import { catalogSummary } from './summary'
+import { catalogSummary } from './catalog-summary'
 
 const catalog = (tables: number): SqlCatalog => ({
   defaultSchema: 'public',

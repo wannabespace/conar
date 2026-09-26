@@ -7,7 +7,6 @@ export { diagnose } from './diagnostics'
 export type { Statement } from './statements'
 export {
   leavesTransactionOpen,
-  parseStatements,
   splitStatements,
   statementAt,
   transactionParts,
@@ -17,6 +16,3 @@ export { INITIAL_STATE, tokenize } from './tokenizer'
 export { changesSchema, destructiveKeywords } from './destructive'
 export { statementScope } from './scope'
 export { findTable, locateTable } from './catalog'
-export { catalogSummary } from './summary'
-export type { GhostTextOffer } from './ghost-text'
-export { needsLeadingSpace, typedAlong, withinStatement } from './ghost-text'

@@ -1,17 +1,16 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { noop, sleep, tryCatchAsync } from '@tamery/shared/utils'
-import type { DialectSpec, GhostTextOffer, Statement } from '@tamery/sql'
-import {
-  needsLeadingSpace,
-  splitStatements,
-  statementAt,
-  tokenize,
-  typedAlong,
-  withinStatement,
-} from '@tamery/sql'
+import type { DialectSpec, Statement } from '@tamery/sql'
+import { splitStatements, statementAt, tokenize } from '@tamery/sql'
 import type { CancellationToken, editor, Position } from 'monaco-editor'
 import { KeyCode, languages, Range } from 'monaco-editor'
 
+import type { GhostTextOffer } from './ghost-text-offer'
+import {
+  needsLeadingSpace,
+  typedAlong,
+  withinStatement,
+} from './ghost-text-offer'
 import type { SqlSource } from './source'
 import { boundSources, catalogSummaryFor } from './source'
 

@@ -1,6 +1,5 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
-
-import type { SqlCatalog } from './catalog'
+import type { SqlCatalog } from '@tamery/sql'
 
 export const catalogSummary = (catalog: SqlCatalog) => {
   const tables = catalog.schemas.flatMap((schema) =>

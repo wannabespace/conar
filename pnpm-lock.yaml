@@ -1333,9 +1333,6 @@ importers:
 
   packages/sql:
     dependencies:
-      '@tamery/ai':
-        specifier: workspace:*
-        version: link:../ai
       '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
