@@ -251,7 +251,7 @@ export const RunnerResults = () => {
                   side="top"
                   align="start"
                   padding="none"
-                  morph
+                  detached
                   className="max-w-lg min-w-64"
                 >
                   {typeof payload === 'string' && (

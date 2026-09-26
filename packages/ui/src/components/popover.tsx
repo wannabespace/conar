@@ -19,7 +19,7 @@ const PopoverContent = ({
   side = 'bottom',
   sideOffset = 4,
   padding = 'default',
-  morph = false,
+  detached = false,
   children,
   ...props
 }: PopoverPrimitive.Popup.Props &
@@ -28,8 +28,8 @@ const PopoverContent = ({
     'align' | 'alignOffset' | 'side' | 'sideOffset'
   > & {
     padding?: 'default' | 'none'
-    /** One popup shared by detached triggers: it glides between them, resizes, and cross-fades its content. */
-    morph?: boolean
+    /** Only with `createPopoverHandle` triggers. Wraps children in a clipping Viewport (no `gap`) and animates position, so a single-trigger popover would lag its anchor. */
+    detached?: boolean
   }) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Positioner
@@ -39,7 +39,7 @@ const PopoverContent = ({
       sideOffset={sideOffset}
       className={cn(
         'isolate z-50',
-        morph &&
+        detached &&
           'h-(--positioner-height) w-(--positioner-width) transition-[top,left,right,bottom] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
       )}
     >
@@ -48,13 +48,13 @@ const PopoverContent = ({
         className={cn(
           `bg-background text-foreground ring-foreground/4 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 z-50 flex w-72 origin-(--transform-origin) flex-col rounded-xl text-sm shadow-xl ring outline-hidden ease-[cubic-bezier(0.32,0.72,0,1)] data-closed:duration-100 data-open:duration-150`,
           padding === 'default' && 'gap-4 p-4',
-          morph &&
+          detached &&
             'h-(--popup-height,auto) w-(--popup-width,auto) transition-[width,height] duration-300 data-instant:transition-none',
           className
         )}
         {...props}
       >
-        {morph ? (
+        {detached ? (
           <PopoverPrimitive.Viewport className="relative size-full overflow-clip *:transition-[opacity,translate] *:duration-200 *:ease-[cubic-bezier(0.32,0.72,0,1)] data-instant:*:transition-none *:data-previous:w-(--popup-width) [&>[data-current][data-starting-style]]:opacity-0 [&>[data-previous]]:absolute [&>[data-previous]]:top-0 [&>[data-previous]]:left-0 [&>[data-previous][data-ending-style]]:opacity-0 [&[data-activation-direction~=left]>[data-current][data-starting-style]]:-translate-x-3 [&[data-activation-direction~=left]>[data-previous][data-ending-style]]:translate-x-3 [&[data-activation-direction~=right]>[data-current][data-starting-style]]:translate-x-3 [&[data-activation-direction~=right]>[data-previous][data-ending-style]]:-translate-x-3">
             {children}
           </PopoverPrimitive.Viewport>
