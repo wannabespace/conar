@@ -45,6 +45,7 @@ import {
   POLICY_COMMANDS,
   policyPredicate,
 } from '~/entities/connection/queries/policies/shape'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -245,11 +246,15 @@ const savePolicy = async ({
 }
 
 const useEnabledToggle = ({
+  connectionResource,
   item,
   queryKey,
   run,
   subject,
-}: Pick<SectionInspectorProps<PolicyItem>, 'item' | 'queryKey' | 'run'> & {
+}: Pick<
+  SectionInspectorProps<PolicyItem>,
+  'connectionResource' | 'item' | 'queryKey' | 'run'
+> & {
   subject: string
 }) =>
   useMutation({
@@ -267,7 +272,12 @@ const useEnabledToggle = ({
         description: error.message,
       }),
     onSuccess: async (_result, { enabled }) => {
-      await queryClient.invalidateQueries({ queryKey })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries(
+          resourceTablesAndSchemasQueryOptions({ connectionResource })
+        ),
+      ])
       toast.success(
         `${uppercaseFirst(subject)} ${enabled ? 'enabled' : 'disabled'}`
       )
@@ -276,6 +286,7 @@ const useEnabledToggle = ({
 
 const PolicyInspector = ({
   can,
+  connectionResource,
   item,
   relationNamesOf,
   onOpenChange,
@@ -297,6 +308,7 @@ const PolicyInspector = ({
     },
   })
   const rowLevelSecurity = useEnabledToggle({
+    connectionResource,
     item,
     queryKey,
     run,
@@ -624,6 +636,7 @@ const PredicatePolicyInspector = ({
     },
   })
   const state = useEnabledToggle({
+    connectionResource,
     item,
     queryKey,
     run,
@@ -641,7 +654,6 @@ const PredicatePolicyInspector = ({
   })
   const draft = useStore(form.store, (store) => store.values)
 
-  // A predicate whose definition is not a plain function call has no fields to show.
   const readable = !!item?.predicates?.every(
     (predicate) => policyPredicate.parse(predicate.definition) !== null
   )

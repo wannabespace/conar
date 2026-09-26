@@ -26,6 +26,11 @@ const lazyQueryExecutor = (
 
       return query.beginTransaction(args)
     },
+    cancel: async (args) => {
+      const query = await loadQuery()
+
+      return query.cancel(args)
+    },
     commitTransaction: async (args) => {
       const query = await loadQuery()
 

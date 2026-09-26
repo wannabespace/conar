@@ -5,6 +5,7 @@ import {
   PlayIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape, uppercaseFirst } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
@@ -17,7 +18,6 @@ import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { sqlDialects } from '~/entities/connection/monaco'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
 import { createTriggerQuery } from '~/entities/connection/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/entities/connection/queries/triggers/definition'
@@ -421,7 +421,7 @@ const TriggerInspector = ({
                 label="Body"
                 description="Runs for every change the trigger answers to."
                 disabled={readOnly}
-                language={sqlDialects[connectionType]}
+                language={sqlLanguageIds[connectionType]}
               />
             )}
           </form.AppField>

@@ -1,8 +1,0 @@
-.monaco-editor-overlaymessage {
-  display: none !important;
-}
-
-/* Sync with apps/app/src/components/monaco.tsx */
-.monaco-highlight {
-  background-color: #5081f150;
-}

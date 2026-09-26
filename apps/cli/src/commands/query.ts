@@ -4,6 +4,7 @@ import process from 'node:process'
 import { boolean, command, positional, string } from '@drizzle-team/brocli'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import type { QueryExecutor } from '@tamery/connection/queries'
+import { rowObjects } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
@@ -183,16 +184,8 @@ export const queryCommand = command({
       querySpinner.stop()
       consola.success(`Query completed in ${ms}ms.`)
 
-      if (opts.json) {
-        consola.log(JSON.stringify(result.result, null, 2))
-        return process.exit(0)
-      }
-
-      if (Array.isArray(result.result)) {
-        consola.log(formatTable(result.result as Record<string, unknown>[]))
-      } else {
-        consola.log(JSON.stringify(result.result, null, 2))
-      }
+      const rows = rowObjects(result.result)
+      consola.log(opts.json ? JSON.stringify(rows, null, 2) : formatTable(rows))
       return process.exit(0)
     } catch (error) {
       querySpinner.stop()

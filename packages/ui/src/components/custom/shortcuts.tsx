@@ -5,22 +5,37 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
+import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps } from 'react'
 
 import { Kbd } from '../kbd'
 
-export const Ctrl = ({ userAgent }: { userAgent: string }) => {
+export const Ctrl = ({
+  className,
+  userAgent,
+}: {
+  className?: string
+  userAgent: string
+}) => {
   const os = getOS(userAgent)
 
   return os.type === 'macos' ? (
-    <HugeiconsIcon icon={CommandIcon} strokeWidth={2} className="size-3" />
+    <HugeiconsIcon
+      icon={CommandIcon}
+      strokeWidth={2}
+      className={cn('size-3', className)}
+    />
   ) : (
     'Ctrl'
   )
 }
 
-export const EnterIcon = () => (
-  <HugeiconsIcon icon={CornerDownLeftIcon} strokeWidth={2} className="size-3" />
+export const EnterIcon = ({ className }: { className?: string }) => (
+  <HugeiconsIcon
+    icon={CornerDownLeftIcon}
+    strokeWidth={2}
+    className={cn('size-3', className)}
+  />
 )
 
 export const KbdCtrlEnter = ({

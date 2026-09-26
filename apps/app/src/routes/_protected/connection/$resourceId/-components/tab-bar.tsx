@@ -1,6 +1,7 @@
 import {
   AiChat01Icon,
   ArrowLeft01Icon,
+  ArrowLeft02Icon,
   ArrowRight01Icon,
   ArrowRight02Icon,
   Cancel01Icon,
@@ -529,6 +530,7 @@ const Tab = ({
   onDragStateChange,
   onClose,
   onCloseAll,
+  onCloseToTheLeft,
   onCloseToTheRight,
   onCloseOthers,
   currentTabIndex,
@@ -543,6 +545,7 @@ const Tab = ({
   connectionResource: ConnectionResource
   onClose: VoidFunction
   onCloseAll: VoidFunction
+  onCloseToTheLeft: VoidFunction
   onCloseToTheRight: VoidFunction
   onCloseOthers: VoidFunction
   currentTabIndex: number
@@ -612,6 +615,12 @@ const Tab = ({
       onSelect: onCloseOthers,
     },
     {
+      label: 'Close to the Left',
+      icon: ArrowLeft02Icon,
+      disabled: currentTabIndex === 0,
+      onSelect: onCloseToTheLeft,
+    },
+    {
       label: 'Close to the Right',
       icon: ArrowRight02Icon,
       disabled: currentTabIndex >= totalTabs - 1,
@@ -653,7 +662,7 @@ const Tab = ({
     })
 
   const tabClasses = cn(
-    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap`,
+    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-40`,
     isActive &&
       `bg-background text-foreground hover:bg-background border-b-transparent`,
     isPreview && 'italic'
@@ -664,7 +673,7 @@ const Tab = ({
       icon={Icon}
       strokeWidth={2}
       className={cn(
-        'text-muted-foreground/60 size-3.5 shrink-0',
+        'text-muted-foreground/60 size-3.5 shrink-0 transition-colors duration-40',
         isActive && 'text-primary'
       )}
     />
@@ -821,14 +830,16 @@ export const TabBar = ({ className }: { className?: string }) => {
     }
   }
 
-  const closeTabsToTheRight = async (tabId: string) => {
+  const closeTabsBeside = async (tabId: string, side: 'left' | 'right') => {
     const currentIndex = tabs.findIndex((tab) => tab.id === tabId)
+    const tabsToClose =
+      side === 'left'
+        ? tabs.slice(0, currentIndex)
+        : tabs.slice(currentIndex + 1)
 
-    if (currentIndex === -1 || currentIndex >= tabs.length - 1) {
+    if (currentIndex === -1 || tabsToClose.length === 0) {
       return
     }
-
-    const tabsToClose = tabs.slice(currentIndex + 1)
 
     if (tabsToClose.some((tab) => tab.id === activeTabId)) {
       await goToTab(tabId)
@@ -953,7 +964,10 @@ export const TabBar = ({ className }: { className?: string }) => {
         <TabRefresh tab={activeTab} />
       </div>
       {tabs.length > 0 && (
-        <ScrollArea className="h-full min-w-0 flex-1">
+        <ScrollArea
+          className="h-full min-w-0 flex-1"
+          viewportClassName="scroll-fade-x [--scroll-fade-mask:linear-gradient(to_top,#000_1px,transparent_1px),var(--scroll-fade-inline)] [-webkit-mask-composite:source-over]! [mask-composite:add]!"
+        >
           <div className="flex h-8 w-max min-w-full items-stretch">
             <Reorder.Group
               axis="x"
@@ -980,7 +994,8 @@ export const TabBar = ({ className }: { className?: string }) => {
                   connectionResource={connectionResource}
                   onClose={() => closeTab(tab.id)}
                   onCloseAll={closeAllTabs}
-                  onCloseToTheRight={() => closeTabsToTheRight(tab.id)}
+                  onCloseToTheLeft={() => closeTabsBeside(tab.id, 'left')}
+                  onCloseToTheRight={() => closeTabsBeside(tab.id, 'right')}
                   onCloseOthers={() => closeOtherTabs(tab.id)}
                   currentTabIndex={index}
                   totalTabs={tabs.length}

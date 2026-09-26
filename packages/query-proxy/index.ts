@@ -35,13 +35,23 @@ interface ConnectionInput {
   resourceId?: string
 }
 
+type HandlerContext<T extends AnyBuilder> = Parameters<
+  Parameters<T['handler']>[0]
+>[0]['context']
+
+interface Resolvers<T extends AnyBuilder> {
+  connectionString: (
+    input: ConnectionInput,
+    context: HandlerContext<T>
+  ) => string | Promise<string>
+  /** Who a transaction belongs to, so a leaked `txId` cannot drive another user's transaction. */
+  owner: (context: HandlerContext<T>) => string
+}
+
 const createQueryDialect = <T extends AnyBuilder>(
   dialect: QueryExecutor,
   orpc: T,
-  resolveConnectionString: (
-    input: ConnectionInput,
-    context: Parameters<Parameters<T['handler']>[0]>[0]['context']
-  ) => string | Promise<string>
+  resolve: Resolvers<T>
 ) =>
   ({
     beginTransaction: orpc
@@ -49,44 +59,58 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.beginTransaction({
           ...input,
-          connectionString: await resolveConnectionString(input, context),
+          connectionString: await resolve.connectionString(input, context),
+          ownerId: resolve.owner(context),
+        })
+      ),
+    cancel: orpc
+      .input(type<Params<typeof dialect.cancel>>())
+      .handler(async ({ input, context }) =>
+        dialect.cancel({
+          ...input,
+          connectionString: await resolve.connectionString(input, context),
         })
       ),
     commitTransaction: orpc
       .input(type<Params<typeof dialect.commitTransaction>>())
-      .handler(({ input }) => dialect.commitTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.commitTransaction({ ...input, ownerId: resolve.owner(context) })
+      ),
     execute: orpc
       .input(type<Params<typeof dialect.execute>>())
       .handler(async ({ input, context }) =>
         dialect.execute({
           ...input,
-          connectionString: await resolveConnectionString(input, context),
+          connectionString: await resolve.connectionString(input, context),
         })
       ),
     executeTransaction: orpc
       .input(type<Params<typeof dialect.executeTransaction>>())
-      .handler(({ input }) => dialect.executeTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.executeTransaction({
+          ...input,
+          ownerId: resolve.owner(context),
+        })
+      ),
     rollbackTransaction: orpc
       .input(type<Params<typeof dialect.rollbackTransaction>>())
-      .handler(({ input }) => dialect.rollbackTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.rollbackTransaction({
+          ...input,
+          ownerId: resolve.owner(context),
+        })
+      ),
   }) satisfies Record<keyof QueryExecutor, unknown>
 
 export const createQueryRouter = <T extends AnyBuilder>(
   orpc: T,
-  resolveConnectionString: (
-    input: ConnectionInput,
-    context: Parameters<Parameters<T['handler']>[0]>[0]['context']
-  ) => string | Promise<string>
+  resolve: Resolvers<T>
 ) =>
   ({
-    clickhouse: createQueryDialect(
-      clickhouse.query,
-      orpc,
-      resolveConnectionString
-    ),
-    mssql: createQueryDialect(mssql.query, orpc, resolveConnectionString),
-    mysql: createQueryDialect(mysql.query, orpc, resolveConnectionString),
-    postgres: createQueryDialect(pg.query, orpc, resolveConnectionString),
+    clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
+    mssql: createQueryDialect(mssql.query, orpc, resolve),
+    mysql: createQueryDialect(mysql.query, orpc, resolve),
+    postgres: createQueryDialect(pg.query, orpc, resolve),
   }) satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

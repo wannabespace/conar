@@ -1,0 +1,414 @@
+import {
+  BrushCleaningIcon,
+  SaveIcon,
+  PanelBottomCloseIcon,
+  PanelBottomOpenIcon,
+  Bookmark02Icon,
+  PlayIcon,
+  StopIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { Statement } from '@tamery/sql'
+import {
+  destructiveKeywords,
+  dialects,
+  splitStatements,
+  statementAt,
+  transactionParts,
+} from '@tamery/sql'
+import { Button } from '@tamery/ui/components/button'
+import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import {
+  ResizableGroup,
+  ResizablePanel,
+  ResizableSeparator,
+} from '@tamery/ui/components/custom/resizable'
+import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
+import { Separator } from '@tamery/ui/components/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import { count, eq, useLiveQuery } from '@tanstack/react-db'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
+import type { editor } from 'monaco-editor'
+import { Range } from 'monaco-editor'
+import type { ComponentRef } from 'react'
+import { useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
+
+import { useCollections } from '~/entities/collections'
+import { wrapExplainQuery } from '~/entities/connection/utils'
+import {
+  RUNNER_RESULTS_DEFAULT_HEIGHT,
+  RUNNER_RESULTS_MAX_HEIGHT,
+  RUNNER_RESULTS_MIN_HEIGHT,
+} from '~/lib/constants'
+import { formatSql } from '~/lib/formatter'
+
+import type { RunnerActions } from '../-lib/actions'
+import { RunnerActionsContext } from '../-lib/actions'
+import type { RunnerStatement } from '../-lib/run'
+import { runnerResultsOptions, runStatements, stopRun } from '../-lib/run'
+import {
+  runnerStatements,
+  setLayout,
+  setQuery,
+  useRunnerPageStore,
+  useRunnerTab,
+} from '../-lib/store'
+import { RunHistoryButton } from './run-history'
+import { useAiEdit } from './runner-ai-edit'
+import { RunnerAlertDialog } from './runner-alert-dialog'
+import { RunnerEditor } from './runner-editor'
+import { RunnerResults } from './runner-results'
+import { RunnerSaveDialog } from './runner-save-dialog'
+import { SavedQueries } from './saved-queries'
+
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/$tabId'
+)
+
+const toRunnerStatement = (
+  statement: Statement,
+  offset = 0
+): RunnerStatement => ({
+  end: offset + statement.end,
+  source: statement.text,
+  start: offset + statement.start,
+  text: statement.text,
+})
+
+const ToolbarButton = ({
+  label,
+  ...props
+}: React.ComponentProps<typeof Button> & { label: string }) => (
+  <Tooltip>
+    <TooltipTrigger
+      render={
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          className="text-muted-foreground hover:text-foreground"
+          {...props}
+        />
+      }
+    />
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
+)
+
+const SavedQueriesButton = () => {
+  const { connectionResource } = useRouteContext()
+  const { queriesCollection } = useCollections()
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery({
+    query: (q) =>
+      q
+        .from({ queries: queriesCollection })
+        .where(({ queries }) =>
+          eq(queries.connectionResourceId, connectionResource.id)
+        )
+        .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+        .findOne(),
+  })
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
+        <HugeiconsIcon icon={Bookmark02Icon} strokeWidth={2} />
+        Saved
+        {queriesCount > 0 && (
+          <span className="text-muted-foreground/70">{queriesCount}</span>
+        )}
+      </PopoverTrigger>
+      <PopoverContent align="end" padding="none" className="w-80">
+        <SavedQueries onPicked={() => setOpen(false)} />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+export const Runner = () => {
+  const { connection, connectionResource } = useRouteContext()
+  const tab = useRunnerTab()
+  const store = useRunnerPageStore()
+  const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
+  const saveDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
+  const [formatted, setFormatted] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const { resultsHeight, resultsVisible } = useSubscription(store, {
+    selector: (state) => state.layout,
+  })
+  const { data: lastRun } = useQuery(runnerResultsOptions(tab))
+  const running = lastRun?.running ?? false
+  const statements = runnerStatements({
+    ...tab,
+    connectionType: connection.type,
+  })
+  const dialect = dialects[connection.type]
+  const aiEdit = useAiEdit({
+    connectionType: connection.type,
+    editorRef,
+  })
+
+  const current = (): {
+    statements: RunnerStatement[]
+    range: Range | null
+  } => {
+    const codeEditor = editorRef.current
+    const model = codeEditor?.getModel()
+    const selection = codeEditor?.getSelection()
+    const position = codeEditor?.getPosition()
+    if (!model || !position) {
+      return { range: null, statements: [] }
+    }
+    if (selection && !selection.isEmpty()) {
+      const offset = model.getOffsetAt(selection.getStartPosition())
+      return {
+        range: selection,
+        statements: splitStatements(
+          model.getValueInRange(selection),
+          dialect
+        ).map((statement) => toRunnerStatement(statement, offset)),
+      }
+    }
+    const statement = statementAt(
+      statements.get(),
+      model.getOffsetAt(position),
+      model.getValue()
+    )
+    if (!statement) {
+      return { range: null, statements: [] }
+    }
+    const lineOf = (offset: number) => model.getPositionAt(offset).lineNumber
+    const first = lineOf(statement.start)
+    const last = lineOf(statement.terminatorEnd)
+    const sameLines = statements
+      .get()
+      .filter(
+        (item) =>
+          lineOf(item.start) <= last && lineOf(item.terminatorEnd) >= first
+      )
+    return {
+      range: Range.fromPositions(
+        model.getPositionAt((sameLines[0] ?? statement).start),
+        model.getPositionAt((sameLines.at(-1) ?? statement).end)
+      ),
+      statements: sameLines.map((item) => toRunnerStatement(item)),
+    }
+  }
+
+  const run = (pending: RunnerStatement[]) => {
+    if (pending.length === 0) {
+      return
+    }
+    const start = () =>
+      runStatements({
+        connectionResource,
+        statements: pending,
+        tabId: tab.tabId,
+      })
+    const keywords = destructiveKeywords(
+      pending.map((statement) => statement.text).join(';\n'),
+      dialect
+    )
+    if (keywords.length > 0) {
+      alertDialogRef.current?.confirm(keywords, start)
+    } else {
+      start()
+    }
+  }
+
+  const actions: RunnerActions = {
+    askAi: () => {
+      const { range } = current()
+      if (range) {
+        aiEdit.open(range)
+      }
+    },
+    explainCurrent: () =>
+      run(
+        current().statements.flatMap((statement) =>
+          (
+            transactionParts(statement.source, dialect)?.statements ?? [
+              statement.source,
+            ]
+          ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
+        )
+      ),
+    fixWithAi: ({ end, error, source, start }) => {
+      const model = editorRef.current?.getModel()
+      if (!model || model.getValue().slice(start, end) !== source) {
+        toast.error('The statement changed since it ran — run it again first')
+        return
+      }
+      aiEdit.fix(
+        Range.fromPositions(
+          model.getPositionAt(start),
+          model.getPositionAt(end)
+        ),
+        error
+      )
+    },
+    focus: () => editorRef.current?.focus(),
+    format: () => {
+      setQuery(store, formatSql(store.get().query, connection.type))
+      setFormatted(true)
+    },
+    runAll: () =>
+      run(statements.get().map((statement) => toRunnerStatement(statement))),
+    runCurrent: () => run(current().statements),
+    renameSaved: (query) =>
+      saveDialogRef.current?.open({ kind: 'rename', query }),
+    saveAll: () => {
+      saveDialogRef.current?.open({
+        kind: 'tab',
+        sql: statements.get().length > 0 ? store.get().query : '',
+      })
+    },
+    saveCurrent: () => {
+      const sources = current().statements.map((statement) => statement.source)
+      if (sources.length > 0) {
+        saveDialogRef.current?.open({
+          kind: 'statement',
+          sql: sources.join(';\n\n'),
+        })
+      }
+    },
+  }
+
+  useHotkey(
+    'Mod+Enter',
+    (event) => {
+      event.preventDefault()
+      actions.runCurrent()
+    },
+    { enabled: !confirming }
+  )
+  useHotkey(
+    'Mod+Shift+Enter',
+    (event) => {
+      event.preventDefault()
+      actions.runAll()
+    },
+    { enabled: !confirming }
+  )
+
+  return (
+    <RunnerActionsContext value={actions}>
+      <ResizableGroup orientation="vertical">
+        <ResizablePanel className="flex min-h-0 flex-col">
+          <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+            {running ? (
+              <Button size="sm" variant="outline" onClick={() => stopRun(tab)}>
+                <HugeiconsIcon icon={StopIcon} strokeWidth={2} />
+                Stop
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => actions.runAll()}
+              >
+                <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
+                Run all
+                <KbdShiftCtrlEnter userAgent={navigator.userAgent} />
+              </Button>
+            )}
+            <div className="ml-auto flex shrink-0 items-center gap-1">
+              <ToolbarButton label="Format" onClick={() => actions.format()}>
+                <ContentSwitch
+                  active={formatted}
+                  activeContent={
+                    <HugeiconsIcon
+                      icon={Tick02Icon}
+                      strokeWidth={2}
+                      className="text-success"
+                    />
+                  }
+                  onSwitchEnd={() => setFormatted(false)}
+                >
+                  <HugeiconsIcon icon={BrushCleaningIcon} strokeWidth={2} />
+                </ContentSwitch>
+              </ToolbarButton>
+              <ToolbarButton
+                label="Save tab as query"
+                onClick={() => actions.saveAll()}
+              >
+                <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />
+              </ToolbarButton>
+              <Separator orientation="vertical" className="mx-0.5 h-4!" />
+              <RunHistoryButton />
+              <SavedQueriesButton />
+              <Separator orientation="vertical" className="mx-0.5 h-4!" />
+              <ToolbarButton
+                label={resultsVisible ? 'Hide results' : 'Show results'}
+                onClick={() =>
+                  setLayout(store, { resultsVisible: !resultsVisible })
+                }
+              >
+                <HugeiconsIcon
+                  icon={
+                    resultsVisible ? PanelBottomCloseIcon : PanelBottomOpenIcon
+                  }
+                  strokeWidth={2}
+                />
+              </ToolbarButton>
+            </div>
+          </div>
+          <div className="relative min-h-0 flex-1 border-t">
+            <RunnerEditor
+              editorRef={editorRef}
+              editing={aiEdit.editing}
+              reviewing={aiEdit.reviewing}
+              acceptAi={aiEdit.accept}
+              rejectAi={aiEdit.reject}
+            />
+          </div>
+          <RunnerSaveDialog ref={saveDialogRef} />
+          <RunnerAlertDialog
+            ref={alertDialogRef}
+            onOpenChange={setConfirming}
+          />
+        </ResizablePanel>
+        <ResizableSeparator aria-label="Resize results" />
+        <ResizablePanel
+          size={resultsHeight}
+          onSizeChange={(height) => setLayout(store, { resultsHeight: height })}
+          defaultSize={RUNNER_RESULTS_DEFAULT_HEIGHT}
+          minSize={RUNNER_RESULTS_MIN_HEIGHT}
+          maxSize={RUNNER_RESULTS_MAX_HEIGHT}
+          collapsed={!resultsVisible}
+          onCollapsedChange={(collapsed) =>
+            setLayout(store, { resultsVisible: !collapsed })
+          }
+        >
+          <div className="size-full border-t">
+            <RunnerResults />
+          </div>
+        </ResizablePanel>
+      </ResizableGroup>
+    </RunnerActionsContext>
+  )
+}

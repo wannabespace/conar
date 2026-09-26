@@ -37,7 +37,7 @@ import {
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import type { MotionStyle } from 'motion/react'
@@ -160,7 +160,12 @@ const ConnectionResourcesSelect = ({
     onValueChange={(value) => onSelectedResourceNameChange(value ?? null)}
     disabled={disabled}
   >
-    <SelectTrigger data-mask size="xs" className="pointer-events-auto">
+    <SelectTrigger
+      data-mask
+      size="xs"
+      variant="ghost-row"
+      className="pointer-events-auto"
+    >
       <SelectValue>
         {selectedResourceName === null
           ? null
@@ -381,6 +386,7 @@ const ConnectionCard = ({
     ...connectionResourcesQueryOptions(connection),
     enabled: canSend,
   })
+  const refresh = useMutation({ mutationFn: () => refetch() })
 
   const defaultResourceName = connectionString?.defaultResourceName ?? null
 
@@ -443,7 +449,8 @@ const ConnectionCard = ({
   }
 
   const isResourcesShown = resources.length > 1
-  const isLoadingVisible = isFetching && connectionResourcesNames.length === 0
+  const isLoadingVisible =
+    (isFetching && connectionResourcesNames.length === 0) || refresh.isPending
 
   const items = buildConnectionMenuItems({
     canSend,
@@ -461,7 +468,7 @@ const ConnectionCard = ({
               }).href
             )
         : null,
-    onRefresh: () => refetch(),
+    onRefresh: () => refresh.mutate(),
     onRemove,
   })
 
@@ -532,6 +539,7 @@ const ConnectionCard = ({
         <AppMenuButton
           items={items}
           contentProps={{ className: 'min-w-44' }}
+          render={<Button variant="ghost-row" size="icon-xs" />}
           className="relative z-10"
         />
       </AppContextMenu>

@@ -3,16 +3,12 @@ import type { Dialect } from 'kysely'
 import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '../driver'
-import { createDialectProvider, createKyselyDriver } from '../driver'
+import { createKyselyDriver } from '../driver'
 
 export const postgresDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new PostgresAdapter(),
-    createDriver: () =>
-      createKyselyDriver({
-        logger: options.log,
-        provider: createDialectProvider(ConnectionType.Postgres, options),
-      }),
+    createDriver: () => createKyselyDriver(ConnectionType.Postgres, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

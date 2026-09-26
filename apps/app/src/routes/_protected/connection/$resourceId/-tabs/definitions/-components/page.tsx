@@ -530,6 +530,9 @@ export const DefinitionsPage = <T extends { name: string }>({
                         <TableCell className="text-right">
                           <AppMenuButton
                             items={() => rowMenuItems(item)}
+                            render={
+                              <Button variant="ghost-row" size="icon-xs" />
+                            }
                             className="-my-0.5"
                           />
                         </TableCell>

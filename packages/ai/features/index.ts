@@ -1,4 +1,5 @@
 export { chatStream } from './chat-stream'
+export { completeSql } from './complete-sql'
 export { generateFilters } from './filters'
 export { fixSql } from './fix-sql'
 export { section, sqlOutputRules } from './prompt'

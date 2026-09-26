@@ -2,7 +2,6 @@ import { getConnectionResourceStore } from '../stores'
 import {
   definitionsTabId,
   parseTabId,
-  runnerLayoutKey,
   runnerStoreKey,
   runnerTabId,
   tableTabId,
@@ -26,14 +25,27 @@ const setTabs = (
   )
 }
 
+const MAX_RECENT_TABLES = 5
+
 export const setActiveTab = (id: string, tabId: string | null) => {
   const store = getConnectionResourceStore(id)
+  const tab = tabId ? parseTabId(tabId) : null
 
   store.set(
     (state) =>
       ({
         ...state,
         activeTabId: tabId,
+        recentTables:
+          tab?.type === 'table'
+            ? [
+                { schema: tab.schema, table: tab.table },
+                ...state.recentTables.filter(
+                  (recent) =>
+                    recent.schema !== tab.schema || recent.table !== tab.table
+                ),
+              ].slice(0, MAX_RECENT_TABLES)
+            : state.recentTables,
       }) satisfies typeof state
   )
 }
@@ -130,7 +142,6 @@ const clearTabStorage = (id: string, tabId: string) => {
   // to restore column sizes and filters when the table is reopened.
   if (tab?.type === 'runner') {
     localStorage.removeItem(runnerStoreKey(id, tabId))
-    localStorage.removeItem(runnerLayoutKey(id, tabId))
   }
 }
 

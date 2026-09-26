@@ -1,10 +1,10 @@
 ---
 title: 'SQL editor'
 sidebarTitle: 'SQL editor'
-description: "Write and run SQL in Tamery's Monaco-based editor, with query zones, saved queries, inline AI, and a query log."
+description: 'Write and run SQL in a Monaco-based editor with schema-aware completion, inline diagnostics, saved queries and AI.'
 ---
 
-The SQL editor is built on Monaco (the VS Code editor), so syntax highlighting, autocomplete, multi-cursor, and shortcuts like <kbd>Ctrl</kbd>+<kbd>Z</kbd> and <kbd>Ctrl</kbd>+<kbd>/</kbd> work as expected.
+The SQL editor is built on Monaco (the VS Code editor), so multi-cursor, find and replace, and shortcuts like <kbd>Ctrl</kbd>+<kbd>Z</kbd> and <kbd>Ctrl</kbd>+<kbd>/</kbd> work as expected. Highlighting, completion and diagnostics are Tamery's own, tuned per dialect for PostgreSQL, MySQL, SQL Server and ClickHouse.
 
 ## Opening a query tab
 
@@ -12,47 +12,80 @@ Click the **+** at the end of the tab strip, or **New query** at the bottom of t
 
 ## Writing queries
 
-Autocomplete suggests tables, columns, keywords, and functions from your live schema, for PostgreSQL, MySQL, MSSQL, and ClickHouse.
+Write as many statements as you like, separated by `;`. The statement under the caret is tinted so you always know what <kbd>⌘</kbd>+<kbd>Enter</kbd> will run.
 
-**Query zones** let you keep several queries in one file, separated by `---` delimiter lines. Each zone runs independently.
+**Completion** knows where you are in the statement and offers what fits there, so a space after a keyword is enough to open it:
 
-- Click inside a zone to focus it.
-- **Run** (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) executes the focused zone.
-- Add a `---` line to create a new zone.
+- tables after `FROM`, `JOIN`, `INTO` and `UPDATE`; columns of the tables in scope after `SELECT`, `WHERE`, `ON`, `SET`, `ORDER BY` — qualified with their alias once a query reads several tables;
+- the next clause after a finished part (`WHERE`, `JOIN`, `GROUP BY`, `LIMIT` after a table; `AND`, `OR`, `ORDER BY` after a condition);
+- operators after a column in a condition, most likely first: `= TRUE` / `= FALSE` for a boolean, `LIKE` for text, `IS NULL` for a nullable column;
+- the values a column takes after `=`, `IN (` or `BETWEEN`: enum members quoted, `TRUE`/`FALSE` for booleans;
+- `*` and the full column list after `SELECT`, the selected columns after `GROUP BY`, `p.user_id = u.id` guesses after `JOIN … ON`, a `(columns) VALUES (…)` template after `INSERT INTO table`, and `10`/`100`/`1000` after `LIMIT`;
+- columns after `alias.`, tables after `schema.`, keywords and functions everywhere else.
+
+Keywords insert in the case you are already writing in: type `select … from users ` and you get `where`, not `WHERE`.
+
+**Diagnostics** show up as you type: unterminated strings and comments, unbalanced brackets, a misspelled statement verb, and — against your live schema — tables and qualified columns that do not exist.
+
+**Ghost text** (subscription): after a short pause the AI proposes how to finish the statement, in grey after the caret. <kbd>Tab</kbd> accepts it.
 
 ## Running queries
 
-Place the cursor in a zone and **Run** (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>). Results appear below the editor with sorting, column resizing, and copy.
+| Action | Shortcut |
+| --- | --- |
+| Run the selection, or the statement under the caret (with any others on the same line) | <kbd>⌘</kbd>+<kbd>Enter</kbd> |
+| Run every statement in the tab | <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd> |
 
-On error, the database message shows inline. Use **Fix with AI** to get a corrected query.
+A **Run** button and a **⋯** menu (Explain, Edit with AI, Save statement; <kbd>⌘</kbd>+<kbd>.</kbd> opens it) sit after the statement under the caret and **Run all** in the toolbar. Statements that change or remove existing data (`UPDATE`, `DELETE`, `MERGE`, `REPLACE`, `DROP`, `ALTER`, `TRUNCATE`, `RENAME`) ask for confirmation first, and so does code the editor cannot see into (`DO`, `EXEC`/`EXECUTE`, `CALL`); `INSERT` and `CREATE` run straight away, and so do row locks (`SELECT … FOR UPDATE`), privileges (`GRANT UPDATE`) and a plain `EXPLAIN`.
+
+While a run is in flight, **Run all** turns into **Stop**, which cancels the statement on the database itself, not just in the editor. Results of statements that already finished stay; the rest show as **Stopped**. Closing a query tab stops its run too. A run also stops at the first statement that fails, so a script never carries on past an error.
+
+After a statement that changes the schema (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`, or a `DO`/`EXEC`/`CALL` that might) runs, table, column and enum suggestions refresh.
+
+A `BEGIN … COMMIT` (or `ROLLBACK`, and Postgres's `END`/`ABORT`) block runs as one transaction: each statement inside it is sent separately within the same transaction, `ROLLBACK TO SAVEPOINT` stays inside it, and a failure or **Stop** rolls the whole block back. An isolation level or `READ ONLY`/`READ WRITE` on the opening statement applies to the block. MySQL commits DDL (`CREATE`, `ALTER`, `DROP`) the moment it runs, so a `ROLLBACK` cannot undo it there. **Explain** on a block explains each statement inside it. Run the block together with its `COMMIT` or `ROLLBACK` — a lone `BEGIN` is refused, since an open transaction would hold the connection the rest of the app uses. ClickHouse has no transactions, so there `BEGIN` is refused too.
+
+Results appear below the editor. A run of several statements shows one numbered result per result set — one per statement, or several for a statement that returns more than one (a SQL Server batch, a MySQL procedure); hover a number to see its SQL. Columns keep the order and the names the statement gave them, duplicates included. Each result has row count and duration, a row search, and export; a write shows how many rows it changed. A result keeps its first 10,000 rows (the count shows `10,000+`) — add a `LIMIT` to page through more.
+
+Results stay with their tab while you switch tabs, and go when you close it.
+
+**History** in the toolbar lists the statements you ran on this connection, newest first, with when they ran, how long they took and whether they failed. Picking one appends it to the tab; the ✕ on a row removes just that statement, and **Clear history** removes them all. History stays on this device.
+
+On error, the database's own message shows in the results pane with **Fix with AI**, which also sits after the failed statement in the editor (<kbd>⌘</kbd>+<kbd>I</kbd> with the caret in it): the corrected statement lands in the editor with a tint and **Accept**/**Reject** above it.
 
 ## Saving queries
 
-Click **Save**, name the query, and it's stored per connection. Open saved queries from the **Saved queries** panel, where you can rename, duplicate, or delete them.
+| Action | Shortcut |
+| --- | --- |
+| Save the selection, or the statement under the caret | <kbd>⌘</kbd>+<kbd>S</kbd> |
+| Save the whole tab | <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> |
+
+Saved queries are stored per connection and listed under **Saved** in the toolbar. Picking one opens it in a new query tab; saving that tab always creates a new saved query, since a saved query's SQL never changes. Each row can also append its SQL to the current tab, be renamed, or be deleted. A query with no SQL cannot be saved.
 
 ## AI in the editor
 
 <CardGroup cols={2}>
   <Card
-    title="Generate / modify SQL"
+    title="Edit with AI"
     icon="wand-magic-sparkles"
     href="/features/ai-assistant"
   >
-    Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> in a zone and describe what
-    you want. A diff shows the change before you apply it. Subscription feature.
+    Press <kbd>⌘</kbd>+<kbd>K</kbd> on a statement and describe the change;
+    paste up to four screenshots to show what you mean. The rewrite lands in
+    place; accept with <kbd>⌘</kbd>+<kbd>Enter</kbd> or reject with{' '}
+    <kbd>Esc</kbd>. Subscription feature.
   </Card>
   <Card
     title="Fix on error"
     icon="circle-exclamation"
     href="/features/ai-assistant"
   >
-    **Fix with AI** appears next to an error and suggests a correction you apply
-    in one click. Subscription feature.
+    **Fix with AI** appears next to a failed statement and proposes a corrected
+    one you review the same way. Subscription feature.
   </Card>
 </CardGroup>
 
-The AI has full schema context, so it uses your real table and column names. See the [AI assistant](/features/ai-assistant).
+Edit with AI, Fix with AI and ghost text all get your schema (tables, columns, enums), so they use real names. Edit with AI and Fix with AI also see the rest of the tab, to match its style. While the AI works, <kbd>Esc</kbd> cancels the request. See the [AI assistant](/features/ai-assistant).
 
 ## Query logger
 
-Every executed query is recorded in the **Query logger** panel: SQL text, timestamp, status, and row count. Click an entry to copy the SQL back into the editor. The log is per session and clears when you close the connection.
+Every executed query is recorded in the **Query logger** panel: SQL text, timestamp, status, and row count. The log is per session and clears when you close the connection.

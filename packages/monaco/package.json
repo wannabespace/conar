@@ -1,0 +1,26 @@
+{
+  "name": "@tamery/monaco",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./editor": "./src/editor.tsx",
+    "./monaco.css": "./src/monaco.css",
+    "./sql-language": "./src/sql-language/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc"
+  },
+  "dependencies": {
+    "@tamery/ai": "workspace:*",
+    "@tamery/configs": "workspace:*",
+    "@tamery/shared": "workspace:*",
+    "@tamery/sql": "workspace:*",
+    "@tamery/ui": "workspace:*",
+    "@types/react": "catalog:",
+    "monaco-editor": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "catalog:"
+  }
+}

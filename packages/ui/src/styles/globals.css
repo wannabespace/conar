@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import '@xyflow/react/dist/style.css';
-@import './monaco.css';
 @import './typography.css';
 @import 'shadcn/tailwind.css';
 @import 'streamdown/styles.css';
@@ -116,7 +115,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.696 0.17 162.48);
   --success-foreground: oklch(0.21 0.006 285.885);
-  --warning: oklch(0.828 0.189 84.429);
+  --warning: oklch(0.74 0.16 78);
   --warning-foreground: oklch(0.21 0.006 285.885);
   --info: oklch(0.707 0.165 254.624);
   --info-foreground: oklch(0.21 0.006 285.885);
@@ -132,17 +131,11 @@
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.4;
-}
-
-.electron.mac:not(.dark):not(.window-fullscreen):not(
-    :has([data-slot$='-overlay'])
-  ) {
-  --accent: oklch(0.89 0.0013 282.73);
+  --surface-alpha: 0.55;
 }
 
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.5;
+  --surface-alpha: 0.65;
 }
 
 .electron.window-blurred {

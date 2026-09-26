@@ -25,7 +25,7 @@ export const NavigatorSwitcher = () => {
 
   return (
     <Button
-      variant="ghost"
+      variant="ghost-row"
       size="sm"
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       className={sidebarActionRowClassName}

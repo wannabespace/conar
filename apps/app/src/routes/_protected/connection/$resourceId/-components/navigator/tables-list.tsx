@@ -7,6 +7,8 @@ import {
   PencilEdit01Icon,
   PinIcon,
   PinOffIcon,
+  SecurityBlockIcon,
+  SecurityCheckIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -23,24 +25,29 @@ import {
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { CSSProperties, ComponentRef, ReactNode } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
+import { setRowLevelSecurityQuery } from '~/entities/connection/queries/policies/set-row-level-security'
 import type { tablesAndSchemasType } from '~/entities/connection/queries/tables/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { pinnedTable } from '~/entities/connection/store/helpers/tables'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { parseTabId, tableTabId } from '~/entities/connection/store/tabs/ids'
 import { openNewWindow } from '~/lib/new-window'
+import { queryClient } from '~/lib/query-client'
 
 import { tableSessionStore } from '../../-tabs/table/-lib/session-store'
 import { DropTableDialog } from './drop-table-dialog'
@@ -59,6 +66,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface TableInfo {
   name: string
+  rowLevelSecurity?: boolean
   type: (typeof tablesAndSchemasType.infer)['type']
 }
 
@@ -85,7 +93,7 @@ const ROW_HEIGHTS = {
   separator: 13,
 } satisfies Record<TreeRow['kind'], number>
 
-const tableTypeIcon = {
+export const tableTypeIcon = {
   table: LayoutTable02Icon,
   view: ViewIcon,
   'materialized view': ViewIcon,
@@ -122,7 +130,7 @@ const SchemaRow = ({
           onClick={onToggle}
         />
       }
-      className="group hover:bg-accent h-full w-full gap-1 px-1.5"
+      className="group hover:bg-foreground/5 h-full w-full gap-1 px-1.5"
     >
       <HugeiconsIcon
         icon={ArrowRight01Icon}
@@ -146,6 +154,69 @@ const SchemaRow = ({
     </SidebarGroupLabel>
   )
 }
+
+const useRowLevelSecurityItems = ({
+  schema,
+  table,
+}: Extract<TreeRow, { kind: 'table' }>): AppMenuNode[] => {
+  const { connectionResource } = useRouteContext()
+  const mutation = useMutation({
+    mutationFn: async (enabled: boolean) =>
+      setRowLevelSecurityQuery({
+        enabled,
+        name: table.name,
+        schema,
+        table: table.name,
+      }).run(await connectionResourceToQueryParams(connectionResource)),
+    onError: (error, enabled) =>
+      toast.error(
+        `Failed to ${enabled ? 'enable' : 'disable'} row level security on "${table.name}"`,
+        { description: error.message }
+      ),
+    onSuccess: async (_result, enabled) => {
+      await Promise.all([
+        queryClient.invalidateQueries(
+          resourceTablesAndSchemasQueryOptions({ connectionResource })
+        ),
+        queryClient.invalidateQueries(
+          resourcePoliciesQueryOptions({ connectionResource })
+        ),
+      ])
+      toast.success(
+        `Row level security ${enabled ? 'enabled' : 'disabled'} on "${table.name}"`
+      )
+    },
+  })
+
+  if (table.type !== 'table' || table.rowLevelSecurity === undefined) {
+    return []
+  }
+
+  return [
+    {
+      label: table.rowLevelSecurity ? 'Disable RLS' : 'Enable RLS',
+      icon: table.rowLevelSecurity ? SecurityBlockIcon : SecurityCheckIcon,
+      disabled: mutation.isPending,
+      onSelect: () => mutation.mutate(!table.rowLevelSecurity),
+    },
+  ]
+}
+
+const RowLevelSecurityMark = ({ active }: { active: boolean }) => (
+  <Tooltip>
+    <TooltipTrigger render={<span className="shrink-0" />}>
+      <HugeiconsIcon
+        icon={SecurityCheckIcon}
+        strokeWidth={2}
+        className={cn(
+          'size-3!',
+          active ? 'text-primary-foreground/70' : 'text-muted-foreground'
+        )}
+      />
+    </TooltipTrigger>
+    <TooltipContent>Row level security enabled</TooltipContent>
+  </Tooltip>
+)
 
 const TableRow = ({
   row,
@@ -175,6 +246,8 @@ const TableRow = ({
   const hasDrafts = useSubscription(store, {
     selector: (state) => Object.keys(state.drafts).length > 0,
   })
+
+  const rowLevelSecurityItems = useRowLevelSecurityItems(row)
 
   const openInNewWindow = () => {
     openTableTab(connectionResource.id, row.schema, row.table.name)
@@ -212,6 +285,7 @@ const TableRow = ({
       disabled: isReadOnly,
       onSelect: onRename,
     },
+    ...rowLevelSecurityItems,
     {
       label: 'Drop',
       icon: Delete02Icon,
@@ -280,13 +354,18 @@ const TableRow = ({
         </span>
         <span
           className={cn(
-            'min-w-0 flex-1 truncate',
+            'flex min-w-0 flex-1 items-center gap-1',
             row.pinned
               ? `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.25rem),transparent_calc(100%-1rem))]`
               : `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
           )}
         >
-          <HighlightText text={row.table.name} match={search} />
+          <span className="truncate">
+            <HighlightText text={row.table.name} match={search} />
+          </span>
+          {row.table.rowLevelSecurity && (
+            <RowLevelSecurityMark active={isActive} />
+          )}
         </span>
       </SidebarMenuButton>
       <AppMenuButton
@@ -296,7 +375,7 @@ const TableRow = ({
           <SidebarMenuAction
             showOnHover
             className={cn(
-              'hover:bg-foreground/10 top-1! right-6 rounded-md',
+              'top-1! right-6 rounded-md',
               isActive &&
                 'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
             )}
@@ -310,7 +389,7 @@ const TableRow = ({
               showOnHover={!row.pinned}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className={cn(
-                'group/pin hover:bg-foreground/10 top-1! rounded-md',
+                'group/pin top-1! rounded-md',
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>

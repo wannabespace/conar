@@ -29,7 +29,7 @@ export const Command = ({
   <CommandPrimitive
     data-slot="command"
     className={cn(
-      'flex size-full flex-col overflow-hidden',
+      'flex size-full flex-col overflow-hidden outline-none',
       commandVariants[variant],
       className
     )}
@@ -178,7 +178,7 @@ export const CommandItem = ({
     <HugeiconsIcon
       icon={Tick02Icon}
       strokeWidth={2}
-      className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100"
+      className="ml-auto hidden opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-checked/command-item:block group-data-[checked=true]/command-item:opacity-100"
     />
   </CommandPrimitive.Item>
 )

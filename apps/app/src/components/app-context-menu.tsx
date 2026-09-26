@@ -21,7 +21,11 @@ import {
   PinOffIcon,
   PlayIcon,
   Refresh01Icon,
+  SaveIcon,
+  SecurityBlockIcon,
+  SecurityCheckIcon,
   Sorting01Icon,
+  SparklesIcon,
   SquareUnlock01Icon,
   TextIcon,
   Undo02Icon,
@@ -46,6 +50,7 @@ import {
   ContextMenuRadioGroup,
   ContextMenuRadioItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
@@ -60,6 +65,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -172,7 +178,11 @@ const sfSymbols = new Map<IconSvgElement, SFSymbol>([
   [PinOffIcon, 'pin.slash'],
   [PlayIcon, 'play'],
   [Refresh01Icon, 'arrow.clockwise'],
+  [SaveIcon, 'square.and.arrow.down'],
+  [SecurityBlockIcon, 'xmark.shield'],
+  [SecurityCheckIcon, 'checkmark.shield'],
   [Sorting01Icon, 'arrow.up.arrow.down'],
+  [SparklesIcon, 'sparkles'],
   [SquareUnlock01Icon, 'lock.open'],
   [TextIcon, 'text.alignleft'],
   [Undo02Icon, 'arrow.uturn.backward'],
@@ -192,6 +202,7 @@ const contextMenuParts = {
   RadioGroup: ContextMenuRadioGroup,
   RadioItem: ContextMenuRadioItem,
   Separator: ContextMenuSeparator,
+  Shortcut: ContextMenuShortcut,
   Sub: ContextMenuSub,
   SubContent: ContextMenuSubContent,
   SubTrigger: ContextMenuSubTrigger,
@@ -204,6 +215,7 @@ const dropdownMenuParts: typeof contextMenuParts = {
   RadioGroup: DropdownMenuRadioGroup,
   RadioItem: DropdownMenuRadioItem,
   Separator: DropdownMenuSeparator,
+  Shortcut: DropdownMenuShortcut,
   Sub: DropdownMenuSub,
   SubContent: DropdownMenuSubContent,
   SubTrigger: DropdownMenuSubTrigger,
@@ -220,8 +232,13 @@ const renderWebNodes = (
         return <parts.Separator key={index} />
       }
       case 'label': {
-        // oxlint-disable-next-line react/no-array-index-key
-        return <parts.Label key={index}>{node.label}</parts.Label>
+        // Base UI's label must sit inside a group, or it throws on render.
+        return (
+          // oxlint-disable-next-line react/no-array-index-key
+          <parts.Group key={index}>
+            <parts.Label>{node.label}</parts.Label>
+          </parts.Group>
+        )
       }
       case 'group': {
         return (
@@ -284,6 +301,7 @@ const renderWebNodes = (
           >
             {menuIcon(node.icon)}
             {node.label}
+            {node.shortcut && <parts.Shortcut>{node.shortcut}</parts.Shortcut>}
             {node.trailing}
           </parts.Item>
         )
@@ -493,7 +511,12 @@ export const AppMenuButton = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger render={trigger}>{icon}</DropdownMenuTrigger>
-        <DropdownMenuContent align="end" {...contentProps}>
+        <DropdownMenuContent
+          align="end"
+          onClick={stopPropagation}
+          onContextMenu={stopPropagation}
+          {...contentProps}
+        >
           {renderWebNodes(resolve(), dropdownMenuParts)}
         </DropdownMenuContent>
       </DropdownMenu>
