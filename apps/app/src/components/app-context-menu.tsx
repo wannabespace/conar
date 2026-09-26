@@ -511,7 +511,12 @@ export const AppMenuButton = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger render={trigger}>{icon}</DropdownMenuTrigger>
-        <DropdownMenuContent align="end" {...contentProps}>
+        <DropdownMenuContent
+          align="end"
+          onClick={stopPropagation}
+          onContextMenu={stopPropagation}
+          {...contentProps}
+        >
           {renderWebNodes(resolve(), dropdownMenuParts)}
         </DropdownMenuContent>
       </DropdownMenu>

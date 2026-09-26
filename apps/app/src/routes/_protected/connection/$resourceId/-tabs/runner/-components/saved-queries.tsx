@@ -64,64 +64,66 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
   }
 
   return (
-    <PopoverCommand
-      count={queries.length}
-      searchPlaceholder="Search saved queries"
-    >
+    <>
       <RemoveQueryDialog ref={removeDialogRef} />
-      <CommandList>
-        <ListEmpty icon={Bookmark02Icon}>
-          {queries.length === 0
-            ? 'No saved queries yet'
-            : 'No matching queries'}
-        </ListEmpty>
-        <CommandGroup>
-          {queries.map((query) => (
-            <CommandItem
-              key={query.id}
-              value={query.id}
-              keywords={[query.name, query.query]}
-              onSelect={() => openInNewTab(query)}
-            >
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span data-mask className="truncate">
-                  {query.name}
-                </span>
-                <span
-                  data-mask
-                  className="text-2xs text-muted-foreground truncate"
-                >
-                  {query.query}
-                </span>
-              </div>
-              <div className="flex shrink-0 items-center">
-                <RowAction
-                  icon={PlayListAddIcon}
-                  label="Append to this tab"
-                  onClick={() => {
-                    appendQuery(store, query.query)
-                    onPicked()
-                  }}
-                />
-                <RowAction
-                  icon={PencilEdit02Icon}
-                  label="Rename"
-                  onClick={() => {
-                    onPicked()
-                    renameSaved(query)
-                  }}
-                />
-                <RowAction
-                  destructive
-                  icon={Delete02Icon}
-                  label="Delete"
-                  onClick={() => removeDialogRef.current?.remove(query)}
-                />
-              </div>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </PopoverCommand>
+      <PopoverCommand
+        count={queries.length}
+        searchPlaceholder="Search saved queries"
+      >
+        <CommandList>
+          <ListEmpty icon={Bookmark02Icon}>
+            {queries.length === 0
+              ? 'No saved queries yet'
+              : 'No matching queries'}
+          </ListEmpty>
+          <CommandGroup>
+            {queries.map((query) => (
+              <CommandItem
+                key={query.id}
+                value={query.id}
+                keywords={[query.name, query.query]}
+                onSelect={() => openInNewTab(query)}
+              >
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span data-mask className="truncate">
+                    {query.name}
+                  </span>
+                  <span
+                    data-mask
+                    className="text-2xs text-muted-foreground truncate"
+                  >
+                    {query.query}
+                  </span>
+                </div>
+                <div className="flex shrink-0 items-center">
+                  <RowAction
+                    icon={PlayListAddIcon}
+                    label="Append to this tab"
+                    onClick={() => {
+                      appendQuery(store, query.query)
+                      onPicked()
+                    }}
+                  />
+                  <RowAction
+                    icon={PencilEdit02Icon}
+                    label="Rename"
+                    onClick={() => {
+                      onPicked()
+                      renameSaved(query)
+                    }}
+                  />
+                  <RowAction
+                    destructive
+                    icon={Delete02Icon}
+                    label="Delete"
+                    onClick={() => removeDialogRef.current?.remove(query)}
+                  />
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </PopoverCommand>
+    </>
   )
 }
