@@ -7,7 +7,7 @@ export const formatSql = (sql: string, type: ConnectionType) => {
     [ConnectionType.Postgres]: 'postgresql',
     [ConnectionType.MySQL]: 'mysql',
     [ConnectionType.MSSQL]: 'tsql',
-    [ConnectionType.ClickHouse]: 'mysql',
+    [ConnectionType.ClickHouse]: 'clickhouse',
   }
 
   try {
