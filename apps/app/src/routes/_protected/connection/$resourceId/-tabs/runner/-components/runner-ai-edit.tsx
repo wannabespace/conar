@@ -22,7 +22,6 @@ import { Button } from '@tamery/ui/components/button'
 import { EnterIcon, KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   InputGroup,
-  InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
 } from '@tamery/ui/components/input-group'
@@ -37,6 +36,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import { editor as monacoEditor, Range } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
+import { createElementSize } from 'seitu/web'
 import { toast } from 'sonner'
 
 import { orpc } from '~/lib/orpc'
@@ -109,7 +110,7 @@ const AiEditZone = ({
   onSubmit: (prompt: string, images: File[]) => void
 }) => {
   const [images, setImages] = useState<{ file: File; id: string }[]>([])
-  const formRef = useRef<HTMLFormElement>(null)
+  const [form, setForm] = useState<HTMLFormElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const resize = useEffectEvent(onResize)
 
@@ -119,17 +120,16 @@ const AiEditZone = ({
     }
   }, [phase.kind])
 
+  const { height } = useSubscription(
+    () => createElementSize({ element: form }),
+    { deps: [form] }
+  )
+
   useEffect(() => {
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) {
-        resize(entry.borderBoxSize[0]?.blockSize ?? CARD_HEIGHT)
-      }
-    })
-    if (formRef.current) {
-      observer.observe(formRef.current)
+    if (height > 0) {
+      resize(height)
     }
-    return () => observer.disconnect()
-  }, [])
+  }, [height])
 
   const icon = (
     <HugeiconsIcon
@@ -145,7 +145,7 @@ const AiEditZone = ({
 
   return (
     <form
-      ref={formRef}
+      ref={setForm}
       className={cn(
         'mt-1.5 ml-3 w-lg max-w-[calc(100%-2.5rem)]',
         phase.kind !== 'prompt' &&
@@ -168,7 +168,11 @@ const AiEditZone = ({
             ref={inputRef}
             data-mask
             rows={1}
-            className="max-h-32 min-h-8 py-1.5 pr-10 pl-8 read-only:opacity-50"
+            className={cn(
+              'max-h-32 min-h-8 py-1.5 pr-10 pl-8 read-only:opacity-50',
+              // Sync with the xs AttachmentGroup's height: the images overlay this padding.
+              images.length > 0 && 'max-h-46 pb-14'
+            )}
             placeholder="Describe how to change this statement…"
             // Read-only, not disabled: a disabled input drops focus, and Esc must still cancel the request.
             readOnly={phase.busy}
@@ -205,13 +209,20 @@ const AiEditZone = ({
                 !event.nativeEvent.isComposing
               ) {
                 event.preventDefault()
-                formRef.current?.requestSubmit()
+                form?.requestSubmit()
               }
             }}
           />
-          {images.length > 0 && (
-            <InputGroupAddon align="block-end" className="pr-9 pl-8">
-              <AttachmentGroup className="w-full">
+          <div className="pointer-events-none absolute top-2.25 left-2.5 flex">
+            {icon}
+          </div>
+          <div className="pointer-events-none absolute inset-x-1 bottom-1 flex items-center gap-1.5 pl-7">
+            {images.length > 0 && (
+              <AttachmentGroup
+                className="pointer-events-none flex-1 gap-1.5 *:pointer-events-auto"
+                // Monaco scrolls the editor on any wheel inside it, view zones included.
+                onWheel={(event) => event.stopPropagation()}
+              >
                 {images.map(({ file, id }) => (
                   <PastedImage
                     key={id}
@@ -224,29 +235,28 @@ const AiEditZone = ({
                   />
                 ))}
               </AttachmentGroup>
-            </InputGroupAddon>
-          )}
-          <div className="absolute top-2.25 left-2.5 flex">{icon}</div>
-          <div className="absolute right-1 bottom-1 flex">
-            {phase.busy ? (
-              <Spinner className="text-muted-foreground m-1.25 size-3.5" />
-            ) : (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <InputGroupButton
-                      type="submit"
-                      size="icon-xs"
-                      aria-label="Send"
-                      className="text-muted-foreground hover:text-foreground"
-                    />
-                  }
-                >
-                  <EnterIcon />
-                </TooltipTrigger>
-                <TooltipContent>Send</TooltipContent>
-              </Tooltip>
             )}
+            <div className="pointer-events-auto ml-auto flex">
+              {phase.busy ? (
+                <Spinner className="text-muted-foreground m-1.25 size-3.5" />
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <InputGroupButton
+                        type="submit"
+                        size="icon-xs"
+                        aria-label="Send"
+                        className="text-muted-foreground hover:text-foreground"
+                      />
+                    }
+                  >
+                    <EnterIcon />
+                  </TooltipTrigger>
+                  <TooltipContent>Send</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </div>
         </InputGroup>
       )}
