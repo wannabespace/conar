@@ -12,7 +12,7 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   createPopoverHandle,
   Popover,
@@ -78,10 +78,7 @@ const ResultError = ({
       <Button size="sm" variant="outline" onClick={() => fixWithAi(result)}>
         <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
         Fix with AI
-        <span className="text-muted-foreground flex items-center">
-          <Ctrl className="size-2.5" userAgent={navigator.userAgent} />
-          <span className="text-2xs">I</span>
-        </span>
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
       </Button>
     </PaneEmpty>
   )

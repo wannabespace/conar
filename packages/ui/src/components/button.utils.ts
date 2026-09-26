@@ -9,13 +9,13 @@ export const buttonVariants = cva(
     },
     variants: {
       size: {
-        default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5`,
+        default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&>[data-slot=kbd]]:-ml-0.5`,
         icon: 'size-8',
         'icon-2xs': `size-5 rounded-sm [&_svg:not([class*='size-'])]:size-3.5`,
         'icon-lg': 'size-9',
         'icon-sm': 'size-7 rounded-lg',
         'icon-xs': `size-6 rounded-md [&_svg:not([class*='size-'])]:size-3.5`,
-        lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3`,
+        lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&>[data-slot=kbd]]:-ml-0.5`,
         sm: `h-7 gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
       },

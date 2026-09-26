@@ -19,7 +19,7 @@ import {
   AttachmentTitle,
 } from '@tamery/ui/components/attachment'
 import { Button } from '@tamery/ui/components/button'
-import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'
+import { EnterIcon, KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   InputGroup,
   InputGroupAddon,
@@ -269,10 +269,7 @@ const AiEditZone = ({
           <RejectButton label="Reject" onClick={onClose} />
           <Button size="xs" onClick={onAccept}>
             Accept
-            <span className="text-primary-foreground/70 flex items-center">
-              <Ctrl userAgent={navigator.userAgent} className="size-2.5" />
-              <EnterIcon className="size-2.5" />
-            </span>
+            <KbdCtrlEnter userAgent={navigator.userAgent} />
           </Button>
         </>
       )}

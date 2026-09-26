@@ -16,7 +16,7 @@ export const inputGroupVariants = cva(
 )
 
 export const inputGroupAddonVariants = cva(
-  `text-muted-foreground **:data-[slot=kbd]:bg-muted-foreground/10 flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-md **:data-[slot=kbd]:px-1.5 [&>svg:not([class*='size-'])]:size-4`,
+  `text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm select-none group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4`,
   {
     defaultVariants: {
       align: 'inline-start',
@@ -25,8 +25,8 @@ export const inputGroupAddonVariants = cva(
       align: {
         'block-end': `order-last w-full justify-start px-2.5 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2`,
         'block-start': `order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2`,
-        'inline-end': `order-last pr-2.5 has-[>[data-slot=button]]:mr-[-0.3rem] has-[>kbd]:mr-[-0.15rem]`,
-        'inline-start': `order-first pl-2.5 has-[>[data-slot=button]]:ml-[-0.3rem] has-[>kbd]:ml-[-0.15rem]`,
+        'inline-end': `order-last pr-2.5 has-[>[data-slot=button]]:mr-[-0.3rem]`,
+        'inline-start': `order-first pl-2.5 has-[>[data-slot=button]]:ml-[-0.3rem]`,
       },
     },
   }

@@ -1,5 +1,4 @@
 import {
-  ArrowUp02Icon,
   BrushCleaningIcon,
   SaveIcon,
   PanelBottomCloseIcon,
@@ -25,7 +24,7 @@ import {
   ResizablePanel,
   ResizableSeparator,
 } from '@tamery/ui/components/custom/resizable'
-import { Ctrl, EnterIcon } from '@tamery/ui/components/custom/shortcuts'
+import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Popover,
   PopoverContent,
@@ -334,15 +333,7 @@ export const Runner = () => {
               >
                 <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
                 Run all
-                <span className="text-muted-foreground flex items-center">
-                  <Ctrl className="size-2.5" userAgent={navigator.userAgent} />
-                  <HugeiconsIcon
-                    icon={ArrowUp02Icon}
-                    strokeWidth={2}
-                    className="size-2.5"
-                  />
-                  <EnterIcon className="size-2.5" />
-                </span>
+                <KbdShiftCtrlEnter userAgent={navigator.userAgent} />
               </Button>
             )}
             <div className="ml-auto flex shrink-0 items-center gap-1">

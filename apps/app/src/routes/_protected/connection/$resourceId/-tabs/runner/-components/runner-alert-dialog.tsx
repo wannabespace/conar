@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
@@ -20,7 +20,7 @@ export const RunnerAlertDialog = ({
   ref: React.RefObject<{
     confirm: (keywords: string[], onConfirmed: () => void) => void
   } | null>
-  /** The runner turns its own ⌘⇧↩ off while this is open, or one press would confirm and ask again. */
+  /** The runner turns its own ⌘↩ and ⌘⇧↩ off while this is open, or one press would confirm and ask again. */
   onOpenChange: (open: boolean) => void
 }) => {
   const [open, setOpen] = useState(false)
@@ -44,7 +44,7 @@ export const RunnerAlertDialog = ({
     changeOpen(false)
   }
 
-  useHotkey('Mod+Shift+Enter', onConfirm, { enabled: open })
+  useHotkey('Mod+Enter', onConfirm, { enabled: open })
 
   return (
     <AlertDialog
@@ -77,13 +77,8 @@ export const RunnerAlertDialog = ({
         <AlertDialogFooter className="gap-2">
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogCancel variant="warning" onClick={onConfirm}>
-            <span className="flex items-center gap-2">
-              Run anyway
-              <KbdShiftCtrlEnter
-                userAgent={navigator.userAgent}
-                className="text-white"
-              />
-            </span>
+            Run anyway
+            <KbdCtrlEnter userAgent={navigator.userAgent} />
           </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
