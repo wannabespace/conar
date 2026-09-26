@@ -56,7 +56,6 @@ const COMMON_KEYWORDS = [
   'LAST',
   'LEFT',
   'LIKE',
-  'LIMIT',
   'NATURAL',
   'NOT',
   'NULL',
@@ -97,18 +96,15 @@ const COMMON_KEYWORDS = [
 const COMMON_FUNCTIONS = [
   'ABS',
   'AVG',
-  'CEIL',
   'COALESCE',
   'CONCAT',
   'COUNT',
   'FLOOR',
   'GREATEST',
   'LEAST',
-  'LENGTH',
   'LOWER',
   'MAX',
   'MIN',
-  'NOW',
   'NULLIF',
   'POWER',
   'REPLACE',
@@ -144,6 +140,8 @@ export interface DialectSpec {
   /** Backslash escapes inside `'...'` (MySQL/ClickHouse); Postgres and SQL Server only double the quote. */
   backslashEscapes: boolean
   hashComments: boolean
+  /** Unquoted names fold to lowercase and catalog lookups match exactly (Postgres); elsewhere lookups ignore case. */
+  foldsNames: boolean
   atVariables: boolean
   goBatches: boolean
   /** `BEGIN … COMMIT` really runs as a transaction; ClickHouse's driver only fakes commit and rollback. */
@@ -163,6 +161,7 @@ const spec = (
   atVariables: false,
   backslashEscapes: false,
   dollarQuotes: false,
+  foldsNames: false,
   goBatches: false,
   hashComments: false,
   identifierQuotes: ['"'],
@@ -178,9 +177,12 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
     backslashEscapes: true,
     functions: [
       'ARRAYJOIN',
+      'CEIL',
       'COUNTIF',
       'FORMATDATETIME',
       'GROUPARRAY',
+      'LENGTH',
+      'NOW',
       'SUMIF',
       'TODATE',
       'TODATETIME',
@@ -199,6 +201,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'ENGINE',
       'FINAL',
       'FORMAT',
+      'LIMIT',
       'MATERIALIZED',
       'OPTIMIZE',
       'PARTITION',
@@ -229,6 +232,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
   [ConnectionType.MSSQL]: spec({
     atVariables: true,
     functions: [
+      'CEILING',
       'CHARINDEX',
       'CONVERT',
       'DATEADD',
@@ -279,11 +283,14 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
     atVariables: true,
     backslashEscapes: true,
     functions: [
+      'CEIL',
       'DATE_FORMAT',
       'GROUP_CONCAT',
       'IFNULL',
       'JSON_EXTRACT',
       'LAST_INSERT_ID',
+      'LENGTH',
+      'NOW',
       'RAND',
       'UUID',
     ],
@@ -296,6 +303,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'DUPLICATE',
       'ENGINE',
       'IGNORE',
+      'LIMIT',
       'LOCK',
       'PROCEDURE',
       'REGEXP',
@@ -309,14 +317,18 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
   }),
   [ConnectionType.Postgres]: spec({
     dollarQuotes: true,
+    foldsNames: true,
     functions: [
       'ARRAY_AGG',
+      'CEIL',
       'DATE_TRUNC',
       'EXTRACT',
       'GEN_RANDOM_UUID',
       'GENERATE_SERIES',
       'JSONB_AGG',
       'JSONB_BUILD_OBJECT',
+      'LENGTH',
+      'NOW',
       'ROW_NUMBER',
       'STRING_AGG',
       'TO_CHAR',
@@ -331,6 +343,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'FUNCTION',
       'ILIKE',
       'LATERAL',
+      'LIMIT',
       'MATERIALIZED',
       'NOTHING',
       'ONLY',

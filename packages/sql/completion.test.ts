@@ -168,6 +168,51 @@ describe('completion', () => {
     expect(complete('-- header\nSELECT 1', 5).labels).toEqual([])
   })
 
+  it('quotes the names Postgres would fold', () => {
+    const exact: SqlCatalog = {
+      defaultSchema: 'public',
+      enums: [],
+      exactNames: true,
+      schemas: [
+        {
+          name: 'public',
+          tables: [
+            {
+              columns: [
+                { name: 'id', nullable: false, type: 'int' },
+                { name: 'userId', nullable: false, type: 'int' },
+              ],
+              kind: 'table',
+              name: 'User',
+            },
+          ],
+        },
+      ],
+    }
+    const inserts = (sql: string, offset = sql.length) =>
+      completionItems(completionContext(sql, offset, pg), exact, pg).map(
+        (item) => item.insertText
+      )
+    expect(inserts('SELECT * FROM ')).toContain('"User"')
+    expect(inserts('SELECT "User". FROM "User"', 14)).toEqual([
+      'id',
+      '"userId"',
+    ])
+  })
+
+  it('offers only the vocabulary the dialect speaks', () => {
+    const mssql = dialects[ConnectionType.MSSQL]
+    const labels = (sql: string) =>
+      completionItems(
+        completionContext(sql, sql.length, mssql),
+        catalog,
+        mssql
+      ).map((item) => item.label)
+    expect(labels('SELECT * FROM users ')).not.toContain('LIMIT')
+    expect(labels('SELECT ')).not.toContain('NOW')
+    expect(complete('SELECT * FROM users ').labels).toContain('LIMIT')
+  })
+
   it('completes after a line comment', () => {
     expect(complete('-- header\nSELECT * FROM ').labels).toContain('users')
   })

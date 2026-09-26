@@ -18,8 +18,10 @@ export interface Token {
   start: number
   end: number
   unclosed?: true
-  /** Quoted identifiers keep `identifier`; this marks them so lookups strip the quotes. */
+  /** Quoted identifiers keep `identifier`; this marks them. */
   quoted?: true
+  /** The name the engine resolves, when it differs from `text`: quotes stripped and undoubled, or folded to lowercase. */
+  name?: string
 }
 
 interface OpenState {
@@ -241,7 +243,7 @@ export const tokenize = (
     kind: TokenKind,
     start: number,
     end: number,
-    extra?: Pick<Token, 'quoted' | 'unclosed'>
+    extra?: Pick<Token, 'name' | 'quoted' | 'unclosed'>
   ) => {
     tokens.push({ end, kind, start, text: text.slice(start, end), ...extra })
     index = end
@@ -253,8 +255,14 @@ export const tokenize = (
     contentStart: number
   ) => {
     const { end, unclosed } = scanUntil(text, contentStart, pending)
+    const { close } = pending
     push(pending.kind, start, end, {
-      ...(pending.kind === 'identifier' && { quoted: true }),
+      ...(pending.kind === 'identifier' && {
+        name: text
+          .slice(contentStart, unclosed ? end : end - close.length)
+          .replaceAll(close + close, close),
+        quoted: true,
+      }),
       ...(unclosed && { unclosed }),
     })
     state = unclosed ? pending : INITIAL_STATE
@@ -276,7 +284,14 @@ export const tokenize = (
     }
     const token = tokenAt(text, index, dialect)
     if (token) {
-      push(token.kind, index, token.end)
+      push(
+        token.kind,
+        index,
+        token.end,
+        token.kind === 'identifier' && dialect.foldsNames
+          ? { name: text.slice(index, token.end).toLowerCase() }
+          : undefined
+      )
     } else {
       index += 1
     }
@@ -285,8 +300,7 @@ export const tokenize = (
   return { state, tokens }
 }
 
-export const identifierName = (token: Token) =>
-  token.quoted ? token.text.slice(1, -1) : token.text
+export const identifierName = (token: Token) => token.name ?? token.text
 
 export const isKeyword = (token: Token | undefined, ...words: string[]) =>
   token?.kind === 'keyword' && words.includes(token.text.toUpperCase())

@@ -195,6 +195,10 @@ COMMIT`
       'SELECT 1',
       'SELECT 2',
     ])
+    expect(texts('SELECT 1\nGO 2\nSELECT 2', mssql)).toEqual([
+      'SELECT 1',
+      'SELECT 2',
+    ])
   })
 
   it('finds the statement at an offset', () => {

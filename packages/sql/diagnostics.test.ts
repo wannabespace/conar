@@ -141,4 +141,29 @@ describe('diagnose', () => {
       )
     ).toEqual(['warning: Unknown table `fresh`'])
   })
+
+  it('matches Postgres names exactly once unquoted ones fold', () => {
+    const exact = (sql: string) =>
+      diagnose(sql, pg, { ...catalog, exactNames: true }).map(
+        ({ message }) => message
+      )
+    expect(exact('SELECT ID FROM USERS')).toEqual([])
+    expect(exact('SELECT "ID" FROM "Users"')).toEqual(['Unknown table `Users`'])
+    expect(exact('SELECT "ID" FROM users')).toEqual([
+      'Unknown column `ID` — not in `users`',
+    ])
+  })
+
+  it('warns that a GO repeat count is ignored', () => {
+    expect(
+      diagnose('SELECT 1\nGO 2', dialects[ConnectionType.MSSQL], null)
+    ).toEqual([
+      {
+        end: 13,
+        message: 'The repeat count is ignored — the batch runs once',
+        severity: 'warning',
+        start: 12,
+      },
+    ])
+  })
 })

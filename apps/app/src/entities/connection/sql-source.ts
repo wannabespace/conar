@@ -2,7 +2,7 @@ import type { SqlSource } from '@tamery/monaco/sql-language'
 import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
-import { locateTable } from '@tamery/sql'
+import { dialects, locateTable } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
 
 import type { ConnectionResource } from '~/entities/connection/core/sync'
@@ -37,6 +37,7 @@ const sqlCatalogOf = (
       table: metadata?.table,
       values,
     })),
+    exactNames: dialects[connectionType].foldsNames,
     schemas: tables.schemas.map((schema) => ({
       name: schema.name,
       tables: schema.tables.map((table) => ({

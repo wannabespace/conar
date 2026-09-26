@@ -26,16 +26,19 @@ interface SqlEnum {
 
 export interface SqlCatalog {
   defaultSchema: string | null
+  /** The dialect's `foldsNames`: lookups take the query's resolved names verbatim instead of ignoring case. */
+  exactNames?: boolean
   schemas: SqlSchema[]
   enums: SqlEnum[]
 }
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'accent' })
 
-const same = (a: string, b: string) => collator.compare(a, b) === 0
+const same = (catalog: SqlCatalog, a: string, b: string) =>
+  catalog.exactNames ? a === b : collator.compare(a, b) === 0
 
 export const findSchema = (catalog: SqlCatalog, name: string) =>
-  catalog.schemas.find((schema) => same(schema.name, name))
+  catalog.schemas.find((schema) => same(catalog, schema.name, name))
 
 export const locateTable = (
   catalog: SqlCatalog,
@@ -51,7 +54,9 @@ export const locateTable = (
         ...catalog.schemas,
       ]
   for (const candidate of schemas) {
-    const table = candidate?.tables.find((item) => same(item.name, name))
+    const table = candidate?.tables.find((item) =>
+      same(catalog, item.name, name)
+    )
     if (candidate && table) {
       return { schema: candidate.name, table }
     }
@@ -64,8 +69,11 @@ export const findTable = (
   schema: string | null
 ) => locateTable(catalog, name, schema)?.table
 
-export const findColumn = (table: SqlTable, name: string) =>
-  table.columns?.find((column) => same(column.name, name))
+export const findColumn = (
+  catalog: SqlCatalog,
+  table: SqlTable,
+  name: string
+) => table.columns?.find((column) => same(catalog, column.name, name))
 
 export const findEnum = (
   catalog: SqlCatalog,
@@ -77,6 +85,6 @@ export const findEnum = (
   ) ??
   catalog.enums.find(
     (item) =>
-      same(item.name, column.type) ||
+      collator.compare(item.name, column.type) === 0 ||
       column.type.toLowerCase().endsWith(`.${item.name.toLowerCase()}`)
   )

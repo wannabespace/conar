@@ -9,8 +9,18 @@ const pg = dialects[ConnectionType.Postgres]
 const mysql = dialects[ConnectionType.MySQL]
 const kinds = (sql: string, dialect = pg) =>
   tokenize(sql, dialect).tokens.map((token) => `${token.kind}:${token.text}`)
+const names = (sql: string, dialect = pg) =>
+  tokenize(sql, dialect).tokens.map((token) => token.name ?? token.text)
 
 describe('tokenize', () => {
+  it('resolves identifier names the way the engine does', () => {
+    expect(names('"a""b" Foo')).toEqual(['a"b', 'foo'])
+    expect(names('[a]]b] Foo', dialects[ConnectionType.MSSQL])).toEqual([
+      'a]b',
+      'Foo',
+    ])
+  })
+
   it('classifies words, literals and operators', () => {
     expect(
       kinds('SELECT count(*) AS n, "Col" FROM t WHERE a->>\'k\' = 1.5e3')

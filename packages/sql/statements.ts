@@ -37,15 +37,26 @@ const ISOLATION_LEVELS = [
   'snapshot',
 ] as const
 
-const onOwnLine = (text: string, token: Token, previous: Token | undefined) => {
-  const before = text.slice(previous?.end ?? 0, token.start)
-  const after = text.slice(
-    token.end,
-    text.indexOf('\n', token.end) + 1 || text.length
-  )
-  return (
-    (previous === undefined || before.includes('\n')) && after.trim() === ''
-  )
+const GO_REPEAT_COUNT = /^\s*\d*\s*$/u
+
+/** End of the line holding a `GO` batch separator — alone on its line, with an optional repeat count — or `null`. */
+export const batchSeparatorEnd = (
+  text: string,
+  tokens: Token[],
+  index: number
+) => {
+  const token = tokens[index]
+  const previous = tokens[index - 1]
+  if (!(token && isKeyword(token, 'GO'))) {
+    return null
+  }
+  const lineEnd = text.indexOf('\n', token.end) + 1 || text.length
+  const startsLine =
+    previous === undefined ||
+    text.slice(previous.end, token.start).includes('\n')
+  return startsLine && GO_REPEAT_COUNT.test(text.slice(token.end, lineEnd))
+    ? lineEnd
+    : null
 }
 
 const upperTexts = (tokens: Token[]) =>
@@ -134,14 +145,18 @@ export const parseStatements = (
     inTransaction = false
   }
 
+  let separatorLineEnd = 0
+
   for (const [index, token] of significant.entries()) {
     const next = significant[index + 1]
 
-    if (
-      dialect.goBatches &&
-      isKeyword(token, 'GO') &&
-      onOwnLine(text, token, significant[index - 1])
-    ) {
+    if (token.start < separatorLineEnd) {
+      continue
+    }
+    const separatorEnd =
+      dialect.goBatches && batchSeparatorEnd(text, significant, index)
+    if (separatorEnd) {
+      separatorLineEnd = separatorEnd
       flush()
       continue
     }

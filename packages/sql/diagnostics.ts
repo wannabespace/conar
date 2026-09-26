@@ -4,7 +4,7 @@ import type { DialectSpec } from './dialect'
 import type { StatementScope } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
 import type { Statement } from './statements'
-import { parseStatements } from './statements'
+import { batchSeparatorEnd, parseStatements } from './statements'
 import type { Token } from './tokenizer'
 import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
@@ -99,6 +99,23 @@ const unclosedDiagnostics = (tokens: Token[]): Diagnostic[] =>
       message: UNCLOSED_MESSAGES[token.kind] ?? 'Unterminated token',
       severity: 'error',
     }))
+
+const repeatCountDiagnostics = (text: string, tokens: Token[]) => {
+  const significant = tokens.filter((token) => token.kind !== 'comment')
+  return significant.flatMap((_, index): Diagnostic[] => {
+    const lineEnd = batchSeparatorEnd(text, significant, index)
+    const count = significant[index + 1]
+    return lineEnd && count && count.start < lineEnd
+      ? [
+          {
+            ...spanOf(count),
+            message: 'The repeat count is ignored — the batch runs once',
+            severity: 'warning',
+          },
+        ]
+      : []
+  })
+}
 
 const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
   const diagnostics: Diagnostic[] = []
@@ -233,7 +250,7 @@ const qualifiedColumnDiagnostics = (
       continue
     }
     const table = resolveQualifier(scope, catalog, qualifierName)
-    if (!table?.columns || findColumn(table, identifierName(token))) {
+    if (!table?.columns || findColumn(catalog, table, identifierName(token))) {
       continue
     }
     diagnostics.push({
@@ -283,6 +300,7 @@ const unqualifiedColumnDiagnostics = (
   ) {
     return []
   }
+  const key = (name: string) => (catalog.exactNames ? name : name.toLowerCase())
   const refTokens = new Set(scope.tables.map((ref) => ref.token))
   const known = new Set(
     [
@@ -296,12 +314,12 @@ const unqualifiedColumnDiagnostics = (
       ...tables.flatMap((table) =>
         (table?.columns ?? []).map((column) => column.name)
       ),
-    ].map((name) => name.toLowerCase())
+    ].map(key)
   )
   const names = tables.flatMap((table) => (table ? [`\`${table.name}\``] : []))
 
   return tokens.flatMap((token, index): Diagnostic[] => {
-    const name = identifierName(token).toLowerCase()
+    const name = key(identifierName(token))
     const previous = tokens[index - 1]
     const next = tokens[index + 1]
     if (
@@ -377,6 +395,7 @@ export const diagnose = (
   const statements = parseStatements(text, tokens, dialect)
   return [
     ...unclosedDiagnostics(tokens),
+    ...(dialect.goBatches ? repeatCountDiagnostics(text, tokens) : []),
     ...statements.flatMap((statement) => [
       ...bracketDiagnostics(statement),
       ...starterDiagnostics(statement),

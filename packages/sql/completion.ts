@@ -442,7 +442,7 @@ const resolveSubject = (
     ? [scopeTable(scope, catalog, subject.qualifier)]
     : scope.tables.map((ref) => findTable(catalog, ref.name, ref.schema))
   for (const table of tables) {
-    const column = table && findColumn(table, subject.name)
+    const column = table && findColumn(catalog, table, subject.name)
     if (table && column) {
       return { column, table }
     }
@@ -450,15 +450,27 @@ const resolveSubject = (
   return null
 }
 
+const PLAIN_NAME = /^[a-z_][a-z\d_$]*$/u
+
+// A catalog that matches names exactly folds unquoted ones to lowercase, so any other spelling is inserted quoted.
+const sqlName = (catalog: SqlCatalog, name: string) =>
+  catalog.exactNames && !PLAIN_NAME.test(name)
+    ? `"${name.replaceAll('"', '""')}"`
+    : name
+
 const columnItems = (
+  catalog: SqlCatalog,
   table: SqlTable,
   { detail = '', qualifier = '' }: { detail?: string; qualifier?: string } = {}
 ): CompletionItem[] =>
   (table.columns ?? []).map((column) => {
     const name = qualifier ? `${qualifier}.${column.name}` : column.name
+    const inserted = sqlName(catalog, column.name)
     return {
       detail: `${detail}${column.type}${column.nullable ? '' : ' not null'}`,
-      insertText: name,
+      insertText: qualifier
+        ? `${sqlName(catalog, qualifier)}.${inserted}`
+        : inserted,
       kind: 'column',
       label: name,
       sortText: `1${name}`,
@@ -468,13 +480,14 @@ const columnItems = (
 const tableItems = (catalog: SqlCatalog): CompletionItem[] =>
   catalog.schemas.flatMap((schema) =>
     schema.tables.map((table) => {
-      const qualified =
-        schema.name === catalog.defaultSchema
-          ? table.name
-          : `${schema.name}.${table.name}`
+      const inDefault = schema.name === catalog.defaultSchema
+      const qualified = inDefault ? table.name : `${schema.name}.${table.name}`
+      const inserted = sqlName(catalog, table.name)
       return {
         detail: `${table.kind} · ${schema.name}`,
-        insertText: qualified,
+        insertText: inDefault
+          ? inserted
+          : `${sqlName(catalog, schema.name)}.${inserted}`,
         kind: table.kind === 'view' ? 'view' : 'table',
         label: qualified,
         sortText: `2${qualified}`,
@@ -532,18 +545,18 @@ const qualifiedItems = (
   }
   if (second !== undefined) {
     const table = findTable(catalog, second, first)
-    return table ? columnItems(table) : []
+    return table ? columnItems(catalog, table) : []
   }
   const table =
     scopeTable(context.scope, catalog, first) ?? findTable(catalog, first, null)
   if (table) {
-    return columnItems(table)
+    return columnItems(catalog, table)
   }
   const schema = findSchema(catalog, first)
   return (
     schema?.tables.map((item) => ({
       detail: item.kind,
-      insertText: item.name,
+      insertText: sqlName(catalog, item.name),
       kind: item.kind === 'view' ? 'view' : 'table',
       label: item.name,
       sortText: `2${item.name}`,
@@ -648,11 +661,12 @@ const insertTemplate = (
     return []
   }
   const names = columns.map((column) => column.name)
+  const inserted = names.map((name) => sqlName(catalog, name))
   return ordered(
     [
       {
         detail: names.join(', '),
-        insertText: `(${names.join(', ')})\nVALUES (${names.map((name, index) => `\${${index + 1}:${name}}`).join(', ')})`,
+        insertText: `(${inserted.join(', ')})\nVALUES (${names.map((name, index) => `\${${index + 1}:${name}}`).join(', ')})`,
         label: '(columns…) VALUES (…)',
         snippet: true,
       },
@@ -681,7 +695,7 @@ const scopeColumnItems = (
   const qualify = known.length > 1
   const seen = new Set<string>()
   return known.flatMap(({ qualifier, table }) =>
-    columnItems(table, {
+    columnItems(catalog, table, {
       detail: qualify ? '' : `${qualifier} · `,
       qualifier: qualify ? qualifier : '',
     }).filter((item) => {
@@ -705,7 +719,8 @@ const slotItems = (
       only && scope.tables.length === 1
         ? findTable(catalog, only.name, only.schema)
         : undefined
-    const all = table?.columns?.map((column) => column.name) ?? []
+    const all =
+      table?.columns?.map((column) => sqlName(catalog, column.name)) ?? []
     return ordered(
       [
         { label: '*' },
@@ -805,7 +820,7 @@ export const completionItems = (
         ...tableItems(catalog),
         ...catalog.schemas.map((schema) => ({
           detail: 'schema',
-          insertText: schema.name,
+          insertText: sqlName(catalog, schema.name),
           kind: 'schema' as const,
           label: schema.name,
           sortText: `3${schema.name}`,
