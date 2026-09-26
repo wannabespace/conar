@@ -7,6 +7,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { catalogSummaryFor } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { fileSize } from '@tamery/shared/files'
 import {
   Attachment,
   AttachmentAction,
@@ -47,24 +48,6 @@ type Phase =
   | { kind: 'prompt'; busy: boolean }
   | { kind: 'fixing'; error: string }
   | { kind: 'review'; original: string; applied: string; fix: boolean }
-
-const sizeFormats = {
-  kilobyte: new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 0,
-    style: 'unit',
-    unit: 'kilobyte',
-  }),
-  megabyte: new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 1,
-    style: 'unit',
-    unit: 'megabyte',
-  }),
-}
-
-const fileSize = (bytes: number) =>
-  bytes < 1_000_000
-    ? sizeFormats.kilobyte.format(Math.max(1, bytes / 1000))
-    : sizeFormats.megabyte.format(bytes / 1_000_000)
 
 const PastedImage = ({
   image,
