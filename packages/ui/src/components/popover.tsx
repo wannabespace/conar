@@ -28,7 +28,7 @@ const PopoverContent = ({
     'align' | 'alignOffset' | 'side' | 'sideOffset'
   > & {
     padding?: 'default' | 'none'
-    /** Only for popovers opened through `createPopoverHandle`. */
+    // Only for popovers opened through `createPopoverHandle`.
     detached?: boolean
   }) => (
   <PopoverPrimitive.Portal>
