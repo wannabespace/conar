@@ -160,7 +160,12 @@ const ConnectionResourcesSelect = ({
     onValueChange={(value) => onSelectedResourceNameChange(value ?? null)}
     disabled={disabled}
   >
-    <SelectTrigger data-mask size="xs" className="pointer-events-auto">
+    <SelectTrigger
+      data-mask
+      size="xs"
+      variant="ghost-row"
+      className="pointer-events-auto"
+    >
       <SelectValue>
         {selectedResourceName === null
           ? null
@@ -532,6 +537,7 @@ const ConnectionCard = ({
         <AppMenuButton
           items={items}
           contentProps={{ className: 'min-w-44' }}
+          render={<Button variant="ghost-row" size="icon-xs" />}
           className="relative z-10"
         />
       </AppContextMenu>

@@ -530,7 +530,10 @@ export const DefinitionsPage = <T extends { name: string }>({
                         <TableCell className="text-right">
                           <AppMenuButton
                             items={() => rowMenuItems(item)}
-                            className="hover:bg-foreground/5 aria-expanded:bg-foreground/5 -my-0.5"
+                            render={
+                              <Button variant="ghost-row" size="icon-xs" />
+                            }
+                            className="-my-0.5"
                           />
                         </TableCell>
                       </AppContextMenu>

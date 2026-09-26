@@ -23,6 +23,7 @@ export const buttonVariants = cva(
         default: `bg-primary text-primary-foreground hover:bg-primary/80`,
         destructive: `bg-destructive hover:bg-destructive/85 text-white shadow-xs`,
         ghost: `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
+        'ghost-row': `hover:bg-foreground/5 hover:text-foreground aria-expanded:bg-foreground/5 aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
         link: `text-primary px-0 underline-offset-4 hover:underline`,
         outline: `bg-input text-foreground ring-foreground/4 hover:ring-foreground/12 aria-expanded:ring-foreground/12 hover:bg-accent aria-expanded:bg-accent aria-pressed:bg-foreground/10 shadow-xs ring`,
         secondary: `bg-secondary text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]`,
