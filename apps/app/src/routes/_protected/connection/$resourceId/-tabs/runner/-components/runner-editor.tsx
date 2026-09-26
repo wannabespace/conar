@@ -34,8 +34,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { editor } from 'monaco-editor'
-import { editor as monacoEditor, KeyCode, KeyMod } from 'monaco-editor'
+import { editor, KeyCode, KeyMod } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -391,7 +390,7 @@ const useStatementBand = (
                   after: {
                     content: RUN_SLOT,
                     // The caret never lands past the slot, so a click beyond the button still types before it.
-                    cursorStops: monacoEditor.InjectedTextCursorStops.Left,
+                    cursorStops: editor.InjectedTextCursorStops.Left,
                     inlineClassName: RUN_SLOT_CLASS,
                   },
                   showIfCollapsed: true,
