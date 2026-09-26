@@ -29,8 +29,6 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       const text = model.getValue()
       const offset = model.getOffsetAt(position)
       const context = completionContext(text, offset, dialect)
-      // A space or paren opens the list only where something specific is expected
-      // (`FROM `, `WHERE `, `IN (`), not after every word.
       const openedByGap =
         trigger.triggerCharacter === ' ' || trigger.triggerCharacter === '('
       if (openedByGap && context.expects === 'any') {

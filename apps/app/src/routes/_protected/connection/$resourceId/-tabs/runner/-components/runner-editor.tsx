@@ -123,7 +123,6 @@ const EDITOR_ACTIONS = [
     precondition: FAILED_CONTEXT_KEY,
   },
   {
-    // Monaco's own ⌘. is Quick Fix, which the SQL language never offers.
     keybinding: KeyMod.CtrlCmd | KeyCode.Period,
     label: 'Statement actions',
     name: 'openStatementMenu',
@@ -243,7 +242,6 @@ const ghostText = (codeEditor: editor.IStandaloneCodeEditor) =>
 interface RunAnchor {
   top: number
   left: number
-  /** The caret's statement, matched against the last run by start and source. */
   start: number
   source: string
   suggestion: { left: number; top: number } | null

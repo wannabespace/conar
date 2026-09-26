@@ -37,7 +37,6 @@ const same = (a: string, b: string) => collator.compare(a, b) === 0
 export const findSchema = (catalog: SqlCatalog, name: string) =>
   catalog.schemas.find((schema) => same(schema.name, name))
 
-/** Unqualified names resolve through the default schema first, then anywhere. */
 export const locateTable = (
   catalog: SqlCatalog,
   name: string,

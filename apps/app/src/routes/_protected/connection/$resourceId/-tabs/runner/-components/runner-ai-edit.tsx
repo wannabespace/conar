@@ -339,7 +339,6 @@ export const useAiEdit = ({
     editorRef.current?.focus()
   }
 
-  /** Undoes only the AI's text; if the user has edited it since, their edit stays. */
   const revert = () => {
     const editor = editorRef.current
     const range = target()

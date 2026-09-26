@@ -51,7 +51,6 @@ export const withinStatement = (
     : reply
 }
 
-/** Ghost text offered for the text around the caret: `before` and `after` it at the time. */
 export interface GhostTextOffer {
   after: string
   before: string

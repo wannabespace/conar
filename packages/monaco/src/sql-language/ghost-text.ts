@@ -156,7 +156,6 @@ const neighbourhood = (
 export const GHOST_TEXT_SELECTOR =
   '.ghost-text-decoration, .ghost-text-decoration-preview, .ghost-text'
 
-/** Our ghost text is the one on screen, not the list's row preview. */
 const ghostTextLive = (
   codeEditor: editor.IStandaloneCodeEditor,
   model: editor.ITextModel

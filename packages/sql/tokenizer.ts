@@ -17,13 +17,11 @@ export interface Token {
   text: string
   start: number
   end: number
-  /** A string, comment or quoted identifier the input ended inside of. */
   unclosed?: true
   /** Quoted identifiers keep `identifier`; this marks them so lookups strip the quotes. */
   quoted?: true
 }
 
-/** Where a previous chunk of text ended, so tokenizing resumes mid-construct (Monaco feeds one line at a time). */
 interface OpenState {
   kind: 'comment' | 'string' | 'identifier'
   close: string

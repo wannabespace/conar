@@ -28,14 +28,12 @@ interface CompletionItem {
   snippet?: true
 }
 
-/** The column a value or operator at the caret applies to (`WHERE status = |`). */
 interface Subject {
   qualifier: string | null
   name: string
 }
 
 interface CompletionContext {
-  /** Text of the word under the caret up to the caret. */
   prefix: string
   replaceStart: number
   replaceEnd: number
@@ -51,12 +49,9 @@ interface CompletionContext {
     | 'any'
   /** What may follow a finished term, in order — filled when `expects` is `clause`. */
   clauses: string[]
-  /** Which clause the caret sits right after, when that changes what to offer first. */
   slot: 'select' | 'group-by' | 'join-on' | 'into' | null
   subject: Subject | null
-  /** Bare columns of the SELECT list, what GROUP BY usually repeats. */
   selected: string[]
-  /** Keywords insert in the case the user is already writing in. */
   keywordCase: 'upper' | 'lower'
   inLiteral: boolean
   scope: StatementScope

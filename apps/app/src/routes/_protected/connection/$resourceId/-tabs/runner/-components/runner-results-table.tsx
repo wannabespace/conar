@@ -78,7 +78,6 @@ export const RunnerResultsTable = ({
   rows,
   connectionType,
 }: {
-  /** Unique names, in the order the statement selected them. */
   columns: string[]
   rows: Record<string, unknown>[]
   connectionType: ConnectionType

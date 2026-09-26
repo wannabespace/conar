@@ -16,7 +16,6 @@ export interface TableRef {
 }
 
 export interface SqlSource {
-  /** The catalog as far as the cache knows it — columns stay `null` until a table's columns were fetched. */
   catalog: () => SqlCatalog
   complete: (
     input: { context: string; prefix: string; suffix: string },

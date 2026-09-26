@@ -25,7 +25,6 @@ import { runHistory } from './history'
 import type { RunnerTab } from './store'
 
 export interface RunnerStatement {
-  /** What is sent: the source, or a wrapped form of it such as `EXPLAIN …`. */
   text: string
   source: string
   start: number

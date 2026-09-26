@@ -13,7 +13,6 @@ export interface StatementScope {
   ctes: string[]
   /** Names given after a closing paren — subquery aliases, and harmlessly column aliases too. */
   derived: string[]
-  /** A FROM/JOIN source whose columns cannot be known: a subquery or a table function. */
   opaque: boolean
 }
 

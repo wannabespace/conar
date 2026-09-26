@@ -71,7 +71,6 @@ export interface QueryExecutor {
     txId: string
     ownerId?: string
   }) => Promise<void>
-  /** Stops a running query on the database; a no-op once it finished. */
   cancel: (args: { connectionString: string; queryId: string }) => Promise<void>
 }
 

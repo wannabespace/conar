@@ -139,14 +139,12 @@ const COMMON_TYPES = [
 ]
 
 export interface DialectSpec {
-  /** Characters that open a quoted identifier: `"` → `"`, `` ` `` → `` ` ``, `[` → `]`. */
   identifierQuotes: readonly string[]
   dollarQuotes: boolean
   /** Backslash escapes inside `'...'` (MySQL/ClickHouse); Postgres and SQL Server only double the quote. */
   backslashEscapes: boolean
   hashComments: boolean
   atVariables: boolean
-  /** Line holding only `GO` ends a batch (SQL Server). */
   goBatches: boolean
   /** `BEGIN … COMMIT` really runs as a transaction; ClickHouse's driver only fakes commit and rollback. */
   transactions: boolean
