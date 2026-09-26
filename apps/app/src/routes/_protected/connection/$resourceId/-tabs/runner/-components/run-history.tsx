@@ -59,10 +59,7 @@ export const RunHistoryButton = () => {
         History
       </PopoverTrigger>
       <PopoverContent align="end" padding="none" className="w-96">
-        <PopoverCommand
-          count={history.length}
-          searchPlaceholder="Search history"
-        >
+        <PopoverCommand searchPlaceholder="Search history">
           <CommandList>
             <ListEmpty icon={HistoryIcon}>
               {history.length === 0

@@ -66,10 +66,7 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
   return (
     <>
       <RemoveQueryDialog ref={removeDialogRef} />
-      <PopoverCommand
-        count={queries.length}
-        searchPlaceholder="Search saved queries"
-      >
+      <PopoverCommand searchPlaceholder="Search saved queries">
         <CommandList>
           <ListEmpty icon={Bookmark02Icon}>
             {queries.length === 0

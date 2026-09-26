@@ -13,28 +13,18 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 
-const SEARCH_FROM = 8
-
-// cmdk reads arrows from inside its root; without the search input nothing in the popup holds focus there.
-const focusOnMount = (node: HTMLElement | null) => node?.focus()
-
 export const PopoverCommand = ({
   children,
-  count,
   searchPlaceholder,
 }: {
   children: React.ReactNode
-  count: number
   searchPlaceholder: string
-}) => {
-  const searchable = count >= SEARCH_FROM
-  return (
-    <Command loop ref={searchable ? undefined : focusOnMount}>
-      {searchable && <CommandInput placeholder={searchPlaceholder} autoFocus />}
-      {children}
-    </Command>
-  )
-}
+}) => (
+  <Command loop>
+    <CommandInput placeholder={searchPlaceholder} autoFocus />
+    {children}
+  </Command>
+)
 
 export const ListEmpty = ({
   children,
