@@ -1,9 +1,10 @@
+import { Mistral } from '@mistralai/mistralai'
 import type { LanguageModelUsage } from 'ai'
 import { generateText } from 'ai'
-import { type } from 'arktype'
 
 import { env } from '../env'
 import { models } from '../models/list'
+import { usageTelemetry } from '../usage/record'
 import { MATCH_USER_STYLE, section } from './prompt'
 
 const CARET = '<CARET>'
@@ -54,24 +55,14 @@ const chatCompleteSql = async (data: CompleteSqlInput) => {
       section('TEXT BEFORE CARET', `${data.prefix}${CARET}`),
       section('TEXT AFTER CARET', `${CARET}${data.suffix}`),
     ].join('\n'),
-    telemetry: {
-      integrations: {
-        onLanguageModelCallEnd: ({ modelId, usage }) =>
-          data.onUsage(modelId, usage),
-      },
-    },
+    telemetry: usageTelemetry(data.onUsage),
   })
   return text
 }
 
 const FIM_MODEL = 'codestral-latest'
 
-const fimResponseType = type({
-  choices: type({ message: { content: 'string' } })
-    .array()
-    .atLeastLength(1),
-  usage: { completion_tokens: 'number', prompt_tokens: 'number' },
-})
+const mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
 
 const TABLE_LINE = /^(?<name>[^\s(]+)(?:\((?<columns>.*)\))?$/u
 
@@ -85,9 +76,9 @@ const schemaAsDdl = (context: string) =>
   })
 
 const fimCompleteSql = async (data: CompleteSqlInput) => {
-  const response = await fetch('https://api.mistral.ai/v1/fim/completions', {
-    body: JSON.stringify({
-      max_tokens: 200,
+  const { choices, usage } = await mistral.fim.complete(
+    {
+      maxTokens: 200,
       model: FIM_MODEL,
       prompt: [
         `-- Database: ${data.connectionType}`,
@@ -98,34 +89,28 @@ const fimCompleteSql = async (data: CompleteSqlInput) => {
       stop: ['\n\n'],
       suffix: data.suffix,
       temperature: 0,
-    }),
-    headers: {
-      authorization: `Bearer ${env.MISTRAL_API_KEY}`,
-      'content-type': 'application/json',
     },
-    method: 'POST',
-    signal: data.signal,
-  })
-  if (!response.ok) {
-    throw new Error(`Codestral fill-in-the-middle failed: ${response.status}`)
-  }
-  const { choices, usage } = fimResponseType.assert(await response.json())
+    { signal: data.signal }
+  )
+  const inputTokens = usage.promptTokens ?? 0
+  const outputTokens = usage.completionTokens ?? 0
   // Recording writes to the database; the keystroke's answer must not wait on it.
   void data.onUsage(FIM_MODEL, {
     inputTokenDetails: {
       cacheReadTokens: 0,
       cacheWriteTokens: 0,
-      noCacheTokens: usage.prompt_tokens,
+      noCacheTokens: inputTokens,
     },
-    inputTokens: usage.prompt_tokens,
+    inputTokens,
     outputTokenDetails: {
       reasoningTokens: 0,
-      textTokens: usage.completion_tokens,
+      textTokens: outputTokens,
     },
-    outputTokens: usage.completion_tokens,
-    totalTokens: usage.prompt_tokens + usage.completion_tokens,
+    outputTokens,
+    totalTokens: inputTokens + outputTokens,
   })
-  return choices[0]?.message.content ?? ''
+  const content = choices[0]?.message?.content
+  return typeof content === 'string' ? content : ''
 }
 
 export const completeSql = async (data: CompleteSqlInput) => {

@@ -18,6 +18,14 @@ export interface AiUsageRecord extends AiUsageScope {
   outputTokens: number
 }
 
+export const usageTelemetry = (
+  onUsage: (modelId: string, usage: LanguageModelUsage) => Promise<void>
+): TelemetryOptions => ({
+  integrations: {
+    onLanguageModelCallEnd: ({ modelId, usage }) => onUsage(modelId, usage),
+  },
+})
+
 export const createAiUsage = (
   onRecord: (record: AiUsageRecord) => Promise<void>
 ) => {
@@ -42,11 +50,7 @@ export const createAiUsage = (
   }
   return {
     record,
-    telemetry: (scope: AiUsageScope): TelemetryOptions => ({
-      integrations: {
-        onLanguageModelCallEnd: ({ modelId, usage }) =>
-          record(scope, modelId, usage),
-      },
-    }),
+    telemetry: (scope: AiUsageScope) =>
+      usageTelemetry((modelId, usage) => record(scope, modelId, usage)),
   }
 }

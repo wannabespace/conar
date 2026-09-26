@@ -10,6 +10,7 @@
     "@ai-sdk/google": "catalog:",
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/xai": "catalog:",
+    "@mistralai/mistralai": "catalog:",
     "@tamery/shared": "workspace:*",
     "ai": "catalog:",
     "ai-resumable-stream": "catalog:",
