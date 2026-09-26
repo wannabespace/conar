@@ -3,6 +3,7 @@ cleanupUnusedCatalogs: true
 minimumReleaseAgeExclude:
   - cn@0.2.6
   - motion-panels
+  - seitu@1.3.1
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -132,7 +133,7 @@ catalog:
   react-qr-code: ^2.2.0
   redis: ^6.2.1
   resend: ^6.25.0
-  seitu: ^0.16.1
+  seitu: ^1.3.1
   serve: ^14.2.6
   shadcn: ^4.20.1
   sonner: ^2.0.8

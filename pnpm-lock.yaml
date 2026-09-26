@@ -352,8 +352,8 @@ catalogs:
       specifier: ^6.25.0
       version: 6.25.0
     seitu:
-      specifier: ^0.16.1
-      version: 0.16.1
+      specifier: ^1.3.1
+      version: 1.3.1
     serve:
       specifier: ^14.2.6
       version: 14.2.6
@@ -754,7 +754,7 @@ importers:
         version: 19.3.0(react@19.3.0)
       seitu:
         specifier: 'catalog:'
-        version: 0.16.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
+        version: 1.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -1353,7 +1353,7 @@ importers:
         version: 19.3.0
       seitu:
         specifier: 'catalog:'
-        version: 0.16.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
+        version: 1.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
     devDependencies:
       '@tamery/configs':
         specifier: workspace:*
@@ -1462,7 +1462,7 @@ importers:
         version: 19.3.0(react@19.3.0)
       seitu:
         specifier: 'catalog:'
-        version: 0.16.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
+        version: 1.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -6621,8 +6621,8 @@ packages:
     resolution: {integrity: sha512-DjlFSM5Pk9cGcL0q5QXl66eGzx0N6szNgaswwc5ZphlBohjTVJSnGgI+rJVOgOi65qUoQnDZN4nDqi33udtydQ==}
     engines: {node: '>=6.0.0'}
 
-  fast-equals@6.0.2:
-    resolution: {integrity: sha512-sAjhj9ZhOxYCGiNMnZLaucOqf5ZeFnHNoKoAZiD9thhJ0N8RP85qJK759/97C/3L7NzzmGVB5uiX9AUpySZmUQ==}
+  fast-equals@6.0.4:
+    resolution: {integrity: sha512-JiBeR0k76FIahi9zAtQR7X1jgZDKLE+fs5S9ryjOGYZWZCOcm8QiwgeahkFvaboS3i6PkGBopRznHKuKhm9zpg==}
     engines: {node: '>=6.0.0'}
 
   fast-fifo@1.3.2:
@@ -8999,8 +8999,8 @@ packages:
   scheduler@0.28.0:
     resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
-  seitu@0.16.1:
-    resolution: {integrity: sha512-KlsBqKwZMyrtvp9gTbRZBe9V1hUGIevYRx6Ej6P+5LwSEmywS5xkW4m1T4OvD2I2t/t4fgqb5p9WOPcg7JIRQg==}
+  seitu@1.3.1:
+    resolution: {integrity: sha512-wBWTPuf0Ou3fvcm9lBqDwgQG2Au3DVXrELMxdbnuzalEahB2hMcKtm/2355NjxBfQyGUVVc7WrPIDKjj2nKHEQ==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -15552,7 +15552,7 @@ snapshots:
 
   fast-equals@5.4.1: {}
 
-  fast-equals@6.0.2: {}
+  fast-equals@6.0.4: {}
 
   fast-fifo@1.3.2: {}
 
@@ -18341,9 +18341,9 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  seitu@0.16.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14):
+  seitu@1.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14):
     dependencies:
-      fast-equals: 6.0.2
+      fast-equals: 6.0.4
     optionalDependencies:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
