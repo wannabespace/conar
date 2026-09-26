@@ -14,7 +14,7 @@ export type HistoryEntry = typeof entryType.infer
 
 const HISTORY_LIMIT = 200
 
-const storeOf = memoize((resourceId: string) =>
+const getResourceStore = memoize((resourceId: string) =>
   createWebStorageValue({
     defaultValue: [],
     key: `${resourceId}.history`,
@@ -29,17 +29,17 @@ export const runHistory = {
       .map((run) => ({ ...run, id: crypto.randomUUID() }))
       .toReversed()
     const sqls = new Set(runs.map((run) => run.sql))
-    storeOf(resourceId).set((history) =>
+    getResourceStore(resourceId).set((history) =>
       [...added, ...history.filter((entry) => !sqls.has(entry.sql))].slice(
         0,
         HISTORY_LIMIT
       )
     )
   },
-  clear: (resourceId: string) => storeOf(resourceId).set([]),
-  of: storeOf,
+  clear: (resourceId: string) => getResourceStore(resourceId).set([]),
+  get: getResourceStore,
   remove: (resourceId: string, id: string) =>
-    storeOf(resourceId).set((history) =>
+    getResourceStore(resourceId).set((history) =>
       history.filter((entry) => entry.id !== id)
     ),
 }

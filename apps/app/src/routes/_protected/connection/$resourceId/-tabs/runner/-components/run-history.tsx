@@ -35,7 +35,7 @@ export const RunHistoryButton = () => {
   const { connectionResource } = useRouteContext()
   const store = useRunnerPageStore()
   const { focus } = useRunnerActions()
-  const history = useSubscription(runHistory.of(connectionResource.id))
+  const history = useSubscription(runHistory.get(connectionResource.id))
   const [open, setOpen] = useState(false)
 
   const append = (sql: string) => {
