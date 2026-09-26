@@ -153,6 +153,7 @@ interface AppContextMenuProps {
     side?: 'top' | 'bottom' | 'left' | 'right'
     align?: 'start' | 'center' | 'end'
     className?: string
+    finalFocus?: () => void
   }
 }
 

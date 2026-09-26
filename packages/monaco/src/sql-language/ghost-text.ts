@@ -153,8 +153,19 @@ const neighbourhood = (
 }
 
 /** Monaco's classes for drawn ghost text; `-preview` is the variant drawn while the suggestion list is open. */
-export const GHOST_TEXT_SELECTOR =
+const GHOST_TEXT_SELECTOR =
   '.ghost-text-decoration, .ghost-text-decoration-preview, .ghost-text'
+
+export const drawnGhostTextElement = (
+  codeEditor: editor.IStandaloneCodeEditor
+) =>
+  [...(codeEditor.getDomNode()?.querySelectorAll(GHOST_TEXT_SELECTOR) ?? [])]
+    .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(({ rect }) => rect.width > 0)
+    .toSorted(
+      (a, b) => a.rect.bottom - b.rect.bottom || a.rect.right - b.rect.right
+    )
+    .at(-1)?.element ?? null
 
 const ghostTextLive = (
   codeEditor: editor.IStandaloneCodeEditor,

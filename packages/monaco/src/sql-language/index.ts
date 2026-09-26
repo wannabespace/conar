@@ -12,7 +12,7 @@ export {
   attachGhostTextEscape,
   bindSqlModel,
   dismissGhostText,
-  GHOST_TEXT_SELECTOR,
+  drawnGhostTextElement,
 } from './ghost-text'
 export { sqlLanguageIds } from './language'
 export type { SqlSource, TableRef } from './source'
