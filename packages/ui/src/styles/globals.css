@@ -348,7 +348,7 @@
 }
 
 @utility focus-ring {
-  @apply ring-ring/50 ring-3;
+  @apply ring-ring/50 ring-3 transition-none;
 }
 
 @utility invalid-ring {
