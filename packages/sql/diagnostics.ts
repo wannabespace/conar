@@ -1,5 +1,5 @@
-import type { SqlCatalog } from './catalog'
-import { findColumn, findSchema, findTable } from './catalog'
+import type { SqlCatalog, SqlColumn, SqlTable } from './catalog'
+import { findColumn, findEnum, findSchema, findTable } from './catalog'
 import type { DialectSpec } from './dialect'
 import type { StatementScope } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
@@ -345,6 +345,134 @@ const unqualifiedColumnDiagnostics = (
   })
 }
 
+const UUID_TYPE = /^(?:uuid|uniqueidentifier)$/iu
+// Keep as lenient as Postgres (braces, no hyphens, any version nibble) — stricter warns on values that run.
+const UUID_VALUE = /^\{?[\da-f]{8}(?:-?[\da-f]{4}){3}-?[\da-f]{12}\}?$/iu
+const INTEGER_TYPE =
+  /^(?:u?int\d*|integer|bigint|smallint|tinyint|mediumint)$/iu
+// Postgres 16 reads underscores and 0x/0o/0b prefixes in integer input.
+const INTEGER_VALUE =
+  /^\s*[+-]?(?:\d[\d_]*|0x[\da-f_]+|0o[0-7_]+|0b[01_]+)\s*$/iu
+const EQUALITY = new Set(['=', '<>', '!='])
+
+const columnBefore = (
+  tokens: Token[],
+  index: number,
+  scope: StatementScope,
+  catalog: SqlCatalog
+) => {
+  const token = tokens[index]
+  const qualifier = tokens[index - 2]
+  if (token?.kind !== 'identifier') {
+    return
+  }
+  const tables = isPunctuation(tokens[index - 1], '.')
+    ? [qualifier && resolveQualifier(scope, catalog, identifierName(qualifier))]
+    : scope.tables.map((ref) => findTable(catalog, ref.name, ref.schema))
+  for (const table of tables) {
+    const column = table && findColumn(catalog, table, identifierName(token))
+    if (table && column) {
+      return { column, table }
+    }
+  }
+}
+
+const literalMismatch = (
+  catalog: SqlCatalog,
+  table: SqlTable,
+  column: SqlColumn,
+  value: string
+) => {
+  const values = findEnum(catalog, table.name, column)?.values
+  if (values) {
+    return values.some((item) => item.toLowerCase() === value.toLowerCase())
+      ? undefined
+      : `one of ${values.map((item) => `'${item}'`).join(', ')}`
+  }
+  if (UUID_TYPE.test(column.type) && !UUID_VALUE.test(value)) {
+    return 'a valid UUID'
+  }
+  if (INTEGER_TYPE.test(column.type) && !INTEGER_VALUE.test(value)) {
+    return 'an integer'
+  }
+}
+
+const literalDiagnostics = (
+  tokens: Token[],
+  scope: StatementScope,
+  catalog: SqlCatalog
+): Diagnostic[] =>
+  tokens.flatMap((token, index): Diagnostic[] => {
+    const literal = tokens[index + 1]
+    if (
+      !EQUALITY.has(token.text) ||
+      literal?.kind !== 'string' ||
+      !literal.text.startsWith("'") ||
+      literal.unclosed
+    ) {
+      return []
+    }
+    const found = columnBefore(tokens, index - 1, scope, catalog)
+    if (!found) {
+      return []
+    }
+    const { column, table } = found
+    const expected = literalMismatch(
+      catalog,
+      table,
+      column,
+      literal.text.slice(1, -1).replaceAll("''", "'")
+    )
+    return expected
+      ? [
+          {
+            ...spanOf(literal),
+            message: `${literal.text} is not ${expected} for \`${column.name}\` (${column.type})`,
+            severity: 'warning',
+          },
+        ]
+      : []
+  })
+
+const CONDITION_CLAUSES = ['WHERE', 'ON', 'HAVING', 'WHEN']
+const CLAUSES = [
+  ...CONDITION_CLAUSES,
+  'SET',
+  'SELECT',
+  'FROM',
+  'VALUES',
+  'THEN',
+  'ELSE',
+  'DECLARE',
+  'BY',
+  'RETURNING',
+]
+
+// Only conditions: `SET col = NULL` and a parameter's `= NULL` default are assignments.
+const nullComparisonDiagnostics = ({ tokens }: Statement): Diagnostic[] =>
+  tokens.flatMap((token, index): Diagnostic[] => {
+    const next = tokens[index + 1]
+    if (
+      !next ||
+      !EQUALITY.has(token.text) ||
+      !isKeyword(next, 'NULL') ||
+      !isKeyword(
+        tokens.slice(0, index).findLast((item) => isKeyword(item, ...CLAUSES)),
+        ...CONDITION_CLAUSES
+      )
+    ) {
+      return []
+    }
+    return [
+      {
+        end: next.end,
+        message: `\`${token.text} NULL\` is never true — use \`IS ${token.text === '=' ? '' : 'NOT '}NULL\``,
+        severity: 'warning',
+        start: token.start,
+      },
+    ]
+  })
+
 const LOCK_STRENGTHS = new Set(['KEY', 'NO', 'SHARE', 'UPDATE'])
 
 const withoutLockingClauses = (tokens: Token[]) => {
@@ -383,6 +511,7 @@ const catalogDiagnostics = (
       })),
     ...qualifiedColumnDiagnostics(tokens, scope, catalog),
     ...unqualifiedColumnDiagnostics(tokens, scope, catalog),
+    ...literalDiagnostics(tokens, scope, catalog),
   ]
 }
 
@@ -399,6 +528,7 @@ export const diagnose = (
     ...statements.flatMap((statement) => [
       ...bracketDiagnostics(statement),
       ...starterDiagnostics(statement),
+      ...nullComparisonDiagnostics(statement),
       ...(catalog && catalog.schemas.length > 0
         ? catalogDiagnostics(statement, catalog)
         : []),

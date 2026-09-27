@@ -39,7 +39,7 @@ const MONACO_OPTIONS = {
   },
   lineNumbersMinChars: 3,
   // `other` defaults to 'offWhenInlineCompletions': the list would wait on the AI ghost-text request.
-  quickSuggestions: { comments: 'off', other: 'on', strings: 'off' },
+  quickSuggestions: { comments: 'off', other: 'on', strings: 'on' },
   quickSuggestionsDelay: 0,
   renderLineHighlight: 'none',
   scrollBeyondLastLine: false,

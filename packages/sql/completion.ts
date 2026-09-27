@@ -108,7 +108,7 @@ const valueItems = (
     return ordered(
       enumeration.values.map((value) => ({
         detail: `enum ${enumeration.name}`,
-        insertText: `'${value}'`,
+        insertText: `'${value.replaceAll("'", "''")}'`,
         label: value,
       })),
       'enum'
@@ -134,14 +134,19 @@ export const completionItems = (
   catalog: SqlCatalog,
   dialect: DialectSpec
 ): CompletionItem[] => {
+  const resolved = resolveSubject(context.subject, context.scope, catalog)
   if (context.inLiteral) {
-    return []
+    return valueItems(resolved, catalog)
+      .filter((item) => item.kind === 'enum')
+      .map((item) => ({
+        ...item,
+        insertText: item.label.replaceAll("'", "''"),
+      }))
   }
   if (context.qualifier.length > 0) {
     return qualifiedItems(context, catalog)
   }
 
-  const resolved = resolveSubject(context.subject, context.scope, catalog)
   const items: CompletionItem[] = []
 
   switch (context.expects) {

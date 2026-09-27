@@ -9,7 +9,7 @@ import { dialects } from './dialect'
 const pg = dialects[ConnectionType.Postgres]
 const catalog: SqlCatalog = {
   defaultSchema: 'public',
-  enums: [],
+  enums: [{ name: 'status', values: ['active', "o'clock"] }],
   schemas: [
     {
       name: 'public',
@@ -19,6 +19,8 @@ const catalog: SqlCatalog = {
             { name: 'id', nullable: false, type: 'int' },
             { name: 'email', nullable: true, type: 'text' },
             { name: 'created_at', nullable: false, type: 'timestamptz' },
+            { name: 'token', nullable: true, type: 'uuid' },
+            { name: 'status', nullable: false, type: 'status' },
           ],
           kind: 'table',
           name: 'users',
@@ -140,6 +142,60 @@ describe('diagnose', () => {
         true
       )
     ).toEqual(['warning: Unknown table `fresh`'])
+  })
+
+  it('flags a string compared with a UUID column that no engine would parse', () => {
+    expect(
+      messages(
+        "SELECT * FROM users u WHERE token = '123' OR u.token <> 'abc' AND email = '123'",
+        true
+      )
+    ).toEqual([
+      "warning: '123' is not a valid UUID for `token` (uuid)",
+      "warning: 'abc' is not a valid UUID for `token` (uuid)",
+    ])
+    expect(
+      messages(
+        "SELECT * FROM users WHERE token = '11111111-1111-1111-1111-111111111111' OR token = '{A0EEBC999C0B4EF8BB6D6BB9BD380A11}'",
+        true
+      )
+    ).toEqual([])
+  })
+
+  it('flags a string outside an enum or not an integer', () => {
+    expect(
+      messages(
+        "SELECT * FROM users WHERE status = 'actve' OR status = 'ACTIVE' OR status = 'o''clock' OR id = 'abc' OR id = ' 1_000 ' OR email = 'abc'",
+        true
+      )
+    ).toEqual([
+      "warning: 'actve' is not one of 'active', 'o'clock' for `status` (status)",
+      "warning: 'abc' is not an integer for `id` (int)",
+    ])
+  })
+
+  it('flags `= NULL` in conditions, not in assignments', () => {
+    expect(
+      messages('UPDATE users SET email = NULL WHERE email = NULL OR id <> NULL')
+    ).toEqual([
+      'warning: `= NULL` is never true — use `IS NULL`',
+      'warning: `<> NULL` is never true — use `IS NOT NULL`',
+    ])
+    expect(
+      messages(
+        'SELECT CASE WHEN a = NULL THEN 1 END FROM t JOIN u ON u.a = NULL'
+      )
+    ).toEqual([
+      'warning: `= NULL` is never true — use `IS NULL`',
+      'warning: `= NULL` is never true — use `IS NULL`',
+    ])
+    expect(
+      diagnose(
+        'CREATE PROCEDURE p @a int = NULL AS SELECT 1',
+        dialects[ConnectionType.MSSQL],
+        null
+      )
+    ).toEqual([])
   })
 
   it('matches Postgres names exactly once unquoted ones fold', () => {

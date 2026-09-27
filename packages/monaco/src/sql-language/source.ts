@@ -19,7 +19,8 @@ export interface SqlSource {
     signal: AbortSignal
   ) => Promise<string>
   ghostTextEnabled: () => boolean
-  loadColumns: (refs: TableRef[]) => Promise<unknown>
+  /** Fetches the catalog and the columns of `refs` that are not cached; `undefined` when nothing is missing. */
+  load: (refs: TableRef[]) => Promise<unknown> | undefined
   onCatalogChange: (listener: () => void) => () => void
   type: ConnectionType
 }
@@ -48,6 +49,6 @@ export const catalogSummaryFor = async (
   if (!source) {
     return ''
   }
-  await silently(() => source.loadColumns(tablesIn(sql, source.type)))
+  await silently(() => source.load(tablesIn(sql, source.type)))
   return catalogSummary(source.catalog())
 }

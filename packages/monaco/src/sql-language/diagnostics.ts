@@ -22,7 +22,7 @@ export const attachSqlDiagnostics = (
     }
     const text = model.getValue()
     const catalog = source.catalog()
-    silently(() => source.loadColumns(tablesIn(text, source.type)))
+    silently(() => source.load(tablesIn(text, source.type)))
     const markers = diagnose(text, dialect, catalog).map((diagnostic) => ({
       ...rangeOf(model, diagnostic.start, diagnostic.end),
       message: diagnostic.message,

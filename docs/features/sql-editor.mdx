@@ -19,13 +19,13 @@ Write as many statements as you like, separated by `;`. The statement under the 
 - tables after `FROM`, `JOIN`, `INTO` and `UPDATE`; columns of the tables in scope after `SELECT`, `WHERE`, `ON`, `SET`, `ORDER BY` — qualified with their alias once a query reads several tables;
 - the next clause after a finished part (`WHERE`, `JOIN`, `GROUP BY`, `LIMIT` after a table; `AND`, `OR`, `ORDER BY` after a condition);
 - operators after a column in a condition, most likely first: `= TRUE` / `= FALSE` for a boolean, `LIKE` for text, `IS NULL` for a nullable column;
-- the values a column takes after `=`, `IN (` or `BETWEEN`: enum members quoted, `TRUE`/`FALSE` for booleans;
+- the values a column takes after `=`, `IN (` or `BETWEEN`: enum members quoted (or bare once you are inside the quotes), `TRUE`/`FALSE` for booleans;
 - `*` and the full column list after `SELECT`, the selected columns after `GROUP BY`, `p.user_id = u.id` guesses after `JOIN … ON`, a `(columns) VALUES (…)` template after `INSERT INTO table`, and `10`/`100`/`1000` after `LIMIT`;
 - columns after `alias.`, tables after `schema.`, keywords and functions everywhere else.
 
 Keywords insert in the case you are already writing in: type `select … from users ` and you get `where`, not `WHERE`.
 
-**Diagnostics** show up as you type: unterminated strings and comments, unbalanced brackets, a misspelled statement verb, and — against your live schema — tables and qualified columns that do not exist.
+**Diagnostics** show up as you type: unterminated strings and comments, unbalanced brackets, a misspelled statement verb, and — against your live schema — tables and qualified columns that do not exist. Comparisons that can never match are flagged too: `= NULL`, a value outside a column's enum, and a string that is not a valid UUID or integer for its column.
 
 **Ghost text** (subscription): after a short pause the AI proposes how to finish the statement, in grey after the caret. <kbd>Tab</kbd> accepts it.
 

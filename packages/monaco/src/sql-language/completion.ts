@@ -1,7 +1,8 @@
 import { silently } from '@tamery/shared/utils'
 import type { CompletionKind, DialectSpec } from '@tamery/sql'
-import { completionContext, completionItems, findTable } from '@tamery/sql'
-import { languages } from 'monaco-editor'
+import { completionContext, completionItems } from '@tamery/sql'
+import type { IPosition } from 'monaco-editor'
+import { editor, languages } from 'monaco-editor'
 
 import type { TableRef } from './source'
 import { boundSources, EMPTY_CATALOG, rangeOf } from './source'
@@ -23,6 +24,31 @@ const ASK_GHOST_TEXT = {
   title: 'Suggest',
 }
 
+const resuggestOnceLoaded = async (
+  loading: Promise<unknown>,
+  model: editor.ITextModel,
+  position: IPosition
+) => {
+  const version = model.getVersionId()
+  try {
+    await loading
+  } catch {
+    return
+  }
+  if (model.getVersionId() !== version) {
+    return
+  }
+  editor
+    .getEditors()
+    .find(
+      (codeEditor) =>
+        codeEditor.getModel() === model &&
+        codeEditor.hasTextFocus() &&
+        codeEditor.getPosition()?.equals(position)
+    )
+    ?.trigger('sql-catalog', 'editor.action.triggerSuggest', { auto: true })
+}
+
 export const registerCompletion = (id: string, dialect: DialectSpec) =>
   languages.registerCompletionItemProvider(id, {
     provideCompletionItems: (model, position, trigger) => {
@@ -31,16 +57,19 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       const context = completionContext(text, offset, dialect)
       const openedByGap =
         trigger.triggerCharacter === ' ' || trigger.triggerCharacter === '('
-      if (openedByGap && context.expects === 'any') {
+      if (
+        (openedByGap && context.expects === 'any') ||
+        (trigger.triggerCharacter === "'" && !context.inLiteral)
+      ) {
         return { suggestions: [] }
       }
       const source = boundSources.get(model)
       let catalog = EMPTY_CATALOG
-      let missingColumns = false
+      let loading: Promise<unknown> | undefined
       if (source) {
         catalog = source.catalog()
-        // Never wait on the network: answer from the cache, start loading what a column
-        // position needs, and mark the list incomplete so the next keystroke asks again.
+        // Never wait on the network: answer from the cache, load what is missing, and ask
+        // again once it lands or on the next keystroke.
         const [first, second] = context.qualifier
         const refs: TableRef[] = [...context.scope.tables]
         if (first !== undefined) {
@@ -50,14 +79,7 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
               : { name: second, schema: first }
           )
         }
-        missingColumns =
-          (context.expects === 'column' || first !== undefined) &&
-          refs.some(
-            (ref) => findTable(catalog, ref.name, ref.schema)?.columns === null
-          )
-        if (missingColumns) {
-          void silently(() => source.loadColumns(refs))
-        }
+        loading = source.load(refs)
       }
       const items = completionItems(context, catalog, dialect)
       // In a value slot (`col = `, `IN (`) the gap opens the list only for the values the column
@@ -68,11 +90,15 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
         context.subject &&
         !items.some((item) => item.kind === 'enum' || item.kind === 'value')
       ) {
-        return { incomplete: missingColumns, suggestions: [] }
+        void silently(() => loading)
+        return { incomplete: loading !== undefined, suggestions: [] }
+      }
+      if (loading) {
+        void resuggestOnceLoaded(loading, model, position)
       }
       const range = rangeOf(model, context.replaceStart, context.replaceEnd)
       return {
-        incomplete: missingColumns,
+        incomplete: loading !== undefined,
         suggestions: items.map((item) => ({
           command: ASK_GHOST_TEXT,
           detail: item.detail,
@@ -87,5 +113,5 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
         })),
       }
     },
-    triggerCharacters: ['.', ' ', '('],
+    triggerCharacters: ['.', ' ', '(', "'"],
   })

@@ -116,6 +116,19 @@ describe('completion', () => {
     )
   })
 
+  it('offers enum values inside the quotes, replacing only what they hold', () => {
+    const empty = complete("SELECT * FROM users WHERE status = ''", 36)
+    expect(empty.inserts).toEqual(['active', 'banned'])
+    const typed = complete("SELECT * FROM users u WHERE u.status = 'ba'", 42)
+    expect(typed.context.prefix).toBe('ba')
+    expect([typed.context.replaceStart, typed.context.replaceEnd]).toEqual([
+      40, 42,
+    ])
+    expect(
+      complete("SELECT * FROM users WHERE status = 'ac").context.replaceEnd
+    ).toBe(38)
+  })
+
   it('guesses join conditions from column names', () => {
     expect(complete('SELECT * FROM users u JOIN posts p ON ').labels[0]).toBe(
       'p.user_id = u.id'

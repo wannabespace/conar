@@ -1,4 +1,4 @@
-import type { SqlSource } from '@tamery/monaco/sql-language'
+import type { SqlSource, TableRef } from '@tamery/monaco/sql-language'
 import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
@@ -68,6 +68,37 @@ export const sqlSourceFor = (
   connectionType: ConnectionType
 ): SqlSource => {
   const catalog = () => sqlCatalogOf(connectionResource, connectionType)
+  const tablesOptions = resourceTablesAndSchemasQueryOptions({
+    connectionResource,
+  })
+  const enumsOptions = resourceEnumsQueryOptions({ connectionResource })
+  const uncachedColumns = (refs: TableRef[]) => {
+    const current = catalog()
+    return refs.flatMap((ref) => {
+      // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
+      const found = locateTable(current, ref.name, ref.schema)
+      return found?.table.columns === null
+        ? [
+            resourceTableColumnsQueryOptions({
+              connectionResource,
+              schema: found.schema,
+              table: found.table.name,
+            }),
+          ]
+        : []
+    })
+  }
+  const loadMissing = async (refs: TableRef[]) => {
+    await Promise.all([
+      queryClient.ensureQueryData(tablesOptions),
+      queryClient.ensureQueryData(enumsOptions),
+    ])
+    await Promise.all(
+      uncachedColumns(refs).map((options) =>
+        queryClient.ensureQueryData(options)
+      )
+    )
+  }
   return {
     catalog,
     complete: (input, signal) =>
@@ -76,26 +107,12 @@ export const sqlSourceFor = (
         { context: { silent: true }, signal }
       ),
     ghostTextEnabled: () => appStore.get().isOnline && hasSubscription(),
-    loadColumns: (refs) => {
-      const current = catalog()
-      return Promise.all(
-        refs.flatMap((ref) => {
-          // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
-          const found = locateTable(current, ref.name, ref.schema)
-          return found?.table.columns === null
-            ? [
-                queryClient.ensureQueryData(
-                  resourceTableColumnsQueryOptions({
-                    connectionResource,
-                    schema: found.schema,
-                    table: found.table.name,
-                  })
-                ),
-              ]
-            : []
-        })
-      )
-    },
+    load: (refs) =>
+      [tablesOptions, enumsOptions].every(
+        (options) => queryClient.getQueryData(options.queryKey) !== undefined
+      ) && uncachedColumns(refs).length === 0
+        ? undefined
+        : loadMissing(refs),
     onCatalogChange: (listener) =>
       queryClient.getQueryCache().subscribe((event) => {
         if (

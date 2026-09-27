@@ -77,8 +77,8 @@ export const wordAt = (tokens: Token[], offset: number) =>
       WORD_KINDS.has(token.kind) && token.start < offset && offset <= token.end
   )
 
-export const insideLiteral = (tokens: Token[], offset: number) =>
-  tokens.some(
+export const literalAt = (tokens: Token[], offset: number) =>
+  tokens.find(
     (token) =>
       (token.kind === 'string' || token.kind === 'comment') &&
       token.start < offset &&
@@ -102,3 +102,12 @@ export const qualifierBefore = (before: Token[]) => {
   }
   return { cursor, qualifier }
 }
+
+/** Where a value typed inside `'…'` goes: between the quotes. */
+export const quotedContents = (literal: Token | undefined) =>
+  literal?.kind === 'string' && literal.text.startsWith("'")
+    ? {
+        end: literal.end - (literal.unclosed ? 0 : 1),
+        start: literal.start + 1,
+      }
+    : undefined

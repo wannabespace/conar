@@ -1,6 +1,7 @@
 import type { Subject } from './cursor'
 import {
-  insideLiteral,
+  literalAt,
+  quotedContents,
   qualifierBefore,
   selectedColumns,
   subjectAt,
@@ -174,6 +175,15 @@ const slotAfter = (
   return null
 }
 
+const subjectBefore = (
+  before: Token[],
+  cursor: number,
+  expects: CompletionContext['expects']
+) =>
+  expects === 'operator'
+    ? subjectAt(before, cursor)
+    : valueSubject(before, cursor)
+
 export const completionContext = (
   text: string,
   offset: number,
@@ -190,9 +200,12 @@ export const completionContext = (
     : { ctes: [], derived: [], opaque: false, tables: [] }
 
   const word = wordAt(tokens, offset)
-  const inLiteral = insideLiteral(tokens, offset)
+  const literal = literalAt(tokens, offset)
+  const quoted = quotedContents(literal)
   const before = tokens.filter(
-    (token) => token.kind !== 'comment' && token.end <= (word?.start ?? offset)
+    (token) =>
+      token.kind !== 'comment' &&
+      token.end <= (literal?.start ?? word?.start ?? offset)
   )
 
   const { cursor, qualifier } = qualifierBefore(before)
@@ -216,13 +229,17 @@ export const completionContext = (
     expects = 'operator'
   }
 
-  const prefix = word ? text.slice(word.start, offset) : ''
+  const replace = quoted ?? {
+    end: word?.end ?? offset,
+    start: word?.start ?? offset,
+  }
+  const prefix = text.slice(replace.start, offset)
   const caseSample = prefix || lastKeyword?.text || ''
 
   return {
     clauses,
     expects,
-    inLiteral,
+    inLiteral: literal !== undefined,
     keywordCase:
       caseSample === caseSample.toLowerCase() &&
       caseSample !== caseSample.toUpperCase()
@@ -230,14 +247,11 @@ export const completionContext = (
         : 'upper',
     prefix,
     qualifier,
-    replaceEnd: word?.end ?? offset,
-    replaceStart: word?.start ?? offset,
+    replaceEnd: replace.end,
+    replaceStart: replace.start,
     scope,
     selected: selectedColumns(statementTokens),
     slot: slotAfter(previous, beforePrevious, clause, expects),
-    subject:
-      expects === 'operator'
-        ? subjectAt(before, cursor)
-        : valueSubject(before, cursor),
+    subject: literal && !quoted ? null : subjectBefore(before, cursor, expects),
   }
 }
