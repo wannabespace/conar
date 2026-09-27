@@ -1,6 +1,5 @@
 import { handleQueryError } from '.'
 
-/** Keyed by connection too, so cancelling needs access to the connection that runs the query, not just its id. */
 const running = new Map<string, () => Promise<unknown>>()
 
 const key = (connectionString: string, queryId: string) =>
