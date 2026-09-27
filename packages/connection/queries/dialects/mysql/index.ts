@@ -12,6 +12,7 @@ export const query = {
     async ({
       accessMode,
       connectionString,
+      isolationLevel,
       ownerId,
     }: {
       connectionString: string
@@ -21,7 +22,12 @@ export const query = {
       const connection = await pool.getConnection()
 
       try {
-        // `isolationLevel` is ignored: MySQL's START TRANSACTION cannot carry one.
+        // MySQL's START TRANSACTION cannot carry an isolation level; SET TRANSACTION applies it to the next one.
+        if (isolationLevel) {
+          await connection.query(
+            `SET TRANSACTION ISOLATION LEVEL ${isolationLevel}`
+          )
+        }
         await connection.query(
           accessMode ? `START TRANSACTION ${accessMode}` : 'START TRANSACTION'
         )

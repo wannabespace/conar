@@ -35,7 +35,7 @@ Every app's entry imports `@tamery/shared/arktype-config` first. ArkType scopes 
 
 ## Connection routes
 
-Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the active tab when it still exists) and `$resourceId/$tabId.tsx` switching on parsed tab type; the layout owns navigator, tab bar and query logger. Runner state is per **tab** (`runnerPageStore({ resourceId, tabId })` via `RunnerTabContext`), never off the resource store. The visualizer has no page store — its state is keyed by resource id alone. **Keep `visualizerViewports` optional**: seitu repairs schema-invalid stored values against defaults and drops keys whose stored `typeof` differs, so adding a *required* key to `connectionResourceType` silently resets tabs state for existing users.
+Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the active tab when it still exists) and `$resourceId/$tabId.tsx` switching on parsed tab type; the layout owns navigator, tab bar and query logger. Runner state is per **tab** (`runnerPageStore({ resourceId, tabId })` via `RunnerTabContext`), never off the resource store. The visualizer has no page store — its state is keyed by resource id alone. A new key on `connectionResourceType` can be required: seitu repairs a schema-invalid stored value by filling missing keys from the defaults and keeping every stored key whose `typeof` matches, so existing tabs survive. Changing an existing key's `typeof` does drop that key.
 
 ## Connection introspection queries
 

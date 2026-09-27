@@ -33,9 +33,10 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { renderWithRoot } from '@tamery/ui/lib/render'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { editor as monacoEditor, Range } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createElementSize } from 'seitu/web'
 import { toast } from 'sonner'
@@ -56,32 +57,38 @@ const PastedImage = ({
 }: {
   image: File
   onRemove: () => void
-}) => {
-  const url = useMemo(() => URL.createObjectURL(image), [image])
-  useEffect(() => () => URL.revokeObjectURL(url), [url])
-
-  return (
-    <Attachment size="xs" className="max-w-52">
-      <AttachmentMedia variant="image">
-        <img data-mask src={url} alt="" />
-      </AttachmentMedia>
-      <AttachmentContent>
-        <Tooltip>
-          <TooltipTrigger render={<AttachmentTitle data-mask />}>
-            {image.name}
-          </TooltipTrigger>
-          <TooltipContent data-mask>{image.name}</TooltipContent>
-        </Tooltip>
-        <AttachmentDescription>{fileSize(image.size)}</AttachmentDescription>
-      </AttachmentContent>
-      <AttachmentActions>
-        <AttachmentAction aria-label="Remove image" onClick={onRemove}>
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-        </AttachmentAction>
-      </AttachmentActions>
-    </Attachment>
-  )
-}
+}) => (
+  <Attachment size="xs" className="max-w-52">
+    <AttachmentMedia variant="image">
+      <img
+        data-mask
+        alt=""
+        ref={(img) => {
+          if (!img) {
+            return
+          }
+          const url = URL.createObjectURL(image)
+          img.src = url
+          return () => URL.revokeObjectURL(url)
+        }}
+      />
+    </AttachmentMedia>
+    <AttachmentContent>
+      <Tooltip>
+        <TooltipTrigger render={<AttachmentTitle data-mask />}>
+          {image.name}
+        </TooltipTrigger>
+        <TooltipContent data-mask>{image.name}</TooltipContent>
+      </Tooltip>
+      <AttachmentDescription>{fileSize(image.size)}</AttachmentDescription>
+    </AttachmentContent>
+    <AttachmentActions>
+      <AttachmentAction aria-label="Remove image" onClick={onRemove}>
+        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+      </AttachmentAction>
+    </AttachmentActions>
+  </Attachment>
+)
 
 const RejectButton = ({
   label,
@@ -113,6 +120,23 @@ const AiEditZone = ({
   const [form, setForm] = useState<HTMLFormElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const resize = useEffectEvent(onResize)
+
+  useHotkeys(
+    [
+      { callback: onClose, hotkey: 'Escape' },
+      {
+        callback: (event) => {
+          if (!event.isComposing) {
+            event.preventDefault()
+            form?.requestSubmit()
+          }
+        },
+        hotkey: 'Enter',
+        options: { preventDefault: false },
+      },
+    ],
+    { ignoreInputs: false, target: inputRef }
+  )
 
   useEffect(() => {
     if (phase.kind === 'prompt') {
@@ -197,20 +221,6 @@ const AiEditZone = ({
                   ...fitting.map((file) => ({ file, id: crypto.randomUUID() })),
                 ].slice(0, AI_SQL_LIMITS.images)
               )
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                event.stopPropagation()
-                onClose()
-              }
-              if (
-                event.key === 'Enter' &&
-                !event.shiftKey &&
-                !event.nativeEvent.isComposing
-              ) {
-                event.preventDefault()
-                form?.requestSubmit()
-              }
             }}
           />
           <div className="pointer-events-none absolute top-2.25 left-2.5 flex">
