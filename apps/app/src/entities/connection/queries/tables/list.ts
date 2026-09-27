@@ -143,6 +143,8 @@ export const resourceTablesAndSchemasQueryOptions = ({
   connectionResource: ConnectionResource
 }) =>
   queryOptions({
+    // The SQL editor's catalog reads this from the cache while nothing may observe it.
+    gcTime: Number.POSITIVE_INFINITY,
     // The key changes only between resources, so the global keepPreviousData would show the previous connection's tables.
     placeholderData: undefined,
     queryFn: async () => {

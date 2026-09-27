@@ -326,6 +326,8 @@ export const resourceTableColumnsQueryOptions = ({
   schema: string
 }) =>
   queryOptions({
+    // The SQL editor's catalog reads this from the cache while nothing may observe it.
+    gcTime: Number.POSITIVE_INFINITY,
     queryFn: async () =>
       resourceTableColumnsQuery({ schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)

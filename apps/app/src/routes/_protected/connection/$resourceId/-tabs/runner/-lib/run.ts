@@ -13,6 +13,9 @@ import type { ConnectionResource } from '~/entities/connection/core/sync'
 import type { ResultSet } from '~/entities/connection/queries/connection/custom'
 import { customQuery } from '~/entities/connection/queries/connection/custom'
 import { transactionQuery } from '~/entities/connection/queries/connection/transaction'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
+import { resourceColumnsQueryKey } from '~/entities/connection/queries/tables/columns'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import type { QueryParams } from '~/entities/connection/runtime/query'
 import {
   cancelQuery,
@@ -235,6 +238,20 @@ export const runStatements = async ({
   ) {
     void queryClient.invalidateQueries({
       queryKey: ['connection-resource', connectionResource.id],
+    })
+    // Invalidation refetches only what is on screen; the editor's catalog is usually not.
+    for (const options of [
+      resourceTablesAndSchemasQueryOptions({ connectionResource }),
+      resourceEnumsQueryOptions({ connectionResource }),
+    ]) {
+      void queryClient.refetchQueries({
+        queryKey: options.queryKey,
+        type: 'inactive',
+      })
+    }
+    queryClient.removeQueries({
+      queryKey: resourceColumnsQueryKey({ connectionResource }),
+      type: 'inactive',
     })
   }
 
