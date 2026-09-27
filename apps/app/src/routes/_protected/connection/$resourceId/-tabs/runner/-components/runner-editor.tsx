@@ -12,6 +12,8 @@ import type { RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import { sqlSourceFor } from '~/entities/connection/sql-source'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
@@ -104,6 +106,16 @@ export const RunnerEditor = ({
         : anchor
     )
   )
+
+  // The editor's catalog reads these from the cache; observing them keeps them cached and refetched on invalidation.
+  useQuery({
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
+    throwOnError: false,
+  })
+  useQuery({
+    ...resourceEnumsQueryOptions({ connectionResource }),
+    throwOnError: false,
+  })
 
   useEffect(() => {
     editorRef.current?.focus()

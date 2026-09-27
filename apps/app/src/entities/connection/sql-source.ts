@@ -67,10 +67,6 @@ export const sqlSourceFor = (
   connectionResource: ConnectionResource,
   connectionType: ConnectionType
 ): SqlSource => {
-  queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
-  queryClient.prefetchQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource })
-  )
   const catalog = () => sqlCatalogOf(connectionResource, connectionType)
   return {
     catalog,
