@@ -3,7 +3,8 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { SqlCatalog } from './catalog'
-import { completionContext, completionItems } from './completion'
+import { completionItems } from './completion'
+import { completionContext } from './completion-context'
 import { dialects } from './dialect'
 
 const pg = dialects[ConnectionType.Postgres]

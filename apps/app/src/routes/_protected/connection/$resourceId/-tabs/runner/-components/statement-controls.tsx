@@ -25,8 +25,8 @@ import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
 
-import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppMenuButton } from '~/components/app-context-menu'
+import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/entities/connection/capabilities'
 
 import type { RunnerActions } from '../-lib/actions'

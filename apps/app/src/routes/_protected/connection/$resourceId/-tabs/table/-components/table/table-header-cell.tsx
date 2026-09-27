@@ -30,8 +30,8 @@ import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
+import type { AppMenuNode } from '~/components/app-menu'
 import type {
   Column,
   ColumnHandlers,

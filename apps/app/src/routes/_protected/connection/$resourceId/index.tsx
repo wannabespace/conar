@@ -18,7 +18,7 @@ import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/quer
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { parseTabId, tableTabId } from '~/entities/connection/store/tabs/ids'
 
-import { tableTypeIcon } from './-components/navigator/tables-list'
+import { tableTypeIcon } from './-components/navigator/tree-row'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
