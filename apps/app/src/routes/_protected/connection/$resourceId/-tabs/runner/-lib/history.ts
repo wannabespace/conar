@@ -28,12 +28,8 @@ export const runHistory = {
     const added = runs
       .map((run) => ({ ...run, id: crypto.randomUUID() }))
       .toReversed()
-    const sqls = new Set(runs.map((run) => run.sql))
     getResourceStore(resourceId).set((history) =>
-      [...added, ...history.filter((entry) => !sqls.has(entry.sql))].slice(
-        0,
-        HISTORY_LIMIT
-      )
+      [...added, ...history].slice(0, HISTORY_LIMIT)
     )
   },
   clear: (resourceId: string) => getResourceStore(resourceId).set([]),
