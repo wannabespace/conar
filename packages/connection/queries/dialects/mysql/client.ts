@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 
-import { tries } from '@tamery/shared/tries'
+import { Result } from 'better-result'
 import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
@@ -13,7 +13,17 @@ export const mysql2 = createRequire(import.meta.url)(
   'mysql2/promise'
 ) as typeof mysql2Promise
 
-export const getPool = memoize((connectionString: string) => {
+const connect = (conf: PoolOptions) =>
+  Result.tryPromise({
+    catch: (error) => error,
+    try: async () => {
+      const pool = mysql2.createPool(conf)
+      await pool.query('SELECT 1')
+      return { conf, pool }
+    },
+  })
+
+export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
   const conf: PoolOptions = {
@@ -24,20 +34,17 @@ export const getPool = memoize((connectionString: string) => {
   }
   const hasSsl = conf.ssl !== undefined
 
-  return tries(
-    async () => {
-      const pool = mysql2.createPool(conf)
-      await pool.query('SELECT 1')
-      return { conf, pool }
-    },
-    !hasSsl &&
-      (async ({ previousError }) => {
-        const fallback = { ...conf, ssl: defaultSSLConfig }
-        const pool = mysql2.createPool(fallback)
-        await pool.query('SELECT 1').catch(() => {
-          throw previousError
-        })
-        return { conf: fallback, pool }
+  const direct = await connect(conf)
+  const result = hasSsl
+    ? direct
+    : await direct.tryRecoverAsync(async (error) => {
+        const fallback = await connect({ ...conf, ssl: defaultSSLConfig })
+        return fallback.mapError(() => error)
       })
-  )
+
+  if (result.isErr()) {
+    throw result.error
+  }
+
+  return result.value
 })
