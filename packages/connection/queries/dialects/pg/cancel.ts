@@ -19,8 +19,7 @@ export const backendPid = async (client: PoolClient) => {
   return pid
 }
 
-/** The pool holds one connection and it is busy, so the cancel request needs its own. */
-export const cancelBackend = async (pool: Pool, pid: number | undefined) => {
+export const cancelBackend = async (pool: Pool, pid?: number) => {
   if (pid === undefined) {
     return
   }
