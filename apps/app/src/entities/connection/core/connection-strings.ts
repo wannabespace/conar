@@ -2,7 +2,7 @@ import { isLocalhostConnectionString } from '@tamery/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import type { Collection } from '@tanstack/react-db'
+import type { Collection, TransactionWithMutations } from '@tanstack/react-db'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { toast } from 'sonner'
 
@@ -42,7 +42,11 @@ type ConnectionStringsUtils = {
 export type ConnectionStringsCollection = Collection<
   ConnectionString,
   string,
-  ConnectionStringsUtils
+  ConnectionStringsUtils & {
+    acceptMutations: (
+      transaction: TransactionWithMutations
+    ) => Promise<void> | void
+  }
 >
 
 const preserveLocalPassword = async (

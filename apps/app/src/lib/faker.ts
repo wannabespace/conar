@@ -3,7 +3,9 @@ import { uppercaseFirst } from '@tamery/shared/utils'
 
 export const generateRandomName = () => {
   const color = faker.color.human()
-  const animalKeys = Object.keys(faker.animal) as (keyof typeof faker.animal)[]
+  const animalKeys = (
+    Object.keys(faker.animal) as (keyof typeof faker.animal)[]
+  ).filter((key) => typeof faker.animal[key] === 'function')
   const categories = [
     () => faker.animal.type(),
     () => faker.animal[faker.helpers.arrayElement(animalKeys)](),
