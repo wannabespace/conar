@@ -1,49 +1,25 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
+import { dropTableStatement } from './shape'
 
 export const dropTableQuery = memoize(
-  ({
-    table,
-    schema,
-    cascade,
-  }: {
-    table: string
-    schema: string
-    cascade: boolean
-  }) =>
+  (target: { table: string; schema: string; cascade: boolean }) =>
     createQuery({
       query: {
         clickhouse: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.dropTable(table)
-            .execute(),
+          db.executeQuery(
+            dropTableStatement(ConnectionType.ClickHouse, db, target)
+          ),
         mssql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.dropTable(table)
-            .execute(),
+          db.executeQuery(dropTableStatement(ConnectionType.MSSQL, db, target)),
         mysql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.dropTable(table)
-            .execute(),
-        postgres: (db) => {
-          let query = db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.dropTable(table)
-
-          if (cascade) {
-            query = query.cascade()
-          }
-
-          return query.execute()
-        },
+          db.executeQuery(dropTableStatement(ConnectionType.MySQL, db, target)),
+        postgres: (db) =>
+          db.executeQuery(
+            dropTableStatement(ConnectionType.Postgres, db, target)
+          ),
       },
     })
 )

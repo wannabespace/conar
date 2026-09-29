@@ -58,6 +58,9 @@ export const connectionResourceType = type({
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   tabs: connectionTabType.array(),
+  'visualizerPositions?': {
+    '[string]': { '[string]': { x: 'number', y: 'number' } },
+  },
   'visualizerViewports?': {
     '[string]': viewportType,
   },
@@ -73,6 +76,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   tabs: [],
+  visualizerPositions: {},
   visualizerViewports: {},
 }
 

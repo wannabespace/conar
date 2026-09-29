@@ -93,7 +93,7 @@ const DialogContent = ({
     >
       {children}
       {showCloseButton && (
-        <DialogCloseButton className="absolute top-4 right-4" />
+        <DialogCloseButton className="absolute top-3.5 right-3.5" />
       )}
     </DialogPrimitive.Popup>
   </DialogPortal>
@@ -102,7 +102,7 @@ const DialogContent = ({
 const DialogHeader = ({ className, ...props }: React.ComponentProps<'div'>) => (
   <div
     data-slot="dialog-header"
-    className={cn('flex flex-col gap-1.5', className)}
+    className={cn('flex flex-col gap-1', className)}
     {...props}
   />
 )

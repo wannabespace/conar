@@ -1,10 +1,10 @@
 ---
 title: 'Schema visualizer'
 sidebarTitle: 'Schema visualizer'
-description: 'Tamery renders your database as an interactive ER diagram of tables, columns, and foreign-key relationships.'
+description: 'Tamery renders your database as an interactive ER diagram you can edit: rename and add columns, link tables, create or drop tables, then apply the changes in one go.'
 ---
 
-The schema visualizer renders your database as an interactive ER diagram — useful for onboarding to an unfamiliar schema or planning a migration.
+The schema visualizer renders your database as an interactive ER diagram — useful for onboarding to an unfamiliar schema, planning a migration, or making structural changes without writing DDL by hand.
 
 ## Opening
 
@@ -18,25 +18,39 @@ The schema visualizer renders your database as an interactive ER diagram — use
     Large schemas take a few seconds.
   </Step>
   <Step title="Select a schema">
-    Use the **Schema** dropdown to switch between schemas.
+    On engines with schemas, use the **schema** dropdown to switch between them.
   </Step>
 </Steps>
 
 ## Reading the diagram
 
-Each table is a **node** listing its name and columns (name + type). **Edges** between nodes are foreign keys: the line runs from the referencing column to the referenced primary key, with an arrowhead for direction.
+Each table is a **card** listing its columns with their type. A trailing `?` marks a nullable column, a key icon the primary key, and a link icon a foreign key. Views and materialized views render as cards too, tagged with their kind. The card header counts the table's indexes, triggers and policies where the engine has them.
 
-- `orders.customer_id → customers.id` means `orders` references `customers`.
-- Edge labels show the columns involved.
-- Tables with no foreign keys stand alone.
+**Edges** between cards are foreign keys drawn in crow's-foot notation: a bar on the referenced key, a fan on the referencing side when many rows can point at one key. Hover a card to light up its relations and the tables they reach.
+
+## Inspecting a table
+
+Click a card to open the **inspector** beside the diagram: columns, relations, and — where the engine supports them — indexes, triggers and policies. Each index, trigger or policy row opens that object on its Schema page. The header shows the table's approximate row count and an action menu.
+
+## Editing
+
+Everything you change is queued as a **draft** and shown on the card until you apply it — added rows tinted green, changed rows in italics, dropped rows struck through. Nothing runs against the database until you click **Apply**.
+
+- **Table** — right-click a card header for _Rename Table_, _Add Column_ and _Drop Table_ (with _Drop Table with Dependents_ on PostgreSQL). The **+ Table** button creates a new table with an `id` primary key; add columns from its card or the inspector.
+- **Column** — right-click a column row (or use its `⋯` menu in the inspector) for _Edit Column_ (name, type, nullability), _Allow NULL_ / _Require a Value_ and _Drop Column_. Engines that cannot rename columns hide the name field.
+- **Foreign key** — drag from a column's edge handle onto a primary or unique key in another table. Select an edge and press <kbd>Delete</kbd> to drop it, or use the relation row's menu in the inspector.
+- **Undo a draft** — the same menu offers _Restore_ on anything marked dropped, and the review drawer discards changes one by one.
+
+Views are read-only in the diagram.
+
+## Applying changes
+
+Click the **eye** button to review every queued change with the exact SQL Tamery will run, then **Apply** (or press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>S</kbd>). On PostgreSQL and SQL Server all statements run in one transaction, so a failure leaves the database untouched. MySQL and ClickHouse commit each DDL statement on its own; the Apply button turns amber to say so, and a failure keeps the remaining drafts so you can fix and retry. The database's error message appears in the review drawer.
 
 ## Navigating
 
-- **Minimap** — overview in the corner; click or drag to jump.
-- **Pan / zoom** — drag the background to pan, scroll to zoom, double-click a node to fit it.
-- **Schema selector** — each schema renders as its own diagram.
-- **Auto-layout** — nodes are arranged to minimize edge crossings; positions are cached, so manual moves persist.
-
-## Searching
-
-Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>F</kbd> and type part of a table name. Matches are highlighted and scrolled into view; other nodes stay visible for context.
+- **Pan / zoom** — drag the background to pan, scroll to move, pinch or <kbd>Ctrl</kbd>+scroll to zoom.
+- **Minimap** — overview in the corner; drag it to jump.
+- **Zoomed out** — once column text would be unreadable, cards show only the table name at a readable size; zoom back in for columns.
+- **Zoom and arrange** — the buttons in the bottom-left corner step the zoom; the last one re-arranges tables root-first, minimising crossings, with standalone tables in a grid beneath. Cards you move keep their position per schema.
+- **Search** — press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>F</kbd> and type part of a table or column name; matches turn blue and everything else fades, and the field says **No matches** when nothing fits. <kbd>Esc</kbd> clears the search, then leaves the field, then closes the inspector.

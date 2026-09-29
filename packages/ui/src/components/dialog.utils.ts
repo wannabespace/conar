@@ -8,7 +8,7 @@ export const dialogContentVariants = cva(
     },
     variants: {
       variant: {
-        default: 'grid gap-6 p-6 sm:max-w-md',
+        default: 'grid gap-4 p-5 sm:max-w-md',
         panel: 'flex h-[70vh] max-h-140 flex-col overflow-hidden sm:max-w-3xl',
       },
     },

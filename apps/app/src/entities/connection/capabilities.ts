@@ -68,6 +68,8 @@ interface TriggerCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
+  // Offered by the diagram's type picker, which also takes free text.
+  columnTypes: readonly string[]
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
   // null: the connection's database is the schema
@@ -75,6 +77,7 @@ interface ConnectionCapabilities {
   explain: boolean
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
+  idColumnType: string
   indexes: IndexCapabilities
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
@@ -120,12 +123,31 @@ const noTriggers: TriggerCapabilities = {
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
+    columnTypes: [
+      'UInt8',
+      'UInt32',
+      'UInt64',
+      'Int32',
+      'Int64',
+      'Float32',
+      'Float64',
+      'Decimal(10, 2)',
+      'String',
+      'FixedString(36)',
+      'UUID',
+      'Bool',
+      'Date',
+      'DateTime',
+      'DateTime64(3)',
+      'Array(String)',
+    ],
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
     functions: noFunctions,
+    idColumnType: 'UInt64',
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     policies: {
       alterInPlace: true,
@@ -152,6 +174,23 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
+    columnTypes: [
+      'int',
+      'bigint',
+      'smallint',
+      'bit',
+      'decimal(18, 2)',
+      'float',
+      'money',
+      'varchar(255)',
+      'nvarchar(255)',
+      'nvarchar(max)',
+      'uniqueidentifier',
+      'date',
+      'time',
+      'datetime2',
+      'varbinary(max)',
+    ],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -164,6 +203,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: true,
       securityDefiner: false,
     },
+    idColumnType: 'int',
     indexes: btreeIndexes,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -195,6 +235,24 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
+    columnTypes: [
+      'int',
+      'bigint',
+      'smallint',
+      'tinyint',
+      'decimal(10, 2)',
+      'float',
+      'double',
+      'boolean',
+      'varchar(255)',
+      'char(36)',
+      'text',
+      'date',
+      'datetime',
+      'timestamp',
+      'json',
+      'blob',
+    ],
     constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
@@ -209,6 +267,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: false,
     },
+    idColumnType: 'int',
     indexes: btreeIndexes,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
@@ -241,6 +300,23 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
+    columnTypes: [
+      'integer',
+      'bigint',
+      'smallint',
+      'numeric',
+      'real',
+      'double precision',
+      'boolean',
+      'text',
+      'varchar(255)',
+      'uuid',
+      'date',
+      'timestamp',
+      'timestamptz',
+      'jsonb',
+      'bytea',
+    ],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -253,6 +329,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: true,
     },
+    idColumnType: 'integer',
     indexes: btreeIndexes,
     policies: {
       alterInPlace: false,

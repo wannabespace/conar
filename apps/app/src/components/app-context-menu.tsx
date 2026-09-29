@@ -27,6 +27,14 @@ import {
   renderWebNodes,
 } from '~/components/app-menu-web'
 
+// Mounts with the popup, so a function `items` resolves on open like the native
+// menu does: callers pick items from a ref the right-click just set.
+const WebContextMenuItems = ({ items }: Pick<AppContextMenuProps, 'items'>) =>
+  renderWebNodes(
+    typeof items === 'function' ? items() : items,
+    contextMenuParts
+  )
+
 export const AppContextMenu = ({
   items,
   children,
@@ -40,15 +48,13 @@ export const AppContextMenu = ({
   const [isNativeOpen, setIsNativeOpen] = useState(false)
 
   if (!isNativeAvailable()) {
-    const resolved = typeof items === 'function' ? items() : items
-
     return (
       <ContextMenu open={open} onOpenChange={onOpenChange}>
         <ContextMenuTrigger className={className} style={style} render={render}>
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent {...contentProps}>
-          {renderWebNodes(resolved, contextMenuParts)}
+          <WebContextMenuItems items={items} />
         </ContextMenuContent>
       </ContextMenu>
     )

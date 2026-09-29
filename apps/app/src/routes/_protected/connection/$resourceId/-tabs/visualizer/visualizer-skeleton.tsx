@@ -8,30 +8,37 @@ export const VisualizerSkeleton = () => (
     aria-hidden
     className="bg-background relative size-full min-h-0 flex-1 overflow-hidden rounded-lg bg-[radial-gradient(var(--color-border)_1px,transparent_0)] bg-size-[20px_20px]"
   >
-    <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-      <Skeleton className="h-8 w-56 rounded-lg" />
-      <Skeleton className="h-8 w-45 rounded-lg" />
+    <div className="absolute inset-x-3 top-3 z-10 flex flex-col items-center">
+      <div className="flex w-full max-w-3xl items-start gap-2">
+        <Skeleton className="h-8 w-40 rounded-xl" />
+        <Skeleton className="h-8 flex-1 rounded-xl" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="size-8 rounded-xl" />
+          <Skeleton className="h-8 w-20 rounded-xl" />
+        </div>
+      </div>
     </div>
-    <div className="flex size-full items-center justify-center gap-16">
+    <Skeleton className="absolute bottom-3 left-3 z-10 h-20 w-7 rounded-xl" />
+    <div className="flex size-full items-center justify-center gap-24">
       {Array.from({ length: NODES_COUNT }).map((_, nodeIndex) => (
         <div
           // oxlint-disable-next-line react/no-array-index-key
           key={nodeIndex}
-          className="bg-card w-66 rounded-xl"
+          className="bg-popover ring-foreground/4 w-64 rounded-xl shadow-md ring"
         >
-          <div className="border-border/80 from-background/50 flex items-center gap-2 border-b bg-linear-to-t px-4 py-3">
-            <Skeleton className="size-5 shrink-0 rounded-md" />
-            <Skeleton className="h-4 w-1/2 rounded-md" />
+          <div className="border-foreground/6 flex h-8 items-center gap-2 border-b px-3">
+            <Skeleton className="size-4 shrink-0" />
+            <Skeleton className="h-3.5 w-1/2" />
           </div>
-          <div className="py-2">
+          <div className="py-1">
             {Array.from({ length: COLUMNS_COUNT }).map((__, columnIndex) => (
               <div
                 // oxlint-disable-next-line react/no-array-index-key
                 key={columnIndex}
-                className="flex items-center justify-between gap-2 px-4 py-2"
+                className="flex h-7 items-center justify-between gap-2 px-3"
               >
-                <Skeleton className="h-3 w-2/5 rounded-md" />
-                <Skeleton className="h-3 w-1/5 rounded-md" />
+                <Skeleton className="h-3 w-2/5" />
+                <Skeleton className="h-3 w-1/5" />
               </div>
             ))}
           </div>
