@@ -7,6 +7,8 @@
 - **Errors are declared, not constructed**: a procedure or middleware lists its codes in `.errors({ CODE: { message } })` and throws `errors.CODE()`, so the code and its message live in the contract the client is generated from. `new ORPCError(...)` only where no `errors` map exists — handler interceptors and helpers outside a procedure. Clients narrow with `isDefinedError`.
 - `syncDiff`'s `updated` query is optional: an insert-only collection omits it rather than paying an `OR` branch per client row for a match that cannot happen.
 
+- Cloud proxy transaction ownership comes from the authenticated session, never from client input. The shared query router overwrites `ownerId` on begin, execute, commit and rollback; local CLI callers may omit an owner resolver because their proxy admits only its signed-in user.
+
 ## Chat
 
 - `routers/ai/v1/chat.ts` (`ai.chat`) is **frozen** — shipped desktop builds parse its wire format; never change it, never import from it. It only gates old clients into a "update the app" error, since chat moved to `ai.stream`. `routers/ai/v2/` holds everything current. **Folders only**: barrels re-export flat so procedure paths stay `ai.chat` / `ai.stream`, never `ai.v1.*` / `ai.chat.*`. `ai.chat` is a procedure, so the namespace is taken — which is why the send endpoint is `ai.stream`.

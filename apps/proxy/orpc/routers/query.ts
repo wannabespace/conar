@@ -4,7 +4,7 @@ import { memoize } from 'memoza'
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
 
-const resolveQueryConnectionString = memoize(
+export const resolveQueryConnectionString = memoize(
   ({
     input,
     headers,
@@ -15,7 +15,7 @@ const resolveQueryConnectionString = memoize(
       connectionId?: string
     }
     headers: Headers
-  }) => {
+  }): string | Promise<string> => {
     if (input.connectionString) {
       return input.connectionString
     }
@@ -28,6 +28,11 @@ const resolveQueryConnectionString = memoize(
     return apiClient.internal.proxy.resolveConnectionString(input)
   },
   {
+    cacheKey: ({ input, headers }) => ({
+      ...input,
+      authorization: headers.get('authorization'),
+      cookie: headers.get('cookie'),
+    }),
     maxAge: 1000 * 60 * 5,
   }
 )
@@ -35,5 +40,6 @@ const resolveQueryConnectionString = memoize(
 export const query = createQueryRouter(
   orpc.use(authMiddleware),
   (input, context) =>
-    resolveQueryConnectionString({ headers: context.headers, input })
+    resolveQueryConnectionString({ headers: context.headers, input }),
+  (context) => context.session.userId
 )

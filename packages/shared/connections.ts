@@ -13,8 +13,10 @@ export const placeholderMap: Record<ConnectionType, string> = {
 export const isConnectionError = (error: unknown): boolean => {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase()
-    return RECONNECT_ERROR_PATTERNS.some((pattern) =>
-      msg.includes(pattern.toLowerCase())
+    return (
+      RECONNECT_ERROR_PATTERNS.some((pattern) =>
+        msg.includes(pattern.toLowerCase())
+      ) || isConnectionError(error.cause)
     )
   }
   return false

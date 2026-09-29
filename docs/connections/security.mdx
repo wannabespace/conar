@@ -66,7 +66,8 @@ Tamery is open source under **AGPL-3.0**, so the encryption implementation is au
 </Warning>
 
 <Note>
-  Query traffic goes directly between your machine and your database. Tamery's
-  cloud stores only encrypted connection metadata — it never handles live query
-  data.
+  The desktop app can query your database directly. The web app uses `tamery
+  proxy` when available, or Tamery's cloud proxy for reachable cloud
+  connections. Cloud proxy transactions belong to your authenticated account;
+  another account cannot execute or finish them.
 </Note>

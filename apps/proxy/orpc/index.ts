@@ -1,11 +1,13 @@
 import { os } from '@orpc/server'
-import type { Session } from 'better-auth'
+import { type } from 'arktype'
 
 import { env } from '~/env'
 
 import type { Context } from './context'
 
 export const orpc = os.$context<Context>()
+
+const sessionResponse = type({ session: { userId: 'string' } })
 
 const getSession = async (headers: Headers) => {
   const res = await fetch(`${env.API_URL}/auth/get-session`, {
@@ -15,7 +17,12 @@ const getSession = async (headers: Headers) => {
     },
   })
 
-  return res.ok ? ((await res.json()) as Session | null) : null
+  if (!res.ok) {
+    return null
+  }
+
+  const data = await res.json()
+  return data ? sessionResponse.assert(data).session : null
 }
 
 export const authMiddleware = orpc

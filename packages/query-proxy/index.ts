@@ -17,7 +17,7 @@ type Params<
 > = Prettify<
   P extends { connectionString: string }
     ? // oxlint-disable-next-line style/indent-binary-ops
-      Omit<P, 'connectionString'> & {
+      Omit<P, 'connectionString' | 'ownerId'> & {
         connectionString?: string
         connectionId?: string
         resourceId?: string
@@ -26,7 +26,7 @@ type Params<
           | { connectionString: string }
           | { connectionId: string }
         )
-    : P
+    : Omit<P, 'ownerId'>
 >
 
 interface ConnectionInput {
@@ -41,7 +41,10 @@ const createQueryDialect = <T extends AnyBuilder>(
   resolveConnectionString: (
     input: ConnectionInput,
     context: Parameters<Parameters<T['handler']>[0]>[0]['context']
-  ) => string | Promise<string>
+  ) => string | Promise<string>,
+  resolveOwnerId?: (
+    context: Parameters<Parameters<T['handler']>[0]>[0]['context']
+  ) => string
 ) =>
   ({
     beginTransaction: orpc
@@ -50,11 +53,17 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.beginTransaction({
           ...input,
           connectionString: await resolveConnectionString(input, context),
+          ownerId: resolveOwnerId?.(context),
         })
       ),
     commitTransaction: orpc
       .input(type<Params<typeof dialect.commitTransaction>>())
-      .handler(({ input }) => dialect.commitTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.commitTransaction({
+          ...input,
+          ownerId: resolveOwnerId?.(context),
+        })
+      ),
     execute: orpc
       .input(type<Params<typeof dialect.execute>>())
       .handler(async ({ input, context }) =>
@@ -65,10 +74,20 @@ const createQueryDialect = <T extends AnyBuilder>(
       ),
     executeTransaction: orpc
       .input(type<Params<typeof dialect.executeTransaction>>())
-      .handler(({ input }) => dialect.executeTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.executeTransaction({
+          ...input,
+          ownerId: resolveOwnerId?.(context),
+        })
+      ),
     rollbackTransaction: orpc
       .input(type<Params<typeof dialect.rollbackTransaction>>())
-      .handler(({ input }) => dialect.rollbackTransaction(input)),
+      .handler(({ input, context }) =>
+        dialect.rollbackTransaction({
+          ...input,
+          ownerId: resolveOwnerId?.(context),
+        })
+      ),
   }) satisfies Record<keyof QueryExecutor, unknown>
 
 export const createQueryRouter = <T extends AnyBuilder>(
@@ -76,17 +95,36 @@ export const createQueryRouter = <T extends AnyBuilder>(
   resolveConnectionString: (
     input: ConnectionInput,
     context: Parameters<Parameters<T['handler']>[0]>[0]['context']
-  ) => string | Promise<string>
+  ) => string | Promise<string>,
+  resolveOwnerId?: (
+    context: Parameters<Parameters<T['handler']>[0]>[0]['context']
+  ) => string
 ) =>
   ({
     clickhouse: createQueryDialect(
       clickhouse.query,
       orpc,
-      resolveConnectionString
+      resolveConnectionString,
+      resolveOwnerId
     ),
-    mssql: createQueryDialect(mssql.query, orpc, resolveConnectionString),
-    mysql: createQueryDialect(mysql.query, orpc, resolveConnectionString),
-    postgres: createQueryDialect(pg.query, orpc, resolveConnectionString),
+    mssql: createQueryDialect(
+      mssql.query,
+      orpc,
+      resolveConnectionString,
+      resolveOwnerId
+    ),
+    mysql: createQueryDialect(
+      mysql.query,
+      orpc,
+      resolveConnectionString,
+      resolveOwnerId
+    ),
+    postgres: createQueryDialect(
+      pg.query,
+      orpc,
+      resolveConnectionString,
+      resolveOwnerId
+    ),
   }) satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

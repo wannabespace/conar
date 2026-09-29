@@ -16,19 +16,23 @@ import type { Database as PostgresDatabase } from './postgres/schema'
 export const dialects = {
   clickhouse: memoize(
     (options: DialectOptions) =>
-      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) })
+      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
   mssql: memoize(
     (options: DialectOptions) =>
-      new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })
+      new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
   mysql: memoize(
     (options: DialectOptions) =>
-      new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) })
+      new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
   postgres: memoize(
     (options: DialectOptions) =>
-      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) })
+      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
 } satisfies Record<ConnectionType, AnyFunction>
 

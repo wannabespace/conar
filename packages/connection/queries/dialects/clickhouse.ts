@@ -24,6 +24,7 @@ const getClient = memoize((connectionString: string) => {
     clickhouse_settings: {
       date_time_output_format: 'iso',
     },
+    request_timeout: 0,
     url,
   })
 })

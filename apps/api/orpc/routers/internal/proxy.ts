@@ -1,6 +1,7 @@
 import { db } from '@tamery/db'
 import { decrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
+import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
 
 import { env } from '~/env'
@@ -49,7 +50,7 @@ export const proxy = {
 
       if (input.resourceId) {
         const connection = await db.query.connectionsResources.findFirst({
-          columns: {},
+          columns: { name: true },
           where: {
             id: { eq: input.resourceId },
           },
@@ -79,12 +80,16 @@ export const proxy = {
           throw errors.FORBIDDEN()
         }
 
-        return decrypt({
-          encryptedText: connection.connection.connectionString,
-          secret: await context.getWorkspaceSecret(
-            connection.connection.workspaceId
-          ),
-        })
+        const url = new SafeURL(
+          decrypt({
+            encryptedText: connection.connection.connectionString,
+            secret: await context.getWorkspaceSecret(
+              connection.connection.workspaceId
+            ),
+          })
+        )
+        url.pathname = connection.name || ''
+        return url.toString()
       }
 
       if (input.connectionId) {

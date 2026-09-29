@@ -27,6 +27,7 @@ const getPool = memoize((connectionString: string) => {
   const ssl = parseSSLConfig(searchParams)
   const conf: PoolConfig = {
     ...config,
+    connectionTimeoutMillis: 30_000,
     max: 1,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),
@@ -36,6 +37,7 @@ const getPool = memoize((connectionString: string) => {
   return tries(
     async () => {
       const pool = new pg.Pool(conf)
+      pool.on('error', console.error)
       await pool.query('SELECT 1')
       return pool
     },
@@ -45,6 +47,7 @@ const getPool = memoize((connectionString: string) => {
           ...conf,
           ssl: defaultSSLConfig,
         })
+        pool.on('error', console.error)
         await pool.query('SELECT 1').catch(() => {
           throw previousError
         })
