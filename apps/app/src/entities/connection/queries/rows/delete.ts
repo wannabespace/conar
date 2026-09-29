@@ -3,7 +3,6 @@ import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
 
-// Kysely nests every OR operand one level deeper, so one statement for thousands of rows overflows the call stack.
 const DELETE_BATCH_SIZE = 500
 
 interface DeleteParams {
