@@ -59,11 +59,11 @@ const AuthSidePanel = () => {
           <MeshBackground />
         </motion.div>
       )}
-      <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
+      <div className="relative z-20 mt-auto mb-4 flex items-center gap-2 text-lg font-medium">
         <AppLogo className="size-6" />
         Tamery
       </div>
-      <blockquote className="relative z-20 mt-auto leading-normal text-balance">
+      <blockquote className="relative z-20 leading-normal text-balance">
         Write queries, explore data, and manage your databases with AI doing the
         heavy lifting.
       </blockquote>

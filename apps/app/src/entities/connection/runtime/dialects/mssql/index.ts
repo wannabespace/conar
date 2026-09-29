@@ -13,7 +13,7 @@ import {
 } from 'kysely'
 
 import type { DialectOptions } from '../driver'
-import { createDialectProvider, createKyselyDriver } from '../driver'
+import { createKyselyDriver } from '../driver'
 
 const isSelectQueryNode = (node: OperationNode): node is SelectQueryNode =>
   node.kind === 'SelectQueryNode'
@@ -53,11 +53,7 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 export const mssqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MssqlAdapter(),
-    createDriver: () =>
-      createKyselyDriver({
-        logger: options.log,
-        provider: createDialectProvider(ConnectionType.MSSQL, options),
-      }),
+    createDriver: () => createKyselyDriver(ConnectionType.MSSQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

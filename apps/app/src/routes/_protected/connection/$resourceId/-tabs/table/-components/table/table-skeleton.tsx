@@ -27,7 +27,7 @@ export const TableHeaderSkeleton = ({
   selectable?: boolean
   columnsCount?: number
 }) => (
-  <div className="bg-background sticky top-0 z-10 flex w-fit min-w-full items-center inset-shadow-[0_-1px_0_0_var(--color-border)]">
+  <div className="bg-background sticky top-0 z-10 flex w-fit min-w-full items-center border-b">
     {selectable && (
       <div className="shrink-0 p-2 pl-4">
         <Skeleton className="size-4 rounded-sm" />

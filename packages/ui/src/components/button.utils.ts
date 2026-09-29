@@ -9,12 +9,13 @@ export const buttonVariants = cva(
     },
     variants: {
       size: {
-        default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5`,
+        default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&>[data-slot=kbd]]:-ml-0.5`,
         icon: 'size-8',
+        'icon-2xs': `size-5 rounded-sm [&_svg:not([class*='size-'])]:size-3.5`,
         'icon-lg': 'size-9',
         'icon-sm': 'size-7 rounded-lg',
         'icon-xs': `size-6 rounded-md [&_svg:not([class*='size-'])]:size-3.5`,
-        lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3`,
+        lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&>[data-slot=kbd]]:-ml-0.5`,
         sm: `h-7 gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
       },
@@ -22,6 +23,7 @@ export const buttonVariants = cva(
         default: `bg-primary text-primary-foreground hover:bg-primary/80`,
         destructive: `bg-destructive hover:bg-destructive/85 text-white shadow-xs`,
         ghost: `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
+        'ghost-row': `hover:bg-foreground/5 hover:text-foreground aria-expanded:bg-foreground/5 aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
         link: `text-primary px-0 underline-offset-4 hover:underline`,
         outline: `bg-input text-foreground ring-foreground/4 hover:ring-foreground/12 aria-expanded:ring-foreground/12 hover:bg-accent aria-expanded:bg-accent aria-pressed:bg-foreground/10 shadow-xs ring`,
         secondary: `bg-secondary text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]`,

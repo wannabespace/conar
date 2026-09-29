@@ -4,7 +4,6 @@ import { sql } from 'kysely'
 import { createQuery } from '../../runtime/query'
 import type { PolicyTarget } from './shape'
 
-// Postgres switches row level security per table, SQL Server per policy.
 export const setRowLevelSecurityQuery = ({
   enabled,
   name,

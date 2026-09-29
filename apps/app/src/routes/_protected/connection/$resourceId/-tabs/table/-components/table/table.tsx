@@ -271,7 +271,7 @@ const TableComponent = ({
       >
         <Table>
           {tableColumns.length > 0 ? (
-            <TableHeader className="bg-background rounded-none inset-shadow-[0_-1px_0_0_var(--color-border)] inset-ring-0" />
+            <TableHeader />
           ) : (
             (isRowsPending || isColumnsPending) && (
               <TableHeaderSkeleton selectable={primaryColumns.length > 0} />

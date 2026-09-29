@@ -1,4 +1,5 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
+import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
@@ -9,7 +10,6 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { sqlDialects } from '~/entities/connection/monaco'
 import { createFunctionQuery } from '~/entities/connection/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/entities/connection/queries/functions/definition'
 import { dropFunctionQuery } from '~/entities/connection/queries/functions/drop'
@@ -403,7 +403,7 @@ const FunctionInspector = ({
             <BodyField
               label="Body"
               disabled={readOnly}
-              language={sqlDialects[connectionType]}
+              language={sqlLanguageIds[connectionType]}
             />
           )}
         </form.AppField>

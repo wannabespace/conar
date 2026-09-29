@@ -42,6 +42,7 @@ export {
 } from './connections'
 export {
   queries,
+  queriesUpdateSchema,
   queriesInsertSchema,
   queriesRelations,
   queriesSelectSchema,

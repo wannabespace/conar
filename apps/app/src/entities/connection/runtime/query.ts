@@ -1,7 +1,7 @@
 import { isConnectionError } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
-import { noop, sleep } from '@tamery/shared/utils'
+import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
@@ -15,6 +15,8 @@ import type {
 
 import { getConnectionStringToShow } from '../utils'
 import { dialects } from './dialects'
+import type { DialectOptions } from './dialects/driver'
+import { createDialectProvider } from './dialects/driver'
 import { logQuery } from './log'
 import { watchForSlowQuery } from './slow-queries'
 
@@ -63,6 +65,7 @@ export interface QueryParams {
   type: ConnectionType
   resourceId?: string
   connectionId?: string
+  resultSets?: DialectOptions['resultSets']
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -72,6 +75,13 @@ export interface QueryParams {
     values?: unknown[]
   }) => void
 }
+
+export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
+  createDialectProvider(queryParams.type, {
+    connectionId: queryParams.connectionId,
+    connectionString: queryParams.connectionString,
+    resourceId: queryParams.resourceId,
+  }).cancel(queryId)
 
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
@@ -104,6 +114,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
       connectionString: queryParams.connectionString,
       log: queryParams.log,
       resourceId: queryParams.resourceId,
+      resultSets: queryParams.resultSets,
     })
     const queryFn = options.query[queryParams.type]
 
@@ -127,60 +138,57 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
       ? watchForSlowQuery(queryParams.resourceId)
       : noop
 
-    const [result] = await Promise.all([
-      Result.tryPromise(
-        {
-          catch: (error) => {
-            if (isConnectionError(error)) {
-              attempt += 1
+    const result = await Result.tryPromise(
+      {
+        catch: (error) => {
+          if (isConnectionError(error)) {
+            attempt += 1
 
-              reconnectingPromises.set((state) => {
-                const existing = state[queryParams.connectionString]
+            reconnectingPromises.set((state) => {
+              const existing = state[queryParams.connectionString]
 
-                return {
-                  ...state,
-                  [queryParams.connectionString]: existing
-                    ? {
-                        ...existing,
-                        attempt,
-                      }
-                    : {
-                        attempt,
-                        promise: resolvers.promise,
-                        resourceId: queryParams.resourceId,
-                      },
-                }
-              })
-            }
+              return {
+                ...state,
+                [queryParams.connectionString]: existing
+                  ? {
+                      ...existing,
+                      attempt,
+                    }
+                  : {
+                      attempt,
+                      promise: resolvers.promise,
+                      resourceId: queryParams.resourceId,
+                    },
+              }
+            })
+          }
 
-            return error
-          },
-          try: async () => {
-            const retryPromise =
-              reconnectingPromises.get()[queryParams.connectionString]
-
-            if (attempt === 0 && retryPromise) {
-              await retryPromise.promise
-            }
-
-            // oxlint-disable-next-line ts/no-explicit-any
-            return queryFn(instance as any)
-          },
+          return error
         },
-        {
-          retry: {
-            backoff: 'constant',
-            delayMs: RECONNECTION_DELAY,
-            // A write is not idempotent — a lost response may still have
-            // committed — so only queries reading a result reconnect and retry.
-            shouldRetry: (error) =>
-              Boolean(options.type) && isConnectionError(error),
-            times: MAX_RECONNECTION_ATTEMPTS,
-          },
-        }
-      ),
-      sleep(300),
-    ])
+        try: async () => {
+          const retryPromise =
+            reconnectingPromises.get()[queryParams.connectionString]
+
+          if (attempt === 0 && retryPromise) {
+            await retryPromise.promise
+          }
+
+          // oxlint-disable-next-line ts/no-explicit-any
+          return queryFn(instance as any)
+        },
+      },
+      {
+        retry: {
+          backoff: 'constant',
+          delayMs: RECONNECTION_DELAY,
+          // A write is not idempotent — a lost response may still have
+          // committed — so only queries reading a result reconnect and retry.
+          shouldRetry: (error) =>
+            Boolean(options.type) && isConnectionError(error),
+          times: MAX_RECONNECTION_ATTEMPTS,
+        },
+      }
+    )
 
     stopSlowQueryWatch()
 

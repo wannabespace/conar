@@ -1,0 +1,10 @@
+{
+  "extends": "@tamery/configs/ts/react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strictNullChecks": true,
+    "types": ["@types/bun", "vite/client"]
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

@@ -38,6 +38,16 @@ export const createQueriesCollection = () =>
             )
           )
         },
+        onUpdate: async ({ transaction }) => {
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.queries.update.call({
+                id: m.key,
+                name: m.changes.name,
+              })
+            )
+          )
+        },
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
       }),
       persistence,

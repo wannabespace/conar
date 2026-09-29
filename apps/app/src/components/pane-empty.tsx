@@ -7,17 +7,20 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
+import type { ReactNode } from 'react'
 
 export const PaneEmpty = ({
+  children,
   description,
   icon: Icon,
   title,
 }: {
+  children?: ReactNode
   description: string
   icon: IconSvgElement
   title: string
 }) => (
-  <Empty className="min-h-0 flex-1 p-4 md:p-4">
+  <Empty className="min-h-0 flex-1 overflow-y-auto p-4 md:p-4">
     <EmptyHeader className="gap-1">
       <EmptyMedia
         variant="icon"
@@ -32,5 +35,6 @@ export const PaneEmpty = ({
         {description}
       </EmptyDescription>
     </EmptyHeader>
+    {children}
   </Empty>
 )

@@ -1,0 +1,228 @@
+import type { SqlCatalog } from './catalog'
+import { findEnum, findSchema, findTable } from './catalog'
+import type { CompletionContext } from './completion-context'
+import type { CompletionItem } from './completion-items'
+import {
+  columnItems,
+  functionItems,
+  keywordItems,
+  ordered,
+  resolveSubject,
+  scopeColumnItems,
+  scopeTable,
+  sqlName,
+  tableItems,
+} from './completion-items'
+import { slotItems } from './completion-slots'
+import type { DialectSpec } from './dialect'
+
+const OPERATORS = [
+  '=',
+  '<>',
+  '>',
+  '<',
+  '>=',
+  '<=',
+  'IN (',
+  'NOT IN (',
+  'LIKE',
+  'ILIKE',
+  'IS NULL',
+  'IS NOT NULL',
+  'BETWEEN',
+]
+const LIMITS = ['10', '50', '100', '1000']
+const STATEMENT_VERBS = [
+  'SELECT',
+  'INSERT INTO',
+  'UPDATE',
+  'DELETE FROM',
+  'WITH',
+  'EXPLAIN',
+  'SHOW',
+  'CREATE',
+  'ALTER',
+  'DROP',
+  'TRUNCATE',
+  'BEGIN',
+  'COMMIT',
+  'ROLLBACK',
+]
+const BOOLEAN_TYPE = /bool|^bit$/iu
+const TEXT_TYPE = /char|text|string|citext|uuid/iu
+
+const qualifiedItems = (
+  context: CompletionContext,
+  catalog: SqlCatalog
+): CompletionItem[] => {
+  const [first, second] = context.qualifier
+  if (first === undefined) {
+    return []
+  }
+  if (second !== undefined) {
+    const table = findTable(catalog, second, first)
+    return table ? columnItems(catalog, table) : []
+  }
+  const table =
+    scopeTable(context.scope, catalog, first) ?? findTable(catalog, first, null)
+  if (table) {
+    return columnItems(catalog, table)
+  }
+  const schema = findSchema(catalog, first)
+  return (
+    schema?.tables.map((item) => ({
+      detail: item.kind,
+      insertText: sqlName(catalog, item.name),
+      kind: item.kind === 'view' ? 'view' : 'table',
+      label: item.name,
+      sortText: `2${item.name}`,
+    })) ?? []
+  )
+}
+
+const operatorItems = (
+  resolved: ReturnType<typeof resolveSubject>
+): CompletionItem[] => {
+  const type = resolved?.column.type ?? ''
+  const first = [
+    ...(BOOLEAN_TYPE.test(type) ? ['= TRUE', '= FALSE'] : []),
+    ...(TEXT_TYPE.test(type) ? ['=', 'LIKE', 'ILIKE'] : []),
+    ...(resolved?.column.nullable ? ['IS NULL', 'IS NOT NULL'] : []),
+  ]
+  return ordered(
+    [...new Set([...first, ...OPERATORS])].map((label) => ({ label })),
+    'operator'
+  )
+}
+
+const valueItems = (
+  resolved: ReturnType<typeof resolveSubject>,
+  catalog: SqlCatalog
+): CompletionItem[] => {
+  if (!resolved) {
+    return []
+  }
+  const { column, table } = resolved
+  const enumeration = findEnum(catalog, table.name, column)
+  if (enumeration) {
+    return ordered(
+      enumeration.values.map((value) => ({
+        detail: `enum ${enumeration.name}`,
+        insertText: `'${value.replaceAll("'", "''")}'`,
+        label: value,
+      })),
+      'enum'
+    )
+  }
+  if (BOOLEAN_TYPE.test(column.type)) {
+    return ordered([{ label: 'TRUE' }, { label: 'FALSE' }], 'value')
+  }
+  return []
+}
+
+const cased = (item: CompletionItem, keywordCase: 'upper' | 'lower') =>
+  keywordCase === 'lower' &&
+  (item.kind === 'keyword' ||
+    item.kind === 'operator' ||
+    item.kind === 'function' ||
+    item.kind === 'value')
+    ? { ...item, insertText: item.insertText.toLowerCase() }
+    : item
+
+export const completionItems = (
+  context: CompletionContext,
+  catalog: SqlCatalog,
+  dialect: DialectSpec
+): CompletionItem[] => {
+  const resolved = resolveSubject(context.subject, context.scope, catalog)
+  if (context.inLiteral) {
+    return valueItems(resolved, catalog)
+      .filter((item) => item.kind === 'enum')
+      .map((item) => ({
+        ...item,
+        insertText: item.label.replaceAll("'", "''"),
+      }))
+  }
+  if (context.qualifier.length > 0) {
+    return qualifiedItems(context, catalog)
+  }
+
+  const items: CompletionItem[] = []
+
+  switch (context.expects) {
+    case 'clause': {
+      items.push(
+        ...slotItems(context, catalog),
+        ...ordered(
+          context.clauses.map((label) => ({ label })),
+          'keyword',
+          '1'
+        )
+      )
+      break
+    }
+    case 'operator': {
+      items.push(...operatorItems(resolved))
+      break
+    }
+    case 'statement': {
+      items.push(
+        ...ordered(
+          STATEMENT_VERBS.filter((verb) =>
+            dialect.keywords.has(verb.split(' ')[0] ?? '')
+          ).map((label) => ({ label })),
+          'keyword'
+        )
+      )
+      break
+    }
+    case 'number': {
+      items.push(
+        ...ordered(
+          LIMITS.map((label) => ({ label })),
+          'value'
+        )
+      )
+      break
+    }
+    case 'table': {
+      items.push(
+        ...context.scope.ctes.map((name) => ({
+          detail: 'CTE',
+          insertText: name,
+          kind: 'table' as const,
+          label: name,
+          sortText: `0${name}`,
+        })),
+        ...tableItems(catalog),
+        ...catalog.schemas.map((schema) => ({
+          detail: 'schema',
+          insertText: sqlName(catalog, schema.name),
+          kind: 'schema' as const,
+          label: schema.name,
+          sortText: `3${schema.name}`,
+        }))
+      )
+      break
+    }
+    case 'column': {
+      items.push(
+        ...valueItems(resolved, catalog),
+        ...slotItems(context, catalog),
+        ...scopeColumnItems(context.scope, catalog),
+        ...functionItems(dialect),
+        ...keywordItems(dialect)
+      )
+      break
+    }
+    default: {
+      items.push(
+        ...tableItems(catalog),
+        ...functionItems(dialect),
+        ...keywordItems(dialect)
+      )
+    }
+  }
+
+  return items.map((item) => cased(item, context.keywordCase))
+}

@@ -19,6 +19,7 @@ const tableTypes = ['base table', 'view', 'materialized view'] as const
 export type RelationKind = 'table' | 'view'
 
 export const tablesAndSchemasType = type({
+  'row_level_security?': 'boolean',
   schema: 'string',
   table: 'string',
   type: type.or(
@@ -29,10 +30,11 @@ export const tablesAndSchemasType = type({
       >[])
     )
   ),
-}).pipe(({ type: rawType, ...props }) => {
+}).pipe(({ row_level_security: rowLevelSecurity, type: rawType, ...props }) => {
   const formattedType = rawType.toLowerCase() as (typeof tableTypes)[number]
   return {
     ...props,
+    rowLevelSecurity,
     type: formattedType === 'base table' ? ('table' as const) : formattedType,
   }
 })
@@ -108,6 +110,7 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               'n.nspname as schema',
               'c.relname as table',
+              'c.relrowsecurity as row_level_security',
               (eb) =>
                 eb
                   .case('c.relkind')
@@ -141,6 +144,8 @@ export const resourceTablesAndSchemasQueryOptions = ({
   connectionResource: ConnectionResource
 }) =>
   queryOptions({
+    // The key changes only between resources, so the global keepPreviousData would show the previous connection's tables.
+    placeholderData: undefined,
     queryFn: async () => {
       const params = await connectionResourceToQueryParams(connectionResource)
       const { systemSchemas } = capabilitiesOf(params.type)
@@ -165,6 +170,7 @@ export const resourceTablesAndSchemasQueryOptions = ({
           name: schema,
           tables: tables.map((table) => ({
             name: table.table,
+            rowLevelSecurity: table.rowLevelSecurity,
             type: table.type,
           })),
         }))

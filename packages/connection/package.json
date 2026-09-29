@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@tamery/shared": "workspace:*",
+    "better-result": "catalog:",
     "memoza": "catalog:"
   },
   "devDependencies": {

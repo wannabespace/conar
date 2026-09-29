@@ -221,7 +221,7 @@ const ContextMenuShortcut = ({
   <span
     data-slot="context-menu-shortcut"
     className={cn(
-      `text-muted-foreground group-focus/context-menu-item:text-accent-foreground ml-auto text-xs tracking-widest`,
+      `text-muted-foreground group-focus/context-menu-item:text-accent-foreground ml-auto inline-flex items-center text-xs tracking-widest`,
       className
     )}
     {...props}

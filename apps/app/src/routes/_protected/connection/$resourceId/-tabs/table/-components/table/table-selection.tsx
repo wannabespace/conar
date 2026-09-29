@@ -22,7 +22,7 @@ const IndeterminateCheckbox = ({
     <input
       type="checkbox"
       className={cn(
-        `peer hit-area-2.5 border-border checked:border-primary checked:bg-primary focus-visible:focus-ring size-4 appearance-none rounded-sm border transition-colors duration-100 outline-none disabled:cursor-not-allowed disabled:opacity-50`,
+        `peer hit-area-2.5 border-border checked:border-primary checked:bg-primary focus-visible:focus-ring size-4 appearance-none rounded-sm border shadow-xs transition-colors duration-100 outline-none disabled:cursor-not-allowed disabled:opacity-50`,
         !props.checked && indeterminate && 'border-primary bg-primary',
         className
       )}
