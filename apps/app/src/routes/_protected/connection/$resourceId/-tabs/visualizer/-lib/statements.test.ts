@@ -13,8 +13,8 @@ import {
   PostgresQueryCompiler,
 } from 'kysely'
 
-import type { DiagramDraft } from './diagram/shape'
-import { diagramDraftType, draftStatement } from './diagram/shape'
+import type { DiagramDraft } from './statements'
+import { diagramDraftType, draftStatement } from './statements'
 
 // The app's own cold dialects reach the browser runtime, so compiling here
 // stays on Kysely's own compilers; ClickHouse compiles through MySQL's.

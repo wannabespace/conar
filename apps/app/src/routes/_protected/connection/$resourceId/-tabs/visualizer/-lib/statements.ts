@@ -9,7 +9,7 @@ import {
   addConstraint,
   dropConstraint,
   mysqlDropKey,
-} from '../constraints/shape'
+} from '~/entities/connection/queries/constraints/shape'
 import {
   addColumnStatement,
   alterColumnStatement,
@@ -19,7 +19,7 @@ import {
   newColumnType,
   renameColumnStatement,
   renameTableStatement,
-} from '../tables/shape'
+} from '~/entities/connection/queries/tables/shape'
 
 const referentialActionType = type.enumerated(...REFERENTIAL_ACTIONS)
 

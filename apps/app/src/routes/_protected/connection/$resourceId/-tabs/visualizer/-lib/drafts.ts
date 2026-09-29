@@ -2,8 +2,9 @@ import { memoize } from 'memoza'
 import { nanoid } from 'nanoid'
 import { createStore } from 'seitu'
 
-import type { DiagramDraft } from '~/entities/connection/queries/diagram/shape'
 import type { NewColumn } from '~/entities/connection/queries/tables/shape'
+
+import type { DiagramDraft } from './statements'
 
 type Unsaved<T> = T extends unknown ? Omit<T, 'id'> : never
 

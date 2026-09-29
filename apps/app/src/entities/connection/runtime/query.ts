@@ -4,6 +4,7 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
+import type { Kysely, Transaction } from 'kysely'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
 
@@ -83,6 +84,19 @@ export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
     resourceId: queryParams.resourceId,
   }).cancel(queryId)
 
+const dialectOf = (queryParams: QueryParams) =>
+  dialects[queryParams.type]({
+    connectionId: queryParams.connectionId,
+    connectionString: queryParams.connectionString,
+    log: queryParams.log,
+    resourceId: queryParams.resourceId,
+    resultSets: queryParams.resultSets,
+  })
+
+export const transaction = (queryParams: QueryParams) =>
+  // oxlint-disable-next-line ts/no-explicit-any
+  (dialectOf(queryParams) as Kysely<any>).transaction()
+
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
 
@@ -106,16 +120,11 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
   }
 }) => {
   const run = async (
-    queryParams: QueryParams
+    queryParams: QueryParams,
+    // oxlint-disable-next-line ts/no-explicit-any
+    tx?: Transaction<any>
   ): Promise<T extends Type ? T['inferOut'] : unknown> => {
-    const dialect = dialects[queryParams.type]
-    const instance = dialect({
-      connectionId: queryParams.connectionId,
-      connectionString: queryParams.connectionString,
-      log: queryParams.log,
-      resourceId: queryParams.resourceId,
-      resultSets: queryParams.resultSets,
-    })
+    const instance = tx ?? dialectOf(queryParams)
     const queryFn = options.query[queryParams.type]
 
     const connectionStringToShow = getConnectionStringToShow(

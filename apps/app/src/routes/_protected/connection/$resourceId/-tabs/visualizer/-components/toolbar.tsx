@@ -29,9 +29,8 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
-import type { DiagramDraft } from '~/entities/connection/queries/diagram/shape'
-
 import { tableMatches, useDiagram } from '../-lib/context'
+import type { DiagramDraft } from '../-lib/statements'
 
 export const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`

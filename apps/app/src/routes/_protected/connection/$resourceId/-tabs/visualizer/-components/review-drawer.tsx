@@ -25,11 +25,11 @@ import {
 } from '@tamery/ui/components/tooltip'
 
 import { PaneEmpty } from '~/components/pane-empty'
-import type { DiagramDraft } from '~/entities/connection/queries/diagram/shape'
-import { draftStatement } from '~/entities/connection/queries/diagram/shape'
 import { coldDialects } from '~/entities/connection/runtime/dialects'
 import { formatSql } from '~/lib/formatter'
 
+import type { DiagramDraft } from '../-lib/statements'
+import { draftStatement } from '../-lib/statements'
 import { applyConsequence, plural } from './toolbar'
 
 const draftLabel = (draft: DiagramDraft) => {

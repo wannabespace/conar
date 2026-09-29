@@ -15,8 +15,6 @@ import {
 } from '~/entities/connection/capabilities'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
-import { applyDiagramDraftsQuery } from '~/entities/connection/queries/diagram/apply'
-import type { DiagramDraft } from '~/entities/connection/queries/diagram/shape'
 import {
   resourceIndexesQueryOptions,
   structureQueryKey,
@@ -30,7 +28,10 @@ import {
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import type { NewColumn } from '~/entities/connection/queries/tables/shape'
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers/list'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import {
+  connectionResourceToQueryParams,
+  transaction,
+} from '~/entities/connection/runtime/query'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 import { visualizerLayout } from '~/entities/connection/store/helpers/visualizer'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
@@ -52,8 +53,10 @@ import { DiagramContext, diagramViewStore } from './-lib/context'
 import { diagramDrafts, diagramDraftsStore } from './-lib/drafts'
 import type { Positions } from './-lib/layout'
 import { NODE_WIDTH, layoutDiagram } from './-lib/layout'
+import { draftQuery } from './-lib/queries'
 import type { DiagramColumn, DiagramTable, TableKind } from './-lib/schema'
 import { buildDiagram, tableNodeId } from './-lib/schema'
+import type { DiagramDraft } from './-lib/statements'
 import { VisualizerSkeleton } from './visualizer-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -309,12 +312,23 @@ const Visualizer = ({
     reset,
   } = useMutation({
     mutationFn: async (pending: DiagramDraft[]) => {
+      const params = await connectionResourceToQueryParams(connectionResource)
+      if (capabilities.ddlRollback) {
+        await transaction(params).execute(async (tx) => {
+          for (const draft of pending) {
+            // oxlint-disable-next-line no-await-in-loop
+            await draftQuery(draft).run(params, tx)
+          }
+        })
+        return pending
+      }
       const committed: DiagramDraft[] = []
       try {
-        await applyDiagramDraftsQuery({
-          drafts: pending,
-          onCommitted: (draft) => committed.push(draft),
-        }).run(await connectionResourceToQueryParams(connectionResource))
+        for (const draft of pending) {
+          // oxlint-disable-next-line no-await-in-loop
+          await draftQuery(draft).run(params)
+          committed.push(draft)
+        }
       } catch (error) {
         for (const draft of committed) {
           edit.remove(draft.id)

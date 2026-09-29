@@ -27,8 +27,6 @@ import {
   renderWebNodes,
 } from '~/components/app-menu-web'
 
-// Mounts with the popup, so a function `items` resolves on open like the native
-// menu does: callers pick items from a ref the right-click just set.
 const WebContextMenuItems = ({ items }: Pick<AppContextMenuProps, 'items'>) =>
   renderWebNodes(
     typeof items === 'function' ? items() : items,
