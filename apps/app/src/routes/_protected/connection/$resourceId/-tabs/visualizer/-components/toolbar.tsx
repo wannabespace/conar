@@ -95,7 +95,7 @@ export const Toolbar = ({
 
   return (
     <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center">
-      <div className="pointer-events-none flex w-full max-w-3xl items-start gap-2 *:pointer-events-auto">
+      <div className="pointer-events-none flex w-full max-w-3xl flex-wrap items-start gap-2 *:pointer-events-auto">
         {can.schemas && schemas.length > 1 && (
           <Select value={schema} onValueChange={(v) => v && onSchemaChange(v)}>
             <SelectTrigger data-mask className="max-w-56 min-w-40">
@@ -115,7 +115,7 @@ export const Toolbar = ({
             </SelectContent>
           </Select>
         )}
-        <InputGroup className="min-w-0 flex-1">
+        <InputGroup className="min-w-40 flex-1">
           <InputGroupInput
             ref={searchRef}
             placeholder="Search tables and columns"
