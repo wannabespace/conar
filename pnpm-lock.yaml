@@ -126,6 +126,9 @@ catalogs:
     '@tanstack/browser-db-sqlite-persistence':
       specifier: ^0.2.20
       version: 0.2.20
+    '@tanstack/db-sqlite-persistence-core':
+      specifier: ^0.2.20
+      version: 0.2.20
     '@tanstack/react-db':
       specifier: ^0.3.7
       version: 0.3.7
@@ -671,6 +674,9 @@ importers:
       '@tanstack/browser-db-sqlite-persistence':
         specifier: 'catalog:'
         version: 0.2.20(@journeyapps/wa-sqlite@1.7.2)(typescript@7.0.2)
+      '@tanstack/db-sqlite-persistence-core':
+        specifier: 'catalog:'
+        version: 0.2.20(typescript@7.0.2)
       '@tanstack/react-db':
         specifier: 'catalog:'
         version: 0.3.7(react@19.3.0)(typescript@7.0.2)

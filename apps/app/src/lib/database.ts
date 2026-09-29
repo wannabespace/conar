@@ -24,16 +24,13 @@ const databaseResult = await Result.tryPromise(
     retry: {
       backoff: 'linear',
       delayMs: OPEN_DATABASE_RETRY_DELAY,
-      shouldRetry: (error) => {
-        posthog.captureException(error)
-        return true
-      },
       times: OPEN_DATABASE_RETRIES,
     },
   }
 )
 
 if (databaseResult.isErr()) {
+  posthog.captureException(databaseResult.error)
   throw databaseResult.error
 }
 

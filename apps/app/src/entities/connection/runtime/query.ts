@@ -128,6 +128,9 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
     let attempt = 0
 
     const resolvers = Promise.withResolvers()
+    // Only concurrent reconnect waiters await this; without a handler every
+    // failed query surfaces as an unhandled rejection.
+    resolvers.promise.catch(noop)
 
     const canShowToast = () =>
       queryParams.resourceId

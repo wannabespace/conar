@@ -31,6 +31,7 @@
     "@tamery/table": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@tanstack/browser-db-sqlite-persistence": "catalog:",
+    "@tanstack/db-sqlite-persistence-core": "catalog:",
     "@tanstack/react-db": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",

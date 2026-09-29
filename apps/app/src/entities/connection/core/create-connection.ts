@@ -19,7 +19,7 @@ export const createConnectionTransaction = (data: {
   } = getCollections()
 
   const tx = createTransaction({
-    mutationFn: async () => {
+    mutationFn: async ({ transaction }) => {
       await orpc.connections.create.call(
         await prepareConnectionToCloud(
           connectionStringsCollection,
@@ -27,19 +27,17 @@ export const createConnectionTransaction = (data: {
         )
       )
       await orpc.connectionsResources.create.call(data.resource)
-
-      if (!window.electron) {
-        await Promise.all([
-          connectionsCollection.utils.awaitChange(
-            data.connection.id,
-            data.connection.updatedAt
-          ),
-          connectionsResourcesCollection.utils.awaitChange(
-            data.resource.id,
-            data.resource.updatedAt
-          ),
-        ])
-      }
+      await connectionStringsCollection.utils.acceptMutations(transaction)
+      await Promise.all([
+        connectionsCollection.utils.awaitChange(
+          data.connection.id,
+          data.connection.updatedAt
+        ),
+        connectionsResourcesCollection.utils.awaitChange(
+          data.resource.id,
+          data.resource.updatedAt
+        ),
+      ])
     },
   })
 
