@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useIsFetching } from '@tanstack/react-query'
+import { partialMatchKey, useIsFetching } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -140,9 +140,7 @@ const VisualizerRefresh = () => {
   const isFetching =
     useIsFetching({
       predicate: (query) =>
-        keys.some((key) =>
-          key.every((part, index) => query.queryKey[index] === part)
-        ),
+        keys.some((key) => partialMatchKey(query.queryKey, key)),
     }) > 0
   const [isUserRefreshing, setIsUserRefreshing] = useState(false)
 

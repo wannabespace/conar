@@ -1,15 +1,10 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '../../runtime/query'
+import type { AlterColumnTarget } from './shape'
 import { alterColumnStatement } from './shape'
 
-export const alterColumnQuery = (target: {
-  column: string
-  nullable: boolean
-  schema: string
-  table: string
-  type: string
-}) =>
+export const alterColumnQuery = (target: AlterColumnTarget) =>
   createQuery({
     query: {
       clickhouse: (db) =>

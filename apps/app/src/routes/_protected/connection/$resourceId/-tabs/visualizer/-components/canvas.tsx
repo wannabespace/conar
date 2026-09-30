@@ -1,5 +1,10 @@
 import { Structure01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import type { Connection, NodeChange, Viewport } from '@xyflow/react'
 import {
@@ -14,13 +19,14 @@ import {
 import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 
-import { COMPACT_ZOOM, useDiagram } from '../-lib/context'
+import { useDiagram } from '../-lib/context'
 import type { Positions } from '../-lib/layout'
 import type { Diagram, DiagramRelation } from '../-lib/schema'
 import type { RelationEdge } from './relation-edge'
 import { RelationEdgeView } from './relation-edge'
+import { handleColumn, handleId } from './row-handles'
 import type { TableNode } from './table-node'
-import { handleColumn, handleId, TableNodeView } from './table-node'
+import { TableNodeView } from './table-node'
 
 const nodeTypes = { table: TableNodeView }
 const edgeTypes = { relation: RelationEdgeView }
@@ -76,20 +82,15 @@ const edgesOf = (
     }
   })
 
-// Zoom reaches the cards as a CSS variable and one boolean in the view store,
-// so a wheel tick re-renders nothing but the cards crossing the threshold.
-const ZoomTracker = () => {
-  const { view } = useDiagram()
+// Zoom reaches the compact card labels as a CSS variable, so a wheel tick
+// re-renders no card.
+const ZoomVariable = () => {
   const zoom = useStore((state) => state.transform[2])
   const domNode = useStore((state) => state.domNode)
 
   useEffect(() => {
     domNode?.style.setProperty('--diagram-zoom', String(zoom))
-    const compact = zoom < COMPACT_ZOOM
-    if (view.get().compact !== compact) {
-      view.set((state) => ({ ...state, compact }))
-    }
-  }, [domNode, view, zoom])
+  }, [domNode, zoom])
 
   return null
 }
@@ -99,7 +100,6 @@ const isValidConnection = (connection: Connection | RelationEdge) =>
 
 export const Canvas = ({
   defaultViewport,
-  onConnect,
   onPositionsChange,
   onPositionsCommit,
   onResetLayout,
@@ -107,12 +107,6 @@ export const Canvas = ({
   positions,
 }: {
   defaultViewport: Viewport | undefined
-  onConnect: (connection: {
-    column: string
-    foreignColumn: string
-    foreignTable: string
-    table: string
-  }) => void
   onPositionsChange: (positions: Positions) => void
   onPositionsCommit: () => void
   onResetLayout: () => void
@@ -201,7 +195,7 @@ export const Canvas = ({
         if (!connection.sourceHandle || !connection.targetHandle) {
           return
         }
-        onConnect({
+        actions.linkColumns({
           column: handleColumn(connection.sourceHandle),
           foreignColumn: handleColumn(connection.targetHandle),
           foreignTable: connection.target,
@@ -224,7 +218,7 @@ export const Canvas = ({
       style={flowStyle}
       className="bg-background"
     >
-      <ZoomTracker />
+      <ZoomVariable />
       <Background
         bgColor="var(--color-background)"
         variant={BackgroundVariant.Dots}
@@ -237,12 +231,21 @@ export const Canvas = ({
         showFitView={false}
         className="ring-foreground/4 overflow-hidden rounded-xl shadow-md ring"
       >
-        <ControlButton
-          onClick={onResetLayout}
-          title="Arrange tables automatically"
-        >
-          <HugeiconsIcon icon={Structure01Icon} strokeWidth={2} />
-        </ControlButton>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <ControlButton
+                onClick={onResetLayout}
+                aria-label="Arrange tables"
+              />
+            }
+          >
+            <HugeiconsIcon icon={Structure01Icon} strokeWidth={2} />
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            Arrange tables automatically
+          </TooltipContent>
+        </Tooltip>
       </Controls>
       <MiniMap
         position="bottom-right"

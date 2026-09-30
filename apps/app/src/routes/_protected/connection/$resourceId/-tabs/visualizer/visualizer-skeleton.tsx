@@ -3,22 +3,32 @@ import { Skeleton } from '@tamery/ui/components/skeleton'
 const NODES_COUNT = 3
 const COLUMNS_COUNT = 5
 
-export const VisualizerSkeleton = () => (
+export const VisualizerSkeleton = ({
+  drafts,
+  schemaPicker,
+}: {
+  drafts: boolean
+  schemaPicker: boolean
+}) => (
   <div
     aria-hidden
     className="bg-background relative size-full min-h-0 flex-1 overflow-hidden rounded-lg bg-[radial-gradient(var(--color-border)_1px,transparent_0)] bg-size-[20px_20px]"
   >
     <div className="absolute inset-x-3 top-3 z-10 flex flex-col items-center">
       <div className="flex w-full max-w-3xl flex-wrap items-start gap-2">
-        <Skeleton className="h-8 w-40 rounded-xl" />
+        {schemaPicker && <Skeleton className="h-8 w-40 rounded-xl" />}
         <Skeleton className="h-8 min-w-40 flex-1 rounded-xl" />
-        <div className="flex items-center gap-1">
-          <Skeleton className="size-8 rounded-xl" />
-          <Skeleton className="h-8 w-20 rounded-xl" />
-        </div>
+        {drafts && (
+          <div className="flex items-center gap-1">
+            <Skeleton className="size-8 rounded-xl" />
+            <Skeleton className="h-8 w-20 rounded-xl" />
+          </div>
+        )}
+        <Skeleton className="h-8 w-20 rounded-xl" />
       </div>
     </div>
     <Skeleton className="absolute bottom-3 left-3 z-10 h-20 w-7 rounded-xl" />
+    <Skeleton className="absolute right-3 bottom-3 z-10 h-37.5 w-50 rounded-xl" />
     <div className="flex size-full items-center justify-center gap-24">
       {Array.from({ length: NODES_COUNT }).map((_, nodeIndex) => (
         <div

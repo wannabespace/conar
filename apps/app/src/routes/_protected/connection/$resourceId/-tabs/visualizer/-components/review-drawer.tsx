@@ -25,12 +25,13 @@ import {
 } from '@tamery/ui/components/tooltip'
 
 import { PaneEmpty } from '~/components/pane-empty'
+import { inlineParameters } from '~/entities/connection/generators/formats/sql'
 import { coldDialects } from '~/entities/connection/runtime/dialects'
 import { formatSql } from '~/lib/formatter'
 
+import { applyConsequence, plural } from '../-lib/apply'
 import type { DiagramDraft } from '../-lib/statements'
-import { draftStatement } from '../-lib/statements'
-import { applyConsequence, plural } from './toolbar'
+import { draftStatement, inApplyOrder } from '../-lib/statements'
 
 const draftLabel = (draft: DiagramDraft) => {
   switch (draft.kind) {
@@ -67,8 +68,15 @@ const draftLabel = (draft: DiagramDraft) => {
   }
 }
 
-const previewSql = (type: ConnectionType, draft: DiagramDraft) =>
-  formatSql(draftStatement(type, coldDialects[type](), draft).sql, type)
+// SQL Server's sp_rename takes names as bound values, which the preview
+// has to show; a statement without any keeps its raw text untouched.
+const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
+  const { parameters, sql } = draftStatement(type, coldDialects[type](), draft)
+  return formatSql(
+    parameters.length > 0 ? inlineParameters(sql, parameters) : sql,
+    type
+  )
+}
 
 export const ReviewDrawer = ({
   applying,
@@ -94,7 +102,10 @@ export const ReviewDrawer = ({
   open: boolean
 }) => {
   const groups = [
-    ...Map.groupBy(drafts, (draft) => `${draft.schema}.${draft.table}`),
+    ...Map.groupBy(
+      inApplyOrder(drafts),
+      (draft) => `${draft.schema}.${draft.table}`
+    ),
   ]
   const consequence = applyConsequence(drafts, ddlRollback)
 
@@ -105,7 +116,7 @@ export const ReviewDrawer = ({
       swipeDirection="right"
       size="sm"
     >
-      <DrawerContent className="max-w-2xl">
+      <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Review changes</DrawerTitle>
           <DrawerDescription>
@@ -153,7 +164,7 @@ export const ReviewDrawer = ({
                                 variant="ghost"
                                 size="icon-xs"
                                 aria-label="Discard change"
-                                className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                                 onClick={() => onDiscard(draft.id)}
                                 disabled={applying}
                               />
@@ -194,7 +205,7 @@ export const ReviewDrawer = ({
             variant="ghost"
             onClick={onDiscardAll}
             disabled={applying || drafts.length === 0}
-            className="text-muted-foreground hover:text-foreground mr-auto"
+            className="text-muted-foreground mr-auto"
           >
             <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
             Discard all

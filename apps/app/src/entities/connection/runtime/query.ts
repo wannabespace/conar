@@ -4,7 +4,7 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
-import type { Kysely, Transaction } from 'kysely'
+import type { Transaction } from 'kysely'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
 
@@ -94,8 +94,7 @@ const dialectOf = (queryParams: QueryParams) =>
   })
 
 export const transaction = (queryParams: QueryParams) =>
-  // oxlint-disable-next-line ts/no-explicit-any
-  (dialectOf(queryParams) as Kysely<any>).transaction()
+  dialectOf(queryParams).transaction()
 
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000

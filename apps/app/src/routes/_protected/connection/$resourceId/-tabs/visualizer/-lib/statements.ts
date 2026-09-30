@@ -1,97 +1,75 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { unsupported } from '@tamery/shared/unsupported'
-import { type } from 'arktype'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { CompiledQuery, Kysely } from 'kysely'
-import { sql } from 'kysely'
 
+import type { ReferentialAction } from '~/entities/connection/queries/constraints/shape'
 import {
-  REFERENTIAL_ACTIONS,
-  addConstraint,
-  dropConstraint,
-  mysqlDropKey,
+  addConstraintStatement,
+  dropConstraintStatement,
 } from '~/entities/connection/queries/constraints/shape'
+import type {
+  AlterColumnTarget,
+  NewColumn,
+} from '~/entities/connection/queries/tables/shape'
 import {
   addColumnStatement,
   alterColumnStatement,
   createTableStatement,
   dropColumnStatement,
   dropTableStatement,
-  newColumnType,
   renameColumnStatement,
   renameTableStatement,
 } from '~/entities/connection/queries/tables/shape'
 
-const referentialActionType = type.enumerated(...REFERENTIAL_ACTIONS)
+interface TableRef {
+  schema: string
+  table: string
+}
 
-export const diagramDraftType = type({ id: 'string' }).and(
-  type.or(
-    type({
-      columns: newColumnType.array(),
-      kind: '"createTable"',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      kind: '"renameTable"',
-      newName: 'string',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      cascade: 'boolean',
-      kind: '"dropTable"',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      column: newColumnType,
-      kind: '"addColumn"',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      column: 'string',
-      kind: '"renameColumn"',
-      newName: 'string',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      column: 'string',
-      kind: '"alterColumn"',
-      nullable: 'boolean',
-      schema: 'string',
-      table: 'string',
-      type: 'string',
-    }),
-    type({
-      column: 'string',
-      kind: '"dropColumn"',
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      columns: 'string[]',
-      foreignColumns: 'string[]',
-      foreignSchema: 'string',
-      foreignTable: 'string',
-      kind: '"addForeignKey"',
-      name: 'string',
-      onDelete: referentialActionType,
-      onUpdate: referentialActionType,
-      schema: 'string',
-      table: 'string',
-    }),
-    type({
-      kind: '"dropForeignKey"',
-      name: 'string',
-      schema: 'string',
-      table: 'string',
-    })
+export type DiagramDraft = { id: string } & TableRef &
+  (
+    | { columns: NewColumn[]; kind: 'createTable' }
+    | { kind: 'renameTable'; newName: string }
+    | { cascade: boolean; kind: 'dropTable' }
+    | { column: NewColumn; kind: 'addColumn' }
+    | { column: string; kind: 'renameColumn'; newName: string }
+    | ({ kind: 'alterColumn' } & Omit<AlterColumnTarget, keyof TableRef>)
+    | { column: string; kind: 'dropColumn' }
+    | {
+        columns: string[]
+        foreignColumns: string[]
+        foreignSchema: string
+        foreignTable: string
+        kind: 'addForeignKey'
+        name: string
+        onDelete: ReferentialAction
+        onUpdate: ReferentialAction
+      }
+    | { kind: 'dropForeignKey'; name: string }
   )
-)
 
-export type DiagramDraft = typeof diagramDraftType.infer
+// Drafts name tables and columns by their original names, so a rename has to
+// run after every statement that still names the object.
+const APPLY_ORDER: DiagramDraft['kind'][] = [
+  'createTable',
+  'addColumn',
+  'alterColumn',
+  'dropForeignKey',
+  'addForeignKey',
+  'dropColumn',
+  'renameColumn',
+  'renameTable',
+  'dropTable',
+]
+
+export const inApplyOrder = (drafts: DiagramDraft[]) =>
+  drafts.toSorted(
+    (a, b) => APPLY_ORDER.indexOf(a.kind) - APPLY_ORDER.indexOf(b.kind)
+  )
+
+export const isDrop = (draft: DiagramDraft) =>
+  draft.kind === 'dropTable' ||
+  draft.kind === 'dropColumn' ||
+  draft.kind === 'dropForeignKey'
 
 export const draftStatement = (
   dialectType: ConnectionType,
@@ -122,26 +100,18 @@ export const draftStatement = (
       return dropColumnStatement(db, draft)
     }
     case 'addForeignKey': {
-      if (dialectType === ConnectionType.ClickHouse) {
-        unsupported('Foreign keys')()
-      }
-
-      return addConstraint(db, draft, {
+      return addConstraintStatement(dialectType, db, draft, {
         ...draft,
         expression: '',
         kind: 'foreignKey',
-      }).compile()
+      })
     }
     case 'dropForeignKey': {
-      if (dialectType === ConnectionType.ClickHouse) {
-        unsupported('Foreign keys')()
-      }
-
-      return dialectType === ConnectionType.MySQL
-        ? sql`ALTER TABLE ${sql.id(draft.schema, draft.table)} DROP ${mysqlDropKey('foreignKey', draft.name)}`.compile(
-            db
-          )
-        : dropConstraint(db, draft).compile()
+      return dropConstraintStatement(dialectType, db, {
+        ...draft,
+        cascade: false,
+        kind: 'foreignKey',
+      })
     }
     default: {
       return draft satisfies never

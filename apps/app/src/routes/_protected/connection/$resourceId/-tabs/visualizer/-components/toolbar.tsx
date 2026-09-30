@@ -29,40 +29,10 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
+import { applyConsequence, plural } from '../-lib/apply'
 import { tableMatches, useDiagram } from '../-lib/context'
+import { isDrop } from '../-lib/statements'
 import type { DiagramDraft } from '../-lib/statements'
-
-export const plural = (count: number, noun: string) =>
-  `${count} ${noun}${count === 1 ? '' : 's'}`
-
-export const applyConsequence = (
-  drafts: DiagramDraft[],
-  ddlRollback: boolean
-) => {
-  const drops = drafts.filter(
-    (draft) =>
-      draft.kind === 'dropTable' ||
-      draft.kind === 'dropColumn' ||
-      draft.kind === 'dropForeignKey'
-  ).length
-  if (drops > 0) {
-    return {
-      description: `${plural(drops, 'drop')} delete data permanently${ddlRollback ? '' : '; earlier statements stay applied if a later one fails'}.`,
-      variant: 'destructive' as const,
-    }
-  }
-  if (!ddlRollback) {
-    return {
-      description:
-        'This engine commits each statement on its own, so a failure leaves the earlier ones applied.',
-      variant: 'warning' as const,
-    }
-  }
-  return {
-    description: 'Runs every statement in one transaction.',
-    variant: 'default' as const,
-  }
-}
 
 export const Toolbar = ({
   applying,
@@ -118,6 +88,7 @@ export const Toolbar = ({
           <InputGroupInput
             ref={searchRef}
             placeholder="Search tables and columns"
+            data-mask
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -138,7 +109,7 @@ export const Toolbar = ({
                       variant="ghost"
                       size="icon-xs"
                       aria-label="Clear search"
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground"
                       onClick={() => onSearchChange('')}
                     />
                   }
@@ -197,7 +168,9 @@ export const Toolbar = ({
                 <TooltipContent side="bottom">
                   <div className="flex flex-col gap-0.5">
                     <span>
-                      Apply {plural(drafts.length, 'change')} to the database.{' '}
+                      {drafts.some(isDrop)
+                        ? `Review ${plural(drafts.length, 'change')} before applying. `
+                        : `Apply ${plural(drafts.length, 'change')} to the database. `}
                       {consequence.description}
                     </span>
                     <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />

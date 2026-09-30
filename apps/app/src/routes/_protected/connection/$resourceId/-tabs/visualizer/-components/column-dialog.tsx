@@ -139,28 +139,22 @@ const ColumnForm = ({
             </ComboboxContent>
           </Combobox>
         </Field>
-        <div className="flex items-center gap-2">
+        <Label className="font-normal">
           <Checkbox
-            id="diagram-column-nullable"
             checked={primaryKey ? false : nullable}
             disabled={primaryKey}
             onCheckedChange={(checked) => setNullable(checked === true)}
           />
-          <Label htmlFor="diagram-column-nullable" className="font-normal">
-            Allow NULL
-          </Label>
-        </div>
+          Allow NULL
+        </Label>
         {column === null && table.state === 'added' && (
-          <div className="flex items-center gap-2">
+          <Label className="font-normal">
             <Checkbox
-              id="diagram-column-pk"
               checked={primaryKey}
               onCheckedChange={(checked) => setPrimaryKey(checked === true)}
             />
-            <Label htmlFor="diagram-column-pk" className="font-normal">
-              Primary key
-            </Label>
-          </div>
+            Primary key
+          </Label>
         )}
       </form>
       <DialogFooter>

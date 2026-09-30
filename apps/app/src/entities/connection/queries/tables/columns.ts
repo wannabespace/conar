@@ -10,6 +10,11 @@ import {
 } from '../../runtime/query'
 
 export const columnType = type({
+  // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.
+  'attributes?': 'string',
+  'collation?': 'string | null',
+  // Full type as a DDL statement spells it, length and precision included.
+  'declaredType?': 'string | null',
   default: 'string | null',
   'editable?': 'boolean | 1 | 0',
   'enumName?': 'string',
@@ -39,6 +44,12 @@ export const columnType = type({
 const clickhouseEnumRegex = /^Enum\d+/u
 
 const clickhouseNullableRegex = /^(?:LowCardinality\()?Nullable\(/u
+
+const clickhouseWithoutNullable = (sqlType: string) =>
+  sqlType.replace(
+    /^(?<wrapper>LowCardinality\()?Nullable\((?<inner>.*)\)$/u,
+    '$<wrapper>$<inner>'
+  )
 
 const getClickhouseColumnType = (sqlType: string): string => {
   if (sqlType.startsWith('Array(') && sqlType.endsWith(')')) {
@@ -111,6 +122,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
 
         return query.map((row) => ({
           ...row,
+          declaredType: clickhouseWithoutNullable(row.type),
           editable: true,
           enumName: row.type.includes('Enum') ? row.id : undefined,
           isArray: row.type.includes('Array('),
@@ -121,7 +133,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
       mssql: async (db) => {
         const query = await db
           .selectFrom('information_schema.COLUMNS')
-          .select([
+          .select((eb) => [
             'TABLE_SCHEMA as schema',
             'TABLE_NAME as table',
             'COLUMN_NAME as name',
@@ -130,6 +142,31 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'NUMERIC_PRECISION as precision',
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
+            'COLLATION_NAME as collation',
+            eb
+              .case()
+              .when('DATA_TYPE', 'in', [
+                'binary',
+                'char',
+                'nchar',
+                'nvarchar',
+                'varbinary',
+                'varchar',
+              ])
+              .then(
+                sql<string>`DATA_TYPE + '(' + IIF(CHARACTER_MAXIMUM_LENGTH = -1, 'max', CAST(CHARACTER_MAXIMUM_LENGTH AS varchar(10))) + ')'`
+              )
+              .when('DATA_TYPE', 'in', ['decimal', 'numeric'])
+              .then(
+                sql<string>`DATA_TYPE + '(' + CAST(NUMERIC_PRECISION AS varchar(10)) + ', ' + CAST(NUMERIC_SCALE AS varchar(10)) + ')'`
+              )
+              .when('DATA_TYPE', 'in', ['datetime2', 'datetimeoffset', 'time'])
+              .then(
+                sql<string>`DATA_TYPE + '(' + CAST(DATETIME_PRECISION AS varchar(10)) + ')'`
+              )
+              .else(eb.ref('DATA_TYPE'))
+              .end()
+              .as('declaredType'),
             sql<number | null>`
               CASE WHEN DATA_TYPE IN ('timestamp', 'rowversion')
                 OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsIdentity') = 1
@@ -182,6 +219,21 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'NUMERIC_PRECISION as precision',
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
+            'COLUMN_TYPE as declaredType',
+            'COLLATION_NAME as collation',
+            sql<string>`
+              CONCAT_WS(' ',
+                IF(COLUMN_DEFAULT IS NULL, NULL, CONCAT('DEFAULT ', CASE
+                  WHEN EXTRA NOT LIKE '%DEFAULT_GENERATED%' THEN QUOTE(COLUMN_DEFAULT)
+                  WHEN COLUMN_DEFAULT LIKE 'CURRENT_TIMESTAMP%' THEN COLUMN_DEFAULT
+                  ELSE CONCAT('(', COLUMN_DEFAULT, ')')
+                END)),
+                IF(EXTRA LIKE '%auto_increment%', 'AUTO_INCREMENT', NULL),
+                IF(EXTRA LIKE '%on update%', SUBSTRING(EXTRA, LOCATE('on update', EXTRA)), NULL),
+                IF(COLUMN_COMMENT = '', NULL, CONCAT('COMMENT ', QUOTE(COLUMN_COMMENT)))
+              )
+            `.as('attributes'),
+            sql<1 | 0>`EXTRA LIKE '%auto_increment%'`.as('isIdentity'),
             sql<1 | 0>`
               EXTRA LIKE '%auto_increment%'
                 OR EXTRA LIKE '%VIRTUAL GENERATED%'
@@ -223,7 +275,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
       postgres: async (db) => {
         const query = await db
           .selectFrom('information_schema.columns')
-          .select([
+          .select((eb) => [
             'table_schema as schema',
             'table_name as table',
             'column_name as id',
@@ -233,6 +285,23 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'character_maximum_length as max_length',
             'numeric_precision as precision',
             'numeric_scale as scale',
+            eb
+              .selectFrom('pg_catalog.pg_attribute as a')
+              .select((sub) =>
+                sub
+                  .fn<string>('format_type', [
+                    sub.ref('a.atttypid'),
+                    sub.ref('a.atttypmod'),
+                  ])
+                  .as('declaredType')
+              )
+              .where(
+                'a.attrelid',
+                '=',
+                sql<number>`(quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass`
+              )
+              .whereRef('a.attname', '=', 'column_name')
+              .as('declaredType'),
             sql<boolean>`is_identity = 'YES' OR is_generated = 'ALWAYS'`.as(
               'isGenerated'
             ),
@@ -321,6 +390,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
           (row) =>
             ({
               ...row,
+              declaredType: row.type,
               editable: false,
               isArray: row.type.endsWith('[]'),
               type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,

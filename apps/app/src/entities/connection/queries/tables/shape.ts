@@ -1,33 +1,55 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { type } from 'arktype'
-import type { CreateTableBuilder, Kysely } from 'kysely'
+import type { AlterColumnBuilder, CreateTableBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import { identifiers, mssqlQualified } from '../shared/sql-fragments'
 
-export const newColumnType = type({
-  name: 'string',
-  nullable: 'boolean',
-  primaryKey: 'boolean',
-  type: 'string',
-})
+export interface NewColumn {
+  name: string
+  nullable: boolean
+  primaryKey: boolean
+  type: string
+}
 
-export type NewColumn = typeof newColumnType.infer
+// What the catalog says about a column before an alter; engines that restate
+// the whole column (MySQL, SQL Server) repeat the parts the alter leaves alone.
+export interface ColumnDefinition {
+  attributes: string
+  collation: string | null
+  nullable: boolean
+  type: string
+}
 
 interface TableTarget {
   schema: string
   table: string
 }
 
+export interface AlterColumnTarget extends TableTarget {
+  column: string
+  nullable: boolean
+  original: ColumnDefinition
+  type: string
+}
+
 // oxlint-disable-next-line ts/no-explicit-any
 type Db = Kysely<any>
 
-// ClickHouse spells nullability as a type wrapper, never as a NULL keyword.
+const LOW_CARDINALITY = 'LowCardinality('
+
+// ClickHouse spells nullability as a type wrapper, never as a NULL keyword,
+// and it has to sit inside LowCardinality.
 const clickhouseColumnType = ({
   nullable,
   type: columnType,
-}: Pick<NewColumn, 'nullable' | 'type'>) =>
-  nullable ? `Nullable(${columnType})` : columnType
+}: Pick<NewColumn, 'nullable' | 'type'>) => {
+  if (!nullable) {
+    return columnType
+  }
+  return columnType.startsWith(LOW_CARDINALITY)
+    ? `${LOW_CARDINALITY}Nullable(${columnType.slice(LOW_CARDINALITY.length, -1)}))`
+    : `Nullable(${columnType})`
+}
 
 export const createTableStatement = (
   dialectType: ConnectionType,
@@ -167,11 +189,21 @@ export const alterColumnStatement = (
   {
     column,
     nullable,
+    original,
     schema,
     table,
     type: columnType,
-  }: TableTarget & { column: string; nullable: boolean; type: string }
+  }: AlterColumnTarget
 ) => {
+  const retyped = columnType !== original.type
+  const kept = [
+    !retyped && original.collation && `COLLATE ${original.collation}`,
+    original.attributes,
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const definition = sql.raw(kept ? `${columnType} ${kept}` : columnType)
+
   if (dialectType === ConnectionType.ClickHouse) {
     return sql`ALTER TABLE ${sql.id(schema, table)} MODIFY COLUMN ${sql.id(column)} ${sql.raw(clickhouseColumnType({ nullable, type: columnType }))}`.compile(
       db
@@ -179,7 +211,7 @@ export const alterColumnStatement = (
   }
 
   if (dialectType === ConnectionType.MSSQL) {
-    return sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${sql.raw(columnType)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`.compile(
+    return sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${definition} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`.compile(
       db
     )
   }
@@ -188,18 +220,21 @@ export const alterColumnStatement = (
 
   if (dialectType === ConnectionType.MySQL) {
     return alter
-      .modifyColumn(column, sql.raw(columnType), (definition) =>
-        nullable ? definition : definition.notNull()
+      .modifyColumn(column, definition, (builder) =>
+        nullable ? builder : builder.notNull()
       )
       .compile()
   }
 
+  const nullability = (builder: AlterColumnBuilder) =>
+    nullable ? builder.dropNotNull() : builder.setNotNull()
+
+  if (!retyped) {
+    return alter.alterColumn(column, nullability).compile()
+  }
+
   return alter
-    .alterColumn(column, (definition) =>
-      definition.setDataType(sql.raw(columnType))
-    )
-    .alterColumn(column, (definition) =>
-      nullable ? definition.dropNotNull() : definition.setNotNull()
-    )
+    .alterColumn(column, (builder) => builder.setDataType(sql.raw(columnType)))
+    .alterColumn(column, nullability)
     .compile()
 }

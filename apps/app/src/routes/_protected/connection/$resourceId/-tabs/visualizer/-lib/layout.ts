@@ -1,7 +1,15 @@
 import dagre from '@dagrejs/dagre'
+import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
+
+import { visualizerLayout } from '~/entities/connection/store/helpers/visualizer'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
 import type { Diagram, DiagramTable } from './schema'
+import { tableNodeId } from './schema'
+import type { DiagramDraft } from './statements'
 
+// Keep in sync with the card's w-64, h-8 header and h-7 rows in table-node.tsx.
 export const NODE_WIDTH = 256
 const NODE_HEADER_HEIGHT = 32
 const NODE_ROW_HEIGHT = 28
@@ -76,4 +84,61 @@ export const layoutDiagram = ({ relations, tables }: Diagram): Positions => {
   }
 
   return positions
+}
+
+export const usePositions = (
+  resourceId: string,
+  schema: string,
+  diagram: Diagram
+) => {
+  const saved = useSubscription(getConnectionResourceStore(resourceId), {
+    isEqual: Object.is,
+    selector: (state) => state.visualizerPositions?.[schema],
+  })
+  const [dragged, setDragged] = useState<Positions>({})
+  // Draft tables carry their own position, so they stay out of the layout and
+  // adding one never shuffles the rest.
+  const auto = layoutDiagram({
+    relations: diagram.relations.filter((r) => r.state !== 'added'),
+    tables: diagram.tables.filter((t) => t.state !== 'added'),
+  })
+  const positions: Positions = Object.fromEntries(
+    diagram.tables.map((table) => [
+      table.id,
+      dragged[table.id] ??
+        saved?.[table.id] ??
+        auto[table.id] ?? { x: 0, y: 0 },
+    ])
+  )
+
+  const commit = (next: Positions) =>
+    visualizerLayout.setPositions(resourceId, schema, next)
+
+  return {
+    auto,
+    commit,
+    positions,
+    setDragged,
+    // Applied drafts: positions follow renamed tables and forget dropped ones.
+    settle: (applied: DiagramDraft[]) => {
+      const renamed = new Map<string, string>()
+      const dropped = new Set<string>()
+      for (const draft of applied) {
+        const id = tableNodeId(draft.schema, draft.table)
+        if (draft.kind === 'renameTable') {
+          renamed.set(id, tableNodeId(draft.schema, draft.newName))
+        } else if (draft.kind === 'dropTable') {
+          dropped.add(id)
+        }
+      }
+      commit(
+        Object.fromEntries(
+          Object.entries(positions)
+            .filter(([id]) => !dropped.has(id))
+            .map(([id, position]) => [renamed.get(id) ?? id, position])
+        )
+      )
+      setDragged({})
+    },
+  }
 }

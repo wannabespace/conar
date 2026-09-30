@@ -2,6 +2,10 @@ import type { constraintsType } from '~/entities/connection/queries/constraints/
 import type { indexesType } from '~/entities/connection/queries/indexes/list'
 import type { policyType } from '~/entities/connection/queries/policies/list'
 import type { columnType } from '~/entities/connection/queries/tables/columns'
+import type {
+  ColumnDefinition,
+  NewColumn,
+} from '~/entities/connection/queries/tables/shape'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
 
 import type { DiagramDraft } from './statements'
@@ -14,11 +18,17 @@ export interface DiagramColumn {
   // Original name: the handle id and the key every draft on it carries.
   id: string
   name: string
+  // Full declared type, what an edit starts from and a statement restates.
   type: string
+  label: string
   nullable: boolean
   primaryKey: boolean
   unique: boolean
   foreign: boolean
+  // Computed or generated: altering it would drop the expression.
+  generated: boolean
+  // Definition before any draft: what an alter compares with and restates.
+  original: ColumnDefinition
   state?: DraftState
 }
 
@@ -47,6 +57,25 @@ export interface Diagram {
   relations: DiagramRelation[]
   tables: DiagramTable[]
 }
+
+const draftColumn = (column: NewColumn): DiagramColumn => ({
+  foreign: false,
+  generated: false,
+  id: column.name,
+  label: column.type,
+  name: column.name,
+  nullable: column.nullable,
+  original: {
+    attributes: '',
+    collation: null,
+    nullable: column.nullable,
+    type: column.type,
+  },
+  primaryKey: column.primaryKey,
+  state: 'added',
+  type: column.type,
+  unique: false,
+})
 
 export const tableNodeId = (schema: string, table: string) =>
   `${schema}.${table}`
@@ -94,8 +123,9 @@ export const buildDiagram = ({
       .filter((c) => c.type === 'primaryKey')
       .map((c) => `${c.table}.${c.column}`)
   )
+  const singlePrimaryKeys = singleColumnKeys(schemaConstraints, 'primaryKey')
   const uniques = singleColumnKeys(schemaConstraints, 'unique')
-  const foreignKeys = schemaConstraints.filter(
+  const foreignKeyColumns = schemaConstraints.filter(
     (c) =>
       c.type === 'foreignKey' &&
       c.column &&
@@ -104,8 +134,12 @@ export const buildDiagram = ({
       (!c.foreignSchema || c.foreignSchema === schema)
   )
   const foreignColumns = new Set(
-    foreignKeys.map((c) => `${c.table}.${c.column}`)
+    foreignKeyColumns.map((c) => `${c.table}.${c.column}`)
   )
+  // One row per column: a multi-column key draws one edge, from its first pair.
+  const foreignKeys = [
+    ...Map.groupBy(foreignKeyColumns, (c) => `${c.table}.${c.name}`).values(),
+  ].flatMap(([first]) => (first ? [first] : []))
   const countBy = <T extends { schema: string; table: string }>(items: T[]) =>
     Map.groupBy(inSchema(items), (item) => item.table)
   const indexCounts = countBy(indexes.filter((index) => !index.constraintOwned))
@@ -139,30 +173,31 @@ export const buildDiagram = ({
           state = 'changed'
         }
 
+        const type = column.declaredType ?? column.typeLabel
+
         return {
           foreign: foreignColumns.has(key),
+          generated: column.isGenerated && !column.isIdentity,
           id: column.id,
+          label: altered ? altered.type : column.typeLabel,
           name: renamed ? renamed.newName : column.id,
           nullable: altered ? altered.nullable : column.isNullable,
+          original: {
+            attributes: column.attributes ?? '',
+            collation: column.collation ?? null,
+            nullable: column.isNullable,
+            type,
+          },
           primaryKey: primaryKeys.has(key),
           state,
-          type: altered ? altered.type : column.typeLabel,
+          type: altered ? altered.type : type,
           unique: uniques.has(key),
         }
       }
     )
     const addedColumns = tableDrafts
       .filter((d) => d.kind === 'addColumn')
-      .map(({ column }): DiagramColumn => ({
-        foreign: false,
-        id: column.name,
-        name: column.name,
-        nullable: column.nullable,
-        primaryKey: column.primaryKey,
-        state: 'added',
-        type: column.type,
-        unique: false,
-      }))
+      .map(({ column }) => draftColumn(column))
     let state: DraftState | undefined
     if (dropped) {
       state = 'dropped'
@@ -189,16 +224,7 @@ export const buildDiagram = ({
   const created = schemaDrafts
     .filter((d) => d.kind === 'createTable')
     .map((draft): DiagramTable => ({
-      columns: draft.columns.map((column) => ({
-        foreign: false,
-        id: column.name,
-        name: column.name,
-        nullable: column.nullable,
-        primaryKey: column.primaryKey,
-        state: 'added',
-        type: column.type,
-        unique: false,
-      })),
+      columns: draft.columns.map(draftColumn),
       counts: { indexes: 0, policies: 0, triggers: 0 },
       id: tableNodeId(schema, draft.table),
       kind: 'table',
@@ -212,7 +238,8 @@ export const buildDiagram = ({
   const nodeIds = new Set(allTables.map((table) => table.id))
   const isMany = (table: string, column: string) =>
     !(
-      primaryKeys.has(`${table}.${column}`) || uniques.has(`${table}.${column}`)
+      singlePrimaryKeys.has(`${table}.${column}`) ||
+      uniques.has(`${table}.${column}`)
     )
 
   const relations: DiagramRelation[] = [

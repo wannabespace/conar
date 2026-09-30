@@ -14,7 +14,7 @@ import {
 } from 'kysely'
 
 import type { DiagramDraft } from './statements'
-import { diagramDraftType, draftStatement } from './statements'
+import { draftStatement } from './statements'
 
 // The app's own cold dialects reach the browser runtime, so compiling here
 // stays on Kysely's own compilers; ClickHouse compiles through MySQL's.
@@ -200,44 +200,86 @@ describe('renameColumn', () => {
 })
 
 describe('alterColumn', () => {
+  const original = {
+    attributes: '',
+    collation: null,
+    nullable: true,
+    type: 'integer',
+  }
   const draft: DiagramDraft = {
     ...target,
     column: 'a',
     kind: 'alterColumn',
     nullable: false,
+    original,
     type: 'bigint',
   }
+  const nullabilityOnly: DiagramDraft = { ...draft, type: 'integer' }
 
-  test('Postgres', () => {
+  test('Postgres retypes only when the type changed', () => {
     expect(compiled(ConnectionType.Postgres, draft)).toBe(
       'alter table "s"."t" alter column "a" type bigint, alter column "a" set not null'
     )
+    expect(compiled(ConnectionType.Postgres, nullabilityOnly)).toBe(
+      'alter table "s"."t" alter column "a" set not null'
+    )
+  })
+
+  test('MySQL restates the clauses MODIFY would drop', () => {
+    const mysqlOriginal = {
+      attributes: "DEFAULT 'x' COMMENT 'note'",
+      collation: 'utf8mb4_bin',
+      nullable: true,
+      type: 'varchar(20)',
+    }
     expect(
-      compiled(ConnectionType.Postgres, { ...draft, nullable: true })
+      compiled(ConnectionType.MySQL, {
+        ...draft,
+        original: mysqlOriginal,
+        type: 'varchar(20)',
+      })
     ).toBe(
-      'alter table "s"."t" alter column "a" type bigint, alter column "a" drop not null'
+      "alter table `s`.`t` modify column `a` varchar(20) COLLATE utf8mb4_bin DEFAULT 'x' COMMENT 'note' not null"
+    )
+    expect(
+      compiled(ConnectionType.MySQL, { ...draft, original: mysqlOriginal })
+    ).toBe(
+      "alter table `s`.`t` modify column `a` bigint DEFAULT 'x' COMMENT 'note' not null"
     )
   })
 
-  test('MySQL', () => {
-    expect(compiled(ConnectionType.MySQL, draft)).toBe(
-      'alter table `s`.`t` modify column `a` bigint not null'
+  test('SQL Server keeps the collation unless retyped', () => {
+    const mssqlOriginal = { ...original, collation: 'Latin1_General_BIN' }
+    expect(
+      compiled(ConnectionType.MSSQL, {
+        ...nullabilityOnly,
+        original: mssqlOriginal,
+      })
+    ).toBe(
+      'ALTER TABLE "s"."t" ALTER COLUMN "a" integer COLLATE Latin1_General_BIN NOT NULL'
     )
+    expect(
+      compiled(ConnectionType.MSSQL, {
+        ...draft,
+        nullable: true,
+        original: mssqlOriginal,
+      })
+    ).toBe('ALTER TABLE "s"."t" ALTER COLUMN "a" bigint NULL')
   })
 
-  test('SQL Server', () => {
-    expect(compiled(ConnectionType.MSSQL, draft)).toBe(
-      'ALTER TABLE "s"."t" ALTER COLUMN "a" bigint NOT NULL'
-    )
-    expect(compiled(ConnectionType.MSSQL, { ...draft, nullable: true })).toBe(
-      'ALTER TABLE "s"."t" ALTER COLUMN "a" bigint NULL'
-    )
-  })
-
-  test('ClickHouse', () => {
+  test('ClickHouse wraps Nullable inside LowCardinality', () => {
     expect(
       compiled(ConnectionType.ClickHouse, { ...draft, nullable: true })
     ).toBe('ALTER TABLE `s`.`t` MODIFY COLUMN `a` Nullable(bigint)')
+    expect(
+      compiled(ConnectionType.ClickHouse, {
+        ...draft,
+        nullable: true,
+        type: 'LowCardinality(String)',
+      })
+    ).toBe(
+      'ALTER TABLE `s`.`t` MODIFY COLUMN `a` LowCardinality(Nullable(String))'
+    )
   })
 })
 
@@ -290,12 +332,6 @@ describe('addForeignKey', () => {
       'alter table "s"."t" add constraint "fk" foreign key ("a") references "r"."o" ("x") on delete cascade on update no action'
     )
   })
-
-  test('ClickHouse has none', () => {
-    expect(() => compiled(ConnectionType.ClickHouse, draft)).toThrow(
-      'Foreign keys is not supported'
-    )
-  })
 })
 
 describe('dropForeignKey', () => {
@@ -318,17 +354,4 @@ describe('dropForeignKey', () => {
       'alter table "s"."t" drop constraint "fk"'
     )
   })
-
-  test('ClickHouse has none', () => {
-    expect(() => compiled(ConnectionType.ClickHouse, draft)).toThrow(
-      'Foreign keys is not supported'
-    )
-  })
-})
-
-test('a draft validates by kind', () => {
-  expect(
-    diagramDraftType.allows({ ...target, column: 'a', kind: 'dropColumn' })
-  ).toBe(true)
-  expect(diagramDraftType.allows({ ...target, kind: 'dropColumn' })).toBe(false)
 })

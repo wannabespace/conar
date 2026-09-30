@@ -1,47 +1,35 @@
 import {
-  AppWindowIcon,
-  Copy01Icon,
-  Delete02Icon,
-  EraserIcon,
   FlashIcon,
   Key01Icon,
   LayoutTable02Icon,
   LeftToRightListDashIcon,
   Link01Icon,
-  LinkSquare02Icon,
-  PencilEdit01Icon,
-  PlusSignIcon,
   SecurityCheckIcon,
-  Undo02Icon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import type { Node, NodeProps } from '@xyflow/react'
-import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react'
+import { useStore, useUpdateNodeInternals } from '@xyflow/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu } from '~/components/app-context-menu'
-import type { AppMenuNode } from '~/components/app-menu'
 
-import type { DiagramActions, DiagramGates } from '../-lib/context'
-import { relationTouches, tableMatches, useDiagram } from '../-lib/context'
+import {
+  COMPACT_ZOOM,
+  relationTouches,
+  tableMatches,
+  useDiagram,
+} from '../-lib/context'
 import type { DiagramColumn, DiagramTable, TableKind } from '../-lib/schema'
+import { columnMenu, tableMenu } from './menus'
+import { RowHandles } from './row-handles'
 
 export type TableNode = Node<{ table: DiagramTable }, 'table'>
-
-export const handleId = (
-  column: string,
-  side: 'left' | 'right',
-  kind: 'source' | 'target'
-) => `${column}:${side}:${kind}`
-
-export const handleColumn = (id: string) => id.split(':').slice(0, -2).join(':')
 
 const kindIcons: Record<TableKind, IconSvgElement> = {
   'materialized view': ViewIcon,
@@ -74,178 +62,6 @@ const Count = ({
     </span>
   )
 
-const handleClass =
-  'border-popover bg-foreground/50! size-2! rounded-full border-2! opacity-0 transition-opacity group-hover/node:opacity-100 data-[linked=true]:opacity-100'
-
-// Every handle subscribes to the flow store, so a card mounts only the
-// handles an edge can end on: keys always (a drag may land on them), other
-// columns' source handles only while the pointer is over the card.
-const RowHandles = ({
-  column,
-  connectable,
-  hovered,
-  linked,
-}: {
-  column: DiagramColumn
-  connectable: boolean
-  hovered: boolean
-  linked: boolean
-}) => (
-  <>
-    {(column.primaryKey || column.unique) && (
-      <>
-        <Handle
-          type="target"
-          position={Position.Left}
-          id={handleId(column.id, 'left', 'target')}
-          isConnectable={connectable}
-          data-linked={linked}
-          className={cn(handleClass, '-left-1!')}
-        />
-        <Handle
-          type="target"
-          position={Position.Right}
-          id={handleId(column.id, 'right', 'target')}
-          isConnectable={connectable}
-          data-linked={linked}
-          className={cn(handleClass, '-right-1!')}
-        />
-      </>
-    )}
-    {connectable && (linked || hovered) && (
-      <>
-        <Handle
-          type="source"
-          position={Position.Right}
-          id={handleId(column.id, 'right', 'source')}
-          data-linked={linked}
-          className={cn(handleClass, '-right-1!')}
-        />
-        <Handle
-          type="source"
-          position={Position.Left}
-          id={handleId(column.id, 'left', 'source')}
-          data-linked={linked}
-          className={cn(handleClass, '-left-1!')}
-        />
-      </>
-    )}
-  </>
-)
-
-export const columnMenu = (
-  table: DiagramTable,
-  column: DiagramColumn,
-  can: DiagramGates,
-  actions: DiagramActions
-): AppMenuNode[] => {
-  const editable = table.kind === 'table' && column.state !== 'dropped'
-
-  return [
-    {
-      icon: Copy01Icon,
-      label: 'Copy Name',
-      onSelect: () => copyToClipboard(column.name, 'Column name copied'),
-    },
-    { type: 'separator' },
-    {
-      disabled: !editable || (!can.renameColumns && column.state !== 'added'),
-      icon: PencilEdit01Icon,
-      label: 'Edit Column',
-      onSelect: () => actions.editColumn(table, column),
-    },
-    {
-      checked: column.nullable,
-      disabled: !editable || column.primaryKey,
-      icon: EraserIcon,
-      label: column.nullable ? 'Require a Value' : 'Allow NULL',
-      onSelect: () => actions.toggleNullable(table, column),
-    },
-    { type: 'separator' },
-    column.state === 'dropped'
-      ? {
-          icon: Undo02Icon,
-          label: 'Restore Column',
-          onSelect: () => actions.dropColumn(table, column),
-        }
-      : {
-          disabled: !editable,
-          icon: Delete02Icon,
-          label: 'Drop Column',
-          onSelect: () => actions.dropColumn(table, column),
-          variant: 'destructive',
-        },
-  ]
-}
-
-export const tableMenu = (
-  table: DiagramTable,
-  can: DiagramGates,
-  actions: DiagramActions
-): AppMenuNode[] => {
-  const editable = table.kind === 'table'
-
-  return [
-    {
-      icon: AppWindowIcon,
-      label: 'Open in New Window',
-      onSelect: () => actions.openTable(table, true),
-    },
-    { type: 'separator' },
-    {
-      icon: LinkSquare02Icon,
-      label: 'Open Table',
-      onSelect: () => actions.openTable(table),
-    },
-    {
-      icon: Copy01Icon,
-      label: 'Copy Name',
-      onSelect: () => copyToClipboard(table.name, 'Table name copied'),
-    },
-    { type: 'separator' },
-    {
-      disabled: !editable || table.state === 'dropped',
-      icon: PencilEdit01Icon,
-      label: 'Rename Table',
-      onSelect: () => actions.renameTable(table),
-    },
-    {
-      disabled: !editable || table.state === 'dropped',
-      icon: PlusSignIcon,
-      label: 'Add Column',
-      onSelect: () => actions.addColumn(table),
-    },
-    { type: 'separator' },
-    ...(table.state === 'dropped'
-      ? [
-          {
-            icon: Undo02Icon,
-            label: 'Restore Table',
-            onSelect: () => actions.restoreTable(table),
-          } satisfies AppMenuNode,
-        ]
-      : [
-          {
-            disabled: !editable,
-            icon: Delete02Icon,
-            label: 'Drop Table',
-            onSelect: () => actions.dropTable(table, false),
-            variant: 'destructive',
-          } satisfies AppMenuNode,
-          ...(can.cascade && editable && table.state !== 'added'
-            ? [
-                {
-                  icon: Delete02Icon,
-                  label: 'Drop Table with Dependents',
-                  onSelect: () => actions.dropTable(table, true),
-                  variant: 'destructive',
-                } satisfies AppMenuNode,
-              ]
-            : []),
-        ]),
-  ]
-}
-
 export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
   const { table } = data
   const { actions, can, diagram, search, view } = useDiagram()
@@ -268,14 +84,15 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
               relationTouches(relation, hoveredTableId)))
       ),
   })
-  const compact = useSubscription(view, { selector: (state) => state.compact })
+  const compact = useStore((state) => state.transform[2] < COMPACT_ZOOM)
   const linkedColumns = new Set(
     diagram.relations.flatMap((relation) => [
       relation.source.table === table.id ? relation.source.column : '',
       relation.target.table === table.id ? relation.target.column : '',
     ])
   )
-  const connectable = can.foreignKeys && table.kind === 'table'
+  const connectable =
+    can.foreignKeys && table.kind === 'table' && table.state !== 'dropped'
   const dimmed = !!search && !tableMatches(table, search)
   // One context menu per card: rows only record which column was hit.
   const menuColumn = useRef<DiagramColumn | null>(null)
@@ -284,7 +101,7 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
     <AppContextMenu
       items={() =>
         menuColumn.current
-          ? columnMenu(table, menuColumn.current, can, actions)
+          ? columnMenu(table, menuColumn.current, { actions, can, diagram })
           : tableMenu(table, can, actions)
       }
       className="block"
@@ -402,7 +219,7 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
                   data-mask
                   className="text-muted-foreground/70 ml-auto max-w-[45%] shrink-0 truncate font-mono"
                 >
-                  {column.type}
+                  {column.label}
                   {column.nullable && '?'}
                 </span>
                 {handles}

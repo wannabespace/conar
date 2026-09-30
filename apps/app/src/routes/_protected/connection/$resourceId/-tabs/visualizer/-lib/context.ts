@@ -1,6 +1,13 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
+
+import {
+  capabilitiesOf,
+  sectionAvailable,
+  sectionCapabilitiesOf,
+} from '~/entities/connection/capabilities'
 
 import type {
   Diagram,
@@ -21,6 +28,25 @@ export interface DiagramGates {
   triggers: boolean
 }
 
+export const gatesOf = (connectionType: ConnectionType): DiagramGates => {
+  const capabilities = capabilitiesOf(connectionType)
+  const constraints = sectionCapabilitiesOf('constraints', connectionType)
+
+  return {
+    cascade: capabilities.cascade,
+    ddlRollback: capabilities.ddlRollback,
+    dropForeignKeys: !!constraints.drop,
+    foreignKeys:
+      capabilities.constraintKinds.includes('foreignKey') &&
+      !!constraints.create,
+    indexes: sectionAvailable('indexes', connectionType),
+    policies: sectionAvailable('policies', connectionType),
+    renameColumns: capabilities.renameColumns,
+    schemas: capabilities.schemas,
+    triggers: sectionAvailable('triggers', connectionType),
+  }
+}
+
 export interface DiagramActions {
   addColumn: (table: DiagramTable) => void
   createTable: () => void
@@ -29,6 +55,12 @@ export interface DiagramActions {
   dropTable: (table: DiagramTable, cascade: boolean) => void
   editColumn: (table: DiagramTable, column: DiagramColumn) => void
   focusRelation: (relation: DiagramRelation) => void
+  linkColumns: (link: {
+    column: string
+    foreignColumn: string
+    foreignTable: string
+    table: string
+  }) => void
   openTable: (table: DiagramTable, newWindow?: boolean) => void
   renameTable: (table: DiagramTable) => void
   restoreTable: (table: DiagramTable) => void
@@ -36,18 +68,16 @@ export interface DiagramActions {
   toggleNullable: (table: DiagramTable, column: DiagramColumn) => void
 }
 
-// Hover and zoom change on every pointer move, so they live in a store each
-// card and edge reads through its own selector instead of in React context,
-// which would re-render every card on the canvas per move.
+// Hover changes on every pointer move, so it lives in a store each card and
+// edge reads through its own selector instead of in React context, which would
+// re-render every card on the canvas per move.
 export interface DiagramView {
-  compact: boolean
   hoveredRelationId: string | null
   hoveredTableId: string | null
 }
 
 export const diagramViewStore = memoize((_resourceId: string) =>
   createStore<DiagramView>({
-    compact: false,
     hoveredRelationId: null,
     hoveredTableId: null,
   })

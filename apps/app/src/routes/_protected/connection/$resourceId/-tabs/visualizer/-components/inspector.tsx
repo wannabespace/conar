@@ -1,12 +1,8 @@
 import {
-  ArrowRight01Icon,
   Cancel01Icon,
-  Delete02Icon,
-  FocusPointIcon,
   Key01Icon,
   Link01Icon,
   PlusSignIcon,
-  Undo02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
@@ -20,61 +16,30 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
-import type { AppMenuNode } from '~/components/app-menu'
-import { Link } from '~/components/link'
 import type { indexesType } from '~/entities/connection/queries/indexes/list'
 import type { policyType } from '~/entities/connection/queries/policies/list'
 import { resourceTableTotalQueryOptions } from '~/entities/connection/queries/rows/total'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
-import { openDefinitionsTab } from '~/entities/connection/store/helpers/tabs'
-import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
-import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
 
 import { useDiagram } from '../-lib/context'
 import type { DiagramColumn, DiagramTable } from '../-lib/schema'
-import { columnMenu, draftStateClass, tableMenu } from './table-node'
+import {
+  DefinitionsSections,
+  EmptyRow,
+  List,
+  RelationsSection,
+  Section,
+  rowClass,
+} from './inspector-sections'
+import { columnMenu, tableMenu } from './menus'
+import { draftStateClass } from './table-node'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const noFilters: never[] = []
-
-const Section = ({
-  action,
-  children,
-  title,
-}: {
-  action?: ReactNode
-  children: ReactNode
-  title: string
-}) => (
-  <section className="flex flex-col gap-1.5">
-    <div className="flex h-6 items-center justify-between">
-      <h3 className="text-2xs text-muted-foreground font-semibold tracking-wider uppercase">
-        {title}
-      </h3>
-      {action}
-    </div>
-    {children}
-  </section>
-)
-
-const List = ({ children }: { children: ReactNode }) => (
-  <ul className="bg-popover ring-foreground/4 flex flex-col overflow-hidden rounded-xl text-xs shadow-xs ring">
-    {children}
-  </ul>
-)
-
-const rowClass =
-  'border-foreground/6 hover:bg-accent flex h-7 items-center gap-2 border-b pr-1 pl-3 last:border-b-0'
-
-const EmptyRow = ({ children }: { children: string }) => (
-  <li className="text-muted-foreground flex h-7 items-center px-3">
-    {children}
-  </li>
-)
 
 const ColumnItem = ({
   column,
@@ -91,7 +56,7 @@ const ColumnItem = ({
       (source.table === table.id && source.column === column.id) ||
       (target.table === table.id && target.column === column.id)
   )
-  const menu = () => columnMenu(table, column, can, actions)
+  const menu = () => columnMenu(table, column, { actions, can, diagram })
 
   return (
     <AppContextMenu
@@ -129,7 +94,7 @@ const ColumnItem = ({
         data-mask
         className="text-muted-foreground max-w-[40%] truncate font-mono"
       >
-        {column.type}
+        {column.label}
         {column.nullable && '?'}
       </span>
       {table.kind === 'table' && (
@@ -139,42 +104,6 @@ const ColumnItem = ({
         />
       )}
     </AppContextMenu>
-  )
-}
-
-const DefinitionLink = ({
-  children,
-  rowKey,
-  schema,
-  section,
-}: {
-  children: ReactNode
-  rowKey: unknown[]
-  schema: string
-  section: DefinitionsSection
-}) => {
-  const { connectionResource } = useRouteContext()
-
-  return (
-    <li>
-      <Link
-        to="/connection/$resourceId/$tabId"
-        params={{
-          resourceId: connectionResource.id,
-          tabId: definitionsTabId(section),
-        }}
-        search={{ open: JSON.stringify(rowKey), schema }}
-        onClick={() => openDefinitionsTab(connectionResource.id, section)}
-        className={cn(rowClass, 'text-foreground group/link pr-2')}
-      >
-        {children}
-        <HugeiconsIcon
-          icon={ArrowRight01Icon}
-          strokeWidth={2}
-          className="text-muted-foreground/50 group-hover/link:text-muted-foreground size-3 shrink-0"
-        />
-      </Link>
-    </li>
   )
 }
 
@@ -209,7 +138,7 @@ const RowCount = ({ table }: { table: DiagramTable }) => {
   )
 }
 
-export const Inspector = ({
+const Inspector = ({
   indexes,
   onClose,
   policies,
@@ -222,20 +151,8 @@ export const Inspector = ({
   table: DiagramTable
   triggers: (typeof triggersType.infer)[]
 }) => {
-  const { actions, can, diagram, view } = useDiagram()
-  const hoverRelation = (hoveredRelationId: string | null) =>
-    view.set((state) => ({ ...state, hoveredRelationId }))
+  const { actions, can } = useDiagram()
   const editable = table.kind === 'table' && table.state !== 'dropped'
-  const ofTable = <T extends { schema: string; table: string }>(items: T[]) =>
-    items.filter(
-      (item) => item.schema === table.schema && item.table === table.table
-    )
-  const relations = diagram.relations.filter(
-    (relation) =>
-      relation.source.table === table.id || relation.target.table === table.id
-  )
-  const nameOf = (id: string) =>
-    diagram.tables.find((entry) => entry.id === id)?.name ?? id
   const menuOfTable = () => tableMenu(table, can, actions)
 
   return (
@@ -310,172 +227,44 @@ export const Inspector = ({
             {table.columns.length === 0 && <EmptyRow>No columns yet</EmptyRow>}
           </List>
         </Section>
-        <Section title="Relations">
-          <List>
-            {relations.map((relation) => {
-              const outgoing = relation.source.table === table.id
-              const menu: AppMenuNode[] | null =
-                outgoing && can.dropForeignKeys
-                  ? [
-                      relation.state === 'dropped'
-                        ? {
-                            icon: Undo02Icon,
-                            label: 'Restore Foreign Key',
-                            onSelect: () => actions.dropRelation(relation),
-                          }
-                        : {
-                            icon: Delete02Icon,
-                            label: 'Drop Foreign Key',
-                            onSelect: () => actions.dropRelation(relation),
-                            variant: 'destructive',
-                          },
-                    ]
-                  : null
-              const rowProps = {
-                className: cn(
-                  rowClass,
-                  relation.state && draftStateClass[relation.state]
-                ),
-                onMouseEnter: () => hoverRelation(relation.id),
-                onMouseLeave: () => hoverRelation(null),
-              }
-              const content = (
-                <>
-                  <span data-mask className="min-w-0 flex-1 truncate font-mono">
-                    {outgoing ? relation.source.column : relation.target.column}
-                    <span className="text-muted-foreground/60">
-                      {outgoing ? ' → ' : ' ← '}
-                    </span>
-                    {nameOf(
-                      outgoing ? relation.target.table : relation.source.table
-                    )}
-                    .
-                    {outgoing ? relation.target.column : relation.source.column}
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label="Show relation on canvas"
-                          className="text-muted-foreground"
-                          onClick={() => actions.focusRelation(relation)}
-                        />
-                      }
-                    >
-                      <HugeiconsIcon icon={FocusPointIcon} strokeWidth={2} />
-                    </TooltipTrigger>
-                    <TooltipContent side="left">Show on canvas</TooltipContent>
-                  </Tooltip>
-                  {menu && (
-                    <AppMenuButton
-                      items={menu}
-                      render={<Button variant="ghost" size="icon-xs" />}
-                    />
-                  )}
-                </>
-              )
-
-              return menu ? (
-                <AppContextMenu
-                  key={relation.id}
-                  items={menu}
-                  render={<li {...rowProps} />}
-                >
-                  {content}
-                </AppContextMenu>
-              ) : (
-                <li key={relation.id} {...rowProps}>
-                  {content}
-                </li>
-              )
-            })}
-            {relations.length === 0 && (
-              <EmptyRow>
-                {can.foreignKeys
-                  ? 'Drag a column onto a key to link tables'
-                  : 'No relations'}
-              </EmptyRow>
-            )}
-          </List>
-        </Section>
-        {can.indexes && (
-          <Section title="Indexes">
-            <List>
-              {ofTable(indexes).map((index) => (
-                <DefinitionLink
-                  key={index.name}
-                  rowKey={[index.table, index.name]}
-                  schema={table.schema}
-                  section="indexes"
-                >
-                  <span data-mask className="min-w-0 flex-1 truncate font-mono">
-                    {index.name}
-                  </span>
-                  <span className="text-muted-foreground shrink-0">
-                    {index.isPrimary ? 'primary' : index.isUnique && 'unique'}
-                  </span>
-                </DefinitionLink>
-              ))}
-              {ofTable(indexes).length === 0 && <EmptyRow>No indexes</EmptyRow>}
-            </List>
-          </Section>
-        )}
-        {can.triggers && (
-          <Section title="Triggers">
-            <List>
-              {ofTable(triggers).map((trigger) => (
-                <DefinitionLink
-                  key={`${trigger.name}:${trigger.event}`}
-                  rowKey={[
-                    trigger.schema,
-                    trigger.table,
-                    trigger.name,
-                    trigger.event,
-                  ]}
-                  schema={table.schema}
-                  section="triggers"
-                >
-                  <span data-mask className="min-w-0 flex-1 truncate font-mono">
-                    {trigger.name}
-                  </span>
-                  <span className="text-muted-foreground shrink-0">
-                    {trigger.timing.toLowerCase()} {trigger.event.toLowerCase()}
-                  </span>
-                </DefinitionLink>
-              ))}
-              {ofTable(triggers).length === 0 && (
-                <EmptyRow>No triggers</EmptyRow>
-              )}
-            </List>
-          </Section>
-        )}
-        {can.policies && (
-          <Section title="Policies">
-            <List>
-              {ofTable(policies).map((policy) => (
-                <DefinitionLink
-                  key={policy.name}
-                  rowKey={[policy.table, policy.name]}
-                  schema={table.schema}
-                  section="policies"
-                >
-                  <span data-mask className="min-w-0 flex-1 truncate font-mono">
-                    {policy.name}
-                  </span>
-                  <span className="text-muted-foreground shrink-0">
-                    {policy.command.toLowerCase()}
-                  </span>
-                </DefinitionLink>
-              ))}
-              {ofTable(policies).length === 0 && (
-                <EmptyRow>No policies</EmptyRow>
-              )}
-            </List>
-          </Section>
-        )}
+        <RelationsSection table={table} />
+        <DefinitionsSections
+          indexes={indexes}
+          policies={policies}
+          table={table}
+          triggers={triggers}
+        />
       </div>
     </div>
   )
 }
+
+export const InspectorPane = ({
+  onClose,
+  table,
+  ...definitions
+}: Omit<Parameters<typeof Inspector>[0], 'table'> & {
+  table: DiagramTable | null
+}) => (
+  <AnimatePresence initial={false}>
+    {table && (
+      <motion.aside
+        key="inspector"
+        initial={{ width: 0 }}
+        animate={{ width: 'auto' }}
+        exit={{ width: 0 }}
+        transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+        className="border-foreground/6 bg-background shrink-0 overflow-hidden border-l"
+      >
+        <div className="h-full w-80">
+          <Inspector
+            key={table.id}
+            table={table}
+            onClose={onClose}
+            {...definitions}
+          />
+        </div>
+      </motion.aside>
+    )}
+  </AnimatePresence>
+)

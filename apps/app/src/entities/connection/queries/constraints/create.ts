@@ -1,8 +1,8 @@
-import { sql } from 'kysely'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '../../runtime/query'
 import type { ConstraintShape } from './shape'
-import { addConstraint, constraintClause } from './shape'
+import { addConstraintStatement } from './shape'
 
 export const createConstraintQuery = ({
   schema,
@@ -12,15 +12,27 @@ export const createConstraintQuery = ({
   schema: string
   shape: ConstraintShape
   table: string
-}) =>
-  createQuery({
+}) => {
+  const target = { schema, table }
+
+  return createQuery({
     query: {
       clickhouse: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} ADD ${constraintClause(shape)}`.execute(
-          db
+        db.executeQuery(
+          addConstraintStatement(ConnectionType.ClickHouse, db, target, shape)
         ),
-      mssql: (db) => addConstraint(db, { schema, table }, shape).execute(),
-      mysql: (db) => addConstraint(db, { schema, table }, shape).execute(),
-      postgres: (db) => addConstraint(db, { schema, table }, shape).execute(),
+      mssql: (db) =>
+        db.executeQuery(
+          addConstraintStatement(ConnectionType.MSSQL, db, target, shape)
+        ),
+      mysql: (db) =>
+        db.executeQuery(
+          addConstraintStatement(ConnectionType.MySQL, db, target, shape)
+        ),
+      postgres: (db) =>
+        db.executeQuery(
+          addConstraintStatement(ConnectionType.Postgres, db, target, shape)
+        ),
     },
   })
+}
