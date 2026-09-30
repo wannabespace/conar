@@ -23,7 +23,10 @@ interface TableTarget {
 type Db = Kysely<any>
 
 // ClickHouse spells nullability as a type wrapper, never as a NULL keyword.
-const clickhouseColumnType = (columnType: string, nullable: boolean) =>
+const clickhouseColumnType = ({
+  nullable,
+  type: columnType,
+}: Pick<NewColumn, 'nullable' | 'type'>) =>
   nullable ? `Nullable(${columnType})` : columnType
 
 export const createTableStatement = (
@@ -37,7 +40,7 @@ export const createTableStatement = (
     const definitions = sql.join(
       columns.map(
         (column) =>
-          sql`${sql.id(column.name)} ${sql.raw(clickhouseColumnType(column.type, column.nullable))}`
+          sql`${sql.id(column.name)} ${sql.raw(clickhouseColumnType(column))}`
       )
     )
     const order = keys.length
@@ -116,10 +119,7 @@ export const addColumnStatement = (
 
   if (dialectType === ConnectionType.ClickHouse) {
     return alter
-      .addColumn(
-        column.name,
-        sql.raw(clickhouseColumnType(column.type, column.nullable))
-      )
+      .addColumn(column.name, sql.raw(clickhouseColumnType(column)))
       .compile()
   }
 
@@ -173,7 +173,7 @@ export const alterColumnStatement = (
   }: TableTarget & { column: string; nullable: boolean; type: string }
 ) => {
   if (dialectType === ConnectionType.ClickHouse) {
-    return sql`ALTER TABLE ${sql.id(schema, table)} MODIFY COLUMN ${sql.id(column)} ${sql.raw(clickhouseColumnType(columnType, nullable))}`.compile(
+    return sql`ALTER TABLE ${sql.id(schema, table)} MODIFY COLUMN ${sql.id(column)} ${sql.raw(clickhouseColumnType({ nullable, type: columnType }))}`.compile(
       db
     )
   }
