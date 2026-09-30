@@ -1,5 +1,7 @@
 import { rowObjects } from '@tamery/connection/queries'
+import { isLocalhostConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { PORTS } from '@tamery/shared/ports'
 import { silently } from '@tamery/shared/utils'
 import type {
@@ -55,8 +57,11 @@ export const createDialectProvider = (
   type: ConnectionType,
   options: DialectOptions
 ) => {
-  const { connectionsCollection, connectionsResourcesCollection } =
-    getCollections()
+  const {
+    connectionsCollection,
+    connectionsResourcesCollection,
+    connectionStringsCollection,
+  } = getCollections()
   const resource = options.resourceId
     ? connectionsResourcesCollection.get(options.resourceId)
     : null
@@ -70,9 +75,21 @@ export const createDialectProvider = (
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
-    const config = connection ? fetchingConfig(connection, { proxy }) : null
+    const connectionString = connectionId
+      ? connectionStringsCollection.get(connectionId)
+      : null
+    const config = fetchingConfig(
+      connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
+      {
+        isLocalhost:
+          connectionString?.isLocalhost ??
+          isLocalhostConnectionString(options.connectionString),
+        isPasswordPopulated: connectionString?.isPasswordPopulated,
+        proxy,
+      }
+    )
 
-    if (config?.type === 'proxy') {
+    if (config.type === 'proxy') {
       const client = createProxyClient(
         proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`
       )

@@ -24,6 +24,7 @@ const connect = (options: PoolConfig) =>
     catch: (error) => error,
     try: async () => {
       const pool = new pg.Pool(options)
+      pool.on('error', console.error)
       await pool.query('SELECT 1')
       return pool
     },
@@ -34,6 +35,7 @@ export const getPool = memoize(async (connectionString: string) => {
   const ssl = parseSSLConfig(searchParams)
   const conf: PoolConfig = {
     ...config,
+    connectionTimeoutMillis: 30_000,
     max: 1,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),

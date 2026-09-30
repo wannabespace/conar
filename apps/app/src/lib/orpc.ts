@@ -80,10 +80,7 @@ export const orpcProxy = createORPCClient(
           }
 
           if (error instanceof Error && isConnectionError(error)) {
-            throw new Error(
-              "We can't connect to the proxy, please check your connection and try again.",
-              { cause: error }
-            )
+            throw new Error(PROXY_ERROR_MESSAGE, { cause: error })
           }
 
           throw error

@@ -23,7 +23,9 @@ Connections live in one place so you can switch between databases and devices.
 
 <Note>
   Tamery tests the connection before saving. If it fails, check the host, port,
-  credentials, and database name.
+  credentials, and database name. The test uses the available local proxy in the
+  web app, including for localhost connections. Queries use the database
+  selected in the Navigator.
 </Note>
 
 ## Sync types
