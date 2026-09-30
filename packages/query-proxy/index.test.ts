@@ -7,11 +7,10 @@ import { createQueryRouter } from '.'
 
 const builder = os.$context<{ userId: string }>()
 const orpc = builder.use(builder.middleware(({ next }) => next()))
-const router = createQueryRouter(
-  orpc,
-  () => '',
-  (context) => context.userId
-)
+const router = createQueryRouter(orpc, {
+  connectionString: () => '',
+  owner: (context) => context.userId,
+})
 
 test('cloud transactions ignore a forged client owner for execute, commit and rollback', async () => {
   const beginInput = {

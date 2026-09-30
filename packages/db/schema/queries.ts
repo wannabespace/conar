@@ -1,5 +1,9 @@
 import { defineRelationsPart } from 'drizzle-orm'
-import { createInsertSchema, createSelectSchema } from 'drizzle-orm/arktype'
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 
 import { baseTable } from '../base-table'
@@ -23,6 +27,7 @@ export const queries = d.snakeCase.table('queries', {
 
 export const queriesSelectSchema = createSelectSchema(queries)
 export const queriesInsertSchema = createInsertSchema(queries)
+export const queriesUpdateSchema = createUpdateSchema(queries)
 
 export const queriesRelations = defineRelationsPart(
   { connectionsResources, queries, users },

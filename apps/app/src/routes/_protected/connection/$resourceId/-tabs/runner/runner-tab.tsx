@@ -1,7 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
-import { useMemo } from 'react'
 
-import { Runner } from './-components/runner/runner'
+import { Runner } from './-components/runner'
 import { RunnerTabContext } from './-lib/store'
 
 const { useRouteContext } = getRouteApi(
@@ -10,13 +9,9 @@ const { useRouteContext } = getRouteApi(
 
 export const RunnerTab = ({ tabId }: { tabId: string }) => {
   const { connectionResource } = useRouteContext()
-  const tab = useMemo(
-    () => ({ resourceId: connectionResource.id, tabId }),
-    [connectionResource.id, tabId]
-  )
 
   return (
-    <RunnerTabContext value={tab}>
+    <RunnerTabContext value={{ resourceId: connectionResource.id, tabId }}>
       <Runner />
     </RunnerTabContext>
   )

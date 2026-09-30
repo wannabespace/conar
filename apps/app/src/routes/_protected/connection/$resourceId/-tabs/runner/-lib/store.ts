@@ -1,10 +1,11 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { dialects, splitStatements } from '@tamery/sql'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createComputed } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { getEditorQueries } from '~/entities/connection/query-parser'
 import { runnerStoreKey } from '~/entities/connection/store/tabs/ids'
 import { RUNNER_RESULTS_DEFAULT_HEIGHT } from '~/lib/constants'
 
@@ -13,92 +14,43 @@ export const runnerPageType = type({
     resultsHeight: ['number', '=', RUNNER_RESULTS_DEFAULT_HEIGHT],
     resultsVisible: 'boolean',
   },
-  queriesToRun: type({
-    endLineNumber: 'number',
-    query: 'string',
-    startLineNumber: 'number',
-  }).array(),
   query: 'string',
-  selectedLines: 'number[]',
 })
-
-const DEFAULT_QUERY = [
-  '-- Write your SQL query here based on your database schema',
-  '-- The examples below are for reference only and may not work with your database',
-  '',
-  '-- Example: Basic query with limit',
-  'SELECT * FROM users LIMIT 10;',
-  '',
-  '-- Example: Query with filtering',
-  "SELECT id, name, email FROM users WHERE created_at > '2025-01-01' ORDER BY name;",
-  '',
-  '-- Example: Join example',
-  'SELECT u.id, u.name, p.title FROM users u',
-  'JOIN posts p ON u.id = p.user_id',
-  'WHERE p.published = true',
-  'LIMIT 10;',
-].join('\n')
 
 const defaultState: typeof runnerPageType.infer = {
   layout: {
     resultsHeight: RUNNER_RESULTS_DEFAULT_HEIGHT,
     resultsVisible: true,
   },
-  queriesToRun: [],
-  query: DEFAULT_QUERY,
-  selectedLines: [],
+  query: '',
 }
-
-export const runnerPageStore = memoize(
-  ({ resourceId, tabId }: { resourceId: string; tabId: string }) =>
-    createWebStorageValue({
-      defaultValue: defaultState,
-      key: runnerStoreKey(resourceId, tabId),
-      schema: runnerPageType,
-      type: 'localStorage',
-    })
-)
-
-export type RunnerPageStore = ReturnType<typeof runnerPageStore>
-
-export const getEditorQueriesComputed = memoize(
-  ({ resourceId, tabId }: { resourceId: string; tabId: string }) => {
-    const store = runnerPageStore({ resourceId, tabId })
-    const computed = createComputed(store, (state) =>
-      getEditorQueries(state.query)
-    )
-
-    computed.subscribe((editorQueries) => {
-      const state = store.get()
-      const currentLineNumbers = new Set(
-        editorQueries.map((query) => query.startLineNumber)
-      )
-      const newSelectedLines = state.selectedLines.filter((line) =>
-        currentLineNumbers.has(line)
-      )
-
-      if (
-        newSelectedLines.length !== state.selectedLines.length ||
-        newSelectedLines.some((line, i) => line !== state.selectedLines[i])
-      ) {
-        store.set(
-          (currentState) =>
-            ({
-              ...currentState,
-              selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-            }) satisfies typeof currentState
-        )
-      }
-    })
-
-    return computed
-  }
-)
 
 export interface RunnerTab {
   resourceId: string
   tabId: string
 }
+
+export const runnerPageStore = memoize(({ resourceId, tabId }: RunnerTab) =>
+  createWebStorageValue({
+    defaultValue: defaultState,
+    key: runnerStoreKey(resourceId, tabId),
+    schema: runnerPageType,
+    type: 'localStorage',
+  })
+)
+
+export type RunnerPageStore = ReturnType<typeof runnerPageStore>
+
+export const runnerStatements = memoize(
+  ({
+    connectionType,
+    resourceId,
+    tabId,
+  }: RunnerTab & { connectionType: ConnectionType }) =>
+    createComputed(runnerPageStore({ resourceId, tabId }), (state) =>
+      splitStatements(state.query, dialects[connectionType])
+    )
+)
 
 export const RunnerTabContext = createContext<RunnerTab | null>(null)
 
@@ -112,8 +64,16 @@ export const useRunnerTab = () => {
 
 export const useRunnerPageStore = () => runnerPageStore(useRunnerTab())
 
-export const useEditorQueriesComputed = () =>
-  getEditorQueriesComputed(useRunnerTab())
+export const setQuery = (store: RunnerPageStore, query: string) => {
+  if (store.get().query !== query) {
+    store.set((state) => ({ ...state, query }) satisfies typeof state)
+  }
+}
+
+export const appendQuery = (store: RunnerPageStore, sql: string) => {
+  const existing = store.get().query.trimEnd()
+  setQuery(store, existing ? `${existing}\n\n${sql}` : sql)
+}
 
 export const setLayout = (
   store: RunnerPageStore,

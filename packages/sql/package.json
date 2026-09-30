@@ -1,0 +1,13 @@
+{
+  "name": "@tamery/sql",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@tamery/configs": "workspace:*",
+    "@tamery/shared": "workspace:*"
+  }
+}

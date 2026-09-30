@@ -105,3 +105,21 @@ export const recordsToMarkdownTable = (
   )
   return [`| ${headers.join(' | ')} |`, `| ${rule} |`, ...rows].join('\n')
 }
+
+const sizeFormats = {
+  kilobyte: new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 0,
+    style: 'unit',
+    unit: 'kilobyte',
+  }),
+  megabyte: new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 1,
+    style: 'unit',
+    unit: 'megabyte',
+  }),
+}
+
+export const fileSize = (bytes: number) =>
+  bytes < 1_000_000
+    ? sizeFormats.kilobyte.format(Math.max(1, bytes / 1000))
+    : sizeFormats.megabyte.format(bytes / 1_000_000)

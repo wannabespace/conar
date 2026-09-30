@@ -1,0 +1,46 @@
+.monaco-editor-overlaymessage {
+  display: none !important;
+}
+
+.monaco-editor .sql-active-band {
+  background-color: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+.monaco-editor .sql-ai-band {
+  background-color: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+
+/* Set Monaco's vars, not the properties: its stylesheet is injected at runtime, after this one, and wins ties. */
+.monaco-editor :is(.monaco-resizable-hover, .monaco-hover) {
+  --vscode-editorHoverWidget-background: var(--foreground);
+  --vscode-editorHoverWidget-foreground: var(--background);
+  --vscode-editorHoverWidget-border: transparent;
+  --vscode-cornerRadius-large: --theme(--radius-xl);
+  --vscode-shadow-lg: none;
+  outline: none;
+}
+
+/* Monaco floors the hover at the editor's line height + 8px (inline sizes), taller than one line of text-xs. */
+.monaco-editor .monaco-resizable-hover > .monaco-hover {
+  top: 50%;
+  translate: 0 -50%;
+}
+
+/* !important: Monaco stamps the editor's mono font inline on the hover and every marker in it. */
+.monaco-editor .monaco-hover :is(.monaco-hover-content, .marker, .marker *) {
+  font-family: --theme(--font-sans) !important;
+  font-size: --theme(--text-xs) !important;
+  line-height: --theme(--text-xs--line-height) !important;
+  letter-spacing: normal !important;
+}
+
+.monaco-editor .monaco-hover :is(.hover-row.status-bar, .hover-copy-button) {
+  display: none;
+}
+
+.monaco-editor
+  .monaco-hover
+  .monaco-hover-content
+  .hover-row.hover-row-with-copy {
+  padding-right: 0;
+}

@@ -8,9 +8,9 @@ import { Constraints } from './-sections/constraints'
 import { Enums } from './-sections/enums'
 import { Functions } from './-sections/functions'
 import { Indexes } from './-sections/indexes'
-import { Policies } from './-sections/policies'
+import { Policies } from './-sections/policies/policies'
 import { Privileges } from './-sections/privileges'
-import { Triggers } from './-sections/triggers'
+import { Triggers } from './-sections/triggers/triggers'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

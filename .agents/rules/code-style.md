@@ -17,6 +17,7 @@ Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-on
 ## Repo-specific, not linted
 
 - React 19: `ref` as a prop, no `forwardRef`. No `useMemo`/`useCallback` — React Compiler is on (`architecture.md`).
+- **A file stays under 300 lines.** Past that, split it by subject — a hook, a component, a helper set each in its own file — and move anything not tied to a Tamery feature into the package that owns the library (Monaco plumbing into `@tamery/monaco`).
 - **A file is named after its subject; `utils.ts` is the only generic name.** Never `lib`, `helpers`, `shared`, `common` — one word or none. `utils.ts` is the leftover bin for unrelated one-offs with no shared subject, at most one per folder; a file with a real subject takes the subject's name (`base64.ts`, `slugify.ts`, `layout.ts`). A `utils/` **folder** is the same word twice — put the files at the parent level instead.
 - Type narrowing over assertions — a cast is a smell (`architecture.md`).
 - A magic number gets a name, not a comment explaining it.

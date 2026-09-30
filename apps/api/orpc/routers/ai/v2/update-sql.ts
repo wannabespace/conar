@@ -1,4 +1,5 @@
 import { updateSql } from '@tamery/ai/features'
+import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
@@ -10,9 +11,19 @@ export const updateSQL = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      context: 'string',
-      prompt: 'string',
-      sql: 'string',
+      context: `string <= ${AI_SQL_LIMITS.context}`,
+      editor: `string <= ${AI_SQL_LIMITS.sql}`,
+      images: type
+        .instanceOf(File)
+        .narrow(
+          (image) =>
+            image.type.startsWith('image/') &&
+            image.size <= AI_SQL_LIMITS.imageBytes
+        )
+        .array()
+        .atMostLength(AI_SQL_LIMITS.images),
+      prompt: `string <= ${AI_SQL_LIMITS.prompt}`,
+      sql: `string <= ${AI_SQL_LIMITS.sql}`,
       type: type.valueOf(ConnectionType),
     })
   )
@@ -20,6 +31,8 @@ export const updateSQL = orpc
     updateSql({
       connectionType: input.type,
       context: input.context,
+      editor: input.editor,
+      images: input.images,
       prompt: input.prompt,
       signal,
       sql: input.sql,

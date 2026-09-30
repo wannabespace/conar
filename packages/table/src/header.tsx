@@ -56,7 +56,7 @@ export const TableHeader = ({
   return (
     <div
       className={cn(
-        `bg-background inset-ring-border sticky top-0 z-10 w-fit min-w-full rounded-lg inset-ring`,
+        `bg-background sticky top-0 z-10 w-fit min-w-full border-b`,
         className
       )}
       style={{ width: `${tableWidth}px`, ...style }}

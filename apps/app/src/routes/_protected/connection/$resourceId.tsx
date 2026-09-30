@@ -42,7 +42,7 @@ import { resourcePanelClassName } from '~/shell'
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
 import { navigatorOpenValue } from './$resourceId/-components/navigator/constants'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
-import { TabBar } from './$resourceId/-components/tab-bar'
+import { TabBar } from './$resourceId/-components/tab-bar/tab-bar'
 import { PasswordForm } from './-components/password-form'
 
 const QueryLogger = lazy(async () => {

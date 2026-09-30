@@ -22,7 +22,6 @@ export const alterPolicyQuery = ({
   using = null,
   ...target
 }: PolicyTarget & {
-  // SQL Server alters only predicates and the name; the rest is Postgres and ClickHouse.
   added?: PolicyPredicate[]
   check?: string | null
   dropped?: PolicyPredicate[]

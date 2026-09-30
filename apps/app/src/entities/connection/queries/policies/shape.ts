@@ -16,7 +16,6 @@ export interface PolicyShape {
   command: PolicyCommand
   kind: PolicyKind
   name: string
-  // SQL Server's policy is only these; it has no roles, command or expressions.
   predicates: PolicyPredicate[]
   roles: string[]
   using: string | null

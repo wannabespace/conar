@@ -3,6 +3,7 @@ import {
   ArrowShrinkIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { Monaco } from '@tamery/monaco/editor'
 import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
@@ -41,7 +42,6 @@ import type { StickToBottomInstance } from 'use-stick-to-bottom'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { CellSwitch } from '~/components/cell-switch'
-import { Monaco } from '~/components/monaco'
 
 import { useCellContext } from './cell-context'
 import { estimateCompactHeight } from './utils'

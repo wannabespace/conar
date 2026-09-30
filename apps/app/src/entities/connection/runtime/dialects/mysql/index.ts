@@ -3,16 +3,12 @@ import type { Dialect } from 'kysely'
 import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '../driver'
-import { createDialectProvider, createKyselyDriver } from '../driver'
+import { createKyselyDriver } from '../driver'
 
 export const mysqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MysqlAdapter(),
-    createDriver: () =>
-      createKyselyDriver({
-        logger: options.log,
-        provider: createDialectProvider(ConnectionType.MySQL, options),
-      }),
+    createDriver: () => createKyselyDriver(ConnectionType.MySQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

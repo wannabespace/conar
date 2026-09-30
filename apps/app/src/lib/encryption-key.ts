@@ -1,20 +1,25 @@
 import { type } from 'arktype'
 import { clearMemoizeCache, memoize } from 'memoza'
-import { createIndexedDbStorage } from 'seitu/web'
+import { createIndexedDb, createIndexedDbStorage } from 'seitu/web'
 
-export const storage = createIndexedDbStorage({
-  databaseName: 'secure-storage',
-  defaultValues: {
-    encryptionKey: null,
+const db = createIndexedDb({
+  name: 'secure-storage',
+  stores: {
+    'encryption-key': createIndexedDbStorage({
+      defaultValues: {
+        encryptionKey: null,
+      },
+      schemas: {
+        encryptionKey: type.instanceOf(CryptoKey).or('null'),
+      },
+    }),
   },
-  schemas: {
-    encryptionKey: type.instanceOf(CryptoKey).or('null'),
-  },
-  storeName: 'encryption-key',
 })
 
+const storage = db.stores['encryption-key']
+
 const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
-  await storage.ready
+  await db.ready
 
   const stored = storage.get().encryptionKey
 

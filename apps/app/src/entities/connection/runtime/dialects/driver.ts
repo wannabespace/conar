@@ -1,3 +1,4 @@
+import { rowObjects } from '@tamery/connection/queries'
 import { isLocalhostConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -8,6 +9,7 @@ import type {
   DatabaseConnection,
   Driver,
   QueryResult,
+  TransactionSettings,
 } from 'kysely'
 
 import { getCollections } from '~/entities/collections'
@@ -20,6 +22,7 @@ export interface DialectOptions {
   connectionString: string
   connectionId?: string
   resourceId?: string
+  resultSets?: { maxRows: number }
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -43,6 +46,7 @@ const resolveProxyIdParams = (options: DialectOptions) => {
 interface QueryPayload {
   query: string
   values: unknown[]
+  queryId?: string
 }
 
 interface TxQueryPayload extends QueryPayload {
@@ -66,6 +70,7 @@ export const createDialectProvider = (
     ? connectionsCollection.get(connectionId)
     : null
 
+  const maxRows = options.resultSets?.maxRows
   const resolveTransport = () => {
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
@@ -100,14 +105,28 @@ export const createDialectProvider = (
   }
 
   return {
-    beginTransaction() {
+    beginTransaction(settings: TransactionSettings) {
       const t = resolveTransport()
       if (t.kind === 'electron') {
         return t.electron.beginTransaction({
           connectionString: options.connectionString,
+          ...settings,
         })
       }
-      return t.proxy.beginTransaction(resolveProxyIdParams(options))
+      return t.proxy.beginTransaction({
+        ...resolveProxyIdParams(options),
+        ...settings,
+      })
+    },
+    cancel(queryId: string) {
+      const t = resolveTransport()
+      if (t.kind === 'electron') {
+        return t.electron.cancel({
+          connectionString: options.connectionString,
+          queryId,
+        })
+      }
+      return t.proxy.cancel({ ...resolveProxyIdParams(options), queryId })
     },
     commitTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -117,19 +136,24 @@ export const createDialectProvider = (
     },
     execute(payload: QueryPayload) {
       const t = resolveTransport()
-      if (t.kind === 'electron') {
-        return t.electron.execute({
-          connectionString: options.connectionString,
-          ...payload,
-        })
-      }
-      return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
+      return t.kind === 'electron'
+        ? t.electron.execute({
+            connectionString: options.connectionString,
+            ...payload,
+            maxRows,
+          })
+        : t.proxy.execute({
+            ...resolveProxyIdParams(options),
+            ...payload,
+            maxRows,
+          })
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()
+      const payload = { ...params, maxRows }
       return t.kind === 'electron'
-        ? t.electron.executeTransaction(params)
-        : t.proxy.executeTransaction(params)
+        ? t.electron.executeTransaction(payload)
+        : t.proxy.executeTransaction(payload)
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -140,35 +164,31 @@ export const createDialectProvider = (
   }
 }
 
-export const createKyselyDriver = ({
-  provider,
-  logger,
-  transformQuery = (compiledQuery) => ({
+export const createKyselyDriver = (
+  type: ConnectionType,
+  options: DialectOptions,
+  transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
-  }),
-}: {
-  provider: ReturnType<typeof createDialectProvider>
-  logger?: DialectOptions['log']
-  transformQuery?: (compiledQuery: CompiledQuery) => QueryPayload
-}) => {
+  })
+) => {
+  const provider = createDialectProvider(type, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
-  const executeAndLog = (compiledQuery: CompiledQuery) => {
-    const payload = transformQuery(compiledQuery)
-    const promise = provider.execute(payload)
-    logger?.({
-      promise,
-      query: compiledQuery.sql,
-      values: compiledQuery.parameters as unknown[],
-    })
-    return promise
-  }
-
-  const executeInTxAndLog = (txId: string, compiledQuery: CompiledQuery) => {
-    const payload = transformQuery(compiledQuery)
-    const promise = provider.executeTransaction({ txId, ...payload })
-    logger?.({
+  const executeAndLog = (compiledQuery: CompiledQuery, txId: string | null) => {
+    const payload = {
+      ...transformQuery(compiledQuery),
+      queryId: compiledQuery.queryId.queryId,
+    }
+    const promise = (
+      txId
+        ? provider.executeTransaction({ txId, ...payload })
+        : provider.execute(payload)
+    ).then(({ duration, result }) => ({
+      duration,
+      result: options.resultSets ? result : rowObjects(result),
+    }))
+    options.log?.({
       promise,
       query: compiledQuery.sql,
       values: compiledQuery.parameters as unknown[],
@@ -183,10 +203,8 @@ export const createKyselyDriver = ({
         executeQuery: async <R>(
           compiledQuery: CompiledQuery
         ): Promise<QueryResult<R>> => {
-          const { result } = state.txId
-            ? await executeInTxAndLog(state.txId, compiledQuery)
-            : await executeAndLog(compiledQuery)
-          return { rows: Array.isArray(result) ? (result as R[]) : [] }
+          const { result } = await executeAndLog(compiledQuery, state.txId)
+          return { rows: result as R[] }
         },
         streamQuery() {
           throw new Error('Not implemented')
@@ -195,13 +213,13 @@ export const createKyselyDriver = ({
       txStates.set(connection, state)
       return Promise.resolve(connection)
     },
-    async beginTransaction(connection) {
+    async beginTransaction(connection, settings) {
       const state = txStates.get(connection)
       if (!state) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const { txId } = await provider.beginTransaction()
+      const { txId } = await provider.beginTransaction(settings)
       state.txId = txId
     },
     async commitTransaction(connection) {
@@ -209,9 +227,8 @@ export const createKyselyDriver = ({
       if (!state?.txId) {
         return
       }
-      const { txId } = state
+      await provider.commitTransaction({ txId: state.txId })
       state.txId = null
-      await provider.commitTransaction({ txId })
     },
     destroy() {
       return Promise.resolve()

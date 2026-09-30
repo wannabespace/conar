@@ -24,8 +24,8 @@ import { copy } from '@tamery/ui/lib/copy'
 import type { CSSProperties, ReactNode } from 'react'
 import { toast } from 'sonner'
 
-import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
+import type { AppMenuNode } from '~/components/app-menu'
 
 import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
