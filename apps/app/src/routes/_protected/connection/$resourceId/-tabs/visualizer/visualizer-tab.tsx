@@ -40,7 +40,7 @@ import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { openNewWindow } from '~/lib/new-window'
 import { queryClient } from '~/lib/query-client'
 
-import { Canvas } from './-components/canvas'
+import { Canvas, fitViewOptions } from './-components/canvas'
 import type { ColumnDialogRequest } from './-components/column-dialog'
 import { ColumnDialog } from './-components/column-dialog'
 import { Inspector } from './-components/inspector'
@@ -440,7 +440,7 @@ const Visualizer = ({
             onResetLayout={() => {
               setDraggedPositions(autoLayout)
               commitPositions(autoLayout)
-              void flow.fitView({ duration: 300, maxZoom: 1, padding: 0.15 })
+              void flow.fitView({ ...fitViewOptions, duration: 300 })
             }}
             onViewportChange={(viewport) =>
               visualizerLayout.setViewport(

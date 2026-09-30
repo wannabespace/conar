@@ -41,10 +41,7 @@ export const handleId = (
   kind: 'source' | 'target'
 ) => `${column}:${side}:${kind}`
 
-export const parseHandleId = (id: string) => {
-  const [column = '', , kind = 'source'] = id.split(':')
-  return { column, kind }
-}
+export const handleColumn = (id: string) => id.split(':').slice(0, -2).join(':')
 
 const kindIcons: Record<TableKind, IconSvgElement> = {
   'materialized view': ViewIcon,

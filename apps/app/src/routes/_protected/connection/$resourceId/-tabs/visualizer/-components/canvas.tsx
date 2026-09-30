@@ -20,7 +20,7 @@ import type { Diagram, DiagramRelation } from '../-lib/schema'
 import type { RelationEdge } from './relation-edge'
 import { RelationEdgeView } from './relation-edge'
 import type { TableNode } from './table-node'
-import { handleId, parseHandleId, TableNodeView } from './table-node'
+import { handleColumn, handleId, TableNodeView } from './table-node'
 
 const nodeTypes = { table: TableNodeView }
 const edgeTypes = { relation: RelationEdgeView }
@@ -44,7 +44,7 @@ const flowStyle = {
 
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5
-const fitViewOptions = { maxZoom: 1, padding: 0.15 }
+export const fitViewOptions = { maxZoom: 1, padding: 0.15 }
 
 const edgesOf = (
   { relations }: Diagram,
@@ -95,9 +95,7 @@ const ZoomTracker = () => {
 }
 
 const isValidConnection = (connection: Connection | RelationEdge) =>
-  connection.source !== connection.target &&
-  !!connection.targetHandle &&
-  parseHandleId(connection.targetHandle).kind === 'target'
+  connection.source !== connection.target
 
 export const Canvas = ({
   defaultViewport,
@@ -172,28 +170,16 @@ export const Canvas = ({
   }
 
   useHotkeys(
-    [
-      {
-        callback: () =>
-          selectedRelation && dropSelectedRelation(selectedRelation),
-        hotkey: 'Backspace',
-      },
-      {
-        callback: () =>
-          selectedRelation && dropSelectedRelation(selectedRelation),
-        hotkey: 'Delete',
-      },
-    ],
-    { enabled: !!selectedRelation && can.dropForeignKeys, preventDefault: true }
+    (['Backspace', 'Delete'] as const).map((hotkey) => ({
+      callback: () =>
+        selectedRelation && dropSelectedRelation(selectedRelation),
+      hotkey,
+    })),
+    { enabled: !!selectedRelation && can.dropForeignKeys }
   )
-  useHotkey(
-    'Escape',
-    (event) => {
-      event.stopPropagation()
-      setSelectedEdgeId(null)
-    },
-    { enabled: selectedEdgeId !== null }
-  )
+  useHotkey('Escape', () => setSelectedEdgeId(null), {
+    enabled: !!selectedRelation,
+  })
 
   return (
     <ReactFlow
@@ -216,8 +202,8 @@ export const Canvas = ({
           return
         }
         onConnect({
-          column: parseHandleId(connection.sourceHandle).column,
-          foreignColumn: parseHandleId(connection.targetHandle).column,
+          column: handleColumn(connection.sourceHandle),
+          foreignColumn: handleColumn(connection.targetHandle),
           foreignTable: connection.target,
           table: connection.source,
         })
@@ -232,7 +218,6 @@ export const Canvas = ({
       minZoom={MIN_ZOOM}
       maxZoom={MAX_ZOOM}
       panOnScroll
-      selectionOnDrag
       onlyRenderVisibleElements
       deleteKeyCode={null}
       proOptions={{ hideAttribution: true }}
@@ -255,7 +240,6 @@ export const Canvas = ({
         <ControlButton
           onClick={onResetLayout}
           title="Arrange tables automatically"
-          aria-label="Arrange tables automatically"
         >
           <HugeiconsIcon icon={Structure01Icon} strokeWidth={2} />
         </ControlButton>
