@@ -7,7 +7,7 @@ import { FieldSet } from '@tamery/ui/components/field'
 import { Separator } from '@tamery/ui/components/separator'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { useMutation } from '@tanstack/react-query'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
@@ -37,31 +37,22 @@ const signUpSchema = baseAuthSchema.and({
   name: type('string').configure({ message: 'Name is required' }),
 })
 
-const useSocialMutation = (provider: 'google' | 'github') => {
-  const { redirectPath } = useSearch()
-  const router = useRouter()
-  const { href } = router.buildLocation({ to: '/account' })
-
-  return useMutation({
-    mutationKey: ['social', provider],
-    mutationFn: async () => {
-      const callbackUrl = new URL(location.origin + (redirectPath || href))
-      const newUserCallbackUrl = new URL(callbackUrl)
-
-      newUserCallbackUrl.searchParams.set('newUser', 'true')
-
-      const { error } = await authClient.signIn.social({
-        provider,
-        callbackURL: callbackUrl.href,
-        newUserCallbackURL: newUserCallbackUrl.href,
-      })
-
-      if (error) {
-        throw error
-      }
-    },
-  })
-}
+const SOCIAL_PROVIDERS = [
+  {
+    icon: (
+      <HugeiconsIcon icon={GoogleIcon} strokeWidth={2} className="size-4" />
+    ),
+    id: 'google',
+    label: 'Google',
+  },
+  {
+    icon: (
+      <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="size-4" />
+    ),
+    id: 'github',
+    label: 'GitHub',
+  },
+]
 
 const Last = () => (
   <Badge
@@ -72,42 +63,59 @@ const Last = () => (
   </Badge>
 )
 
-const SocialAuthForm = () => {
-  const lastMethod = getLastUsedLoginMethod()
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } =
-    useSocialMutation('google')
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } =
-    useSocialMutation('github')
+const SocialButton = ({
+  provider,
+}: {
+  provider: (typeof SOCIAL_PROVIDERS)[number]
+}) => {
+  const { redirectPath } = useSearch()
+  const router = useRouter()
+  const { href } = router.buildLocation({ to: '/account' })
+  const isAnyPending = useIsMutating({ mutationKey: ['social'] }) > 0
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['social', provider.id],
+    mutationFn: async () => {
+      const callbackUrl = new URL(location.origin + (redirectPath || href))
+      const newUserCallbackUrl = new URL(callbackUrl)
+
+      newUserCallbackUrl.searchParams.set('newUser', 'true')
+
+      const { error } = await authClient.signIn.social({
+        provider: provider.id,
+        callbackURL: callbackUrl.href,
+        newUserCallbackURL: newUserCallbackUrl.href,
+      })
+
+      if (error) {
+        throw error
+      }
+    },
+    onError: handleError,
+  })
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <Button
-        variant="outline"
-        className="relative w-full"
-        onClick={() => googleSignIn()}
-        disabled={isGoogleSignInPending || isGithubSignInPending}
-      >
-        <LoadingContent loading={isGoogleSignInPending}>
-          <HugeiconsIcon icon={GoogleIcon} strokeWidth={2} className="size-4" />
-          Google
-        </LoadingContent>
-        {lastMethod === 'google' && <Last />}
-      </Button>
-      <Button
-        variant="outline"
-        className="relative w-full"
-        disabled={isGithubSignInPending || isGoogleSignInPending}
-        onClick={() => githubSignIn()}
-      >
-        <LoadingContent loading={isGithubSignInPending}>
-          <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="size-4" />
-          GitHub
-        </LoadingContent>
-        {lastMethod === 'github' && <Last />}
-      </Button>
-    </div>
+    <Button
+      variant="outline"
+      className="relative w-full"
+      onClick={() => mutate()}
+      disabled={isAnyPending}
+    >
+      <LoadingContent loading={isPending}>
+        {provider.icon}
+        {provider.label}
+      </LoadingContent>
+      {getLastUsedLoginMethod() === provider.id && <Last />}
+    </Button>
   )
 }
+
+const SocialAuthForm = () => (
+  <div className="grid grid-cols-2 gap-4">
+    {SOCIAL_PROVIDERS.map((provider) => (
+      <SocialButton key={provider.id} provider={provider} />
+    ))}
+  </div>
+)
 
 export const AuthForm = ({ type: authType }: { type: Type }) => {
   const search = useSearch()
