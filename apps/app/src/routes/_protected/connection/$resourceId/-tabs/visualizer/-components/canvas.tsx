@@ -1,12 +1,20 @@
-import { Structure01Icon } from '@hugeicons/core-free-icons'
+import {
+  MinusSignIcon,
+  PlusSignIcon,
+  Structure01Icon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
-import type { Connection, NodeChange, Viewport } from '@xyflow/react'
+import type {
+  Connection,
+  EdgeChange,
+  NodeChange,
+  Viewport,
+} from '@xyflow/react'
 import {
   Background,
   BackgroundVariant,
@@ -14,17 +22,19 @@ import {
   Controls,
   MiniMap,
   ReactFlow,
+  useReactFlow,
   useStore,
 } from '@xyflow/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 
+import type { Positions } from '~/entities/connection/store/stores'
+
 import { useDiagram } from '../-lib/context'
-import type { Positions } from '../-lib/layout'
-import type { Diagram, DiagramRelation } from '../-lib/schema'
+import { relationEdge, tableNode } from './elements'
 import type { RelationEdge } from './relation-edge'
 import { RelationEdgeView } from './relation-edge'
-import { handleColumn, handleId } from './row-handles'
+import { handleColumn } from './row-handles'
 import type { TableNode } from './table-node'
 import { TableNodeView } from './table-node'
 
@@ -52,36 +62,6 @@ const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5
 export const fitViewOptions = { maxZoom: 1, padding: 0.15 }
 
-const edgesOf = (
-  { relations }: Diagram,
-  positions: Positions,
-  selectedEdgeId: string | null
-): RelationEdge[] =>
-  relations.map((relation) => {
-    const sourceX = positions[relation.source.table]?.x ?? 0
-    const targetX = positions[relation.target.table]?.x ?? 0
-    const forward = sourceX <= targetX
-
-    return {
-      data: { relation },
-      id: relation.id,
-      selected: relation.id === selectedEdgeId,
-      source: relation.source.table,
-      sourceHandle: handleId(
-        relation.source.column,
-        forward ? 'right' : 'left',
-        'source'
-      ),
-      target: relation.target.table,
-      targetHandle: handleId(
-        relation.target.column,
-        forward ? 'left' : 'right',
-        'target'
-      ),
-      type: 'relation',
-    }
-  })
-
 // Zoom reaches the compact card labels as a CSS variable, so a wheel tick
 // re-renders no card.
 const ZoomVariable = () => {
@@ -95,43 +75,50 @@ const ZoomVariable = () => {
   return null
 }
 
-const isValidConnection = (connection: Connection | RelationEdge) =>
-  connection.source !== connection.target
+const isValidConnection = ({
+  source,
+  sourceHandle,
+  target,
+  targetHandle,
+}: Connection | RelationEdge) =>
+  source !== target ||
+  handleColumn(sourceHandle ?? '') !== handleColumn(targetHandle ?? '')
 
 export const Canvas = ({
   defaultViewport,
+  onEdgeSelect,
   onPositionsChange,
   onPositionsCommit,
   onResetLayout,
   onViewportChange,
   positions,
+  selectedEdgeId,
 }: {
   defaultViewport: Viewport | undefined
+  onEdgeSelect: (id: string | null) => void
   onPositionsChange: (positions: Positions) => void
-  onPositionsCommit: () => void
+  onPositionsCommit: (positions: Positions) => void
   onResetLayout: () => void
   onViewportChange: (viewport: Viewport) => void
   positions: Positions
+  selectedEdgeId: string | null
 }) => {
   const { actions, can, diagram, selectedId } = useDiagram()
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+  const flow = useReactFlow()
   // React Flow reports measured sizes through dimension changes; nodes rebuilt
   // without them stay unmeasured and vanish from the minimap.
   const [measured, setMeasured] = useState<
     Record<string, { height: number; width: number }>
   >({})
-  const selectedRelation = diagram.relations.find(
-    (relation) => relation.id === selectedEdgeId
-  )
 
-  const nodes: TableNode[] = diagram.tables.map((table) => ({
-    data: { table },
-    id: table.id,
-    measured: measured[table.id],
-    position: positions[table.id] ?? { x: 0, y: 0 },
-    selected: table.id === selectedId,
-    type: 'table',
-  }))
+  const nodes = diagram.tables.map((table) =>
+    tableNode(
+      table,
+      positions[table.id] ?? { x: 0, y: 0 },
+      table.id === selectedId,
+      measured[table.id]
+    )
+  )
 
   const handleNodesChange = (changes: NodeChange<TableNode>[]) => {
     const moved = changes.flatMap((change) =>
@@ -140,7 +127,11 @@ export const Canvas = ({
         : []
     )
     if (moved.length > 0) {
-      onPositionsChange({ ...positions, ...Object.fromEntries(moved) })
+      const next = { ...positions, ...Object.fromEntries(moved) }
+      onPositionsChange(next)
+      if (changes.some((c) => c.type === 'position' && !c.dragging)) {
+        onPositionsCommit(next)
+      }
     }
     const sized = changes.flatMap((change) =>
       change.type === 'dimensions' && change.dimensions
@@ -153,42 +144,50 @@ export const Canvas = ({
     for (const change of changes) {
       if (change.type === 'select' && change.selected) {
         actions.select(change.id)
-        setSelectedEdgeId(null)
+        onEdgeSelect(null)
       }
     }
   }
 
-  const dropSelectedRelation = (relation: DiagramRelation) => {
-    actions.dropRelation(relation)
-    setSelectedEdgeId(null)
+  const handleEdgesChange = (changes: EdgeChange<RelationEdge>[]) => {
+    for (const change of changes) {
+      if (change.type === 'select' && change.selected) {
+        onEdgeSelect(change.id)
+        actions.select(null)
+      }
+    }
   }
 
-  useHotkeys(
-    (['Backspace', 'Delete'] as const).map((hotkey) => ({
-      callback: () =>
-        selectedRelation && dropSelectedRelation(selectedRelation),
-      hotkey,
-    })),
-    { enabled: !!selectedRelation && can.dropForeignKeys }
-  )
-  useHotkey('Escape', () => setSelectedEdgeId(null), {
-    enabled: !!selectedRelation,
-  })
+  const controls = [
+    {
+      icon: PlusSignIcon,
+      label: 'Zoom in',
+      onClick: () => flow.zoomIn(),
+    },
+    {
+      icon: MinusSignIcon,
+      label: 'Zoom out',
+      onClick: () => flow.zoomOut(),
+    },
+    {
+      icon: Structure01Icon,
+      label: 'Arrange tables automatically',
+      onClick: onResetLayout,
+    },
+  ]
 
   return (
     <ReactFlow
       nodes={nodes}
-      edges={edgesOf(diagram, positions, selectedEdgeId)}
+      edges={diagram.relations.map((relation) =>
+        relationEdge(relation, positions, relation.id === selectedEdgeId)
+      )}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       onNodesChange={handleNodesChange}
-      onNodeDragStop={onPositionsCommit}
-      onEdgeClick={(_, edge) => {
-        setSelectedEdgeId(edge.id)
-        actions.select(null)
-      }}
+      onEdgesChange={handleEdgesChange}
       onPaneClick={() => {
-        setSelectedEdgeId(null)
+        onEdgeSelect(null)
         actions.select(null)
       }}
       onConnect={(connection) => {
@@ -229,23 +228,19 @@ export const Canvas = ({
         position="bottom-left"
         showInteractive={false}
         showFitView={false}
+        showZoom={false}
         className="ring-foreground/4 overflow-hidden rounded-xl shadow-md ring"
       >
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <ControlButton
-                onClick={onResetLayout}
-                aria-label="Arrange tables"
-              />
-            }
-          >
-            <HugeiconsIcon icon={Structure01Icon} strokeWidth={2} />
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            Arrange tables automatically
-          </TooltipContent>
-        </Tooltip>
+        {controls.map(({ icon, label, onClick }) => (
+          <Tooltip key={label}>
+            <TooltipTrigger
+              render={<ControlButton onClick={onClick} aria-label={label} />}
+            >
+              <HugeiconsIcon icon={icon} strokeWidth={2} />
+            </TooltipTrigger>
+            <TooltipContent side="right">{label}</TooltipContent>
+          </Tooltip>
+        ))}
       </Controls>
       <MiniMap
         position="bottom-right"

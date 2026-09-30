@@ -33,6 +33,7 @@ import {
   RelationsSection,
   Section,
   rowClass,
+  useHoverRelation,
 } from './inspector-sections'
 import { columnMenu, tableMenu } from './menus'
 import { draftStateClass } from './table-node'
@@ -48,14 +49,15 @@ const ColumnItem = ({
   column: DiagramColumn
   table: DiagramTable
 }) => {
-  const { actions, can, diagram, view } = useDiagram()
-  const hoverRelation = (hoveredRelationId: string | null) =>
-    view.set((state) => ({ ...state, hoveredRelationId }))
-  const relation = diagram.relations.find(
-    ({ source, target }) =>
-      (source.table === table.id && source.column === column.id) ||
-      (target.table === table.id && target.column === column.id)
-  )
+  const { actions, can, diagram } = useDiagram()
+  const hoverRelation = useHoverRelation()
+  const relationIds = diagram.relations
+    .filter(
+      ({ source, target }) =>
+        (source.table === table.id && source.column === column.id) ||
+        (target.table === table.id && target.column === column.id)
+    )
+    .map(({ id }) => id)
   const menu = () => columnMenu(table, column, { actions, can, diagram })
 
   return (
@@ -68,8 +70,8 @@ const ColumnItem = ({
             rowClass,
             column.state && draftStateClass[column.state]
           )}
-          onMouseEnter={() => hoverRelation(relation?.id ?? null)}
-          onMouseLeave={() => hoverRelation(null)}
+          onMouseEnter={() => hoverRelation(relationIds)}
+          onMouseLeave={() => hoverRelation([])}
         />
       }
     >
@@ -97,12 +99,7 @@ const ColumnItem = ({
         {column.label}
         {column.nullable && '?'}
       </span>
-      {table.kind === 'table' && (
-        <AppMenuButton
-          items={menu}
-          render={<Button variant="ghost" size="icon-xs" />}
-        />
-      )}
+      {table.kind === 'table' && <AppMenuButton items={menu} />}
     </AppContextMenu>
   )
 }
@@ -178,10 +175,7 @@ const Inspector = ({
           </span>
         </div>
         <RowCount table={table} />
-        <AppMenuButton
-          items={menuOfTable}
-          render={<Button variant="ghost" size="icon-xs" />}
-        />
+        <AppMenuButton items={menuOfTable} />
         <Tooltip>
           <TooltipTrigger
             render={

@@ -6,12 +6,13 @@ import { useSubscription } from 'seitu/react'
 import { relationTouches, useDiagram } from '../-lib/context'
 import type { DiagramRelation } from '../-lib/schema'
 
-export type RelationEdge = Edge<{ relation: DiagramRelation }, 'relation'>
+export type RelationEdge = Edge<{ relation: DiagramRelation }, 'relation'> & {
+  data: { relation: DiagramRelation }
+}
 
 const MARKER_LENGTH = 14
 const MARKER_SPREAD = 5
 
-// Crow's foot fans out at the node edge; a bar stands for "one".
 const markerPath = (
   x: number,
   y: number,
@@ -31,7 +32,7 @@ const offset = (x: number, position: Position) =>
   position === Position.Left ? x - MARKER_LENGTH : x + MARKER_LENGTH
 
 export const RelationEdgeView = ({
-  data,
+  data: { relation },
   selected,
   sourcePosition,
   sourceX,
@@ -41,19 +42,15 @@ export const RelationEdgeView = ({
   targetY,
 }: EdgeProps<RelationEdge>) => {
   const { selectedId, view } = useDiagram()
-  const relation = data?.relation
   const hovered = useSubscription(view, {
-    selector: ({ hoveredRelationId, hoveredTableId }) =>
-      relation !== undefined &&
-      (relation.id === hoveredRelationId ||
-        (hoveredTableId !== null && relationTouches(relation, hoveredTableId))),
+    selector: ({ hoveredRelationIds, hoveredTableId }) =>
+      hoveredRelationIds.includes(relation.id) ||
+      (hoveredTableId !== null && relationTouches(relation, hoveredTableId)),
   })
   const highlighted =
     !!selected ||
     hovered ||
-    (relation !== undefined &&
-      selectedId !== null &&
-      relationTouches(relation, selectedId))
+    (selectedId !== null && relationTouches(relation, selectedId))
   const [path] = getSmoothStepPath({
     borderRadius: 12,
     sourcePosition,
@@ -65,10 +62,10 @@ export const RelationEdgeView = ({
   })
   const stroke = cn(
     'fill-none stroke-[1.5] transition-[stroke,stroke-width]',
-    relation?.state === 'added' && 'stroke-success [stroke-dasharray:4_4]',
-    relation?.state === 'dropped' &&
+    relation.state === 'added' && 'stroke-success [stroke-dasharray:4_4]',
+    relation.state === 'dropped' &&
       'stroke-destructive opacity-60 [stroke-dasharray:4_4]',
-    !relation?.state &&
+    !relation.state &&
       (highlighted ? 'stroke-primary' : 'stroke-foreground/30'),
     highlighted && 'stroke-2'
   )
@@ -77,7 +74,7 @@ export const RelationEdgeView = ({
     <>
       <BaseEdge path={path} className={stroke} interactionWidth={16} />
       <path
-        d={`${markerPath(sourceX, sourceY, sourcePosition, relation?.many ?? true)} ${markerPath(targetX, targetY, targetPosition, false)}`}
+        d={`${markerPath(sourceX, sourceY, sourcePosition, relation.many)} ${markerPath(targetX, targetY, targetPosition, false)}`}
         className={cn(stroke, 'pointer-events-none')}
       />
     </>

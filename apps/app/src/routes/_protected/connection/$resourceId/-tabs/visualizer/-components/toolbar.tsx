@@ -1,5 +1,4 @@
 import {
-  Cancel01Icon,
   PlusSignIcon,
   Search01Icon,
   ViewIcon,
@@ -7,13 +6,9 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from '@tamery/ui/components/input-group'
+import { InputGroupText } from '@tamery/ui/components/input-group'
 import {
   Select,
   SelectContent,
@@ -67,10 +62,10 @@ export const Toolbar = ({
       <div className="pointer-events-none flex w-full max-w-3xl flex-wrap items-start gap-2 *:pointer-events-auto">
         {can.schemas && schemas.length > 1 && (
           <Select value={schema} onValueChange={(v) => v && onSchemaChange(v)}>
-            <SelectTrigger data-mask className="max-w-56 min-w-40">
+            <SelectTrigger className="max-w-56 min-w-40">
               <div className="flex flex-1 items-center gap-2 overflow-hidden text-left">
                 <span className="text-muted-foreground shrink-0">schema</span>
-                <span className="truncate">
+                <span data-mask className="truncate">
                   <SelectValue placeholder="Select schema" />
                 </span>
               </div>
@@ -84,45 +79,30 @@ export const Toolbar = ({
             </SelectContent>
           </Select>
         )}
-        <InputGroup className="min-w-40 flex-1">
-          <InputGroupInput
-            ref={searchRef}
-            placeholder="Search tables and columns"
-            data-mask
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-          <InputGroupAddon>
+        <SearchInput
+          ref={searchRef}
+          className="min-w-40 flex-1"
+          placeholder="Search tables and columns"
+          data-mask
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onClear={() => onSearchChange('')}
+          start={
             <HugeiconsIcon
               icon={Search01Icon}
               strokeWidth={2}
-              className="text-muted-foreground pointer-events-none size-3.5"
+              className="size-3.5"
             />
-          </InputGroupAddon>
-          <InputGroupAddon align="inline-end">
-            {noMatches && <InputGroupText>No matches</InputGroupText>}
-            {search ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label="Clear search"
-                      className="text-muted-foreground"
-                      onClick={() => onSearchChange('')}
-                    />
-                  }
-                >
-                  <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Clear</TooltipContent>
-              </Tooltip>
-            ) : (
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
-            )}
-          </InputGroupAddon>
-        </InputGroup>
+          }
+          end={
+            <>
+              {noMatches && <InputGroupText>No matches</InputGroupText>}
+              {!search && (
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
+              )}
+            </>
+          }
+        />
         <AnimatePresence initial={false}>
           {drafts.length > 0 && (
             <motion.div

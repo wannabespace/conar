@@ -24,8 +24,6 @@ import type {
   DiagramTable,
 } from '../-lib/schema'
 
-// The keyboard route to a foreign key: every key column the canvas drag
-// could land on.
 const referenceMenu = (
   table: DiagramTable,
   column: DiagramColumn,
@@ -65,16 +63,15 @@ export const columnMenu = (
 
   return [
     {
-      icon: Copy01Icon,
-      label: 'Copy Name',
-      onSelect: () => copyToClipboard(column.name, 'Column name copied'),
-    },
-    { type: 'separator' },
-    {
       disabled: !editable,
       icon: PencilEdit01Icon,
       label: 'Edit Column',
       onSelect: () => actions.editColumn(table, column),
+    },
+    {
+      icon: Copy01Icon,
+      label: 'Copy Name',
+      onSelect: () => copyToClipboard(column.name, 'Column name copied'),
     },
     {
       disabled: !editable || column.primaryKey,
@@ -120,15 +117,18 @@ export const tableMenu = (
   actions: DiagramActions
 ): AppMenuNode[] => {
   const editable = table.kind === 'table'
+  const added = table.state === 'added'
 
   return [
     {
+      disabled: added,
       icon: AppWindowIcon,
       label: 'Open in New Window',
       onSelect: () => actions.openTable(table, true),
     },
     { type: 'separator' },
     {
+      disabled: added,
       icon: LinkSquare02Icon,
       label: 'Open Table',
       onSelect: () => actions.openTable(table),
@@ -168,7 +168,7 @@ export const tableMenu = (
             onSelect: () => actions.dropTable(table, false),
             variant: 'destructive',
           } satisfies AppMenuNode,
-          ...(can.cascade && editable && table.state !== 'added'
+          ...(can.cascade && editable && !added
             ? [
                 {
                   icon: Delete02Icon,

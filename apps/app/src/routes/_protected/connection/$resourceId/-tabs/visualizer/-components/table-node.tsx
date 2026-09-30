@@ -10,6 +10,11 @@ import {
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { Node, NodeProps } from '@xyflow/react'
 import { useStore, useUpdateNodeInternals } from '@xyflow/react'
@@ -53,13 +58,19 @@ const Count = ({
   label: string
 }) =>
   count > 0 && (
-    <span
-      title={`${count} ${label}`}
-      className="text-2xs text-muted-foreground flex items-center gap-0.5 tabular-nums"
-    >
-      <HugeiconsIcon icon={icon} strokeWidth={2} className="size-3" />
-      {count}
-    </span>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span className="text-2xs text-muted-foreground flex items-center gap-0.5 tabular-nums" />
+        }
+      >
+        <HugeiconsIcon icon={icon} strokeWidth={2} className="size-3" />
+        {count}
+      </TooltipTrigger>
+      <TooltipContent>
+        {count} {label}
+      </TooltipContent>
+    </Tooltip>
   )
 
 export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
@@ -73,12 +84,21 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
       updateNodeInternals(id)
     }
   }, [hovered, id, updateNodeInternals])
+  useEffect(
+    () => () =>
+      view.set((state) =>
+        state.hoveredTableId === table.id
+          ? { ...state, hoveredTableId: null }
+          : state
+      ),
+    [table.id, view]
+  )
   const related = useSubscription(view, {
-    selector: ({ hoveredRelationId, hoveredTableId }) =>
+    selector: ({ hoveredRelationIds, hoveredTableId }) =>
       diagram.relations.some(
         (relation) =>
           relationTouches(relation, table.id) &&
-          (relation.id === hoveredRelationId ||
+          (hoveredRelationIds.includes(relation.id) ||
             (hoveredTableId !== null &&
               hoveredTableId !== table.id &&
               relationTouches(relation, hoveredTableId)))
@@ -120,7 +140,7 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
           menuColumn.current = null
         }}
         className={cn(
-          'group/node bg-popover ring-foreground/4 relative w-64 rounded-xl text-xs shadow-md ring outline-2 outline-offset-2 outline-transparent transition-[box-shadow,opacity,outline-color] select-none',
+          'group/node bg-popover ring-foreground/4 in-[[aria-roledescription=node]:focus-visible]:focus-ring relative w-64 rounded-xl text-xs shadow-md ring outline-2 outline-offset-2 outline-transparent transition-[box-shadow,opacity,outline-color] select-none',
           selected && 'outline-primary',
           related && 'outline-primary/40',
           dimmed && 'opacity-35',
@@ -227,7 +247,12 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
             )
           })}
           {table.columns.length === 0 && (
-            <p className="text-muted-foreground flex h-7 items-center px-3">
+            <p
+              className={cn(
+                'text-muted-foreground flex h-7 items-center px-3',
+                compact && 'invisible'
+              )}
+            >
               No columns yet
             </p>
           )}

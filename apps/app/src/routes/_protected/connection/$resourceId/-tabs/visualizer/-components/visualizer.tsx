@@ -1,4 +1,4 @@
-import { useHotkey } from '@tanstack/react-hotkeys'
+import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useReactFlow } from '@xyflow/react'
@@ -116,6 +116,7 @@ export const Visualizer = ({
   const layout = usePositions(connectionResource.id, schema, diagram)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [tableRequest, setTableRequest] = useState<TableDialogRequest | null>(
     null
@@ -126,6 +127,10 @@ export const Visualizer = ({
   const searchRef = useRef<HTMLInputElement>(null)
   const selectedTable =
     diagram.tables.find((table) => table.id === selectedId) ?? null
+  const selectedRelation = diagram.relations.find(
+    (relation) => relation.id === selectedEdgeId
+  )
+  const idle = !tableRequest && !columnRequest && !reviewOpen
 
   const { actions, submitColumn, submitTable } = useDiagramActions({
     constraints,
@@ -134,7 +139,6 @@ export const Visualizer = ({
     edit,
     schema,
     setColumnRequest,
-    setDragged: layout.setDragged,
     setPickedSchema,
     setSelectedId,
     setTableRequest,
@@ -151,7 +155,7 @@ export const Visualizer = ({
     setReviewOpen,
   })
 
-  useHotkey('Mod+F', () => searchRef.current?.focus(), { preventDefault: true })
+  useHotkey('Mod+F', () => searchRef.current?.focus())
   useHotkey(
     'Escape',
     () => {
@@ -161,18 +165,30 @@ export const Visualizer = ({
       }
       searchRef.current?.blur()
     },
-    { preventDefault: true, target: searchRef }
+    { target: searchRef }
   )
   useHotkey(
     'Escape',
-    (event) => {
-      event.stopPropagation()
+    () => {
+      if (selectedRelation) {
+        setSelectedEdgeId(null)
+        return
+      }
       setSelectedId(null)
     },
-    {
-      enabled:
-        selectedId !== null && !tableRequest && !columnRequest && !reviewOpen,
-    }
+    { enabled: (!!selectedRelation || selectedId !== null) && idle }
+  )
+  useHotkeys(
+    (['Backspace', 'Delete'] as const).map((hotkey) => ({
+      callback: () => {
+        if (selectedRelation) {
+          actions.dropRelation(selectedRelation)
+          setSelectedEdgeId(null)
+        }
+      },
+      hotkey,
+    })),
+    { enabled: !!selectedRelation && can.dropForeignKeys && idle }
   )
 
   const context: DiagramContextValue = {
@@ -196,6 +212,7 @@ export const Visualizer = ({
             onSchemaChange={(next) => {
               setPickedSchema(next)
               setSelectedId(null)
+              setSelectedEdgeId(null)
               layout.setDragged({})
               setSearch('')
             }}
@@ -209,14 +226,15 @@ export const Visualizer = ({
             key={schema}
             defaultViewport={
               getConnectionResourceStore(connectionResource.id).get()
-                .visualizerViewports?.[schema]
+                .visualizerViewports[schema]
             }
             positions={layout.positions}
+            selectedEdgeId={selectedEdgeId}
+            onEdgeSelect={setSelectedEdgeId}
             onPositionsChange={(next) => layout.setDragged(next)}
-            onPositionsCommit={() => layout.commit(layout.positions)}
+            onPositionsCommit={(next) => layout.commit(next)}
             onResetLayout={() => {
-              layout.setDragged(layout.auto)
-              layout.commit(layout.auto)
+              layout.arrange()
               void flow.fitView({ ...fitViewOptions, duration: 300 })
             }}
             onViewportChange={(viewport) =>

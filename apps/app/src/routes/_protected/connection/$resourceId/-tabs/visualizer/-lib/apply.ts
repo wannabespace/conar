@@ -2,10 +2,6 @@ import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/entities/connection/capabilities'
-import { structureQueryKey } from '~/entities/connection/queries/indexes/list'
-import { resourceColumnsQueryKey } from '~/entities/connection/queries/tables/columns'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 import {
   connectionResourceToQueryParams,
   transaction,
@@ -13,6 +9,7 @@ import {
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/lib/query-client'
 
+import { gatesOf } from './context'
 import type { diagramDrafts } from './drafts'
 import { draftQuery } from './queries'
 import { inApplyOrder, isDrop } from './statements'
@@ -63,7 +60,7 @@ export const useApplyDrafts = ({
   setReviewOpen: (open: boolean) => void
 }) => {
   const { connection, connectionResource } = useRouteContext()
-  const { ddlRollback } = capabilitiesOf(connection.type)
+  const { ddlRollback } = gatesOf(connection.type)
   const mutation = useMutation({
     mutationFn: async (pending: DiagramDraft[]) => {
       const params = await connectionResourceToQueryParams(connectionResource)
@@ -85,6 +82,7 @@ export const useApplyDrafts = ({
           committed.push(draft)
         }
       } catch (error) {
+        onApplied(committed)
         edit.settle(committed)
         throw error
       }
@@ -92,17 +90,9 @@ export const useApplyDrafts = ({
     },
     onError: () => setReviewOpen(true),
     onSettled: () => {
-      void Promise.all([
-        queryClient.invalidateQueries(
-          resourceTablesAndSchemasQueryOptions({ connectionResource })
-        ),
-        queryClient.invalidateQueries({
-          queryKey: resourceColumnsQueryKey({ connectionResource }),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: structureQueryKey(connectionResource),
-        }),
-      ])
+      void queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
     },
     onSuccess: (applied) => {
       onApplied(applied)

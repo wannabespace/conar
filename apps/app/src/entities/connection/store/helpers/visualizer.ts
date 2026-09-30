@@ -1,23 +1,29 @@
-import type { viewportType } from '../stores'
+import type { Positions, viewportType } from '../stores'
 import { getConnectionResourceStore } from '../stores'
 
+const setPositions = (
+  id: string,
+  schema: string,
+  change: (positions: Positions) => Positions
+) => {
+  getConnectionResourceStore(id).set(
+    (state) =>
+      ({
+        ...state,
+        visualizerPositions: {
+          ...state.visualizerPositions,
+          [schema]: change(state.visualizerPositions[schema] ?? {}),
+        },
+      }) satisfies typeof state
+  )
+}
+
 export const visualizerLayout = {
-  setPositions: (
-    id: string,
-    schema: string,
-    positions: Record<string, { x: number; y: number }>
-  ) => {
-    getConnectionResourceStore(id).set(
-      (state) =>
-        ({
-          ...state,
-          visualizerPositions: {
-            ...state.visualizerPositions,
-            [schema]: positions,
-          },
-        }) satisfies typeof state
-    )
-  },
+  moveTable: (id: string, schema: string, from: string, to: string | null) =>
+    setPositions(id, schema, ({ [from]: position, ...rest }) =>
+      position && to ? { ...rest, [to]: position } : rest
+    ),
+  setPositions,
   setViewport: (
     id: string,
     schema: string,

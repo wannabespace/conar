@@ -1,7 +1,7 @@
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import {
-  Combobox,
+  Autocomplete,
   ComboboxContent,
   ComboboxInput,
   ComboboxItem,
@@ -36,29 +36,50 @@ export interface ColumnDialogRequest {
 
 const FORM_ID = 'diagram-column'
 
-const submittable = (column: DiagramColumn | null, next: NewColumn) =>
-  !!next.name &&
-  !!next.type &&
-  (column === null ||
-    next.name !== column.name ||
-    next.type !== column.type ||
-    next.nullable !== column.nullable)
+const changed = (column: DiagramColumn | null, next: NewColumn) =>
+  column === null ||
+  next.name !== column.name ||
+  next.type !== column.type ||
+  next.nullable !== column.nullable
+
+const errorsOf = (
+  { column, table }: ColumnDialogRequest,
+  next: NewColumn,
+  submitted: boolean
+) => {
+  const nameBecomesId = column === null || column.state === 'added'
+  const taken = table.columns.some(
+    (other) =>
+      other.id !== column?.id &&
+      (other.name === next.name || (nameBecomesId && other.id === next.name))
+  )
+  const missingName = submitted ? 'Give the column a name.' : undefined
+  return {
+    name: next.name
+      ? taken && 'This table already has a column with this name'
+      : missingName,
+    type:
+      submitted && !next.type ? "Pick or write the column's type." : undefined,
+  }
+}
 
 const ColumnForm = ({
   canRename,
   columnTypes,
   onSubmit,
-  request: { column, table },
+  request,
 }: {
   canRename: boolean
   columnTypes: readonly string[]
   onSubmit: (column: NewColumn) => void
   request: ColumnDialogRequest
 }) => {
+  const { column, table } = request
   const [name, setName] = useState(column?.name ?? '')
   const [type, setType] = useState(column?.type ?? '')
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
+  const [submitted, setSubmitted] = useState(false)
   const nameLocked = column !== null && !canRename && column.state !== 'added'
   const next: NewColumn = {
     name: name.trim(),
@@ -66,10 +87,7 @@ const ColumnForm = ({
     primaryKey,
     type: type.trim(),
   }
-  const taken = table.columns.some(
-    (other) => other.name === next.name && other.id !== column?.id
-  )
-  const canSubmit = !taken && submittable(column, next)
+  const errors = errorsOf(request, next, submitted)
 
   return (
     <>
@@ -84,7 +102,9 @@ const ColumnForm = ({
         className="flex flex-col gap-3"
         onSubmit={(e) => {
           e.preventDefault()
-          if (canSubmit) {
+          setSubmitted(true)
+          const refused = errorsOf(request, next, true)
+          if (!refused.name && !refused.type) {
             onSubmit(next)
           }
         }}
@@ -96,7 +116,7 @@ const ColumnForm = ({
               id="diagram-column-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              aria-invalid={taken}
+              aria-invalid={!!errors.name}
               autoFocus={!nameLocked}
               disabled={nameLocked}
               spellCheck={false}
@@ -104,31 +124,34 @@ const ColumnForm = ({
               data-mask
             />
             <InputGroupAddon align="inline-end">
-              {taken && (
-                <FieldError>
-                  This table already has a column with this name
-                </FieldError>
-              )}
+              {errors.name && <FieldError>{errors.name}</FieldError>}
             </InputGroupAddon>
           </InputGroup>
         </Field>
         <Field>
           <FieldLabel htmlFor="diagram-column-type">Type</FieldLabel>
-          <Combobox
+          <Autocomplete
             items={columnTypes}
-            inputValue={type}
-            onInputValueChange={setType}
+            value={type}
+            onValueChange={setType}
           >
             <ComboboxInput
               id="diagram-column-type"
+              aria-invalid={!!errors.type}
               autoFocus={nameLocked}
               spellCheck={false}
               autoComplete="off"
               placeholder="integer, varchar(255)…"
               className="w-full"
               data-mask
-            />
-            <ComboboxContent data-mask className="data-empty:hidden">
+            >
+              {errors.type && (
+                <InputGroupAddon align="inline-end">
+                  <FieldError>{errors.type}</FieldError>
+                </InputGroupAddon>
+              )}
+            </ComboboxInput>
+            <ComboboxContent>
               <ComboboxList>
                 {(item: string) => (
                   <ComboboxItem key={item} value={item}>
@@ -137,7 +160,7 @@ const ColumnForm = ({
                 )}
               </ComboboxList>
             </ComboboxContent>
-          </Combobox>
+          </Autocomplete>
         </Field>
         <Label className="font-normal">
           <Checkbox
@@ -161,7 +184,7 @@ const ColumnForm = ({
         <DialogClose render={<Button type="button" variant="outline" />}>
           Cancel
         </DialogClose>
-        <Button type="submit" form={FORM_ID} disabled={!canSubmit}>
+        <Button type="submit" form={FORM_ID} disabled={!changed(column, next)}>
           {column ? 'Save' : 'Add column'}
         </Button>
       </DialogFooter>
@@ -181,18 +204,25 @@ export const ColumnDialog = ({
   onOpenChange: (open: boolean) => void
   onSubmit: (request: ColumnDialogRequest, column: NewColumn) => void
   request: ColumnDialogRequest | null
-}) => (
-  <Dialog open={request !== null} onOpenChange={onOpenChange}>
-    <DialogContent>
-      {request && (
-        <ColumnForm
-          key={`${request.table.id}:${request.column?.id ?? ''}`}
-          canRename={canRename}
-          columnTypes={columnTypes}
-          request={request}
-          onSubmit={(column) => onSubmit(request, column)}
-        />
-      )}
-    </DialogContent>
-  </Dialog>
-)
+}) => {
+  const [shown, setShown] = useState(request)
+  if (request && request !== shown) {
+    setShown(request)
+  }
+
+  return (
+    <Dialog open={request !== null} onOpenChange={onOpenChange}>
+      <DialogContent>
+        {shown && (
+          <ColumnForm
+            key={`${shown.table.id}:${shown.column?.id ?? ''}`}
+            canRename={canRename}
+            columnTypes={columnTypes}
+            request={shown}
+            onSubmit={(column) => onSubmit(shown, column)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

@@ -23,7 +23,11 @@ export const draftQuery = (draft: DiagramDraft) => {
       })
     }
     case 'dropTable': {
-      return dropTableQuery(draft)
+      return dropTableQuery({
+        cascade: draft.cascade,
+        schema: draft.schema,
+        table: draft.table,
+      })
     }
     case 'addColumn': {
       return addColumnQuery(draft)

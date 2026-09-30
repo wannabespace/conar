@@ -46,21 +46,32 @@ const TableForm = ({
 }) => {
   const [name, setName] = useState(table?.name ?? '')
   const [schema, setSchema] = useState(initialSchema)
+  const [submitted, setSubmitted] = useState(false)
   const trimmed = name.trim()
   const taken =
     trimmed !== table?.name &&
     trimmed !== table?.table &&
     tableIds.has(tableNodeId(schema, trimmed))
-  const canSubmit = !!trimmed && trimmed !== table?.name && !taken
+  let nameError: string | null = null
+  if (taken) {
+    nameError =
+      schemas.length > 1
+        ? `${schema} already has a table with this name`
+        : 'A table with this name already exists'
+  } else if (submitted && !trimmed) {
+    nameError = 'Give the table a name.'
+  }
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>{table ? 'Rename table' : 'New table'}</DialogTitle>
         <DialogDescription>
-          {table
-            ? 'The rename is queued until you apply the diagram changes.'
-            : 'The table is created with an id primary key; add columns from its card.'}
+          {table ? (
+            <span data-mask>{`${table.schema}.${table.name}`}</span>
+          ) : (
+            'The table is created with an id primary key; add columns from its card.'
+          )}
         </DialogDescription>
       </DialogHeader>
       <form
@@ -68,7 +79,8 @@ const TableForm = ({
         className="flex flex-col gap-3"
         onSubmit={(e) => {
           e.preventDefault()
-          if (canSubmit) {
+          setSubmitted(true)
+          if (trimmed && !taken) {
             onSubmit(schema, trimmed)
           }
         }}
@@ -101,20 +113,14 @@ const TableForm = ({
               id="diagram-table-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              aria-invalid={taken}
+              aria-invalid={!!nameError}
               autoFocus
               spellCheck={false}
               autoComplete="off"
               data-mask
             />
             <InputGroupAddon align="inline-end">
-              {taken && (
-                <FieldError>
-                  {schemas.length > 1
-                    ? `${schema} already has a table with this name`
-                    : 'A table with this name already exists'}
-                </FieldError>
-              )}
+              {nameError && <FieldError>{nameError}</FieldError>}
             </InputGroupAddon>
           </InputGroup>
         </Field>
@@ -123,7 +129,7 @@ const TableForm = ({
         <DialogClose render={<Button type="button" variant="outline" />}>
           Cancel
         </DialogClose>
-        <Button type="submit" form={FORM_ID} disabled={!canSubmit}>
+        <Button type="submit" form={FORM_ID} disabled={trimmed === table?.name}>
           {table ? 'Rename' : 'Create table'}
         </Button>
       </DialogFooter>
@@ -143,18 +149,25 @@ export const TableDialog = ({
   request: TableDialogRequest | null
   schemas: string[]
   tableIds: Set<string>
-}) => (
-  <Dialog open={request !== null} onOpenChange={onOpenChange}>
-    <DialogContent>
-      {request && (
-        <TableForm
-          key={request.table?.id ?? 'new'}
-          request={request}
-          schemas={schemas}
-          tableIds={tableIds}
-          onSubmit={(schema, name) => onSubmit(request, schema, name)}
-        />
-      )}
-    </DialogContent>
-  </Dialog>
-)
+}) => {
+  const [shown, setShown] = useState(request)
+  if (request && request !== shown) {
+    setShown(request)
+  }
+
+  return (
+    <Dialog open={request !== null} onOpenChange={onOpenChange}>
+      <DialogContent>
+        {shown && (
+          <TableForm
+            key={shown.table?.id ?? 'new'}
+            request={shown}
+            schemas={schemas}
+            tableIds={tableIds}
+            onSubmit={(schema, name) => onSubmit(shown, schema, name)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}

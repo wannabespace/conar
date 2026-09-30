@@ -130,19 +130,6 @@ export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
     unique: sql`INDEX ${sql.id(name)}`,
   })[kind]
 
-export const addConstraintStatement = (
-  dialectType: ConnectionType,
-  // oxlint-disable-next-line ts/no-explicit-any
-  db: Kysely<any>,
-  target: Omit<ConstraintTarget, 'name'>,
-  shape: ConstraintShape
-) =>
-  dialectType === ConnectionType.ClickHouse
-    ? sql`ALTER TABLE ${sql.id(target.schema, target.table)} ADD ${constraintClause(shape)}`.compile(
-        db
-      )
-    : addConstraint(db, target, shape).compile()
-
 export const dropConstraintStatement = (
   dialectType: ConnectionType,
   // oxlint-disable-next-line ts/no-explicit-any
@@ -153,10 +140,7 @@ export const dropConstraintStatement = (
     ...target
   }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
 ) => {
-  if (
-    dialectType === ConnectionType.ClickHouse ||
-    dialectType === ConnectionType.MySQL
-  ) {
+  if (dialectType === ConnectionType.MySQL) {
     return sql`ALTER TABLE ${sql.id(target.schema, target.table)} DROP ${mysqlDropKey(kind, target.name)}`.compile(
       db
     )

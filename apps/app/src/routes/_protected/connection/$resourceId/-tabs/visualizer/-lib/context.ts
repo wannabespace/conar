@@ -16,19 +16,7 @@ import type {
   DiagramTable,
 } from './schema'
 
-export interface DiagramGates {
-  cascade: boolean
-  ddlRollback: boolean
-  dropForeignKeys: boolean
-  foreignKeys: boolean
-  indexes: boolean
-  policies: boolean
-  renameColumns: boolean
-  schemas: boolean
-  triggers: boolean
-}
-
-export const gatesOf = (connectionType: ConnectionType): DiagramGates => {
+export const gatesOf = (connectionType: ConnectionType) => {
   const capabilities = capabilitiesOf(connectionType)
   const constraints = sectionCapabilitiesOf('constraints', connectionType)
 
@@ -46,6 +34,8 @@ export const gatesOf = (connectionType: ConnectionType): DiagramGates => {
     triggers: sectionAvailable('triggers', connectionType),
   }
 }
+
+export type DiagramGates = ReturnType<typeof gatesOf>
 
 export interface DiagramActions {
   addColumn: (table: DiagramTable) => void
@@ -71,14 +61,14 @@ export interface DiagramActions {
 // Hover changes on every pointer move, so it lives in a store each card and
 // edge reads through its own selector instead of in React context, which would
 // re-render every card on the canvas per move.
-export interface DiagramView {
-  hoveredRelationId: string | null
+interface DiagramView {
+  hoveredRelationIds: string[]
   hoveredTableId: string | null
 }
 
 export const diagramViewStore = memoize((_resourceId: string) =>
   createStore<DiagramView>({
-    hoveredRelationId: null,
+    hoveredRelationIds: [],
     hoveredTableId: null,
   })
 )

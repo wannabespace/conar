@@ -7,7 +7,7 @@ import type {
   NewColumn,
 } from '~/entities/connection/queries/tables/shape'
 
-import type { DiagramDraft } from './statements'
+import type { DiagramDraft, TableRef } from './statements'
 
 type Unsaved<T> = T extends unknown ? Omit<T, 'id'> : never
 
@@ -19,10 +19,11 @@ export const diagramDraftsStore = memoize((_resourceId: string) =>
 
 type DiagramDraftsStore = ReturnType<typeof diagramDraftsStore>
 
-interface TableRef {
-  schema: string
-  table: string
-}
+const draftOn = ({ schema, table }: TableRef) => ({
+  id: nanoid(8),
+  schema,
+  table,
+})
 
 const sameTable = (draft: TableRef, { schema, table }: TableRef) =>
   draft.schema === schema && draft.table === table
@@ -34,12 +35,20 @@ const sameColumn = (draft: DiagramDraft, ref: TableRef, column: string) =>
     draft.kind === 'dropColumn') &&
   draft.column === column
 
+const addsColumn = (
+  draft: DiagramDraft,
+  ref: TableRef,
+  column: string
+): draft is Extract<DiagramDraft, { kind: 'addColumn' }> =>
+  draft.kind === 'addColumn' &&
+  sameTable(draft, ref) &&
+  draft.column.name === column
+
 const foreignRef = (draft: ForeignKeyDraft): TableRef => ({
   schema: draft.foreignSchema,
   table: draft.foreignTable,
 })
 
-// A pending foreign key whose source or target table (or column) is gone.
 const linksTo = (draft: DiagramDraft, ref: TableRef, column?: string) =>
   draft.kind === 'addForeignKey' &&
   ((sameTable(draft, ref) &&
@@ -50,13 +59,10 @@ const linksTo = (draft: DiagramDraft, ref: TableRef, column?: string) =>
 const renameIn = (names: string[], from: string, to: string) =>
   names.map((name) => (name === from ? to : name))
 
-// Edits on a table or column that only exists as a draft fold into the draft
-// that creates it, so the statement list stays one CREATE/ADD per object.
 export const diagramDrafts = (store: DiagramDraftsStore) => {
   const update = (change: (drafts: DiagramDraft[]) => DiagramDraft[]) =>
     store.set((state) => ({ drafts: change(state.drafts) }))
-  const add = (draft: Unsaved<DiagramDraft>) =>
-    update((drafts) => [...drafts, { ...draft, id: nanoid(8) }])
+  const add = (draft: DiagramDraft) => update((drafts) => [...drafts, draft])
   const created = (ref: TableRef) =>
     store
       .get()
@@ -64,14 +70,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         (draft) => draft.kind === 'createTable' && sameTable(draft, ref)
       )
   const added = (ref: TableRef, column: string) =>
-    store
-      .get()
-      .drafts.some(
-        (draft) =>
-          draft.kind === 'addColumn' &&
-          sameTable(draft, ref) &&
-          draft.column.name === column
-      )
+    store.get().drafts.some((draft) => addsColumn(draft, ref, column))
   const editNew = (
     ref: TableRef,
     column: string,
@@ -87,11 +86,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
             ),
           }
         }
-        if (
-          draft.kind === 'addColumn' &&
-          sameTable(draft, ref) &&
-          draft.column.name === column
-        ) {
+        if (addsColumn(draft, ref, column)) {
           return { ...draft, column: change(draft.column) }
         }
         return draft
@@ -112,9 +107,10 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         )
         return
       }
-      add({ ...ref, column, kind: 'addColumn' })
+      add({ ...draftOn(ref), column, kind: 'addColumn' })
     },
-    addForeignKey: (draft: Unsaved<ForeignKeyDraft>) => add(draft),
+    addForeignKey: (draft: Unsaved<ForeignKeyDraft>) =>
+      add({ ...draft, id: nanoid(8) }),
     alterColumn: (
       ref: TableRef,
       column: string,
@@ -138,20 +134,13 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         }
         return [
           ...rest,
-          {
-            ...ref,
-            ...shape,
-            column,
-            id: nanoid(8),
-            kind: 'alterColumn',
-            original,
-          },
+          { ...draftOn(ref), ...shape, column, kind: 'alterColumn', original },
         ]
       })
     },
     clear: () => store.set({ drafts: [] }),
     createTable: (ref: TableRef, columns: NewColumn[]) =>
-      add({ ...ref, columns, kind: 'createTable' }),
+      add({ ...draftOn(ref), columns, kind: 'createTable' }),
     dropColumn: (ref: TableRef, column: string) =>
       update((drafts) => {
         const dropped = drafts.find(
@@ -166,11 +155,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
             (draft) =>
               !sameColumn(draft, ref, column) &&
               !linksTo(draft, ref, column) &&
-              !(
-                draft.kind === 'addColumn' &&
-                sameTable(draft, ref) &&
-                draft.column.name === column
-              )
+              !addsColumn(draft, ref, column)
           )
           .map((draft) =>
             draft.kind === 'createTable' && sameTable(draft, ref)
@@ -182,7 +167,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
           )
         return created(ref) || added(ref, column)
           ? rest
-          : [...rest, { ...ref, column, id: nanoid(8), kind: 'dropColumn' }]
+          : [...rest, { ...draftOn(ref), column, kind: 'dropColumn' }]
       }),
     dropForeignKey: (ref: TableRef, name: string) =>
       update((drafts) => {
@@ -196,22 +181,15 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         if (pending) {
           return drafts.filter((draft) => draft !== pending)
         }
-        return [
-          ...drafts,
-          { ...ref, id: nanoid(8), kind: 'dropForeignKey', name },
-        ]
+        return [...drafts, { ...draftOn(ref), kind: 'dropForeignKey', name }]
       }),
     dropTable: (ref: TableRef, cascade: boolean) =>
       update((drafts) => [
         ...withoutTable(drafts, ref),
         ...(created(ref)
           ? []
-          : [{ ...ref, cascade, id: nanoid(8), kind: 'dropTable' as const }]),
+          : [{ ...draftOn(ref), cascade, kind: 'dropTable' as const }]),
       ]),
-    // Drops exactly the drafts that ran; one edited or queued meanwhile is a
-    // new object and stays.
-    settle: (applied: DiagramDraft[]) =>
-      update((drafts) => drafts.filter((draft) => !applied.includes(draft))),
     remove: (id: string) =>
       update((drafts) => {
         const draft = drafts.find((entry) => entry.id === id)
@@ -231,20 +209,19 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
       if (created(ref) || added(ref, column)) {
         editNew(ref, column, (c) => ({ ...c, name: newName }))
         update((drafts) =>
-          drafts.map((draft) => {
-            if (draft.kind !== 'addForeignKey') {
-              return draft
-            }
-            return {
-              ...draft,
-              columns: sameTable(draft, ref)
-                ? renameIn(draft.columns, column, newName)
-                : draft.columns,
-              foreignColumns: sameTable(foreignRef(draft), ref)
-                ? renameIn(draft.foreignColumns, column, newName)
-                : draft.foreignColumns,
-            }
-          })
+          drafts.map((draft) =>
+            draft.kind === 'addForeignKey' && linksTo(draft, ref, column)
+              ? {
+                  ...draft,
+                  columns: sameTable(draft, ref)
+                    ? renameIn(draft.columns, column, newName)
+                    : draft.columns,
+                  foreignColumns: sameTable(foreignRef(draft), ref)
+                    ? renameIn(draft.foreignColumns, column, newName)
+                    : draft.foreignColumns,
+                }
+              : draft
+          )
         )
         return
       }
@@ -258,7 +235,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         }
         return [
           ...rest,
-          { ...ref, column, id: nanoid(8), kind: 'renameColumn', newName },
+          { ...draftOn(ref), column, kind: 'renameColumn', newName },
         ]
       })
     },
@@ -284,10 +261,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         if (newName === ref.table) {
           return rest
         }
-        return [
-          ...rest,
-          { ...ref, id: nanoid(8), kind: 'renameTable', newName },
-        ]
+        return [...rest, { ...draftOn(ref), kind: 'renameTable', newName }]
       })
     },
     restoreTable: (ref: TableRef) =>
@@ -296,5 +270,9 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
           (draft) => !(draft.kind === 'dropTable' && sameTable(draft, ref))
         )
       ),
+    // Drops exactly the drafts that ran; one edited or queued meanwhile is a
+    // new object and stays.
+    settle: (applied: DiagramDraft[]) =>
+      update((drafts) => drafts.filter((draft) => !applied.includes(draft))),
   }
 }

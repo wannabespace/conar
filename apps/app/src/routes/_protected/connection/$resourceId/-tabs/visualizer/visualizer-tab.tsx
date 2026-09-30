@@ -4,6 +4,7 @@ import { ReactFlowProvider } from '@xyflow/react'
 import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import { TableError } from '~/entities/connection/components/table/table-error'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import { resourceColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
@@ -16,7 +17,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const VisualizerTab = () => {
   const { connection, connectionResource } = useRouteContext()
-  const { data: tables } = useQuery({
+  const { data: tables, error: tablesError } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
     select: (data) =>
       data.schemas.flatMap(({ name, tables: entries }) =>
@@ -27,10 +28,10 @@ export const VisualizerTab = () => {
         }))
       ),
   })
-  const { data: columns } = useQuery(
+  const { data: columns, error: columnsError } = useQuery(
     resourceColumnsQueryOptions({ connectionResource })
   )
-  const { data: constraints } = useQuery(
+  const { data: constraints, error: constraintsError } = useQuery(
     resourceConstraintsQueryOptions({ connectionResource })
   )
 
@@ -39,6 +40,10 @@ export const VisualizerTab = () => {
   })
 
   if (!tables || !constraints || !columns) {
+    const error = tablesError ?? columnsError ?? constraintsError
+    if (error) {
+      return <TableError error={error} />
+    }
     return (
       <VisualizerSkeleton
         drafts={hasDrafts}

@@ -6,6 +6,7 @@ import { capabilitiesOf } from '~/entities/connection/capabilities'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
 import type { NewColumn } from '~/entities/connection/queries/tables/shape'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
+import { visualizerLayout } from '~/entities/connection/store/helpers/visualizer'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { openNewWindow } from '~/lib/new-window'
 
@@ -13,7 +14,6 @@ import type { ColumnDialogRequest } from '../-components/column-dialog'
 import type { TableDialogRequest } from '../-components/table-dialog'
 import type { DiagramActions } from './context'
 import type { diagramDrafts } from './drafts'
-import type { Positions } from './layout'
 import { NODE_WIDTH } from './layout'
 import type { Diagram } from './schema'
 import { tableNodeId } from './schema'
@@ -36,7 +36,6 @@ export const useDiagramActions = ({
   edit,
   schema,
   setColumnRequest,
-  setDragged,
   setPickedSchema,
   setSelectedId,
   setTableRequest,
@@ -47,9 +46,8 @@ export const useDiagramActions = ({
   edit: ReturnType<typeof diagramDrafts>
   schema: string
   setColumnRequest: (request: ColumnDialogRequest | null) => void
-  setDragged: Dispatch<SetStateAction<Positions>>
   setPickedSchema: (schema: string) => void
-  setSelectedId: (id: string | null) => void
+  setSelectedId: Dispatch<SetStateAction<string | null>>
   setTableRequest: (request: TableDialogRequest | null) => void
 }) => {
   const { connection, connectionResource } = useRouteContext()
@@ -160,6 +158,16 @@ export const useDiagramActions = ({
   ) => {
     if (table) {
       edit.renameTable(table, name)
+      if (table.state === 'added') {
+        const renamedId = tableNodeId(table.schema, name)
+        visualizerLayout.moveTable(
+          connectionResource.id,
+          table.schema,
+          table.id,
+          renamedId
+        )
+        setSelectedId((current) => (current === table.id ? renamedId : current))
+      }
     } else {
       edit.createTable({ schema: targetSchema, table: name }, [
         {
@@ -174,10 +182,14 @@ export const useDiagramActions = ({
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
       })
-      setDragged((current) => ({
-        ...current,
-        [id]: { x: center.x - NODE_WIDTH / 2, y: center.y },
-      }))
+      visualizerLayout.setPositions(
+        connectionResource.id,
+        targetSchema,
+        (positions) => ({
+          ...positions,
+          [id]: { x: center.x - NODE_WIDTH / 2, y: center.y },
+        })
+      )
       if (targetSchema === schema) {
         setSelectedId(id)
       } else {

@@ -3,7 +3,7 @@ import type { CompiledQuery, Kysely } from 'kysely'
 
 import type { ReferentialAction } from '~/entities/connection/queries/constraints/shape'
 import {
-  addConstraintStatement,
+  addConstraint,
   dropConstraintStatement,
 } from '~/entities/connection/queries/constraints/shape'
 import type {
@@ -20,7 +20,7 @@ import {
   renameTableStatement,
 } from '~/entities/connection/queries/tables/shape'
 
-interface TableRef {
+export interface TableRef {
   schema: string
   table: string
 }
@@ -50,10 +50,10 @@ export type DiagramDraft = { id: string } & TableRef &
 // Drafts name tables and columns by their original names, so a rename has to
 // run after every statement that still names the object.
 const APPLY_ORDER: DiagramDraft['kind'][] = [
+  'dropForeignKey',
   'createTable',
   'addColumn',
   'alterColumn',
-  'dropForeignKey',
   'addForeignKey',
   'dropColumn',
   'renameColumn',
@@ -97,14 +97,14 @@ export const draftStatement = (
       return alterColumnStatement(dialectType, db, draft)
     }
     case 'dropColumn': {
-      return dropColumnStatement(db, draft)
+      return dropColumnStatement(dialectType, db, draft)
     }
     case 'addForeignKey': {
-      return addConstraintStatement(dialectType, db, draft, {
+      return addConstraint(db, draft, {
         ...draft,
         expression: '',
         kind: 'foreignKey',
-      })
+      }).compile()
     }
     case 'dropForeignKey': {
       return dropConstraintStatement(dialectType, db, {

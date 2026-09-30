@@ -17,6 +17,9 @@ import type { AppMenuNode } from '~/components/app-menu'
 
 import type { CellContext, DefinitionsColumn } from '../-lib/columns'
 
+export const cardClass =
+  'bg-popover ring-foreground/4 rounded-xl shadow-xs ring'
+
 const SKELETON_ROWS = 6
 const SKELETON_MIN_WIDTH = 40
 const SKELETON_WIDTH_RANGE = 45
@@ -71,7 +74,7 @@ export const DefinitionsTable = <T,>({
   rows: T[]
   rowsRef: RefObject<Map<string, HTMLTableRowElement>>
 }) => (
-  <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
+  <div className={cn(cardClass, 'overflow-hidden')}>
     <Table className="min-w-xl table-fixed">
       <TableHeader>
         <TableRow>

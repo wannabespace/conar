@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { visualizerLayout } from '~/entities/connection/store/helpers/visualizer'
+import type { Positions } from '~/entities/connection/store/stores'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
 import type { Diagram, DiagramTable } from './schema'
@@ -17,12 +18,10 @@ const NODE_BODY_PADDING = 8
 const RANK_GAP = 96
 const NODE_GAP = 32
 
-export type Positions = Record<string, { x: number; y: number }>
-
 const nodeHeight = (table: DiagramTable) =>
   NODE_HEADER_HEIGHT +
   NODE_BODY_PADDING +
-  table.columns.length * NODE_ROW_HEIGHT
+  Math.max(table.columns.length, 1) * NODE_ROW_HEIGHT
 
 const layoutConnected = (
   tables: DiagramTable[],
@@ -34,7 +33,6 @@ const layoutConnected = (
   for (const table of tables) {
     graph.setNode(table.id, { height: nodeHeight(table), width: NODE_WIDTH })
   }
-  // Referenced table left of the tables pointing at it: a schema reads root-first.
   for (const relation of relations) {
     graph.setEdge(relation.target.table, relation.source.table)
   }
@@ -54,7 +52,7 @@ const layoutConnected = (
 
 // Dagre stacks every unlinked table into one column beside the graph, so
 // standalone tables get a grid under it instead.
-export const layoutDiagram = ({ relations, tables }: Diagram): Positions => {
+const layoutDiagram = ({ relations, tables }: Diagram): Positions => {
   const linked = new Set(
     relations.flatMap((relation) => [
       relation.source.table,
@@ -93,11 +91,9 @@ export const usePositions = (
 ) => {
   const saved = useSubscription(getConnectionResourceStore(resourceId), {
     isEqual: Object.is,
-    selector: (state) => state.visualizerPositions?.[schema],
+    selector: (state) => state.visualizerPositions[schema],
   })
   const [dragged, setDragged] = useState<Positions>({})
-  // Draft tables carry their own position, so they stay out of the layout and
-  // adding one never shuffles the rest.
   const auto = layoutDiagram({
     relations: diagram.relations.filter((r) => r.state !== 'added'),
     tables: diagram.tables.filter((t) => t.state !== 'added'),
@@ -112,32 +108,31 @@ export const usePositions = (
   )
 
   const commit = (next: Positions) =>
-    visualizerLayout.setPositions(resourceId, schema, next)
+    visualizerLayout.setPositions(resourceId, schema, () => next)
 
   return {
-    auto,
+    arrange: () => {
+      const arranged = { ...positions, ...auto }
+      setDragged(arranged)
+      commit(arranged)
+    },
     commit,
     positions,
     setDragged,
-    // Applied drafts: positions follow renamed tables and forget dropped ones.
     settle: (applied: DiagramDraft[]) => {
-      const renamed = new Map<string, string>()
-      const dropped = new Set<string>()
+      commit(positions)
       for (const draft of applied) {
-        const id = tableNodeId(draft.schema, draft.table)
-        if (draft.kind === 'renameTable') {
-          renamed.set(id, tableNodeId(draft.schema, draft.newName))
-        } else if (draft.kind === 'dropTable') {
-          dropped.add(id)
+        if (draft.kind === 'renameTable' || draft.kind === 'dropTable') {
+          visualizerLayout.moveTable(
+            resourceId,
+            draft.schema,
+            tableNodeId(draft.schema, draft.table),
+            draft.kind === 'renameTable'
+              ? tableNodeId(draft.schema, draft.newName)
+              : null
+          )
         }
       }
-      commit(
-        Object.fromEntries(
-          Object.entries(positions)
-            .filter(([id]) => !dropped.has(id))
-            .map(([id, position]) => [renamed.get(id) ?? id, position])
-        )
-      )
       setDragged({})
     },
   }

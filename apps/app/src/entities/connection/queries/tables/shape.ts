@@ -25,8 +25,11 @@ interface TableTarget {
   table: string
 }
 
-export interface AlterColumnTarget extends TableTarget {
+interface ColumnTarget extends TableTarget {
   column: string
+}
+
+export interface AlterColumnTarget extends ColumnTarget {
   nullable: boolean
   original: ColumnDefinition
   type: string
@@ -37,13 +40,15 @@ type Db = Kysely<any>
 
 const LOW_CARDINALITY = 'LowCardinality('
 
+const clickhouseNeverNullableRegex = /^(?:Array|Map|Tuple)\(/u
+
 // ClickHouse spells nullability as a type wrapper, never as a NULL keyword,
-// and it has to sit inside LowCardinality.
+// and it has to sit inside LowCardinality. Array, Map and Tuple reject it.
 const clickhouseColumnType = ({
   nullable,
   type: columnType,
 }: Pick<NewColumn, 'nullable' | 'type'>) => {
-  if (!nullable) {
+  if (!nullable || clickhouseNeverNullableRegex.test(columnType)) {
     return columnType
   }
   return columnType.startsWith(LOW_CARDINALITY)
@@ -57,36 +62,39 @@ export const createTableStatement = (
   { columns, schema, table }: TableTarget & { columns: NewColumn[] }
 ) => {
   const keys = columns.filter((column) => column.primaryKey)
+  let create: CreateTableBuilder<string, string> = db
+    .withSchema(schema)
+    .schema.createTable(table)
 
   if (dialectType === ConnectionType.ClickHouse) {
-    const definitions = sql.join(
-      columns.map(
-        (column) =>
-          sql`${sql.id(column.name)} ${sql.raw(clickhouseColumnType(column))}`
+    for (const column of columns) {
+      create = create.addColumn(
+        column.name,
+        sql.raw(clickhouseColumnType(column))
       )
-    )
+    }
     const order = keys.length
       ? sql`(${identifiers(keys.map((key) => key.name))})`
       : sql`tuple()`
 
-    return sql`CREATE TABLE ${sql.id(schema, table)} (${definitions}) ENGINE = MergeTree ORDER BY ${order}`.compile(
-      db
-    )
+    return create.modifyEnd(sql`ENGINE = MergeTree ORDER BY ${order}`).compile()
   }
 
-  let create: CreateTableBuilder<string, string> = db
-    .withSchema(schema)
-    .schema.createTable(table)
+  const singleKey = keys.length === 1
 
   for (const column of columns) {
     create = create.addColumn(
       column.name,
       sql.raw(column.type),
-      (definition) => (column.nullable ? definition : definition.notNull())
+      (definition) => {
+        const keyed =
+          singleKey && column.primaryKey ? definition.primaryKey() : definition
+        return column.nullable ? keyed : keyed.notNull()
+      }
     )
   }
 
-  if (keys.length) {
+  if (keys.length > 1) {
     create = create.addPrimaryKeyConstraint(
       `${table}_pkey`,
       keys.map((key) => key.name)
@@ -152,10 +160,42 @@ export const addColumnStatement = (
     .compile()
 }
 
+// SQL Server refuses to drop or retype a column a DEFAULT constraint depends on
+// (Msg 5074), and only the catalog knows that constraint's name.
+const mssqlDefaultConstraint = ({ column, schema, table }: ColumnTarget) => {
+  const qualified = mssqlQualified(schema, table)
+
+  return {
+    drop: sql`DECLARE @default nvarchar(max), @definition nvarchar(max), @statement nvarchar(max);
+SELECT @default = QUOTENAME(name), @definition = definition FROM sys.default_constraints WHERE parent_object_id = OBJECT_ID(${qualified}) AND parent_column_id = COLUMNPROPERTY(OBJECT_ID(${qualified}), ${column}, 'ColumnId');
+SET @statement = N'ALTER TABLE ' + ${qualified} + N' DROP CONSTRAINT ' + @default;
+IF @statement IS NOT NULL EXEC sp_executesql @statement;
+`,
+    restore: sql`;
+SET @statement = N'ALTER TABLE ' + ${qualified} + N' ADD CONSTRAINT ' + @default + N' DEFAULT ' + @definition + N' FOR ' + ${mssqlQualified(column)};
+IF @statement IS NOT NULL EXEC sp_executesql @statement;`,
+  }
+}
+
 export const dropColumnStatement = (
+  dialectType: ConnectionType,
   db: Db,
-  { column, schema, table }: TableTarget & { column: string }
-) => db.withSchema(schema).schema.alterTable(table).dropColumn(column).compile()
+  target: ColumnTarget
+) => {
+  const { column, schema, table } = target
+
+  if (dialectType === ConnectionType.MSSQL) {
+    return sql`${mssqlDefaultConstraint(target).drop}ALTER TABLE ${sql.id(schema, table)} DROP COLUMN ${sql.id(column)}`.compile(
+      db
+    )
+  }
+
+  return db
+    .withSchema(schema)
+    .schema.alterTable(table)
+    .dropColumn(column)
+    .compile()
+}
 
 export const renameColumnStatement = (
   dialectType: ConnectionType,
@@ -186,16 +226,38 @@ export const renameColumnStatement = (
 export const alterColumnStatement = (
   dialectType: ConnectionType,
   db: Db,
-  {
-    column,
-    nullable,
-    original,
-    schema,
-    table,
-    type: columnType,
-  }: AlterColumnTarget
+  target: AlterColumnTarget
 ) => {
+  const { column, nullable, original, schema, table, type: columnType } = target
   const retyped = columnType !== original.type
+  const alter = db.withSchema(schema).schema.alterTable(table)
+
+  if (dialectType === ConnectionType.ClickHouse) {
+    return alter
+      .modifyColumn(
+        column,
+        sql.raw(clickhouseColumnType({ nullable, type: columnType }))
+      )
+      .compile()
+  }
+
+  if (dialectType === ConnectionType.Postgres) {
+    const nullability = (builder: AlterColumnBuilder) =>
+      nullable ? builder.dropNotNull() : builder.setNotNull()
+
+    if (!retyped) {
+      return alter.alterColumn(column, nullability).compile()
+    }
+
+    const newType = sql.raw(columnType)
+    return alter
+      .alterColumn(column, (builder) =>
+        builder.setDataType(sql`${newType} USING ${sql.id(column)}::${newType}`)
+      )
+      .alterColumn(column, nullability)
+      .compile()
+  }
+
   const kept = [
     !retyped && original.collation && `COLLATE ${original.collation}`,
     original.attributes,
@@ -204,37 +266,18 @@ export const alterColumnStatement = (
     .join(' ')
   const definition = sql.raw(kept ? `${columnType} ${kept}` : columnType)
 
-  if (dialectType === ConnectionType.ClickHouse) {
-    return sql`ALTER TABLE ${sql.id(schema, table)} MODIFY COLUMN ${sql.id(column)} ${sql.raw(clickhouseColumnType({ nullable, type: columnType }))}`.compile(
-      db
-    )
-  }
-
   if (dialectType === ConnectionType.MSSQL) {
-    return sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${definition} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`.compile(
-      db
-    )
-  }
-
-  const alter = db.withSchema(schema).schema.alterTable(table)
-
-  if (dialectType === ConnectionType.MySQL) {
-    return alter
-      .modifyColumn(column, definition, (builder) =>
-        nullable ? builder : builder.notNull()
-      )
-      .compile()
-  }
-
-  const nullability = (builder: AlterColumnBuilder) =>
-    nullable ? builder.dropNotNull() : builder.setNotNull()
-
-  if (!retyped) {
-    return alter.alterColumn(column, nullability).compile()
+    const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${definition} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
+    if (!retyped) {
+      return statement.compile(db)
+    }
+    const { drop, restore } = mssqlDefaultConstraint(target)
+    return sql`${drop}${statement}${restore}`.compile(db)
   }
 
   return alter
-    .alterColumn(column, (builder) => builder.setDataType(sql.raw(columnType)))
-    .alterColumn(column, nullability)
+    .modifyColumn(column, definition, (builder) =>
+      nullable ? builder : builder.notNull()
+    )
     .compile()
 }

@@ -27,11 +27,11 @@ import {
   renderWebNodes,
 } from '~/components/app-menu-web'
 
-const WebContextMenuItems = ({ items }: Pick<AppContextMenuProps, 'items'>) =>
-  renderWebNodes(
-    typeof items === 'function' ? items() : items,
-    contextMenuParts
-  )
+const WebMenuItems = ({
+  items,
+  parts,
+}: Pick<AppContextMenuProps, 'items'> & { parts: typeof contextMenuParts }) =>
+  renderWebNodes(typeof items === 'function' ? items() : items, parts)
 
 export const AppContextMenu = ({
   items,
@@ -52,7 +52,7 @@ export const AppContextMenu = ({
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent {...contentProps}>
-          <WebContextMenuItems items={items} />
+          <WebMenuItems items={items} parts={contextMenuParts} />
         </ContextMenuContent>
       </ContextMenu>
     )
@@ -116,7 +116,6 @@ export const AppMenuButton = ({
   render?: ReactElement<HTMLAttributes<HTMLElement>>
 }) => {
   const [isNativeOpen, setIsNativeOpen] = useState(false)
-  const resolve = () => (typeof items === 'function' ? items() : items)
   const icon = <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
   // oxlint-disable-next-line react/no-clone-element
   const trigger = cloneElement(render, {
@@ -136,7 +135,7 @@ export const AppMenuButton = ({
           onContextMenu={stopPropagation}
           {...contentProps}
         >
-          {renderWebNodes(resolve(), dropdownMenuParts)}
+          <WebMenuItems items={items} parts={dropdownMenuParts} />
         </DropdownMenuContent>
       </DropdownMenu>
     )
@@ -150,7 +149,9 @@ export const AppMenuButton = ({
     }
 
     const rect = e.currentTarget.getBoundingClientRect()
-    const { nativeItems, handlers } = toNativeMenu(resolve())
+    const { nativeItems, handlers } = toNativeMenu(
+      typeof items === 'function' ? items() : items
+    )
 
     setIsNativeOpen(true)
 

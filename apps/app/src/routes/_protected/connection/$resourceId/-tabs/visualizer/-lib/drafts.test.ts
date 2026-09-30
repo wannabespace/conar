@@ -36,6 +36,22 @@ test('renames run after the statements that still name the original', () => {
   ])
 })
 
+test('a foreign key drops before its column is altered', () => {
+  const { drafts, edit } = setup('fk-order')
+  edit.alterColumn(
+    orders,
+    'user_id',
+    { nullable: false, type: 'integer' },
+    original
+  )
+  edit.dropForeignKey(orders, 'orders_user_id_fkey')
+
+  expect(inApplyOrder(drafts()).map((draft) => draft.kind)).toEqual([
+    'dropForeignKey',
+    'alterColumn',
+  ])
+})
+
 test('an alter back to the original shape leaves no draft', () => {
   const { drafts, edit } = setup('noop')
   edit.alterColumn(

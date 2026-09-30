@@ -37,20 +37,20 @@ Click a card to open the **inspector** beside the diagram: columns, relations, a
 Everything you change is queued as a **draft** and shown on the card until you apply it — added rows tinted green, changed rows in italics, dropped rows struck through. Nothing runs against the database until you click **Apply**.
 
 - **Table** — right-click a card header for _Rename Table_, _Add Column_ and _Drop Table_ (with _Drop Table with Dependents_ on PostgreSQL). The **+ Table** button creates a new table with an `id` primary key; add columns from its card or the inspector.
-- **Column** — right-click a column row (or use its `⋯` menu in the inspector) for _Edit Column_ (name, type, nullability), _Allow NULL_ and _Drop Column_. Engines that cannot rename columns lock the name field. Generated and computed columns are read-only. A change keeps the column's length, precision, default, comment and collation unless you change its type.
-- **Foreign key** — drag from a column's edge handle onto a primary or unique key in another table, or pick the key from the column menu's _Reference_ submenu. Select an edge and press <kbd>Delete</kbd> to drop it, or use the relation row's menu in the inspector.
+- **Column** — right-click a column row (or use its `⋯` menu in the inspector) for _Edit Column_ (name, type, nullability), _Allow NULL_ / _Require a Value_ and _Drop Column_. Engines that cannot rename columns lock the name field. Generated and computed columns are read-only. A change keeps the column's length, precision, default and comment, and its collation unless you change its type.
+- **Foreign key** — drag from a column's edge handle onto a primary or unique key — in another table or the same one — or pick the key from the column menu's _Reference_ submenu. Select an edge and press <kbd>Delete</kbd> to drop it, or use the relation row's menu in the inspector.
 - **Undo a draft** — the same menu offers _Restore_ on anything marked dropped, and the review drawer discards changes one by one.
 
 Views are read-only in the diagram. A foreign key over several columns shows as one link, drawn from its first column.
 
 ## Applying changes
 
-Click the **eye** button to review every queued change with the exact SQL Tamery will run, in the order it runs, then **Apply** (or press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>S</kbd>). When a drop is queued, Apply opens the review first — applying from there is the confirmation. On PostgreSQL and SQL Server all statements run in one transaction, so a failure leaves the database untouched. MySQL and ClickHouse commit each DDL statement on its own; the Apply button turns amber to say so, and a failure keeps the remaining drafts so you can fix and retry. The database's error message appears in the review drawer.
+Click the **eye** button to review every queued change with the exact SQL Tamery will run, grouped by table in the order it runs, then **Apply** (or press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>S</kbd>). When a drop is queued, Apply opens the review first — applying from there is the confirmation. On PostgreSQL and SQL Server all statements run in one transaction, so a failure leaves the database untouched. MySQL and ClickHouse commit each DDL statement on its own; the Apply button turns amber to say so (red whenever a drop is queued), and a failure keeps the remaining drafts so you can fix and retry. The database's error message appears in the review drawer.
 
 ## Navigating
 
 - **Pan / zoom** — drag the background to pan, scroll to move, pinch or <kbd>Ctrl</kbd>+scroll to zoom.
 - **Minimap** — overview in the corner; drag it to jump.
 - **Zoomed out** — once column text would be unreadable, cards show only the table name at a readable size; zoom back in for columns.
-- **Zoom and arrange** — the buttons in the bottom-left corner step the zoom; the last one re-arranges tables root-first, minimising crossings, with standalone tables in a grid beneath. Cards you move keep their position per schema.
+- **Zoom and arrange** — the buttons in the bottom-left corner step the zoom; the last one re-arranges tables root-first, minimising crossings, with standalone tables in a grid beneath. Cards you move, and tables you create, keep their position per schema.
 - **Search** — press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>F</kbd> and type part of a table or column name; matches turn blue and everything else fades, and the field says **No matches** when nothing fits. <kbd>Esc</kbd> clears the search, then leaves the field, then closes the inspector.

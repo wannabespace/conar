@@ -20,7 +20,11 @@ import { definitionsTabId } from '~/entities/connection/store/tabs/ids'
 import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
 
 import { useDiagram } from '../-lib/context'
-import type { DiagramTable } from '../-lib/schema'
+import type { DiagramRelation, DiagramTable } from '../-lib/schema'
+import { cardClass } from '../../definitions/-components/definitions-table'
+import { indexKey } from '../../definitions/-sections/indexes'
+import { policyKey } from '../../definitions/-sections/policies/policies'
+import { triggerKey } from '../../definitions/-sections/triggers/triggers'
 import { relationMenu } from './menus'
 import { draftStateClass } from './table-node'
 
@@ -47,7 +51,7 @@ export const Section = ({
 )
 
 export const List = ({ children }: { children: ReactNode }) => (
-  <ul className="bg-popover ring-foreground/4 flex flex-col overflow-hidden rounded-xl text-xs shadow-xs ring">
+  <ul className={cn(cardClass, 'flex flex-col overflow-hidden text-xs')}>
     {children}
   </ul>
 )
@@ -61,22 +65,34 @@ export const EmptyRow = ({ children }: { children: string }) => (
   </li>
 )
 
+export const useHoverRelation = () => {
+  const { view } = useDiagram()
+
+  return (hoveredRelationIds: string[]) =>
+    view.set((state) => ({ ...state, hoveredRelationIds }))
+}
+
 export const RelationsSection = ({ table }: { table: DiagramTable }) => {
-  const { actions, can, diagram, view } = useDiagram()
-  const hoverRelation = (hoveredRelationId: string | null) =>
-    view.set((state) => ({ ...state, hoveredRelationId }))
+  const { actions, can, diagram } = useDiagram()
+  const hoverRelation = useHoverRelation()
   const relations = diagram.relations.filter(
     (relation) =>
       relation.source.table === table.id || relation.target.table === table.id
   )
-  const nameOf = (id: string) =>
-    diagram.tables.find((entry) => entry.id === id)?.name ?? id
+  const tableOf = (id: string) =>
+    diagram.tables.find((entry) => entry.id === id)
+  const columnName = ({ column, table: tableId }: DiagramRelation['source']) =>
+    tableOf(tableId)?.columns.find((entry) => entry.id === column)?.name ??
+    column
 
   return (
     <Section title="Relations">
       <List>
         {relations.map((relation) => {
           const outgoing = relation.source.table === table.id
+          const [near, far] = outgoing
+            ? [relation.source, relation.target]
+            : [relation.target, relation.source]
           const menu =
             outgoing && can.dropForeignKeys
               ? relationMenu(relation, actions)
@@ -86,20 +102,17 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
               rowClass,
               relation.state && draftStateClass[relation.state]
             ),
-            onMouseEnter: () => hoverRelation(relation.id),
-            onMouseLeave: () => hoverRelation(null),
+            onMouseEnter: () => hoverRelation([relation.id]),
+            onMouseLeave: () => hoverRelation([]),
           }
           const content = (
             <>
               <span data-mask className="min-w-0 flex-1 truncate font-mono">
-                {outgoing ? relation.source.column : relation.target.column}
+                {columnName(near)}
                 <span className="text-muted-foreground/60">
                   {outgoing ? ' → ' : ' ← '}
                 </span>
-                {nameOf(
-                  outgoing ? relation.target.table : relation.source.table
-                )}
-                .{outgoing ? relation.target.column : relation.source.column}
+                {tableOf(far.table)?.name ?? far.table}.{columnName(far)}
               </span>
               <Tooltip>
                 <TooltipTrigger
@@ -117,12 +130,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
                 </TooltipTrigger>
                 <TooltipContent side="left">Show on canvas</TooltipContent>
               </Tooltip>
-              {menu && (
-                <AppMenuButton
-                  items={menu}
-                  render={<Button variant="ghost" size="icon-xs" />}
-                />
-              )}
+              {menu && <AppMenuButton items={menu} />}
             </>
           )
 
@@ -159,7 +167,7 @@ const DefinitionLink = ({
   section,
 }: {
   children: ReactNode
-  rowKey: unknown[]
+  rowKey: string
   schema: string
   section: DefinitionsSection
 }) => {
@@ -173,7 +181,7 @@ const DefinitionLink = ({
           resourceId: connectionResource.id,
           tabId: definitionsTabId(section),
         }}
-        search={{ open: JSON.stringify(rowKey), schema }}
+        search={{ open: rowKey, schema }}
         onClick={() => openDefinitionsTab(connectionResource.id, section)}
         className={cn(rowClass, 'text-foreground group/link pr-2')}
       >
@@ -213,7 +221,7 @@ export const DefinitionsSections = ({
             {ofTable(indexes).map((index) => (
               <DefinitionLink
                 key={index.name}
-                rowKey={[index.table, index.name]}
+                rowKey={indexKey(index)}
                 schema={table.schema}
                 section="indexes"
               >
@@ -235,12 +243,7 @@ export const DefinitionsSections = ({
             {ofTable(triggers).map((trigger) => (
               <DefinitionLink
                 key={`${trigger.name}:${trigger.event}`}
-                rowKey={[
-                  trigger.schema,
-                  trigger.table,
-                  trigger.name,
-                  trigger.event,
-                ]}
+                rowKey={triggerKey(trigger)}
                 schema={table.schema}
                 section="triggers"
               >
@@ -262,7 +265,7 @@ export const DefinitionsSections = ({
             {ofTable(policies).map((policy) => (
               <DefinitionLink
                 key={policy.name}
-                rowKey={[policy.table, policy.name]}
+                rowKey={policyKey(policy)}
                 schema={table.schema}
                 section="policies"
               >

@@ -147,9 +147,16 @@ const VisualizerRefresh = () => {
   const handleRefresh = () => {
     setIsUserRefreshing(true)
 
-    return Promise.all(
-      keys.map((queryKey) => queryClient.invalidateQueries({ queryKey }))
-    ).finally(() => setIsUserRefreshing(false))
+    return Promise.all([
+      ...keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          partialMatchKey(queryKey, [
+            'connection-resource',
+            connectionResource.id,
+          ]) && queryKey.includes('total'),
+      }),
+    ]).finally(() => setIsUserRefreshing(false))
   }
 
   useRefreshHotkey(handleRefresh, isFetching)

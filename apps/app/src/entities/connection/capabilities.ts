@@ -1,5 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
+import { COLUMN_TYPES } from './column-types'
 import type {
   ConstraintKind,
   ReferentialAction,
@@ -68,7 +69,6 @@ interface TriggerCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
-  // Offered by the diagram's type picker, which also takes free text.
   columnTypes: readonly string[]
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
@@ -123,24 +123,7 @@ const noTriggers: TriggerCapabilities = {
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
-    columnTypes: [
-      'UInt8',
-      'UInt32',
-      'UInt64',
-      'Int32',
-      'Int64',
-      'Float32',
-      'Float64',
-      'Decimal(10, 2)',
-      'String',
-      'FixedString(36)',
-      'UUID',
-      'Bool',
-      'Date',
-      'DateTime',
-      'DateTime64(3)',
-      'Array(String)',
-    ],
+    columnTypes: COLUMN_TYPES[ConnectionType.ClickHouse],
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
@@ -174,23 +157,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
-    columnTypes: [
-      'int',
-      'bigint',
-      'smallint',
-      'bit',
-      'decimal(18, 2)',
-      'float',
-      'money',
-      'varchar(255)',
-      'nvarchar(255)',
-      'nvarchar(max)',
-      'uniqueidentifier',
-      'date',
-      'time',
-      'datetime2',
-      'varbinary(max)',
-    ],
+    columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -235,24 +202,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
-    columnTypes: [
-      'int',
-      'bigint',
-      'smallint',
-      'tinyint',
-      'decimal(10, 2)',
-      'float',
-      'double',
-      'boolean',
-      'varchar(255)',
-      'char(36)',
-      'text',
-      'date',
-      'datetime',
-      'timestamp',
-      'json',
-      'blob',
-    ],
+    columnTypes: COLUMN_TYPES[ConnectionType.MySQL],
     constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
@@ -300,23 +250,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
-    columnTypes: [
-      'integer',
-      'bigint',
-      'smallint',
-      'numeric',
-      'real',
-      'double precision',
-      'boolean',
-      'text',
-      'varchar(255)',
-      'uuid',
-      'date',
-      'timestamp',
-      'timestamptz',
-      'jsonb',
-      'bytea',
-    ],
+    columnTypes: COLUMN_TYPES[ConnectionType.Postgres],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',

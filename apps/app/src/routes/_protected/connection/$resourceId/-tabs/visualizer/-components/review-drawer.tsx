@@ -9,6 +9,7 @@ import {
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Drawer,
   DrawerClose,
@@ -32,6 +33,7 @@ import { formatSql } from '~/lib/formatter'
 import { applyConsequence, plural } from '../-lib/apply'
 import type { DiagramDraft } from '../-lib/statements'
 import { draftStatement, inApplyOrder } from '../-lib/statements'
+import { cardClass } from '../../definitions/-components/definitions-table'
 
 const draftLabel = (draft: DiagramDraft) => {
   switch (draft.kind) {
@@ -133,10 +135,7 @@ export const ReviewDrawer = ({
           ) : (
             <div className="flex flex-col gap-3">
               {groups.map(([key, tableDrafts]) => (
-                <div
-                  key={key}
-                  className="bg-popover ring-foreground/4 rounded-xl shadow-xs ring"
-                >
+                <div key={key} className={cardClass}>
                   <header className="border-foreground/6 flex h-9 items-center border-b px-3">
                     <span
                       data-mask
@@ -148,7 +147,7 @@ export const ReviewDrawer = ({
                   {tableDrafts.map((draft) => (
                     <div
                       key={draft.id}
-                      className="group border-foreground/6 flex flex-col gap-1.5 border-b py-2 pr-1.5 pl-3 last:border-b-0"
+                      className="border-foreground/6 flex flex-col gap-1.5 border-b py-2 pr-1.5 pl-3 last:border-b-0"
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -164,7 +163,7 @@ export const ReviewDrawer = ({
                                 variant="ghost"
                                 size="icon-xs"
                                 aria-label="Discard change"
-                                className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                className="text-muted-foreground shrink-0"
                                 onClick={() => onDiscard(draft.id)}
                                 disabled={applying}
                               />
@@ -211,15 +210,30 @@ export const ReviewDrawer = ({
             Discard all
           </Button>
           <DrawerClose render={<Button variant="outline">Close</Button>} />
-          <Button
-            variant={consequence.variant}
-            onClick={onApply}
-            disabled={applying || drafts.length === 0}
-          >
-            <LoadingContent loading={applying}>
-              Apply {plural(drafts.length, 'change')}
-            </LoadingContent>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant={consequence.variant}
+                  onClick={onApply}
+                  disabled={applying || drafts.length === 0}
+                />
+              }
+            >
+              <LoadingContent loading={applying}>
+                Apply {plural(drafts.length, 'change')}
+              </LoadingContent>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="flex flex-col gap-0.5">
+                <span>
+                  {`Apply ${plural(drafts.length, 'change')} to the database. `}
+                  {consequence.description}
+                </span>
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
+              </div>
+            </TooltipContent>
+          </Tooltip>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

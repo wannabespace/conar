@@ -123,7 +123,6 @@ export const buildDiagram = ({
       .filter((c) => c.type === 'primaryKey')
       .map((c) => `${c.table}.${c.column}`)
   )
-  const singlePrimaryKeys = singleColumnKeys(schemaConstraints, 'primaryKey')
   const uniques = singleColumnKeys(schemaConstraints, 'unique')
   const foreignKeyColumns = schemaConstraints.filter(
     (c) =>
@@ -136,7 +135,6 @@ export const buildDiagram = ({
   const foreignColumns = new Set(
     foreignKeyColumns.map((c) => `${c.table}.${c.column}`)
   )
-  // One row per column: a multi-column key draws one edge, from its first pair.
   const foreignKeys = [
     ...Map.groupBy(foreignKeyColumns, (c) => `${c.table}.${c.name}`).values(),
   ].flatMap(([first]) => (first ? [first] : []))
@@ -236,11 +234,17 @@ export const buildDiagram = ({
 
   const allTables = [...existing, ...created]
   const nodeIds = new Set(allTables.map((table) => table.id))
+  const singleKeys = new Set([
+    ...singleColumnKeys(schemaConstraints, 'primaryKey'),
+    ...uniques,
+    ...schemaDrafts.flatMap((d) => {
+      const keys =
+        d.kind === 'createTable' ? d.columns.filter((c) => c.primaryKey) : []
+      return keys.length === 1 ? keys.map((c) => `${d.table}.${c.name}`) : []
+    }),
+  ])
   const isMany = (table: string, column: string) =>
-    !(
-      singlePrimaryKeys.has(`${table}.${column}`) ||
-      uniques.has(`${table}.${column}`)
-    )
+    !singleKeys.has(`${table}.${column}`)
 
   const relations: DiagramRelation[] = [
     ...foreignKeys.map((c) => ({

@@ -27,8 +27,8 @@ export const VisualizerSkeleton = ({
         <Skeleton className="h-8 w-20 rounded-xl" />
       </div>
     </div>
-    <Skeleton className="absolute bottom-3 left-3 z-10 h-20 w-7 rounded-xl" />
-    <Skeleton className="absolute right-3 bottom-3 z-10 h-37.5 w-50 rounded-xl" />
+    <Skeleton className="absolute bottom-3.75 left-3.75 z-10 h-19.5 w-6.5 rounded-xl" />
+    <Skeleton className="absolute right-3.75 bottom-3.75 z-10 h-37.5 w-50 rounded-xl" />
     <div className="flex size-full items-center justify-center gap-24">
       {Array.from({ length: NODES_COUNT }).map((_, nodeIndex) => (
         <div

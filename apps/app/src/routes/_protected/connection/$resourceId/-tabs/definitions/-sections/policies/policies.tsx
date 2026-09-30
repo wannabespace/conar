@@ -95,7 +95,8 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   }),
 ]
 
-const policyKey = (item: PolicyItem) => JSON.stringify([item.table, item.name])
+export const policyKey = (item: PolicyItem) =>
+  JSON.stringify([item.table, item.name])
 
 const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
   {
