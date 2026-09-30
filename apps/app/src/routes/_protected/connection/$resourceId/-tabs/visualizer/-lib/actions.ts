@@ -3,6 +3,8 @@ import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
 
 import { capabilitiesOf } from '~/entities/connection/capabilities'
+import type { ColumnDialogRequest } from '~/entities/connection/components/column-dialog'
+import type { TableDialogRequest } from '~/entities/connection/components/table-dialog'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
 import type { NewColumn } from '~/entities/connection/queries/tables/shape'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
@@ -10,12 +12,10 @@ import { visualizerLayout } from '~/entities/connection/store/helpers/visualizer
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 import { openNewWindow } from '~/lib/new-window'
 
-import type { ColumnDialogRequest } from '../-components/column-dialog'
-import type { TableDialogRequest } from '../-components/table-dialog'
 import type { DiagramActions } from './context'
 import type { diagramDrafts } from './drafts'
 import { NODE_WIDTH } from './layout'
-import type { Diagram } from './schema'
+import type { Diagram, DiagramColumn, DiagramTable } from './schema'
 import { tableNodeId } from './schema'
 import type { DiagramDraft } from './statements'
 
@@ -45,10 +45,12 @@ export const useDiagramActions = ({
   drafts: DiagramDraft[]
   edit: ReturnType<typeof diagramDrafts>
   schema: string
-  setColumnRequest: (request: ColumnDialogRequest | null) => void
+  setColumnRequest: (
+    request: ColumnDialogRequest<DiagramTable, DiagramColumn> | null
+  ) => void
   setPickedSchema: (schema: string) => void
   setSelectedId: Dispatch<SetStateAction<string | null>>
-  setTableRequest: (request: TableDialogRequest | null) => void
+  setTableRequest: (request: TableDialogRequest<DiagramTable> | null) => void
 }) => {
   const { connection, connectionResource } = useRouteContext()
   const router = useRouter()
@@ -129,7 +131,7 @@ export const useDiagramActions = ({
   }
 
   const submitColumn = (
-    { column, table }: ColumnDialogRequest,
+    { column, table }: ColumnDialogRequest<DiagramTable, DiagramColumn>,
     next: NewColumn
   ) => {
     if (column === null) {
@@ -152,7 +154,7 @@ export const useDiagramActions = ({
   }
 
   const submitTable = (
-    { table }: TableDialogRequest,
+    { table }: TableDialogRequest<DiagramTable>,
     targetSchema: string,
     name: string
   ) => {

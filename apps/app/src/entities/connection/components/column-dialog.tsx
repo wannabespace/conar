@@ -7,6 +7,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@tamery/ui/components/combobox'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogClose,
@@ -25,18 +26,34 @@ import {
 import { Label } from '@tamery/ui/components/label'
 import { useState } from 'react'
 
-import type { NewColumn } from '~/entities/connection/queries/tables/shape'
+import type {
+  DraftState,
+  NewColumn,
+} from '~/entities/connection/queries/tables/shape'
 
-import type { DiagramColumn, DiagramTable } from '../-lib/schema'
-
-export interface ColumnDialogRequest {
-  column: DiagramColumn | null
-  table: DiagramTable
+interface EditableColumn extends NewColumn {
+  // Name in the database; differs from `name` while a rename is pending.
+  id: string
+  state?: DraftState
 }
 
-const FORM_ID = 'diagram-column'
+interface EditableTable {
+  columns: Pick<EditableColumn, 'id' | 'name'>[]
+  name: string
+  state?: DraftState
+}
 
-const changed = (column: DiagramColumn | null, next: NewColumn) =>
+export interface ColumnDialogRequest<
+  Table extends EditableTable = EditableTable,
+  Column extends EditableColumn = EditableColumn,
+> {
+  column: Column | null
+  table: Table
+}
+
+const FORM_ID = 'column-dialog'
+
+const changed = (column: EditableColumn | null, next: NewColumn) =>
   column === null ||
   next.name !== column.name ||
   next.type !== column.type ||
@@ -63,15 +80,36 @@ const errorsOf = (
   }
 }
 
+const Footer = ({
+  disabled,
+  label,
+  pending,
+}: {
+  disabled: boolean
+  label: string
+  pending: boolean
+}) => (
+  <DialogFooter>
+    <DialogClose render={<Button type="button" variant="outline" />}>
+      Cancel
+    </DialogClose>
+    <Button type="submit" form={FORM_ID} disabled={pending || disabled}>
+      <LoadingContent loading={pending}>{label}</LoadingContent>
+    </Button>
+  </DialogFooter>
+)
+
 const ColumnForm = ({
   canRename,
   columnTypes,
   onSubmit,
+  pending,
   request,
 }: {
   canRename: boolean
   columnTypes: readonly string[]
   onSubmit: (column: NewColumn) => void
+  pending: boolean
   request: ColumnDialogRequest
 }) => {
   const { column, table } = request
@@ -110,10 +148,10 @@ const ColumnForm = ({
         }}
       >
         <Field>
-          <FieldLabel htmlFor="diagram-column-name">Name</FieldLabel>
+          <FieldLabel htmlFor="column-dialog-name">Name</FieldLabel>
           <InputGroup>
             <InputGroupInput
-              id="diagram-column-name"
+              id="column-dialog-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-invalid={!!errors.name}
@@ -129,14 +167,14 @@ const ColumnForm = ({
           </InputGroup>
         </Field>
         <Field>
-          <FieldLabel htmlFor="diagram-column-type">Type</FieldLabel>
+          <FieldLabel htmlFor="column-dialog-type">Type</FieldLabel>
           <Autocomplete
             items={columnTypes}
             value={type}
             onValueChange={setType}
           >
             <ComboboxInput
-              id="diagram-column-type"
+              id="column-dialog-type"
               aria-invalid={!!errors.type}
               autoFocus={nameLocked}
               spellCheck={false}
@@ -180,30 +218,35 @@ const ColumnForm = ({
           </Label>
         )}
       </form>
-      <DialogFooter>
-        <DialogClose render={<Button type="button" variant="outline" />}>
-          Cancel
-        </DialogClose>
-        <Button type="submit" form={FORM_ID} disabled={!changed(column, next)}>
-          {column ? 'Save' : 'Add column'}
-        </Button>
-      </DialogFooter>
+      <Footer
+        disabled={!changed(column, next)}
+        label={column ? 'Save' : 'Add column'}
+        pending={pending}
+      />
     </>
   )
 }
 
-export const ColumnDialog = ({
+export const ColumnDialog = <
+  Table extends EditableTable,
+  Column extends EditableColumn,
+>({
   canRename,
   columnTypes,
   onOpenChange,
   onSubmit,
+  pending = false,
   request,
 }: {
   canRename: boolean
   columnTypes: readonly string[]
   onOpenChange: (open: boolean) => void
-  onSubmit: (request: ColumnDialogRequest, column: NewColumn) => void
-  request: ColumnDialogRequest | null
+  onSubmit: (
+    request: ColumnDialogRequest<Table, Column>,
+    column: NewColumn
+  ) => void
+  pending?: boolean
+  request: ColumnDialogRequest<Table, Column> | null
 }) => {
   const [shown, setShown] = useState(request)
   if (request && request !== shown) {
@@ -215,9 +258,10 @@ export const ColumnDialog = ({
       <DialogContent>
         {shown && (
           <ColumnForm
-            key={`${shown.table.id}:${shown.column?.id ?? ''}`}
+            key={`${shown.table.name}:${shown.column?.id ?? ''}`}
             canRename={canRename}
             columnTypes={columnTypes}
+            pending={pending}
             request={shown}
             onSubmit={(column) => onSubmit(shown, column)}
           />

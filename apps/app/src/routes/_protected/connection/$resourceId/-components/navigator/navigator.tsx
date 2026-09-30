@@ -29,6 +29,7 @@ import {
 } from '~/entities/connection/store/stores'
 import { pressNavProps } from '~/lib/press-nav'
 
+import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
 import { sidebarActionRowClassName } from './primitives'
@@ -36,7 +37,11 @@ import { TablesList } from './tables-list'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const TablesPanel = () => {
+const TablesPanel = ({
+  onCreateTable,
+}: {
+  onCreateTable: (schema: string) => void
+}) => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const search = useSubscription(store, {
@@ -99,7 +104,11 @@ const TablesPanel = () => {
           </TooltipContent>
         </Tooltip>
       </div>
-      <TablesList className="min-h-0 flex-1" search={search} />
+      <TablesList
+        className="min-h-0 flex-1"
+        search={search}
+        onCreateTable={onCreateTable}
+      />
     </>
   )
 }
@@ -149,6 +158,9 @@ const NavigatorFooter = () => {
   )
 }
 
+const createTable = (schema: string) =>
+  createTableDialogRef.current?.create(schema)
+
 export const Navigator = () => {
   const { connectionResource } = useRouteContext()
   const navigator = useSubscription(getNavigatorStore(connectionResource.id))
@@ -168,11 +180,16 @@ export const Navigator = () => {
             transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
             className="flex min-h-0 flex-1 flex-col"
           >
-            {navigator === 'tables' ? <TablesPanel /> : <DefinitionsPanel />}
+            {navigator === 'tables' ? (
+              <TablesPanel onCreateTable={createTable} />
+            ) : (
+              <DefinitionsPanel />
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
       <NavigatorFooter />
+      <CreateTableDialog />
     </div>
   )
 }

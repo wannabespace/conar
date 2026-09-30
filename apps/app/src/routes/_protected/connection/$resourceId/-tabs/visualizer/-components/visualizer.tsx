@@ -9,6 +9,10 @@ import {
   capabilitiesOf,
   defaultSchemaOf,
 } from '~/entities/connection/capabilities'
+import type { ColumnDialogRequest } from '~/entities/connection/components/column-dialog'
+import { ColumnDialog } from '~/entities/connection/components/column-dialog'
+import type { TableDialogRequest } from '~/entities/connection/components/table-dialog'
+import { TableDialog } from '~/entities/connection/components/table-dialog'
 import type { constraintsType } from '~/entities/connection/queries/constraints/list'
 import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
@@ -23,15 +27,11 @@ import type { DiagramContextValue } from '../-lib/context'
 import { DiagramContext, diagramViewStore, gatesOf } from '../-lib/context'
 import { diagramDrafts, diagramDraftsStore } from '../-lib/drafts'
 import { usePositions } from '../-lib/layout'
-import type { TableKind } from '../-lib/schema'
+import type { DiagramColumn, DiagramTable, TableKind } from '../-lib/schema'
 import { buildDiagram, tableNodeId } from '../-lib/schema'
 import { Canvas, fitViewOptions } from './canvas'
-import type { ColumnDialogRequest } from './column-dialog'
-import { ColumnDialog } from './column-dialog'
 import { InspectorPane } from './inspector'
 import { ReviewDrawer } from './review-drawer'
-import type { TableDialogRequest } from './table-dialog'
-import { TableDialog } from './table-dialog'
 import { Toolbar } from './toolbar'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -118,11 +118,12 @@ export const Visualizer = ({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [tableRequest, setTableRequest] = useState<TableDialogRequest | null>(
-    null
-  )
-  const [columnRequest, setColumnRequest] =
-    useState<ColumnDialogRequest | null>(null)
+  const [tableRequest, setTableRequest] =
+    useState<TableDialogRequest<DiagramTable> | null>(null)
+  const [columnRequest, setColumnRequest] = useState<ColumnDialogRequest<
+    DiagramTable,
+    DiagramColumn
+  > | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
   const selectedTable =
@@ -257,7 +258,10 @@ export const Visualizer = ({
       <TableDialog
         request={tableRequest}
         schemas={schemas}
-        tableIds={tableIds}
+        isTaken={(targetSchema, name) =>
+          name !== tableRequest?.table?.table &&
+          tableIds.has(tableNodeId(targetSchema, name))
+        }
         onOpenChange={(open) => !open && setTableRequest(null)}
         onSubmit={submitTable}
       />

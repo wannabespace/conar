@@ -15,7 +15,6 @@ export type TreeRow =
       id: string
       name: string
       open: boolean
-      tablesCount: number
     }
   | {
       kind: 'table'

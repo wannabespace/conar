@@ -4,6 +4,7 @@ import type { policyType } from '~/entities/connection/queries/policies/list'
 import type { columnType } from '~/entities/connection/queries/tables/columns'
 import type {
   ColumnDefinition,
+  DraftState,
   NewColumn,
 } from '~/entities/connection/queries/tables/shape'
 import type { triggersType } from '~/entities/connection/queries/triggers/list'
@@ -11,8 +12,6 @@ import type { triggersType } from '~/entities/connection/queries/triggers/list'
 import type { DiagramDraft } from './statements'
 
 export type TableKind = 'table' | 'view' | 'materialized view'
-
-export type DraftState = 'added' | 'changed' | 'dropped'
 
 export interface DiagramColumn {
   // Original name: the handle id and the key every draft on it carries.

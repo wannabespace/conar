@@ -4,6 +4,8 @@ import { sql } from 'kysely'
 
 import { identifiers, mssqlQualified } from '../shared/sql-fragments'
 
+export type DraftState = 'added' | 'changed' | 'dropped'
+
 export interface NewColumn {
   name: string
   nullable: boolean

@@ -1,4 +1,5 @@
 import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogClose,
@@ -23,35 +24,36 @@ import {
 } from '@tamery/ui/components/select'
 import { useState } from 'react'
 
-import type { DiagramTable } from '../-lib/schema'
-import { tableNodeId } from '../-lib/schema'
-
-export interface TableDialogRequest {
+interface TableTarget {
+  name: string
   schema: string
-  table: DiagramTable | null
 }
 
-const FORM_ID = 'diagram-table'
+export interface TableDialogRequest<Table extends TableTarget = TableTarget> {
+  schema: string
+  table: Table | null
+}
+
+const FORM_ID = 'table-dialog'
 
 const TableForm = ({
+  isTaken,
   onSubmit,
+  pending,
   request: { schema: initialSchema, table },
   schemas,
-  tableIds,
 }: {
+  isTaken: (schema: string, name: string) => boolean
   onSubmit: (schema: string, name: string) => void
+  pending: boolean
   request: TableDialogRequest
   schemas: string[]
-  tableIds: Set<string>
 }) => {
   const [name, setName] = useState(table?.name ?? '')
   const [schema, setSchema] = useState(initialSchema)
   const [submitted, setSubmitted] = useState(false)
   const trimmed = name.trim()
-  const taken =
-    trimmed !== table?.name &&
-    trimmed !== table?.table &&
-    tableIds.has(tableNodeId(schema, trimmed))
+  const taken = trimmed !== table?.name && isTaken(schema, trimmed)
   let nameError: string | null = null
   if (taken) {
     nameError =
@@ -70,7 +72,7 @@ const TableForm = ({
           {table ? (
             <span data-mask>{`${table.schema}.${table.name}`}</span>
           ) : (
-            'The table is created with an id primary key; add columns from its card.'
+            'The table is created with an id primary key.'
           )}
         </DialogDescription>
       </DialogHeader>
@@ -87,10 +89,10 @@ const TableForm = ({
       >
         {table === null && schemas.length > 1 && (
           <Field>
-            <FieldLabel htmlFor="diagram-table-schema">Schema</FieldLabel>
+            <FieldLabel htmlFor="table-dialog-schema">Schema</FieldLabel>
             <Select value={schema} onValueChange={(v) => v && setSchema(v)}>
               <SelectTrigger
-                id="diagram-table-schema"
+                id="table-dialog-schema"
                 data-mask
                 className="w-full"
               >
@@ -107,10 +109,10 @@ const TableForm = ({
           </Field>
         )}
         <Field>
-          <FieldLabel htmlFor="diagram-table-name">Name</FieldLabel>
+          <FieldLabel htmlFor="table-dialog-name">Name</FieldLabel>
           <InputGroup>
             <InputGroupInput
-              id="diagram-table-name"
+              id="table-dialog-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-invalid={!!nameError}
@@ -129,26 +131,38 @@ const TableForm = ({
         <DialogClose render={<Button type="button" variant="outline" />}>
           Cancel
         </DialogClose>
-        <Button type="submit" form={FORM_ID} disabled={trimmed === table?.name}>
-          {table ? 'Rename' : 'Create table'}
+        <Button
+          type="submit"
+          form={FORM_ID}
+          disabled={pending || trimmed === table?.name}
+        >
+          <LoadingContent loading={pending}>
+            {table ? 'Rename' : 'Create table'}
+          </LoadingContent>
         </Button>
       </DialogFooter>
     </>
   )
 }
 
-export const TableDialog = ({
+export const TableDialog = <Table extends TableTarget>({
+  isTaken,
   onOpenChange,
   onSubmit,
+  pending = false,
   request,
   schemas,
-  tableIds,
 }: {
+  isTaken: (schema: string, name: string) => boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (request: TableDialogRequest, schema: string, name: string) => void
-  request: TableDialogRequest | null
+  onSubmit: (
+    request: TableDialogRequest<Table>,
+    schema: string,
+    name: string
+  ) => void
+  pending?: boolean
+  request: TableDialogRequest<Table> | null
   schemas: string[]
-  tableIds: Set<string>
 }) => {
   const [shown, setShown] = useState(request)
   if (request && request !== shown) {
@@ -160,10 +174,11 @@ export const TableDialog = ({
       <DialogContent>
         {shown && (
           <TableForm
-            key={shown.table?.id ?? 'new'}
+            key={shown.table ? `${shown.table.schema}.${shown.table.name}` : ''}
+            isTaken={isTaken}
+            pending={pending}
             request={shown}
             schemas={schemas}
-            tableIds={tableIds}
             onSubmit={(schema, name) => onSubmit(shown, schema, name)}
           />
         )}

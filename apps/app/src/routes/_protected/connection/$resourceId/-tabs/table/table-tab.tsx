@@ -2,6 +2,10 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 
+import {
+  AddColumnDialog,
+  addColumnDialogRef,
+} from './-components/table/add-column-dialog'
 import { Table } from './-components/table/table'
 import { TableToolbar } from './-components/toolbar/toolbar'
 import { ColumnsContext, useTableColumnsQuery } from './-lib/columns'
@@ -12,6 +16,8 @@ import {
 import { tablePageStore, TablePageStoreContext } from './-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const addColumn = () => addColumnDialogRef.current?.add()
 
 const TableContent = ({ table, schema }: { table: string; schema: string }) => {
   const { connectionResource } = useRouteContext()
@@ -29,12 +35,17 @@ const TableContent = ({ table, schema }: { table: string; schema: string }) => {
         onClick={() => openTableTab(connectionResource.id, schema, table)}
       >
         <div className="relative min-h-0 flex-1">
-          <Table table={table} schema={schema} />
+          <Table table={table} schema={schema} onAddColumn={addColumn} />
           <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex flex-col items-center">
-            <TableToolbar table={table} schema={schema} />
+            <TableToolbar
+              table={table}
+              schema={schema}
+              onAddColumn={addColumn}
+            />
           </div>
         </div>
       </div>
+      <AddColumnDialog schema={schema} table={table} />
     </ColumnsContext>
   )
 }

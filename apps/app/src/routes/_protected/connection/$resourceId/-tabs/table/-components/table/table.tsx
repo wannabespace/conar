@@ -1,10 +1,18 @@
+import { PlusSignIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import type { ColumnRenderer, TableCellProps } from '@tamery/table'
 import { Table, TableBody, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { useShiftSelectionKeyDown, useTableContext } from '@tamery/table/hooks'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { Button } from '@tamery/ui/components/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef } from 'react'
@@ -22,6 +30,7 @@ import type {
 } from '~/entities/connection/components/table/cell/utils'
 import { TableError } from '~/entities/connection/components/table/table-error'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables/list'
 
 import { useTableColumnsContext } from '../../-lib/columns'
 import {
@@ -45,12 +54,7 @@ import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const ACTIONS_COLUMN: ColumnRenderer = {
-  id: INTERNAL_COLUMN_IDS.ACTIONS,
-  size: 200,
-  cell: () => <div />,
-  header: () => <div />,
-}
+const EmptyCell = () => <div />
 
 const BodyCellRenderer = ({
   column,
@@ -112,9 +116,11 @@ const BodyCellRenderer = ({
 }
 
 const TableComponent = ({
+  onAddColumn,
   table,
   schema,
 }: {
+  onAddColumn: () => void
   table: string
   schema: string
 }) => {
@@ -149,6 +155,13 @@ const TableComponent = ({
   )
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
+  const { data: isBaseTable } = useQuery({
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
+    select: (data) =>
+      data.schemas
+        .find((entry) => entry.name === schema)
+        ?.tables.find((entry) => entry.name === table)?.type === 'table',
+  })
 
   useSyncSelectionWithRows(rows, primaryColumns)
   useClearDraftsOnQueryChange()
@@ -236,10 +249,39 @@ const TableComponent = ({
         ]
       : []
 
+  const actionsColumn: ColumnRenderer = {
+    id: INTERNAL_COLUMN_IDS.ACTIONS,
+    size: 200,
+    cell: EmptyCell,
+    // oxlint-disable-next-line react/no-unstable-nested-components
+    header: ({ style }) => (
+      <div className="flex shrink-0 items-center px-2" style={style}>
+        {isBaseTable && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Add column"
+                  className="text-muted-foreground"
+                  onClick={onAddColumn}
+                />
+              }
+            >
+              <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Add column</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    ),
+  }
+
   const providerColumns: ColumnRenderer[] = [
     ...selectionColumns,
     ...tableColumns,
-    ACTIONS_COLUMN,
+    actionsColumn,
   ]
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
