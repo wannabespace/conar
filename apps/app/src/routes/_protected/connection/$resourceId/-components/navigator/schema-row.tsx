@@ -1,13 +1,22 @@
-import { ArrowRight01Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
+import {
+  ArrowRight01Icon,
+  Copy01Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useParams } from '@tanstack/react-router'
 
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
+import type { AppMenuNode } from '~/components/app-menu'
 import { parseTabId } from '~/entities/connection/store/tabs/ids'
 
 import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
@@ -23,16 +32,41 @@ const useActiveTable = () => {
 export const SchemaRow = ({
   row,
   onCreateTable,
+  onDrop,
+  onRename,
   onToggle,
 }: {
   row: Extract<TreeRow, { kind: 'schema' }>
   onCreateTable: () => void
+  onDrop: () => void
+  onRename?: () => void
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
+  const items: AppMenuNode[] = [
+    ...(onRename
+      ? [{ label: 'Rename', icon: PencilEdit01Icon, onSelect: onRename }]
+      : []),
+    {
+      label: 'Copy Name',
+      icon: Copy01Icon,
+      onSelect: () => copyToClipboard(row.name, 'Schema name copied'),
+    },
+    { type: 'separator' },
+    {
+      label: 'Drop',
+      icon: Delete02Icon,
+      variant: 'destructive',
+      onSelect: onDrop,
+    },
+  ]
 
   return (
-    <div className="relative h-full">
+    <AppContextMenu
+      items={items}
+      className="relative block h-full"
+      contentProps={{ className: 'min-w-48' }}
+    >
       <SidebarGroupLabel
         render={
           <button
@@ -60,13 +94,23 @@ export const SchemaRow = ({
           {row.name}
         </span>
       </SidebarGroupLabel>
+      <AppMenuButton
+        items={items}
+        contentProps={{ className: 'min-w-48' }}
+        render={
+          <SidebarMenuAction
+            showOnHover
+            className="top-1/2! -translate-y-1/2 rounded-md"
+          />
+        }
+      />
       <Tooltip>
         <TooltipTrigger
           render={
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
-              className="text-muted-foreground top-1/2! -translate-y-1/2 rounded-md"
+              className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
               onClick={onCreateTable}
             />
           }
@@ -79,6 +123,6 @@ export const SchemaRow = ({
         </TooltipTrigger>
         <TooltipContent side="right">New table</TooltipContent>
       </Tooltip>
-    </div>
+    </AppContextMenu>
   )
 }

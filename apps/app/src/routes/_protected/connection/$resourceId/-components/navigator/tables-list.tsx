@@ -18,6 +18,7 @@ import { pinnedTable } from '~/entities/connection/store/helpers/tables'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 
+import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import {
   SidebarContent,
@@ -25,6 +26,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from './primitives'
+import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
 import { TableRow } from './table-row'
@@ -61,7 +63,11 @@ export const TablesList = ({
         tablesAndSchemas?.schemas[0]?.name ?? 'public',
       ],
   })
+  const dropSchemaDialogRef =
+    useRef<ComponentRef<typeof DropSchemaDialog>>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameSchemaDialogRef =
+    useRef<ComponentRef<typeof RenameSchemaDialog>>(null)
   const renameTableDialogRef =
     useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
@@ -251,7 +257,9 @@ export const TablesList = ({
       )}
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
+      <DropSchemaDialog ref={dropSchemaDialogRef} />
       <DropTableDialog ref={dropTableDialogRef} />
+      <RenameSchemaDialog ref={renameSchemaDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <SidebarMenu
         data-mask
@@ -271,6 +279,12 @@ export const TablesList = ({
                 <SchemaRow
                   row={row}
                   onCreateTable={() => onCreateTable(row.name)}
+                  onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
+                  onRename={
+                    capabilitiesOf(connection.type).renameSchema
+                      ? () => renameSchemaDialogRef.current?.rename(row.name)
+                      : undefined
+                  }
                   onToggle={() => toggleSchema(row.name)}
                 />
               </div>

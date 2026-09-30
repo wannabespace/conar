@@ -69,7 +69,10 @@ The panel lists every column with its generator on the left. Select a column to 
 | **Add column** | The **+** after the last column header, the toolbar's **⋯**, or **Add column…** from the command menu. |
 | **Column visibility** | Hide/show columns (hidden, not deleted). |
 | **Copy data** | Copy selected rows or the whole result as TSV. |
+| **Rename schema** | Postgres only. Right-click a schema in the sidebar, or hover it and click **⋯**, then **Rename**. |
 | **Full-text search** | Filter rows across visible columns. |
+| **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, **CASCADE** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
+| **New schema** | Run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema opens **New table** right away — a schema shows in the sidebar once it holds a table. |
 | **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key. |
 | **Rename column** | Right-click a column header. |
 | **Rename / drop table** | From the toolbar menu (with confirmation). |

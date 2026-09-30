@@ -8,6 +8,7 @@ import {
   DatabaseAddIcon,
   DatabaseSyncIcon,
   Download01Icon,
+  FolderAddIcon,
   HistoryIcon,
   LayoutTable02Icon,
   Moon02Icon,
@@ -46,6 +47,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
 import type {
   Connection,
@@ -65,6 +67,7 @@ import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
 import { globalHooks } from '~/lib/global-hooks'
 import { navigatorOpenValue } from '~/routes/_protected/connection/$resourceId/-components/navigator/constants'
+import { createSchemaDialogRef } from '~/routes/_protected/connection/$resourceId/-components/navigator/create-schema-dialog'
 import { createTableDialogRef } from '~/routes/_protected/connection/$resourceId/-components/navigator/create-table-dialog'
 import { schemaGroups } from '~/routes/_protected/connection/$resourceId/-components/navigator/definitions-section'
 import { toggleChat } from '~/routes/_protected/connection/$resourceId/-components/tab-bar/chat-toggle'
@@ -367,6 +370,16 @@ export const ActionsCenter = () => {
                 PlusSignIcon,
                 () => createTableDialogRef.current?.create()
               ),
+              ...(capabilitiesOf(current.connection.type).schemas
+                ? [
+                    actionEntry(
+                      'New schema…',
+                      ['create', 'add', 'schema', 'database', 'namespace'],
+                      FolderAddIcon,
+                      () => createSchemaDialogRef.current?.create()
+                    ),
+                  ]
+                : []),
               actionEntry(
                 'Refresh data',
                 ['reload', 'refetch', 'update'],
@@ -386,10 +399,6 @@ export const ActionsCenter = () => {
                 : []),
             ],
           },
-        ]
-      : []),
-    ...(current
-      ? [
           {
             heading: 'View',
             entries: [

@@ -41,7 +41,7 @@ const TableForm = ({
   onSubmit,
   pending,
   request: { schema: initialSchema, table },
-  schemas,
+  schemas: knownSchemas,
 }: {
   isTaken: (schema: string, name: string) => boolean
   onSubmit: (schema: string, name: string) => void
@@ -49,6 +49,9 @@ const TableForm = ({
   request: TableDialogRequest
   schemas: string[]
 }) => {
+  const schemas = knownSchemas.includes(initialSchema)
+    ? knownSchemas
+    : [initialSchema, ...knownSchemas]
   const [name, setName] = useState(table?.name ?? '')
   const [schema, setSchema] = useState(initialSchema)
   const [submitted, setSubmitted] = useState(false)

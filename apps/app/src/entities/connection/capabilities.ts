@@ -84,6 +84,7 @@ interface ConnectionCapabilities {
   renameColumns: boolean
   rowLevelSecurity: boolean
   renameConstraints: boolean
+  renameSchema: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
   systemSchemas: readonly string[]
@@ -141,6 +142,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: false,
     sections: {
@@ -178,6 +180,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: true,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -226,6 +229,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: false,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -274,6 +278,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: true,
+    renameSchema: true,
     rowLevelSecurity: true,
     schemas: true,
     sections: {
