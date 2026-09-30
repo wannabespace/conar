@@ -13,25 +13,25 @@ import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
-export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
-  const store = getConnectionResourceStore(resourceId)
-  const { isPending, subscription } = useUserSubscription()
-
-  const toggleChat = () => {
-    if (!(subscription || isPending)) {
-      setIsSubscriptionDialogOpen(true)
-      return
-    }
-
-    store.set(
-      (state) =>
-        ({ ...state, chatOpened: !state.chatOpened }) satisfies typeof state
-    )
+export const toggleChat = (resourceId: string, canUseChat: boolean) => {
+  if (!canUseChat) {
+    setIsSubscriptionDialogOpen(true)
+    return
   }
+
+  getConnectionResourceStore(resourceId).set(
+    (state) =>
+      ({ ...state, chatOpened: !state.chatOpened }) satisfies typeof state
+  )
+}
+
+export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
+  const { isPending, subscription } = useUserSubscription()
+  const toggle = () => toggleChat(resourceId, !!(subscription || isPending))
 
   useHotkey('Mod+L', (e) => {
     e.preventDefault()
-    toggleChat()
+    toggle()
   })
 
   return (
@@ -43,7 +43,7 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             className="text-muted-foreground hover:text-foreground"
             size="icon-xs"
             aria-label="AI chat"
-            onClick={toggleChat}
+            onClick={toggle}
           />
         }
       >

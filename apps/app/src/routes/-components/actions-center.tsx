@@ -1,16 +1,21 @@
 import {
+  AiChat01Icon,
   ArrowDown02Icon,
   ArrowUp02Icon,
   ComputerIcon,
   ComputerTerminal01Icon,
   DashboardSquare01Icon,
+  DatabaseAddIcon,
+  DatabaseSyncIcon,
   Download01Icon,
+  FolderAddIcon,
   HistoryIcon,
   LayoutTable02Icon,
   Moon02Icon,
   PlusSignIcon,
   Refresh01Icon,
   Search01Icon,
+  SidebarLeftIcon,
   Sun03Icon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
@@ -27,7 +32,10 @@ import {
   CommandShortcut,
   defaultFilter,
 } from '@tamery/ui/components/command'
-import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
+import {
+  EnterIcon,
+  KbdCtrlLetter,
+} from '@tamery/ui/components/custom/shortcuts'
 import { Kbd } from '@tamery/ui/components/kbd'
 import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -39,6 +47,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
+import { capabilitiesOf } from '~/entities/connection/capabilities'
 import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
 import type {
   Connection,
@@ -52,9 +61,17 @@ import {
   openTableTab,
 } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { parseTabId } from '~/entities/connection/store/tabs/ids'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
+import { globalHooks } from '~/lib/global-hooks'
+import { navigatorOpenValue } from '~/routes/_protected/connection/$resourceId/-components/navigator/constants'
+import { createSchemaDialogRef } from '~/routes/_protected/connection/$resourceId/-components/navigator/create-schema-dialog'
+import { createTableDialogRef } from '~/routes/_protected/connection/$resourceId/-components/navigator/create-table-dialog'
 import { schemaGroups } from '~/routes/_protected/connection/$resourceId/-components/navigator/definitions-section'
+import { toggleChat } from '~/routes/_protected/connection/$resourceId/-components/tab-bar/chat-toggle'
+import { addColumnDialogRef } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/add-column-dialog'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 const CONNECTION_PAGES = [
@@ -72,6 +89,8 @@ const TABLE_TYPE_ICONS = {
   table: LayoutTable02Icon,
 } as const
 
+const REFRESH_SHORTCUT_LETTER = window.electron ? 'R' : undefined
+
 const run = (action: () => void) => () => {
   setIsActionCenterOpen(false)
   action()
@@ -81,7 +100,8 @@ const actionEntry = (
   value: string,
   keywords: string[],
   Icon: IconSvgElement,
-  action: () => void
+  action: () => void,
+  shortcutLetter?: string
 ) => ({
   value,
   keywords,
@@ -89,6 +109,13 @@ const actionEntry = (
     <CommandItem key={value} value={value} onSelect={run(action)}>
       <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
+      {shortcutLetter && (
+        <KbdCtrlLetter
+          className="ml-auto"
+          userAgent={navigator.userAgent}
+          letter={shortcutLetter}
+        />
+      )}
     </CommandItem>
   ),
 })
@@ -175,6 +202,20 @@ const tableEntries = (
     })
   )
 
+const baseTableOf = (
+  tabId: string | undefined,
+  schemas: { name: string; tables: { name: string; type: string }[] }[] = []
+) => {
+  const tab = tabId ? parseTabId(tabId) : null
+  const isBaseTable =
+    tab?.type === 'table' &&
+    schemas
+      .find((schema) => schema.name === tab.schema)
+      ?.tables.find((table) => table.name === tab.table)?.type === 'table'
+
+  return isBaseTable ? tab : null
+}
+
 const FooterHint = ({
   children,
   label,
@@ -191,7 +232,7 @@ const FooterHint = ({
 export const ActionsCenter = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
-  const { resourceId } = useParams({ strict: false })
+  const { resourceId, tabId } = useParams({ strict: false })
   const { data: activeWorkspace } = useActiveWorkspace()
   const { data } = useLiveQuery({
     query: (q) => {
@@ -222,7 +263,12 @@ export const ActionsCenter = () => {
   })
   const router = useRouter()
   const resolvedTheme = useResolvedTheme()
+  const { isPending: isSubscriptionPending, subscription } =
+    useUserSubscription()
   const [search, setSearch] = useState('')
+  if (!isOpen && search) {
+    setSearch('')
+  }
   const listRef = useRef<ComponentRef<typeof CommandList>>(null)
 
   useHotkey('Mod+P', (e) => {
@@ -244,6 +290,7 @@ export const ActionsCenter = () => {
   })
 
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
+  const activeTable = baseTableOf(tabId, tablesAndSchemas?.schemas)
 
   const connections = data.map(({ connection, connectionResource }) => ({
     value: connectionTitle(connection, connectionResource),
@@ -310,14 +357,86 @@ export const ActionsCenter = () => {
               ),
             ]
           : []),
-        actionEntry(
-          'Add new connection…',
-          ['new', 'create', 'database'],
-          PlusSignIcon,
-          () => router.navigate({ to: '/create' })
-        ),
       ],
     },
+    ...(current
+      ? [
+          {
+            heading: 'Database',
+            entries: [
+              actionEntry(
+                'New table…',
+                ['create', 'add', 'table'],
+                PlusSignIcon,
+                () => createTableDialogRef.current?.create()
+              ),
+              ...(capabilitiesOf(current.connection.type).schemas
+                ? [
+                    actionEntry(
+                      'New schema…',
+                      ['create', 'add', 'schema', 'database', 'namespace'],
+                      FolderAddIcon,
+                      () => createSchemaDialogRef.current?.create()
+                    ),
+                  ]
+                : []),
+              actionEntry(
+                'Refresh data',
+                ['reload', 'refetch', 'update'],
+                DatabaseSyncIcon,
+                () => globalHooks.callHook('refreshPressed'),
+                REFRESH_SHORTCUT_LETTER
+              ),
+              ...(activeTable
+                ? [
+                    actionEntry(
+                      'Add column…',
+                      ['create', 'new', 'column', activeTable.table],
+                      PlusSignIcon,
+                      () => addColumnDialogRef.current?.add()
+                    ),
+                  ]
+                : []),
+            ],
+          },
+          {
+            heading: 'View',
+            entries: [
+              actionEntry(
+                'Toggle sidebar',
+                ['navigator', 'panel', 'hide', 'show'],
+                SidebarLeftIcon,
+                () => navigatorOpenValue.set((open) => !open),
+                'B'
+              ),
+              actionEntry(
+                'Toggle AI chat',
+                ['assistant', 'ai', 'panel'],
+                AiChat01Icon,
+                () =>
+                  toggleChat(
+                    current.connectionResource.id,
+                    !!(subscription || isSubscriptionPending)
+                  ),
+                'L'
+              ),
+              actionEntry(
+                'Toggle query logger',
+                ['logs', 'queries', 'history'],
+                HistoryIcon,
+                () =>
+                  getConnectionResourceStore(current.connectionResource.id).set(
+                    (state) => ({
+                      ...state,
+                      loggerOpened: !state.loggerOpened,
+                    })
+                  ),
+                'J'
+              ),
+            ],
+          },
+        ]
+      : []),
     {
       heading: 'Appearance',
       entries: [
@@ -338,22 +457,6 @@ export const ActionsCenter = () => {
     {
       heading: 'Application',
       entries: [
-        ...(current
-          ? [
-              actionEntry(
-                'Toggle query logger',
-                ['logs', 'queries', 'history'],
-                HistoryIcon,
-                () =>
-                  getConnectionResourceStore(current.connectionResource.id).set(
-                    (state) => ({
-                      ...state,
-                      loggerOpened: !state.loggerOpened,
-                    })
-                  )
-              ),
-            ]
-          : []),
         ...(window.electron
           ? [
               actionEntry(
@@ -372,9 +475,18 @@ export const ActionsCenter = () => {
         ),
       ],
     },
-    ...(connections.length > 0
-      ? [{ heading: 'Connections', entries: connections }]
-      : []),
+    {
+      heading: 'Connections',
+      entries: [
+        actionEntry(
+          'Add new connection…',
+          ['new', 'create', 'database'],
+          DatabaseAddIcon,
+          () => router.navigate({ to: '/create' })
+        ),
+        ...connections,
+      ],
+    },
     ...(current && tables.length > 0
       ? [
           {

@@ -1,5 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
+import { COLUMN_TYPES } from './column-types'
 import type {
   ConstraintKind,
   ReferentialAction,
@@ -68,6 +69,7 @@ interface TriggerCapabilities {
 
 interface ConnectionCapabilities {
   cascade: boolean
+  columnTypes: readonly string[]
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
   // null: the connection's database is the schema
@@ -75,12 +77,14 @@ interface ConnectionCapabilities {
   explain: boolean
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
+  idColumnType: string
   indexes: IndexCapabilities
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   rowLevelSecurity: boolean
   renameConstraints: boolean
+  renameSchema: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
   systemSchemas: readonly string[]
@@ -120,12 +124,14 @@ const noTriggers: TriggerCapabilities = {
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
+    columnTypes: COLUMN_TYPES[ConnectionType.ClickHouse],
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
     functions: noFunctions,
+    idColumnType: 'UInt64',
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     policies: {
       alterInPlace: true,
@@ -136,6 +142,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: false,
     renameConstraints: false,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: false,
     sections: {
@@ -152,6 +159,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
+    columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -164,6 +172,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: true,
       securityDefiner: false,
     },
+    idColumnType: 'int',
     indexes: btreeIndexes,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -171,6 +180,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: true,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -195,6 +205,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
+    columnTypes: COLUMN_TYPES[ConnectionType.MySQL],
     constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
@@ -209,6 +220,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: false,
     },
+    idColumnType: 'int',
     indexes: btreeIndexes,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
@@ -217,6 +229,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     ),
     renameColumns: true,
     renameConstraints: false,
+    renameSchema: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -241,6 +254,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
+    columnTypes: COLUMN_TYPES[ConnectionType.Postgres],
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -253,6 +267,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: true,
     },
+    idColumnType: 'integer',
     indexes: btreeIndexes,
     policies: {
       alterInPlace: false,
@@ -263,6 +278,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: true,
+    renameSchema: true,
     rowLevelSecurity: true,
     schemas: true,
     sections: {

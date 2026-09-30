@@ -1,8 +1,8 @@
-import { sql } from 'kysely'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
-import { mssqlQualified } from '../shared/sql-fragments'
+import { renameColumnStatement } from './shape'
 
 export const renameColumnQuery = memoize(
   ({
@@ -15,35 +15,28 @@ export const renameColumnQuery = memoize(
     table: string
     oldColumn: string
     newColumn: string
-  }) =>
-    createQuery({
+  }) => {
+    const target = { column: oldColumn, newName: newColumn, schema, table }
+
+    return createQuery({
       query: {
         clickhouse: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.alterTable(table)
-            .renameColumn(oldColumn, newColumn)
-            .execute(),
-        mssql: async (db) => {
-          await sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table, oldColumn))}, ${sql.val(newColumn)}, 'COLUMN'`.execute(
-            db
-          )
-        },
+          db.executeQuery(
+            renameColumnStatement(ConnectionType.ClickHouse, db, target)
+          ),
+        mssql: (db) =>
+          db.executeQuery(
+            renameColumnStatement(ConnectionType.MSSQL, db, target)
+          ),
         mysql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.alterTable(table)
-            .renameColumn(oldColumn, newColumn)
-            .execute(),
+          db.executeQuery(
+            renameColumnStatement(ConnectionType.MySQL, db, target)
+          ),
         postgres: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.alterTable(table)
-            .renameColumn(oldColumn, newColumn)
-            .execute(),
+          db.executeQuery(
+            renameColumnStatement(ConnectionType.Postgres, db, target)
+          ),
       },
     })
+  }
 )

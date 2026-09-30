@@ -1,3 +1,4 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
@@ -128,6 +129,29 @@ export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
     primaryKey: sql`PRIMARY KEY`,
     unique: sql`INDEX ${sql.id(name)}`,
   })[kind]
+
+export const dropConstraintStatement = (
+  dialectType: ConnectionType,
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  {
+    cascade,
+    kind,
+    ...target
+  }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
+) => {
+  if (dialectType === ConnectionType.MySQL) {
+    return sql`ALTER TABLE ${sql.id(target.schema, target.table)} DROP ${mysqlDropKey(kind, target.name)}`.compile(
+      db
+    )
+  }
+
+  const drop = dropConstraint(db, target)
+
+  return (
+    cascade && dialectType === ConnectionType.Postgres ? drop.cascade() : drop
+  ).compile()
+}
 
 const QUOTES = new Set(["'", '"', '`'])
 

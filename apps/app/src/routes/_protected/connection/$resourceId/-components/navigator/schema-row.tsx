@@ -1,11 +1,25 @@
-import { ArrowRight01Icon } from '@hugeicons/core-free-icons'
+import {
+  ArrowRight01Icon,
+  Copy01Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useParams } from '@tanstack/react-router'
 
+import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
+import type { AppMenuNode } from '~/components/app-menu'
 import { parseTabId } from '~/entities/connection/store/tabs/ids'
 
-import { SidebarGroupLabel } from './primitives'
+import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
 
 const useActiveTable = () => {
@@ -17,43 +31,98 @@ const useActiveTable = () => {
 
 export const SchemaRow = ({
   row,
+  onCreateTable,
+  onDrop,
+  onRename,
   onToggle,
 }: {
   row: Extract<TreeRow, { kind: 'schema' }>
+  onCreateTable: () => void
+  onDrop: () => void
+  onRename?: () => void
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
+  const items: AppMenuNode[] = [
+    ...(onRename
+      ? [{ label: 'Rename', icon: PencilEdit01Icon, onSelect: onRename }]
+      : []),
+    {
+      label: 'Copy Name',
+      icon: Copy01Icon,
+      onSelect: () => copyToClipboard(row.name, 'Schema name copied'),
+    },
+    { type: 'separator' },
+    {
+      label: 'Drop',
+      icon: Delete02Icon,
+      variant: 'destructive',
+      onSelect: onDrop,
+    },
+  ]
 
   return (
-    <SidebarGroupLabel
-      render={
-        <button
-          type="button"
-          aria-label={`Toggle ${row.name} schema`}
-          onClick={onToggle}
-        />
-      }
-      className="group hover:bg-foreground/5 h-full w-full gap-1 px-1.5"
+    <AppContextMenu
+      items={items}
+      className="relative block h-full"
+      contentProps={{ className: 'min-w-48' }}
     >
-      <HugeiconsIcon
-        icon={ArrowRight01Icon}
-        strokeWidth={2}
-        className={cn(
-          `text-muted-foreground/70 size-3.5! shrink-0 transition-transform duration-150 ease-out`,
-          row.open && 'rotate-90'
-        )}
-      />
-      <span
-        className={cn(
-          'text-2xs truncate font-semibold tracking-wider uppercase',
-          schemaParam === row.name && 'text-foreground'
-        )}
+      <SidebarGroupLabel
+        render={
+          <button
+            type="button"
+            aria-label={`Toggle ${row.name} schema`}
+            onClick={onToggle}
+          />
+        }
+        className="group hover:bg-foreground/5 h-full w-full gap-1 px-1.5"
       >
-        {row.name}
-      </span>
-      <span className="text-2xs text-muted-foreground/50 ml-auto pr-1 tabular-nums opacity-0 group-hover:opacity-100">
-        {row.tablesCount}
-      </span>
-    </SidebarGroupLabel>
+        <HugeiconsIcon
+          icon={ArrowRight01Icon}
+          strokeWidth={2}
+          className={cn(
+            `text-muted-foreground/70 size-3.5! shrink-0 transition-transform duration-150 ease-out`,
+            row.open && 'rotate-90'
+          )}
+        />
+        <span
+          className={cn(
+            'text-2xs truncate font-semibold tracking-wider uppercase',
+            schemaParam === row.name && 'text-foreground'
+          )}
+        >
+          {row.name}
+        </span>
+      </SidebarGroupLabel>
+      <AppMenuButton
+        items={items}
+        contentProps={{ className: 'min-w-48' }}
+        render={
+          <SidebarMenuAction
+            showOnHover
+            className="top-1/2! -translate-y-1/2 rounded-md"
+          />
+        }
+      />
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <SidebarMenuAction
+              showOnHover
+              aria-label={`New table in ${row.name}`}
+              className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
+              onClick={onCreateTable}
+            />
+          }
+        >
+          <HugeiconsIcon
+            icon={PlusSignIcon}
+            strokeWidth={2}
+            className="size-3.5!"
+          />
+        </TooltipTrigger>
+        <TooltipContent side="right">New table</TooltipContent>
+      </Tooltip>
+    </AppContextMenu>
   )
 }

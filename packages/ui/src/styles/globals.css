@@ -92,7 +92,7 @@
   --warning-foreground: oklch(0.985 0 0);
   --info: oklch(0.623 0.214 259.815);
   --info-foreground: oklch(0.985 0 0);
-  --border: oklch(0 0 0 / 5%);
+  --border: oklch(0 0 0 / 8%);
   --input: oklch(1 0 0);
   --ring: var(--primary);
   --radius: 0.4rem;
@@ -126,8 +126,8 @@
   --shadow-lg:
     0 16px 32px -4px rgb(0 0 0 / 0.4), 0 4px 8px -4px rgb(0 0 0 / 0.26);
   --shadow-xl:
-    0 28px 56px -8px rgb(0 0 0 / 0.5), 0 8px 16px -8px rgb(0 0 0 / 0.3);
-  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.55);
+    0 28px 56px -8px rgb(0 0 0 / 0.7), 0 8px 16px -8px rgb(0 0 0 / 0.5);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.75);
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {

@@ -16,37 +16,45 @@ import { Button } from '../button'
 
 export const SearchInput = ({
   className,
+  end,
   size,
+  start,
   value,
   onClear,
   ...props
 }: Omit<React.ComponentProps<'input'>, 'size'> &
   Pick<React.ComponentProps<typeof InputGroup>, 'size'> & {
+    end?: React.ReactNode
     onClear: () => void
+    start?: React.ReactNode
   }) => {
   const hasValue = typeof value === 'string' ? value.length > 0 : Boolean(value)
 
   return (
     <InputGroup className={className} size={size}>
       <InputGroupInput value={value} {...props} />
-      {hasValue && (
+      {start && <InputGroupAddon>{start}</InputGroupAddon>}
+      {(hasValue || end) && (
         <InputGroupAddon align="inline-end">
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Clear"
-                  className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-                  onClick={onClear}
-                />
-              }
-            >
-              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-            </TooltipTrigger>
-            <TooltipContent side="top">Clear</TooltipContent>
-          </Tooltip>
+          {end}
+          {hasValue && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Clear"
+                    className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                    onClick={onClear}
+                  />
+                }
+              >
+                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+              </TooltipTrigger>
+              <TooltipContent side="top">Clear</TooltipContent>
+            </Tooltip>
+          )}
         </InputGroupAddon>
       )}
     </InputGroup>

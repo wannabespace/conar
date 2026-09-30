@@ -43,6 +43,12 @@ export const viewportType = type({
   zoom: 'number',
 })
 
+const positionsType = type({
+  '[string]': { x: 'number', y: 'number' },
+})
+
+export type Positions = typeof positionsType.infer
+
 const tableRefType = type({
   schema: 'string',
   table: 'string',
@@ -58,7 +64,10 @@ export const connectionResourceType = type({
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   tabs: connectionTabType.array(),
-  'visualizerViewports?': {
+  visualizerPositions: {
+    '[string]': positionsType,
+  },
+  visualizerViewports: {
     '[string]': viewportType,
   },
 })
@@ -73,6 +82,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   tabs: [],
+  visualizerPositions: {},
   visualizerViewports: {},
 }
 

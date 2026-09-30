@@ -1,8 +1,8 @@
-import { sql } from 'kysely'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 
 import { createQuery } from '../../runtime/query'
-import { mssqlQualified } from '../shared/sql-fragments'
+import { renameTableStatement } from './shape'
 
 export const renameTableQuery = memoize(
   ({
@@ -13,32 +13,28 @@ export const renameTableQuery = memoize(
     schema: string
     oldTable: string
     newTable: string
-  }) =>
-    createQuery({
+  }) => {
+    const target = { newName: newTable, schema, table: oldTable }
+
+    return createQuery({
       query: {
         clickhouse: (db) =>
-          sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(
-            db
+          db.executeQuery(
+            renameTableStatement(ConnectionType.ClickHouse, db, target)
           ),
-        mssql: async (db) => {
-          await sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, oldTable))}, ${sql.val(newTable)}`.execute(
-            db
-          )
-        },
+        mssql: (db) =>
+          db.executeQuery(
+            renameTableStatement(ConnectionType.MSSQL, db, target)
+          ),
         mysql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [oldTable]: Record<string, unknown> }>()
-            .schema.alterTable(oldTable)
-            .renameTo(newTable)
-            .execute(),
+          db.executeQuery(
+            renameTableStatement(ConnectionType.MySQL, db, target)
+          ),
         postgres: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [oldTable]: Record<string, unknown> }>()
-            .schema.alterTable(oldTable)
-            .renameTo(newTable)
-            .execute(),
+          db.executeQuery(
+            renameTableStatement(ConnectionType.Postgres, db, target)
+          ),
       },
     })
+  }
 )

@@ -6,6 +6,7 @@ import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { defaultRangeExtractor } from '@tanstack/react-virtual'
 import { motion } from 'motion/react'
 import type { CSSProperties, ComponentRef, ReactNode } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
@@ -17,6 +18,7 @@ import { pinnedTable } from '~/entities/connection/store/helpers/tables'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { tableTabId } from '~/entities/connection/store/tabs/ids'
 
+import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import {
   SidebarContent,
@@ -24,6 +26,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from './primitives'
+import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
 import { TableRow } from './table-row'
@@ -39,9 +42,11 @@ const ROW_HEIGHTS = {
 
 export const TablesList = ({
   className,
+  onCreateTable,
   search,
 }: {
   className?: string
+  onCreateTable: (schema: string) => void
   search?: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
@@ -58,7 +63,11 @@ export const TablesList = ({
         tablesAndSchemas?.schemas[0]?.name ?? 'public',
       ],
   })
+  const dropSchemaDialogRef =
+    useRef<ComponentRef<typeof DropSchemaDialog>>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameSchemaDialogRef =
+    useRef<ComponentRef<typeof RenameSchemaDialog>>(null)
   const renameTableDialogRef =
     useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
@@ -102,7 +111,6 @@ export const TablesList = ({
         id: `schema:${schema.name}`,
         name: schema.name,
         open,
-        tablesCount: tables.length,
       })
     }
 
@@ -142,7 +150,13 @@ export const TablesList = ({
     }
   }
 
-  const { virtualItems, totalSize, scrollToIndex } = useVirtualizer({
+  const schemaIndexes = rows.flatMap((row, index) =>
+    row.kind === 'schema' ? [index] : []
+  )
+  const stickyIndexAt = (startIndex: number) =>
+    schemaIndexes.findLast((index) => index <= startIndex)
+
+  const { virtualItems, totalSize, scrollToIndex, range } = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => {
@@ -151,7 +165,16 @@ export const TablesList = ({
     },
     getItemKey: (index) => rows[index]?.id ?? index,
     overscan: 12,
+    rangeExtractor: (visibleRange) => {
+      const indexes = defaultRangeExtractor(visibleRange)
+      const stickyIndex = stickyIndexAt(visibleRange.startIndex)
+
+      return stickyIndex === undefined || indexes.includes(stickyIndex)
+        ? indexes
+        : [stickyIndex, ...indexes]
+    },
   })
+  const stickyIndex = range ? stickyIndexAt(range.startIndex) : undefined
 
   const router = useRouter()
   const scrollToActiveEvent = useEffectEvent(() => {
@@ -226,9 +249,17 @@ export const TablesList = ({
   return (
     <SidebarContent
       ref={parentRef}
-      className={cn('scroll-fade block overflow-y-auto pb-2 pl-2', className)}
+      className={cn(
+        'scroll-fade block overflow-y-auto pb-2 pl-2',
+        stickyIndex !== undefined &&
+          'mask-add! [--scroll-fade-mask:linear-gradient(to_bottom,#000_var(--sticky-height),transparent_var(--sticky-height)),linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)] [-webkit-mask-composite:source-over]!',
+        className
+      )}
+      style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
+      <DropSchemaDialog ref={dropSchemaDialogRef} />
       <DropTableDialog ref={dropTableDialogRef} />
+      <RenameSchemaDialog ref={renameSchemaDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <SidebarMenu
         data-mask
@@ -245,7 +276,17 @@ export const TablesList = ({
           if (row.kind === 'schema') {
             rowContent = (
               <div className="h-full pt-0.5 pb-1">
-                <SchemaRow row={row} onToggle={() => toggleSchema(row.name)} />
+                <SchemaRow
+                  row={row}
+                  onCreateTable={() => onCreateTable(row.name)}
+                  onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
+                  onRename={
+                    capabilitiesOf(connection.type).renameSchema
+                      ? () => renameSchemaDialogRef.current?.rename(row.name)
+                      : undefined
+                  }
+                  onToggle={() => toggleSchema(row.name)}
+                />
               </div>
             )
           } else if (row.kind === 'separator') {
@@ -271,6 +312,20 @@ export const TablesList = ({
                   }
                 />
               </div>
+            )
+          }
+
+          if (virtualRow.index === stickyIndex) {
+            return (
+              <li
+                key={virtualRow.key}
+                className="group/menu-item bg-body sticky top-0 z-10 h-(--row-height) backdrop-blur-md"
+                style={
+                  { '--row-height': `${virtualRow.size}px` } as CSSProperties
+                }
+              >
+                {rowContent}
+              </li>
             )
           }
 

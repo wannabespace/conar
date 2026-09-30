@@ -1,6 +1,7 @@
 import {
   HashtagIcon,
   MoreHorizontalIcon,
+  PlusSignIcon,
   SourceCodeIcon,
   SproutIcon,
 } from '@hugeicons/core-free-icons'
@@ -176,9 +177,11 @@ const TableStats = ({
 }
 
 export const TableToolbar = ({
+  onAddColumn,
   table,
   schema,
 }: {
+  onAddColumn: () => void
   table: string
   schema: string
 }) => {
@@ -301,6 +304,12 @@ export const TableToolbar = ({
             <TooltipContent side="top">More actions</TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="top" align="end" className="min-w-44">
+            {tableType === 'table' && (
+              <DropdownMenuItem onClick={onAddColumn}>
+                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+                Add column
+              </DropdownMenuItem>
+            )}
             {tableType === 'table' && (
               <DropdownMenuItem onClick={() => setSeedOpen(true)}>
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />

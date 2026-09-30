@@ -16,7 +16,7 @@ import {
   quoteIdentifier,
 } from '../utils'
 
-const inlineParameters = (
+export const inlineParameters = (
   sql: string,
   parameters: readonly unknown[]
 ): string => {

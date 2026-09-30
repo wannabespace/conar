@@ -1,33 +1,29 @@
-import { sql } from 'kysely'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '../../runtime/query'
 import type { ConstraintKind, ConstraintTarget } from './shape'
-import { dropConstraint, mysqlDropKey } from './shape'
+import { dropConstraintStatement } from './shape'
 
-export const dropConstraintQuery = ({
-  cascade,
-  kind,
-  name,
-  schema,
-  table,
-}: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }) => {
-  const target = { name, schema, table }
-
-  return createQuery({
+export const dropConstraintQuery = (
+  target: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
+) =>
+  createQuery({
     query: {
       clickhouse: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} DROP ${mysqlDropKey(kind, name)}`.execute(
-          db
+        db.executeQuery(
+          dropConstraintStatement(ConnectionType.ClickHouse, db, target)
         ),
-      mssql: (db) => dropConstraint(db, target).execute(),
+      mssql: (db) =>
+        db.executeQuery(
+          dropConstraintStatement(ConnectionType.MSSQL, db, target)
+        ),
       mysql: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} DROP ${mysqlDropKey(kind, name)}`.execute(
-          db
+        db.executeQuery(
+          dropConstraintStatement(ConnectionType.MySQL, db, target)
         ),
-      postgres: (db) => {
-        const drop = dropConstraint(db, target)
-        return (cascade ? drop.cascade() : drop).execute()
-      },
+      postgres: (db) =>
+        db.executeQuery(
+          dropConstraintStatement(ConnectionType.Postgres, db, target)
+        ),
     },
   })
-}

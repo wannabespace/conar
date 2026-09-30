@@ -23,7 +23,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
-import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/tables/columns'
+import { resourceColumnsQueryKey } from '~/entities/connection/queries/tables/columns'
 import { renameColumnQuery } from '~/entities/connection/queries/tables/rename-columns'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { queryClient } from '~/lib/query-client'
@@ -70,13 +70,9 @@ export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
       setOpen(false)
 
       await Promise.all([
-        queryClient.invalidateQueries(
-          resourceTableColumnsQueryOptions({
-            connectionResource,
-            table,
-            schema,
-          })
-        ),
+        queryClient.invalidateQueries({
+          queryKey: resourceColumnsQueryKey({ connectionResource }),
+        }),
         queryClient.invalidateQueries({
           queryKey: resourceRowsQueryInfiniteOptions({
             connectionResource,

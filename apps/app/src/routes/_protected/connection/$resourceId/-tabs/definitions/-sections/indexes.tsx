@@ -81,7 +81,7 @@ const kindLabels: Record<IndexKind, string> = {
 }
 
 // A name may hold the separator of any string key, so the key is the tuple.
-const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
+export const indexKey = (item: Pick<IndexItem, 'name' | 'table'>) =>
   JSON.stringify([item.table, item.name])
 
 const kindOf = (item: IndexItem): IndexKind => {

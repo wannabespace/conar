@@ -1,8 +1,6 @@
-import { sql } from 'kysely'
-
 import { createQuery } from '../../runtime/query'
 import type { ConstraintShape } from './shape'
-import { addConstraint, constraintClause } from './shape'
+import { addConstraint } from './shape'
 
 export const createConstraintQuery = ({
   schema,
@@ -15,10 +13,7 @@ export const createConstraintQuery = ({
 }) =>
   createQuery({
     query: {
-      clickhouse: (db) =>
-        sql`ALTER TABLE ${sql.id(schema, table)} ADD ${constraintClause(shape)}`.execute(
-          db
-        ),
+      clickhouse: (db) => addConstraint(db, { schema, table }, shape).execute(),
       mssql: (db) => addConstraint(db, { schema, table }, shape).execute(),
       mysql: (db) => addConstraint(db, { schema, table }, shape).execute(),
       postgres: (db) => addConstraint(db, { schema, table }, shape).execute(),

@@ -125,7 +125,7 @@ export const TableRow = ({
         isActive={isActive}
         className={cn(
           `text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default rounded-md pl-2 text-sm`,
-          row.pinned && 'pr-8'
+          row.pinned && 'pr-12'
         )}
         render={
           <Link
@@ -175,9 +175,8 @@ export const TableRow = ({
         <span
           className={cn(
             'flex min-w-0 flex-1 items-center gap-1',
-            row.pinned
-              ? `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.25rem),transparent_calc(100%-1rem))]`
-              : `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
+            !row.pinned &&
+              `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
           )}
         >
           <span className="truncate">
@@ -195,7 +194,7 @@ export const TableRow = ({
           <SidebarMenuAction
             showOnHover
             className={cn(
-              'top-1! right-6 rounded-md',
+              'top-1! rounded-md',
               isActive &&
                 'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
             )}
@@ -209,7 +208,7 @@ export const TableRow = ({
               showOnHover={!row.pinned}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className={cn(
-                'group/pin top-1! rounded-md',
+                'group/pin top-1! right-6 rounded-md',
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>

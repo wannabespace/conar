@@ -3,7 +3,7 @@ import {
   Copy01Icon,
   Csv01Icon,
   EraserIcon,
-  FilterAddIcon,
+  FilterIcon,
   PencilEdit02Icon,
   Sorting01Icon,
   TextIcon,
@@ -13,12 +13,7 @@ import {
   recordToMarkdownTable,
   toCSV,
 } from '@tamery/shared/files'
-import type { Filter } from '@tamery/shared/filters'
-import {
-  cellToFilterValues,
-  FILTER_GROUPS,
-  FILTERS_GROUPED,
-} from '@tamery/shared/filters'
+import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
 import { useTableContext } from '@tamery/table/hooks'
 import { copy } from '@tamery/ui/lib/copy'
 import type { CSSProperties, ReactNode } from 'react'
@@ -31,9 +26,6 @@ import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
 
 const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
-
-const isDisabledFilter = (filter: Filter, cellValue: unknown): boolean =>
-  filter.hasValue !== false && (cellValue === null || cellValue === undefined)
 
 export const TableCellContextMenu = ({
   open,
@@ -94,39 +86,18 @@ export const TableCellContextMenu = ({
     }
 
     if (onAddFilter) {
-      const filterItems: AppMenuNode[] = []
-      for (const [index, filterGroup] of FILTERS_GROUPED.entries()) {
-        const { group, filters } = filterGroup
-        if (index > 0) {
-          filterItems.push({ type: 'separator' })
-        }
-        filterItems.push({ label: FILTER_GROUPS[group], type: 'label' })
-        for (const filter of filters) {
-          filterItems.push({
-            disabled: isDisabledFilter(filter, value),
-            label: filter.label,
-            nativeLabel: `${filter.label} (${filter.symbol})`,
-            onSelect: () => {
-              onAddFilter({
-                column: column.id,
-                ref: filter,
-                values: cellToFilterValues(filter, value),
-              })
-              toast.success('Filter added')
-            },
-            trailing: (
-              <span className="text-muted-foreground ml-auto pl-2 text-xs">
-                {filter.symbol}
-              </span>
-            ),
-          })
-        }
-      }
       columnItems.push({
-        icon: FilterAddIcon,
-        items: filterItems,
-        label: 'Add filter',
-        type: 'sub',
+        disabled: value === null || value === undefined,
+        icon: FilterIcon,
+        label: 'Filter by value',
+        onSelect: () => {
+          onAddFilter({
+            column: column.id,
+            ref: EQUAL_FILTER,
+            values: cellToFilterValues(EQUAL_FILTER, value),
+          })
+          toast.success('Filter added')
+        },
       })
     }
 

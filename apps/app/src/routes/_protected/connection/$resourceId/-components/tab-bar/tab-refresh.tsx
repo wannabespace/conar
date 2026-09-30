@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useIsFetching } from '@tanstack/react-query'
+import { partialMatchKey, useIsFetching } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -15,7 +15,10 @@ import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints/list'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums/list'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions/list'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes/list'
+import {
+  resourceIndexesQueryOptions,
+  structureQueryKey,
+} from '~/entities/connection/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/entities/connection/queries/policies/list'
 import { resourcePrivilegesQueryOptions } from '~/entities/connection/queries/privileges/list'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows/list'
@@ -120,23 +123,39 @@ const VisualizerRefresh = () => {
     connectionResource,
   }).queryKey
   const columnsKey = resourceColumnsQueryKey({ connectionResource })
-  const constraintsKey = resourceConstraintsQueryOptions({
+  const structureKey = structureQueryKey(connectionResource)
+  const triggersKey = resourceTriggersQueryOptions({
     connectionResource,
   }).queryKey
+  const policiesKey = resourcePoliciesQueryOptions({
+    connectionResource,
+  }).queryKey
+  const keys = [
+    tablesAndSchemasKey,
+    columnsKey,
+    structureKey,
+    triggersKey,
+    policiesKey,
+  ]
   const isFetching =
-    useIsFetching({ queryKey: tablesAndSchemasKey }) +
-      useIsFetching({ queryKey: columnsKey }) +
-      useIsFetching({ queryKey: constraintsKey }) >
-    0
+    useIsFetching({
+      predicate: (query) =>
+        keys.some((key) => partialMatchKey(query.queryKey, key)),
+    }) > 0
   const [isUserRefreshing, setIsUserRefreshing] = useState(false)
 
   const handleRefresh = () => {
     setIsUserRefreshing(true)
 
     return Promise.all([
-      queryClient.invalidateQueries({ queryKey: tablesAndSchemasKey }),
-      queryClient.invalidateQueries({ queryKey: columnsKey }),
-      queryClient.invalidateQueries({ queryKey: constraintsKey }),
+      ...keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      queryClient.invalidateQueries({
+        predicate: ({ queryKey }) =>
+          partialMatchKey(queryKey, [
+            'connection-resource',
+            connectionResource.id,
+          ]) && queryKey.includes('total'),
+      }),
     ]).finally(() => setIsUserRefreshing(false))
   }
 

@@ -26,7 +26,7 @@ import { sentenceCase } from './trigger-draft'
 import { TriggerInspector } from './trigger-inspector'
 import { useToggle } from './use-toggle'
 
-const triggerKey = (item: TriggerItem) =>
+export const triggerKey = (item: TriggerItem) =>
   JSON.stringify([item.schema, item.table, item.name, item.event])
 
 const columns: DefinitionsColumn<TriggerItem>[] = [

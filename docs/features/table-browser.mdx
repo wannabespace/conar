@@ -23,6 +23,8 @@ Use the filter field in the bottom toolbar (or press <kbd>⌘</kbd> <kbd>F</kbd>
 - **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `contains`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
 - **Ask AI** — type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically.
 
+Or right-click a cell: _Filter by value_ keeps only rows where that column equals the cell's value.
+
 Active filters appear as chips inside the field. Each chip can be edited segment by segment, temporarily disabled with the eye toggle (kept in the field but excluded from the query), or removed with ×. Press <kbd>Backspace</kbd> in the empty field to remove the last chip.
 
 Conditions combine with `AND`. Filters are saved per table in local storage.
@@ -62,10 +64,15 @@ The panel lists every column with its generator on the left. Select a column to 
 
 ## Other actions
 
-| Action                  | Description                                    |
-| ----------------------- | ---------------------------------------------- |
-| **Column visibility**   | Hide/show columns (hidden, not deleted).       |
-| **Copy data**           | Copy selected rows or the whole result as TSV. |
-| **Full-text search**    | Filter rows across visible columns.            |
-| **Rename column**       | Right-click a column header.                   |
-| **Rename / drop table** | From the toolbar menu (with confirmation).     |
+| Action | Description |
+| --- | --- |
+| **Add column** | The **+** after the last column header, the toolbar's **⋯**, or **Add column…** from the command menu. |
+| **Column visibility** | Hide/show columns (hidden, not deleted). |
+| **Copy data** | Copy selected rows or the whole result as TSV. |
+| **Rename schema** | Postgres only. Right-click a schema in the sidebar, or hover it and click **⋯**, then **Rename**. |
+| **Full-text search** | Filter rows across visible columns. |
+| **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, **CASCADE** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
+| **New schema** | Run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema opens **New table** right away — a schema shows in the sidebar once it holds a table. |
+| **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key. |
+| **Rename column** | Right-click a column header. |
+| **Rename / drop table** | From the toolbar menu (with confirmation). |

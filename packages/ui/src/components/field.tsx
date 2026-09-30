@@ -9,7 +9,14 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
-import { createContext, use, useEffect, useState } from 'react'
+import {
+  createContext,
+  use,
+  useEffect,
+  useId,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 
 import {
   fieldDescriptionVariants,
@@ -101,7 +108,7 @@ const FieldLabel = ({
     data-slot="field-label"
     className={cn(
       `group/field-label peer/field-label has-data-checked:bg-input/30 flex w-fit gap-2 leading-snug transition-colors group-data-[disabled=true]/field:opacity-50`,
-      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3`,
+      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:px-2.5 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:py-1.5`,
       className
     )}
     {...props}
@@ -177,6 +184,35 @@ const fieldErrorContent = (
 
 const ERROR_PEEK_MS = 3000
 
+// Tooltips share one provider, so only one can be open: without a single
+// owner, errors marked in the same commit all peek and the last one wins.
+const errorPeek = {
+  claim: (id: string) => {
+    if (!errorPeek.owner) {
+      errorPeek.owner = id
+      errorPeek.notify()
+    }
+  },
+  get: () => errorPeek.owner,
+  listeners: new Set<() => void>(),
+  notify: () => {
+    for (const listener of errorPeek.listeners) {
+      listener()
+    }
+  },
+  owner: null as string | null,
+  release: (id: string) => {
+    if (errorPeek.owner === id) {
+      errorPeek.owner = null
+      errorPeek.notify()
+    }
+  },
+  subscribe: (listener: () => void) => {
+    errorPeek.listeners.add(listener)
+    return () => errorPeek.listeners.delete(listener)
+  },
+}
+
 const FieldError = ({
   className,
   children,
@@ -186,17 +222,26 @@ const FieldError = ({
   errors?: ({ message?: string } | undefined)[]
 }) => {
   const content = fieldErrorContent(children, errors)
-  const [seen, setSeen] = useState<React.ReactNode>(null)
+  const id = useId()
+  const peekOwner = useSyncExternalStore(
+    errorPeek.subscribe,
+    errorPeek.get,
+    errorPeek.get
+  )
   const [hovered, setHovered] = useState(false)
 
   useEffect(() => {
-    if (hovered) {
+    if (!content) {
       return
     }
-    const timeout = setTimeout(() => setSeen(content), ERROR_PEEK_MS)
+    errorPeek.claim(id)
+    const timeout = setTimeout(() => errorPeek.release(id), ERROR_PEEK_MS)
 
-    return () => clearTimeout(timeout)
-  }, [content, hovered])
+    return () => {
+      clearTimeout(timeout)
+      errorPeek.release(id)
+    }
+  }, [content, id])
 
   if (!content) {
     return null
@@ -205,12 +250,12 @@ const FieldError = ({
   const engage = (next: boolean) => {
     setHovered(next)
     if (!next) {
-      setSeen(content)
+      errorPeek.release(id)
     }
   }
 
   return (
-    <Tooltip open={hovered || seen !== content} onOpenChange={engage}>
+    <Tooltip open={hovered || peekOwner === id} onOpenChange={engage}>
       <TooltipTrigger
         render={
           <button
