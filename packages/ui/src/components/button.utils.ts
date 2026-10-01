@@ -11,9 +11,6 @@ export const buttonVariants = cva(
     },
     variants: {
       size: {
-        chip: `h-6 gap-1 rounded-md px-1.5 text-xs [&_svg:not([class*='size-'])]:size-3`,
-        counter: `h-8 gap-1.5 px-2.5`,
-        crumb: `h-7 gap-1.5 rounded-lg px-2`,
         default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&>[data-slot=kbd]]:-ml-0.5`,
         icon: 'size-8',
         'icon-2xs': `size-5 rounded-sm [&_svg:not([class*='size-'])]:size-3.5`,
@@ -21,7 +18,6 @@ export const buttonVariants = cva(
         'icon-sm': 'size-7 rounded-lg',
         'icon-xs': `size-6 rounded-md [&_svg:not([class*='size-'])]:size-3.5`,
         lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&>[data-slot=kbd]]:-ml-0.5`,
-        row: `h-7 w-full justify-start gap-2 rounded-md px-2`,
         sm: `h-7 gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
       },
@@ -31,7 +27,6 @@ export const buttonVariants = cva(
         ghost: `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
         'ghost-destructive': `text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-transform`,
         'ghost-muted': `text-muted-foreground hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
-        'ghost-nav': `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground not-hover:aria-[current=page]:bg-accent/50 transition-transform`,
         'ghost-row': `hover:bg-foreground/5 hover:text-foreground aria-expanded:bg-foreground/5 aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
         'ghost-tint': `hover:bg-foreground/10 hover:text-foreground aria-expanded:bg-foreground/10 aria-expanded:text-foreground transition-transform`,
         link: `text-primary px-0 underline-offset-4 hover:underline`,

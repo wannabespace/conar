@@ -16,8 +16,8 @@ export { Command as CommandPrimitive, defaultFilter } from 'cmdk'
 
 const commandVariants = {
   flat: 'text-foreground **:data-[slot=command-item]:font-normal',
-  palette: 'text-popover-foreground rounded-xl',
   popup: 'bg-popover text-popover-foreground rounded-xl',
+  transparent: 'text-popover-foreground rounded-xl',
 }
 
 export const Command = ({

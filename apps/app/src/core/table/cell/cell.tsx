@@ -100,7 +100,13 @@ const ReferenceButton = ({
   children,
   ...props
 }: ComponentProps<typeof Button>) => (
-  <Button variant="ghost" size="chip" {...props}>
+  <Button
+    variant="ghost"
+    size="xs"
+    // oxlint-disable-next-line shadcn/no-restyle -- a tight chip inside a table cell
+    className="px-1.5"
+    {...props}
+  >
     <HugeiconsIcon
       icon={ArrowDownLeft01Icon}
       strokeWidth={2}

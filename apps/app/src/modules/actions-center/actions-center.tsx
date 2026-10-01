@@ -433,7 +433,7 @@ export const ActionsCenter = () => {
       onOpenChange={(open) => actionCenterOpen.set(open)}
     >
       <Command
-        variant="palette"
+        variant="transparent"
         loop
         shouldFilter={false}
         className="min-h-0 flex-1"

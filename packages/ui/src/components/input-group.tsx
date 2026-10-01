@@ -90,7 +90,7 @@ const InputGroupText = ({
 const InputGroupInput = ({
   className,
   ...props
-}: React.ComponentProps<typeof Input>) => (
+}: React.ComponentProps<'input'>) => (
   <Input
     data-slot="input-group-control"
     className={cn(

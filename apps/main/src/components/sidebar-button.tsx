@@ -11,8 +11,12 @@ export const SidebarButton = ({
   ...props
 }: React.ComponentProps<typeof Button>) => (
   <Button
-    variant="ghost-nav"
-    className={cn(`w-full justify-start`, className)}
+    variant="ghost"
+    className={cn(
+      // oxlint-disable-next-line shadcn/no-restyle -- the current page's row stays lit
+      `not-hover:aria-[current=page]:bg-accent/50 w-full justify-start`,
+      className
+    )}
     {...props}
   />
 )

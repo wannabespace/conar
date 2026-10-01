@@ -47,7 +47,13 @@ export const ActionsColumns = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={<Button variant="outline" size="counter" />}
+              render={
+                <Button
+                  variant="outline"
+                  // oxlint-disable-next-line shadcn/no-restyle -- toolbar counters share one compact shape
+                  className="gap-1.5 px-2.5"
+                />
+              }
             />
           }
         >

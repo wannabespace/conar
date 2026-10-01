@@ -118,7 +118,9 @@ const NavigatorFooter = () => {
         <Button
           key={action.label}
           variant="ghost-row"
-          size="row"
+          size="sm"
+          // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
+          className="h-7 w-full justify-start gap-2 rounded-md px-2"
           {...pressNavProps(() =>
             router.navigate({
               params: {
@@ -137,7 +139,13 @@ const NavigatorFooter = () => {
           {action.label}
         </Button>
       ))}
-      <Button variant="ghost-row" size="row" disabled>
+      <Button
+        variant="ghost-row"
+        size="sm"
+        disabled
+        // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
+        className="h-7 w-full justify-start gap-2 rounded-md px-2"
+      >
         <HugeiconsIcon
           icon={Settings02Icon}
           strokeWidth={2}

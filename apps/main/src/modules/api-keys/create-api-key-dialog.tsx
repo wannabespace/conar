@@ -224,9 +224,9 @@ export const CreateApiKeyDialog = ({
               <InputGroup>
                 <InputGroupInput
                   readOnly
-                  variant="code"
                   value={createdKey.key}
-                  className="min-w-0 overflow-x-auto"
+                  // oxlint-disable-next-line shadcn/no-restyle -- an API key reads as code
+                  className="min-w-0 overflow-x-auto font-mono text-xs"
                 />
                 <InputGroupAddon align="inline-end">
                   <CopyButton
