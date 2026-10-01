@@ -26,8 +26,8 @@ import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
-import { useCollections } from '~/entities/collections'
-import { useActiveWorkspace } from '~/entities/workspace/hooks'
+import { useCollections } from '~/core/collections'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
 
 export const StepSave = ({
   type,

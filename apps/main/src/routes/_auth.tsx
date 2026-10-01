@@ -10,6 +10,7 @@ import {
 import { type } from 'arktype'
 
 import { SEO } from '~/constants'
+import { mainModules } from '~/lib/modules'
 
 const AuthLayout = () => {
   const match = useMatches({
@@ -49,25 +50,10 @@ const AuthLayout = () => {
           </div>
           <div className="mx-auto flex w-full flex-col justify-center gap-6 sm:w-87.5">
             <Outlet />
-            {isSignIn && (
-              <p className="text-muted-foreground px-6 text-center text-xs">
-                By clicking continue, you agree to our{' '}
-                <Link
-                  to="/terms-of-service"
-                  className="hover:text-primary underline underline-offset-4"
-                >
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link
-                  to="/privacy-policy"
-                  className="hover:text-primary underline underline-offset-4"
-                >
-                  Privacy Policy
-                </Link>
-                .
-              </p>
-            )}
+            {isSignIn &&
+              mainModules.authFooter.map(({ Component }, index) => (
+                <Component key={index} />
+              ))}
           </div>
         </div>
       </div>

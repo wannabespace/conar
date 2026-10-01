@@ -1,8 +1,7 @@
+import { mainModules } from '~/lib/modules'
+
 import { Demo } from './-components/demo'
-import { Features } from './-components/features'
 import { Hero } from './-components/hero'
-import { Pricing } from './-components/pricing'
-import { Testimonials } from './-components/testimonials'
 
 export const HomePage = () => (
   <main className="px-4 sm:px-6 lg:px-10">
@@ -10,8 +9,8 @@ export const HomePage = () => (
       <Hero className="sticky top-(--navbar-height)" />
       <Demo />
     </div>
-    <Features />
-    <Testimonials />
-    <Pricing />
+    {mainModules.homeSections.map(({ Component }, index) => (
+      <Component key={index} />
+    ))}
   </main>
 )

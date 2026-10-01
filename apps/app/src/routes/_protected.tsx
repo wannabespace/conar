@@ -3,13 +3,11 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
-import { GlobalBanner } from '~/components/global-banner'
-import { SubscriptionModal } from '~/components/subscription-modal'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
+import { protectedModules } from '~/lib/protected-modules'
 import { subscriptionQueryClient } from '~/lib/query-client'
 
-import { ActionsCenter } from './-components/actions-center'
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 const ProtectedLayout = () => {
@@ -31,11 +29,14 @@ const ProtectedLayout = () => {
 
   return (
     <EventsProvider>
-      <SubscriptionModal />
-      <ActionsCenter />
+      {protectedModules.mounts.map((Mount, index) => (
+        <Mount key={index} />
+      ))}
       <div className="flex h-full flex-col">
         <ProtectedTitleBar />
-        <GlobalBanner />
+        {protectedModules.banners.map(({ Component }, index) => (
+          <Component key={index} />
+        ))}
         <div
           className={cn(
             'min-h-0 flex-1',
@@ -52,7 +53,7 @@ const ProtectedLayout = () => {
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
-    const { getCollections } = await import('~/entities/collections')
+    const { getCollections } = await import('~/core/collections')
     const c = getCollections()
 
     await Promise.all([

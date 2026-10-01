@@ -12,9 +12,9 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/entities/collections'
-import type { Connection } from '~/entities/connection/core/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
+import { useCollections } from '~/core/collections'
+import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import type { Connection } from '~/core/connection/sync'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{

@@ -1,62 +1,32 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { enabledFilters } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimateView } from 'motion/react-animate-view'
 import { useDeferredValue, useEffect } from 'react'
 
-import { sectionAvailable } from '~/entities/connection/capabilities'
-import {
-  prefetchConnectionResourceCore,
-  prefetchConnectionResourceTableCore,
-} from '~/entities/connection/fetching'
-import {
-  ensureTab,
-  setActiveTab,
-} from '~/entities/connection/store/helpers/tabs'
-import { getNavigatorStore } from '~/entities/connection/store/stores'
-import { parseTabId } from '~/entities/connection/store/tabs/ids'
-import { tabFullTitle } from '~/entities/connection/store/tabs/title'
-import type { ConnectionTab } from '~/entities/connection/store/tabs/types'
-
-import { DefinitionsTab } from './-tabs/definitions/definitions-tab'
-import { RunnerTab } from './-tabs/runner/runner-tab'
-import { tablePageStore } from './-tabs/table/-lib/store'
-import { TableTab } from './-tabs/table/table-tab'
-import { VisualizerTab } from './-tabs/visualizer/visualizer-tab'
+import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
+import { ensureTab, setActiveTab } from '~/core/tabs/actions'
+import { resolveTab, tabFullTitle } from '~/core/tabs/kinds'
+import { workspaceModules } from '~/lib/workspace-modules'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const TabContent = ({ tab }: { tab: ConnectionTab }) => {
-  if (tab.type === 'table') {
-    return <TableTab schema={tab.schema} table={tab.table} />
-  }
-
-  if (tab.type === 'runner') {
-    return <RunnerTab tabId={tab.id} />
-  }
-
-  if (tab.type === 'definitions') {
-    return <DefinitionsTab section={tab.section} />
-  }
-
-  return <VisualizerTab />
-}
-
 const TabPage = () => {
   const { connectionResource, tab } = useRouteContext()
 
   useEffect(() => {
-    ensureTab(connectionResource.id, tab)
+    ensureTab(connectionResource.id, tab.id)
     setActiveTab(connectionResource.id, tab.id)
+    tab.kind.onActivate?.(connectionResource.id, tab.params)
   }, [connectionResource.id, tab])
 
   // Router state commits through useSyncExternalStore, which never starts a view transition; the deferred re-render does.
   const shownResourceId = useDeferredValue(connectionResource.id)
   const shownTab = useDeferredValue(tab)
+  const view = workspaceModules.tabs[shownTab.kind.type]
 
   return (
     <AnimateView
@@ -64,7 +34,7 @@ const TabPage = () => {
       transition={{ duration: 0.04 }}
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <TabContent tab={shownTab} />
+        {view && <view.Content id={shownTab.id} params={shownTab.params} />}
       </div>
     </AnimateView>
   )
@@ -82,12 +52,12 @@ export const Route = createFileRoute(
     'schema?': 'string',
   }),
   beforeLoad: ({ context, params }) => {
-    const tab = parseTabId(params.tabId)
+    const resolved = resolveTab(params.tabId)
 
     if (
-      !tab ||
-      (tab.type === 'definitions' &&
-        !sectionAvailable(tab.section, context.connection.type))
+      !resolved ||
+      resolved.kind.available?.(resolved.params, context.connection.type) ===
+        false
     ) {
       throw redirect({
         params: { resourceId: params.resourceId },
@@ -95,63 +65,21 @@ export const Route = createFileRoute(
       })
     }
 
-    getNavigatorStore(
-      params.resourceId,
-      tab.type === 'runner' || tab.type === 'table' ? 'tables' : 'definitions'
-    )
-
-    return { tab }
+    return { tab: { id: params.tabId, ...resolved } }
   },
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
     const { connection, connectionResource, tab } = context
 
     prefetchConnectionResourceCore(connectionResource)
-
-    const base = {
+    workspaceModules.tabs[tab.kind.type]?.load?.({
       connection,
       connectionResource,
-      tab,
-    }
+      params: tab.params,
+      search: deps,
+    })
 
-    if (tab.type === 'table') {
-      const store = tablePageStore({
-        id: connectionResource.id,
-        schema: tab.schema,
-        table: tab.table,
-      })
-      const { filters: searchFilters, orderBy: searchOrderBy } = deps
-
-      if (searchFilters) {
-        store.set(
-          (current) =>
-            ({ ...current, filters: searchFilters }) satisfies typeof current
-        )
-      }
-      if (searchOrderBy) {
-        store.set(
-          (current) =>
-            ({ ...current, orderBy: searchOrderBy }) satisfies typeof current
-        )
-      }
-
-      const pageState = store.get()
-
-      prefetchConnectionResourceTableCore({
-        connectionResource,
-        query: {
-          exact: false,
-          filters: enabledFilters(pageState.filters),
-          orderBy: pageState.orderBy,
-        },
-        schema: tab.schema,
-        table: tab.table,
-      })
-
-      return base
-    }
-
-    return base
+    return { connection, connectionResource, tab }
   },
   head: ({ loaderData }) => ({
     meta: loaderData

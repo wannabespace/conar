@@ -1,7 +1,6 @@
 import { createStore } from 'seitu'
 
 export const appStore = createStore({
-  isActionCenterOpen: false,
   isOnline: window.navigator.onLine,
   isSubscriptionDialogOpen: false,
 })
@@ -15,12 +14,6 @@ const updateOnline = () => {
 
 window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
-
-export const setIsActionCenterOpen = (isOpen: boolean) => {
-  appStore.set(
-    (state) => ({ ...state, isActionCenterOpen: isOpen }) satisfies typeof state
-  )
-}
 
 export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
   appStore.set(

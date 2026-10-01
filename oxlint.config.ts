@@ -12,7 +12,7 @@ export default defineConfig({
   jsPlugins: ['oxlint-tailwindcss'],
   overrides: [
     {
-      files: ['apps/app/src/entities/connection/**'],
+      files: ['apps/app/src/core/{queries,runtime}/**'],
       // Kysely's case builder spells its branches .then(); no promise involved.
       rules: { 'promise/prefer-await-to-then': 'off' },
     },

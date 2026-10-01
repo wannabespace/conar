@@ -1,16 +1,6 @@
 import { THEME_STORAGE_KEY } from '@tamery/ui/theme-constants'
 
-import {
-  CHAT_DEFAULT_WIDTH,
-  CHAT_WIDTH_KEY,
-  connectionResourceStoreKey,
-  LAST_LOCATION_KEY,
-  LOGGER_DEFAULT_HEIGHT,
-  LOGGER_HEIGHT_KEY,
-  NAVIGATOR_OPEN_KEY,
-  NAVIGATOR_WIDTH_KEY,
-  SIDEBAR_DEFAULT_WIDTH,
-} from './lib/constants'
+import { LAST_LOCATION_KEY, SHELL_LAYOUT_KEY } from './lib/constants'
 
 const read = <T>(key: string): T | undefined => {
   try {
@@ -22,13 +12,10 @@ const read = <T>(key: string): T | undefined => {
 
 const isElectron = !!window.electron
 const lastLocation = read<string>(LAST_LOCATION_KEY)
-const resourceId = lastLocation?.match(/\/connection\/(?<id>[^/?#]+)/u)?.groups
-  ?.id
-const resourceState = resourceId
-  ? read<{ chatOpened?: boolean; loggerOpened?: boolean }>(
-      connectionResourceStoreKey(resourceId)
-    )
-  : undefined
+const isConnection = /\/connection\/[^/?#]+/u.test(lastLocation ?? '')
+const layout = isConnection
+  ? (read<Record<string, number>>(SHELL_LAYOUT_KEY) ?? {})
+  : {}
 const theme = read<string>(THEME_STORAGE_KEY) ?? 'system'
 
 const classes = {
@@ -38,19 +25,11 @@ const classes = {
   electron: isElectron,
   mac: isElectron && /Mac/u.test(navigator.userAgent),
   'shell-auth': lastLocation === undefined,
-  'shell-chat': !!resourceState?.chatOpened,
-  'shell-connection': !!resourceId,
-  'shell-dashboard': lastLocation !== undefined && !resourceId,
-  'shell-logger': !!resourceState?.loggerOpened,
-  'shell-navigator': read<boolean>(NAVIGATOR_OPEN_KEY) !== false,
-}
-
-const sizes = {
-  '--shell-chat-width': read<number>(CHAT_WIDTH_KEY) ?? CHAT_DEFAULT_WIDTH,
-  '--shell-logger-height':
-    read<number>(LOGGER_HEIGHT_KEY) ?? LOGGER_DEFAULT_HEIGHT,
-  '--shell-navigator-width':
-    read<number>(NAVIGATOR_WIDTH_KEY) ?? SIDEBAR_DEFAULT_WIDTH,
+  'shell-connection': isConnection,
+  'shell-dashboard': lastLocation !== undefined && !isConnection,
+  ...Object.fromEntries(
+    Object.keys(layout).map((region) => [`shell-${region}`, true])
+  ),
 }
 
 document.documentElement.classList.add(
@@ -59,6 +38,9 @@ document.documentElement.classList.add(
     .map(([name]) => name)
 )
 
-for (const [name, value] of Object.entries(sizes)) {
-  document.documentElement.style.setProperty(name, `${value}px`)
+for (const [region, size] of Object.entries(layout)) {
+  document.documentElement.style.setProperty(
+    `--shell-${region}-size`,
+    `${size}px`
+  )
 }

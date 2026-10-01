@@ -5,10 +5,10 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useQuery } from '@tanstack/react-query'
 
-import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
-import type { Connection } from '~/entities/connection/core/sync'
-import { useFetchingConfig } from '~/entities/connection/fetching'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection/version'
+import { ConnectionIcon } from '~/core/connection/connection-icon'
+import { useFetchingConfig } from '~/core/connection/fetching'
+import type { Connection } from '~/core/connection/sync'
+import { connectionVersionQueryOptions } from '~/core/queries/connection/version'
 
 const VersionTooltipContent = ({
   canSend,

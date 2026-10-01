@@ -1,19 +1,14 @@
 import {
   ArrowRight01Icon,
-  CommandIcon,
   Delete02Icon,
-  File01Icon,
-  Globe02Icon,
   PlusSignIcon,
   Tick02Icon,
   UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
-import { SyncType } from '@tamery/shared/enums/sync-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,35 +19,21 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useHotkey } from '@tanstack/react-hotkeys'
-import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import type { CSSProperties, ComponentRef } from 'react'
 import { useRef, useState } from 'react'
-import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
-import { UpdateButton } from '~/components/update-button'
-import { useCollections } from '~/entities/collections'
-import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
-import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import type {
-  Connection,
-  ConnectionResource,
-} from '~/entities/connection/core/sync'
-import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
-import { UserButton } from '~/entities/user/components/user-button'
-import { useActiveWorkspace } from '~/entities/workspace/hooks'
-import { checkForUpdates, updatesStore } from '~/hooks/use-updates-observer'
-import { setIsActionCenterOpen } from '~/store'
+import { useCollections } from '~/core/collections'
+import { ConnectionIcon } from '~/core/connection/connection-icon'
+import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
+import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
+import { protectedModules } from '~/lib/protected-modules'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'
@@ -346,121 +327,9 @@ const ConnectionsBreadcrumb = ({
   )
 }
 
-const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
-  const store = getConnectionResourceStore(resourceId)
-  const loggerOpened = useSubscription(store, {
-    selector: (state) => state.loggerOpened,
-  })
-  const toggleLogger = () =>
-    store.set(
-      (state) =>
-        ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state
-    )
-
-  useHotkey('Mod+J', (e) => {
-    e.preventDefault()
-    toggleLogger()
-  })
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Query logger"
-            aria-pressed={loggerOpened}
-            onClick={toggleLogger}
-          />
-        }
-      >
-        <HugeiconsIcon icon={File01Icon} strokeWidth={2} className="size-4" />
-      </TooltipTrigger>
-      <TooltipContent side="bottom">
-        Query logger
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="J" />
-      </TooltipContent>
-    </Tooltip>
-  )
-}
-
-const QueryLoggerToggle = () => {
-  const { resourceId } = useParams({ strict: false })
-
-  return resourceId ? <QueryLoggerButton resourceId={resourceId} /> : null
-}
-
-const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
-  const {
-    connectionsCollection,
-    connectionsResourcesCollection,
-    connectionStringsCollection,
-  } = useCollections()
-  const location = useLocation()
-
-  const { data: connection } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ r: connectionsResourcesCollection })
-        .where(({ r }) => eq(r.id, resourceId))
-        .innerJoin({ c: connectionsCollection }, ({ r, c }) =>
-          eq(c.id, r.connectionId)
-        )
-        .select(({ c }) => ({ id: c.id, syncType: c.syncType }))
-        .findOne(),
-  })
-
-  const { data: connectionString } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection?.id ?? ''))
-        .findOne(),
-  })
-
-  if (
-    connection?.syncType !== SyncType.Cloud ||
-    connectionString?.isLocalhost
-  ) {
-    return null
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Open in web app"
-            onClick={() =>
-              window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)
-            }
-          />
-        }
-      >
-        <HugeiconsIcon icon={Globe02Icon} strokeWidth={2} className="size-4" />
-      </TooltipTrigger>
-      <TooltipContent side="bottom">Open in web app</TooltipContent>
-    </Tooltip>
-  )
-}
-
-const OpenInWeb = () => {
-  const { resourceId } = useParams({ strict: false })
-
-  return window.electron && resourceId ? (
-    <OpenInWebButton resourceId={resourceId} />
-  ) : null
-}
-
 export const ProtectedTitleBar = () => {
   const removeDialogRef =
     useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
-  const version = useSubscription(updatesStore, {
-    selector: (state) => state.version,
-  })
 
   return (
     <div className="flex shrink-0 flex-col">
@@ -493,50 +362,9 @@ export const ProtectedTitleBar = () => {
             }
           />
           <div className="ml-auto flex h-full shrink-0 items-center gap-1">
-            {window.electron && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      aria-label="Check for updates"
-                      className="text-2xs text-muted-foreground/60 hover:bg-foreground/5 hover:text-muted-foreground rounded-md px-1.5 py-0.5 tabular-nums"
-                      onClick={() => checkForUpdates()}
-                    />
-                  }
-                >
-                  v{version}
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Check for updates</TooltipContent>
-              </Tooltip>
-            )}
-            <UpdateButton />
-            <OpenInWeb />
-            <QueryLoggerToggle />
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    aria-label="Command palette"
-                    onClick={() => setIsActionCenterOpen(true)}
-                  />
-                }
-              >
-                <HugeiconsIcon
-                  icon={CommandIcon}
-                  strokeWidth={2}
-                  className="size-4"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Command palette
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />
-              </TooltipContent>
-            </Tooltip>
-            <span className="bg-border mx-1 h-4 w-px shrink-0 self-center" />
-            <UserButton side="bottom" align="end" />
+            {protectedModules.titlebar.map(({ Component }, index) => (
+              <Component key={index} />
+            ))}
           </div>
         </div>
       </TitleBar>

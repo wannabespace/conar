@@ -11,7 +11,7 @@ import {
 } from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 
-import type { getConnectionStore } from '~/entities/connection/store/stores'
+import type { getConnectionStore } from '~/core/connection/stores'
 
 const ROOT_RESOURCE_VALUE =
   CONNECTION_RESOURCE_ROOT_SYMBOL.description ?? 'CONNECTION_RESOURCE_ROOT'

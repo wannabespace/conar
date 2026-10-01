@@ -6,7 +6,8 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
-import { Link } from '@tanstack/react-router'
+
+import { mainModules } from '~/lib/modules'
 
 export const Footer = () => (
   <footer className="container mx-auto flex flex-col items-center justify-between gap-4 p-4 sm:flex-row sm:gap-0 sm:px-0">
@@ -15,18 +16,9 @@ export const Footer = () => (
       <span className="text-sm font-medium">Tamery</span>
     </div>
     <div className="flex flex-1 items-center justify-center gap-4">
-      <Link
-        to="/terms-of-service"
-        className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-      >
-        Terms of Service
-      </Link>
-      <Link
-        to="/privacy-policy"
-        className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-      >
-        Privacy Policy
-      </Link>
+      {mainModules.footerLinks.map(({ Component }, index) => (
+        <Component key={index} />
+      ))}
     </div>
     <div className="flex flex-1 items-center justify-center gap-2 sm:justify-end">
       <a

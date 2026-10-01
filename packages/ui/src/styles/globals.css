@@ -169,25 +169,25 @@
   display: revert-layer;
 }
 
-[data-shell-navigator],
-[data-shell-chat],
-[data-shell-logger] {
+[data-shell-left],
+[data-shell-right],
+[data-shell-bottom] {
   display: none;
 }
 
-.shell-navigator [data-shell-navigator] {
+.shell-left [data-shell-left] {
   display: revert-layer;
-  width: var(--shell-navigator-width, 256px);
+  width: var(--shell-left-size);
 }
 
-.shell-chat [data-shell-chat] {
+.shell-right [data-shell-right] {
   display: revert-layer;
-  width: var(--shell-chat-width, 380px);
+  width: var(--shell-right-size);
 }
 
-.shell-logger [data-shell-logger] {
+.shell-bottom [data-shell-bottom] {
   display: revert-layer;
-  height: var(--shell-logger-height, 240px);
+  height: var(--shell-bottom-size);
 }
 
 .electron.mac:not(.window-fullscreen) [data-shell-titlebar] {

@@ -1,0 +1,311 @@
+import {
+  Alert02Icon,
+  ArrowRight01Icon,
+  ArrowTurnBackwardIcon,
+  SaveIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { pick } from '@tamery/shared/utils'
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@tamery/ui/components/drawer'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
+import { useSubscription } from 'seitu/react'
+
+import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import type { Draft } from '~/core/table/session'
+import {
+  draftsActions,
+  getRowKeyByPrimaryKeys,
+  primaryKeysKey,
+  useTableSessionStore,
+} from '~/core/table/session'
+import { createTransformer } from '~/core/transformers/create-transformer'
+import { getDisplayValue } from '~/core/transformers/value-transformer'
+
+import { useTableColumnsContext } from '../../lib/columns'
+import { useTablePageStore } from '../../lib/store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const Value = ({ value, children }: { value: unknown; children: string }) => {
+  const isEmpty = value === null || value === undefined || value === ''
+
+  return (
+    <span
+      title={children}
+      className={cn(
+        'line-clamp-3 wrap-break-word',
+        isEmpty && 'text-muted-foreground/60 italic'
+      )}
+    >
+      {isEmpty ? String(value ?? 'null') || 'empty' : children}
+    </span>
+  )
+}
+
+export const DraftsReviewDrawer = ({
+  open,
+  onOpenChange,
+  table,
+  schema,
+  isSaving,
+  onSave,
+  onDiscardAll,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  table: string
+  schema: string
+  isSaving: boolean
+  onSave: () => void
+  onDiscardAll: () => void
+}) => {
+  const { connection, connectionResource } = useRouteContext()
+  const { columns } = useTableColumnsContext()
+  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
+  const drafts = useSubscription(sessionStore, {
+    selector: (state) => Object.values(state.drafts),
+  })
+  const { filters, orderBy } = useSubscription(store, {
+    selector: (state) => pick(state, ['filters', 'orderBy']),
+  })
+  const { remove: removeDraft, removeRow } = draftsActions(sessionStore)
+
+  const { data: rows = [] } = useInfiniteQuery(
+    resourceRowsQueryInfiniteOptions({
+      connectionResource,
+      query: { filters, orderBy },
+      schema,
+      table,
+    })
+  )
+
+  const rowsByPrimaryKey = new Map(
+    rows.map(
+      (row, index) =>
+        [getRowKeyByPrimaryKeys(row, primaryColumns), { index, row }] as const
+    )
+  )
+  const draftIndex = (rowDrafts: Draft[]) => {
+    const [firstDraft] = rowDrafts
+    if (!firstDraft) {
+      return Number.MAX_SAFE_INTEGER
+    }
+    return (
+      rowsByPrimaryKey.get(primaryKeysKey(firstDraft.primaryKeys))?.index ??
+      Number.MAX_SAFE_INTEGER
+    )
+  }
+  const rowsEntries = [
+    ...Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)).values(),
+  ].toSorted((a, b) => draftIndex(a) - draftIndex(b))
+
+  const columnDisplay = (columnId: string, value: unknown) => {
+    const column = columns.find((c) => c.id === columnId)
+
+    if (!column) {
+      return getDisplayValue(value, Number.POSITIVE_INFINITY)
+    }
+
+    return createTransformer(connection.type, column).toDisplay(
+      value,
+      Number.POSITIVE_INFINITY
+    )
+  }
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
+      <DrawerContent className="max-w-2xl">
+        <DrawerHeader>
+          <DrawerTitle>Review changes</DrawerTitle>
+          <DrawerDescription>
+            {drafts.length} change
+            {drafts.length === 1 ? '' : 's'} in{' '}
+            <span data-mask className="font-medium">
+              {schema}.{table}
+            </span>
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="min-h-0 flex-1 overflow-auto px-4 pb-4">
+          {rowsEntries.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="bg-muted/60 mb-4 flex size-12 items-center justify-center rounded-2xl">
+                <HugeiconsIcon
+                  icon={SaveIcon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-6"
+                />
+              </div>
+              <div className="text-sm font-medium">Nothing to review</div>
+              <p className="text-muted-foreground mt-1 max-w-56 text-xs">
+                Edit cells in the table and the changes will show up here.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {rowsEntries.map((rowDrafts) => {
+                const [firstDraft] = rowDrafts
+                if (!firstDraft) {
+                  return null
+                }
+                const { primaryKeys } = firstDraft
+                const row = rowsByPrimaryKey.get(
+                  primaryKeysKey(primaryKeys)
+                )?.row
+                const primaryLabel = Object.entries(primaryKeys)
+                  .map(
+                    ([columnId, value]) =>
+                      `${columnId} = ${columnDisplay(columnId, value)}`
+                  )
+                  .join(' · ')
+
+                return (
+                  <div
+                    key={primaryKeysKey(primaryKeys)}
+                    className="bg-card rounded-xl border shadow-xs"
+                  >
+                    <header className="flex h-9 items-center gap-2 border-b pr-1.5 pl-3">
+                      <span
+                        data-mask
+                        title={primaryLabel || undefined}
+                        className="text-2xs text-muted-foreground min-w-0 flex-1 truncate font-mono"
+                      >
+                        {primaryLabel || 'Unknown row'}
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="text-muted-foreground hover:text-foreground shrink-0"
+                              onClick={() => removeRow(primaryKeys)}
+                              disabled={isSaving}
+                            />
+                          }
+                        >
+                          <HugeiconsIcon
+                            icon={ArrowTurnBackwardIcon}
+                            strokeWidth={2}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>Discard row</TooltipContent>
+                      </Tooltip>
+                    </header>
+                    <div className="flex flex-col">
+                      {rowDrafts.map((draft) => {
+                        const before = row
+                          ? columnDisplay(draft.columnId, row[draft.columnId])
+                          : ''
+                        const after = columnDisplay(draft.columnId, draft.value)
+
+                        return (
+                          <div
+                            key={draft.columnId}
+                            className="group flex items-start gap-3 border-b py-2 pr-1.5 pl-3 last:border-b-0"
+                          >
+                            <span
+                              data-mask
+                              title={draft.columnId}
+                              className="text-2xs text-muted-foreground w-28 shrink-0 truncate pt-0.5 font-mono font-medium"
+                            >
+                              {draft.columnId}
+                            </span>
+                            <div
+                              data-mask
+                              className="flex min-w-0 flex-1 items-start gap-2 font-mono text-xs"
+                            >
+                              <div className="text-muted-foreground min-w-0 flex-1">
+                                <Value value={row?.[draft.columnId]}>
+                                  {before}
+                                </Value>
+                              </div>
+                              <HugeiconsIcon
+                                icon={ArrowRight01Icon}
+                                strokeWidth={2}
+                                className="text-muted-foreground/50 mt-0.5 size-3 shrink-0"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <Value value={draft.value}>{after}</Value>
+                                {draft.error && (
+                                  <p className="text-2xs text-destructive mt-1 flex items-start gap-1 font-sans">
+                                    <HugeiconsIcon
+                                      icon={Alert02Icon}
+                                      strokeWidth={2}
+                                      className="mt-px size-3 shrink-0"
+                                    />
+                                    {draft.error}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                                    onClick={() =>
+                                      removeDraft(primaryKeys, draft.columnId)
+                                    }
+                                    disabled={isSaving}
+                                  />
+                                }
+                              >
+                                <HugeiconsIcon
+                                  icon={ArrowTurnBackwardIcon}
+                                  strokeWidth={2}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>Discard change</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        <DrawerFooter>
+          <Button
+            variant="ghost"
+            onClick={onDiscardAll}
+            disabled={isSaving || drafts.length === 0}
+            className="text-muted-foreground hover:text-foreground mr-auto"
+          >
+            <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
+            Discard all
+          </Button>
+          <DrawerClose render={<Button variant="outline">Close</Button>} />
+          <Button onClick={onSave} disabled={isSaving || drafts.length === 0}>
+            <LoadingContent loading={isSaving}>
+              Save {drafts.length} change{drafts.length === 1 ? '' : 's'}
+            </LoadingContent>
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+}

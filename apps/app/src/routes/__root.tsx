@@ -16,12 +16,10 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import { WindowTooSmall } from '~/components/window-too-small'
-import { useDeepLinksObserver } from '~/hooks/use-deep-links-observer'
-import { useUpdatesObserver } from '~/hooks/use-updates-observer'
 import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
 import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
 import { globalHooks } from '~/lib/global-hooks'
+import { appModules } from '~/lib/modules'
 import { queryClient } from '~/lib/query-client'
 
 const isElectron = !!window.electron
@@ -35,13 +33,10 @@ const RootDocument = () => {
   useHotkey('Mod+Shift+R', () => location.reload(), {
     enabled: isElectron,
   })
-  useDeepLinksObserver()
   useWindowFocusObserver()
   useWindowFullscreenObserver()
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
-
-  useUpdatesObserver()
 
   return (
     <>
@@ -72,7 +67,9 @@ const RootDocument = () => {
             />
           )}
         </QueryClientProvider>
-        <WindowTooSmall />
+        {appModules.mounts.map((Mount, index) => (
+          <Mount key={index} />
+        ))}
         <Toaster />
       </TooltipProvider>
     </>

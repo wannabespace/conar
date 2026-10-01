@@ -10,9 +10,9 @@ Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-on
 
 - **A module that composes children must not also define what they import.** That mix produced every cycle here: an entry, registry or barrel exporting a contract or singleton its own children reach back for. Put the shared piece in a leaf below both — contracts in `types.ts`, a driver toolkit beside its registry, stores beside their helpers, infrastructure beside the router that composes it.
 - **A factory takes what it depends on; it does not look itself up.** A collection's own utils close over the collection rather than reading it back out of `getCollections()`; operations that *do* need the registry live outside the factory module.
-- **No `export *` anywhere; re-export by name.** Star exports trip `no-barrel-file` once a folder pulls >100 modules and they hide what a path actually offers. A package's public folder API stays a barrel of explicit names; app code has no `entities/*` re-export barrels — import the leaf that owns the symbol (`architecture.md` explains the bundling cost).
+- **No `export *` anywhere; re-export by name.** Star exports trip `no-barrel-file` once a folder pulls >100 modules and they hide what a path actually offers. A package's public folder API stays a barrel of explicit names; app code has no `core/*` re-export barrels — import the leaf that owns the symbol (`architecture.md` explains the bundling cost).
 - Type-only imports count: `import type` still closes a cycle for the linter.
-- The tanstack preset turns `sort-keys` **off** under `**/routes/**`, so code moved from a route into `entities/` or `packages/` can surface fresh `sort-keys` errors it never had.
+- The tanstack preset turns `sort-keys` **off** under `**/routes/**`, so code moved from a route into `core/`, a module outside its `routes/`, or `packages/` can surface fresh `sort-keys` errors it never had.
 
 ## Repo-specific, not linted
 

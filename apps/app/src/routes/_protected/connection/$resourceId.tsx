@@ -10,84 +10,78 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
-import { type } from 'arktype'
-import { lazy, Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createWebStorageValue } from 'seitu/web'
 
-import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
-} from '~/entities/connection/fetching'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
-import { getConnectionResourceStore } from '~/entities/connection/store/stores'
-import { workspaceSelection } from '~/entities/workspace/utils'
-import {
-  CHAT_DEFAULT_WIDTH,
-  CHAT_MAX_WIDTH,
-  CHAT_MIN_WIDTH,
-  CHAT_WIDTH_KEY,
-  LOGGER_DEFAULT_HEIGHT,
-  LOGGER_HEIGHT_KEY,
-  LOGGER_MAX_HEIGHT,
-  LOGGER_MIN_HEIGHT,
-  NAVIGATOR_WIDTH_KEY,
-  SIDEBAR_DEFAULT_WIDTH,
-  SIDEBAR_MAX_WIDTH,
-  SIDEBAR_MIN_WIDTH,
-} from '~/lib/constants'
+} from '~/core/connection/fetching'
+import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import { workspaceSelection } from '~/core/workspace/utils'
+import type { Panel } from '~/lib/module'
+import { panelSize, useShellLayout } from '~/lib/panels'
+import { workspaceModules } from '~/lib/workspace-modules'
 import { resourcePanelClassName } from '~/shell'
 
-import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
-import { navigatorOpenValue } from './$resourceId/-components/navigator/constants'
-import { Navigator } from './$resourceId/-components/navigator/navigator'
-import { TabBar } from './$resourceId/-components/tab-bar/tab-bar'
 import { PasswordForm } from './-components/password-form'
-
-const QueryLogger = lazy(async () => {
-  const { QueryLogger: component } =
-    await import('~/entities/connection/components/query-logger')
-
-  return { default: component }
-})
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const persistedSize = (key: string, defaultValue: number) =>
-  createWebStorageValue({
-    defaultValue,
-    key,
-    schema: type('number'),
-    type: 'localStorage',
-  })
+const REGION_MOTION = {
+  bottom: {
+    animate: { translateY: '0' },
+    initial: { translateY: '100%' },
+  },
+  left: {
+    animate: { scale: 1 },
+    className: 'origin-left',
+    initial: { scale: 0.85 },
+  },
+  right: {
+    animate: { translateX: '0' },
+    initial: { translateX: '100%' },
+  },
+}
 
-const navigatorWidthValue = persistedSize(
-  NAVIGATOR_WIDTH_KEY,
-  SIDEBAR_DEFAULT_WIDTH
-)
-const chatWidthValue = persistedSize(CHAT_WIDTH_KEY, CHAT_DEFAULT_WIDTH)
-const loggerHeightValue = persistedSize(
-  LOGGER_HEIGHT_KEY,
-  LOGGER_DEFAULT_HEIGHT
-)
+const RegionPanel = ({
+  panel,
+  resourceId,
+}: {
+  panel: Panel
+  resourceId: string
+}) => {
+  const openValue = panel.open(resourceId)
+  const sizeValue = panelSize(panel)
+  const opened = useSubscription(openValue)
+  const size = useSubscription(sizeValue)
+  const { Component } = panel
+  const separator = (
+    <ResizableSeparator key="separator" aria-label={`Resize ${panel.label}`} />
+  )
+  const content = (
+    <ResizablePanel
+      key="panel"
+      size={size}
+      onSizeChange={(next) => sizeValue.set(next)}
+      defaultSize={panel.defaultSize}
+      minSize={panel.minSize}
+      maxSize={panel.maxSize}
+      collapsed={!opened}
+      onCollapsedChange={(collapsed) => openValue.set(!collapsed)}
+      {...REGION_MOTION[panel.region]}
+    >
+      <Component />
+    </ResizablePanel>
+  )
+
+  return panel.region === 'left' ? [content, separator] : [separator, content]
+}
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const loggerOpened = useSubscription(store, {
-    selector: (state) => state.loggerOpened,
-  })
-  const chatOpened = useSubscription(store, {
-    selector: (state) => state.chatOpened,
-  })
-  const navigatorOpened = useSubscription(navigatorOpenValue)
-  const navigatorWidth = useSubscription(navigatorWidthValue)
-  const chatWidth = useSubscription(chatWidthValue)
-  const loggerHeight = useSubscription(loggerHeightValue)
-  const setStore = (
-    patch: { chatOpened: boolean } | { loggerOpened: boolean }
-  ) => store.set((state) => ({ ...state, ...patch }) satisfies typeof state)
+
+  useShellLayout(connectionResource.id)
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
@@ -102,6 +96,9 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
+  const leftPanel = workspaceModules.panelIn('left')
+  const bottomPanel = workspaceModules.panelIn('bottom')
+  const rightPanel = workspaceModules.panelIn('right')
 
   if (fetching.type === 'waiting-for-password') {
     return (
@@ -113,69 +110,37 @@ const ResourcePage = () => {
   }
 
   return (
-    <ResizableGroup orientation="horizontal" className="p-2">
-      <ResizablePanel
-        size={navigatorWidth}
-        onSizeChange={(width) => navigatorWidthValue.set(width)}
-        defaultSize={SIDEBAR_DEFAULT_WIDTH}
-        minSize={SIDEBAR_MIN_WIDTH}
-        className="origin-left"
-        initial={{ scale: 0.85 }}
-        animate={{ scale: 1 }}
-        maxSize={SIDEBAR_MAX_WIDTH}
-        collapsed={!navigatorOpened}
-        onCollapsedChange={(collapsed) => navigatorOpenValue.set(!collapsed)}
-      >
-        <Navigator />
-      </ResizablePanel>
-      <ResizableSeparator aria-label="Resize navigator" />
-      <ResizablePanel className="flex flex-col">
-        <ResizableGroup orientation="vertical">
-          <ResizablePanel className="flex flex-col">
-            <div className={resourcePanelClassName}>
-              <TabBar />
-              <Outlet />
-            </div>
-          </ResizablePanel>
-          <ResizableSeparator aria-label="Resize query logger" />
-          <ResizablePanel
-            size={loggerHeight}
-            onSizeChange={(height) => loggerHeightValue.set(height)}
-            defaultSize={LOGGER_DEFAULT_HEIGHT}
-            minSize={LOGGER_MIN_HEIGHT}
-            maxSize={LOGGER_MAX_HEIGHT}
-            collapsed={!loggerOpened}
-            initial={{ translateY: '100%' }}
-            animate={{ translateY: '0' }}
-            onCollapsedChange={(collapsed) =>
-              setStore({ loggerOpened: !collapsed })
-            }
-          >
-            <div className="flex h-full flex-col pt-1.5">
+    <>
+      {workspaceModules.mounts.map((Mount, index) => (
+        <Mount key={index} />
+      ))}
+      <ResizableGroup orientation="horizontal" className="p-2">
+        {leftPanel && (
+          <RegionPanel panel={leftPanel} resourceId={connectionResource.id} />
+        )}
+        <ResizablePanel className="flex flex-col">
+          <ResizableGroup orientation="vertical">
+            <ResizablePanel className="flex flex-col">
               <div className={resourcePanelClassName}>
-                <Suspense fallback={<QueryLoggerSkeleton />}>
-                  <QueryLogger connectionResource={connectionResource} />
-                </Suspense>
+                {workspaceModules.headers.map((Header, index) => (
+                  <Header key={index} />
+                ))}
+                <Outlet />
               </div>
-            </div>
-          </ResizablePanel>
-        </ResizableGroup>
-      </ResizablePanel>
-      <ResizableSeparator aria-label="Resize chat" />
-      <ResizablePanel
-        size={chatWidth}
-        onSizeChange={(width) => chatWidthValue.set(width)}
-        defaultSize={CHAT_DEFAULT_WIDTH}
-        initial={{ translateX: '100%' }}
-        animate={{ translateX: '0' }}
-        minSize={CHAT_MIN_WIDTH}
-        maxSize={CHAT_MAX_WIDTH}
-        collapsed={!chatOpened}
-        onCollapsedChange={(collapsed) => setStore({ chatOpened: !collapsed })}
-      >
-        <ChatPanel />
-      </ResizablePanel>
-    </ResizableGroup>
+            </ResizablePanel>
+            {bottomPanel && (
+              <RegionPanel
+                panel={bottomPanel}
+                resourceId={connectionResource.id}
+              />
+            )}
+          </ResizableGroup>
+        </ResizablePanel>
+        {rightPanel && (
+          <RegionPanel panel={rightPanel} resourceId={connectionResource.id} />
+        )}
+      </ResizableGroup>
+    </>
   )
 }
 

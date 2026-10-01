@@ -1,12 +1,8 @@
 import {
-  ChartLineData01Icon,
   DashboardSquare01Icon,
-  File01Icon,
-  GitBranchIcon,
   GithubIcon,
   LogoutCircle01Icon,
   Moon02Icon,
-  Settings01Icon,
   Sun03Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -25,25 +21,20 @@ import {
   Link,
   Outlet,
   redirect,
-  useMatches,
   useRouter,
 } from '@tanstack/react-router'
 
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
+import { SidebarLink } from '~/components/sidebar-button'
 import { authClient } from '~/lib/auth'
+import { mainModules } from '~/lib/modules'
 import { orpc } from '~/lib/orpc'
-
-import { SidebarButton } from './-components/sidebar-button'
-import { SupportButton } from './-components/support-button'
 
 const { useLoaderData } = getRouteApi('/account')
 
 const AccountLayout = () => {
   const router = useRouter()
-  const match = useMatches({
-    select: (matches) => matches.map((routeMatch) => routeMatch.routeId).at(-1),
-  })
   const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = useLoaderData()
 
@@ -62,19 +53,9 @@ const AccountLayout = () => {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden gap-1 sm:flex sm:gap-2"
-            render={<Link to="/releases" />}
-          >
-            <HugeiconsIcon
-              icon={GitBranchIcon}
-              strokeWidth={2}
-              className="size-3 sm:size-4"
-            />
-            Releases
-          </Button>
+          {mainModules.headerLinks.map(({ Component }, index) => (
+            <Component key={index} />
+          ))}
           <Button
             variant="ghost"
             size="sm"
@@ -144,51 +125,12 @@ const AccountLayout = () => {
             </div>
           </div>
           <nav className="space-y-1">
-            <SidebarButton
-              active={match === '/account/'}
-              render={<Link to="/account" />}
-            >
-              <HugeiconsIcon
-                icon={DashboardSquare01Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
+            <SidebarLink to="/account" icon={DashboardSquare01Icon}>
               Dashboard
-            </SidebarButton>
-            <SidebarButton
-              active={match === '/account/billing'}
-              render={<Link to="/account/billing" />}
-            >
-              <HugeiconsIcon
-                icon={File01Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
-              Billing & Invoices
-            </SidebarButton>
-            <SidebarButton
-              active={match === '/account/ai-usage'}
-              render={<Link to="/account/ai-usage" />}
-            >
-              <HugeiconsIcon
-                icon={ChartLineData01Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
-              AI Usage
-            </SidebarButton>
-            <SidebarButton
-              active={match === '/account/settings/'}
-              render={<Link to="/account/settings" />}
-            >
-              <HugeiconsIcon
-                icon={Settings01Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
-              Settings
-            </SidebarButton>
-            <SupportButton />
+            </SidebarLink>
+            {mainModules.accountNav.map(({ Component }, index) => (
+              <Component key={index} />
+            ))}
             <Separator className="my-2" />
             <Button
               variant="ghost"

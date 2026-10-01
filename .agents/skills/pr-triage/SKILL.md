@@ -56,6 +56,6 @@ Loop over the trivial paths, using double quotes because paths may contain `$`. 
 Keep the report short:
 - **Marked (n)**: each path with a few words on why it is trivial.
 - **Skim**: the paths grouped by kind, one line per group.
-- **Review order**: core logic first (packages, then entities and state, then routes and UI), each with a one-line summary of what changed. Put a moved file next to its old path.
+- **Review order**: core logic first (packages, then `core/` and state, then modules, routes and UI), each with a one-line summary of what changed. Put a moved file next to its old path.
 
 Ask before marking anything outside the trivial list, e.g. a lockfile.

@@ -1,0 +1,266 @@
+import { NewTwitterIcon, QuoteDownIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@tamery/ui/components/avatar'
+import { Button } from '@tamery/ui/components/button'
+import { cn } from '@tamery/ui/lib/utils'
+import type { ComponentProps } from 'react'
+
+interface TestimonialCardProps extends ComponentProps<'article'> {
+  testimonialId: string
+}
+
+const TestimonialCard = ({
+  className,
+  children,
+  testimonialId,
+  ...props
+}: TestimonialCardProps) => (
+  <article
+    className={cn(
+      `bg-card rounded-2xl border p-4 transition-all duration-300 sm:p-6`,
+      className
+    )}
+    data-testimonial={testimonialId}
+    {...props}
+  >
+    {children}
+  </article>
+)
+
+interface TestimonialProps {
+  name: string
+  login: string
+  avatar: string
+  link: string
+  children: React.ReactNode
+  className?: string
+}
+
+const Testimonial = ({
+  name,
+  login,
+  avatar,
+  link,
+  children,
+  className,
+}: TestimonialProps) => (
+  <a
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="focus-visible:outline-ring/50 block space-y-4 transition-transform sm:space-y-6"
+  >
+    <header
+      className={cn(`mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4`, className)}
+    >
+      <Avatar className="size-10 shrink-0 rounded-full sm:size-12">
+        <AvatarImage src={avatar} alt={name} />
+        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+          {name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-foreground truncate text-sm font-semibold sm:text-base">
+          {name}
+        </h3>
+        <p className="text-muted-foreground text-xs sm:text-sm">@{login}</p>
+      </div>
+    </header>
+    <div className="relative">
+      <HugeiconsIcon
+        icon={QuoteDownIcon}
+        strokeWidth={2}
+        className="text-primary/20 absolute -top-1 -left-1 size-5 sm:-top-2 sm:-left-2 sm:size-6"
+        aria-hidden="true"
+      />
+      <blockquote className="text-foreground pl-3 text-sm/relaxed sm:pl-4 sm:text-base">
+        {children}
+      </blockquote>
+    </div>
+  </a>
+)
+
+const JoinTestimonials = () => (
+  <div className="flex min-h-full items-center justify-center space-y-4 sm:space-y-6">
+    <div className="text-center">
+      <div className="from-primary/20 to-primary/10 mx-auto mb-3 flex size-10 items-center justify-center rounded-xl bg-linear-to-br sm:mb-4 sm:size-12">
+        <HugeiconsIcon
+          icon={NewTwitterIcon}
+          strokeWidth={2}
+          className="text-primary size-5 sm:size-6"
+          aria-hidden="true"
+        />
+      </div>
+      <h3 className="text-foreground mb-2 text-sm font-semibold sm:text-base">
+        Want to be featured here?
+      </h3>
+      <Button
+        render={
+          <a
+            href={SOCIAL_LINKS.TWITTER}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Tag @tamery_app on X"
+          />
+        }
+        variant="link"
+      >
+        Tag @tamery_app on
+        <HugeiconsIcon
+          icon={NewTwitterIcon}
+          strokeWidth={2}
+          className="size-3 sm:size-4"
+          aria-hidden="true"
+        />
+      </Button>
+    </div>
+  </div>
+)
+
+const testimonials: {
+  name: string
+  login: string
+  avatar: string
+  link: string
+  children: () => React.ReactNode
+}[] = [
+  {
+    avatar: '/avatars/steipete.png',
+    children: () => 'Postgres + AI is amazing. @tamery_app',
+    link: 'https://x.com/steipete/status/1961806791404130480',
+    login: 'steipete',
+    name: 'Peter Steinberger',
+  },
+  {
+    avatar: '/avatars/mazeincoding.jpg',
+    children: () => "finally, a database viewer that doesn't suck",
+    link: 'https://x.com/mazeincoding/status/1929612879600181555',
+    login: 'mazeincoding',
+    name: 'Maze',
+  },
+  {
+    avatar: '/avatars/itsnoahd.jpg',
+    children: () =>
+      'HOLY CRAP WHAT??? @tamery_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
+    link: 'https://x.com/itsnoahd/status/1936938123570925802',
+    login: 'itsnoahd',
+    name: 'Noah',
+  },
+  {
+    avatar: '/avatars/anshrathodfr.jpg',
+    children: () => 'omg tried it and love this app!',
+    link: 'https://x.com/anshrathodfr/status/1935670652289347720',
+    login: 'anshrathodfr',
+    name: 'Ansh Rathod',
+  },
+  {
+    avatar: '/avatars/tristanbob.jpg',
+    children: () => 'wow, I love this!',
+    link: 'https://x.com/tristanbob/status/1935675893596434817',
+    login: 'tristanbob',
+    name: 'Tristan Rhodes',
+  },
+  {
+    avatar: '/avatars/lassejlv.png',
+    children: () =>
+      '@tamery_app is the best database viewer i ever used, no cap 🔥',
+    link: 'https://x.com/lassejlv/status/1940734263772828006',
+    login: 'lassejlv',
+    name: 'lasse',
+  },
+  {
+    avatar: '/avatars/dominikdoesdev.jpg',
+    children: () =>
+      "Not gonna lie I was looking for something like @tamery_app a while ago but couldn't find it until now. I think I am in love with this 😍",
+    link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
+    login: 'DominikDoesDev',
+    name: 'Dominik',
+  },
+  {
+    avatar: '/avatars/en3sis.jpg',
+    children: () =>
+      'If you’re reading this, go download @tamery_app now and thank me later! ;)',
+    link: 'https://x.com/en3sis/status/1945158382396010955',
+    login: 'en3sis',
+    name: 'Sorin Curescu',
+  },
+  {
+    avatar: '/avatars/chef_berke.jpg',
+    children: () =>
+      'found my new favorite db tool if you work with postgresql, definitely check this out @tamery_app',
+    link: 'https://x.com/chef_berke/status/1949880848246853733',
+    login: 'chef_berke',
+    name: 'Berke',
+  },
+  {
+    avatar: '/avatars/alex_holovach.jpg',
+    children: () =>
+      'wow I can query data at the speed of thought with @tamery_app',
+    link: 'https://x.com/alex_holovach/status/1950707905440727087',
+    login: 'alex_holovach',
+    name: 'Alex Holovach',
+  },
+  {
+    avatar: '/avatars/izadoesdev.jpg',
+    children: () => 'okay why did nobody tell me how sexy @tamery_app is',
+    link: 'https://x.com/izadoesdev/status/1955604787585802722',
+    login: 'izadoesdev',
+    name: 'Iza',
+  },
+  {
+    avatar: '/avatars/thanaen_dev.jpg',
+    children: () =>
+      "I came for the funny name (I'm French), I stayed for the app! Very practical and pleasant to use @tamery_app",
+    link: 'https://x.com/thanaen_dev/status/2029543137375314054',
+    login: 'thanaen_dev',
+    name: 'Thanaen',
+  },
+]
+
+export const Testimonials = () => (
+  <section
+    aria-labelledby="testimonials-heading"
+    className="py-8 sm:py-12 lg:py-16"
+  >
+    <div className="mb-12 px-4 text-center sm:mb-16">
+      <h2
+        id="testimonials-heading"
+        className="text-muted-foreground mb-3 text-center text-sm font-medium tracking-wide uppercase"
+      >
+        Testimonials
+      </h2>
+      <p className="mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance sm:text-3xl">
+        Loved by developers worldwide
+      </p>
+    </div>
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+      {testimonials.map((testimonial) => (
+        <TestimonialCard
+          key={testimonial.login}
+          testimonialId={testimonial.login}
+        >
+          <Testimonial
+            name={testimonial.name}
+            login={testimonial.login}
+            avatar={testimonial.avatar}
+            link={testimonial.link}
+          >
+            {testimonial.children()}
+          </Testimonial>
+        </TestimonialCard>
+      ))}
+      <TestimonialCard testimonialId="join-us">
+        <JoinTestimonials />
+      </TestimonialCard>
+    </div>
+  </section>
+)
