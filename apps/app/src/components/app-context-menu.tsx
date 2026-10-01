@@ -111,11 +111,11 @@ export const AppMenuButton = ({
   items,
   className,
   contentProps,
-  muted = true,
   render = defaultMenuButton,
+  variant = 'muted',
 }: Pick<AppContextMenuProps, 'items' | 'className' | 'contentProps'> & {
-  muted?: boolean
   render?: ReactElement<HTMLAttributes<HTMLElement>>
+  variant?: 'default' | 'muted'
 }) => {
   const [isNativeOpen, setIsNativeOpen] = useState(false)
   const icon = <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
@@ -123,7 +123,7 @@ export const AppMenuButton = ({
   const trigger = cloneElement(render, {
     'aria-label': 'More actions',
     className: cn(
-      muted && 'text-muted-foreground',
+      variant === 'muted' && 'text-muted-foreground',
       render.props.className,
       className
     ),
