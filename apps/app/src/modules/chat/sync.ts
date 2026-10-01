@@ -29,10 +29,9 @@ export const createChatsCollection = () =>
     persistedCollectionOptions({
       ...syncCollectionOptions<Chat>({
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.chats.events.call(
-            {},
-            { signal }
-          )) {
+          for await (const message of await orpc.chats.events.call(undefined, {
+            signal,
+          })) {
             write(message)
           }
         },
@@ -51,7 +50,7 @@ export const createChatsMessagesCollection = () =>
       ...syncCollectionOptions<ChatMessage>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.chatsMessages.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)
@@ -73,7 +72,7 @@ export const createChatsMessagesPartsCollection = () =>
       ...syncCollectionOptions<ChatMessagePart>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.chatsMessagesParts.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)

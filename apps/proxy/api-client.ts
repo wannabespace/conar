@@ -17,6 +17,7 @@ export const createApiClient = (options: {
         ...(options.cookie ? { cookie: options.cookie } : {}),
         'x-proxy-token': env.PROXY_SHARED_SECRET,
       }),
-      url: `${env.API_URL}/rpc`,
+      origin: env.API_URL,
+      url: '/rpc',
     })
   )

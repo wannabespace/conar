@@ -9,7 +9,7 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
-export type AnyBuilder = BuilderWithMiddlewares<any, any, any, any, any, any>
+export type AnyBuilder = BuilderWithMiddlewares<any, any, any>
 
 type Params<
   T extends AnyFunction,

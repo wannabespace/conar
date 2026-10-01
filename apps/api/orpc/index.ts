@@ -75,9 +75,7 @@ const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   return result
 })
 
-// oRPC Middleware.concat chains middlewares (not Array#concat)
-// oxlint-disable-next-line unicorn/prefer-spread
-export const authMiddleware = logMiddleware.concat(
+export const authMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
 
@@ -96,8 +94,7 @@ export const authMiddleware = logMiddleware.concat(
   })
 )
 
-// oxlint-disable-next-line unicorn/prefer-spread
-export const optionalAuthMiddleware = logMiddleware.concat(
+export const optionalAuthMiddleware = logMiddleware.use(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers).catch(() => null)
 
@@ -114,8 +111,7 @@ export const optionalAuthMiddleware = logMiddleware.concat(
   })
 )
 
-// oxlint-disable-next-line unicorn/prefer-spread
-export const subscriptionMiddleware = logMiddleware.concat(
+export const subscriptionMiddleware = logMiddleware.use(
   sessionOrpc
     .errors({ FORBIDDEN: {} })
     .middleware(async ({ context, errors, next }) => {
@@ -154,8 +150,7 @@ export const subscriptionMiddleware = logMiddleware.concat(
     })
 )
 
-// oxlint-disable-next-line unicorn/prefer-spread
-export const optionalSubscriptionMiddleware = logMiddleware.concat(
+export const optionalSubscriptionMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
 
@@ -178,13 +173,12 @@ export const optionalSubscriptionMiddleware = logMiddleware.concat(
 )
 
 export const cacheMiddleware = (ttl: number = 60 * 60 * 24) =>
-  // oxlint-disable-next-line unicorn/prefer-spread
-  logMiddleware.concat(
-    orpc.middleware(async ({ next, path }, input, output) => {
+  logMiddleware.use(
+    orpc.middleware(async ({ next, path }, input, done) => {
       const cacheKey = path.join('/') + JSON.stringify(input)
       const cached = await redis.get(cacheKey)
       if (cached) {
-        return output(JSON.parse(cached))
+        return done({ output: JSON.parse(cached) })
       }
 
       // oxlint-disable-next-line node/callback-return -- middleware caches after next()

@@ -1,9 +1,18 @@
 import type { MaybePromise } from '@tamery/shared/utils'
 import { Redis } from 'ioredis'
+import { createClient } from 'redis'
 
 import { env } from '~/env'
 
 export const redis = new Redis(env.REDIS_URL)
+// node-redis crashes the process on an unhandled 'error' event; every client needs a listener.
+export const publisherRedis = createClient({ url: env.REDIS_URL }).on(
+  'error',
+  console.error
+)
+export const publisherSubscriber: typeof publisherRedis = publisherRedis
+  .duplicate()
+  .on('error', console.error)
 
 export const redisMemoize = async <T>(
   fn: () => MaybePromise<T>,

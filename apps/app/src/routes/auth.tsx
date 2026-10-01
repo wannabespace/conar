@@ -95,7 +95,7 @@ const AuthPage = () => {
   }
 
   const { data, error, isPending } = useQuery(
-    orpc.account.challenge.listen.experimental_liveOptions({
+    orpc.account.challenge.listen.liveOptions({
       input: codeChallenge ? { codeChallenge } : skipToken,
       throwOnError: false,
     })

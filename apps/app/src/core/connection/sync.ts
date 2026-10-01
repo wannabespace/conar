@@ -61,7 +61,7 @@ export const createConnectionsCollection = (
       ...syncCollectionOptions<Connection>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.connections.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)
@@ -107,7 +107,7 @@ export const createConnectionsResourcesCollection = () =>
       ...syncCollectionOptions<ConnectionResource>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.connectionsResources.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)

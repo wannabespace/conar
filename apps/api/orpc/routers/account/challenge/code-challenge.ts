@@ -1,13 +1,12 @@
-import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
+import { RedisPublisher } from '@orpc/publisher/redis'
 
-import { redis } from '~/lib/redis'
+import { publisherRedis, publisherSubscriber, redis } from '~/lib/redis'
 
-export const codeChallengePublisher = new IORedisPublisher<
+export const codeChallengePublisher = new RedisPublisher<
   Record<string, { ready: boolean }>
->({
-  commander: redis.duplicate(),
-  listener: redis.duplicate(),
+>(publisherRedis, {
   prefix: 'orpc:publisher:code-challenge:',
+  subscriber: publisherSubscriber,
 })
 
 export const codeChallengeRedis = {
