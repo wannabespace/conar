@@ -275,7 +275,6 @@ export const QueryLogger = ({
       onValueChange={(value) =>
         setTab((current) => ({ ...current, value: value as string }))
       }
-      gap="none"
       className={cn('flex h-full min-h-0 flex-col', className)}
     >
       <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-3">

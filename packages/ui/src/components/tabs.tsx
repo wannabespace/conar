@@ -7,15 +7,13 @@ import { tabsListVariants } from './tabs.utils'
 const Tabs = ({
   className,
   orientation = 'horizontal',
-  gap = 'default',
   ...props
-}: TabsPrimitive.Root.Props & { gap?: 'default' | 'none' }) => (
+}: TabsPrimitive.Root.Props) => (
   <TabsPrimitive.Root
     data-slot="tabs"
     data-orientation={orientation}
     className={cn(
       `group/tabs flex data-[orientation=horizontal]:flex-col`,
-      gap === 'default' && 'gap-2',
       className
     )}
     {...props}

@@ -22,7 +22,7 @@ export const TableCellReferences = ({
     references.some((reference) => reference.schema !== firstSchema)
 
   return (
-    <Tabs defaultValue={references?.[0]?.name} gap="none" className="size-full">
+    <Tabs defaultValue={references?.[0]?.name} className="size-full">
       <ScrollArea className="bg-muted/50">
         <TabsList variant="ghost" className="h-8 w-full justify-start">
           {references.map((reference) => (

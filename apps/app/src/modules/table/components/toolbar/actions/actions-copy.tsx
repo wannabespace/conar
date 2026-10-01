@@ -178,7 +178,6 @@ export const ActionsCopy = ({
         <Tabs
           value={format.type}
           onValueChange={setFormatType}
-          gap="none"
           className="min-h-0 flex-1"
         >
           <TabsList variant="bar" className="shrink-0 after:hidden">
