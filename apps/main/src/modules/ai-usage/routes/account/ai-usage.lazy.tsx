@@ -85,16 +85,18 @@ const RouteComponent = () => {
               </Button>
             }
           />
-          <PopoverContent align="end" padding="none" className="w-auto">
-            <div className="p-2">
-              <Calendar
-                autoFocus
-                mode="range"
-                numberOfMonths={2}
-                onSelect={setRange}
-                selected={range}
-              />
-            </div>
+          <PopoverContent
+            align="end"
+            // oxlint-disable-next-line shadcn/no-restyle -- the range calendar takes a tighter inset than the form padding
+            className="w-auto gap-2 p-2"
+          >
+            <Calendar
+              autoFocus
+              mode="range"
+              numberOfMonths={2}
+              onSelect={setRange}
+              selected={range}
+            />
           </PopoverContent>
         </Popover>
       </div>

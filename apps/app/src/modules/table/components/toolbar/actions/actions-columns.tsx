@@ -75,8 +75,8 @@ export const ActionsColumns = () => {
         </TooltipContent>
       </Tooltip>
       <PopoverContent
-        padding="none"
-        className="w-2xs"
+        // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
+        className="w-2xs gap-0 p-0"
         side="bottom"
         align="end"
       >
