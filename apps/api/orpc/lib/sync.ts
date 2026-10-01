@@ -1,9 +1,9 @@
-import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
-import { eventIterator } from '@orpc/server'
+import { RedisPublisher } from '@orpc/publisher/redis'
+import { asyncIteratorObject } from '@orpc/server'
 import type { Type } from 'arktype'
 import { type } from 'arktype'
 
-import { redis } from '~/lib/redis'
+import { redis, redisSubscriber } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 
 // Overload signatures require function declarations (func-style exception).
@@ -30,10 +30,9 @@ export const createSyncPublisher = <
   _output: T,
   prefix: string
 ) =>
-  new IORedisPublisher<Record<string, T['inferIn']>>({
-    commander: redis.duplicate(),
-    listener: redis.duplicate(),
+  new RedisPublisher<Record<string, T['inferIn']>>(redis, {
     prefix,
+    subscriber: redisSubscriber,
   })
 
 export const syncDiff = async <TItem>(opts: {
@@ -66,7 +65,7 @@ export const createEventsEndpoint = <
 ) =>
   orpc
     .use(authMiddleware)
-    .output(eventIterator(output))
+    .output(asyncIteratorObject(output))
     .handler(async function* eventsHandler({ context, signal, lastEventId }) {
       for await (const payload of publisher.subscribe(context.user.id, {
         lastEventId,

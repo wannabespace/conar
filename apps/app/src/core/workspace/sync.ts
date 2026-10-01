@@ -19,7 +19,7 @@ export const createWorkspacesCollection = () =>
       ...syncCollectionOptions<Workspace>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.workspaces.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)

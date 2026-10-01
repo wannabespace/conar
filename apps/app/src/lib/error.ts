@@ -1,5 +1,4 @@
-import { ORPCError } from '@orpc/client'
-import type { CommonORPCErrorCode } from '@orpc/client'
+import { COMMON_ERROR_STATUS_MAP, ORPCError } from '@orpc/client'
 import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
@@ -13,8 +12,7 @@ const getErrorMessage = (error: unknown) =>
   'Our server is practicing its meditation. Please, try again later.'
 
 export const isUnauthorizedError = (error: unknown) =>
-  error instanceof ORPCError &&
-  error.code === ('UNAUTHORIZED' satisfies CommonORPCErrorCode)
+  error instanceof ORPCError && error.code === 'UNAUTHORIZED'
 
 const isSessionExpiredError = (error: unknown) =>
   (typeof error === 'object' &&
@@ -24,6 +22,17 @@ const isSessionExpiredError = (error: unknown) =>
     error.status === 401 &&
     error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
   isUnauthorizedError(error)
+
+const errorStatus: Record<string, number | undefined> = COMMON_ERROR_STATUS_MAP
+
+const isServerError = (error: unknown) =>
+  error instanceof ORPCError
+    ? (errorStatus[error.code] ?? 500) >= 500
+    : typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      typeof error.status === 'number' &&
+      error.status >= 500
 
 export const handleError = async (
   error: unknown,
@@ -65,10 +74,7 @@ export const handleError = async (
   const message = getErrorMessage(error)
 
   toast.error(
-    typeof error === 'object' &&
-      'status' in error &&
-      typeof error.status === 'number' &&
-      error.status >= 500
+    isServerError(error)
       ? 'Something went wrong with our server. You can continue working, but some features may not work as expected.'
       : message,
     { id: `error-${message}` }

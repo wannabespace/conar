@@ -1,9 +1,16 @@
 import type { MaybePromise } from '@tamery/shared/utils'
-import { Redis } from 'ioredis'
+import { createClient } from 'redis'
 
 import { env } from '~/env'
 
-export const redis = new Redis(env.REDIS_URL)
+export const redis = createClient({ url: env.REDIS_URL }).on(
+  'error',
+  console.error
+)
+export const redisSubscriber: typeof redis = redis
+  .duplicate()
+  .on('error', console.error)
+await redis.connect()
 
 export const redisMemoize = async <T>(
   fn: () => MaybePromise<T>,
@@ -16,6 +23,6 @@ export const redisMemoize = async <T>(
   }
 
   const data = await fn()
-  await redis.setex(key, ttl, JSON.stringify(data === undefined ? null : data))
+  await redis.setEx(key, ttl, JSON.stringify(data === undefined ? null : data))
   return data
 }

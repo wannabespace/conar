@@ -1,13 +1,12 @@
-import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
+import { RedisPublisher } from '@orpc/publisher/redis'
 
-import { redis } from '~/lib/redis'
+import { redis, redisSubscriber } from '~/lib/redis'
 
-export const codeChallengePublisher = new IORedisPublisher<
+export const codeChallengePublisher = new RedisPublisher<
   Record<string, { ready: boolean }>
->({
-  commander: redis.duplicate(),
-  listener: redis.duplicate(),
+>(redis, {
   prefix: 'orpc:publisher:code-challenge:',
+  subscriber: redisSubscriber,
 })
 
 export const codeChallengeRedis = {
@@ -24,6 +23,6 @@ export const codeChallengeRedis = {
     codeChallenge: string,
     value: { userId: string; newUser?: boolean }
   ) => {
-    await redis.setex(codeChallenge, 60 * 5, JSON.stringify(value))
+    await redis.setEx(codeChallenge, 60 * 5, JSON.stringify(value))
   },
 }

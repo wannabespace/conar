@@ -13,6 +13,7 @@ export const orpc = createORPCClient<ORPCRouter>(
         Authorization: token ? `Bearer ${token}` : undefined,
       }
     },
-    url: `${import.meta.env.API_URL}/rpc`,
+    origin: import.meta.env.API_URL,
+    url: '/rpc',
   })
 )

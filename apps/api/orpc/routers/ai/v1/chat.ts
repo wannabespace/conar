@@ -2,7 +2,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { webSearch } from '@exalabs/ai-sdk'
-import { ORPCError, streamToEventIterator } from '@orpc/server'
+import { ORPCError, streamToAsyncIteratorObject } from '@orpc/server'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { FILTER_OPERATORS } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
@@ -259,5 +259,5 @@ export const chat = orpc
       stream: result.stream,
     })
 
-    return streamToEventIterator(stream)
+    return streamToAsyncIteratorObject(stream)
   })

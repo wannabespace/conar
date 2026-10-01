@@ -18,7 +18,7 @@ export const createQueriesCollection = () =>
       ...syncCollectionOptions<Query>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.queries.events.call(
-            {},
+            undefined,
             { signal }
           )) {
             write(message)

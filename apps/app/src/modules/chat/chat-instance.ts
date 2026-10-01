@@ -1,5 +1,5 @@
 import { Chat } from '@ai-sdk/react'
-import { eventIteratorToStream } from '@orpc/client'
+import { asyncIteratorToStream } from '@orpc/client'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { memoize } from 'memoza'
 import { v7 } from 'uuid'
@@ -21,7 +21,7 @@ export const getChatInstance = memoize(
           if (first.done) {
             return null
           }
-          return eventIteratorToStream(
+          return asyncIteratorToStream(
             (async function* reconnectToStream() {
               yield first.value
               yield* chunks
@@ -29,7 +29,7 @@ export const getChatInstance = memoize(
           )
         },
         sendMessages: async ({ abortSignal, messages }) =>
-          eventIteratorToStream(
+          asyncIteratorToStream(
             await orpc.ai.stream.call(
               {
                 chatId: data.chatId,
