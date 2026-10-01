@@ -81,10 +81,9 @@ export const ChatInput = ({
             <TooltipTrigger
               render={
                 <InputGroupButton
-                  size="icon-xs"
+                  size="icon-round"
                   variant="default"
                   aria-label={isStreaming ? 'Stop generating' : 'Send message'}
-                  className="rounded-full"
                   {...(isStreaming
                     ? { onClick: onStop }
                     : { disabled: !value.trim(), type: 'submit' })}

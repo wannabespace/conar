@@ -123,6 +123,7 @@ const TableStats = ({
         <Button
           variant="outline"
           disabled={!canRequestExact}
+          // oxlint-disable-next-line shadcn/no-restyle -- toolbar counters share one compact shape
           className="gap-1.5 px-2.5 disabled:opacity-100"
           onClick={onRequestExact}
         >

@@ -47,7 +47,13 @@ export const ActionsColumns = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={<Button variant="outline" className="gap-1.5 px-2.5" />}
+              render={
+                <Button
+                  variant="outline"
+                  // oxlint-disable-next-line shadcn/no-restyle -- toolbar counters share one compact shape
+                  className="gap-1.5 px-2.5"
+                />
+              }
             />
           }
         >
@@ -74,7 +80,12 @@ export const ActionsColumns = () => {
               : `${columns.length} column${columns.length === 1 ? '' : 's'}`)}
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-2xs gap-0 p-0" side="bottom" align="end">
+      <PopoverContent
+        // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
+        className="w-2xs gap-0 p-0"
+        side="bottom"
+        align="end"
+      >
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">

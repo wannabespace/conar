@@ -214,7 +214,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
           </Link>
         </p>
       </div>
-      <Form className="space-y-4" form={form}>
+      <Form form={form}>
         <FieldSet className="w-full">
           <form.AppField name="email">
             {(field) => (
@@ -254,9 +254,8 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
                   <field.Label>Password</field.Label>
                   {authType === 'sign-in' && (
                     <Button
-                      variant="link"
+                      variant="link-muted"
                       size="xs"
-                      className="text-muted-foreground hover:text-foreground"
                       render={<Link to="/forgot-password" />}
                     >
                       Forgot password?

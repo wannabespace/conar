@@ -418,12 +418,12 @@ const FunctionInspector = ({
 }
 
 const columns: DefinitionsColumn<FunctionItem>[] = [
-  nameColumn({ icon: () => SourceCodeIcon, width: 'w-3/12' }),
+  nameColumn({ icon: () => SourceCodeIcon, width: '3/12' }),
   labelColumn({
     header: 'Language',
     labelOf: (item: FunctionItem, { search }) =>
       item.language && <HighlightText text={item.language} match={search} />,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   textColumn({
     header: 'Returns',
@@ -432,13 +432,13 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
   textColumn({
     header: 'Arguments',
     valueOf: (item: FunctionItem) => item.args,
-    width: 'w-3/12',
+    width: '3/12',
   }),
   labelColumn({
     align: 'end',
     header: 'Type',
     labelOf: (item: FunctionItem) => typeLabels[item.type],
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 

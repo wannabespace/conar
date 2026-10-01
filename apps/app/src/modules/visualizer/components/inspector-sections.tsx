@@ -116,10 +116,9 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
                 <TooltipTrigger
                   render={
                     <Button
-                      variant="ghost"
+                      variant="ghost-muted"
                       size="icon-xs"
                       aria-label="Show relation on canvas"
-                      className="text-muted-foreground"
                       onClick={() => actions.focusRelation(relation)}
                     />
                   }
@@ -128,7 +127,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
                 </TooltipTrigger>
                 <TooltipContent side="left">Show on canvas</TooltipContent>
               </Tooltip>
-              {menu && <AppMenuButton items={menu} />}
+              {menu && <AppMenuButton variant="muted" items={menu} />}
             </>
           )
 

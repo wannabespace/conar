@@ -137,9 +137,7 @@ export const UserButton = ({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-muted-foreground">
-            Theme
-          </DropdownMenuLabel>
+          <DropdownMenuLabel>Theme</DropdownMenuLabel>
           {THEME_OPTIONS.map((option) => (
             <DropdownMenuItem
               key={option.value}
@@ -164,16 +162,15 @@ export const UserButton = ({
           Sign out
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <div className="flex items-center gap-1 px-1 py-0.5">
+        <div className="text-muted-foreground flex items-center gap-1 px-1 py-0.5">
           {SOCIAL_ROWS.map((social) => (
             <Tooltip key={social.label}>
               <TooltipTrigger
                 render={
                   <Button
-                    variant="ghost"
+                    variant="ghost-tint"
                     size="icon-xs"
                     aria-label={social.label}
-                    className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                     onClick={() => window.open(social.href, '_blank')}
                   />
                 }

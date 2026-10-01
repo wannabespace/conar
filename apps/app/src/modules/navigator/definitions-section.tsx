@@ -52,7 +52,6 @@ export const DefinitionsPanel = () => {
           <InputGroupInput
             data-mask
             placeholder="Search"
-            className="text-sm"
             aria-label="Search definitions"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -67,7 +66,7 @@ export const DefinitionsPanel = () => {
         )}
         {filtered.map((group) => (
           <SidebarMenu key={group.label}>
-            <SidebarGroupLabel className="text-muted-foreground h-6 px-2 text-xs font-[450]">
+            <SidebarGroupLabel className="text-muted-foreground font-row h-6 px-2 text-xs">
               {group.label}
             </SidebarGroupLabel>
             {group.items.map(({ icon, label, tabId }) => {

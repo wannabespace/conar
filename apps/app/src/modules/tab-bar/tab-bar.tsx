@@ -189,8 +189,7 @@ export const TabBar = ({ className }: { className?: string }) => {
               <TooltipTrigger
                 render={
                   <Button
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-foreground"
+                    variant="ghost-muted"
                     size="icon-xs"
                     aria-label="Toggle sidebar"
                     onClick={toggleLeftPanel}

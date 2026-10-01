@@ -46,15 +46,7 @@ export const RunHistoryButton = () => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
-          />
-        }
-      >
+      <PopoverTrigger render={<Button variant="ghost-muted" size="sm" />}>
         <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
         History
       </PopoverTrigger>

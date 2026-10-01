@@ -35,7 +35,6 @@ export const StepType = ({
             key={connectionType}
             variant={type === connectionType ? 'default' : 'outline'}
             onClick={() => setType(connectionType)}
-            className="flex items-center gap-2 px-4 py-2"
           >
             <ConnectionIcon
               type={connectionType}
@@ -44,11 +43,7 @@ export const StepType = ({
             {connectionLabels[connectionType]}
           </Button>
         ))}
-        <Button
-          variant="outline"
-          disabled
-          className="flex items-center gap-2 px-4 py-2 opacity-60"
-        >
+        <Button variant="outline" disabled>
           <MongoIcon />
           MongoDB (soon)
         </Button>

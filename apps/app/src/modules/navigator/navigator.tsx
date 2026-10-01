@@ -29,7 +29,6 @@ import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
-import { sidebarActionRowClassName } from './primitives'
 import { getNavigatorStore, navigatorStore } from './stores'
 import { TablesList } from './tables-list'
 
@@ -64,7 +63,6 @@ const TablesPanel = ({
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search"
-            className="text-sm"
             value={search}
             onChange={(e) =>
               store.set(
@@ -81,9 +79,8 @@ const TablesPanel = ({
           <TooltipTrigger
             render={
               <RefreshButton
-                variant="outline"
+                variant="outline-muted"
                 size="icon-sm"
-                className="text-muted-foreground"
                 onClick={() => refetchTablesAndSchemas()}
                 refreshing={isRefreshingTablesAndSchemas}
               />
@@ -122,7 +119,8 @@ const NavigatorFooter = () => {
           key={action.label}
           variant="ghost-row"
           size="sm"
-          className={sidebarActionRowClassName}
+          // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
+          className="h-7 w-full justify-start gap-2 rounded-md px-2"
           {...pressNavProps(() =>
             router.navigate({
               params: {
@@ -145,7 +143,8 @@ const NavigatorFooter = () => {
         variant="ghost-row"
         size="sm"
         disabled
-        className={sidebarActionRowClassName}
+        // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
+        className="h-7 w-full justify-start gap-2 rounded-md px-2"
       >
         <HugeiconsIcon
           icon={Settings02Icon}

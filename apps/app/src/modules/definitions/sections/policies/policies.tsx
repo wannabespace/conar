@@ -72,12 +72,12 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
   textColumn({
     header: 'Table',
     valueOf: (item: PolicyItem) => item.table,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   labelColumn({
     header: 'Command',
     labelOf: (item: PolicyItem) => item.command,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   labelColumn({
     header: 'Roles',
@@ -86,13 +86,13 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
         <HighlightText text={item.roles.join(', ')} match={search} />
       </span>
     ),
-    width: 'w-2/12',
+    width: '2/12',
   }),
   labelColumn({
     align: 'end',
     header: 'Type',
     labelOf: (item: PolicyItem) => kindLabels[item.type],
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 
@@ -117,7 +117,7 @@ const predicateColumns: DefinitionsColumn<PolicyItem>[] = [
   textColumn({
     header: 'Tables',
     valueOf: (item: PolicyItem) => item.table,
-    width: 'w-3/12',
+    width: '3/12',
   }),
 ]
 

@@ -61,7 +61,7 @@ const MainLayout = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
       >
-        <TextHoverEffect className="tracking-tighter" text="Tamery" />
+        <TextHoverEffect text="Tamery" />
       </motion.div>
     </motion.div>
   )

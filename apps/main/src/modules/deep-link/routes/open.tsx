@@ -56,28 +56,30 @@ const OpenPageContent = () => {
         <CardHeader>
           <CardTitle>Opening Tamery</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
-          <p>{getOpenMessage(clientType)}</p>
-          <div className="flex">
-            {data ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                render={<Link to="/account" />}
-              >
-                Go to Account
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                render={<Link to="/sign-in" />}
-              >
-                Sign in
-              </Button>
-            )}
+        <CardContent>
+          <div className="flex flex-col gap-6">
+            <p>{getOpenMessage(clientType)}</p>
+            <div className="flex">
+              {data ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  render={<Link to="/account" />}
+                >
+                  Go to Account
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  render={<Link to="/sign-in" />}
+                >
+                  Sign in
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -111,29 +113,31 @@ const AuthSuccessCard = ({
     <CardHeader>
       <CardTitle>Authentication successful</CardTitle>
     </CardHeader>
-    <CardContent className="flex flex-col gap-6">
-      <p>
-        You have successfully signed in. You can now close this tab and return
-        to the Tamery desktop app.
-      </p>
-      <div className="flex flex-col gap-4">
-        <p className="text-muted-foreground text-sm">
-          If the app didn&apos;t open automatically, use the button below to
-          copy the connection URL.
+    <CardContent>
+      <div className="flex flex-col gap-6">
+        <p>
+          You have successfully signed in. You can now close this tab and return
+          to the Tamery desktop app.
         </p>
-        <div className="flex">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCopyUrl(token, codeChallenge, newUser)}
-            className="w-full"
-          >
-            Copy auth URL
-          </Button>
+        <div className="flex flex-col gap-4">
+          <p className="text-muted-foreground text-sm">
+            If the app didn&apos;t open automatically, use the button below to
+            copy the connection URL.
+          </p>
+          <div className="flex">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCopyUrl(token, codeChallenge, newUser)}
+              className="w-full"
+            >
+              Copy auth URL
+            </Button>
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Paste this URL in the desktop app to continue.
+          </p>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Paste this URL in the desktop app to continue.
-        </p>
       </div>
     </CardContent>
   </>

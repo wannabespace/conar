@@ -93,6 +93,7 @@ export const SchemaRow = ({
         </span>
       </SidebarGroupLabel>
       <AppMenuButton
+        variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
         render={

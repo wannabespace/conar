@@ -23,7 +23,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
-import type { RefObject } from 'react'
+import type { CSSProperties, RefObject } from 'react'
 
 import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
@@ -160,18 +160,25 @@ export const StatementControls = ({
     <>
       {anchor.suggestion && !suggestionHere && (
         <div
-          className="absolute"
-          style={{
-            left: anchor.suggestion.left + RUN_SLOT_GAP,
-            top: anchor.suggestion.top,
-          }}
+          className="absolute top-(--top) left-(--left)"
+          style={
+            {
+              '--left': `${anchor.suggestion.left + RUN_SLOT_GAP}px`,
+              '--top': `${anchor.suggestion.top}px`,
+            } as CSSProperties
+          }
         >
           <SuggestionControls editorRef={editorRef} />
         </div>
       )}
       <div
-        className="absolute flex gap-1.5"
-        style={{ left: anchor.left + RUN_SLOT_GAP, top: anchor.top }}
+        className="absolute top-(--top) left-(--left) flex gap-1.5"
+        style={
+          {
+            '--left': `${anchor.left + RUN_SLOT_GAP}px`,
+            '--top': `${anchor.top}px`,
+          } as CSSProperties
+        }
       >
         {anchor.suggestion && suggestionHere && (
           <SuggestionControls editorRef={editorRef} />
@@ -228,7 +235,6 @@ export const StatementControls = ({
                   }
                 />
               }
-              className="text-foreground"
               contentProps={{
                 align: 'start',
                 finalFocus: () => editorRef.current?.focus(),

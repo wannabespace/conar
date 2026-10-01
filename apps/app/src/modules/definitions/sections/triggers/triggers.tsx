@@ -32,23 +32,23 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
     after: (item: TriggerItem) =>
       item.enabled === false && <Badge variant="destructive">Disabled</Badge>,
     icon: () => FlashIcon,
-    width: 'w-3/12',
+    width: '3/12',
   }),
   textColumn({
     header: 'Table',
     valueOf: (item: TriggerItem) => item.table,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   labelColumn({
     header: 'Timing',
     labelOf: (item: TriggerItem) => sentenceCase(item.timing),
-    width: 'w-2/12',
+    width: '2/12',
   }),
   labelColumn({
     header: 'Event',
     labelOf: (item: TriggerItem) =>
       item.event.split(' OR ').map(sentenceCase).join(', '),
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 

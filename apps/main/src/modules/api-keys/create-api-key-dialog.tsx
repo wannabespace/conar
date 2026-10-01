@@ -128,7 +128,7 @@ export const CreateApiKeyDialog = ({
             </DialogDescription>
           </DialogHeader>
           <div>
-            <Form id="create-api-key-form" className="space-y-4" form={form}>
+            <Form id="create-api-key-form" form={form}>
               <FieldSet className="w-full">
                 <form.AppField
                   name="name"
@@ -221,10 +221,11 @@ export const CreateApiKeyDialog = ({
           </DialogHeader>
           <div>
             {createdKey && (
-              <InputGroup className="font-mono text-xs shadow-none">
+              <InputGroup>
                 <InputGroupInput
                   readOnly
                   value={createdKey.key}
+                  // oxlint-disable-next-line shadcn/no-restyle -- an API key reads as code
                   className="min-w-0 overflow-x-auto font-mono text-xs"
                 />
                 <InputGroupAddon align="inline-end">

@@ -37,7 +37,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
@@ -147,8 +146,8 @@ const ApiKeysContent = ({
         {isPending && <ApiKeysSkeletonRows />}
         {apiKeys.map((key) => (
           <TableRow key={key.id}>
-            <TableCell className="font-medium">
-              {key.name || 'Untitled key'}
+            <TableCell>
+              <span className="font-medium">{key.name || 'Untitled key'}</span>
             </TableCell>
             <TableCell>
               {key.createdAt ? (
@@ -166,14 +165,14 @@ const ApiKeysContent = ({
                 'Unknown'
               )}
             </TableCell>
-            <TableCell
-              className={cn(!key.lastRequest && `text-muted-foreground`)}
-            >
-              {key.lastRequest
-                ? formatDistanceToNow(new Date(key.lastRequest), {
-                    addSuffix: true,
-                  })
-                : 'Never'}
+            <TableCell>
+              {key.lastRequest ? (
+                formatDistanceToNow(new Date(key.lastRequest), {
+                  addSuffix: true,
+                })
+              ) : (
+                <span className="text-muted-foreground">Never</span>
+              )}
             </TableCell>
             <TableCell>
               <Badge variant="outline">
@@ -312,15 +311,15 @@ const RouteComponent = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center">
             Your API keys
-            {isFetching && <Spinner className="size-4" />}
+            {isFetching && <Spinner className="ml-2 size-4" />}
           </CardTitle>
           <CardDescription>
             Revoke any key that is no longer in use.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <ApiKeysContent
             apiKeys={apiKeys}
             createDialogRef={createDialogRef}

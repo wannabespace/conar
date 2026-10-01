@@ -142,6 +142,7 @@ export const SqlField = ({
   <Labelled description={description} label={label}>
     <FieldTextarea
       data-mask
+      // oxlint-disable-next-line shadcn/no-restyle -- SQL reads as code
       className="font-mono"
       spellCheck={false}
       {...textarea}

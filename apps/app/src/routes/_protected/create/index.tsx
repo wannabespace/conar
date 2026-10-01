@@ -237,19 +237,18 @@ const CreateConnectionPage = () => {
   const canSaveInCloud = !!url && canSend
 
   return (
-    <ScrollArea className="py-24">
+    <ScrollArea>
       <form
         onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
-        className="mx-auto flex w-full max-w-2xl flex-col px-6 py-10"
+        className="mx-auto flex w-full max-w-2xl flex-col px-6 py-34"
       >
         <div className="mb-6 flex w-full items-center gap-2">
           <Button
             type="button"
-            variant="link"
-            className="text-muted-foreground hover:text-foreground"
+            variant="link-muted"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon

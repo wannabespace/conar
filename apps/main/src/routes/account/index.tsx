@@ -61,11 +61,11 @@ const RouteComponent = () => {
     <>
       {isSuccess && (
         <Alert variant="success" className="mb-6">
-          <AlertTitle className="flex items-center gap-2">
+          <AlertTitle className="flex items-center">
             <HugeiconsIcon
               icon={FavouriteIcon}
               strokeWidth={2}
-              className="size-4"
+              className="mr-2 size-4"
             />
             Subscription upgraded successfully!
           </AlertTitle>

@@ -137,7 +137,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
                 checked={cascade}
                 onCheckedChange={() => setCascade(!cascade)}
               />
-              <Label htmlFor="cascade" className="font-normal">
+              <Label htmlFor="cascade" variant="checkbox">
                 Drop tables that depend on this table (CASCADE)
               </Label>
             </div>

@@ -40,6 +40,7 @@ import { TableNodeView } from './table-node'
 const nodeTypes = { table: TableNodeView }
 const edgeTypes = { relation: RelationEdgeView }
 
+/* oxlint-disable shadcn/no-inline-styles -- xyflow reads its theme only from these vars */
 const flowStyle = {
   '--xy-attribution-background-color-default': 'transparent',
   '--xy-background-pattern-dots-color-default': 'var(--color-border)',
@@ -56,6 +57,7 @@ const flowStyle = {
   '--xy-minimap-node-background-color-default':
     'color-mix(in oklch, var(--color-foreground) 35%, transparent)',
 } as CSSProperties
+/* oxlint-enable shadcn/no-inline-styles */
 
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5

@@ -53,31 +53,24 @@ export const TableError = ({ error }: { error: Error }) => {
         transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         className="pointer-events-auto flex min-w-0 flex-1"
       >
-        <Empty className="p-4 md:p-4">
-          <EmptyHeader className="max-w-md gap-1">
-            <EmptyMedia
-              variant="icon"
-              className="bg-destructive/10 text-destructive mb-3 size-14 rounded-2xl [&_svg]:size-7"
-            >
+        <Empty size="sm">
+          <EmptyHeader className="max-w-md">
+            <EmptyMedia variant="destructive">
               <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
             </EmptyMedia>
-            <EmptyTitle className="text-sm font-medium tracking-normal">
-              Query failed
-            </EmptyTitle>
-            <EmptyDescription
-              data-mask
-              className="font-mono text-xs wrap-break-word select-text"
-            >
-              {summary}
+            <EmptyTitle>Query failed</EmptyTitle>
+            <EmptyDescription className="wrap-break-word select-text">
+              <span data-mask className="font-mono">
+                {summary}
+              </span>
             </EmptyDescription>
           </EmptyHeader>
 
           {hasDetails && (
-            <EmptyContent className="max-w-lg gap-2">
+            <EmptyContent className="max-w-lg">
               <Button
-                variant="ghost"
+                variant="ghost-muted"
                 size="xs"
-                className="text-muted-foreground"
                 onClick={() => setShowDetails((prev) => !prev)}
               >
                 {showDetails ? 'Hide details' : 'Show details'}

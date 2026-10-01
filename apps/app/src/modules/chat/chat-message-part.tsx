@@ -29,7 +29,7 @@ const Disclosure = ({
   status?: React.ReactNode
 }) => (
   <Collapsible>
-    <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors">
+    <CollapsibleTrigger variant="disclosure" className="group">
       <HugeiconsIcon
         icon={ArrowRight01Icon}
         strokeWidth={2}
@@ -39,7 +39,7 @@ const Disclosure = ({
       <span className="truncate">{label}</span>
       {status}
     </CollapsibleTrigger>
-    <CollapsibleContent className="mt-1 ml-1.5 border-l pl-3">
+    <CollapsibleContent variant="disclosure" className="mt-1 ml-1.5">
       {children}
     </CollapsibleContent>
   </Collapsible>
@@ -86,7 +86,9 @@ export const MessagePart = ({ part }: { part: AppMessagePart }) => {
     case 'reasoning': {
       return part.text.trim() ? (
         <Disclosure icon={BrainIcon} label="Reasoning">
-          <Response className="text-muted-foreground">{part.text}</Response>
+          <div className="text-muted-foreground">
+            <Response>{part.text}</Response>
+          </div>
         </Disclosure>
       ) : null
     }

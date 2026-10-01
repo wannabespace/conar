@@ -55,15 +55,17 @@ export const ConnectionIconWithVersion = ({
 
       <TooltipContent
         side="left"
-        className="pointer-events-auto flex items-center gap-1"
+        className="pointer-events-auto"
         sideOffset={10}
       >
-        <span className="opacity-50">Version: </span>
-        <VersionTooltipContent
-          canSend={canSend}
-          isVersionPending={isVersionPending}
-          version={version}
-        />
+        <span className="flex items-center gap-1">
+          <span className="opacity-50">Version: </span>
+          <VersionTooltipContent
+            canSend={canSend}
+            isVersionPending={isVersionPending}
+            version={version}
+          />
+        </span>
       </TooltipContent>
     </Tooltip>
   )

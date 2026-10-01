@@ -165,12 +165,16 @@ export const ConnectionCard = ({
       <AppContextMenu
         items={items}
         contentProps={{ className: 'min-w-44' }}
-        className={cn(
-          'group relative flex h-9 items-center gap-3 pr-2 pl-3',
-          selectedResource &&
-            canOpenResource &&
-            'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
-        )}
+        render={
+          <div
+            className={cn(
+              'group relative flex h-9 items-center gap-3 pr-2 pl-3 select-none',
+              selectedResource &&
+                canOpenResource &&
+                'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
+            )}
+          />
+        }
       >
         {selectedResource && canOpenResource && (
           <ConnectionResourceLink
@@ -215,6 +219,7 @@ export const ConnectionCard = ({
           selectedResourceName={selectedResourceName}
         />
         <AppMenuButton
+          variant="muted"
           items={items}
           contentProps={{ className: 'min-w-44' }}
           render={<Button variant="ghost-row" size="icon-xs" />}

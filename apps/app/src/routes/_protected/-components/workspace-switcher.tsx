@@ -74,6 +74,7 @@ export const WorkspaceSwitcher = () => {
               variant="ghost"
               size="sm"
               aria-label="Switch workspace"
+              // oxlint-disable-next-line shadcn/no-restyle -- title-bar pickers sit tighter than a toolbar button
               className="max-w-56 gap-1.5 px-2"
             />
           }

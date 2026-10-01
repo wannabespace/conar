@@ -38,7 +38,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                   className="text-destructive size-8"
                 />
               </div>
-              <CardTitle className="text-xl">Something went wrong</CardTitle>
+              <CardTitle>Something went wrong</CardTitle>
               <CardDescription>
                 An error occurred while rendering this page
               </CardDescription>
@@ -77,7 +77,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 </ScrollArea>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between gap-2">
+            <CardFooter>
               <Button
                 variant="outline"
                 className="flex-1"
@@ -87,7 +87,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 Go back
               </Button>
               <Button
-                className="flex-1"
+                className="ml-2 flex-1"
                 onClick={() => window.location.reload()}
               >
                 <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />

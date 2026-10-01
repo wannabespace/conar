@@ -8,11 +8,13 @@ export interface CellContext {
   search: string
 }
 
+export type ColumnWidth = '2/12' | '3/12' | '4/12'
+
 export interface DefinitionsColumn<T> {
   align?: 'end'
   cell: (item: T, context: CellContext) => ReactNode
   header: string
-  width?: string
+  width?: ColumnWidth
 }
 
 export const nameColumn = <T extends { name: string }>({
@@ -22,7 +24,7 @@ export const nameColumn = <T extends { name: string }>({
 }: {
   after?: (item: T) => ReactNode
   icon: (item: T) => IconSvgElement
-  width: string
+  width: ColumnWidth
 }): DefinitionsColumn<T> => ({
   cell: (item, { search }) => (
     <span data-mask className="flex min-w-0 items-center gap-2">
@@ -48,7 +50,7 @@ export const textColumn = <T,>({
 }: {
   header: string
   valueOf: (item: T) => string | null | undefined
-  width?: string
+  width?: ColumnWidth
 }): DefinitionsColumn<T> => ({
   cell: (item, { search }) => (
     <span data-mask>
@@ -68,7 +70,7 @@ export const labelColumn = <T,>({
   align?: 'end'
   header: string
   labelOf: (item: T, context: CellContext) => ReactNode
-  width?: string
+  width?: ColumnWidth
 }): DefinitionsColumn<T> => ({
   align,
   cell: (item, context) => (

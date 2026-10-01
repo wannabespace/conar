@@ -75,7 +75,7 @@ const ResetPasswordPage = () => {
           Enter your new password below.
         </p>
       </div>
-      <Form className="space-y-4" form={form}>
+      <Form form={form}>
         <FieldSet className="w-full">
           <form.AppField name="password">
             {(field) => (

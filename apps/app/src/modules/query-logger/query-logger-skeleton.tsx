@@ -1,5 +1,4 @@
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn } from '@tamery/ui/lib/utils'
 
 const skeletonQueryWidths = [
   'w-40',
@@ -27,7 +26,9 @@ export const QueryLoggerSkeleton = () => (
           <span className="flex w-3 shrink-0 justify-center">
             <Skeleton className="size-1.5 rounded-full" />
           </span>
-          <Skeleton className={cn('h-2.5 rounded-full', width)} />
+          <div className={width}>
+            <Skeleton className="h-2.5 rounded-full" />
+          </div>
           <span className="ml-auto flex items-center gap-3">
             <Skeleton className="h-2.5 w-12 rounded-full" />
             <Skeleton className="h-2.5 w-12 rounded-full" />

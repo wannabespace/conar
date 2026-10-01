@@ -46,7 +46,7 @@ export const TextHoverEffect = ({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onMouseMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
-      className={cn('select-none', className)}
+      className={cn('tracking-tighter select-none', className)}
     >
       <defs>
         <linearGradient
@@ -75,8 +75,8 @@ export const TextHoverEffect = ({
           animate={maskPosition}
           transition={{ duration: duration ?? 0, ease: 'easeOut' }}
         >
-          <stop offset="0%" stopColor="white" />
-          <stop offset="100%" stopColor="black" />
+          <stop offset="0%" stopColor="currentColor" className="text-white" />
+          <stop offset="100%" stopColor="currentColor" className="text-black" />
         </motion.radialGradient>
         <mask id="textMask">
           <rect
@@ -94,8 +94,10 @@ export const TextHoverEffect = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="stroke-muted fill-transparent font-[helvetica] text-7xl font-bold"
-        style={{ opacity: hovered ? 0.7 : 0 }}
+        className={cn(
+          'stroke-muted fill-transparent font-[helvetica] text-7xl font-bold',
+          hovered ? 'opacity-70' : 'opacity-0'
+        )}
       >
         {text}
       </text>

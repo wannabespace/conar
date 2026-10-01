@@ -99,7 +99,7 @@ const ColumnItem = ({
         {column.label}
         {column.nullable && '?'}
       </span>
-      {table.kind === 'table' && <AppMenuButton items={menu} />}
+      {table.kind === 'table' && <AppMenuButton variant="muted" items={menu} />}
     </AppContextMenu>
   )
 }
@@ -175,15 +175,14 @@ const Inspector = ({
           </span>
         </div>
         <RowCount table={table} />
-        <AppMenuButton items={menuOfTable} />
+        <AppMenuButton variant="muted" items={menuOfTable} />
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
-                variant="ghost"
+                variant="ghost-muted"
                 size="icon-xs"
                 aria-label="Close inspector"
-                className="text-muted-foreground"
                 onClick={onClose}
               />
             }
@@ -199,9 +198,8 @@ const Inspector = ({
           action={
             editable && (
               <Button
-                variant="ghost"
+                variant="ghost-muted"
                 size="xs"
-                className="text-muted-foreground"
                 onClick={() => actions.addColumn(table)}
               >
                 <HugeiconsIcon

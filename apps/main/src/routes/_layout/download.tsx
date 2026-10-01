@@ -35,6 +35,7 @@ const HomebrewInstall = () => {
       <h2 className="mb-4 text-center text-xl font-semibold sm:text-2xl">
         Install via Homebrew
       </h2>
+      {/* oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card */}
       <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
           <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
@@ -78,6 +79,7 @@ const DownloadOption = ({
   arch?: string
   link: string
 }) => (
+  // oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card
   <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
     <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
       <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
@@ -85,12 +87,7 @@ const DownloadOption = ({
       </div>
       <div className="flex flex-col items-start">
         <span className="w-full truncate text-sm font-medium sm:text-base">
-          {osMap[type].label}{' '}
-          {arch && (
-            <Badge variant="outline" className="text-xs sm:text-sm">
-              {arch}
-            </Badge>
-          )}
+          {osMap[type].label} {arch && <Badge variant="outline">{arch}</Badge>}
         </span>
       </div>
     </div>

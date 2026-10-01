@@ -169,6 +169,7 @@ export const TableRow = ({
             <Indicator
               className={cn(
                 '-top-0.5 -right-0.5 size-1.5',
+                // oxlint-disable-next-line shadcn/no-restyle -- the dot inverts on the active primary row
                 isActive && 'bg-primary-foreground'
               )}
             />
@@ -177,8 +178,7 @@ export const TableRow = ({
         <span
           className={cn(
             'flex min-w-0 flex-1 items-center gap-1',
-            !row.pinned &&
-              `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
+            !row.pinned && 'group-hover/menu-item:row-actions-fade'
           )}
         >
           <span className="truncate">
@@ -190,6 +190,7 @@ export const TableRow = ({
         </span>
       </SidebarMenuButton>
       <AppMenuButton
+        variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
         render={

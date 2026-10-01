@@ -20,6 +20,7 @@ const HeaderCellBase = ({
   const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.header) {
+    // oxlint-disable-next-line shadcn/no-inline-styles -- column widths are a shared style contract with custom cell renderers
     return <div style={style}>{column.id}</div>
   }
 
@@ -34,10 +35,6 @@ const HeaderCellBase = ({
 HeaderCellBase.displayName = 'HeaderCell'
 
 const HeaderCell = memo(HeaderCellBase)
-
-const spacerStyle: CSSProperties = {
-  contain: 'layout style size',
-}
 
 export const TableHeader = ({
   className,
@@ -56,18 +53,17 @@ export const TableHeader = ({
   return (
     <div
       className={cn(
-        `bg-background sticky top-0 z-10 w-fit min-w-full border-b`,
+        `bg-background sticky top-0 z-10 w-(--table-width) min-w-full border-b`,
         className
       )}
-      style={{ width: `${tableWidth}px`, ...style }}
+      style={{ '--table-width': `${tableWidth}px`, ...style } as CSSProperties}
       {...props}
     >
       {before}
       <div className="flex w-fit min-w-full items-center">
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-left-offset) shrink-0"
-          style={spacerStyle}
+          className="w-(--table-scroll-left-offset) shrink-0 contain-layout contain-size contain-style"
         />
         {virtualColumns.map((virtualColumn) => {
           const column = columns[virtualColumn.index]
@@ -85,8 +81,7 @@ export const TableHeader = ({
         })}
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-right-offset) shrink-0"
-          style={spacerStyle}
+          className="w-(--table-scroll-right-offset) shrink-0 contain-layout contain-size contain-style"
         />
       </div>
       {after}

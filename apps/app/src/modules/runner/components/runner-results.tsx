@@ -216,7 +216,7 @@ export const RunnerResults = () => {
       onValueChange={(value) =>
         setPicked({ index: Number(value), run: run?.id ?? '' })
       }
-      className="size-full gap-0"
+      className="size-full"
     >
       <div className="flex h-8 shrink-0 items-center gap-2 border-b pr-1 pl-3">
         {results.length > 1 ? (
@@ -235,14 +235,16 @@ export const RunnerResults = () => {
                   <TabsTrigger
                     value={String(index)}
                     className={cn(
-                      'flex-none tabular-nums transition-none',
+                      'flex-none transition-none',
+                      // oxlint-disable-next-line shadcn/no-restyle -- a failed statement's tab reads red
                       item.error !== null && 'text-destructive',
+                      // oxlint-disable-next-line shadcn/no-restyle -- a statement that never finished reads muted
                       (item.stopped || item.pending) && 'text-muted-foreground'
                     )}
                   />
                 }
               >
-                {index + 1}
+                <span className="tabular-nums">{index + 1}</span>
               </PopoverTrigger>
             ))}
             <Popover handle={statementPopover}>
@@ -256,7 +258,8 @@ export const RunnerResults = () => {
                 >
                   {typeof payload === 'string' && (
                     <CodeBlock
-                      className="max-h-80 px-3 py-2.5"
+                      padding="popup"
+                      className="max-h-80"
                       code={payload}
                       language="sql"
                       size="xs"
@@ -290,10 +293,9 @@ export const RunnerResults = () => {
             // oxlint-disable-next-line react/no-unstable-nested-components
             trigger={({ isExporting }) => (
               <Button
-                variant="ghost"
+                variant="ghost-muted"
                 size="icon-xs"
                 aria-label="Export results"
-                className="text-muted-foreground hover:text-foreground"
                 disabled={isExporting || rows.length === 0}
               >
                 <LoadingContent loading={isExporting}>

@@ -24,6 +24,7 @@ const VirtualColumnBase = ({
   const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.cell) {
+    // oxlint-disable-next-line shadcn/no-inline-styles -- column widths are a shared style contract with custom cell renderers
     return <div style={style}>{formatCellValue(value)}</div>
   }
 
@@ -40,10 +41,6 @@ const VirtualColumnBase = ({
 VirtualColumnBase.displayName = 'VirtualColumn'
 
 const VirtualColumn = memo(VirtualColumnBase)
-
-const spacerStyle: CSSProperties = {
-  contain: 'layout style size',
-}
 
 const RowBase = ({
   size,
@@ -64,16 +61,15 @@ const RowBase = ({
   return (
     <div
       className={cn(
-        `hover:bg-foreground/6 flex w-fit min-w-full border-b`,
+        `hover:bg-foreground/6 flex h-(--table-row-height) w-fit min-w-full border-b contain-layout contain-style`,
         (isLast || zebra) && `border-b-0`,
         zebra && rowIndex % 2 === 1 && 'bg-foreground/3'
       )}
-      style={{ contain: 'layout style', height: `${size}px` }}
+      style={{ '--table-row-height': `${size}px` } as CSSProperties}
     >
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-left-offset) shrink-0"
-        style={spacerStyle}
+        className="w-(--table-scroll-left-offset) shrink-0 contain-layout contain-size contain-style"
       />
       {virtualColumns.map((virtualColumn) => {
         const column = columns[virtualColumn.index]
@@ -94,8 +90,7 @@ const RowBase = ({
       })}
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-right-offset) shrink-0"
-        style={spacerStyle}
+        className="w-(--table-scroll-right-offset) shrink-0 contain-layout contain-size contain-style"
       />
     </div>
   )
@@ -118,14 +113,14 @@ export const TableBody = ({
 
   return (
     <div
-      className={cn('relative min-w-full', className)}
-      style={{ width: `${tableWidth}px`, ...style }}
+      className={cn('relative w-(--table-width) min-w-full', className)}
+      style={{ '--table-width': `${tableWidth}px`, ...style } as CSSProperties}
       {...props}
     >
       <div
         aria-hidden="true"
-        className="shrink-0"
-        style={{ ...spacerStyle, height: `${topOffset}px` }}
+        className="h-(--table-offset) shrink-0 contain-layout contain-size contain-style"
+        style={{ '--table-offset': `${topOffset}px` } as CSSProperties}
       />
       {virtualRows.map((virtualRow) => (
         <Row
@@ -137,8 +132,8 @@ export const TableBody = ({
       ))}
       <div
         aria-hidden="true"
-        className="shrink-0"
-        style={{ ...spacerStyle, height: `${bottomOffset}px` }}
+        className="h-(--table-offset) shrink-0 contain-layout contain-size contain-style"
+        style={{ '--table-offset': `${bottomOffset}px` } as CSSProperties}
       />
     </div>
   )

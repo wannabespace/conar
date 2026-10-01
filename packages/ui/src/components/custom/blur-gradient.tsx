@@ -11,10 +11,10 @@ const generateGradientLayers = () => {
     const blur = baseBlur * multiplier ** i
 
     return {
-      backdropFilter: `blur(${blur}px)`,
-      maskImage: `linear-gradient(rgba(0, 0, 0, 0) ${100 - end - 12.5}%, rgb(0, 0, 0) ${100 - end}%, rgb(0, 0, 0) ${100 - start - 12.5}%, rgba(0, 0, 0, 0) ${100 - start}%)`,
+      blur: `${blur}px`,
+      mask: `linear-gradient(rgba(0, 0, 0, 0) ${100 - end - 12.5}%, rgb(0, 0, 0) ${100 - end}%, rgb(0, 0, 0) ${100 - start - 12.5}%, rgba(0, 0, 0, 0) ${100 - start}%)`,
       zIndex: i + 1,
-    } satisfies CSSProperties
+    }
   })
 }
 
@@ -28,8 +28,14 @@ export const BlurGradient = ({
     className={cn('pointer-events-none overflow-hidden', className)}
     {...props}
   >
-    {gradientLayers.map((style) => (
-      <div key={style.zIndex} style={style} className="absolute inset-0" />
+    {gradientLayers.map(({ blur, mask, zIndex }) => (
+      <div
+        key={zIndex}
+        style={
+          { '--blur': blur, '--mask': mask, '--z': zIndex } as CSSProperties
+        }
+        className="absolute inset-0 z-(--z) mask-(--mask) backdrop-blur-(--blur)"
+      />
     ))}
   </div>
 )

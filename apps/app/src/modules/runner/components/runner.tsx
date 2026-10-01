@@ -95,10 +95,9 @@ const ToolbarButton = ({
     <TooltipTrigger
       render={
         <Button
-          variant="ghost"
+          variant="ghost-muted"
           size="icon-sm"
           aria-label={label}
-          className="text-muted-foreground hover:text-foreground"
           {...props}
         />
       }
@@ -124,15 +123,7 @@ const SavedQueriesButton = () => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
-          />
-        }
-      >
+      <PopoverTrigger render={<Button variant="ghost-muted" size="sm" />}>
         <HugeiconsIcon icon={Bookmark02Icon} strokeWidth={2} />
         Saved
         {queriesCount > 0 && (

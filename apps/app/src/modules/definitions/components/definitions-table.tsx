@@ -22,18 +22,20 @@ const SKELETON_ROWS = 6
 const SKELETON_MIN_WIDTH = 40
 const SKELETON_WIDTH_RANGE = 45
 
-const columnClass = ({ align }: Pick<DefinitionsColumn<unknown>, 'align'>) =>
-  cn('truncate', align === 'end' && 'text-right')
-
 const SkeletonRows = <T,>({ columns }: { columns: DefinitionsColumn<T>[] }) =>
   Array.from({ length: SKELETON_ROWS }, (_, row) => (
     <TableRow
       // oxlint-disable-next-line react/no-array-index-key
       key={`skeleton-${row}`}
-      className="hover:bg-transparent"
+      aria-busy
     >
       {columns.map((column, index) => (
-        <TableCell key={column.header} className={columnClass(column)}>
+        <TableCell
+          key={column.header}
+          className={
+            column.align === 'end' ? 'truncate text-right' : 'truncate'
+          }
+        >
           <Skeleton
             className={cn(
               'h-3 w-(--bar-width) rounded-full',
@@ -79,7 +81,17 @@ export const DefinitionsTable = <T,>({
           {columns.map((column) => (
             <TableHead
               key={column.header}
-              className={cn(column.width, columnClass(column))}
+              className={
+                column.align === 'end'
+                  ? 'w-(--column-width) truncate text-right'
+                  : 'w-(--column-width) truncate'
+              }
+              style={
+                {
+                  '--column-width':
+                    column.width && `calc(${column.width} * 100%)`,
+                } as CSSProperties
+              }
             >
               {column.header}
             </TableHead>
@@ -107,18 +119,24 @@ export const DefinitionsTable = <T,>({
                     }
                   }}
                   data-highlighted={highlighted === key || undefined}
-                  className="group/row data-highlighted:bg-foreground/7 transition-none"
+                  className="group/row transition-none"
                   onClick={() => onOpen(item)}
                 />
               }
             >
               {columns.map((column) => (
-                <TableCell key={column.header} className={columnClass(column)}>
+                <TableCell
+                  key={column.header}
+                  className={
+                    column.align === 'end' ? 'truncate text-right' : 'truncate'
+                  }
+                >
                   {column.cell(item, context)}
                 </TableCell>
               ))}
               <TableCell className="text-right">
                 <AppMenuButton
+                  variant="muted"
                   items={() => menuOf(item)}
                   render={<Button variant="ghost-row" size="icon-xs" />}
                   className="-my-0.5"

@@ -60,7 +60,7 @@ export const FilterChip = ({
     filter.values?.length === 0 || filter.values?.every((value) => value === '')
 
   return (
-    <div className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring">
+    <div className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring">
       <Tooltip>
         <TooltipTrigger
           render={
@@ -93,7 +93,10 @@ export const FilterChip = ({
           >
             {filter.column}
           </PopoverTrigger>
-          <PopoverContent className="gap-0 p-0">
+          <PopoverContent
+            // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
+            className="gap-0 p-0"
+          >
             <FiltersColumnSelector
               onSelect={(column) => {
                 onEdit({ ...filter, column, values })
@@ -109,7 +112,10 @@ export const FilterChip = ({
           >
             {filter.ref.label}
           </PopoverTrigger>
-          <PopoverContent className="gap-0 p-0">
+          <PopoverContent
+            // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
+            className="gap-0 p-0"
+          >
             <FiltersOperatorSelector
               onSelect={(operator) => {
                 onEdit({ ...filter, ref: operator, values })
@@ -134,7 +140,10 @@ export const FilterChip = ({
                   )}
                 </span>
               </PopoverTrigger>
-              <PopoverContent className="max-h-[calc(100vh-10rem)] gap-0 p-0">
+              <PopoverContent
+                // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
+                className="max-h-[calc(100vh-10rem)] gap-0 p-0"
+              >
                 <FiltersValueSelector
                   column={filter.column}
                   operator={filter.ref.symbol}

@@ -29,9 +29,8 @@ export const Hero = ({ className }: { className?: string }) => {
     >
       <div className="w-full lg:w-auto lg:flex-1">
         <h1
-          className={cn(
-            `text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance`
-          )}
+          // oxlint-disable-next-line shadcn/no-arbitrary-values -- the hero headline scales with the viewport
+          className="text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance"
         >
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}

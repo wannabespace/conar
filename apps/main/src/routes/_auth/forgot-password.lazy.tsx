@@ -1,5 +1,6 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { FieldGroup } from '@tamery/ui/components/field'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
@@ -67,27 +68,29 @@ const ForgotPasswordPage = () => {
           your password.
         </p>
       </div>
-      <Form className="space-y-4" form={form}>
-        <form.AppField name="email">
-          {(field) => (
-            <field.Field>
-              <field.Label>Email</field.Label>
-              <field.Input
-                placeholder="example@gmail.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                spellCheck={false}
-                autoFocus
-              />
-            </field.Field>
-          )}
-        </form.AppField>
-        <Button className="w-full" type="submit" disabled={isSubmitting}>
-          <LoadingContent loading={isSubmitting}>
-            Send reset link
-          </LoadingContent>
-        </Button>
+      <Form form={form}>
+        <FieldGroup size="sm">
+          <form.AppField name="email">
+            {(field) => (
+              <field.Field>
+                <field.Label>Email</field.Label>
+                <field.Input
+                  placeholder="example@gmail.com"
+                  type="email"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  spellCheck={false}
+                  autoFocus
+                />
+              </field.Field>
+            )}
+          </form.AppField>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
+            <LoadingContent loading={isSubmitting}>
+              Send reset link
+            </LoadingContent>
+          </Button>
+        </FieldGroup>
       </Form>
     </>
   )

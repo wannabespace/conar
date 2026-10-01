@@ -85,7 +85,11 @@ const RouteComponent = () => {
               </Button>
             }
           />
-          <PopoverContent align="end" className="w-auto gap-2 p-2">
+          <PopoverContent
+            align="end"
+            // oxlint-disable-next-line shadcn/no-restyle -- the range calendar takes a tighter inset than the form padding
+            className="w-auto gap-2 p-2"
+          >
             <Calendar
               autoFocus
               mode="range"
@@ -142,16 +146,16 @@ const RouteComponent = () => {
                   : usage.map((row) => (
                       <TableRow key={row.month}>
                         <TableCell>{formatMonth(row.month)}</TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.calls)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.inputTokens ?? 0)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.outputTokens ?? 0)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {row.cost === null ? '—' : formatCost(row.cost)}
                         </TableCell>
                       </TableRow>

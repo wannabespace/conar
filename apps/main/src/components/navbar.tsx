@@ -90,7 +90,7 @@ export const Navbar = ({ className, ...props }: ComponentProps<'header'>) => {
         <Button
           variant="outline"
           size="sm"
-          className="hidden gap-1 sm:flex sm:gap-2"
+          className="hidden sm:flex"
           render={isSignedIn ? <Link to="/account" /> : <Link to="/sign-in" />}
         >
           {isSignedIn ? 'Account' : 'Sign in'}

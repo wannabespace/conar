@@ -24,8 +24,8 @@ export const TotpCodeInput = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={id} className="text-muted-foreground text-sm">
-        {label}
+      <Label htmlFor={id}>
+        <span className="text-muted-foreground">{label}</span>
       </Label>
       <InputOTP id={id} maxLength={TOTP_LENGTH} {...props}>
         <InputOTPGroup>

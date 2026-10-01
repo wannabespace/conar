@@ -58,9 +58,10 @@ export const SubscriptionModal = () => {
       open={isSubscriptionDialogOpen}
       onOpenChange={setIsSubscriptionDialogOpen}
     >
+      {/* oxlint-disable-next-line shadcn/no-restyle -- the upsell modal's brand gradient */}
       <DialogContent className="from-primary/8 via-background to-background gap-7 bg-linear-to-b via-40% sm:max-w-lg">
-        <DialogHeader className="items-center gap-2 pt-4 text-center">
-          <div className="relative mb-2">
+        <DialogHeader className="mt-4 items-center text-center">
+          <div className="relative mb-3">
             <div className="bg-primary/20 absolute -inset-5 rounded-full blur-2xl" />
             <div className="bg-primary/10 inset-ring-primary/15 relative flex size-14 items-center justify-center rounded-2xl inset-ring">
               <HugeiconsIcon
@@ -70,10 +71,11 @@ export const SubscriptionModal = () => {
               />
             </div>
           </div>
+          {/* oxlint-disable-next-line shadcn/no-restyle -- the upsell modal's headline */}
           <DialogTitle className="text-lg font-semibold">
             Tamery Pro
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="mt-1">
             Everything Tamery can do, without limits.
           </DialogDescription>
         </DialogHeader>
@@ -90,7 +92,7 @@ export const SubscriptionModal = () => {
           ))}
         </ul>
         <div className="space-y-4">
-          <DialogFooter className="gap-2">
+          <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setIsSubscriptionDialogOpen(false)}

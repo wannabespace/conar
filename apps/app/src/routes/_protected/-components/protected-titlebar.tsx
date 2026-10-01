@@ -144,7 +144,12 @@ const ConnectionsDropdown = ({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
+          <Button
+            variant="ghost"
+            size="sm"
+            // oxlint-disable-next-line shadcn/no-restyle -- title-bar pickers sit tighter than a toolbar button
+            className="max-w-64 gap-1.5 px-2"
+          />
         }
       >
         {current ? (
@@ -219,7 +224,12 @@ const ResourcesDropdown = ({
   <DropdownMenu>
     <DropdownMenuTrigger
       render={
-        <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
+        <Button
+          variant="ghost"
+          size="sm"
+          // oxlint-disable-next-line shadcn/no-restyle -- title-bar pickers sit tighter than a toolbar button
+          className="max-w-64 gap-1.5 px-2"
+        />
       }
     >
       <span data-mask className="text-muted-foreground truncate">

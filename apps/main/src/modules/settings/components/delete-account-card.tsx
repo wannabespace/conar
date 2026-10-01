@@ -174,7 +174,7 @@ export const DeleteAccountCard = () => {
             Permanently remove your account and all associated data.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Button variant="destructive" onClick={() => setOpen(true)}>
             <HugeiconsIcon
               icon={Delete02Icon}

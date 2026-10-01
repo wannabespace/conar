@@ -126,7 +126,7 @@ export const AiEditZone = ({
       }}
     >
       {phase.kind === 'prompt' && (
-        <InputGroup className="shadow-md">
+        <InputGroup variant="floating">
           <InputGroupTextarea
             ref={inputRef}
             data-mask
@@ -168,7 +168,7 @@ export const AiEditZone = ({
           <div className="pointer-events-none absolute inset-x-1 bottom-1 flex items-center gap-1.5 pl-7">
             {images.length > 0 && (
               <AttachmentGroup
-                className="pointer-events-none flex-1 gap-1.5 *:pointer-events-auto"
+                className="pointer-events-none flex-1 *:pointer-events-auto"
                 // Monaco scrolls the editor on any wheel inside it, view zones included.
                 onWheel={(event) => event.stopPropagation()}
               >
@@ -196,7 +196,7 @@ export const AiEditZone = ({
                         type="submit"
                         size="icon-xs"
                         aria-label="Send"
-                        className="text-muted-foreground hover:text-foreground"
+                        variant="ghost-muted"
                       />
                     }
                   >

@@ -14,7 +14,12 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { Input } from '@tamery/ui/components/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@tamery/ui/components/input-group'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps } from 'react'
@@ -119,42 +124,38 @@ const FilterWithAI = () => (
       }
     />
     <div className="space-y-3 sm:space-y-4">
-      <div className="relative w-full">
-        <HugeiconsIcon
-          icon={SparklesIcon}
-          strokeWidth={2}
-          className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-          aria-hidden="true"
-        />
-        <Input
-          className="focus-visible:border-primary focus-visible:ring-primary/20 w-full pr-12 pl-10 text-sm focus-visible:ring-2"
+      <InputGroup>
+        <InputGroupAddon>
+          <HugeiconsIcon
+            icon={SparklesIcon}
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+        </InputGroupAddon>
+        <InputGroupInput
           value="price between 500 and 1000"
           readOnly
           aria-label="AI filter input"
         />
-        <Button
-          variant="secondary"
-          size="icon-xs"
-          className="hover:bg-primary hover:text-primary-foreground absolute top-1/2 right-2 -translate-y-1/2 transition-colors"
-          aria-label="Send filter request"
-        >
-          <HugeiconsIcon
-            icon={SentIcon}
-            strokeWidth={2}
-            className="size-3"
-            aria-hidden="true"
-          />
-        </Button>
-      </div>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            variant="secondary"
+            size="icon-xs"
+            aria-label="Send filter request"
+          >
+            <HugeiconsIcon
+              icon={SentIcon}
+              strokeWidth={2}
+              className="size-3"
+              aria-hidden="true"
+            />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
       <div className="flex flex-wrap gap-2">
         <FilterItem name="price" operator=">=" value="500" />
         <FilterItem name="price" operator="<=" value="1000" />
-        <Button
-          variant="outline"
-          size="icon-xs"
-          className="hover:bg-primary hover:text-primary-foreground transition-colors"
-          aria-label="Add new filter"
-        >
+        <Button variant="outline" size="icon-xs" aria-label="Add new filter">
           <HugeiconsIcon
             icon={PlusSignIcon}
             strokeWidth={2}
