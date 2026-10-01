@@ -112,7 +112,7 @@ export const AppMenuButton = ({
   className,
   contentProps,
   render = defaultMenuButton,
-  variant = 'muted',
+  variant = 'default',
 }: Pick<AppContextMenuProps, 'items' | 'className' | 'contentProps'> & {
   render?: ReactElement<HTMLAttributes<HTMLElement>>
   variant?: 'default' | 'muted'

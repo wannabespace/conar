@@ -472,6 +472,7 @@ export const TableHeaderCell = ({
           </span>
         )}
         <AppMenuButton
+          variant="muted"
           items={items}
           contentProps={{ align: 'end', className: 'min-w-52' }}
           className="self-center opacity-0 transition-opacity group-hover/header-cell:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100"

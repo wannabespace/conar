@@ -127,7 +127,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
                 </TooltipTrigger>
                 <TooltipContent side="left">Show on canvas</TooltipContent>
               </Tooltip>
-              {menu && <AppMenuButton items={menu} />}
+              {menu && <AppMenuButton variant="muted" items={menu} />}
             </>
           )
 

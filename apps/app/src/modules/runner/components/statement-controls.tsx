@@ -235,7 +235,6 @@ export const StatementControls = ({
                   }
                 />
               }
-              variant="default"
               contentProps={{
                 align: 'start',
                 finalFocus: () => editorRef.current?.focus(),

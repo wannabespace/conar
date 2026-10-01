@@ -219,6 +219,7 @@ export const ConnectionCard = ({
           selectedResourceName={selectedResourceName}
         />
         <AppMenuButton
+          variant="muted"
           items={items}
           contentProps={{ className: 'min-w-44' }}
           render={<Button variant="ghost-row" size="icon-xs" />}

@@ -99,7 +99,7 @@ const ColumnItem = ({
         {column.label}
         {column.nullable && '?'}
       </span>
-      {table.kind === 'table' && <AppMenuButton items={menu} />}
+      {table.kind === 'table' && <AppMenuButton variant="muted" items={menu} />}
     </AppContextMenu>
   )
 }
@@ -175,7 +175,7 @@ const Inspector = ({
           </span>
         </div>
         <RowCount table={table} />
-        <AppMenuButton items={menuOfTable} />
+        <AppMenuButton variant="muted" items={menuOfTable} />
         <Tooltip>
           <TooltipTrigger
             render={

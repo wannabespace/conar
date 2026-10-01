@@ -187,6 +187,7 @@ export const TableRow = ({
         </span>
       </SidebarMenuButton>
       <AppMenuButton
+        variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
         render={
