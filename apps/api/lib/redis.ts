@@ -3,7 +3,6 @@ import { createClient } from 'redis'
 
 import { env } from '~/env'
 
-// node-redis crashes the process on an unhandled 'error' event; every client needs a listener.
 export const redis = createClient({ url: env.REDIS_URL }).on(
   'error',
   console.error
