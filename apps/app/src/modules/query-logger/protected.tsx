@@ -17,6 +17,7 @@ export default {
             group: 'View',
             icon: HistoryIcon,
             keywords: ['logs', 'queries', 'history'],
+            order: 30,
             shortcut: 'J',
             value: 'Toggle query logger',
           },

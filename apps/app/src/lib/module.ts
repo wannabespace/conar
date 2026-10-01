@@ -73,6 +73,7 @@ export interface CommandEntry {
   group: 'Navigation' | 'Database' | 'View' | 'Application'
   icon: IconSvgElement
   keywords: string[]
+  order: number
   shortcut?: string
   value: string
 }

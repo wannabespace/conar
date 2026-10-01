@@ -1,6 +1,6 @@
 import { createTransaction } from '@tanstack/react-db'
 
-import { getCollections } from '~/core/collections.ts'
+import { getCollections } from '~/core/collections'
 import { orpc } from '~/lib/orpc'
 
 import type { ConnectionString } from './connection-strings'

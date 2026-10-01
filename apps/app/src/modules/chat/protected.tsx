@@ -11,10 +11,14 @@ export default {
       ? [
           {
             action: () =>
-              toggleChat(current.connectionResource.id, hasSubscription()),
+              toggleChat(
+                current.connectionResource.id,
+                hasSubscription() ?? true
+              ),
             group: 'View',
             icon: AiChat01Icon,
             keywords: ['assistant', 'ai', 'panel'],
+            order: 20,
             shortcut: 'L',
             value: 'Toggle AI chat',
           },

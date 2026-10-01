@@ -45,7 +45,7 @@ const tableView: TabView<TableParams> = {
 
     prefetchConnectionResourceTableCore({
       connectionResource,
-      query: { exact: false, filters, orderBy },
+      query: { exact: false, filters: enabledFilters(filters), orderBy },
       ...params,
     })
   },

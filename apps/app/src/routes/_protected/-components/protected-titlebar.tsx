@@ -27,7 +27,7 @@ import { useRef, useState } from 'react'
 
 import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'

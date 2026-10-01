@@ -42,9 +42,7 @@ export const TabBar = ({ className }: { className?: string }) => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: (state) => state.tabs })
-  const leftPanel = workspaceModules.panels.find(
-    (panel) => panel.region === 'left'
-  )
+  const leftPanel = workspaceModules.panelIn('left')
   const toggleLeftPanel = () =>
     leftPanel?.open(connectionResource.id).set((open) => !open)
 

@@ -53,7 +53,7 @@ const ProtectedLayout = () => {
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
-    const { getCollections } = await import('~/core/collections.ts')
+    const { getCollections } = await import('~/core/collections')
     const c = getCollections()
 
     await Promise.all([

@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 
-import { getCollections } from '~/core/collections.ts'
+import { getCollections } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
 import { connectionToQueryParams, createQuery } from '~/core/runtime/query'
 

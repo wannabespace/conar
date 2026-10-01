@@ -1,4 +1,4 @@
-import { getCollections } from '~/core/collections.ts'
+import { getCollections } from '~/core/collections'
 import { orpc } from '~/lib/orpc'
 
 import { workspaceSelection } from './utils'

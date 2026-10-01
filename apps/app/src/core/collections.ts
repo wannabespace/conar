@@ -27,13 +27,6 @@ const moduleCollections = Object.values(
 )
 
 let current: Collections | null = null
-const listeners = new Set<() => void>()
-
-const notify = () => {
-  for (const listener of listeners) {
-    listener()
-  }
-}
 
 export const getCollections = (): Collections => {
   if (current) {
@@ -56,17 +49,11 @@ export const getCollections = (): Collections => {
     workspacesCollection: createWorkspacesCollection(),
   }
 
-  notify()
   return current
 }
 
 export const cleanCollections = () => {
-  if (!current) {
-    return
-  }
-
   current = null
-  notify()
 }
 
 const { useRouteContext } = getRouteApi('/_protected')

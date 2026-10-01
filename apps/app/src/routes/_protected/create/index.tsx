@@ -24,7 +24,7 @@ import {
   StepperList,
   StepperTrigger,
 } from '~/components/stepper'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { createConnectionTransaction } from '~/core/connection/create'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { fetchingConfig } from '~/core/connection/fetching-config'

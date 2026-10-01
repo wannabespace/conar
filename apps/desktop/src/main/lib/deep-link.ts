@@ -5,12 +5,10 @@ import { app } from 'electron'
 
 const DEEPLINK_PROTOCOL = 'tamery'
 
-let deepLinkUrl: string | null = null
 let mainWindow: BrowserWindow | null = null
 
-const sendDeepLink = (url: string) => {
+const focusMainWindow = () => {
   if (!mainWindow) {
-    deepLinkUrl = url
     return
   }
 
@@ -26,8 +24,6 @@ const sendDeepLink = (url: string) => {
     mainWindow.show()
     mainWindow.setAlwaysOnTop(false)
   }
-
-  mainWindow.webContents.send('deep-link', url)
 }
 
 export const setupProtocolHandler = (win: BrowserWindow) => {
@@ -45,32 +41,13 @@ export const setupProtocolHandler = (win: BrowserWindow) => {
   const gotTheLock = app.requestSingleInstanceLock()
 
   if (gotTheLock) {
-    app.on('second-instance', (_event, commandLine) => {
-      if (win.isMinimized()) {
-        win.restore()
-      }
-
-      win.focus()
-
-      const deeplinkingUrl = commandLine.pop()
-
-      if (deeplinkingUrl) {
-        sendDeepLink(deeplinkingUrl)
-      }
-    })
+    app.on('second-instance', focusMainWindow)
   } else {
     app.quit()
   }
-
-  win.webContents.on('did-finish-load', () => {
-    if (deepLinkUrl) {
-      sendDeepLink(deepLinkUrl)
-      deepLinkUrl = null
-    }
-  })
 }
 
-app.on('open-url', (event, url) => {
+app.on('open-url', (event) => {
   event.preventDefault()
-  sendDeepLink(url)
+  focusMainWindow()
 })

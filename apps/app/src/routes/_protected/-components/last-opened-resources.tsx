@@ -10,7 +10,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'

@@ -8,7 +8,7 @@ import type { Transaction } from 'kysely'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
 
-import { getCollections } from '~/core/collections.ts'
+import { getCollections } from '~/core/collections'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { getConnectionStringToShow } from '~/core/connection/utils'
 

@@ -10,7 +10,7 @@ import {
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useLocation, useParams } from '@tanstack/react-router'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 
 const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
   const {

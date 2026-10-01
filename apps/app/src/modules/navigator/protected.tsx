@@ -20,6 +20,7 @@ export default {
             group: 'Database',
             icon: PlusSignIcon,
             keywords: ['create', 'add', 'table'],
+            order: 10,
             value: 'New table…',
           },
           ...(capabilitiesOf(current.connection.type).schemas
@@ -35,6 +36,7 @@ export default {
                     'database',
                     'namespace',
                   ],
+                  order: 20,
                   value: 'New schema…',
                 } satisfies CommandEntry,
               ]
@@ -44,6 +46,7 @@ export default {
             group: 'View',
             icon: SidebarLeftIcon,
             keywords: ['navigator', 'panel', 'hide', 'show'],
+            order: 10,
             shortcut: 'B',
             value: 'Toggle sidebar',
           },

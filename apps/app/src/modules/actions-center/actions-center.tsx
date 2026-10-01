@@ -38,7 +38,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { tableTypeIcon } from '~/core/catalog/table-type'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
@@ -49,7 +49,7 @@ import { tableTabId } from '~/core/tabs/ids'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import type { CommandEntry } from '~/lib/module'
-import { appModules } from '~/lib/modules'
+import { appModules, byOrder } from '~/lib/modules'
 import { protectedModules } from '~/lib/protected-modules'
 
 import { actionCenterOpen } from './action-center-open'
@@ -241,8 +241,11 @@ export const ActionsCenter = () => {
 
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
   const moduleEntries = protectedModules.commands({ current, tabId })
-  const entriesIn = (group: CommandEntry['group']) =>
-    moduleEntries
+  const entriesIn = (
+    group: CommandEntry['group'],
+    coreEntries: CommandEntry[] = []
+  ) =>
+    byOrder([...moduleEntries, ...coreEntries])
       .filter((entry) => entry.group === group)
       .map((entry) =>
         actionEntry(
@@ -325,20 +328,22 @@ export const ActionsCenter = () => {
       heading: 'Navigation',
     },
     {
-      entries: [
-        ...(current
+      entries: entriesIn(
+        'Database',
+        current
           ? [
-              actionEntry(
-                'Refresh data',
-                ['reload', 'refetch', 'update'],
-                DatabaseSyncIcon,
-                () => globalHooks.callHook('refreshPressed'),
-                REFRESH_SHORTCUT_LETTER
-              ),
+              {
+                action: () => globalHooks.callHook('refreshPressed'),
+                group: 'Database',
+                icon: DatabaseSyncIcon,
+                keywords: ['reload', 'refetch', 'update'],
+                order: 30,
+                shortcut: REFRESH_SHORTCUT_LETTER,
+                value: 'Refresh data',
+              },
             ]
-          : []),
-        ...entriesIn('Database'),
-      ],
+          : []
+      ),
       heading: 'Database',
     },
     { entries: entriesIn('View'), heading: 'View' },

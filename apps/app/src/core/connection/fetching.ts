@@ -3,7 +3,7 @@ import { noop } from '@tamery/shared/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
-import { getCollections, useCollections } from '~/core/collections.ts'
+import { getCollections, useCollections } from '~/core/collections'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'

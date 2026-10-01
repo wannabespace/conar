@@ -12,7 +12,7 @@ import type {
   TransactionSettings,
 } from 'kysely'
 
-import { getCollections } from '~/core/collections.ts'
+import { getCollections } from '~/core/collections'
 import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'

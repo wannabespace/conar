@@ -10,7 +10,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { orpc } from '~/lib/orpc'
 import { resourcePanelClassName } from '~/shell'
 

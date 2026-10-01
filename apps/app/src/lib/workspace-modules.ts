@@ -1,4 +1,4 @@
-import type { WorkspaceModule } from './module'
+import type { Panel, WorkspaceModule } from './module'
 import { byOrder } from './modules'
 
 // Import only from the connection workspace's chunks: the glob bundles every
@@ -9,12 +9,15 @@ const list = Object.values(
     import: 'default',
   })
 )
+const panels = list.flatMap((module) => module.panels ?? [])
 
 export const workspaceModules = {
   emptyPane: byOrder(list.flatMap((module) => module.emptyPane ?? [])),
   headers: list.flatMap((module) => (module.header ? [module.header] : [])),
   mounts: list.flatMap((module) => module.mounts ?? []),
-  panels: list.flatMap((module) => module.panels ?? []),
+  panelIn: (region: Panel['region']) =>
+    panels.find((panel) => panel.region === region),
+  panels,
   referenceTable: list.find((module) => module.referenceTable)?.referenceTable,
   tabBarEnd: byOrder(list.flatMap((module) => module.tabBarEnd ?? [])),
   tabs: Object.fromEntries(

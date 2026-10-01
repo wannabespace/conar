@@ -47,7 +47,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
 import { formatSql } from '~/lib/formatter'
 

@@ -14,7 +14,6 @@ type Promisified<T> = {
 
 export type ElectronPreload = Promisified<typeof electron> & {
   app: {
-    onDeepLink: (callback: (url: string) => void) => () => void
     onUpdatesStatus: (
       callback: (params: { status: UpdatesStatus; message?: string }) => void
     ) => () => void
@@ -90,7 +89,6 @@ contextBridge.exposeInMainWorld('electron', {
     checkForUpdates: handleElectronError(() =>
       ipcRenderer.invoke('app.checkForUpdates')
     ),
-    onDeepLink: (onMessage) => onEvent('deep-link', onMessage),
     onFocusChange: (onMessage) => onEvent('focus-changed', onMessage),
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),

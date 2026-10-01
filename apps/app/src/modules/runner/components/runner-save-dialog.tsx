@@ -19,7 +19,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 
 import type { Query } from '../sync'
 

@@ -54,7 +54,5 @@ const neverOpen = createStore(false)
 
 export const usePanelOpen = (region: Panel['region'], resourceId: string) =>
   useSubscription(
-    workspaceModules.panels
-      .find((panel) => panel.region === region)
-      ?.open(resourceId) ?? neverOpen
+    workspaceModules.panelIn(region)?.open(resourceId) ?? neverOpen
   )

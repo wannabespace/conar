@@ -10,7 +10,7 @@ import {
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 
 import type { Query } from '../sync'
 

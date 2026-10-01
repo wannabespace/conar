@@ -17,7 +17,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 

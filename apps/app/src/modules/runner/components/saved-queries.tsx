@@ -14,7 +14,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef } from 'react'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 
 import { useRunnerActions } from '../lib/actions'
 import {

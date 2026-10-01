@@ -13,7 +13,7 @@ const isActiveSubscription = ({ status }: { status: string | null }) =>
 export const hasSubscription = () =>
   subscriptionQueryClient
     .getQueryData(orpc.account.subscription.list.queryOptions().queryKey)
-    ?.some(isActiveSubscription) ?? false
+    ?.some(isActiveSubscription)
 
 export const useSubscription = () => {
   const { data } = authClient.useSession()

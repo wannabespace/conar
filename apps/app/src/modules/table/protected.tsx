@@ -32,6 +32,7 @@ export default {
             group: 'Database',
             icon: PlusSignIcon,
             keywords: ['create', 'new', 'column', active.table],
+            order: 40,
             value: 'Add column…',
           },
         ]

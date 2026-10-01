@@ -1,7 +1,7 @@
 import { useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 
 import { workspaceSelection } from './utils'
 

@@ -12,7 +12,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import { useFetchingConfig } from '~/core/connection/fetching'
 import { getConnectionStore } from '~/core/connection/stores'

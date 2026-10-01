@@ -14,6 +14,7 @@ export default {
             group: 'Application',
             icon: Download01Icon,
             keywords: ['update', 'version'],
+            order: 10,
             value: 'Check for updates…',
           },
         ]

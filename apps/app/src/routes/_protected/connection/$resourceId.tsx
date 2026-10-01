@@ -44,13 +44,6 @@ const REGION_MOTION = {
   },
 }
 
-const panelIn = (region: Panel['region']) =>
-  workspaceModules.panels.find((panel) => panel.region === region)
-
-const leftPanel = panelIn('left')
-const bottomPanel = panelIn('bottom')
-const rightPanel = panelIn('right')
-
 const RegionPanel = ({
   panel,
   resourceId,
@@ -103,6 +96,9 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
+  const leftPanel = workspaceModules.panelIn('left')
+  const bottomPanel = workspaceModules.panelIn('bottom')
+  const rightPanel = workspaceModules.panelIn('right')
 
   if (fetching.type === 'waiting-for-password') {
     return (

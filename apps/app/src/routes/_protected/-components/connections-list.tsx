@@ -23,7 +23,7 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
 import { Link } from '~/components/link'
-import { useCollections } from '~/core/collections.ts'
+import { useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
