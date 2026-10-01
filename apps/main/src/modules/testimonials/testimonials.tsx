@@ -58,9 +58,9 @@ const Testimonial = ({
     <header
       className={cn(`mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4`, className)}
     >
-      <Avatar className="size-10 shrink-0 rounded-full sm:size-12">
+      <Avatar className="size-10 shrink-0 sm:size-12">
         <AvatarImage src={avatar} alt={name} />
-        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+        <AvatarFallback variant="primary">
           {name
             .split(' ')
             .map((n) => n[0])

@@ -253,10 +253,9 @@ const TableComponent = ({
             <TooltipTrigger
               render={
                 <Button
-                  variant="ghost"
+                  variant="ghost-muted"
                   size="icon-xs"
                   aria-label="Add column"
-                  className="text-muted-foreground"
                   onClick={onAddColumn}
                 />
               }

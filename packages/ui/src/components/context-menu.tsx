@@ -91,7 +91,7 @@ const ContextMenuItem = ({
     data-inset={inset}
     data-variant={variant}
     className={cn(
-      `group/context-menu-item focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive focus:data-[variant=destructive]:bg-destructive/15 focus:data-[variant=destructive]:text-destructive *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm font-[450] tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `group/context-menu-item focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive focus:data-[variant=destructive]:bg-destructive/15 focus:data-[variant=destructive]:text-destructive *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}
@@ -116,7 +116,7 @@ const ContextMenuSubTrigger = ({
     data-slot="context-menu-sub-trigger"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-open:*:[svg]:text-accent-foreground flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm font-[450] tracking-wide outline-hidden select-none data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-open:*:[svg]:text-accent-foreground font-row flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}
@@ -153,7 +153,7 @@ const ContextMenuCheckboxItem = ({
     data-slot="context-menu-checkbox-item"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1 pr-8 pl-2 text-sm font-[450] tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent focus:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1 pr-8 pl-2 text-sm tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     checked={checked}
@@ -189,7 +189,7 @@ const ContextMenuRadioItem = ({
     data-slot="context-menu-radio-item"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1 pr-8 pl-2 text-sm font-[450] tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent focus:text-accent-foreground *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1 pr-8 pl-2 text-sm tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}

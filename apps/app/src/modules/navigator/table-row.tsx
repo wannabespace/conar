@@ -167,18 +167,15 @@ export const TableRow = ({
           />
           {hasDrafts && (
             <Indicator
-              className={cn(
-                '-top-0.5 -right-0.5 size-1.5',
-                isActive && 'bg-primary-foreground'
-              )}
+              inverse={isActive}
+              className="-top-0.5 -right-0.5 size-1.5"
             />
           )}
         </span>
         <span
           className={cn(
             'flex min-w-0 flex-1 items-center gap-1',
-            !row.pinned &&
-              `group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-4.75rem),transparent_calc(100%-2.5rem))]`
+            !row.pinned && 'group-hover/menu-item:row-actions-fade'
           )}
         >
           <span className="truncate">

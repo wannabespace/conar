@@ -67,7 +67,7 @@ export const ChatMessages = ({
                   </Message>
                 )}
                 {isPending && message === messages.at(-1) && (
-                  <Message className="pt-2.5">
+                  <Message className="mt-2.5">
                     <MessageContent>
                       <Spinner className="text-muted-foreground size-4" />
                     </MessageContent>
@@ -77,7 +77,7 @@ export const ChatMessages = ({
             ))}
           </MessageScrollerContent>
         </MessageScrollerViewport>
-        <MessageScrollerButton className="absolute inset-x-0 bottom-3 mx-auto transition-[translate,opacity] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-[active=false]:pointer-events-none data-[active=false]:translate-y-2 data-[active=false]:opacity-0 data-[active=true]:translate-y-0 data-[active=true]:opacity-100" />
+        <MessageScrollerButton className="absolute inset-x-0 bottom-3 mx-auto" />
       </MessageScroller>
     </MessageScrollerProvider>
   )

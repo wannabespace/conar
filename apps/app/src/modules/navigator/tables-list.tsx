@@ -292,7 +292,7 @@ export const TablesList = ({
           } else if (row.kind === 'separator') {
             rowContent = (
               <div className="flex h-full items-center">
-                <Separator className="bg-border mx-2 w-full" />
+                <Separator className="mx-2 w-full" />
               </div>
             )
           } else {

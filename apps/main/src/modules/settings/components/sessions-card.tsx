@@ -202,12 +202,12 @@ export const SessionsCard = () => {
           that device out.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent>
         {sessionsPending ? (
-          <>
-            <Skeleton className="bg-muted/30 h-10 w-full rounded-lg border" />
-            <Skeleton className="bg-muted/30 h-10 w-full rounded-lg border" />
-          </>
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full rounded-lg border" />
+            <Skeleton className="h-10 w-full rounded-lg border" />
+          </div>
         ) : (
           <ul className="space-y-2">
             {sessions?.map((session) => (

@@ -160,10 +160,9 @@ export const GlobalBanner = () => {
               <TooltipTrigger
                 render={
                   <Button
-                    variant="ghost"
+                    variant="ghost-tint"
                     size="icon-xs"
                     aria-label="Dismiss banner"
-                    className="hover:bg-foreground/10"
                     onClick={() =>
                       bannerDismissedValue.set((state) => [...state, item.text])
                     }

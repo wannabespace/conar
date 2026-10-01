@@ -44,22 +44,23 @@ const LastOpenedResource = ({
           </span>
         </span>
       </Link>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost-row"
-              size="icon-xs"
-              aria-label="Remove from recents"
-              className="text-muted-foreground shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 focus-visible:opacity-100"
-              onClick={onClose}
-            />
-          }
-        >
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-        </TooltipTrigger>
-        <TooltipContent side="top">Remove from recents</TooltipContent>
-      </Tooltip>
+      <span className="text-muted-foreground flex shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 has-focus-visible:opacity-100">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost-row"
+                size="icon-xs"
+                aria-label="Remove from recents"
+                onClick={onClose}
+              />
+            }
+          >
+            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+          </TooltipTrigger>
+          <TooltipContent side="top">Remove from recents</TooltipContent>
+        </Tooltip>
+      </span>
     </div>
   )
 }

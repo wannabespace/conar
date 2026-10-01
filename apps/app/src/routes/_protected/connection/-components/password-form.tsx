@@ -74,8 +74,7 @@ export const PasswordForm = ({
         <div className="flex w-full items-center gap-2">
           <Button
             type="button"
-            variant="link"
-            className="text-muted-foreground hover:text-foreground"
+            variant="link-muted"
             onClick={() => router.history.back()}
           >
             <HugeiconsIcon
@@ -100,7 +99,7 @@ export const PasswordForm = ({
                 To use this connection, you need to enter the password.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <PasswordInput
                 placeholder="••••••••"
                 value={password}

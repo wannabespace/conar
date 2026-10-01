@@ -47,12 +47,7 @@ const SortedItem = ({
   onFlip: () => void
   onRemove: () => void
 }) => (
-  <CommandItem
-    value={columnId}
-    keywords={[columnId]}
-    className="pr-8"
-    onSelect={onFlip}
-  >
+  <CommandItem value={columnId} keywords={[columnId]} onSelect={onFlip}>
     {position !== null && (
       <span className="text-2xs text-muted-foreground/70 w-3 shrink-0 tabular-nums">
         {position}
@@ -61,7 +56,7 @@ const SortedItem = ({
     <span data-mask className="min-w-0 flex-1 truncate">
       {columnId}
     </span>
-    <CommandShortcut>
+    <CommandShortcut className="mr-6">
       <HugeiconsIcon
         icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
         strokeWidth={2}
@@ -72,11 +67,11 @@ const SortedItem = ({
       <TooltipTrigger
         render={
           <Button
-            variant="ghost"
+            variant="ghost-destructive"
             size="icon-xs"
             aria-label={`Remove sort from ${columnId}`}
             tabIndex={-1}
-            className="text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive absolute inset-y-0 right-1 my-auto"
+            className="absolute inset-y-0 right-1 my-auto"
             onPointerDown={(event) => {
               event.preventDefault()
               event.stopPropagation()
@@ -122,7 +117,7 @@ export const ActionsOrder = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={<Button variant="outline" className="gap-1.5 px-2.5" />}
+              render={<Button variant="outline" size="counter" />}
             />
           }
         >
@@ -148,7 +143,7 @@ export const ActionsOrder = () => {
               : 'Sort order')}
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-72 gap-0 p-0" side="bottom" align="end">
+      <PopoverContent padding="none" className="w-72" side="bottom" align="end">
         <Command
           value={highlighted}
           onValueChange={setHighlighted}

@@ -26,7 +26,6 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tamery/ui/components/tabs'
-import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
@@ -216,7 +215,8 @@ export const RunnerResults = () => {
       onValueChange={(value) =>
         setPicked({ index: Number(value), run: run?.id ?? '' })
       }
-      className="size-full gap-0"
+      gap="none"
+      className="size-full"
     >
       <div className="flex h-8 shrink-0 items-center gap-2 border-b pr-1 pl-3">
         {results.length > 1 ? (
@@ -234,15 +234,13 @@ export const RunnerResults = () => {
                 render={
                   <TabsTrigger
                     value={String(index)}
-                    className={cn(
-                      'flex-none tabular-nums transition-none',
-                      item.error !== null && 'text-destructive',
-                      (item.stopped || item.pending) && 'text-muted-foreground'
-                    )}
+                    destructive={item.error !== null}
+                    muted={item.stopped || item.pending}
+                    className="flex-none transition-none"
                   />
                 }
               >
-                {index + 1}
+                <span className="tabular-nums">{index + 1}</span>
               </PopoverTrigger>
             ))}
             <Popover handle={statementPopover}>
@@ -256,7 +254,8 @@ export const RunnerResults = () => {
                 >
                   {typeof payload === 'string' && (
                     <CodeBlock
-                      className="max-h-80 px-3 py-2.5"
+                      padding="popup"
+                      className="max-h-80"
                       code={payload}
                       language="sql"
                       size="xs"
@@ -290,10 +289,9 @@ export const RunnerResults = () => {
             // oxlint-disable-next-line react/no-unstable-nested-components
             trigger={({ isExporting }) => (
               <Button
-                variant="ghost"
+                variant="ghost-muted"
                 size="icon-xs"
                 aria-label="Export results"
-                className="text-muted-foreground hover:text-foreground"
                 disabled={isExporting || rows.length === 0}
               >
                 <LoadingContent loading={isExporting}>

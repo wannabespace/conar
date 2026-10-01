@@ -47,7 +47,7 @@ export const ActionsColumns = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={<Button variant="outline" className="gap-1.5 px-2.5" />}
+              render={<Button variant="outline" size="counter" />}
             />
           }
         >
@@ -74,7 +74,12 @@ export const ActionsColumns = () => {
               : `${columns.length} column${columns.length === 1 ? '' : 's'}`)}
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-2xs gap-0 p-0" side="bottom" align="end">
+      <PopoverContent
+        padding="none"
+        className="w-2xs"
+        side="bottom"
+        align="end"
+      >
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">

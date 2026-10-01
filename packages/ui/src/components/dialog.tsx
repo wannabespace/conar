@@ -7,7 +7,7 @@ import * as React from 'react'
 
 import { dialogContentVariants, dialogTitleVariants } from './dialog.utils'
 
-type DialogVariant = 'default' | 'panel'
+type DialogVariant = 'default' | 'panel' | 'promo'
 
 const DialogVariantContext = React.createContext<DialogVariant>('default')
 

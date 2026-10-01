@@ -160,10 +160,10 @@ export const ReviewDrawer = ({
                           <TooltipTrigger
                             render={
                               <Button
-                                variant="ghost"
+                                variant="ghost-muted"
                                 size="icon-xs"
                                 aria-label="Discard change"
-                                className="text-muted-foreground shrink-0"
+                                className="shrink-0"
                                 onClick={() => onDiscard(draft.id)}
                                 disabled={applying}
                               />
@@ -194,17 +194,19 @@ export const ReviewDrawer = ({
         {error && (
           <Alert variant="destructive" className="mx-3 mb-3">
             <AlertTitle>The database refused the changes</AlertTitle>
-            <AlertDescription data-mask className="font-mono select-text">
-              {error.message}
+            <AlertDescription>
+              <span data-mask className="font-mono select-text">
+                {error.message}
+              </span>
             </AlertDescription>
           </Alert>
         )}
         <DrawerFooter>
           <Button
-            variant="ghost"
+            variant="ghost-muted"
             onClick={onDiscardAll}
             disabled={applying || drafts.length === 0}
-            className="text-muted-foreground mr-auto"
+            className="mr-auto"
           >
             <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
             Discard all

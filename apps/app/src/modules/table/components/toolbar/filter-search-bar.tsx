@@ -25,6 +25,7 @@ import {
   EnterIcon,
   KbdCtrlLetter,
 } from '@tamery/ui/components/custom/shortcuts'
+import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -714,13 +715,14 @@ export const FilterSearchBar = ({
     >
       <div className="bg-input ring-foreground/4 has-[input:focus]:focus-ring flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring transition-[color,box-shadow] duration-200">
         <LoadingContent
-          className="text-muted-foreground pointer-events-none mr-1 size-4 shrink-0"
+          className="pointer-events-none mr-1 size-4 shrink-0"
           loading={isPending}
+          spinner={<Spinner className="text-muted-foreground" />}
         >
           <HugeiconsIcon
             icon={Search01Icon}
             strokeWidth={2}
-            className="size-4"
+            className="text-muted-foreground size-4"
           />
         </LoadingContent>
         <div
@@ -750,7 +752,7 @@ export const FilterSearchBar = ({
             />
           ))}
           {stage.step !== 'idle' && (
-            <span className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring">
+            <span className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring">
               <span
                 data-mask
                 className="flex items-center px-1.5 text-xs font-medium"

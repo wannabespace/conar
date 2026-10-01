@@ -1,0 +1,5 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "tailwind": { "css": "../../packages/ui/src/styles/globals.css" },
+  "aliases": { "ui": "@tamery/ui/components" }
+}

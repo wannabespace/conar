@@ -29,7 +29,6 @@ import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
-import { sidebarActionRowClassName } from './primitives'
 import { getNavigatorStore, navigatorStore } from './stores'
 import { TablesList } from './tables-list'
 
@@ -64,7 +63,6 @@ const TablesPanel = ({
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search"
-            className="text-sm"
             value={search}
             onChange={(e) =>
               store.set(
@@ -81,9 +79,8 @@ const TablesPanel = ({
           <TooltipTrigger
             render={
               <RefreshButton
-                variant="outline"
+                variant="outline-muted"
                 size="icon-sm"
-                className="text-muted-foreground"
                 onClick={() => refetchTablesAndSchemas()}
                 refreshing={isRefreshingTablesAndSchemas}
               />
@@ -121,8 +118,7 @@ const NavigatorFooter = () => {
         <Button
           key={action.label}
           variant="ghost-row"
-          size="sm"
-          className={sidebarActionRowClassName}
+          size="row"
           {...pressNavProps(() =>
             router.navigate({
               params: {
@@ -141,12 +137,7 @@ const NavigatorFooter = () => {
           {action.label}
         </Button>
       ))}
-      <Button
-        variant="ghost-row"
-        size="sm"
-        disabled
-        className={sidebarActionRowClassName}
-      >
+      <Button variant="ghost-row" size="row" disabled>
         <HugeiconsIcon
           icon={Settings02Icon}
           strokeWidth={2}

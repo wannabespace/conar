@@ -117,16 +117,11 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           )}
 
           <div className="mt-7 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => router.history.back()}
-            >
+            <Button variant="ghost-muted" onClick={() => router.history.back()}>
               Go back
             </Button>
             <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              variant="ghost-muted"
               onClick={() => router.navigate({ to: '/' })}
             >
               Home
@@ -135,22 +130,17 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           </div>
 
           <div className="text-muted-foreground/70 mt-5 flex items-center gap-1 text-xs">
-            <CopyButton
-              variant="ghost"
-              size="xs"
-              text={details}
-              className="text-muted-foreground/70 hover:text-foreground h-6 gap-1 px-1.5 font-normal hover:bg-transparent"
-            >
+            <CopyButton variant="ghost" size="xs" text={details}>
               Copy details
             </CopyButton>
             <span aria-hidden>·</span>
-            <button
-              type="button"
-              className="hover:text-foreground focus-visible:text-foreground cursor-default rounded-md px-1.5 py-0.5 outline-none"
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={() => setShowDetails((prev) => !prev)}
             >
               {showDetails ? 'Hide details' : 'Show details'}
-            </button>
+            </Button>
           </div>
 
           <div
@@ -160,12 +150,13 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
             )}
           >
             <div className="min-h-0 overflow-hidden">
-              <ScrollArea
-                data-mask
-                className="text-2xs text-muted-foreground/80 mt-4 max-h-56 border-t pt-4 text-left font-mono leading-relaxed whitespace-pre-wrap"
-              >
-                {details}
-              </ScrollArea>
+              <div className="text-2xs text-muted-foreground/80 mt-4 flex max-h-56 flex-col border-t text-left font-mono leading-relaxed whitespace-pre-wrap">
+                <ScrollArea>
+                  <div data-mask className="pt-4">
+                    {details}
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
           </div>
         </motion.div>

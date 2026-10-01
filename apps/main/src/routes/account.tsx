@@ -134,7 +134,7 @@ const AccountLayout = () => {
             <Separator className="my-2" />
             <Button
               variant="ghost"
-              className="text-foreground w-full justify-start"
+              className="w-full justify-start"
               onClick={() => {
                 void handleSignOut()
               }}

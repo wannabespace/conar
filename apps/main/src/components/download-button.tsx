@@ -57,7 +57,7 @@ export const DownloadButton = ({ className }: { className?: string }) => {
     return (
       <Button
         size="lg"
-        className={cn('flex items-center justify-center gap-2', className)}
+        className={className}
         render={
           <a
             href={firstAsset.link}
@@ -78,7 +78,7 @@ export const DownloadButton = ({ className }: { className?: string }) => {
         render={
           <Button
             size="lg"
-            className={cn(`flex items-center justify-center gap-2`, className)}
+            className={cn(`flex items-center justify-center`, className)}
           />
         }
       >

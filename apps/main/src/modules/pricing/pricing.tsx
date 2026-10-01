@@ -74,8 +74,8 @@ export const Pricing = ({ className }: PricingSectionProps) => {
       </div>
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4 sm:gap-6 lg:grid-cols-2">
         {plans.map((plan) => (
-          <Card key={plan.name} className="relative flex flex-col p-0">
-            <div className="flex-1 p-6 sm:p-8">
+          <Card key={plan.name} size="none" className="relative">
+            <div className="mb-5 flex-1 p-6 sm:p-8">
               <div className="mb-6 flex items-center justify-between sm:mb-8">
                 <div
                   className={cn(

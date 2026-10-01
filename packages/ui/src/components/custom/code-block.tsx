@@ -51,6 +51,7 @@ const useTokens = (code: string, language: string) => {
 
 const TokenSpans = ({ tokens }: { tokens: Token[] }) =>
   tokens.map((token, index) => (
+    // oxlint-disable-next-line shadcn/no-inline-styles -- Shiki emits each token's theme colors as inline styles
     <span key={index} style={token.htmlStyle}>
       {token.content}
     </span>
@@ -84,11 +85,17 @@ const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
     variant: 'ghost',
   },
   variants: {
+    padding: {
+      bottom: 'pb-2',
+      popup: 'px-3 py-2.5',
+      y: 'py-2',
+    },
     size: {
       '2xs': 'text-2xs/5',
       xs: 'text-xs/5',
     },
     variant: {
+      destructive: 'text-destructive',
       field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring',
       ghost: '',
     },
@@ -103,6 +110,7 @@ const CodeBlock = ({
   code,
   language,
   lineNumbers = false,
+  padding,
   size,
   variant,
   wrap = false,
@@ -120,7 +128,10 @@ const CodeBlock = ({
   return (
     <pre
       data-slot="code-block"
-      className={cn(codeBlockVariants({ size, variant, wrap }), className)}
+      className={cn(
+        codeBlockVariants({ padding, size, variant, wrap }),
+        className
+      )}
       {...props}
     >
       <code data-mask className={cn(lineNumbers && '[counter-reset:line]')}>

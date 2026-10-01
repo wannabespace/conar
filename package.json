@@ -42,6 +42,7 @@
   "devDependencies": {
     "@clack/prompts": "catalog:",
     "@manypkg/get-packages": "catalog:",
+    "@shadcn/lint": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",

@@ -20,20 +20,13 @@ export const PaneEmpty = ({
   icon: IconSvgElement
   title: string
 }) => (
-  <Empty className="min-h-0 flex-1 overflow-y-auto p-4 md:p-4">
-    <EmptyHeader className="gap-1">
-      <EmptyMedia
-        variant="icon"
-        className="bg-muted/60 text-muted-foreground/70 mb-3 size-14 rounded-2xl [&_svg]:size-7"
-      >
+  <Empty size="sm" className="min-h-0 flex-1 overflow-y-auto">
+    <EmptyHeader>
+      <EmptyMedia variant="muted">
         <HugeiconsIcon icon={Icon} strokeWidth={2} />
       </EmptyMedia>
-      <EmptyTitle className="text-sm font-medium tracking-normal">
-        {title}
-      </EmptyTitle>
-      <EmptyDescription className="max-w-64 text-xs">
-        {description}
-      </EmptyDescription>
+      <EmptyTitle>{title}</EmptyTitle>
+      <EmptyDescription className="max-w-64">{description}</EmptyDescription>
     </EmptyHeader>
     {children}
   </Empty>

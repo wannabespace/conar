@@ -261,12 +261,16 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
           <div
             // Third bound keeps a long name inside the card: ~0.55em per glyph
             // over a 15rem inner width.
-            style={{ '--label-length': table.name.length } as CSSProperties}
+            style={
+              {
+                '--label-size': `min(4rem, calc(0.875rem / var(--diagram-zoom)), calc(27rem / ${table.name.length}))`,
+              } as CSSProperties
+            }
             className="pointer-events-none absolute inset-0 flex items-center justify-center px-2"
           >
             <span
               data-mask
-              className="text-foreground max-w-full truncate text-[min(4rem,calc(0.875rem/var(--diagram-zoom)),calc(27rem/var(--label-length)))] leading-none font-medium"
+              className="text-foreground max-w-full truncate text-(length:--label-size) leading-none font-medium"
             >
               {table.name}
             </span>

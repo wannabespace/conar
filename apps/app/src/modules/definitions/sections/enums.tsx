@@ -381,7 +381,7 @@ const EnumInspector = ({
 const enumNameColumn = nameColumn({
   icon: (item: EnumItem) =>
     item.metadata?.isSet ? LeftToRightListDashIcon : TagsIcon,
-  width: 'w-3/12',
+  width: '3/12',
 })
 
 const valuesColumn: DefinitionsColumn<EnumItem> = {
@@ -402,19 +402,19 @@ const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
   textColumn({
     header: 'Table',
     valueOf: (item: EnumItem) => item.metadata?.table,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   textColumn({
     header: 'Column',
     valueOf: (item: EnumItem) => item.metadata?.column,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   valuesColumn,
   labelColumn({
     align: 'end',
     header: 'Type',
     labelOf: (item: EnumItem) => (item.metadata?.isSet ? 'Set' : 'Enum'),
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 

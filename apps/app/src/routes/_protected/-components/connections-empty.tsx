@@ -45,7 +45,7 @@ const GhostRow = ({
 export const Empty = () => (
   <div className="flex flex-col items-center py-10 text-center">
     <div
-      className="border-border/50 bg-card/40 pointer-events-none w-full max-w-md overflow-hidden rounded-xl border mask-[linear-gradient(to_bottom,black,transparent)]"
+      className="border-border/50 bg-card/40 pointer-events-none w-full max-w-md overflow-hidden rounded-xl border mask-b-from-0%"
       aria-hidden
     >
       <GhostRow nameWidth="w-32" urlWidth="w-28" lit />

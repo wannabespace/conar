@@ -58,11 +58,11 @@ export const RunnerAlertDialog = ({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
+          <AlertDialogTitle className="flex items-center">
             <HugeiconsIcon
               icon={Alert02Icon}
               strokeWidth={2}
-              className="text-warning size-5"
+              className="text-warning mr-2 size-5"
             />
             This changes data
           </AlertDialogTitle>
@@ -74,7 +74,7 @@ export const RunnerAlertDialog = ({
             , which can modify or delete data in the database.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2">
+        <AlertDialogFooter>
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogCancel variant="warning" onClick={onConfirm}>
             Run anyway

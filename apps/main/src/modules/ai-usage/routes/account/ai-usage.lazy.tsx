@@ -85,14 +85,16 @@ const RouteComponent = () => {
               </Button>
             }
           />
-          <PopoverContent align="end" className="w-auto gap-2 p-2">
-            <Calendar
-              autoFocus
-              mode="range"
-              numberOfMonths={2}
-              onSelect={setRange}
-              selected={range}
-            />
+          <PopoverContent align="end" padding="none" className="w-auto">
+            <div className="p-2">
+              <Calendar
+                autoFocus
+                mode="range"
+                numberOfMonths={2}
+                onSelect={setRange}
+                selected={range}
+              />
+            </div>
           </PopoverContent>
         </Popover>
       </div>
@@ -142,16 +144,16 @@ const RouteComponent = () => {
                   : usage.map((row) => (
                       <TableRow key={row.month}>
                         <TableCell>{formatMonth(row.month)}</TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.calls)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.inputTokens ?? 0)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {formatTokens(row.outputTokens ?? 0)}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        <TableCell variant="numeric">
                           {row.cost === null ? '—' : formatCost(row.cost)}
                         </TableCell>
                       </TableRow>

@@ -148,7 +148,6 @@ export const StepSave = ({
                     variant={label === option ? 'default' : 'outline'}
                     size="xs"
                     onClick={() => setLabel(option)}
-                    className="border!"
                   >
                     {option}
                   </Button>
@@ -190,7 +189,7 @@ export const StepSave = ({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="flex items-center gap-2 text-sm font-normal">
+            <Label variant="checkbox">
               <Checkbox
                 checked={syncType === SyncType.Cloud}
                 onCheckedChange={() =>

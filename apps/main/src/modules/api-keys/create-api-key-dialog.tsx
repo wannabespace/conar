@@ -128,7 +128,7 @@ export const CreateApiKeyDialog = ({
             </DialogDescription>
           </DialogHeader>
           <div>
-            <Form id="create-api-key-form" className="space-y-4" form={form}>
+            <Form id="create-api-key-form" form={form}>
               <FieldSet className="w-full">
                 <form.AppField
                   name="name"
@@ -221,11 +221,12 @@ export const CreateApiKeyDialog = ({
           </DialogHeader>
           <div>
             {createdKey && (
-              <InputGroup className="font-mono text-xs shadow-none">
+              <InputGroup>
                 <InputGroupInput
                   readOnly
+                  variant="code"
                   value={createdKey.key}
-                  className="min-w-0 overflow-x-auto font-mono text-xs"
+                  className="min-w-0 overflow-x-auto"
                 />
                 <InputGroupAddon align="inline-end">
                   <CopyButton

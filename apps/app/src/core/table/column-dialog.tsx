@@ -197,7 +197,7 @@ const ColumnForm = ({
             </ComboboxContent>
           </Autocomplete>
         </Field>
-        <Label className="font-normal">
+        <Label variant="checkbox">
           <Checkbox
             checked={primaryKey ? false : nullable}
             disabled={primaryKey}
@@ -206,7 +206,7 @@ const ColumnForm = ({
           Allow NULL
         </Label>
         {column === null && table.state === 'added' && (
-          <Label className="font-normal">
+          <Label variant="checkbox">
             <Checkbox
               checked={primaryKey}
               onCheckedChange={(checked) => setPrimaryKey(checked === true)}

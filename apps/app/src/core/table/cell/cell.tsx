@@ -98,15 +98,9 @@ const ForeignButton = (props: ComponentProps<'button'>) => (
 
 const ReferenceButton = ({
   children,
-  className,
   ...props
 }: ComponentProps<typeof Button>) => (
-  <Button
-    variant="ghost"
-    size="xs"
-    className={cn('px-1.5!', className)}
-    {...props}
-  >
+  <Button variant="ghost" size="chip" {...props}>
     <HugeiconsIcon
       icon={ArrowDownLeft01Icon}
       strokeWidth={2}
@@ -193,7 +187,8 @@ const CellForeignPopover = ({
       <TooltipContent side="right">See foreign record</TooltipContent>
     </Tooltip>
     <PopoverContent
-      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
+      padding="none"
+      className="h-[45vh] w-[80vw] overflow-hidden"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -245,7 +240,8 @@ const CellReferencesPopover = ({
       </TooltipContent>
     </Tooltip>
     <PopoverContent
-      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
+      padding="none"
+      className="h-[45vh] w-[80vw] overflow-hidden"
       onDoubleClick={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
@@ -403,8 +399,9 @@ const InteractiveTableCell = ({
               )}
           </PopoverTrigger>
           <PopoverContent
+            padding="none"
             className={cn(
-              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
+              `w-80 overflow-auto duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
               isBig && `w-[min(50vw,60rem)]`
             )}
             onAnimationEnd={disableInteractIfPossible}

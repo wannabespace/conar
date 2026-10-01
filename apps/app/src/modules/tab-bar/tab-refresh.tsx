@@ -13,10 +13,9 @@ export const TabRefresh = ({ tabId }: { tabId: string | undefined }) => {
 
   return (
     <RefreshButton
-      variant="ghost"
+      variant="ghost-muted"
       size="icon-xs"
       aria-label="Refresh"
-      className="text-muted-foreground"
       iconClassName="size-3.5"
       refreshing={false}
       disabled

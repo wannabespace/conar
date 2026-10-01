@@ -48,7 +48,7 @@ const TableRow = ({ className, ...props }: React.ComponentProps<'tr'>) => (
   <tr
     data-slot="table-row"
     className={cn(
-      `hover:bg-accent has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors`,
+      `hover:bg-accent has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted data-highlighted:bg-foreground/7 border-b transition-colors hover:aria-busy:bg-transparent`,
       className
     )}
     {...props}
@@ -66,11 +66,16 @@ const TableHead = ({ className, ...props }: React.ComponentProps<'th'>) => (
   />
 )
 
-const TableCell = ({ className, ...props }: React.ComponentProps<'td'>) => (
+const TableCell = ({
+  className,
+  variant = 'default',
+  ...props
+}: React.ComponentProps<'td'> & { variant?: 'default' | 'numeric' }) => (
   <td
     data-slot="table-cell"
     className={cn(
       `p-2 align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0`,
+      variant === 'numeric' && 'text-right tabular-nums',
       className
     )}
     {...props}

@@ -4,6 +4,16 @@ Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-on
 
 `oxlint.config.ts` turns rules **off** only where a preset rule contradicts how this repo works, each with the reason inline. A rule that merely fails is a defect to fix, not an entry to add.
 
+## Design-system lint (`@shadcn/lint`)
+
+The `shadcn/*` rules enforce the `tamery-ui` hard rules: `no-restyle` is rule 11, `no-raw-colors` and `no-arbitrary-values` keep values on theme tokens, `no-inline-styles` sends dynamic values through CSS custom properties (`w-(--x)` + `style={{ '--x': … }}`).
+
+- A `no-restyle` finding means the kit is missing a `variant`/`size`/prop — add it in `packages/ui`, never silence the call site. `packages/ui/src/components/**` is exempt from `no-restyle`, `no-arbitrary-values` and `require-static-classes`: components own their appearance.
+- Call sites may always pass layout, motion, `opacity` (hover reveals, display-only disabled state), `truncate` and the scroller utilities. A component that owns no surface (`ScrollArea`, raw primitive triggers, layout containers) gets a **contract** in `oxlint.config.ts` widening what call sites may pass; a contract is never a shortcut around a missing variant on a component that does own a surface.
+- `require-static-classes` needs class strings the linter can read in the same file — no class names passed in as data or built by a helper; ternaries of literals and `cn(…, cond && '…')` are fine.
+- A disable is the last resort and always says why: `// oxlint-disable-next-line shadcn/<rule> -- <reason>` (third-party code that only accepts inline styles, a value no token can describe).
+- Theme discovery reads the nearest `components.json`: a workspace that renders kit classes but lacks one (`apps/main`, `packages/table`) carries a minimal one pointing at the kit's `globals.css`, or `no-unknown-classes` falls back to stock Tailwind.
+
 ## No import cycles, no star barrels
 
 `import/no-cycle` and `oxc/no-barrel-file` are on repo-wide and the tree satisfies both — keep it that way rather than adding an override.

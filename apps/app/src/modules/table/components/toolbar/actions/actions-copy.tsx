@@ -160,15 +160,15 @@ export const ActionsCopy = ({
     <Dialog open={open} onOpenChange={onOpenChange} variant="panel">
       <DialogContent showCloseButton={false}>
         <div className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b px-2">
-          <DialogTitle className="truncate px-2" data-mask>
+          <DialogTitle className="mx-2 truncate" data-mask>
             {table}
           </DialogTitle>
           <Tabs value={kind} onValueChange={setKind}>
             <TabsList>
-              <TabsTrigger value="schema" className="px-4">
+              <TabsTrigger value="schema" className="min-w-20">
                 Schema
               </TabsTrigger>
-              <TabsTrigger value="query" className="px-4">
+              <TabsTrigger value="query" className="min-w-20">
                 Query
               </TabsTrigger>
             </TabsList>
@@ -178,7 +178,8 @@ export const ActionsCopy = ({
         <Tabs
           value={format.type}
           onValueChange={setFormatType}
-          className="min-h-0 flex-1 gap-0"
+          gap="none"
+          className="min-h-0 flex-1"
         >
           <TabsList variant="bar" className="shrink-0 after:hidden">
             {formats.map((f) => (
@@ -196,9 +197,8 @@ export const ActionsCopy = ({
                   render={
                     <CopyButton
                       size="icon-xs"
-                      variant="ghost"
+                      variant="ghost-muted"
                       aria-label="Copy"
-                      className="text-muted-foreground"
                       text={code}
                     />
                   }
@@ -210,7 +210,8 @@ export const ActionsCopy = ({
             </div>
           </TabsList>
           <CodeBlock
-            className="no-scrollbar scroll-fade min-h-0 flex-1 py-2"
+            padding="y"
+            className="no-scrollbar scroll-fade min-h-0 flex-1"
             code={code}
             language={format.language}
             lineNumbers

@@ -83,12 +83,9 @@ const LogRow = ({
     className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:focus-ring flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
   >
     <StatusDot {...query} />
-    <CodeInline
-      data-mask
-      code={query.query}
-      language="sql"
-      className="min-w-0 flex-1 truncate text-xs"
-    />
+    <span className="min-w-0 flex-1 truncate font-mono text-xs">
+      <CodeInline data-mask code={query.query} language="sql" />
+    </span>
     <span className="text-2xs text-muted-foreground/70 flex items-center gap-3 tabular-nums">
       <span className="w-12 text-right">
         {query.duration === null ? '' : `${Math.round(query.duration)} ms`}
@@ -155,10 +152,9 @@ const QueryDetails = ({
     className="flex min-h-0 flex-1 flex-col"
   >
     <CodeBlock
-      className={cn(
-        'no-scrollbar scroll-fade min-h-0 flex-1 pb-2',
-        tab.value === 'error' && 'text-destructive'
-      )}
+      variant={tab.value === 'error' ? 'destructive' : 'ghost'}
+      padding="bottom"
+      className="no-scrollbar scroll-fade min-h-0 flex-1"
       code={tab.code}
       language={tab.language}
       lineNumbers
@@ -279,7 +275,8 @@ export const QueryLogger = ({
       onValueChange={(value) =>
         setTab((current) => ({ ...current, value: value as string }))
       }
-      className={cn('flex h-full min-h-0 flex-col gap-0', className)}
+      gap="none"
+      className={cn('flex h-full min-h-0 flex-col', className)}
     >
       <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-3">
         <span className="text-sm font-medium">Query Logger</span>
@@ -289,8 +286,7 @@ export const QueryLogger = ({
               render={
                 <Button
                   size="icon-xs"
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground"
+                  variant="ghost-muted"
                   aria-label="Clear log"
                   disabled={queries.length === 0}
                   onClick={clearQueries}
@@ -318,8 +314,7 @@ export const QueryLogger = ({
               render={
                 <Button
                   size="icon-xs"
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground"
+                  variant="ghost-muted"
                   aria-label="Close query logger"
                   onClick={() => loggerOpen(connectionResource.id).set(false)}
                 />
@@ -366,9 +361,9 @@ export const QueryLogger = ({
                   <TabsTrigger
                     key={item.value}
                     value={item.value}
-                    className="flex-none tabular-nums transition-none"
+                    className="flex-none transition-none"
                   >
-                    {item.label}
+                    <span className="tabular-nums">{item.label}</span>
                   </TabsTrigger>
                 ))}
                 <div className="flex flex-1 items-center justify-end border-b px-1">
@@ -377,9 +372,8 @@ export const QueryLogger = ({
                       render={
                         <CopyButton
                           size="icon-xs"
-                          variant="ghost"
+                          variant="ghost-muted"
                           aria-label="Copy"
-                          className="text-muted-foreground"
                           text={activeTab.code}
                         />
                       }

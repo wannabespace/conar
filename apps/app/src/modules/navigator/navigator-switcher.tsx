@@ -9,7 +9,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { sidebarActionRowClassName } from './primitives'
 import { getNavigatorStore } from './stores'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -25,9 +24,8 @@ export const NavigatorSwitcher = () => {
   return (
     <Button
       variant="ghost-row"
-      size="sm"
+      size="row"
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
-      className={sidebarActionRowClassName}
       onClick={() =>
         navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
       }

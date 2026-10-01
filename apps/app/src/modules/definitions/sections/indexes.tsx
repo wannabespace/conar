@@ -437,12 +437,12 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
   nameColumn({
     icon: (item: GroupedIndex) =>
       item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon,
-    width: 'w-4/12',
+    width: '4/12',
   }),
   textColumn({
     header: 'Table',
     valueOf: (item: GroupedIndex) => item.table,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   textColumn({
     header: 'Columns',
@@ -453,7 +453,7 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
     header: 'Type',
     labelOf: (item: GroupedIndex) =>
       [kindLabels[item.kind], item.type].filter(Boolean).join(' · '),
-    width: 'w-3/12',
+    width: '3/12',
   }),
 ]
 

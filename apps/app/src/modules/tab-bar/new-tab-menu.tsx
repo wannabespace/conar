@@ -47,12 +47,7 @@ export const NewTabMenu = ({
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-            size="icon-xs"
-            aria-label="New tab"
-          />
+          <Button variant="ghost-muted" size="icon-xs" aria-label="New tab" />
         }
       >
         <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />

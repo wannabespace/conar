@@ -17,10 +17,14 @@ export const ChatSkeleton = () => (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-3 py-3">
       {skeletonTurns.map(({ bubble, lines }) => (
         <div key={bubble} className="flex flex-col gap-4">
-          <Skeleton className={cn('h-9 self-end rounded-3xl', bubble)} />
+          <div className={cn('self-end', bubble)}>
+            <Skeleton className="h-9 rounded-3xl" />
+          </div>
           <div className="flex flex-col gap-2">
             {lines.map((line) => (
-              <Skeleton key={line} className={cn('h-2.5 rounded-full', line)} />
+              <div key={line} className={line}>
+                <Skeleton className="h-2.5 rounded-full" />
+              </div>
             ))}
           </div>
         </div>

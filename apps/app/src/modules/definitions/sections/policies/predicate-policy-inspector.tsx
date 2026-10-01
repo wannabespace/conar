@@ -176,8 +176,8 @@ export const PredicatePolicyInspector = ({
                   render={
                     <Button
                       size="icon-xs"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-foreground -mt-0.5"
+                      variant="ghost-muted"
+                      className="-mt-0.5"
                       aria-label="Remove predicate"
                       onClick={() => form.removeFieldValue('predicates', index)}
                     >

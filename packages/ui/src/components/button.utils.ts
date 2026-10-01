@@ -1,5 +1,7 @@
 import { cva } from 'class-variance-authority'
 
+const outline = `bg-input ring-foreground/4 hover:ring-foreground/12 aria-expanded:ring-foreground/12 hover:bg-accent aria-expanded:bg-accent aria-pressed:bg-foreground/10 shadow-xs ring`
+
 export const buttonVariants = cva(
   `group/button focus-visible:focus-ring aria-invalid:invalid-ring inline-flex shrink-0 cursor-default items-center justify-center rounded-xl border border-transparent text-sm whitespace-nowrap transition-[transform,box-shadow,color,background-color,border-color] outline-none select-none active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:opacity-50 active:aria-disabled:translate-y-0 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
   {
@@ -9,6 +11,9 @@ export const buttonVariants = cva(
     },
     variants: {
       size: {
+        chip: `h-6 gap-1 rounded-md px-1.5 text-xs [&_svg:not([class*='size-'])]:size-3`,
+        counter: `h-8 gap-1.5 px-2.5`,
+        crumb: `h-7 gap-1.5 rounded-lg px-2`,
         default: `h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&>[data-slot=kbd]]:-ml-0.5`,
         icon: 'size-8',
         'icon-2xs': `size-5 rounded-sm [&_svg:not([class*='size-'])]:size-3.5`,
@@ -16,6 +21,7 @@ export const buttonVariants = cva(
         'icon-sm': 'size-7 rounded-lg',
         'icon-xs': `size-6 rounded-md [&_svg:not([class*='size-'])]:size-3.5`,
         lg: `h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&>[data-slot=kbd]]:-ml-0.5`,
+        row: `h-7 w-full justify-start gap-2 rounded-md px-2`,
         sm: `h-7 gap-1 rounded-lg px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2`,
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
       },
@@ -23,9 +29,15 @@ export const buttonVariants = cva(
         default: `bg-primary text-primary-foreground hover:bg-primary/80`,
         destructive: `bg-destructive hover:bg-destructive/85 text-white shadow-xs`,
         ghost: `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
+        'ghost-destructive': `text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-transform`,
+        'ghost-muted': `text-muted-foreground hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
+        'ghost-nav': `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground not-hover:aria-[current=page]:bg-accent/50 transition-transform`,
         'ghost-row': `hover:bg-foreground/5 hover:text-foreground aria-expanded:bg-foreground/5 aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
+        'ghost-tint': `hover:bg-foreground/10 hover:text-foreground aria-expanded:bg-foreground/10 aria-expanded:text-foreground transition-transform`,
         link: `text-primary px-0 underline-offset-4 hover:underline`,
-        outline: `bg-input text-foreground ring-foreground/4 hover:ring-foreground/12 aria-expanded:ring-foreground/12 hover:bg-accent aria-expanded:bg-accent aria-pressed:bg-foreground/10 shadow-xs ring`,
+        'link-muted': `text-muted-foreground hover:text-foreground px-0 underline-offset-4 hover:underline`,
+        outline: `text-foreground ${outline}`,
+        'outline-muted': `text-muted-foreground hover:text-foreground ${outline}`,
         secondary: `bg-secondary text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]`,
         warning: `bg-warning hover:bg-warning/85 text-white shadow-xs`,
       },

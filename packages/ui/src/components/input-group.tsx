@@ -90,7 +90,7 @@ const InputGroupText = ({
 const InputGroupInput = ({
   className,
   ...props
-}: React.ComponentProps<'input'>) => (
+}: React.ComponentProps<typeof Input>) => (
   <Input
     data-slot="input-group-control"
     className={cn(
@@ -103,12 +103,14 @@ const InputGroupInput = ({
 
 const InputGroupTextarea = ({
   className,
+  mono = false,
   ...props
-}: React.ComponentProps<'textarea'>) => (
+}: React.ComponentProps<'textarea'> & { mono?: boolean }) => (
   <Textarea
     data-slot="input-group-control"
     className={cn(
       `flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0`,
+      mono && 'font-mono',
       className
     )}
     {...props}

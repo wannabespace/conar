@@ -165,9 +165,8 @@ const Preview = ({
             <TooltipTrigger
               render={
                 <Button
-                  variant="ghost"
+                  variant="ghost-muted"
                   size="icon-xs"
-                  className="text-muted-foreground hover:text-foreground"
                   onClick={() => setValues(sample)}
                 />
               }
@@ -376,7 +375,7 @@ const Inspector = ({
             data-mask
             aria-label="SQL expression"
             placeholder="now()"
-            className="font-mono text-xs"
+            variant="code"
             value={generator.customExpression ?? ''}
             onChange={(event) =>
               onChange({ customExpression: event.target.value })

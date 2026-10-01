@@ -160,12 +160,12 @@ const columns: DefinitionsColumn<PrivilegeItem>[] = [
   textColumn({
     header: 'Account',
     valueOf: (item: PrivilegeItem) => item.grantee,
-    width: 'w-4/12',
+    width: '4/12',
   }),
   labelColumn({
     header: 'Privilege',
     labelOf: (item: PrivilegeItem) => item.privilege,
-    width: 'w-3/12',
+    width: '3/12',
   }),
   textColumn({
     header: 'Table',
@@ -175,7 +175,7 @@ const columns: DefinitionsColumn<PrivilegeItem>[] = [
     align: 'end',
     header: 'Can grant',
     labelOf: (item: PrivilegeItem) => (item.grantable ? 'Yes' : 'No'),
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 

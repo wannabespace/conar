@@ -143,9 +143,7 @@ const ConnectionsDropdown = ({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
-        }
+        render={<Button variant="ghost" size="crumb" className="max-w-64" />}
       >
         {current ? (
           <>
@@ -218,9 +216,7 @@ const ResourcesDropdown = ({
 }) => (
   <DropdownMenu>
     <DropdownMenuTrigger
-      render={
-        <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
-      }
+      render={<Button variant="ghost" size="crumb" className="max-w-64" />}
     >
       <span data-mask className="text-muted-foreground truncate">
         {current.name || CONNECTION_RESOURCE_ROOT_LABEL}

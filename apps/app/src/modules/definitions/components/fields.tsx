@@ -140,12 +140,7 @@ export const SqlField = ({
   ...textarea
 }: LabelledProps & ComponentProps<typeof FieldTextarea>) => (
   <Labelled description={description} label={label}>
-    <FieldTextarea
-      data-mask
-      className="font-mono"
-      spellCheck={false}
-      {...textarea}
-    />
+    <FieldTextarea data-mask mono spellCheck={false} {...textarea} />
   </Labelled>
 )
 

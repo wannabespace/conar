@@ -21,9 +21,11 @@
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 0.875rem;
+  --text-hero: clamp(2rem, min(7vh, 7vw), 4rem);
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --font-mono: 'Geist Mono Variable', monospace;
+  --font-weight-row: 450;
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -49,6 +51,7 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
   --color-body: var(--body);
+  --color-chip: color-mix(in oklch, var(--input), var(--foreground) 4%);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -365,4 +368,12 @@
     inset: calc(--value([*]) * -1);
     pointer-events: inherit;
   }
+}
+
+@utility row-actions-fade {
+  mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 4.75rem),
+    transparent calc(100% - 2.5rem)
+  );
 }

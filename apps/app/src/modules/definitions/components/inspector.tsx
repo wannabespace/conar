@@ -107,10 +107,10 @@ export const Inspector = ({
   return (
     <>
       <DrawerHeader showCloseButton>
-        <DrawerTitle data-mask className="truncate">
+        <DrawerTitle data-mask truncate>
           {item ? item.name : `New ${noun}`}
         </DrawerTitle>
-        <DrawerDescription data-mask className="truncate">
+        <DrawerDescription data-mask truncate>
           {description}
         </DrawerDescription>
       </DrawerHeader>
@@ -242,8 +242,8 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
           render={
             <CopyButton
               size="icon-xs"
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground -mt-0.5"
+              variant="ghost-muted"
+              className="-mt-0.5"
               aria-label="Copy SQL"
               text={code}
             />

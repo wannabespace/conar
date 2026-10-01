@@ -567,12 +567,12 @@ const ConstraintInspector = ({
 const columns: DefinitionsColumn<GroupedConstraint>[] = [
   nameColumn({
     icon: (item: GroupedConstraint) => typeIcons[item.type] ?? Key01Icon,
-    width: 'w-4/12',
+    width: '4/12',
   }),
   textColumn({
     header: 'Table',
     valueOf: (item: GroupedConstraint) => item.table,
-    width: 'w-2/12',
+    width: '2/12',
   }),
   {
     cell: (item, { schema, search }) => (
@@ -595,7 +595,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
     align: 'end',
     header: 'Type',
     labelOf: (item: GroupedConstraint) => typeLabels[item.type],
-    width: 'w-2/12',
+    width: '2/12',
   }),
 ]
 

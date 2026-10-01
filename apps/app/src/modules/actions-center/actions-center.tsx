@@ -433,9 +433,10 @@ export const ActionsCenter = () => {
       onOpenChange={(open) => actionCenterOpen.set(open)}
     >
       <Command
+        variant="palette"
         loop
         shouldFilter={false}
-        className="min-h-0 flex-1 bg-transparent p-0"
+        className="min-h-0 flex-1"
       >
         <div className="flex shrink-0 items-center gap-3 border-b px-4">
           <HugeiconsIcon
@@ -456,9 +457,9 @@ export const ActionsCenter = () => {
         </div>
         <CommandList
           ref={listRef}
-          className="scroll-fade max-h-none flex-1 scroll-py-2 p-1"
+          className="scroll-fade max-h-none flex-1 scroll-py-2"
         >
-          {listContent}
+          <div className="p-1">{listContent}</div>
         </CommandList>
       </Command>
       <div className="text-2xs text-muted-foreground/70 flex shrink-0 items-center gap-3 border-t px-4 py-2">

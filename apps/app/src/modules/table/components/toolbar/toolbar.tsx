@@ -122,8 +122,9 @@ const TableStats = ({
       <TooltipTrigger render={<span className="flex" />}>
         <Button
           variant="outline"
+          size="counter"
           disabled={!canRequestExact}
-          className="gap-1.5 px-2.5 disabled:opacity-100"
+          className="disabled:opacity-100"
           onClick={onRequestExact}
         >
           <HugeiconsIcon

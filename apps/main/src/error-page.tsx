@@ -38,24 +38,24 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                   className="text-destructive size-8"
                 />
               </div>
-              <CardTitle className="text-xl">Something went wrong</CardTitle>
+              <CardTitle>Something went wrong</CardTitle>
               <CardDescription>
                 An error occurred while rendering this page
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
-                <ScrollArea className="bg-muted text-muted-foreground h-50 rounded-md p-4 text-sm">
+                <ScrollArea variant="code" className="h-50 font-sans text-sm">
                   {error.message}
                 </ScrollArea>
               )}
               {!(error instanceof TraversalError) && error.stack && (
-                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
+                <ScrollArea variant="code" className="h-75">
                   {error.stack}
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
+                <ScrollArea variant="code" className="h-75">
                   {error.arkErrors.map((err, index) => (
                     <div key={err.message} className="mb-4 last:mb-0">
                       <div className="text-destructive font-semibold">
@@ -77,7 +77,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 </ScrollArea>
               )}
             </CardContent>
-            <CardFooter className="flex justify-between gap-2">
+            <CardFooter>
               <Button
                 variant="outline"
                 className="flex-1"
@@ -87,7 +87,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 Go back
               </Button>
               <Button
-                className="flex-1"
+                className="ml-2 flex-1"
                 onClick={() => window.location.reload()}
               >
                 <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />

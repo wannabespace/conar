@@ -22,9 +22,9 @@ export const TableCellReferences = ({
     references.some((reference) => reference.schema !== firstSchema)
 
   return (
-    <Tabs defaultValue={references?.[0]?.name} className="size-full gap-0">
+    <Tabs defaultValue={references?.[0]?.name} gap="none" className="size-full">
       <ScrollArea className="bg-muted/50">
-        <TabsList className="h-8 w-full justify-start bg-transparent">
+        <TabsList variant="ghost" className="h-8 w-full justify-start">
           {references.map((reference) => (
             <TabsTrigger
               key={reference.name}

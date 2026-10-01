@@ -22,8 +22,7 @@ export const HistoryNav = () => {
         <TooltipTrigger
           render={
             <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              variant="ghost-muted"
               size="icon-xs"
               aria-label="Go back"
               disabled={!canGoBack}
@@ -39,8 +38,7 @@ export const HistoryNav = () => {
         <TooltipTrigger
           render={
             <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              variant="ghost-muted"
               size="icon-xs"
               aria-label="Go forward"
               onClick={() => router.history.forward()}

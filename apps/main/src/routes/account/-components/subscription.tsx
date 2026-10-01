@@ -23,6 +23,11 @@ import {
   CardTitle,
 } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Tooltip,
@@ -216,11 +221,11 @@ export const Subscription = () => {
     <>
       {subscription?.status === 'past_due' && (
         <Alert variant="destructive" className="mb-6">
-          <AlertTitle className="flex items-center gap-2">
+          <AlertTitle className="flex items-center">
             <HugeiconsIcon
               icon={Alert02Icon}
               strokeWidth={2}
-              className="text-destructive size-4"
+              className="text-destructive mr-2 size-4"
             />
             Payment issue with your subscription
           </AlertTitle>
@@ -228,27 +233,28 @@ export const Subscription = () => {
         </Alert>
       )}
       <Card>
-        <CardHeader className="flex flex-row justify-between space-y-0">
+        <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center">
               Subscription
               {isPending && (
                 <HugeiconsIcon
                   icon={Loading03Icon}
                   strokeWidth={2}
-                  className={cn('size-4 animate-spin')}
+                  className="ml-2 size-4 animate-spin"
                 />
               )}
             </CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            <CardDescription className="flex items-center">
               Manage your subscription
-              <Tooltip>
-                <TooltipTrigger
+              <Popover>
+                <PopoverTrigger
+                  openOnHover
                   render={
                     <button
                       type="button"
                       aria-label="About subscription support"
-                      className="inline-flex focus:outline-none"
+                      className="ml-2 inline-flex focus:outline-none"
                     />
                   }
                 >
@@ -257,8 +263,8 @@ export const Subscription = () => {
                     strokeWidth={2}
                     className="size-4"
                   />
-                </TooltipTrigger>
-                <TooltipContent className="bg-background max-w-xs p-0">
+                </PopoverTrigger>
+                <PopoverContent padding="none" className="w-xs">
                   <div className="from-primary/5 to-card space-y-4 bg-linear-to-b p-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="bg-primary/20 text-primary inline-flex size-6 items-center justify-center rounded-full">
@@ -284,8 +290,8 @@ export const Subscription = () => {
                       Thank you for helping us stay independent.
                     </p>
                   </div>
-                </TooltipContent>
-              </Tooltip>
+                </PopoverContent>
+              </Popover>
             </CardDescription>
           </div>
           {!subscription && !isPending && (

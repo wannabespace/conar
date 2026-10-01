@@ -6,6 +6,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
+import type { CSSProperties } from 'react'
 
 const CARD_WIDTH = 256
 const HEADER_HEIGHT = 32
@@ -60,6 +61,7 @@ export const VisualizerSkeleton = ({
 }) => (
   <div
     aria-hidden
+    // oxlint-disable-next-line shadcn/no-arbitrary-values -- stands in for xyflow's dot background, which no token describes
     className="bg-background relative size-full min-h-0 flex-1 overflow-hidden rounded-lg bg-[radial-gradient(var(--color-border)_1px,transparent_0)] bg-size-[20px_20px]"
   >
     <div className="absolute inset-x-3 top-3 z-10 flex flex-col items-center">
@@ -97,8 +99,8 @@ export const VisualizerSkeleton = ({
         {cards.map(({ rows, x, y }) => (
           <div
             key={`${x}-${y}`}
-            style={{ left: x, top: y }}
-            className="bg-popover ring-foreground/4 absolute w-64 rounded-xl shadow-md ring"
+            style={{ '--x': `${x}px`, '--y': `${y}px` } as CSSProperties}
+            className="bg-popover ring-foreground/4 absolute top-(--y) left-(--x) w-64 rounded-xl shadow-md ring"
           >
             <div className="border-foreground/6 flex h-8 items-center gap-2 border-b px-3">
               <Skeleton className="size-4 shrink-0" />

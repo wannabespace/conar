@@ -6,9 +6,6 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties } from 'react'
 import * as React from 'react'
 
-export const sidebarActionRowClassName =
-  'text-foreground h-7 w-full justify-start gap-2 rounded-md px-2'
-
 export const SidebarContent = ({
   className,
   ...props

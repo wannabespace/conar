@@ -50,7 +50,7 @@ export const DropDialog = ({
         </AlertDialogDescription>
       </AlertDialogHeader>
       {cascadable && (
-        <Label className="font-normal">
+        <Label variant="checkbox">
           <Checkbox
             checked={cascade}
             onCheckedChange={(checked) => onCascadeChange(checked === true)}

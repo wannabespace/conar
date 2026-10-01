@@ -7,7 +7,6 @@ import {
 import { Badge } from '@tamery/ui/components/badge'
 import { Card, CardContent } from '@tamery/ui/components/card'
 import { Separator } from '@tamery/ui/components/separator'
-import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import type { ComponentPropsWithoutRef } from 'react'
@@ -52,17 +51,16 @@ const RouteComponent = () => {
       <Accordion
         value={expandedReleases}
         onValueChange={setExpandedReleases}
-        className="space-y-6"
+        variant="spaced"
       >
         {releases.map((release, index) => (
           <AccordionItem
             key={release.id}
             value={String(release.id)}
-            className="border-none"
             disabled={!release.body}
           >
             <div className="mb-2">
-              <AccordionTrigger className={cn(`py-0 hover:no-underline`)}>
+              <AccordionTrigger>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-semibold">
@@ -81,8 +79,8 @@ const RouteComponent = () => {
             </div>
             {release.body && (
               <AccordionContent>
-                <Card>
-                  <CardContent className="p-4">
+                <Card size="sm">
+                  <CardContent>
                     <Streamdown
                       mode="static"
                       className="text-sm"

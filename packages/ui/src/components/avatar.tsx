@@ -33,12 +33,14 @@ const AvatarImage = ({ className, ...props }: AvatarPrimitive.Image.Props) => (
 
 const AvatarFallback = ({
   className,
+  variant = 'default',
   ...props
-}: AvatarPrimitive.Fallback.Props) => (
+}: AvatarPrimitive.Fallback.Props & { variant?: 'default' | 'primary' }) => (
   <AvatarPrimitive.Fallback
     data-slot="avatar-fallback"
     className={cn(
       `bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs`,
+      variant === 'primary' && 'bg-primary/10 text-primary font-semibold',
       className
     )}
     {...props}

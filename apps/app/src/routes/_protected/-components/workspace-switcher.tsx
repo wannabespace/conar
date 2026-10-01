@@ -72,9 +72,9 @@ export const WorkspaceSwitcher = () => {
           render={
             <Button
               variant="ghost"
-              size="sm"
+              size="crumb"
               aria-label="Switch workspace"
-              className="max-w-56 gap-1.5 px-2"
+              className="max-w-56"
             />
           }
         >

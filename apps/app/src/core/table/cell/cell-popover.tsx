@@ -230,9 +230,8 @@ const CellPopoverToolbar = ({
           <TooltipTrigger
             render={
               <Button
-                variant="outline"
+                variant="outline-muted"
                 size="icon-xs"
-                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsBig((prev) => !prev)}
               />
             }
@@ -250,8 +249,7 @@ const CellPopoverToolbar = ({
           render={
             <CopyButton
               size="icon-xs"
-              variant="outline"
-              className="text-muted-foreground"
+              variant="outline-muted"
               text={copyTextForValue(isRaw, rawValue, newValue)}
             />
           }
@@ -263,10 +261,9 @@ const CellPopoverToolbar = ({
           <TooltipTrigger
             render={
               <Button
-                variant="outline"
+                variant="outline-muted"
                 size="xs"
                 aria-pressed={isRaw}
-                className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsRaw((prev) => !prev)}
               />
             }

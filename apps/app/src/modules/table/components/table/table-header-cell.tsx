@@ -55,17 +55,19 @@ export const PrimaryKeyTooltipIcon = ({
         className="text-primary size-2.5 shrink-0"
       />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={Key01Icon}
-          strokeWidth={2}
-          className="text-primary size-3"
-        />
-        Primary key
-      </div>
-      <div data-mask className="text-xs opacity-70">
-        {primaryKey}
+    <TooltipContent className="max-w-none">
+      <div className="flex flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1">
+          <HugeiconsIcon
+            icon={Key01Icon}
+            strokeWidth={2}
+            className="text-primary size-3"
+          />
+          Primary key
+        </div>
+        <div data-mask className="text-xs opacity-70">
+          {primaryKey}
+        </div>
       </div>
     </TooltipContent>
   </Tooltip>
@@ -104,17 +106,19 @@ export const UniqueTooltipIcon = ({ unique }: { unique: string }) => (
         className="size-2.5 shrink-0 opacity-70"
       />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={FingerPrintIcon}
-          strokeWidth={2}
-          className="size-3 opacity-70"
-        />
-        Unique
-      </div>
-      <div data-mask className="text-xs opacity-70">
-        {unique}
+    <TooltipContent className="max-w-none">
+      <div className="flex flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1">
+          <HugeiconsIcon
+            icon={FingerPrintIcon}
+            strokeWidth={2}
+            className="size-3 opacity-70"
+          />
+          Unique
+        </div>
+        <div data-mask className="text-xs opacity-70">
+          {unique}
+        </div>
       </div>
     </TooltipContent>
   </Tooltip>
@@ -155,20 +159,22 @@ export const DefaultValueTooltipIcon = ({
         className="size-2.5 shrink-0 opacity-70"
       />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={ScanTextIcon}
-          strokeWidth={2}
-          className="size-3 opacity-70"
-        />
-        Default
-      </div>
-      <div
-        data-mask
-        className="max-w-sm font-mono text-xs break-all opacity-70"
-      >
-        {defaultValue}
+    <TooltipContent className="max-w-none">
+      <div className="flex flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1">
+          <HugeiconsIcon
+            icon={ScanTextIcon}
+            strokeWidth={2}
+            className="size-3 opacity-70"
+          />
+          Default
+        </div>
+        <div
+          data-mask
+          className="max-w-sm font-mono text-xs break-all opacity-70"
+        >
+          {defaultValue}
+        </div>
       </div>
     </TooltipContent>
   </Tooltip>
@@ -193,17 +199,19 @@ export const ForeignTooltipIcon = ({
         />
       }
     />
-    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={Link01Icon}
-          strokeWidth={2}
-          className="size-3 opacity-70"
-        />
-        Foreign key
-      </div>
-      <div data-mask className="text-xs opacity-70">
-        {name} ({table}.{column})
+    <TooltipContent className="max-w-none">
+      <div className="flex flex-col items-start gap-0.5">
+        <div className="flex items-center gap-1">
+          <HugeiconsIcon
+            icon={Link01Icon}
+            strokeWidth={2}
+            className="size-3 opacity-70"
+          />
+          Foreign key
+        </div>
+        <div data-mask className="text-xs opacity-70">
+          {name} ({table}.{column})
+        </div>
       </div>
     </TooltipContent>
   </Tooltip>
@@ -479,12 +487,12 @@ export const TableHeaderCell = ({
               }
               onResize(width)
             }}
-            className="flex items-stretch self-stretch p-1"
+            className="flex items-stretch self-stretch"
             onDoubleClick={removeSize}
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! w-0.5 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />
+            <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! m-1 w-0.5 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />
           </ResizeHandle>
         )}
       </div>

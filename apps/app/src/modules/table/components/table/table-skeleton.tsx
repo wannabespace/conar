@@ -103,6 +103,7 @@ export const TableBodySkeleton = ({
           )}
           style={
             {
+              '--row-delay': `${rowIndex * STAGGER_MS}ms`,
               '--row-height': `${DEFAULT_ROW_HEIGHT}px`,
               '--row-opacity': 1 - rowIndex / ROWS_COUNT,
             } as CSSProperties
@@ -110,10 +111,7 @@ export const TableBodySkeleton = ({
         >
           {selectable && (
             <div className="shrink-0 p-2 pl-4">
-              <Skeleton
-                className="size-4 rounded-sm"
-                style={{ animationDelay: `${rowIndex * STAGGER_MS}ms` }}
-              />
+              <Skeleton className="size-4 rounded-sm [animation-delay:var(--row-delay)]" />
             </div>
           )}
           {cols.map((column, columnIndex) => (
@@ -123,11 +121,10 @@ export const TableBodySkeleton = ({
               style={{ '--column-width': `${column.size}px` } as CSSProperties}
             >
               <Skeleton
-                className="h-3.5 w-(--bar-width) rounded-md"
+                className="h-3.5 w-(--bar-width) rounded-md [animation-delay:var(--row-delay)]"
                 style={
                   {
                     '--bar-width': `${barWidth(rowIndex, columnIndex)}%`,
-                    animationDelay: `${rowIndex * STAGGER_MS}ms`,
                   } as CSSProperties
                 }
               />

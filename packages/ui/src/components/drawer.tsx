@@ -220,11 +220,16 @@ const DrawerFooter = ({ className, ...props }: React.ComponentProps<'div'>) => {
   )
 }
 
-const DrawerTitle = ({ className, ...props }: DrawerPrimitive.Title.Props) => (
+const DrawerTitle = ({
+  className,
+  truncate = false,
+  ...props
+}: DrawerPrimitive.Title.Props & { truncate?: boolean }) => (
   <DrawerPrimitive.Title
     data-slot="drawer-title"
     className={cn(
       'font-heading text-foreground text-base font-medium',
+      truncate && 'truncate',
       className
     )}
     {...props}
@@ -233,14 +238,19 @@ const DrawerTitle = ({ className, ...props }: DrawerPrimitive.Title.Props) => (
 
 const DrawerDescription = ({
   className,
+  truncate = false,
   ...props
-}: DrawerPrimitive.Description.Props) => {
+}: DrawerPrimitive.Description.Props & { truncate?: boolean }) => {
   const { size } = useDrawer()
 
   return (
     <DrawerPrimitive.Description
       data-slot="drawer-description"
-      className={cn(drawerDescriptionVariants({ size }), className)}
+      className={cn(
+        drawerDescriptionVariants({ size }),
+        truncate && 'truncate',
+        className
+      )}
       {...props}
     />
   )
