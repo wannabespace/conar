@@ -26,6 +26,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tamery/ui/components/tabs'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
@@ -233,9 +234,13 @@ export const RunnerResults = () => {
                 render={
                   <TabsTrigger
                     value={String(index)}
-                    destructive={item.error !== null}
-                    muted={item.stopped || item.pending}
-                    className="flex-none transition-none"
+                    className={cn(
+                      'flex-none transition-none',
+                      // oxlint-disable-next-line shadcn/no-restyle -- a failed statement's tab reads red
+                      item.error !== null && 'text-destructive',
+                      // oxlint-disable-next-line shadcn/no-restyle -- a statement that never finished reads muted
+                      (item.stopped || item.pending) && 'text-muted-foreground'
+                    )}
                   />
                 }
               >

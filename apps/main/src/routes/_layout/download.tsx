@@ -35,25 +35,24 @@ const HomebrewInstall = () => {
       <h2 className="mb-4 text-center text-xl font-semibold sm:text-2xl">
         Install via Homebrew
       </h2>
-      <Card size="none" className="w-full">
-        <div className="flex items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
-          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-            <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-              <HugeiconsIcon
-                icon={SourceCodeIcon}
-                strokeWidth={2}
-                className="text-muted-foreground size-4"
-              />
-            </div>
-            <input
-              type="text"
-              className="m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono text-sm outline-none sm:text-base"
-              value={BREW_INSTALL_COMMAND}
-              readOnly
+      {/* oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card */}
+      <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <HugeiconsIcon
+              icon={SourceCodeIcon}
+              strokeWidth={2}
+              className="text-muted-foreground size-4"
             />
           </div>
-          <CopyButton text={BREW_INSTALL_COMMAND} />
+          <input
+            type="text"
+            className="m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono text-sm outline-none sm:text-base"
+            value={BREW_INSTALL_COMMAND}
+            readOnly
+          />
         </div>
+        <CopyButton text={BREW_INSTALL_COMMAND} />
       </Card>
     </div>
   )
@@ -80,34 +79,32 @@ const DownloadOption = ({
   arch?: string
   link: string
 }) => (
-  <Card size="none" className="w-full">
-    <div className="flex items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
-      <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-        <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-          {icon}
-        </div>
-        <div className="flex flex-col items-start">
-          <span className="w-full truncate text-sm font-medium sm:text-base">
-            {osMap[type].label}{' '}
-            {arch && <Badge variant="outline">{arch}</Badge>}
-          </span>
-        </div>
+  // oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card
+  <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
+    <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+      <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+        {icon}
       </div>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              render={<a href={link} download aria-label="Download" />}
-              size="sm"
-              disabled={!link}
-              variant="secondary"
-            />
-          }
-        >
-          Download
-        </TooltipTrigger>
-      </Tooltip>
+      <div className="flex flex-col items-start">
+        <span className="w-full truncate text-sm font-medium sm:text-base">
+          {osMap[type].label} {arch && <Badge variant="outline">{arch}</Badge>}
+        </span>
+      </div>
     </div>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            render={<a href={link} download aria-label="Download" />}
+            size="sm"
+            disabled={!link}
+            variant="secondary"
+          />
+        }
+      >
+        Download
+      </TooltipTrigger>
+    </Tooltip>
   </Card>
 )
 

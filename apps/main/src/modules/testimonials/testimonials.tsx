@@ -60,7 +60,8 @@ const Testimonial = ({
     >
       <Avatar className="size-10 shrink-0 sm:size-12">
         <AvatarImage src={avatar} alt={name} />
-        <AvatarFallback variant="primary">
+        {/* oxlint-disable-next-line shadcn/no-restyle -- marketing initials in brand tint */}
+        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
           {name
             .split(' ')
             .map((n) => n[0])

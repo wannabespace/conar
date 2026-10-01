@@ -153,8 +153,8 @@ const QueryDetails = ({
   >
     <CodeBlock
       variant={tab.value === 'error' ? 'destructive' : 'ghost'}
-      padding="bottom"
-      className="no-scrollbar scroll-fade min-h-0 flex-1"
+      // oxlint-disable-next-line shadcn/no-restyle -- the block sits flush under the tab strip
+      className="no-scrollbar scroll-fade min-h-0 flex-1 pb-2"
       code={tab.code}
       language={tab.language}
       lineNumbers

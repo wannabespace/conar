@@ -45,17 +45,17 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
-                <ScrollArea variant="code" className="h-50 font-sans text-sm">
+                <ScrollArea className="bg-muted text-muted-foreground h-50 rounded-md p-4 text-sm">
                   {error.message}
                 </ScrollArea>
               )}
               {!(error instanceof TraversalError) && error.stack && (
-                <ScrollArea variant="code" className="h-75">
+                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
                   {error.stack}
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea variant="code" className="h-75">
+                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
                   {error.arkErrors.map((err, index) => (
                     <div key={err.message} className="mb-4 last:mb-0">
                       <div className="text-destructive font-semibold">

@@ -51,16 +51,20 @@ const RouteComponent = () => {
       <Accordion
         value={expandedReleases}
         onValueChange={setExpandedReleases}
-        variant="spaced"
+        // oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list
+        className="space-y-6"
       >
         {releases.map((release, index) => (
           <AccordionItem
             key={release.id}
             value={String(release.id)}
+            // oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list
+            className="border-none"
             disabled={!release.body}
           >
             <div className="mb-2">
-              <AccordionTrigger>
+              {/* oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list */}
+              <AccordionTrigger className="py-0 hover:no-underline">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-semibold">

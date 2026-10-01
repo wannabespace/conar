@@ -86,9 +86,7 @@ const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
   },
   variants: {
     padding: {
-      bottom: 'pb-2',
       popup: 'px-3 py-2.5',
-      y: 'py-2',
     },
     size: {
       '2xs': 'text-2xs/5',

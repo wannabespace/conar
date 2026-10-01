@@ -21,7 +21,6 @@
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 0.875rem;
-  --text-hero: clamp(2rem, min(7vh, 7vw), 4rem);
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --font-mono: 'Geist Mono Variable', monospace;

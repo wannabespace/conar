@@ -167,8 +167,11 @@ export const TableRow = ({
           />
           {hasDrafts && (
             <Indicator
-              inverse={isActive}
-              className="-top-0.5 -right-0.5 size-1.5"
+              className={cn(
+                '-top-0.5 -right-0.5 size-1.5',
+                // oxlint-disable-next-line shadcn/no-restyle -- the dot inverts on the active primary row
+                isActive && 'bg-primary-foreground'
+              )}
             />
           )}
         </span>

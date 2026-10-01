@@ -107,10 +107,10 @@ export const Inspector = ({
   return (
     <>
       <DrawerHeader showCloseButton>
-        <DrawerTitle data-mask truncate>
+        <DrawerTitle data-mask className="truncate">
           {item ? item.name : `New ${noun}`}
         </DrawerTitle>
-        <DrawerDescription data-mask truncate>
+        <DrawerDescription data-mask className="truncate">
           {description}
         </DrawerDescription>
       </DrawerHeader>

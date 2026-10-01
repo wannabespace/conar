@@ -209,8 +209,8 @@ export const ActionsCopy = ({
             </div>
           </TabsList>
           <CodeBlock
-            padding="y"
-            className="no-scrollbar scroll-fade min-h-0 flex-1"
+            // oxlint-disable-next-line shadcn/no-restyle -- the block sits flush under the tab strip
+            className="no-scrollbar scroll-fade min-h-0 flex-1 py-2"
             code={code}
             language={format.language}
             lineNumbers

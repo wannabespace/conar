@@ -10,7 +10,6 @@ export const dialogContentVariants = cva(
       variant: {
         default: 'grid gap-4 p-5 sm:max-w-md',
         panel: 'flex h-[70vh] max-h-140 flex-col overflow-hidden sm:max-w-3xl',
-        promo: `from-primary/8 via-background to-background grid gap-7 bg-linear-to-b via-40% p-5`,
       },
     },
   }
@@ -26,7 +25,6 @@ export const dialogTitleVariants = cva(
       variant: {
         default: 'text-base',
         panel: 'text-sm',
-        promo: 'text-lg font-semibold',
       },
     },
   }
