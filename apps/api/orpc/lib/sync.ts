@@ -3,7 +3,7 @@ import { asyncIteratorObject } from '@orpc/server'
 import type { Type } from 'arktype'
 import { type } from 'arktype'
 
-import { publisherRedis, publisherSubscriber } from '~/lib/redis'
+import { redis, redisSubscriber } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 
 // Overload signatures require function declarations (func-style exception).
@@ -30,9 +30,9 @@ export const createSyncPublisher = <
   _output: T,
   prefix: string
 ) =>
-  new RedisPublisher<Record<string, T['inferIn']>>(publisherRedis, {
+  new RedisPublisher<Record<string, T['inferIn']>>(redis, {
     prefix,
-    subscriber: publisherSubscriber,
+    subscriber: redisSubscriber,
   })
 
 export const syncDiff = async <TItem>(opts: {

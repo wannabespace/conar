@@ -184,7 +184,7 @@ export const cacheMiddleware = (ttl: number = 60 * 60 * 24) =>
       // oxlint-disable-next-line node/callback-return -- middleware caches after next()
       const result = await next()
 
-      await redis.setex(cacheKey, ttl, JSON.stringify(result.output))
+      await redis.setEx(cacheKey, ttl, JSON.stringify(result.output))
 
       return result
     })

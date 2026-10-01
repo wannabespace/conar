@@ -1,12 +1,12 @@
 import { RedisPublisher } from '@orpc/publisher/redis'
 
-import { publisherRedis, publisherSubscriber, redis } from '~/lib/redis'
+import { redis, redisSubscriber } from '~/lib/redis'
 
 export const codeChallengePublisher = new RedisPublisher<
   Record<string, { ready: boolean }>
->(publisherRedis, {
+>(redis, {
   prefix: 'orpc:publisher:code-challenge:',
-  subscriber: publisherSubscriber,
+  subscriber: redisSubscriber,
 })
 
 export const codeChallengeRedis = {
@@ -23,6 +23,6 @@ export const codeChallengeRedis = {
     codeChallenge: string,
     value: { userId: string; newUser?: boolean }
   ) => {
-    await redis.setex(codeChallenge, 60 * 5, JSON.stringify(value))
+    await redis.setEx(codeChallenge, 60 * 5, JSON.stringify(value))
   },
 }
