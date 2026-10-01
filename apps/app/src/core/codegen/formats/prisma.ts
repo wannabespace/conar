@@ -1,0 +1,326 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ActiveFilter, FilterOperator } from '@tamery/shared/filters'
+import { camelCase, pascalCase } from 'change-case'
+
+import * as templates from '~/core/codegen/templates'
+import type { QueryParams, SchemaParams } from '~/core/codegen/types'
+import {
+  filterExplicitIndexes,
+  getColumnType,
+  groupIndexes,
+  isNowDefault,
+  isSerialDefault,
+} from '~/core/codegen/utils'
+
+type PrismaFilterValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | { [key: string]: PrismaFilterValue }
+  | PrismaFilterValue[]
+
+const isPrismaFilterValue = (v: unknown): v is PrismaFilterValue =>
+  v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
+
+const PRISMA_OPERATORS: Record<FilterOperator, string | null> = {
+  eq: 'equals',
+  gt: 'gt',
+  gte: 'gte',
+  ilike: 'contains',
+  in: 'in',
+  isNotNull: 'not',
+  isNull: 'equals',
+  like: 'contains',
+  lt: 'lt',
+  lte: 'lte',
+  ne: 'not',
+  notIn: 'notIn',
+  notLike: null,
+}
+
+const singleFilterToPrisma = (
+  filter: ActiveFilter
+): PrismaFilterValue | null => {
+  const prismaOp = PRISMA_OPERATORS[filter.ref.operator]
+  if (!prismaOp) {
+    return null
+  }
+  if (filter.ref.hasValue === false) {
+    return { [prismaOp]: null }
+  }
+  if (filter.ref.isArray) {
+    return { [prismaOp]: filter.values.filter(isPrismaFilterValue) }
+  }
+  const [value] = filter.values
+  if (!isPrismaFilterValue(value)) {
+    return null
+  }
+  return prismaOp === 'equals' ? value : { [prismaOp]: value }
+}
+
+const mergeWhereField = (
+  existing: PrismaFilterValue | undefined,
+  next: PrismaFilterValue
+): PrismaFilterValue => {
+  if (
+    existing === null ||
+    typeof existing !== 'object' ||
+    typeof next !== 'object' ||
+    next === null
+  ) {
+    return next
+  }
+  return { ...existing, ...next }
+}
+
+export const generateQueryPrisma = ({ table, filters }: QueryParams) => {
+  const tableName = camelCase(table)
+  const where: Record<string, PrismaFilterValue> = {}
+  for (const f of filters) {
+    const finalValue = singleFilterToPrisma(f)
+    if (finalValue === null) {
+      continue
+    }
+    const colName = camelCase(f.column)
+    where[colName] = mergeWhereField(where[colName], finalValue)
+  }
+
+  const jsonWhere =
+    Object.keys(where).length > 0
+      ? JSON.stringify(where, null, 2).replaceAll(
+          /"(?<key>[^"]+)":/gu,
+          '$<key>:'
+        )
+      : '{}'
+
+  return templates.prismaQueryTemplate(tableName, jsonWhere)
+}
+
+const FK_ACTION_MAP: Record<string, string> = {
+  CASCADE: 'Cascade',
+  'NO ACTION': 'NoAction',
+  RESTRICT: 'Restrict',
+  'SET DEFAULT': 'SetDefault',
+  'SET NULL': 'SetNull',
+}
+
+const foreignActionToPrisma = (
+  action: string,
+  kind: 'onDelete' | 'onUpdate'
+): string => {
+  const value = FK_ACTION_MAP[action.toUpperCase()]
+  return value ? `, ${kind}: ${value}` : ''
+}
+
+interface PrismaField {
+  name: string
+  type: string
+  attributes: string[]
+  isRelation: boolean
+}
+
+const prismaDefault = (
+  c: SchemaParams['columns'][number],
+  prismaType: string
+): string | null => {
+  if (
+    c.isIdentity ||
+    isSerialDefault(c.defaultValue) ||
+    (c.primaryKey && ['BigInt', 'Int'].includes(prismaType))
+  ) {
+    return 'autoincrement()'
+  }
+  if (typeof c.defaultValue !== 'string') {
+    return null
+  }
+  if (isNowDefault(c.defaultValue)) {
+    return 'now()'
+  }
+  const literal = c.defaultValue.replaceAll(/^\(+|\)+$/gu, '')
+  if (
+    /^-?\d+(?:\.\d+)?$/u.test(literal) ||
+    /^(?:true|false)$/iu.test(literal)
+  ) {
+    return literal.toLowerCase()
+  }
+  return `dbgenerated("${c.defaultValue.replaceAll('"', '\\"')}")`
+}
+
+const buildFieldAttributes = (
+  c: SchemaParams['columns'][number],
+  prismaType: string,
+  needsMap: boolean,
+  dialect: ConnectionType
+): string[] => {
+  const attributes: string[] = []
+  if (c.primaryKey) {
+    attributes.push('@id')
+  } else if (c.unique) {
+    attributes.push('@unique')
+  }
+
+  const defaultValue = prismaDefault(c, prismaType)
+  if (defaultValue) {
+    attributes.push(`@default(${defaultValue})`)
+  }
+
+  if (prismaType === 'String' && c.maxLength && c.maxLength > 0) {
+    attributes.push(`@db.VarChar(${c.maxLength})`)
+  }
+
+  if (dialect === ConnectionType.Postgres && c.type === 'uuid') {
+    attributes.push('@db.Uuid')
+  }
+
+  if (prismaType === 'Decimal' && c.precision) {
+    attributes.push(`@db.Decimal(${c.precision}, ${c.scale || 0})`)
+  }
+
+  if (needsMap) {
+    attributes.push(`@map("${c.id}")`)
+  }
+
+  return attributes
+}
+
+const appendEnumBlock = (
+  c: SchemaParams['columns'][number],
+  extraBlocks: string[]
+): string | null => {
+  if (!(c.enumName && c.availableValues?.length)) {
+    return null
+  }
+  const enumName = pascalCase(c.enumName)
+  const availableValues = c.availableValues
+    .map((v) => {
+      if (/^[a-z]\w*$/iu.test(v)) {
+        return `  ${v}`
+      }
+      return `  ${v.replaceAll(/\W/gu, '_')} @map("${v}")`
+    })
+    .join('\n')
+  extraBlocks.push(`enum ${enumName} {\n${availableValues}\n}`)
+  return enumName
+}
+
+const appendForeignAndRefs = (
+  c: SchemaParams['columns'][number],
+  fieldName: string,
+  fields: PrismaField[],
+  usedNames: Set<string>
+) => {
+  if (c.foreign) {
+    let relName = camelCase(c.foreign.table)
+    if (usedNames.has(relName)) {
+      relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
+    }
+    usedNames.add(relName)
+
+    const relType = pascalCase(c.foreign.table)
+    const onDelete = foreignActionToPrisma(c.foreign.onDelete ?? '', 'onDelete')
+    const onUpdate = foreignActionToPrisma(c.foreign.onUpdate ?? '', 'onUpdate')
+
+    fields.push({
+      attributes: [
+        `@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`,
+      ],
+      isRelation: true,
+      name: relName,
+      type: relType,
+    })
+  }
+
+  for (const ref of c.references ?? []) {
+    const refType = pascalCase(ref.table)
+    let refFieldName = camelCase(ref.table)
+    if (usedNames.has(refFieldName)) {
+      refFieldName = camelCase(`${ref.table}_${ref.column}`)
+    }
+    usedNames.add(refFieldName)
+    fields.push({
+      attributes: [],
+      isRelation: true,
+      name: refFieldName,
+      type: ref.isUnique ? `${refType}?` : `${refType}[]`,
+    })
+  }
+}
+
+export const generateSchemaPrisma = ({
+  table,
+  schema,
+  columns,
+  dialect,
+  indexes = [],
+}: SchemaParams) => {
+  const fields: PrismaField[] = []
+  const extraBlocks: string[] = []
+  const usedNames = new Set<string>()
+
+  for (const c of columns) {
+    if (!c.type) {
+      continue
+    }
+
+    let prismaType = getColumnType(c.type, 'prisma', dialect)
+    const enumName = appendEnumBlock(c, extraBlocks)
+    if (enumName) {
+      prismaType = enumName
+    }
+
+    const fieldName = camelCase(c.id)
+    const needsMap = fieldName !== c.id
+    usedNames.add(fieldName)
+
+    const isList = c.isArray && dialect === ConnectionType.Postgres
+    fields.push({
+      attributes: buildFieldAttributes(c, prismaType, needsMap, dialect),
+      isRelation: false,
+      name: fieldName,
+      type: isList ? `${prismaType}[]` : prismaType + (c.isNullable ? '?' : ''),
+    })
+
+    appendForeignAndRefs(c, fieldName, fields, usedNames)
+  }
+
+  const allFields = [
+    ...fields.filter((f) => !f.isRelation),
+    ...fields.filter((f) => f.isRelation),
+  ]
+  const maxNameLen = Math.max(...allFields.map((f) => f.name.length), 0)
+  const maxTypeLen = Math.max(...allFields.map((f) => f.type.length), 0)
+
+  const cols = allFields.map((f) => {
+    const parts = [
+      f.name.padEnd(maxNameLen),
+      f.type.padEnd(maxTypeLen),
+      ...f.attributes,
+    ]
+    return `  ${parts.join(' ').trimEnd()}`
+  })
+
+  const explicitIndexes = filterExplicitIndexes(
+    groupIndexes(indexes, schema, table),
+    columns
+  )
+
+  const indexBlocks = explicitIndexes
+    .filter((idx) => idx.columns.length > 0)
+    .map((idx) => {
+      const fieldNames = idx.columns.map((col) => camelCase(col))
+      const type = idx.isUnique ? '@@unique' : '@@index'
+      return `  ${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
+    })
+
+  const body =
+    cols.join('\n') + (indexBlocks.length ? `\n${indexBlocks.join('\n')}` : '')
+
+  const uniqueExtras = [...new Set(extraBlocks)]
+
+  return (
+    templates.prismaSchemaTemplate(table, body) +
+    (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
+  )
+}

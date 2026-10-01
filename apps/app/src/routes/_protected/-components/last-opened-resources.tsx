@@ -10,15 +10,12 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
-import { useCollections } from '~/entities/collections'
-import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
-import type {
-  Connection,
-  ConnectionResource,
-} from '~/entities/connection/core/sync'
-import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/last-opened-resources'
-import { useActiveWorkspace } from '~/entities/workspace/hooks'
+import { useCollections } from '~/core/collections.ts'
+import { ConnectionIcon } from '~/core/connection/connection-icon'
+import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
 
 const LastOpenedResource = ({
   connectionResource,

@@ -1,8 +1,8 @@
 import { createEffect } from '@tanstack/react-db'
 import { useEffect } from 'react'
 
-import { useCollections } from '~/entities/collections'
-import type { Connection } from '~/entities/connection/core/sync'
+import { useCollections } from '~/core/collections.ts'
+import type { Connection } from '~/core/connection/sync'
 
 export const useConnectionStringsSync = () => {
   const collections = useCollections()

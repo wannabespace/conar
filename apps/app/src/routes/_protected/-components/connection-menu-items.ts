@@ -8,7 +8,7 @@ import {
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import type { Connection } from '~/entities/connection/core/sync'
+import type { Connection } from '~/core/connection/sync'
 
 export const buildConnectionMenuItems = ({
   canSend,

@@ -1,0 +1,95 @@
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@tamery/ui/components/alert-dialog'
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { useMutation } from '@tanstack/react-query'
+import { useImperativeHandle, useState } from 'react'
+import { toast } from 'sonner'
+
+import { authClient } from '~/lib/auth'
+import { handleError } from '~/utils/error'
+
+interface RevokeApiKeyDialogProps {
+  ref?: React.RefObject<{ revoke: (keyId: string) => void } | null>
+  onRefetch: () => void
+}
+
+export const RevokeApiKeyDialog = ({
+  ref,
+  onRefetch,
+}: RevokeApiKeyDialogProps) => {
+  const [open, setOpen] = useState(false)
+  const [keyId, setKeyId] = useState<string | null>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      revoke: (id: string) => {
+        setKeyId(id)
+        setOpen(true)
+      },
+    }),
+    []
+  )
+
+  const { mutate: deleteApiKey, isPending: isDeleting } = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await authClient.apiKey.delete({ keyId: id })
+      if (error) {
+        throw error
+      }
+    },
+    onError: handleError,
+    onSuccess: () => {
+      setOpen(false)
+      setKeyId(null)
+      onRefetch()
+      toast.success('API key revoked')
+    },
+  })
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) {
+          setKeyId(null)
+        }
+      }}
+    >
+      <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. Any integration using this key will
+            stop working immediately.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel variant="outline" size="default">
+            Cancel
+          </AlertDialogCancel>
+          <Button
+            variant="destructive"
+            disabled={isDeleting || !keyId}
+            onClick={() => {
+              if (keyId) {
+                deleteApiKey(keyId)
+              }
+            }}
+          >
+            <LoadingContent loading={isDeleting}>Revoke</LoadingContent>
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}

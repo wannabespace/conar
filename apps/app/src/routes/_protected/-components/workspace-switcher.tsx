@@ -15,10 +15,10 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { useSubscription } from '~/entities/user/hooks/use-subscription'
-import { useActiveWorkspace } from '~/entities/workspace/hooks'
-import type { Workspace } from '~/entities/workspace/sync'
-import { workspaceSelection } from '~/entities/workspace/utils'
+import { useSubscription } from '~/core/user/use-subscription'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
+import type { Workspace } from '~/core/workspace/sync'
+import { workspaceSelection } from '~/core/workspace/utils'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'

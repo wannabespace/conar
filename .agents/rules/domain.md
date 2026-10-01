@@ -38,12 +38,12 @@ Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `ac
 
 ## Tabs
 
-Tabs live in `connectionResourceStore.tabs`, persisted per resource in `localStorage`; always import that store from `~/entities/connection/store`.
+Tabs live in `connectionResourceStore.tabs` as `{ id, preview?, title? }`, persisted per resource in `localStorage`; import that store from `~/core/connection/stores`. The type lives in the id alone: each tab module registers a kind that matches its ids.
 
-- A tab id is readable, self-describing, and the single route path param; `parseTabId` turns one back into a tab, so deep links work. Runner is the **only** multi-instance type.
+- A tab id is readable, self-describing, and the single route path param; `resolveTab` turns one back into a kind and params, so deep links work; an id no registered kind matches is closed. Runner is the **only** multi-instance type.
 - `$tabId`'s `beforeLoad` must stay **pure** — it runs on hover preload and must not touch the store; a component effect calls `ensureTab` + `setActiveTab`.
 - `tabLabels` derives the whole strip at once, since qualification and numbering depend on the other open tabs.
-- Activating a table tab records it in `recentTables` (last 5); the empty pane lists the ones still present in the catalog.
+- Activating a table tab records it in the table module's recent list (last 5); the empty pane lists the ones still present in the catalog.
 - Table tabs carry `preview`: single click is a preview (italic, reused), double click promotes it. A tab may also carry an optional user `title`, cleared when emptied or equal to the derived label.
 
 ## Navigator

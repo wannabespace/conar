@@ -71,7 +71,7 @@ export const fullSignOut = async () => {
   }
 
   const [{ cleanCollections }, { clearDb }] = await Promise.all([
-    import('~/entities/collections'),
+    import('~/core/collections.ts'),
     import('./sync'),
   ])
 

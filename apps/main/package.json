@@ -5,7 +5,8 @@
     "dev": "portless run vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsc"
+    "check-types": "tsc",
+    "test": "bun test ./src"
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",
@@ -42,6 +43,7 @@
     "@tamery/configs": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
+    "@tanstack/virtual-file-routes": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",

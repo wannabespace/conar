@@ -13,10 +13,6 @@ if (window.electron) {
   })
 }
 
-window.electron?.app.onDeepLink((url) => {
-  window.initialDeepLink = url
-})
-
 window.electron?.app.onSendToast(({ message, type, description, duration }) => {
   toast[type](message, {
     description,

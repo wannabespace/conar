@@ -5,7 +5,6 @@ import type { ElectronPreload } from '../desktop/src/preload/preload'
 declare global {
   interface Window {
     electron?: ElectronPreload
-    initialDeepLink?: string | null
   }
 }
 

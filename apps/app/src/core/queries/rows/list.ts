@@ -1,0 +1,253 @@
+import type { ActiveFilter } from '@tamery/shared/filters'
+import { toKyselyFilter } from '@tamery/shared/filters'
+import { infiniteQueryOptions } from '@tanstack/react-query'
+import { type } from 'arktype'
+import { sql } from 'kysely'
+import { memoize } from 'memoza'
+
+import type { ConnectionResource } from '~/core/connection/sync'
+import { DEFAULT_PAGE_LIMIT } from '~/core/connection/utils'
+import {
+  connectionResourceToQueryParams,
+  createQuery,
+} from '~/core/runtime/query'
+
+const rowType = type('Record<string, unknown>')
+
+interface PageResult {
+  rows: (typeof rowType.inferIn)[]
+}
+
+export interface RowsQueryProps {
+  limit?: number
+  select?: string[]
+  table: string
+  schema: string
+  query: {
+    filtersConcatOperator?: 'AND' | 'OR'
+    orderBy?: Record<string, 'ASC' | 'DESC'>
+    filters?: ActiveFilter[]
+  }
+}
+
+const orderEntries = (orderBy: Record<string, 'ASC' | 'DESC'> | undefined) =>
+  Object.entries(orderBy ?? {}) as [string, 'ASC' | 'DESC'][]
+
+export const resourceRowsQuery = memoize(
+  ({
+    limit = DEFAULT_PAGE_LIMIT,
+    select,
+    offset,
+    table,
+    schema,
+    query: { orderBy, filters, filtersConcatOperator },
+  }: RowsQueryProps & { offset: number }) =>
+    createQuery({
+      query: {
+        clickhouse: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
+
+          let query = db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
+          }
+
+          return query.execute()
+        },
+        mssql: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
+
+          let query = db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          if (orders.length === 0) {
+            query = query.orderBy(sql<string>`(select null)`)
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
+          }
+
+          return query.execute()
+        },
+        mysql: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
+
+          let query = db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
+          }
+
+          return query.execute()
+        },
+        postgres: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
+
+          let query = db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
+          }
+
+          return query.execute()
+        },
+      },
+      type: rowType.array(),
+    })
+)
+
+export const resourceRowsQueryKey = ({
+  connectionResource,
+  schema,
+  table,
+}: {
+  connectionResource: ConnectionResource
+  schema: string
+  table: string
+}) => [
+  'connection-resource',
+  connectionResource.id,
+  'schema',
+  schema,
+  'table',
+  table,
+  'rows',
+]
+
+export const resourceRowsQueryInfiniteOptions = memoize(
+  ({
+    connectionResource,
+    schema,
+    table,
+    query: { orderBy, filters, filtersConcatOperator },
+    ...props
+  }: {
+    connectionResource: ConnectionResource
+  } & RowsQueryProps) => {
+    const pageLimit = props.limit ?? DEFAULT_PAGE_LIMIT
+
+    return infiniteQueryOptions({
+      getNextPageParam: (
+        lastPage: PageResult,
+        _allPages: PageResult[],
+        lastPageParam: number
+      ) =>
+        lastPage.rows.length === 0 || lastPage.rows.length < pageLimit
+          ? null
+          : lastPageParam + pageLimit,
+      initialPageParam: 0,
+      queryFn: async ({ pageParam: offset }) => {
+        const result = await resourceRowsQuery({
+          offset,
+          query: {
+            filters,
+            filtersConcatOperator,
+            orderBy,
+          },
+          schema,
+          table,
+          ...props,
+        }).run(await connectionResourceToQueryParams(connectionResource))
+
+        return {
+          rows: result,
+        } satisfies PageResult
+      },
+      queryKey: [
+        ...resourceRowsQueryKey({ connectionResource, schema, table }),
+        {
+          filters,
+          filtersConcatOperator,
+          orderBy,
+        },
+      ],
+      select: (data) => data.pages.flatMap((page) => page.rows),
+      throwOnError: false,
+    })
+  }
+)

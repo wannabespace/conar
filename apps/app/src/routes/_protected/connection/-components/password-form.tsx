@@ -17,12 +17,9 @@ import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/entities/collections'
-import type {
-  Connection,
-  ConnectionResource,
-} from '~/entities/connection/core/sync'
-import { testConnectionQuery } from '~/entities/connection/queries/connection/test'
+import { useCollections } from '~/core/collections.ts'
+import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { testConnectionQuery } from '~/core/queries/connection/test'
 
 export const PasswordForm = ({
   connection,

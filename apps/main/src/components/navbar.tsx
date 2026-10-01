@@ -1,9 +1,4 @@
-import {
-  GitBranchIcon,
-  GithubIcon,
-  Moon02Icon,
-  Sun03Icon,
-} from '@hugeicons/core-free-icons'
+import { GithubIcon, Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
@@ -18,6 +13,7 @@ import type { ComponentProps } from 'react'
 
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
+import { mainModules } from '~/lib/modules'
 import { orpc } from '~/lib/orpc'
 
 import { NavbarTextLogo } from './navbar-text-logo'
@@ -47,19 +43,9 @@ export const Navbar = ({ className, ...props }: ComponentProps<'header'>) => {
         </Link>
       </div>
       <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden gap-1 sm:flex sm:gap-2"
-          render={<Link to="/releases" />}
-        >
-          <HugeiconsIcon
-            icon={GitBranchIcon}
-            strokeWidth={2}
-            className="size-3 sm:size-4"
-          />
-          Releases
-        </Button>
+        {mainModules.headerLinks.map(({ Component }, index) => (
+          <Component key={index} />
+        ))}
         <Button
           variant="ghost"
           size="sm"

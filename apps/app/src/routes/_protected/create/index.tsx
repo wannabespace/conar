@@ -24,14 +24,14 @@ import {
   StepperList,
   StepperTrigger,
 } from '~/components/stepper'
-import { useCollections } from '~/entities/collections'
-import { createConnectionTransaction } from '~/entities/connection/core/create-connection'
-import { prefetchConnectionResourceCore } from '~/entities/connection/fetching'
-import { fetchingConfig } from '~/entities/connection/fetching-config'
-import { testConnectionQuery } from '~/entities/connection/queries/connection/test'
-import { useLocalProxyAvailable } from '~/entities/connection/runtime/proxy'
-import { getConnectionStore } from '~/entities/connection/store/stores'
-import { useActiveWorkspace } from '~/entities/workspace/hooks'
+import { useCollections } from '~/core/collections.ts'
+import { createConnectionTransaction } from '~/core/connection/create'
+import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
+import { fetchingConfig } from '~/core/connection/fetching-config'
+import { getConnectionStore } from '~/core/connection/stores'
+import { testConnectionQuery } from '~/core/queries/connection/test'
+import { useLocalProxyAvailable } from '~/core/runtime/proxy'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
 import { StepCredentials } from './-components/step-credentials'

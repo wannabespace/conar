@@ -43,21 +43,21 @@ const ShellFrame = ({
 const ConnectionShell = () => (
   <ShellFrame id="shell-connection">
     <div className="flex min-h-0 flex-1 p-2">
-      <div className="h-full shrink-0" data-shell-navigator />
+      <div className="h-full shrink-0" data-shell-left />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className={resourcePanelClassName}>
           <div className="h-8 shrink-0" />
         </div>
         <div
           className="flex min-h-0 shrink-0 flex-col pt-1.5"
-          data-shell-logger
+          data-shell-bottom
         >
           <div className={resourcePanelClassName}>
             <div className="h-8 shrink-0" />
           </div>
         </div>
       </div>
-      <div className="h-full shrink-0" data-shell-chat>
+      <div className="h-full shrink-0" data-shell-right>
         <div className="flex h-full flex-col pl-1.5">
           <div className={resourcePanelClassName}>
             <div className="h-8 shrink-0" />

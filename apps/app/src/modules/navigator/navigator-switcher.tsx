@@ -1,0 +1,72 @@
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Layers01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Button } from '@tamery/ui/components/button'
+import { getRouteApi } from '@tanstack/react-router'
+import { AnimatePresence, motion } from 'motion/react'
+import { useSubscription } from 'seitu/react'
+
+import { sidebarActionRowClassName } from './primitives'
+import { getNavigatorStore } from './stores'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const TRANSITION = { duration: 0.15, ease: [0.32, 0.72, 0, 1] } as const
+
+export const NavigatorSwitcher = () => {
+  const { connectionResource } = useRouteContext()
+  const navigatorStore = getNavigatorStore(connectionResource.id)
+  const navigator = useSubscription(navigatorStore)
+  const isDefinitions = navigator === 'definitions'
+
+  return (
+    <Button
+      variant="ghost-row"
+      size="sm"
+      aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
+      className={sidebarActionRowClassName}
+      onClick={() =>
+        navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
+      }
+    >
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.span
+          key={navigator}
+          initial={{ opacity: 0, x: isDefinitions ? 6 : -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: isDefinitions ? -6 : 6 }}
+          transition={TRANSITION}
+          className="flex w-full items-center gap-2"
+        >
+          {isDefinitions ? (
+            <>
+              <HugeiconsIcon
+                icon={ArrowLeft01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground size-4 shrink-0"
+              />
+              Tables
+            </>
+          ) : (
+            <>
+              <HugeiconsIcon
+                icon={Layers01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground size-4 shrink-0"
+              />
+              Schema
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground/60 ml-auto size-3.5 shrink-0"
+              />
+            </>
+          )}
+        </motion.span>
+      </AnimatePresence>
+    </Button>
+  )
+}
