@@ -204,6 +204,10 @@
   --accent: oklch(0.951 0.0013 282.73);
 }
 
+.dark :is(.bg-background, .bg-card) {
+  --accent: oklch(0.29 0.0075 259.64);
+}
+
 .bg-popover:not(.dark *) {
   --accent: oklch(0.965 0.0013 282.73);
 }

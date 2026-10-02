@@ -35,6 +35,7 @@ import type { ExportDataProps } from '~/components/export-data'
 import { ExportData } from '~/components/export-data'
 import { PaneEmpty } from '~/components/pane-empty'
 import type { ResultSet } from '~/core/queries/connection/custom'
+import { useIsAnonymous } from '~/lib/auth'
 
 import { useRunnerActions } from '../lib/actions'
 import type { RunnerResult } from '../lib/run'
@@ -68,6 +69,7 @@ const ResultError = ({
   result: RunnerResult & { error: string }
 }) => {
   const { fixWithAi } = useRunnerActions()
+  const isAnonymous = useIsAnonymous()
 
   return (
     <PaneEmpty
@@ -75,7 +77,14 @@ const ResultError = ({
       title="The statement failed"
       description={result.error}
     >
-      <Button size="sm" variant="outline" onClick={() => fixWithAi(result)}>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={isAnonymous}
+        focusableWhenDisabled
+        data-guest-locked={isAnonymous ? 'ai' : undefined}
+        onClick={() => fixWithAi(result)}
+      >
         <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
         Fix with AI
         <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />

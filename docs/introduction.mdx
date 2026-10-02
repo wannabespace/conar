@@ -50,5 +50,6 @@ Tamery encrypts every connection string at rest with a per-user key. When you sa
 
 - **Cloud (with password)** — full connection string, including the password, is encrypted and synced to every device.
 - **Cloud (without password)** — only metadata (host, port, database, username) syncs; the password stays on the device where you enter it.
+- **Cloud (without connection string)** — only the name, label and color sync; the connection string stays on the device where you create it.
 
-Both modes sync the connection across devices. See [Security](/connections/security) for details.
+Every mode syncs the connection across devices. See [Security](/connections/security) for details.

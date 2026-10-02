@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
+import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
@@ -26,6 +27,7 @@ import { Link } from '~/components/link'
 import { useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
+import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 
 import { ConnectionCard } from './connection-card'
@@ -60,8 +62,12 @@ const groupValue = createWebStorageValue({
   defaultValue: 'label',
 })
 
+const newConnectionRowClass =
+  'text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150'
+
 export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
+  const permissions = usePermissions()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
   const { data: activeWorkspace } = useActiveWorkspace()
@@ -223,17 +229,29 @@ export const ConnectionsList = () => {
               </div>
             </div>
           ))}
-          <Link
-            to="/create"
-            className="text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150"
-          >
-            <HugeiconsIcon
-              icon={PlusSignIcon}
-              strokeWidth={2}
-              className="size-4"
-            />
-            New connection
-          </Link>
+          {permissions.check('connection.create', { count: data.length }) ? (
+            <Link to="/create" className={newConnectionRowClass}>
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                strokeWidth={2}
+                className="size-4"
+              />
+              New connection
+            </Link>
+          ) : (
+            <span
+              aria-disabled
+              data-guest-locked="connections"
+              className={cn(newConnectionRowClass, 'opacity-50')}
+            >
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                strokeWidth={2}
+                className="size-4"
+              />
+              New connection
+            </span>
+          )}
         </div>
       ) : (
         <Empty />

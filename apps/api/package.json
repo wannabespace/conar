@@ -35,6 +35,7 @@
     "hono": "catalog:",
     "memoza": "catalog:",
     "nanoid": "catalog:",
+    "permix": "catalog:",
     "pg": "catalog:",
     "react": "catalog:",
     "redis": "catalog:",

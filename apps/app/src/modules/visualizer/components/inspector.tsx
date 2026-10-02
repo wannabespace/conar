@@ -200,6 +200,9 @@ const Inspector = ({
               <Button
                 variant="ghost-muted"
                 size="xs"
+                disabled={!can.edit}
+                focusableWhenDisabled
+                data-guest-locked={can.edit ? undefined : 'edit'}
                 onClick={() => actions.addColumn(table)}
               >
                 <HugeiconsIcon

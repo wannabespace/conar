@@ -8,6 +8,7 @@ import {
   sectionAvailable,
   sectionCapabilitiesOf,
 } from '~/core/catalog/capabilities'
+import { permix } from '~/core/user/permissions'
 
 import type {
   Diagram,
@@ -24,6 +25,7 @@ export const gatesOf = (connectionType: ConnectionType) => {
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,
+    edit: permix.check('database.edit'),
     foreignKeys:
       capabilities.constraintKinds.includes('foreignKey') &&
       !!constraints.create,

@@ -1,10 +1,10 @@
 ---
 title: 'Security'
 sidebarTitle: 'Security'
-description: 'How Tamery encrypts connection strings and how the two sync modes handle your password.'
+description: 'How Tamery encrypts connection strings and how the sync modes handle your password.'
 ---
 
-Every connection string is encrypted before it leaves your device. The sync type controls whether your password is stored in the cloud at all.
+Every connection string is encrypted before it leaves your device. The sync type controls whether your password — or the connection string itself — is stored in the cloud at all.
 
 ## Encryption at rest
 
@@ -14,11 +14,11 @@ All connection strings are encrypted with a **per-workspace secret key**, unique
 
 When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
 
-To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned.
+To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned. To keep the connection string off the server entirely, use **Cloud (without connection string)**.
 
-## Cloud (with password) vs Cloud (without password)
+## Sync modes
 
-Both modes sync the connection across your devices.
+Every mode syncs the connection across your devices.
 
 <Tabs>
   <Tab title="Cloud (with password)">
@@ -42,17 +42,28 @@ Both modes sync the connection across your devices.
     Best for production or strict-policy environments.
 
   </Tab>
+  <Tab title="Cloud (without connection string)">
+    Stores only the connection's name, label and color. The connection string is **never** uploaded.
+
+    - It's kept on the device where you created the connection, encrypted with your workspace key.
+    - Other devices list the connection but can't open it.
+    - The CLI and cloud proxy can't use it.
+
+    Best when a database's address must not leave the device.
+
+  </Tab>
 </Tabs>
 
 ## Choosing a mode
 
-| Situation                      | Mode                     |
-| ------------------------------ | ------------------------ |
-| Local / dev databases          | Cloud (with password)    |
-| Staging                        | Cloud (with password)    |
-| Production                     | Cloud (without password) |
-| External secret-storage policy | Cloud (without password) |
-| Shared machines                | Cloud (without password) |
+| Situation                      | Mode                              |
+| ------------------------------ | --------------------------------- |
+| Local / dev databases          | Cloud (with password)             |
+| Staging                        | Cloud (with password)             |
+| Production                     | Cloud (without password)          |
+| External secret-storage policy | Cloud (without password)          |
+| Shared machines                | Cloud (without password)          |
+| Address must stay on device    | Cloud (without connection string) |
 
 You can mix modes per connection.
 

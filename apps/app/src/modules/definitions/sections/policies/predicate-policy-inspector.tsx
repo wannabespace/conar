@@ -17,6 +17,7 @@ import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { alterPolicyQuery } from '~/core/queries/policies/alter'
 import { createPolicyQuery } from '~/core/queries/policies/create'
 import { policyPredicate } from '~/core/queries/policies/shape'
+import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
 
 import { SchemaField, SelectField, TextField } from '../../components/fields'
@@ -53,6 +54,7 @@ export const PredicatePolicyInspector = ({
   schemas,
   selectedSchema,
 }: SectionInspectorProps<PolicyItem>) => {
+  const canEdit = usePermissions().check('database.edit')
   const { data: functions = [], isPending: functionsPending } = useQuery(
     resourceFunctionsQueryOptions({ connectionResource })
   )
@@ -140,7 +142,7 @@ export const PredicatePolicyInspector = ({
             <Switch
               id="policy-enabled"
               size="sm"
-              disabled={state.isPending}
+              disabled={state.isPending || !canEdit}
               checked={item.enabled}
               onCheckedChange={(enabled) => state.mutate({ enabled })}
             />

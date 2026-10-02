@@ -2,6 +2,7 @@ import { PlusSignIcon } from '@hugeicons/core-free-icons'
 
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { parseTableTabId } from '~/core/tabs/ids'
+import { permix } from '~/core/user/permissions'
 import type { ProtectedModule } from '~/lib/module'
 import { queryClient } from '~/lib/query-client'
 
@@ -29,6 +30,7 @@ export default {
       ? [
           {
             action: () => addColumnDialogRef.current?.add(),
+            disabled: !permix.check('database.edit'),
             group: 'Database',
             icon: PlusSignIcon,
             keywords: ['create', 'new', 'column', active.table],

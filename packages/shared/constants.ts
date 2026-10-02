@@ -44,6 +44,10 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
 ] as const
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
+export const GUEST_AI_MESSAGE = 'AI features need an account.'
+export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
+export const GUEST_SYNC_MESSAGE =
+  'Guests keep the connection string on this device.'
 
 export const API_KEY_PERMISSIONS = {
   connections: ['read', 'write'] as const,

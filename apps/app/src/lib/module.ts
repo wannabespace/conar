@@ -70,6 +70,7 @@ export interface NewTabAction {
 
 export interface CommandEntry {
   action: () => void
+  disabled?: boolean
   group: 'Navigation' | 'Database' | 'View' | 'Application'
   icon: IconSvgElement
   keywords: string[]

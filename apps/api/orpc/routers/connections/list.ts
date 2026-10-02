@@ -26,8 +26,13 @@ export const list = orpc
       .where(eq(connections.userId, context.user.id))
       .orderBy(desc(connections.createdAt))
 
+    const cloudConnections = connectionsList.flatMap(
+      ({ connectionString, ...connection }) =>
+        connectionString ? [{ ...connection, connectionString }] : []
+    )
+
     return Promise.all(
-      connectionsList.map(async ({ workspaceId, ...connection }) => {
+      cloudConnections.map(async ({ workspaceId, ...connection }) => {
         const secret = await context.getWorkspaceSecret(workspaceId)
 
         try {

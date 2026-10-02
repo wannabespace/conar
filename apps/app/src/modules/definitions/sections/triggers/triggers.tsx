@@ -16,6 +16,7 @@ import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { dropTriggerQuery } from '~/core/queries/triggers/drop'
 import { resourceTriggersQueryOptions } from '~/core/queries/triggers/list'
 import { definitionsTabId } from '~/core/tabs/ids'
+import { usePermissions } from '~/core/user/permissions'
 
 import { DefinitionsPage } from '../../components/page'
 import { useDefinitionsState } from '../../hooks/use-definitions-state'
@@ -58,6 +59,7 @@ const functionColumn = textColumn({
 })
 
 export const Triggers = () => {
+  const canEdit = usePermissions().check('database.edit')
   const state = useDefinitionsState({ section: 'triggers' })
   const { connectionResource, relationNamesOf, run, search, selectedSchema } =
     state
@@ -128,6 +130,7 @@ export const Triggers = () => {
     options.toggle
       ? [
           {
+            disabled: !canEdit,
             icon: item.enabled === false ? PlayIcon : PauseIcon,
             label: item.enabled === false ? 'Enable' : 'Disable',
             onSelect: () =>

@@ -42,6 +42,7 @@ import type { StickToBottomInstance } from 'use-stick-to-bottom'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { CellSwitch } from '~/components/cell-switch'
+import { usePermissions } from '~/core/user/permissions'
 
 import { useCellContext } from './cell-context'
 import { estimateCompactHeight } from './utils'
@@ -205,6 +206,7 @@ const CellPopoverToolbar = ({
   newValue,
   hasUiRender,
   canEdit,
+  locked,
   isNullable,
   isNull,
   onSetNull,
@@ -218,6 +220,7 @@ const CellPopoverToolbar = ({
   newValue: unknown
   hasUiRender: boolean
   canEdit: boolean
+  locked: boolean
   isNullable: boolean
   isNull: boolean
   onSetNull: () => void
@@ -277,13 +280,15 @@ const CellPopoverToolbar = ({
       )}
     </div>
     <div className="flex items-center gap-1">
-      {canEdit && (
+      {(canEdit || locked) && (
         <>
           {isNullable && (
             <Button
               size="xs"
               variant="secondary"
-              disabled={isNull}
+              disabled={locked || isNull}
+              focusableWhenDisabled
+              data-guest-locked={locked ? 'edit' : undefined}
               onClick={onSetNull}
             >
               Set <span className="font-mono">null</span>
@@ -291,7 +296,15 @@ const CellPopoverToolbar = ({
           )}
           <Tooltip>
             <TooltipTrigger
-              render={<Button size="xs" onClick={() => onQueue()} />}
+              render={
+                <Button
+                  size="xs"
+                  disabled={locked}
+                  focusableWhenDisabled
+                  data-guest-locked={locked ? 'edit' : undefined}
+                  onClick={() => onQueue()}
+                />
+              }
             >
               Apply
             </TooltipTrigger>
@@ -378,7 +391,9 @@ export const CellPopoverContent = ({
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { scrollRef, contentRef } = useStickToBottom({ initial: 'instant' })
 
+  const canEditDatabase = usePermissions().check('database.edit')
   const canEdit = !!column?.isEditable && hasUpdateFn
+  const locked = !!column?.isEditable && !canEditDatabase
 
   const uiRender = renderCellEditor({
     canEdit,
@@ -486,6 +501,7 @@ export const CellPopoverContent = ({
         newValue={newValue}
         hasUiRender={!!uiRender}
         canEdit={canEdit}
+        locked={locked}
         isNullable={!!column?.isNullable}
         isNull={value === null}
         onSetNull={onSetNull}

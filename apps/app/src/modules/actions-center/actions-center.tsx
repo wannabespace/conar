@@ -46,6 +46,7 @@ import { useConnectionResourceLinkParams } from '~/core/connection/use-connectio
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import type { CommandEntry } from '~/lib/module'
@@ -66,11 +67,17 @@ const actionEntry = (
   keywords: string[],
   Icon: IconSvgElement,
   action: () => void,
-  shortcutLetter?: string
+  shortcutLetter?: string,
+  disabled?: boolean
 ) => ({
   keywords,
   node: (
-    <CommandItem key={value} value={value} onSelect={run(action)}>
+    <CommandItem
+      key={value}
+      value={value}
+      disabled={disabled}
+      onSelect={run(action)}
+    >
       <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
       {shortcutLetter && (
@@ -213,6 +220,7 @@ export const ActionsCenter = () => {
   })
 
   const isOpen = useSubscription(actionCenterOpen)
+  const permissions = usePermissions()
   const router = useRouter()
   const resolvedTheme = useResolvedTheme()
   const [search, setSearch] = useState('')
@@ -253,7 +261,8 @@ export const ActionsCenter = () => {
           entry.keywords,
           entry.icon,
           entry.action,
-          entry.shortcut
+          entry.shortcut,
+          entry.disabled
         )
       )
 
@@ -382,7 +391,9 @@ export const ActionsCenter = () => {
           'Add new connection…',
           ['new', 'create', 'database'],
           DatabaseAddIcon,
-          () => router.navigate({ to: '/create' })
+          () => router.navigate({ to: '/create' }),
+          undefined,
+          !permissions.check('connection.create', { count: data.length })
         ),
         ...connections,
       ],

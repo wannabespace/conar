@@ -26,6 +26,8 @@ interface FetchingOptions {
 }
 
 const REASONS = {
+  connectionStringNotStored:
+    'This connection string was not synced to the cloud. Open this connection on the device where it was created.',
   localhostFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   passwordMissingInDesktop:
@@ -87,6 +89,13 @@ export const fetchingConfig = (
     proxyReachable,
   } = resolveFlags(connection, options)
 
+  if (
+    connection.syncType === SyncType.CloudWithoutConnectionString &&
+    options?.isPasswordPopulated === undefined
+  ) {
+    return blocked('local', REASONS.connectionStringNotStored)
+  }
+
   if (passwordUnresolved) {
     return blocked('resolving-password')
   }
@@ -112,7 +121,7 @@ export const fetchingConfig = (
     return blocked('proxy', REASONS.localhostFromWeb)
   }
 
-  if (connection.syncType === SyncType.CloudWithoutPassword) {
+  if (connection.syncType !== SyncType.Cloud) {
     return blocked('cloud-proxy', REASONS.passwordNotStored)
   }
 

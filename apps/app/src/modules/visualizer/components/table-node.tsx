@@ -112,7 +112,10 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
     ])
   )
   const connectable =
-    can.foreignKeys && table.kind === 'table' && table.state !== 'dropped'
+    can.edit &&
+    can.foreignKeys &&
+    table.kind === 'table' &&
+    table.state !== 'dropped'
   const dimmed = !!search && !tableMatches(table, search)
   // One context menu per card: rows only record which column was hit.
   const menuColumn = useRef<DiagramColumn | null>(null)

@@ -18,6 +18,11 @@ let instance: Promise<PostHog> | null = null
 const load = () => (instance ??= init())
 
 export const posthog = {
+  capture: async (...args: Parameters<PostHog['capture']>) => {
+    const client = await load()
+
+    client.capture(...args)
+  },
   captureException: async (
     ...args: Parameters<PostHog['captureException']>
   ) => {

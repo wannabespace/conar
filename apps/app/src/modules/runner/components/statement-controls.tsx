@@ -28,6 +28,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { useIsAnonymous } from '~/lib/auth'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
@@ -41,7 +42,8 @@ const { useRouteContext } = getRouteApi(
 
 const statementMenuItems = (
   actions: RunnerActions,
-  canExplain: boolean
+  canExplain: boolean,
+  isAnonymous: boolean
 ): AppMenuNode[] => [
   ...(canExplain
     ? [
@@ -54,6 +56,7 @@ const statementMenuItems = (
     : []),
   {
     accelerator: 'CmdOrCtrl+K',
+    disabled: isAnonymous,
     icon: SparklesIcon,
     label: 'Edit with AI',
     onSelect: () => actions.askAi(),
@@ -154,6 +157,7 @@ export const StatementControls = ({
 }) => {
   const { connection } = useRouteContext()
   const actions = useRunnerActions()
+  const isAnonymous = useIsAnonymous()
   const suggestionHere = sameSpot(anchor.suggestion, anchor)
 
   return (
@@ -192,6 +196,9 @@ export const StatementControls = ({
                     size="icon-2xs"
                     variant="outline"
                     aria-label="Fix with AI"
+                    disabled={isAnonymous}
+                    focusableWhenDisabled
+                    data-guest-locked={isAnonymous ? 'ai' : undefined}
                     onClick={() => actions.fixWithAi(failed)}
                   />
                 }
@@ -242,7 +249,8 @@ export const StatementControls = ({
               items={() =>
                 statementMenuItems(
                   actions,
-                  capabilitiesOf(connection.type).explain
+                  capabilitiesOf(connection.type).explain,
+                  isAnonymous
                 )
               }
             />

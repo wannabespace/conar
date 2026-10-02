@@ -163,6 +163,9 @@ export const Toolbar = ({
         <Button
           variant="outline"
           className="shrink-0"
+          disabled={!can.edit}
+          focusableWhenDisabled
+          data-guest-locked={can.edit ? undefined : 'edit'}
           onClick={() => actions.createTable()}
         >
           <HugeiconsIcon

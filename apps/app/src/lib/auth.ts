@@ -1,6 +1,6 @@
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
-import { organizationClient } from 'better-auth/client/plugins'
+import { anonymousClient, organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -52,8 +52,14 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient()],
+  plugins: [anonymousClient(), organizationClient()],
 })
+
+export const isAnonymous = () =>
+  !!authClient.$store.atoms.session?.get().data?.user.isAnonymous
+
+export const useIsAnonymous = () =>
+  !!authClient.useSession().data?.user.isAnonymous
 
 export const isSignedIn = async () => {
   const { data } = await tryCatchAsync(authClient.getSession)
@@ -70,11 +76,13 @@ export const fullSignOut = async () => {
     history.push('/auth')
   }
 
-  const [{ cleanCollections }, { clearDb }] = await Promise.all([
+  const [{ cleanCollections }, { clearDb }, { resetPlan }] = await Promise.all([
     import('~/core/collections'),
     import('./sync'),
+    import('~/core/user/permissions'),
   ])
 
   cleanCollections()
+  resetPlan()
   await Promise.all([clearDb(), encryptionKey.reset()])
 }

@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -69,6 +70,7 @@ export const PolicyInspector = ({
   selectedSchema,
   type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
+  const canEdit = usePermissions().check('database.edit')
   const mutation = useMutation({
     mutationFn: (draft: PolicyDraft) =>
       savePolicy({ connectionType, draft, item, run }),
@@ -132,7 +134,7 @@ export const PolicyInspector = ({
             <Switch
               id="policy-row-level-security"
               size="sm"
-              disabled={rowLevelSecurity.isPending}
+              disabled={rowLevelSecurity.isPending || !canEdit}
               checked={item.enabled}
               onCheckedChange={(enabled) =>
                 rowLevelSecurity.mutate({ enabled })

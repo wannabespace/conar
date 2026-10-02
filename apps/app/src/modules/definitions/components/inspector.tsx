@@ -35,6 +35,7 @@ import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { usePermissions } from '~/core/user/permissions'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 
@@ -78,7 +79,8 @@ export const Inspector = ({
   saveLabel?: string
   warning?: InspectorWarning | undefined
 }) => {
-  const saveEnabled = !(readOnly || mutation.isPending) && canSave
+  const locked = !usePermissions().check('database.edit')
+  const saveEnabled = !(readOnly || locked || mutation.isPending) && canSave
 
   useHotkeys(
     [
@@ -97,6 +99,8 @@ export const Inspector = ({
       form={FORM_ID}
       variant={warning ? 'warning' : 'default'}
       disabled={!saveEnabled}
+      focusableWhenDisabled
+      data-guest-locked={locked ? 'edit' : undefined}
     >
       <LoadingContent loading={mutation.isPending}>
         {warning?.action ?? saveLabel ?? (item ? 'Save' : `Create ${noun}`)}

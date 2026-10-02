@@ -18,6 +18,7 @@ import { resourcePoliciesQueryOptions } from '~/core/queries/policies/list'
 import { setRowLevelSecurityQuery } from '~/core/queries/policies/set-row-level-security'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
 
 import type { TreeRow } from './tree-row'
@@ -28,6 +29,7 @@ export const useRowLevelSecurityItems = ({
   schema,
   table,
 }: Extract<TreeRow, { kind: 'table' }>): AppMenuNode[] => {
+  const canEdit = usePermissions().check('database.edit')
   const { connectionResource } = useRouteContext()
   const mutation = useMutation({
     mutationFn: async (enabled: boolean) =>
@@ -63,7 +65,7 @@ export const useRowLevelSecurityItems = ({
 
   return [
     {
-      disabled: mutation.isPending,
+      disabled: mutation.isPending || !canEdit,
       icon: table.rowLevelSecurity ? SecurityBlockIcon : SecurityCheckIcon,
       label: table.rowLevelSecurity ? 'Disable RLS' : 'Enable RLS',
       onSelect: () => mutation.mutate(!table.rowLevelSecurity),

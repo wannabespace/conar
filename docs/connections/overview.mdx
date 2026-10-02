@@ -30,7 +30,7 @@ Connections live in one place so you can switch between databases and devices.
 
 ## Sync types
 
-Sync type controls whether Tamery stores your password. Both options sync the connection across your devices.
+Sync type controls whether Tamery stores your password or connection string. Every option syncs the connection across your devices.
 
 <Tabs>
   <Tab title="Cloud (with password)">
@@ -43,6 +43,12 @@ Sync type controls whether Tamery stores your password. Both options sync the co
     Only metadata (host, port, database, username) is stored; the password is never uploaded. You enter it on each device.
 
     Good for production or when policy forbids storing passwords externally.
+
+  </Tab>
+  <Tab title="Cloud (without connection string)">
+    Only the name, label and color are stored; the connection string never leaves the device where you created it. Other devices list the connection but can't open it.
+
+    Good when a database's address must not be stored externally.
 
   </Tab>
 </Tabs>

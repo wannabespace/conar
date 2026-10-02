@@ -65,10 +65,12 @@ export const sync = orpc
     })
     const decryptItem = async (item: (typeof updatedItems)[number]) => ({
       ...item,
-      connectionString: decrypt({
-        encryptedText: item.connectionString,
-        secret: await context.getWorkspaceSecret(item.workspaceId),
-      }),
+      connectionString:
+        item.connectionString &&
+        decrypt({
+          encryptedText: item.connectionString,
+          secret: await context.getWorkspaceSecret(item.workspaceId),
+        }),
     })
     const [updatedValues, newValues] = await Promise.all([
       Promise.all(updatedItems.map(decryptItem)),

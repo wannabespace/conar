@@ -1,4 +1,6 @@
 import { getConnectionResourceStore } from '~/core/connection/stores'
+import { permix } from '~/core/user/permissions'
+import { promptSignIn } from '~/store'
 
 import { resolveTab } from './kinds'
 import type { ConnectionTab } from './types'
@@ -8,12 +10,19 @@ const setTabs = (
   update: (tabs: ConnectionTab[]) => ConnectionTab[]
 ) => {
   const store = getConnectionResourceStore(id)
+  const tabs = update(store.get().tabs)
+
+  const multiple = permix.check('tab.multiple')
+
+  if (!multiple && tabs.length > 1) {
+    promptSignIn('tabs')
+  }
 
   store.set(
     (state) =>
       ({
         ...state,
-        tabs: update(state.tabs),
+        tabs: multiple ? tabs : tabs.slice(-1),
       }) satisfies typeof state
   )
 }

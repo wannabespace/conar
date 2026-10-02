@@ -8,6 +8,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
+import { GUEST_ROW_LIMIT } from '@tamery/shared/permissions'
 import { Button } from '@tamery/ui/components/button'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
@@ -37,6 +38,7 @@ import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
+import { permix, usePermissions } from '~/core/user/permissions'
 
 import { useTablePageStore } from '../../lib/store'
 import { ActionsColumns } from './actions/actions-columns'
@@ -186,6 +188,7 @@ export const TableToolbar = ({
   table: string
   schema: string
 }) => {
+  const canEdit = usePermissions().check('database.edit')
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -245,9 +248,13 @@ export const TableToolbar = ({
     limit?: number
     filters?: ActiveFilter[]
   }) => {
-    if (limit) {
+    const rowLimit = permix.check('table.allRows')
+      ? limit
+      : Math.min(limit ?? GUEST_ROW_LIMIT, GUEST_ROW_LIMIT)
+
+    if (rowLimit) {
       return resourceRowsQuery({
-        limit,
+        limit: rowLimit,
         offset: 0,
         query: {
           filters: dataFilters || filters,
@@ -306,13 +313,21 @@ export const TableToolbar = ({
           </Tooltip>
           <DropdownMenuContent side="top" align="end" className="min-w-44">
             {tableType === 'table' && (
-              <DropdownMenuItem onClick={onAddColumn}>
+              <DropdownMenuItem
+                disabled={!canEdit}
+                data-guest-locked={canEdit ? undefined : 'edit'}
+                onClick={onAddColumn}
+              >
                 <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
                 Add column
               </DropdownMenuItem>
             )}
             {tableType === 'table' && (
-              <DropdownMenuItem onClick={() => setSeedOpen(true)}>
+              <DropdownMenuItem
+                disabled={!canEdit}
+                data-guest-locked={canEdit ? undefined : 'edit'}
+                onClick={() => setSeedOpen(true)}
+              >
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />
                 Seed data
               </DropdownMenuItem>

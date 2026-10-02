@@ -86,7 +86,7 @@ export const auth = betterAuth({
               throw error
             })
 
-          if (resend) {
+          if (resend && !user.isAnonymous) {
             const [firstName = '', ...lastName] = user.name.split(' ')
 
             await resend.contacts.create({

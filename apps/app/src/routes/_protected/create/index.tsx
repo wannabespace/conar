@@ -12,7 +12,7 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -31,8 +31,10 @@ import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
+import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
+import { promptSignIn } from '~/store'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -128,7 +130,13 @@ const CreateConnectionPage = () => {
           to: '/connection/$resourceId',
           params: { resourceId },
         })
-        toast.success('Connection created successfully 🎉')
+        try {
+          await tx.isPersisted.promise
+          toast.success('Connection created successfully 🎉')
+        } catch {
+          // The oRPC interceptor already toasts the error; only leave the rolled-back connection.
+          await router.navigate({ to: '/' })
+        }
       },
     })
 
@@ -397,6 +405,19 @@ const CreateConnectionPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/create/')({
+  beforeLoad: ({ context: { collections }, preload }) => {
+    if (
+      !permix.check('connection.create', {
+        count: collections.connectionsCollection.size,
+      })
+    ) {
+      if (!preload) {
+        promptSignIn('connections')
+      }
+
+      throw redirect({ to: '/' })
+    }
+  },
   component: CreateConnectionPage,
   head: () => ({
     meta: [{ title: title('Create connection') }],

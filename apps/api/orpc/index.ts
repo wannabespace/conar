@@ -3,8 +3,11 @@ import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
+import type { Permissions } from '@tamery/shared/permissions'
+import { permissionsOf, planOf } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
+import { createPermix } from 'permix/orpc'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
@@ -111,46 +114,20 @@ export const optionalAuthMiddleware = logMiddleware.use(
   })
 )
 
-export const subscriptionMiddleware = logMiddleware.use(
-  sessionOrpc
-    .errors({ FORBIDDEN: {} })
-    .middleware(async ({ context, errors, next }) => {
-      const session = await getSession(context.headers)
+export const permix = createPermix<Permissions>({
+  onForbidden: ({ context }) => {
+    const minorVersion = context.parsedAppVersion?.minor ?? 0
 
-      if (!session) {
-        throw errors.UNAUTHORIZED()
-      }
-
-      const minorVersion = context.parsedAppVersion?.minor ?? 0
-      const subscription = await getSubscription(session.user.id)
-
-      context.addLogData({ userId: session.user.id })
-
-      if (!subscription) {
-        throw errors.FORBIDDEN({
-          message:
-            minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-              ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
-              : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
-        })
-      }
-
-      context.addLogData({
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
-      })
-
-      return next({
-        context: {
-          ...session,
-          getWorkspaceSecret,
-          subscription,
-        },
-      })
+    throw new ORPCError('FORBIDDEN', {
+      message:
+        minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+          ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+          : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
     })
-)
+  },
+}).contextKey('permissions')
 
-export const optionalSubscriptionMiddleware = logMiddleware.use(
+export const permissionsMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
 
@@ -160,16 +137,29 @@ export const optionalSubscriptionMiddleware = logMiddleware.use(
 
     const subscription = await getSubscription(session.user.id)
 
-    context.addLogData({ userId: session.user.id })
+    context.addLogData({
+      userId: session.user.id,
+      ...(subscription && {
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+      }),
+    })
 
     return next({
       context: {
         ...session,
         getWorkspaceSecret,
         subscription,
+        ...permix.setupContext(
+          permissionsOf(planOf(session.user, !!subscription))
+        ),
       },
     })
   })
+)
+
+export const subscriptionMiddleware = permissionsMiddleware.use(
+  permix.checkMiddleware('ai.chat')
 )
 
 export const cacheMiddleware = (ttl: number = 60 * 60 * 24) =>

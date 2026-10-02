@@ -18,6 +18,7 @@ import { useParams } from '@tanstack/react-router'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { parseTableTabId } from '~/core/tabs/ids'
+import { usePermissions } from '~/core/user/permissions'
 
 import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
@@ -41,9 +42,17 @@ export const SchemaRow = ({
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
+  const locked = !usePermissions().check('database.edit')
   const items: AppMenuNode[] = [
     ...(onRename
-      ? [{ icon: PencilEdit01Icon, label: 'Rename', onSelect: onRename }]
+      ? [
+          {
+            disabled: locked,
+            icon: PencilEdit01Icon,
+            label: 'Rename',
+            onSelect: onRename,
+          },
+        ]
       : []),
     {
       icon: Copy01Icon,
@@ -52,6 +61,7 @@ export const SchemaRow = ({
     },
     { type: 'separator' },
     {
+      disabled: locked,
       icon: Delete02Icon,
       label: 'Drop',
       onSelect: onDrop,
@@ -109,6 +119,8 @@ export const SchemaRow = ({
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
+              disabled={locked}
+              data-guest-locked={locked ? 'edit' : undefined}
               className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
               onClick={onCreateTable}
             />

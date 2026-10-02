@@ -39,7 +39,7 @@ export const proxy = {
       },
       FORBIDDEN: {
         message:
-          'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+          'This connection is not allowed to be used because its password or connection string is not stored in the cloud.',
       },
       NOT_FOUND: { message: 'Connection not found' },
     })
@@ -74,8 +74,9 @@ export const proxy = {
         }
 
         if (
-          connection.connection.syncType === SyncType.CloudWithoutPassword &&
-          connection.connection.isPasswordExists
+          !connection.connection.connectionString ||
+          (connection.connection.syncType === SyncType.CloudWithoutPassword &&
+            connection.connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()
         }
@@ -111,8 +112,9 @@ export const proxy = {
         }
 
         if (
-          connection.syncType === SyncType.CloudWithoutPassword &&
-          connection.isPasswordExists
+          !connection.connectionString ||
+          (connection.syncType === SyncType.CloudWithoutPassword &&
+            connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()
         }

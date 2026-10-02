@@ -25,6 +25,7 @@ import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
+import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
 
 import { useTablePageStore } from '../../../lib/store'
@@ -38,6 +39,7 @@ export const ActionsDelete = ({
   table: string
   schema: string
 }) => {
+  const canEdit = usePermissions().check('database.edit')
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
@@ -120,7 +122,13 @@ export const ActionsDelete = ({
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.1 }}
           >
-            <Button variant="destructive" onClick={() => setIsOpened(true)}>
+            <Button
+              variant="destructive"
+              disabled={!canEdit}
+              focusableWhenDisabled
+              data-guest-locked={canEdit ? undefined : 'edit'}
+              onClick={() => setIsOpened(true)}
+            >
               <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
               <span>
                 Delete (

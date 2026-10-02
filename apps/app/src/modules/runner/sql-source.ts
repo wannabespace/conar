@@ -10,7 +10,7 @@ import type { ConnectionResource } from '~/core/connection/sync'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { hasSubscription } from '~/core/user/use-subscription'
+import { permix } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
@@ -105,8 +105,7 @@ export const sqlSourceFor = (
         { ...input, type: connectionType },
         { context: { silent: true }, signal }
       ),
-    ghostTextEnabled: () =>
-      appStore.get().isOnline && (hasSubscription() ?? false),
+    ghostTextEnabled: () => appStore.get().isOnline && permix.check('ai.sql'),
     load: (refs) =>
       [tablesOptions, enumsOptions].every(
         (options) => queryClient.getQueryData(options.queryKey) !== undefined

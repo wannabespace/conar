@@ -31,6 +31,7 @@ import {
   useTableSessionStore,
 } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
+import { permix, usePermissions } from '~/core/user/permissions'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import {
@@ -97,7 +98,9 @@ const BodyCellRenderer = ({
   return (
     <TableCell
       column={column}
-      onQueueValue={primaryKeys ? queueValue : undefined}
+      onQueueValue={
+        primaryKeys && permix.check('database.edit') ? queueValue : undefined
+      }
       connectionType={connectionType}
       draft={draft}
       onAddFilter={onAddFilter}
@@ -119,6 +122,7 @@ const TableComponent = ({
   schema: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
+  const canEdit = usePermissions().check('database.edit')
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -256,6 +260,9 @@ const TableComponent = ({
                   variant="ghost-muted"
                   size="icon-xs"
                   aria-label="Add column"
+                  disabled={!canEdit}
+                  focusableWhenDisabled
+                  data-guest-locked={canEdit ? undefined : 'edit'}
                   onClick={onAddColumn}
                 />
               }

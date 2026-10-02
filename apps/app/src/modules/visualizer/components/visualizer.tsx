@@ -15,6 +15,7 @@ import type { ColumnDialogRequest } from '~/core/table/column-dialog'
 import { ColumnDialog } from '~/core/table/column-dialog'
 import type { TableDialogRequest } from '~/core/table/table-dialog'
 import { TableDialog } from '~/core/table/table-dialog'
+import { usePermissions } from '~/core/user/permissions'
 
 import { useDiagramActions } from '../lib/actions'
 import { useApplyDrafts } from '../lib/apply'
@@ -51,6 +52,8 @@ export const Visualizer = ({
     selector: (state) => state.drafts,
   })
   const edit = diagramDrafts(draftsStore)
+  // Subscribes to permission changes; gatesOf reads them.
+  usePermissions()
   const can = gatesOf(connection.type)
 
   const defaultSchema = defaultSchemaOf(
@@ -185,7 +188,7 @@ export const Visualizer = ({
       },
       hotkey,
     })),
-    { enabled: !!selectedRelation && can.dropForeignKeys && idle }
+    { enabled: !!selectedRelation && can.edit && can.dropForeignKeys && idle }
   )
 
   const context: DiagramContextValue = {

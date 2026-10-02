@@ -16,6 +16,7 @@ import {
   triggerEventsFor,
   triggerOrientationsFor,
 } from '~/core/queries/triggers/shape'
+import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -58,6 +59,7 @@ export const TriggerInspector = ({
   selectedSchema,
   type: connectionType,
 }: SectionInspectorProps<TriggerItem>) => {
+  const canEdit = usePermissions().check('database.edit')
   const options = capabilitiesOf(connectionType).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
@@ -154,7 +156,7 @@ export const TriggerInspector = ({
             <Switch
               id="trigger-enabled"
               size="sm"
-              disabled={toggle.isPending}
+              disabled={toggle.isPending || !canEdit}
               checked={item.enabled !== false}
               onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
             />

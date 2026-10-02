@@ -25,8 +25,9 @@ export const resolve = orpc
     }
 
     if (
-      input.updatedAt &&
-      input.updatedAt.getTime() >= connection.updatedAt.getTime()
+      !connection.connectionString ||
+      (input.updatedAt &&
+        input.updatedAt.getTime() >= connection.updatedAt.getTime())
     ) {
       return { status: 'unchanged' as const }
     }

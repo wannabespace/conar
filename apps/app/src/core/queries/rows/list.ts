@@ -1,5 +1,6 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
+import { GUEST_ROW_LIMIT } from '@tamery/shared/permissions'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -11,6 +12,7 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
+import { permix } from '~/core/user/permissions'
 
 const rowType = type('Record<string, unknown>')
 
@@ -217,7 +219,9 @@ export const resourceRowsQueryInfiniteOptions = memoize(
         _allPages: PageResult[],
         lastPageParam: number
       ) =>
-        lastPage.rows.length === 0 || lastPage.rows.length < pageLimit
+        !permix.check('table.allRows') ||
+        lastPage.rows.length === 0 ||
+        lastPage.rows.length < pageLimit
           ? null
           : lastPageParam + pageLimit,
       initialPageParam: 0,
@@ -232,6 +236,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(
           schema,
           table,
           ...props,
+          limit: permix.check('table.allRows') ? props.limit : GUEST_ROW_LIMIT,
         }).run(await connectionResourceToQueryParams(connectionResource))
 
         return {

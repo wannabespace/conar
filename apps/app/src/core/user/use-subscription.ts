@@ -10,11 +10,6 @@ const isActiveSubscription = ({ status }: { status: string | null }) =>
     status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
   )
 
-export const hasSubscription = () =>
-  subscriptionQueryClient
-    .getQueryData(orpc.account.subscription.list.queryOptions().queryKey)
-    ?.some(isActiveSubscription)
-
 export const useSubscription = () => {
   const { data } = authClient.useSession()
   const { data: list, isPending } = useQuery(

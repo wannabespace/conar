@@ -1,5 +1,6 @@
 import {
   Alert02Icon,
+  ArrowRight01Icon,
   Cancel01Icon,
   CheckmarkCircle02Icon,
   InformationCircleIcon,
@@ -20,18 +21,27 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { AnimatePresence, motion } from 'motion/react'
+import {
+  AnimatePresence,
+  motion,
+  useAnimate,
+  useReducedMotion,
+} from 'motion/react'
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
+import { Link } from '~/components/link'
 import {
   MAX_RECONNECTION_ATTEMPTS,
   reconnectingPromises,
 } from '~/core/runtime/query'
 import { slowQueries } from '~/core/runtime/slow-queries'
+import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import type { NoGuestFeature } from '~/store'
+import { appStore, isNoGuestFeature, promptSignIn } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
@@ -80,6 +90,18 @@ const typeConfig = {
 
 const INITIAL_DELAY = 1000
 
+const GUEST_TEXT = 'Many features are disabled until you sign in.'
+
+const GUEST_HINTS: Record<NoGuestFeature, string> = {
+  ai: 'AI needs an account.',
+  connections: 'Guests can save one connection.',
+  edit: 'Guests can browse but not change the database.',
+  server: 'That needs an account.',
+  subscription: 'That needs an account.',
+  sync: 'Guests keep connection strings on this device.',
+  tabs: 'Guests keep one tab open.',
+}
+
 const bannerDismissedValue = createWebStorageValue({
   defaultValue: [],
   key: 'banner-dismissed',
@@ -106,6 +128,87 @@ const Banner = ({
   </motion.div>
 )
 
+const SHAKE = { x: [0, -4, 4, -2, 2, 0] }
+
+const GuestBannerContent = ({
+  prompt,
+}: {
+  prompt: { at: number; feature: NoGuestFeature | null }
+}) => {
+  const [scope, animate] = useAnimate()
+  const reduceMotion = useReducedMotion()
+
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const feature =
+        event.target instanceof Element &&
+        event.target.closest<HTMLElement>('[data-guest-locked]')?.dataset
+          .guestLocked
+
+      if (isNoGuestFeature(feature)) {
+        promptSignIn(feature)
+      }
+    }
+
+    // Capture phase: a guest-locked control is disabled, so its own handlers never fire.
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () =>
+      document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [])
+
+  useEffect(() => {
+    if (!prompt.at) {
+      return
+    }
+
+    animate('[data-flash]', { opacity: [1, 0] }, { duration: 0.9 })
+
+    if (!reduceMotion) {
+      animate('[data-shake]', SHAKE, { duration: 0.3 })
+    }
+  }, [animate, reduceMotion, prompt.at])
+
+  return (
+    <div
+      ref={scope}
+      className="relative flex min-w-0 flex-1 items-center self-stretch"
+    >
+      <span
+        data-flash
+        className="bg-info/20 pointer-events-none absolute -inset-x-4 -inset-y-1 opacity-0"
+      />
+      <div
+        data-shake
+        className="relative flex min-w-0 flex-1 items-center gap-2"
+      >
+        {typeConfig.info.icon}
+        <span className="min-w-0 flex-1 truncate leading-none">
+          <span className="font-medium">{GUEST_TEXT}</span>
+          {prompt.feature && (
+            <motion.span
+              key={prompt.at}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              className="ml-3"
+            >
+              {GUEST_HINTS[prompt.feature]}
+            </motion.span>
+          )}
+        </span>
+        <Button variant="ghost-tint" size="xs" render={<Link to="/auth" />}>
+          Sign in
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
+            data-icon="inline-end"
+          />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export const GlobalBanner = () => {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
@@ -120,6 +223,10 @@ export const GlobalBanner = () => {
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
+  const signInPrompt = useSubscription(appStore, {
+    selector: (state) => state.signInPrompt,
+  })
+  const { data: session } = authClient.useSession()
   const dismissed = useSubscription(bannerDismissedValue)
   const delayPassed = useDelay(INITIAL_DELAY)
 
@@ -176,6 +283,11 @@ export const GlobalBanner = () => {
           )}
         </Banner>
       ))}
+      {session?.user.isAnonymous && (
+        <Banner key="guest" className={typeConfig.info.className}>
+          <GuestBannerContent prompt={signInPrompt} />
+        </Banner>
+      )}
       {!reconnectingData && waitingSince !== undefined && (
         <Banner key="slow-query" className={typeConfig.info.className}>
           {typeConfig.info.icon}

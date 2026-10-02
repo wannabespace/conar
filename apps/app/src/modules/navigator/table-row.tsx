@@ -26,6 +26,7 @@ import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { usePermissions } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import { pinnedTable } from './pinned-tables'
@@ -56,7 +57,8 @@ export const TableRow = ({
     select: (params) => params.tabId === tabId,
     strict: false,
   })
-  const isReadOnly = row.table.type !== 'table'
+  const canEdit = usePermissions().check('database.edit')
+  const isReadOnly = row.table.type !== 'table' || !canEdit
   const Icon = tableTypeIcon[row.table.type]
   const store = tableSessionStore({
     id: connectionResource.id,
