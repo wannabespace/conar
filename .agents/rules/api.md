@@ -2,7 +2,7 @@
 
 ## oRPC
 
-- Copy the shape from a neighbouring router in `apps/api/orpc/routers/` and register it in `routers/index.ts`. `authMiddleware` puts `user`/`session` on context; `permissionsMiddleware` adds `subscription` and `context.permissions` (`architecture.md` → Permissions). `subscriptionMiddleware` is that plus the `ai.chat` check, kept for the chat procedures and frozen chat v1. Clients call through the generated `ORPCRouter` type, never a manual fetch.
+- Copy the shape from a neighbouring router in `apps/api/orpc/routers/` and register it in `routers/index.ts`. `authMiddleware` puts `user`/`session` on context; `permissionsMiddleware` adds `context.permissions` (`architecture.md` → Permissions). `subscriptionMiddleware` is that plus the `ai.chat` check, kept for the chat procedures and frozen chat v1. Clients call through the generated `ORPCRouter` type, never a manual fetch.
 - `create` procedures take exactly one item — never `type.or(schema, schema.array())`; collection handlers fan out with `Promise.all`.
 - **Errors are declared, not constructed**: a procedure or middleware lists its codes in `.errors({ CODE: { message } })` and throws `errors.CODE()`, so the code and its message live in the contract the client is generated from. `new ORPCError(...)` only where no `errors` map exists — handler interceptors and helpers outside a procedure. Clients narrow with `isDefinedError`.
 - `syncDiff`'s `updated` query is optional: an insert-only collection omits it rather than paying an `OR` branch per client row for a match that cannot happen.

@@ -7,6 +7,11 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
+import {
+  GUEST_AI_MESSAGE,
+  GUEST_CONNECTIONS_MESSAGE,
+  GUEST_SYNC_MESSAGE,
+} from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
@@ -38,7 +43,7 @@ import {
   reconnectingPromises,
 } from '~/core/runtime/query'
 import { slowQueries } from '~/core/runtime/slow-queries'
-import { authClient } from '~/lib/auth'
+import { useIsAnonymous } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import type { NoGuestFeature } from '~/store'
 import { appStore, isNoGuestFeature, promptSignIn } from '~/store'
@@ -93,12 +98,12 @@ const INITIAL_DELAY = 1000
 const GUEST_TEXT = 'Many features are disabled until you sign in.'
 
 const GUEST_HINTS: Record<NoGuestFeature, string> = {
-  ai: 'AI needs an account.',
-  connections: 'Guests can save one connection.',
+  ai: GUEST_AI_MESSAGE,
+  connections: GUEST_CONNECTIONS_MESSAGE,
   edit: 'Guests can browse but not change the database.',
   server: 'That needs an account.',
   subscription: 'That needs an account.',
-  sync: 'Guests keep connection strings on this device.',
+  sync: GUEST_SYNC_MESSAGE,
   tabs: 'Guests keep one tab open.',
 }
 
@@ -226,7 +231,7 @@ export const GlobalBanner = () => {
   const signInPrompt = useSubscription(appStore, {
     selector: (state) => state.signInPrompt,
   })
-  const { data: session } = authClient.useSession()
+  const isGuest = useIsAnonymous()
   const dismissed = useSubscription(bannerDismissedValue)
   const delayPassed = useDelay(INITIAL_DELAY)
 
@@ -283,7 +288,7 @@ export const GlobalBanner = () => {
           )}
         </Banner>
       ))}
-      {session?.user.isAnonymous && (
+      {isGuest && (
         <Banner key="guest" className={typeConfig.info.className}>
           <GuestBannerContent prompt={signInPrompt} />
         </Banner>

@@ -31,10 +31,10 @@ import {
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import { useMutation } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { Link } from '~/components/link'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
 import { accountUrl } from '~/lib/urls'
@@ -111,7 +111,7 @@ export const UserButton = ({
         </div>
         <DropdownMenuSeparator />
         {data?.user.isAnonymous ? (
-          <DropdownMenuItem render={<Link to="/auth" />}>
+          <DropdownMenuItem render={<Link to="/auth" activateOn="click" />}>
             <HugeiconsIcon icon={Login03Icon} strokeWidth={2} />
             Sign in
           </DropdownMenuItem>

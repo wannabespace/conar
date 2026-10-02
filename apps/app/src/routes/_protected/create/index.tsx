@@ -144,7 +144,9 @@ const CreateConnectionPage = () => {
     connectionString: '',
     name: generateRandomName(),
     type: null,
-    syncType: SyncType.Cloud,
+    syncType: permix.check('connection.syncString')
+      ? SyncType.Cloud
+      : SyncType.CloudWithoutConnectionString,
     label: null,
     color: null,
   }

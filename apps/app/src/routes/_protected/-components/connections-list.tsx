@@ -62,12 +62,8 @@ const groupValue = createWebStorageValue({
   defaultValue: 'label',
 })
 
-const newConnectionRowClass =
-  'text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150'
-
 export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
-  const permissions = usePermissions()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
   const { data: activeWorkspace } = useActiveWorkspace()
@@ -99,6 +95,10 @@ export const ConnectionsList = () => {
         sortDirection
       )
     },
+  })
+
+  const canCreate = usePermissions().check('connection.create', {
+    count: data.length,
   })
 
   const removeDialogRef =
@@ -229,29 +229,22 @@ export const ConnectionsList = () => {
               </div>
             </div>
           ))}
-          {permissions.check('connection.create', { count: data.length }) ? (
-            <Link to="/create" className={newConnectionRowClass}>
-              <HugeiconsIcon
-                icon={PlusSignIcon}
-                strokeWidth={2}
-                className="size-4"
-              />
-              New connection
-            </Link>
-          ) : (
-            <span
-              aria-disabled
-              data-guest-locked="connections"
-              className={cn(newConnectionRowClass, 'opacity-50')}
-            >
-              <HugeiconsIcon
-                icon={PlusSignIcon}
-                strokeWidth={2}
-                className="size-4"
-              />
-              New connection
-            </span>
-          )}
+          <Link
+            to="/create"
+            disabled={!canCreate}
+            data-guest-locked={canCreate ? undefined : 'connections'}
+            className={cn(
+              'text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150',
+              !canCreate && 'opacity-50'
+            )}
+          >
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              className="size-4"
+            />
+            New connection
+          </Link>
         </div>
       ) : (
         <Empty />

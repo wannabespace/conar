@@ -149,7 +149,6 @@ export const permissionsMiddleware = logMiddleware.use(
       context: {
         ...session,
         getWorkspaceSecret,
-        subscription,
         ...permix.setupContext(
           permissionsOf(planOf(session.user, !!subscription))
         ),

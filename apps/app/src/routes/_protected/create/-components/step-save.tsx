@@ -22,7 +22,7 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { CSSProperties } from 'react'
-import { useEffect, useId } from 'react'
+import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
@@ -78,15 +78,6 @@ export const StepSave = ({
   const canSyncString = usePermissions().check('connection.syncString')
   const isSyncDisabled = (value: SyncType) =>
     !canSyncString && value !== SyncType.CloudWithoutConnectionString
-  const firstEnabledSync = SYNC_OPTIONS.find(
-    (option) => !isSyncDisabled(option.value)
-  )
-
-  useEffect(() => {
-    if (isSyncDisabled(syncType) && firstEnabledSync) {
-      setSyncType(firstEnabledSync.value)
-    }
-  })
   const { connectionsCollection } = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const { data: connections } = useLiveQuery({
