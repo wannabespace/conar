@@ -56,8 +56,7 @@ export const columnMenu = (
   context: Pick<DiagramContextValue, 'actions' | 'can' | 'diagram'>
 ): AppMenuNode[] => {
   const { actions, can } = context
-  const tableEditable =
-    can.edit && table.kind === 'table' && table.state !== 'dropped'
+  const tableEditable = table.kind === 'table' && table.state !== 'dropped'
   const editable =
     tableEditable && column.state !== 'dropped' && !column.generated
   const references = referenceMenu(table, column, context)
@@ -117,7 +116,7 @@ export const tableMenu = (
   can: DiagramGates,
   actions: DiagramActions
 ): AppMenuNode[] => {
-  const editable = can.edit && table.kind === 'table'
+  const editable = table.kind === 'table'
   const added = table.state === 'added'
 
   return [
@@ -185,18 +184,15 @@ export const tableMenu = (
 
 export const relationMenu = (
   relation: DiagramRelation,
-  can: DiagramGates,
   actions: DiagramActions
 ): AppMenuNode[] => [
   relation.state === 'dropped'
     ? {
-        disabled: !can.edit,
         icon: Undo02Icon,
         label: 'Restore Foreign Key',
         onSelect: () => actions.dropRelation(relation),
       }
     : {
-        disabled: !can.edit,
         icon: Delete02Icon,
         label: 'Drop Foreign Key',
         onSelect: () => actions.dropRelation(relation),

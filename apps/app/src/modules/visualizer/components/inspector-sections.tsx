@@ -93,7 +93,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
             : [relation.target, relation.source]
           const menu =
             outgoing && can.dropForeignKeys
-              ? relationMenu(relation, can, actions)
+              ? relationMenu(relation, actions)
               : null
           const rowProps = {
             className: cn(
@@ -147,7 +147,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
         })}
         {relations.length === 0 && (
           <EmptyRow>
-            {can.edit && can.foreignKeys
+            {can.foreignKeys
               ? 'Drag a column onto a key to link tables'
               : 'No relations'}
           </EmptyRow>

@@ -35,7 +35,7 @@ import { useConnectionResourceLinkParams } from '~/core/connection/use-connectio
 import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { protectedModules } from '~/lib/protected-modules'
-import { NO_GUEST_FEATURES } from '~/store'
+import { GUEST_LOCKED_FEATURES } from '~/store'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'
@@ -209,7 +209,7 @@ const ConnectionsDropdown = ({
         <DropdownMenuItem
           disabled={atGuestLimit}
           data-guest-locked={
-            atGuestLimit ? NO_GUEST_FEATURES.connections : undefined
+            atGuestLimit ? GUEST_LOCKED_FEATURES.connections : undefined
           }
           render={
             atGuestLimit ? undefined : <Link to="/create" activateOn="click" />

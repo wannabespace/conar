@@ -1,16 +1,10 @@
 import { COMMON_ERROR_STATUS_MAP, ORPCError } from '@orpc/client'
-import {
-  GUEST_AI_MESSAGE,
-  GUEST_CONNECTIONS_MESSAGE,
-  GUEST_SYNC_MESSAGE,
-  PROXY_ERROR_MESSAGE,
-} from '@tamery/shared/constants'
+import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { fullSignOut, isAnonymous } from '~/lib/auth'
 import { isAuthLocation } from '~/lib/last-location'
-import type { NoGuestFeature } from '~/store'
 import { promptSignIn } from '~/store'
 
 const getErrorMessage = (error: unknown) =>
@@ -40,12 +34,6 @@ const isServerError = (error: unknown) =>
       'status' in error &&
       typeof error.status === 'number' &&
       error.status >= 500
-
-const noGuestFeatureByMessage: Record<string, NoGuestFeature> = {
-  [GUEST_AI_MESSAGE]: 'ai',
-  [GUEST_CONNECTIONS_MESSAGE]: 'connections',
-  [GUEST_SYNC_MESSAGE]: 'sync',
-}
 
 export const handleError = async (
   error: unknown,
@@ -84,17 +72,17 @@ export const handleError = async (
     return
   }
 
-  const message = getErrorMessage(error)
-
   if (
     error instanceof ORPCError &&
     error.code === 'FORBIDDEN' &&
     isAnonymous() &&
     !isAuthLocation()
   ) {
-    promptSignIn(noGuestFeatureByMessage[message] ?? 'server')
+    promptSignIn('server')
     return
   }
+
+  const message = getErrorMessage(error)
 
   toast.error(
     isServerError(error)

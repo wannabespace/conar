@@ -29,7 +29,7 @@ import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { useIsAnonymous } from '~/lib/auth'
-import { NO_GUEST_FEATURES } from '~/store'
+import { GUEST_LOCKED_FEATURES } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
@@ -200,7 +200,7 @@ export const StatementControls = ({
                     disabled={isAnonymous}
                     focusableWhenDisabled
                     data-guest-locked={
-                      isAnonymous ? NO_GUEST_FEATURES.ai : undefined
+                      isAnonymous ? GUEST_LOCKED_FEATURES.ai : undefined
                     }
                     onClick={() => actions.fixWithAi(failed)}
                   />

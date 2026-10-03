@@ -34,8 +34,6 @@ import type { AnyFormApi } from '@tanstack/react-form'
 import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { usePermissions } from '~/core/user/permissions'
-
 import { InspectorOption } from './inspector'
 
 export const editorOptions = {
@@ -160,8 +158,6 @@ export const BodyField = ({
 }: LabelledProps & { disabled?: boolean; language: string }) => {
   const field = useFieldContext<string>()
   const form = useFormContext()
-  const canEdit = usePermissions().check('database.edit')
-  const readOnly = disabled || !canEdit
 
   return (
     <Labelled description={description} label={label}>
@@ -171,11 +167,11 @@ export const BodyField = ({
         language={language}
         value={field.state.value}
         options={{
-          ...(readOnly ? readOnlyEditorOptions : editorOptions),
+          ...(disabled ? readOnlyEditorOptions : editorOptions),
           ariaLabel: label,
         }}
         // Monaco swallows its own keys, so the editor carries the save shortcut.
-        onSubmit={readOnly ? undefined : () => form.handleSubmit()}
+        onSubmit={disabled ? undefined : () => form.handleSubmit()}
         onChange={field.handleChange}
       />
     </Labelled>

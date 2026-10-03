@@ -25,13 +25,14 @@ describe('permissionsOf', () => {
     )
 
     expect(subscribedGuest.check('ai.chat.use')).toBe(false)
-    expect(subscribedGuest.check('database.edit')).toBe(false)
   })
 
   it('lets a guest create only the first connection', () => {
     expect(guest.check('connection.create', { count: 0 })).toBe(true)
     expect(guest.check('connection.create', { count: 1 })).toBe(false)
     expect(free.check('connection.create', { count: 5 })).toBe(true)
+    expect(free.check('connection.create')).toBe(true)
+    expect(guest.check('connection.create')).toBe(false)
   })
 
   it('keeps AI chat for pro and filters for every member', () => {
@@ -39,6 +40,5 @@ describe('permissionsOf', () => {
     expect(free.check('ai.chat.use')).toBe(false)
     expect(free.check('ai.filter.use')).toBe(true)
     expect(guest.check('ai.filter.use')).toBe(false)
-    expect(guest.check('database.edit')).toBe(false)
   })
 })

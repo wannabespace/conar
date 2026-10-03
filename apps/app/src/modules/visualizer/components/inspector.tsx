@@ -23,7 +23,6 @@ import type { indexesType } from '~/core/queries/indexes/list'
 import type { policyType } from '~/core/queries/policies/list'
 import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import type { triggersType } from '~/core/queries/triggers/list'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import { useDiagram } from '../lib/context'
 import type { DiagramColumn, DiagramTable } from '../lib/schema'
@@ -201,11 +200,6 @@ const Inspector = ({
               <Button
                 variant="ghost-muted"
                 size="xs"
-                disabled={!can.edit}
-                focusableWhenDisabled
-                data-guest-locked={
-                  can.edit ? undefined : NO_GUEST_FEATURES.edit
-                }
                 onClick={() => actions.addColumn(table)}
               >
                 <HugeiconsIcon

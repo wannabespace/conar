@@ -34,7 +34,6 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import type { Column, ColumnHandlers } from '~/core/table/cell/utils'
-import { permix } from '~/core/user/permissions'
 
 import type { tablePageType } from '../../lib/store'
 import { useTablePageStore } from '../../lib/store'
@@ -301,7 +300,6 @@ const buildHeaderMenuItems = ({
 
   if (onRename) {
     items.push({
-      disabled: !permix.check('database.edit'),
       icon: PencilEdit02Icon,
       label: 'Rename Column',
       onSelect: onRename,

@@ -24,9 +24,7 @@ import type { AppMenuNode } from '~/components/app-menu'
 import { DropDialog } from '~/components/drop-dialog'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 import { useInspector } from '../hooks/use-inspector'
@@ -101,12 +99,9 @@ export const DefinitionsPage = <T extends { name: string }>({
 
   const highlightedIndex = rows.findIndex((item) => keyOf(item) === highlighted)
   const highlightedItem: T | undefined = rows[highlightedIndex]
-  const locked = !usePermissions().check('database.edit')
-  const droppable = (item?: T): item is T =>
+  const canDrop = (item?: T): item is T =>
     !!item && !!can.drop && (canDropItem?.(item) ?? true)
-  const canDrop = (item?: T): item is T => !locked && droppable(item)
-  const canCreate =
-    !!can.create && !!selectedSchema && !createBlocked && !locked
+  const canCreate = !!can.create && !!selectedSchema && !createBlocked
   const overlayOpen = inspector.inspected.open || dropping.open
   const empty = !loading && rows.length === 0
   const context: CellContext = { schema: selectedSchema, search }
@@ -210,11 +205,10 @@ export const DefinitionsPage = <T extends { name: string }>({
         copyToClipboard(item.name, `${uppercaseFirst(noun)} name copied`),
     },
     ...(rowMenu?.(item) ?? []),
-    ...(droppable(item)
+    ...(canDrop(item)
       ? ([
           { type: 'separator' },
           {
-            disabled: locked,
             icon: Delete02Icon,
             label: `Drop ${noun}`,
             onSelect: () => requestDrop(item),
@@ -228,8 +222,6 @@ export const DefinitionsPage = <T extends { name: string }>({
     <Button
       variant="outline"
       disabled={!canCreate}
-      focusableWhenDisabled
-      data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
       onClick={() => inspector.open(null)}
     >
       <HugeiconsIcon

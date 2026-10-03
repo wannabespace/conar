@@ -1,15 +1,12 @@
 import { generateFilters } from '@tamery/ai/features'
 import { AiFeature } from '@tamery/ai/usage'
-import {
-  FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
-  GUEST_AI_MESSAGE,
-} from '@tamery/shared/constants'
+import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 
 import { aiUsage } from '~/lib/ai-usage'
 import { redis } from '~/lib/redis'
-import { orpc, permissionsMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 const redisUsage = {
   get: async (userId: string) => {
@@ -29,6 +26,7 @@ const redisUsage = {
 
 export const filters = orpc
   .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.filter.use'))
   .input(
     type({
       context: 'string',
@@ -51,12 +49,9 @@ export const filters = orpc
 
     let usage = 0
     const unlimited = context.permissions.check('ai.filter.unlimited')
-    const allowed = context.permissions.check('ai.filter.use')
 
     if (!unlimited) {
-      usage = allowed
-        ? await redisUsage.get(context.user.id)
-        : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT
+      usage = await redisUsage.get(context.user.id)
 
       if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
         throw errors.FORBIDDEN({
@@ -65,9 +60,8 @@ export const filters = orpc
             remaining: 0,
             resetAt: addDays(endOfMonth(new Date()), 1),
           },
-          message: allowed
-            ? 'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.'
-            : GUEST_AI_MESSAGE,
+          message:
+            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
         })
       }
     }

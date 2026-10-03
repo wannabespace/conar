@@ -8,7 +8,6 @@ export type Permissions = {
     sql: ['use']
   }
   connection: [{ name: 'create'; type: { count: number } }, 'syncString']
-  database: ['edit']
   seed: ['unlimited']
   tab: ['multiple']
   workspace: ['create']
@@ -34,7 +33,6 @@ export const permissionsOf = ({
       create: member || ((connections) => connections?.count === 0),
       syncString: member,
     },
-    database: { edit: member },
     seed: { unlimited: pro },
     tab: { multiple: member },
     workspace: { create: pro },

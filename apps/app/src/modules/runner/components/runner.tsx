@@ -49,7 +49,7 @@ import { toast } from 'sonner'
 import { wrapExplainQuery } from '~/core/connection/utils'
 import { permix } from '~/core/user/permissions'
 import { formatSql } from '~/lib/formatter'
-import { requestAccess } from '~/store'
+import { requestUpgrade } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { RunnerActionsContext } from '../lib/actions'
@@ -216,7 +216,7 @@ export const Runner = () => {
   const actions: RunnerActions = {
     askAi: () => {
       if (!permix.check('ai.sql.use')) {
-        requestAccess('ai')
+        requestUpgrade()
         return
       }
       const { range } = current()
@@ -236,7 +236,7 @@ export const Runner = () => {
       ),
     fixWithAi: ({ end, error, source, start }) => {
       if (!permix.check('ai.sql.use')) {
-        requestAccess('ai')
+        requestUpgrade()
         return
       }
       const model = editorRef.current?.getModel()

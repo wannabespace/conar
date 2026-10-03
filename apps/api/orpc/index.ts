@@ -116,6 +116,12 @@ export const optionalAuthMiddleware = logMiddleware.use(
 
 export const permix = createPermix<Permissions>({
   onForbidden: ({ context }) => {
+    if (context.user.isAnonymous) {
+      throw new ORPCError('FORBIDDEN', {
+        message: 'Sign in with an account to use this feature.',
+      })
+    }
+
     const minorVersion = context.parsedAppVersion?.minor ?? 0
 
     throw new ORPCError('FORBIDDEN', {

@@ -35,8 +35,6 @@ import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import { usePermissions } from '~/core/user/permissions'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 
@@ -80,8 +78,7 @@ export const Inspector = ({
   saveLabel?: string
   warning?: InspectorWarning | undefined
 }) => {
-  const locked = !usePermissions().check('database.edit')
-  const saveEnabled = !(readOnly || locked || mutation.isPending) && canSave
+  const saveEnabled = !(readOnly || mutation.isPending) && canSave
 
   useHotkeys(
     [
@@ -100,8 +97,6 @@ export const Inspector = ({
       form={FORM_ID}
       variant={warning ? 'warning' : 'default'}
       disabled={!saveEnabled}
-      focusableWhenDisabled
-      data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
     >
       <LoadingContent loading={mutation.isPending}>
         {warning?.action ?? saveLabel ?? (item ? 'Save' : `Create ${noun}`)}
@@ -123,13 +118,6 @@ export const Inspector = ({
         <Form
           id={FORM_ID}
           form={form}
-          // Capture phase: Enter in a field submits natively, past the disabled save button.
-          onSubmitCapture={(event) => {
-            if (locked) {
-              event.preventDefault()
-              event.stopPropagation()
-            }
-          }}
           className="scroll-fade no-scrollbar flex min-h-0 flex-1 flex-col divide-y overflow-y-auto"
         >
           {children}

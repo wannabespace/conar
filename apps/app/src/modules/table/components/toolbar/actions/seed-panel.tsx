@@ -56,8 +56,9 @@ import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
 import { usePermissions } from '~/core/user/permissions'
+import { useIsAnonymous } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
-import { requestAccess } from '~/store'
+import { GUEST_LOCKED_FEATURES, requestUpgrade } from '~/store'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { useTablePageStore } from '../../../lib/store'
@@ -442,6 +443,14 @@ export const SeedPanel = ({
   const seedUsageCount = useSubscription(seedUsageValue)
   const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
   const hasReachedFreeLimit = !unlimited && remainingFreeSeeds === 0
+  const isGuest = useIsAnonymous()
+  const upgradeLock = {
+    'data-guest-locked': isGuest
+      ? GUEST_LOCKED_FEATURES.subscription
+      : undefined,
+    disabled: isGuest,
+    focusableWhenDisabled: true,
+  }
 
   const columnGenerators = Object.fromEntries(
     columns.map((column): [string, Generator] => {
@@ -596,7 +605,8 @@ export const SeedPanel = ({
               <Button
                 variant="outline"
                 size="xs"
-                onClick={() => requestAccess('subscription')}
+                {...upgradeLock}
+                onClick={requestUpgrade}
               >
                 Upgrade
               </Button>
@@ -704,12 +714,13 @@ export const SeedPanel = ({
         <Button
           onClick={() => {
             if (hasReachedFreeLimit) {
-              requestAccess('subscription')
+              requestUpgrade()
               return
             }
             seed()
           }}
           disabled={isPending || (!canSeed && !hasReachedFreeLimit)}
+          {...(hasReachedFreeLimit && upgradeLock)}
         >
           <LoadingContent loading={isPending}>
             <HugeiconsIcon

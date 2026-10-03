@@ -37,8 +37,6 @@ import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
-import { usePermissions } from '~/core/user/permissions'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import { useTablePageStore } from '../../lib/store'
 import { ActionsColumns } from './actions/actions-columns'
@@ -188,7 +186,6 @@ export const TableToolbar = ({
   table: string
   schema: string
 }) => {
-  const canEdit = usePermissions().check('database.edit')
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -309,21 +306,13 @@ export const TableToolbar = ({
           </Tooltip>
           <DropdownMenuContent side="top" align="end" className="min-w-44">
             {tableType === 'table' && (
-              <DropdownMenuItem
-                disabled={!canEdit}
-                data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
-                onClick={onAddColumn}
-              >
+              <DropdownMenuItem onClick={onAddColumn}>
                 <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
                 Add column
               </DropdownMenuItem>
             )}
             {tableType === 'table' && (
-              <DropdownMenuItem
-                disabled={!canEdit}
-                data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
-                onClick={() => setSeedOpen(true)}
-              >
+              <DropdownMenuItem onClick={() => setSeedOpen(true)}>
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />
                 Seed data
               </DropdownMenuItem>

@@ -34,7 +34,6 @@ import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
-import { promptSignIn } from '~/store'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -407,16 +406,12 @@ const CreateConnectionPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/create/')({
-  beforeLoad: ({ context: { collections }, preload }) => {
+  beforeLoad: ({ context: { collections } }) => {
     if (
       !permix.check('connection.create', {
         count: collections.connectionsCollection.size,
       })
     ) {
-      if (!preload) {
-        promptSignIn('connections')
-      }
-
       throw redirect({ to: '/' })
     }
   },

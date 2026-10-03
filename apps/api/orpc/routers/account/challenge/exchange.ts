@@ -87,6 +87,10 @@ export const exchange = orpc
     FORBIDDEN: {
       message: "We couldn't authenticate you. Please try signing in again.",
     },
+    INTERNAL_SERVER_ERROR: {
+      message:
+        "We couldn't move your guest connections to your account. Please try signing in again.",
+    },
     NOT_ACCEPTABLE: {
       message: "We couldn't authenticate you. Please try signing in again.",
     },
@@ -114,6 +118,7 @@ export const exchange = orpc
           `Failed to adopt anonymous user ${current.user.id} into ${data.userId}`,
           error
         )
+        throw errors.INTERNAL_SERVER_ERROR({ cause: error })
       })
     }
 

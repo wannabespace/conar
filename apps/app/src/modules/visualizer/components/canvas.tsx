@@ -203,7 +203,7 @@ export const Canvas = ({
         })
       }}
       isValidConnection={isValidConnection}
-      nodesConnectable={can.edit && can.foreignKeys}
+      nodesConnectable={can.foreignKeys}
       connectionRadius={24}
       onMoveEnd={(_, viewport) => onViewportChange(viewport)}
       defaultViewport={defaultViewport}

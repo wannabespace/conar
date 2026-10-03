@@ -5,7 +5,6 @@ import {
 } from '@hugeicons/core-free-icons'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import { permix } from '~/core/user/permissions'
 import type { CommandEntry, ProtectedModule } from '~/lib/module'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
@@ -18,7 +17,6 @@ export default {
       ? [
           {
             action: () => createTableDialogRef.current?.create(),
-            disabled: !permix.check('database.edit'),
             group: 'Database',
             icon: PlusSignIcon,
             keywords: ['create', 'add', 'table'],
@@ -29,7 +27,6 @@ export default {
             ? [
                 {
                   action: () => createSchemaDialogRef.current?.create(),
-                  disabled: !permix.check('database.edit'),
                   group: 'Database',
                   icon: FolderAddIcon,
                   keywords: [

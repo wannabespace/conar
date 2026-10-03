@@ -28,7 +28,7 @@ import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
 import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
-import { NO_GUEST_FEATURES } from '~/store'
+import { GUEST_LOCKED_FEATURES } from '~/store'
 
 const SYNC_OPTIONS = [
   {
@@ -225,7 +225,7 @@ export const StepSave = ({
                   focusableWhenDisabled
                   data-guest-locked={
                     isSyncDisabled(option.value)
-                      ? NO_GUEST_FEATURES.sync
+                      ? GUEST_LOCKED_FEATURES.sync
                       : undefined
                   }
                   onClick={() => setSyncType(option.value)}

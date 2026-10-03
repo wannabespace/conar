@@ -66,18 +66,20 @@ export const create = orpc
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
     const [inserted] = await db.transaction(async (tx) => {
-      // Serializes a user's concurrent creates so the count below can't race.
-      await tx.execute(
-        sql`SELECT pg_advisory_xact_lock(hashtext(${context.user.id}))`
-      )
+      if (!context.permissions.check('connection.create')) {
+        // Only a count-limited plan reaches here. The lock serializes its concurrent creates and exchange's adoption so the count can't race.
+        await tx.execute(
+          sql`SELECT pg_advisory_xact_lock(hashtext(${context.user.id}))`
+        )
 
-      const count = await tx.$count(
-        connections,
-        eq(connections.userId, context.user.id)
-      )
+        const count = await tx.$count(
+          connections,
+          eq(connections.userId, context.user.id)
+        )
 
-      if (!context.permissions.check('connection.create', { count })) {
-        throw errors.FORBIDDEN()
+        if (!context.permissions.check('connection.create', { count })) {
+          throw errors.FORBIDDEN()
+        }
       }
 
       return tx

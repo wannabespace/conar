@@ -24,8 +24,6 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
-import { NO_GUEST_FEATURES } from '~/store'
-
 import { applyConsequence, plural } from '../lib/apply'
 import { tableMatches, useDiagram } from '../lib/context'
 import { isDrop } from '../lib/statements'
@@ -165,9 +163,6 @@ export const Toolbar = ({
         <Button
           variant="outline"
           className="shrink-0"
-          disabled={!can.edit}
-          focusableWhenDisabled
-          data-guest-locked={can.edit ? undefined : NO_GUEST_FEATURES.edit}
           onClick={() => actions.createTable()}
         >
           <HugeiconsIcon

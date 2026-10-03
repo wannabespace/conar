@@ -8,7 +8,6 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import {
-  GUEST_AI_MESSAGE,
   GUEST_CONNECTIONS_MESSAGE,
   GUEST_SYNC_MESSAGE,
 } from '@tamery/shared/constants'
@@ -45,8 +44,8 @@ import {
 import { slowQueries } from '~/core/runtime/slow-queries'
 import { useIsAnonymous } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import type { NoGuestFeature } from '~/store'
-import { appStore, isNoGuestFeature, promptSignIn } from '~/store'
+import type { GuestLockedFeature } from '~/store'
+import { appStore, isGuestLockedFeature, promptSignIn } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
@@ -97,14 +96,12 @@ const INITIAL_DELAY = 1000
 
 const GUEST_TEXT = 'Many features are disabled until you sign in.'
 
-const GUEST_HINTS: Record<NoGuestFeature, string> = {
-  ai: GUEST_AI_MESSAGE,
+const GUEST_HINTS: Record<GuestLockedFeature, string> = {
+  ai: 'AI features need an account.',
   connections: GUEST_CONNECTIONS_MESSAGE,
-  edit: 'Guests can browse but not change the database.',
   server: 'That needs an account.',
   subscription: 'That needs an account.',
   sync: GUEST_SYNC_MESSAGE,
-  tabs: 'Guests keep one tab open.',
 }
 
 const bannerDismissedValue = createWebStorageValue({
@@ -138,7 +135,7 @@ const SHAKE = { x: [0, -4, 4, -2, 2, 0] }
 const GuestBannerContent = ({
   prompt,
 }: {
-  prompt: { at: number; feature: NoGuestFeature | null }
+  prompt: { at: number; feature: GuestLockedFeature | null }
 }) => {
   const [scope, animate] = useAnimate()
   const reduceMotion = useReducedMotion()
@@ -150,7 +147,7 @@ const GuestBannerContent = ({
         event.target.closest<HTMLElement>('[data-guest-locked]')?.dataset
           .guestLocked
 
-      if (isNoGuestFeature(feature)) {
+      if (isGuestLockedFeature(feature)) {
         promptSignIn(feature)
       }
     }

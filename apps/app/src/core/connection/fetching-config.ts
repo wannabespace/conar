@@ -20,6 +20,7 @@ type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
 interface FetchingOptions {
   isLocalProxyAvailable?: boolean
+  // undefined = this device holds no connection string for the connection.
   isPasswordPopulated?: boolean
   isLocalhost?: boolean
   proxy?: { enabled: boolean; url: string | null }
@@ -59,15 +60,18 @@ const resolveFlags = (
 ) => {
   const isElectron = !!window.electron
   const { isPasswordPopulated } = options ?? {}
+  const isStoredOnDevice = isPasswordPopulated !== undefined
 
   return {
+    connectionStringMissing:
+      connection.syncType === SyncType.CloudWithoutConnectionString &&
+      !isStoredOnDevice,
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
     isLocalhost: options?.isLocalhost ?? false,
     needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
-    passwordUnresolved:
-      connection.isPasswordExists && isPasswordPopulated === undefined,
+    passwordUnresolved: connection.isPasswordExists && !isStoredOnDevice,
     proxyPreferred: !isElectron || options?.proxy?.enabled === true,
     proxyReachable:
       (options?.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
@@ -80,6 +84,7 @@ export const fetchingConfig = (
   options?: FetchingOptions
 ): FetchingConfig => {
   const {
+    connectionStringMissing,
     hasPassword,
     isElectron,
     isLocalhost,
@@ -89,10 +94,7 @@ export const fetchingConfig = (
     proxyReachable,
   } = resolveFlags(connection, options)
 
-  if (
-    connection.syncType === SyncType.CloudWithoutConnectionString &&
-    options?.isPasswordPopulated === undefined
-  ) {
+  if (connectionStringMissing) {
     return blocked('local', REASONS.connectionStringNotStored)
   }
 

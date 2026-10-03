@@ -1,4 +1,3 @@
-import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import {
   ArrowRight01Icon,
   Copy01Icon,
@@ -19,8 +18,6 @@ import { useParams } from '@tanstack/react-router'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { parseTableTabId } from '~/core/tabs/ids'
-import { usePermissions } from '~/core/user/permissions'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
@@ -44,17 +41,9 @@ export const SchemaRow = ({
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
-  const locked = !usePermissions().check('database.edit')
   const items: AppMenuNode[] = [
     ...(onRename
-      ? [
-          {
-            disabled: locked,
-            icon: PencilEdit01Icon,
-            label: 'Rename',
-            onSelect: onRename,
-          },
-        ]
+      ? [{ icon: PencilEdit01Icon, label: 'Rename', onSelect: onRename }]
       : []),
     {
       icon: Copy01Icon,
@@ -63,7 +52,6 @@ export const SchemaRow = ({
     },
     { type: 'separator' },
     {
-      disabled: locked,
       icon: Delete02Icon,
       label: 'Drop',
       onSelect: onDrop,
@@ -121,9 +109,6 @@ export const SchemaRow = ({
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
-              render={<ButtonPrimitive focusableWhenDisabled />}
-              disabled={locked}
-              data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
               className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
               onClick={onCreateTable}
             />

@@ -31,8 +31,6 @@ import {
   useTableSessionStore,
 } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
-import { usePermissions } from '~/core/user/permissions'
-import { NO_GUEST_FEATURES } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import {
@@ -53,7 +51,6 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const EmptyCell = () => <div />
 
 const BodyCellRenderer = ({
-  canEdit,
   column,
   connectionType,
   primaryColumns,
@@ -63,7 +60,6 @@ const BodyCellRenderer = ({
   ...props
 }: TableCellProps &
   ColumnHandlers & {
-    canEdit: boolean
     column: Column
     connectionType: ConnectionType
     primaryColumns: string[]
@@ -101,7 +97,7 @@ const BodyCellRenderer = ({
   return (
     <TableCell
       column={column}
-      onQueueValue={primaryKeys && canEdit ? queueValue : undefined}
+      onQueueValue={primaryKeys ? queueValue : undefined}
       connectionType={connectionType}
       draft={draft}
       onAddFilter={onAddFilter}
@@ -123,7 +119,6 @@ const TableComponent = ({
   schema: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
-  const canEdit = usePermissions().check('database.edit')
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -213,7 +208,6 @@ const TableComponent = ({
         // oxlint-disable-next-line react/no-unstable-nested-components
         cell: (props) => (
           <BodyCellRenderer
-            canEdit={canEdit}
             column={column}
             connectionType={connection.type}
             primaryColumns={primaryColumns}
@@ -262,11 +256,6 @@ const TableComponent = ({
                   variant="ghost-muted"
                   size="icon-xs"
                   aria-label="Add column"
-                  disabled={!canEdit}
-                  focusableWhenDisabled
-                  data-guest-locked={
-                    canEdit ? undefined : NO_GUEST_FEATURES.edit
-                  }
                   onClick={onAddColumn}
                 />
               }

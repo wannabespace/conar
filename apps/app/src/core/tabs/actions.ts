@@ -1,6 +1,5 @@
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { permix } from '~/core/user/permissions'
-import { promptSignIn } from '~/store'
 
 import { resolveTab } from './kinds'
 import type { ConnectionTab } from './types'
@@ -10,25 +9,14 @@ const setTabs = (
   update: (tabs: ConnectionTab[]) => ConnectionTab[]
 ) => {
   const store = getConnectionResourceStore(id)
-  const tabs = update(store.get().tabs)
-  const dropped =
-    permix.check('tab.multiple') || tabs.length <= 1 ? [] : tabs.slice(0, -1)
 
   store.set(
     (state) =>
       ({
         ...state,
-        tabs: dropped.length > 0 ? tabs.slice(-1) : tabs,
+        tabs: update(state.tabs),
       }) satisfies typeof state
   )
-
-  if (dropped.length > 0) {
-    promptSignIn('tabs')
-
-    for (const tab of dropped) {
-      resolveTab(tab.id)?.kind.onClose?.(id, tab.id)
-    }
-  }
 }
 
 const isPreview = (tab: ConnectionTab) => !!tab.preview
@@ -39,7 +27,25 @@ export const setActiveTab = (id: string, tabId: string | null) => {
   )
 }
 
+export const removeTab = (id: string, tabId: string) => {
+  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
+  resolveTab(tabId)?.kind.onClose?.(id, tabId)
+}
+
+const closeOtherTabsUnlessMultiple = (id: string, tabId: string) => {
+  if (permix.check('tab.multiple')) {
+    return
+  }
+
+  for (const tab of getConnectionResourceStore(id).get().tabs) {
+    if (tab.id !== tabId) {
+      removeTab(id, tab.id)
+    }
+  }
+}
+
 export const ensureTab = (id: string, tabId: string) => {
+  closeOtherTabsUnlessMultiple(id, tabId)
   setTabs(id, (tabs) => {
     if (tabs.some((item) => item.id === tabId)) {
       return tabs
@@ -73,6 +79,7 @@ export const replaceTabId = (id: string, from: string, to: string) => {
 }
 
 export const openTab = (id: string, tabId: string, preview = false) => {
+  closeOtherTabsUnlessMultiple(id, tabId)
   setTabs(id, (tabs) => {
     const existingIndex = tabs.findIndex((item) => item.id === tabId)
 
@@ -98,11 +105,6 @@ export const openTab = (id: string, tabId: string, preview = false) => {
   })
 
   return tabId
-}
-
-export const removeTab = (id: string, tabId: string) => {
-  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
-  resolveTab(tabId)?.kind.onClose?.(id, tabId)
 }
 
 export const updateTabs = (id: string, tabs: ConnectionTab[]) => {
