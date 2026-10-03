@@ -1,16 +1,6 @@
-import {
-  CrownIcon,
-  Link01Icon,
-  Refresh01Icon,
-  SproutIcon,
-} from '@hugeicons/core-free-icons'
+import { Link01Icon, Refresh01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -21,17 +11,7 @@ import {
   CommandList,
 } from '@tamery/ui/components/command'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
-import { DrawerClose, DrawerFooter } from '@tamery/ui/components/drawer'
 import { Input } from '@tamery/ui/components/input'
-import {
-  NumberField,
-  NumberFieldDecrement,
-  NumberFieldGroup,
-  NumberFieldIncrement,
-  NumberFieldInput,
-} from '@tamery/ui/components/number-field'
 import { Switch } from '@tamery/ui/components/switch'
 import {
   Tooltip,
@@ -55,8 +35,6 @@ import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
-import { useIsAnonymous } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
 
 import { useTableColumnsContext } from '../../../lib/columns'
@@ -77,11 +55,7 @@ import {
   REFERENCE_GENERATOR,
   SKIP_GENERATOR,
 } from '../../../seeds/types'
-import {
-  FREE_SEED_LIMIT,
-  incrementSeedUsage,
-  seedUsageValue,
-} from '../../../seeds/usage'
+import { incrementSeedUsage, useSeedQuota } from '../../../seeds/usage'
 import {
   DefaultValueTooltipIcon,
   ForeignTooltipIcon,
@@ -90,11 +64,11 @@ import {
   ReadOnlyTooltipIcon,
   UniqueTooltipIcon,
 } from '../../table/table-header-cell'
+import { SeedFooter } from './seed-panel-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const SEED_INSPECTOR_ID = 'seed-inspector'
-const MAX_SEED_ROWS = 10_000
 const PREVIEW_ROWS = 3
 
 const generatorLabel = (
@@ -438,11 +412,7 @@ export const SeedPanel = ({
     columnsRef.current?.focus()
   }, [])
 
-  const unlimited = usePermissions().check('seed.unlimited')
-  const seedUsageCount = useSubscription(seedUsageValue)
-  const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
-  const hasReachedFreeLimit = !unlimited && remainingFreeSeeds === 0
-  const isGuest = useIsAnonymous()
+  const { hasReachedLimit, unlimited } = useSeedQuota()
 
   const columnGenerators = Object.fromEntries(
     columns.map((column): [string, Generator] => {
@@ -509,7 +479,7 @@ export const SeedPanel = ({
       !generator.customExpression?.trim()
   )
   const canSeed =
-    activeGenerators.length > 0 && !hasEmptyExpression && !hasReachedFreeLimit
+    activeGenerators.length > 0 && !hasEmptyExpression && !hasReachedLimit
 
   const { mutate: seed, isPending } = useMutation({
     mutationFn: async () => {
@@ -580,32 +550,6 @@ export const SeedPanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {!unlimited && (
-        <div className="border-b p-3">
-          <Alert>
-            <HugeiconsIcon
-              icon={CrownIcon}
-              strokeWidth={2}
-              className="text-primary"
-            />
-            <AlertDescription>
-              {hasReachedFreeLimit
-                ? 'You have used all your free seed runs.'
-                : `${remainingFreeSeeds} of ${FREE_SEED_LIMIT} free seed runs left.`}
-            </AlertDescription>
-            <AlertAction>
-              <Button
-                variant="outline"
-                size="xs"
-                className={isGuest ? 'opacity-50' : undefined}
-                onClick={() => checkOrUpgrade('seed.unlimited')}
-              >
-                Upgrade
-              </Button>
-            </AlertAction>
-          </Alert>
-        </div>
-      )}
       <div className="flex min-h-0 flex-1">
         <div
           ref={columnsRef}
@@ -680,58 +624,7 @@ export const SeedPanel = ({
           />
         )}
       </div>
-      <DrawerFooter>
-        <NumberField
-          min={1}
-          max={MAX_SEED_ROWS}
-          value={seedsCount}
-          onValueChange={(value) =>
-            store.set(
-              (state) =>
-                ({
-                  ...state,
-                  seedsCount: Math.max(1, Math.min(MAX_SEED_ROWS, value ?? 1)),
-                }) satisfies typeof state
-            )
-          }
-          className="mr-auto w-28"
-        >
-          <NumberFieldGroup>
-            <NumberFieldDecrement />
-            <NumberFieldInput />
-            <NumberFieldIncrement />
-          </NumberFieldGroup>
-        </NumberField>
-        <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
-        <Button
-          onClick={() => {
-            if (hasReachedFreeLimit) {
-              checkOrUpgrade('seed.unlimited')
-              return
-            }
-            seed()
-          }}
-          disabled={isPending || (!canSeed && !hasReachedFreeLimit)}
-          className={isGuest && hasReachedFreeLimit ? 'opacity-50' : undefined}
-        >
-          <LoadingContent loading={isPending}>
-            <HugeiconsIcon
-              icon={hasReachedFreeLimit ? CrownIcon : SproutIcon}
-              strokeWidth={2}
-            />
-            {hasReachedFreeLimit ? (
-              'Upgrade to seed'
-            ) : (
-              <NumberFlow
-                value={seedsCount}
-                className="tabular-nums"
-                prefix="Seed "
-                suffix={seedsCount === 1 ? ' row' : ' rows'}
-              />
-            )}
-          </LoadingContent>
-        </Button>
-      </DrawerFooter>
+      <SeedFooter canSeed={canSeed} seeding={isPending} onSeed={() => seed()} />
     </div>
   )
 }
