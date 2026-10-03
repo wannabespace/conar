@@ -22,18 +22,18 @@
 
 ## Modules
 
-`apps/app` and `apps/main` are a core plus `src/modules/<name>/` folders. **Deleting a module folder removes the feature and the app still compiles** — that is the contract every change keeps.
+`apps/app` and `apps/main` are a core plus `src/modules/<name>/` folders. Core is everything outside `src/modules/`.
 
-- Modules are found by eager `import.meta.glob`, never listed anywhere. Core is everything outside `src/modules/`.
-- **A module imports only core and its own folder** (`src/lib/modules.test.ts` fails otherwise). Code two modules need moves into core; core never names a module. Cross-feature wiring goes through a slot or a core contract (table tab ids in `core/tabs/ids.ts`, `definitionKey`, `lib/panels.ts`).
-- **Never read a registry at module top level.** The globs import every module eagerly, and modules import the registries back, so a registry's value exists only once evaluation finishes — read it inside a function or render.
+- **A module imports only core and its own folder**. Code two modules need moves into core. Core reaches a module only through its entry file, `module.ts(x)`.
+- In `apps/app`, **deleting a module folder removes the feature and the app still compiles**: modules are found by eager `import.meta.glob`, never listed anywhere, and core never names a module. Cross-feature wiring goes through a slot or a core contract (table tab ids in `core/tabs/ids.ts`, `definitionKey`, `lib/panels.ts`).
+- **Never read an `apps/app` registry at module top level.** The globs import every module eagerly, and modules import the registries back, so a registry's value exists only once evaluation finishes — read it inside a function or render.
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
   - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries.
   - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane, the FK reference table.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
-- `apps/main` contracts are `src/lib/module.ts`: `module.tsx` fills header/footer links, the auth footer, account nav and home sections. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
+- `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 
 ## Core layout (`apps/app/src/core`)
 

@@ -3,9 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Link } from '@tanstack/react-router'
 
-import type { MainModule } from '~/lib/module'
-
-const ReleasesLink = () => (
+export const ReleasesLink = () => (
   <Button
     variant="ghost"
     size="sm"
@@ -20,7 +18,3 @@ const ReleasesLink = () => (
     Releases
   </Button>
 )
-
-export default {
-  headerLinks: [{ Component: ReleasesLink, order: 0 }],
-} satisfies MainModule

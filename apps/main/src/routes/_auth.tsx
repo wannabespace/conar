@@ -10,7 +10,7 @@ import {
 import { type } from 'arktype'
 
 import { SEO } from '~/constants'
-import { mainModules } from '~/lib/modules'
+import { Consent } from '~/modules/legal/module'
 
 const AuthLayout = () => {
   const match = useMatches({
@@ -50,10 +50,7 @@ const AuthLayout = () => {
           </div>
           <div className="mx-auto flex w-full flex-col justify-center gap-6 sm:w-87.5">
             <Outlet />
-            {isSignIn &&
-              mainModules.authFooter.map(({ Component }, index) => (
-                <Component key={index} />
-              ))}
+            {isSignIn && <Consent />}
           </div>
         </div>
       </div>
