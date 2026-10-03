@@ -4,7 +4,11 @@ import { PermixProvider } from 'permix/react'
 import { useEffect } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
-import { permix, usePermissionsSync } from '~/core/user/permissions'
+import {
+  loadPermissions,
+  permix,
+  usePermissionsSync,
+} from '~/core/user/permissions'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { protectedModules } from '~/lib/protected-modules'
@@ -66,6 +70,7 @@ export const Route = createFileRoute('/_protected')({
       c.connectionsCollection.stateWhenReady(),
       c.connectionsResourcesCollection.stateWhenReady(),
       c.workspacesCollection.stateWhenReady(),
+      permix.isReady() || loadPermissions(),
     ])
 
     return { collections: c }

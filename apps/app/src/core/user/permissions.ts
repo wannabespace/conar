@@ -5,38 +5,42 @@ import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
 import { useEffect } from 'react'
 
-import { authClient } from '~/lib/auth'
+import { authClient, getSessionUser } from '~/lib/auth'
+import { orpc } from '~/lib/orpc'
+import { subscriptionQueryClient } from '~/lib/query-client'
 
-import { useSubscription } from './use-subscription'
+import { isActiveSubscription, useSubscription } from './use-subscription'
 
-const PRO = { plan: 'pro' } as const
-
-// Unknown access is treated as Pro until the session and subscription arrive, so a guest's locked controls show undimmed for a moment after boot; the server checks are the real gate.
-export const permix = createPermix<Permissions>(
-  permissionsOf({ subscription: PRO, user: {} })
-)
+// check() throws until setup() runs, so every route under _protected must stay behind loadPermissions.
+export const permix = createPermix<Permissions>()
 
 export const usePermissions = () => usePermix(permix)
 
-// Route guards run before usePermissionsSync's first effect. A guest's rules need only the session, so a guard loads it; a member keeps the Pro default until the subscription arrives.
-export const loadGuestPermissions = async () => {
-  const { data } = await tryCatchAsync(authClient.getSession)
-  const user = data?.data?.user
+export const loadPermissions = async () => {
+  const user = await getSessionUser()
+  const subscriptions = user?.isAnonymous
+    ? null
+    : await tryCatchAsync(() =>
+        subscriptionQueryClient.ensureQueryData(
+          orpc.account.subscription.list.queryOptions()
+        )
+      )
 
-  if (user?.isAnonymous) {
-    permix.setup(permissionsOf({ subscription: null, user }))
-  }
+  permix.setup(
+    permissionsOf({
+      subscription: subscriptions?.data?.find(isActiveSubscription) ?? null,
+      user: user ?? {},
+    })
+  )
 }
 
 export const usePermissionsSync = () => {
   const user = authClient.useSession().data?.user
-  const { isPending, subscription } = useSubscription()
+  const { isLoading, subscription } = useSubscription()
 
   useEffect(() => {
-    if (user) {
-      permix.setup(
-        permissionsOf({ subscription: isPending ? PRO : subscription, user })
-      )
+    if (user && !isLoading) {
+      permix.setup(permissionsOf({ subscription, user }))
     }
-  }, [user, isPending, subscription])
+  }, [user, isLoading, subscription])
 }

@@ -31,7 +31,7 @@ import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
-import { loadGuestPermissions, permix } from '~/core/user/permissions'
+import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
@@ -399,9 +399,7 @@ const CreateConnectionPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/create/')({
-  beforeLoad: async ({ context: { collections } }) => {
-    await loadGuestPermissions()
-
+  beforeLoad: ({ context: { collections } }) => {
     if (
       !permix.check('connection.create', {
         count: collections.connectionsCollection.size,
