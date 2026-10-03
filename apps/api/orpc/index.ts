@@ -3,8 +3,12 @@ import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
+import { decrypt } from '@tamery/shared/crypto-node'
+import type { Permissions } from '@tamery/shared/permissions'
+import { permissionsOf } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
+import { createPermix } from 'permix/orpc'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
@@ -39,6 +43,14 @@ export const getWorkspaceSecret = memoize(
   },
   { maxAge: 5 * 60 * 1000 }
 )
+
+const decryptConnectionString = async ({
+  encryptedText,
+  workspaceId,
+}: {
+  encryptedText: string
+  workspaceId: string
+}) => decrypt({ encryptedText, secret: await getWorkspaceSecret(workspaceId) })
 
 const getSession = (headers: Headers) => auth.api.getSession({ headers })
 
@@ -88,11 +100,22 @@ export const authMiddleware = logMiddleware.use(
     return next({
       context: {
         ...session,
+        decryptConnectionString,
         getWorkspaceSecret,
       },
     })
   })
 )
+
+export const accountMiddleware = authMiddleware.use(({ context, next }) => {
+  if (context.user.isAnonymous) {
+    throw new ORPCError('FORBIDDEN', {
+      message: 'Sign in with an account to continue.',
+    })
+  }
+
+  return next()
+})
 
 export const optionalAuthMiddleware = logMiddleware.use(
   orpc.middleware(async ({ context, next }) => {
@@ -111,46 +134,26 @@ export const optionalAuthMiddleware = logMiddleware.use(
   })
 )
 
-export const subscriptionMiddleware = logMiddleware.use(
-  sessionOrpc
-    .errors({ FORBIDDEN: {} })
-    .middleware(async ({ context, errors, next }) => {
-      const session = await getSession(context.headers)
-
-      if (!session) {
-        throw errors.UNAUTHORIZED()
-      }
-
-      const minorVersion = context.parsedAppVersion?.minor ?? 0
-      const subscription = await getSubscription(session.user.id)
-
-      context.addLogData({ userId: session.user.id })
-
-      if (!subscription) {
-        throw errors.FORBIDDEN({
-          message:
-            minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-              ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
-              : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
-        })
-      }
-
-      context.addLogData({
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
+export const permix = createPermix<Permissions>({
+  onForbidden: ({ context }) => {
+    if (context.user.isAnonymous) {
+      throw new ORPCError('FORBIDDEN', {
+        message: 'Sign in with an account to use this feature.',
       })
+    }
 
-      return next({
-        context: {
-          ...session,
-          getWorkspaceSecret,
-          subscription,
-        },
-      })
+    const minorVersion = context.parsedAppVersion?.minor ?? 0
+
+    throw new ORPCError('FORBIDDEN', {
+      message:
+        minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+          ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+          : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
     })
-)
+  },
+}).contextKey('permissions')
 
-export const optionalSubscriptionMiddleware = logMiddleware.use(
+export const permissionsMiddleware = logMiddleware.use(
   sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
 
@@ -160,13 +163,22 @@ export const optionalSubscriptionMiddleware = logMiddleware.use(
 
     const subscription = await getSubscription(session.user.id)
 
-    context.addLogData({ userId: session.user.id })
+    context.addLogData({
+      userId: session.user.id,
+      ...(subscription && {
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+      }),
+    })
 
     return next({
       context: {
         ...session,
+        decryptConnectionString,
         getWorkspaceSecret,
-        subscription,
+        ...permix.setupContext(
+          permissionsOf({ subscription, user: session.user })
+        ),
       },
     })
   })

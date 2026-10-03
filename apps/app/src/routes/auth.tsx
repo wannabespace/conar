@@ -2,7 +2,6 @@ import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { challenge } from '@tamery/shared/challenge'
 import { title } from '@tamery/shared/title'
-import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
@@ -73,7 +72,7 @@ const AuthSidePanel = () => {
 
 const AuthPage = () => {
   const router = useRouter()
-  const { refetch } = authClient.useSession()
+  const { data: session, refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
@@ -105,12 +104,29 @@ const AuthPage = () => {
     orpc.account.challenge.exchange.mutationOptions({
       onSuccess: async (exchangeData) => {
         bearerToken.set(exchangeData.token)
+
+        if (session?.user.isAnonymous) {
+          await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
+          location.reload()
+          return
+        }
+
         await refetch()
         router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         successAuthToast(!!exchangeData.newUser)
       },
     })
   )
+
+  const { mutate: continueAnonymously, isPending: isContinuing } = useMutation({
+    mutationFn: () =>
+      authClient.signIn.anonymous({ fetchOptions: { throw: true } }),
+    onSuccess: async ({ token }) => {
+      bearerToken.set(token)
+      await refetch()
+      router.navigate({ to: '/' })
+    },
+  })
 
   useEffect(() => {
     if (!data?.ready || !codeChallenge || !verifier) {
@@ -209,23 +225,37 @@ const AuthPage = () => {
               </div>
             )}
           </div>
-          <motion.div
-            className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
-            initial={{
-              opacity: 0,
-              transform: 'translateY(10px)',
-              filter: 'blur(4px)',
-            }}
-            animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <Button className="w-full" variant="secondary">
-              Continue without an account
-              <Badge variant="secondary" className="ml-1">
-                Soon
-              </Badge>
-            </Button>
-          </motion.div>
+          {window.electron && (
+            <motion.div
+              className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
+              initial={{
+                opacity: 0,
+                transform: 'translateY(10px)',
+                filter: 'blur(4px)',
+              }}
+              animate={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                filter: 'none',
+              }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={isContinuing}
+                onClick={() =>
+                  session?.user.isAnonymous
+                    ? router.navigate({
+                        href: lastLocationStorageValue.get() ?? '/',
+                      })
+                    : continueAnonymously()
+                }
+              >
+                Continue without an account
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </>

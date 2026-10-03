@@ -7,7 +7,7 @@ import {
   leavesTransactionOpen,
   splitStatements,
   statementAt,
-  transactionParts,
+  unwrapTransaction,
 } from './statements'
 
 const pg = dialects[ConnectionType.Postgres]
@@ -60,7 +60,7 @@ COMMIT`
 
   it('takes a transaction group apart for the driver', () => {
     expect(
-      transactionParts(
+      unwrapTransaction(
         'BEGIN;\nUPDATE a SET x = 1;\nDELETE FROM b;\nCOMMIT',
         pg
       )
@@ -69,15 +69,15 @@ COMMIT`
       statements: ['UPDATE a SET x = 1', 'DELETE FROM b'],
     })
     expect(
-      transactionParts('START TRANSACTION; DELETE FROM t; ROLLBACK', pg)
+      unwrapTransaction('START TRANSACTION; DELETE FROM t; ROLLBACK', pg)
     ).toMatchObject({ commit: false, statements: ['DELETE FROM t'] })
-    expect(transactionParts('SELECT 1', pg)).toBeNull()
-    expect(transactionParts('BEGIN; SELECT 1', pg)).toBeNull()
+    expect(unwrapTransaction('SELECT 1', pg)).toBeNull()
+    expect(unwrapTransaction('BEGIN; SELECT 1', pg)).toBeNull()
   })
 
   it('keeps the isolation level and access mode the opener asks for', () => {
     expect(
-      transactionParts(
+      unwrapTransaction(
         'BEGIN ISOLATION LEVEL READ COMMITTED, READ ONLY; SELECT 1; COMMIT',
         pg
       )
@@ -86,7 +86,7 @@ COMMIT`
       isolationLevel: 'read committed',
     })
     expect(
-      transactionParts('START TRANSACTION READ WRITE; SELECT 1; COMMIT', mysql)
+      unwrapTransaction('START TRANSACTION READ WRITE; SELECT 1; COMMIT', mysql)
     ).toMatchObject({ accessMode: 'read write', isolationLevel: undefined })
   })
 
@@ -101,7 +101,7 @@ COMMIT`
     const tx =
       'BEGIN; UPDATE a SET x=1; SAVEPOINT s; UPDATE b SET y=1; ROLLBACK TO SAVEPOINT s; UPDATE c SET z=1; COMMIT'
     expect(texts(`${tx};`)).toEqual([tx])
-    expect(transactionParts(`${tx};`, pg)).toMatchObject({
+    expect(unwrapTransaction(`${tx};`, pg)).toMatchObject({
       commit: true,
       statements: [
         'UPDATE a SET x=1',
@@ -143,9 +143,9 @@ COMMIT`
       'SELECT 1',
     ])
     expect(
-      transactionParts('BEGIN; DELETE FROM t; END TRANSACTION', pg)
+      unwrapTransaction('BEGIN; DELETE FROM t; END TRANSACTION', pg)
     ).toMatchObject({ commit: true, statements: ['DELETE FROM t'] })
-    expect(transactionParts('BEGIN; DELETE FROM t; ABORT', pg)).toMatchObject({
+    expect(unwrapTransaction('BEGIN; DELETE FROM t; ABORT', pg)).toMatchObject({
       commit: false,
       statements: ['DELETE FROM t'],
     })
@@ -171,7 +171,7 @@ COMMIT`
       'SELECT 1',
       'COMMIT',
     ])
-    expect(transactionParts(tx, clickhouse)).toBeNull()
+    expect(unwrapTransaction(tx, clickhouse)).toBeNull()
   })
 
   it('tells a transaction left open from a block or a closed batch', () => {

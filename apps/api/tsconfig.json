@@ -9,6 +9,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "./.types",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types": ["@types/bun", "@better-auth/core/db/internal"]
   }
 }

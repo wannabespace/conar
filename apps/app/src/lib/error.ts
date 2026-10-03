@@ -3,8 +3,9 @@ import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
-import { fullSignOut } from '~/lib/auth'
+import { fullSignOut, isAnonymous } from '~/lib/auth'
 import { isAuthLocation } from '~/lib/last-location'
+import { promptSignIn } from '~/store'
 
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
@@ -68,6 +69,16 @@ export const handleError = async (
   }
 
   if (context?.silent) {
+    return
+  }
+
+  if (
+    error instanceof ORPCError &&
+    error.code === 'FORBIDDEN' &&
+    isAnonymous() &&
+    !isAuthLocation()
+  ) {
+    promptSignIn('server', error.message)
     return
   }
 

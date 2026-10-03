@@ -14,6 +14,7 @@
     "drizzle-orm": "catalog:",
     "kysely": "catalog:",
     "nanoid": "catalog:",
+    "permix": "catalog:",
     "sf-symbols-typescript": "catalog:"
   }
 }

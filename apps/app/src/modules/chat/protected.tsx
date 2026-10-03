@@ -1,6 +1,6 @@
 import { AiChat01Icon } from '@hugeicons/core-free-icons'
 
-import { hasSubscription } from '~/core/user/use-subscription'
+import { permix } from '~/core/user/permissions'
 import type { ProtectedModule } from '~/lib/module'
 
 import { toggleChat } from './chat-toggle'
@@ -13,7 +13,7 @@ export default {
             action: () =>
               toggleChat(
                 current.connectionResource.id,
-                hasSubscription() ?? true
+                permix.check('ai.chat.use')
               ),
             group: 'View',
             icon: AiChat01Icon,

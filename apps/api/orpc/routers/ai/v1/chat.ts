@@ -21,7 +21,7 @@ import { v7 } from 'uuid'
 import * as z from 'zod/mini'
 
 import { env } from '~/env'
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 const MIN_CHAT_VERSION_MINOR = 32
 
@@ -180,7 +180,8 @@ const handleError = (error: unknown) => {
 }
 
 export const chat = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .use(({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')

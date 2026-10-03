@@ -36,6 +36,10 @@ export const prepareConnectionToCloud = async (
   connectionStrings: ConnectionStringsCollection,
   connection: Connection
 ) => {
+  if (connection.syncType === SyncType.CloudWithoutConnectionString) {
+    return { ...connection, connectionString: null }
+  }
+
   const connectionString = await connectionStrings.utils.decrypt(connection.id)
 
   return {

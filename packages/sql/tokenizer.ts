@@ -34,7 +34,7 @@ interface OpenState {
 export type TokenizerState = OpenState | { kind: 'none' }
 
 export const INITIAL_STATE: TokenizerState = { kind: 'none' }
-const CLOSED = { backslash: false, doubled: false }
+const NO_ESCAPES = { backslash: false, doubled: false }
 
 const WORD_START = /[\p{L}_]/u
 const WORD = /[\p{L}\p{N}_$]/u
@@ -130,7 +130,7 @@ const openingAt = (
   if (text.startsWith('/*', index)) {
     return {
       contentStart: index + 2,
-      pending: { ...CLOSED, close: '*/', kind: 'comment' },
+      pending: { ...NO_ESCAPES, close: '*/', kind: 'comment' },
     }
   }
   if (dialect.dollarQuotes && char === '$') {
@@ -138,7 +138,7 @@ const openingAt = (
     if (tag) {
       return {
         contentStart: index + tag.length,
-        pending: { ...CLOSED, close: tag, kind: 'string' },
+        pending: { ...NO_ESCAPES, close: tag, kind: 'string' },
       }
     }
   }
@@ -146,7 +146,7 @@ const openingAt = (
     return {
       contentStart: index + 1,
       pending: {
-        ...CLOSED,
+        ...NO_ESCAPES,
         close: CLOSING_QUOTE[char] ?? char,
         doubled: true,
         kind: 'identifier',
@@ -249,7 +249,7 @@ export const tokenize = (
     index = end
   }
 
-  const enclosed = (
+  const pushEnclosed = (
     pending: OpenState,
     start: number,
     contentStart: number
@@ -270,7 +270,7 @@ export const tokenize = (
 
   while (index < text.length) {
     if (state.kind !== 'none') {
-      enclosed(state, index, index)
+      pushEnclosed(state, index, index)
       continue
     }
     if (/\s/u.test(text[index] ?? '')) {
@@ -279,7 +279,7 @@ export const tokenize = (
     }
     const opening = openingAt(text, index, dialect)
     if (opening) {
-      enclosed(opening.pending, index, opening.contentStart)
+      pushEnclosed(opening.pending, index, opening.contentStart)
       continue
     }
     const token = tokenAt(text, index, dialect)

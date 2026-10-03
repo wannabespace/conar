@@ -6,7 +6,7 @@ import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 
 import { aiUsage } from '~/lib/ai-usage'
 import { redis } from '~/lib/redis'
-import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 const redisUsage = {
   get: async (userId: string) => {
@@ -25,7 +25,8 @@ const redisUsage = {
 }
 
 export const filters = orpc
-  .use(optionalSubscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.filter.use'))
   .input(
     type({
       context: 'string',
@@ -47,8 +48,9 @@ export const filters = orpc
     })
 
     let usage = 0
+    const unlimited = context.permissions.check('ai.filter.unlimited')
 
-    if (!context.subscription) {
+    if (!unlimited) {
       usage = await redisUsage.get(context.user.id)
 
       if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
@@ -74,11 +76,11 @@ export const filters = orpc
       }),
     })
 
-    if (!context.subscription && result.filters.length > 0) {
+    if (!unlimited && result.filters.length > 0) {
       usage = await redisUsage.increment(context.user.id)
     }
 
-    const remainingFreeAiUsage = context.subscription
+    const remainingFreeAiUsage = unlimited
       ? null
       : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
 

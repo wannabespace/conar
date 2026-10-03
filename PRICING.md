@@ -20,7 +20,7 @@ Why this model (and not feature gating):
 | --- | --- | --- |
 | Connections | 3 | Unlimited |
 | Workspaces | 1 (personal, auto-created) | Unlimited |
-| AI requests | Limited per month, or unlimited with BYOK | Unlimited |
+| AI requests | Limited per month, or unlimited with BYOK | Unlimited filters; included credits, then bought credits, for the rest |
 | Cloud sync | Included (within connection limit) | Included |
 | Chats & query history | Limited retention | Unlimited |
 
@@ -42,7 +42,7 @@ Connections, workspaces, AI requests, saved queries, history retention, sync tar
 
 AI tokens, storage, compute we pay for per request.
 
-→ **Ship to everyone with a Free usage cap; Pro raises or removes the cap.** If the cost is user-transferable (AI), offer BYOK on Free.
+→ **Ship to everyone with a Free usage cap; Pro spends included credits, then bought credits.** Never make a per-use cost unlimited. If the cost is user-transferable (AI), offer BYOK on Free.
 
 ### 3. Is it collaboration between people?
 
@@ -76,7 +76,7 @@ Commitments we don't walk back — churning these breaks trust:
 
 Where today's wiring contradicts the framework. Read the routers for the current state; this is the direction, in priority order, each naming the principle it serves.
 
-1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI requests per month free, unlimited on Pro."
+1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI filters per month free, unlimited on Pro; other AI spends Pro credits, buy more when they run out."
 2. **Gate generation, never chat persistence.** Storing chat rows costs nothing, and a lapsed subscriber must not lose the ability to edit or delete their own history. Chats and messages mutations belong on `authMiddleware`; the model call is the enforcement point. Retention, if ever needed, is a quantity limit.
 3. **Implement the connection limit before tiers launch** — it is the model's primary quantity lever. Count server-side in `connections/create`, block only new creates, and ship the UI mirror in the same release: a silent server rejection reads as a bug, not a plan.
 4. **BYOK is the free tier's AI escape hatch.** A user-stored provider key (per-user secret in Infisical, same path as encryption secrets) routes AI calls to it and skips the quota entirely — which makes the free story honest, serves privacy-sensitive users, and removes token cost as an argument for hard gates.
@@ -88,12 +88,12 @@ Where today's wiring contradicts the framework. Read the routers for the current
 How to wire a gate once the framework has decided where a feature lands:
 
 1. **Gate at the API boundary, never only in the client.** The desktop app, web app, and CLI all speak to the same oRPC routers; a client-side check is a suggestion, not a limit. UI may _mirror_ the limit (disable buttons, show upgrade prompts) but the router enforces it.
-2. **Metered features copy the `ai/filters` pattern** (`apps/api/orpc/routers/ai/filters.ts`): `optionalSubscriptionMiddleware`, Redis counter keyed `ai:usage:{userId}:{feature}:{yyyy-MM}` with expiry at end of month, skip the counter when `context.subscription` exists.
+2. **Metered features copy the `ai/filters` pattern** (`apps/api/orpc/routers/ai/v2/filters.ts`): `permissionsMiddleware`, Redis counter keyed `ai:usage:{userId}:{feature}:{yyyy-MM}` with expiry at end of month, skip the counter when `context.permissions.check('ai.filter.unlimited')` passes.
 3. **Limit errors carry the numbers.** Follow the `ai/filters` FORBIDDEN error shape — `{ max, remaining, resetAt }` in `errors({...})` typed data — so every client can render "37 of 50 left, resets March 1" instead of a bare rejection. Never return a plain string error for a limit.
 4. **Limit constants live in `packages/shared/constants.ts`**, named `FREE_<FEATURE>_..._LIMIT` (see `FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT`). Shared package so clients render the same numbers the server enforces — no hardcoded copies in UI code.
-5. **Boolean subscription gates use `subscriptionMiddleware`; metered ones use `optionalSubscriptionMiddleware`.** Reserve the hard middleware for things that are structurally Pro/Team (extra workspaces, future member management), not for capping usage.
+5. **Boolean gates use `permix.checkMiddleware('<entity>.<action>')` after `permissionsMiddleware`; metered ones check `context.permissions` inline.** Reserve the hard check for things that are structurally Pro/Team (extra workspaces, future member management), not for capping usage.
 6. **Quantity limits (connections, workspaces) are enforced on create**, counting server-side rows — never trust a client-reported count. Existing over-limit data stays readable when a subscription lapses; the limit blocks _new_ creates only. Downgrade must never lock users out of their data.
-7. **Grandfathering by app version already has a pattern**: `subscriptionMiddleware` branches its message on `LATEST_VERSION_BEFORE_SUBSCRIPTION`. When a previously free surface gains a gate, keep the version-aware messaging so old clients get an actionable error.
+7. **Grandfathering by app version already has a pattern**: permix's `onForbidden` (`apps/api/orpc/index.ts`) branches its message on `LATEST_VERSION_BEFORE_SUBSCRIPTION`. When a previously free surface gains a gate, keep the version-aware messaging so old clients get an actionable error.
 
 ## Surface-specific rules
 

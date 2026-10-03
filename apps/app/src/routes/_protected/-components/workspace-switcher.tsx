@@ -15,11 +15,12 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { useSubscription } from '~/core/user/use-subscription'
+import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { useIsAnonymous } from '~/lib/auth'
+import { requestUpgrade } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -40,9 +41,10 @@ const WorkspaceGlyph = ({
 export const WorkspaceSwitcher = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const isAnonymous = useIsAnonymous()
   const [createOpen, setCreateOpen] = useState(false)
   const { data: activeWorkspace, workspaces } = useActiveWorkspace()
-  const { subscription, isPending: isSubscriptionPending } = useSubscription()
+  const canCreate = usePermissions().check('workspace.create')
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -58,10 +60,10 @@ export const WorkspaceSwitcher = () => {
   const handleCreate = () => {
     setOpen(false)
 
-    if (subscription || isSubscriptionPending) {
+    if (canCreate) {
       setCreateOpen(true)
     } else {
-      setIsSubscriptionDialogOpen(true)
+      requestUpgrade('subscription')
     }
   }
 
@@ -118,7 +120,10 @@ export const WorkspaceSwitcher = () => {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleCreate}>
+          <DropdownMenuItem
+            className={isAnonymous ? 'opacity-50' : undefined}
+            onClick={handleCreate}
+          >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Create workspace
           </DropdownMenuItem>

@@ -13,8 +13,8 @@ import type { ComponentProps } from 'react'
 
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
-import { mainModules } from '~/lib/modules'
 import { orpc } from '~/lib/orpc'
+import { ReleasesLink } from '~/modules/releases/module'
 
 import { NavbarTextLogo } from './navbar-text-logo'
 
@@ -43,9 +43,7 @@ export const Navbar = ({ className, ...props }: ComponentProps<'header'>) => {
         </Link>
       </div>
       <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-        {mainModules.headerLinks.map(({ Component }, index) => (
-          <Component key={index} />
-        ))}
+        <ReleasesLink />
         <Button
           variant="ghost"
           size="sm"

@@ -19,6 +19,7 @@ export interface FetchingConfig {
 type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
 interface FetchingOptions {
+  hasLocalConnectionString?: boolean
   isLocalProxyAvailable?: boolean
   isPasswordPopulated?: boolean
   isLocalhost?: boolean
@@ -26,6 +27,8 @@ interface FetchingOptions {
 }
 
 const REASONS = {
+  connectionStringNotStored:
+    'This connection string was not synced to the cloud. Open this connection on the device where it was created.',
   localhostFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   passwordMissingInDesktop:
@@ -59,6 +62,9 @@ const resolveFlags = (
   const { isPasswordPopulated } = options ?? {}
 
   return {
+    connectionStringMissing:
+      connection.syncType === SyncType.CloudWithoutConnectionString &&
+      !options?.hasLocalConnectionString,
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
@@ -78,6 +84,7 @@ export const fetchingConfig = (
   options?: FetchingOptions
 ): FetchingConfig => {
   const {
+    connectionStringMissing,
     hasPassword,
     isElectron,
     isLocalhost,
@@ -86,6 +93,10 @@ export const fetchingConfig = (
     proxyPreferred,
     proxyReachable,
   } = resolveFlags(connection, options)
+
+  if (connectionStringMissing) {
+    return blocked('local', REASONS.connectionStringNotStored)
+  }
 
   if (passwordUnresolved) {
     return blocked('resolving-password')
@@ -112,7 +123,7 @@ export const fetchingConfig = (
     return blocked('proxy', REASONS.localhostFromWeb)
   }
 
-  if (connection.syncType === SyncType.CloudWithoutPassword) {
+  if (connection.syncType !== SyncType.Cloud) {
     return blocked('cloud-proxy', REASONS.passwordNotStored)
   }
 

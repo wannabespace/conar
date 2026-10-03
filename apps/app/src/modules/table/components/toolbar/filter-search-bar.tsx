@@ -36,8 +36,9 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
+import { usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import { appStore, requestUpgrade } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -313,6 +314,7 @@ const FilterCommandList = ({
   committedParts,
   filtersCount,
   freeAiUsage,
+  aiLocked,
   isOnline,
   isPending,
   matchingColumns,
@@ -331,6 +333,7 @@ const FilterCommandList = ({
   committedParts: string[]
   filtersCount: number
   freeAiUsage: { remaining: number; max: number } | null
+  aiLocked: boolean
   isOnline: boolean
   isPending: boolean
   matchingColumns: { id: string; type?: string; typeLabel?: string }[]
@@ -368,7 +371,8 @@ const FilterCommandList = ({
           <CommandItem
             value={`ai:${trimmedQuery.toLowerCase()}`}
             disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-            onSelect={askAi}
+            className={aiLocked ? 'opacity-50' : undefined}
+            onSelect={aiLocked ? () => requestUpgrade('ai') : askAi}
           >
             <HugeiconsIcon
               icon={SparklesIcon}
@@ -490,6 +494,7 @@ export const FilterSearchBar = ({
   table: string
   schema: string
 }) => {
+  const aiLocked = !usePermissions().check('ai.filter.use')
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
@@ -825,6 +830,7 @@ export const FilterSearchBar = ({
                 committedParts={committedParts}
                 filtersCount={filters.length}
                 freeAiUsage={freeAiUsage}
+                aiLocked={aiLocked}
                 isOnline={isOnline}
                 isPending={isPending}
                 matchingColumns={matchingColumns}

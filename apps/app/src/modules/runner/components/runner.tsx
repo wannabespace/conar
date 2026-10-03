@@ -15,7 +15,7 @@ import {
   dialects,
   splitStatements,
   statementAt,
-  transactionParts,
+  unwrapTransaction,
 } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -49,7 +49,9 @@ import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
+import { permix } from '~/core/user/permissions'
 import { formatSql } from '~/lib/formatter'
+import { requestUpgrade } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { RunnerActionsContext } from '../lib/actions'
@@ -231,6 +233,10 @@ export const Runner = () => {
 
   const actions: RunnerActions = {
     askAi: () => {
+      if (!permix.check('ai.sql.use')) {
+        requestUpgrade('ai')
+        return
+      }
       const { range } = current()
       if (range) {
         aiEdit.open(range)
@@ -240,13 +246,17 @@ export const Runner = () => {
       run(
         current().statements.flatMap((statement) =>
           (
-            transactionParts(statement.source, dialect)?.statements ?? [
+            unwrapTransaction(statement.source, dialect)?.statements ?? [
               statement.source,
             ]
           ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
         )
       ),
     fixWithAi: ({ end, error, source, start }) => {
+      if (!permix.check('ai.sql.use')) {
+        requestUpgrade('ai')
+        return
+      }
       const model = editorRef.current?.getModel()
       if (!model || model.getValue().slice(start, end) !== source) {
         toast.error('The statement changed since it ran — run it again first')

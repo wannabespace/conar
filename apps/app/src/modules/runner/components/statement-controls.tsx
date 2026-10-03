@@ -28,6 +28,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { useIsAnonymous } from '~/lib/auth'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
@@ -154,6 +155,7 @@ export const StatementControls = ({
 }) => {
   const { connection } = useRouteContext()
   const actions = useRunnerActions()
+  const isAnonymous = useIsAnonymous()
   const suggestionHere = sameSpot(anchor.suggestion, anchor)
 
   return (
@@ -192,6 +194,7 @@ export const StatementControls = ({
                     size="icon-2xs"
                     variant="outline"
                     aria-label="Fix with AI"
+                    className={isAnonymous ? 'opacity-50' : undefined}
                     onClick={() => actions.fixWithAi(failed)}
                   />
                 }

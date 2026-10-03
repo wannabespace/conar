@@ -1,6 +1,5 @@
 import { db } from '@tamery/db'
 import { connections, connectionsSelectSchema } from '@tamery/db/schema'
-import { decrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
@@ -65,10 +64,12 @@ export const sync = orpc
     })
     const decryptItem = async (item: (typeof updatedItems)[number]) => ({
       ...item,
-      connectionString: decrypt({
-        encryptedText: item.connectionString,
-        secret: await context.getWorkspaceSecret(item.workspaceId),
-      }),
+      connectionString:
+        item.connectionString &&
+        (await context.decryptConnectionString({
+          encryptedText: item.connectionString,
+          workspaceId: item.workspaceId,
+        })),
     })
     const [updatedValues, newValues] = await Promise.all([
       Promise.all(updatedItems.map(decryptItem)),

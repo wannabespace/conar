@@ -1,7 +1,6 @@
 import { db } from '@tamery/db'
 import { connections } from '@tamery/db/schema'
-import { decrypt } from '@tamery/shared/crypto-node'
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq, isNotNull } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -23,24 +22,30 @@ export const list = orpc
         workspaceId: connections.workspaceId,
       })
       .from(connections)
-      .where(eq(connections.userId, context.user.id))
+      .where(
+        and(
+          eq(connections.userId, context.user.id),
+          isNotNull(connections.connectionString)
+        )
+      )
       .orderBy(desc(connections.createdAt))
 
     return Promise.all(
-      connectionsList.map(async ({ workspaceId, ...connection }) => {
-        const secret = await context.getWorkspaceSecret(workspaceId)
-
-        try {
-          return {
-            ...connection,
-            connectionString: decrypt({
-              encryptedText: connection.connectionString,
-              secret,
-            }),
+      connectionsList.map(
+        async ({ connectionString, workspaceId, ...connection }) => {
+          try {
+            return {
+              ...connection,
+              connectionString: await context.decryptConnectionString({
+                // oxlint-disable-next-line typescript/no-non-null-assertion -- isNotNull in where
+                encryptedText: connectionString!,
+                workspaceId,
+              }),
+            }
+          } catch {
+            throw errors.INTERNAL_SERVER_ERROR()
           }
-        } catch {
-          throw errors.INTERNAL_SERVER_ERROR()
         }
-      })
+      )
     )
   })

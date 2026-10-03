@@ -28,8 +28,12 @@ import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { SidebarLink } from '~/components/sidebar-button'
 import { authClient } from '~/lib/auth'
-import { mainModules } from '~/lib/modules'
 import { orpc } from '~/lib/orpc'
+import { AiUsageLink } from '~/modules/ai-usage/module'
+import { BillingLink } from '~/modules/billing/module'
+import { ReleasesLink } from '~/modules/releases/module'
+import { SettingsLink } from '~/modules/settings/module'
+import { SupportButton } from '~/modules/support/module'
 
 const { useLoaderData } = getRouteApi('/account')
 
@@ -53,9 +57,7 @@ const AccountLayout = () => {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-          {mainModules.headerLinks.map(({ Component }, index) => (
-            <Component key={index} />
-          ))}
+          <ReleasesLink />
           <Button
             variant="ghost"
             size="sm"
@@ -128,9 +130,10 @@ const AccountLayout = () => {
             <SidebarLink to="/account" icon={DashboardSquare01Icon}>
               Dashboard
             </SidebarLink>
-            {mainModules.accountNav.map(({ Component }, index) => (
-              <Component key={index} />
-            ))}
+            <BillingLink />
+            <AiUsageLink />
+            <SettingsLink />
+            <SupportButton />
             <Separator className="my-2" />
             <Button
               variant="ghost"

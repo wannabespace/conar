@@ -40,7 +40,7 @@ const ISOLATION_LEVELS = [
 const GO_REPEAT_COUNT = /^\s*\d*\s*$/u
 
 /** End of the line holding a `GO` batch separator — alone on its line, with an optional repeat count — or `null`. */
-export const batchSeparatorEnd = (
+export const goSeparatorLineEnd = (
   text: string,
   tokens: Token[],
   index: number
@@ -77,7 +77,7 @@ const opensTransactionAt = (tokens: Token[], index: number) => {
 }
 
 // `ROLLBACK TO` a savepoint closes nothing; Postgres' `END` and `ABORT` close only as a whole statement.
-const transactionEnd = (tokens: Token[]) => {
+const transactionCloser = (tokens: Token[]) => {
   const words = upperTexts(tokens.slice(0, 3))
   const [word, next, after] = words
   if (word === 'COMMIT' || (word === 'ROLLBACK' && !words.includes('TO'))) {
@@ -93,7 +93,7 @@ const transactionEnd = (tokens: Token[]) => {
 }
 
 // Postgres and MySQL leave BEGIN unreserved, so `SELECT begin, …` is a column, not a block.
-const namesColumn = (previous: Token | undefined) =>
+const isColumnPosition = (previous: Token | undefined) =>
   isKeyword(previous, 'SELECT') ||
   isPunctuation(previous, ',') ||
   isPunctuation(previous, '(')
@@ -104,11 +104,11 @@ export const leavesTransactionOpen = (text: string, dialect: DialectSpec) => {
   )
   return (
     opensTransactionAt(tokens, 0) &&
-    !tokens.some((_, index) => transactionEnd(tokens.slice(index)))
+    !tokens.some((_, index) => transactionCloser(tokens.slice(index)))
   )
 }
 
-export const parseStatements = (
+export const statementsFromTokens = (
   text: string,
   tokens: Token[],
   dialect: DialectSpec,
@@ -126,9 +126,11 @@ export const parseStatements = (
   const flush = (terminator?: Token) => {
     const [first] = current
     const last = current.at(-1)
-    if (inTransaction && !transactionEnd(current.slice(innerStart))) {
+    if (inTransaction && !transactionCloser(current.slice(innerStart))) {
       statements.push(
-        ...parseStatements(text, current, dialect, { groupTransactions: false })
+        ...statementsFromTokens(text, current, dialect, {
+          groupTransactions: false,
+        })
       )
     } else if (first && last) {
       statements.push({
@@ -154,7 +156,7 @@ export const parseStatements = (
       continue
     }
     const separatorEnd =
-      dialect.goBatches && batchSeparatorEnd(text, significant, index)
+      dialect.goBatches && goSeparatorLineEnd(text, significant, index)
     if (separatorEnd) {
       separatorLineEnd = separatorEnd
       flush()
@@ -165,7 +167,7 @@ export const parseStatements = (
       inTransaction = groups
     } else if (
       isKeyword(token, 'CASE') ||
-      (isKeyword(token, 'BEGIN') && !namesColumn(significant[index - 1]))
+      (isKeyword(token, 'BEGIN') && !isColumnPosition(significant[index - 1]))
     ) {
       depth += 1
     } else if (isKeyword(token, 'END') && !isKeyword(next, ...END_QUALIFIERS)) {
@@ -173,7 +175,7 @@ export const parseStatements = (
     }
 
     if (isPunctuation(token, ';') && depth === 0) {
-      if (!inTransaction || transactionEnd(current.slice(innerStart))) {
+      if (!inTransaction || transactionCloser(current.slice(innerStart))) {
         flush(token)
         continue
       }
@@ -191,16 +193,17 @@ export const splitStatements = (
   text: string,
   dialect: DialectSpec,
   options?: { groupTransactions?: boolean }
-) => parseStatements(text, tokenize(text, dialect).tokens, dialect, options)
+) =>
+  statementsFromTokens(text, tokenize(text, dialect).tokens, dialect, options)
 
 // Drivers without multi-statement support reject a `BEGIN … COMMIT` group sent as one string.
-export const transactionParts = (text: string, dialect: DialectSpec) => {
+export const unwrapTransaction = (text: string, dialect: DialectSpec) => {
   if (!dialect.transactions) {
     return null
   }
   const parts = splitStatements(text, dialect, { groupTransactions: false })
   const [first] = parts
-  const ending = transactionEnd(parts.at(-1)?.tokens ?? [])
+  const ending = transactionCloser(parts.at(-1)?.tokens ?? [])
   if (!(first && ending && opensTransactionAt(first.tokens, 0))) {
     return null
   }

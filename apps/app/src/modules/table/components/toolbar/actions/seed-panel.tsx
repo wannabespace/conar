@@ -55,9 +55,10 @@ import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import { useSubscription as useUserSubscription } from '~/core/user/use-subscription'
+import { usePermissions } from '~/core/user/permissions'
+import { useIsAnonymous } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { requestUpgrade } from '~/store'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { useTablePageStore } from '../../../lib/store'
@@ -438,10 +439,11 @@ export const SeedPanel = ({
     columnsRef.current?.focus()
   }, [])
 
-  const { subscription } = useUserSubscription()
+  const unlimited = usePermissions().check('seed.unlimited')
   const seedUsageCount = useSubscription(seedUsageValue)
   const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
-  const hasReachedFreeLimit = !subscription && remainingFreeSeeds === 0
+  const hasReachedFreeLimit = !unlimited && remainingFreeSeeds === 0
+  const isGuest = useIsAnonymous()
 
   const columnGenerators = Object.fromEntries(
     columns.map((column): [string, Generator] => {
@@ -555,7 +557,7 @@ export const SeedPanel = ({
       toast.error('Failed to seed data', { description: error.message })
     },
     onSuccess: () => {
-      if (!subscription) {
+      if (!unlimited) {
         incrementSeedUsage()
       }
       toast.success(
@@ -579,7 +581,7 @@ export const SeedPanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {!subscription && (
+      {!unlimited && (
         <div className="border-b p-3">
           <Alert>
             <HugeiconsIcon
@@ -596,7 +598,8 @@ export const SeedPanel = ({
               <Button
                 variant="outline"
                 size="xs"
-                onClick={() => setIsSubscriptionDialogOpen(true)}
+                className={isGuest ? 'opacity-50' : undefined}
+                onClick={() => requestUpgrade('subscription')}
               >
                 Upgrade
               </Button>
@@ -704,12 +707,13 @@ export const SeedPanel = ({
         <Button
           onClick={() => {
             if (hasReachedFreeLimit) {
-              setIsSubscriptionDialogOpen(true)
+              requestUpgrade('subscription')
               return
             }
             seed()
           }}
           disabled={isPending || (!canSeed && !hasReachedFreeLimit)}
+          className={isGuest && hasReachedFreeLimit ? 'opacity-50' : undefined}
         >
           <LoadingContent loading={isPending}>
             <HugeiconsIcon

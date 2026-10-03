@@ -5,8 +5,7 @@
     "dev": "portless run vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsc",
-    "test": "bun test ./src"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",

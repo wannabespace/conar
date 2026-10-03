@@ -13,7 +13,7 @@ Use precisely; avoid the listed synonyms.
 - **Workspace** — named group of connections. _Avoid_: organization (in UI copy), team, project.
 - **Tab** — every view inside a connection resource: `table`, `runner`, `definitions`, `visualizer`. _Avoid_: page, view, screen.
 - **Navigator** — the only sidebar.
-- **SyncType** — credential handling during cloud sync: `Cloud`, `CloudWithoutPassword`, `Local`. _Avoid_: sync mode, cloud mode.
+- **SyncType** — credential handling during cloud sync: `Cloud`, `CloudWithoutPassword`, `CloudWithoutConnectionString`. The last stores a null connection string server-side, so its row never reaches another device's `connectionStringsCollection` — there an absent row is final, not "resolving". _Avoid_: sync mode, cloud mode.
 - **Collections** — client data in TanStack DB collections, persisted to SQLite; synced ones stream from cloud via oRPC event iterators.
 
 User-facing names differ from internal ids in two places: **Query** is the user-facing name for a `runner`, and **Schema** for `definitions` (the umbrella has to cover the visualizer too).
@@ -30,11 +30,18 @@ User-facing names differ from internal ids in two places: **Query** is the user-
 Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `activeOrganizationId` field points at the `activeWorkspaceId` column.
 
 - Every user gets a lazily-created **default personal workspace**; `connections.create` falls back to it.
-- Extra workspaces are gated by `subscriptionMiddleware`. Deletion is **disabled** — connections cascade and there is no delete flow yet.
+- Extra workspaces are gated by `workspace.create`. Deletion is **disabled** — connections cascade and there is no delete flow yet.
 - The client scopes connections to the active workspace **inside** each `useLiveQuery`, never a post-query `.filter()` (a new array every render).
 - Workspaces reach the client through `workspacesCollection`, **not** Better Auth's `useListOrganizations` — the list must survive offline.
 - Active workspace is per-device `localStorage`, **never** pushed to the session; callers pass the active id explicitly to Better Auth endpoints.
 - `connections.create` accepts the client's `workspaceId` (membership-checked) so offline-created connections land in the device-active workspace. Multi-member and invites are not built yet.
+
+## Anonymous users
+
+Desktop-only "Continue without an account" signs in through Better Auth's `anonymous` plugin, so an anonymous user is a real server user with a default workspace and its own Infisical secret — every sync and encryption path stays shared.
+
+- Limits are the `guest` plan in `packages/shared/permissions.ts`: one connection (`connection.create` with the current count), no AI (`ai.*`), no workspaces, one open tab per resource (`tab.multiple`, client-only: `openTab`/`ensureTab` close the other tabs first, so opening another replaces it silently). Guests can edit the database like any member. Every locked control calls `requestUpgrade(feature)` from `~/store`: a member gets the upsell dialog, a guest gets the guest banner prompt (`promptSignIn`, which also sends the PostHog event `guest_feature_blocked { feature }` — the signal for which limits push guests to sign up). For a guest the control is dimmed, never disabled, so the press reaches it. The server checks are the real gate; `handleError` shows a guest's `FORBIDDEN` message in the banner (toasts on `/auth`, which has no banner).
+- Upgrading goes through the desktop challenge `exchange`, which still carries the anonymous bearer: it moves the anonymous user's connections (same ids; a guest's have no stored string, so nothing is re-encrypted) and queries into the real user's default workspace, then deletes the anonymous user. A failed move fails the exchange — the transaction rolls back and the guest session stays valid, so signing in again retries it. Better Auth's own `onLinkAccount` never fires here — the real sign-in happens in the browser, not in the anonymous session. The client reloads afterwards so sync streams reopen as the new user.
 
 ## Tabs
 

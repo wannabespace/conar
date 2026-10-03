@@ -4,6 +4,7 @@ import {
   GithubIcon,
   Globe02Icon,
   HistoryIcon,
+  Login03Icon,
   Logout03Icon,
   Message01Icon,
   NewTwitterIcon,
@@ -33,6 +34,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { Link } from '~/components/link'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
 import { accountUrl } from '~/lib/urls'
@@ -101,15 +103,24 @@ export const UserButton = ({
       <DropdownMenuContent className="min-w-56" side={side} align={align}>
         <div className="flex flex-col px-2 py-1.5 leading-tight">
           <span className="text-sm font-medium">{data?.user.name}</span>
-          <span className="text-muted-foreground text-xs">
-            {data?.user.email}
-          </span>
+          {!data?.user.isAnonymous && (
+            <span className="text-muted-foreground text-xs">
+              {data?.user.email}
+            </span>
+          )}
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => window.open(accountUrl, '_blank')}>
-          <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
-          Account
-        </DropdownMenuItem>
+        {data?.user.isAnonymous ? (
+          <DropdownMenuItem render={<Link to="/auth" activateOn="click" />}>
+            <HugeiconsIcon icon={Login03Icon} strokeWidth={2} />
+            Sign in
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem onClick={() => window.open(accountUrl, '_blank')}>
+            <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
+            Account
+          </DropdownMenuItem>
+        )}
         {window.electron && (
           <DropdownMenuItem
             onClick={() =>

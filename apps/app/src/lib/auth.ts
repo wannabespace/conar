@@ -1,6 +1,6 @@
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
-import { organizationClient } from 'better-auth/client/plugins'
+import { anonymousClient, organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ import {
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
+const SESSION_CACHE_KEY = 'tamery.session'
 
 export const bearerToken = createWebStorageValue({
   defaultValue: null,
@@ -52,18 +53,44 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient()],
+  plugins: [anonymousClient(), organizationClient()],
 })
 
-export const isSignedIn = async () => {
+const sessionCache = createWebStorageValue({
+  defaultValue: null,
+  key: SESSION_CACHE_KEY,
+  schema: type('object | null').as<typeof authClient.$Infer.Session | null>(),
+  type: 'localStorage',
+})
+
+// Must run before anything subscribes to the session atom; hydrateSession only fills an empty atom.
+authClient.hydrateSession(sessionCache.get())
+authClient.$store.atoms.session?.listen(({ data }) => sessionCache.set(data))
+
+export const getSessionUser = async () => {
+  const user = sessionCache.get()?.user
+
+  if (user) {
+    return user
+  }
+
   const { data } = await tryCatchAsync(authClient.getSession)
 
-  return !!data?.data?.user
+  return data?.data?.user
 }
+
+export const isAnonymous = () =>
+  !!authClient.$store.atoms.session?.get().data?.user.isAnonymous
+
+export const useIsAnonymous = () =>
+  !!authClient.useSession().data?.user.isAnonymous
+
+export const isSignedIn = async () => !!(await getSessionUser())
 
 export const fullSignOut = async () => {
   await authClient.signOut()
   bearerToken.clear()
+  sessionCache.clear()
   lastLocationStorageValue.clear()
 
   if (!isAuthLocation()) {

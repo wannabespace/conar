@@ -46,11 +46,13 @@ import { useConnectionResourceLinkParams } from '~/core/connection/use-connectio
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import type { CommandEntry } from '~/lib/module'
 import { appModules, byOrder } from '~/lib/modules'
 import { protectedModules } from '~/lib/protected-modules'
+import { requestUpgrade } from '~/store'
 
 import { actionCenterOpen } from './action-center-open'
 
@@ -382,7 +384,12 @@ export const ActionsCenter = () => {
           'Add new connection…',
           ['new', 'create', 'database'],
           DatabaseAddIcon,
-          () => router.navigate({ to: '/create' })
+          () =>
+            permix.check('connection.create', {
+              count: connectionsCollection.size,
+            })
+              ? router.navigate({ to: '/create' })
+              : requestUpgrade('connections')
         ),
         ...connections,
       ],
