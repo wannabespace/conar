@@ -125,7 +125,7 @@ const AuthPage = () => {
       authClient.signIn.anonymous({ fetchOptions: { throw: true } }),
     onSuccess: async ({ token }) => {
       bearerToken.set(token)
-      setAccess({ hasSubscription: false, isAnonymous: true })
+      setAccess({ subscription: null, user: { isAnonymous: true } })
       await refetch()
       router.navigate({ to: '/' })
     },

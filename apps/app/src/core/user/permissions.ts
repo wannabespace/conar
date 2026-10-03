@@ -11,13 +11,13 @@ import { authClient } from '~/lib/auth'
 import { useSubscription } from './use-subscription'
 
 const accessSchema = type({
-  hasSubscription: 'boolean',
-  isAnonymous: 'boolean',
+  subscription: type({ plan: "'pro'" }).or('null'),
+  user: { 'isAnonymous?': 'boolean | null' },
 })
 
 // The last known access, so the first render (and the first row queries) already use it; Pro before any is known so nothing flickers disabled.
 const accessValue = createWebStorageValue({
-  defaultValue: { hasSubscription: true, isAnonymous: false },
+  defaultValue: { subscription: { plan: 'pro' }, user: { isAnonymous: false } },
   key: 'tamery.access',
   schema: accessSchema,
   type: 'localStorage',
@@ -42,13 +42,10 @@ export const usePermissions = () => usePermix(permix)
 export const usePermissionsSync = () => {
   const user = authClient.useSession().data?.user
   const { isPending, subscription } = useSubscription()
-  const isAnonymous = !!user?.isAnonymous
-  const hasSubscription = !!subscription
-  const known = !!user && (isAnonymous || !isPending)
 
   useEffect(() => {
-    if (known) {
-      setAccess({ hasSubscription, isAnonymous })
+    if (user && (user.isAnonymous || !isPending)) {
+      setAccess({ subscription, user })
     }
-  }, [known, hasSubscription, isAnonymous])
+  }, [user, isPending, subscription])
 }

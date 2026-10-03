@@ -6,19 +6,22 @@ import type { Permissions } from './permissions'
 import { permissionsOf } from './permissions'
 
 const guest = createPermix<Permissions>(
-  permissionsOf({ hasSubscription: false, isAnonymous: true })
+  permissionsOf({ subscription: null, user: { isAnonymous: true } })
 )
 const free = createPermix<Permissions>(
-  permissionsOf({ hasSubscription: false, isAnonymous: false })
+  permissionsOf({ subscription: null, user: { isAnonymous: false } })
 )
 const pro = createPermix<Permissions>(
-  permissionsOf({ hasSubscription: true, isAnonymous: false })
+  permissionsOf({ subscription: { plan: 'pro' }, user: { isAnonymous: false } })
 )
 
 describe('permissionsOf', () => {
   it('treats an anonymous user as guest even with a subscription', () => {
     const subscribedGuest = createPermix<Permissions>(
-      permissionsOf({ hasSubscription: true, isAnonymous: true })
+      permissionsOf({
+        subscription: { plan: 'pro' },
+        user: { isAnonymous: true },
+      })
     )
 
     expect(subscribedGuest.check('ai.chat.use')).toBe(false)

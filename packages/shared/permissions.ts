@@ -15,14 +15,14 @@ export type Permissions = {
 }
 
 export const permissionsOf = ({
-  hasSubscription,
-  isAnonymous,
+  subscription,
+  user,
 }: {
-  hasSubscription: boolean
-  isAnonymous: boolean
+  subscription: { plan: 'pro' } | null
+  user: { isAnonymous?: boolean | null }
 }): Rules<Permissions> => {
-  const member = !isAnonymous
-  const pro = member && hasSubscription
+  const member = !user.isAnonymous
+  const pro = member && !!subscription
 
   return {
     ai: {
