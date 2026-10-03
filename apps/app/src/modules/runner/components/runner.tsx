@@ -15,7 +15,7 @@ import {
   dialects,
   splitStatements,
   statementAt,
-  transactionParts,
+  unwrapTransaction,
 } from '@tamery/sql'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -246,7 +246,7 @@ export const Runner = () => {
       run(
         current().statements.flatMap((statement) =>
           (
-            transactionParts(statement.source, dialect)?.statements ?? [
+            unwrapTransaction(statement.source, dialect)?.statements ?? [
               statement.source,
             ]
           ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))

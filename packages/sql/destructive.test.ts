@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { changesSchema, destructiveKeywords } from './destructive'
+import { invalidatesCatalog, destructiveKeywords } from './destructive'
 import { dialects } from './dialect'
 
 const mysql = dialects[ConnectionType.MySQL]
@@ -89,15 +89,19 @@ describe('destructiveKeywords', () => {
   })
 
   it('tells schema changes from data changes', () => {
-    expect(changesSchema('create table t (id int)', mysql)).toBe(true)
-    expect(changesSchema('SELECT 1; ALTER TABLE t ADD c int', mysql)).toBe(true)
-    expect(changesSchema("UPDATE t SET a = 'DROP'", mysql)).toBe(false)
-    expect(changesSchema('DO $$ BEGIN CREATE TABLE t (); END $$', pg)).toBe(
+    expect(invalidatesCatalog('create table t (id int)', mysql)).toBe(true)
+    expect(invalidatesCatalog('SELECT 1; ALTER TABLE t ADD c int', mysql)).toBe(
       true
     )
-    expect(changesSchema('EXPLAIN CREATE TABLE t AS SELECT 1', pg)).toBe(false)
+    expect(invalidatesCatalog("UPDATE t SET a = 'DROP'", mysql)).toBe(false)
     expect(
-      changesSchema('EXPLAIN ANALYZE CREATE TABLE t AS SELECT 1', pg)
+      invalidatesCatalog('DO $$ BEGIN CREATE TABLE t (); END $$', pg)
+    ).toBe(true)
+    expect(invalidatesCatalog('EXPLAIN CREATE TABLE t AS SELECT 1', pg)).toBe(
+      false
+    )
+    expect(
+      invalidatesCatalog('EXPLAIN ANALYZE CREATE TABLE t AS SELECT 1', pg)
     ).toBe(true)
   })
 })

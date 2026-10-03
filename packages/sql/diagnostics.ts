@@ -4,7 +4,7 @@ import type { DialectSpec } from './dialect'
 import type { StatementScope } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
 import type { Statement } from './statements'
-import { batchSeparatorEnd, parseStatements } from './statements'
+import { goSeparatorLineEnd, statementsFromTokens } from './statements'
 import type { Token } from './tokenizer'
 import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
@@ -103,7 +103,7 @@ const unclosedDiagnostics = (tokens: Token[]): Diagnostic[] =>
 const repeatCountDiagnostics = (text: string, tokens: Token[]) => {
   const significant = tokens.filter((token) => token.kind !== 'comment')
   return significant.flatMap((_, index): Diagnostic[] => {
-    const lineEnd = batchSeparatorEnd(text, significant, index)
+    const lineEnd = goSeparatorLineEnd(text, significant, index)
     const count = significant[index + 1]
     return lineEnd && count && count.start < lineEnd
       ? [
@@ -149,7 +149,7 @@ const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
   return diagnostics
 }
 
-const starterDiagnostics = (statement: Statement): Diagnostic[] => {
+const unknownStatementDiagnostics = (statement: Statement): Diagnostic[] => {
   const [first] = statement.tokens
   if (
     !first ||
@@ -293,7 +293,7 @@ const unqualifiedColumnDiagnostics = (
   )
   if (
     !isKeyword(tokens[0], ...QUERY_VERBS) ||
-    scope.opaque ||
+    scope.hasUnknownColumns ||
     scope.ctes.length > 0 ||
     tables.length === 0 ||
     tables.some((table) => !table?.columns)
@@ -521,13 +521,13 @@ export const diagnose = (
   catalog: SqlCatalog | null
 ): Diagnostic[] => {
   const { tokens } = tokenize(text, dialect)
-  const statements = parseStatements(text, tokens, dialect)
+  const statements = statementsFromTokens(text, tokens, dialect)
   return [
     ...unclosedDiagnostics(tokens),
     ...(dialect.goBatches ? repeatCountDiagnostics(text, tokens) : []),
     ...statements.flatMap((statement) => [
       ...bracketDiagnostics(statement),
-      ...starterDiagnostics(statement),
+      ...unknownStatementDiagnostics(statement),
       ...nullComparisonDiagnostics(statement),
       ...(catalog && catalog.schemas.length > 0
         ? catalogDiagnostics(statement, catalog)

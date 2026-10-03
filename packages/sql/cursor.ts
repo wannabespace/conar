@@ -1,14 +1,17 @@
 import { identifierName, isKeyword, isPunctuation } from './tokenizer'
 import type { Token } from './tokenizer'
 
-export interface Subject {
+export interface ColumnRef {
   qualifier: string | null
   name: string
 }
 
 const WORD_KINDS = new Set(['identifier', 'keyword', 'function', 'type'])
 
-export const subjectAt = (tokens: Token[], index: number): Subject | null => {
+export const columnRefAt = (
+  tokens: Token[],
+  index: number
+): ColumnRef | null => {
   const token = tokens[index]
   if (token?.kind !== 'identifier') {
     return null
@@ -23,19 +26,19 @@ export const subjectAt = (tokens: Token[], index: number): Subject | null => {
   }
 }
 
-export const valueSubject = (before: Token[], cursor: number) => {
+export const columnBeforeValue = (before: Token[], cursor: number) => {
   const previous = before[cursor]
   if (previous?.kind === 'operator') {
-    return subjectAt(before, cursor - 1)
+    return columnRefAt(before, cursor - 1)
   }
   if (isPunctuation(previous, '(') && isKeyword(before[cursor - 1], 'IN')) {
-    return subjectAt(
+    return columnRefAt(
       before,
       isKeyword(before[cursor - 2], 'NOT') ? cursor - 3 : cursor - 2
     )
   }
   if (isKeyword(previous, 'BETWEEN', 'LIKE', 'ILIKE')) {
-    return subjectAt(before, cursor - 1)
+    return columnRefAt(before, cursor - 1)
   }
   return null
 }
@@ -104,7 +107,7 @@ export const qualifierBefore = (before: Token[]) => {
 }
 
 /** Where a value typed inside `'…'` goes: between the quotes. */
-export const quotedContents = (literal: Token | undefined) =>
+export const stringContentRange = (literal: Token | undefined) =>
   literal?.kind === 'string' && literal.text.startsWith("'")
     ? {
         end: literal.end - (literal.unclosed ? 0 : 1),
