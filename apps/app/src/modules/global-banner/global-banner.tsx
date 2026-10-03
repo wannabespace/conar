@@ -21,8 +21,14 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from 'motion/react'
 import type { ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -119,22 +125,30 @@ const GuestBannerContent = ({
   prompt: { at: number; hint: string | null }
 }) => {
   const reduceMotion = useReducedMotion()
+  const flashRef = useRef<HTMLSpanElement>(null)
+  const shakeRef = useRef<HTMLDivElement>(null)
+
+  // Imperative because the banner's AnimatePresence initial={false} blocks mount animations of keyed children.
+  useEffect(() => {
+    if (!prompt.at || !flashRef.current || !shakeRef.current) {
+      return
+    }
+
+    animate(flashRef.current, { opacity: [1, 0] }, { duration: 0.9 })
+
+    if (!reduceMotion) {
+      animate(shakeRef.current, SHAKE, { duration: 0.3 })
+    }
+  }, [prompt.at, reduceMotion])
 
   return (
     <div className="relative flex min-w-0 flex-1 items-center self-stretch">
-      {prompt.at > 0 && (
-        <motion.span
-          key={prompt.at}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: 0.9 }}
-          className="bg-info/20 pointer-events-none absolute -inset-x-4 -inset-y-1"
-        />
-      )}
-      <motion.div
-        key={prompt.at}
-        animate={prompt.at > 0 && !reduceMotion ? SHAKE : undefined}
-        transition={{ duration: 0.3 }}
+      <span
+        ref={flashRef}
+        className="bg-info/20 pointer-events-none absolute -inset-x-4 -inset-y-1 opacity-0"
+      />
+      <div
+        ref={shakeRef}
         className="relative flex min-w-0 flex-1 items-center gap-2"
       >
         {typeConfig.info.icon}
@@ -159,7 +173,7 @@ const GuestBannerContent = ({
             data-icon="inline-end"
           />
         </Button>
-      </motion.div>
+      </div>
     </div>
   )
 }
