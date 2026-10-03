@@ -36,6 +36,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -46,6 +47,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
 import { permix } from '~/core/user/permissions'
 import { formatSql } from '~/lib/formatter'
@@ -107,13 +109,29 @@ const ToolbarButton = ({
 )
 
 const SavedQueriesButton = () => {
+  const { connectionResource } = useRouteContext()
+  const { queriesCollection } = useCollections()
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery({
+    query: (q) =>
+      q
+        .from({ queries: queriesCollection })
+        .where(({ queries }) =>
+          eq(queries.connectionResourceId, connectionResource.id)
+        )
+        .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+        .findOne(),
+  })
   const [open, setOpen] = useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <ToolbarButton label="Saved queries" render={<PopoverTrigger />}>
+      <PopoverTrigger render={<Button variant="ghost-muted" size="sm" />}>
         <HugeiconsIcon icon={Bookmark02Icon} strokeWidth={2} />
-      </ToolbarButton>
+        Saved
+        {queriesCount > 0 && (
+          <span className="text-muted-foreground/70">{queriesCount}</span>
+        )}
+      </PopoverTrigger>
       <PopoverContent align="end" padding="none" className="w-80">
         <SavedQueries onPicked={() => setOpen(false)} />
       </PopoverContent>

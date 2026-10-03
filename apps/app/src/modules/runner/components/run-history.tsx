@@ -16,11 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { formatDistanceToNowStrict } from 'date-fns'
@@ -51,24 +46,10 @@ export const RunHistoryButton = () => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <PopoverTrigger
-              render={
-                <Button
-                  variant="ghost-muted"
-                  size="icon-sm"
-                  aria-label="History"
-                />
-              }
-            />
-          }
-        >
-          <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
-        </TooltipTrigger>
-        <TooltipContent>History</TooltipContent>
-      </Tooltip>
+      <PopoverTrigger render={<Button variant="ghost-muted" size="sm" />}>
+        <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
+        History
+      </PopoverTrigger>
       <PopoverContent align="end" padding="none" className="w-96">
         <PopoverCommand searchPlaceholder="Search history">
           <CommandList>

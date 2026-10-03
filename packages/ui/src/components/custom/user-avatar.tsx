@@ -21,7 +21,7 @@ export const UserAvatar = ({
 }) => (
   <Avatar
     className={cn(
-      `size-6 shrink-0 overflow-hidden rounded-lg after:rounded-lg has-data-[slot=avatar-fallback]:after:hidden`,
+      `size-6 shrink-0 overflow-hidden rounded-lg after:rounded-lg`,
       className
     )}
   >
