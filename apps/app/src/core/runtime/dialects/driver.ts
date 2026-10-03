@@ -80,6 +80,7 @@ export const createDialectProvider = (
     const config = fetchingConfig(
       connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
       {
+        hasLocalConnectionString: !!connectionString,
         isLocalhost:
           connectionString?.isLocalhost ??
           isLocalhostConnectionString(options.connectionString),
