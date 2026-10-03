@@ -143,6 +143,7 @@ export const PredicatePolicyInspector = ({
               id="policy-enabled"
               size="sm"
               disabled={state.isPending || !canEdit}
+              data-guest-locked={canEdit ? undefined : 'edit'}
               checked={item.enabled}
               onCheckedChange={(enabled) => state.mutate({ enabled })}
             />

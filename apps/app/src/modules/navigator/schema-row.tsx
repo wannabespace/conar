@@ -1,3 +1,4 @@
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import {
   ArrowRight01Icon,
   Copy01Icon,
@@ -119,6 +120,7 @@ export const SchemaRow = ({
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
+              render={<ButtonPrimitive focusableWhenDisabled />}
               disabled={locked}
               data-guest-locked={locked ? 'edit' : undefined}
               className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"

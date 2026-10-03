@@ -31,7 +31,7 @@ import {
   useTableSessionStore,
 } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
-import { permix, usePermissions } from '~/core/user/permissions'
+import { usePermissions } from '~/core/user/permissions'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import {
@@ -52,6 +52,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const EmptyCell = () => <div />
 
 const BodyCellRenderer = ({
+  canEdit,
   column,
   connectionType,
   primaryColumns,
@@ -61,6 +62,7 @@ const BodyCellRenderer = ({
   ...props
 }: TableCellProps &
   ColumnHandlers & {
+    canEdit: boolean
     column: Column
     connectionType: ConnectionType
     primaryColumns: string[]
@@ -98,9 +100,7 @@ const BodyCellRenderer = ({
   return (
     <TableCell
       column={column}
-      onQueueValue={
-        primaryKeys && permix.check('database.edit') ? queueValue : undefined
-      }
+      onQueueValue={primaryKeys && canEdit ? queueValue : undefined}
       connectionType={connectionType}
       draft={draft}
       onAddFilter={onAddFilter}
@@ -212,6 +212,7 @@ const TableComponent = ({
         // oxlint-disable-next-line react/no-unstable-nested-components
         cell: (props) => (
           <BodyCellRenderer
+            canEdit={canEdit}
             column={column}
             connectionType={connection.type}
             primaryColumns={primaryColumns}

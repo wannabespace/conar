@@ -157,6 +157,7 @@ export const TriggerInspector = ({
               id="trigger-enabled"
               size="sm"
               disabled={toggle.isPending || !canEdit}
+              data-guest-locked={canEdit ? undefined : 'edit'}
               checked={item.enabled !== false}
               onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
             />

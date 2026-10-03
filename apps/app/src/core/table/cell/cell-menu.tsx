@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
+import { usePermissions } from '~/core/user/permissions'
 
 import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
@@ -42,6 +43,7 @@ export const TableCellContextMenu = ({
 }) => {
   const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } =
     useCellContext()
+  const canEdit = usePermissions().check('database.edit')
   const row = useTableContext(({ rows }) => rows[rowIndex] ?? {})
   const tableColumns = useTableContext(({ columns }) => columns)
   const columnKeys = tableColumns
@@ -79,6 +81,7 @@ export const TableCellContextMenu = ({
 
     if (onRename) {
       columnItems.push({
+        disabled: !canEdit,
         icon: PencilEdit02Icon,
         label: 'Rename',
         onSelect: onRename,

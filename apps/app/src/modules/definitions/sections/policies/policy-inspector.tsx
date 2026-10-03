@@ -135,6 +135,7 @@ export const PolicyInspector = ({
               id="policy-row-level-security"
               size="sm"
               disabled={rowLevelSecurity.isPending || !canEdit}
+              data-guest-locked={canEdit ? undefined : 'edit'}
               checked={item.enabled}
               onCheckedChange={(enabled) =>
                 rowLevelSecurity.mutate({ enabled })

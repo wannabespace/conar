@@ -89,7 +89,8 @@ export const handleError = async (
   if (
     error instanceof ORPCError &&
     error.code === 'FORBIDDEN' &&
-    isAnonymous()
+    isAnonymous() &&
+    !isAuthLocation()
   ) {
     promptSignIn(noGuestFeatureByMessage[message] ?? 'server')
     return
