@@ -1,5 +1,4 @@
 import { db } from '@tamery/db'
-import { decrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
@@ -82,11 +81,9 @@ export const proxy = {
         }
 
         const url = new SafeURL(
-          decrypt({
+          await context.decryptConnectionString({
             encryptedText: connection.connection.connectionString,
-            secret: await context.getWorkspaceSecret(
-              connection.connection.workspaceId
-            ),
+            workspaceId: connection.connection.workspaceId,
           })
         )
         url.pathname = connection.name || ''
@@ -119,9 +116,9 @@ export const proxy = {
           throw errors.FORBIDDEN()
         }
 
-        return decrypt({
+        return context.decryptConnectionString({
           encryptedText: connection.connectionString,
-          secret: await context.getWorkspaceSecret(connection.workspaceId),
+          workspaceId: connection.workspaceId,
         })
       }
 

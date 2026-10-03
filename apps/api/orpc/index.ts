@@ -3,6 +3,7 @@ import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
+import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
 import { permissionsOf } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
@@ -42,6 +43,14 @@ export const getWorkspaceSecret = memoize(
   },
   { maxAge: 5 * 60 * 1000 }
 )
+
+const decryptConnectionString = async ({
+  encryptedText,
+  workspaceId,
+}: {
+  encryptedText: string
+  workspaceId: string
+}) => decrypt({ encryptedText, secret: await getWorkspaceSecret(workspaceId) })
 
 const getSession = (headers: Headers) => auth.api.getSession({ headers })
 
@@ -91,6 +100,7 @@ export const authMiddleware = logMiddleware.use(
     return next({
       context: {
         ...session,
+        decryptConnectionString,
         getWorkspaceSecret,
       },
     })
@@ -164,6 +174,7 @@ export const permissionsMiddleware = logMiddleware.use(
     return next({
       context: {
         ...session,
+        decryptConnectionString,
         getWorkspaceSecret,
         ...permix.setupContext(
           permissionsOf({ subscription, user: session.user })

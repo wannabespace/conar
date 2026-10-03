@@ -1,5 +1,4 @@
 import { db } from '@tamery/db'
-import { decrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 
 import { authMiddleware, orpc } from '~/orpc'
@@ -32,9 +31,9 @@ export const resolve = orpc
       return { status: 'unchanged' as const }
     }
 
-    const connectionString = decrypt({
+    const connectionString = await context.decryptConnectionString({
       encryptedText: connection.connectionString,
-      secret: await context.getWorkspaceSecret(connection.workspaceId),
+      workspaceId: connection.workspaceId,
     })
 
     return {
