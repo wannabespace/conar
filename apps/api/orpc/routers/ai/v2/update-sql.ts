@@ -9,7 +9,7 @@ import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 export const updateSQL = orpc
   .use(permissionsMiddleware)
-  .use(permix.checkMiddleware('ai.sql'))
+  .use(permix.checkMiddleware('ai.sql.use'))
   .input(
     type({
       context: `string <= ${AI_SQL_LIMITS.context}`,

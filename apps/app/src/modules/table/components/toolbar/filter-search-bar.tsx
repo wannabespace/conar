@@ -495,7 +495,7 @@ export const FilterSearchBar = ({
   table: string
   schema: string
 }) => {
-  const aiLocked = !usePermissions().check('filter.ai')
+  const aiLocked = !usePermissions().check('ai.filter.use')
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })

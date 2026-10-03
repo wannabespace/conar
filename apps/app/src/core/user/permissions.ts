@@ -1,5 +1,5 @@
-import type { Permissions, Plan } from '@tamery/shared/permissions'
-import { permissionsOf, planOf } from '@tamery/shared/permissions'
+import type { Permissions } from '@tamery/shared/permissions'
+import { permissionsOf } from '@tamery/shared/permissions'
 import { type } from 'arktype'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
@@ -10,24 +10,31 @@ import { authClient } from '~/lib/auth'
 
 import { useSubscription } from './use-subscription'
 
-// The last known plan, so the first render (and the first row queries) already use it; Pro before any is known so nothing flickers disabled.
-const planValue = createWebStorageValue({
-  defaultValue: 'pro',
-  key: 'tamery.plan',
-  schema: type("'free' | 'guest' | 'pro'"),
+const accessSchema = type({
+  hasSubscription: 'boolean',
+  isAnonymous: 'boolean',
+})
+
+// The last known access, so the first render (and the first row queries) already use it; Pro before any is known so nothing flickers disabled.
+const accessValue = createWebStorageValue({
+  defaultValue: { hasSubscription: true, isAnonymous: false },
+  key: 'tamery.access',
+  schema: accessSchema,
   type: 'localStorage',
 })
 
-export const permix = createPermix<Permissions>(permissionsOf(planValue.get()))
+export const permix = createPermix<Permissions>(
+  permissionsOf(accessValue.get())
+)
 
-export const setPlan = (plan: Plan) => {
-  planValue.set(plan)
-  permix.setup(permissionsOf(plan))
+export const setAccess = (access: typeof accessSchema.infer) => {
+  accessValue.set(access)
+  permix.setup(permissionsOf(access))
 }
 
-export const resetPlan = () => {
-  planValue.clear()
-  permix.setup(permissionsOf(planValue.get()))
+export const resetAccess = () => {
+  accessValue.clear()
+  permix.setup(permissionsOf(accessValue.get()))
 }
 
 export const usePermissions = () => usePermix(permix)
@@ -35,14 +42,13 @@ export const usePermissions = () => usePermix(permix)
 export const usePermissionsSync = () => {
   const user = authClient.useSession().data?.user
   const { isPending, subscription } = useSubscription()
-  const plan =
-    user && (user.isAnonymous || !isPending)
-      ? planOf(user, !!subscription)
-      : null
+  const isAnonymous = !!user?.isAnonymous
+  const hasSubscription = !!subscription
+  const known = !!user && (isAnonymous || !isPending)
 
   useEffect(() => {
-    if (plan) {
-      setPlan(plan)
+    if (known) {
+      setAccess({ hasSubscription, isAnonymous })
     }
-  }, [plan])
+  }, [known, hasSubscription, isAnonymous])
 }

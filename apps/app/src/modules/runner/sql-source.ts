@@ -105,7 +105,8 @@ export const sqlSourceFor = (
         { ...input, type: connectionType },
         { context: { silent: true }, signal }
       ),
-    ghostTextEnabled: () => appStore.get().isOnline && permix.check('ai.sql'),
+    ghostTextEnabled: () =>
+      appStore.get().isOnline && permix.check('ai.sql.use'),
     load: (refs) =>
       [tablesOptions, enumsOptions].every(
         (options) => queryClient.getQueryData(options.queryKey) !== undefined

@@ -1,12 +1,13 @@
 import { db } from '@tamery/db'
 import { chats, chatsInsertSchema } from '@tamery/db/schema'
 
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 import { publisher } from './events'
 
 export const create = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .input(chatsInsertSchema.omit('userId', 'title'))
   .errors({
     NOT_FOUND: { message: 'Chat not found' },

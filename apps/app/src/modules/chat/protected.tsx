@@ -14,7 +14,7 @@ export default {
             action: () =>
               toggleChat(
                 current.connectionResource.id,
-                permix.check('ai.chat')
+                permix.check('ai.chat.use')
               ),
             disabled: isAnonymous(),
             group: 'View',

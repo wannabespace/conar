@@ -215,7 +215,7 @@ export const Runner = () => {
 
   const actions: RunnerActions = {
     askAi: () => {
-      if (!permix.check('ai.sql')) {
+      if (!permix.check('ai.sql.use')) {
         requestAccess('ai')
         return
       }
@@ -235,7 +235,7 @@ export const Runner = () => {
         )
       ),
     fixWithAi: ({ end, error, source, start }) => {
-      if (!permix.check('ai.sql')) {
+      if (!permix.check('ai.sql.use')) {
         requestAccess('ai')
         return
       }

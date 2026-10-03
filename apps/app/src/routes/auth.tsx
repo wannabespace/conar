@@ -12,7 +12,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
-import { resetPlan, setPlan } from '~/core/user/permissions'
+import { resetAccess, setAccess } from '~/core/user/permissions'
 import {
   authClient,
   bearerToken,
@@ -107,7 +107,7 @@ const AuthPage = () => {
         bearerToken.set(exchangeData.token)
 
         if (session?.user.isAnonymous) {
-          resetPlan()
+          resetAccess()
           await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
           location.reload()
           return
@@ -125,7 +125,7 @@ const AuthPage = () => {
       authClient.signIn.anonymous({ fetchOptions: { throw: true } }),
     onSuccess: async ({ token }) => {
       bearerToken.set(token)
-      setPlan('guest')
+      setAccess({ hasSubscription: false, isAnonymous: true })
       await refetch()
       router.navigate({ to: '/' })
     },

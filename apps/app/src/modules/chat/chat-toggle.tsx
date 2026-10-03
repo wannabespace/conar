@@ -25,7 +25,7 @@ export const toggleChat = (resourceId: string, canUseChat: boolean) => {
 }
 
 export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
-  const canUseChat = usePermissions().check('ai.chat')
+  const canUseChat = usePermissions().check('ai.chat.use')
   const isGuest = useIsAnonymous()
   const toggle = () => toggleChat(resourceId, canUseChat)
 

@@ -4,7 +4,7 @@ import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
-import { permissionsOf, planOf } from '@tamery/shared/permissions'
+import { permissionsOf } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 import { createPermix } from 'permix/orpc'
@@ -150,15 +150,14 @@ export const permissionsMiddleware = logMiddleware.use(
         ...session,
         getWorkspaceSecret,
         ...permix.setupContext(
-          permissionsOf(planOf(session.user, !!subscription))
+          permissionsOf({
+            hasSubscription: !!subscription,
+            isAnonymous: !!session.user.isAnonymous,
+          })
         ),
       },
     })
   })
-)
-
-export const subscriptionMiddleware = permissionsMiddleware.use(
-  permix.checkMiddleware('ai.chat')
 )
 
 export const cacheMiddleware = (ttl: number = 60 * 60 * 24) =>

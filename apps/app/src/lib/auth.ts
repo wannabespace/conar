@@ -76,13 +76,14 @@ export const fullSignOut = async () => {
     history.push('/auth')
   }
 
-  const [{ cleanCollections }, { clearDb }, { resetPlan }] = await Promise.all([
-    import('~/core/collections'),
-    import('./sync'),
-    import('~/core/user/permissions'),
-  ])
+  const [{ cleanCollections }, { clearDb }, { resetAccess }] =
+    await Promise.all([
+      import('~/core/collections'),
+      import('./sync'),
+      import('~/core/user/permissions'),
+    ])
 
   cleanCollections()
-  resetPlan()
+  resetAccess()
   await Promise.all([clearDb(), encryptionKey.reset()])
 }

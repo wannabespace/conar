@@ -50,8 +50,8 @@ export const filters = orpc
     })
 
     let usage = 0
-    const unlimited = context.permissions.check('filter.unlimited')
-    const allowed = context.permissions.check('filter.ai')
+    const unlimited = context.permissions.check('ai.filter.unlimited')
+    const allowed = context.permissions.check('ai.filter.use')
 
     if (!unlimited) {
       usage = allowed
