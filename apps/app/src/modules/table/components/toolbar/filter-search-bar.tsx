@@ -38,7 +38,7 @@ import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import { appStore, requestUpgrade } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -370,10 +370,9 @@ const FilterCommandList = ({
         {trimmedQuery.length > 0 && (
           <CommandItem
             value={`ai:${trimmedQuery.toLowerCase()}`}
-            disabled={
-              aiLocked || !isOnline || isPending || freeAiUsage?.remaining === 0
-            }
-            onSelect={askAi}
+            disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
+            className={aiLocked ? 'opacity-50' : undefined}
+            onSelect={aiLocked ? () => requestUpgrade('ai') : askAi}
           >
             <HugeiconsIcon
               icon={SparklesIcon}

@@ -1,21 +1,24 @@
+import {
+  GUEST_CONNECTIONS_MESSAGE,
+  GUEST_SYNC_MESSAGE,
+} from '@tamery/shared/constants'
 import { createStore } from 'seitu'
 
 import { isAnonymous } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
 
-export const GUEST_LOCKED_FEATURES = {
-  ai: 'ai',
-  connections: 'connections',
-  server: 'server',
-  subscription: 'subscription',
-  sync: 'sync',
-} as const
+const GUEST_HINTS = {
+  ai: 'AI features need an account.',
+  connections: GUEST_CONNECTIONS_MESSAGE,
+  subscription: 'That needs an account.',
+  sync: GUEST_SYNC_MESSAGE,
+}
 
-export type GuestLockedFeature = keyof typeof GUEST_LOCKED_FEATURES
+export type GuestFeature = keyof typeof GUEST_HINTS
 
-const noSignInPrompt: { at: number; feature: GuestLockedFeature | null } = {
+const noSignInPrompt: { at: number; hint: string | null } = {
   at: 0,
-  feature: null,
+  hint: null,
 }
 
 export const appStore = createStore({
@@ -34,18 +37,16 @@ const updateOnline = () => {
 window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
 
-export const isGuestLockedFeature = (
-  value: unknown
-): value is GuestLockedFeature =>
-  typeof value === 'string' && Object.hasOwn(GUEST_LOCKED_FEATURES, value)
-
-export const promptSignIn = (feature: GuestLockedFeature) => {
+export const promptSignIn = (
+  feature: GuestFeature | 'server',
+  hint: string
+) => {
   void posthog.capture('guest_feature_blocked', { feature })
   appStore.set(
     (state) =>
       ({
         ...state,
-        signInPrompt: { at: Date.now(), feature },
+        signInPrompt: { at: Date.now(), hint },
       }) satisfies typeof state
   )
 }
@@ -57,9 +58,10 @@ export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
   )
 }
 
-// Guests can't subscribe: their locked controls are disabled and report through the guest banner instead.
-export const requestUpgrade = () => {
-  if (!isAnonymous()) {
+export const requestUpgrade = (feature: GuestFeature) => {
+  if (isAnonymous()) {
+    promptSignIn(feature, GUEST_HINTS[feature])
+  } else {
     setIsSubscriptionDialogOpen(true)
   }
 }

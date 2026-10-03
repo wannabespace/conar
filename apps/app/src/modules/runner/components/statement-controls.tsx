@@ -29,7 +29,6 @@ import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { useIsAnonymous } from '~/lib/auth'
-import { GUEST_LOCKED_FEATURES } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
@@ -43,8 +42,7 @@ const { useRouteContext } = getRouteApi(
 
 const statementMenuItems = (
   actions: RunnerActions,
-  canExplain: boolean,
-  isAnonymous: boolean
+  canExplain: boolean
 ): AppMenuNode[] => [
   ...(canExplain
     ? [
@@ -57,7 +55,6 @@ const statementMenuItems = (
     : []),
   {
     accelerator: 'CmdOrCtrl+K',
-    disabled: isAnonymous,
     icon: SparklesIcon,
     label: 'Edit with AI',
     onSelect: () => actions.askAi(),
@@ -197,11 +194,7 @@ export const StatementControls = ({
                     size="icon-2xs"
                     variant="outline"
                     aria-label="Fix with AI"
-                    disabled={isAnonymous}
-                    focusableWhenDisabled
-                    data-guest-locked={
-                      isAnonymous ? GUEST_LOCKED_FEATURES.ai : undefined
-                    }
+                    className={isAnonymous ? 'opacity-50' : undefined}
                     onClick={() => actions.fixWithAi(failed)}
                   />
                 }
@@ -252,8 +245,7 @@ export const StatementControls = ({
               items={() =>
                 statementMenuItems(
                   actions,
-                  capabilitiesOf(connection.type).explain,
-                  isAnonymous
+                  capabilitiesOf(connection.type).explain
                 )
               }
             />

@@ -20,7 +20,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { useIsAnonymous } from '~/lib/auth'
-import { GUEST_LOCKED_FEATURES, requestUpgrade } from '~/store'
+import { requestUpgrade } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -63,7 +63,7 @@ export const WorkspaceSwitcher = () => {
     if (canCreate) {
       setCreateOpen(true)
     } else {
-      requestUpgrade()
+      requestUpgrade('subscription')
     }
   }
 
@@ -121,10 +121,7 @@ export const WorkspaceSwitcher = () => {
           ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            disabled={isAnonymous}
-            data-guest-locked={
-              isAnonymous ? GUEST_LOCKED_FEATURES.subscription : undefined
-            }
+            className={isAnonymous ? 'opacity-50' : undefined}
             onClick={handleCreate}
           >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />

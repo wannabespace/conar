@@ -28,7 +28,7 @@ import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
 import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
-import { GUEST_LOCKED_FEATURES } from '~/store'
+import { requestUpgrade } from '~/store'
 
 const SYNC_OPTIONS = [
   {
@@ -221,14 +221,14 @@ export const StepSave = ({
                   key={option.value}
                   variant={syncType === option.value ? 'default' : 'outline'}
                   size="xs"
-                  disabled={isSyncDisabled(option.value)}
-                  focusableWhenDisabled
-                  data-guest-locked={
-                    isSyncDisabled(option.value)
-                      ? GUEST_LOCKED_FEATURES.sync
-                      : undefined
+                  className={
+                    isSyncDisabled(option.value) ? 'opacity-50' : undefined
                   }
-                  onClick={() => setSyncType(option.value)}
+                  onClick={() =>
+                    isSyncDisabled(option.value)
+                      ? requestUpgrade('sync')
+                      : setSyncType(option.value)
+                  }
                 >
                   {option.label}
                 </Button>

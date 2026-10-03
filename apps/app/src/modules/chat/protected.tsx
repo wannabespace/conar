@@ -1,7 +1,6 @@
 import { AiChat01Icon } from '@hugeicons/core-free-icons'
 
 import { permix } from '~/core/user/permissions'
-import { isAnonymous } from '~/lib/auth'
 import type { ProtectedModule } from '~/lib/module'
 
 import { toggleChat } from './chat-toggle'
@@ -16,7 +15,6 @@ export default {
                 current.connectionResource.id,
                 permix.check('ai.chat.use')
               ),
-            disabled: isAnonymous(),
             group: 'View',
             icon: AiChat01Icon,
             keywords: ['assistant', 'ai', 'panel'],

@@ -36,7 +36,6 @@ import { ExportData } from '~/components/export-data'
 import { PaneEmpty } from '~/components/pane-empty'
 import type { ResultSet } from '~/core/queries/connection/custom'
 import { useIsAnonymous } from '~/lib/auth'
-import { GUEST_LOCKED_FEATURES } from '~/store'
 
 import { useRunnerActions } from '../lib/actions'
 import type { RunnerResult } from '../lib/run'
@@ -81,9 +80,7 @@ const ResultError = ({
       <Button
         size="sm"
         variant="outline"
-        disabled={isAnonymous}
-        focusableWhenDisabled
-        data-guest-locked={isAnonymous ? GUEST_LOCKED_FEATURES.ai : undefined}
+        className={isAnonymous ? 'opacity-50' : undefined}
         onClick={() => fixWithAi(result)}
       >
         <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />

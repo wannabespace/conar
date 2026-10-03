@@ -11,13 +11,13 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 
 import { usePermissions } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
-import { GUEST_LOCKED_FEATURES, requestUpgrade } from '~/store'
+import { requestUpgrade } from '~/store'
 
 import { chatOpen } from './stores'
 
 export const toggleChat = (resourceId: string, canUseChat: boolean) => {
   if (!canUseChat) {
-    requestUpgrade()
+    requestUpgrade('ai')
     return
   }
 
@@ -25,7 +25,7 @@ export const toggleChat = (resourceId: string, canUseChat: boolean) => {
 }
 
 export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
-  const canUseChat = usePermissions().check('ai.chat.use')
+  const canUseChat = usePermissions().check('ai.sql.use')
   const isGuest = useIsAnonymous()
   const toggle = () => toggleChat(resourceId, canUseChat)
 
@@ -42,9 +42,7 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             variant="ghost-muted"
             size="icon-xs"
             aria-label="AI chat"
-            disabled={isGuest}
-            focusableWhenDisabled
-            data-guest-locked={isGuest ? GUEST_LOCKED_FEATURES.ai : undefined}
+            className={isGuest ? 'opacity-50' : undefined}
             onClick={toggle}
           />
         }

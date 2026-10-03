@@ -78,7 +78,7 @@ export const handleError = async (
     isAnonymous() &&
     !isAuthLocation()
   ) {
-    promptSignIn('server')
+    promptSignIn('server', error.message)
     return
   }
 

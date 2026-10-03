@@ -7,10 +7,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
-import {
-  GUEST_CONNECTIONS_MESSAGE,
-  GUEST_SYNC_MESSAGE,
-} from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
@@ -44,8 +40,7 @@ import {
 import { slowQueries } from '~/core/runtime/slow-queries'
 import { useIsAnonymous } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import type { GuestLockedFeature } from '~/store'
-import { appStore, isGuestLockedFeature, promptSignIn } from '~/store'
+import { appStore } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
@@ -96,14 +91,6 @@ const INITIAL_DELAY = 1000
 
 const GUEST_TEXT = 'Many features are disabled until you sign in.'
 
-const GUEST_HINTS: Record<GuestLockedFeature, string> = {
-  ai: 'AI features need an account.',
-  connections: GUEST_CONNECTIONS_MESSAGE,
-  server: 'That needs an account.',
-  subscription: 'That needs an account.',
-  sync: GUEST_SYNC_MESSAGE,
-}
-
 const bannerDismissedValue = createWebStorageValue({
   defaultValue: [],
   key: 'banner-dismissed',
@@ -135,28 +122,10 @@ const SHAKE = { x: [0, -4, 4, -2, 2, 0] }
 const GuestBannerContent = ({
   prompt,
 }: {
-  prompt: { at: number; feature: GuestLockedFeature | null }
+  prompt: { at: number; hint: string | null }
 }) => {
   const [scope, animate] = useAnimate()
   const reduceMotion = useReducedMotion()
-
-  useEffect(() => {
-    const onPointerDown = (event: PointerEvent) => {
-      const feature =
-        event.target instanceof Element &&
-        event.target.closest<HTMLElement>('[data-guest-locked]')?.dataset
-          .guestLocked
-
-      if (isGuestLockedFeature(feature)) {
-        promptSignIn(feature)
-      }
-    }
-
-    // Capture phase: a guest-locked control is disabled, so its own handlers never fire.
-    document.addEventListener('pointerdown', onPointerDown, true)
-    return () =>
-      document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [])
 
   useEffect(() => {
     if (!prompt.at) {
@@ -186,7 +155,7 @@ const GuestBannerContent = ({
         {typeConfig.info.icon}
         <span className="min-w-0 flex-1 truncate leading-none">
           <span className="font-medium">{GUEST_TEXT}</span>
-          {prompt.feature && (
+          {prompt.hint && (
             <motion.span
               key={prompt.at}
               initial={{ opacity: 0 }}
@@ -194,7 +163,7 @@ const GuestBannerContent = ({
               transition={{ duration: 0.2 }}
               className="ml-3"
             >
-              {GUEST_HINTS[prompt.feature]}
+              {prompt.hint}
             </motion.span>
           )}
         </span>

@@ -234,7 +234,7 @@ export const Runner = () => {
   const actions: RunnerActions = {
     askAi: () => {
       if (!permix.check('ai.sql.use')) {
-        requestUpgrade()
+        requestUpgrade('ai')
         return
       }
       const { range } = current()
@@ -254,7 +254,7 @@ export const Runner = () => {
       ),
     fixWithAi: ({ end, error, source, start }) => {
       if (!permix.check('ai.sql.use')) {
-        requestUpgrade()
+        requestUpgrade('ai')
         return
       }
       const model = editorRef.current?.getModel()
