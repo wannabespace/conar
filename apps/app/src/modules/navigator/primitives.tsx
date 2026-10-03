@@ -79,7 +79,7 @@ export const SidebarMenuAction = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-foreground/10 hover:text-accent-foreground focus-visible:focus-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden data-disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-foreground/10 hover:text-accent-foreground focus-visible:focus-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden data-disabled:*:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0`,
           showOnHover &&
             `peer-data-active/menu-button:text-accent-foreground opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100`,
           className
