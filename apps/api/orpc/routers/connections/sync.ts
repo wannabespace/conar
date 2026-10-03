@@ -1,5 +1,6 @@
 import { db } from '@tamery/db'
 import { connections, connectionsSelectSchema } from '@tamery/db/schema'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
@@ -62,15 +63,29 @@ export const sync = orpc
             ),
       },
     })
-    const decryptItem = async (item: (typeof updatedItems)[number]) => ({
-      ...item,
-      connectionString:
-        item.connectionString &&
-        (await context.decryptConnectionString({
-          encryptedText: item.connectionString,
-          workspaceId: item.workspaceId,
-        })),
-    })
+    // An undecryptable string comes back as missing, so the app asks for it instead of failing the whole sync.
+    const decryptItem = async (item: (typeof updatedItems)[number]) => {
+      if (!item.connectionString) {
+        return item
+      }
+
+      try {
+        return {
+          ...item,
+          connectionString: await context.decryptConnectionString({
+            encryptedText: item.connectionString,
+            workspaceId: item.workspaceId,
+          }),
+        }
+      } catch (error) {
+        console.error(`Failed to decrypt connection ${item.id}`, error)
+        return {
+          ...item,
+          connectionString: null,
+          syncType: SyncType.CloudWithoutConnectionString,
+        }
+      }
+    }
     const [updatedValues, newValues] = await Promise.all([
       Promise.all(updatedItems.map(decryptItem)),
       Promise.all(newItems.map(decryptItem)),
