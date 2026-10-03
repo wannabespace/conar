@@ -21,14 +21,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
-import {
-  AnimatePresence,
-  motion,
-  useAnimate,
-  useReducedMotion,
-} from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -124,32 +118,23 @@ const GuestBannerContent = ({
 }: {
   prompt: { at: number; hint: string | null }
 }) => {
-  const [scope, animate] = useAnimate()
   const reduceMotion = useReducedMotion()
 
-  useEffect(() => {
-    if (!prompt.at) {
-      return
-    }
-
-    animate('[data-flash]', { opacity: [1, 0] }, { duration: 0.9 })
-
-    if (!reduceMotion) {
-      animate('[data-shake]', SHAKE, { duration: 0.3 })
-    }
-  }, [animate, reduceMotion, prompt.at])
-
   return (
-    <div
-      ref={scope}
-      className="relative flex min-w-0 flex-1 items-center self-stretch"
-    >
-      <span
-        data-flash
-        className="bg-info/20 pointer-events-none absolute -inset-x-4 -inset-y-1 opacity-0"
-      />
-      <div
-        data-shake
+    <div className="relative flex min-w-0 flex-1 items-center self-stretch">
+      {prompt.at > 0 && (
+        <motion.span
+          key={prompt.at}
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 0.9 }}
+          className="bg-info/20 pointer-events-none absolute -inset-x-4 -inset-y-1"
+        />
+      )}
+      <motion.div
+        key={prompt.at}
+        animate={prompt.at > 0 && !reduceMotion ? SHAKE : undefined}
+        transition={{ duration: 0.3 }}
         className="relative flex min-w-0 flex-1 items-center gap-2"
       >
         {typeConfig.info.icon}
@@ -157,7 +142,6 @@ const GuestBannerContent = ({
           <span className="font-medium">{GUEST_TEXT}</span>
           {prompt.hint && (
             <motion.span
-              key={prompt.at}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
@@ -175,7 +159,7 @@ const GuestBannerContent = ({
             data-icon="inline-end"
           />
         </Button>
-      </div>
+      </motion.div>
     </div>
   )
 }
