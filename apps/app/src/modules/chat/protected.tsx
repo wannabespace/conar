@@ -1,6 +1,5 @@
 import { AiChat01Icon } from '@hugeicons/core-free-icons'
 
-import { permix } from '~/core/user/permissions'
 import type { ProtectedModule } from '~/lib/module'
 
 import { toggleChat } from './chat-toggle'
@@ -10,11 +9,7 @@ export default {
     current
       ? [
           {
-            action: () =>
-              toggleChat(
-                current.connectionResource.id,
-                permix.check('ai.chat.use')
-              ),
+            action: () => toggleChat(current.connectionResource.id),
             group: 'View',
             icon: AiChat01Icon,
             keywords: ['assistant', 'ai', 'panel'],

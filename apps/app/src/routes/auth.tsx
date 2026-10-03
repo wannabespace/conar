@@ -12,6 +12,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
+import { resetGuestState } from '~/core/user/permissions'
 import {
   authClient,
   bearerToken,
@@ -103,15 +104,14 @@ const AuthPage = () => {
   const { mutate: exchange } = useMutation(
     orpc.account.challenge.exchange.mutationOptions({
       onSuccess: async (exchangeData) => {
+        const wasGuest = !!session?.user.isAnonymous
         bearerToken.set(exchangeData.token)
+        await refetch()
 
-        if (session?.user.isAnonymous) {
-          await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
-          location.reload()
-          return
+        if (wasGuest) {
+          await resetGuestState()
         }
 
-        await refetch()
         router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         successAuthToast(!!exchangeData.newUser)
       },

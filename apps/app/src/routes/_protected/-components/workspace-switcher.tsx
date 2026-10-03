@@ -15,12 +15,11 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { usePermissions } from '~/core/user/permissions'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { useIsAnonymous } from '~/lib/auth'
-import { requestUpgrade } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -44,7 +43,6 @@ export const WorkspaceSwitcher = () => {
   const isAnonymous = useIsAnonymous()
   const [createOpen, setCreateOpen] = useState(false)
   const { data: activeWorkspace, workspaces } = useActiveWorkspace()
-  const canCreate = usePermissions().check('workspace.create')
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -60,10 +58,8 @@ export const WorkspaceSwitcher = () => {
   const handleCreate = () => {
     setOpen(false)
 
-    if (canCreate) {
+    if (checkOrUpgrade('workspace.create')) {
       setCreateOpen(true)
-    } else {
-      requestUpgrade('subscription')
     }
   }
 

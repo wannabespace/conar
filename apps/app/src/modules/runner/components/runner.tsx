@@ -49,9 +49,8 @@ import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
-import { permix } from '~/core/user/permissions'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { formatSql } from '~/lib/formatter'
-import { requestUpgrade } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { RunnerActionsContext } from '../lib/actions'
@@ -233,8 +232,7 @@ export const Runner = () => {
 
   const actions: RunnerActions = {
     askAi: () => {
-      if (!permix.check('ai.sql.use')) {
-        requestUpgrade('ai')
+      if (!checkOrUpgrade('ai.sql.use')) {
         return
       }
       const { range } = current()
@@ -253,8 +251,7 @@ export const Runner = () => {
         )
       ),
     fixWithAi: ({ end, error, source, start }) => {
-      if (!permix.check('ai.sql.use')) {
-        requestUpgrade('ai')
+      if (!checkOrUpgrade('ai.sql.use')) {
         return
       }
       const model = editorRef.current?.getModel()

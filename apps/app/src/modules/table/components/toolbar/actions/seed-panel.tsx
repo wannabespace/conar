@@ -55,10 +55,9 @@ import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import { usePermissions } from '~/core/user/permissions'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
-import { requestUpgrade } from '~/store'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { useTablePageStore } from '../../../lib/store'
@@ -599,7 +598,7 @@ export const SeedPanel = ({
                 variant="outline"
                 size="xs"
                 className={isGuest ? 'opacity-50' : undefined}
-                onClick={() => requestUpgrade('subscription')}
+                onClick={() => checkOrUpgrade('seed.unlimited')}
               >
                 Upgrade
               </Button>
@@ -707,7 +706,7 @@ export const SeedPanel = ({
         <Button
           onClick={() => {
             if (hasReachedFreeLimit) {
-              requestUpgrade('subscription')
+              checkOrUpgrade('seed.unlimited')
               return
             }
             seed()

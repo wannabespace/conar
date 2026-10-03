@@ -9,15 +9,13 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useHotkey } from '@tanstack/react-hotkeys'
 
-import { usePermissions } from '~/core/user/permissions'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
-import { requestUpgrade } from '~/store'
 
 import { chatOpen } from './stores'
 
-export const toggleChat = (resourceId: string, canUseChat: boolean) => {
-  if (!canUseChat) {
-    requestUpgrade('ai')
+export const toggleChat = (resourceId: string) => {
+  if (!checkOrUpgrade('ai.chat.use')) {
     return
   }
 
@@ -25,9 +23,8 @@ export const toggleChat = (resourceId: string, canUseChat: boolean) => {
 }
 
 export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
-  const canUseChat = usePermissions().check('ai.sql.use')
   const isGuest = useIsAnonymous()
-  const toggle = () => toggleChat(resourceId, canUseChat)
+  const toggle = () => toggleChat(resourceId)
 
   useHotkey('Mod+L', (e) => {
     e.preventDefault()

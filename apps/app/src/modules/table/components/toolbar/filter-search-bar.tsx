@@ -36,9 +36,9 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
-import { usePermissions } from '~/core/user/permissions'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
-import { appStore, requestUpgrade } from '~/store'
+import { appStore } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -373,7 +373,7 @@ const FilterCommandList = ({
               value={`ai:${trimmedQuery.toLowerCase()}`}
               disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
               className={aiLocked ? 'opacity-50' : undefined}
-              onSelect={aiLocked ? () => requestUpgrade('ai') : askAi}
+              onSelect={() => checkOrUpgrade('ai.filter.use') && askAi()}
             >
               <HugeiconsIcon
                 icon={SparklesIcon}

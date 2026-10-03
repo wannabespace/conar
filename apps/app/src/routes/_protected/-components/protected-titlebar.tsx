@@ -32,10 +32,9 @@ import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
-import { usePermissions } from '~/core/user/permissions'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { protectedModules } from '~/lib/protected-modules'
-import { requestUpgrade } from '~/store'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'
@@ -211,8 +210,8 @@ const ConnectionsDropdown = ({
           render={
             <Link to="/create" activateOn="click" disabled={atGuestLimit} />
           }
-          onClick={
-            atGuestLimit ? () => requestUpgrade('connections') : undefined
+          onClick={() =>
+            checkOrUpgrade('connection.create', { count: groups.length })
           }
         >
           <HugeiconsIcon

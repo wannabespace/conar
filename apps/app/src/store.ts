@@ -1,16 +1,6 @@
-import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { createStore } from 'seitu'
 
-import { isAnonymous } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
-
-const GUEST_HINTS = {
-  ai: 'AI features need an account.',
-  connections: GUEST_CONNECTIONS_MESSAGE,
-  subscription: 'That needs an account.',
-}
-
-export type GuestFeature = keyof typeof GUEST_HINTS
 
 const noSignInPrompt: { at: number; hint: string | null } = {
   at: 0,
@@ -49,12 +39,4 @@ export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
     (state) =>
       ({ ...state, isSubscriptionDialogOpen: isOpen }) satisfies typeof state
   )
-}
-
-export const requestUpgrade = (feature: GuestFeature) => {
-  if (isAnonymous()) {
-    promptSignIn(GUEST_HINTS[feature])
-  } else {
-    setIsSubscriptionDialogOpen(true)
-  }
 }
