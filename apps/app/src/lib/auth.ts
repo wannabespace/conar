@@ -2,6 +2,7 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { anonymousClient, organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
+import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
@@ -11,6 +12,7 @@ import {
   isAuthLocation,
   lastLocationStorageValue,
 } from './last-location'
+import { subscriptionQueryClient } from './query-client'
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -79,11 +81,12 @@ export const getSessionUser = async () => {
   return data?.data?.user
 }
 
-export const isAnonymous = () =>
-  !!authClient.$store.atoms.session?.get().data?.user.isAnonymous
+export const isAnonymous = () => !!sessionCache.get()?.user.isAnonymous
 
 export const useIsAnonymous = () =>
-  !!authClient.useSession().data?.user.isAnonymous
+  useSubscription(sessionCache, {
+    selector: (session) => !!session?.user.isAnonymous,
+  })
 
 export const isSignedIn = async () => !!(await getSessionUser())
 
@@ -97,11 +100,15 @@ export const fullSignOut = async () => {
     history.push('/auth')
   }
 
-  const [{ cleanCollections }, { clearDb }] = await Promise.all([
-    import('~/core/collections'),
-    import('./sync'),
-  ])
+  const [{ cleanCollections }, { clearDb }, { subscriptionsCache }] =
+    await Promise.all([
+      import('~/core/collections'),
+      import('./sync'),
+      import('~/core/user/use-subscription'),
+    ])
 
   cleanCollections()
+  subscriptionsCache.clear()
+  subscriptionQueryClient.clear()
   await Promise.all([clearDb(), encryptionKey.reset()])
 }

@@ -6,10 +6,13 @@ import { usePermix } from 'permix/react'
 import { useEffect } from 'react'
 
 import { authClient, getSessionUser } from '~/lib/auth'
-import { orpc } from '~/lib/orpc'
 import { subscriptionQueryClient } from '~/lib/query-client'
 
-import { isActiveSubscription, useSubscription } from './use-subscription'
+import {
+  isActiveSubscription,
+  subscriptionsQueryOptions,
+  useSubscription,
+} from './use-subscription'
 
 // check() throws until setup() runs, so every route under _protected must stay behind loadPermissions.
 export const permix = createPermix<Permissions>()
@@ -21,9 +24,10 @@ export const loadPermissions = async () => {
   const subscriptions = user?.isAnonymous
     ? null
     : await tryCatchAsync(() =>
-        subscriptionQueryClient.ensureQueryData(
-          orpc.account.subscription.list.queryOptions()
-        )
+        subscriptionQueryClient.query({
+          ...subscriptionsQueryOptions,
+          staleTime: 'static',
+        })
       )
 
   permix.setup(
