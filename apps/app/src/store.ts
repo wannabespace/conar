@@ -33,11 +33,8 @@ const updateOnline = () => {
 window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
 
-export const promptSignIn = (
-  feature: GuestFeature | 'server',
-  hint: string
-) => {
-  void posthog.capture('guest_feature_blocked', { feature })
+export const promptSignIn = (hint: string) => {
+  void posthog.capture('guest_feature_blocked')
   appStore.set(
     (state) =>
       ({
@@ -56,7 +53,7 @@ export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
 
 export const requestUpgrade = (feature: GuestFeature) => {
   if (isAnonymous()) {
-    promptSignIn(feature, GUEST_HINTS[feature])
+    promptSignIn(GUEST_HINTS[feature])
   } else {
     setIsSubscriptionDialogOpen(true)
   }
