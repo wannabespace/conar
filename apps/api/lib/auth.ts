@@ -285,13 +285,11 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       desktopVersion: {
-        fieldName: 'desktop_version',
         input: false,
         required: false,
         type: 'string',
       },
       stripeCustomerId: {
-        fieldName: 'stripe_customer_id',
         input: false,
         required: false,
         returned: false,
