@@ -18,6 +18,7 @@ import {
 } from '~/core/queries/triggers/shape'
 import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import {
   BodyField,
@@ -157,7 +158,7 @@ export const TriggerInspector = ({
               id="trigger-enabled"
               size="sm"
               disabled={toggle.isPending || !canEdit}
-              data-guest-locked={canEdit ? undefined : 'edit'}
+              data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
               checked={item.enabled !== false}
               onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
             />

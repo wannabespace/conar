@@ -36,6 +36,7 @@ import type { ReactNode } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { usePermissions } from '~/core/user/permissions'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 
@@ -100,7 +101,7 @@ export const Inspector = ({
       variant={warning ? 'warning' : 'default'}
       disabled={!saveEnabled}
       focusableWhenDisabled
-      data-guest-locked={locked ? 'edit' : undefined}
+      data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
     >
       <LoadingContent loading={mutation.isPending}>
         {warning?.action ?? saveLabel ?? (item ? 'Save' : `Create ${noun}`)}

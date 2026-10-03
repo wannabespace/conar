@@ -29,6 +29,7 @@ import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { useIsAnonymous } from '~/lib/auth'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
@@ -198,7 +199,9 @@ export const StatementControls = ({
                     aria-label="Fix with AI"
                     disabled={isAnonymous}
                     focusableWhenDisabled
-                    data-guest-locked={isAnonymous ? 'ai' : undefined}
+                    data-guest-locked={
+                      isAnonymous ? NO_GUEST_FEATURES.ai : undefined
+                    }
                     onClick={() => actions.fixWithAi(failed)}
                   />
                 }

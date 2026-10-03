@@ -38,6 +38,7 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
 import { usePermissions } from '~/core/user/permissions'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { useTablePageStore } from '../../lib/store'
 import { ActionsColumns } from './actions/actions-columns'
@@ -310,7 +311,7 @@ export const TableToolbar = ({
             {tableType === 'table' && (
               <DropdownMenuItem
                 disabled={!canEdit}
-                data-guest-locked={canEdit ? undefined : 'edit'}
+                data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
                 onClick={onAddColumn}
               >
                 <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
@@ -320,7 +321,7 @@ export const TableToolbar = ({
             {tableType === 'table' && (
               <DropdownMenuItem
                 disabled={!canEdit}
-                data-guest-locked={canEdit ? undefined : 'edit'}
+                data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
                 onClick={() => setSeedOpen(true)}
               >
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />

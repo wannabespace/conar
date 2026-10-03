@@ -29,6 +29,7 @@ import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-r
 import type { Connection } from '~/core/connection/sync'
 import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { ConnectionCard } from './connection-card'
 import { Empty } from './connections-empty'
@@ -232,7 +233,9 @@ export const ConnectionsList = () => {
           <Link
             to="/create"
             disabled={!canCreate}
-            data-guest-locked={canCreate ? undefined : 'connections'}
+            data-guest-locked={
+              canCreate ? undefined : NO_GUEST_FEATURES.connections
+            }
             className={cn(
               'text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150',
               !canCreate && 'opacity-50'

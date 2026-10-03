@@ -27,6 +27,7 @@ import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
 import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { useTablePageStore } from '../../../lib/store'
 
@@ -126,7 +127,7 @@ export const ActionsDelete = ({
               variant="destructive"
               disabled={!canEdit}
               focusableWhenDisabled
-              data-guest-locked={canEdit ? undefined : 'edit'}
+              data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
               onClick={() => setIsOpened(true)}
             >
               <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />

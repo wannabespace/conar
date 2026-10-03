@@ -20,6 +20,7 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { parseTableTabId } from '~/core/tabs/ids'
 import { usePermissions } from '~/core/user/permissions'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
@@ -122,7 +123,7 @@ export const SchemaRow = ({
               aria-label={`New table in ${row.name}`}
               render={<ButtonPrimitive focusableWhenDisabled />}
               disabled={locked}
-              data-guest-locked={locked ? 'edit' : undefined}
+              data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
               className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
               onClick={onCreateTable}
             />

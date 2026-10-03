@@ -26,6 +26,7 @@ import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 import { useInspector } from '../hooks/use-inspector'
@@ -228,7 +229,7 @@ export const DefinitionsPage = <T extends { name: string }>({
       variant="outline"
       disabled={!canCreate}
       focusableWhenDisabled
-      data-guest-locked={locked ? 'edit' : undefined}
+      data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
       onClick={() => inspector.open(null)}
     >
       <HugeiconsIcon

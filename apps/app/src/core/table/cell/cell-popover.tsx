@@ -43,6 +43,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { CellSwitch } from '~/components/cell-switch'
 import { usePermissions } from '~/core/user/permissions'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { useCellContext } from './cell-context'
 import { estimateCompactHeight } from './utils'
@@ -288,7 +289,7 @@ const CellPopoverToolbar = ({
               variant="secondary"
               disabled={locked || isNull}
               focusableWhenDisabled
-              data-guest-locked={locked ? 'edit' : undefined}
+              data-guest-locked={locked ? NO_GUEST_FEATURES.edit : undefined}
               onClick={onSetNull}
             >
               Set <span className="font-mono">null</span>
@@ -301,7 +302,9 @@ const CellPopoverToolbar = ({
                   size="xs"
                   disabled={locked}
                   focusableWhenDisabled
-                  data-guest-locked={locked ? 'edit' : undefined}
+                  data-guest-locked={
+                    locked ? NO_GUEST_FEATURES.edit : undefined
+                  }
                   onClick={() => onQueue()}
                 />
               }

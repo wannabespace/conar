@@ -32,6 +32,7 @@ import {
 } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
 import { usePermissions } from '~/core/user/permissions'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import {
@@ -263,7 +264,9 @@ const TableComponent = ({
                   aria-label="Add column"
                   disabled={!canEdit}
                   focusableWhenDisabled
-                  data-guest-locked={canEdit ? undefined : 'edit'}
+                  data-guest-locked={
+                    canEdit ? undefined : NO_GUEST_FEATURES.edit
+                  }
                   onClick={onAddColumn}
                 />
               }

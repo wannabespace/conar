@@ -19,6 +19,7 @@ import { createPolicyQuery } from '~/core/queries/policies/create'
 import { policyPredicate } from '~/core/queries/policies/shape'
 import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import { SchemaField, SelectField, TextField } from '../../components/fields'
 import type { SectionInspectorProps } from '../../components/inspector'
@@ -143,7 +144,7 @@ export const PredicatePolicyInspector = ({
               id="policy-enabled"
               size="sm"
               disabled={state.isPending || !canEdit}
-              data-guest-locked={canEdit ? undefined : 'edit'}
+              data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
               checked={item.enabled}
               onCheckedChange={(enabled) => state.mutate({ enabled })}
             />

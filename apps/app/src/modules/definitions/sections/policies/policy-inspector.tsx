@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { usePermissions } from '~/core/user/permissions'
 import { queryClient } from '~/lib/query-client'
+import { NO_GUEST_FEATURES } from '~/store'
 
 import {
   resetFields,
@@ -135,7 +136,7 @@ export const PolicyInspector = ({
               id="policy-row-level-security"
               size="sm"
               disabled={rowLevelSecurity.isPending || !canEdit}
-              data-guest-locked={canEdit ? undefined : 'edit'}
+              data-guest-locked={canEdit ? undefined : NO_GUEST_FEATURES.edit}
               checked={item.enabled}
               onCheckedChange={(enabled) =>
                 rowLevelSecurity.mutate({ enabled })
