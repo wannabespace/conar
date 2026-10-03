@@ -89,12 +89,12 @@ export const sqlSourceFor = (
   }
   const loadMissing = async (refs: TableRef[]) => {
     await Promise.all([
-      queryClient.ensureQueryData(tablesOptions),
-      queryClient.ensureQueryData(enumsOptions),
+      queryClient.query({ ...tablesOptions, staleTime: 'static' }),
+      queryClient.query({ ...enumsOptions, staleTime: 'static' }),
     ])
     await Promise.all(
       uncachedColumns(refs).map((options) =>
-        queryClient.ensureQueryData(options)
+        queryClient.query({ ...options, staleTime: 'static' })
       )
     )
   }
