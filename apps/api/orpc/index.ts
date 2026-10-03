@@ -97,6 +97,16 @@ export const authMiddleware = logMiddleware.use(
   })
 )
 
+export const accountMiddleware = authMiddleware.use(({ context, next }) => {
+  if (context.user.isAnonymous) {
+    throw new ORPCError('FORBIDDEN', {
+      message: 'Sign in with an account to continue.',
+    })
+  }
+
+  return next()
+})
+
 export const optionalAuthMiddleware = logMiddleware.use(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers).catch(() => null)

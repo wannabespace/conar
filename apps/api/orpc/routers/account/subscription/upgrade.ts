@@ -5,10 +5,10 @@ import { eq } from 'drizzle-orm'
 
 import { env } from '~/env'
 import { stripe } from '~/lib/stripe'
-import { authMiddleware, orpc } from '~/orpc'
+import { accountMiddleware, orpc } from '~/orpc'
 
 export const upgrade = orpc
-  .use(authMiddleware)
+  .use(accountMiddleware)
   .input(
     type({
       cancelUrl: 'string',
@@ -18,15 +18,10 @@ export const upgrade = orpc
     })
   )
   .errors({
-    FORBIDDEN: { message: 'Sign in with an account to subscribe.' },
     INTERNAL_SERVER_ERROR: { message: 'Stripe is not configured' },
     NOT_FOUND: { message: 'User not found' },
   })
   .handler(async ({ context, errors, input }) => {
-    if (context.user.isAnonymous) {
-      throw errors.FORBIDDEN()
-    }
-
     if (!stripe) {
       throw errors.INTERNAL_SERVER_ERROR()
     }
