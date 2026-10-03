@@ -6,9 +6,9 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
+import { encryptConnectionString } from '~/lib/connection-string'
 import { orpc, permissionsMiddleware } from '~/orpc'
 
-import { encryptConnectionString } from './create'
 import { publisher } from './events'
 
 export const update = orpc

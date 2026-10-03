@@ -8,6 +8,7 @@ import {
   API_KEY_PERMISSIONS,
   AUTH_COOKIE_PREFIX,
 } from '@tamery/shared/constants'
+import { permissionsOf } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -216,7 +217,10 @@ export const auth = betterAuth({
     twoFactor(),
     organization({
       allowUserToCreateOrganization: async (user) =>
-        !user.isAnonymous && !!(await getSubscription(user.id)),
+        permissionsOf({
+          subscription: await getSubscription(user.id),
+          user: { isAnonymous: user.isAnonymous },
+        }).workspace.create === true,
       disableOrganizationDeletion: true,
       schema: {
         invitation: {
