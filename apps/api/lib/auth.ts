@@ -1,4 +1,6 @@
 import { apiKey } from '@better-auth/api-key'
+// better-auth 1.7.7's inferred `auth` type references SchemaCheck, which TS can only name in .types when this entry is in the program.
+import '@better-auth/core/db/internal'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
