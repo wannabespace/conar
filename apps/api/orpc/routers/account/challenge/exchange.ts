@@ -8,7 +8,7 @@ import {
 } from '@tamery/db/schema'
 import { challenge } from '@tamery/shared/challenge'
 import { type } from 'arktype'
-import { eq, inArray, sql } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 import { auth } from '~/lib/auth'
 import { ensureDefaultWorkspace } from '~/lib/workspace'
@@ -20,12 +20,6 @@ const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
   const workspaceId = await ensureDefaultWorkspace(userId)
 
   await db.transaction(async (tx) => {
-    // Same lock as connections.create: a connection the guest saves mid-adoption
-    // would otherwise miss the move and die with the guest's workspace.
-    await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext(${anonymousUserId}))`
-    )
-
     const anonymousMembers = await tx
       .select({ workspaceId: members.workspaceId })
       .from(members)

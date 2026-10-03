@@ -6,7 +6,7 @@ import {
 } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { type } from 'arktype'
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
@@ -42,35 +42,28 @@ export const create = orpc
         : await ensureDefaultWorkspace(context.user.id)
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
-    const [inserted] = await db.transaction(async (tx) => {
-      // The lock serializes a user's concurrent creates and exchange's adoption so the count can't race.
-      await tx.execute(
-        sql`SELECT pg_advisory_xact_lock(hashtext(${context.user.id}))`
-      )
+    const count = await db.$count(
+      connections,
+      eq(connections.userId, context.user.id)
+    )
 
-      const count = await tx.$count(
-        connections,
-        eq(connections.userId, context.user.id)
-      )
+    if (!context.permissions.check('connection.create', { count })) {
+      throw errors.FORBIDDEN()
+    }
 
-      if (!context.permissions.check('connection.create', { count })) {
-        throw errors.FORBIDDEN()
-      }
-
-      return tx
-        .insert(connections)
-        .values({
-          ...input,
-          connectionString: encryptConnectionString({
-            connectionString: input.connectionString,
-            secret: workspaceSecret,
-            syncType: input.syncType,
-          }),
-          userId: context.user.id,
-          workspaceId,
-        })
-        .returning()
-    })
+    const [inserted] = await db
+      .insert(connections)
+      .values({
+        ...input,
+        connectionString: encryptConnectionString({
+          connectionString: input.connectionString,
+          secret: workspaceSecret,
+          syncType: input.syncType,
+        }),
+        userId: context.user.id,
+        workspaceId,
+      })
+      .returning()
 
     if (!inserted) {
       throw new Error('Failed to create connection')
