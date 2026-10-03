@@ -34,7 +34,7 @@ window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
 
 export const promptSignIn = (hint: string) => {
-  void posthog.capture('guest_feature_blocked')
+  void posthog.capture('guest_feature_blocked', { hint })
   appStore.set(
     (state) =>
       ({
