@@ -1,10 +1,6 @@
 import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
-import {
-  GUEST_CONNECTIONS_MESSAGE,
-  GUEST_SYNC_MESSAGE,
-} from '@tamery/shared/constants'
-import { SyncType } from '@tamery/shared/enums/sync-type'
+import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
@@ -25,13 +21,6 @@ export const create = orpc
     FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },
   })
   .handler(async ({ context, errors, input }) => {
-    if (
-      !context.permissions.check('connection.syncString') &&
-      input.syncType !== SyncType.CloudWithoutConnectionString
-    ) {
-      throw errors.FORBIDDEN({ message: GUEST_SYNC_MESSAGE })
-    }
-
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []

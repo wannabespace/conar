@@ -1,18 +1,16 @@
 import { db } from '@tamery/db'
 import { connections, connectionsUpdateSchema } from '@tamery/db/schema'
-import { GUEST_SYNC_MESSAGE } from '@tamery/shared/constants'
 import { decrypt } from '@tamery/shared/crypto-node'
-import { SyncType } from '@tamery/shared/enums/sync-type'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
 import { encryptConnectionString } from '~/lib/connection-string'
-import { orpc, permissionsMiddleware } from '~/orpc'
+import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
 export const update = orpc
-  .use(permissionsMiddleware)
+  .use(authMiddleware)
   .input(
     type.and(
       connectionsUpdateSchema.omit(
@@ -26,19 +24,10 @@ export const update = orpc
     )
   )
   .errors({
-    FORBIDDEN: { message: GUEST_SYNC_MESSAGE },
     NOT_FOUND: { message: 'Connection not found' },
   })
   .handler(async ({ context, errors, input }) => {
     const { id, ...changes } = input
-
-    if (
-      !context.permissions.check('connection.syncString') &&
-      changes.syncType &&
-      changes.syncType !== SyncType.CloudWithoutConnectionString
-    ) {
-      throw errors.FORBIDDEN()
-    }
 
     const [found] = await db
       .select()

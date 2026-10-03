@@ -26,9 +26,7 @@ import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
-import { usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
-import { requestUpgrade } from '~/store'
 
 const SYNC_OPTIONS = [
   {
@@ -76,9 +74,6 @@ export const StepSave = ({
   color: string | null
   setColor: (color: string | null) => void
 }) => {
-  const canSyncString = usePermissions().check('connection.syncString')
-  const isSyncDisabled = (value: SyncType) =>
-    !canSyncString && value !== SyncType.CloudWithoutConnectionString
   const { connectionsCollection } = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const { data: connections } = useLiveQuery({
@@ -221,14 +216,7 @@ export const StepSave = ({
                   key={option.value}
                   variant={syncType === option.value ? 'default' : 'outline'}
                   size="xs"
-                  className={
-                    isSyncDisabled(option.value) ? 'opacity-50' : undefined
-                  }
-                  onClick={() =>
-                    isSyncDisabled(option.value)
-                      ? requestUpgrade('sync')
-                      : setSyncType(option.value)
-                  }
+                  onClick={() => setSyncType(option.value)}
                 >
                   {option.label}
                 </Button>

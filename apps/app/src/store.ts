@@ -1,7 +1,4 @@
-import {
-  GUEST_CONNECTIONS_MESSAGE,
-  GUEST_SYNC_MESSAGE,
-} from '@tamery/shared/constants'
+import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { createStore } from 'seitu'
 
 import { isAnonymous } from '~/lib/auth'
@@ -11,7 +8,6 @@ const GUEST_HINTS = {
   ai: 'AI features need an account.',
   connections: GUEST_CONNECTIONS_MESSAGE,
   subscription: 'That needs an account.',
-  sync: GUEST_SYNC_MESSAGE,
 }
 
 export type GuestFeature = keyof typeof GUEST_HINTS
