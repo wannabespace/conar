@@ -31,7 +31,7 @@ import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
-import { permix } from '~/core/user/permissions'
+import { loadGuestPermissions, permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
@@ -129,13 +129,7 @@ const CreateConnectionPage = () => {
           to: '/connection/$resourceId',
           params: { resourceId },
         })
-        try {
-          await tx.isPersisted.promise
-          toast.success('Connection created successfully 🎉')
-        } catch {
-          // The oRPC interceptor already toasts the error; only leave the rolled-back connection.
-          await router.navigate({ to: '/' })
-        }
+        toast.success('Connection created successfully 🎉')
       },
     })
 
@@ -238,6 +232,7 @@ const CreateConnectionPage = () => {
       isPasswordExists: hasPassword,
     },
     {
+      hasLocalConnectionString: true,
       isLocalProxyAvailable,
       isPasswordPopulated: hasPassword,
       isLocalhost,
@@ -406,7 +401,9 @@ const CreateConnectionPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/create/')({
-  beforeLoad: ({ context: { collections } }) => {
+  beforeLoad: async ({ context: { collections } }) => {
+    await loadGuestPermissions()
+
     if (
       !permix.check('connection.create', {
         count: collections.connectionsCollection.size,
