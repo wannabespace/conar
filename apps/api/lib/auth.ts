@@ -216,7 +216,7 @@ export const auth = betterAuth({
     twoFactor(),
     organization({
       allowUserToCreateOrganization: async (user) =>
-        !!(await getSubscription(user.id)),
+        !user.isAnonymous && !!(await getSubscription(user.id)),
       disableOrganizationDeletion: true,
       schema: {
         invitation: {

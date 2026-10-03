@@ -8,7 +8,6 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
-import { GUEST_ROW_LIMIT } from '@tamery/shared/permissions'
 import { Button } from '@tamery/ui/components/button'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
@@ -38,7 +37,7 @@ import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
-import { permix, usePermissions } from '~/core/user/permissions'
+import { usePermissions } from '~/core/user/permissions'
 
 import { useTablePageStore } from '../../lib/store'
 import { ActionsColumns } from './actions/actions-columns'
@@ -248,13 +247,9 @@ export const TableToolbar = ({
     limit?: number
     filters?: ActiveFilter[]
   }) => {
-    const rowLimit = permix.check('table.allRows')
-      ? limit
-      : Math.min(limit ?? GUEST_ROW_LIMIT, GUEST_ROW_LIMIT)
-
-    if (rowLimit) {
+    if (limit) {
       return resourceRowsQuery({
-        limit: rowLimit,
+        limit,
         offset: 0,
         query: {
           filters: dataFilters || filters,

@@ -2,16 +2,14 @@ import type { Rules } from 'permix'
 
 export type Plan = 'free' | 'guest' | 'pro'
 
-export const GUEST_ROW_LIMIT = 10
-
 // oxlint-disable-next-line typescript/consistent-type-definitions -- permix's Definition needs an index signature, which an interface lacks
 export type Permissions = {
-  ai: ['chat', 'filters', 'sql', 'unlimited']
+  ai: ['chat', 'sql']
   connection: [{ name: 'create'; type: { count: number } }, 'syncString']
   database: ['edit']
+  filter: ['ai', 'unlimited']
   seed: ['unlimited']
   tab: ['multiple']
-  table: ['allRows']
   workspace: ['create']
 }
 
@@ -31,15 +29,15 @@ export const permissionsOf = (plan: Plan): Rules<Permissions> => {
   const pro = plan === 'pro'
 
   return {
-    ai: { chat: pro, filters: member, sql: pro, unlimited: pro },
+    ai: { chat: pro, sql: pro },
     connection: {
       create: member || ((connections) => connections?.count === 0),
       syncString: member,
     },
     database: { edit: member },
+    filter: { ai: member, unlimited: pro },
     seed: { unlimited: pro },
     tab: { multiple: member },
-    table: { allRows: member },
     workspace: { create: pro },
   }
 }

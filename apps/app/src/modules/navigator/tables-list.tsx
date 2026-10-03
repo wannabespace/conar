@@ -258,6 +258,7 @@ export const TablesList = ({
     >
       {stickyRow && (
         <div
+          data-mask
           className="group/menu-item absolute inset-x-0 top-0 z-10 h-(--sticky-height) pl-2"
           onWheel={(event) =>
             parentRef.current?.scrollBy({ top: event.deltaY })

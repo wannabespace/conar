@@ -228,31 +228,37 @@ const AuthPage = () => {
               </div>
             )}
           </div>
-          <motion.div
-            className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
-            initial={{
-              opacity: 0,
-              transform: 'translateY(10px)',
-              filter: 'blur(4px)',
-            }}
-            animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <Button
-              className="w-full"
-              variant="outline"
-              disabled={isContinuing}
-              onClick={() =>
-                session?.user.isAnonymous
-                  ? router.navigate({
-                      href: lastLocationStorageValue.get() ?? '/',
-                    })
-                  : continueAnonymously()
-              }
+          {window.electron && (
+            <motion.div
+              className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
+              initial={{
+                opacity: 0,
+                transform: 'translateY(10px)',
+                filter: 'blur(4px)',
+              }}
+              animate={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                filter: 'none',
+              }}
+              transition={{ duration: 0.5, delay: 0.6 }}
             >
-              Continue without an account
-            </Button>
-          </motion.div>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={isContinuing}
+                onClick={() =>
+                  session?.user.isAnonymous
+                    ? router.navigate({
+                        href: lastLocationStorageValue.get() ?? '/',
+                      })
+                    : continueAnonymously()
+                }
+              >
+                Continue without an account
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </>

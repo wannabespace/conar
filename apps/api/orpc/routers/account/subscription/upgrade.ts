@@ -18,10 +18,15 @@ export const upgrade = orpc
     })
   )
   .errors({
+    FORBIDDEN: { message: 'Sign in with an account to subscribe.' },
     INTERNAL_SERVER_ERROR: { message: 'Stripe is not configured' },
     NOT_FOUND: { message: 'User not found' },
   })
   .handler(async ({ context, errors, input }) => {
+    if (context.user.isAnonymous) {
+      throw errors.FORBIDDEN()
+    }
+
     if (!stripe) {
       throw errors.INTERNAL_SERVER_ERROR()
     }

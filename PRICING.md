@@ -20,7 +20,7 @@ Why this model (and not feature gating):
 | --- | --- | --- |
 | Connections | 3 | Unlimited |
 | Workspaces | 1 (personal, auto-created) | Unlimited |
-| AI requests | Limited per month, or unlimited with BYOK | Unlimited |
+| AI requests | Limited per month, or unlimited with BYOK | Unlimited filters; included credits, then bought credits, for the rest |
 | Cloud sync | Included (within connection limit) | Included |
 | Chats & query history | Limited retention | Unlimited |
 
@@ -42,7 +42,7 @@ Connections, workspaces, AI requests, saved queries, history retention, sync tar
 
 AI tokens, storage, compute we pay for per request.
 
-→ **Ship to everyone with a Free usage cap; Pro raises or removes the cap.** If the cost is user-transferable (AI), offer BYOK on Free.
+→ **Ship to everyone with a Free usage cap; Pro spends included credits, then bought credits.** Never make a per-use cost unlimited. If the cost is user-transferable (AI), offer BYOK on Free.
 
 ### 3. Is it collaboration between people?
 
@@ -76,7 +76,7 @@ Commitments we don't walk back — churning these breaks trust:
 
 Where today's wiring contradicts the framework. Read the routers for the current state; this is the direction, in priority order, each naming the principle it serves.
 
-1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI requests per month free, unlimited on Pro."
+1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI filters per month free, unlimited on Pro; other AI spends Pro credits, buy more when they run out."
 2. **Gate generation, never chat persistence.** Storing chat rows costs nothing, and a lapsed subscriber must not lose the ability to edit or delete their own history. Chats and messages mutations belong on `authMiddleware`; the model call is the enforcement point. Retention, if ever needed, is a quantity limit.
 3. **Implement the connection limit before tiers launch** — it is the model's primary quantity lever. Count server-side in `connections/create`, block only new creates, and ship the UI mirror in the same release: a silent server rejection reads as a bug, not a plan.
 4. **BYOK is the free tier's AI escape hatch.** A user-stored provider key (per-user secret in Infisical, same path as encryption secrets) routes AI calls to it and skips the quota entirely — which makes the free story honest, serves privacy-sensitive users, and removes token cost as an argument for hard gates.

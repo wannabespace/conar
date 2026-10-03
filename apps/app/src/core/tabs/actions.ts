@@ -11,20 +11,24 @@ const setTabs = (
 ) => {
   const store = getConnectionResourceStore(id)
   const tabs = update(store.get().tabs)
-
-  const multiple = permix.check('tab.multiple')
-
-  if (!multiple && tabs.length > 1) {
-    promptSignIn('tabs')
-  }
+  const dropped =
+    permix.check('tab.multiple') || tabs.length <= 1 ? [] : tabs.slice(0, -1)
 
   store.set(
     (state) =>
       ({
         ...state,
-        tabs: multiple ? tabs : tabs.slice(-1),
+        tabs: dropped.length > 0 ? tabs.slice(-1) : tabs,
       }) satisfies typeof state
   )
+
+  if (dropped.length > 0) {
+    promptSignIn('tabs')
+
+    for (const tab of dropped) {
+      resolveTab(tab.id)?.kind.onClose?.(id, tab.id)
+    }
+  }
 }
 
 const isPreview = (tab: ConnectionTab) => !!tab.preview

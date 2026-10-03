@@ -122,6 +122,13 @@ export const Inspector = ({
         <Form
           id={FORM_ID}
           form={form}
+          // Capture phase: Enter in a field submits natively, past the disabled save button.
+          onSubmitCapture={(event) => {
+            if (locked) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+          }}
           className="scroll-fade no-scrollbar flex min-h-0 flex-1 flex-col divide-y overflow-y-auto"
         >
           {children}

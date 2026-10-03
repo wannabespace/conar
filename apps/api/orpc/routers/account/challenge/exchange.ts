@@ -9,7 +9,7 @@ import {
 import { challenge } from '@tamery/shared/challenge'
 import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 
 import { auth } from '~/lib/auth'
 import { ensureDefaultWorkspace } from '~/lib/workspace'
@@ -19,39 +19,44 @@ import { codeChallengeRedis } from './code-challenge'
 
 const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
   const workspaceId = await ensureDefaultWorkspace(userId)
-  const [rows, secret, anonymousMembers] = await Promise.all([
-    db
-      .select()
-      .from(connections)
-      .where(eq(connections.userId, anonymousUserId)),
-    getWorkspaceSecret(workspaceId),
-    db
-      .select({ workspaceId: members.workspaceId })
-      .from(members)
-      .where(eq(members.userId, anonymousUserId)),
-  ])
-  const reencrypted = await Promise.all(
-    rows.map(async (row) => ({
-      connectionString:
-        row.connectionString &&
-        encrypt({
-          secret,
-          text: decrypt({
-            encryptedText: row.connectionString,
-            secret: await getWorkspaceSecret(row.workspaceId),
-          }),
-        }),
-      id: row.id,
-    }))
-  )
+  const secret = await getWorkspaceSecret(workspaceId)
 
   await db.transaction(async (tx) => {
+    // Same lock as connections.create: a connection the guest saves mid-adoption
+    // would otherwise miss the move and die with the guest's workspace.
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${anonymousUserId}))`
+    )
+
+    const [rows, anonymousMembers] = await Promise.all([
+      tx
+        .select()
+        .from(connections)
+        .where(eq(connections.userId, anonymousUserId)),
+      tx
+        .select({ workspaceId: members.workspaceId })
+        .from(members)
+        .where(eq(members.userId, anonymousUserId)),
+    ])
+
     await Promise.all(
-      reencrypted.map(({ connectionString, id }) =>
+      rows.map(async (row) =>
         tx
           .update(connections)
-          .set({ connectionString, userId, workspaceId })
-          .where(eq(connections.id, id))
+          .set({
+            connectionString:
+              row.connectionString &&
+              encrypt({
+                secret,
+                text: decrypt({
+                  encryptedText: row.connectionString,
+                  secret: await getWorkspaceSecret(row.workspaceId),
+                }),
+              }),
+            userId,
+            workspaceId,
+          })
+          .where(eq(connections.id, row.id))
       )
     )
     await tx

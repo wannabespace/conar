@@ -30,10 +30,8 @@ describe('permissionsOf', () => {
   it('keeps AI chat for pro and filters for every member', () => {
     expect(permixFor('pro').check('ai.chat')).toBe(true)
     expect(permixFor('free').check('ai.chat')).toBe(false)
-    expect(permixFor('free').check('ai.filters')).toBe(true)
-    expect(permixFor('guest').check('ai.filters')).toBe(false)
+    expect(permixFor('free').check('filter.ai')).toBe(true)
+    expect(permixFor('guest').check('filter.ai')).toBe(false)
     expect(permixFor('guest').check('database.edit')).toBe(false)
-    expect(permixFor('guest').check('table.allRows')).toBe(false)
-    expect(permixFor('free').check('table.allRows')).toBe(true)
   })
 })
