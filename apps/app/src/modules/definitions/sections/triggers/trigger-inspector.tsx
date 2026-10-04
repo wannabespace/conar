@@ -65,6 +65,7 @@ export const TriggerInspector = ({
   })
   const toggle = useToggle({ queryKey, run })
   const mutation = useMutation({
+    meta: { event: 'trigger_saved' },
     mutationFn: (draft: TriggerDraft) =>
       run(
         item

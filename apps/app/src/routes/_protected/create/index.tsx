@@ -34,6 +34,7 @@ import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
+import { posthog } from '~/lib/posthog'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -129,6 +130,10 @@ const CreateConnectionPage = () => {
           to: '/connection/$resourceId',
           params: { resourceId },
         })
+        posthog.capture('connection_created', {
+          syncType: data.syncType,
+          type: data.type,
+        })
         toast.success('Connection created successfully 🎉')
       },
     })
@@ -178,6 +183,7 @@ const CreateConnectionPage = () => {
     reset,
     status: testingStatus,
   } = useMutation({
+    meta: { event: 'connection_tested' },
     mutationFn: ({
       type: connectionType,
       connectionString: stringToTest,

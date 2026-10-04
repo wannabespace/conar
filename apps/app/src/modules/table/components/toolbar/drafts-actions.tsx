@@ -78,6 +78,7 @@ export const DraftsActions = ({
   }
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
+    meta: { event: 'row_changes_saved' },
     mutationFn: async () => {
       if (primaryColumns.length === 0) {
         throw new Error(

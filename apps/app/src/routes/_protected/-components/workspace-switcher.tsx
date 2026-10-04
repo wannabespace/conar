@@ -20,6 +20,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { useIsAnonymous } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -52,6 +53,7 @@ export const WorkspaceSwitcher = () => {
     }
 
     workspaceSelection.set(id)
+    posthog.capture('workspace_switched')
     await navigate({ to: '/' })
   }
 

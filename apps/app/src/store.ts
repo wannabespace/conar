@@ -35,6 +35,9 @@ export const promptSignIn = (hint: string) => {
 }
 
 export const setIsSubscriptionDialogOpen = (isOpen: boolean) => {
+  if (isOpen) {
+    posthog.capture('subscription_dialog_opened')
+  }
   appStore.set(
     (state) =>
       ({ ...state, isSubscriptionDialogOpen: isOpen }) satisfies typeof state

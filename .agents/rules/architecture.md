@@ -18,6 +18,7 @@
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
 | Styles | TailwindCSS v4 — no inline `style=` for layout or theme values, except where a library hard-codes inline styles no class can beat. |
 | Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
+| Analytics | PostHog through the lazy `~/lib/posthog` facade. A user-facing `useMutation` names its event in `meta: { event: 'object_verb' }` and the `queryClient` mutation cache captures it with `success`; other actions call `posthog.capture` directly. Properties carry enums and counts only — never SQL, names, values or error messages (privacy policy promises anonymized events). |
 | Feature code | A feature is a module folder (see Modules). Core single-page files live next to the route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`); `core/<domain>/` holds data and code shared across modules (see Core layout). |
 
 ## Modules

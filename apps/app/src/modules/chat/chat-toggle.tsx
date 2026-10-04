@@ -11,6 +11,7 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { chatOpen } from './stores'
 
@@ -20,6 +21,7 @@ export const toggleChat = (resourceId: string) => {
   }
 
   chatOpen(resourceId).set((opened) => !opened)
+  posthog.capture('ai_chat_toggled')
 }
 
 export const ChatToggle = ({ resourceId }: { resourceId: string }) => {

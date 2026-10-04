@@ -9,6 +9,7 @@ const AUTH_PAGE_TRANSITION_MS = 1000
 
 export const useSignOut = () => {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
+    meta: { event: 'signed_out' },
     mutationFn: async () => {
       await fullSignOut()
     },

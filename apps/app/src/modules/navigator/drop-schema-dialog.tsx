@@ -25,6 +25,7 @@ export const DropSchemaDialog = ({
   const [cascade, setCascade] = useState(false)
 
   const { mutate, isPending, error, reset } = useMutation({
+    meta: { event: 'schema_dropped' },
     mutationFn: async () => {
       await dropSchemaQuery({ cascade, schema }).run(
         await connectionResourceToQueryParams(connectionResource)

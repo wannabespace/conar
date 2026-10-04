@@ -51,6 +51,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import type { CommandEntry } from '~/lib/module'
 import { appModules, byOrder } from '~/lib/modules'
+import { posthog } from '~/lib/posthog'
 import { protectedModules } from '~/lib/protected-modules'
 
 import { actionCenterOpen } from './action-center-open'
@@ -71,7 +72,14 @@ const actionEntry = (
 ) => ({
   keywords,
   node: (
-    <CommandItem key={value} value={value} onSelect={run(action)}>
+    <CommandItem
+      key={value}
+      value={value}
+      onSelect={run(() => {
+        posthog.capture('command_run', { command: value })
+        action()
+      })}
+    >
       <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
       {shortcutLetter && (

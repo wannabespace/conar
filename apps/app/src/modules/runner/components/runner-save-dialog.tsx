@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { v7 } from 'uuid'
 
 import { useCollections } from '~/core/collections'
+import { posthog } from '~/lib/posthog'
 
 import type { Query } from '../sync'
 
@@ -74,6 +75,7 @@ export const RunnerSaveDialog = ({
         draft.name = name.trim()
         draft.updatedAt = new Date()
       })
+      posthog.capture('saved_query_renamed')
       toast.success(`Renamed to "${name.trim()}"`)
     } else {
       queriesCollection.insert({
@@ -84,6 +86,7 @@ export const RunnerSaveDialog = ({
         query: sql,
         updatedAt: new Date(),
       })
+      posthog.capture('query_saved')
       toast.success(`Saved "${name.trim()}"`)
     }
     close()

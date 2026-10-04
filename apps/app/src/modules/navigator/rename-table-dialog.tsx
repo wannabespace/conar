@@ -58,6 +58,7 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   }))
 
   const { mutate: renameTable, isPending } = useMutation({
+    meta: { event: 'table_renamed' },
     mutationFn: async () => {
       await renameTableQuery({
         newTable: newTableName,

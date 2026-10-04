@@ -205,6 +205,7 @@ const FunctionInspector = ({
 }: SectionInspectorProps<FunctionItem>) => {
   const options = capabilitiesOf(connectionType).functions
   const mutation = useMutation({
+    meta: { event: 'function_saved' },
     mutationFn: (draft: FunctionDraft) =>
       run(
         item

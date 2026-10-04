@@ -12,6 +12,7 @@ import { v7 } from 'uuid'
 
 import { useCollections } from '~/core/collections'
 import { orpc } from '~/lib/orpc'
+import { posthog } from '~/lib/posthog'
 import { resourcePanelClassName } from '~/shell'
 
 import { ChatError } from './chat-error'
@@ -97,6 +98,7 @@ const Chat = ({
     }
   }, [isAwaitingAnswer, resumeStream])
   const retry = () => {
+    posthog.capture('ai_chat_retried')
     if (messages.length > 0) {
       void regenerate()
       return
@@ -114,7 +116,10 @@ const Chat = ({
         history={chatHistory}
         title={chat?.title || pendingTitle}
         onClose={() => chatOpen(connectionResourceId).set(false)}
-        onNewChat={onNewChat}
+        onNewChat={() => {
+          posthog.capture('ai_chat_created')
+          onNewChat()
+        }}
         onSelectChat={(id) => chatStore.set(id)}
       />
       <ChatMessages isPending={isStreaming} messages={displayMessages} />
@@ -123,6 +128,7 @@ const Chat = ({
         isStreaming={isStreaming}
         onSend={(text) => {
           chatStore.set(chatId)
+          posthog.capture('ai_chat_message_sent')
           void sendMessage({
             id: v7(),
             parts: [{ text, type: 'text' }],
@@ -130,6 +136,7 @@ const Chat = ({
           })
         }}
         onStop={() => {
+          posthog.capture('ai_chat_stopped')
           void orpc.ai.abortStream.call({ chatId })
           stop()
         }}

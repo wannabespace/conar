@@ -30,6 +30,7 @@ export const useRowLevelSecurityItems = ({
 }: Extract<TreeRow, { kind: 'table' }>): AppMenuNode[] => {
   const { connectionResource } = useRouteContext()
   const mutation = useMutation({
+    meta: { event: 'row_level_security_toggled' },
     mutationFn: async (enabled: boolean) =>
       setRowLevelSecurityQuery({
         enabled,
