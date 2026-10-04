@@ -2,7 +2,7 @@ import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 
 import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
@@ -21,17 +21,6 @@ export const create = orpc
     FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },
   })
   .handler(async ({ context, errors, input }) => {
-    // Before the limit check: an outbox replay of a create whose response was
-    // lost would count its own row and fail with FORBIDDEN.
-    const alreadyCreated = await db.$count(
-      connections,
-      and(eq(connections.id, input.id), eq(connections.userId, context.user.id))
-    )
-
-    if (alreadyCreated > 0) {
-      return
-    }
-
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []
@@ -42,9 +31,11 @@ export const create = orpc
         : await ensureDefaultWorkspace(context.user.id)
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
+    // Excludes its own id: an outbox replay of a create whose response was
+    // lost would otherwise count its own row and fail with FORBIDDEN.
     const count = await db.$count(
       connections,
-      eq(connections.userId, context.user.id)
+      and(eq(connections.userId, context.user.id), ne(connections.id, input.id))
     )
 
     if (!context.permissions.check('connection.create', { count })) {
