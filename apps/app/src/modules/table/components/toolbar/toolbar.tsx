@@ -43,7 +43,7 @@ import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
 import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
-import { ActionsSeed, preloadSeedPanel } from './actions/actions-seed'
+import { ActionsSeed, importSeedPanel } from './actions/actions-seed'
 import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
 
@@ -288,7 +288,7 @@ export const TableToolbar = ({
         <DropdownMenu
           onOpenChange={(menuOpen) => {
             if (menuOpen && tableType === 'table') {
-              void preloadSeedPanel()
+              void importSeedPanel()
             }
           }}
         >

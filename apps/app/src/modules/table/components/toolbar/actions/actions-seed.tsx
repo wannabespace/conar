@@ -5,26 +5,20 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@tamery/ui/components/drawer'
-import { queryOptions, useQuery } from '@tanstack/react-query'
-
-import { queryClient } from '~/lib/query-client'
+import { lazy, Suspense } from 'react'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { SeedPanelSkeleton } from './seed-panel-skeleton'
 
-// Not lazy + Suspense: a Suspense reveal inside a tab starts the tab's
-// AnimateView view transition, whose snapshot paints over the open drawer
-const seedPanelQuery = queryOptions({
-  gcTime: Number.POSITIVE_INFINITY,
-  queryFn: async () => {
-    const { SeedPanel } = await import('./seed-panel')
+// The panel bundles faker and every generator, so only the shell is eager: the
+// drawer paints on the click and the inspector stands in as skeleton meanwhile
+export const importSeedPanel = () => import('./seed-panel')
 
-    return SeedPanel
-  },
-  queryKey: ['seed-panel'],
+const SeedPanel = lazy(async () => {
+  const { SeedPanel: component } = await importSeedPanel()
+
+  return { default: component }
 })
-
-export const preloadSeedPanel = () => queryClient.prefetchQuery(seedPanelQuery)
 
 export const ActionsSeed = ({
   table,
@@ -38,7 +32,6 @@ export const ActionsSeed = ({
   onOpenChange: (open: boolean) => void
 }) => {
   const { columns } = useTableColumnsContext()
-  const { data: SeedPanel } = useQuery({ ...seedPanelQuery, enabled: open })
 
   return (
     <Drawer
@@ -54,15 +47,13 @@ export const ActionsSeed = ({
             {schema}.{table}
           </DrawerDescription>
         </DrawerHeader>
-        {SeedPanel ? (
+        <Suspense fallback={<SeedPanelSkeleton columns={columns} />}>
           <SeedPanel
             schema={schema}
             table={table}
             onOpenChange={onOpenChange}
           />
-        ) : (
-          <SeedPanelSkeleton columns={columns} />
-        )}
+        </Suspense>
       </DrawerContent>
     </Drawer>
   )
