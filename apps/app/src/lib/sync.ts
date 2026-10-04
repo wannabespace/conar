@@ -133,12 +133,15 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
-      const writeItems = (items: SyncMessage<T>[]) => {
+      const writeItems = (
+        items: SyncMessage<T>[],
+        options?: { immediate: boolean }
+      ) => {
         if (signal.aborted) {
           return
         }
 
-        begin()
+        begin(options)
         for (const item of items) {
           writeItem(item)
         }
@@ -153,16 +156,16 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
               return
             }
 
-            await collection.stateWhenReady()
             // Synced rows only: a row still waiting in the offline outbox is
             // unknown to the server, which would answer with its delete and
             // race the insert the outbox is about to send.
-            const rows = [...collection._state.syncedData.values()].map(
-              (item) => ({
+            const items = await collection.toArrayWhenReady()
+            const rows = items
+              .filter((item) => item.$synced)
+              .map((item) => ({
                 id: config.getKey(item),
                 updatedAt: item.updatedAt,
-              })
-            )
+              }))
             writeItems(await config.sync({ rows, signal }))
           },
         })
@@ -219,7 +222,10 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
       }
 
-      writeSynced = writeItems
+      // Immediate: a plain sync commit waits for every persisting transaction
+      // on the collection, so the row would vanish while a later outbox write
+      // is still pending.
+      writeSynced = (items) => writeItems(items, { immediate: true })
       markReady()
       run()
 
