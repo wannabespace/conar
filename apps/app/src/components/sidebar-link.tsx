@@ -5,7 +5,7 @@ import type { ComponentProps } from 'react'
 import { Link } from '~/components/link'
 
 const baseClasses = `
-  flex h-7 w-full cursor-default items-center gap-2 rounded-md px-2 text-sm
+  flex h-7 w-full shrink-0 cursor-default items-center gap-2 rounded-md px-2 text-sm
   text-foreground select-none
   [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-primary/75
 `
