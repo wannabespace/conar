@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@tamery/ui/components/card'
-import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Group } from '@tamery/ui/components/group'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
@@ -28,6 +27,27 @@ import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
+
+const SYNC_OPTIONS = [
+  {
+    description:
+      'The full connection string, including the password, is encrypted and synced to every device.',
+    label: 'With password',
+    value: SyncType.Cloud,
+  },
+  {
+    description:
+      'The connection string is synced without the password. Enter the password on each device.',
+    label: 'Without password',
+    value: SyncType.CloudWithoutPassword,
+  },
+  {
+    description:
+      'Only the name, label and color are synced. The connection string stays on this device.',
+    label: 'Without connection string',
+    value: SyncType.CloudWithoutConnectionString,
+  },
+]
 
 export const StepSave = ({
   type,
@@ -189,25 +209,24 @@ export const StepSave = ({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label variant="checkbox">
-              <Checkbox
-                checked={syncType === SyncType.Cloud}
-                onCheckedChange={() =>
-                  setSyncType(
-                    syncType === SyncType.Cloud
-                      ? SyncType.CloudWithoutPassword
-                      : SyncType.Cloud
-                  )
-                }
-              />
-              Do you want to sync the password in our cloud?
-            </Label>
+            <Label>Sync</Label>
+            <Group>
+              {SYNC_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  variant={syncType === option.value ? 'default' : 'outline'}
+                  size="xs"
+                  onClick={() => setSyncType(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </Group>
             <div className="text-muted-foreground/50 text-xs text-balance">
-              Syncing passwords in our cloud allows access from any device
-              without re-entering the password.
-              <br />
-              If not synced, we will store the connection string without the
-              password.
+              {
+                SYNC_OPTIONS.find((option) => option.value === syncType)
+                  ?.description
+              }
             </div>
           </div>
         </div>

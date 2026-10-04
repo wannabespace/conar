@@ -1,5 +1,4 @@
 import { db } from '@tamery/db'
-import { decrypt } from '@tamery/shared/crypto-node'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
@@ -39,7 +38,7 @@ export const proxy = {
       },
       FORBIDDEN: {
         message:
-          'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+          'This connection is not allowed to be used because its password or connection string is not stored in the cloud.',
       },
       NOT_FOUND: { message: 'Connection not found' },
     })
@@ -74,18 +73,17 @@ export const proxy = {
         }
 
         if (
-          connection.connection.syncType === SyncType.CloudWithoutPassword &&
-          connection.connection.isPasswordExists
+          !connection.connection.connectionString ||
+          (connection.connection.syncType === SyncType.CloudWithoutPassword &&
+            connection.connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()
         }
 
         const url = new SafeURL(
-          decrypt({
+          await context.decryptConnectionString({
             encryptedText: connection.connection.connectionString,
-            secret: await context.getWorkspaceSecret(
-              connection.connection.workspaceId
-            ),
+            workspaceId: connection.connection.workspaceId,
           })
         )
         url.pathname = connection.name || ''
@@ -111,15 +109,16 @@ export const proxy = {
         }
 
         if (
-          connection.syncType === SyncType.CloudWithoutPassword &&
-          connection.isPasswordExists
+          !connection.connectionString ||
+          (connection.syncType === SyncType.CloudWithoutPassword &&
+            connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()
         }
 
-        return decrypt({
+        return context.decryptConnectionString({
           encryptedText: connection.connectionString,
-          secret: await context.getWorkspaceSecret(connection.workspaceId),
+          workspaceId: connection.workspaceId,
         })
       }
 

@@ -32,6 +32,7 @@ import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { protectedModules } from '~/lib/protected-modules'
 
@@ -139,6 +140,9 @@ const ConnectionsDropdown = ({
   onRemove: (connection: Connection) => void
 }) => {
   const [open, setOpen] = useState(false)
+  const atGuestLimit = !usePermissions().check('connection.create', {
+    count: groups.length,
+  })
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -201,7 +205,15 @@ const ConnectionsDropdown = ({
           )
         })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link to="/create" activateOn="click" />}>
+        <DropdownMenuItem
+          className={atGuestLimit ? 'opacity-50' : undefined}
+          render={
+            <Link to="/create" activateOn="click" disabled={atGuestLimit} />
+          }
+          onClick={() =>
+            checkOrUpgrade('connection.create', { count: groups.length })
+          }
+        >
           <HugeiconsIcon
             icon={PlusSignIcon}
             strokeWidth={2}

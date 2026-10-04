@@ -6,12 +6,13 @@ import {
 } from '@tamery/db/schema'
 import { and, eq } from 'drizzle-orm'
 
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 import { publisher } from './events'
 
 export const create = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .input(chatsMessagesInsertSchema)
   .errors({
     NOT_FOUND: { message: 'Chat not found' },

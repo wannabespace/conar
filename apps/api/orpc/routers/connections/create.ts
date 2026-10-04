@@ -1,23 +1,26 @@
 import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
-import { encrypt } from '@tamery/shared/crypto-node'
-import { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/safe-url'
+import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
+import { eq } from 'drizzle-orm'
 
+import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, permissionsMiddleware } from '~/orpc'
 
 import { publisher } from './events'
 
 export const create = orpc
-  .use(authMiddleware)
+  .use(permissionsMiddleware)
   .input(
     connectionsInsertSchema
       .omit('userId', 'workspaceId')
       .and(type({ 'workspaceId?': 'string | null' }))
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },
+  })
+  .handler(async ({ context, errors, input }) => {
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []
@@ -28,19 +31,23 @@ export const create = orpc
         : await ensureDefaultWorkspace(context.user.id)
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
-    const connectionString = new SafeURL(input.connectionString)
+    const count = await db.$count(
+      connections,
+      eq(connections.userId, context.user.id)
+    )
 
-    if (input.syncType !== SyncType.Cloud) {
-      connectionString.password = ''
+    if (!context.permissions.check('connection.create', { count })) {
+      throw errors.FORBIDDEN()
     }
 
     const [inserted] = await db
       .insert(connections)
       .values({
         ...input,
-        connectionString: encrypt({
+        connectionString: encryptConnectionString({
+          connectionString: input.connectionString,
           secret: workspaceSecret,
-          text: connectionString.toString(),
+          syncType: input.syncType,
         }),
         userId: context.user.id,
         workspaceId,

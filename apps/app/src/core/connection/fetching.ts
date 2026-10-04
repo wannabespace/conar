@@ -98,6 +98,7 @@ export const useFetchingConfig = (
   })
 
   return fetchingConfig(connection, {
+    hasLocalConnectionString: !!connectionString,
     isLocalProxyAvailable: localProxyAvailable,
     isLocalhost: connectionString?.isLocalhost,
     isPasswordPopulated: connectionString?.isPasswordPopulated,

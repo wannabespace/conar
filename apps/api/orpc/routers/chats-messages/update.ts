@@ -7,12 +7,13 @@ import {
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 import { publisher } from './events'
 
 export const update = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .input(
     type.and(
       chatsMessagesUpdateSchema.omit('id'),

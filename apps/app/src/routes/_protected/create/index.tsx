@@ -12,7 +12,7 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -31,6 +31,7 @@ import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
+import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
@@ -229,6 +230,7 @@ const CreateConnectionPage = () => {
       isPasswordExists: hasPassword,
     },
     {
+      hasLocalConnectionString: true,
       isLocalProxyAvailable,
       isPasswordPopulated: hasPassword,
       isLocalhost,
@@ -397,6 +399,15 @@ const CreateConnectionPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/create/')({
+  beforeLoad: ({ context: { collections } }) => {
+    if (
+      !permix.check('connection.create', {
+        count: collections.connectionsCollection.size,
+      })
+    ) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: CreateConnectionPage,
   head: () => ({
     meta: [{ title: title('Create connection') }],

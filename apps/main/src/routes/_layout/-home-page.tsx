@@ -1,4 +1,6 @@
-import { mainModules } from '~/lib/modules'
+import { Features } from '~/modules/features/module'
+import { Pricing } from '~/modules/pricing/module'
+import { Testimonials } from '~/modules/testimonials/module'
 
 import { Demo } from './-components/demo'
 import { Hero } from './-components/hero'
@@ -9,8 +11,8 @@ export const HomePage = () => (
       <Hero className="sticky top-(--navbar-height)" />
       <Demo />
     </div>
-    {mainModules.homeSections.map(({ Component }, index) => (
-      <Component key={index} />
-    ))}
+    <Features />
+    <Testimonials />
+    <Pricing />
   </main>
 )

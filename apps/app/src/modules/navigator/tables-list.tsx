@@ -6,9 +6,8 @@ import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { defaultRangeExtractor } from '@tanstack/react-virtual'
 import { motion } from 'motion/react'
-import type { CSSProperties, ComponentRef, ReactNode } from 'react'
+import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -150,12 +149,6 @@ export const TablesList = ({
     }
   }
 
-  const schemaIndexes = rows.flatMap((row, index) =>
-    row.kind === 'schema' ? [index] : []
-  )
-  const stickyIndexAt = (startIndex: number) =>
-    schemaIndexes.findLast((index) => index <= startIndex)
-
   const { virtualItems, totalSize, scrollToIndex, range } = useVirtualizer({
     count: rows.length,
     estimateSize: (index) => {
@@ -165,16 +158,12 @@ export const TablesList = ({
     getItemKey: (index) => rows[index]?.id ?? index,
     getScrollElement: () => parentRef.current,
     overscan: 12,
-    rangeExtractor: (visibleRange) => {
-      const indexes = defaultRangeExtractor(visibleRange)
-      const stickyIndex = stickyIndexAt(visibleRange.startIndex)
-
-      return stickyIndex === undefined || indexes.includes(stickyIndex)
-        ? indexes
-        : [stickyIndex, ...indexes]
-    },
   })
-  const stickyIndex = range ? stickyIndexAt(range.startIndex) : undefined
+  const stickyRow =
+    range &&
+    rows.findLast(
+      (row, index) => row.kind === 'schema' && index <= range.startIndex
+    )
 
   const router = useRouter()
   const scrollToActiveEvent = useEffectEvent(() => {
@@ -246,109 +235,111 @@ export const TablesList = ({
     )
   }
 
+  const rowContentOf = (row: TreeRow) => {
+    if (row.kind === 'schema') {
+      return (
+        <div className="h-full pt-0.5 pb-1">
+          <SchemaRow
+            row={row}
+            onCreateTable={() => onCreateTable(row.name)}
+            onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
+            onRename={
+              capabilitiesOf(connection.type).renameSchema
+                ? () => renameSchemaDialogRef.current?.rename(row.name)
+                : undefined
+            }
+            onToggle={() => toggleSchema(row.name)}
+          />
+        </div>
+      )
+    }
+
+    if (row.kind === 'separator') {
+      return (
+        <div className="flex h-full items-center">
+          <Separator className="mx-2 w-full" />
+        </div>
+      )
+    }
+
+    return (
+      <div className="pb-0.5">
+        <TableRow
+          row={row}
+          search={search}
+          onRename={() =>
+            renameTableDialogRef.current?.rename(row.schema, row.table.name)
+          }
+          onDrop={() =>
+            dropTableDialogRef.current?.drop(row.schema, row.table.name)
+          }
+        />
+      </div>
+    )
+  }
+
   return (
-    <SidebarContent
-      ref={parentRef}
-      className={cn(
-        'scroll-fade block overflow-y-auto pb-2 pl-2',
-        stickyIndex !== undefined &&
-          'mask-add! [--scroll-fade-mask:linear-gradient(to_bottom,#000_var(--sticky-height),transparent_var(--sticky-height)),linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)] [-webkit-mask-composite:source-over]!',
-        className
-      )}
+    <div
+      className={cn('relative flex flex-col', className)}
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
-      <DropSchemaDialog ref={dropSchemaDialogRef} />
-      <DropTableDialog ref={dropTableDialogRef} />
-      <RenameSchemaDialog ref={renameSchemaDialogRef} />
-      <RenameTableDialog ref={renameTableDialogRef} />
-      <SidebarMenu
-        data-mask
-        className="relative h-(--total-size) w-full gap-0"
-        style={{ '--total-size': `${totalSize}px` } as CSSProperties}
+      <SidebarContent
+        ref={parentRef}
+        className={cn(
+          'scroll-fade block overflow-y-auto pb-2 pl-2',
+          stickyRow &&
+            '[--scroll-fade-mask:linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)]'
+        )}
       >
-        {virtualItems.map((virtualRow) => {
-          const row = rows[virtualRow.index]
-          if (!row) {
-            return null
-          }
+        <DropSchemaDialog ref={dropSchemaDialogRef} />
+        <DropTableDialog ref={dropTableDialogRef} />
+        <RenameSchemaDialog ref={renameSchemaDialogRef} />
+        <RenameTableDialog ref={renameTableDialogRef} />
+        <SidebarMenu
+          data-mask
+          className="relative h-(--total-size) w-full gap-0"
+          style={{ '--total-size': `${totalSize}px` } as CSSProperties}
+        >
+          {virtualItems.map((virtualRow) => {
+            const row = rows[virtualRow.index]
+            if (!row) {
+              return null
+            }
 
-          let rowContent: ReactNode
-          if (row.kind === 'schema') {
-            rowContent = (
-              <div className="h-full pt-0.5 pb-1">
-                <SchemaRow
-                  row={row}
-                  onCreateTable={() => onCreateTable(row.name)}
-                  onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
-                  onRename={
-                    capabilitiesOf(connection.type).renameSchema
-                      ? () => renameSchemaDialogRef.current?.rename(row.name)
-                      : undefined
-                  }
-                  onToggle={() => toggleSchema(row.name)}
-                />
-              </div>
-            )
-          } else if (row.kind === 'separator') {
-            rowContent = (
-              <div className="flex h-full items-center">
-                <Separator className="mx-2 w-full" />
-              </div>
-            )
-          } else {
-            rowContent = (
-              <div className="pb-0.5">
-                <TableRow
-                  row={row}
-                  search={search}
-                  onRename={() =>
-                    renameTableDialogRef.current?.rename(
-                      row.schema,
-                      row.table.name
-                    )
-                  }
-                  onDrop={() =>
-                    dropTableDialogRef.current?.drop(row.schema, row.table.name)
-                  }
-                />
-              </div>
-            )
-          }
-
-          if (virtualRow.index === stickyIndex) {
             return (
-              <li
+              <motion.li
                 key={virtualRow.key}
-                className="group/menu-item bg-body sticky top-0 z-10 h-(--row-height) backdrop-blur-md"
+                initial={false}
+                animate={{ y: virtualRow.start }}
+                transition={
+                  search || !isSearchSettled
+                    ? { duration: 0 }
+                    : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
+                }
+                className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
                 style={
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
               >
-                {rowContent}
-              </li>
+                {rowContentOf(row)}
+              </motion.li>
             )
+          })}
+        </SidebarMenu>
+      </SidebarContent>
+      {stickyRow && (
+        <SidebarMenu
+          data-mask
+          className="absolute inset-x-0 top-0 pl-2"
+          onWheel={(event) =>
+            parentRef.current?.scrollBy({ top: event.deltaY })
           }
-
-          return (
-            <motion.li
-              key={virtualRow.key}
-              initial={false}
-              animate={{ y: virtualRow.start }}
-              transition={
-                search || !isSearchSettled
-                  ? { duration: 0 }
-                  : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
-              }
-              className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
-              style={
-                { '--row-height': `${virtualRow.size}px` } as CSSProperties
-              }
-            >
-              {rowContent}
-            </motion.li>
-          )
-        })}
-      </SidebarMenu>
-    </SidebarContent>
+        >
+          <SidebarMenuItem className="h-(--sticky-height)">
+            {rowContentOf(stickyRow)}
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
+    </div>
   )
 }

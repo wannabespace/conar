@@ -1,11 +1,11 @@
 import { type } from 'arktype'
 
-import { authMiddleware, orpc } from '~/orpc'
+import { accountMiddleware, orpc } from '~/orpc'
 
 import { codeChallengePublisher, codeChallengeRedis } from './code-challenge'
 
 export const publish = orpc
-  .use(authMiddleware)
+  .use(accountMiddleware)
   .input(
     type({
       codeChallenge: 'string',

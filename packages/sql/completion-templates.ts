@@ -2,7 +2,7 @@ import type { SqlCatalog } from './catalog'
 import { findTable } from './catalog'
 import type { CompletionContext } from './completion-context'
 import type { CompletionItem } from './completion-items'
-import { ordered, sqlName } from './completion-items'
+import { orderedItems, quoteIfNeeded } from './completion-items'
 import type { StatementScope, TableRef } from './scope'
 
 const singular = (name: string) => {
@@ -45,7 +45,7 @@ const joinConditionItems = (
       }
     }
   }
-  return ordered(
+  return orderedItems(
     pairs.map((label) => ({ label })),
     'column'
   )
@@ -62,8 +62,8 @@ const insertTemplate = (
     return []
   }
   const names = columns.map((column) => column.name)
-  const inserted = names.map((name) => sqlName(catalog, name))
-  return ordered(
+  const inserted = names.map((name) => quoteIfNeeded(catalog, name))
+  return orderedItems(
     [
       {
         detail: names.join(', '),
@@ -76,20 +76,20 @@ const insertTemplate = (
   )
 }
 
-export const slotItems = (
+export const templateItems = (
   context: CompletionContext,
   catalog: SqlCatalog
 ): CompletionItem[] => {
-  const { scope, selected, slot } = context
-  if (slot === 'select') {
+  const { scope, selectedColumns, template } = context
+  if (template === 'select') {
     const [only] = scope.tables
     const table =
       only && scope.tables.length === 1
         ? findTable(catalog, only.name, only.schema)
         : undefined
     const all =
-      table?.columns?.map((column) => sqlName(catalog, column.name)) ?? []
-    return ordered(
+      table?.columns?.map((column) => quoteIfNeeded(catalog, column.name)) ?? []
+    return orderedItems(
       [
         { label: '*' },
         ...(all.length > 0
@@ -105,21 +105,26 @@ export const slotItems = (
       'column'
     )
   }
-  if (slot === 'group-by' && selected.length > 0) {
-    return ordered(
+  if (template === 'group-by' && selectedColumns.length > 0) {
+    return orderedItems(
       [
-        ...(selected.length > 1
-          ? [{ detail: 'every selected column', label: selected.join(', ') }]
+        ...(selectedColumns.length > 1
+          ? [
+              {
+                detail: 'every selected column',
+                label: selectedColumns.join(', '),
+              },
+            ]
           : []),
-        ...selected.map((label) => ({ label })),
+        ...selectedColumns.map((label) => ({ label })),
       ],
       'column'
     )
   }
-  if (slot === 'join-on') {
+  if (template === 'join-on') {
     return joinConditionItems(scope, catalog)
   }
-  if (slot === 'into') {
+  if (template === 'into') {
     return insertTemplate(scope, catalog)
   }
   return []

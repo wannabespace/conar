@@ -6,14 +6,14 @@ import {
   columnItems,
   functionItems,
   keywordItems,
-  ordered,
-  resolveSubject,
+  orderedItems,
+  resolveComparedColumn,
   scopeColumnItems,
-  scopeTable,
-  sqlName,
+  tableForQualifier,
+  quoteIfNeeded,
   tableItems,
 } from './completion-items'
-import { slotItems } from './completion-slots'
+import { templateItems } from './completion-templates'
 import type { DialectSpec } from './dialect'
 
 const OPERATORS = [
@@ -64,7 +64,8 @@ const qualifiedItems = (
     return table ? columnItems(catalog, table) : []
   }
   const table =
-    scopeTable(context.scope, catalog, first) ?? findTable(catalog, first, null)
+    tableForQualifier(context.scope, catalog, first) ??
+    findTable(catalog, first, null)
   if (table) {
     return columnItems(catalog, table)
   }
@@ -72,7 +73,7 @@ const qualifiedItems = (
   return (
     schema?.tables.map((item) => ({
       detail: item.kind,
-      insertText: sqlName(catalog, item.name),
+      insertText: quoteIfNeeded(catalog, item.name),
       kind: item.kind === 'view' ? 'view' : 'table',
       label: item.name,
       sortText: `2${item.name}`,
@@ -81,7 +82,7 @@ const qualifiedItems = (
 }
 
 const operatorItems = (
-  resolved: ReturnType<typeof resolveSubject>
+  resolved: ReturnType<typeof resolveComparedColumn>
 ): CompletionItem[] => {
   const type = resolved?.column.type ?? ''
   const first = [
@@ -89,14 +90,14 @@ const operatorItems = (
     ...(TEXT_TYPE.test(type) ? ['=', 'LIKE', 'ILIKE'] : []),
     ...(resolved?.column.nullable ? ['IS NULL', 'IS NOT NULL'] : []),
   ]
-  return ordered(
+  return orderedItems(
     [...new Set([...first, ...OPERATORS])].map((label) => ({ label })),
     'operator'
   )
 }
 
 const valueItems = (
-  resolved: ReturnType<typeof resolveSubject>,
+  resolved: ReturnType<typeof resolveComparedColumn>,
   catalog: SqlCatalog
 ): CompletionItem[] => {
   if (!resolved) {
@@ -105,7 +106,7 @@ const valueItems = (
   const { column, table } = resolved
   const enumeration = findEnum(catalog, table.name, column)
   if (enumeration) {
-    return ordered(
+    return orderedItems(
       enumeration.values.map((value) => ({
         detail: `enum ${enumeration.name}`,
         insertText: `'${value.replaceAll("'", "''")}'`,
@@ -115,7 +116,7 @@ const valueItems = (
     )
   }
   if (BOOLEAN_TYPE.test(column.type)) {
-    return ordered([{ label: 'TRUE' }, { label: 'FALSE' }], 'value')
+    return orderedItems([{ label: 'TRUE' }, { label: 'FALSE' }], 'value')
   }
   return []
 }
@@ -134,7 +135,11 @@ export const completionItems = (
   catalog: SqlCatalog,
   dialect: DialectSpec
 ): CompletionItem[] => {
-  const resolved = resolveSubject(context.subject, context.scope, catalog)
+  const resolved = resolveComparedColumn(
+    context.comparedColumn,
+    context.scope,
+    catalog
+  )
   if (context.inLiteral) {
     return valueItems(resolved, catalog)
       .filter((item) => item.kind === 'enum')
@@ -152,8 +157,8 @@ export const completionItems = (
   switch (context.expects) {
     case 'clause': {
       items.push(
-        ...slotItems(context, catalog),
-        ...ordered(
+        ...templateItems(context, catalog),
+        ...orderedItems(
           context.clauses.map((label) => ({ label })),
           'keyword',
           '1'
@@ -167,7 +172,7 @@ export const completionItems = (
     }
     case 'statement': {
       items.push(
-        ...ordered(
+        ...orderedItems(
           STATEMENT_VERBS.filter((verb) =>
             dialect.keywords.has(verb.split(' ')[0] ?? '')
           ).map((label) => ({ label })),
@@ -178,7 +183,7 @@ export const completionItems = (
     }
     case 'number': {
       items.push(
-        ...ordered(
+        ...orderedItems(
           LIMITS.map((label) => ({ label })),
           'value'
         )
@@ -197,7 +202,7 @@ export const completionItems = (
         ...tableItems(catalog),
         ...catalog.schemas.map((schema) => ({
           detail: 'schema',
-          insertText: sqlName(catalog, schema.name),
+          insertText: quoteIfNeeded(catalog, schema.name),
           kind: 'schema' as const,
           label: schema.name,
           sortText: `3${schema.name}`,
@@ -208,7 +213,7 @@ export const completionItems = (
     case 'column': {
       items.push(
         ...valueItems(resolved, catalog),
-        ...slotItems(context, catalog),
+        ...templateItems(context, catalog),
         ...scopeColumnItems(context.scope, catalog),
         ...functionItems(dialect),
         ...keywordItems(dialect)

@@ -1,13 +1,88 @@
 import { db } from '@tamery/db'
-import { sessions } from '@tamery/db/schema'
+import {
+  connections,
+  members,
+  queries,
+  sessions,
+  workspaces,
+} from '@tamery/db/schema'
 import { challenge } from '@tamery/shared/challenge'
+import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 import { auth } from '~/lib/auth'
-import { orpc } from '~/orpc'
+import { ensureDefaultWorkspace } from '~/lib/workspace'
+import { getWorkspaceSecret, orpc } from '~/orpc'
 
 import { codeChallengeRedis } from './code-challenge'
+
+const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
+  const workspaceId = await ensureDefaultWorkspace(userId)
+  const [secret, guestConnections] = await Promise.all([
+    getWorkspaceSecret(workspaceId),
+    db
+      .select({
+        connectionString: connections.connectionString,
+        id: connections.id,
+        workspaceId: connections.workspaceId,
+      })
+      .from(connections)
+      .where(eq(connections.userId, anonymousUserId)),
+  ])
+  // Connection strings are encrypted with their workspace's secret, so moving one re-encrypts it.
+  const reencrypted = await Promise.all(
+    guestConnections.flatMap(({ connectionString, id, workspaceId: from }) =>
+      connectionString
+        ? [
+            getWorkspaceSecret(from).then((guestSecret) => ({
+              connectionString: encrypt({
+                secret,
+                text: decrypt({
+                  encryptedText: connectionString,
+                  secret: guestSecret,
+                }),
+              }),
+              id,
+            })),
+          ]
+        : []
+    )
+  )
+
+  await db.transaction(async (tx) => {
+    const anonymousMembers = await tx
+      .select({ workspaceId: members.workspaceId })
+      .from(members)
+      .where(eq(members.userId, anonymousUserId))
+
+    await tx
+      .update(connections)
+      .set({ userId, workspaceId })
+      .where(eq(connections.userId, anonymousUserId))
+    await Promise.all(
+      reencrypted.map(({ connectionString, id }) =>
+        tx
+          .update(connections)
+          .set({ connectionString })
+          .where(eq(connections.id, id))
+      )
+    )
+    await tx
+      .update(queries)
+      .set({ userId })
+      .where(eq(queries.userId, anonymousUserId))
+    await tx.delete(workspaces).where(
+      inArray(
+        workspaces.id,
+        anonymousMembers.map((member) => member.workspaceId)
+      )
+    )
+  })
+
+  const context = await auth.$context
+  await context.internalAdapter.deleteUser(anonymousUserId)
+}
 
 export const exchange = orpc
   .input(
@@ -20,6 +95,10 @@ export const exchange = orpc
   .errors({
     FORBIDDEN: {
       message: "We couldn't authenticate you. Please try signing in again.",
+    },
+    INTERNAL_SERVER_ERROR: {
+      message:
+        "We couldn't move your guest connections to your account. Please try signing in again.",
     },
     NOT_ACCEPTABLE: {
       message: "We couldn't authenticate you. Please try signing in again.",
@@ -38,6 +117,18 @@ export const exchange = orpc
 
     if (!data) {
       throw errors.FORBIDDEN()
+    }
+
+    const current = await auth.api.getSession({ headers })
+
+    if (current?.user.isAnonymous) {
+      await adoptAnonymousUser(current.user.id, data.userId).catch((error) => {
+        console.error(
+          `Failed to adopt anonymous user ${current.user.id} into ${data.userId}`,
+          error
+        )
+        throw errors.INTERNAL_SERVER_ERROR({ cause: error })
+      })
     }
 
     const context = await auth.$context

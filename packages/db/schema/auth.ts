@@ -71,6 +71,8 @@ export const twoFactors = d.snakeCase.table(
   {
     ...baseTable,
     backupCodes: d.text().notNull(),
+    failedVerificationCount: d.integer().default(0),
+    lockedUntil: d.timestamp({ withTimezone: true }),
     secret: d.text().notNull(),
     userId: d
       .uuid()

@@ -13,7 +13,7 @@ export interface StatementScope {
   ctes: string[]
   /** Names given after a closing paren — subquery aliases, and harmlessly column aliases too. */
   derived: string[]
-  opaque: boolean
+  hasUnknownColumns: boolean
 }
 
 export const TABLE_INTRODUCERS = ['FROM', 'JOIN', 'INTO', 'UPDATE', 'TABLE']
@@ -125,17 +125,17 @@ const sourcesAfter = (tokens: Token[], index: number) => {
   for (;;) {
     const found = tableRefAt(tokens, cursor, clause)
     if (!found) {
-      const opaque =
+      const hasUnknownColumns =
         clause &&
         (isPunctuation(tokens[cursor], '(') ||
           isPunctuation(tokens[cursor + 1], '('))
-      return { opaque, refs }
+      return { hasUnknownColumns, refs }
     }
     refs.push(found.ref)
     if (
       !(isKeyword(introducer, 'FROM') && isPunctuation(tokens[found.next], ','))
     ) {
-      return { opaque: false, refs }
+      return { hasUnknownColumns: false, refs }
     }
     cursor = found.next + 1
   }
@@ -145,7 +145,7 @@ export const statementScope = (tokens: Token[]): StatementScope => {
   const tables: TableRef[] = []
   const ctes: string[] = []
   const derived: string[] = []
-  let opaque = false
+  let hasUnknownColumns = false
   // One entry per open paren: whether it is a call's argument list, where `FROM` is not a table
   // clause (`EXTRACT(YEAR FROM ts)`, `SUBSTRING(s FROM 1)`).
   const parens: boolean[] = []
@@ -168,9 +168,9 @@ export const statementScope = (tokens: Token[]): StatementScope => {
     } else if (introducesTable(tokens, index) && parens.at(-1) !== true) {
       const sources = sourcesAfter(tokens, index)
       tables.push(...sources.refs)
-      opaque ||= sources.opaque
+      hasUnknownColumns ||= sources.hasUnknownColumns
     }
   }
 
-  return { ctes, derived, opaque, tables }
+  return { ctes, derived, hasUnknownColumns, tables }
 }

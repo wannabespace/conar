@@ -10,10 +10,10 @@ export {
   leavesTransactionOpen,
   splitStatements,
   statementAt,
-  transactionParts,
+  unwrapTransaction,
 } from './statements'
 export type { TokenizerState } from './tokenizer'
 export { INITIAL_STATE, tokenize } from './tokenizer'
-export { changesSchema, destructiveKeywords } from './destructive'
+export { invalidatesCatalog, destructiveKeywords } from './destructive'
 export { statementScope } from './scope'
-export { findTable, locateTable } from './catalog'
+export { findTable, findTableWithSchema } from './catalog'

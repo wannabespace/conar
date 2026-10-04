@@ -43,7 +43,7 @@ import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
 import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
-import { ActionsSeed, importSeedPanel } from './actions/actions-seed'
+import { ActionsSeed } from './actions/actions-seed'
 import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
 
@@ -285,13 +285,7 @@ export const TableToolbar = ({
       <div className="flex shrink-0 items-center gap-1">
         <ActionsColumns />
         <ActionsOrder />
-        <DropdownMenu
-          onOpenChange={(menuOpen) => {
-            if (menuOpen && tableType === 'table') {
-              void importSeedPanel()
-            }
-          }}
-        >
+        <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
               render={

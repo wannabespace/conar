@@ -1,17 +1,17 @@
-import type { Subject } from './cursor'
+import type { ColumnRef } from './cursor'
 import {
   literalAt,
-  quotedContents,
+  stringContentRange,
   qualifierBefore,
   selectedColumns,
-  subjectAt,
-  valueSubject,
+  columnRefAt,
+  columnBeforeValue,
   wordAt,
 } from './cursor'
 import type { DialectSpec } from './dialect'
 import type { StatementScope } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
-import { parseStatements, statementAt } from './statements'
+import { statementsFromTokens, statementAt } from './statements'
 import type { Token } from './tokenizer'
 import { isKeyword, isPunctuation, tokenize } from './tokenizer'
 
@@ -31,9 +31,9 @@ export interface CompletionContext {
     | 'any'
   /** What may follow a finished term, in order — filled when `expects` is `clause`. */
   clauses: string[]
-  slot: 'select' | 'group-by' | 'join-on' | 'into' | null
-  subject: Subject | null
-  selected: string[]
+  template: 'select' | 'group-by' | 'join-on' | 'into' | null
+  comparedColumn: ColumnRef | null
+  selectedColumns: string[]
   keywordCase: 'upper' | 'lower'
   inLiteral: boolean
   scope: StatementScope
@@ -154,12 +154,12 @@ const expectsAfter = (
   return 'any'
 }
 
-const slotAfter = (
+const templateAfter = (
   previous: Token | undefined,
   beforePrevious: Token | undefined,
   clause: string,
   expects: CompletionContext['expects']
-): CompletionContext['slot'] => {
+): CompletionContext['template'] => {
   if (isKeyword(previous, 'SELECT', 'DISTINCT')) {
     return 'select'
   }
@@ -175,14 +175,14 @@ const slotAfter = (
   return null
 }
 
-const subjectBefore = (
+const comparedColumnBefore = (
   before: Token[],
   cursor: number,
   expects: CompletionContext['expects']
 ) =>
   expects === 'operator'
-    ? subjectAt(before, cursor)
-    : valueSubject(before, cursor)
+    ? columnRefAt(before, cursor)
+    : columnBeforeValue(before, cursor)
 
 export const completionContext = (
   text: string,
@@ -191,17 +191,17 @@ export const completionContext = (
 ): CompletionContext => {
   const { tokens } = tokenize(text, dialect)
   const statement = statementAt(
-    parseStatements(text, tokens, dialect),
+    statementsFromTokens(text, tokens, dialect),
     offset,
     text
   )
   const scope = statement
     ? statementScope(statement.tokens)
-    : { ctes: [], derived: [], opaque: false, tables: [] }
+    : { ctes: [], derived: [], hasUnknownColumns: false, tables: [] }
 
   const word = wordAt(tokens, offset)
   const literal = literalAt(tokens, offset)
-  const quoted = quotedContents(literal)
+  const quoted = stringContentRange(literal)
   const before = tokens.filter(
     (token) =>
       token.kind !== 'comment' &&
@@ -238,6 +238,8 @@ export const completionContext = (
 
   return {
     clauses,
+    comparedColumn:
+      literal && !quoted ? null : comparedColumnBefore(before, cursor, expects),
     expects,
     inLiteral: literal !== undefined,
     keywordCase:
@@ -250,8 +252,7 @@ export const completionContext = (
     replaceEnd: replace.end,
     replaceStart: replace.start,
     scope,
-    selected: selectedColumns(statementTokens),
-    slot: slotAfter(previous, beforePrevious, clause, expects),
-    subject: literal && !quoted ? null : subjectBefore(before, cursor, expects),
+    selectedColumns: selectedColumns(statementTokens),
+    template: templateAfter(previous, beforePrevious, clause, expects),
   }
 }
