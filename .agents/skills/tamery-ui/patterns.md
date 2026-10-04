@@ -120,7 +120,7 @@ One modal, no sidebar: `Dialog variant="panel"` (the kit's full-bleed surface, s
 - The preview holds three sample values in state, not recomputed in render (sampling in the body rerolls on every unrelated re-render); a ghost refresh button reseeds them.
 - **The inspector is keyed by column id**, not each stateful child by its own prop — one inspector stays mounted across selections, so state inside it must be reset at the top or it leaks between columns that share a generator.
 - **The picker chooses exactly one generator; NULL mixing is a toggle, not a choice** — a modifier on whatever is selected, so it sits in its own section under the list (nullable columns only) and never enters the `Command` list. The SQL expression sits there for the same reason. Rejected homes: the column header, the preview header, a checkable row in the list.
-- **Only the shell is eager.** The frame, header and column list cost nothing; everything needing the generators (faker, ~180 entries) is a lazy chunk behind `Suspense`, warmed when the toolbar menu opens. The fallback skeletons **the inspector only** — the column names are already in hand, so the list renders for real and swaps in place, and the fallback renders the real `SeedFooter` (count field, free-runs chip, Cancel, Seed). Nothing sits above the panes: a banner the fallback lacks shoves the whole list down on swap. The free-runs quota is a ghost chip in the footer that opens the upgrade, never an alert row.
+- **The panel mounts with the drawer, no `Suspense` skeleton.** Nothing sits above the panes; the free-runs quota is a ghost chip in the footer that opens the upgrade, never an alert row.
 
 ## Schema definition lists
 
