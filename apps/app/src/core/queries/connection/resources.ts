@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 
-import { getCollections } from '~/core/collections'
+import { getCollections, mutateOffline } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
 import { connectionToQueryParams, createQuery } from '~/core/runtime/query'
 
@@ -78,17 +78,20 @@ export const connectionResourcesQueryOptions = (connection: Connection) =>
           .select(({ resource }) => ({ name: resource.name }))
       )
       const storedNames = new Set(stored.map((resource) => resource.name))
+      const missing = resources.filter((name) => !storedNames.has(name))
 
-      for (const name of resources) {
-        if (!storedNames.has(name)) {
-          connectionsResourcesCollection.insert({
-            connectionId: connection.id,
-            createdAt: new Date(),
-            id: v7(),
-            name,
-            updatedAt: new Date(),
-          })
-        }
+      if (missing.length > 0) {
+        mutateOffline(() => {
+          for (const name of missing) {
+            connectionsResourcesCollection.insert({
+              connectionId: connection.id,
+              createdAt: new Date(),
+              id: v7(),
+              name,
+              updatedAt: new Date(),
+            })
+          }
+        })
       }
 
       return resources

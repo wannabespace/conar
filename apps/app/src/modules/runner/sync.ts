@@ -26,27 +26,10 @@ export const createQueriesCollection = () =>
         },
         getKey: (item) => item.id,
         id: 'queries',
-        onDelete: async ({ transaction }) => {
-          await orpc.queries.remove.call(
-            transaction.mutations.map((m) => ({ id: m.key }))
-          )
-        },
-        onInsert: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map((m) =>
-              orpc.queries.create.call(m.modified)
-            )
-          )
-        },
-        onUpdate: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map((m) =>
-              orpc.queries.update.call({
-                id: m.key,
-                name: m.changes.name,
-              })
-            )
-          )
+        mutations: {
+          delete: (id) => orpc.queries.remove.call({ id }),
+          insert: (value) => orpc.queries.create.call(value),
+          update: (id, { name }) => orpc.queries.update.call({ id, name }),
         },
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
       }),

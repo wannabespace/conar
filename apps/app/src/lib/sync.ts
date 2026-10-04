@@ -1,5 +1,5 @@
 import { sleep } from '@tamery/shared/utils'
-import type { SyncConfig } from '@tanstack/react-db'
+import type { PendingMutation, SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
@@ -75,12 +75,6 @@ export type SyncMessage<T> =
   | { type: 'update'; value: T }
   | { type: 'delete'; key: string }
 
-type MutationFn<T> = (params: {
-  transaction: {
-    mutations: { key: string; modified: T; changes: Partial<T> }[]
-  }
-}) => Promise<void>
-
 export type SyncEventsFn<T> = (params: {
   signal: AbortSignal
   write: (message: SyncMessage<T>) => void
@@ -88,6 +82,18 @@ export type SyncEventsFn<T> = (params: {
 
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
+
+const whenOnline = (signal: AbortSignal) => {
+  const { promise, resolve } = Promise.withResolvers<undefined>()
+
+  if (navigator.onLine) {
+    resolve()
+  } else {
+    window.addEventListener('online', () => resolve(), { once: true, signal })
+  }
+
+  return promise
+}
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
@@ -97,9 +103,11 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
     rows: { id: string; updatedAt: Date }[]
     signal: AbortSignal
   }) => Promise<SyncMessage<T>[]>
-  onInsert?: MutationFn<T>
-  onUpdate?: MutationFn<T>
-  onDelete?: MutationFn<T>
+  mutations?: {
+    delete: (key: string) => Promise<unknown>
+    insert: (value: T) => Promise<unknown>
+    update: (key: string, changes: Partial<T>) => Promise<unknown>
+  }
 }
 
 export const syncCollectionOptions = <T extends { updatedAt: Date }>(
@@ -107,6 +115,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
 ) => {
   const tracker = createSyncTracker()
   const firstSync = Promise.withResolvers<undefined>()
+  let writeSynced: ((items: SyncMessage<T>[]) => void) | null = null
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -118,7 +127,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           write({ key: item.key, type: 'delete' })
           return
         }
-        write({ type: item.type, value: item.value })
+        // Always an upsert: `push` may already have written the row as synced,
+        // and an `insert` of a differing value throws DuplicateKeySyncError.
+        write({ type: 'update', value: item.value })
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
@@ -142,11 +153,16 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
               return
             }
 
-            const items = await collection.toArrayWhenReady()
-            const rows = items.map((item) => ({
-              id: config.getKey(item),
-              updatedAt: item.updatedAt,
-            }))
+            await collection.stateWhenReady()
+            // Synced rows only: a row still waiting in the offline outbox is
+            // unknown to the server, which would answer with its delete and
+            // race the insert the outbox is about to send.
+            const rows = [...collection._state.syncedData.values()].map(
+              (item) => ({
+                id: config.getKey(item),
+                updatedAt: item.updatedAt,
+              })
+            )
             writeItems(await config.sync({ rows, signal }))
           },
         })
@@ -166,6 +182,11 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         let failures = 0
 
         while (!signal.aborted) {
+          if (!navigator.onLine) {
+            firstSync.resolve()
+          }
+          // oxlint-disable-next-line no-await-in-loop
+          await whenOnline(signal)
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
             catch: (error) => error,
@@ -184,7 +205,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
             abortController.abort(`${config.id} sync unauthorized`)
             return
           } else {
-            posthog.captureException(result.error)
+            if (navigator.onLine) {
+              posthog.captureException(result.error)
+            }
             failures += 1
           }
 
@@ -196,6 +219,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
       }
 
+      writeSynced = writeItems
       markReady()
       run()
 
@@ -211,12 +235,27 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     defaultIndexType: BasicIndex,
     getKey: config.getKey,
     id: config.id,
-    onDelete: config.onDelete,
-    onInsert: config.onInsert,
-    onUpdate: config.onUpdate,
     sync,
     utils: {
       awaitChange: tracker.awaitChange,
+      // Sends one offline-outbox mutation, then writes it as synced so the row
+      // holds still between the optimistic layer dropping and the server echo.
+      push: async (mutation: PendingMutation<T>) => {
+        if (!config.mutations) {
+          throw new Error(`${config.id} has no server mutations`)
+        }
+
+        if (mutation.type === 'delete') {
+          await config.mutations.delete(mutation.key)
+          writeSynced?.([{ key: mutation.key, type: 'delete' }])
+          return
+        }
+
+        await (mutation.type === 'insert'
+          ? config.mutations.insert(mutation.modified)
+          : config.mutations.update(mutation.key, mutation.changes))
+        writeSynced?.([{ type: 'update', value: mutation.modified }])
+      },
       whenSynced: () => firstSync.promise,
     },
   }

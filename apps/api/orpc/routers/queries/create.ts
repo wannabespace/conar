@@ -31,14 +31,13 @@ export const create = orpc
         ...input,
         userId: context.user.id,
       })
+      .onConflictDoNothing()
       .returning()
 
-    if (!inserted) {
-      throw new Error('Failed to create query')
+    if (inserted) {
+      publisher.publish(context.user.id, {
+        type: 'insert',
+        value: inserted,
+      })
     }
-
-    publisher.publish(context.user.id, {
-      type: 'insert',
-      value: inserted,
-    })
   })

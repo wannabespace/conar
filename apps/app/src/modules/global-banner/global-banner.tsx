@@ -199,31 +199,26 @@ export const GlobalBanner = () => {
   const dismissed = useSubscription(bannerDismissedValue)
   const delayPassed = useDelay(INITIAL_DELAY)
 
-  const { data = [] } = useQuery(
+  const { data: serverItems = [] } = useQuery(
     orpc.banner.queryOptions({
       enabled: delayPassed,
       refetchInterval: 1000 * 60 * 5,
-      select: (bannerItems) => {
-        const filtered = bannerItems?.filter(
-          (item) => !dismissed.includes(item.text)
-        )
-        return [
-          ...(isOnline
-            ? []
-            : [
-                {
-                  dismissible: false,
-                  text: 'You are currently offline. Some features may be unavailable until your internet connection is restored.',
-                  type: 'info',
-                } satisfies BannerItem,
-              ]),
-          ...filtered,
-        ]
-      },
+      select: (bannerItems) =>
+        bannerItems.filter((item) => !dismissed.includes(item.text)),
       staleTime: 1000 * 60 * 5,
       throwOnError: false,
     })
   )
+  const data = isOnline
+    ? serverItems
+    : [
+        {
+          dismissible: false,
+          text: "You're offline. Your changes are saved and will sync once you're back online. AI features are unavailable.",
+          type: 'info',
+        } satisfies BannerItem,
+        ...serverItems,
+      ]
 
   return (
     <AnimatePresence initial={false} mode="popLayout">

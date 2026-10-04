@@ -2,7 +2,7 @@ import { db } from '@tamery/db'
 import { connections, connectionsInsertSchema } from '@tamery/db/schema'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
@@ -15,12 +15,23 @@ export const create = orpc
   .input(
     connectionsInsertSchema
       .omit('userId', 'workspaceId')
-      .and(type({ 'workspaceId?': 'string | null' }))
+      .and(type({ id: 'string.uuid.v7', 'workspaceId?': 'string | null' }))
   )
   .errors({
     FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },
   })
   .handler(async ({ context, errors, input }) => {
+    // Before the limit check: an outbox replay of a create whose response was
+    // lost would count its own row and fail with FORBIDDEN.
+    const alreadyCreated = await db.$count(
+      connections,
+      and(eq(connections.id, input.id), eq(connections.userId, context.user.id))
+    )
+
+    if (alreadyCreated > 0) {
+      return
+    }
+
     const allowedWorkspaceIds = await memberWorkspaceIds(
       context.user.id,
       typeof input.workspaceId === 'string' ? [input.workspaceId] : []
@@ -52,14 +63,13 @@ export const create = orpc
         userId: context.user.id,
         workspaceId,
       })
+      .onConflictDoNothing()
       .returning()
 
-    if (!inserted) {
-      throw new Error('Failed to create connection')
+    if (inserted) {
+      publisher.publish(context.user.id, {
+        type: 'insert',
+        value: inserted,
+      })
     }
-
-    publisher.publish(context.user.id, {
-      type: 'insert',
-      value: inserted,
-    })
   })

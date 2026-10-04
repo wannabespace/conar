@@ -26,7 +26,7 @@ const isSessionExpiredError = (error: unknown) =>
 
 const errorStatus: Record<string, number | undefined> = COMMON_ERROR_STATUS_MAP
 
-const isServerError = (error: unknown) =>
+export const isServerError = (error: unknown) =>
   error instanceof ORPCError
     ? (errorStatus[error.code] ?? 500) >= 500
     : typeof error === 'object' &&

@@ -32,7 +32,7 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-export const prepareConnectionToCloud = async (
+const prepareConnectionToCloud = async (
   connectionStrings: ConnectionStringsCollection,
   connection: Connection
 ) => {
@@ -73,29 +73,14 @@ export const createConnectionsCollection = (
         },
         getKey: (item) => item.id,
         id: 'connections',
-        onDelete: async ({ transaction }) => {
-          await orpc.connections.remove.call(
-            transaction.mutations.map((m) => ({ id: m.key }))
-          )
-        },
-        onInsert: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map(async (m) =>
-              orpc.connections.create.call(
-                await prepareConnectionToCloud(connectionStrings, m.modified)
-              )
-            )
-          )
-        },
-        onUpdate: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map((m) =>
-              orpc.connections.update.call({
-                id: m.key,
-                ...m.changes,
-              })
-            )
-          )
+        mutations: {
+          delete: (id) => orpc.connections.remove.call({ id }),
+          insert: async (value) =>
+            orpc.connections.create.call(
+              await prepareConnectionToCloud(connectionStrings, value)
+            ),
+          update: (id, changes) =>
+            orpc.connections.update.call({ id, ...changes }),
         },
         sync: ({ rows, signal }) =>
           orpc.connections.sync.call(rows, { signal }),
@@ -119,24 +104,11 @@ export const createConnectionsResourcesCollection = () =>
         },
         getKey: (item) => item.id,
         id: 'connections-resources',
-        onDelete: async ({ transaction }) => {
-          await orpc.connectionsResources.remove.call(
-            transaction.mutations.map((m) => ({ id: m.key }))
-          )
-        },
-        onInsert: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map((m) =>
-              orpc.connectionsResources.create.call(m.modified)
-            )
-          )
-        },
-        onUpdate: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map((m) =>
-              orpc.connectionsResources.update.call({ id: m.key, ...m.changes })
-            )
-          )
+        mutations: {
+          delete: (id) => orpc.connectionsResources.remove.call({ id }),
+          insert: (value) => orpc.connectionsResources.create.call(value),
+          update: (id, changes) =>
+            orpc.connectionsResources.update.call({ id, ...changes }),
         },
         sync: ({ rows, signal }) =>
           orpc.connectionsResources.sync.call(rows, { signal }),

@@ -66,7 +66,7 @@ export const loadPermissions = async () => {
 
 export const resetGuestState = async () => {
   const { cleanCollections } = await import('~/core/collections')
-  cleanCollections()
+  await cleanCollections()
   subscriptionQueryClient.clear()
   await loadPermissions()
 }
