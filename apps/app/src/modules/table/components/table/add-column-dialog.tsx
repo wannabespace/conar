@@ -42,6 +42,7 @@ export const AddColumnDialog = ({
   }))
 
   const { mutate: addColumn, isPending } = useMutation({
+    meta: { event: 'column_added' },
     mutationFn: async (column: NewColumn) => {
       await addColumnQuery({ column, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)

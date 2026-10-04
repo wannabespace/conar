@@ -41,6 +41,7 @@ export const CreateTableDialog = () => {
   }))
 
   const { mutate: createTable, isPending } = useMutation({
+    meta: { event: 'table_created' },
     mutationFn: async ({
       schema,
       table,

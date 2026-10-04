@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
+import { posthog } from '~/lib/posthog'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{
@@ -81,6 +82,7 @@ export const RemoveConnectionDialog = ({
       }
     }
 
+    posthog.capture('connection_removed')
     toast.success('Connection removed successfully')
     setOpen(false)
   }

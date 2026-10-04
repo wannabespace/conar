@@ -139,6 +139,7 @@ const useExportMutation = ({
   getData: ExportDataProps['getData']
 }) =>
   useMutation({
+    meta: { event: 'data_exported' },
     mutationFn: async ({ type, format, filters, limit }: ExportProps) => {
       const data = await getData({ filters, limit })
       const content = generateContent({ data, format })

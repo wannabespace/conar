@@ -19,6 +19,7 @@ import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { connectionResourcesQueryOptions } from '~/core/queries/connection/resources'
 import { openNewWindow } from '~/lib/new-window'
+import { posthog } from '~/lib/posthog'
 
 import { ConnectionCardMeta } from './connection-card-meta'
 import { ConnectionCardStatus } from './connection-card-status'
@@ -64,7 +65,10 @@ export const ConnectionCard = ({
     ...connectionResourcesQueryOptions(connection),
     enabled: canSend,
   })
-  const refresh = useMutation({ mutationFn: () => refetch() })
+  const refresh = useMutation({
+    meta: { event: 'connection_refreshed' },
+    mutationFn: () => refetch(),
+  })
 
   const defaultResourceName = connectionString?.defaultResourceName ?? null
 
@@ -123,6 +127,7 @@ export const ConnectionCard = ({
       Object.assign(draft, connectionStringRecord)
     })
 
+    posthog.capture('connection_password_cleared')
     toast.success('Password cleared from this device')
   }
 

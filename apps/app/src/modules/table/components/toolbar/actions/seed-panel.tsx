@@ -478,6 +478,7 @@ export const SeedPanel = ({
     activeGenerators.length > 0 && !hasEmptyExpression && !hasReachedLimit
 
   const { mutate: seed, isPending } = useMutation({
+    meta: { event: 'table_seeded' },
     mutationFn: async () => {
       const queryParams =
         await connectionResourceToQueryParams(connectionResource)

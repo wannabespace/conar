@@ -11,6 +11,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
+import { posthog } from '~/lib/posthog'
 
 import type { Query } from '../sync'
 
@@ -42,6 +43,7 @@ export const RemoveQueryDialog = ({ ref }: RemoveQueryDialogProps) => {
     }
 
     queriesCollection.delete(query.id)
+    posthog.capture('saved_query_removed')
     toast.success('Query removed successfully')
     setOpen(false)
   }

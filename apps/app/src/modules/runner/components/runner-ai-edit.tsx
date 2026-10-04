@@ -8,6 +8,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { orpc } from '~/lib/orpc'
+import { posthog } from '~/lib/posthog'
 
 import { AiEditZone } from './runner-ai-edit-zone'
 import type { Phase } from './runner-ai-edit-zone'
@@ -89,6 +90,7 @@ export const useAiEdit = ({
   }
 
   const reject = () => {
+    posthog.capture('ai_sql_edit_rejected')
     revert()
     closeAndFocus()
   }
@@ -177,6 +179,7 @@ export const useAiEdit = ({
   }
 
   const fix = (range: Range, error: string) => {
+    posthog.capture('ai_sql_fix_requested')
     close()
     // Fixing has no input to hold focus, so Esc reaches the editor's reject binding instead.
     editorRef.current?.focus()
@@ -186,12 +189,14 @@ export const useAiEdit = ({
   }
 
   const accept = () => {
+    posthog.capture('ai_sql_edit_accepted')
     if (phase?.kind === 'review') {
       closeAndFocus()
     }
   }
 
   const submit = (prompt: string, images: File[]) => {
+    posthog.capture('ai_sql_edit_requested', { images: images.length })
     const range = target()
     if (range) {
       request(range, { busy: true, kind: 'prompt' }, (input, signal) =>

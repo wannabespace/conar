@@ -70,6 +70,7 @@ export const PolicyInspector = ({
   type: connectionType,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
+    meta: { event: 'policy_saved' },
     mutationFn: (draft: PolicyDraft) =>
       savePolicy({ connectionType, draft, item, run }),
     onSuccess: async (_result, draft) => {

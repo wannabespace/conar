@@ -117,6 +117,7 @@ export const CreateSchemaDialog = () => {
   }))
 
   const { mutate: createSchema, isPending } = useMutation({
+    meta: { event: 'schema_created' },
     mutationFn: async (schema: string) => {
       await createSchemaQuery(schema).run(
         await connectionResourceToQueryParams(connectionResource)

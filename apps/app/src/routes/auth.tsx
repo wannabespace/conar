@@ -21,6 +21,7 @@ import {
 } from '~/lib/auth'
 import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
+import { posthog } from '~/lib/posthog'
 
 const signInUrl = (type: 'web' | 'desktop') => {
   const verifier = challenge.noble.generateVerifier()
@@ -113,12 +114,14 @@ const AuthPage = () => {
         }
 
         router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
+        posthog.capture(exchangeData.newUser ? 'signed_up' : 'signed_in')
         successAuthToast(!!exchangeData.newUser)
       },
     })
   )
 
   const { mutate: continueAnonymously, isPending: isContinuing } = useMutation({
+    meta: { event: 'signed_in_as_guest' },
     mutationFn: () =>
       authClient.signIn.anonymous({ fetchOptions: { throw: true } }),
     onSuccess: async ({ token }) => {

@@ -57,6 +57,7 @@ export const PredicatePolicyInspector = ({
     resourceFunctionsQueryOptions({ connectionResource })
   )
   const mutation = useMutation({
+    meta: { event: 'policy_saved' },
     mutationFn: (draft: PredicatePolicyDraft) =>
       run(
         item

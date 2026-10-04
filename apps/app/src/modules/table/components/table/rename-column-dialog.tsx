@@ -55,6 +55,7 @@ export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
   }))
 
   const { mutate: renameColumn, isPending } = useMutation({
+    meta: { event: 'column_renamed' },
     mutationFn: async () => {
       await renameColumnQuery({
         newColumn: newColumnName,

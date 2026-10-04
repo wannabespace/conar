@@ -562,6 +562,7 @@ export const FilterSearchBar = ({
 
   const { mutate: generateFilter, isPending } = useMutation(
     orpc.ai.filters.mutationOptions({
+      meta: { event: 'ai_filter_generated' },
       onError: (error) => {
         if (isDefinedError(error) && error.code === 'FORBIDDEN') {
           setFreeAiUsage(error.data)

@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
+import { posthog } from '~/lib/posthog'
 
 import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
@@ -96,6 +97,7 @@ export const TableCellContextMenu = ({
             ref: EQUAL_FILTER,
             values: cellToFilterValues(EQUAL_FILTER, value),
           })
+          posthog.capture('cell_filter_added')
           toast.success('Filter added')
         },
       })

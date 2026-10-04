@@ -20,6 +20,7 @@ import {
   cancelQuery,
   connectionResourceToQueryParams,
 } from '~/core/runtime/query'
+import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
 import { runHistory } from './history'
@@ -225,8 +226,13 @@ export const runStatements = async ({
   run.running = false
   publish()
   runHistory.add(connectionResource.id, ran)
-
   const connectionType = params?.type
+  posthog.capture('query_run', {
+    failed: failedAt !== undefined,
+    statements: statements.length,
+    stopped: signal.aborted,
+    type: connectionType,
+  })
   if (
     connectionType &&
     invalidatesCatalog(

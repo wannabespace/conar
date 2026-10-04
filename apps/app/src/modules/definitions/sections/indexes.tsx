@@ -284,6 +284,7 @@ const IndexInspector = ({
   type: connectionType,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
+    meta: { event: 'index_saved' },
     mutationFn: (draft: IndexDraft) =>
       saveIndex({ connectionType, draft, item, run }),
     onSuccess: async (_result, draft) => {

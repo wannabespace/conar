@@ -51,6 +51,7 @@ const PrivilegeInspector = ({
   selectedSchema,
 }: SectionInspectorProps<PrivilegeItem>) => {
   const mutation = useMutation({
+    meta: { event: 'privilege_saved' },
     mutationFn: (draft: PrivilegeTarget) =>
       run(grantPrivilegeQuery({ ...draft, grantee: draft.grantee.trim() })),
     onSuccess: async (_result, draft) => {

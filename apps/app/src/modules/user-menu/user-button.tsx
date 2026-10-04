@@ -84,6 +84,7 @@ export const UserButton = ({
   const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   const { mutate: clearLocalCache, isPending: isClearingCache } = useMutation({
+    meta: { event: 'local_cache_cleared' },
     mutationFn: clearLocalAppCache,
     onError: (err) => {
       console.error(err)
