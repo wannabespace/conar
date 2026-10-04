@@ -33,7 +33,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -42,7 +41,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { SidebarButton } from '~/components/sidebar-link'
 import { getValueForEditor } from '~/core/connection/utils'
 import { distinctQuery } from '~/core/queries/rows/distinct'
 import { insertQuery } from '~/core/queries/rows/insert'
@@ -88,7 +86,6 @@ import {
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const SEED_INSPECTOR_ID = 'seed-inspector'
 const PREVIEW_ROWS = 3
 const MAX_SEED_ROWS = 10_000
 
@@ -321,12 +318,7 @@ const Inspector = ({
     generator.generatorId !== SKIP_GENERATOR
 
   return (
-    <div
-      id={SEED_INSPECTOR_ID}
-      role="tabpanel"
-      aria-labelledby={`seed-column-${column.id}`}
-      className="flex min-w-0 flex-1 flex-col"
-    >
+    <div className="flex min-w-0 flex-1 flex-col">
       <div className="flex h-9 shrink-0 items-center gap-1.5 border-b px-3">
         <span data-mask className="truncate text-sm font-medium">
           {column.id}
@@ -466,26 +458,8 @@ export const SeedPanel = ({
         }) satisfies typeof state
     )
 
-  const selectAt = (index: number) => {
-    const column = columns.at(Math.min(index, columns.length - 1))
-    if (column) {
-      setSelectedId(column.id)
-    }
-  }
-
-  const selectedIndex = columns.findIndex(
-    (column) => column.id === selectedColumn?.id
-  )
-
   useHotkeys(
     [
-      { callback: () => selectAt(selectedIndex + 1), hotkey: 'ArrowDown' },
-      {
-        callback: () => selectAt(Math.max(0, selectedIndex - 1)),
-        hotkey: 'ArrowUp',
-      },
-      { callback: () => selectAt(0), hotkey: 'Home' },
-      { callback: () => selectAt(columns.length - 1), hotkey: 'End' },
       { callback: () => searchRef.current?.focus(), hotkey: 'ArrowRight' },
       { callback: () => searchRef.current?.focus(), hotkey: 'Enter' },
     ],
@@ -573,59 +547,49 @@ export const SeedPanel = ({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1">
-        <div
-          ref={columnsRef}
-          role="tablist"
-          aria-orientation="vertical"
-          tabIndex={-1}
-          aria-label="Columns"
-          aria-activedescendant={
-            selectedColumn && `seed-column-${selectedColumn.id}`
-          }
-          className="no-scrollbar scroll-fade flex w-72 shrink-0 flex-col gap-px overflow-y-auto border-r p-2 outline-none"
-        >
-          {columns.map((column) => {
-            const generator = columnGenerators[column.id]
-            const active = column.id === selectedColumn?.id
-            return (
-              generator && (
-                <SidebarButton
-                  key={column.id}
-                  id={`seed-column-${column.id}`}
-                  role="tab"
-                  tabIndex={-1}
-                  aria-controls={SEED_INSPECTOR_ID}
-                  aria-selected={active}
-                  active={active}
-                  onClick={() => setSelectedId(column.id)}
-                >
-                  <span data-mask className="min-w-0 flex-1 truncate text-left">
-                    {column.id}
-                  </span>
-                  <span
-                    data-mask
-                    className={cn(
-                      'flex max-w-28 shrink-0 items-center gap-1 text-xs',
-                      active
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {generator.generatorId === REFERENCE_GENERATOR && (
-                      <HugeiconsIcon
-                        icon={Link01Icon}
-                        strokeWidth={2}
-                        className="size-3! shrink-0 text-current!"
-                      />
-                    )}
-                    <span className="truncate">
-                      {generatorLabel(generator, column, generators)}
-                    </span>
-                  </span>
-                </SidebarButton>
-              )
-            )
-          })}
+        <div className="flex w-72 shrink-0 flex-col border-r">
+          <Command
+            ref={columnsRef}
+            tabIndex={-1}
+            label="Columns"
+            value={selectedColumn?.id}
+            onValueChange={setSelectedId}
+            shouldFilter={false}
+            disablePointerSelection
+            variant="flat"
+          >
+            <CommandList className="scroll-fade max-h-none flex-1">
+              <CommandGroup>
+                {columns.map((column) => {
+                  const generator = columnGenerators[column.id]
+                  return (
+                    generator && (
+                      <CommandItem key={column.id} value={column.id}>
+                        <span data-mask className="min-w-0 flex-1 truncate">
+                          {column.id}
+                        </span>
+                        <span
+                          data-mask
+                          className="text-muted-foreground flex max-w-28 shrink-0 items-center gap-1 text-xs"
+                        >
+                          {generator.generatorId === REFERENCE_GENERATOR && (
+                            <HugeiconsIcon
+                              icon={Link01Icon}
+                              strokeWidth={2}
+                              className="size-3!"
+                            />
+                          )}
+                          <span className="truncate">
+                            {generatorLabel(generator, column, generators)}
+                          </span>
+                        </span>
+                      </CommandItem>
+                    )
+                  )
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
         </div>
         {selectedColumn && selectedGenerator && (
           <Inspector
@@ -668,27 +632,24 @@ export const SeedPanel = ({
             <NumberFieldIncrement />
           </NumberFieldGroup>
         </NumberField>
-        <div className="mr-auto">
-          {!unlimited && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost-muted"
-                    size="xs"
-                    className={isGuest ? 'opacity-50' : undefined}
-                    onClick={() => checkOrUpgrade('seed.unlimited')}
-                  />
-                }
-              >
-                <HugeiconsIcon icon={CrownIcon} strokeWidth={2} />
-                {remaining} of {FREE_SEED_LIMIT} free runs left
-              </TooltipTrigger>
-              <TooltipContent>Upgrade for unlimited seeding</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-        <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+        {!unlimited && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground tabular-nums">
+              {remaining} of {FREE_SEED_LIMIT} free runs
+            </span>
+            <Button
+              variant="link"
+              size="xs"
+              className={isGuest ? 'opacity-50' : undefined}
+              onClick={() => checkOrUpgrade('seed.unlimited')}
+            >
+              Upgrade
+            </Button>
+          </div>
+        )}
+        <DrawerClose render={<Button variant="outline" className="ml-auto" />}>
+          Cancel
+        </DrawerClose>
         <Button
           onClick={() =>
             hasReachedLimit ? checkOrUpgrade('seed.unlimited') : seed()
