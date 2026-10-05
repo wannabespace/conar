@@ -1,45 +1,27 @@
 import { db } from '@tamery/db'
 import { connections } from '@tamery/db/schema'
 import { type } from 'arktype'
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const input = type({
-  id: 'string.uuid.v7',
-})
-
 export const remove = orpc
   .use(authMiddleware)
-  .input(
-    type
-      .or(input, input.array())
-      .pipe((data) => (Array.isArray(data) ? data : [data]))
-  )
-  .errors({
-    BAD_REQUEST: { message: 'No connections to remove' },
-  })
-  .handler(async ({ context, errors, input: items }) => {
-    if (items.length === 0) {
-      throw errors.BAD_REQUEST()
-    }
-
-    await db.delete(connections).where(
-      and(
-        inArray(
-          connections.id,
-          items.map((item) => item.id)
-        ),
-        eq(connections.userId, context.user.id)
+  .input(type({ id: 'string.uuid.v7' }))
+  .handler(async ({ context, input }) => {
+    await db
+      .delete(connections)
+      .where(
+        and(
+          eq(connections.id, input.id),
+          eq(connections.userId, context.user.id)
+        )
       )
-    )
 
-    for (const item of items) {
-      publisher.publish(context.user.id, {
-        key: item.id,
-        type: 'delete',
-      })
-    }
+    publisher.publish(context.user.id, {
+      key: input.id,
+      type: 'delete',
+    })
   })

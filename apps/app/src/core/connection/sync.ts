@@ -79,8 +79,6 @@ export const createConnectionsCollection = (
             orpc.connections.create.call(
               await prepareConnectionToCloud(connectionStrings, value)
             ),
-          update: (id, changes) =>
-            orpc.connections.update.call({ id, ...changes }),
         },
         sync: ({ rows, signal }) =>
           orpc.connections.sync.call(rows, { signal }),
@@ -105,10 +103,7 @@ export const createConnectionsResourcesCollection = () =>
         getKey: (item) => item.id,
         id: 'connections-resources',
         mutations: {
-          delete: (id) => orpc.connectionsResources.remove.call({ id }),
           insert: (value) => orpc.connectionsResources.create.call(value),
-          update: (id, changes) =>
-            orpc.connectionsResources.update.call({ id, ...changes }),
         },
         sync: ({ rows, signal }) =>
           orpc.connectionsResources.sync.call(rows, { signal }),

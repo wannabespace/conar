@@ -38,7 +38,7 @@ import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import { useIsOnline } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -496,9 +496,7 @@ export const FilterSearchBar = ({
   table: string
   schema: string
 }) => {
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
+  const isOnline = useIsOnline()
   const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const chipsRef = useRef<HTMLDivElement>(null)

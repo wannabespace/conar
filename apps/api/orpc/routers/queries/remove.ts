@@ -1,45 +1,22 @@
 import { db } from '@tamery/db'
 import { queries } from '@tamery/db/schema/queries'
 import { type } from 'arktype'
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const input = type({
-  id: 'string.uuid.v7',
-})
-
 export const remove = orpc
   .use(authMiddleware)
-  .input(
-    type
-      .or(input, input.array())
-      .pipe((data) => (Array.isArray(data) ? data : [data]))
-  )
-  .handler(async ({ context, input: items }) => {
-    if (items.length === 0) {
-      return
-    }
-
+  .input(type({ id: 'string.uuid.v7' }))
+  .handler(async ({ context, input }) => {
     await db
       .delete(queries)
-      .where(
-        and(
-          eq(queries.userId, context.user.id),
-          inArray(
-            queries.id,
-            items.map((item) => item.id)
-          )
-        )
-      )
-      .returning()
+      .where(and(eq(queries.userId, context.user.id), eq(queries.id, input.id)))
 
-    for (const item of items) {
-      publisher.publish(context.user.id, {
-        key: item.id,
-        type: 'delete',
-      })
-    }
+    publisher.publish(context.user.id, {
+      key: input.id,
+      type: 'delete',
+    })
   })

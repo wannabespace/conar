@@ -40,7 +40,7 @@ import {
 import { slowQueries } from '~/core/runtime/slow-queries'
 import { useIsAnonymous } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import { appStore, useIsOnline } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
@@ -189,9 +189,7 @@ export const GlobalBanner = () => {
   const waitingSince = useSubscription(slowQueries, {
     selector: (state) => (resourceId ? state[resourceId]?.[0] : undefined),
   })
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
+  const isOnline = useIsOnline()
   const signInPrompt = useSubscription(appStore, {
     selector: (state) => state.signInPrompt,
   })

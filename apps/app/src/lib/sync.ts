@@ -1,4 +1,5 @@
 import { sleep } from '@tamery/shared/utils'
+import { NonRetriableError } from '@tanstack/offline-transactions'
 import type { PendingMutation, SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
@@ -83,16 +84,16 @@ export type SyncEventsFn<T> = (params: {
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
 
-const whenOnline = (signal: AbortSignal) => {
+const nextOnline = (signal: AbortSignal) => {
   const { promise, resolve } = Promise.withResolvers<undefined>()
-
-  if (navigator.onLine) {
-    resolve()
-  } else {
-    window.addEventListener('online', () => resolve(), { once: true, signal })
-  }
-
+  window.addEventListener('online', () => resolve(), { once: true, signal })
   return promise
+}
+
+interface ServerMutations<T> {
+  delete?: (key: string) => Promise<unknown>
+  insert?: (value: T) => Promise<unknown>
+  update?: (key: string, changes: Partial<T>) => Promise<unknown>
 }
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
@@ -103,11 +104,7 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
     rows: { id: string; updatedAt: Date }[]
     signal: AbortSignal
   }) => Promise<SyncMessage<T>[]>
-  mutations?: {
-    delete: (key: string) => Promise<unknown>
-    insert: (value: T) => Promise<unknown>
-    update: (key: string, changes: Partial<T>) => Promise<unknown>
-  }
+  mutations?: ServerMutations<T>
 }
 
 export const syncCollectionOptions = <T extends { updatedAt: Date }>(
@@ -187,9 +184,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         while (!signal.aborted) {
           if (!navigator.onLine) {
             firstSync.resolve()
+            // oxlint-disable-next-line no-await-in-loop
+            await nextOnline(signal)
           }
-          // oxlint-disable-next-line no-await-in-loop
-          await whenOnline(signal)
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
             catch: (error) => error,
@@ -236,6 +233,15 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     },
   }
 
+  // Non-retriable: the outbox is FIFO, so a retried write blocks every later one.
+  const serverMutation = <K extends keyof ServerMutations<T>>(type: K) => {
+    const send = config.mutations?.[type]
+    if (!send) {
+      throw new NonRetriableError(`${config.id} has no server ${type}`)
+    }
+    return send
+  }
+
   return {
     autoIndex: 'eager' as const,
     defaultIndexType: BasicIndex,
@@ -247,19 +253,15 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       // Sends one offline-outbox mutation, then writes it as synced so the row
       // holds still between the optimistic layer dropping and the server echo.
       push: async (mutation: PendingMutation<T>) => {
-        if (!config.mutations) {
-          throw new Error(`${config.id} has no server mutations`)
-        }
-
         if (mutation.type === 'delete') {
-          await config.mutations.delete(mutation.key)
+          await serverMutation('delete')(mutation.key)
           writeSynced?.([{ key: mutation.key, type: 'delete' }])
           return
         }
 
         await (mutation.type === 'insert'
-          ? config.mutations.insert(mutation.modified)
-          : config.mutations.update(mutation.key, mutation.changes))
+          ? serverMutation('insert')(mutation.modified)
+          : serverMutation('update')(mutation.key, mutation.changes))
         writeSynced?.([{ type: 'update', value: mutation.modified }])
       },
       whenSynced: () => firstSync.promise,

@@ -14,7 +14,6 @@ import {
 } from '@tamery/ui/components/dropdown-menu'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
 
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
@@ -22,7 +21,7 @@ import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { useIsAnonymous } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
-import { appStore } from '~/store'
+import { useIsOnline } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -46,9 +45,7 @@ export const WorkspaceSwitcher = () => {
   const isAnonymous = useIsAnonymous()
   const [createOpen, setCreateOpen] = useState(false)
   const { data: activeWorkspace, workspaces } = useActiveWorkspace()
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
+  const isOnline = useIsOnline()
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)

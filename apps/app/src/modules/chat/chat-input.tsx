@@ -14,7 +14,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { appStore } from '~/store'
+import { useIsOnline } from '~/store'
 
 import { chatOpen } from './stores'
 
@@ -31,9 +31,7 @@ export const ChatInput = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const isOpened = useSubscription(chatOpen(connectionResource.id))
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
+  const isOnline = useIsOnline()
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 

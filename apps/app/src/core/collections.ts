@@ -66,16 +66,21 @@ const init = () => {
         // Sequential: a connection must land before the resource referencing it.
         push: async ({ transaction }) => {
           for (const mutation of transaction.mutations) {
+            const { push } = mutation.collection.utils
+            // Local-only collections (connection strings) have no `push`.
+            if (!push) {
+              throw new NonRetriableError(
+                `${mutation.collection.id} cannot be written offline`
+              )
+            }
             // oxlint-disable-next-line no-await-in-loop
-            await mutation.collection.utils
-              .push(mutation)
-              .catch((error: unknown) => {
-                // The executor retries every other error forever.
-                if (error instanceof ORPCError && !isServerError(error)) {
-                  throw new NonRetriableError(error.message)
-                }
-                throw error
-              })
+            await push(mutation).catch((error: unknown) => {
+              // The executor retries every other error forever.
+              if (error instanceof ORPCError && !isServerError(error)) {
+                throw new NonRetriableError(error.message)
+              }
+              throw error
+            })
           }
         },
       },

@@ -113,6 +113,14 @@ const CreateConnectionPage = () => {
             updatedAt,
           })
         })
+        const dropStringOnRollback = async () => {
+          try {
+            await tx.isPersisted.promise
+          } catch {
+            connectionStringsCollection.delete(id)
+          }
+        }
+        void dropStringOnRollback()
 
         if (resource) {
           getConnectionStore(id).set((state) => ({
