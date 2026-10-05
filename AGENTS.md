@@ -25,6 +25,7 @@ Record **any** UI pattern, motion recipe, kit gotcha or design decision establis
 
 ## Always applies
 
+- **Improvement ideas go in [`IMPROVEMENTS.md`](IMPROVEMENTS.md).** Any product or UX/DX improvement proposed or discovered during a task is appended there, never left only in chat or a PR.
 - **A comment is a warning or it does not exist** (repo-wide). The only comments allowed are the ones that stop the next reader breaking something: a dialect or platform trap, a race or ordering constraint, a lint/type escape hatch's justification, a sync-with-that-file pointer, a prop's non-obvious contract. Everything else — design rationale, why a value was picked, what the next line does, what changed — goes in the code's names or nowhere. Self-explaining code: clear names, small extracted functions, named constants.
 - **Write as little code as possible.** The smallest change that fully solves the task wins. Reuse before adding, extend a file before creating one, delete more than you add. No speculative abstractions, options, wrappers or config; no defensive branches for impossible states. Solve the given task, not the generalized version.
 - **Simplest mechanism that works.** A library's built-in option beats a hand-rolled effect; an iterator or one-liner beats reimplementing a primitive a dependency already provides. When a fix grows guards to defend its own complexity, step back and pick the plainer mechanism — accept a documented edge over machinery.
