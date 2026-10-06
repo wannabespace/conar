@@ -1,8 +1,14 @@
 import type * as mssqlModule from 'mssql'
 
 import type { RunOptions } from '../..'
-import { bindable, resultSet } from '../..'
+import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
+
+// mssql binds a plain `Uint8Array` (how bytes arrive over the wire and Electron IPC) as `NVarChar`; only a `Buffer` infers `VarBinary`.
+const bindable = (value: unknown) =>
+  value instanceof Uint8Array && !Buffer.isBuffer(value)
+    ? Buffer.from(value.buffer, value.byteOffset, value.byteLength)
+    : value
 
 interface ColumnMetadata {
   name: string
@@ -59,8 +65,8 @@ export const runRequest = async (
   }: { connectionString: string; sql: string; values: unknown[] },
   { maxRows, queryId }: RunOptions
 ) => {
-  for (const [index, value] of bindable(values).entries()) {
-    request.input(`${index + 1}`, value)
+  for (const [index, value] of values.entries()) {
+    request.input(`${index + 1}`, bindable(value))
   }
   request.arrayRowMode = true
   const start = performance.now()

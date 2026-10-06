@@ -30,14 +30,6 @@ export const resultSet = (
   truncated: rows.length > maxRows,
 })
 
-/** Bytes arrive as a `Uint8Array` (over the wire or Electron IPC), which only pg binds; mysql2 and mssql need a `Buffer`. */
-export const bindable = (values: unknown[]) =>
-  values.map((value) =>
-    value instanceof Uint8Array && !Buffer.isBuffer(value)
-      ? Buffer.from(value.buffer, value.byteOffset, value.byteLength)
-      : value
-  )
-
 /** The first set as row objects; a duplicate column name keeps its last value. */
 export const rowObjects = ([first]: ResultSet[]) =>
   first
