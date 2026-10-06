@@ -72,7 +72,10 @@ const useColumnTypes = () => {
     )
   const groups: ColumnTypeGroup[] = [
     { items: namedEnums, label: 'Enums' },
-    { items: capabilitiesOf(connection.type).columnTypes, label: 'Types' },
+    {
+      items: capabilitiesOf(connection.type).columnTypes.options,
+      label: 'Types',
+    },
   ]
   return groups.filter((group) => group.items.length > 0)
 }

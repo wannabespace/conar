@@ -25,12 +25,11 @@ export const createTransformer = (
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytesColumnTypes, jsonColumnType, uuidColumnType } =
-    capabilitiesOf(connectionType)
-  if (jsonColumnType.test(type)) {
+  const { bytes, json, uuid } = capabilitiesOf(connectionType).columnTypes
+  if (json.test(type)) {
     return createJsonTransformer()
   }
-  if (bytesColumnTypes.includes(type)) {
+  if (bytes?.test(type)) {
     return createBytesTransformer()
   }
 
@@ -65,9 +64,7 @@ export const createTransformer = (
       if (isNumericColumn(column)) {
         return createNumberTransformer(column.isNullable ?? false)
       }
-      return uuidColumnType?.test(type)
-        ? createUuidTransformer()
-        : createRawTransformer()
+      return uuid?.test(type) ? createUuidTransformer() : createRawTransformer()
     }
   }
 }

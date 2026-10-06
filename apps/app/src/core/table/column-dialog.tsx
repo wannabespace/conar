@@ -87,7 +87,10 @@ const ColumnForm = ({
 }) => {
   const { column, table } = request
   const { connection } = useRouteContext()
-  const { arrayType, renameColumns } = capabilitiesOf(connection.type)
+  const {
+    columnTypes: { array: arrayType },
+    renameColumns,
+  } = capabilitiesOf(connection.type)
   const [name, setName] = useState(column?.name ?? '')
   const initialType = arrayTypes.split(arrayType, column?.type ?? '')
   const [type, setType] = useState(initialType.element)

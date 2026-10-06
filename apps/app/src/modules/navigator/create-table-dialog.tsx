@@ -55,7 +55,7 @@ export const CreateTableDialog = () => {
             name: 'id',
             nullable: false,
             primaryKey: true,
-            type: capabilitiesOf(connection.type).idColumnType,
+            type: capabilitiesOf(connection.type).columnTypes.id,
           },
         ],
         schema,

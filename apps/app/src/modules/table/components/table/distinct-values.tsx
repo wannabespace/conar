@@ -53,14 +53,9 @@ export const hasDistinctValues = (
   connectionType: ConnectionType,
   column: Column
 ) => {
-  const { bytesColumnTypes, incomparableColumnType } =
-    capabilitiesOf(connectionType)
+  const { bytes, incomparable } = capabilitiesOf(connectionType).columnTypes
   const type = column.type ?? ''
-  return (
-    !column.isArray &&
-    !bytesColumnTypes.includes(type) &&
-    !incomparableColumnType?.test(type)
-  )
+  return !column.isArray && !bytes?.test(type) && !incomparable?.test(type)
 }
 
 const percent = new Intl.NumberFormat(undefined, {

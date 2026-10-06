@@ -179,7 +179,7 @@ export const useDiagramActions = ({
           name: 'id',
           nullable: false,
           primaryKey: true,
-          type: capabilitiesOf(connection.type).idColumnType,
+          type: capabilitiesOf(connection.type).columnTypes.id,
         },
       ])
       const id = tableNodeId(targetSchema, name)

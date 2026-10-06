@@ -33,11 +33,11 @@ const codeLanguage = (
   { type = '', uiType }: Column,
   value: unknown
 ) => {
-  const { jsonColumnType, xmlColumnType } = capabilitiesOf(connectionType)
-  if (jsonColumnType.test(type) || (uiType === 'raw' && isNested(value))) {
+  const { json, xml } = capabilitiesOf(connectionType).columnTypes
+  if (json.test(type) || (uiType === 'raw' && isNested(value))) {
     return 'json'
   }
-  if (xmlColumnType?.test(type)) {
+  if (xml?.test(type)) {
     return 'xml'
   }
 }

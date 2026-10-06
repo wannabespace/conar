@@ -31,22 +31,21 @@ export type ColumnTypes = { id: string; type?: string }[]
 export type BindValue = (columnType: string, value: unknown) => unknown
 
 const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
-  const { jsonColumnType } = capabilitiesOf(connectionType)
+  const { json } = capabilitiesOf(connectionType).columnTypes
 
   return (columnType, value) => {
     if (value === undefined) {
       return sql`default`
     }
     // Drafts hold parsed json like driver values do; bound as is, an array would become a SQL array and a string invalid json.
-    return value !== null && jsonColumnType.test(columnType)
+    return value !== null && json.test(columnType)
       ? JSON.stringify(value)
       : value
   }
 }
 
-const clickhouseJsonColumnType = capabilitiesOf(
-  ConnectionType.ClickHouse
-).jsonColumnType
+const clickhouseJsonColumnType = capabilitiesOf(ConnectionType.ClickHouse)
+  .columnTypes.json
 const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
 
 // Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.

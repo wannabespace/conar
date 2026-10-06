@@ -76,7 +76,7 @@ describe('createTable', () => {
   test("New table's id fills itself on every engine with a sequence", () => {
     const newTableId = (type: ConnectionType) => ({
       ...id,
-      type: capabilitiesOf(type).idColumnType,
+      type: capabilitiesOf(type).columnTypes.id,
     })
     const engines = [
       [ConnectionType.Postgres, postgres],

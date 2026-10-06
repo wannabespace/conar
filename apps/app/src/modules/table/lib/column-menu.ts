@@ -26,7 +26,7 @@ import { columnLayout, columnsOrder } from './store'
 const OFF = '__off__'
 
 export const isSortable = (connectionType: ConnectionType, column: Column) =>
-  !capabilitiesOf(connectionType).incomparableColumnType?.test(
+  !capabilitiesOf(connectionType).columnTypes.incomparable?.test(
     column.type ?? ''
   )
 

@@ -37,22 +37,26 @@ export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
-    arrayType: { close: ')', open: 'Array(' },
-    bytesColumnTypes: [],
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.ClickHouse],
+    columnTypes: {
+      array: { close: ')', open: 'Array(' },
+      bytes: null,
+      id: 'UInt64',
+      incomparable:
+        /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
+      json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
+      options: COLUMN_TYPES[ConnectionType.ClickHouse],
+      uuid: /\bUUID\b/u,
+      xml: null,
+    },
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
     functions: noFunctions,
-    idColumnType: 'UInt64',
     ilike: true,
-    incomparableColumnType:
-      /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
-    jsonColumnType: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -77,14 +81,19 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
-    uuidColumnType: /\bUUID\b/u,
-    xmlColumnType: null,
   },
   [ConnectionType.MSSQL]: {
-    arrayType: null,
-    bytesColumnTypes: ['binary', 'image', 'timestamp', 'varbinary'],
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
+    columnTypes: {
+      array: null,
+      bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
+      id: 'int identity',
+      incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[ConnectionType.MSSQL],
+      uuid: /^uniqueidentifier$/iu,
+      xml: /^xml$/iu,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -97,12 +106,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: true,
       securityDefiner: false,
     },
-    idColumnType: 'int identity',
     ilike: false,
-    incomparableColumnType:
-      /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
     indexes: btreeIndexes,
-    jsonColumnType: JSON_COLUMN_TYPE,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -132,22 +137,19 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['AFTER', 'INSTEAD OF'],
       toggle: true,
     },
-    uuidColumnType: /^uniqueidentifier$/iu,
-    xmlColumnType: /^xml$/iu,
   },
   [ConnectionType.MySQL]: {
-    arrayType: null,
-    bytesColumnTypes: [
-      'binary',
-      'bit',
-      'blob',
-      'longblob',
-      'mediumblob',
-      'tinyblob',
-      'varbinary',
-    ],
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.MySQL],
+    columnTypes: {
+      array: null,
+      bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
+      id: 'int auto_increment',
+      incomparable: null,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[ConnectionType.MySQL],
+      uuid: null,
+      xml: null,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
@@ -162,11 +164,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: false,
     },
-    idColumnType: 'int auto_increment',
     ilike: false,
-    incomparableColumnType: null,
     indexes: btreeIndexes,
-    jsonColumnType: JSON_COLUMN_TYPE,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -197,14 +196,21 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
-    uuidColumnType: null,
-    xmlColumnType: null,
   },
   [ConnectionType.Postgres]: {
-    arrayType: { close: '[]', open: '' },
-    bytesColumnTypes: [],
     cascade: true,
-    columnTypes: COLUMN_TYPES[ConnectionType.Postgres],
+    columnTypes: {
+      array: { close: '[]', open: '' },
+      bytes: null,
+      id: 'serial',
+      // Geometric types have no btree or hash operator class to sort or group by.
+      incomparable:
+        /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
+      json: /^jsonb?$/iu,
+      options: COLUMN_TYPES[ConnectionType.Postgres],
+      uuid: /^uuid$/iu,
+      xml: /^xml$/iu,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -217,13 +223,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: true,
     },
-    idColumnType: 'serial',
     ilike: true,
-    // Geometric types have no btree or hash operator class to sort or group by.
-    incomparableColumnType:
-      /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
     indexes: btreeIndexes,
-    jsonColumnType: /^jsonb?$/iu,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
@@ -256,8 +257,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
-    uuidColumnType: /^uuid$/iu,
-    xmlColumnType: /^xml$/iu,
   },
 }
 
