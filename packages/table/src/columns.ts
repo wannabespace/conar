@@ -46,7 +46,7 @@ export const columnStyle = (
   const vars = columnVars(column.id)
   return {
     flexShrink: 0,
-    translate: `var(${vars.shift})`,
+    translate: `calc(var(${vars.shift}, 0) * 1px)`,
     width: `var(${vars.width})`,
     ...(column.pinned && {
       left: pinnedLeft(columns, index),

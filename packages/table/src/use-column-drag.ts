@@ -1,6 +1,6 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
 import type { MotionValue } from 'motion'
-import { animate, motionValue } from 'motion'
+import { animate, clamp, motionValue, moveItem, styleEffect } from 'motion'
 import type { PointerEvent, RefObject } from 'react'
 import { useRef, useState } from 'react'
 
@@ -14,33 +14,32 @@ const COLUMN_TRANSITION = {
 
 interface Drag {
   column: GridColumn
+  from: number
   moved: boolean
   slots: Map<string, number>
   startX: number
-  target: GridColumn[]
+  to: number
 }
 
-export interface ColumnDragHandle {
+export type ColumnDragHandle = ReturnType<typeof useColumnDrag>['handlers'] & {
   'data-grid-column': string
-  onLostPointerCapture: (event: PointerEvent<HTMLElement>) => void
-  onPointerDown: (event: PointerEvent<HTMLElement>) => void
-  onPointerMove: (event: PointerEvent<HTMLElement>) => void
-  onPointerUp: (event: PointerEvent<HTMLElement>) => void
 }
 
 const holdsSlot = (column: GridColumn) => column.fixed || column.pinned
 
-const targetOrder = (columns: GridColumn[], drag: Drag, offset: number) => {
-  const others = columns.filter((column) => column.id !== drag.column.id)
+const targetIndex = (columns: GridColumn[], drag: Drag, offset: number) => {
   const center =
     (drag.slots.get(drag.column.id) ?? 0) + offset + drag.column.size / 2
-  const first = columns.findIndex((column) => !holdsSlot(column))
-  const last = columns.findLastIndex((column) => !holdsSlot(column))
-  const crossed = others.filter(
-    (column) => (drag.slots.get(column.id) ?? 0) + column.size / 2 < center
+  const crossed = columns.filter(
+    (column) =>
+      column.id !== drag.column.id &&
+      (drag.slots.get(column.id) ?? 0) + column.size / 2 < center
   ).length
-  others.splice(Math.min(Math.max(crossed, first), last), 0, drag.column)
-  return others
+  return clamp(
+    columns.findIndex((column) => !holdsSlot(column)),
+    columns.findLastIndex((column) => !holdsSlot(column)),
+    crossed
+  )
 }
 
 export const useColumnDrag = ({
@@ -56,17 +55,15 @@ export const useColumnDrag = ({
   const shifts = useRef(new Map<string, MotionValue<number>>())
   const [dragging, setDragging] = useState<string | null>(null)
 
-  // `animate(element, { '--var': … })` keeps its own value per element and ignores a hand-written property, so every shift goes through one MotionValue.
   const shiftOf = (id: string) => {
     const existing = shifts.current.get(id)
     if (existing) {
       return existing
     }
     const shift = motionValue(0)
-    const { shift: name } = columnVars(id)
-    shift.on('change', (x) =>
-      scrollRef.current?.style.setProperty(name, `${x}px`)
-    )
+    if (scrollRef.current) {
+      styleEffect(scrollRef.current, { [columnVars(id).shift]: shift })
+    }
     shifts.current.set(id, shift)
     return shift
   }
@@ -78,7 +75,7 @@ export const useColumnDrag = ({
       return
     }
 
-    const order = commit ? current.target : columns
+    const order = commit ? moveItem(columns, current.from, current.to) : columns
     const slots = columnSlots(order)
     for (const column of columns) {
       const shift = shiftOf(column.id)
@@ -96,23 +93,20 @@ export const useColumnDrag = ({
       })
     }
 
-    const ids = order.map((column) => column.id)
-    if (commit && ids.join('\n') !== columns.map((c) => c.id).join('\n')) {
-      onReorder?.(ids)
+    if (commit && current.to !== current.from) {
+      onReorder?.(order.map((column) => column.id))
     }
   }
 
   useHotkey('Escape', () => settle(false), { enabled: dragging !== null })
 
-  const columnOf = (event: PointerEvent<HTMLElement>) =>
-    columns.find(
-      (column) => column.id === event.currentTarget.dataset.gridColumn
-    )
-
-  const handlers: Omit<ColumnDragHandle, 'data-grid-column'> = {
+  const handlers = {
     onLostPointerCapture: () => settle(true),
-    onPointerDown: (event) => {
-      const column = columnOf(event)
+    onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      const from = columns.findIndex(
+        (column) => column.id === event.currentTarget.dataset.gridColumn
+      )
+      const column = columns[from]
       const target = event.target instanceof Element ? event.target : null
       const isControl = target?.closest('button, [role="separator"]')
       // React bubbles the header's portalled menus through here; capturing their press swallows the item's click.
@@ -130,13 +124,14 @@ export const useColumnDrag = ({
       event.currentTarget.setPointerCapture(event.pointerId)
       drag.current = {
         column,
+        from,
         moved: false,
         slots: columnSlots(columns),
         startX: event.clientX + (scrollRef.current?.scrollLeft ?? 0),
-        target: columns,
+        to: from,
       }
     },
-    onPointerMove: (event) => {
+    onPointerMove: (event: PointerEvent<HTMLElement>) => {
       const { current } = drag
       const element = scrollRef.current
       if (!current || !element) {
@@ -149,12 +144,12 @@ export const useColumnDrag = ({
       }
       shiftOf(current.column.id).jump(offset)
 
-      const target = targetOrder(columns, current, offset)
-      if (target.every((entry, index) => entry === current.target[index])) {
+      const to = targetIndex(columns, current, offset)
+      if (to === current.to) {
         return
       }
-      current.target = target
-      const slots = columnSlots(target)
+      current.to = to
+      const slots = columnSlots(moveItem(columns, current.from, to))
       for (const other of columns) {
         if (other.id !== current.column.id) {
           animate(
@@ -165,7 +160,6 @@ export const useColumnDrag = ({
         }
       }
     },
-    onPointerUp: () => settle(true),
   }
 
   const setWidth = (id: string, width: number) =>
