@@ -88,16 +88,15 @@ export interface GridCursor {
   cancel: () => void
   /** Space opens the value as a JSON tree instead of the reference peek. */
   canPeek: (cell: DataGridCell) => boolean
-  cellAt: (position: CellPosition | null) => DataGridCell | null
   change: (text: string | null) => void
-  clear: () => void
   closePeek: () => void
-  collapse: () => void
-  columns: Column[]
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
   connectionType: ConnectionType
   copy: () => void
+  current: () => DataGridCell | null
+  /** Drops the range, or the cursor when there is no range. */
+  dismiss: () => void
   /** `text` types over the cell; without it the edit starts from the current value. */
   edit: (text?: string) => void
   element: () => Element | null | undefined
@@ -111,15 +110,11 @@ export interface GridCursor {
   paste: (text: string) => void
   place: (position: CellPosition, extend?: boolean) => void
   preview: () => void
-  rows: GridRow[]
-  select: (anchor: CellPosition, cursor: CellPosition) => void
   selection: () => DataGridCell[][]
   /** Writes a value picked in the editor and closes it. */
   set: (value: unknown) => void
   step: (down: number, right: number, extend?: boolean) => void
   store: CursorStore
-  /** Parses and writes each text; values that do not fit their column are counted in one toast. */
-  writeAll: (writes: [DataGridCell, string | null][]) => void
 }
 
 export const CursorContext = createContext<GridCursor | null>(null)

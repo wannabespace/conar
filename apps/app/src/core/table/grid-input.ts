@@ -110,8 +110,7 @@ export const useGridHotkeys = ({
         options: { enabled: navigating },
       },
       {
-        callback: () =>
-          cursor.store.get().anchor ? cursor.collapse() : cursor.clear(),
+        callback: cursor.dismiss,
         hotkey: 'Escape',
         options: { enabled: navigating },
       },

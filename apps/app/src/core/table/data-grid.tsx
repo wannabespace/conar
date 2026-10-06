@@ -189,7 +189,7 @@ export const DataGrid = ({
   }))
 
   const menu = () => {
-    const cell = cursor.cellAt(cursor.store.get().cursor)
+    const cell = cursor.current()
     if (!cell) {
       return []
     }

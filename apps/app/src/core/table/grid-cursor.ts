@@ -62,6 +62,26 @@ export const useGridCursor = ({
   const isEditable = (column: Column) => !!onEdit && column.isEditable !== false
   const focusGrid = () => scrollRef.current?.focus({ preventScroll: true })
 
+  const writeAll = (writes: [DataGridCell, string | null][]) => {
+    let rejected = 0
+    for (const [cell, text] of writes) {
+      if (!isEditable(cell.column)) {
+        continue
+      }
+      const { data, error } = parseCellText(connectionType, cell.column, text)
+      if (error) {
+        rejected += 1
+      } else {
+        onEdit?.(cell, data)
+      }
+    }
+    if (rejected > 0) {
+      toast.error(
+        `${plural(rejected, 'value')} did not fit ${rejected === 1 ? 'its column' : 'their columns'}`
+      )
+    }
+  }
+
   const cursor: GridCursor = {
     apply: (value) => {
       const cell = current()
@@ -74,13 +94,8 @@ export const useGridCursor = ({
       store.set((state) => ({ ...state, edit: null }))
       focusGrid()
     },
-    cellAt,
     change: (text) => store.set((state) => ({ ...state, edit: { text } })),
-    clear: () =>
-      store.set({ anchor: null, cursor: null, edit: null, peek: false }),
     closePeek: () => store.set((state) => ({ ...state, peek: false })),
-    collapse: () => store.set((state) => ({ ...state, anchor: null })),
-    columns,
     commit: () => {
       const { edit } = store.get()
       const cell = current()
@@ -106,7 +121,15 @@ export const useGridCursor = ({
       return true
     },
     connectionType,
-    copy: () => gridClipboard(cursor).copy(),
+    copy: () =>
+      gridClipboard(cursor, { cellAt, columns, rows, writeAll }).copy(),
+    current,
+    dismiss: () =>
+      store.set((state) =>
+        state.anchor
+          ? { ...state, anchor: null }
+          : { anchor: null, cursor: null, edit: null, peek: false }
+      ),
     edit: (text) => {
       const cell = current()
       if (
@@ -152,7 +175,7 @@ export const useGridCursor = ({
         return
       }
       const at = store.get().cursor
-      cursor.writeAll(
+      writeAll(
         others
           .filter(
             (cell) => cell.rowIndex !== at?.row || cell.column.id !== at.column
@@ -183,7 +206,8 @@ export const useGridCursor = ({
         focusGrid()
       }
     },
-    paste: (text) => gridClipboard(cursor).paste(text),
+    paste: (text) =>
+      gridClipboard(cursor, { cellAt, columns, rows, writeAll }).paste(text),
     place: (position, extend = false) => {
       const { cursor: at, edit } = store.get()
       if (
@@ -219,9 +243,6 @@ export const useGridCursor = ({
       }
       onPreview?.(cell, element)
     },
-    rows,
-    select: (anchor, at) =>
-      store.set((state) => ({ ...state, anchor, cursor: at })),
     selection: () => {
       const range = rangeOf(store.get(), indexOf)
       if (!range) {
@@ -262,25 +283,6 @@ export const useGridCursor = ({
       }
     },
     store,
-    writeAll: (writes) => {
-      let rejected = 0
-      for (const [cell, text] of writes) {
-        if (!isEditable(cell.column)) {
-          continue
-        }
-        const { data, error } = parseCellText(connectionType, cell.column, text)
-        if (error) {
-          rejected += 1
-        } else {
-          onEdit?.(cell, data)
-        }
-      }
-      if (rejected > 0) {
-        toast.error(
-          `${plural(rejected, 'value')} did not fit ${rejected === 1 ? 'its column' : 'their columns'}`
-        )
-      }
-    },
   }
 
   useFollowRows({ rowKey, rows, store })

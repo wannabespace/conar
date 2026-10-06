@@ -1,9 +1,11 @@
 import { parseTsv, toTsv } from '@tamery/shared/files'
+import type { GridRow } from '@tamery/table'
 import { copy } from '@tamery/ui/lib/copy'
 
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { posthog } from '~/lib/posthog'
 
+import type { Column } from './cell/utils'
 import type { CellPosition, DataGridCell, GridCursor } from './cursor'
 import { rangeOf } from './cursor'
 
@@ -18,8 +20,21 @@ const pasted = (
   text === '' && cell.column.isNullable ? null : text,
 ]
 
-export const gridClipboard = (cursor: GridCursor) => {
-  const { cellAt, columns, indexOf, rows, store } = cursor
+export const gridClipboard = (
+  cursor: GridCursor,
+  {
+    cellAt,
+    columns,
+    rows,
+    writeAll,
+  }: {
+    cellAt: (position: CellPosition) => DataGridCell | null
+    columns: Column[]
+    rows: GridRow[]
+    writeAll: (writes: [DataGridCell, string | null][]) => void
+  }
+) => {
+  const { indexOf, store } = cursor
 
   const textOf = (cell: DataGridCell) => {
     const value = cursor.getValue(cell)
@@ -46,7 +61,7 @@ export const gridClipboard = (cursor: GridCursor) => {
         }
       }
     }
-    cursor.writeAll(writes)
+    writeAll(writes)
     const corner = columns[left]
     const end =
       columns[
@@ -56,13 +71,14 @@ export const gridClipboard = (cursor: GridCursor) => {
         )
       ]
     if (corner && end) {
-      cursor.select(
-        { column: corner.id, row: top },
-        {
+      store.set((state) => ({
+        ...state,
+        anchor: { column: corner.id, row: top },
+        cursor: {
           column: end.id,
           row: Math.min(top + block.length - 1, rows.length - 1),
-        }
-      )
+        },
+      }))
     }
   }
 
@@ -99,13 +115,13 @@ export const gridClipboard = (cursor: GridCursor) => {
       if (
         value &&
         !rangeOf(store.get(), indexOf) &&
-        cellAt(at)?.column.uiType !== 'boolean'
+        cursor.current()?.column.uiType !== 'boolean'
       ) {
         cursor.edit(value)
         cursor.commit()
         return
       }
-      cursor.writeAll(
+      writeAll(
         cursor
           .selection()
           .flat()
