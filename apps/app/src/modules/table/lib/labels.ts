@@ -3,8 +3,10 @@ import type { GridRow } from '@tamery/table'
 import { useQueries } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
-import { resourceRowsQueryKey } from '~/core/queries/rows/list'
-import { selectQuery } from '~/core/queries/rows/select'
+import {
+  resourceRowsQuery,
+  resourceRowsQueryKey,
+} from '~/core/queries/rows/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
 import {
@@ -34,18 +36,32 @@ const LABEL_NAMES_BY_PREFERENCE = [
   'name',
   'title',
   'label',
-  'display_name',
-  'full_name',
+  'displayname',
+  'fullname',
   'username',
+  'nickname',
+  'login',
+  'handle',
   'email',
+  'firstname',
+  'lastname',
+  'subject',
+  'heading',
+  'caption',
   'slug',
+  'code',
+  'sku',
   'role',
+  'description',
 ]
+
+const comparable = (column: string) =>
+  column.toLowerCase().replaceAll(/[\s_-]/gu, '')
 
 const defaultLabel = (columns: { id: string; type: string }[], key: string) => {
   const candidates = labelCandidates(columns, key)
   return LABEL_NAMES_BY_PREFERENCE.map((name) =>
-    candidates.find((column) => column.id.toLowerCase() === name)
+    candidates.find((column) => comparable(column.id) === name)
   ).find(Boolean)?.id
 }
 
@@ -81,8 +97,15 @@ export const useReferenceLabels = (
       return {
         enabled: keys.length > 0,
         queryFn: async () => {
-          const found = await selectQuery({
-            filters: [{ column: foreign.column, ref: IN_FILTER, values: keys }],
+          const found = await resourceRowsQuery({
+            columns: referenced.get(id),
+            limit: keys.length,
+            offset: 0,
+            query: {
+              filters: [
+                { column: foreign.column, ref: IN_FILTER, values: keys },
+              ],
+            },
             schema: foreign.schema,
             select: [foreign.column, label],
             table: foreign.table,
