@@ -1,5 +1,7 @@
 import { expect, mock, test } from 'bun:test'
 
+import type { ActiveFilter } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 
@@ -80,6 +82,22 @@ test('a sort change drops drafts undoably, but never mid-save', async () => {
   await nextTick()
 
   sortBy('DESC')
+  expect(values()).toEqual([])
+  history.undo()
+  expect(values()).toEqual(['a'])
+})
+
+test('a filter added then removed still undoes back to the drafts', async () => {
+  const { edit, history, pageStore, values } = setup('filter-round-trip')
+  const filterBy = (filters: ActiveFilter[]) =>
+    pageStore.set((state) => ({ ...state, filters }))
+  edit(1, 'a')
+  await nextTick()
+
+  filterBy([{ column: 'name', ref: EQUAL_FILTER, values: ['x'] }])
+  await nextTick()
+  filterBy([])
+  await nextTick()
   expect(values()).toEqual([])
   history.undo()
   expect(values()).toEqual(['a'])

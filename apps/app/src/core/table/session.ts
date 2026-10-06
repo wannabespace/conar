@@ -114,8 +114,11 @@ export const draftsActions = (store: TableSessionStore) => {
     )
   }
 
+  // A row saves as one statement, so its error stops applying once any of its changes goes.
   const remove = (primaryKeys: PrimaryKeys, columnId: string) => {
-    setDrafts((drafts) => omit(drafts, [draftKey(primaryKeys, columnId)]))
+    updateRow(primaryKeys, (draft) =>
+      draft.columnId === columnId ? null : { ...draft, error: undefined }
+    )
   }
 
   return {

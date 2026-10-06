@@ -1,22 +1,20 @@
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Input } from '@tamery/ui/components/input'
-import { Label } from '@tamery/ui/components/label'
+import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@tamery/ui/components/input-group'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { RefObject } from 'react'
@@ -29,7 +27,11 @@ import { renameColumnQuery } from '~/core/queries/tables/rename-columns'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { queryClient } from '~/lib/query-client'
 
+import { useTableColumnsContext } from '../../lib/columns'
+
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const FORM_ID = 'rename-column-dialog'
 
 export const RenameColumnDialog = ({
   ref,
@@ -39,6 +41,7 @@ export const RenameColumnDialog = ({
   } | null>
 }) => {
   const { connectionResource } = useRouteContext()
+  const { columns } = useTableColumnsContext()
   const [target, setTarget] = useState({ column: '', schema: '', table: '' })
   const { column, schema, table } = target
   const [newColumnName, setNewColumnName] = useState('')
@@ -81,53 +84,61 @@ export const RenameColumnDialog = ({
     },
   })
 
-  const canConfirm =
-    newColumnName.trim() !== '' && newColumnName.trim() !== column && !isPending
+  const trimmed = newColumnName.trim()
+  const taken =
+    trimmed !== column && columns.some((other) => other.id === trimmed)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rename Column</DialogTitle>
+          <DialogTitle>Rename column</DialogTitle>
+          <DialogDescription>
+            <span data-mask>{`${table}.${column}`}</span>
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <Alert>
-            <HugeiconsIcon
-              icon={InformationCircleIcon}
-              strokeWidth={2}
-              className="text-info size-5"
-            />
-            <AlertTitle data-mask>
-              Rename column &quot;{column}&quot;
-            </AlertTitle>
-            <AlertDescription data-mask>
-              This will rename the column from &quot;{column}&quot; to the new
-              name you specify.
-            </AlertDescription>
-          </Alert>
-          <div className="space-y-2">
-            <Label htmlFor="newColumnName">Column name</Label>
-            <Input
-              id="newColumnName"
-              value={newColumnName}
-              placeholder="Enter new column name"
-              spellCheck={false}
-              autoComplete="off"
-              onChange={(e) => setNewColumnName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && canConfirm) {
-                  renameColumn()
-                }
-              }}
-            />
-          </div>
-        </div>
+        <form
+          id={FORM_ID}
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (trimmed && !taken && trimmed !== column) {
+              renameColumn()
+            }
+          }}
+        >
+          <Field>
+            <FieldLabel htmlFor="rename-column-name">Name</FieldLabel>
+            <InputGroup>
+              <InputGroupInput
+                id="rename-column-name"
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+                aria-invalid={taken}
+                autoFocus
+                spellCheck={false}
+                autoComplete="off"
+                data-mask
+              />
+              <InputGroupAddon align="inline-end">
+                {taken && (
+                  <FieldError>
+                    A column with this name already exists
+                  </FieldError>
+                )}
+              </InputGroupAddon>
+            </InputGroup>
+          </Field>
+        </form>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>
+          <DialogClose render={<Button type="button" variant="outline" />}>
             Cancel
           </DialogClose>
-          <Button disabled={!canConfirm} onClick={() => renameColumn()}>
-            <LoadingContent loading={isPending}>Rename Column</LoadingContent>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            disabled={isPending || !trimmed || trimmed === column}
+          >
+            <LoadingContent loading={isPending}>Rename</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

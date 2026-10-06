@@ -49,8 +49,8 @@ const Value = ({
   )
 }
 
-const ChangeError = ({ error }: { error: string }) => (
-  <span className="text-2xs text-destructive flex items-start gap-1">
+export const RowError = ({ error }: { error: string }) => (
+  <span className="text-2xs text-destructive flex items-start gap-1 px-3 py-2">
     <HugeiconsIcon
       icon={Alert02Icon}
       strokeWidth={2}
@@ -115,7 +115,6 @@ export const DraftChange = ({
         />
         <Value {...after} />
       </span>
-      {draft.error && <ChangeError error={draft.error} />}
     </button>
     {onDiscard && (
       <DiscardButton
@@ -161,11 +160,7 @@ export const NewRowValues = ({
           </button>
         )
       })}
-    {newRow.error && (
-      <div className="px-3 py-2">
-        <ChangeError error={newRow.error} />
-      </div>
-    )}
+    {newRow.error && <RowError error={newRow.error} />}
   </>
 )
 

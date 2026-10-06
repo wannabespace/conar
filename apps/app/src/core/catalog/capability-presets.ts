@@ -70,6 +70,7 @@ export interface ConnectionCapabilities {
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
   idColumnType: string
+  ilike: boolean
   // Column types ORDER BY, GROUP BY or COUNT(DISTINCT) reject; Distinct Values also skips `bytesColumnTypes`.
   incomparableColumnType: RegExp | null
   indexes: IndexCapabilities

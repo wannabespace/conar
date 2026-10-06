@@ -8,6 +8,8 @@ import {
   CommandList,
 } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
+import { useRef, useState } from 'react'
 
 import type { ValueTransformer } from '~/core/transformers/value-transformer'
 
@@ -68,11 +70,13 @@ export const CellSelect = ({
   transformer: ValueTransformer
   value: unknown
 }) => {
+  const commandRef = useRef<HTMLDivElement | null>(null)
+  const [highlighted, setHighlighted] = useState('')
   const multiple = column.uiType === 'list'
   const options = column.availableValues ?? []
   const picked: unknown =
     value === null ? null : transformer.fromConnection(value).toUI()
-  const chosen = Array.isArray(picked) ? picked : [picked]
+  const chosen = picked === null ? [] : [picked].flat()
 
   const pick = (option: string) => {
     if (readOnly) {
@@ -92,6 +96,26 @@ export const CellSelect = ({
     cursor.change(transformer.fromConnection(next).toRaw())
   }
 
+  useHotkeys(
+    [
+      {
+        callback: () => {
+          if (highlighted) {
+            cursor.change(
+              transformer
+                .fromConnection(transformer.toConnection.fromUI(highlighted))
+                .toRaw()
+            )
+          }
+          cursor.fill()
+        },
+        hotkey: 'Mod+Enter',
+        options: { enabled: !multiple && !readOnly },
+      },
+    ],
+    { ignoreInputs: false, target: commandRef }
+  )
+
   return (
     <Command
       size="sm"
@@ -99,7 +123,9 @@ export const CellSelect = ({
       loop
       tabIndex={-1}
       aria-label={`Value of ${column.id}`}
+      onValueChange={setHighlighted}
       ref={(element) => {
+        commandRef.current = element
         if (options.length < SEARCH_THRESHOLD) {
           element?.focus()
         }

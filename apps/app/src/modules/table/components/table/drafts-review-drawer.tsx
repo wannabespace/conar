@@ -21,7 +21,12 @@ import { plural } from '~/lib/plural'
 import { useTableColumnsContext } from '../../lib/columns'
 import { tableGridRef } from '../../lib/grid-ref'
 import { useTablePageStore } from '../../lib/store'
-import { ChangeList, DraftChange, NewRowValues } from './draft-changes'
+import {
+  ChangeList,
+  DraftChange,
+  NewRowValues,
+  RowError,
+} from './draft-changes'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -210,6 +215,7 @@ export const DraftsReviewDrawer = ({
                   />
                 )
               })}
+              {rowDrafts[0]?.error && <RowError error={rowDrafts[0].error} />}
             </ChangeGroup>
           )
         })}

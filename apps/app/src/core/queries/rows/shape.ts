@@ -109,3 +109,21 @@ export const clickhouseFilterValues =
       columns.find(({ id }) => id === column)?.type ?? '',
       value
     )
+
+// MSSQL caps a statement at 2100 bound parameters; the others comfortably take 500 rows per statement
+const MSSQL_PARAMETER_LIMIT = 2000
+const MAX_ROWS_PER_STATEMENT = 500
+
+export const rowsPerStatement = (
+  dialect: ConnectionType,
+  valuesPerRow: number
+) =>
+  dialect === ConnectionType.MSSQL
+    ? Math.max(
+        1,
+        Math.min(
+          MAX_ROWS_PER_STATEMENT,
+          Math.floor(MSSQL_PARAMETER_LIMIT / valuesPerRow)
+        )
+      )
+    : MAX_ROWS_PER_STATEMENT

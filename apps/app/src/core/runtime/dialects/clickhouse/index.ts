@@ -9,8 +9,11 @@ const escapeSqlStringRegex = /[\\']/gu
 
 const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
-const compiledSqlRegex = /\?/gu
-const compiledSqlParameterRegex = /^update (?<table>(?:`\w+`\.)*`\w+`) set/iu
+// Quoted text is matched first so a `?` inside a literal or an identifier is not taken for a placeholder.
+const compiledSqlRegex =
+  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`]|``)*`|\?/gu
+const compiledSqlParameterRegex =
+  /^update (?<table>(?:`(?:[^`]|``)+`\.)*`(?:[^`]|``)+`) set/iu
 
 const formatArrayValue = (value: unknown) => {
   if (value === null || value === undefined) {
@@ -24,7 +27,10 @@ const formatArrayValue = (value: unknown) => {
 
 export const prepareQuery = (compiledQuery: CompiledQuery) => {
   let i = 0
-  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
+  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, (token) => {
+    if (token !== '?') {
+      return token
+    }
     const param = compiledQuery.parameters[i]
     i += 1
 

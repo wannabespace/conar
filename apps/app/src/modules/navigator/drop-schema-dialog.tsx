@@ -4,8 +4,8 @@ import { useImperativeHandle, useState } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { DropDialog } from '~/core/catalog/drop-dialog'
+import { getConnectionResourceStore } from '~/core/connection/stores'
 import { dropSchemaQuery } from '~/core/queries/schemas/drop'
-import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { removeTab } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
@@ -34,13 +34,17 @@ export const DropSchemaDialog = ({
     },
     onSuccess: async () => {
       setOpen(false)
-      queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({ connectionResource })
-      )
-      const active = tabId ? parseTableTabId(tabId) : null
-      if (tabId && active?.schema === schema) {
-        // Before navigating: the resource index redirects back to the active tab while it is still listed.
-        removeTab(connectionResource.id, tabId)
+      queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
+      // Before navigating: the resource index redirects back to the active tab while it is still listed.
+      for (const tab of getConnectionResourceStore(connectionResource.id).get()
+        .tabs) {
+        if (parseTableTabId(tab.id)?.schema === schema) {
+          removeTab(connectionResource.id, tab.id)
+        }
+      }
+      if (tabId && parseTableTabId(tabId)?.schema === schema) {
         await router.navigate({
           params: { resourceId: connectionResource.id },
           to: '/connection/$resourceId',

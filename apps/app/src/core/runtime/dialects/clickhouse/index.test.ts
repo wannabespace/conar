@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'bun:test'
 
-import { Kysely } from 'kysely'
+import { Kysely, sql } from 'kysely'
 
 mock.module('~/core/runtime/dialects/driver', () => ({
   createKyselyDriver: mock(),
@@ -31,5 +31,28 @@ test('an ISO timestamp stays a string literal', () => {
 test('a select is not turned into a mutation', () => {
   expect(prepareQuery(db.selectFrom('events').selectAll().compile())).toBe(
     'select * from `events`'
+  )
+})
+
+test('a question mark inside a literal is not a placeholder', () => {
+  expect(
+    prepareQuery(
+      sql`select * from events where note = 'why?' and id = ${1}`.compile(db)
+    )
+  ).toBe("select * from events where note = 'why?' and id = 1")
+})
+
+test('a table name outside \\w is still turned into a mutation', () => {
+  expect(
+    prepareQuery(
+      db
+        .withSchema('my-db')
+        .updateTable('events-2024')
+        .set({ value: 1 })
+        .where('id', '=', 2)
+        .compile()
+    )
+  ).toBe(
+    'alter table `my-db`.`events-2024` update `value` = 1 where `id` = 2 settings mutations_sync = 1'
   )
 })

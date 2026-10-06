@@ -20,7 +20,7 @@ Double-click a tab label to rename it — handy when several query tabs are open
 
 Use the filter field in the toolbar above the table (or press <kbd>⌘</kbd> <kbd>F</kbd>). Start typing to either:
 
-- **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `contains`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
+- **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `like`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
 - **Ask AI** — type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically.
 
 Typing a column name from a table a foreign key points at also offers _Filter by users.email_ (through `user_id`): it keeps the rows whose `user_id` belongs to a user matching the condition. These filters copy as SQL only.
@@ -29,7 +29,7 @@ Or right-click a cell: _Filter by value_ keeps only rows where that column equal
 
 Active filters appear as chips inside the field. Each chip can be edited segment by segment, temporarily disabled with the eye toggle (kept in the field but excluded from the query), or removed with ×. Press <kbd>Backspace</kbd> in the empty field to remove the last chip.
 
-Conditions combine with `AND`. Filters are saved per table in local storage.
+Conditions combine with `AND`. `ilike` (case-insensitive match) is offered on Postgres and ClickHouse only; on MySQL and SQL Server `like` already ignores case under the usual collations. Filters are saved per table in local storage.
 
 ## Sorting
 
@@ -65,7 +65,7 @@ Drag a column header sideways to reorder columns. The order is saved per table a
 The column header menu also has:
 
 - **Pin Column** keeps the column at the left edge while you scroll sideways. Pinned columns lead the grid in the order you pinned them.
-- **Distinct Values** shows how many of the column's values are unique and empty (with minimum and maximum for numbers and dates) and its most frequent values under the current filters. Search the values, then pick one to filter the table by it.
+- **Distinct Values** shows how many of the column's values are unique and empty (with minimum and maximum for numbers and dates) and its most frequent values under the current filters, with a foreign key's label beside each key. Search the values, then pick one to filter the table by it.
 - **Show Labels**, on foreign key columns, picks a column of the referenced table to show next to each key, such as a user's name beside their `user_id`. Columns are labelled automatically when the referenced table has an obvious one (`name`, `title`, `label`, `email`, `role` and similar); choose **Off** to hide it.
 
 ## References
@@ -98,8 +98,10 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     card to put the default back (not on ClickHouse). With a block of cells
     selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of them.
     JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
-    invalid JSON, and text a date, timestamp or UUID column cannot read, is
-    caught before it is staged. Edited cells are highlighted.
+    invalid JSON, a value missing from an enum, and text a number, date,
+    timestamp or UUID column cannot read, are caught before they are staged.
+    Columns the database fills itself (identity, computed and generated columns,
+    and ClickHouse sorting keys) are read-only. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Staged changes show up in a bar at the bottom of the grid. Click its
@@ -127,7 +129,7 @@ brings them back, and staged new rows stay.
 
 Open the toolbar's **⋯** menu and choose **Seed data**. Tamery picks a generator per column from its name and type — names, emails, timestamps, enum members, and foreign keys pointing at existing rows. Columns the database fills itself (identity, auto-increment, computed, or defaulted) are left to the database.
 
-The panel lists every column with its generator on the left. Select a column to search the generators on the right, choose **NULL** or **SQL expression** (for example `now()`), and switch on **Mix in NULL values** to put `NULL` in a quarter of the rows. A preview under the list shows three sample values for the current choice. Choose how many rows to insert. Rows are inserted in one transaction, so a failure leaves the table unchanged.
+The panel lists every column with its generator on the left. Select a column to search the generators on the right, choose **NULL** or **SQL expression** (for example `now()`), and switch on **Randomize NULL values** to put `NULL` in a quarter of the rows. A preview under the list shows three sample values for the current choice. Choose how many rows to insert. Rows are inserted in one transaction, so a failure leaves the table unchanged.
 
 <Note>
   Seeding is a subscription feature. Free accounts get a limited number of runs.
@@ -145,6 +147,6 @@ The panel lists every column with its generator on the left. Select a column to 
 | **Full-text search** | Filter rows across visible columns. |
 | **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, turning on **Cascade** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
 | **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema shows in the sidebar and opens **New table** right away. |
-| **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key. |
+| **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key the database numbers itself (on ClickHouse, a plain `UInt64` sorting key). |
 | **Rename column** | Right-click a column header. |
-| **Rename / drop table** | From the toolbar menu (with confirmation). |
+| **Rename / drop table** | Right-click the table in the sidebar. Renaming keeps the table's filters, sort and column layout. |

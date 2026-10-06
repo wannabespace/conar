@@ -164,6 +164,9 @@ export const CellReference = ({
         })
       : rows
   const keys = options.map((row) => raw(row[foreign.column]))
+  const highlightedKey = keys.includes(highlighted)
+    ? highlighted
+    : (keys[0] ?? '')
 
   // A key no row matches still applies (deferred or unenforced constraints); the value's own type check rejects malformed text.
   useHotkeys(
@@ -172,6 +175,15 @@ export const CellReference = ({
         callback: () => cursor.leave(0, 0),
         hotkey: 'Enter',
         options: { enabled: options.length === 0 && !isPending },
+      },
+      {
+        callback: () => {
+          if (highlightedKey) {
+            cursor.change(highlightedKey)
+          }
+          cursor.fill()
+        },
+        hotkey: 'Mod+Enter',
       },
     ],
     { ignoreInputs: false, target: ref }
@@ -184,7 +196,7 @@ export const CellReference = ({
       shouldFilter={false}
       loop
       // cmdk drops its highlight when the highlighted item unmounts beside others (new results), leaving Enter dead.
-      value={keys.includes(highlighted) ? highlighted : (keys[0] ?? '')}
+      value={highlightedKey}
       onValueChange={setHighlighted}
       aria-label={`Value of ${column.id}`}
     >

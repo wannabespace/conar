@@ -3,13 +3,16 @@ import { tryCatch } from '@tamery/shared/utils'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
+import { isNumericColumn } from '~/core/table/cell/utils'
 
 import { createBooleanTransformer } from './boolean'
 import { createDateTransformer } from './date'
 import { createListTransformer } from './list'
 import {
   createBytesTransformer,
+  createEnumTransformer,
   createJsonTransformer,
+  createNumberTransformer,
   createRawTransformer,
   createUuidTransformer,
 } from './raw'
@@ -49,7 +52,19 @@ export const createTransformer = (
       return createDateTransformer(column)
     }
 
+    case 'select': {
+      return column.availableValues
+        ? createEnumTransformer(
+            column.availableValues,
+            column.isNullable ?? false
+          )
+        : createRawTransformer()
+    }
+
     default: {
+      if (isNumericColumn(column)) {
+        return createNumberTransformer(column.isNullable ?? false)
+      }
       return uuidColumnType?.test(type)
         ? createUuidTransformer()
         : createRawTransformer()
@@ -62,8 +77,14 @@ export const parseCellText = (
   column: Column,
   text: string | null
 ) =>
-  tryCatch(() =>
-    text === null
-      ? null
-      : createTransformer(connectionType, column).toConnection.fromRaw(text)
-  )
+  tryCatch(() => {
+    if (text !== null) {
+      return createTransformer(connectionType, column).toConnection.fromRaw(
+        text
+      )
+    }
+    if (column.isNullable === false) {
+      throw new Error(`${column.id} cannot be null`)
+    }
+    return null
+  })

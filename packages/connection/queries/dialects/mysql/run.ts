@@ -27,6 +27,25 @@ const setOf = (rows: unknown, fields: unknown, maxRows?: number) => {
   return resultSet({ affectedRows, columns: [], rows: [] }, maxRows)
 }
 
+// mysql2 fills every `?`, so one inside a quoted literal or identifier would take a later placeholder's value.
+const placeholderRegex =
+  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`]|``)*`|\?/gu
+
+export const inlineValues = (
+  sql: string,
+  values: unknown[],
+  escape: (value: unknown) => string
+) => {
+  let index = 0
+  return sql.replace(placeholderRegex, (token) => {
+    if (token !== '?') {
+      return token
+    }
+    index += 1
+    return escape(values[index - 1])
+  })
+}
+
 export const runOn = async (
   connection: mysql2Promise.PoolConnection,
   {
@@ -55,7 +74,14 @@ export const runOn = async (
   const start = performance.now()
   const [rows, fields] = await cancellable(
     { cancel, connectionString, queryId },
-    () => connection.query({ rowsAsArray: true, sql }, values)
+    () =>
+      connection.query({
+        rowsAsArray: true,
+        sql:
+          values.length > 0
+            ? inlineValues(sql, values, (value) => connection.escape(value))
+            : sql,
+      })
   )
   const fieldSets: unknown[] = fields ?? []
   // `CALL` answers with one row set per SELECT inside the procedure, then a status header.

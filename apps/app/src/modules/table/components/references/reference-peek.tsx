@@ -12,6 +12,7 @@ import { Link } from '~/components/link'
 import { tableTabId } from '~/core/tabs/ids'
 import { posthog } from '~/lib/posthog'
 
+import { tablePageStore } from '../../lib/store'
 import type { Hop } from './hops'
 import { tableView } from './hops'
 import { RowsView } from './reference-rows'
@@ -143,7 +144,17 @@ const Trail = ({
                   resourceId: connectionResource.id,
                   tabId: tableTabId(view.schema, view.table),
                 }}
-                search={{ filters: view.filters, orderBy: {} }}
+                onClick={() =>
+                  tablePageStore({
+                    id: connectionResource.id,
+                    schema: view.schema,
+                    table: view.table,
+                  }).set((state) => ({
+                    ...state,
+                    filters: view.filters,
+                    orderBy: {},
+                  }))
+                }
               />
             }
           >

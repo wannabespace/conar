@@ -26,6 +26,7 @@ import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import { pinnedTable } from './pinned-tables'
@@ -71,7 +72,9 @@ export const TableRow = ({
   const rowLevelSecurityItems = useRowLevelSecurityItems(row)
 
   const openInNewWindow = () => {
-    openTab(connectionResource.id, tableTabId(row.schema, row.table.name))
+    if (!checkOrUpgrade('tab.multiple')) {
+      return
+    }
 
     openNewWindow(
       router.buildLocation({

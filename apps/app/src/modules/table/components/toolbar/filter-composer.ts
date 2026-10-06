@@ -1,10 +1,16 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
-import { FILTERS_LIST } from '@tamery/shared/filters'
+import { FILTERS_GROUPED } from '@tamery/shared/filters'
+import { getRouteApi } from '@tanstack/react-router'
 import type { RefObject } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
+
 import { useTablePageStore } from '../../lib/store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export type FilterTarget = Pick<ActiveFilter, 'column' | 'via'>
 
@@ -13,16 +19,29 @@ export type Stage =
   | { step: 'operator'; target: FilterTarget }
   | { step: 'value'; target: FilterTarget; ref: Filter }
 
+export const offeredFilters = (connectionType: ConnectionType) =>
+  FILTERS_GROUPED.map((group) => ({
+    ...group,
+    filters: group.filters.filter(
+      (filter) =>
+        filter.operator !== 'ilike' || capabilitiesOf(connectionType).ilike
+    ),
+  }))
+
 export const operatorMatches = (filter: Filter, text: string) =>
   filter.label.toLowerCase().includes(text) ||
   filter.symbol.toLowerCase().includes(text)
 
-const highlightForStage = (stage: Stage, value: string) => {
+const highlightForStage = (
+  connectionType: ConnectionType,
+  stage: Stage,
+  value: string
+) => {
   const trimmed = value.trim().toLowerCase()
   if (stage.step === 'operator') {
-    const first = FILTERS_LIST.find((filter) =>
-      operatorMatches(filter, trimmed)
-    )
+    const first = offeredFilters(connectionType)
+      .flatMap((group) => group.filters)
+      .find((filter) => operatorMatches(filter, trimmed))
     return first ? `operator:${first.operator}` : ''
   }
   if (stage.step === 'value') {
@@ -40,6 +59,7 @@ export const useFilterComposer = ({
   inputRef: RefObject<HTMLInputElement | null>
   onQueryChange: () => void
 }) => {
+  const { connection } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -53,7 +73,7 @@ export const useFilterComposer = ({
 
   const setQuery = (value: string) => {
     setPrompt(value)
-    setHighlighted(highlightForStage(stage, value))
+    setHighlighted(highlightForStage(connection.type, stage, value))
     onQueryChange()
   }
 

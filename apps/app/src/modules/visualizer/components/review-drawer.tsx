@@ -57,7 +57,7 @@ const draftLabel = (draft: DiagramDraft) => {
 const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
   const { parameters, sql } = draftStatement(type, coldDialects[type](), draft)
   return formatSql(
-    parameters.length > 0 ? inlineParameters(sql, parameters) : sql,
+    parameters.length > 0 ? inlineParameters(sql, parameters, type) : sql,
     type
   )
 }

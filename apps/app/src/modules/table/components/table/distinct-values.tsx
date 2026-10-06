@@ -35,6 +35,7 @@ import { isNumericColumn } from '~/core/table/cell/utils'
 import { createTransformer } from '~/core/transformers/create-transformer'
 
 import { useTableColumnsContext } from '../../lib/columns'
+import { useReferenceLabels } from '../../lib/labels'
 import { useTablePageStore } from '../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -86,12 +87,14 @@ const Bound = ({ label, value }: { label: string; value: string }) => (
 
 const StatsBody = ({
   column,
+  columnLabels,
   filters,
   onFilter,
   schema,
   table,
 }: {
   column: Column
+  columnLabels: Record<string, string>
   filters: ActiveFilter[]
   onFilter: (filter: ActiveFilter) => void
   schema: string
@@ -131,6 +134,12 @@ const StatsBody = ({
       }).run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: [...key, 'value-counts', column.id, filters, term],
   })
+
+  const labels = useReferenceLabels(
+    [column],
+    values.map(({ value }) => ({ [column.id]: value })),
+    columnLabels
+  ).get(column.id)
 
   const empty = stats ? stats.total - stats.filled : 0
   const allUnique = !!stats && stats.filled > 1 && stats.unique === stats.filled
@@ -227,7 +236,16 @@ const StatsBody = ({
                       value === null && 'text-muted-foreground'
                     )}
                   >
-                    {display(value)}
+                    {labels?.has(String(value)) && (
+                      <>{labels.get(String(value))} </>
+                    )}
+                    <span
+                      className={cn(
+                        labels?.has(String(value)) && 'text-muted-foreground'
+                      )}
+                    >
+                      {display(value)}
+                    </span>
                   </span>
                   <span className="text-muted-foreground tabular-nums">
                     {number.format(count)}
@@ -270,6 +288,9 @@ export const DistinctValues = ({
   const filters = enabledFilters(
     useSubscription(store, { selector: (state) => state.filters })
   )
+  const columnLabels = useSubscription(store, {
+    selector: (state) => state.columnLabels,
+  })
 
   return (
     <Popover open={!!target} onOpenChange={(open) => !open && onClose()}>
@@ -283,6 +304,7 @@ export const DistinctValues = ({
           <StatsBody
             key={target.column.id}
             column={target.column}
+            columnLabels={columnLabels}
             filters={filters}
             schema={schema}
             table={table}

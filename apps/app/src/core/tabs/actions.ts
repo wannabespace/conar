@@ -28,7 +28,18 @@ export const setActiveTab = (id: string, tabId: string | null) => {
 }
 
 export const removeTab = (id: string, tabId: string) => {
-  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
+  getConnectionResourceStore(id).set((state) => {
+    const index = state.tabs.findIndex((tab) => tab.id === tabId)
+    const neighbour = state.tabs[index + 1] ?? state.tabs[index - 1]
+    return {
+      ...state,
+      activeTabId:
+        state.activeTabId === tabId
+          ? (neighbour?.id ?? null)
+          : state.activeTabId,
+      tabs: state.tabs.filter((tab) => tab.id !== tabId),
+    } satisfies typeof state
+  })
   resolveTab(tabId)?.kind.onClose?.(id, tabId)
 }
 
@@ -76,6 +87,11 @@ export const replaceTabId = (id: string, from: string, to: string) => {
   setTabs(id, (tabs) =>
     tabs.map((tab) => (tab.id === from ? { ...tab, id: to } : tab))
   )
+  const renamed = resolveTab(from)
+  const target = resolveTab(to)
+  if (renamed && target?.kind === renamed.kind) {
+    renamed.kind.onRename?.(id, renamed.params, target.params)
+  }
 }
 
 export const openTab = (id: string, tabId: string, preview = false) => {

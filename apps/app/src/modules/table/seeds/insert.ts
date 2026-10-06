@@ -3,13 +3,14 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { distinctQuery } from '~/core/queries/rows/distinct'
 import { insertQuery } from '~/core/queries/rows/insert'
+import { rowsPerStatement } from '~/core/queries/rows/shape'
 import {
   connectionResourceToQueryParams,
   transaction,
 } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
 
-import { generateRows, insertBatchSize } from '.'
+import { generateRows } from '.'
 import type { Generator } from './registry'
 import { REFERENCE_GENERATOR, SKIP_GENERATOR } from './types'
 
@@ -63,7 +64,7 @@ export const insertSeedRows = async ({
   const insertedColumnCount = Object.values(columnGenerators).filter(
     (generator) => generator.generatorId !== SKIP_GENERATOR
   ).length
-  const batchSize = insertBatchSize(dialect, insertedColumnCount)
+  const batchSize = rowsPerStatement(dialect, insertedColumnCount)
 
   await transaction(queryParams).execute(async (tx) => {
     for (let index = 0; index < rows.length; index += batchSize) {

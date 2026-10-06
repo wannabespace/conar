@@ -48,6 +48,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     fixedConstraintNames: {},
     functions: noFunctions,
     idColumnType: 'UInt64',
+    ilike: true,
     incomparableColumnType:
       /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
@@ -96,7 +97,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: true,
       securityDefiner: false,
     },
-    idColumnType: 'int',
+    idColumnType: 'int identity',
+    ilike: false,
     incomparableColumnType:
       /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
     indexes: btreeIndexes,
@@ -160,7 +162,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: false,
     },
-    idColumnType: 'int',
+    idColumnType: 'int auto_increment',
+    ilike: false,
     incomparableColumnType: null,
     indexes: btreeIndexes,
     jsonColumnType: JSON_COLUMN_TYPE,
@@ -214,7 +217,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: true,
     },
-    idColumnType: 'integer',
+    idColumnType: 'serial',
+    ilike: true,
     // Geometric types have no btree or hash operator class to sort or group by.
     incomparableColumnType:
       /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,

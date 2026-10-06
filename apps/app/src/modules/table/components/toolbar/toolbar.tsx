@@ -82,6 +82,7 @@ export const TableToolbar = ({
 
   const {
     data: rows = [],
+    hasNextPage,
     isError: isRowsError,
     isPending,
     isPlaceholderData: isRowsPlaceholder,
@@ -113,7 +114,16 @@ export const TableToolbar = ({
         query: {
           filters: selection ?? filters,
           filtersConcatOperator: selection ? 'OR' : 'AND',
-          orderBy,
+          orderBy: {
+            ...orderBy,
+            ...Object.fromEntries(
+              columns
+                .filter(
+                  (column) => column.primaryKey && !(column.id in orderBy)
+                )
+                .map((column) => [column.id, 'ASC' as const])
+            ),
+          },
         },
         schema,
         table,
@@ -139,6 +149,11 @@ export const TableToolbar = ({
       <TableStats
         failed={isRowsError}
         filters={filters}
+        loaded={
+          isRowsSuccess && !isRowsPlaceholder && !hasNextPage
+            ? rows.length
+            : undefined
+        }
         ready={isRowsSuccess && !isRowsPlaceholder}
         schema={schema}
         table={table}

@@ -26,7 +26,6 @@ import { toast } from 'sonner'
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { dropTableQuery } from '~/core/queries/tables/drop'
-import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { tableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
@@ -78,9 +77,9 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({ connectionResource })
-      )
+      queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
 
       // Before navigating: the resource index redirects back to the active tab while it is still listed.
       pinnedTable.remove(connectionResource.id, schema, table)

@@ -2,14 +2,10 @@ import { describe, expect, test } from 'bun:test'
 
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
+import { rowsPerStatement } from '~/core/queries/rows/shape'
 import type { Column } from '~/core/table/cell/utils'
 
-import {
-  autoDetectGenerator,
-  generateRows,
-  getGeneratorGroups,
-  insertBatchSize,
-} from './'
+import { autoDetectGenerator, generateRows, getGeneratorGroups } from './'
 import { REFERENCE_GENERATOR, SKIP_GENERATOR } from './types'
 
 const column = (partial: Partial<Column> & { id: string }): Column => ({
@@ -127,11 +123,11 @@ describe('getGeneratorGroups', () => {
   })
 })
 
-describe('insertBatchSize', () => {
+describe('rowsPerStatement', () => {
   test('respects the MSSQL parameter cap', () => {
-    expect(insertBatchSize(ConnectionType.MSSQL, 5)).toBe(400)
-    expect(insertBatchSize(ConnectionType.MSSQL, 2)).toBe(500)
-    expect(insertBatchSize(ConnectionType.Postgres, 200)).toBe(500)
+    expect(rowsPerStatement(ConnectionType.MSSQL, 5)).toBe(400)
+    expect(rowsPerStatement(ConnectionType.MSSQL, 2)).toBe(500)
+    expect(rowsPerStatement(ConnectionType.Postgres, 200)).toBe(500)
   })
 })
 

@@ -36,6 +36,48 @@ export const createBytesTransformer = (): ValueTransformer<unknown> => ({
   },
 })
 
+const DIGIT_REGEX = /\d/u
+const NON_FINITE_REGEX = /^[+-]?(?:inf(?:inity)?|nan)$/iu
+
+// Lenient on purpose: engines read `1_000`, `0x1F` or `$1.00` too, so only text with no number in it is refused here.
+export const createNumberTransformer = (
+  nullable: boolean
+): ValueTransformer<unknown> => ({
+  ...createRawTransformer(),
+  toConnection: {
+    fromRaw: (raw) => {
+      const text = raw.trim()
+      if (text === '' && nullable) {
+        return null
+      }
+      if (!DIGIT_REGEX.test(text) && !NON_FINITE_REGEX.test(text)) {
+        throw new Error('Enter a number, like 42 or 3.14')
+      }
+      return text
+    },
+    fromUI: (value) => value,
+  },
+})
+
+export const createEnumTransformer = (
+  values: string[],
+  nullable: boolean
+): ValueTransformer<unknown> => ({
+  ...createRawTransformer(),
+  toConnection: {
+    fromRaw: (raw) => {
+      if (raw === '' && nullable && !values.includes('')) {
+        return null
+      }
+      if (!values.includes(raw)) {
+        throw new Error('Pick one of the listed values')
+      }
+      return raw
+    },
+    fromUI: (value) => value,
+  },
+})
+
 const UUID_REGEX =
   /^\{?[\da-f]{8}-?[\da-f]{4}-?[\da-f]{4}-?[\da-f]{4}-?[\da-f]{12}\}?$/iu
 

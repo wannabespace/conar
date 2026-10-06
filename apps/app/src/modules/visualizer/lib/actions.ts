@@ -9,6 +9,7 @@ import type { ColumnDialogRequest } from '~/core/table/column-dialog'
 import type { TableDialogRequest } from '~/core/table/table-dialog'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import type { DiagramActions } from './context'
@@ -104,7 +105,6 @@ export const useDiagramActions = ({
       })
     },
     openTable: (table, newWindow) => {
-      openTab(connectionResource.id, tableTabId(table.schema, table.table))
       const location = {
         params: {
           resourceId: connectionResource.id,
@@ -113,9 +113,12 @@ export const useDiagramActions = ({
         to: '/connection/$resourceId/$tabId' as const,
       }
       if (newWindow) {
-        openNewWindow(router.buildLocation(location).href)
+        if (checkOrUpgrade('tab.multiple')) {
+          openNewWindow(router.buildLocation(location).href)
+        }
         return
       }
+      openTab(connectionResource.id, tableTabId(table.schema, table.table))
       void router.navigate(location)
     },
     renameTable: (table) => setTableRequest({ schema: table.schema, table }),

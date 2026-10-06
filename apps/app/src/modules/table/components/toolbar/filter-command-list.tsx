@@ -4,7 +4,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { FILTER_GROUPS, FILTERS_GROUPED } from '@tamery/shared/filters'
+import { FILTER_GROUPS } from '@tamery/shared/filters'
 import {
   CommandGroup,
   CommandItem,
@@ -13,13 +13,16 @@ import {
 } from '@tamery/ui/components/command'
 import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { cn } from '@tamery/ui/lib/utils'
+import { getRouteApi } from '@tanstack/react-router'
 
 import type { FilterAi } from './filter-ai'
 import { FilterAskAiItem } from './filter-ai'
 import { filterLabel } from './filter-chip'
 import type { FilterComposer } from './filter-composer'
-import { operatorMatches } from './filter-composer'
+import { offeredFilters, operatorMatches } from './filter-composer'
 import { useFilterTargets } from './filter-targets'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const FilterCommandList = ({
   ai,
@@ -30,14 +33,17 @@ export const FilterCommandList = ({
 }) => {
   const { matchingColumns, matchingRelated, matchingValues } =
     useFilterTargets(composer)
+  const { connection } = useRouteContext()
   const { applyValue, committedParts, filters, query, stage } = composer
   const trimmedQuery = query.trim()
-  const matchingOperators = FILTERS_GROUPED.map((group) => ({
-    ...group,
-    filters: group.filters.filter((filter) =>
-      operatorMatches(filter, trimmedQuery.toLowerCase())
-    ),
-  })).filter((group) => group.filters.length > 0)
+  const matchingOperators = offeredFilters(connection.type)
+    .map((group) => ({
+      ...group,
+      filters: group.filters.filter((filter) =>
+        operatorMatches(filter, trimmedQuery.toLowerCase())
+      ),
+    }))
+    .filter((group) => group.filters.length > 0)
 
   return (
     <CommandList className="max-h-64">

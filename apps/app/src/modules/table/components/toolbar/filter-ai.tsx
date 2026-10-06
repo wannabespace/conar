@@ -1,7 +1,6 @@
 import { SparklesIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { isDefinedError } from '@orpc/client'
-import { FILTERS_LIST } from '@tamery/shared/filters'
 import { CommandItem, CommandShortcut } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -12,6 +11,7 @@ import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
@@ -20,6 +20,7 @@ import { appStore } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
+import { offeredFilters } from './filter-composer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -57,7 +58,7 @@ export const useFilterAi = ({
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(
@@ -88,55 +89,67 @@ export const useFilterAi = ({
         }
       },
       onSuccess: (data) => {
-        const hasOrderBy = Object.keys(data.orderBy).length > 0
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              filters: data.filters.flatMap(({ column, operator, values }) => {
-                const ref = FILTERS_LIST.find((f) => f.operator === operator)
-                return ref ? [{ column, ref, values }] : []
-              }),
-              orderBy: data.orderBy,
-              prompt: '',
-            }) satisfies typeof state
+        setFreeAiUsage(data.freeAiUsage || null)
+        const known = new Set(columns.map((column) => column.id))
+        const offered = offeredFilters(connection.type).flatMap(
+          (group) => group.filters
+        )
+        const filters = data.filters.flatMap(({ column, operator, values }) => {
+          const ref = offered.find((filter) => filter.operator === operator)
+          return ref && known.has(column) ? [{ column, ref, values }] : []
+        })
+        const orderBy = Object.fromEntries(
+          Object.entries(data.orderBy).filter(([column]) => known.has(column))
         )
 
-        if (data.filters.length === 0 && !hasOrderBy) {
+        if (filters.length === 0 && Object.keys(orderBy).length === 0) {
           toast.info(
             'No filters or ordering were generated, please try again with a different prompt',
             { id: 'no-filters-or-ordering' }
           )
+          return
         }
 
-        setSummary(summarize(data.filters, data.orderBy))
-        setFreeAiUsage(data.freeAiUsage || null)
+        store.set(
+          (state) =>
+            ({ ...state, filters, orderBy, prompt: '' }) satisfies typeof state
+        )
+        setSummary(summarize(filters, orderBy))
       },
     })
   )
-
-  const context = `
-    Filters working with AND operator.
-    Table name: ${table}
-    Schema name: ${schema}
-    Columns: ${JSON.stringify(
-      columns.map((col) => ({
-        default: col.defaultValue,
-        id: col.id,
-        isNullable: col.isNullable,
-        type: col.type,
-      })),
-      null,
-      2
-    )}
-    Enums: ${JSON.stringify(enums, null, 2)}
-  `.trim()
 
   const canAsk = isOnline && !isPending && freeAiUsage?.remaining !== 0
 
   return {
     ask: (prompt: string) => {
       if (prompt && canAsk) {
+        const current = store.get()
+        const context = `
+          Filters working with AND operator.
+          Database engine: ${connection.type}${capabilitiesOf(connection.type).ilike ? '' : ' (no ilike operator: use like)'}
+          Current filters: ${JSON.stringify(
+            current.filters.map(({ column, ref, values }) => ({
+              column,
+              operator: ref.operator,
+              values,
+            }))
+          )}
+          Current ordering: ${JSON.stringify(current.orderBy)}
+          Table name: ${table}
+          Schema name: ${schema}
+          Columns: ${JSON.stringify(
+            columns.map((col) => ({
+              default: col.defaultValue,
+              id: col.id,
+              isNullable: col.isNullable,
+              type: col.type,
+            })),
+            null,
+            2
+          )}
+          Enums: ${JSON.stringify(enums, null, 2)}
+        `.trim()
         generateFilter(
           { context, prompt },
           {

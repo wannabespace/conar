@@ -76,7 +76,18 @@ interface ExportProps {
   format: ContentFormatType
   limit?: (typeof EXPORT_LIMITS)[number]
   filters?: ActiveFilter[]
+  selected?: Record<string, unknown>[]
 }
+
+const isSelected = (
+  row: Record<string, unknown>,
+  selected: Record<string, unknown>[]
+) =>
+  selected.some((keys) =>
+    Object.entries(keys).every(
+      ([column, value]) => String(row[column]) === String(value)
+    )
+  )
 
 const ExportDataDropdownMenuSubContent = ({
   format,
@@ -109,7 +120,7 @@ const ExportDataDropdownMenuSubContent = ({
         <>
           <DropdownMenuItem
             disabled={selected.length === 0}
-            onClick={() => onExport({ filters, format, type })}
+            onClick={() => onExport({ filters, format, selected, type })}
           >
             {selectedLabel}
           </DropdownMenuItem>
@@ -141,8 +152,18 @@ const useExportMutation = ({
 }) =>
   useMutation({
     meta: { event: 'data_exported' },
-    mutationFn: async ({ type, format, filters, limit }: ExportProps) => {
-      const data = await getData({ filters, limit })
+    mutationFn: async ({
+      type,
+      format,
+      filters,
+      limit,
+      selected,
+    }: ExportProps) => {
+      // Selected rows go out as one OR of every key column, so a composite key matches more than it should.
+      const fetched = await getData({ filters, limit })
+      const data = selected
+        ? fetched.filter((row) => isSelected(row, selected))
+        : fetched
       const content = generateContent({ data, format })
 
       if (content === null) {
