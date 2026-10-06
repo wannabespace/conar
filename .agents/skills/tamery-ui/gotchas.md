@@ -34,6 +34,7 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 - A ghost icon button next to a filled input reads shorter than it is — they measure equal, but the field's fill, ring and shadow give it a lip the transparent button lacks. Fix by matching surfaces (`variant="outline"` + the field's radius), never by growing the button.
 - **A `Button` variant with no rest text colour renders blue as a link** — the global `a { text-primary }` rule sits in `@layer base`, so any utility beats it, but only if one is there. `outline` carries `text-foreground`; `ghost` deliberately does not (its icon buttons inherit the row's muted colour), so a ghost button rendered as a link sets the colour at its call site.
 - Router `Link` concatenates `activeProps.className` without tw-merge — use `data-[status=active]:` variants in one className.
+- **sonner's `unstyled` drops the rule that hides a stacked toast's content**: a toast behind the front one is clamped to the front toast's height, and only `data-styled=true` fades its children out. The kit toast class carries that rule itself (`data-[expanded=false]:data-[front=false]:*:opacity-0`); without it a longer toast behind a shorter one spills its text out of its shrunken box.
 - Tooltip positioner is `pointer-events-none` (kit). Its entrance scales the popup up from the trigger, so an un-gated tooltip landing under the cursor makes the trigger see `mouseleave` and the hover flicker off and on.
 
 ## Focus, keyboard, input

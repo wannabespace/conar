@@ -114,7 +114,7 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.2 0.007 282.73);
   --muted-foreground: oklch(0.705 0 0);
-  --accent: oklch(0.32 0.0075 259.64);
+  --accent: oklch(0.2525 0.0042 259.64);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.696 0.17 162.48);
@@ -208,6 +208,18 @@
 
 .bg-popover:not(.dark *) {
   --accent: oklch(0.965 0.0013 282.73);
+}
+
+.dark :is(.bg-background, .bg-card) {
+  --accent: oklch(0.2787 0.0059 259.64);
+}
+
+.dark .bg-popover {
+  --accent: oklch(0.289 0.0068 259.64);
+}
+
+.dark .bg-input {
+  --accent: oklch(0.2983 0.0075 259.64);
 }
 
 @layer base {
