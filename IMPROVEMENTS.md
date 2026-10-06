@@ -19,7 +19,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Deferred
 
 - **Notebooks / dashboards** — a different product; saved queries plus auto-charts cover most of it.
-- **More engines** (Mongo icon exists) — no differentiation, each costs dialect work.
+- **More engines** (Mongo icon exists) — no differentiation, each costs dialect work. `toMongoPipeline` already runs filters through a reference (`via`), but Mongo has no foreign keys to offer the targets: references would have to be inferred (ObjectId fields found in another collection) or declared by the user.
 - **Team features** — blocked until multi-member workspaces exist.
 
 ## Table
