@@ -72,6 +72,7 @@
 - Navigator and definitions rows use muted icons, not primary — distinct glyphs in blue read as noise.
 - **Navigator status marks** (a table's row level security) sit inline right after the name as a `size-3!` muted glyph (the `!` beats `SidebarMenuButton`'s `[&_svg]:size-4`) with a kit `Tooltip` (never a native `title`), inside the name's flex span so the hover mask still fades them. Only the non-default state is marked; a mark on every row is noise.
 - Title-bar switchers: the workspace menu lists workspaces only; connections and resources are reached through the breadcrumb dropdowns beside it (one menu, one axis). Subscription-gated actions render enabled and route to the upsell modal — the modal is the gate, not a greyed item.
+- **The upsell modal is a plain kit dialog**: default `DialogContent` (narrow `sm:max-w-sm`), left-aligned title + a one-line note that support keeps Tamery going, footer `Maybe Later` / `Upgrade to Pro`. No perk list, gradient, glow, hero icon tile or footnote — it is a personal ask, not a landing page.
 
 ## Messages, alerts, and status
 
