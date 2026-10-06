@@ -1,4 +1,4 @@
-import { LeftToRightListDashIcon, TagsIcon } from '@hugeicons/core-free-icons'
+import { TagsIcon } from '@hugeicons/core-free-icons'
 import { matchesSearch, sameList } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -24,7 +24,6 @@ import { dropEnumQuery } from '~/core/queries/enums/drop'
 import type { enumType } from '~/core/queries/enums/list'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { recreateEnumQuery } from '~/core/queries/enums/recreate'
-import { setColumnEnumValuesQuery } from '~/core/queries/enums/set-column-values'
 import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
 import { queryClient } from '~/lib/query-client'
 
@@ -38,7 +37,7 @@ import { DefinitionsPage } from '../components/page'
 import type { RunQuery } from '../hooks/use-definitions-state'
 import { useDefinitionsState } from '../hooks/use-definitions-state'
 import type { DefinitionsColumn } from '../lib/columns'
-import { labelColumn, nameColumn, textColumn } from '../lib/columns'
+import { nameColumn } from '../lib/columns'
 
 type EnumItem = typeof enumType.infer
 
@@ -68,23 +67,6 @@ const enumPlan = (item: EnumItem | null, drafts: EditableListItem[]) => {
     renames,
     values: rows.map((row) => row.value),
   }
-}
-
-type EnumPlan = ReturnType<typeof enumPlan>
-
-const migratedDefault = (
-  value: string | null,
-  { renames, values }: EnumPlan,
-  isSet: boolean
-) => {
-  if (value === null) {
-    return null
-  }
-  const kept = (isSet ? value.split(',') : [value])
-    .map((label) => renames[label] ?? label)
-    .filter((label) => values.includes(label))
-
-  return kept.join(',') || null
 }
 
 const enumSchema = type({
@@ -133,30 +115,6 @@ const saveEnum = async ({
     )
     return
   }
-  const { metadata } = item
-
-  if (metadata?.table && metadata.column) {
-    await run(
-      setColumnEnumValuesQuery({
-        charset: metadata.charset ?? null,
-        collation: metadata.collation ?? null,
-        column: metadata.column,
-        comment: metadata.comment,
-        defaultValue: migratedDefault(
-          metadata.default ?? null,
-          plan,
-          !!metadata.isSet
-        ),
-        isSet: !!metadata.isSet,
-        nullable: !!metadata.nullable,
-        schema: item.schema,
-        table: metadata.table,
-        values: plan.values,
-      })
-    )
-    return
-  }
-
   if (plan.recreate) {
     const dependents = await queryClient.query(
       enumDependentsQueryOptions({
@@ -204,38 +162,6 @@ const replaceWarning = (item: EnumItem): InspectorWarning => ({
   ),
 })
 
-// MySQL matches old list against new by text, so a renamed or removed label
-// fails the rewrite under strict SQL mode and is written back as an empty
-// string otherwise.
-const lostValuesWarning = (
-  item: EnumItem,
-  values: string[]
-): InspectorWarning | undefined => {
-  const lost = item.values.filter((value) => !values.includes(value))
-
-  if (!item.metadata?.table || lost.length === 0) {
-    return undefined
-  }
-
-  return {
-    action: 'Rewrite column',
-    description: (
-      <>
-        Rows of{' '}
-        <span data-mask className="font-medium">
-          {item.metadata.table}.{item.metadata.column}
-        </span>{' '}
-        holding{' '}
-        <span data-mask className="font-medium">
-          {lost.join(', ')}
-        </span>{' '}
-        lose it for good: strict mode fails the rewrite, anything else blanks
-        the cell.
-      </>
-    ),
-  }
-}
-
 const valuesNote = ({
   item,
   readOnly,
@@ -251,24 +177,10 @@ const valuesNote = ({
   if (readOnly) {
     return 'We cannot edit enums on this database yet.'
   }
-  if (item.metadata?.table) {
-    return 'Values live on the column, so saving rewrites the whole list.'
-  }
-
   return recreating
     ? null
     : 'Renaming and appending values alter the type in place.'
 }
-
-const describe = (item: EnumItem | null, schema: string) =>
-  item?.metadata?.table
-    ? `${item.schema}.${item.metadata.table}.${item.metadata.column}`
-    : (item?.schema ?? schema)
-
-const nameHint = (item: EnumItem | null) =>
-  item?.metadata?.table
-    ? `Column-bound ${item.metadata.isSet ? 'sets' : 'enums'} are named after their column.`
-    : 'Recommended to use lowercase and an underscore to separate words.'
 
 const EnumInspector = ({
   can,
@@ -307,27 +219,22 @@ const EnumInspector = ({
   })
   const draft = useStore(form.store, (state) => state.values)
 
-  const columnBound = !!item?.metadata?.table
   const readOnly = item ? !can.edit : !can.create
   const { recreate, values } = enumPlan(item, draft.drafts)
-  const replacesType = !columnBound && recreate
   const changed =
     !item || draft.name.trim() !== item.name || !sameList(values, item.values)
-  const note = valuesNote({ item, readOnly, recreating: replacesType })
-  const warning =
-    item &&
-    (replacesType ? replaceWarning(item) : lostValuesWarning(item, values))
+  const note = valuesNote({ item, readOnly, recreating: recreate })
 
   return (
     <Inspector
       canSave={changed}
-      description={describe(item, draft.schema)}
+      description={item?.schema ?? draft.schema}
       form={form}
       item={item}
       mutation={mutation}
       noun="enum"
       readOnly={readOnly}
-      warning={warning ?? undefined}
+      warning={item && recreate ? replaceWarning(item) : undefined}
     >
       <InspectorSection
         title="General"
@@ -343,8 +250,8 @@ const EnumInspector = ({
             <TextField
               label="Name"
               autoFocus={!item}
-              description={nameHint(item)}
-              disabled={readOnly || columnBound}
+              description="Recommended to use lowercase and an underscore to separate words."
+              disabled={readOnly}
             />
           )}
         </form.AppField>
@@ -362,6 +269,7 @@ const EnumInspector = ({
                 items={field.state.value}
                 placeholder="Value"
                 readOnly={readOnly}
+                onBlur={field.handleBlur}
                 onItemsChange={field.handleChange}
               />
               <AnimatePresence initial={false}>
@@ -379,49 +287,20 @@ const EnumInspector = ({
   )
 }
 
-const enumNameColumn = nameColumn({
-  icon: (item: EnumItem) =>
-    item.metadata?.isSet ? LeftToRightListDashIcon : TagsIcon,
-  width: '3/12',
-})
-
-const valuesColumn: DefinitionsColumn<EnumItem> = {
-  cell: (item, { search }) => (
-    <span data-mask className="flex flex-wrap items-center gap-1">
-      {item.values.map((value) => (
-        <Badge key={value} size="sm" variant="outline">
-          <HighlightText text={value} match={search} />
-        </Badge>
-      ))}
-    </span>
-  ),
-  header: 'Values',
-}
-
-const columnBoundColumns: DefinitionsColumn<EnumItem>[] = [
-  enumNameColumn,
-  textColumn({
-    header: 'Table',
-    valueOf: (item: EnumItem) => item.metadata?.table,
-    width: '2/12',
-  }),
-  textColumn({
-    header: 'Column',
-    valueOf: (item: EnumItem) => item.metadata?.column,
-    width: '2/12',
-  }),
-  valuesColumn,
-  labelColumn({
-    align: 'end',
-    header: 'Type',
-    labelOf: (item: EnumItem) => (item.metadata?.isSet ? 'Set' : 'Enum'),
-    width: '2/12',
-  }),
-]
-
-const typeColumns: DefinitionsColumn<EnumItem>[] = [
-  enumNameColumn,
-  valuesColumn,
+const columns: DefinitionsColumn<EnumItem>[] = [
+  nameColumn({ icon: () => TagsIcon, width: '3/12' }),
+  {
+    cell: (item, { search }) => (
+      <span data-mask className="flex flex-wrap items-center gap-1">
+        {item.values.map((value) => (
+          <Badge key={value} size="sm" variant="outline">
+            <HighlightText text={value} match={search} />
+          </Badge>
+        ))}
+      </span>
+    ),
+    header: 'Values',
+  },
 ]
 
 export const Enums = () => {
@@ -432,11 +311,7 @@ export const Enums = () => {
 
   return (
     <DefinitionsPage
-      columns={
-        enums.some((item) => item.metadata?.table)
-          ? columnBoundColumns
-          : typeColumns
-      }
+      columns={columns}
       dropItem={async (item, cascade) => {
         await run(
           dropEnumQuery({ cascade, name: item.name, schema: item.schema })
@@ -445,24 +320,9 @@ export const Enums = () => {
       }}
       Inspector={EnumInspector}
       items={enums.filter((item) => item.schema === selectedSchema)}
-      keyOf={(item) =>
-        JSON.stringify([
-          item.schema,
-          item.name,
-          item.metadata?.table ?? '',
-          item.metadata?.column ?? '',
-        ])
-      }
+      keyOf={(item) => JSON.stringify([item.schema, item.name])}
       loading={isPending}
-      match={(item) =>
-        matchesSearch(
-          search,
-          item.name,
-          item.metadata?.table,
-          item.metadata?.column,
-          ...item.values
-        )
-      }
+      match={(item) => matchesSearch(search, item.name, ...item.values)}
       queryKey={query.queryKey}
       state={state}
     />

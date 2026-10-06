@@ -15,8 +15,16 @@ const toCodePoint = (char: string) => {
 export const fromBase64 = (base64: string) =>
   new TextDecoder().decode(Uint8Array.from(atob(base64), toCodePoint))
 
-export const bytesToBase64 = (bytes: Uint8Array) =>
-  btoa(String.fromCodePoint(...bytes))
+// Spreading a whole blob into `fromCodePoint` overflows the call stack.
+const BYTE_CHUNK = 0x80_00
+
+export const bytesToBase64 = (bytes: Uint8Array) => {
+  let binary = ''
+  for (let index = 0; index < bytes.length; index += BYTE_CHUNK) {
+    binary += String.fromCodePoint(...bytes.subarray(index, index + BYTE_CHUNK))
+  }
+  return btoa(binary)
+}
 
 export const base64ToBytes = (base64: string) =>
   Uint8Array.from(atob(base64), toCodePoint)

@@ -1,5 +1,5 @@
 import type { ExpressionBuilder } from 'kysely'
-import { sql } from 'kysely'
+import { isExpression, sql } from 'kysely'
 
 import type { ActiveFilter, FilterOperator } from './types'
 
@@ -19,43 +19,41 @@ export const SQL_OPERATORS: Record<FilterOperator, string> = {
   notLike: 'not like',
 }
 
-const filterValueExpression = (filter: ActiveFilter) => {
-  if (filter.ref.hasValue === false) {
-    return null
-  }
+/** How a filter value is matched against `column`; an engine that parses values by column type passes one. */
+export type FilterValueBinding = (column: string, value: unknown) => unknown
 
-  if (filter.ref.isArray) {
-    return sql.join(
-      [
-        sql.raw('('),
-        sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
-        sql.raw(')'),
-      ],
-      sql.raw('')
-    )
-  }
+const unbound: FilterValueBinding = (_, value) => value
 
-  return sql.val(filter.values[0])
+const predicate = (
+  column: string,
+  { ref, values }: ActiveFilter,
+  bind: FilterValueBinding
+) => {
+  const comparison = sql`${sql.ref(column)} ${sql.raw(SQL_OPERATORS[ref.operator])}`
+  if (ref.hasValue === false) {
+    return comparison
+  }
+  const valueOf = (value: unknown) => {
+    const bound = bind(column, value)
+    return isExpression(bound) ? bound : sql.val(bound)
+  }
+  const value = ref.isArray
+    ? sql`(${sql.join(values.map((item) => valueOf(String(item).trim())))})`
+    : valueOf(values[0])
+  return sql`${comparison} ${value}`
 }
 
 // oxlint-disable-next-line ts/no-explicit-any
 export const toKyselyFilter = <E extends ExpressionBuilder<any, any>>(
   eb: E,
   filters: ActiveFilter[],
-  concatOperator: 'AND' | 'OR' = 'AND'
-) => {
-  const concat = concatOperator === 'AND' ? eb.and : eb.or
-
-  return concat(
-    filters.map((filter) =>
-      sql.join(
-        [
-          sql.ref(filter.column),
-          sql.raw(SQL_OPERATORS[filter.ref.operator]),
-          filterValueExpression(filter),
-        ].filter(Boolean),
-        sql.raw(' ')
-      )
+  concatOperator: 'AND' | 'OR' = 'AND',
+  bind: FilterValueBinding = unbound
+) =>
+  (concatOperator === 'AND' ? eb.and : eb.or)(
+    filters.map(({ via, ...filter }) =>
+      via
+        ? sql`${sql.ref(filter.column)} in (select ${sql.ref(via.key)} from ${sql.id(via.schema, via.table)} where ${predicate(via.target, filter, unbound)})`
+        : predicate(filter.column, filter, bind)
     )
   )
-}

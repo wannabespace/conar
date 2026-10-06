@@ -1,11 +1,6 @@
-export { TableBody } from './body'
-export { TableHeader } from './header'
-export { TableProvider } from './provider'
-export type { TableContextType } from './provider'
-export { Table } from './table'
-export type {
-  ColumnRenderer,
-  TableCellProps,
-  TableHeaderCellProps,
-} from './types'
-export type { ColumnPosition } from './utils'
+export type { GridColumn } from './columns'
+export { Grid } from './grid'
+export type { ScrollToCell } from './grid'
+export type { GridCellProps, GridHeaderProps, GridRow } from './grid-row'
+export { GridScroller } from './grid-scroller'
+export type { GridScrollerProps } from './grid-scroller'

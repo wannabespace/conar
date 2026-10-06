@@ -1,23 +1,4 @@
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@tamery/ui/components/alert'
-import { Button } from '@tamery/ui/components/button'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@tamery/ui/components/dialog'
-import { Input } from '@tamery/ui/components/input'
-import { Label } from '@tamery/ui/components/label'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
@@ -25,6 +6,8 @@ import { toast } from 'sonner'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { renameTableQuery } from '~/core/queries/tables/rename'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import type { TableDialogRequest } from '~/core/table/table-dialog'
+import { TableDialog } from '~/core/table/table-dialog'
 import { tableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -42,49 +25,48 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   const { connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
-  const [newTableName, setNewTableName] = useState('')
-  const [schema, setSchema] = useState('')
-  const [table, setTable] = useState('')
-  const [open, setOpen] = useState(false)
-  const isCurrentTable = activeTabId === tableTabId(schema, table)
+  const [request, setRequest] = useState<TableDialogRequest | null>(null)
+  const { data: tablesAndSchemas } = useQuery(
+    resourceTablesAndSchemasQueryOptions({ connectionResource })
+  )
+  const schemas = tablesAndSchemas?.schemas ?? []
 
   useImperativeHandle(ref, () => ({
-    rename: (schemaName: string, tableName: string) => {
-      setSchema(schemaName)
-      setTable(tableName)
-      setNewTableName(tableName)
-      setOpen(true)
-    },
+    rename: (schema, name) => setRequest({ schema, table: { name, schema } }),
   }))
 
   const { mutate: renameTable, isPending } = useMutation({
     meta: { event: 'table_renamed' },
-    mutationFn: async () => {
-      await renameTableQuery({
-        newTable: newTableName,
-        oldTable: table,
-        schema,
-      }).run(await connectionResourceToQueryParams(connectionResource))
+    mutationFn: async ({
+      newTable,
+      schema,
+      table,
+    }: {
+      newTable: string
+      schema: string
+      table: string
+    }) => {
+      await renameTableQuery({ newTable, oldTable: table, schema }).run(
+        await connectionResourceToQueryParams(connectionResource)
+      )
     },
     onError: (error) => {
       toast.error(`Failed to rename table "${error.message}".`)
     },
-    onSuccess: async () => {
-      toast.success(
-        `Table "${table}" successfully renamed to "${newTableName}"`
-      )
-      setOpen(false)
+    onSuccess: async (_, { newTable, schema, table }) => {
+      toast.success(`Table "${table}" successfully renamed to "${newTable}"`)
+      setRequest(null)
 
-      await queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({ connectionResource })
-      )
-      pinnedTable.rename(connectionResource.id, schema, table, newTableName)
+      await queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
+      pinnedTable.rename(connectionResource.id, schema, table, newTable)
 
-      if (isCurrentTable) {
+      if (activeTabId === tableTabId(schema, table)) {
         router.navigate({
           params: {
             resourceId: connectionResource.id,
-            tabId: tableTabId(schema, newTableName),
+            tabId: tableTabId(schema, newTable),
           },
           replace: true,
           to: '/connection/$resourceId/$tabId',
@@ -93,61 +75,22 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
     },
   })
 
-  const canConfirm =
-    newTableName.trim() !== '' && newTableName.trim() !== table && !isPending
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Rename Table</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <Alert>
-            <HugeiconsIcon
-              icon={InformationCircleIcon}
-              strokeWidth={2}
-              className="size-5"
-            />
-            <AlertTitle data-mask>Rename table &quot;{table}&quot;</AlertTitle>
-            <AlertDescription data-mask>
-              This will rename the table from &quot;{table}&quot; to the new
-              name you specify. This action cannot be undone.
-            </AlertDescription>
-          </Alert>
-          <div className="space-y-2">
-            <Label htmlFor="newTableName">Table name</Label>
-            <Input
-              id="newTableName"
-              value={newTableName}
-              placeholder="Enter new table name"
-              spellCheck={false}
-              autoComplete="off"
-              onChange={(e) => setNewTableName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && canConfirm) {
-                  renameTable()
-                }
-              }}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>
-            Cancel
-          </DialogClose>
-          <Button
-            disabled={!canConfirm}
-            onClick={() => {
-              if (canConfirm) {
-                renameTable()
-              }
-            }}
-          >
-            <LoadingContent loading={isPending}>Rename Table</LoadingContent>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <TableDialog
+      request={request}
+      schemas={schemas.map(({ name }) => name)}
+      isTaken={(schema, name) =>
+        schemas.some(
+          (entry) =>
+            entry.name === schema &&
+            entry.tables.some((table) => table.name === name)
+        )
+      }
+      pending={isPending}
+      onOpenChange={(open) => !open && setRequest(null)}
+      onSubmit={({ table }, schema, newTable) =>
+        table && renameTable({ newTable, schema, table: table.name })
+      }
+    />
   )
 }

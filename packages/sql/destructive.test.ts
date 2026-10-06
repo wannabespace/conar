@@ -2,7 +2,11 @@ import { describe, expect, it } from 'bun:test'
 
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { invalidatesCatalog, destructiveKeywords } from './destructive'
+import {
+  destructiveKeywords,
+  invalidatesCatalog,
+  writesData,
+} from './destructive'
 import { dialects } from './dialect'
 
 const mysql = dialects[ConnectionType.MySQL]
@@ -103,5 +107,25 @@ describe('destructiveKeywords', () => {
     expect(
       invalidatesCatalog('EXPLAIN ANALYZE CREATE TABLE t AS SELECT 1', pg)
     ).toBe(true)
+  })
+
+  it('tells data writes from reads', () => {
+    expect(writesData('INSERT INTO t VALUES (1)', pg)).toBe(true)
+    expect(writesData('SELECT 1; UPDATE t SET a = 1', mysql)).toBe(true)
+    expect(
+      writesData(
+        'WITH gone AS (DELETE FROM t RETURNING id) SELECT * FROM gone',
+        pg
+      )
+    ).toBe(true)
+    expect(
+      writesData(
+        "EXEC('INSERT INTO t VALUES (1)')",
+        dialects[ConnectionType.MSSQL]
+      )
+    ).toBe(true)
+    expect(writesData('SELECT * FROM t FOR UPDATE', pg)).toBe(false)
+    expect(writesData("SELECT 'DELETE' FROM t", mysql)).toBe(false)
+    expect(writesData('EXPLAIN UPDATE t SET a = 1', pg)).toBe(false)
   })
 })

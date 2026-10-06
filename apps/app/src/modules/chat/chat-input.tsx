@@ -1,10 +1,12 @@
 import { ArrowUp02Icon, StopIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import {
   InputGroup,
   InputGroupButton,
   InputGroupTextarea,
 } from '@tamery/ui/components/input-group'
+import { Kbd } from '@tamery/ui/components/kbd'
 import {
   Tooltip,
   TooltipContent,
@@ -80,7 +82,16 @@ export const ChatInput = ({
           }}
         />
         <div className="absolute right-1.5 bottom-1.5 flex items-center gap-1">
-          <Tooltip>
+          <Tooltip
+            shortcut={
+              !isStreaming &&
+              value.trim() && (
+                <Kbd>
+                  <EnterIcon />
+                </Kbd>
+              )
+            }
+          >
             <TooltipTrigger
               render={
                 <InputGroupButton

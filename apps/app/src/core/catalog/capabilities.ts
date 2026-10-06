@@ -1,9 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type {
-  ConstraintKind,
-  ReferentialAction,
-} from '~/core/queries/constraints/shape'
 import {
   CONSTRAINT_KINDS,
   REFERENTIAL_ACTIONS,
@@ -13,126 +9,53 @@ import {
   FUNCTION_VOLATILITIES,
 } from '~/core/queries/functions/shape'
 import { SKIP_INDEX_TYPES } from '~/core/queries/indexes/shape'
-import type { PolicyCommand } from '~/core/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/core/queries/policies/shape'
-import type { RelationKind } from '~/core/queries/tables/list'
-import type {
-  TriggerEvent,
-  TriggerOrientation,
-  TriggerTiming,
-} from '~/core/queries/triggers/shape'
 import {
   TRIGGER_EVENTS,
   TRIGGER_ORIENTATIONS,
   TRIGGER_TIMINGS,
 } from '~/core/queries/triggers/shape'
 
+import type {
+  ConnectionCapabilities,
+  SectionCapabilities,
+} from './capability-presets'
+import {
+  btreeIndexes,
+  full,
+  JSON_COLUMN_TYPE,
+  noFunctions,
+  noPolicies,
+  noTriggers,
+  readOnly,
+  ROW_EVENTS,
+} from './capability-presets'
 import { COLUMN_TYPES } from './column-types'
 import type { DefinitionsSection } from './sections'
 
-export interface SectionCapabilities {
-  create?: boolean
-  drop?: boolean
-  edit?: boolean
-}
-
-interface FunctionCapabilities {
-  argumentPlaceholder: string
-  behaviors: readonly string[]
-  languages: readonly string[]
-  schemaBinding: boolean
-  securityDefiner: boolean
-}
-
-interface IndexCapabilities {
-  rename: boolean
-  // Data-skipping index types; offering any swaps Unique for Type and Granularity.
-  skipTypes: readonly string[]
-}
-
-interface PolicyCapabilities {
-  // ClickHouse's ALTER ROW POLICY rewrites every clause, so nothing recreates.
-  alterInPlace: boolean
-  commands: readonly PolicyCommand[]
-  everyone: string
-  predicates: boolean
-}
-
-interface TriggerCapabilities {
-  body: boolean
-  events: readonly TriggerEvent[]
-  insteadOfTargets: readonly RelationKind[]
-  multipleEvents: boolean
-  orientations: readonly TriggerOrientation[]
-  timings: readonly TriggerTiming[]
-  toggle: boolean
-}
-
-interface ConnectionCapabilities {
-  cascade: boolean
-  columnTypes: readonly string[]
-  constraintKinds: readonly ConstraintKind[]
-  ddlRollback: boolean
-  // null: the connection's database is the schema
-  defaultSchema: string | null
-  explain: boolean
-  fixedConstraintNames: Partial<Record<ConstraintKind, string>>
-  functions: FunctionCapabilities
-  idColumnType: string
-  indexes: IndexCapabilities
-  policies: PolicyCapabilities
-  referentialActions: readonly ReferentialAction[]
-  renameColumns: boolean
-  rowLevelSecurity: boolean
-  renameConstraints: boolean
-  renameSchema: boolean
-  schemas: boolean
-  sections: Record<DefinitionsSection, SectionCapabilities | false>
-  systemSchemas: readonly string[]
-  triggers: TriggerCapabilities
-}
-
-// Only Postgres fires a trigger on TRUNCATE, and only per statement.
-const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')
-
-const readOnly: SectionCapabilities = {}
-const full: SectionCapabilities = { create: true, drop: true, edit: true }
-
-const btreeIndexes: IndexCapabilities = { rename: true, skipTypes: [] }
-const noFunctions: FunctionCapabilities = {
-  argumentPlaceholder: '',
-  behaviors: [],
-  languages: [],
-  schemaBinding: false,
-  securityDefiner: false,
-}
-const noPolicies: PolicyCapabilities = {
-  alterInPlace: false,
-  commands: [],
-  everyone: '',
-  predicates: false,
-}
-const noTriggers: TriggerCapabilities = {
-  body: false,
-  events: [],
-  insteadOfTargets: [],
-  multipleEvents: false,
-  orientations: [],
-  timings: [],
-  toggle: false,
-}
+export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.ClickHouse],
+    columnTypes: {
+      array: { close: ')', open: 'Array(' },
+      bytes: null,
+      id: 'UInt64',
+      incomparable:
+        /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
+      json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
+      options: COLUMN_TYPES[ConnectionType.ClickHouse],
+      uuid: /\bUUID\b/u,
+      xml: null,
+    },
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
     functions: noFunctions,
-    idColumnType: 'UInt64',
+    ilike: true,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     policies: {
       alterInPlace: true,
@@ -148,19 +71,29 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     schemas: false,
     sections: {
       constraints: full,
-      enums: readOnly,
+      enums: false,
       functions: false,
       indexes: full,
       policies: full,
       privileges: false,
       triggers: false,
     },
+    setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
   },
   [ConnectionType.MSSQL]: {
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
+    columnTypes: {
+      array: null,
+      bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
+      id: 'int identity',
+      incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[ConnectionType.MSSQL],
+      uuid: /^uniqueidentifier$/iu,
+      xml: /^xml$/iu,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -173,7 +106,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: true,
       securityDefiner: false,
     },
-    idColumnType: 'int',
+    ilike: false,
     indexes: btreeIndexes,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -193,7 +126,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: false,
       triggers: full,
     },
-    systemSchemas: ['sys', 'INFORMATION_SCHEMA'],
+    setDefault: true,
+    systemSchemas: ['sys', 'INFORMATION_SCHEMA', 'guest'],
     triggers: {
       body: true,
       events: ROW_EVENTS,
@@ -206,7 +140,16 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.MySQL]: {
     cascade: false,
-    columnTypes: COLUMN_TYPES[ConnectionType.MySQL],
+    columnTypes: {
+      array: null,
+      bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
+      id: 'int auto_increment',
+      incomparable: null,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[ConnectionType.MySQL],
+      uuid: null,
+      xml: null,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
@@ -221,7 +164,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: false,
     },
-    idColumnType: 'int',
+    ilike: false,
     indexes: btreeIndexes,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
@@ -242,6 +185,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: { create: true, drop: true },
       triggers: full,
     },
+    setDefault: true,
     systemSchemas: ['mysql', 'information_schema', 'performance_schema', 'sys'],
     triggers: {
       body: true,
@@ -255,7 +199,18 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
   [ConnectionType.Postgres]: {
     cascade: true,
-    columnTypes: COLUMN_TYPES[ConnectionType.Postgres],
+    columnTypes: {
+      array: { close: '[]', open: '' },
+      bytes: null,
+      id: 'serial',
+      // Geometric types have no btree or hash operator class to sort or group by.
+      incomparable:
+        /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
+      json: /^jsonb?$/iu,
+      options: COLUMN_TYPES[ConnectionType.Postgres],
+      uuid: /^uuid$/iu,
+      xml: /^xml$/iu,
+    },
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -268,7 +223,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       schemaBinding: false,
       securityDefiner: true,
     },
-    idColumnType: 'integer',
+    ilike: true,
     indexes: btreeIndexes,
     policies: {
       alterInPlace: false,
@@ -291,6 +246,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: false,
       triggers: full,
     },
+    setDefault: true,
     systemSchemas: ['pg_catalog', 'information_schema'],
     triggers: {
       body: false,

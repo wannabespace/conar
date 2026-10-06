@@ -1,4 +1,3 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -46,9 +45,7 @@ export const Route = createFileRoute(
   component: TabPage,
   validateSearch: type({
     'create?': 'string',
-    'filters?': 'object[]' as type.cast<ActiveFilter[]>,
     'open?': 'string',
-    'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
     'schema?': 'string',
   }),
   beforeLoad: ({ context, params }) => {

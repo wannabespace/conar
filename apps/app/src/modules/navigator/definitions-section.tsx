@@ -2,11 +2,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from '@tamery/ui/components/input-group'
+import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -41,22 +37,23 @@ export const DefinitionsPanel = () => {
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <InputGroup className="flex-1" size="sm">
-          <InputGroupAddon>
+        <SearchInput
+          className="flex-1"
+          size="sm"
+          data-mask
+          placeholder="Search"
+          aria-label="Search definitions"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          start={
             <HugeiconsIcon
               icon={Search01Icon}
               strokeWidth={2}
               className="text-muted-foreground/70 size-3.5"
             />
-          </InputGroupAddon>
-          <InputGroupInput
-            data-mask
-            placeholder="Search"
-            aria-label="Search definitions"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </InputGroup>
+          }
+        />
       </div>
       <SidebarContent className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2">
         {filtered.length === 0 && (
@@ -76,7 +73,6 @@ export const DefinitionsPanel = () => {
                 <SidebarMenuItem key={tabId}>
                   <SidebarMenuButton
                     isActive={isActive}
-                    className="text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default gap-2 rounded-md px-2 text-sm"
                     render={
                       <Link
                         to="/connection/$resourceId/$tabId"

@@ -1,10 +1,11 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
 import {
-  invalidatesCatalog,
   dialects,
+  invalidatesCatalog,
   leavesTransactionOpen,
   unwrapTransaction,
+  writesData,
 } from '@tamery/sql'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -154,6 +155,28 @@ const runOne = async (
   }
 }
 
+const refreshAfterRun = (
+  connectionResource: ConnectionResource,
+  connectionType: ConnectionType,
+  statements: { text: string }[]
+) => {
+  const text = statements.map((statement) => statement.text).join(';\n')
+  if (invalidatesCatalog(text, dialects[connectionType])) {
+    void queryClient.invalidateQueries({
+      queryKey: ['connection-resource', connectionResource.id],
+    })
+    queryClient.removeQueries({
+      queryKey: resourceColumnsQueryKey({ connectionResource }),
+      type: 'inactive',
+    })
+  } else if (writesData(text, dialects[connectionType])) {
+    // Sync with resourceRowsQueryKey and resourceTableTotalQueryKey: every row-data key starts with this prefix.
+    void queryClient.invalidateQueries({
+      queryKey: ['connection-resource', connectionResource.id, 'schema'],
+    })
+  }
+}
+
 export const runStatements = async ({
   connectionResource,
   statements,
@@ -233,20 +256,8 @@ export const runStatements = async ({
     stopped: signal.aborted,
     type: connectionType,
   })
-  if (
-    connectionType &&
-    invalidatesCatalog(
-      statements.map((statement) => statement.text).join(';\n'),
-      dialects[connectionType]
-    )
-  ) {
-    void queryClient.invalidateQueries({
-      queryKey: ['connection-resource', connectionResource.id],
-    })
-    queryClient.removeQueries({
-      queryKey: resourceColumnsQueryKey({ connectionResource }),
-      type: 'inactive',
-    })
+  if (connectionType) {
+    refreshAfterRun(connectionResource, connectionType, statements)
   }
 
   if (!current()) {

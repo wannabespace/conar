@@ -1,63 +1,34 @@
-import {
-  Alert02Icon,
-  ArrowRight01Icon,
-  ArrowTurnBackwardIcon,
-  SaveIcon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { pick } from '@tamery/shared/utils'
-import { Button } from '@tamery/ui/components/button'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@tamery/ui/components/drawer'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { DiscardButton } from '~/core/drafts/discard-button'
+import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
-import type { Draft } from '~/core/table/session'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
+  newRowsActions,
   primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
+import { plural } from '~/lib/plural'
 
 import { useTableColumnsContext } from '../../lib/columns'
+import { tableGridRef } from '../../lib/grid-ref'
 import { useTablePageStore } from '../../lib/store'
+import {
+  ChangeList,
+  DraftChange,
+  NewRowValues,
+  RowError,
+} from './draft-changes'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const Value = ({ value, children }: { value: unknown; children: string }) => {
-  const isEmpty = value === null || value === undefined || value === ''
-
-  return (
-    <span
-      title={children}
-      className={cn(
-        'line-clamp-3 wrap-break-word',
-        isEmpty && 'text-muted-foreground/60 italic'
-      )}
-    >
-      {isEmpty ? String(value ?? 'null') || 'empty' : children}
-    </span>
-  )
-}
 
 export const DraftsReviewDrawer = ({
   open,
@@ -78,19 +49,27 @@ export const DraftsReviewDrawer = ({
 }) => {
   const { connection, connectionResource } = useRouteContext()
   const { columns } = useTableColumnsContext()
+  const columnsById = new Map(columns.map((column) => [column.id, column]))
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const drafts = useSubscription(sessionStore, {
     selector: (state) => Object.values(state.drafts),
   })
+  const newRows = useSubscription(sessionStore, {
+    selector: (state) => state.newRows,
+  })
+  const changeCount = drafts.length + newRows.length
   const { filters, orderBy } = useSubscription(store, {
     selector: (state) => pick(state, ['filters', 'orderBy']),
   })
-  const { remove: removeDraft, removeRow } = draftsActions(sessionStore)
+  const { discard, discardRow } = draftsActions(sessionStore)
+  const listRef = useRef<HTMLDivElement>(null)
+  const jumpTarget = useRef<{ column: string; row: string } | null>(null)
 
   const { data: rows = [] } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
+      columns,
       connectionResource,
       query: { filters, orderBy },
       schema,
@@ -104,208 +83,143 @@ export const DraftsReviewDrawer = ({
         [getRowKeyByPrimaryKeys(row, primaryColumns), { index, row }] as const
     )
   )
-  const draftIndex = (rowDrafts: Draft[]) => {
-    const [firstDraft] = rowDrafts
-    if (!firstDraft) {
-      return Number.MAX_SAFE_INTEGER
-    }
-    return (
-      rowsByPrimaryKey.get(primaryKeysKey(firstDraft.primaryKeys))?.index ??
-      Number.MAX_SAFE_INTEGER
-    )
-  }
-  const rowsEntries = [
-    ...Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)).values(),
-  ].toSorted((a, b) => draftIndex(a) - draftIndex(b))
+  const rowIndex = (key: string) =>
+    rowsByPrimaryKey.get(key)?.index ?? Number.MAX_SAFE_INTEGER
+  const groups = [
+    ...Map.groupBy(drafts, (draft) => primaryKeysKey(draft.primaryKeys)),
+  ].toSorted(([a], [b]) => rowIndex(a) - rowIndex(b))
 
   const columnDisplay = (columnId: string, value: unknown) => {
-    const column = columns.find((c) => c.id === columnId)
+    const column = columnsById.get(columnId)
+    return column
+      ? createTransformer(connection.type, column).toDisplay(
+          value,
+          Number.POSITIVE_INFINITY
+        )
+      : getDisplayValue(value, Number.POSITIVE_INFINITY)
+  }
 
-    if (!column) {
-      return getDisplayValue(value, Number.POSITIVE_INFINITY)
-    }
-
-    return createTransformer(connection.type, column).toDisplay(
-      value,
-      Number.POSITIVE_INFINITY
-    )
+  const jump = (position: { column: string; row: string }) => {
+    jumpTarget.current = position
+    tableGridRef.current?.reveal(position)
+    onOpenChange(false)
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
-      <DrawerContent className="max-w-2xl">
-        <DrawerHeader>
-          <DrawerTitle>Review changes</DrawerTitle>
-          <DrawerDescription>
-            {drafts.length} change
-            {drafts.length === 1 ? '' : 's'} in{' '}
-            <span data-mask className="font-medium">
-              {schema}.{table}
-            </span>
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="min-h-0 flex-1 overflow-auto px-4 pb-4">
-          {rowsEntries.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="bg-muted/60 mb-4 flex size-12 items-center justify-center rounded-2xl">
-                <HugeiconsIcon
-                  icon={SaveIcon}
-                  strokeWidth={2}
-                  className="text-muted-foreground/70 size-6"
+    <StagedReviewDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      busy={isSaving}
+      count={changeCount}
+      description={
+        <>
+          {plural(changeCount, 'change')} in{' '}
+          <span data-mask className="font-mono">
+            {schema}.{table}
+          </span>
+        </>
+      }
+      emptyDescription="Edit cells in the table and the changes will show up here."
+      onDiscardAll={onDiscardAll}
+      onSubmit={onSave}
+      submit={{
+        label: `Save ${plural(changeCount, 'change')}`,
+        tooltip: 'Save in one transaction',
+      }}
+      contentProps={{
+        className: 'w-lg',
+        finalFocus: () => {
+          const target = jumpTarget.current
+          jumpTarget.current = null
+          if (!target) {
+            return true
+          }
+          tableGridRef.current?.reveal(target)
+          return false
+        },
+        initialFocus: () =>
+          listRef.current?.querySelector<HTMLElement>('[data-change]') ?? true,
+      }}
+    >
+      <ChangeList listRef={listRef} isSaving={isSaving}>
+        {newRows.map((newRow) => (
+          <ChangeGroup
+            key={newRow.id}
+            title="New row"
+            action={
+              <DiscardButton
+                label="Discard row"
+                onClick={() => newRowsActions(sessionStore).discard(newRow.id)}
+                disabled={isSaving}
+              />
+            }
+          >
+            <NewRowValues
+              columns={columns}
+              display={columnDisplay}
+              newRow={newRow}
+              onJump={(column) => jump({ column, row: newRow.id })}
+            />
+          </ChangeGroup>
+        ))}
+        {groups.map(([key, rowDrafts]) => {
+          const primaryKeys = rowDrafts[0]?.primaryKeys ?? {}
+          const loaded = rowsByPrimaryKey.get(key)
+          const rowLabel = Object.entries(primaryKeys)
+            .map(
+              ([columnId, value]) =>
+                `${columnId} = ${columnDisplay(columnId, value)}`
+            )
+            .join(' · ')
+
+          return (
+            <ChangeGroup
+              key={key}
+              title={
+                <span data-mask title={rowLabel} className="font-mono">
+                  {rowLabel}
+                </span>
+              }
+              action={
+                <DiscardButton
+                  label="Discard row"
+                  onClick={() => discardRow(primaryKeys)}
+                  disabled={isSaving}
                 />
-              </div>
-              <div className="text-sm font-medium">Nothing to review</div>
-              <p className="text-muted-foreground mt-1 max-w-56 text-xs">
-                Edit cells in the table and the changes will show up here.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {rowsEntries.map((rowDrafts) => {
-                const [firstDraft] = rowDrafts
-                if (!firstDraft) {
-                  return null
-                }
-                const { primaryKeys } = firstDraft
-                const row = rowsByPrimaryKey.get(
-                  primaryKeysKey(primaryKeys)
-                )?.row
-                const primaryLabel = Object.entries(primaryKeys)
-                  .map(
-                    ([columnId, value]) =>
-                      `${columnId} = ${columnDisplay(columnId, value)}`
-                  )
-                  .join(' · ')
-
+              }
+            >
+              {rowDrafts.map((draft) => {
+                const original = loaded?.row[draft.columnId]
                 return (
-                  <div
-                    key={primaryKeysKey(primaryKeys)}
-                    className="bg-card rounded-xl border shadow-xs"
-                  >
-                    <header className="flex h-9 items-center gap-2 border-b pr-1.5 pl-3">
-                      <span
-                        data-mask
-                        title={primaryLabel || undefined}
-                        className="text-2xs text-muted-foreground min-w-0 flex-1 truncate font-mono"
-                      >
-                        {primaryLabel || 'Unknown row'}
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Button
-                              variant="ghost-muted"
-                              size="icon-xs"
-                              className="shrink-0"
-                              onClick={() => removeRow(primaryKeys)}
-                              disabled={isSaving}
-                            />
-                          }
-                        >
-                          <HugeiconsIcon
-                            icon={ArrowTurnBackwardIcon}
-                            strokeWidth={2}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>Discard row</TooltipContent>
-                      </Tooltip>
-                    </header>
-                    <div className="flex flex-col">
-                      {rowDrafts.map((draft) => {
-                        const before = row
-                          ? columnDisplay(draft.columnId, row[draft.columnId])
-                          : ''
-                        const after = columnDisplay(draft.columnId, draft.value)
-
-                        return (
-                          <div
-                            key={draft.columnId}
-                            className="group flex items-start gap-3 border-b py-2 pr-1.5 pl-3 last:border-b-0"
-                          >
-                            <span
-                              data-mask
-                              title={draft.columnId}
-                              className="text-2xs text-muted-foreground w-28 shrink-0 truncate pt-0.5 font-mono font-medium"
-                            >
-                              {draft.columnId}
-                            </span>
-                            <div
-                              data-mask
-                              className="flex min-w-0 flex-1 items-start gap-2 font-mono text-xs"
-                            >
-                              <div className="text-muted-foreground min-w-0 flex-1">
-                                <Value value={row?.[draft.columnId]}>
-                                  {before}
-                                </Value>
-                              </div>
-                              <HugeiconsIcon
-                                icon={ArrowRight01Icon}
-                                strokeWidth={2}
-                                className="text-muted-foreground/50 mt-0.5 size-3 shrink-0"
-                              />
-                              <div className="min-w-0 flex-1">
-                                <Value value={draft.value}>{after}</Value>
-                                {draft.error && (
-                                  <p className="text-2xs text-destructive mt-1 flex items-start gap-1 font-sans">
-                                    <HugeiconsIcon
-                                      icon={Alert02Icon}
-                                      strokeWidth={2}
-                                      className="mt-px size-3 shrink-0"
-                                    />
-                                    {draft.error}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <Tooltip>
-                              <TooltipTrigger
-                                render={
-                                  <Button
-                                    variant="ghost-muted"
-                                    size="icon-xs"
-                                    className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                                    onClick={() =>
-                                      removeDraft(primaryKeys, draft.columnId)
-                                    }
-                                    disabled={isSaving}
-                                  />
-                                }
-                              >
-                                <HugeiconsIcon
-                                  icon={ArrowTurnBackwardIcon}
-                                  strokeWidth={2}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent>Discard change</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
+                  <DraftChange
+                    key={draft.columnId}
+                    column={columnsById.get(draft.columnId)}
+                    draft={draft}
+                    isSaving={isSaving}
+                    before={{
+                      display: loaded
+                        ? columnDisplay(draft.columnId, original)
+                        : '',
+                      value: original,
+                    }}
+                    after={{
+                      display: columnDisplay(draft.columnId, draft.value),
+                      value: draft.value,
+                    }}
+                    onJump={() => jump({ column: draft.columnId, row: key })}
+                    onDiscard={
+                      rowDrafts.length > 1
+                        ? () => discard(primaryKeys, draft.columnId)
+                        : undefined
+                    }
+                  />
                 )
               })}
-            </div>
-          )}
-        </div>
-        <DrawerFooter>
-          <Button
-            variant="ghost-muted"
-            onClick={onDiscardAll}
-            disabled={isSaving || drafts.length === 0}
-            className="mr-auto"
-          >
-            <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
-            Discard all
-          </Button>
-          <DrawerClose render={<Button variant="outline">Close</Button>} />
-          <Button onClick={onSave} disabled={isSaving || drafts.length === 0}>
-            <LoadingContent loading={isSaving}>
-              Save {drafts.length} change{drafts.length === 1 ? '' : 's'}
-            </LoadingContent>
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+              {rowDrafts[0]?.error && <RowError error={rowDrafts[0].error} />}
+            </ChangeGroup>
+          )
+        })}
+      </ChangeList>
+    </StagedReviewDrawer>
   )
 }

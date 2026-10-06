@@ -1,170 +1,124 @@
-import { MinusSignIcon, Tick02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
-import {
-  isShiftClick,
-  reduceShiftClick,
-  useTableContext,
-  useTableStore,
-} from '@tamery/table/hooks'
-import { cn } from '@tamery/ui/lib/utils'
-import type { ChangeEvent, ComponentProps } from 'react'
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
+import type { GridRow } from '@tamery/table'
+import { Checkbox } from '@tamery/ui/components/checkbox'
+import type { CSSProperties } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { useTableSessionStore } from '~/core/table/session'
+import type { GridEntry, PrimaryKeys } from '~/core/table/session'
+import {
+  getRowPrimaryKeysValues,
+  primaryKeysKey,
+  useTableSessionStore,
+} from '~/core/table/session'
 
-const IndeterminateCheckbox = ({
-  indeterminate,
-  className,
-  ...props
-}: { indeterminate?: boolean } & ComponentProps<'input'>) => (
-  <div className="relative inline-flex items-center justify-center">
-    <input
-      type="checkbox"
-      className={cn(
-        `peer hit-area-2.5 border-border checked:border-primary checked:bg-primary focus-visible:focus-ring size-4 appearance-none rounded-sm border shadow-xs transition-colors duration-100 outline-none disabled:cursor-not-allowed disabled:opacity-50`,
-        !props.checked && indeterminate && 'border-primary bg-primary',
-        className
-      )}
-      {...props}
+import { rowSelection } from '../../lib/row-selection'
+
+export const keysInRange =
+  (rows: GridRow[], keys: string[]) => (start: number, end: number) =>
+    rows.slice(start, end + 1).map((row) => getRowPrimaryKeysValues(row, keys))
+
+const SelectAll = ({ keys, rows }: { keys: string[]; rows: GridRow[] }) => {
+  const store = useTableSessionStore()
+  const count = useSubscription(store, {
+    selector: (state) => state.selected.length,
+  })
+  const checked = rows.length > 0 && count === rows.length
+
+  return (
+    <Checkbox
+      aria-label="Select all rows"
+      disabled={rows.length === 0}
+      checked={checked}
+      indeterminate={count > 0 && !checked}
+      onCheckedChange={() =>
+        store.set((state) => ({
+          ...state,
+          selected: checked
+            ? []
+            : rows.map((row) => getRowPrimaryKeysValues(row, keys)),
+        }))
+      }
     />
-    <HugeiconsIcon
-      icon={Tick02Icon}
-      strokeWidth={2}
-      className={cn(
-        `text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100 peer-checked:opacity-100`
-      )}
-    />
-    <HugeiconsIcon
-      icon={MinusSignIcon}
-      strokeWidth={2}
-      className={cn(
-        `text-primary-foreground pointer-events-none absolute size-3 transition-opacity duration-100`,
-        !props.checked && indeterminate ? 'opacity-100' : 'opacity-0'
-      )}
-    />
+  )
+}
+
+export const LeadingHeaderCell = ({
+  keys,
+  rows,
+  style,
+}: {
+  keys: string[]
+  rows: GridRow[]
+  style?: CSSProperties
+}) => (
+  <div
+    role="columnheader"
+    className="bg-background z-10 flex items-center justify-end pr-3"
+    style={style}
+  >
+    <SelectAll keys={keys} rows={rows} />
   </div>
 )
 
-const rowKeyFromKeys = (
-  keys: string[],
-  row: Record<string, unknown> | undefined
-) =>
-  Object.fromEntries(
-    keys.map((key) => [key, (row?.[key] ?? '') as string])
-  ) as Record<string, string>
-
-export const SelectionHeaderCell = ({
-  columnIndex,
-  className,
-  style,
+const SelectRow = ({
   keys,
-}: TableHeaderCellProps & {
+  rowIndex,
+  rowKey,
+  rows,
+}: {
   keys: string[]
-  className?: string
+  rowIndex: number
+  rowKey: PrimaryKeys
+  rows: GridRow[]
 }) => {
-  const tableStore = useTableStore()
-  const rowCount = useTableContext((state) => state.rows.length)
   const store = useTableSessionStore()
-  const [checked, indeterminate] = useSubscription(store, {
-    selector: (state) => [
-      rowCount > 0 && state.selected.length === rowCount,
-      state.selected.length > 0,
-    ],
+  const key = primaryKeysKey(rowKey)
+  const isSelected = useSubscription(store, {
+    selector: (state) =>
+      state.selected.some((selected) => primaryKeysKey(selected) === key),
   })
 
   return (
-    <div
-      className={cn(
-        'flex shrink-0 items-center px-2',
-        columnIndex === 0 && `pl-4`,
-        className
-      )}
-      style={style}
-    >
-      <IndeterminateCheckbox
-        disabled={rowCount === 0}
-        checked={checked}
-        indeterminate={indeterminate}
-        onChange={() => {
-          store.set(
-            (state) =>
-              ({
-                ...state,
-                selected: checked
-                  ? []
-                  : tableStore
-                      .get()
-                      .rows.map((row) => rowKeyFromKeys(keys, row)),
-              }) satisfies typeof state
-          )
-        }}
-      />
-    </div>
+    <Checkbox
+      aria-label="Select row"
+      checked={isSelected}
+      onCheckedChange={(_, { event }) =>
+        store.set((state) =>
+          rowSelection.click(state, {
+            isShiftHeld: event instanceof MouseEvent && event.shiftKey,
+            keysInRange: keysInRange(rows, keys),
+            rowIndex,
+            rowKey,
+          })
+        )
+      }
+    />
   )
 }
 
-export const SelectionCell = ({
-  rowIndex,
-  columnIndex,
-  className,
-  style,
+export const LeadingCell = ({
+  entry,
   keys,
-}: TableCellProps & {
+  rows,
+  style,
+}: {
+  entry: GridEntry
   keys: string[]
-  className?: string
-}) => {
-  const store = useTableSessionStore()
-  const tableStore = useTableStore()
-  const currentRow = useTableContext((state) => state.rows[rowIndex])
-  const rowKey = rowKeyFromKeys(keys, currentRow)
-  const { isSelected, currentSelected, lastClickedIndex } = useSubscription(
-    store,
-    {
-      selector: (state) => ({
-        currentSelected: state.selected,
-        isSelected: state.selected.some((row) =>
-          keys.every((key) => row[key] === currentRow?.[key])
-        ),
-        lastClickedIndex: state.lastClickedIndex,
-      }),
-    }
-  )
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const update = reduceShiftClick(isShiftClick(event), {
-      currentSelected,
-      getItemsInRange: (start, end) =>
-        tableStore
-          .get()
-          .rows.slice(start, end + 1)
-          .map((row) => rowKeyFromKeys(keys, row)),
-      isSelected,
-      lastClickedIndex,
-      rowIndex,
-      rowKey,
-    })
-    store.set(
-      (state) =>
-        ({
-          ...state,
-          lastClickedIndex: update.lastClickedIndex,
-          selected: update.selected,
-          selectionState: update.state,
-        }) satisfies typeof state
-    )
-  }
-
-  return (
-    <div
-      className={cn(
-        'flex items-center px-2',
-        columnIndex === 0 && 'pl-4',
-        className
-      )}
-      style={style}
-    >
-      <IndeterminateCheckbox checked={isSelected} onChange={handleChange} />
-    </div>
-  )
-}
+  rows: GridRow[]
+  style?: CSSProperties
+}) => (
+  <div
+    role="gridcell"
+    className="bg-background group-hover/row:bg-accent z-10 flex items-center justify-end pr-3"
+    style={style}
+  >
+    {entry.kind === 'saved' && (
+      <SelectRow
+        keys={keys}
+        rowIndex={entry.index}
+        rowKey={entry.keys}
+        rows={rows}
+      />
+    )}
+  </div>
+)

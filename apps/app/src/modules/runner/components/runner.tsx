@@ -24,7 +24,10 @@ import {
   ResizablePanel,
   ResizableSeparator,
 } from '@tamery/ui/components/custom/resizable'
-import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  KbdShiftCtrlEnter,
+  KbdShiftCtrlLetter,
+} from '@tamery/ui/components/custom/shortcuts'
 import {
   Popover,
   PopoverContent,
@@ -90,9 +93,13 @@ const toRunnerStatement = (
 
 const ToolbarButton = ({
   label,
+  shortcut,
   ...props
-}: React.ComponentProps<typeof Button> & { label: string }) => (
-  <Tooltip>
+}: React.ComponentProps<typeof Button> & {
+  label: string
+  shortcut?: React.ReactNode
+}) => (
+  <Tooltip shortcut={shortcut}>
     <TooltipTrigger
       render={
         <Button
@@ -322,15 +329,23 @@ export const Runner = () => {
                 Stop
               </Button>
             ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => actions.runAll()}
+              <Tooltip
+                shortcut={<KbdShiftCtrlEnter userAgent={navigator.userAgent} />}
               >
-                <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
-                Run all
-                <KbdShiftCtrlEnter userAgent={navigator.userAgent} />
-              </Button>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => actions.runAll()}
+                    />
+                  }
+                >
+                  <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
+                  Run all
+                </TooltipTrigger>
+                <TooltipContent>Run every statement</TooltipContent>
+              </Tooltip>
             )}
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <ToolbarButton label="Format" onClick={() => actions.format()}>
@@ -350,6 +365,12 @@ export const Runner = () => {
               </ToolbarButton>
               <ToolbarButton
                 label="Save tab as query"
+                shortcut={
+                  <KbdShiftCtrlLetter
+                    userAgent={navigator.userAgent}
+                    letter="S"
+                  />
+                }
                 onClick={() => actions.saveAll()}
               >
                 <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />

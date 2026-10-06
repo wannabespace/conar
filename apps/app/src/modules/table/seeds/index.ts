@@ -93,24 +93,6 @@ export const autoDetectGenerator = (
   return DIALECT_CONFIGS[dialect].types[type] ?? detectGenerator(column, type)
 }
 
-// MSSQL caps a statement at 2100 bound parameters; the others comfortably take 500 rows per statement
-const MSSQL_PARAMETER_LIMIT = 2000
-const MAX_ROWS_PER_INSERT = 500
-
-export const insertBatchSize = (
-  dialect: ConnectionType,
-  columnCount: number
-) =>
-  dialect === ConnectionType.MSSQL
-    ? Math.max(
-        1,
-        Math.min(
-          MAX_ROWS_PER_INSERT,
-          Math.floor(MSSQL_PARAMETER_LIMIT / columnCount)
-        )
-      )
-    : MAX_ROWS_PER_INSERT
-
 const NULL_SHARE = 0.25
 const ARRAY_LENGTH = { max: 5, min: 1 }
 const produceNull = (): unknown => null

@@ -17,7 +17,6 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'Date',
     'DateTime',
     'DateTime64(3)',
-    'Array(String)',
   ],
   [ConnectionType.MSSQL]: [
     'int',

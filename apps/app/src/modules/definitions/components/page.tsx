@@ -10,8 +10,14 @@ import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Drawer, DrawerContent } from '@tamery/ui/components/drawer'
 import { Skeleton } from '@tamery/ui/components/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
@@ -21,9 +27,9 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import { DropDialog } from '~/components/drop-dialog'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { DropDialog } from '~/core/catalog/drop-dialog'
 import { queryClient } from '~/lib/query-client'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
@@ -220,18 +226,31 @@ export const DefinitionsPage = <T extends { name: string }>({
   ]
 
   const addButton = (
-    <Button
-      variant="outline"
-      disabled={!canCreate}
-      onClick={() => inspector.open(null)}
+    <Tooltip
+      shortcut={
+        canCreate && (
+          <KbdCtrlLetter userAgent={navigator.userAgent} letter="N" />
+        )
+      }
     >
-      <HugeiconsIcon
-        icon={PlusSignIcon}
-        strokeWidth={2}
-        data-icon="inline-start"
-      />
-      Add {noun}
-    </Button>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="outline"
+            disabled={!canCreate}
+            onClick={() => inspector.open(null)}
+          />
+        }
+      >
+        <HugeiconsIcon
+          icon={PlusSignIcon}
+          strokeWidth={2}
+          data-icon="inline-start"
+        />
+        Add {noun}
+      </TooltipTrigger>
+      <TooltipContent side="bottom">New {noun}</TooltipContent>
+    </Tooltip>
   )
 
   return (

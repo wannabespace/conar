@@ -19,12 +19,11 @@ New rule file: H1 title in `.agents/rules/`, add a row above — the table is th
 
 ## Design decisions go in the skill
 
-`ui.md` = process; the design system = `tamery-ui` skill (`.agents/skills/tamery-ui/`), whose `SKILL.md` holds the hard rules — **review blockers, load it before any UI work** — and indexes the topic files.
-
-Record **any** UI pattern, motion recipe, kit gotcha or design decision established during a task in the matching topic file, same task — even when no rule file changes. Improvements that stay only in code get lost. Append to the topic file; never grow `SKILL.md` beyond hard rules + index.
+The design system is the `tamery-ui` skill (`.agents/skills/tamery-ui/`). Record **any** UI pattern, motion recipe, kit gotcha or design decision established during a task in its matching topic file, same task — even when no rule file changes; improvements that stay only in code get lost. Never grow its `SKILL.md` beyond hard rules + index.
 
 ## Always applies
 
+- **Improvement ideas go in [`IMPROVEMENTS.md`](IMPROVEMENTS.md).** Any product or UX/DX improvement proposed or discovered during a task is appended there, never left only in chat or a PR.
 - **A comment is a warning or it does not exist** (repo-wide). The only comments allowed are the ones that stop the next reader breaking something: a dialect or platform trap, a race or ordering constraint, a lint/type escape hatch's justification, a sync-with-that-file pointer, a prop's non-obvious contract. Everything else — design rationale, why a value was picked, what the next line does, what changed — goes in the code's names or nowhere. Self-explaining code: clear names, small extracted functions, named constants.
 - **Write as little code as possible.** The smallest change that fully solves the task wins. Reuse before adding, extend a file before creating one, delete more than you add. No speculative abstractions, options, wrappers or config; no defensive branches for impossible states. Solve the given task, not the generalized version.
 - **Simplest mechanism that works.** A library's built-in option beats a hand-rolled effect; an iterator or one-liner beats reimplementing a primitive a dependency already provides. When a fix grows guards to defend its own complexity, step back and pick the plainer mechanism — accept a documented edge over machinery.

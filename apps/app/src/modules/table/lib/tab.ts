@@ -6,6 +6,8 @@ import { createWebStorageValue } from 'seitu/web'
 import { parseTableTabId } from '~/core/tabs/ids'
 import type { TabKind } from '~/lib/module'
 
+import { tablePageStore } from './store'
+
 export interface TableParams {
   schema: string
   table: string
@@ -41,6 +43,16 @@ export const tableTab: TabKind<TableParams> = {
         ),
       ].slice(0, MAX_RECENT_TABLES)
     ),
+  onRename: (resourceId, from, to) => {
+    const source = tablePageStore({ id: resourceId, ...from })
+    tablePageStore({ id: resourceId, ...to }).set(source.get())
+    source.clear()
+    recentTables(resourceId).set((recent) =>
+      recent.map((item) =>
+        item.schema === from.schema && item.table === from.table ? to : item
+      )
+    )
+  },
   title: ({ table }) => table,
   type: 'table',
 }

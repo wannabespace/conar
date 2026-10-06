@@ -26,6 +26,7 @@ import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import { pinnedTable } from './pinned-tables'
@@ -64,13 +65,16 @@ export const TableRow = ({
     table: row.table.name,
   })
   const hasDrafts = useSubscription(store, {
-    selector: (state) => Object.keys(state.drafts).length > 0,
+    selector: (state) =>
+      Object.keys(state.drafts).length > 0 || state.newRows.length > 0,
   })
 
   const rowLevelSecurityItems = useRowLevelSecurityItems(row)
 
   const openInNewWindow = () => {
-    openTab(connectionResource.id, tableTabId(row.schema, row.table.name))
+    if (!checkOrUpgrade('tab.multiple')) {
+      return
+    }
 
     openNewWindow(
       router.buildLocation({
@@ -123,10 +127,7 @@ export const TableRow = ({
     >
       <SidebarMenuButton
         isActive={isActive}
-        className={cn(
-          `text-foreground hover:text-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground h-7 cursor-default rounded-md pl-2 text-sm`,
-          row.pinned && 'pr-12'
-        )}
+        className={cn(row.pinned && 'pr-12')}
         render={
           <Link
             to="/connection/$resourceId/$tabId"
@@ -197,7 +198,6 @@ export const TableRow = ({
           <SidebarMenuAction
             showOnHover
             className={cn(
-              'top-1! rounded-md',
               isActive &&
                 'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
             )}
@@ -211,7 +211,7 @@ export const TableRow = ({
               showOnHover={!row.pinned}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className={cn(
-                'group/pin top-1! right-6 rounded-md',
+                'group/pin right-6',
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>

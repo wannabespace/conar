@@ -108,6 +108,7 @@ export const LastOpenedResources = () => {
         lastOpenedResources.indexOf(a.connectionResource.id) -
         lastOpenedResources.indexOf(b.connectionResource.id)
     )
+    .slice(0, 3)
 
   if (toShow.length === 0) {
     return null

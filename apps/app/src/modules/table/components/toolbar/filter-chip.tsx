@@ -4,7 +4,7 @@ import {
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterVia } from '@tamery/shared/filters'
 import {
   Popover,
   PopoverContent,
@@ -22,6 +22,25 @@ import { FiltersColumnSelector } from './filters/filters-column-selector'
 import { FiltersOperatorSelector } from './filters/filters-operator-selector'
 import { FiltersValueSelector } from './filters/filters-value-selector'
 
+export const filterLabel = ({
+  column,
+  via,
+}: {
+  column: string
+  via?: FilterVia
+}) => (via ? `${via.table}.${via.target}` : column)
+
+export const Chip = (props: React.ComponentProps<'div'>) => (
+  <div
+    {...props}
+    className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring"
+  />
+)
+
+export const ChipDivider = () => (
+  <span aria-hidden className="bg-border w-px shrink-0" />
+)
+
 const ChipSegment = ({
   className,
   ...props
@@ -30,45 +49,38 @@ const ChipSegment = ({
     type="button"
     {...props}
     className={cn(
-      `hover:bg-accent focus-visible:bg-accent flex cursor-default items-center gap-1 px-1.5 text-xs whitespace-nowrap outline-none`,
+      'hover:bg-accent focus-visible:bg-accent flex cursor-default items-center gap-1 px-1.5 text-xs whitespace-nowrap outline-none',
       className
     )}
   />
 )
 
-const ChipDivider = () => (
-  <span aria-hidden className="bg-border w-px shrink-0" />
-)
-
 export const FilterChip = ({
   filter,
-  onRemove,
   onEdit,
-  onToggleDisabled,
+  onRemove,
 }: {
   filter: ActiveFilter
-  onRemove: () => void
   onEdit: (filter: ActiveFilter) => void
-  onToggleDisabled: () => void
+  onRemove: () => void
 }) => {
   const [isColumnOpen, setIsColumnOpen] = useState(false)
   const [isOperatorOpen, setIsOperatorOpen] = useState(false)
   const [isValueOpen, setIsValueOpen] = useState(false)
   const [values, setValues] = useState(filter.values)
-
-  const isValueEmpty =
-    filter.values?.length === 0 || filter.values?.every((value) => value === '')
+  const toggleLabel = filter.disabled ? 'Enable filter' : 'Disable filter'
+  const isValueEmpty = filter.values.every((value) => value === '')
 
   return (
-    <div className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring">
+    <Chip>
       <Tooltip>
         <TooltipTrigger
           render={
             <ChipSegment
-              aria-label={filter.disabled ? 'Enable filter' : 'Disable filter'}
+              aria-label={toggleLabel}
               aria-pressed={!filter.disabled}
               className="text-muted-foreground px-1"
-              onClick={onToggleDisabled}
+              onClick={() => onEdit({ ...filter, disabled: !filter.disabled })}
             />
           }
         >
@@ -78,9 +90,7 @@ export const FilterChip = ({
             className="size-3.5"
           />
         </TooltipTrigger>
-        <TooltipContent side="top">
-          {filter.disabled ? 'Enable filter' : 'Disable filter'}
-        </TooltipContent>
+        <TooltipContent side="bottom">{toggleLabel}</TooltipContent>
       </Tooltip>
       <ChipDivider />
       <div
@@ -91,7 +101,7 @@ export const FilterChip = ({
             data-mask
             render={<ChipSegment className="font-medium" />}
           >
-            {filter.column}
+            {filterLabel(filter)}
           </PopoverTrigger>
           <PopoverContent
             // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
@@ -99,7 +109,12 @@ export const FilterChip = ({
           >
             <FiltersColumnSelector
               onSelect={(column) => {
-                onEdit({ ...filter, column, values })
+                onEdit({
+                  column,
+                  disabled: filter.disabled,
+                  ref: filter.ref,
+                  values: filter.values,
+                })
                 setIsColumnOpen(false)
               }}
             />
@@ -117,8 +132,8 @@ export const FilterChip = ({
             className="gap-0 p-0"
           >
             <FiltersOperatorSelector
-              onSelect={(operator) => {
-                onEdit({ ...filter, ref: operator, values })
+              onSelect={(ref) => {
+                onEdit({ ...filter, ref })
                 setIsOperatorOpen(false)
               }}
             />
@@ -136,7 +151,7 @@ export const FilterChip = ({
                   {isValueEmpty ? (
                     <span className="opacity-40">empty</span>
                   ) : (
-                    filter.values?.join(', ')
+                    filter.values.join(', ')
                   )}
                 </span>
               </PopoverTrigger>
@@ -145,7 +160,7 @@ export const FilterChip = ({
                 className="max-h-[calc(100vh-10rem)] gap-0 p-0"
               >
                 <FiltersValueSelector
-                  column={filter.column}
+                  column={filterLabel(filter)}
                   operator={filter.ref.symbol}
                   isArray={filter.ref.isArray ?? false}
                   values={values}
@@ -177,8 +192,8 @@ export const FilterChip = ({
             className="size-3.5"
           />
         </TooltipTrigger>
-        <TooltipContent side="top">Remove filter</TooltipContent>
+        <TooltipContent side="bottom">Remove filter</TooltipContent>
       </Tooltip>
-    </div>
+    </Chip>
   )
 }

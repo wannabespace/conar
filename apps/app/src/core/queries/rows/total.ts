@@ -11,12 +11,18 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
+import type { ColumnTypes } from './shape'
+import { clickhouseFilterValues } from './shape'
+
 export const resourceTableTotalQuery = memoize(
   ({
+    columns,
     table,
     schema,
     query: { filters, exact },
   }: {
+    /** The table's columns, whose types ClickHouse parses filter values by. */
+    columns?: ColumnTypes
     table: string
     schema: string
     query: {
@@ -46,7 +52,14 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .where((eb) => toKyselyFilter(eb, filters))
+            .where((eb) =>
+              toKyselyFilter(
+                eb,
+                filters,
+                'AND',
+                clickhouseFilterValues(columns)
+              )
+            )
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
@@ -148,11 +161,13 @@ export const resourceTableTotalQueryKey = ({
 ]
 
 export const resourceTableTotalQueryOptions = ({
+  columns,
   connectionResource,
   table,
   schema,
   query: { filters, exact },
 }: {
+  columns?: ColumnTypes
   connectionResource: ConnectionResource
   table: string
   schema: string
@@ -160,9 +175,12 @@ export const resourceTableTotalQueryOptions = ({
 }) =>
   queryOptions({
     queryFn: async () =>
-      resourceTableTotalQuery({ query: { exact, filters }, schema, table }).run(
-        await connectionResourceToQueryParams(connectionResource)
-      ),
+      resourceTableTotalQuery({
+        columns,
+        query: { exact, filters },
+        schema,
+        table,
+      }).run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: [
       ...resourceTableTotalQueryKey({ connectionResource, schema, table }),
       {

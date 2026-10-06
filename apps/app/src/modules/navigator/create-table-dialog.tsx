@@ -55,7 +55,7 @@ export const CreateTableDialog = () => {
             name: 'id',
             nullable: false,
             primaryKey: true,
-            type: capabilitiesOf(connection.type).idColumnType,
+            type: capabilitiesOf(connection.type).columnTypes.id,
           },
         ],
         schema,
@@ -67,9 +67,9 @@ export const CreateTableDialog = () => {
     },
     onSuccess: async (_, { schema, table }) => {
       setRequest(null)
-      await queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({ connectionResource })
-      )
+      await queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
       openTab(connectionResource.id, tableTabId(schema, table))
       router.navigate({
         params: {

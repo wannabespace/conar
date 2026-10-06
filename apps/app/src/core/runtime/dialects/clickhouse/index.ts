@@ -1,5 +1,4 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { type } from 'arktype'
 import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
@@ -10,10 +9,11 @@ const escapeSqlStringRegex = /[\\']/gu
 
 const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
-const dateStringType = type('string.date')
-
-const compiledSqlRegex = /\?/gu
-const compiledSqlParameterRegex = /^update (?<table>(?:`\w+`\.)*`\w+`) set/iu
+// Quoted text is matched first so a `?` inside a literal or an identifier is not taken for a placeholder.
+const compiledSqlRegex =
+  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`]|``)*`|\?/gu
+const compiledSqlParameterRegex =
+  /^update (?<table>(?:`(?:[^`]|``)+`\.)*`(?:[^`]|``)+`) set/iu
 
 const formatArrayValue = (value: unknown) => {
   if (value === null || value === undefined) {
@@ -25,9 +25,12 @@ const formatArrayValue = (value: unknown) => {
   return `'${escapeSqlString(String(value))}'`
 }
 
-const prepareQuery = (compiledQuery: CompiledQuery) => {
+export const prepareQuery = (compiledQuery: CompiledQuery) => {
   let i = 0
-  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
+  const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, (token) => {
+    if (token !== '?') {
+      return token
+    }
     const param = compiledQuery.parameters[i]
     i += 1
 
@@ -47,21 +50,17 @@ const prepareQuery = (compiledQuery: CompiledQuery) => {
       return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
     }
 
-    if (typeof param !== 'string') {
-      return `'${escapeSqlString(JSON.stringify(param))}'`
-    }
-
-    if (dateStringType.allows(param)) {
-      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
-    }
-
-    return `'${escapeSqlString(param)}'`
+    return `'${escapeSqlString(typeof param === 'string' ? param : JSON.stringify(param))}'`
   })
 
-  return compiledSql.replace(
+  const mutation = compiledSql.replace(
     compiledSqlParameterRegex,
     'alter table $<table> update'
   )
+  // A mutation runs in the background by default, so the refresh right after a save would read the old row.
+  return mutation === compiledSql
+    ? compiledSql
+    : `${mutation} settings mutations_sync = 1`
 }
 
 const clickhouseAdapter = () => ({

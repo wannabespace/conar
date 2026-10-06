@@ -89,6 +89,10 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             sql<boolean>`default_kind IN ('MATERIALIZED', 'ALIAS')`.as(
               'isGenerated'
             ),
+            // ClickHouse refuses to UPDATE a sorting or primary key column.
+            sql<boolean>`default_kind NOT IN ('MATERIALIZED', 'ALIAS') AND NOT is_in_sorting_key AND NOT is_in_primary_key`.as(
+              'editable'
+            ),
           ])
           .$call((qb) =>
             filter
@@ -106,7 +110,6 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
         return query.map((row) => ({
           ...row,
           declaredType: clickhouseWithoutNullable(row.type),
-          editable: true,
           enumName: row.type.includes('Enum') ? row.id : undefined,
           isArray: row.type.includes('Array('),
           nullable: clickhouseNullableRegex.test(row.type),
@@ -185,6 +188,8 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
           ({ name, ...column }) =>
             ({
               ...column,
+              // Identity, computed and rowversion columns all refuse an UPDATE.
+              editable: !column.isGenerated,
               id: name,
               maxLength: column.max_length,
             }) satisfies typeof columnType.inferIn

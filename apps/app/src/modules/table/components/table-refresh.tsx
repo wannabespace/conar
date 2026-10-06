@@ -4,12 +4,12 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { TabRefreshButton } from '~/components/tab-refresh-button'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
+import { TabRefreshButton } from '~/core/tabs/refresh-button'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/lib/query-client'
 

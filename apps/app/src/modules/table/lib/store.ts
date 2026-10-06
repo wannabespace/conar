@@ -8,12 +8,21 @@ import { createWebStorageValue } from 'seitu/web'
 import type { GeneratorId } from '../seeds/registry'
 
 export const tablePageType = type({
+  // Foreign-key column → the referenced column whose text labels its keys; '' turns off a default label.
+  columnLabels: 'Record<string, string>',
+  columnOrder: 'string[]',
   columnSizes: 'Record<string, number>',
   filters: type({
     column: 'string',
     'disabled?': 'boolean',
     ref: 'object' as type.cast<Filter>,
     values: 'unknown[]',
+    'via?': {
+      key: 'string',
+      schema: 'string',
+      table: 'string',
+      target: 'string',
+    },
   }).array() as type.cast<ActiveFilter[]>,
   generators: {
     '[string]': {
@@ -26,18 +35,24 @@ export const tablePageType = type({
   orderBy: {
     '[string]': '"ASC" | "DESC"',
   },
+  pinnedColumns: 'string[]',
   prompt: 'string',
   seedsCount: 'number',
+  view: '"grid" | "documents"',
 })
 
 const defaultState: typeof tablePageType.infer = {
+  columnLabels: {},
+  columnOrder: [],
   columnSizes: {},
   filters: [],
   generators: {},
   hiddenColumns: [],
   orderBy: {},
+  pinnedColumns: [],
   prompt: '',
   seedsCount: 10,
+  view: 'grid',
 }
 
 export const tablePageStore = memoize(
@@ -50,7 +65,7 @@ export const tablePageStore = memoize(
     })
 )
 
-type TablePageStore = ReturnType<typeof tablePageStore>
+export type TablePageStore = ReturnType<typeof tablePageStore>
 
 export const TablePageStoreContext = createContext<TablePageStore | null>(null)
 
@@ -86,21 +101,90 @@ export const columnsOrder = (store: TablePageStore) => {
     )
   }
 
-  const toggleOrder = (columnId: string) => {
-    const currentOrder = store.get().orderBy?.[columnId]
-
-    if (currentOrder === 'ASC') {
-      setOrder(columnId, 'DESC')
-    } else if (currentOrder === 'DESC') {
-      removeOrder(columnId)
-    } else {
-      setOrder(columnId, 'ASC')
-    }
-  }
-
   return {
     removeOrder,
     setOrder,
-    toggleOrder,
   }
 }
+
+export const orderColumns = <T extends { id: string }>(
+  columns: T[],
+  order: string[]
+) => {
+  const rank = (id: string) => {
+    const index = order.indexOf(id)
+    return index === -1 ? order.length : index
+  }
+  return columns.toSorted((a, b) => rank(a.id) - rank(b.id))
+}
+
+export const columnView = <T extends { id: string }>(
+  columns: T[],
+  {
+    columnOrder,
+    hiddenColumns,
+    pinnedColumns,
+  }: Pick<
+    typeof tablePageType.infer,
+    'columnOrder' | 'hiddenColumns' | 'pinnedColumns'
+  >,
+  canPin: boolean
+) => {
+  const ordered = orderColumns(columns, columnOrder)
+  const shown = ordered.filter((column) => !hiddenColumns.includes(column.id))
+  const pinned = canPin
+    ? pinnedColumns.filter((id) => shown.some((column) => column.id === id))
+    : []
+  return {
+    pinned,
+    /** The full column order once the shown columns are dragged into `ids`; hidden ones keep their slots. */
+    reordered: (ids: string[]) => {
+      const moved = ids.filter((id) => shown.some((column) => column.id === id))
+      return ordered.map((column) =>
+        hiddenColumns.includes(column.id)
+          ? column.id
+          : (moved.shift() ?? column.id)
+      )
+    },
+    visible: [
+      ...orderColumns(
+        shown.filter((column) => pinned.includes(column.id)),
+        pinned
+      ),
+      ...shown.filter((column) => !pinned.includes(column.id)),
+    ],
+  }
+}
+
+export const columnLayout = (store: TablePageStore) => ({
+  hide: (id: string) =>
+    store.set((state) => ({
+      ...state,
+      hiddenColumns: [...state.hiddenColumns, id],
+    })),
+  reorder: (ids: string[]) =>
+    store.set((state) => ({ ...state, columnOrder: ids })),
+  resetOrder: () => store.set((state) => ({ ...state, columnOrder: [] })),
+  resetSize: (id: string) =>
+    store.set((state) => ({
+      ...state,
+      columnSizes: omit(state.columnSizes, [id]),
+    })),
+  resize: (id: string, width: number) =>
+    store.set((state) => ({
+      ...state,
+      columnSizes: { ...state.columnSizes, [id]: width },
+    })),
+  setLabel: (id: string, label: string) =>
+    store.set((state) => ({
+      ...state,
+      columnLabels: { ...state.columnLabels, [id]: label },
+    })),
+  togglePin: (id: string) =>
+    store.set((state) => ({
+      ...state,
+      pinnedColumns: state.pinnedColumns.includes(id)
+        ? state.pinnedColumns.filter((other) => other !== id)
+        : [...state.pinnedColumns, id],
+    })),
+})

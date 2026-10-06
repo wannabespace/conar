@@ -1,6 +1,5 @@
 import type { IconSvgElement } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { ActiveFilter } from '@tamery/shared/filters'
 import type { ComponentType, ReactNode } from 'react'
 import type { Readable, Subscribable, Writable } from 'seitu'
 
@@ -18,6 +17,7 @@ export interface TabKind<Params = unknown> {
   match(id: string): Params | null
   onActivate?(resourceId: string, params: Params): void
   onClose?(resourceId: string, id: string): void
+  onRename?(resourceId: string, from: Params, to: Params): void
   title(params: Params): string
   type: string
 }
@@ -38,9 +38,7 @@ export interface TabView<Params = unknown> {
 // Sync with the `$tabId` route's validateSearch.
 export interface TabSearch {
   create?: string
-  filters?: ActiveFilter[]
   open?: string
-  orderBy?: Record<string, 'ASC' | 'DESC'>
   schema?: string
 }
 
@@ -125,12 +123,6 @@ export interface WorkspaceModule {
   header?: ComponentType
   mounts?: ComponentType[]
   panels?: Panel[]
-  referenceTable?: ComponentType<{
-    column: string
-    schema: string
-    table: string
-    value: unknown
-  }>
   tabBarEnd?: Slotted<{ resourceId: string }>[]
   tabs?: Record<string, TabView>
 }

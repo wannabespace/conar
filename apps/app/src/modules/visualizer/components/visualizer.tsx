@@ -5,7 +5,7 @@ import { useReactFlow } from '@xyflow/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { defaultSchemaOf } from '~/core/catalog/capabilities'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { resourceIndexesQueryOptions } from '~/core/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/core/queries/policies/list'
@@ -262,8 +262,6 @@ export const Visualizer = ({
       />
       <ColumnDialog
         request={columnRequest}
-        canRename={can.renameColumns}
-        columnTypes={capabilitiesOf(connection.type).columnTypes}
         onOpenChange={(open) => !open && setColumnRequest(null)}
         onSubmit={submitColumn}
       />

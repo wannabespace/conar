@@ -6,6 +6,20 @@ export const EQUAL_FILTER = {
   symbol: '=',
 } as const satisfies Filter
 
+export const IN_FILTER = {
+  isArray: true,
+  label: 'In',
+  operator: 'in',
+  symbol: 'IN',
+} as const satisfies Filter
+
+export const IS_NULL_FILTER = {
+  hasValue: false,
+  label: 'Is null',
+  operator: 'isNull',
+  symbol: 'IS NULL',
+} as const satisfies Filter
+
 export const FILTERS_GROUPED = [
   {
     filters: [
@@ -28,19 +42,14 @@ export const FILTERS_GROUPED = [
   },
   {
     filters: [
-      { isArray: true, label: 'In', operator: 'in', symbol: 'IN' },
+      IN_FILTER,
       { isArray: true, label: 'Not in', operator: 'notIn', symbol: 'NOT IN' },
     ],
     group: 'list',
   },
   {
     filters: [
-      {
-        hasValue: false,
-        label: 'Is null',
-        operator: 'isNull',
-        symbol: 'IS NULL',
-      },
+      IS_NULL_FILTER,
       {
         hasValue: false,
         label: 'Is not null',

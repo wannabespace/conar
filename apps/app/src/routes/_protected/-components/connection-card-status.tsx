@@ -21,7 +21,7 @@ export const ConnectionCardStatus = ({
   if (isLoadingVisible && canSend) {
     return <Spinner className="size-3 shrink-0" />
   }
-  if (!canSend) {
+  if (reason) {
     return (
       <Tooltip>
         <TooltipTrigger

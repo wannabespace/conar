@@ -6,6 +6,7 @@ import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { createQueryRouter } from '@tamery/query-proxy'
+import { querySerializer } from '@tamery/query-proxy/serializer'
 import { PORTS } from '@tamery/shared/constants'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { consola } from 'consola'
@@ -183,6 +184,7 @@ export const proxyCommand = command({
           }
         },
       ],
+      serializer: querySerializer,
     })
 
     const app = new Hono()

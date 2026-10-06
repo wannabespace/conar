@@ -97,10 +97,7 @@ export const SchemaRow = ({
         items={items}
         contentProps={{ className: 'min-w-48' }}
         render={
-          <SidebarMenuAction
-            showOnHover
-            className="top-1/2! -translate-y-1/2 rounded-md"
-          />
+          <SidebarMenuAction showOnHover className="top-1/2 -translate-y-1/2" />
         }
       />
       <Tooltip>
@@ -109,7 +106,7 @@ export const SchemaRow = ({
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
-              className="text-muted-foreground top-1/2! right-6 -translate-y-1/2 rounded-md"
+              className="text-muted-foreground top-1/2 right-6 -translate-y-1/2"
               onClick={onCreateTable}
             />
           }

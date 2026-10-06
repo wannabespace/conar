@@ -8,45 +8,32 @@ import { runRequest } from './run'
 export const query = {
   ...transactionQueries,
 
-  beginTransaction: handleQueryError(
-    async ({
-      connectionString,
-      ownerId,
-    }: {
-      connectionString: string
-      ownerId?: string
-    }) => {
-      const pool = await getPool(connectionString)
-      const transaction = pool.transaction()
+  beginTransaction: handleQueryError(async ({ connectionString, ownerId }) => {
+    const pool = await getPool(connectionString)
+    const transaction = pool.transaction()
+    await transaction.begin()
 
-      await transaction.begin()
-
-      const txId = registerTransaction(
-        {
-          commit: async () => {
-            await transaction.commit()
-          },
-          execute: (sql, values, options) =>
-            runRequest(
-              transaction.request(),
-              { connectionString, sql, values },
-              options
-            ),
-          release: async () => {
-            // mssql's `Transaction` releases its connection internally on commit/rollback.
-          },
-          rollback: async () => {
-            await transaction.rollback()
-          },
+    const txId = registerTransaction(
+      {
+        commit: () => transaction.commit(),
+        execute: (sql, values, options) =>
+          runRequest(
+            transaction.request(),
+            { connectionString, sql, values },
+            options
+          ),
+        release: async () => {
+          // mssql's `Transaction` releases its connection internally on commit/rollback.
         },
-        ownerId
-      )
-
-      return { txId }
-    }
-  ),
+        rollback: () => transaction.rollback(),
+      },
+      ownerId
+    )
+    return { txId }
+  }),
 
   cancel,
+
   execute: handleQueryError(
     async ({ connectionString, query: sql, values = [], ...options }) => {
       const pool = await getPool(connectionString)

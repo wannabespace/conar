@@ -13,6 +13,8 @@ import {
   PostgresQueryCompiler,
 } from 'kysely'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
+
 import {
   addColumnStatement,
   alterColumnStatement,
@@ -69,6 +71,31 @@ describe('createTable', () => {
     ).toBe(
       'create table "s"."t" ("id" integer not null primary key, "note" text)'
     )
+  })
+
+  test("New table's id fills itself on every engine with a sequence", () => {
+    const newTableId = (type: ConnectionType) => ({
+      ...id,
+      type: capabilitiesOf(type).columnTypes.id,
+    })
+    const engines = [
+      [ConnectionType.Postgres, postgres],
+      [ConnectionType.MySQL, mysql],
+      [ConnectionType.MSSQL, mssql],
+    ] as const
+    expect(
+      engines.map(
+        ([type, db]) =>
+          createTableStatement(type, db, {
+            ...target,
+            columns: [newTableId(type)],
+          }).sql
+      )
+    ).toEqual([
+      'create table "s"."t" ("id" serial not null primary key)',
+      'create table `s`.`t` (`id` int auto_increment not null primary key)',
+      'create table "s"."t" ("id" int identity not null primary key)',
+    ])
   })
 
   test('a composite key is a table constraint', () => {

@@ -6,11 +6,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from '@tamery/ui/components/input-group'
+import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
   Tooltip,
   TooltipContent,
@@ -37,13 +33,15 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const TablesPanel = ({
   onCreateTable,
 }: {
-  onCreateTable: (schema: string) => void
+  onCreateTable: (schema?: string) => void
 }) => {
   const { connectionResource } = useRouteContext()
   const store = navigatorStore(connectionResource.id)
   const search = useSubscription(store, {
     selector: (state) => state.tablesSearch,
   })
+  const setSearch = (tablesSearch: string) =>
+    store.set((state) => ({ ...state, tablesSearch }) satisfies typeof state)
   const {
     refetch: refetchTablesAndSchemas,
     isFetching: isRefreshingTablesAndSchemas,
@@ -53,28 +51,23 @@ const TablesPanel = ({
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <InputGroup className="flex-1" size="sm">
-          <InputGroupAddon>
+        <SearchInput
+          className="flex-1"
+          size="sm"
+          data-mask
+          placeholder="Search"
+          aria-label="Search tables"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          start={
             <HugeiconsIcon
               icon={Search01Icon}
               strokeWidth={2}
               className="text-muted-foreground/70 size-3.5"
             />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Search"
-            value={search}
-            onChange={(e) =>
-              store.set(
-                (state) =>
-                  ({
-                    ...state,
-                    tablesSearch: e.target.value,
-                  }) satisfies typeof state
-              )
-            }
-          />
-        </InputGroup>
+          }
+        />
         <Tooltip>
           <TooltipTrigger
             render={
@@ -157,7 +150,7 @@ const NavigatorFooter = () => {
   )
 }
 
-const createTable = (schema: string) =>
+const createTable = (schema?: string) =>
   createTableDialogRef.current?.create(schema)
 
 export const Navigator = () => {

@@ -5,7 +5,6 @@
 `ls apps packages` for the list. Non-obvious placements:
 
 - `apps/app/src/modules`, `apps/main/src/modules` — one folder per feature; `apps/app/src/core` — one folder per shared domain. Rules in `architecture.md` → Modules, Core layout.
-
 - `apps/proxy` — separate Hono process executing DB queries; clients connect to **the proxy**, not `apps/api`. `packages/query-proxy` holds the oRPC router factory both share.
 - `packages/sql` — the SQL language behind the editor: per-dialect tokenizer (also Monaco's tokens provider), statement splitter, catalog-aware diagnostics and completion, destructive-keyword check. Pure and Monaco-free; `packages/monaco` is the only place that binds it to Monaco.
 - `packages/monaco` — everything Monaco: the `Monaco` component with its themes and workers, `monaco.css`, and the SQL language binding. It knows nothing about the app's data: a runner model is bound to a `SqlSource` (catalog, column loading, AI completion, change feed), which the app builds from its query cache in `modules/runner/sql-source.ts`.
@@ -13,13 +12,14 @@
 - `packages/ai` — everything AI that needs no db/auth/oRPC: models, resumable chat stream, `UIMessage` helpers, one module per generation feature. New prompts and models go here, not `apps/api`. Folder barrels only, each re-exporting by name (`code-style.md`), so the client never pulls server-only modules.
 - `@tamery/vite-inline-html` — Vite plugins that fill `index.html` markers in dev and build (the root entry inlines bundled IIFE scripts, the `/react` entry server-renders components). It knows nothing about shells, boot or CSS; every target is passed from the app's `vite.config.ts`.
 - `apps/desktop` — Electron wrapper around `apps/app`; `apps/main` is marketing + auth only.
-- `motion-panels` — the resizable pane mechanics (framework-agnostic core plus a React adapter, animated with motion). An **external npm package** developed in its own repo (`~/Projects/Own/motion-panels`), not a workspace package; the catalog pins the version. To test local changes, add a `pnpm-workspace.yaml` `overrides` entry (`link:` paths resolve from the workspace root; catalogs reject the protocol), `pnpm install`, restart Vite, and rebuild the package for each change — then **drop the override before merging**, or the branch installs a checkout CI does not have. It ships unstyled and has no `cn`, so the kit wraps it (`packages/ui/components/custom/resizable.tsx`) and the app imports those. Behaviour and rules in the `tamery-ui` skill.
+- `motion-panels` — the resizable pane mechanics (framework-agnostic core plus a React adapter, animated with motion). An **external npm package** developed in its own repo (`~/Projects/Own/motion-panels`), not a workspace package; the catalog pins the version. To test local changes, add a `pnpm-workspace.yaml` `overrides` entry (`link:` paths resolve from the workspace root; catalogs reject the protocol), `pnpm install`, restart Vite, and rebuild the package for each change — then **drop the override before merging**, or the branch installs a checkout CI does not have. The app imports the kit wrapper (`packages/ui/src/components/custom/resizable.tsx`), never the package; behaviour and rules are in the `tamery-ui` skill.
 
 ## Dev commands
 
 Setup and the command list live in `README.md` and the root `package.json`. Not obvious:
 
 - `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
+- A dead backend shows up in the browser as a **CORS error**: portless answers for a stopped server with a 502 that has no CORS headers. `bun --watch` stays down after a crash until a watched file changes, and it ignores `node_modules`, so a crash on a not-yet-installed package needs `dev` restarted after `pnpm install`.
 - Portless dev URLs live only while `dev` runs. In a linked git worktree portless prefixes the branch name, so worktrees run alongside the main checkout.
 - `.env` files are gitignored and created by `scripts/setup-dev.ts` on install, never overwritten. A linked worktree copies them from the main checkout, because `.env.example` points at localhost services that don't run here. To resync a stale `.env`, delete it and re-run `bun scripts/setup-dev.ts`.
 - Cross-service dev URLs are not in `.env` — `setupPortlessEnvs(...)` fills them at startup, worktree-aware, and each app declares its own env-key map. Precedence: existing env var > portless > declared default.

@@ -98,6 +98,26 @@ const bannerDismissedValue = createWebStorageValue({
   type: 'localStorage',
 })
 
+const lastBannersValue = createWebStorageValue({
+  defaultValue: [],
+  key: 'banner-last',
+  schema: type('object[]').as<BannerItem[]>(),
+  type: 'localStorage',
+})
+
+const listQueryOptions = orpc.banner.queryOptions({
+  placeholderData: () => lastBannersValue.get(),
+})
+
+const bannerQueryOptions = {
+  ...listQueryOptions,
+  queryFn: async (context: Parameters<typeof listQueryOptions.queryFn>[0]) => {
+    const items = await listQueryOptions.queryFn(context)
+    lastBannersValue.set(items)
+    return items
+  },
+}
+
 const Banner = ({
   className,
   children,
@@ -197,16 +217,15 @@ export const GlobalBanner = () => {
   const dismissed = useSubscription(bannerDismissedValue)
   const delayPassed = useDelay(INITIAL_DELAY)
 
-  const { data: serverItems = [] } = useQuery(
-    orpc.banner.queryOptions({
-      enabled: delayPassed,
-      refetchInterval: 1000 * 60 * 5,
-      select: (bannerItems) =>
-        bannerItems.filter((item) => !dismissed.includes(item.text)),
-      staleTime: 1000 * 60 * 5,
-      throwOnError: false,
-    })
-  )
+  const { data: serverItems = [] } = useQuery({
+    ...bannerQueryOptions,
+    enabled: delayPassed,
+    refetchInterval: 1000 * 60 * 5,
+    select: (bannerItems) =>
+      bannerItems.filter((item) => !dismissed.includes(item.text)),
+    staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+  })
   const data = isOnline
     ? serverItems
     : [

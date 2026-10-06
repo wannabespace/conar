@@ -21,6 +21,7 @@ export const useVirtualizer = <
 
   return {
     measure: virtualizer.measure,
+    measureElement: virtualizer.measureElement,
     range: virtualizer.range,
     scrollToIndex: virtualizer.scrollToIndex,
     totalSize: virtualizer.getTotalSize(),

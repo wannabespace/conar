@@ -18,12 +18,13 @@ import {
 
 export const inlineParameters = (
   sql: string,
-  parameters: readonly unknown[]
+  parameters: readonly unknown[],
+  dialect: ConnectionType
 ): string => {
   let i = 0
   return sql.replaceAll(/\$\d+|@\d+|\?/gu, () => {
     i += 1
-    return formatValue(parameters[i - 1])
+    return formatValue(parameters[i - 1], dialect)
   })
 }
 
@@ -45,7 +46,7 @@ export const generateQuerySQL = ({
   const query =
     filters.length > 0 ? base.where((eb) => toKyselyFilter(eb, filters)) : base
   const compiled = query.compile()
-  return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
+  return formatSql(inlineParameters(compiled.sql, compiled.parameters, dialect), dialect)
 }
 
 const escapeSqlString = (s: string): string => s.replaceAll("'", "''")

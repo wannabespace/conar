@@ -9,22 +9,19 @@ import {
   CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
-import type { RefObject } from 'react'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 
 export const FiltersColumnSelector = ({
-  ref,
   onSelect,
 }: {
-  ref?: RefObject<HTMLInputElement | null>
   onSelect: (column: string) => void
 }) => {
   const { columns } = useTableColumnsContext()
 
   return (
     <Command>
-      <CommandInput ref={ref} placeholder="Select column to filter..." />
+      <CommandInput placeholder="Select column to filter..." />
       <CommandList data-mask className="h-fit max-h-[45vh]">
         <CommandEmpty>No columns found.</CommandEmpty>
         <CommandGroup>

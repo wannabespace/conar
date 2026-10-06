@@ -29,7 +29,9 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
   })
 
   return (
-    <Tooltip>
+    <Tooltip
+      shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="J" />}
+    >
       <TooltipTrigger
         render={
           <Button
@@ -43,10 +45,7 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
       >
         <HugeiconsIcon icon={File01Icon} strokeWidth={2} className="size-4" />
       </TooltipTrigger>
-      <TooltipContent side="bottom">
-        Query logger
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="J" />
-      </TooltipContent>
+      <TooltipContent side="left">Query logger</TooltipContent>
     </Tooltip>
   )
 }

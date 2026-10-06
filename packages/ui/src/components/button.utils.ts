@@ -22,8 +22,8 @@ export const buttonVariants = cva(
         xs: `h-6 gap-1 rounded-md px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3`,
       },
       variant: {
-        default: `bg-primary text-primary-foreground hover:bg-primary/80`,
-        destructive: `bg-destructive hover:bg-destructive/85 text-white shadow-xs`,
+        default: `bg-primary text-primary-foreground hover:bg-[color-mix(in_oklab,var(--primary),var(--foreground)_12%)]`,
+        destructive: `bg-destructive text-white shadow-xs hover:bg-[color-mix(in_oklab,var(--destructive),var(--foreground)_12%)]`,
         ghost: `hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
         'ghost-destructive': `text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-transform`,
         'ghost-muted': `text-muted-foreground hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground aria-pressed:bg-foreground/10 aria-pressed:text-foreground transition-transform`,
