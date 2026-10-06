@@ -52,7 +52,7 @@ export const handleError = async (
         error.message.includes(PROXY_ERROR_MESSAGE)
       : false
 
-  if (shouldIgnoreError) {
+  if (shouldIgnoreError || (!navigator.onLine && isServerError(error))) {
     return
   }
 

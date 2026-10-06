@@ -1,7 +1,5 @@
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
-import { RetryLinkPlugin } from '@orpc/client/plugins'
-import type { RetryLinkPluginContext } from '@orpc/client/plugins'
 import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type * as apiOrpc from '@tamery/api/orpc/routers'
@@ -16,7 +14,7 @@ import { bearerToken } from './auth'
 import { handleError } from './error'
 import { apiUrl, proxyUrl } from './urls'
 
-export interface AppClientContext extends RetryLinkPluginContext {
+export interface AppClientContext {
   silent?: boolean
 }
 
@@ -43,16 +41,6 @@ export const orpc = createTanstackQueryUtils(
       },
       interceptors: [onError(handleError)],
       origin: apiUrl,
-      plugins: [
-        new RetryLinkPlugin({
-          default: {
-            retry: 3,
-            retryDelay: 2000,
-            shouldRetry: ({ error }) =>
-              error instanceof TypeError && !navigator.onLine,
-          },
-        }),
-      ],
       url: '/rpc',
     })
   ) satisfies apiOrpc.ORPCRouter

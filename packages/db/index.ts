@@ -16,3 +16,6 @@ export const relations = {
 export const db = drizzle(env.DATABASE_URL, {
   relations,
 })
+
+// An idle client's network error is emitted on the pool; unhandled, it kills the process.
+db.$client.on('error', console.error)
