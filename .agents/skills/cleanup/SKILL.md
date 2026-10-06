@@ -29,8 +29,8 @@ In rough order of payoff:
 - **Imagined states**: a guard or `try`/`catch` the surrounding module would not write, protecting a state that cannot occur; compatibility shims, aliases, retries and fallbacks — the app is unreleased, so none are owed; casts that launder types (`as any`, `as unknown as T`, `!` where narrowing works); intermediate variables that name nothing.
 - **Reinvention**: a `div` stack that is a registry component, a hand-rolled effect where a library option exists, a loop where a built-in reads better. Kit search: `pnpm dlx shadcn@latest search @shadcn -q <term>`.
 - **Speculative shape**: an abstraction with one implementation, an option nobody sets, a wrapper that forwards. Collapse it.
-- **Duplicate logic** added next to an existing helper — reuse the helper (a hand-rolled `n > 1 ? 's' : ''` is `plural()` from `~/lib/plural`). Two dialect branches of one `createQuery` that are character-for-character identical are one statement written twice.
-- **No-op code**: a prop set to the kit's default (`side="top"` on `TooltipContent`, `variant="outline"` on `AlertDialogCancel` — read the component's default before keeping it); branches that all return the same value; a merge/spread over an object every caller passes whole; a caller spelling out `undefined`/`false` fields that are only read truthily; recomputing a value already in scope.
+- **Duplicate logic** added next to an existing helper — reuse the helper (a hand-rolled `n > 1 ? 's' : ''` is `plural()` from `~/lib/plural`; a query key rebuilt by slicing another helper's `queryOptions(...).queryKey` is the exported `*QueryKey` builder). Two dialect branches of one `createQuery` that are character-for-character identical are one statement written twice. The same inline object type in two files is one named type exported by the file that owns it.
+- **No-op code**: a prop set to the kit's default (`side="top"` on `TooltipContent`, `variant="outline"` on `AlertDialogCancel` — read the component's default before keeping it); an `onClick` re-checking the condition that already sets `disabled`; branches that all return the same value; a merge/spread over an object every caller passes whole; a caller spelling out `undefined`/`false` fields that are only read truthily; recomputing a value already in scope.
 - **Unused lint escapes**: `pnpm exec oxlint -c oxlint.config.ts --report-unused-disable-directives $(git diff --name-only --diff-filter=d $BASE -- '*.ts' '*.tsx')` lists every `oxlint-disable` in the changed files that suppresses nothing — delete them; a moved or rewritten line often leaves its directive behind.
 - **Orphan files**: a patch nothing lists in `pnpm-workspace.yaml`, an asset nothing imports, a fixture no test reads. Check the registry a file needs to be in, not just imports.
 
@@ -38,7 +38,9 @@ Do **not** delete a behaviour a rule file or the `tamery-ui` skill describes on 
 
 ## 3. Match the house shape
 
-New code should be indistinguishable from the code beside it. Pick the majority spelling and use it everywhere rather than leaving two conventions in one folder: one hook for one job, one import path, one prop-type style across sibling files. Kit variants live in `<component>.utils.ts` as `cva`, not as a record inside the `.tsx`.
+New code should be indistinguishable from the code beside it — and read as written by a person, not compressed. Plain branches beat a clever one-liner (`String(v ?? 'null') || 'empty'`, `const [only] = cond ? list : []`, a line opening with `;(`); an `if` chain over one field's values is a lookup record; a class ternary repeating its shared classes is `cn(shared, cond ? a : b)`; several `useState`s always set together are one object state.
+
+ Pick the majority spelling and use it everywhere rather than leaving two conventions in one folder: one hook for one job, one import path, one prop-type style across sibling files. Kit variants live in `<component>.utils.ts` as `cva`, not as a record inside the `.tsx`.
 
 Look at what the repo actually does before "fixing" a file to a rule — `useMemo`/`useCallback` are banned, but `react-hooks(exhaustive-deps)` outranks that: if the linter demands a stable identity, the memo stays.
 
@@ -83,6 +85,8 @@ Traps this pass keeps hitting:
 
 - **A default parameter is part of the behaviour.** Re-signing a tiny factory (`createItem(value = '')` → `createItem()`) silently empties every `.map(createItem)` call site. Re-read each caller after touching a signature.
 - **Inlining has a lint limit.** Folding a helper into its caller can push the caller past `eslint(complexity)` — then the helper stays.
+- **Merging seitu subscriptions is not free.** `useSubscription` deep-compares selector results, so folding separate subscriptions into one `pick` changes which references an effect's deps see — leave subscriptions that feed effect deps separate.
+- **Lint vetoes some obvious rewrites.** `no-nested-ternary` is on (a three-way value is an `if` chain); `prefer-array-index-of` rejects `findIndex((x) => x === v)`, so an `indexOf(… as HTMLElement)` cast stays; `hook-use-state` rejects destructuring an object state in the `useState` line — take `[thing, setThing]` and destructure on the next line.
 - **A "simpler" rewrite that needs new types, consts or lint escapes to stand up is not simpler.** Measure it against the original and revert if it lost. The point is a shorter diff, not a different one.
 
 ## 9. Report
