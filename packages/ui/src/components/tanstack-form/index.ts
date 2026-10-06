@@ -1,3 +1,4 @@
+import type { AnyFormApi } from '@tanstack/react-form'
 import { createFormHook } from '@tanstack/react-form'
 
 import { fieldContext, formContext } from './context'
@@ -21,7 +22,7 @@ export {
   useFormContext,
 } from './context'
 
-export const { useAppForm } = createFormHook({
+const { useAppForm: useKitForm } = createFormHook({
   fieldComponents: {
     Error: FieldError,
     Field,
@@ -34,3 +35,18 @@ export const { useAppForm } = createFormHook({
   formComponents: {},
   formContext,
 })
+
+const revealErrors = (form: AnyFormApi) => {
+  for (const name of Object.keys(form.state.fieldMeta)) {
+    form.setFieldMeta(name, (meta) => ({ ...meta, isBlurred: true }))
+  }
+}
+
+export const useAppForm: typeof useKitForm = (options) =>
+  useKitForm({
+    ...options,
+    onSubmitInvalid: (props) => {
+      revealErrors(props.formApi)
+      options.onSubmitInvalid?.(props)
+    },
+  })

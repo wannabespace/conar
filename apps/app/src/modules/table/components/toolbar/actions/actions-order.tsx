@@ -31,6 +31,8 @@ import {
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { plural } from '~/lib/plural'
+
 import { useTableColumnsContext } from '../../../lib/columns'
 import { columnsOrder, useTablePageStore } from '../../../lib/store'
 
@@ -114,7 +116,7 @@ export const ActionsOrder = () => {
   if (isPending) {
     label = 'Loading columns…'
   } else if (activeCount > 0) {
-    label = `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
+    label = `Sorted by ${plural(activeCount, 'column')}`
   }
 
   return (

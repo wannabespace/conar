@@ -11,14 +11,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import type { ValueTransformer } from '~/core/transformers/value-transformer'
+import { createTransformer } from '~/core/transformers/create-transformer'
+import { isNested } from '~/core/transformers/value-transformer'
 
-import type { GridCursor } from '../grid-cursor'
+import type { CellEdit, GridCursor } from '../cursor'
+import { useGridCursorContext } from '../cursor'
 import { CellFieldActions } from './cell-field-actions'
 import { CellReference } from './cell-reference'
 import { CellSelect, isPickColumn } from './cell-select'
-import type { CellEdit, CursorStore } from './cursor'
-import { isNested } from './json-tree'
 import type { Column } from './utils'
 import { hasTabularFigures } from './utils'
 
@@ -28,25 +28,16 @@ const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
   time: [11, 19],
 }
 
-// UTC wall clock: engines read a bare timestamp in the session time zone.
-const nowAs = ([start, end]: [number, number]) =>
-  new Date().toISOString().replace('T', ' ').slice(start, end)
-
-const COVER_ANCHOR = ({ anchor }: { anchor: { height: number } }) =>
-  -anchor.height
-
 const codeLanguage = (
   connectionType: ConnectionType,
   { type = '', uiType }: Column,
   value: unknown
 ) => {
-  if (
-    capabilitiesOf(connectionType).jsonColumnType.test(type) ||
-    (uiType === 'raw' && isNested(value))
-  ) {
+  const { jsonColumnType, xmlColumnType } = capabilitiesOf(connectionType)
+  if (jsonColumnType.test(type) || (uiType === 'raw' && isNested(value))) {
     return 'json'
   }
-  if (type.includes('xml')) {
+  if (xmlColumnType?.test(type)) {
     return 'xml'
   }
 }
@@ -65,8 +56,6 @@ const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
   useHotkeys(
     [
       { callback: () => cursor.leave(0, 0), hotkey: 'Enter' },
-      { callback: () => cursor.leave(0, 1), hotkey: 'Tab' },
-      { callback: () => cursor.leave(0, -1), hotkey: 'Shift+Tab' },
       {
         callback: () => {
           const field = ref.current
@@ -123,7 +112,13 @@ const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
           size="xs"
           className="m-1 shrink-0"
           onClick={() => {
-            cursor.change(nowAs(nowSlice))
+            // UTC wall clock: engines read a bare timestamp in the session time zone.
+            cursor.change(
+              new Date()
+                .toISOString()
+                .replace('T', ' ')
+                .slice(...nowSlice)
+            )
             ref.current?.focus()
           }}
         >
@@ -170,26 +165,22 @@ const CodeField = ({
 
 export const CellField = ({
   anchor,
-  canDefault,
   column,
-  connectionType,
-  cursor,
-  readOnly,
-  store,
-  transformer,
   value,
-}: Omit<FieldProps, 'edit'> & {
+}: {
   anchor: RefObject<HTMLElement | null>
-  /** The column has a DEFAULT the engine can write back in an UPDATE. */
-  canDefault: boolean
-  connectionType: ConnectionType
-  store: CursorStore
-  transformer: ValueTransformer
+  column: Column
   value: unknown
 }) => {
+  const cursor = useGridCursorContext()
+  const { connectionType } = cursor
   // State, not a ref: the portal mounts the popup a render after this one, and the hotkeys must bind once it exists.
   const [popup, setPopup] = useState<HTMLDivElement | null>(null)
-  const edit = useSubscription(store, { selector: (state) => state.edit })
+  const edit = useSubscription(cursor.store, {
+    selector: (state) => state.edit,
+  })
+  const transformer = createTransformer(connectionType, column)
+  const readOnly = !cursor.isEditable(column)
   const language = codeLanguage(connectionType, column, value)
   const props = { column, cursor, edit, readOnly }
 
@@ -197,6 +188,17 @@ export const CellField = ({
     [
       { callback: () => cursor.fill(), hotkey: 'Mod+Enter' },
       { callback: cursor.cancel, hotkey: 'Escape' },
+      // Code fields keep Tab for indenting.
+      {
+        callback: () => cursor.leave(0, 1),
+        hotkey: 'Tab',
+        options: { enabled: !language },
+      },
+      {
+        callback: () => cursor.leave(0, -1),
+        hotkey: 'Shift+Tab',
+        options: { enabled: !language },
+      },
     ],
     { enabled: !!popup, ignoreInputs: false, target: popup }
   )
@@ -233,11 +235,10 @@ export const CellField = ({
     <Popover open>
       <PopoverContent
         ref={setPopup}
-        data-editing
         anchor={anchor}
         side="bottom"
         align="start"
-        sideOffset={COVER_ANCHOR}
+        sideOffset={({ anchor: cell }) => -cell.height}
         padding="none"
         initialFocus={false}
         finalFocus={false}
@@ -252,11 +253,13 @@ export const CellField = ({
         )}
         onBlur={(event) => {
           // Leaving the window, or moving focus inside the field, is not leaving the cell.
+          const blurred = event.target
           if (
             document.hasFocus() &&
-            !event.currentTarget.contains(event.relatedTarget)
+            !event.currentTarget.contains(event.relatedTarget) &&
+            !cursor.commit()
           ) {
-            cursor.commit()
+            requestAnimationFrame(() => blurred.focus())
           }
         }}
         // React bubbles portal events to the grid, whose context menu would open over the field.
@@ -271,9 +274,7 @@ export const CellField = ({
         {!readOnly && (
           <CellFieldActions
             canApply={!!language}
-            canDefault={canDefault}
             column={column}
-            cursor={cursor}
             edit={edit}
             value={value}
           />

@@ -1,40 +1,40 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { GridCellProps } from '@tamery/table'
 import { useSubscription } from 'seitu/react'
 
+import type { CellGeometry } from '~/core/table/cell/cell'
 import { TableCell } from '~/core/table/cell/cell'
-import type { DataGridCell } from '~/core/table/cell/cursor'
-import {
-  draftKey,
-  getRowPrimaryKeysValues,
-  useTableSessionStore,
-} from '~/core/table/session'
+import type { DataGridCell } from '~/core/table/cursor'
+import type { GridEntry } from '~/core/table/session'
+import { draftKey, useTableSessionStore } from '~/core/table/session'
 
+import type { OpenPeek } from '../references/reference-buttons'
 import { ReferenceButtons } from '../references/reference-buttons'
 
 export const TableBodyCell = ({
   cell: { column, row, rowIndex },
   connectionType,
+  entry,
   labels,
-  primaryColumns,
+  onPeek,
   props,
 }: {
   cell: DataGridCell
   connectionType: ConnectionType
+  entry: GridEntry
   labels?: Map<string, string>
-  primaryColumns: string[]
-  props: GridCellProps
+  onPeek: OpenPeek
+  props?: CellGeometry
 }) => {
   const sessionStore = useTableSessionStore()
-  const key =
-    primaryColumns.length > 0
-      ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id)
-      : null
+  const key = entry.kind === 'saved' ? draftKey(entry.keys, column.id) : null
   const draft = useSubscription(sessionStore, {
     selector: (state) => (key ? state.drafts[key] : undefined),
   })
   const newRow = useSubscription(sessionStore, {
-    selector: (state) => state.newRows.at(rowIndex),
+    selector: (state) =>
+      entry.kind === 'new'
+        ? state.newRows.find((staged) => staged.id === entry.newRow.id)
+        : undefined,
   })
   const flash = useSubscription(sessionStore, {
     selector: (state) =>
@@ -44,24 +44,20 @@ export const TableBodyCell = ({
 
   return (
     <TableCell
+      {...props}
       column={column}
       connectionType={connectionType}
       draft={newRow ?? draft}
       flash={flash}
-      isDragging={props.isDragging}
       label={
         value === null || value === undefined
           ? undefined
           : labels?.get(String(value))
       }
-      pinned={props.column.pinned}
       rowIndex={rowIndex}
-      size={props.column.size}
-      // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-      style={props.style}
       value={value}
     >
-      <ReferenceButtons column={column} value={value} />
+      <ReferenceButtons column={column} onPeek={onPeek} value={value} />
     </TableCell>
   )
 }

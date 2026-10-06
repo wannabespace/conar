@@ -5,11 +5,12 @@ import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import type { ReactNode, RefObject } from 'react'
-import { Fragment, useRef, useState } from 'react'
+import type { RefObject } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 
 import { Link } from '~/components/link'
 import { tableTabId } from '~/core/tabs/ids'
+import { posthog } from '~/lib/posthog'
 
 import type { Hop } from './hops'
 import { tableView } from './hops'
@@ -170,67 +171,94 @@ const Trail = ({
   )
 }
 
-/** Lives inside its cell, so virtualization unmounting the cell takes the popover with it. */
+/** One peek per table; it anchors to a cell that virtualization can unmount, so it closes once the grid moves. */
+export const useReferencePeek = (
+  scrollRef: RefObject<HTMLDivElement | null>
+) => {
+  const [target, setTarget] = useState<{ anchor: Element; hop: Hop } | null>(
+    null
+  )
+
+  useEffect(() => {
+    const scroller = scrollRef.current
+    if (!target || !scroller) {
+      return
+    }
+    const close = () => setTarget(null)
+    scroller.addEventListener('scroll', close, { once: true })
+    return () => scroller.removeEventListener('scroll', close)
+  }, [target, scrollRef])
+
+  return {
+    close: () => setTarget(null),
+    open: (anchor: Element, hop: Hop) => {
+      posthog.capture('reference_peek_opened')
+      setTarget({ anchor, hop })
+    },
+    target,
+  }
+}
+
 export const ReferencePeek = ({
-  anchor,
-  children,
+  onClose,
+  target,
 }: {
-  anchor: () => Element | null
-  children: ReactNode
+  onClose: () => void
+  target: { anchor: Element; hop: Hop } | null
 }) => {
   const ref = useRef<HTMLDivElement>(null)
   const [trail, setTrail] = useState({
     direction: 1,
     hops: [] as Hop[],
-    root: '',
+    target,
   })
+  const shown =
+    trail.target === target
+      ? trail
+      : { direction: 1, hops: target ? [target.hop] : [] }
+  const { hops } = shown
 
-  const step = (hops: Hop[], direction: number) => {
-    setTrail({ direction, hops, root: hops[0] ? hopKey(hops[0]) : '' })
+  const step = (next: Hop[], direction: number) => {
+    setTrail({ direction, hops: next, target })
     ref.current?.focus()
   }
-  const hopsFrom = (payload: Hop) =>
-    trail.root === hopKey(payload) ? trail.hops : [payload]
 
   return (
-    <Popover<Hop>
+    <Popover
+      open={!!target}
       onOpenChange={(open, details) => {
         if (open) {
-          setTrail({ direction: 1, hops: [], root: '' })
-        } else if (details.reason === 'escape-key' && trail.hops.length > 1) {
-          details.cancel()
-          step(trail.hops.slice(0, -1), -1)
+          return
         }
+        if (details.reason === 'escape-key' && hops.length > 1) {
+          details.cancel()
+          step(hops.slice(0, -1), -1)
+          return
+        }
+        onClose()
       }}
     >
-      {({ payload }) => (
-        <>
-          {children}
-          {payload && (
-            <PopoverContent
-              anchor={anchor}
-              side="bottom"
-              align="start"
-              collisionAvoidance={{ align: 'shift' }}
-              collisionPadding={16}
-              padding="none"
-              initialFocus={ref}
-              className="w-3xl overflow-hidden"
-              // React bubbles portal events to the grid, whose context menu would open over the popover.
-              onContextMenu={(event) => event.stopPropagation()}
-            >
-              <Trail
-                ref={ref}
-                hops={hopsFrom(payload)}
-                direction={trail.direction}
-                onFollow={(next) => step([...hopsFrom(payload), next], 1)}
-                onJump={(index) =>
-                  step(hopsFrom(payload).slice(0, index + 1), -1)
-                }
-              />
-            </PopoverContent>
-          )}
-        </>
+      {target && (
+        <PopoverContent
+          anchor={target.anchor}
+          side="bottom"
+          align="start"
+          collisionAvoidance={{ align: 'shift' }}
+          collisionPadding={16}
+          padding="none"
+          initialFocus={ref}
+          className="w-3xl overflow-hidden"
+          // React bubbles portal events to the grid, whose context menu would open over the popover.
+          onContextMenu={(event) => event.stopPropagation()}
+        >
+          <Trail
+            ref={ref}
+            hops={hops}
+            direction={shown.direction}
+            onFollow={(next) => step([...hops, next], 1)}
+            onJump={(index) => step(hops.slice(0, index + 1), -1)}
+          />
+        </PopoverContent>
       )}
     </Popover>
   )

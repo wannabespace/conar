@@ -4,9 +4,8 @@ import type { MouseEvent, PointerEvent, RefObject } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import type { CellPosition, CursorStore } from './cell/cursor'
-import { inRange } from './cell/cursor'
-import type { GridCursor } from './grid-cursor'
+import type { CellPosition, GridCursor } from './cursor'
+import { inRange } from './cursor'
 
 // Hotkeys take no wildcard; these are the keys that start an edit by typing over the cell.
 const TYPING_KEYS = [
@@ -24,21 +23,25 @@ const positionOf = (event: MouseEvent): CellPosition | null => {
     : { column: cell.dataset.column, row: Number(cell.dataset.row) }
 }
 
+const isCheckbox = (event: MouseEvent) =>
+  event.target instanceof Element &&
+  !!event.target.closest('[data-slot="checkbox"]')
+
 export const useGridHotkeys = ({
   canEdit,
   cursor,
+  onExtendRows,
   scrollRef,
-  store,
 }: {
   canEdit: boolean
   cursor: GridCursor
+  onExtendRows?: (direction: 'up' | 'down') => void
   scrollRef: RefObject<HTMLDivElement | null>
-  store: CursorStore
 }) => {
-  const hasCursor = useSubscription(store, {
+  const hasCursor = useSubscription(cursor.store, {
     selector: (state) => state.cursor !== null,
   })
-  const isEditing = useSubscription(store, {
+  const isEditing = useSubscription(cursor.store, {
     selector: (state) => state.edit !== null,
   })
   const navigating = hasCursor && !isEditing
@@ -59,9 +62,15 @@ export const useGridHotkeys = ({
           options: { enabled: !isEditing },
         },
         {
-          callback: () => cursor.step(down, right, true),
+          callback: () => {
+            if (hasCursor) {
+              cursor.step(down, right, true)
+            } else if (down !== 0) {
+              onExtendRows?.(down > 0 ? 'down' : 'up')
+            }
+          },
           hotkey: `Shift+${hotkey}` as const,
-          options: { enabled: navigating },
+          options: { enabled: !isEditing },
         },
       ]),
       ...(['Enter', 'F2'] as const).map((hotkey) => ({
@@ -102,9 +111,7 @@ export const useGridHotkeys = ({
       },
       {
         callback: () =>
-          store.get().anchor
-            ? store.set((state) => ({ ...state, anchor: null }))
-            : cursor.clear(),
+          cursor.store.get().anchor ? cursor.collapse() : cursor.clear(),
         hotkey: 'Escape',
         options: { enabled: navigating },
       },
@@ -113,35 +120,23 @@ export const useGridHotkeys = ({
   )
 }
 
-export const useGridPointer = ({
-  cursor,
-  indexOf,
-  store,
-}: {
-  cursor: GridCursor
-  indexOf: (column: string) => number
-  store: CursorStore
-}) => {
+export const useGridPointer = (cursor: GridCursor) => {
   const dragging = useRef(false)
   return {
     // The press places the cursor, so a click only has the checkbox toggle left to do.
     onClick: (event: MouseEvent) => {
-      if (
-        positionOf(event) &&
-        event.target instanceof Element &&
-        event.target.closest('[data-slot="checkbox"]')
-      ) {
+      if (positionOf(event) && isCheckbox(event)) {
         cursor.edit()
       }
     },
     onContextMenuCapture: (event: MouseEvent) => {
       const position = positionOf(event)
-      if (position && !inRange(store.get(), position, indexOf)) {
+      if (position && !inRange(cursor.store.get(), position, cursor.indexOf)) {
         cursor.place(position)
       }
     },
     onDoubleClick: (event: MouseEvent) => {
-      if (positionOf(event)) {
+      if (positionOf(event) && !isCheckbox(event)) {
         cursor.edit()
       }
     },

@@ -11,7 +11,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import type { CSSProperties, ComponentRef, ReactNode } from 'react'
+import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -116,9 +116,11 @@ export const TablesList = ({
     getScrollElement: () => parentRef.current,
     overscan: 12,
   })
-  const stickyRow = rows
-    .slice(0, (range?.startIndex ?? -1) + 1)
-    .findLast((row) => row.kind === 'schema')
+  const stickyRow =
+    range &&
+    rows.findLast(
+      (row, index) => row.kind === 'schema' && index <= range.startIndex
+    )
 
   const router = useRouter()
   const scrollToActiveEvent = useEffectEvent(() => {
@@ -203,21 +205,70 @@ export const TablesList = ({
     )
   }
 
-  const renderSchemaRow = (row: Extract<TreeRow, { kind: 'schema' }>) => (
-    <div className="h-full pt-0.5 pb-1">
-      <SchemaRow
-        row={row}
-        onCreateTable={() => onCreateTable(row.name)}
-        onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
-        onRename={
-          capabilitiesOf(connection.type).renameSchema
-            ? () => renameSchemaDialogRef.current?.rename(row.name)
-            : undefined
-        }
-        onToggle={() => toggleSchema(row.name)}
-      />
-    </div>
-  )
+  const rowContentOf = (row: TreeRow) => {
+    if (row.kind === 'schema') {
+      return (
+        <div className="h-full pt-0.5 pb-1">
+          <SchemaRow
+            row={row}
+            onCreateTable={() => onCreateTable(row.name)}
+            onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
+            onRename={
+              capabilitiesOf(connection.type).renameSchema
+                ? () => renameSchemaDialogRef.current?.rename(row.name)
+                : undefined
+            }
+            onToggle={() => toggleSchema(row.name)}
+          />
+        </div>
+      )
+    }
+
+    if (row.kind === 'empty') {
+      return (
+        <p className="text-muted-foreground flex h-full items-center pb-0.5 pl-2 text-xs">
+          No tables
+        </p>
+      )
+    }
+
+    if (row.kind === 'new-schema') {
+      return (
+        <div className="pt-4">
+          <SidebarMenuButton
+            className="text-muted-foreground"
+            onClick={() => createSchemaDialogRef.current?.create()}
+          >
+            <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />
+            <span>New schema</span>
+          </SidebarMenuButton>
+        </div>
+      )
+    }
+
+    if (row.kind === 'separator') {
+      return (
+        <div className="flex h-full items-center">
+          <Separator className="mx-2 w-full" />
+        </div>
+      )
+    }
+
+    return (
+      <div className="pb-0.5">
+        <TableRow
+          row={row}
+          search={search}
+          onRename={() =>
+            renameTableDialogRef.current?.rename(row.schema, row.table.name)
+          }
+          onDrop={() =>
+            dropTableDialogRef.current?.drop(row.schema, row.table.name)
+          }
+        />
+      </div>
+    )
+  }
 
   return (
     <div
@@ -247,56 +298,6 @@ export const TablesList = ({
               return null
             }
 
-            let rowContent: ReactNode
-            if (row.kind === 'schema') {
-              rowContent = renderSchemaRow(row)
-            } else if (row.kind === 'empty') {
-              rowContent = (
-                <p className="text-muted-foreground flex h-full items-center pb-0.5 pl-2 text-xs">
-                  No tables
-                </p>
-              )
-            } else if (row.kind === 'new-schema') {
-              rowContent = (
-                <div className="pt-4">
-                  <SidebarMenuButton
-                    className="text-muted-foreground"
-                    onClick={() => createSchemaDialogRef.current?.create()}
-                  >
-                    <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />
-                    <span>New schema</span>
-                  </SidebarMenuButton>
-                </div>
-              )
-            } else if (row.kind === 'separator') {
-              rowContent = (
-                <div className="flex h-full items-center">
-                  <Separator className="mx-2 w-full" />
-                </div>
-              )
-            } else {
-              rowContent = (
-                <div className="pb-0.5">
-                  <TableRow
-                    row={row}
-                    search={search}
-                    onRename={() =>
-                      renameTableDialogRef.current?.rename(
-                        row.schema,
-                        row.table.name
-                      )
-                    }
-                    onDrop={() =>
-                      dropTableDialogRef.current?.drop(
-                        row.schema,
-                        row.table.name
-                      )
-                    }
-                  />
-                </div>
-              )
-            }
-
             return (
               <motion.li
                 key={virtualRow.key}
@@ -313,7 +314,7 @@ export const TablesList = ({
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
               >
-                {rowContent}
+                {rowContentOf(row)}
               </motion.li>
             )
           })}
@@ -327,9 +328,9 @@ export const TablesList = ({
             parentRef.current?.scrollBy({ top: event.deltaY })
           }
         >
-          <li className="group/menu-item h-(--sticky-height)">
-            {renderSchemaRow(stickyRow)}
-          </li>
+          <SidebarMenuItem className="h-(--sticky-height)">
+            {rowContentOf(stickyRow)}
+          </SidebarMenuItem>
         </SidebarMenu>
       )}
     </div>

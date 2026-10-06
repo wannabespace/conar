@@ -1,97 +1,46 @@
-import {
-  LayoutThreeColumnIcon,
-  MoreHorizontalIcon,
-  PlusSignIcon,
-  TableIcon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
-import type { GridRow } from '@tamery/table'
-import {
-  DEFAULT_COLUMN_WIDTH,
-  LEADING_COLUMN_SIZE,
-} from '@tamery/table/constants'
-import { Button } from '@tamery/ui/components/button'
-import { Spinner } from '@tamery/ui/components/spinner'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
-import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { ComponentRef } from 'react'
-import { createRef, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { PaneEmpty } from '~/components/pane-empty'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import type { DataGridCell } from '~/core/table/cell/cursor'
-import type { Column } from '~/core/table/cell/utils'
-import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/core/table/cell/utils'
-import type { DataGridHandle } from '~/core/table/data-grid'
 import { DataGrid } from '~/core/table/data-grid'
-import {
-  draftKey,
-  draftsActions,
-  getRowPrimaryKeysValues,
-  newRowsActions,
-  primaryKeysKey,
-  useTableSessionStore,
-} from '~/core/table/session'
+import { isSaving, useTableSessionStore } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
+import { posthog } from '~/lib/posthog'
 
 import { useTableColumnsContext } from '../../lib/columns'
-import { useDraftHistory } from '../../lib/history'
-import {
-  isSameValue,
-  useFlashChangedCells,
-  useSyncSelectionWithRows,
-} from '../../lib/hooks'
+import { tableGridRef } from '../../lib/grid-ref'
+import { stagedHistory, useStagedHistoryHotkeys } from '../../lib/history'
+import { useFlashChangedCells, useSyncSelectionWithRows } from '../../lib/hooks'
 import { useReferenceLabels } from '../../lib/labels'
+import { rowSelection } from '../../lib/row-selection'
+import { useStagedEdits } from '../../lib/staged-edits'
 import { columnLayout, columnView, useTablePageStore } from '../../lib/store'
-import { DistinctValues, hasDistinctValues } from './distinct-values'
-import { RenameColumnDialog } from './rename-column-dialog'
-import { SetValueDialog } from './set-value-dialog'
+import { cellHop } from '../references/hops'
+import { ReferencePeek, useReferencePeek } from '../references/reference-peek'
+import { useColumnActions } from './column-actions'
 import { TableBodyCell } from './table-body-cell'
 import { tableCellMenu } from './table-cell-menu'
-import { TableFieldLabel, TableHeaderCell } from './table-header-cell'
 import {
-  LeadingCell,
-  LeadingHeaderCell,
-  useRowRangeKeys,
-} from './table-selection'
+  addColumnColumn,
+  defaultSize,
+  EndOfRows,
+  NoRows,
+  selectColumn,
+  tableBar,
+} from './table-chrome'
+import { TableFieldLabel, TableHeaderCell } from './table-header-cell'
+import { keysInRange } from './table-selection'
 import { DocumentsSkeleton, TableSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-export const tableGridRef = createRef<DataGridHandle>()
-
-const TRAILING_COLUMN_SIZE = 48
-const REFERENCE_BUTTON_WIDTH = 24
-
-const defaultSize = (column: Column) =>
-  (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
-  (column.foreign ? REFERENCE_BUTTON_WIDTH : 0) +
-  (column.references?.length ? REFERENCE_BUTTON_WIDTH : 0)
-
-const referenceTriggerIn = (cell: Element | null | undefined) =>
-  cell?.querySelector<HTMLElement>('[data-reference]')
-
-const isFilledByDatabase = (column: Column) =>
-  column.isGenerated || column.isIdentity
-
-const cloneValues = (columns: Column[], row: GridRow) =>
-  Object.fromEntries(
-    columns
-      .filter((column) => !column.primaryKey && !isFilledByDatabase(column))
-      .map((column) => [column.id, row[column.id]])
-  )
 
 const TableComponent = ({
   onAddColumn,
@@ -127,8 +76,12 @@ const TableComponent = ({
   })
   const orderBy = useSubscription(store, { selector: (state) => state.orderBy })
   const view = useSubscription(store, { selector: (state) => state.view })
-  const newRows = useSubscription(sessionStore, {
-    selector: (state) => state.newRows,
+  const newRowCount = useSubscription(sessionStore, {
+    selector: (state) => state.newRows.length,
+  })
+  const saving = useSubscription(sessionStore, { selector: isSaving })
+  const draftCount = useSubscription(sessionStore, {
+    selector: (state) => Object.keys(state.drafts).length,
   })
   const filters = enabledFilters(activeFilters)
   const {
@@ -140,6 +93,7 @@ const TableComponent = ({
     isPending: isRowsPending,
   } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
+      columns,
       connectionResource,
       query: { filters, orderBy },
       schema,
@@ -154,16 +108,14 @@ const TableComponent = ({
         ?.tables.find((entry) => entry.name === table)?.type === 'table',
   })
   const scrollRef = useRef<HTMLDivElement>(null)
-  const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
-  const [setting, setSetting] = useState<Column | null>(null)
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
-  const [distinct, setDistinct] = useState<{
-    anchor: Element
-    column: Column
-  } | null>(null)
-  const gridRows = [...newRows.map((newRow) => newRow.values), ...rows]
+  const {
+    close: closePeek,
+    open: openPeek,
+    target: peekTarget,
+  } = useReferencePeek(scrollRef)
 
   const { pinned, reordered, visible } = columnView(
     columns,
@@ -173,85 +125,29 @@ const TableComponent = ({
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const isEditable = primaryColumns.length > 0
   const canInsert = isEditable && !!isBaseTable
+  const staged = useStagedEdits({
+    columns,
+    connectionType: connection.type,
+    rows,
+    visible,
+  })
 
-  const insertRow = (values: Record<string, unknown>) => {
-    newRowsActions(sessionStore).add(values)
-    const column = visible.find((c) => !isFilledByDatabase(c)) ?? visible[0]
-    if (column) {
-      tableGridRef.current?.reveal({ column: column.id, row: 0 })
-    }
-  }
-
-  const labels = useReferenceLabels(visible, gridRows, columnLabels)
+  const labels = useReferenceLabels(visible, staged.rows, columnLabels)
 
   useSyncSelectionWithRows(rows, primaryColumns)
   useFlashChangedCells(rows, primaryColumns)
-  useDraftHistory(scrollRef)
+  useStagedHistoryHotkeys(
+    stagedHistory({ id: connectionResource.id, schema, table })
+  )
 
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ behavior: 'smooth', top: 0 })
   }, [activeFilters, orderBy])
 
-  const keysOf = (row: GridRow) => getRowPrimaryKeysValues(row, primaryColumns)
-
-  const valueOf = ({ column, row }: DataGridCell) => {
-    const draft = isEditable
-      ? sessionStore.get().drafts[draftKey(keysOf(row), column.id)]
-      : undefined
-    return draft ? draft.value : row[column.id]
-  }
-
-  const edit = ({ column, row, rowIndex }: DataGridCell, value: unknown) => {
-    const newRow = sessionStore.get().newRows.at(rowIndex)
-    if (newRow) {
-      newRowsActions(sessionStore).setValue(newRow.id, column.id, value)
-      return
-    }
-    const actions = draftsActions(sessionStore)
-    if (isSameValue(value, row[column.id])) {
-      actions.remove(keysOf(row), column.id)
-      return
-    }
-    actions.upsert({
-      columnId: column.id,
-      error: undefined,
-      isCommitting: false,
-      primaryKeys: keysOf(row),
-      value,
-    })
-  }
-
-  const setInSelected = (column: Column, value: unknown) => {
-    const picked = new Set(selected.map(primaryKeysKey))
-    for (const [rowIndex, row] of gridRows.entries()) {
-      if (picked.has(primaryKeysKey(keysOf(row)))) {
-        edit({ column, row, rowIndex }, value)
-      }
-    }
-  }
-
-  const renameOf = (column: Column) =>
-    capabilitiesOf(connection.type).renameColumns && !column.primaryKey
-      ? () => renameColumnRef.current?.rename(schema, table, column.id)
-      : undefined
-
-  const columnActions = (column: Column) => ({
-    onDistinctValues: hasDistinctValues(column)
-      ? (anchor: Element) => setDistinct({ anchor, column })
-      : undefined,
-    onRename: renameOf(column),
-    onSetSelected:
-      isEditable && selected.length > 0 && column.isEditable !== false
-        ? { count: selected.length, set: () => setSetting(column) }
-        : undefined,
-  })
-
-  useRowRangeKeys({
-    enabled: isEditable,
-    hasCursor: () => !!tableGridRef.current?.hasCursor(),
-    keys: primaryColumns,
-    rows,
-    target: scrollRef,
+  const { actionsOf, dialogs } = useColumnActions({
+    connectionType: connection.type,
+    schema,
+    table,
   })
 
   if (isRowsPending || isColumnsPending) {
@@ -277,173 +173,103 @@ const TableComponent = ({
   return (
     <div className="relative size-full">
       <DataGrid
+        bar={tableBar({
+          canDelete: !!isBaseTable && selected.length > 0,
+          hasChanges: draftCount + newRowCount > 0,
+          schema,
+          table,
+        })}
         connectionType={connection.type}
-        getValue={valueOf}
-        onEdit={isEditable ? edit : undefined}
-        onPreview={(_, element) => referenceTriggerIn(element)?.click()}
+        getValue={staged.valueOf}
+        onEdit={isEditable && !saving ? staged.edit : undefined}
+        onExtendRows={
+          isEditable
+            ? (direction) =>
+                sessionStore.set((state) =>
+                  rowSelection.extend(state, {
+                    direction,
+                    keysInRange: keysInRange(rows, primaryColumns),
+                    rowCount: rows.length,
+                  })
+                )
+            : undefined
+        }
+        onPreview={(cell, element) => {
+          const hop = cellHop(cell.column, staged.valueOf(cell))
+          if (hop) {
+            openPeek(element, hop)
+          }
+        }}
         renderCell={(cell, props) => (
           <TableBodyCell
             cell={cell}
             props={props}
             connectionType={connection.type}
             labels={labels.get(cell.column.id)}
-            primaryColumns={primaryColumns}
+            entry={staged.rowAt(cell.rowIndex)}
+            onPeek={openPeek}
           />
         )}
         renderLabel={(column) => (
-          <TableFieldLabel column={column} {...columnActions(column)} />
+          <TableFieldLabel column={column} {...actionsOf(column)} />
         )}
         sizeOf={(column) => columnSizes[column.id] ?? defaultSize(column)}
         cursorRef={tableGridRef}
         layout={view}
         pinned={pinned}
         scrollRef={scrollRef}
-        rows={gridRows}
+        rows={staged.rows}
+        rowKey={isEditable ? staged.rowKey : undefined}
         columns={visible}
-        onEndReached={() => hasNextPage && !isFetching && fetchNextPage()}
-        onReorder={(ids) => columnLayout(store).reorder(reordered(ids))}
-        menuItems={(cell, element) => {
-          const newRow = newRows.at(cell.rowIndex)
-          const trigger = referenceTriggerIn(element)
-          const editable = isEditable && cell.column.isEditable !== false
-          const hasDraft =
-            isEditable &&
-            !newRow &&
-            draftKey(keysOf(cell.row), cell.column.id) in
-              sessionStore.get().drafts
-          return tableCellMenu({
-            column: cell.column,
-            onDiscardChange: hasDraft
-              ? () =>
-                  draftsActions(sessionStore).remove(
-                    keysOf(cell.row),
-                    cell.column.id
-                  )
-              : undefined,
-            onDiscardRow: newRow
-              ? () => newRowsActions(sessionStore).remove(newRow.id)
-              : undefined,
-            onDuplicateRow: canInsert
-              ? () => insertRow(cloneValues(columns, cell.row))
-              : undefined,
-            onPeek: trigger ? () => trigger.click() : undefined,
-            onRename: renameOf(cell.column),
-            onSetNull:
-              editable && cell.column.isNullable
-                ? () => edit(cell, null)
-                : undefined,
-            store,
-            value: valueOf(cell),
-          })
+        isFetching={isFetching}
+        onEndReached={() => hasNextPage && fetchNextPage()}
+        onReorder={(ids) => {
+          posthog.capture('columns_reordered')
+          columnLayout(store).reorder(reordered(ids))
         }}
+        menuItems={(cell, element) =>
+          tableCellMenu({
+            actions: actionsOf(cell.column),
+            canInsert,
+            cell,
+            element,
+            isEditable,
+            onPeek: openPeek,
+            saving,
+            sessionStore,
+            staged,
+            store,
+          })
+        }
         renderHeader={(column, header) => (
           <TableHeaderCell
             column={column}
             header={header}
-            {...columnActions(column)}
+            {...actionsOf(column)}
           />
         )}
         leading={
           isEditable
-            ? {
-                id: INTERNAL_COLUMN_IDS.SELECT,
-                renderCell: ({ row, rowIndex, style }) => (
-                  <LeadingCell
-                    keys={rowIndex < newRows.length ? null : primaryColumns}
-                    row={row}
-                    rowIndex={rowIndex - newRows.length}
-                    rows={rows}
-                    // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-                    style={style}
-                  />
-                ),
-                renderHeader: ({ style }) => (
-                  <LeadingHeaderCell
-                    keys={primaryColumns}
-                    rows={rows}
-                    // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-                    style={style}
-                  />
-                ),
-                size: LEADING_COLUMN_SIZE,
-              }
+            ? selectColumn({
+                entryAt: staged.rowAt,
+                keys: primaryColumns,
+                rows,
+              })
             : undefined
         }
-        trailing={{
-          id: INTERNAL_COLUMN_IDS.ACTIONS,
-          // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-          renderCell: ({ style }) => <div aria-hidden style={style} />,
-          renderHeader: ({ style }) => (
-            // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-            <div className="flex items-center px-2" style={style}>
-              {isBaseTable && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost-muted"
-                        size="icon-xs"
-                        aria-label="Add column"
-                        onClick={onAddColumn}
-                      />
-                    }
-                  >
-                    <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Add column</TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          ),
-          size: TRAILING_COLUMN_SIZE,
-        }}
+        trailing={addColumnColumn(isBaseTable ? onAddColumn : undefined)}
         footer={
-          gridRows.length > 0 && (
-            <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
-              {hasNextPage ? (
-                <Spinner />
-              ) : (
-                <PaneEmpty
-                  icon={MoreHorizontalIcon}
-                  title="No more rows"
-                  description="You've reached the end of this table."
-                />
-              )}
-            </div>
-          )
+          staged.rows.length > 0 && <EndOfRows hasNextPage={hasNextPage} />
         }
       />
-      {gridRows.length === 0 && (
-        <div
-          className={cn(
-            'pointer-events-none absolute inset-x-0 bottom-0 flex',
-            view === 'documents' ? 'top-0' : 'top-8'
-          )}
-        >
-          <PaneEmpty
-            icon={TableIcon}
-            title="No rows"
-            description={
-              filters.length > 0
-                ? 'Nothing matches the current filters.'
-                : 'This table is empty.'
-            }
-          />
-        </div>
+      {staged.rows.length === 0 && (
+        <NoRows
+          isDocuments={view === 'documents'}
+          isFiltered={filters.length > 0}
+        />
       )}
-      <RenameColumnDialog ref={renameColumnRef} />
-      <SetValueDialog
-        column={setting}
-        count={selected.length}
-        onClose={() => setSetting(null)}
-        onSet={setInSelected}
-      />
-      <DistinctValues
-        schema={schema}
-        table={table}
-        target={distinct}
-        onClose={() => setDistinct(null)}
-      />
+      {dialogs}
+      <ReferencePeek target={peekTarget} onClose={closePeek} />
     </div>
   )
 }

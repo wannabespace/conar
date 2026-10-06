@@ -9,10 +9,6 @@ const escapeSqlStringRegex = /[\\']/gu
 
 const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
-// ISO only, the form `date_time_output_format` reads back: a looser match turns `'42'` into a date.
-const isoDateTimeRegex =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?<fraction>\d{1,9}))?(?:Z|[+-]\d{2}:?\d{2})$/u
-
 const compiledSqlRegex = /\?/gu
 const compiledSqlParameterRegex = /^update (?<table>(?:`\w+`\.)*`\w+`) set/iu
 
@@ -48,16 +44,7 @@ export const prepareQuery = (compiledQuery: CompiledQuery) => {
       return `parseDateTime64BestEffort('${escapeSqlString(param.toISOString())}')`
     }
 
-    if (typeof param !== 'string') {
-      return `'${escapeSqlString(JSON.stringify(param))}'`
-    }
-
-    const isoDateTime = isoDateTimeRegex.exec(param)
-    if (isoDateTime) {
-      return `parseDateTime64BestEffort('${param}', ${isoDateTime.groups?.fraction?.length ?? 0})`
-    }
-
-    return `'${escapeSqlString(param)}'`
+    return `'${escapeSqlString(typeof param === 'string' ? param : JSON.stringify(param))}'`
   })
 
   const mutation = compiledSql.replace(

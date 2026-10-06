@@ -5,10 +5,12 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { selectQuery } from '~/core/queries/rows/select'
-import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import { isTextType } from '~/core/table/cell/utils'
+import {
+  labelCandidates,
+  useReferencedColumns,
+} from '~/core/table/referenced-columns'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -40,15 +42,12 @@ const LABEL_NAMES_BY_PREFERENCE = [
   'role',
 ]
 
-const defaultLabel = (columns: { id: string; type: string }[], key: string) =>
-  LABEL_NAMES_BY_PREFERENCE.map((name) =>
-    columns.find(
-      (column) =>
-        column.id !== key &&
-        column.id.toLowerCase() === name &&
-        isTextType(column.type)
-    )
+const defaultLabel = (columns: { id: string; type: string }[], key: string) => {
+  const candidates = labelCandidates(columns, key)
+  return LABEL_NAMES_BY_PREFERENCE.map((name) =>
+    candidates.find((column) => column.id.toLowerCase() === name)
   ).find(Boolean)?.id
+}
 
 export const labelColumnOf = (
   stored: string | undefined,
@@ -62,22 +61,14 @@ export const useReferenceLabels = (
   stored: Record<string, string>
 ) => {
   const { connectionResource } = useRouteContext()
-  const foreignColumns = columns.flatMap(({ foreign, id }) =>
-    foreign && stored[id] !== '' ? [{ foreign, id }] : []
-  )
-  const referenced = useQueries({
-    queries: foreignColumns.map(({ foreign }) =>
-      resourceTableColumnsQueryOptions({
-        connectionResource,
-        schema: foreign.schema,
-        table: foreign.table,
-      })
-    ),
-  })
-  const labeled = foreignColumns.flatMap(({ foreign, id }, index) => {
+  const referenced = useReferencedColumns(columns)
+  const labeled = columns.flatMap(({ foreign, id }) => {
+    if (!foreign) {
+      return []
+    }
     const label = labelColumnOf(
       stored[id],
-      referenced[index]?.data ?? [],
+      referenced.get(id) ?? [],
       foreign.column
     )
     return label ? [{ foreign, id, label }] : []

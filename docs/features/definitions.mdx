@@ -10,8 +10,7 @@ The **Schema** list in the sidebar covers everything about your database except 
 
 <CardGroup cols={2}>
   <Card title="Enums" icon="list-ul" href="/features/definitions">
-    PostgreSQL `ENUM` types; ClickHouse `Enum` columns. Shows the name and
-    allowed values.
+    PostgreSQL `ENUM` types. Shows the name and allowed values.
   </Card>
   <Card title="Indexes" icon="bolt" href="/features/definitions">
     Indexed columns, index type (B-tree, Hash, GiST, …), and uniqueness.
@@ -39,8 +38,9 @@ The **Schema** list in the sidebar covers everything about your database except 
 
 <Note>
   **Functions** and **Triggers** are not available for ClickHouse. MySQL has
-  **Privileges** in place of **Policies**, and no **Enums** list: its `ENUM` and
-  `SET` types belong to their columns.
+  **Privileges** in place of **Policies**. Only PostgreSQL has an **Enums**
+  list: MySQL's `ENUM` and `SET` and ClickHouse's `Enum8` and `Enum16` belong to
+  their columns.
 </Note>
 
 ## Navigating
@@ -80,7 +80,7 @@ What each engine supports:
 
 | Object | PostgreSQL | MySQL | SQL Server | ClickHouse |
 | --- | --- | --- | --- | --- |
-| Enums | Create, rename, add, rename and remove values, drop | — | — | Read only |
+| Enums | Create, rename, add, rename and remove values, drop | — | — | — |
 | Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop data-skipping indexes |
 | Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks |
 | Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — |

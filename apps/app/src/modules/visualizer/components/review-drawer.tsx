@@ -1,33 +1,13 @@
-import { ArrowTurnBackwardIcon, SaveIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
   AlertTitle,
 } from '@tamery/ui/components/alert'
-import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@tamery/ui/components/drawer'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 
-import { cardClass } from '~/components/card'
 import { DiscardButton } from '~/components/discard-button'
-import { PaneEmpty } from '~/components/pane-empty'
+import { ChangeGroup, StagedReviewDrawer } from '~/components/staged-review'
 import { inlineParameters } from '~/core/codegen/formats/sql'
 import { coldDialects } from '~/core/runtime/dialects'
 import { formatSql } from '~/lib/formatter'
@@ -114,71 +94,15 @@ export const ReviewDrawer = ({
   const consequence = applyConsequence(drafts, ddlRollback)
 
   return (
-    <Drawer
+    <StagedReviewDrawer
       open={open}
       onOpenChange={onOpenChange}
-      swipeDirection="right"
-      size="sm"
-    >
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>Review changes</DrawerTitle>
-          <DrawerDescription>
-            {plural(drafts.length, 'change')} · {consequence.description}
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto p-3">
-          {groups.length === 0 ? (
-            <PaneEmpty
-              icon={SaveIcon}
-              title="Nothing to review"
-              description="Edit tables on the canvas and the changes will show up here."
-            />
-          ) : (
-            <div className="flex flex-col gap-3">
-              {groups.map(([key, tableDrafts]) => (
-                <div key={key} className={cardClass}>
-                  <header className="border-foreground/6 flex h-9 items-center border-b px-3">
-                    <span
-                      data-mask
-                      className="text-2xs text-foreground truncate font-mono"
-                    >
-                      {key}
-                    </span>
-                  </header>
-                  {tableDrafts.map((draft) => (
-                    <div
-                      key={draft.id}
-                      className="border-foreground/6 flex flex-col gap-1.5 border-b py-2 pr-1.5 pl-3 last:border-b-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          data-mask
-                          className="min-w-0 flex-1 truncate text-xs"
-                        >
-                          {draftLabel(draft)}
-                        </span>
-                        <DiscardButton
-                          label="Discard change"
-                          onClick={() => onDiscard(draft.id)}
-                          disabled={applying}
-                        />
-                      </div>
-                      <CodeBlock
-                        code={previewSql(connectionType, draft)}
-                        language="sql"
-                        size="xs"
-                        wrap
-                        className="mr-1.5"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {error && (
+      busy={applying}
+      count={drafts.length}
+      description={`${plural(drafts.length, 'change')} · ${consequence.description}`}
+      emptyDescription="Edit tables on the canvas and the changes will show up here."
+      notice={
+        error && (
           <Alert variant="destructive" className="mx-3 mb-3">
             <AlertTitle>The database refused the changes</AlertTitle>
             <AlertDescription>
@@ -187,44 +111,53 @@ export const ReviewDrawer = ({
               </span>
             </AlertDescription>
           </Alert>
-        )}
-        <DrawerFooter>
-          <Button
-            variant="ghost-muted"
-            onClick={onDiscardAll}
-            disabled={applying || drafts.length === 0}
-            className="mr-auto"
+        )
+      }
+      onDiscardAll={onDiscardAll}
+      onSubmit={onApply}
+      submit={{
+        label: `Apply ${plural(drafts.length, 'change')}`,
+        tooltip: `Apply ${plural(drafts.length, 'change')} to the database. ${consequence.description}`,
+        variant: consequence.variant,
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {groups.map(([key, tableDrafts]) => (
+          <ChangeGroup
+            key={key}
+            title={
+              <span data-mask className="font-mono">
+                {key}
+              </span>
+            }
           >
-            <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
-            Discard all
-          </Button>
-          <DrawerClose render={<Button variant="outline">Close</Button>} />
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant={consequence.variant}
-                  onClick={onApply}
-                  disabled={applying || drafts.length === 0}
+            {tableDrafts.map((draft) => (
+              <div
+                key={draft.id}
+                className="border-foreground/6 flex flex-col gap-1.5 border-b py-2 pr-1.5 pl-3 last:border-b-0"
+              >
+                <div className="flex items-center gap-2">
+                  <span data-mask className="min-w-0 flex-1 truncate text-xs">
+                    {draftLabel(draft)}
+                  </span>
+                  <DiscardButton
+                    label="Discard change"
+                    onClick={() => onDiscard(draft.id)}
+                    disabled={applying}
+                  />
+                </div>
+                <CodeBlock
+                  code={previewSql(connectionType, draft)}
+                  language="sql"
+                  size="xs"
+                  wrap
+                  className="mr-1.5"
                 />
-              }
-            >
-              <LoadingContent loading={applying}>
-                Apply {plural(drafts.length, 'change')}
-              </LoadingContent>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="flex flex-col gap-0.5">
-                <span>
-                  {`Apply ${plural(drafts.length, 'change')} to the database. `}
-                  {consequence.description}
-                </span>
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
               </div>
-            </TooltipContent>
-          </Tooltip>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+            ))}
+          </ChangeGroup>
+        ))}
+      </div>
+    </StagedReviewDrawer>
   )
 }

@@ -1,58 +1,38 @@
 import { type } from 'arktype'
+import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
 const distinctType = type('Record<string, unknown>[]')
 
-export const distinctQuery = ({
-  schema,
-  table,
-  column,
-  limit = 1000,
-}: {
+interface DistinctParams {
   schema: string
   table: string
   column: string
   limit?: number
-}) =>
+}
+
+const selectDistinct = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { schema, table, column, limit = 1000 }: DistinctParams
+) =>
+  db
+    .withSchema(schema)
+    .$extendTables<Record<string, Record<string, unknown>>>()
+    .selectFrom(table)
+    .select(column)
+    .distinct()
+    .limit(limit)
+    .execute()
+
+export const distinctQuery = (params: DistinctParams) =>
   createQuery({
     query: {
-      clickhouse: (db) =>
-        db
-          .withSchema(schema)
-          .$extendTables<Record<string, Record<string, unknown>>>()
-          .selectFrom(table)
-          .select(column)
-          .distinct()
-          .limit(limit)
-          .execute(),
-      mssql: (db) =>
-        db
-          .withSchema(schema)
-          .$extendTables<Record<string, Record<string, unknown>>>()
-          .selectFrom(table)
-          .select(column)
-          .distinct()
-          .limit(limit)
-          .execute(),
-      mysql: (db) =>
-        db
-          .withSchema(schema)
-          .$extendTables<Record<string, Record<string, unknown>>>()
-          .selectFrom(table)
-          .select(column)
-          .distinct()
-          .limit(limit)
-          .execute(),
-      postgres: (db) =>
-        db
-          .withSchema(schema)
-          .$extendTables<Record<string, Record<string, unknown>>>()
-          .selectFrom(table)
-          .select(column)
-          .distinct()
-          .limit(limit)
-          .execute(),
+      clickhouse: (db) => selectDistinct(db, params),
+      mssql: (db) => selectDistinct(db, params),
+      mysql: (db) => selectDistinct(db, params),
+      postgres: (db) => selectDistinct(db, params),
     },
     type: distinctType,
   })

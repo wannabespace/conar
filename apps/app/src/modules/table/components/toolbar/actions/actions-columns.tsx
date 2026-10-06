@@ -29,6 +29,8 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
+import { plural } from '~/lib/plural'
+
 import { useTableColumnsContext } from '../../../lib/columns'
 import { orderColumns, useTablePageStore } from '../../../lib/store'
 
@@ -42,7 +44,7 @@ export const ActionsColumns = () => {
   const hiddenCount = hiddenColumns.filter((id) =>
     columns.some((column) => column.id === id)
   ).length
-  let label = `${columns.length} column${columns.length === 1 ? '' : 's'}`
+  let label = plural(columns.length, 'column')
   if (isPending) {
     label = 'Loading columns…'
   } else if (hiddenCount > 0) {

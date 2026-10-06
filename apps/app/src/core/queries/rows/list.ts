@@ -1,8 +1,8 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
-import { toKyselyFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
+import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { sql } from 'kysely'
+import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -12,6 +12,9 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
+import type { ColumnTypes } from './shape'
+import { clickhouseFilterValues } from './shape'
+
 const rowType = type('Record<string, unknown>')
 
 interface PageResult {
@@ -19,6 +22,8 @@ interface PageResult {
 }
 
 export interface RowsQueryProps {
+  /** The table's columns, whose types ClickHouse parses filter values by. */
+  columns?: ColumnTypes
   limit?: number
   select?: string[]
   table: string
@@ -33,149 +38,51 @@ export interface RowsQueryProps {
 const orderEntries = (orderBy: Record<string, 'ASC' | 'DESC'> | undefined) =>
   Object.entries(orderBy ?? {}) as [string, 'ASC' | 'DESC'][]
 
-export const resourceRowsQuery = memoize(
-  ({
+const selectPage = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  {
     limit = DEFAULT_PAGE_LIMIT,
     select,
     offset,
     table,
     schema,
     query: { orderBy, filters, filtersConcatOperator },
-  }: RowsQueryProps & { offset: number }) =>
+  }: RowsQueryProps & { offset: number },
+  bind?: FilterValueBinding
+) => {
+  let query = db
+    .withSchema(schema)
+    .$extendTables<{ [table]: Record<string, unknown> }>()
+    .selectFrom(table)
+
+  query = select === undefined ? query.selectAll() : query.select(select)
+
+  if (filters !== undefined) {
+    query = query.where((eb) =>
+      toKyselyFilter(eb, filters, filtersConcatOperator, bind)
+    )
+  }
+
+  for (const [column, direction] of orderEntries(orderBy)) {
+    query = query.orderBy(
+      column,
+      direction.toLowerCase() as Lowercase<typeof direction>
+    )
+  }
+
+  return query.limit(limit).offset(offset).execute()
+}
+
+export const resourceRowsQuery = memoize(
+  (props: RowsQueryProps & { offset: number }) =>
     createQuery({
       query: {
-        clickhouse: (db) => {
-          const orders = orderEntries(orderBy)
-          const selectedColumns = select
-          const activeFilters = filters
-
-          let query = db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-
-          query =
-            selectedColumns === undefined
-              ? query.selectAll()
-              : query.select(selectedColumns)
-
-          if (activeFilters !== undefined) {
-            query = query.where((eb) =>
-              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
-            )
-          }
-
-          query = query.limit(limit).offset(offset)
-
-          for (const [column, direction] of orders) {
-            query = query.orderBy(
-              column,
-              direction.toLowerCase() as Lowercase<typeof direction>
-            )
-          }
-
-          return query.execute()
-        },
-        mssql: (db) => {
-          const orders = orderEntries(orderBy)
-          const selectedColumns = select
-          const activeFilters = filters
-
-          let query = db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-
-          query =
-            selectedColumns === undefined
-              ? query.selectAll()
-              : query.select(selectedColumns)
-
-          if (activeFilters !== undefined) {
-            query = query.where((eb) =>
-              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
-            )
-          }
-
-          if (orders.length === 0) {
-            query = query.orderBy(sql<string>`(select null)`)
-          }
-
-          query = query.limit(limit).offset(offset)
-
-          for (const [column, direction] of orders) {
-            query = query.orderBy(
-              column,
-              direction.toLowerCase() as Lowercase<typeof direction>
-            )
-          }
-
-          return query.execute()
-        },
-        mysql: (db) => {
-          const orders = orderEntries(orderBy)
-          const selectedColumns = select
-          const activeFilters = filters
-
-          let query = db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-
-          query =
-            selectedColumns === undefined
-              ? query.selectAll()
-              : query.select(selectedColumns)
-
-          if (activeFilters !== undefined) {
-            query = query.where((eb) =>
-              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
-            )
-          }
-
-          query = query.limit(limit).offset(offset)
-
-          for (const [column, direction] of orders) {
-            query = query.orderBy(
-              column,
-              direction.toLowerCase() as Lowercase<typeof direction>
-            )
-          }
-
-          return query.execute()
-        },
-        postgres: (db) => {
-          const orders = orderEntries(orderBy)
-          const selectedColumns = select
-          const activeFilters = filters
-
-          let query = db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-
-          query =
-            selectedColumns === undefined
-              ? query.selectAll()
-              : query.select(selectedColumns)
-
-          if (activeFilters !== undefined) {
-            query = query.where((eb) =>
-              toKyselyFilter(eb, activeFilters, filtersConcatOperator)
-            )
-          }
-
-          query = query.limit(limit).offset(offset)
-
-          for (const [column, direction] of orders) {
-            query = query.orderBy(
-              column,
-              direction.toLowerCase() as Lowercase<typeof direction>
-            )
-          }
-
-          return query.execute()
-        },
+        clickhouse: (db) =>
+          selectPage(db, props, clickhouseFilterValues(props.columns)),
+        mssql: (db) => selectPage(db, props),
+        mysql: (db) => selectPage(db, props),
+        postgres: (db) => selectPage(db, props),
       },
       type: rowType.array(),
     })
@@ -251,3 +158,27 @@ export const resourceRowsQueryInfiniteOptions = memoize(
     })
   }
 )
+
+/** Rows of `table` whose `column` holds `value`: the reference peek and the reference picker share this cache entry. */
+export const matchingRowsQueryOptions = ({
+  column,
+  connectionResource,
+  schema,
+  table,
+  value,
+}: {
+  column: string
+  connectionResource: ConnectionResource
+  schema: string
+  table: string
+  value: unknown
+}) =>
+  resourceRowsQueryInfiniteOptions({
+    connectionResource,
+    query: {
+      filters: [{ column, ref: EQUAL_FILTER, values: [value] }],
+      orderBy: {},
+    },
+    schema,
+    table,
+  })

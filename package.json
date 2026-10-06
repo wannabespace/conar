@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky && bun scripts/sync-pnpm-versions.ts && bun scripts/setup-dev.ts",
-    "postinstall": "pnpm run portless:start",
+    "postinstall": "bun -e \"await Bun.write('.turbo/installed-at.txt', Date())\" && pnpm run portless:start",
     "portless:start": "portless proxy start --tld app",
     "portless:stop": "portless proxy stop",
     "x": "bun scripts/run-script.ts",

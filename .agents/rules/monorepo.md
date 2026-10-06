@@ -20,6 +20,7 @@
 Setup and the command list live in `README.md` and the root `package.json`. Not obvious:
 
 - `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
+- A dead backend shows up in the browser as a **CORS error**: portless answers for a stopped server with a 502 that has no CORS headers. `bun --watch` stays down after a crash until a watched file changes, and it ignores `node_modules` — so `apps/api` and `apps/proxy` preload `scripts/restart-on-install.ts`, and the root `postinstall` rewrites its stamp so every `pnpm install` restarts them (e.g. a merge added a package while `dev` ran).
 - Portless dev URLs live only while `dev` runs. In a linked git worktree portless prefixes the branch name, so worktrees run alongside the main checkout.
 - `.env` files are gitignored and created by `scripts/setup-dev.ts` on install, never overwritten. A linked worktree copies them from the main checkout, because `.env.example` points at localhost services that don't run here. To resync a stale `.env`, delete it and re-run `bun scripts/setup-dev.ts`.
 - Cross-service dev URLs are not in `.env` — `setupPortlessEnvs(...)` fills them at startup, worktree-aware, and each app declares its own env-key map. Precedence: existing env var > portless > declared default.

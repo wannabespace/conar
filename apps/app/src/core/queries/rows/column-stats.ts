@@ -1,9 +1,12 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
+
+import type { ColumnTypes } from './shape'
+import { clickhouseFilterValues } from './shape'
 
 const count = type('number | string | bigint').pipe(Number)
 
@@ -14,11 +17,11 @@ const statsType = type({
   total: count,
   unique: count,
 })
-  .array()
-  .pipe((rows) => rows[0] ?? { filled: 0, total: 0, unique: 0 })
 
 interface ColumnStatsParams {
   column: string
+  /** The table's columns, whose types ClickHouse parses filter values by. */
+  columns: ColumnTypes
   filters: ActiveFilter[]
   ranged: boolean
   schema: string
@@ -28,7 +31,8 @@ interface ColumnStatsParams {
 const selectStats = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
-  { column, filters, ranged, schema, table }: ColumnStatsParams
+  { column, filters, ranged, schema, table }: ColumnStatsParams,
+  bind?: FilterValueBinding
 ) =>
   db
     .withSchema(schema)
@@ -45,14 +49,15 @@ const selectStats = (
         eb.fn.max(column).as('max'),
       ])
     )
-    .where((eb) => toKyselyFilter(eb, filters))
-    .execute()
+    .where((eb) => toKyselyFilter(eb, filters, 'AND', bind))
+    .executeTakeFirstOrThrow()
 
-/** Row, filled and distinct counts of one column under the table's filters; `ranged` adds min and max, which only ordered types have. */
+// `ranged` adds min and max, which only ordered types have.
 export const columnStatsQuery = (params: ColumnStatsParams) =>
   createQuery({
     query: {
-      clickhouse: (db) => selectStats(db, params),
+      clickhouse: (db) =>
+        selectStats(db, params, clickhouseFilterValues(params.columns)),
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),

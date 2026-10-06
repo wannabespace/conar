@@ -2,7 +2,6 @@ import type { ActiveFilter } from '@tamery/shared/filters'
 import { EQUAL_FILTER } from '@tamery/shared/filters'
 import type { GridRow } from '@tamery/table'
 
-import type { ConnectionResource } from '~/core/connection/sync'
 import type { Column } from '~/core/table/cell/utils'
 
 export interface RowsHop {
@@ -33,6 +32,19 @@ export const followReference = (
   value: unknown
 ): Hop => ({ column, kind: 'rows', schema, table, value })
 
+/** What Space or Show References opens on a cell: the row it points to, else the rows pointing at it. */
+export const cellHop = (column: Column, value: unknown): Hop | null => {
+  if (value === null || value === undefined) {
+    return null
+  }
+  if (column.foreign) {
+    return followReference(column.foreign, value)
+  }
+  return column.references?.length
+    ? { kind: 'references', references: column.references, value }
+    : null
+}
+
 const matchFilters = ({ column, value }: RowsHop): ActiveFilter[] => [
   { column, ref: EQUAL_FILTER, values: [value] },
 ]
@@ -56,13 +68,3 @@ export const tableView = (
   }
   return null
 }
-
-export const matchQuery = (
-  connectionResource: ConnectionResource,
-  hop: RowsHop
-) => ({
-  connectionResource,
-  query: { filters: matchFilters(hop), orderBy: {} },
-  schema: hop.schema,
-  table: hop.table,
-})

@@ -1,22 +1,15 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type {
-  Dialect,
-  LimitNode,
-  OffsetNode,
-  OperationNode,
-  SelectQueryNode,
-} from 'kysely'
+import type { Dialect, OffsetNode, SelectQueryNode } from 'kysely'
 import {
   MssqlQueryCompiler as DefaultMssqlQueryCompiler,
   DummyDriver,
   MssqlAdapter,
+  TopNode,
+  ValueNode,
 } from 'kysely'
 
 import type { DialectOptions } from '~/core/runtime/dialects/driver'
 import { createKyselyDriver } from '~/core/runtime/dialects/driver'
-
-const isSelectQueryNode = (node: OperationNode): node is SelectQueryNode =>
-  node.kind === 'SelectQueryNode'
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary; a NULL literal converts to any type.
@@ -28,34 +21,33 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
     }
   }
 
-  protected override visitOffset(node: OffsetNode) {
-    const parent = this.parentNode
-
-    if (parent && isSelectQueryNode(parent) && parent.limit) {
-      return
+  // SQL Server has no LIMIT: a bare limit becomes TOP, and OFFSET … FETCH needs an ORDER BY.
+  protected override visitSelectQuery(node: SelectQueryNode) {
+    if (node.offset) {
+      super.visitSelectQuery({ ...node, limit: undefined })
+    } else if (node.limit && ValueNode.is(node.limit.limit)) {
+      super.visitSelectQuery({
+        ...node,
+        limit: undefined,
+        top: TopNode.create(Number(node.limit.limit.value)),
+      })
+    } else {
+      super.visitSelectQuery(node)
     }
-
-    this.append(' OFFSET ')
-    this.visitNode(node.offset)
-    this.append(' ROWS ')
   }
 
-  protected override visitLimit(node: LimitNode): void {
-    const parent = this.parentNode
+  protected override visitOffset(node: OffsetNode) {
+    const { limit, orderBy } = this.parentNode as SelectQueryNode
 
-    if (parent && isSelectQueryNode(parent)) {
-      if (parent.offset) {
-        this.append(' OFFSET ')
-        this.visitNode(parent.offset.offset)
-        this.append(' ROWS ')
-      } else {
-        this.append(' OFFSET 0 ROWS ')
-      }
+    if (!orderBy) {
+      this.append('order by (select null) ')
     }
-
-    this.append(' FETCH NEXT ')
-    this.visitNode(node.limit)
-    this.append(' ROWS ONLY ')
+    super.visitOffset(node)
+    if (limit) {
+      this.append(' fetch next ')
+      this.visitNode(limit.limit)
+      this.append(' rows only')
+    }
   }
 }
 

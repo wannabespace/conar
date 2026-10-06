@@ -1,17 +1,11 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { GridRow } from '@tamery/table'
+import { parseTsv, toTsv } from '@tamery/shared/files'
 import { copy } from '@tamery/ui/lib/copy'
-import { toast } from 'sonner'
 
-import {
-  createTransformer,
-  parseCellText,
-} from '~/core/transformers/create-transformer'
+import { createTransformer } from '~/core/transformers/create-transformer'
+import { posthog } from '~/lib/posthog'
 
-import type { CellPosition, CursorStore, DataGridCell } from './cell/cursor'
-import { rangeOf } from './cell/cursor'
-import type { Column } from './cell/utils'
-import { parseTsv, toTsv } from './tsv'
+import type { CellPosition, DataGridCell, GridCursor } from './cursor'
+import { rangeOf } from './cursor'
 
 // A single cell copies its raw text, whose newlines and quotes would read back as a block; paste matches it to keep one value.
 let copiedCell: string | null = null
@@ -24,56 +18,16 @@ const pasted = (
   text === '' && cell.column.isNullable ? null : text,
 ]
 
-export const gridClipboard = ({
-  cellAt,
-  columns,
-  connectionType,
-  getValue,
-  indexOf,
-  isEditable,
-  onEdit,
-  rows,
-  selection,
-  store,
-}: {
-  cellAt: (position: CellPosition | null) => DataGridCell | null
-  columns: Column[]
-  connectionType: ConnectionType
-  getValue: (cell: DataGridCell) => unknown
-  indexOf: (column: string) => number
-  isEditable: (column: Column) => boolean
-  onEdit?: (cell: DataGridCell, value: unknown) => void
-  rows: GridRow[]
-  selection: () => DataGridCell[][]
-  store: CursorStore
-}) => {
+export const gridClipboard = (cursor: GridCursor) => {
+  const { cellAt, columns, indexOf, rows, store } = cursor
+
   const textOf = (cell: DataGridCell) => {
-    const value = getValue(cell)
+    const value = cursor.getValue(cell)
     return value === null || value === undefined
       ? ''
-      : createTransformer(connectionType, cell.column)
+      : createTransformer(cursor.connectionType, cell.column)
           .fromConnection(value)
           .toRaw()
-  }
-
-  const writeAll = (writes: [DataGridCell, string | null][]) => {
-    let rejected = 0
-    for (const [cell, text] of writes) {
-      if (!isEditable(cell.column)) {
-        continue
-      }
-      const { data, error } = parseCellText(connectionType, cell.column, text)
-      if (error) {
-        rejected += 1
-      } else {
-        onEdit?.(cell, data)
-      }
-    }
-    if (rejected > 0) {
-      toast.error(
-        `${rejected} value${rejected === 1 ? '' : 's'} did not fit ${rejected === 1 ? 'its column' : 'their columns'}`
-      )
-    }
   }
 
   const pasteBlock = (block: string[][], at: CellPosition) => {
@@ -92,7 +46,7 @@ export const gridClipboard = ({
         }
       }
     }
-    writeAll(writes)
+    cursor.writeAll(writes)
     const corner = columns[left]
     const end =
       columns[
@@ -102,21 +56,21 @@ export const gridClipboard = ({
         )
       ]
     if (corner && end) {
-      store.set((state) => ({
-        ...state,
-        anchor: { column: corner.id, row: top },
-        cursor: {
+      cursor.select(
+        { column: corner.id, row: top },
+        {
           column: end.id,
           row: Math.min(top + block.length - 1, rows.length - 1),
-        },
-      }))
+        }
+      )
     }
   }
 
   return {
     copy: () => {
-      const cells = selection()
+      const cells = cursor.selection()
       const [only, ...rest] = cells.flat()
+      posthog.capture('cells_copied', { count: rest.length + 1 })
       if (only && rest.length === 0) {
         copiedCell = textOf(only)
         copy(copiedCell, 'Cell value copied')
@@ -128,14 +82,15 @@ export const gridClipboard = ({
         `${rest.length + 1} cells copied`
       )
     },
-    /** Returns the one value to type over the cursor cell, so a misfit shows in its editor; anything else is written here. */
-    paste: (text: string): string | undefined => {
+    /** One value over the cursor cell types into its editor, so a misfit shows there; anything else is written at once. */
+    paste: (text: string) => {
       const block = text === copiedCell ? [[text]] : parseTsv(text)
       const at = store.get().cursor
       const [first] = block
       if (!at || !first) {
         return
       }
+      posthog.capture('cells_pasted', { rows: block.length })
       if (block.length > 1 || first.length > 1) {
         pasteBlock(block, at)
         return
@@ -146,14 +101,16 @@ export const gridClipboard = ({
         !rangeOf(store.get(), indexOf) &&
         cellAt(at)?.column.uiType !== 'boolean'
       ) {
-        return value
+        cursor.edit(value)
+        cursor.commit()
+        return
       }
-      writeAll(
-        selection()
+      cursor.writeAll(
+        cursor
+          .selection()
           .flat()
           .map((cell) => pasted(cell, value))
       )
     },
-    writeAll,
   }
 }

@@ -118,7 +118,6 @@ export const orderColumns = <T extends { id: string }>(
   return columns.toSorted((a, b) => rank(a.id) - rank(b.id))
 }
 
-/** `pinned` lists the pins still shown; they lead `visible` in pin order. */
 export const columnView = <T extends { id: string }>(
   columns: T[],
   {

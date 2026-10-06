@@ -1,0 +1,106 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { GridRow } from '@tamery/table'
+import { useSubscription } from 'seitu/react'
+
+import type { Column } from '~/core/table/cell/utils'
+import type { DataGridCell } from '~/core/table/cursor'
+import {
+  draftKey,
+  draftsActions,
+  newRowsActions,
+  stagedGrid,
+  useTableSessionStore,
+} from '~/core/table/session'
+import type { TableSessionStore } from '~/core/table/session'
+import { createTransformer } from '~/core/transformers/create-transformer'
+
+import { tableGridRef } from './grid-ref'
+import { isSameValue } from './hooks'
+
+const isFilledByDatabase = (column: Column) =>
+  column.isGenerated || column.isIdentity
+
+export const stageRow = (
+  sessionStore: TableSessionStore,
+  visible: Column[],
+  values: Record<string, unknown>
+) => {
+  const id = newRowsActions(sessionStore).add(values)
+  const column = visible.find((c) => !isFilledByDatabase(c)) ?? visible[0]
+  if (column) {
+    tableGridRef.current?.reveal({ column: column.id, row: id })
+  }
+}
+
+/** The grid's rows with the staged changes over them, and every way a cell or row gets staged. */
+export const useStagedEdits = ({
+  columns,
+  connectionType,
+  rows,
+  visible,
+}: {
+  columns: Column[]
+  connectionType: ConnectionType
+  rows: GridRow[]
+  visible: Column[]
+}) => {
+  const sessionStore = useTableSessionStore()
+  const newRows = useSubscription(sessionStore, {
+    selector: (state) => state.newRows,
+  })
+  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const staged = stagedGrid(newRows, rows, primaryColumns)
+
+  const valueOf = ({ column, row, rowIndex }: DataGridCell) => {
+    const entry = staged.rowAt(rowIndex)
+    const draft =
+      entry.kind === 'saved'
+        ? sessionStore.get().drafts[draftKey(entry.keys, column.id)]
+        : undefined
+    return draft ? draft.value : row[column.id]
+  }
+
+  const edit = ({ column, row, rowIndex }: DataGridCell, value: unknown) => {
+    const entry = staged.rowAt(rowIndex)
+    if (entry.kind === 'new') {
+      newRowsActions(sessionStore).setValue(entry.newRow.id, column.id, value)
+      return
+    }
+    const actions = draftsActions(sessionStore)
+    const transformer = createTransformer(connectionType, column)
+    if (
+      isSameValue(value, row[column.id], (v) =>
+        transformer.fromConnection(v).toRaw()
+      )
+    ) {
+      actions.remove(entry.keys, column.id)
+      return
+    }
+    actions.upsert({
+      columnId: column.id,
+      error: undefined,
+      isCommitting: false,
+      primaryKeys: entry.keys,
+      value,
+    })
+  }
+
+  return {
+    ...staged,
+    /** Stages a copy of the row as shown, drafts included, minus what the database fills in. */
+    duplicate: (cell: DataGridCell) =>
+      stageRow(
+        sessionStore,
+        visible,
+        Object.fromEntries(
+          columns
+            .filter(
+              (column) => !column.primaryKey && !isFilledByDatabase(column)
+            )
+            .map((column) => [column.id, valueOf({ ...cell, column })])
+        )
+      ),
+    edit,
+    valueOf,
+  }
+}

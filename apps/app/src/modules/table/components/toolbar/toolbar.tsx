@@ -1,7 +1,6 @@
 import {
   HashtagIcon,
   MoreHorizontalIcon,
-  PlusSignIcon,
   SourceCodeIcon,
   SproutIcon,
 } from '@hugeicons/core-free-icons'
@@ -36,21 +35,23 @@ import {
 import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import type { Column } from '~/core/table/cell/utils'
 import { useTableSessionStore } from '~/core/table/session'
 
+import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
+import { ActionsAdd } from './actions/actions-add'
 import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
-import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
 import { ActionsSeed } from './actions/actions-seed'
 import { ActionsView } from './actions/actions-view'
-import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const fetchAllRows = async ({
+  columns,
   connectionResource,
   exportFilters,
   filters,
@@ -58,6 +59,7 @@ const fetchAllRows = async ({
   schema,
   table,
 }: {
+  columns: Column[]
   connectionResource: Parameters<typeof connectionResourceToQueryParams>[0]
   exportFilters?: ActiveFilter[]
   filters: ActiveFilter[]
@@ -73,6 +75,7 @@ const fetchAllRows = async ({
   while (true) {
     // oxlint-disable-next-line no-await-in-loop
     const batch = await resourceRowsQuery({
+      columns,
       limit,
       offset,
       query: {
@@ -188,6 +191,7 @@ export const TableToolbar = ({
   schema: string
 }) => {
   const { connectionResource } = useRouteContext()
+  const { columns } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
@@ -218,6 +222,7 @@ export const TableToolbar = ({
     isSuccess: isRowsSuccess,
   } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
+      columns,
       connectionResource,
       query: { filters, orderBy },
       schema,
@@ -231,6 +236,7 @@ export const TableToolbar = ({
     dataUpdatedAt: totalUpdatedAt,
   } = useQuery({
     ...resourceTableTotalQueryOptions({
+      columns,
       connectionResource,
       query: { exact, filters },
       schema,
@@ -248,6 +254,7 @@ export const TableToolbar = ({
   }) => {
     if (limit) {
       return resourceRowsQuery({
+        columns,
         limit,
         offset: 0,
         query: {
@@ -261,6 +268,7 @@ export const TableToolbar = ({
     }
 
     return fetchAllRows({
+      columns,
       connectionResource,
       exportFilters: dataFilters,
       filters,
@@ -281,12 +289,11 @@ export const TableToolbar = ({
         totalUpdatedAt={totalUpdatedAt}
       />
       <FilterSearchBar table={table} schema={schema} />
-      <DraftsActions table={table} schema={schema} />
-      {tableType === 'table' && <ActionsDelete table={table} schema={schema} />}
       <div className="flex shrink-0 items-center gap-1">
         <ActionsColumns />
         <ActionsOrder />
         <ActionsView />
+        {tableType === 'table' && <ActionsAdd onAddColumn={onAddColumn} />}
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
@@ -302,12 +309,6 @@ export const TableToolbar = ({
             <TooltipContent side="bottom">More actions</TooltipContent>
           </Tooltip>
           <DropdownMenuContent align="end" className="min-w-44">
-            {tableType === 'table' && (
-              <DropdownMenuItem onClick={onAddColumn}>
-                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-                Add column
-              </DropdownMenuItem>
-            )}
             {tableType === 'table' && (
               <DropdownMenuItem onClick={() => setSeedOpen(true)}>
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />

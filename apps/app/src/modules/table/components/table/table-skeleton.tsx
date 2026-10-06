@@ -3,6 +3,7 @@ import { pseudoRandom } from '@tamery/shared/utils'
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
+  GUTTER_WIDTH,
   LEADING_COLUMN_SIZE,
 } from '@tamery/table/constants'
 import { Skeleton } from '@tamery/ui/components/skeleton'
@@ -35,8 +36,7 @@ const Columns = ({
   selectable: boolean
 }) => (
   <>
-    {/* Keep in step with the grid's `GUTTER`. */}
-    <div aria-hidden className="w-2 shrink-0" />
+    <div aria-hidden className="w-(--gutter-width) shrink-0" />
     {selectable && (
       <div className="flex w-(--leading-width) shrink-0 items-center justify-end border-r pr-3">
         <Skeleton className="size-4 rounded-md [animation-delay:var(--row-delay)]" />
@@ -60,6 +60,7 @@ export const TableSkeleton = ({ selectable }: { selectable: boolean }) => (
     style={
       {
         '--column-width': `${DEFAULT_COLUMN_WIDTH}px`,
+        '--gutter-width': `${GUTTER_WIDTH}px`,
         '--leading-width': `${LEADING_COLUMN_SIZE}px`,
         '--row-height': `${DEFAULT_ROW_HEIGHT}px`,
       } as CSSProperties

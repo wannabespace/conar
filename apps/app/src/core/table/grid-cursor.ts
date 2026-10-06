@@ -1,22 +1,28 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import type { RefObject } from 'react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import {
   createTransformer,
   parseCellText,
 } from '~/core/transformers/create-transformer'
+import { isNested } from '~/core/transformers/value-transformer'
+import { plural } from '~/lib/plural'
+import { posthog } from '~/lib/posthog'
 
-import type {
-  CellPosition,
-  CursorStore,
-  DataGridCell,
-  DataGridLayout,
-} from './cell/cursor'
-import { rangeOf } from './cell/cursor'
-import { isNested } from './cell/json-tree'
 import type { Column } from './cell/utils'
 import { gridClipboard } from './clipboard'
+import type {
+  CellPosition,
+  DataGridCell,
+  DataGridLayout,
+  GridCursor,
+} from './cursor'
+import { createCursorStore, rangeOf } from './cursor'
+import { useFollowRows } from './follow-rows'
+import { glideIntoView } from './glide-into-view'
 
 export const useGridCursor = ({
   columns,
@@ -25,9 +31,9 @@ export const useGridCursor = ({
   layout,
   onEdit,
   onPreview,
+  rowKey,
   rows,
   scrollRef,
-  store,
 }: {
   columns: Column[]
   connectionType: ConnectionType
@@ -35,13 +41,12 @@ export const useGridCursor = ({
   layout: DataGridLayout
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onPreview?: (cell: DataGridCell, anchor: Element) => void
+  rowKey?: (rowIndex: number) => string
   rows: GridRow[]
   scrollRef: RefObject<HTMLDivElement | null>
-  store: CursorStore
 }) => {
-  // The compiler skips a hook that calls no hooks; unmemoized, `cursor` is a new CursorContext value each render and re-renders every cell.
-  'use memo'
-
+  const [store, setStore] = useState(createCursorStore)
+  void setStore
   const byId = new Map(columns.map((column) => [column.id, column]))
   const columnIndex = new Map(
     columns.map((column, index) => [column.id, index])
@@ -56,49 +61,26 @@ export const useGridCursor = ({
   const current = () => cellAt(store.get().cursor)
   const isEditable = (column: Column) => !!onEdit && column.isEditable !== false
   const focusGrid = () => scrollRef.current?.focus({ preventScroll: true })
-  const selection = (): DataGridCell[][] => {
-    const range = rangeOf(store.get(), indexOf)
-    if (!range) {
-      const cell = current()
-      return cell ? [[cell]] : []
-    }
-    const picked = columns.slice(range.left, range.right + 1)
-    return rows
-      .slice(range.top, range.bottom + 1)
-      .map((row, offset) =>
-        picked.map((column) => ({ column, row, rowIndex: range.top + offset }))
-      )
-  }
 
-  const clipboard = gridClipboard({
-    cellAt,
-    columns,
-    connectionType,
-    getValue,
-    indexOf,
-    isEditable,
-    onEdit,
-    rows,
-    selection,
-    store,
-  })
-
-  const cursor = {
-    apply: (value: unknown) => {
+  const cursor: GridCursor = {
+    apply: (value) => {
       const cell = current()
       if (cell && isEditable(cell.column)) {
         onEdit?.(cell, value)
       }
     },
+    canPeek: (cell) => layout === 'grid' && isNested(getValue(cell)),
     cancel: () => {
       store.set((state) => ({ ...state, edit: null }))
       focusGrid()
     },
-    change: (text: string | null) =>
-      store.set((state) => ({ ...state, edit: { text } })),
+    cellAt,
+    change: (text) => store.set((state) => ({ ...state, edit: { text } })),
     clear: () =>
       store.set({ anchor: null, cursor: null, edit: null, peek: false }),
-    /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
+    closePeek: () => store.set((state) => ({ ...state, peek: false })),
+    collapse: () => store.set((state) => ({ ...state, anchor: null })),
+    columns,
     commit: () => {
       const { edit } = store.get()
       const cell = current()
@@ -116,12 +98,6 @@ export const useGridCursor = ({
             ...state,
             edit: { ...edit, error: error.message },
           }))
-          // The field is portaled out of the cell, so it is found by its popup's marker.
-          requestAnimationFrame(() =>
-            document
-              .querySelector<HTMLElement>('[data-editing] :is(textarea, input)')
-              ?.focus()
-          )
           return false
         }
         onEdit?.(cell, data)
@@ -129,9 +105,9 @@ export const useGridCursor = ({
       store.set((state) => ({ ...state, edit: null }))
       return true
     },
-    copy: () => clipboard.copy(),
-    /** `text` types over the cell; without it the edit starts from the current value. */
-    edit: (text?: string) => {
+    connectionType,
+    copy: () => gridClipboard(cursor).copy(),
+    edit: (text) => {
       const cell = current()
       if (
         !cell ||
@@ -171,12 +147,12 @@ export const useGridCursor = ({
     element: () => scrollRef.current?.querySelector('[data-cell][data-cursor]'),
     fill: () => {
       const { edit } = store.get()
-      const others = selection().flat()
+      const others = cursor.selection().flat()
       if (!edit || !cursor.commit()) {
         return
       }
       const at = store.get().cursor
-      clipboard.writeAll(
+      cursor.writeAll(
         others
           .filter(
             (cell) => cell.rowIndex !== at?.row || cell.column.id !== at.column
@@ -186,7 +162,8 @@ export const useGridCursor = ({
       focusGrid()
     },
     fillDown: () => {
-      const [top = [], ...below] = selection()
+      const [top = [], ...below] = cursor.selection()
+      posthog.capture('cells_filled_down', { rows: below.length })
       for (const row of below) {
         for (const [index, cell] of row.entries()) {
           const source = top[index]
@@ -196,21 +173,18 @@ export const useGridCursor = ({
         }
       }
     },
+    getValue,
+    indexOf,
     isEditable,
-    leave: (down: number, right: number) => {
+    layout,
+    leave: (down, right) => {
       if (cursor.commit()) {
         cursor.step(down, right)
         focusGrid()
       }
     },
-    paste: (text: string) => {
-      const typed = clipboard.paste(text)
-      if (typed !== undefined) {
-        cursor.edit(typed)
-        cursor.commit()
-      }
-    },
-    place: (position: CellPosition, extend = false) => {
+    paste: (text) => gridClipboard(cursor).paste(text),
+    place: (position, extend = false) => {
       const { cursor: at, edit } = store.get()
       if (
         (edit && at?.row === position.row && at.column === position.column) ||
@@ -225,11 +199,13 @@ export const useGridCursor = ({
         peek: false,
       }))
       // The cursor cell renders after the store update; scrolling here, not on cell mount, keeps virtualized remounts from yanking the scroll back.
-      requestAnimationFrame(() =>
-        cursor
-          .element()
-          ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-      )
+      requestAnimationFrame(() => {
+        const scroller = scrollRef.current
+        const element = cursor.element()
+        if (scroller && element) {
+          glideIntoView(scroller, element)
+        }
+      })
     },
     preview: () => {
       const cell = current()
@@ -237,14 +213,35 @@ export const useGridCursor = ({
       if (!cell || !element) {
         return
       }
-      if (layout === 'grid' && isNested(getValue(cell))) {
+      if (cursor.canPeek(cell)) {
         store.set((state) => ({ ...state, peek: !state.peek }))
         return
       }
       onPreview?.(cell, element)
     },
-    selection,
-    step: (down: number, right: number, extend = false) => {
+    rows,
+    select: (anchor, at) =>
+      store.set((state) => ({ ...state, anchor, cursor: at })),
+    selection: () => {
+      const range = rangeOf(store.get(), indexOf)
+      if (!range) {
+        const cell = current()
+        return cell ? [[cell]] : []
+      }
+      const picked = columns.slice(range.left, range.right + 1)
+      return rows.slice(range.top, range.bottom + 1).map((row, offset) =>
+        picked.map((column) => ({
+          column,
+          row,
+          rowIndex: range.top + offset,
+        }))
+      )
+    },
+    set: (value) => {
+      cursor.apply(value)
+      cursor.cancel()
+    },
+    step: (down, right, extend = false) => {
       const [rowStep, columnStep] =
         layout === 'documents' ? [right, down] : [down, right]
       const position = store.get().cursor
@@ -264,9 +261,29 @@ export const useGridCursor = ({
         )
       }
     },
+    store,
+    writeAll: (writes) => {
+      let rejected = 0
+      for (const [cell, text] of writes) {
+        if (!isEditable(cell.column)) {
+          continue
+        }
+        const { data, error } = parseCellText(connectionType, cell.column, text)
+        if (error) {
+          rejected += 1
+        } else {
+          onEdit?.(cell, data)
+        }
+      }
+      if (rejected > 0) {
+        toast.error(
+          `${plural(rejected, 'value')} did not fit ${rejected === 1 ? 'its column' : 'their columns'}`
+        )
+      }
+    },
   }
 
-  return { byId, cellAt, cursor, indexOf }
-}
+  useFollowRows({ rowKey, rows, store })
 
-export type GridCursor = ReturnType<typeof useGridCursor>['cursor']
+  return { byId, cursor }
+}

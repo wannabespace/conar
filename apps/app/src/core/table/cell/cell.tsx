@@ -7,18 +7,16 @@ import { useRef } from 'react'
 
 import { createTransformer } from '~/core/transformers/create-transformer'
 import type { ValueTransformer } from '~/core/transformers/value-transformer'
+import { isNested } from '~/core/transformers/value-transformer'
 
-import { useCellCursor } from '../cursor-context'
+import type { DataGridLayout } from '../cursor'
+import { useCellCursor } from '../cursor'
 import type { Draft } from '../session'
 import { CellField } from './cell-editor'
 import { Tag } from './cell-select'
-import type { DataGridLayout } from './cursor'
-import { isNested, JsonPeek, JsonTree } from './json-tree'
+import { JsonPeek, JsonTree } from './json-tree'
 import type { Column } from './utils'
-import { canWriteDefault, hasTabularFigures } from './utils'
-
-const CURSOR_RING =
-  'inset-ring-foreground/20 group-focus-within/grid:inset-ring-ring/50 inset-ring-3'
+import { hasTabularFigures } from './utils'
 
 const CellValue = ({
   column,
@@ -38,55 +36,64 @@ const CellValue = ({
   if (value === undefined) {
     return <span className="italic">default</span>
   }
-  if (value !== null && column.uiType === 'boolean') {
-    return (
-      <Checkbox
-        aria-label={`Value of ${column.id}`}
-        checked={transformer.fromConnection(value).toUI() === true}
-        readOnly
-        tabIndex={-1}
-        className={cn(layout === 'documents' && 'my-0.5')}
-      />
-    )
-  }
-  if (value !== null && column.uiType === 'select') {
-    return <Tag column={column} value={String(value)} />
-  }
-  const items: unknown =
-    value !== null && column.uiType === 'list'
-      ? transformer.fromConnection(value).toUI()
-      : null
-  if (Array.isArray(items) && items.length > 0) {
-    return (
-      <div
-        className={cn(
-          'flex min-w-0 flex-1 gap-1',
-          layout === 'documents' ? 'flex-wrap py-0.5' : 'overflow-hidden'
-        )}
-      >
-        {items.map((item, index) => (
-          // oxlint-disable-next-line react/no-array-index-key -- a list may repeat a value
-          <Tag key={index} column={column} value={String(item)} />
-        ))}
-      </div>
-    )
-  }
-  if (label !== undefined && value !== null) {
-    return (
-      <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
-        <span className="max-w-2/3 shrink-0 truncate">{label}</span>
-        <span className="text-muted-foreground min-w-0 truncate tabular-nums">
-          {transformer.toDisplay(value, size)}
+  if (value !== null) {
+    switch (column.uiType) {
+      case 'boolean': {
+        return (
+          <Checkbox
+            aria-label={`Value of ${column.id}`}
+            checked={transformer.fromConnection(value).toUI() === true}
+            readOnly
+            tabIndex={-1}
+            className={cn(layout === 'documents' && 'my-0.5')}
+          />
+        )
+      }
+      case 'select': {
+        return <Tag column={column} value={String(value)} />
+      }
+      case 'list': {
+        const items: unknown = transformer.fromConnection(value).toUI()
+        if (Array.isArray(items) && items.length > 0) {
+          return (
+            <div
+              className={cn(
+                'flex min-w-0 flex-1 gap-1',
+                layout === 'documents'
+                  ? 'flex-wrap py-0.5'
+                  : 'end-fade overflow-hidden'
+              )}
+            >
+              {items.map((item, index) => (
+                // oxlint-disable-next-line react/no-array-index-key -- a list may repeat a value
+                <Tag key={index} column={column} value={String(item)} />
+              ))}
+            </div>
+          )
+        }
+        break
+      }
+      default: {
+        break
+      }
+    }
+    if (label !== undefined) {
+      return (
+        <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="max-w-2/3 shrink-0 truncate">{label}</span>
+          <span className="text-muted-foreground min-w-0 truncate tabular-nums">
+            {transformer.toDisplay(value, size)}
+          </span>
         </span>
-      </span>
-    )
-  }
-  if (layout === 'documents' && isNested(value)) {
-    return (
-      <div className="min-w-0 flex-1 py-0.5">
-        <JsonTree value={value} />
-      </div>
-    )
+      )
+    }
+    if (layout === 'documents' && isNested(value)) {
+      return (
+        <div className="min-w-0 flex-1 py-0.5">
+          <JsonTree value={value} />
+        </div>
+      )
+    }
   }
   return (
     <span
@@ -112,9 +119,17 @@ const overlayClass = (
     draft && 'bg-warning/15',
     draft?.error && 'bg-destructive/10 inset-ring-destructive/40 inset-ring',
     (state === 'cursor' || state === 'peek' || state === 'range-cursor') &&
-      CURSOR_RING,
+      'inset-ring-foreground/20 group-focus-within/grid:inset-ring-ring/50 inset-ring-3',
     (state === 'range' || state === 'range-cursor') && 'bg-primary/10'
   )
+
+/** Where the grid layout places a cell; the documents layout has none, so a value there is never truncated. */
+export interface CellGeometry {
+  isDragging?: boolean
+  pinned?: boolean
+  size?: number
+  style?: CSSProperties
+}
 
 export const TableCell = ({
   children,
@@ -126,31 +141,27 @@ export const TableCell = ({
   label,
   pinned,
   rowIndex,
-  size,
+  size = Number.MAX_SAFE_INTEGER,
   style,
   value,
-}: {
+}: CellGeometry & {
   children?: ReactNode
   column: Column
   connectionType: ConnectionType
   draft?: Pick<Draft, 'error' | 'isCommitting'>
   /** Set when a refetch changed the value; a new number replays the flash. */
   flash?: number
-  isDragging: boolean
   /** A readable stand-in for the value, e.g. the referenced row's name; the value stays beside it. */
   label?: string
-  pinned?: boolean
   rowIndex: number
-  size: number
-  style: CSSProperties
   value: unknown
 }) => {
-  const { cursor, layout, state, store } = useCellCursor({
+  const { cursor, state } = useCellCursor({
     column: column.id,
     row: rowIndex,
   })
+  const { layout } = cursor
   const ref = useRef<HTMLDivElement>(null)
-  const readOnly = !cursor.isEditable(column)
   const transformer = createTransformer(connectionType, column)
 
   return (
@@ -171,7 +182,7 @@ export const TableCell = ({
         (value === null || value === undefined || value === '') &&
           'text-muted-foreground/60',
         draft?.isCommitting && 'animate-pulse',
-        pinned && 'bg-background row-hover:bg-accent z-10',
+        pinned && 'bg-background group-hover/row:bg-accent z-10',
         isDragging && 'bg-background z-10'
       )}
     >
@@ -198,22 +209,12 @@ export const TableCell = ({
         <JsonPeek
           anchor={ref}
           column={column.id}
-          onClose={() => store.set((current) => ({ ...current, peek: false }))}
+          onClose={() => cursor.closePeek()}
           value={value}
         />
       )}
       {state === 'editing' && (
-        <CellField
-          anchor={ref}
-          canDefault={canWriteDefault(connectionType, column)}
-          column={column}
-          connectionType={connectionType}
-          cursor={cursor}
-          readOnly={readOnly}
-          store={store}
-          transformer={transformer}
-          value={value}
-        />
+        <CellField anchor={ref} column={column} value={value} />
       )}
     </div>
   )

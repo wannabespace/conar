@@ -185,7 +185,11 @@ export const TabBar = ({ className }: { className?: string }) => {
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         {leftPanel && (
           <>
-            <Tooltip>
+            <Tooltip
+              shortcut={
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
+              }
+            >
               <TooltipTrigger
                 render={
                   <Button
@@ -198,10 +202,7 @@ export const TabBar = ({ className }: { className?: string }) => {
               >
                 <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} />
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Toggle sidebar
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
-              </TooltipContent>
+              <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
             </Tooltip>
             <Separator orientation="vertical" className="mx-0.5 h-4!" />
           </>

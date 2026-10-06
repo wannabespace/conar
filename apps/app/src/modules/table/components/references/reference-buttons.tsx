@@ -5,33 +5,35 @@ import {
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { PopoverTrigger } from '@tamery/ui/components/popover'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { getRouteApi } from '@tanstack/react-router'
-import { useRef } from 'react'
 
-import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import type { Column } from '~/core/table/cell/utils'
+import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
 
 import type { Hop } from './hops'
-import { followReference, matchQuery } from './hops'
-import { ReferencePeek } from './reference-peek'
+import { followReference } from './hops'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+export type OpenPeek = (anchor: Element, hop: Hop) => void
 
 const ReferenceTrigger = ({
   hop,
   icon,
   label,
+  onPeek,
 }: {
   hop: Hop
   icon: IconSvgElement
   label: string
+  onPeek: OpenPeek
 }) => {
   const { connectionResource } = useRouteContext()
 
@@ -39,27 +41,25 @@ const ReferenceTrigger = ({
     <Tooltip>
       <TooltipTrigger
         render={
-          <PopoverTrigger
-            payload={hop}
-            render={
-              <Button
-                data-reference
-                variant="ghost-row"
-                size="icon-2xs"
-                tabIndex={-1}
-                aria-label={label}
-                onDoubleClick={(event) => event.stopPropagation()}
-                onPointerEnter={() => {
-                  if (hop.kind === 'rows') {
-                    queryClient.prefetchInfiniteQuery(
-                      resourceRowsQueryInfiniteOptions(
-                        matchQuery(connectionResource, hop)
-                      )
-                    )
-                  }
-                }}
-              />
+          <Button
+            variant="ghost-row"
+            size="icon-2xs"
+            tabIndex={-1}
+            aria-label={label}
+            onClick={({ currentTarget }) =>
+              onPeek(
+                currentTarget.closest('[role="gridcell"]') ?? currentTarget,
+                hop
+              )
             }
+            onDoubleClick={(event) => event.stopPropagation()}
+            onPointerEnter={() => {
+              if (hop.kind === 'rows') {
+                queryClient.prefetchInfiniteQuery(
+                  matchingRowsQueryOptions({ connectionResource, ...hop })
+                )
+              }
+            }}
           />
         }
       >
@@ -76,12 +76,13 @@ const ReferenceTrigger = ({
 
 export const ReferenceButtons = ({
   column,
+  onPeek,
   value,
 }: {
   column: Column
+  onPeek: OpenPeek
   value: unknown
 }) => {
-  const ref = useRef<HTMLSpanElement>(null)
   const references = column.references ?? []
   if (
     value === null ||
@@ -92,25 +93,23 @@ export const ReferenceButtons = ({
   }
 
   return (
-    <ReferencePeek
-      anchor={() => ref.current?.closest('[role="gridcell"]') ?? null}
-    >
-      <span ref={ref} className="ml-auto flex shrink-0">
-        {column.foreign && (
-          <ReferenceTrigger
-            hop={followReference(column.foreign, value)}
-            icon={ArrowUpRight01Icon}
-            label={`Show the referenced ${column.foreign.table} row`}
-          />
-        )}
-        {references.length > 0 && (
-          <ReferenceTrigger
-            hop={{ kind: 'references', references, value }}
-            icon={ArrowDownLeft01Icon}
-            label={`Show rows pointing here from ${references.length} table${references.length === 1 ? '' : 's'}`}
-          />
-        )}
-      </span>
-    </ReferencePeek>
+    <span className="ml-auto flex shrink-0">
+      {column.foreign && (
+        <ReferenceTrigger
+          hop={followReference(column.foreign, value)}
+          icon={ArrowUpRight01Icon}
+          label={`Show the referenced ${column.foreign.table} row`}
+          onPeek={onPeek}
+        />
+      )}
+      {references.length > 0 && (
+        <ReferenceTrigger
+          hop={{ kind: 'references', references, value }}
+          icon={ArrowDownLeft01Icon}
+          label={`Show rows pointing here from ${plural(references.length, 'table')}`}
+          onPeek={onPeek}
+        />
+      )}
+    </span>
   )
 }

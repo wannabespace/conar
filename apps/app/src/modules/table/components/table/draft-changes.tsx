@@ -175,7 +175,7 @@ export const ChangeList = ({
   listRef: RefObject<HTMLDivElement | null>
 }) => {
   const sessionStore = useTableSessionStore()
-  const { remove } = draftsActions(sessionStore)
+  const { discard: discardDraft } = draftsActions(sessionStore)
 
   const focused = () => {
     const buttons = [
@@ -199,7 +199,7 @@ export const ChangeList = ({
       return
     }
     ;(buttons[index + 1] ?? buttons[index - 1])?.focus()
-    remove(draft.primaryKeys, draft.columnId)
+    discardDraft(draft.primaryKeys, draft.columnId)
   }
 
   useHotkeys(

@@ -7,6 +7,7 @@ export {
   FILTERS_LIST,
 } from './list'
 export { toMongoFilter } from './mongo'
+export type { FilterValueBinding } from './kysely'
 export { SQL_OPERATORS, toKyselyFilter } from './kysely'
 export { cellToFilterValues } from './transformers'
 export { FILTER_GROUPS, enabledFilters } from './types'

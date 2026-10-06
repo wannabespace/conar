@@ -21,3 +21,11 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Notebooks / dashboards** — a different product; saved queries plus auto-charts cover most of it.
 - **More engines** (Mongo icon exists) — no differentiation, each costs dialect work.
 - **Team features** — blocked until multi-member workspaces exist.
+
+## Table
+
+- **Hold-⌘ hints for shortcuts without a control.** Tooltips with a shortcut reveal on ⌘; undo/redo (⌘Z/⇧⌘Z), the grid's copy/paste/fill (⌘C/⌘V/⌘D, listed only in the cell menu) and the Schema pages' ⌘D drop have no control to carry a hint, so they stay undiscoverable until something on screen names them.
+- **Referenced columns on the columns context.** Each header still calls `useReferencedColumns` for its own column; the fetch is shared through the query cache, but one lookup on `ColumnsContext` would drop the per-header hook.
+- **Exact row count once the grid hits the end.** The toolbar badge keeps the planner estimate ("~3") after every row is loaded and "No more rows" shows 7; the loaded count is exact at that point.
+- **Readable rows in the delete dialog.** It lists primary keys only (UUIDs); showing the row's label column (the one **Show Labels** picks) beside each key makes it clear which rows are going.
+- **Keep staged edits across a reload.** A page reload drops every staged cell edit and new row without a prompt; persist drafts per table, or at least confirm before unload while any are staged.

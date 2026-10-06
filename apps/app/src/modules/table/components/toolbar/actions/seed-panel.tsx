@@ -18,6 +18,7 @@ import {
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
+import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { DrawerClose, DrawerFooter } from '@tamery/ui/components/drawer'
 import { Input } from '@tamery/ui/components/input'
 import {
@@ -46,7 +47,10 @@ import { distinctQuery } from '~/core/queries/rows/distinct'
 import { insertQuery } from '~/core/queries/rows/insert'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
-import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import {
+  connectionResourceToQueryParams,
+  transaction,
+} from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
@@ -494,12 +498,18 @@ export const SeedPanel = ({
         referenceData,
       })
 
-      await insertQuery({
-        batchSize: insertBatchSize(dialect, activeGenerators.length),
-        rows,
-        schema,
-        table,
-      }).run(queryParams)
+      const batchSize = insertBatchSize(dialect, activeGenerators.length)
+      await transaction(queryParams).execute(async (tx) => {
+        for (let index = 0; index < rows.length; index += batchSize) {
+          // oxlint-disable-next-line no-await-in-loop
+          await insertQuery({
+            columns,
+            rows: rows.slice(index, index + batchSize),
+            schema,
+            table,
+          }).run(queryParams, tx)
+        }
+      })
     },
     onError: (error) => {
       toast.error('Failed to seed data', { description: error.message })
@@ -633,30 +643,44 @@ export const SeedPanel = ({
         <DrawerClose render={<Button variant="outline" className="ml-auto" />}>
           Cancel
         </DrawerClose>
-        <Button
-          onClick={() =>
-            hasReachedLimit ? checkOrUpgrade('seed.unlimited') : seed()
+        <Tooltip
+          shortcut={
+            canSeed &&
+            !isPending && <KbdCtrlEnter userAgent={navigator.userAgent} />
           }
-          disabled={isPending || (!canSeed && !hasReachedLimit)}
-          className={isGuest && hasReachedLimit ? 'opacity-50' : undefined}
         >
-          <LoadingContent loading={isPending}>
-            <HugeiconsIcon
-              icon={hasReachedLimit ? CrownIcon : SproutIcon}
-              strokeWidth={2}
-            />
-            {hasReachedLimit ? (
-              'Upgrade to seed'
-            ) : (
-              <NumberFlow
-                value={seedsCount}
-                className="tabular-nums"
-                prefix="Seed "
-                suffix={seedsCount === 1 ? ' row' : ' rows'}
+          <TooltipTrigger
+            render={
+              <Button
+                onClick={() =>
+                  hasReachedLimit ? checkOrUpgrade('seed.unlimited') : seed()
+                }
+                disabled={isPending || (!canSeed && !hasReachedLimit)}
+                className={
+                  isGuest && hasReachedLimit ? 'opacity-50' : undefined
+                }
               />
-            )}
-          </LoadingContent>
-        </Button>
+            }
+          >
+            <LoadingContent loading={isPending}>
+              <HugeiconsIcon
+                icon={hasReachedLimit ? CrownIcon : SproutIcon}
+                strokeWidth={2}
+              />
+              {hasReachedLimit ? (
+                'Upgrade to seed'
+              ) : (
+                <NumberFlow
+                  value={seedsCount}
+                  className="tabular-nums"
+                  prefix="Seed "
+                  suffix={seedsCount === 1 ? ' row' : ' rows'}
+                />
+              )}
+            </LoadingContent>
+          </TooltipTrigger>
+          <TooltipContent>Seed rows</TooltipContent>
+        </Tooltip>
       </DrawerFooter>
     </div>
   )

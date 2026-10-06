@@ -17,7 +17,6 @@ import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -32,7 +31,8 @@ import { primaryKeysKey, useTableSessionStore } from '~/core/table/session'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
 import { queryClient } from '~/lib/query-client'
 
-import { useTablePageStore } from '../../../lib/store'
+import { useTableColumnsContext } from '../../lib/columns'
+import { useTablePageStore } from '../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -59,6 +59,7 @@ export const ActionsDelete = ({
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
+  const { columns } = useTableColumnsContext()
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
@@ -69,9 +70,12 @@ export const ActionsDelete = ({
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     meta: { event: 'rows_deleted' },
     mutationFn: async () => {
-      await deleteRowsQuery({ primaryKeys: selected, schema, table }).run(
-        await connectionResourceToQueryParams(connectionResource)
-      )
+      await deleteRowsQuery({
+        columns,
+        primaryKeys: selected,
+        schema,
+        table,
+      }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onError: (error) => {
       toast.error('Failed to delete rows', {
@@ -155,29 +159,13 @@ export const ActionsDelete = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <AnimatePresence>
-        {selected.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.1 }}
-          >
-            <Button variant="destructive" onClick={() => setIsOpened(true)}>
-              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-              <span>
-                Delete (
-                <NumberFlow
-                  spinTiming={{ duration: 200 }}
-                  value={selected.length}
-                  className="tabular-nums"
-                />
-                )
-              </span>
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Button variant="destructive" size="sm" onClick={() => setIsOpened(true)}>
+        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+        <span>
+          Delete (
+          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
+        </span>
+      </Button>
     </>
   )
 }

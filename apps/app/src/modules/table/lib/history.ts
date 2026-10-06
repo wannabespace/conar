@@ -1,12 +1,11 @@
 import { useHotkeys } from '@tanstack/react-hotkeys'
-import type { RefObject } from 'react'
-import { useEffect, useRef } from 'react'
-import { useSubscription } from 'seitu/react'
+import { memoize } from 'memoza'
 
 import type { TableSessionState } from '~/core/table/session'
-import { draftsActions, useTableSessionStore } from '~/core/table/session'
+import { isSaving, tableSessionStore } from '~/core/table/session'
+import { posthog } from '~/lib/posthog'
 
-import { useTablePageStore } from './store'
+import { tablePageStore } from './store'
 
 type Staged = Pick<TableSessionState, 'drafts' | 'newRows'>
 
@@ -15,40 +14,23 @@ const stagedOf = ({ drafts, newRows }: TableSessionState): Staged => ({
   newRows,
 })
 
-const isSaving = ({ drafts, newRows }: Staged) =>
-  Object.values(drafts).some((draft) => draft.isCommitting) ||
-  newRows.some((row) => row.isCommitting)
+const queryOf = ({
+  filters,
+  orderBy,
+}: ReturnType<ReturnType<typeof tablePageStore>['get']>) =>
+  JSON.stringify([filters, orderBy])
 
-/** ⌘Z / ⇧⌘Z over staged edits. Whatever one action stages synchronously (a paste, a fill) is one step; a save starts a fresh history; a filter or sort change drops the edits with it. */
-export const useDraftHistory = (target: RefObject<HTMLElement | null>) => {
-  const store = useTableSessionStore()
-  const pageStore = useTablePageStore()
-  const filters = useSubscription(pageStore, {
-    selector: (state) => state.filters,
-  })
-  const orderBy = useSubscription(pageStore, {
-    selector: (state) => state.orderBy,
-  })
-  const steps = useRef({ redo: [] as Staged[], undo: [] as Staged[] })
-  const restoring = useRef(false)
-  const query = useRef({ filters, orderBy, pageStore })
-
-  useEffect(() => {
-    const previous = query.current
-    query.current = { filters, orderBy, pageStore }
-    if (
-      previous.pageStore === pageStore &&
-      (previous.filters !== filters || previous.orderBy !== orderBy)
-    ) {
-      draftsActions(store).clear()
-      steps.current = { redo: [], undo: [] }
-    }
-  }, [store, pageStore, filters, orderBy])
-
-  useEffect(() => {
+/** Undo/redo over the staged changes; a filter or sort change drops the drafts as an undoable step, staged rows stay. */
+export const stagedHistory = memoize(
+  (key: { id: string; schema: string; table: string }) => {
+    const store = tableSessionStore(key)
+    const pageStore = tablePageStore(key)
+    let steps = { redo: [] as Staged[], undo: [] as Staged[] }
     let previous = stagedOf(store.get())
+    let restoring = false
     let batching = false
-    return store.subscribe((state) => {
+
+    store.subscribe((state) => {
       const next = stagedOf(state)
       if (
         next.drafts === previous.drafts &&
@@ -56,11 +38,9 @@ export const useDraftHistory = (target: RefObject<HTMLElement | null>) => {
       ) {
         return
       }
-      if (isSaving(next) || isSaving(previous)) {
-        steps.current = { redo: [], undo: [] }
-      } else if (!restoring.current && !batching) {
-        steps.current.undo.push(previous)
-        steps.current.redo = []
+      if (!restoring && !batching && !isSaving(state)) {
+        steps.undo.push(previous)
+        steps.redo = []
         batching = true
         queueMicrotask(() => {
           batching = false
@@ -68,30 +48,50 @@ export const useDraftHistory = (target: RefObject<HTMLElement | null>) => {
       }
       previous = next
     })
-  }, [store])
 
-  const restore = (from: Staged[], to: Staged[]) => {
-    const staged = from.pop()
-    if (!staged) {
-      return
+    let query = queryOf(pageStore.get())
+    pageStore.subscribe((state) => {
+      const next = queryOf(state)
+      if (next === query) {
+        return
+      }
+      query = next
+      if (Object.keys(store.get().drafts).length > 0) {
+        store.set((current) => ({ ...current, drafts: {} }))
+      }
+    })
+
+    const restore = (from: Staged[], to: Staged[]) => {
+      const staged = from.at(-1)
+      if (!staged || isSaving(store.get())) {
+        return
+      }
+      from.pop()
+      posthog.capture(from === steps.undo ? 'drafts_undone' : 'drafts_redone')
+      to.push(stagedOf(store.get()))
+      restoring = true
+      store.set((state) => ({ ...state, ...staged }))
+      restoring = false
     }
-    to.push(stagedOf(store.get()))
-    restoring.current = true
-    store.set((state) => ({ ...state, ...staged }))
-    restoring.current = false
-  }
 
+    return {
+      redo: () => restore(steps.redo, steps.undo),
+      reset: () => {
+        steps = { redo: [], undo: [] }
+      },
+      undo: () => restore(steps.undo, steps.redo),
+    }
+  }
+)
+
+// App-wide, not on the grid: removing a filter chip unmounts the focused control, and only the active tab's table is mounted.
+export const useStagedHistoryHotkeys = (
+  history: ReturnType<typeof stagedHistory>
+) =>
   useHotkeys(
     [
-      {
-        callback: () => restore(steps.current.undo, steps.current.redo),
-        hotkey: 'Mod+Z',
-      },
-      {
-        callback: () => restore(steps.current.redo, steps.current.undo),
-        hotkey: 'Mod+Shift+Z',
-      },
+      { callback: history.undo, hotkey: 'Mod+Z' },
+      { callback: history.redo, hotkey: 'Mod+Shift+Z' },
     ],
-    { ignoreInputs: true, target }
+    { ignoreInputs: true }
   )
-}

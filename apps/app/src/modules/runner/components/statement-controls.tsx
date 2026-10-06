@@ -92,7 +92,7 @@ const SuggestionControls = ({
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>
 }) => (
   <Group>
-    <Tooltip>
+    <Tooltip shortcut={<Kbd>Tab</Kbd>}>
       <TooltipTrigger
         render={
           <Button
@@ -110,12 +110,9 @@ const SuggestionControls = ({
       >
         <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
       </TooltipTrigger>
-      <TooltipContent>
-        Accept suggestion
-        <Kbd>Tab</Kbd>
-      </TooltipContent>
+      <TooltipContent>Accept suggestion</TooltipContent>
     </Tooltip>
-    <Tooltip>
+    <Tooltip shortcut={<Kbd>Esc</Kbd>}>
       <TooltipTrigger
         render={
           <Button
@@ -134,10 +131,7 @@ const SuggestionControls = ({
       >
         <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
       </TooltipTrigger>
-      <TooltipContent>
-        Dismiss suggestion
-        <Kbd>Esc</Kbd>
-      </TooltipContent>
+      <TooltipContent>Dismiss suggestion</TooltipContent>
     </Tooltip>
   </Group>
 )
@@ -187,7 +181,11 @@ export const StatementControls = ({
         )}
         <Group>
           {failed && (
-            <Tooltip>
+            <Tooltip
+              shortcut={
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
+              }
+            >
               <TooltipTrigger
                 render={
                   <Button
@@ -205,13 +203,10 @@ export const StatementControls = ({
                   className="size-3"
                 />
               </TooltipTrigger>
-              <TooltipContent>
-                Fix with AI
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
-              </TooltipContent>
+              <TooltipContent>Fix with AI</TooltipContent>
             </Tooltip>
           )}
-          <Tooltip>
+          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
             <TooltipTrigger
               render={
                 <Button
@@ -224,12 +219,13 @@ export const StatementControls = ({
             >
               <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
             </TooltipTrigger>
-            <TooltipContent>
-              Run statement
-              <KbdCtrlEnter userAgent={navigator.userAgent} />
-            </TooltipContent>
+            <TooltipContent>Run statement</TooltipContent>
           </Tooltip>
-          <Tooltip>
+          <Tooltip
+            shortcut={
+              <KbdCtrlLetter userAgent={navigator.userAgent} letter="." />
+            }
+          >
             <AppMenuButton
               render={
                 <TooltipTrigger
@@ -249,10 +245,7 @@ export const StatementControls = ({
                 )
               }
             />
-            <TooltipContent>
-              More actions
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="." />
-            </TooltipContent>
+            <TooltipContent>More actions</TooltipContent>
           </Tooltip>
         </Group>
       </div>

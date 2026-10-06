@@ -14,6 +14,7 @@ import {
 } from '@tamery/shared/files'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { EQUAL_FILTER } from '@tamery/shared/filters'
+import { valueToText } from '@tamery/shared/value-text'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +51,7 @@ const generateContent = ({
   format: ContentFormatType
 }) => {
   if (format === 'json') {
-    return JSON.stringify(data, null, 2)
+    return valueToText(data, 2)
   }
 
   if (data[0] === undefined) {

@@ -1,209 +1,58 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
-import {
-  ArrowDown02Icon,
-  ArrowLeftRightIcon,
-  ArrowUp02Icon,
-  Cancel01Icon,
-  ChartHistogramIcon,
-  Copy01Icon,
-  LayoutThreeColumnIcon,
-  PencilEdit02Icon,
-  PinIcon,
-  PinOffIcon,
-  Tag01Icon,
-  TextIcon,
-  ViewOffSlashIcon,
-} from '@hugeicons/core-free-icons'
+import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridHeaderProps } from '@tamery/table'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
-import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
-import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
 import type { RefObject } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
-import type { AppMenuNode } from '~/components/app-menu'
-import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import type { Column } from '~/core/table/cell/utils'
-import { isTextType } from '~/core/table/cell/utils'
+import {
+  labelCandidates,
+  useReferencedColumns,
+} from '~/core/table/referenced-columns'
 
+import type { ColumnActions } from '../../lib/column-menu'
+import { columnMenuItems } from '../../lib/column-menu'
 import { labelColumnOf } from '../../lib/labels'
-import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
+import { columnLayout, useTablePageStore } from '../../lib/store'
 import { ColumnHeading } from './column-type'
 
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const OFF = '__off__'
-
 const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' } as const
-const CANNOT_SORT_TYPES = new Set(['json'])
 const MIN_WIDTH = 100
-
-interface ColumnActions {
-  onRename?: () => void
-  /** Stages one value in every selected row; absent when no row is selected or the column is read-only. */
-  onSetSelected?: { count: number; set: () => void }
-  onDistinctValues?: (anchor: Element) => void
-}
 
 const useColumnMenu = (
   column: Column,
   anchor: RefObject<HTMLDivElement | null>,
-  { onRename, onSetSelected, onDistinctValues }: ColumnActions
+  actions: ColumnActions
 ) => {
   const store = useTablePageStore()
-  const { hasCustomOrder, hasCustomSize, isPinned, order, storedLabel } =
-    useSubscription(store, {
-      selector: (state) => ({
-        hasCustomOrder: state.columnOrder.length > 0,
-        hasCustomSize: state.columnSizes[column.id] !== undefined,
-        isPinned: state.pinnedColumns.includes(column.id),
-        order: state.orderBy[column.id] ?? null,
-        storedLabel: state.columnLabels[column.id],
-      }),
-    })
-  const layout = columnLayout(store)
-  const sorting = columnsOrder(store)
-  const { connectionResource } = useRouteContext()
-  const { data: referenced = [] } = useQuery({
-    ...resourceTableColumnsQueryOptions({
-      connectionResource,
-      schema: column.foreign?.schema ?? '',
-      table: column.foreign?.table ?? '',
-    }),
-    enabled: !!column.foreign,
+  const order = useSubscription(store, {
+    selector: (state) => state.orderBy[column.id] ?? null,
   })
-  const labelColumns = referenced
-    .filter(
-      (candidate) =>
-        candidate.id !== column.foreign?.column && isTextType(candidate.type)
-    )
-    .map((candidate) => candidate.id)
-  const label = labelColumnOf(
-    storedLabel,
-    referenced,
-    column.foreign?.column ?? ''
-  )
-  const isSortable =
-    !!column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel)
+  const storedLabel = useSubscription(store, {
+    selector: (state) => state.columnLabels[column.id],
+  })
+  const referenced = useReferencedColumns([column]).get(column.id) ?? []
+  const key = column.foreign?.column ?? ''
+  const items = () =>
+    columnMenuItems({
+      ...actions,
+      anchor: anchor.current,
+      column,
+      labels: column.foreign
+        ? {
+            columns: labelCandidates(referenced, key).map(({ id }) => id),
+            current: labelColumnOf(storedLabel, referenced, key),
+          }
+        : undefined,
+      store,
+    })
 
-  const items = (): AppMenuNode[] => [
-    ...(isSortable
-      ? ([
-          {
-            checked: order === 'ASC' || undefined,
-            icon: ArrowUp02Icon,
-            label: 'Sort Ascending',
-            onSelect: () =>
-              order === 'ASC'
-                ? sorting.removeOrder(column.id)
-                : sorting.setOrder(column.id, 'ASC'),
-          },
-          {
-            checked: order === 'DESC' || undefined,
-            icon: ArrowDown02Icon,
-            label: 'Sort Descending',
-            onSelect: () =>
-              order === 'DESC'
-                ? sorting.removeOrder(column.id)
-                : sorting.setOrder(column.id, 'DESC'),
-          },
-          ...(order
-            ? [
-                {
-                  icon: Cancel01Icon,
-                  label: 'Clear Sort',
-                  onSelect: () => sorting.removeOrder(column.id),
-                },
-              ]
-            : []),
-          { type: 'separator' },
-        ] satisfies AppMenuNode[])
-      : []),
-    ...(onSetSelected
-      ? [
-          {
-            icon: TextIcon,
-            label: `Set Value in ${onSetSelected.count} Selected Row${onSetSelected.count === 1 ? '' : 's'}…`,
-            onSelect: onSetSelected.set,
-          },
-          { type: 'separator' } as const,
-        ]
-      : []),
-    ...(onRename
-      ? [{ icon: PencilEdit02Icon, label: 'Rename Column', onSelect: onRename }]
-      : []),
-    {
-      icon: Copy01Icon,
-      label: 'Copy Name',
-      onSelect: () => copy(column.id, 'Column name copied'),
-    },
-    ...(onDistinctValues
-      ? [
-          {
-            icon: ChartHistogramIcon,
-            label: 'Distinct Values',
-            onSelect: () => anchor.current && onDistinctValues(anchor.current),
-          },
-        ]
-      : []),
-    ...(column.foreign && labelColumns.length > 0
-      ? [
-          {
-            icon: Tag01Icon,
-            items: [
-              {
-                onValueChange: (next: string) =>
-                  layout.setLabel(column.id, next === OFF ? '' : next),
-                options: [
-                  { label: 'Off', value: OFF },
-                  ...labelColumns.map((id) => ({ label: id, value: id })),
-                ],
-                type: 'radio',
-                value: label ?? OFF,
-              } satisfies AppMenuNode,
-            ],
-            label: 'Show Labels',
-            type: 'sub',
-          } satisfies AppMenuNode,
-        ]
-      : []),
-    { type: 'separator' },
-    {
-      icon: isPinned ? PinOffIcon : PinIcon,
-      label: isPinned ? 'Unpin Column' : 'Pin Column',
-      onSelect: () => layout.togglePin(column.id),
-    },
-    {
-      icon: ViewOffSlashIcon,
-      label: 'Hide Column',
-      onSelect: () => layout.hide(column.id),
-    },
-    ...(hasCustomSize
-      ? [
-          {
-            icon: ArrowLeftRightIcon,
-            label: 'Reset Width',
-            onSelect: () => layout.resetSize(column.id),
-          },
-        ]
-      : []),
-    ...(hasCustomOrder
-      ? [
-          {
-            icon: LayoutThreeColumnIcon,
-            label: 'Reset Column Order',
-            onSelect: layout.resetOrder,
-          },
-        ]
-      : []),
-  ]
-
-  return { items, layout, order }
+  return { items, layout: columnLayout(store), order }
 }
 
 const SortArrow = ({ order }: { order: 'ASC' | 'DESC' }) => (

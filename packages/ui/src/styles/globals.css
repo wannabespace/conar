@@ -17,8 +17,6 @@
 @source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
-/* The grid's editor card renders inside its row, so hovering the card must not light the rows it covers. */
-@custom-variant row-hover (&:where([data-grid-row]:hover, [data-grid-row]:hover *));
 
 @theme inline {
   --default-border-width: 0.5px;
@@ -284,7 +282,7 @@
   container-type: inline-size;
 }
 
-/* The grid and document list rewrite these while scrolling; an inherited custom property restyles every cell below it on each write (~20x the layout cost), so each must stay non-inherited and be set on the element that reads it. */
+/* The grid and document list rewrite these while scrolling; an inherited custom property restyles every cell below it on each write, so each must stay non-inherited and be set on the element that reads it. */
 @property --grid-top {
   syntax: '<length>';
   inherits: false;
@@ -303,22 +301,12 @@
   initial-value: 0px;
 }
 
-@property --list-top {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
-@property --list-height {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
 /* A view transition paints its named groups above the whole document, so an
    open overlay must be a group too or the tab's snapshot covers it. Name the
-   portal's children, never the portal: it has no box and naming it hides them. */
-[data-base-ui-portal] > * {
+   portal's children, never the portal: it has no box and naming it hides them.
+   A portal nested in another (a tooltip in a drawer) is such a child too, and
+   naming it traps its z-index under the outer overlay. */
+[data-base-ui-portal] > :not([data-base-ui-portal]) {
   view-transition-name: match-element;
   view-transition-class: overlay;
 }
@@ -350,6 +338,10 @@
     inset: calc(--value([*]) * -1);
     pointer-events: inherit;
   }
+}
+
+@utility end-fade {
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
 }
 
 @utility row-actions-fade {

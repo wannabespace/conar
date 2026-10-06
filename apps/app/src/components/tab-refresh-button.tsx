@@ -15,7 +15,13 @@ export const TabRefreshButton = ({
   refreshing: boolean
   onRefresh: () => void
 }) => (
-  <Tooltip>
+  <Tooltip
+    shortcut={
+      !!window.electron && (
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
+      )
+    }
+  >
     <TooltipTrigger
       render={
         <RefreshButton
@@ -28,11 +34,6 @@ export const TabRefreshButton = ({
         />
       }
     />
-    <TooltipContent side="bottom">
-      {label}
-      {window.electron && (
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
-      )}
-    </TooltipContent>
+    <TooltipContent side="bottom">{label}</TooltipContent>
   </Tooltip>
 )

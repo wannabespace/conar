@@ -64,7 +64,8 @@ export const TableRow = ({
     table: row.table.name,
   })
   const hasDrafts = useSubscription(store, {
-    selector: (state) => Object.keys(state.drafts).length > 0,
+    selector: (state) =>
+      Object.keys(state.drafts).length > 0 || state.newRows.length > 0,
   })
 
   const rowLevelSecurityItems = useRowLevelSecurityItems(row)

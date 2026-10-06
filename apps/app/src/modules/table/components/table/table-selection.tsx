@@ -1,16 +1,21 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
 import type { GridRow } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
-import { useHotkeys } from '@tanstack/react-hotkeys'
-import type { CSSProperties, RefObject } from 'react'
+import type { CSSProperties } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { rowSelection } from '~/core/table/row-selection'
+import type { GridEntry, PrimaryKeys } from '~/core/table/session'
 import {
   getRowPrimaryKeysValues,
   primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
+
+import { rowSelection } from '../../lib/row-selection'
+
+export const keysInRange =
+  (rows: GridRow[], keys: string[]) => (start: number, end: number) =>
+    rows.slice(start, end + 1).map((row) => getRowPrimaryKeysValues(row, keys))
 
 const SelectAll = ({ keys, rows }: { keys: string[]; rows: GridRow[] }) => {
   const store = useTableSessionStore()
@@ -44,7 +49,7 @@ export const LeadingHeaderCell = ({
 }: {
   keys: string[]
   rows: GridRow[]
-  style: CSSProperties
+  style?: CSSProperties
 }) => (
   // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
   <div
@@ -58,17 +63,16 @@ export const LeadingHeaderCell = ({
 
 const SelectRow = ({
   keys,
-  row,
   rowIndex,
+  rowKey,
   rows,
 }: {
   keys: string[]
-  row: GridRow
   rowIndex: number
+  rowKey: PrimaryKeys
   rows: GridRow[]
 }) => {
   const store = useTableSessionStore()
-  const rowKey = getRowPrimaryKeysValues(row, keys)
   const isSelected = useSubscription(store, {
     selector: (state) =>
       state.selected.some(
@@ -80,92 +84,44 @@ const SelectRow = ({
     <Checkbox
       aria-label="Select row"
       checked={isSelected}
-      onCheckedChange={(_, { event }) => {
-        const state = store.get()
-        const update = rowSelection.click(
-          event instanceof MouseEvent && event.shiftKey,
-          {
-            currentSelected: state.selected,
-            getItemsInRange: (start, end) =>
-              rows
-                .slice(start, end + 1)
-                .map((item) => getRowPrimaryKeysValues(item, keys)),
-            isSelected,
-            lastClickedIndex: state.lastClickedIndex,
+      onCheckedChange={(_, { event }) =>
+        store.set((state) =>
+          rowSelection.click(state, {
+            isShiftHeld: event instanceof MouseEvent && event.shiftKey,
+            keysInRange: keysInRange(rows, keys),
             rowIndex,
             rowKey,
-          }
+          })
         )
-        store.set((current) => ({ ...current, ...update }))
-      }}
+      }
     />
   )
 }
 
 export const LeadingCell = ({
+  entry,
   keys,
-  row,
-  rowIndex,
   rows,
   style,
 }: {
-  keys: string[] | null
-  row: GridRow
-  rowIndex: number
+  entry: GridEntry
+  keys: string[]
   rows: GridRow[]
-  style: CSSProperties
+  style?: CSSProperties
 }) => (
   // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
   <div
     role="gridcell"
-    className="bg-background row-hover:bg-accent z-10 flex items-center justify-end pr-3"
+    className="bg-background group-hover/row:bg-accent z-10 flex items-center justify-end pr-3"
     style={style}
   >
-    {keys && (
-      <SelectRow keys={keys} row={row} rowIndex={rowIndex} rows={rows} />
+    {entry.kind === 'saved' && (
+      <SelectRow
+        keys={keys}
+        rowIndex={entry.index}
+        rowKey={entry.keys}
+        rows={rows}
+      />
     )}
   </div>
 )
-
-/** Shift+↑/↓ grows a row selection while the grid has no cell cursor. */
-export const useRowRangeKeys = ({
-  enabled,
-  hasCursor,
-  keys,
-  rows,
-  target,
-}: {
-  enabled: boolean
-  hasCursor: () => boolean
-  keys: string[]
-  rows: GridRow[]
-  target: RefObject<HTMLElement | null>
-}) => {
-  const store = useTableSessionStore()
-  useHotkeys(
-    (['up', 'down'] as const).map((direction) => ({
-      callback: () => {
-        const update = hasCursor()
-          ? null
-          : rowSelection.extend(
-              direction,
-              rows.length,
-              store.get().selectionState
-            )
-        if (update) {
-          store.set((state) => ({
-            ...state,
-            selected: rows
-              .slice(update.range.start, update.range.end + 1)
-              .map((row) => getRowPrimaryKeysValues(row, keys)),
-            selectionState: update.state,
-          }))
-        }
-      },
-      hotkey: direction === 'up' ? 'Shift+ArrowUp' : 'Shift+ArrowDown',
-      // The grid binds the same keys to extend the cell block; each handler stands down while the other's mode is active.
-      options: { conflictBehavior: 'allow', enabled },
-    })),
-    { target }
-  )
-}

@@ -8,25 +8,24 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
-import type { GridCursor } from '../grid-cursor'
-import type { CellEdit } from './cursor'
+import type { CellEdit } from '../cursor'
+import { useGridCursorContext } from '../cursor'
 import type { Column } from './utils'
+import { canWriteDefault } from './utils'
 
 export const CellFieldActions = ({
   canApply,
-  canDefault,
   column,
-  cursor,
   edit,
   value,
 }: {
   canApply: boolean
-  canDefault: boolean
   column: Column
-  cursor: GridCursor
   edit: CellEdit | null
   value: unknown
 }) => {
+  const cursor = useGridCursorContext()
+  const canDefault = canWriteDefault(cursor.connectionType, column)
   if (!column.isNullable && !canApply && !canDefault) {
     return null
   }
@@ -38,10 +37,7 @@ export const CellFieldActions = ({
           variant="ghost-muted"
           size="xs"
           disabled={value === null && edit?.text === null}
-          onClick={() => {
-            cursor.apply(null)
-            cursor.cancel()
-          }}
+          onClick={() => cursor.set(null)}
         >
           <HugeiconsIcon
             icon={EraserIcon}
@@ -59,11 +55,8 @@ export const CellFieldActions = ({
                 variant="ghost-muted"
                 size="xs"
                 disabled={value === undefined}
-                onClick={() => {
-                  // oxlint-disable-next-line unicorn/no-useless-undefined -- `undefined` is the DEFAULT draft, not a missing value
-                  cursor.apply(undefined)
-                  cursor.cancel()
-                }}
+                // oxlint-disable-next-line unicorn/no-useless-undefined -- `undefined` is the DEFAULT draft, not a missing value
+                onClick={() => cursor.set(undefined)}
               />
             }
           >
@@ -82,7 +75,7 @@ export const CellFieldActions = ({
         </Tooltip>
       )}
       {canApply && (
-        <Tooltip>
+        <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
           <TooltipTrigger
             render={
               <Button
@@ -94,10 +87,7 @@ export const CellFieldActions = ({
           >
             Apply
           </TooltipTrigger>
-          <TooltipContent side="bottom">
-            Apply with
-            <KbdCtrlEnter userAgent={navigator.userAgent} />
-          </TooltipContent>
+          <TooltipContent side="bottom">Apply with</TooltipContent>
         </Tooltip>
       )}
     </div>

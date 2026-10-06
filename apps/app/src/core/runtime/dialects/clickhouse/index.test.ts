@@ -22,15 +22,9 @@ const update = (value: unknown) =>
       .compile()
   )
 
-test('a date-like string stays a string literal', () => {
-  expect(update('42')).toBe(
-    "alter table `default`.`events` update `value` = '42' where `id` = 1 settings mutations_sync = 1"
-  )
-})
-
-test('an ISO timestamp is parsed at its own precision', () => {
-  expect(update('2024-02-29T13:45:10.123456Z')).toContain(
-    "`value` = parseDateTime64BestEffort('2024-02-29T13:45:10.123456Z', 6)"
+test('an ISO timestamp stays a string literal', () => {
+  expect(update('2024-02-29T13:45:10Z')).toBe(
+    "alter table `default`.`events` update `value` = '2024-02-29T13:45:10Z' where `id` = 1 settings mutations_sync = 1"
   )
 })
 

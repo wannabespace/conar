@@ -4,41 +4,81 @@ import {
   EraserIcon,
   FilterAddIcon,
   Link01Icon,
-  PencilEdit02Icon,
-  Sorting01Icon,
 } from '@hugeicons/core-free-icons'
 import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
 
 import type { AppMenuNode } from '~/components/app-menu'
 import type { CellMenuExtra } from '~/core/table/cell/cell-menu'
-import type { Column } from '~/core/table/cell/utils'
+import type { DataGridCell } from '~/core/table/cursor'
+import type { TableSessionStore } from '~/core/table/session'
+import { draftKey, draftsActions, newRowsActions } from '~/core/table/session'
 import { posthog } from '~/lib/posthog'
 
+import type { ColumnActions } from '../../lib/column-menu'
+import { columnMenuItems } from '../../lib/column-menu'
+import type { useStagedEdits } from '../../lib/staged-edits'
 import type { TablePageStore } from '../../lib/store'
-import { columnsOrder } from '../../lib/store'
+import { cellHop } from '../references/hops'
+import type { OpenPeek } from '../references/reference-buttons'
 
 export const tableCellMenu = ({
-  column,
-  onDiscardChange,
-  onDiscardRow,
-  onDuplicateRow,
+  actions,
+  canInsert,
+  cell,
+  element,
+  isEditable,
   onPeek,
-  onRename,
-  onSetNull,
+  saving,
+  sessionStore,
+  staged,
   store,
-  value,
 }: {
-  column: Column
-  onDiscardChange?: () => void
-  onDiscardRow?: () => void
-  onDuplicateRow?: () => void
-  onPeek?: () => void
-  onRename?: () => void
-  onSetNull?: () => void
+  actions: ColumnActions
+  canInsert: boolean
+  cell: DataGridCell
+  element: Element | null | undefined
+  isEditable: boolean
+  onPeek: OpenPeek
+  saving: boolean
+  sessionStore: TableSessionStore
+  staged: ReturnType<typeof useStagedEdits>
   store: TablePageStore
-  value: unknown
 }): CellMenuExtra => {
-  const sorting = columnsOrder(store)
+  const { column } = cell
+  const entry = staged.rowAt(cell.rowIndex)
+  const value = staged.valueOf(cell)
+  // Filters match saved rows, so Filter by Value takes the stored value, never a pending draft.
+  const storedValue = cell.row[column.id]
+  const hop = cellHop(column, value)
+  const hasDraft =
+    entry.kind === 'saved' &&
+    draftKey(entry.keys, column.id) in sessionStore.get().drafts
+  const onDiscardChange =
+    hasDraft && !saving
+      ? () => draftsActions(sessionStore).discard(entry.keys, column.id)
+      : undefined
+  const onDiscardRow =
+    entry.kind === 'new' && !saving
+      ? () => newRowsActions(sessionStore).discard(entry.newRow.id)
+      : undefined
+  const onDuplicateRow = canInsert
+    ? () => {
+        posthog.capture('row_duplicated')
+        staged.duplicate(cell)
+      }
+    : undefined
+  const peek = hop && element ? () => onPeek(element, hop) : undefined
+  const onSetNull =
+    isEditable && column.isEditable !== false && column.isNullable
+      ? () => staged.edit(cell, null)
+      : undefined
+  const columnItems = columnMenuItems({
+    ...actions,
+    anchor: element ?? null,
+    column,
+    store,
+  })
+
   const rowItems: AppMenuNode[] = [
     ...(onDuplicateRow
       ? [{ icon: Copy02Icon, label: 'Duplicate Row', onSelect: onDuplicateRow }]
@@ -63,8 +103,8 @@ export const tableCellMenu = ({
           },
         ]
       : []),
-    ...(onPeek
-      ? [{ icon: Link01Icon, label: 'Show References', onSelect: onPeek }]
+    ...(peek
+      ? [{ icon: Link01Icon, label: 'Show References', onSelect: peek }]
       : []),
     ...(onSetNull
       ? [
@@ -83,17 +123,8 @@ export const tableCellMenu = ({
     groups: [
       {
         items: [
-          ...(onRename
-            ? [
-                {
-                  icon: PencilEdit02Icon,
-                  label: 'Rename Column',
-                  onSelect: onRename,
-                },
-              ]
-            : []),
           {
-            disabled: value === null || value === undefined,
+            disabled: storedValue === null || storedValue === undefined,
             icon: FilterAddIcon,
             label: 'Filter by Value',
             onSelect: () => {
@@ -104,33 +135,15 @@ export const tableCellMenu = ({
                   {
                     column: column.id,
                     ref: EQUAL_FILTER,
-                    values: cellToFilterValues(EQUAL_FILTER, value),
+                    values: cellToFilterValues(EQUAL_FILTER, storedValue),
                   },
                 ],
               }))
               posthog.capture('cell_filter_added')
             },
           },
-          {
-            icon: Sorting01Icon,
-            items: [
-              {
-                onValueChange: (next) =>
-                  next === 'ASC' || next === 'DESC'
-                    ? sorting.setOrder(column.id, next)
-                    : sorting.removeOrder(column.id),
-                options: [
-                  { label: 'None', value: 'none' },
-                  { label: 'Ascending', value: 'ASC' },
-                  { label: 'Descending', value: 'DESC' },
-                ],
-                type: 'radio',
-                value: store.get().orderBy[column.id] ?? 'none',
-              },
-            ],
-            label: 'Sort',
-            type: 'sub',
-          },
+          { type: 'separator' },
+          ...columnItems,
         ],
         label: 'Column',
         type: 'group',

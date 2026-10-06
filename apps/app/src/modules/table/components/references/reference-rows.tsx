@@ -15,11 +15,10 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 
 import { PaneEmpty } from '~/components/pane-empty'
-import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import { TableError } from '~/core/table/table-error'
 
 import type { Hop, RowsHop } from './hops'
-import { matchQuery } from './hops'
 import { Display, RecordView, useColumns } from './reference-views'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -51,9 +50,7 @@ export const RowsView = ({
     error,
     hasNextPage,
     isPending,
-  } = useInfiniteQuery(
-    resourceRowsQueryInfiniteOptions(matchQuery(connectionResource, hop))
-  )
+  } = useInfiniteQuery(matchingRowsQueryOptions({ connectionResource, ...hop }))
   const { data: columns = [], isPending: isColumnsPending } = useColumns(
     hop.schema,
     hop.table

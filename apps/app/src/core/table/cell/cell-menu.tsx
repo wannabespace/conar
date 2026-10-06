@@ -9,12 +9,12 @@ import {
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { recordToMarkdownTable, toCSV } from '@tamery/shared/files'
+import { valueToText } from '@tamery/shared/value-text'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
 
-/** Items a host adds to the cell menu, each landing in the group it acts on. */
 export interface CellMenuExtra {
   cell?: AppMenuNode[]
   /** Whole groups shown between the cell and row groups, e.g. a host's Column group. */
@@ -93,8 +93,7 @@ export const cellMenu = ({
             {
               icon: CodeIcon,
               label: 'JSON',
-              onSelect: () =>
-                copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
+              onSelect: () => copy(valueToText(row, 2), 'Row copied as JSON'),
             },
             {
               icon: Csv01Icon,

@@ -34,7 +34,9 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   })
 
   return (
-    <Tooltip>
+    <Tooltip
+      shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="L" />}
+    >
       <TooltipTrigger
         render={
           <Button
@@ -48,10 +50,7 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
       >
         <HugeiconsIcon icon={AiChat01Icon} strokeWidth={2} />
       </TooltipTrigger>
-      <TooltipContent side="bottom">
-        AI chat
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="L" />
-      </TooltipContent>
+      <TooltipContent side="bottom">AI chat</TooltipContent>
     </Tooltip>
   )
 }

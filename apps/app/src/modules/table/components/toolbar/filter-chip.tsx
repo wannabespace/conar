@@ -158,7 +158,7 @@ export const FilterChip = ({
                 className="max-h-[calc(100vh-10rem)] gap-0 p-0"
               >
                 <FiltersValueSelector
-                  column={filter.column}
+                  column={filterLabel(filter)}
                   operator={filter.ref.symbol}
                   isArray={filter.ref.isArray ?? false}
                   values={values}

@@ -1,5 +1,6 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
@@ -23,6 +24,7 @@ import type { CSSProperties } from 'react'
 import { useDeferredValue, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { columnStatsQuery } from '~/core/queries/rows/column-stats'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { valueCountsQuery } from '~/core/queries/rows/value-counts'
@@ -31,18 +33,22 @@ import type { Column } from '~/core/table/cell/utils'
 import { isNumericColumn } from '~/core/table/cell/utils'
 import { createTransformer } from '~/core/transformers/create-transformer'
 
+import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const TOP_VALUES = 50
 const VALUE_CHARS = 60
-// Engines cannot group or count-distinct these, so they have no distinct values to list.
-const UNGROUPABLE_TYPE = /json|xml|blob|bytea|binary|image|geo|\[\]/iu
 const RANGED_UI_TYPES = new Set<Column['uiType']>(['date', 'datetime', 'time'])
 
-export const hasDistinctValues = (column: Column) =>
-  !UNGROUPABLE_TYPE.test(column.type ?? '') && !column.isArray
+export const hasDistinctValues = (
+  connectionType: ConnectionType,
+  column: Column
+) =>
+  !capabilitiesOf(connectionType).ungroupableColumnType.test(
+    column.type ?? ''
+  ) && !column.isArray
 
 const percent = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 1,
@@ -79,6 +85,7 @@ const StatsBody = ({
   schema: string
   table: string
 }) => {
+  const { columns } = useTableColumnsContext()
   const { connection, connectionResource } = useRouteContext()
   const [search, setSearch] = useState('')
   const term = useDeferredValue(search)
@@ -91,6 +98,7 @@ const StatsBody = ({
     queryFn: async () =>
       columnStatsQuery({
         column: column.id,
+        columns,
         filters,
         ranged,
         schema,
@@ -102,6 +110,7 @@ const StatsBody = ({
     queryFn: async () =>
       valueCountsQuery({
         column: column.id,
+        columns,
         filters,
         limit: TOP_VALUES,
         schema,

@@ -1,9 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type {
-  ConstraintKind,
-  ReferentialAction,
-} from '~/core/queries/constraints/shape'
 import {
   CONSTRAINT_KINDS,
   REFERENTIAL_ACTIONS,
@@ -13,128 +9,31 @@ import {
   FUNCTION_VOLATILITIES,
 } from '~/core/queries/functions/shape'
 import { SKIP_INDEX_TYPES } from '~/core/queries/indexes/shape'
-import type { PolicyCommand } from '~/core/queries/policies/shape'
 import { POLICY_COMMANDS } from '~/core/queries/policies/shape'
-import type { RelationKind } from '~/core/queries/tables/list'
-import type {
-  TriggerEvent,
-  TriggerOrientation,
-  TriggerTiming,
-} from '~/core/queries/triggers/shape'
 import {
   TRIGGER_EVENTS,
   TRIGGER_ORIENTATIONS,
   TRIGGER_TIMINGS,
 } from '~/core/queries/triggers/shape'
 
+import type {
+  ConnectionCapabilities,
+  SectionCapabilities,
+} from './capability-presets'
+import {
+  btreeIndexes,
+  full,
+  JSON_COLUMN_TYPE,
+  noFunctions,
+  noPolicies,
+  noTriggers,
+  readOnly,
+  ROW_EVENTS,
+} from './capability-presets'
 import { COLUMN_TYPES } from './column-types'
 import type { DefinitionsSection } from './sections'
 
-export interface SectionCapabilities {
-  create?: boolean
-  drop?: boolean
-  edit?: boolean
-}
-
-interface FunctionCapabilities {
-  argumentPlaceholder: string
-  behaviors: readonly string[]
-  languages: readonly string[]
-  schemaBinding: boolean
-  securityDefiner: boolean
-}
-
-interface IndexCapabilities {
-  rename: boolean
-  // Data-skipping index types; offering any swaps Unique for Type and Granularity.
-  skipTypes: readonly string[]
-}
-
-interface PolicyCapabilities {
-  // ClickHouse's ALTER ROW POLICY rewrites every clause, so nothing recreates.
-  alterInPlace: boolean
-  commands: readonly PolicyCommand[]
-  everyone: string
-  predicates: boolean
-}
-
-interface TriggerCapabilities {
-  body: boolean
-  events: readonly TriggerEvent[]
-  insteadOfTargets: readonly RelationKind[]
-  multipleEvents: boolean
-  orientations: readonly TriggerOrientation[]
-  timings: readonly TriggerTiming[]
-  toggle: boolean
-}
-
-export interface ArrayType {
-  close: string
-  open: string
-}
-
-interface ConnectionCapabilities {
-  arrayType: ArrayType | null
-  // Column types whose values the driver hands over as bytes; Postgres reads `bytea` as text, so it lists none.
-  bytesColumnTypes: readonly string[]
-  cascade: boolean
-  columnTypes: readonly string[]
-  constraintKinds: readonly ConstraintKind[]
-  ddlRollback: boolean
-  // null: the connection's database is the schema
-  defaultSchema: string | null
-  explain: boolean
-  fixedConstraintNames: Partial<Record<ConstraintKind, string>>
-  functions: FunctionCapabilities
-  idColumnType: string
-  indexes: IndexCapabilities
-  // Column types edited as JSON text; ClickHouse reads its composite types back as JSON too.
-  jsonColumnType: RegExp
-  policies: PolicyCapabilities
-  referentialActions: readonly ReferentialAction[]
-  renameColumns: boolean
-  rowLevelSecurity: boolean
-  renameConstraints: boolean
-  renameSchema: boolean
-  schemas: boolean
-  sections: Record<DefinitionsSection, SectionCapabilities | false>
-  // `UPDATE … SET column = DEFAULT`; ClickHouse's ALTER UPDATE takes expressions only.
-  setDefault: boolean
-  systemSchemas: readonly string[]
-  triggers: TriggerCapabilities
-}
-
-// Only Postgres fires a trigger on TRUNCATE, and only per statement.
-const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')
-
-const readOnly: SectionCapabilities = {}
-const full: SectionCapabilities = { create: true, drop: true, edit: true }
-
-const btreeIndexes: IndexCapabilities = { rename: true, skipTypes: [] }
-const noFunctions: FunctionCapabilities = {
-  argumentPlaceholder: '',
-  behaviors: [],
-  languages: [],
-  schemaBinding: false,
-  securityDefiner: false,
-}
-const noPolicies: PolicyCapabilities = {
-  alterInPlace: false,
-  commands: [],
-  everyone: '',
-  predicates: false,
-}
-const noTriggers: TriggerCapabilities = {
-  body: false,
-  events: [],
-  insteadOfTargets: [],
-  multipleEvents: false,
-  orientations: [],
-  timings: [],
-  toggle: false,
-}
-
-const JSON_COLUMN_TYPE = /^json$/iu
+export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
@@ -165,7 +64,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     schemas: false,
     sections: {
       constraints: full,
-      enums: readOnly,
+      enums: false,
       functions: false,
       indexes: full,
       policies: full,
@@ -175,6 +74,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
+    ungroupableColumnType: /json|Object\(|AggregateFunction|Dynamic|Variant/iu,
+    uuidColumnType: /\bUUID\b/u,
+    xmlColumnType: null,
   },
   [ConnectionType.MSSQL]: {
     arrayType: null,
@@ -225,6 +127,10 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['AFTER', 'INSTEAD OF'],
       toggle: true,
     },
+    ungroupableColumnType:
+      /^(?:n?text|image|xml|json|geometry|geography|(?:var)?binary)$/iu,
+    uuidColumnType: /^uniqueidentifier$/iu,
+    xmlColumnType: /^xml$/iu,
   },
   [ConnectionType.MySQL]: {
     arrayType: null,
@@ -286,6 +192,10 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
+    ungroupableColumnType:
+      /json|blob|binary|bit|geometry|point|linestring|polygon/iu,
+    uuidColumnType: null,
+    xmlColumnType: null,
   },
   [ConnectionType.Postgres]: {
     arrayType: { close: '[]', open: '' },
@@ -339,6 +249,11 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
+    // Geometric types have no btree or hash operator class to group by.
+    ungroupableColumnType:
+      /^(?:json|xml|bytea|point|line|lseg|box|path|polygon|circle)$/iu,
+    uuidColumnType: /^uuid$/iu,
+    xmlColumnType: /^xml$/iu,
   },
 }
 

@@ -1,4 +1,3 @@
-import { EQUAL_FILTER } from '@tamery/shared/filters'
 import {
   Command,
   CommandEmpty,
@@ -13,23 +12,31 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useRef, useState } from 'react'
 
-import {
-  resourceRowsQueryInfiniteOptions,
-  resourceRowsQueryKey,
-} from '~/core/queries/rows/list'
-import { searchRowsQuery } from '~/core/queries/rows/search'
-import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
-import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
+import { searchRowsQueryOptions } from '~/core/queries/rows/search'
 import type { ValueTransformer } from '~/core/transformers/value-transformer'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
 
-import type { GridCursor } from '../grid-cursor'
-import type { CellEdit } from './cursor'
-import { PREVIEW_CHARS, rowPreview } from './row-label'
+import type { CellEdit, GridCursor } from '../cursor'
+import { labelCandidates, useReferencedColumns } from '../referenced-columns'
 import type { Column } from './utils'
-import { isTextType } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const PREVIEW_CHARS = 40
+const DATE_LIKE = /^\d{4}-\d{2}-\d{2}/u
+// Hex-only text is an id, not something a person named.
+const NAMED = /[g-z]/iu
+
+const isNamed = (value: unknown): value is string =>
+  typeof value === 'string' && NAMED.test(value) && !DATE_LIKE.test(value)
+
+const rowPreview = (row: Record<string, unknown>, key: string) =>
+  Object.entries(row)
+    .filter(([id, value]) => id !== key && value !== null && value !== '')
+    .toSorted(([, a], [, b]) => Number(isNamed(b)) - Number(isNamed(a)))
+    .map(([id, value]) => `${id} ${getDisplayValue(value, PREVIEW_CHARS)}`)
+    .join(' · ')
 
 const SUGGESTIONS = 50
 const LOADING_ROWS = 4
@@ -50,9 +57,6 @@ const leadWithCurrent = ({
   rows: Row[]
   value: unknown
 }): Row[] => {
-  if (value === null) {
-    return rows
-  }
   const isCurrent = (row: Row) => raw(row[key]) === raw(value)
   return [
     rows.find(isCurrent) ?? fetched ?? { [key]: value },
@@ -118,68 +122,48 @@ export const CellReference = ({
   const [highlighted, setHighlighted] = useState('')
   const raw = (rowValue: unknown) =>
     rowValue === null ? '' : transformer.fromConnection(rowValue).toRaw()
+  // A staged row's untouched cell is `undefined` (the column default), not a key to lead with.
+  const hasValue = value !== null && value !== undefined
   const text = edit?.text ?? ''
   const untouched = text === raw(value)
   const term = useDeferredValue(untouched ? '' : text)
 
-  const { data: columns, isPending: isColumnsPending } = useQuery(
-    resourceTableColumnsQueryOptions({ connectionResource, ...foreign })
-  )
-  const searched = [
-    foreign.column,
-    ...(columns ?? []).flatMap((candidate) =>
-      candidate.id !== foreign.column && isTextType(candidate.type)
-        ? [candidate.id]
-        : []
-    ),
-  ]
-
+  const columns = useReferencedColumns([column]).get(column.id)
   // An untouched edit searches nothing, so it needn't wait for the column list.
   const browsing = term === ''
-  const searchedColumns = browsing ? [] : searched
+  const searchedColumns = browsing
+    ? []
+    : [
+        foreign.column,
+        ...labelCandidates(columns ?? [], foreign.column).map(({ id }) => id),
+      ]
   const { data: rows = [], isPending } = useQuery({
-    enabled: browsing || !isColumnsPending,
-    queryFn: async () =>
-      searchRowsQuery({
-        columns: searchedColumns,
-        limit: SUGGESTIONS,
-        schema: foreign.schema,
-        table: foreign.table,
-        term,
-      }).run(await connectionResourceToQueryParams(connectionResource)),
-    queryKey: [
-      ...resourceRowsQueryKey({ connectionResource, ...foreign }),
-      'search',
-      searchedColumns,
+    ...searchRowsQueryOptions({
+      columns: searchedColumns,
+      connectionResource,
+      limit: SUGGESTIONS,
+      schema: foreign.schema,
+      table: foreign.table,
       term,
-    ],
+    }),
+    enabled: browsing || columns !== undefined,
   })
-  // Same key as the ↗ peek's rows hop, so hovering that button already loaded it.
   const { data: [currentRow] = [], isLoading: isCurrentLoading } =
     useInfiniteQuery({
-      ...resourceRowsQueryInfiniteOptions({
-        connectionResource,
-        query: {
-          filters: [
-            { column: foreign.column, ref: EQUAL_FILTER, values: [value] },
-          ],
-          orderBy: {},
-        },
-        schema: foreign.schema,
-        table: foreign.table,
-      }),
-      enabled: value !== null && value !== undefined,
+      ...matchingRowsQueryOptions({ connectionResource, ...foreign, value }),
+      enabled: hasValue,
     })
 
-  const options = untouched
-    ? leadWithCurrent({
-        fetched: currentRow,
-        key: foreign.column,
-        raw,
-        rows,
-        value,
-      })
-    : rows
+  const options =
+    untouched && hasValue
+      ? leadWithCurrent({
+          fetched: currentRow,
+          key: foreign.column,
+          raw,
+          rows,
+          value,
+        })
+      : rows
   const keys = options.map((row) => raw(row[foreign.column]))
 
   useHotkeys(
@@ -189,8 +173,6 @@ export const CellReference = ({
         hotkey: 'Enter',
         options: { enabled: options.length === 0 },
       },
-      { callback: () => cursor.leave(0, 1), hotkey: 'Tab' },
-      { callback: () => cursor.leave(0, -1), hotkey: 'Shift+Tab' },
     ],
     { ignoreInputs: false, target: ref }
   )
@@ -223,7 +205,13 @@ export const CellReference = ({
       />
       <CommandList>
         <CommandEmpty>
-          {isPending ? 'Searching…' : `No matching ${foreign.table} rows`}
+          {isPending ? (
+            'Searching…'
+          ) : (
+            <>
+              No matching <span data-mask>{foreign.table}</span> rows
+            </>
+          )}
         </CommandEmpty>
         <CommandGroup>
           {options.map((row) => {
@@ -232,7 +220,7 @@ export const CellReference = ({
               <CommandItem
                 key={key}
                 value={key}
-                data-checked={value !== null && key === raw(value)}
+                data-checked={hasValue && key === raw(value)}
                 onSelect={() => pick(row[foreign.column])}
               >
                 <OptionLabel

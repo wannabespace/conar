@@ -1,3 +1,5 @@
+import { valueToText } from './value-text'
+
 export const downloadFile = (
   content: string,
   fileName: string,
@@ -20,26 +22,15 @@ export const downloadFile = (
   }
 }
 
-const escapeCSVValue = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return ''
-  }
+const escapeCSVValue = (value: unknown, delimiter = ','): string => {
+  const str = valueToText(value)
 
-  const str = String(value)
-
-  return str.includes(',') || str.includes('\n') || str.includes('"')
+  return str.includes(delimiter) ||
+    str.includes('\n') ||
+    str.includes('\r') ||
+    str.includes('"')
     ? `"${str.replaceAll('"', '""')}"`
     : str
-}
-
-export const formatValueForPlainCell = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return ''
-  }
-  if (typeof value === 'object') {
-    return JSON.stringify(value)
-  }
-  return String(value)
 }
 
 export const toCSV = (
@@ -56,6 +47,56 @@ export const toCSV = (
     columns.map((c) => escapeCSVValue(row[c.key])).join(',')
   )
   return [headerRow, ...dataRows].join('\n')
+}
+
+export const toTsv = (rows: string[][]) =>
+  rows
+    .map((row) => row.map((field) => escapeCSVValue(field, '\t')).join('\t'))
+    .join('\n')
+
+/** Reads what Sheets, Excel and Numbers put on the clipboard; one trailing newline is not a row. */
+export const parseTsv = (text: string): string[][] => {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+  let index = 0
+  while (index < text.length) {
+    const char = text[index]
+    if (quoted) {
+      if (char === '"' && text[index + 1] === '"') {
+        field += '"'
+        index += 2
+        continue
+      }
+      if (char === '"') {
+        quoted = false
+      } else {
+        field += char
+      }
+    } else if (char === '"' && field === '') {
+      quoted = true
+    } else if (char === '\t') {
+      row.push(field)
+      field = ''
+    } else if (char === '\n' || char === '\r') {
+      row.push(field)
+      rows.push(row)
+      row = []
+      field = ''
+      if (char === '\r' && text[index + 1] === '\n') {
+        index += 1
+      }
+    } else {
+      field += char
+    }
+    index += 1
+  }
+  if (field !== '' || row.length > 0) {
+    row.push(field)
+    rows.push(row)
+  }
+  return rows
 }
 
 const escapeMarkdownTableCell = (raw: string): string =>
@@ -78,7 +119,7 @@ export const recordToMarkdownTable = (
     escapeMarkdownTableCell(String(c.header ?? c.key))
   )
   const values = columns.map((c) =>
-    escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))
+    escapeMarkdownTableCell(valueToText(row[c.key]))
   )
   const rule = columns.map(() => '---').join(' | ')
   return [
@@ -101,7 +142,7 @@ export const recordsToMarkdownTable = (
   const rule = columns.map(() => '---').join(' | ')
   const rows = data.map(
     (row) =>
-      `| ${columns.map((c) => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`
+      `| ${columns.map((c) => escapeMarkdownTableCell(valueToText(row[c.key]))).join(' | ')} |`
   )
   return [`| ${headers.join(' | ')} |`, `| ${rule} |`, ...rows].join('\n')
 }

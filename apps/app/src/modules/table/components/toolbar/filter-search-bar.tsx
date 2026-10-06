@@ -1,73 +1,20 @@
-import {
-  CancelCircleIcon,
-  FilterIcon,
-  Search01Icon,
-  SparklesIcon,
-  Tick02Icon,
-} from '@hugeicons/core-free-icons'
+import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { isDefinedError } from '@orpc/client'
-import type { ActiveFilter, Filter, FilterVia } from '@tamery/shared/filters'
-import {
-  FILTER_GROUPS,
-  FILTERS_GROUPED,
-  FILTERS_LIST,
-} from '@tamery/shared/filters'
-import {
-  CommandGroup,
-  CommandItem,
-  CommandList,
-  CommandPrimitive,
-  CommandShortcut,
-} from '@tamery/ui/components/command'
+import { CommandPrimitive } from '@tamery/ui/components/command'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import {
-  EnterIcon,
-  KbdCtrlLetter,
-} from '@tamery/ui/components/custom/shortcuts'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
-
-import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
-import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
-import { getColumnUiType } from '~/core/table/cell/utils'
-import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
-import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
-import { useTablePageStore } from '../../lib/store'
+import { AiSummaryRow, useFilterAi } from './filter-ai'
 import { FilterChip, filterLabel } from './filter-chip'
-
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-type Stage =
-  | { step: 'idle' }
-  | { step: 'operator'; column: string; via?: FilterVia }
-  | { step: 'value'; column: string; ref: Filter; via?: FilterVia }
-
-const stageFilter = (
-  { column, via }: { column: string; via?: FilterVia },
-  ref: Filter,
-  values: unknown[]
-): ActiveFilter => ({ column, ref, values, via })
-
-const splitParts = (value: string) =>
-  value
-    .split(',')
-    .map((part) => part.trim())
-    .filter((part) => part !== '')
-
-const operatorMatches = (filter: Filter, text: string) =>
-  filter.label.toLowerCase().includes(text) ||
-  filter.symbol.toLowerCase().includes(text)
+import { FilterCommandList } from './filter-command-list'
+import type { Stage } from './filter-composer'
+import { useFilterComposer } from './filter-composer'
 
 const getFilterPlaceholder = ({
   isOnline,
@@ -88,451 +35,6 @@ const getFilterPlaceholder = ({
   return 'Filter or ask AI…'
 }
 
-const highlightForStage = (stage: Stage, value: string) => {
-  const trimmed = value.trim().toLowerCase()
-  if (stage.step === 'operator') {
-    const first = FILTERS_LIST.find((filter) =>
-      operatorMatches(filter, trimmed)
-    )
-    return first ? `operator:${first.operator}` : ''
-  }
-  if (stage.step === 'value') {
-    return 'apply-value'
-  }
-  return trimmed ? `ai:${trimmed}` : ''
-}
-
-const handleFilterInputKeyDown = ({
-  e,
-  filtersLength,
-  query,
-  setFilters,
-  setQuery,
-  setStage,
-  stage,
-}: {
-  e: React.KeyboardEvent<HTMLInputElement>
-  filtersLength: number
-  query: string
-  setFilters: (updater: (filters: ActiveFilter[]) => ActiveFilter[]) => void
-  setQuery: (value: string) => void
-  setStage: (stage: Stage) => void
-  stage: Stage
-}) => {
-  if (e.key === 'Backspace' && query === '') {
-    if (stage.step === 'value') {
-      setStage({ column: stage.column, step: 'operator', via: stage.via })
-      return
-    }
-    if (stage.step === 'operator') {
-      setStage({ step: 'idle' })
-      return
-    }
-    if (filtersLength > 0) {
-      setFilters((current) => current.slice(0, -1))
-    }
-    return
-  }
-
-  if (e.key !== 'Escape') {
-    return
-  }
-
-  if (stage.step === 'idle') {
-    ;(e.target as HTMLElement).blur()
-    return
-  }
-
-  e.preventDefault()
-  e.stopPropagation()
-  setStage({ step: 'idle' })
-  setQuery('')
-}
-
-const mapGeneratedFilters = (
-  filters: { column: string; operator: string; values: string[] }[]
-) =>
-  filters
-    .map(
-      (filter) =>
-        ({
-          column: filter.column,
-          ref: FILTERS_LIST.find((f) => f.operator === filter.operator),
-          values: filter.values,
-        }) satisfies Omit<ActiveFilter, 'ref'> & {
-          ref?: ActiveFilter['ref']
-        }
-    )
-    .filter((f) => !!f.ref) as ActiveFilter[]
-
-const generateSummary = (
-  filters: { column: string }[],
-  orderBy: Record<string, 'ASC' | 'DESC'>
-) => {
-  const parts: string[] = []
-
-  if (filters.length > 0) {
-    const columns = [...new Set(filters.map((filter) => filter.column))]
-    parts.push(
-      `${filters.length} filter${filters.length > 1 ? 's' : ''} on ${columns.join(', ')}`
-    )
-  }
-
-  for (const [column, direction] of Object.entries(orderBy)) {
-    parts.push(`sorted by ${column} ${direction.toLowerCase()}`)
-  }
-
-  return parts.length > 0 ? `Applied ${parts.join(' · ')}` : null
-}
-
-interface SuggestionColumn {
-  availableValues?: string[]
-  uiType?: string
-}
-
-interface RelatedColumn {
-  column: string
-  target: SuggestionColumn
-  via: FilterVia
-}
-
-const valueColumnOf = (
-  stage: Stage,
-  columns: (SuggestionColumn & { id: string })[] | undefined,
-  related: RelatedColumn[]
-) => {
-  if (stage.step !== 'value') {
-    return
-  }
-  const { column, via } = stage
-  if (via) {
-    return related.find(
-      (entry) => entry.column === column && entry.via.target === via.target
-    )?.target
-  }
-  return columns?.find(({ id }) => id === column)
-}
-
-const getStageSuggestions = ({
-  columns,
-  query,
-  related,
-  stage,
-}: {
-  columns?: (SuggestionColumn & { id: string })[]
-  query: string
-  related: RelatedColumn[]
-  stage: Stage
-}) => {
-  const stageColumn = valueColumnOf(stage, columns, related)
-  const suggestedValues =
-    stageColumn?.availableValues ??
-    (stageColumn?.uiType === 'boolean' ? ['true', 'false'] : undefined)
-  const committedParts =
-    stage.step === 'value' && stage.ref.isArray ? splitParts(query) : []
-  const valueFilterText = (
-    stage.step === 'value' && stage.ref.isArray
-      ? (query.split(',').at(-1) ?? '')
-      : query
-  ).trim()
-  const matchingValues = (suggestedValues ?? []).filter((value) =>
-    value.toLowerCase().includes(valueFilterText.toLowerCase())
-  )
-
-  return { committedParts, matchingValues, valueFilterText }
-}
-
-const applyOperatorSelection = ({
-  focusSearchInput,
-  ref,
-  resetStage,
-  setFilters,
-  setHighlighted,
-  setPrompt,
-  setStage,
-  stage,
-}: {
-  focusSearchInput: () => void
-  ref: Filter
-  resetStage: () => void
-  setFilters: (updater: (filters: ActiveFilter[]) => ActiveFilter[]) => void
-  setHighlighted: (value: string) => void
-  setPrompt: (value: string) => void
-  setStage: (stage: Stage) => void
-  stage: Stage
-}) => {
-  if (stage.step !== 'operator') {
-    return
-  }
-  if (ref.hasValue === false) {
-    setFilters((current) => [...current, stageFilter(stage, ref, [])])
-    resetStage()
-  } else {
-    setStage({ column: stage.column, ref, step: 'value', via: stage.via })
-    setHighlighted('apply-value')
-    setPrompt('')
-  }
-  focusSearchInput()
-}
-
-const applyFilterValue = ({
-  focusSearchInput,
-  query,
-  resetStage,
-  setFilters,
-  stage,
-}: {
-  focusSearchInput: () => void
-  query: string
-  resetStage: () => void
-  setFilters: (updater: (filters: ActiveFilter[]) => ActiveFilter[]) => void
-  stage: Stage
-}) => {
-  if (stage.step !== 'value') {
-    return
-  }
-  const values = stage.ref.isArray ? splitParts(query) : [query]
-  setFilters((current) => [...current, stageFilter(stage, stage.ref, values)])
-  resetStage()
-  focusSearchInput()
-}
-
-const applySuggestedValue = ({
-  committedParts,
-  focusSearchInput,
-  resetStage,
-  setFilters,
-  setQuery,
-  stage,
-  value,
-  valueFilterText,
-}: {
-  committedParts: string[]
-  focusSearchInput: () => void
-  resetStage: () => void
-  setFilters: (updater: (filters: ActiveFilter[]) => ActiveFilter[]) => void
-  setQuery: (value: string) => void
-  stage: Stage
-  value: string
-  valueFilterText: string
-}) => {
-  if (stage.step !== 'value') {
-    return
-  }
-  if (stage.ref.isArray) {
-    const committed = valueFilterText
-      ? committedParts.slice(0, -1)
-      : committedParts
-    const next = committed.includes(value)
-      ? committed.filter((part) => part !== value)
-      : [...committed, value]
-    setQuery(next.join(', '))
-  } else {
-    setFilters((current) => [
-      ...current,
-      stageFilter(stage, stage.ref, [value]),
-    ])
-    resetStage()
-  }
-  focusSearchInput()
-}
-
-const FilterCommandList = ({
-  applyValue,
-  askAi,
-  committedParts,
-  filtersCount,
-  freeAiUsage,
-  isOnline,
-  isPending,
-  matchingColumns,
-  matchingOperators,
-  matchingRelated,
-  matchingValues,
-  onClearFilters,
-  pickColumn,
-  pickOperator,
-  pickSuggestedValue,
-  query,
-  stage,
-  trimmedQuery,
-}: {
-  applyValue: () => void
-  askAi: () => void
-  committedParts: string[]
-  filtersCount: number
-  freeAiUsage: { remaining: number; max: number } | null
-  isOnline: boolean
-  isPending: boolean
-  matchingColumns: { id: string; type?: string; typeLabel?: string }[]
-  matchingOperators: { group: keyof typeof FILTER_GROUPS; filters: Filter[] }[]
-  matchingRelated: { column: string; via: FilterVia }[]
-  matchingValues: string[]
-  onClearFilters: () => void
-  pickColumn: (columnId: string, via?: FilterVia) => void
-  pickOperator: (ref: Filter) => void
-  pickSuggestedValue: (value: string) => void
-  query: string
-  stage: Stage
-  trimmedQuery: string
-}) => {
-  const aiLocked = !usePermissions().check('ai.filter.use')
-
-  return (
-    <CommandList className="max-h-64">
-      {stage.step === 'idle' && (
-        <CommandGroup>
-          {matchingColumns.map((column) => (
-            <CommandItem
-              key={column.id}
-              value={`column:${column.id}`}
-              onSelect={() => pickColumn(column.id)}
-            >
-              <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
-              <span data-mask className="min-w-0 flex-1 truncate">
-                Filter by {column.id}
-              </span>
-              {column.type && (
-                <CommandShortcut>
-                  {column.typeLabel || column.type}
-                </CommandShortcut>
-              )}
-            </CommandItem>
-          ))}
-          {matchingRelated.map(({ column, via }) => (
-            <CommandItem
-              key={`${column}:${via.target}`}
-              value={`related:${column}:${via.target}`}
-              onSelect={() => pickColumn(column, via)}
-            >
-              <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
-              <span data-mask className="min-w-0 flex-1 truncate">
-                Filter by {filterLabel({ column, via })}
-              </span>
-              <CommandShortcut data-mask>via {column}</CommandShortcut>
-            </CommandItem>
-          ))}
-          {trimmedQuery.length > 0 && (
-            <CommandItem
-              value={`ai:${trimmedQuery.toLowerCase()}`}
-              disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-              className={aiLocked ? 'opacity-50' : undefined}
-              onSelect={() => checkOrUpgrade('ai.filter.use') && askAi()}
-            >
-              <HugeiconsIcon
-                icon={SparklesIcon}
-                strokeWidth={2}
-                className="text-primary/75 size-4"
-              />
-              <span className="min-w-0 flex-1 truncate">
-                Ask AI: “{trimmedQuery}”
-              </span>
-              {freeAiUsage && (
-                <CommandShortcut>
-                  {freeAiUsage.remaining}/{freeAiUsage.max} left
-                </CommandShortcut>
-              )}
-            </CommandItem>
-          )}
-          {trimmedQuery.length === 0 && filtersCount > 0 && (
-            <CommandItem value="clear-filters" onSelect={onClearFilters}>
-              <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} />
-              Clear all filters
-            </CommandItem>
-          )}
-        </CommandGroup>
-      )}
-      {stage.step === 'operator' &&
-        matchingOperators.map((group) => (
-          <CommandGroup key={group.group} heading={FILTER_GROUPS[group.group]}>
-            {group.filters.map((filter) => (
-              <CommandItem
-                key={filter.operator}
-                value={`operator:${filter.operator}`}
-                onSelect={() => pickOperator(filter)}
-              >
-                <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-                <CommandShortcut>{filter.symbol}</CommandShortcut>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        ))}
-      {stage.step === 'value' && (
-        <>
-          {matchingValues.length > 0 && (
-            <CommandGroup heading="Suggested values">
-              {matchingValues.map((value) => (
-                <CommandItem
-                  key={value}
-                  value={`suggest:${value.toLowerCase()}`}
-                  onSelect={() => pickSuggestedValue(value)}
-                >
-                  <HugeiconsIcon
-                    icon={Tick02Icon}
-                    strokeWidth={2}
-                    className={cn(
-                      'size-4',
-                      committedParts.includes(value)
-                        ? 'text-foreground'
-                        : 'opacity-0'
-                    )}
-                  />
-                  <span data-mask className="min-w-0 flex-1 truncate">
-                    {value}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-          <CommandGroup>
-            <CommandItem value="apply-value" onSelect={applyValue}>
-              <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
-              <span data-mask className="min-w-0 flex-1 truncate">
-                Apply: {filterLabel(stage)} {stage.ref.symbol}{' '}
-                {query === '' ? '(empty)' : query}
-              </span>
-              <CommandShortcut>
-                <EnterIcon />
-              </CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
-        </>
-      )}
-    </CommandList>
-  )
-}
-
-const AiSummaryRow = ({
-  hasList,
-  summary,
-}: {
-  hasList: boolean
-  summary: string
-}) => (
-  <motion.div
-    initial={{ height: 0, opacity: 0, y: -8 }}
-    animate={{ height: 'auto', opacity: 1, y: 0 }}
-    exit={{ height: 0, opacity: 0, y: -8 }}
-    transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-    className="overflow-hidden"
-  >
-    <div
-      data-mask
-      className={cn(
-        'text-muted-foreground flex items-center gap-2 px-3 py-1.5 text-xs',
-        hasList && 'border-b'
-      )}
-    >
-      <HugeiconsIcon
-        icon={Tick02Icon}
-        strokeWidth={2}
-        className="text-success size-3.5 shrink-0"
-      />
-      <span className="min-w-0 flex-1 truncate">{summary}</span>
-    </div>
-  </motion.div>
-)
-
 export const FilterSearchBar = ({
   table,
   schema,
@@ -540,34 +42,22 @@ export const FilterSearchBar = ({
   table: string
   schema: string
 }) => {
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
-  const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const chipsRef = useRef<HTMLDivElement>(null)
-  const store = useTablePageStore()
-  const filters = useSubscription(store, {
-    selector: (state) => state.filters,
-  })
-  const query = useSubscription(store, { selector: (state) => state.prompt })
   const [isFocused, setIsFocused] = useState(false)
-  const [stage, setStage] = useState<Stage>({ step: 'idle' })
-  const [highlighted, setHighlighted] = useState('')
-  const [freeAiUsage, setFreeAiUsage] = useState<{
-    remaining: number
-    max: number
-  } | null>(null)
-  const [aiSummary, setAiSummary] = useState<string | null>(null)
-
-  const setPrompt = (value: string) =>
-    store.set((state) => ({ ...state, prompt: value }) satisfies typeof state)
-
-  const setQuery = (value: string) => {
-    setPrompt(value)
-    setHighlighted(highlightForStage(stage, value))
-    setAiSummary(null)
-  }
+  const { columns } = useTableColumnsContext()
+  const ai = useFilterAi({ schema, table })
+  const composer = useFilterComposer({ inputRef, onQueryChange: ai.dismiss })
+  const {
+    filters,
+    highlighted,
+    keyDown,
+    query,
+    setFilters,
+    setHighlighted,
+    setQuery,
+    stage,
+  } = composer
 
   useEffect(() => {
     const chips = chipsRef.current
@@ -577,221 +67,13 @@ export const FilterSearchBar = ({
     }
   }, [filters.length])
 
-  useEffect(() => {
-    if (!aiSummary) {
-      return
-    }
-
-    const timer = setTimeout(() => setAiSummary(null), 6000)
-
-    return () => clearTimeout(timer)
-  }, [aiSummary])
-
-  const setFilters = (updater: (filters: ActiveFilter[]) => ActiveFilter[]) =>
-    store.set(
-      (state) =>
-        ({ ...state, filters: updater(state.filters) }) satisfies typeof state
-    )
-
-  const resetStage = () => {
-    setStage({ step: 'idle' })
-    setHighlighted('')
-    setPrompt('')
-  }
-
-  const { columns } = useTableColumnsContext()
-  const foreignKeys = (columns ?? []).flatMap(({ foreign, id }) =>
-    foreign ? [{ foreign, id }] : []
-  )
-  const { data: enums } = useQuery(
-    resourceEnumsQueryOptions({ connectionResource })
-  )
-
-  const { mutate: generateFilter, isPending } = useMutation(
-    orpc.ai.filters.mutationOptions({
-      meta: { event: 'ai_filter_generated' },
-      onError: (error) => {
-        if (isDefinedError(error) && error.code === 'FORBIDDEN') {
-          setFreeAiUsage(error.data)
-        }
-      },
-      onSuccess: (data) => {
-        const hasOrderBy = Object.keys(data.orderBy).length > 0
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              filters: mapGeneratedFilters(data.filters),
-              orderBy: data.orderBy,
-              prompt: '',
-            }) satisfies typeof state
-        )
-
-        if (data.filters.length === 0 && !hasOrderBy) {
-          toast.info(
-            'No filters or ordering were generated, please try again with a different prompt',
-            { id: 'no-filters-or-ordering' }
-          )
-        }
-
-        setAiSummary(generateSummary(data.filters, data.orderBy))
-        setFreeAiUsage(data.freeAiUsage || null)
-
-        setTimeout(() => {
-          document
-            .querySelector<HTMLInputElement>('[data-filter-search-input]')
-            ?.focus()
-        }, 100)
-      },
-    })
-  )
-
-  const context = `
-    Filters working with AND operator.
-    Table name: ${table}
-    Schema name: ${schema}
-    Columns: ${JSON.stringify(
-      columns?.map((col) => ({
-        default: col.defaultValue,
-        id: col.id,
-        isNullable: col.isNullable,
-        type: col.type,
-      })),
-      null,
-      2
-    )}
-    Enums: ${JSON.stringify(enums, null, 2)}
-  `.trim()
-
   useHotkey('Mod+F', () => {
     inputRef.current?.focus()
   })
 
-  const trimmedQuery = query.trim()
-  const columnQuery = trimmedQuery.toLowerCase()
-  const columnRank = (id: string) => {
-    if (id === columnQuery) {
-      return 0
-    }
-
-    return id.startsWith(columnQuery) ? 1 : 2
-  }
-  const matchingColumns = (columns ?? [])
-    .filter((column) => column.id.toLowerCase().includes(columnQuery))
-    .toSorted(
-      (a, b) => columnRank(a.id.toLowerCase()) - columnRank(b.id.toLowerCase())
-    )
-
-  const related = useQueries({
-    combine: (results) =>
-      foreignKeys.flatMap(({ foreign, id }, index) =>
-        (results[index]?.data ?? []).map((target) => ({
-          column: id,
-          target: { uiType: getColumnUiType(target) },
-          via: {
-            key: foreign.column,
-            schema: foreign.schema,
-            table: foreign.table,
-            target: target.id,
-          },
-        }))
-      ),
-    queries: foreignKeys.map(({ foreign }) =>
-      resourceTableColumnsQueryOptions({
-        connectionResource,
-        schema: foreign.schema,
-        table: foreign.table,
-      })
-    ),
-  })
-  const matchingRelated =
-    columnQuery === ''
-      ? []
-      : related.filter((entry) =>
-          filterLabel(entry).toLowerCase().includes(columnQuery)
-        )
-
   const isOpen =
     isFocused &&
-    (stage.step !== 'idle' ||
-      trimmedQuery.length > 0 ||
-      (columns?.length ?? 0) > 0)
-
-  const focusSearchInput = () => {
-    inputRef.current?.focus()
-  }
-
-  const askAi = () => {
-    if (
-      !trimmedQuery ||
-      !isOnline ||
-      isPending ||
-      freeAiUsage?.remaining === 0
-    ) {
-      return
-    }
-    generateFilter({ context, prompt: trimmedQuery })
-  }
-
-  const pickColumn = (columnId: string, via?: FilterVia) => {
-    setStage({ column: columnId, step: 'operator', via })
-    setPrompt('')
-    setHighlighted('operator:eq')
-    focusSearchInput()
-  }
-
-  const pickOperator = (ref: Filter) => {
-    applyOperatorSelection({
-      focusSearchInput,
-      ref,
-      resetStage,
-      setFilters,
-      setHighlighted,
-      setPrompt,
-      setStage,
-      stage,
-    })
-  }
-
-  const applyValue = () => {
-    applyFilterValue({
-      focusSearchInput,
-      query,
-      resetStage,
-      setFilters,
-      stage,
-    })
-  }
-
-  const stageSuggestions = getStageSuggestions({
-    columns,
-    query,
-    related,
-    stage,
-  })
-  const { committedParts, matchingValues } = stageSuggestions
-
-  const pickSuggestedValue = (value: string) => {
-    applySuggestedValue({
-      committedParts,
-      focusSearchInput,
-      resetStage,
-      setFilters,
-      setQuery,
-      stage,
-      value,
-      valueFilterText: stageSuggestions.valueFilterText,
-    })
-  }
-
-  const matchingOperators = FILTERS_GROUPED.map((group) => ({
-    ...group,
-    filters: group.filters.filter((filter) =>
-      operatorMatches(filter, trimmedQuery.toLowerCase())
-    ),
-  })).filter((group) => group.filters.length > 0)
-
-  const placeholder = getFilterPlaceholder({ isOnline, stage })
+    (stage.step !== 'idle' || query.trim().length > 0 || columns.length > 0)
 
   return (
     <CommandPrimitive
@@ -804,7 +86,7 @@ export const FilterSearchBar = ({
       <div className="bg-input ring-foreground/4 has-[input:focus]:focus-ring flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring transition-[color,box-shadow] duration-200">
         <LoadingContent
           className="pointer-events-none mr-1 size-4 shrink-0"
-          loading={isPending}
+          loading={ai.isPending}
           spinner={<Spinner className="text-muted-foreground" />}
         >
           <HugeiconsIcon
@@ -845,7 +127,7 @@ export const FilterSearchBar = ({
                 data-mask
                 className="flex items-center px-1.5 text-xs font-medium"
               >
-                {filterLabel(stage)}
+                {filterLabel(stage.target)}
               </span>
               {stage.step === 'value' && (
                 <>
@@ -863,22 +145,12 @@ export const FilterSearchBar = ({
             aria-label="Filter rows"
             value={query}
             onValueChange={setQuery}
-            placeholder={placeholder}
-            disabled={isPending}
+            placeholder={getFilterPlaceholder({ isOnline: ai.isOnline, stage })}
+            disabled={ai.isPending}
             className="placeholder:text-muted-foreground h-6 min-w-32 flex-1 bg-transparent text-sm outline-none"
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-              handleFilterInputKeyDown({
-                e,
-                filtersLength: filters.length,
-                query,
-                setFilters,
-                setQuery,
-                setStage,
-                stage,
-              })
-            }
+            onKeyDown={keyDown}
           />
         </div>
         <KbdCtrlLetter
@@ -891,7 +163,7 @@ export const FilterSearchBar = ({
         />
       </div>
       <AnimatePresence>
-        {(isOpen || aiSummary) && (
+        {(isOpen || ai.summary) && (
           <motion.div
             key="suggestion-panel"
             role="presentation"
@@ -903,32 +175,11 @@ export const FilterSearchBar = ({
             onMouseDown={(e) => e.preventDefault()}
           >
             <AnimatePresence>
-              {aiSummary && (
-                <AiSummaryRow hasList={isOpen} summary={aiSummary} />
+              {ai.summary && (
+                <AiSummaryRow hasList={isOpen} summary={ai.summary} />
               )}
             </AnimatePresence>
-            {isOpen && (
-              <FilterCommandList
-                applyValue={applyValue}
-                askAi={askAi}
-                committedParts={committedParts}
-                filtersCount={filters.length}
-                freeAiUsage={freeAiUsage}
-                isOnline={isOnline}
-                isPending={isPending}
-                matchingColumns={matchingColumns}
-                matchingOperators={matchingOperators}
-                matchingRelated={matchingRelated}
-                matchingValues={matchingValues}
-                onClearFilters={() => setFilters(() => [])}
-                pickColumn={pickColumn}
-                pickOperator={pickOperator}
-                pickSuggestedValue={pickSuggestedValue}
-                query={query}
-                stage={stage}
-                trimmedQuery={trimmedQuery}
-              />
-            )}
+            {isOpen && <FilterCommandList ai={ai} composer={composer} />}
           </motion.div>
         )}
       </AnimatePresence>

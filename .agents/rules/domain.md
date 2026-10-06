@@ -49,6 +49,7 @@ Tabs live in `connectionResourceStore.tabs` as `{ id, preview?, title? }`, persi
 
 - A tab id is readable, self-describing, and the single route path param; `resolveTab` turns one back into a kind and params, so deep links work; an id no registered kind matches is closed. Runner is the **only** multi-instance type.
 - `$tabId`'s `beforeLoad` must stay **pure** — it runs on hover preload and must not touch the store; a component effect calls `ensureTab` + `setActiveTab`.
+- The resource index redirects to the active tab while it is still listed, so code that leaves a tab whose object is gone (a dropped table, a dropped or renamed schema) **removes the tab before navigating** to the index — the other order lands back on the stale tab.
 - `tabLabels` derives the whole strip at once, since qualification and numbering depend on the other open tabs.
 - Activating a table tab records it in the table module's recent list (last 5); the empty pane lists the ones still present in the catalog.
 - Table tabs carry `preview`: single click is a preview (italic, reused), double click promotes it. A tab may also carry an optional user `title`, cleared when emptied or equal to the derived label.

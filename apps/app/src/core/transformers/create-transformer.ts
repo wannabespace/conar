@@ -1,16 +1,17 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { tryCatch } from '@tamery/shared/utils'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import { createBooleanTransformer } from './boolean'
+import { createDateTransformer } from './date'
 import { createListTransformer } from './list'
 import {
   createBytesTransformer,
-  createClickHouseJsonTransformer,
   createJsonTransformer,
   createRawTransformer,
+  createUuidTransformer,
 } from './raw'
 import { createTimeTransformer } from './time.ts'
 import type { ValueTransformer } from './value-transformer'
@@ -21,11 +22,10 @@ export const createTransformer = (
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytesColumnTypes, jsonColumnType } = capabilitiesOf(connectionType)
+  const { bytesColumnTypes, jsonColumnType, uuidColumnType } =
+    capabilitiesOf(connectionType)
   if (jsonColumnType.test(type)) {
-    return connectionType === ConnectionType.ClickHouse
-      ? createClickHouseJsonTransformer(type)
-      : createJsonTransformer()
+    return createJsonTransformer()
   }
   if (bytesColumnTypes.includes(type)) {
     return createBytesTransformer()
@@ -44,13 +44,19 @@ export const createTransformer = (
       return createTimeTransformer(column)
     }
 
+    case 'date':
+    case 'datetime': {
+      return createDateTransformer(column)
+    }
+
     default: {
-      return createRawTransformer()
+      return uuidColumnType?.test(type)
+        ? createUuidTransformer()
+        : createRawTransformer()
     }
   }
 }
 
-/** Cell text to the value staged for it; `null` text is NULL. */
 export const parseCellText = (
   connectionType: ConnectionType,
   column: Column,

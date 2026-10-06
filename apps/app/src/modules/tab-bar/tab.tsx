@@ -259,7 +259,14 @@ export const Tab = ({
         >
           {icon}
           <span>{label}</span>
-          <Tooltip>
+          <Tooltip
+            shortcut={
+              isActive &&
+              isElectron && (
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
+              )
+            }
+          >
             <TooltipTrigger
               render={
                 // Nested button is invalid HTML (parent tab is already a button).
@@ -267,7 +274,7 @@ export const Tab = ({
                 <span
                   tabIndex={-1}
                   aria-label="Close tab"
-                  className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute right-2 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity duration-100 group-hover:opacity-60 hover:opacity-100!"
+                  className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute right-2 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity duration-100 group-hover:opacity-60 hover:opacity-100! data-popup-open:opacity-100"
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation()

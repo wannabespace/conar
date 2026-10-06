@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { renameSchemaQuery } from '~/core/queries/schemas/rename'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { removeTab } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -51,7 +52,9 @@ export const RenameSchemaDialog = ({
         resourceTablesAndSchemasQueryOptions({ connectionResource })
       )
       const active = tabId ? parseTableTabId(tabId) : null
-      if (active?.schema === schema) {
+      if (tabId && active?.schema === schema) {
+        // Before navigating: the resource index redirects back to the active tab while it is still listed.
+        removeTab(connectionResource.id, tabId)
         await router.navigate({
           params: { resourceId: connectionResource.id },
           to: '/connection/$resourceId',

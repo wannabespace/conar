@@ -133,7 +133,13 @@ export const Toolbar = ({
                   Review changes and their SQL
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
+              <Tooltip
+                shortcut={
+                  !applying && (
+                    <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
+                  )
+                }
+              >
                 <TooltipTrigger
                   render={
                     <Button
@@ -148,15 +154,12 @@ export const Toolbar = ({
                   </LoadingContent>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <div className="flex flex-col gap-0.5">
-                    <span>
-                      {drafts.some(isDrop)
-                        ? `Review ${plural(drafts.length, 'change')} before applying. `
-                        : `Apply ${plural(drafts.length, 'change')} to the database. `}
-                      {consequence.description}
-                    </span>
-                    <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
-                  </div>
+                  <span>
+                    {drafts.some(isDrop)
+                      ? `Review ${plural(drafts.length, 'change')} before applying. `
+                      : `Apply ${plural(drafts.length, 'change')} to the database. `}
+                    {consequence.description}
+                  </span>
                 </TooltipContent>
               </Tooltip>
             </motion.div>

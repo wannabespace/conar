@@ -1,5 +1,5 @@
 import { tryCatch } from '@tamery/shared/utils'
-import { sql } from 'kysely'
+import { hexToBytes } from '@tamery/shared/value-text'
 
 import { getValueForEditor } from '~/core/connection/utils'
 
@@ -30,9 +30,26 @@ export const createBytesTransformer = (): ValueTransformer<unknown> => ({
       if (!HEX_REGEX.test(hex)) {
         throw new Error('Enter bytes as hex, like 0xDEADBEEF')
       }
-      return Uint8Array.from(hex.slice(2).match(/../gu) ?? [], (byte) =>
-        Number.parseInt(byte, 16)
-      )
+      return hexToBytes(hex)
+    },
+    fromUI: (value) => value,
+  },
+})
+
+const UUID_REGEX =
+  /^\{?[\da-f]{8}-?[\da-f]{4}-?[\da-f]{4}-?[\da-f]{4}-?[\da-f]{12}\}?$/iu
+
+export const createUuidTransformer = (): ValueTransformer<unknown> => ({
+  ...createRawTransformer(),
+  toConnection: {
+    fromRaw: (raw) => {
+      const uuid = raw.trim()
+      if (!UUID_REGEX.test(uuid)) {
+        throw new Error(
+          'Enter a UUID, like 01a02ef9-5d4f-72ba-8c04-0f6e8e450727'
+        )
+      }
+      return uuid
     },
     fromUI: (value) => value,
   },
@@ -53,16 +70,4 @@ export const createJsonTransformer = (): ValueTransformer<unknown> => ({
     },
     fromUI: (value) => value,
   },
-  // Drafts hold parsed json like driver values do; bound as is, an array would become a SQL array and a string invalid json.
-  toStatement: (value) =>
-    value === null || value === undefined ? value : JSON.stringify(value),
-})
-
-// No string casts to a ClickHouse Map or Tuple; `format(JSONEachRow)` rejects a misfit where `JSONExtract` silently writes a default.
-export const createClickHouseJsonTransformer = (
-  columnType: string
-): ValueTransformer<unknown> => ({
-  ...createJsonTransformer(),
-  toStatement: (value) =>
-    sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${`{"v":${JSON.stringify(value)}}`}))`,
 })

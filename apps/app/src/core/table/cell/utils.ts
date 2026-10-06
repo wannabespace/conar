@@ -86,6 +86,11 @@ export const getColumnUiType = (
     return 'boolean'
   }
 
+  // Postgres `daterange` holds bounds like `[2026-01-01,2026-02-01)`, not a date.
+  if (column.type.toLowerCase().includes('range')) {
+    return 'raw'
+  }
+
   if (
     column.type.toLowerCase().includes('datetime') ||
     column.type.toLowerCase().includes('timestamp')
@@ -118,30 +123,6 @@ export const isNumericColumn = (column: Column) =>
 
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)
-
-const TAG_COLORS = [
-  'bg-blue-500',
-  'bg-green-500',
-  'bg-orange-500',
-  'bg-purple-500',
-  'bg-red-500',
-  'bg-yellow-500',
-  'bg-pink-500',
-  'bg-teal-500',
-  'bg-zinc-400',
-]
-
-export const tagColor = (column: Column, value: string) => {
-  const index = column.availableValues?.indexOf(value) ?? -1
-  const seed =
-    index === -1
-      ? [...value].reduce(
-          (hash, char) => hash * 31 + (char.codePointAt(0) ?? 0),
-          7
-        )
-      : index
-  return TAG_COLORS[Math.abs(seed) % TAG_COLORS.length]
-}
 
 export const canWriteDefault = (
   connectionType: ConnectionType,

@@ -28,12 +28,14 @@ export interface ColumnDragHandle {
   onPointerUp: (event: PointerEvent<HTMLElement>) => void
 }
 
+const holdsSlot = (column: GridColumn) => column.fixed || column.pinned
+
 const targetOrder = (columns: GridColumn[], drag: Drag, offset: number) => {
   const others = columns.filter((column) => column.id !== drag.column.id)
   const center =
     (drag.slots.get(drag.column.id) ?? 0) + offset + drag.column.size / 2
-  const first = others.findIndex((column) => !column.fixed)
-  const last = others.findLastIndex((column) => !column.fixed) + 1
+  const first = others.findIndex((column) => !holdsSlot(column))
+  const last = others.findLastIndex((column) => !holdsSlot(column)) + 1
   const crossed = others.filter(
     (column) => (drag.slots.get(column.id) ?? 0) + column.size / 2 < center
   ).length
@@ -109,15 +111,17 @@ export const useColumnDrag = ({
     onLostPointerCapture: () => settle(true),
     onPointerDown: (event) => {
       const column = columnOf(event)
-      const isControl =
-        event.target instanceof Element &&
-        event.target.closest('button, [role="separator"]')
+      const target = event.target instanceof Element ? event.target : null
+      const isControl = target?.closest('button, [role="separator"]')
+      // React bubbles the header's portalled menus through here; capturing their press swallows the item's click.
+      const isPortalled = !event.currentTarget.contains(target)
       if (
         !column ||
-        column.fixed ||
+        holdsSlot(column) ||
         !onReorder ||
         event.button !== 0 ||
-        isControl
+        isControl ||
+        isPortalled
       ) {
         return
       }

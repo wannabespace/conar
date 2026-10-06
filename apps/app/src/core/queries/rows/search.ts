@@ -1,9 +1,15 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
 
-import { createQuery } from '~/core/runtime/query'
+import type { ConnectionResource } from '~/core/connection/sync'
+import {
+  connectionResourceToQueryParams,
+  createQuery,
+} from '~/core/runtime/query'
 
+import { resourceRowsQueryKey } from './list'
+import type { ContainsText } from './shape'
 import { textContains } from './shape'
 
 const rowsType = type('Record<string, unknown>[]')
@@ -19,7 +25,7 @@ interface SearchRowsParams {
 const searchRows = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
-  connectionType: ConnectionType,
+  contains: ContainsText,
   { columns, limit, schema, table, term }: SearchRowsParams
 ) =>
   db
@@ -29,29 +35,38 @@ const searchRows = (
     .selectAll()
     .$if(term !== '', (query) =>
       query.where((eb) =>
-        eb.or(
-          columns.map((column) =>
-            textContains[connectionType](eb, column, `%${term}%`)
-          )
-        )
+        eb.or(columns.map((column) => contains(eb, column, `%${term}%`)))
       )
     )
-    // SQL Server compiles a limit to OFFSET … FETCH, which needs an ORDER BY this search lacks.
-    .$call((query) =>
-      connectionType === ConnectionType.MSSQL
-        ? query.top(limit)
-        : query.limit(limit)
-    )
+    .limit(limit)
     .execute()
 
 /** `term` matches anywhere in any of `columns` cast to text, case-insensitively; `%` and `_` in it act as wildcards. */
 export const searchRowsQuery = (params: SearchRowsParams) =>
   createQuery({
     query: {
-      clickhouse: (db) => searchRows(db, ConnectionType.ClickHouse, params),
-      mssql: (db) => searchRows(db, ConnectionType.MSSQL, params),
-      mysql: (db) => searchRows(db, ConnectionType.MySQL, params),
-      postgres: (db) => searchRows(db, ConnectionType.Postgres, params),
+      clickhouse: (db) => searchRows(db, textContains.clickhouse, params),
+      mssql: (db) => searchRows(db, textContains.mssql, params),
+      mysql: (db) => searchRows(db, textContains.mysql, params),
+      postgres: (db) => searchRows(db, textContains.postgres, params),
     },
     type: rowsType,
+  })
+
+export const searchRowsQueryOptions = ({
+  connectionResource,
+  ...params
+}: SearchRowsParams & { connectionResource: ConnectionResource }) =>
+  queryOptions({
+    queryFn: async () =>
+      searchRowsQuery(params).run(
+        await connectionResourceToQueryParams(connectionResource)
+      ),
+    queryKey: [
+      ...resourceRowsQueryKey({ connectionResource, ...params }),
+      'search',
+      params.columns,
+      params.term,
+      params.limit,
+    ],
   })

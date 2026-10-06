@@ -1,5 +1,5 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { formatValueForPlainCell } from '@tamery/shared/files'
+import { valueToText } from '@tamery/shared/value-text'
 
 import type { Column } from '~/core/table/cell/utils'
 import { DataGrid } from '~/core/table/data-grid'
@@ -20,7 +20,7 @@ const columnWidth = (
     columnId.length,
     ...rows
       .slice(0, SAMPLED_ROWS)
-      .map((row) => formatValueForPlainCell(row[columnId]).length)
+      .map((row) => valueToText(row[columnId]).length)
   )
   return Math.min(
     Math.max(longest * CHAR_WIDTH + CELL_PADDING, MIN_WIDTH),

@@ -3,18 +3,23 @@ import { memoize } from 'memoza'
 
 import { createQuery } from '~/core/runtime/query'
 
+import type { BindValue, ColumnTypes } from './shape'
+import { bindValue, matchesPrimaryKeys } from './shape'
+
 const DELETE_BATCH_SIZE = 500
 
 interface DeleteParams {
   table: string
   schema: string
+  columns: ColumnTypes
   primaryKeys: Record<string, unknown>[]
 }
 
 const deleteInBatches = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
-  { table, schema, primaryKeys }: DeleteParams
+  bind: BindValue,
+  { table, schema, columns, primaryKeys }: DeleteParams
 ) =>
   db.transaction().execute(async (trx) => {
     for (
@@ -27,15 +32,11 @@ const deleteInBatches = (
         .withSchema(schema)
         .$extendTables<Record<string, Record<string, unknown>>>()
         .deleteFrom(table)
-        .where(({ or, and, eb }) =>
-          or(
+        .where((eb) =>
+          eb.or(
             primaryKeys
               .slice(index, index + DELETE_BATCH_SIZE)
-              .map((pk) =>
-                and(
-                  Object.entries(pk).map(([key, value]) => eb(key, '=', value))
-                )
-              )
+              .map((pk) => matchesPrimaryKeys(eb, bind, columns, pk))
           )
         )
         .execute()
@@ -45,10 +46,10 @@ const deleteInBatches = (
 export const deleteRowsQuery = memoize((params: DeleteParams) =>
   createQuery({
     query: {
-      clickhouse: (db) => deleteInBatches(db, params),
-      mssql: (db) => deleteInBatches(db, params),
-      mysql: (db) => deleteInBatches(db, params),
-      postgres: (db) => deleteInBatches(db, params),
+      clickhouse: (db) => deleteInBatches(db, bindValue.clickhouse, params),
+      mssql: (db) => deleteInBatches(db, bindValue.mssql, params),
+      mysql: (db) => deleteInBatches(db, bindValue.mysql, params),
+      postgres: (db) => deleteInBatches(db, bindValue.postgres, params),
     },
   })
 )

@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { parseTsv, toTsv } from './tsv'
+import { parseTsv, toTsv } from './files'
 
 test('round-trips fields holding tabs, newlines and quotes', () => {
   const rows = [

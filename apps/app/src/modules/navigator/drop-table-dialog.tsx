@@ -82,13 +82,14 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
         resourceTablesAndSchemasQueryOptions({ connectionResource })
       )
 
+      // Before navigating: the resource index redirects back to the active tab while it is still listed.
+      pinnedTable.remove(connectionResource.id, schema, table)
       if (isCurrentTable) {
         await router.navigate({
           params: { resourceId: connectionResource.id },
           to: '/connection/$resourceId',
         })
       }
-      pinnedTable.remove(connectionResource.id, schema, table)
     },
   })
 

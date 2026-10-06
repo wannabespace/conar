@@ -9,13 +9,7 @@ import {
 
 export const enumType = type({
   metadata: type({
-    'charset?': 'string | null',
-    'collation?': 'string | null',
     column: 'string?',
-    'comment?': 'string',
-    'default?': 'string | null',
-    isSet: 'boolean?',
-    'nullable?': 'boolean',
     table: 'string?',
   }).optional(),
   name: 'string',
@@ -107,12 +101,6 @@ const resourceEnumsQuery = createQuery({
           'TABLE_NAME as table',
           'COLUMN_TYPE as value',
           'COLUMN_NAME as name',
-          'DATA_TYPE as data_type',
-          'IS_NULLABLE as nullable',
-          'COLUMN_DEFAULT as default',
-          'COLUMN_COMMENT as comment',
-          'CHARACTER_SET_NAME as charset',
-          'COLLATION_NAME as collation',
         ])
         .where(({ or, and, eb }) =>
           and([
@@ -131,13 +119,7 @@ const resourceEnumsQuery = createQuery({
         (row) =>
           ({
             metadata: {
-              charset: row.charset,
-              collation: row.collation,
               column: row.name,
-              comment: row.comment,
-              default: row.default,
-              isSet: row.data_type === 'set',
-              nullable: row.nullable === 'YES',
               table: row.table,
             },
             name: row.name,

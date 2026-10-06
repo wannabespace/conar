@@ -1,14 +1,20 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { Expression, ExpressionBuilder, Kysely, SqlBool } from 'kysely'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { FilterValueBinding } from '@tamery/shared/filters'
+import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
+
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
 
-export const textContains: Record<
-  ConnectionType,
-  (eb: Eb, column: string, pattern: string) => Expression<SqlBool>
-> = {
+export type ContainsText = (
+  eb: Eb,
+  column: string,
+  pattern: string
+) => Expression<SqlBool>
+
+export const textContains: Record<ConnectionType, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
   // Default collations compare case-insensitively, so LIKE already ignores case.
@@ -20,15 +26,87 @@ export const textContains: Record<
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
 }
 
-export const insertRows = (
-  // oxlint-disable-next-line ts/no-explicit-any
-  db: Kysely<any>,
-  { schema, table }: { schema: string; table: string },
-  rows: Record<string, unknown>[]
+export type ColumnTypes = { id: string; type?: string }[]
+
+export type BindValue = (columnType: string, value: unknown) => unknown
+
+const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
+  const { jsonColumnType } = capabilitiesOf(connectionType)
+
+  return (columnType, value) => {
+    if (value === undefined) {
+      return sql`default`
+    }
+    // Drafts hold parsed json like driver values do; bound as is, an array would become a SQL array and a string invalid json.
+    return value !== null && jsonColumnType.test(columnType)
+      ? JSON.stringify(value)
+      : value
+  }
+}
+
+const clickhouseJsonColumnType = capabilitiesOf(
+  ConnectionType.ClickHouse
+).jsonColumnType
+const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
+
+// Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.
+const clickhouseDateTime = (columnType: string, value: unknown) => {
+  const dateTime =
+    typeof value === 'string' && clickhouseDateTimeType.exec(columnType)
+  return dateTime
+    ? sql`parseDateTime64BestEffort(${value}, ${Number(dateTime.groups?.precision ?? 0)})`
+    : value
+}
+
+/** How a value is written to, or matched against, a column of `columnType`; `undefined` is the column's DEFAULT. */
+export const bindValue: Record<ConnectionType, BindValue> = {
+  clickhouse: (columnType, value) => {
+    if (value === undefined) {
+      return sql`default`
+    }
+    if (value === null) {
+      return value
+    }
+    // No string casts to a ClickHouse Map or Tuple; `format(JSONEachRow)` rejects a misfit where `JSONExtract` silently writes a default.
+    if (clickhouseJsonColumnType.test(columnType)) {
+      return sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${`{"v":${JSON.stringify(value)}}`}))`
+    }
+    return clickhouseDateTime(columnType, value)
+  },
+  mssql: bindJsonAsText(ConnectionType.MSSQL),
+  mysql: bindJsonAsText(ConnectionType.MySQL),
+  postgres: bindJsonAsText(ConnectionType.Postgres),
+}
+
+export const bindRow = (
+  bind: BindValue,
+  columns: ColumnTypes,
+  row: Record<string, unknown>
 ) =>
-  db
-    .withSchema(schema)
-    .$extendTables<Record<string, Record<string, unknown>>>()
-    .insertInto(table)
-    .values(rows)
-    .execute()
+  Object.fromEntries(
+    Object.entries(row).map(([id, value]) => [
+      id,
+      bind(columns.find((column) => column.id === id)?.type ?? '', value),
+    ])
+  )
+
+export const matchesPrimaryKeys = (
+  eb: Eb,
+  bind: BindValue,
+  columns: ColumnTypes,
+  primaryKeys: Record<string, unknown>
+) =>
+  eb.and(
+    Object.entries(bindRow(bind, columns, primaryKeys)).map(([id, value]) =>
+      eb(id, '=', value)
+    )
+  )
+
+/** Filter values matched against the table's own columns; only ClickHouse parses them by column type. */
+export const clickhouseFilterValues =
+  (columns: ColumnTypes = []): FilterValueBinding =>
+  (column, value) =>
+    clickhouseDateTime(
+      columns.find(({ id }) => id === column)?.type ?? '',
+      value
+    )

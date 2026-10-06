@@ -25,7 +25,7 @@ import { isNumericColumn } from '~/core/table/cell/utils'
 
 const columnClauses = (column: Column) =>
   [
-    column.typeLabel && [column.typeLabel],
+    column.typeLabel && ['TYPE', column.typeLabel],
     column.primaryKey ? ['PRIMARY KEY'] : column.unique && ['UNIQUE'],
     column.foreign && [
       'REFERENCES',

@@ -10,12 +10,10 @@ import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { cn } from '@tamery/ui/lib/utils'
 import type { RefObject } from 'react'
 
-import { getDisplayValue } from '~/core/transformers/value-transformer'
-
-export const isNested = (value: unknown): value is object =>
-  typeof value === 'object' &&
-  value !== null &&
-  !(value instanceof Date || value instanceof Uint8Array)
+import {
+  getDisplayValue,
+  isNested,
+} from '~/core/transformers/value-transformer'
 
 export const JsonTree = ({
   defaultOpen,
@@ -62,7 +60,6 @@ export const JsonTree = ({
   </Collapsible>
 )
 
-/** Space on a JSON cell in the grid: the value as a read-only tree, owned by its cell so virtualization takes it away with the cell. */
 export const JsonPeek = ({
   anchor,
   column,

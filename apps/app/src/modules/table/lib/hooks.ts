@@ -36,13 +36,17 @@ export const useSyncSelectionWithRows = (
 
 // Editors hand back text (`"700"`, pretty-printed JSON), so compare in the
 // editor's form; null, '' and DEFAULT (`undefined`) share that form and must stay distinct.
-export const isSameValue = (a: unknown, b: unknown) =>
+export const isSameValue = (
+  a: unknown,
+  b: unknown,
+  toText: (value: unknown) => string = getValueForEditor
+) =>
   a === b ||
   (a !== null &&
     a !== undefined &&
     b !== null &&
     b !== undefined &&
-    getValueForEditor(a) === getValueForEditor(b))
+    toText(a) === toText(b))
 
 export const useFlashChangedCells = (
   rows: Record<string, unknown>[],

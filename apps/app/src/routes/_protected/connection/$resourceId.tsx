@@ -17,7 +17,10 @@ import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
 } from '~/core/connection/fetching'
-import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import {
+  lastOpenedResourcesStorageValue,
+  MAX_REMEMBERED_RESOURCES,
+} from '~/core/connection/last-opened-resources'
 import { workspaceSelection } from '~/core/workspace/utils'
 import type { Panel } from '~/lib/module'
 import { panelSize, useShellLayout } from '~/lib/panels'
@@ -86,10 +89,12 @@ const ResourcePage = () => {
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
     if (last[0] !== connectionResource.id) {
-      lastOpenedResourcesStorageValue.set([
-        connectionResource.id,
-        ...last.filter((resourceId) => resourceId !== connectionResource.id),
-      ])
+      lastOpenedResourcesStorageValue.set(
+        [
+          connectionResource.id,
+          ...last.filter((resourceId) => resourceId !== connectionResource.id),
+        ].slice(0, MAX_REMEMBERED_RESOURCES)
+      )
     }
   }, [connectionResource.id])
 

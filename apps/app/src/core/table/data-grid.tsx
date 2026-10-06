@@ -5,38 +5,43 @@ import type {
   GridColumn,
   GridHeaderProps,
   GridRow,
+  GridScrollerProps,
   ScrollToCell,
 } from '@tamery/table'
 import { Grid } from '@tamery/table'
-import type { ReactNode, Ref, RefObject } from 'react'
-import { useImperativeHandle, useRef, useState } from 'react'
+import type { CSSProperties, ReactNode, Ref, RefObject } from 'react'
+import { useImperativeHandle, useLayoutEffect, useRef } from 'react'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 
+import type { CellGeometry } from './cell/cell'
 import { TableCell } from './cell/cell'
 import type { CellMenuExtra } from './cell/cell-menu'
 import { cellMenu } from './cell/cell-menu'
-import type { CellPosition, DataGridCell, DataGridLayout } from './cell/cursor'
-import { createCursorStore } from './cell/cursor'
-import { isNested } from './cell/json-tree'
 import type { Column } from './cell/utils'
-import { CursorContext } from './cursor-context'
+import type { DataGridCell, DataGridLayout } from './cursor'
+import { CursorContext } from './cursor'
 import { DocumentList } from './document-list'
+import type { GridBarItem } from './grid-bar'
+import { GridBar } from './grid-bar'
 import { useGridCursor } from './grid-cursor'
 import { useGridHotkeys, useGridPointer } from './grid-input'
-import { SelectionSummary } from './selection-summary'
 
 export interface DataGridHandle {
-  /** Whether arrow keys belong to the cell cursor, so Shift+arrows extend cells rather than rows. */
-  hasCursor: () => boolean
-  /** Scrolls a cell into view, even one virtualized away, puts the cursor on it and focuses the grid. */
-  reveal: (position: CellPosition) => void
+  /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
+  commit: () => boolean
+  /** Scrolls a cell into view, even one virtualized away, puts the cursor on it and focuses the grid; `row` is a `rowKey`, so a row staged in the same tick is found once it renders. */
+  reveal: (target: { column: string; row: string }) => void
 }
 
 /** A column outside the data (row selection, trailing actions) that never moves. */
-interface ExtraColumn {
+export interface ExtraColumn {
   id: string
-  renderCell: (props: GridCellProps) => ReactNode
+  renderCell: (props: {
+    row: GridRow
+    rowIndex: number
+    style?: CSSProperties
+  }) => ReactNode
   renderHeader: (props: GridHeaderProps) => ReactNode
   size: number
 }
@@ -65,40 +70,41 @@ const PlainHeader = (
   </div>
 )
 
-const PlainLabel = (column: Column) => (
-  <div data-mask className="truncate p-2 text-xs font-medium">
-    {column.id}
-  </div>
-)
-
 export const DataGrid = ({
+  bar,
   columns,
   connectionType,
   cursorRef,
   footer,
   getValue = valueOf,
+  isFetching,
   layout = 'grid',
   leading,
   menuItems,
   onEdit,
   onEndReached,
+  onExtendRows,
   onPreview,
   onReorder,
   pinned,
   renderCell,
   renderHeader = PlainHeader,
-  renderLabel = PlainLabel,
+  renderLabel,
+  rowKey,
   rows,
   scrollRef: externalScrollRef,
   sizeOf,
   trailing,
 }: {
+  /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
+  bar?: GridBarItem[]
   columns: Column[]
   connectionType: ConnectionType
   cursorRef?: Ref<DataGridHandle>
   footer?: ReactNode
   /** The value the cell shows and the editor starts from, e.g. a pending draft. */
   getValue?: (cell: DataGridCell) => unknown
+  isFetching?: boolean
   layout?: DataGridLayout
   leading?: ExtraColumn
   menuItems?: (
@@ -107,15 +113,19 @@ export const DataGrid = ({
   ) => CellMenuExtra
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onEndReached?: () => void
+  /** Shift+↑/↓ while no cell has the cursor. */
+  onExtendRows?: (direction: 'up' | 'down') => void
   /** Space on the cursor cell, like Quick Look; `anchor` is the cell element. */
   onPreview?: (cell: DataGridCell, anchor: Element) => void
   onReorder?: (ids: string[]) => void
   /** Columns stuck to the left edge; they must lead `columns`. */
   pinned?: string[]
-  renderCell?: (cell: DataGridCell, props: GridCellProps) => ReactNode
+  renderCell?: (cell: DataGridCell, props?: CellGeometry) => ReactNode
   renderHeader?: (column: Column, props: GridHeaderProps) => ReactNode
   /** A column's name beside each value in the documents layout. */
   renderLabel?: (column: Column) => ReactNode
+  /** A row's identity across inserts and refetches; without it the cursor stays on its index. */
+  rowKey?: (rowIndex: number) => string
   rows: GridRow[]
   scrollRef?: RefObject<HTMLDivElement | null>
   sizeOf: (column: Column) => number
@@ -123,54 +133,64 @@ export const DataGrid = ({
 }) => {
   const ownScrollRef = useRef<HTMLDivElement>(null)
   const scrollRef = externalScrollRef ?? ownScrollRef
-  const [store, setStore] = useState(createCursorStore)
-  void setStore
-  const { byId, cellAt, cursor, indexOf } = useGridCursor({
+  const { byId, cursor } = useGridCursor({
     columns,
     connectionType,
     getValue,
     layout,
     onEdit,
     onPreview,
+    rowKey,
     rows,
     scrollRef,
-    store,
   })
-  useGridHotkeys({ canEdit: !!onEdit, cursor, scrollRef, store })
-  const pointer = useGridPointer({ cursor, indexOf, store })
+  useGridHotkeys({ canEdit: !!onEdit, cursor, onExtendRows, scrollRef })
+  const pointer = useGridPointer(cursor)
   const extras = new Map(
     [leading, trailing].flatMap((extra) => (extra ? [[extra.id, extra]] : []))
   )
   const gridColumns: GridColumn[] = [
-    ...(leading
-      ? [{ fixed: true, id: leading.id, pinned: true, size: leading.size }]
-      : []),
-    ...columns.map((column) => {
-      const isPinned = !!pinned?.includes(column.id)
-      return {
-        fixed: isPinned,
-        id: column.id,
-        pinned: isPinned,
-        size: sizeOf(column),
-      }
-    }),
+    ...(leading ? [{ id: leading.id, pinned: true, size: leading.size }] : []),
+    ...columns.map((column) => ({
+      id: column.id,
+      pinned: !!pinned?.includes(column.id),
+      size: sizeOf(column),
+    })),
     ...(trailing
       ? [{ fixed: true, id: trailing.id, size: trailing.size }]
       : []),
   ]
 
   const scrollToCell = useRef<ScrollToCell>(null)
+  const revealing = useRef<{ column: string; row: string } | null>(null)
+  const reveal = () => {
+    const target = revealing.current
+    const row =
+      target && rowKey
+        ? rows.findIndex((_, index) => rowKey(index) === target.row)
+        : -1
+    if (!target || row === -1) {
+      return
+    }
+    revealing.current = null
+    scrollToCell.current?.(row, target.column)
+    cursor.place({ column: target.column, row })
+    scrollRef.current?.focus({ preventScroll: true })
+  }
+  useLayoutEffect(() => {
+    reveal()
+    revealing.current = null
+  })
   useImperativeHandle(cursorRef, () => ({
-    hasCursor: () => store.get().cursor !== null,
-    reveal: (position) => {
-      scrollToCell.current?.(position.row, position.column)
-      cursor.place(position)
-      scrollRef.current?.focus({ preventScroll: true })
+    commit: cursor.commit,
+    reveal: (target) => {
+      revealing.current = target
+      reveal()
     },
   }))
 
   const menu = () => {
-    const cell = cellAt(store.get().cursor)
+    const cell = cursor.cellAt(cursor.store.get().cursor)
     if (!cell) {
       return []
     }
@@ -184,72 +204,75 @@ export const DataGrid = ({
       onFillDown:
         editable && cursor.selection().length > 1 ? cursor.fillDown : undefined,
       onOpen: () => cursor.edit(),
-      onShowJson:
-        layout === 'grid' && isNested(getValue(cell))
-          ? cursor.preview
-          : undefined,
+      onShowJson: cursor.canPeek(cell) ? cursor.preview : undefined,
       row: cell.row,
     })
   }
 
-  const renderGridCell = (props: GridCellProps) => {
-    const column = byId.get(props.column.id)
-    if (!column) {
-      return extras.get(props.column.id)?.renderCell(props)
-    }
-    const cell = { column, row: props.row, rowIndex: props.rowIndex }
-    return renderCell ? (
-      renderCell(cell, props)
+  const renderDataCell = (cell: DataGridCell, geometry?: CellGeometry) =>
+    renderCell ? (
+      renderCell(cell, geometry)
     ) : (
       <TableCell
-        column={column}
+        {...geometry}
+        column={cell.column}
         connectionType={connectionType}
-        isDragging={props.isDragging}
-        pinned={props.column.pinned}
-        rowIndex={props.rowIndex}
-        size={props.column.size}
-        // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-        style={props.style}
+        rowIndex={cell.rowIndex}
         value={getValue(cell)}
       />
     )
+
+  const renderGridCell = (props: GridCellProps) => {
+    const column = byId.get(props.column.id)
+    return column
+      ? renderDataCell(
+          { column, row: props.row, rowIndex: props.rowIndex },
+          {
+            isDragging: props.isDragging,
+            pinned: props.column.pinned,
+            size: props.column.size,
+            style: props.style,
+          }
+        )
+      : extras.get(props.column.id)?.renderCell(props)
   }
 
-  const renderBody = (body: ReactNode) => (
-    <AppContextMenu
-      items={menu}
-      render={
-        // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- the keyboard drives the cursor through the grid's hotkeys
-        <div {...pointer} />
-      }
-    >
-      {body}
-    </AppContextMenu>
-  )
+  const scroller: GridScrollerProps = {
+    footer,
+    isFetching,
+    onEndReached,
+    renderBody: (body) => (
+      <AppContextMenu
+        items={menu}
+        render={
+          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- the keyboard drives the cursor through the grid's hotkeys
+          <div {...pointer} />
+        }
+      >
+        {body}
+      </AppContextMenu>
+    ),
+    scrollRef,
+  }
 
   return (
-    <CursorContext value={{ cursor, indexOf, layout, store }}>
+    <CursorContext value={cursor}>
       {layout === 'documents' ? (
         <DocumentList
-          scrollRef={scrollRef}
+          {...scroller}
           scrollToRef={scrollToCell}
           rows={rows}
           columns={columns}
-          footer={footer}
           leading={leading?.renderCell}
-          onEndReached={onEndReached}
-          renderBody={renderBody}
-          renderCell={renderGridCell}
+          renderCell={renderDataCell}
           renderLabel={renderLabel}
         />
       ) : (
         <Grid
-          scrollRef={scrollRef}
+          {...scroller}
           scrollToRef={scrollToCell}
           rows={rows}
           columns={gridColumns}
-          footer={footer}
-          onEndReached={onEndReached}
           onReorder={onReorder}
           renderHeader={(props) => {
             const column = byId.get(props.column.id)
@@ -258,10 +281,9 @@ export const DataGrid = ({
               : extras.get(props.column.id)?.renderHeader(props)
           }}
           renderCell={renderGridCell}
-          renderBody={renderBody}
         />
       )}
-      <SelectionSummary cursor={cursor} getValue={getValue} store={store} />
+      <GridBar cursor={cursor} items={bar} />
     </CursorContext>
   )
 }

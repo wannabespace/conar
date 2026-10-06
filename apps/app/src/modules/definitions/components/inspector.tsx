@@ -5,6 +5,7 @@ import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   DrawerClose,
   DrawerDescription,
@@ -131,17 +132,20 @@ export const Inspector = ({
         <DrawerClose render={<Button variant="outline" className="ml-auto" />}>
           {readOnly ? 'Close' : 'Cancel'}
         </DrawerClose>
-        {!readOnly &&
-          (warning ? (
-            <Tooltip>
-              <TooltipTrigger render={saveButton} />
-              <TooltipContent>
+        {!readOnly && (
+          <Tooltip
+            shortcut={
+              saveEnabled && <KbdCtrlEnter userAgent={navigator.userAgent} />
+            }
+          >
+            <TooltipTrigger render={saveButton} />
+            <TooltipContent>
+              {warning && (
                 <span className="block text-pretty">{warning.description}</span>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            saveButton
-          ))}
+              )}
+            </TooltipContent>
+          </Tooltip>
+        )}
       </DrawerFooter>
     </>
   )

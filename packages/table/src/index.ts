@@ -1,9 +1,6 @@
 export type { GridColumn } from './columns'
 export { Grid } from './grid'
-export type {
-  GridCellProps,
-  GridHeaderProps,
-  GridRow,
-  ScrollToCell,
-} from './grid'
-export { useEndReached } from './use-end-reached'
+export type { ScrollToCell } from './grid'
+export type { GridCellProps, GridHeaderProps, GridRow } from './grid-row'
+export { GridScroller } from './grid-scroller'
+export type { GridScrollerProps } from './grid-scroller'
