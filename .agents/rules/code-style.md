@@ -27,7 +27,7 @@ The `shadcn/*` rules enforce the `tamery-ui` hard rules: `no-restyle` is rule 11
 ## Repo-specific, not linted
 
 - React 19: `ref` as a prop, no `forwardRef`. No `useMemo`/`useCallback` (`architecture.md` → Memoization).
-- **A file stays under 300 lines.** Past that, split it by subject — a hook, a component, a helper set each in its own file — and move anything not tied to a Tamery feature into the package that owns the library (Monaco plumbing into `@tamery/monaco`).
+- **A file holds one subject.** A second component, a hook with its own state, a layout branch or a helper set goes in its own file, however short the file is; 300 lines is the ceiling, not the trigger, and one past it is always more than one subject. Split by subject, and move anything not tied to a Tamery feature into the package that owns the library (Monaco plumbing into `@tamery/monaco`).
 - **A file is named after its subject; `utils.ts` is the only generic name.** Never `lib`, `helpers`, `shared`, `common` — one word or none. `utils.ts` is the leftover bin for unrelated one-offs with no shared subject, at most one per folder; a file with a real subject takes the subject's name (`base64.ts`, `slugify.ts`, `layout.ts`). A `utils/` **folder** is the same word twice — put the files at the parent level instead.
 - **A cast is a smell.** Narrow, or model the shape in ArkType instead of `as` — a schema deletes both the cast and the validation gap. A surviving cast sits at a wire boundary with a warning comment saying why.
 - A magic number gets a name, not a comment explaining it; a value with no reason behind it gets no constant either.

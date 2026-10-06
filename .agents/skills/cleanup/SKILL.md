@@ -1,11 +1,11 @@
 ---
 name: cleanup
-description: Review the current branch's diff against its base (tamery, else main), then shrink it — delete code that carries no logic, make new code look like the code around it, replace per-page styling with kit props, strip every comment that is not a warning, fix bugs the pass surfaces, and re-check keyboard flow and DX. Use before opening or updating a PR, or when the user says the branch got messy.
+description: Review the current branch's diff against its base (tamery, else main), then shrink it — delete code that carries no logic, split files that hold more than one subject, make new code look like the code around it, replace per-page styling with kit props, strip every comment that is not a warning, fix bugs the pass surfaces, and re-check keyboard flow and DX. Use before opening or updating a PR, or when the user says the branch got messy.
 ---
 
 # Cleanup
 
-Shrink a branch's diff without changing what it does. **Fewer lines, fewer overrides, fewer comments** — every change here is behaviour-preserving unless it fixes a real bug found on the way.
+Shrink a branch's diff without changing what it does. **Fewer lines, fewer overrides, fewer comments, one subject per file** — every change here is behaviour-preserving unless it fixes a real bug found on the way.
 
 Read first: `.agents/rules/code-style.md`, `.agents/rules/ui.md`, and the `tamery-ui` skill's hard rules. They define what "clean" means here; this skill is the pass that enforces them.
 
@@ -28,6 +28,7 @@ In rough order of payoff:
 - **Dead code the branch created**: unused exports, props never passed, state never read, helpers with one caller (inline them). `grep` each new symbol repo-wide before keeping it.
 - **Imagined states**: a guard or `try`/`catch` the surrounding module would not write, protecting a state that cannot occur; compatibility shims, aliases, retries and fallbacks — the app is unreleased, so none are owed; casts that launder types (`as any`, `as unknown as T`, `!` where narrowing works); intermediate variables that name nothing.
 - **Reinvention**: a `div` stack that is a registry component, a hand-rolled effect where a library option exists, a loop where a built-in reads better. Kit search: `pnpm dlx shadcn@latest search @shadcn -q <term>`.
+- **Hand-written code for a well-known format or algorithm** (CSV/TSV, diff, glob, semver, date math, …): check npm for a small, maintained, zero-dependency package. Adding a dependency is the user's call, so put it in the report under "left alone and why" with the package name; don't keep it silently.
 - **Speculative shape**: an abstraction with one implementation, an option nobody sets, a wrapper that forwards. Collapse it.
 - **Duplicate logic** added next to an existing helper — reuse the helper (a hand-rolled `n > 1 ? 's' : ''` is `plural()` from `~/lib/plural`; a query key rebuilt by slicing another helper's `queryOptions(...).queryKey` is the exported `*QueryKey` builder). Two dialect branches of one `createQuery` that are character-for-character identical are one statement written twice. The same inline object type in two files is one named type exported by the file that owns it.
 - **No-op code**: a prop set to the kit's default (`side="top"` on `TooltipContent`, `variant="outline"` on `AlertDialogCancel` — read the component's default before keeping it); an `onClick` re-checking the condition that already sets `disabled`; branches that all return the same value; a merge/spread over an object every caller passes whole; a caller spelling out `undefined`/`false` fields that are only read truthily; recomputing a value already in scope.
@@ -36,7 +37,18 @@ In rough order of payoff:
 
 Do **not** delete a behaviour a rule file or the `tamery-ui` skill describes on purpose — an unused *option* is speculation, an unused *behaviour* someone wrote down is a decision. Speculation goes; a decision gets asked about. Either way, **the doc describing what you deleted is updated in the same pass**.
 
-## 3. Match the house shape
+## 3. One subject per file
+
+Deleting never finds a file that does too much, so ask it of every changed file separately, whatever its length: **list its subjects.** A subject is a component, a hook with its own refs or effects, one branch of a layout switch, or an adapter that unpacks one object into another's parameters. Anything past the first moves out:
+
+- A layout branch whose sibling already has its own file (`DocumentList` beside an inline `<Grid>` setup) gets its own file, shaped like the sibling.
+- A cluster of refs, an effect and an imperative handle serving one job is a `use<Job>` hook in its own file, together with the types it exports.
+- An adapter that spreads an object into callbacks for a single callee means the callee should take the object; fold the adapter into it.
+- After a split, `grep` what the old file returned or exported. A value only the moved code used (a lookup map returned beside the real result) is now dead.
+
+Lines a split adds do not count against the shorter diff. Repoint importers at the new file; never re-export from the old one.
+
+## 4. Match the house shape
 
 New code should be indistinguishable from the code beside it — and read as written by a person, not compressed. Plain branches beat a clever one-liner (`String(v ?? 'null') || 'empty'`, `const [only] = cond ? list : []`, a line opening with `;(`); an `if` chain over one field's values is a lookup record; a class ternary repeating its shared classes is `cn(shared, cond ? a : b)`; several `useState`s always set together are one object state.
 
@@ -44,23 +56,23 @@ New code should be indistinguishable from the code beside it — and read as wri
 
 Look at what the repo actually does before "fixing" a file to a rule — `useMemo`/`useCallback` are banned, but `react-hooks(exhaustive-deps)` outranks that: if the linter demands a stable identity, the memo stays.
 
-## 4. De-customize the UI
+## 5. De-customize the UI
 
 Check every changed `.tsx` against the `tamery-ui` hard rules. Rule 11 (*a className on a kit component is a missing prop*) is the one this pass finds most: surface classes on a kit component (padding, radius, background, border, font size, height) move into a `size`/`variant` in `packages/ui`, and the call site keeps layout only. Changed chrome is mirrored in the boot shell and skeletons (`AGENTS.md` → stand-ins).
 
-## 5. Comments
+## 6. Comments
 
 Apply `AGENTS.md` → "A comment is a warning or it does not exist". The test for each comment: *without it, would the next reader misunderstand what this code does, or break it?* If not, delete it. A comment needed only to explain *what* code does is a naming problem — rename or extract until the code says it, then delete the comment.
 
-## 6. Fix what the pass surfaces
+## 7. Fix what the pass surfaces
 
 A pass over the whole diff finds real defects — a wrong dependency, a missed error path, a stale query key, an `await` that isn't. Fix them here and say so in the report. Verify against official docs rather than memory when a library's behaviour is the question.
 
-## 7. DX and keyboard
+## 8. DX and keyboard
 
 Every surface the branch added meets hard rules 12 (keyboard flow, the Escape ladder) and 13 (⌘ reveals its shortcuts).
 
-## 8. Verify
+## 9. Verify
 
 ```sh
 pnpm run fix         # autofix lint + format
@@ -77,8 +89,8 @@ Traps this pass keeps hitting:
 - **Inlining has a lint limit.** Folding a helper into its caller can push the caller past `eslint(complexity)` — then the helper stays.
 - **Merging seitu subscriptions is not free.** `useSubscription` deep-compares selector results, so folding separate subscriptions into one `pick` changes which references an effect's deps see — leave subscriptions that feed effect deps separate.
 - **Lint vetoes some obvious rewrites.** `no-nested-ternary` is on (a three-way value is an `if` chain); `prefer-array-index-of` rejects `findIndex((x) => x === v)`, so an `indexOf(… as HTMLElement)` cast stays; `hook-use-state` rejects destructuring an object state in the `useState` line — take `[thing, setThing]` and destructure on the next line.
-- **A "simpler" rewrite that needs new types, consts or lint escapes to stand up is not simpler.** Measure it against the original and revert if it lost. The point is a shorter diff, not a different one.
+- **A "simpler" rewrite that needs new types, consts or lint escapes to stand up is not simpler.** Measure it against the original and revert if it lost. The point is a shorter diff, not a different one; a split by subject (step 3) is the one exception.
 
-## 9. Report
+## 10. Report
 
-`git diff --stat` before vs after, then three lists: **deleted**, **bugs fixed**, **left alone and why**. Anything intentionally kept that looks like cruft gets a line, so the next pass does not re-litigate it.
+`git diff --stat` before vs after, then four lists: **deleted**, **split**, **bugs fixed**, **left alone and why**. Anything intentionally kept that looks like cruft gets a line, so the next pass does not re-litigate it.
