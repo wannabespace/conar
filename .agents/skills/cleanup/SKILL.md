@@ -46,18 +46,11 @@ Look at what the repo actually does before "fixing" a file to a rule — `useMem
 
 ## 4. De-customize the UI
 
-The hard rule: *a className on a kit component is a missing prop*. For every changed `.tsx`:
-
-- Kit component carrying surface classes (padding, radius, background, border, font size, height) → move it into a `size`/`variant` in `packages/ui`. The same override at two call sites, or a stack on one element, is a blocker.
-- Call sites keep layout only: position, flex sizing, `min-h-0`, width, animation.
-- No `dark:`, no pixel font sizes, no `cursor-pointer`, no `sidebar-*` tokens. `data-mask` on every element rendering user data.
-- Any changed chrome → mirror it in `apps/app/src/shell.tsx` and the matching `*-skeleton.tsx`.
+Check every changed `.tsx` against the `tamery-ui` hard rules. Rule 11 (*a className on a kit component is a missing prop*) is the one this pass finds most: surface classes on a kit component (padding, radius, background, border, font size, height) move into a `size`/`variant` in `packages/ui`, and the call site keeps layout only. Changed chrome is mirrored in the boot shell and skeletons (`AGENTS.md` → stand-ins).
 
 ## 5. Comments
 
-Only **warning** comments survive (`CLAUDE.md` → "A comment is a warning or it does not exist"). The test for each one: *without it, would the next reader misunderstand what this code does, or break it?* If not, delete it. Warnings look like a dialect or platform trap, a race or ordering constraint, a lint escape's justification, a sync-with-that-file pointer, a prop's non-obvious contract — one or two lines.
-
-Everything else goes: what the next line does, design rationale, why a value was picked, what changed, a JSDoc restating the name. A comment needed only to explain *what* code does is a naming problem — rename or extract until the code says it, then delete the comment. A magic number keeps its name and gains a warning on one line, or loses the constant.
+Apply `AGENTS.md` → "A comment is a warning or it does not exist". The test for each comment: *without it, would the next reader misunderstand what this code does, or break it?* If not, delete it. A comment needed only to explain *what* code does is a naming problem — rename or extract until the code says it, then delete the comment.
 
 ## 6. Fix what the pass surfaces
 
@@ -65,10 +58,7 @@ A pass over the whole diff finds real defects — a wrong dependency, a missed e
 
 ## 7. DX and keyboard
 
-- Every surface the branch added answers arrows/Enter/Escape, Escape walks back one step toward the Navigator, and keys are registered with `useHotkey`/`useHotkeys`.
-- An opening surface sets `initialFocus`; closing returns focus to the trigger.
-- Refresh belongs to the tab bar, never a page.
-- Names describe the thing, not the mechanism.
+Every surface the branch added meets hard rules 12 (keyboard flow, the Escape ladder) and 13 (⌘ reveals its shortcuts).
 
 ## 8. Verify
 
@@ -79,7 +69,7 @@ pnpm run check-types # after router changes: cd apps/api && pnpm tsc first
 pnpm test            # if the branch touches tested code
 ```
 
-Then run the app and exercise the changed screens (`monorepo.md` → browser workflow). Behaviour-preserving means verified, not assumed; when the browser is unavailable, say which checks did run instead of implying the screens were seen.
+Then run the app and exercise the changed screens (`monorepo.md` → Opening the running app in a browser). Behaviour-preserving means verified, not assumed; when the browser is unavailable, say which checks did run instead of implying the screens were seen.
 
 Traps this pass keeps hitting:
 

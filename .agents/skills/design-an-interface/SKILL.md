@@ -23,7 +23,7 @@ Ask: "What does this module need to do? Who will use it?"
 
 ### 2. Generate Designs (Parallel Sub-Agents)
 
-Spawn 3+ sub-agents simultaneously using Task tool. Each must produce a **radically different** approach.
+Spawn 3+ sub-agents in one message with the Agent tool. Each must produce a **radically different** approach.
 
 ```
 Prompt template for each sub-agent:
@@ -47,20 +47,14 @@ Output format:
 
 ### 3. Present Designs
 
-Show each design with:
-
-1. **Interface signature** - types, methods, params
-2. **Usage examples** - how callers actually use it in practice
-3. **What it hides** - complexity kept internal
-
-Present designs sequentially so user can absorb each approach before comparison.
+Show each design in the sub-agent's output format, one at a time, so the user can absorb each approach before the comparison.
 
 ### 4. Compare Designs
 
 After showing all designs, compare them on:
 
 - **Interface simplicity**: fewer methods, simpler params
-- **General-purpose vs specialized**: flexibility vs focus
+- **General-purpose vs specialized**: flexibility vs focus — beware over-generalization
 - **Implementation efficiency**: does shape allow efficient internals?
 - **Depth**: small interface hiding significant complexity (good) vs large interface with thin implementation (bad)
 - **Ease of correct use** vs **ease of misuse**
@@ -73,18 +67,6 @@ Often the best design combines insights from multiple options. Ask:
 
 - "Which design best fits your primary use case?"
 - "Any elements from other designs worth incorporating?"
-
-## Evaluation Criteria
-
-From "A Philosophy of Software Design":
-
-**Interface simplicity**: Fewer methods, simpler params = easier to learn and use correctly.
-
-**General-purpose**: Can handle future use cases without changes. But beware over-generalization.
-
-**Implementation efficiency**: Does interface shape allow efficient implementation? Or force awkward internals?
-
-**Depth**: Small interface hiding significant complexity = deep module (good). Large interface with thin implementation = shallow module (avoid).
 
 ## Anti-Patterns
 
