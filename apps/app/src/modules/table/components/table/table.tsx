@@ -76,13 +76,11 @@ const TableComponent = ({
   })
   const orderBy = useSubscription(store, { selector: (state) => state.orderBy })
   const view = useSubscription(store, { selector: (state) => state.view })
-  const newRowCount = useSubscription(sessionStore, {
-    selector: (state) => state.newRows.length,
+  const hasChanges = useSubscription(sessionStore, {
+    selector: (state) =>
+      state.newRows.length > 0 || Object.keys(state.drafts).length > 0,
   })
   const saving = useSubscription(sessionStore, { selector: isSaving })
-  const draftCount = useSubscription(sessionStore, {
-    selector: (state) => Object.keys(state.drafts).length,
-  })
   const filters = enabledFilters(activeFilters)
   const {
     data: rows = [],
@@ -108,8 +106,8 @@ const TableComponent = ({
         ?.tables.find((entry) => entry.name === table)?.type === 'table',
   })
   const scrollRef = useRef<HTMLDivElement>(null)
-  const selected = useSubscription(sessionStore, {
-    selector: (state) => state.selected,
+  const hasSelection = useSubscription(sessionStore, {
+    selector: (state) => state.selected.length > 0,
   })
   const {
     close: closePeek,
@@ -174,8 +172,8 @@ const TableComponent = ({
     <div className="relative size-full">
       <DataGrid
         bar={tableBar({
-          canDelete: !!isBaseTable && selected.length > 0,
-          hasChanges: draftCount + newRowCount > 0,
+          canDelete: !!isBaseTable && hasSelection,
+          hasChanges,
           schema,
           table,
         })}

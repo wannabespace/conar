@@ -68,8 +68,8 @@ const ShortcutTooltip = ({
 }
 
 /**
- * `shortcut`: the control's `Kbd`, shown after the content. Holding ⌘ opens the tooltip with the glyph alone (tamery-ui hard rule 13),
- * so neighbouring hints stay apart; pass nothing while the control is disabled or the key does not fire here.
+ * `shortcut`: the control's `Kbd`, appended to the content and shown alone while ⌘ is held.
+ * Pass nothing while the control is disabled or the key does not fire here.
  */
 const Tooltip = ({
   shortcut,

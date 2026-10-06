@@ -5,6 +5,8 @@ import { createQuery } from '~/core/runtime/query'
 
 const distinctType = type('Record<string, unknown>[]')
 
+const DISTINCT_LIMIT = 1000
+
 interface DistinctParams {
   schema: string
   table: string
@@ -22,7 +24,7 @@ const selectDistinct = (
     .selectFrom(table)
     .select(column)
     .distinct()
-    .limit(1000)
+    .limit(DISTINCT_LIMIT)
     .execute()
 
 export const distinctQuery = (params: DistinctParams) =>

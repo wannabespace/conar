@@ -34,11 +34,6 @@ const VALUE_CHARS = 400
 
 const isPresent = (value: unknown) => value !== null && value !== undefined
 
-export const useColumns = (schema: string, table: string) => {
-  const { connectionResource } = useRouteContext()
-  return useTableColumnsQuery({ connectionResource, schema, table })
-}
-
 export const Display = ({
   column,
   value,
@@ -111,7 +106,12 @@ export const RecordView = ({
   schema: string
   table: string
 }) => {
-  const { data = [] } = useColumns(schema, table)
+  const { connectionResource } = useRouteContext()
+  const { data = [] } = useTableColumnsQuery({
+    connectionResource,
+    schema,
+    table,
+  })
   const columns: Column[] =
     data.length > 0
       ? data

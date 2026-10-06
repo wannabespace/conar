@@ -102,7 +102,6 @@ export const matchesPrimaryKeys = (
     )
   )
 
-/** Filter values matched against the table's own columns; only ClickHouse parses them by column type. */
 export const clickhouseFilterValues =
   (columns: ColumnTypes = []): FilterValueBinding =>
   (column, value) =>

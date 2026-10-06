@@ -112,12 +112,6 @@ export const getColumnUiType = (
 const NUMERIC_TYPE_REGEX =
   /^(?:u?int\d*|tinyint|smallint|mediumint|bigint|integer|numeric|decimal|float\d*|double|real|money|smallmoney|serial|bigserial|smallserial|number)\b/iu
 
-// Casting anything else to text can fail (SQL Server `image`, spatial types) and nobody searches or reads it as words.
-const TEXT_TYPE = /char|text|uuid|string|enum|name/iu
-
-export const isTextType = (type: string | undefined) =>
-  TEXT_TYPE.test(type ?? '')
-
 export const isNumericColumn = (column: Column) =>
   column.uiType === 'raw' && NUMERIC_TYPE_REGEX.test(column.type ?? '')
 

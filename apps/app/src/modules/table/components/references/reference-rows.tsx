@@ -18,8 +18,9 @@ import { PaneEmpty } from '~/components/pane-empty'
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import { TableError } from '~/core/table/table-error'
 
+import { useTableColumnsQuery } from '../../lib/columns'
 import type { Hop, RowsHop } from './hops'
-import { Display, RecordView, useColumns } from './reference-views'
+import { Display, RecordView } from './reference-views'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -50,10 +51,12 @@ export const RowsView = ({
     hasNextPage,
     isPending,
   } = useInfiniteQuery(matchingRowsQueryOptions({ connectionResource, ...hop }))
-  const { data: columns = [], isPending: isColumnsPending } = useColumns(
-    hop.schema,
-    hop.table
-  )
+  const { data: columns = [], isPending: isColumnsPending } =
+    useTableColumnsQuery({
+      connectionResource,
+      schema: hop.schema,
+      table: hop.table,
+    })
   const [onlyRow] = rows
   const bodyRef = useRef<HTMLTableSectionElement>(null)
   const openRow = (row: GridRow) =>

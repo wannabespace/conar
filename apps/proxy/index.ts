@@ -109,7 +109,6 @@ const app = new Hono<{
     if (status >= 400) {
       console.error(log)
     } else {
-      // oxlint-disable-next-line no-console
       console.info(log)
     }
   })

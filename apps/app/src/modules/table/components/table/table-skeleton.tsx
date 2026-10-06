@@ -35,16 +35,16 @@ const Columns = ({
   selectable: boolean
 }) => (
   <>
-    <div aria-hidden className="w-(--gutter-width) shrink-0" />
+    <div className="w-(--gutter-width) shrink-0" />
     {selectable && (
       <div className="flex w-(--leading-width) shrink-0 items-center justify-end border-r pr-3">
-        <Skeleton className="size-4 rounded-md [animation-delay:var(--row-delay)]" />
+        <Skeleton className="size-4 [animation-delay:var(--row-delay)]" />
       </div>
     )}
     {Array.from({ length: COLUMNS }, (_, column) => (
       <div
         key={column}
-        className="flex w-(--column-width) shrink-0 flex-col justify-center gap-1.5 border-r px-2"
+        className="flex w-(--column-width) shrink-0 flex-col justify-center border-r px-2"
       >
         {children(column)}
       </div>
@@ -82,7 +82,7 @@ export const TableSkeleton = ({ selectable }: { selectable: boolean }) => (
     {Array.from({ length: ROWS }, (_, row) => (
       <div
         key={row}
-        className="flex h-(--row-height) border-b opacity-(--row-opacity) [animation-delay:var(--row-delay)]"
+        className="flex h-(--row-height) border-b opacity-(--row-opacity)"
         style={
           {
             '--row-delay': `${row * STAGGER_MS}ms`,
@@ -108,7 +108,7 @@ export const DocumentsSkeleton = ({ selectable }: { selectable: boolean }) => (
     {Array.from({ length: DOCUMENTS }, (_, document) => (
       <div key={document} data-index={document} className={DOCUMENT_ITEM_CLASS}>
         <div className={DOCUMENT_HEADER_CLASS}>
-          {selectable && <Skeleton className="mr-2 -ml-1 size-4 rounded-md" />}
+          {selectable && <Skeleton className="mr-2 -ml-1 size-4" />}
           <Skeleton className="h-2.5 w-12" />
         </div>
         {Array.from({ length: FIELDS }, (__, field) => (

@@ -173,7 +173,6 @@ const Preview = ({
       ) : (
         <ul data-mask className="flex flex-col gap-1">
           {values.map((value, index) => (
-            // oxlint-disable-next-line react/no-array-index-key
             <li key={index} className="truncate font-mono text-xs">
               {previewText(value)}
             </li>

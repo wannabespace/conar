@@ -193,58 +193,55 @@ const StatsBody = ({
             </p>
           ) : (
             <CommandGroup>
-              {values.map(({ count, value }, index) => {
-                const label = display(value)
-                return (
-                  <CommandItem
-                    // Long values truncate to the same label, and cmdk merges items sharing a `value`.
-                    key={index}
-                    value={String(index)}
-                    onSelect={() =>
-                      onFilter(
-                        value === null
-                          ? {
-                              column: column.id,
-                              ref: IS_NULL_FILTER,
-                              values: [''],
-                            }
-                          : {
-                              column: column.id,
-                              ref: EQUAL_FILTER,
-                              values: cellToFilterValues(EQUAL_FILTER, value),
-                            }
-                      )
+              {values.map(({ count, value }, index) => (
+                <CommandItem
+                  // Long values truncate to the same label, and cmdk merges items sharing a `value`.
+                  key={index}
+                  value={String(index)}
+                  onSelect={() =>
+                    onFilter(
+                      value === null
+                        ? {
+                            column: column.id,
+                            ref: IS_NULL_FILTER,
+                            values: [''],
+                          }
+                        : {
+                            column: column.id,
+                            ref: EQUAL_FILTER,
+                            values: cellToFilterValues(EQUAL_FILTER, value),
+                          }
+                    )
+                  }
+                >
+                  <span
+                    data-mask
+                    className={
+                      value === null
+                        ? 'text-muted-foreground min-w-0 flex-1 truncate'
+                        : 'min-w-0 flex-1 truncate'
                     }
                   >
+                    {display(value)}
+                  </span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {number.format(count)}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="bg-foreground/10 h-1 w-10 shrink-0 overflow-hidden rounded-full"
+                  >
                     <span
-                      data-mask
-                      className={
-                        value === null
-                          ? 'text-muted-foreground min-w-0 flex-1 truncate'
-                          : 'min-w-0 flex-1 truncate'
+                      className="bg-primary/70 block h-full w-(--share) rounded-full"
+                      style={
+                        {
+                          '--share': `${(count / Math.max(stats?.total ?? count, 1)) * 100}%`,
+                        } as CSSProperties
                       }
-                    >
-                      {label}
-                    </span>
-                    <span className="text-muted-foreground tabular-nums">
-                      {number.format(count)}
-                    </span>
-                    <span
-                      aria-hidden
-                      className="bg-foreground/10 h-1 w-10 shrink-0 overflow-hidden rounded-full"
-                    >
-                      <span
-                        className="bg-primary/70 block h-full w-(--share) rounded-full"
-                        style={
-                          {
-                            '--share': `${(count / Math.max(stats?.total ?? count, 1)) * 100}%`,
-                          } as CSSProperties
-                        }
-                      />
-                    </span>
-                  </CommandItem>
-                )
-              })}
+                    />
+                  </span>
+                </CommandItem>
+              ))}
             </CommandGroup>
           )}
         </CommandList>

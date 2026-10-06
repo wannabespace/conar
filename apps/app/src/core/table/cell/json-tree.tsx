@@ -74,7 +74,6 @@ export const JsonPeek = ({
   <Popover open onOpenChange={(open) => !open && onClose()}>
     <PopoverContent
       anchor={anchor}
-      side="bottom"
       align="start"
       padding="none"
       className="w-md overflow-hidden"

@@ -55,7 +55,6 @@ export const rowSelection = {
       selectionState: at(rowIndex),
     }
   },
-  /** Shift+↑/↓ without a cell cursor; unchanged when the focus is already at the edge. */
   extend: (
     state: TableSessionState,
     {

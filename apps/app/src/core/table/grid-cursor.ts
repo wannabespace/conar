@@ -248,7 +248,7 @@ export const useGridCursor = ({
       const index = indexOf(position?.column ?? '')
       const column =
         columns[Math.min(Math.max(index + columnStep, 0), columns.length - 1)]
-      if (column) {
+      if (column && rows.length > 0) {
         cursor.place(
           {
             column: column.id,

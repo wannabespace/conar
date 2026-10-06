@@ -155,7 +155,6 @@ export const ActionsOrder = () => {
       <PopoverContent
         // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
         className="w-72 gap-0 p-0"
-        side="bottom"
         align="end"
       >
         <Command

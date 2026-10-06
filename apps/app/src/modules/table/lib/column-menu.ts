@@ -29,7 +29,7 @@ export interface ColumnActions {
   onDistinctValues?: (anchor: Element) => void
 }
 
-/** The column's menu, read from the page store when it opens; the header and a cell's Column group both show it. */
+/** Reads the page store once, so build it when the menu opens. */
 export const columnMenuItems = ({
   anchor,
   column,

@@ -65,6 +65,7 @@ export const DraftsReviewDrawer = ({
 
   const { data: rows = [] } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
+      columns,
       connectionResource,
       query: { filters, orderBy },
       schema,

@@ -206,7 +206,6 @@ export const Tab = ({
       >
         <div data-mask className={tabClasses}>
           {icon}
-          {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- rename starts on an explicit user gesture */}
           <input
             autoFocus
             aria-label="Tab name"

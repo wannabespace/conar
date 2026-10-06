@@ -83,7 +83,6 @@ export interface DataGridCell {
   rowIndex: number
 }
 
-/** The grid's one owner of its cell cursor: every move, edit and write goes through a verb here. */
 export interface GridCursor {
   apply: (value: unknown) => void
   cancel: () => void

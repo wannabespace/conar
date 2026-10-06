@@ -180,7 +180,6 @@ export type GridEntry =
   | { kind: 'new'; newRow: NewRow }
   | { kind: 'saved'; index: number; keys: PrimaryKeys; row: GridRow }
 
-/** The grid lists the staged inserts first, then the saved rows. */
 export const stagedGrid = (
   newRows: NewRow[],
   rows: GridRow[],

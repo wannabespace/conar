@@ -101,7 +101,6 @@ export const FilterSearchBar = ({
         >
           {filters.map((filter, index) => (
             <FilterChip
-              // oxlint-disable-next-line react/no-array-index-key
               key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
               filter={filter}
               onRemove={() =>

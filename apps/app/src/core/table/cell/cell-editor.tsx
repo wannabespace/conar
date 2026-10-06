@@ -238,7 +238,6 @@ export const CellField = ({
       <PopoverContent
         ref={setPopup}
         anchor={anchor}
-        side="bottom"
         align="start"
         sideOffset={({ anchor: cell }) => -cell.height}
         padding="none"

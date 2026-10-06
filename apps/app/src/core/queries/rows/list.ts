@@ -175,10 +175,7 @@ export const matchingRowsQueryOptions = ({
 }) =>
   resourceRowsQueryInfiniteOptions({
     connectionResource,
-    query: {
-      filters: [{ column, ref: EQUAL_FILTER, values: [value] }],
-      orderBy: {},
-    },
+    query: { filters: [{ column, ref: EQUAL_FILTER, values: [value] }] },
     schema,
     table,
   })

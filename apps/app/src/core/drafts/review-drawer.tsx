@@ -23,7 +23,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { cardClass } from '~/components/card'
 import { PaneEmpty } from '~/components/pane-empty'
 
-/** One card per row or table in a review; `title` masks its own user values. */
+/** `title` is not masked here; the caller masks its user values. */
 export const ChangeGroup = ({
   action,
   children,
@@ -44,7 +44,6 @@ export const ChangeGroup = ({
   </div>
 )
 
-/** The "Review changes" drawer every staged-changes surface shares; the caller supplies the groups. */
 export const StagedReviewDrawer = ({
   busy,
   children,
@@ -68,7 +67,6 @@ export const StagedReviewDrawer = ({
   count: number
   description: ReactNode
   emptyDescription: string
-  /** Shown above the footer, e.g. the database's refusal. */
   notice?: ReactNode
   onDiscardAll: () => void
   onOpenChange: (open: boolean) => void

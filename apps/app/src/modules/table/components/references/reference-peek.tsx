@@ -241,7 +241,6 @@ export const ReferencePeek = ({
       {target && (
         <PopoverContent
           anchor={target.anchor}
-          side="bottom"
           align="start"
           collisionAvoidance={{ align: 'shift' }}
           collisionPadding={16}

@@ -164,7 +164,6 @@ export const TablesList = ({
       <SidebarContent className={cn('overflow-hidden pl-2', className)}>
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
-            // oxlint-disable-next-line react/no-array-index-key
             <SidebarMenuItem key={index}>
               <SidebarMenuSkeleton seed={index} showIcon />
             </SidebarMenuItem>

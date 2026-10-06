@@ -156,9 +156,6 @@ export const columnView = <T extends { id: string }>(
   }
 }
 
-const toggled = (ids: string[], id: string) =>
-  ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id]
-
 export const columnLayout = (store: TablePageStore) => ({
   hide: (id: string) =>
     store.set((state) => ({
@@ -186,6 +183,8 @@ export const columnLayout = (store: TablePageStore) => ({
   togglePin: (id: string) =>
     store.set((state) => ({
       ...state,
-      pinnedColumns: toggled(state.pinnedColumns, id),
+      pinnedColumns: state.pinnedColumns.includes(id)
+        ? state.pinnedColumns.filter((other) => other !== id)
+        : [...state.pinnedColumns, id],
     })),
 })
