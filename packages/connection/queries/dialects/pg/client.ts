@@ -52,13 +52,11 @@ export const getPool = memoize(async (connectionString: string) => {
     ...config,
     connectionTimeoutMillis: 30_000,
     max: 1,
-    ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
-    ...(typeof ssl === 'boolean' ? { ssl } : {}),
+    ssl: typeof ssl === 'object' ? readSSLFiles(ssl) : ssl,
   }
-  const hasSsl = conf.ssl !== undefined && conf.ssl !== false
 
   const direct = await connect(conf)
-  const result = hasSsl
+  const result = ssl
     ? direct
     : await direct.tryRecoverAsync(async (error) => {
         const fallback = await connect({ ...conf, ssl: defaultSSLConfig })
@@ -68,6 +66,5 @@ export const getPool = memoize(async (connectionString: string) => {
   if (result.isErr()) {
     throw result.error
   }
-
   return result.value
 })

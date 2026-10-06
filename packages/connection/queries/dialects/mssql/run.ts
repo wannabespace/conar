@@ -4,39 +4,37 @@ import type { RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 
-// mssql binds a plain `Uint8Array` (how bytes arrive over the wire and Electron IPC) as `NVarChar`; only a `Buffer` infers `VarBinary`.
-const bindable = (value: unknown) =>
-  value instanceof Uint8Array && !Buffer.isBuffer(value)
-    ? Buffer.from(value.buffer, value.byteOffset, value.byteLength)
-    : value
-
 interface ColumnMetadata {
   name: string
   scale?: number
   type?: { declaration?: string }
 }
 
-const fractionOf = (
-  date: Date & { nanosecondsDelta?: number },
-  scale: number
-) => {
-  const tenthsOfMicroseconds = Math.round(
-    (date.getUTCMilliseconds() / 1000 + (date.nanosecondsDelta ?? 0)) * 1e7
-  )
-  return scale === 0
-    ? ''
-    : `.${String(tenthsOfMicroseconds).padStart(7, '0').slice(0, scale)}`
-}
+const DEFAULT_TIME_SCALE = 3
+
+// mssql binds a plain `Uint8Array` (how bytes arrive over the wire and Electron IPC) as `NVarChar`; only a `Buffer` infers `VarBinary`.
+const bindable = (value: unknown) =>
+  value instanceof Uint8Array && !Buffer.isBuffer(value)
+    ? Buffer.from(value.buffer, value.byteOffset, value.byteLength)
+    : value
 
 // Text, as pg and mysql give: a `Date` drops datetime2's last four digits and shifts a `time` into the viewer's zone. tedious reads every value as UTC.
 const dateAsText = (value: unknown, column?: ColumnMetadata) => {
   if (!(value instanceof Date)) {
     return value
   }
-  const iso = value.toISOString()
+  const date: Date & { nanosecondsDelta?: number } = value
+  const scale = column?.scale ?? DEFAULT_TIME_SCALE
+  const ticks = Math.round(
+    (date.getUTCMilliseconds() / 1000 + (date.nanosecondsDelta ?? 0)) * 1e7
+  )
+  const fraction =
+    scale === 0 ? '' : `.${String(ticks).padStart(7, '0').slice(0, scale)}`
+
+  const iso = date.toISOString()
   const day = iso.slice(0, 10)
   const seconds = iso.slice(11, 19)
-  const time = `${seconds}${fractionOf(value, column?.scale ?? 3)}`
+  const time = `${seconds}${fraction}`
   switch (column?.type?.declaration) {
     case 'date': {
       return day
@@ -78,6 +76,7 @@ export const runRequest = async (
     },
     () => request.query<unknown[][]>(sql)
   )
+
   // Array row mode puts each recordset's columns on `result.columns`, which the typings lack.
   const columnSets: unknown[] =
     'columns' in result && Array.isArray(result.columns) ? result.columns : []
@@ -96,23 +95,13 @@ export const runRequest = async (
       maxRows
     )
   })
+  if (sets.length > 0) {
+    return { duration: performance.now() - start, result: sets }
+  }
+
+  const affectedRows = result.rowsAffected.reduce((sum, n) => sum + n, 0)
   return {
     duration: performance.now() - start,
-    result:
-      sets.length > 0
-        ? sets
-        : [
-            resultSet(
-              {
-                affectedRows: result.rowsAffected.reduce(
-                  (sum, n) => sum + n,
-                  0
-                ),
-                columns: [],
-                rows: [],
-              },
-              maxRows
-            ),
-          ],
+    result: [resultSet({ affectedRows, columns: [], rows: [] }, maxRows)],
   }
 }
