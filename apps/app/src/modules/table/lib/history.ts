@@ -36,7 +36,7 @@ export const stagedHistory = memoize(
       ) {
         return
       }
-      if (!restoring && !batching && !isSaving(state)) {
+      if (!restoring && !batching && !isSaving(previous) && !isSaving(next)) {
         steps.undo.push(previous)
         steps.redo = []
         batching = true
@@ -54,7 +54,8 @@ export const stagedHistory = memoize(
         return
       }
       query = next
-      if (Object.keys(store.get().drafts).length > 0) {
+      const staged = store.get()
+      if (Object.keys(staged.drafts).length > 0 && !isSaving(staged)) {
         store.set((current) => ({ ...current, drafts: {} }))
       }
     })

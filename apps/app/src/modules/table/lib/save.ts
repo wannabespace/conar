@@ -117,10 +117,7 @@ export const useSaveStaged = ({
       })
     },
     onMutate: () => status.setStatus({ error: undefined, isCommitting: true }),
-    onSettled: () => {
-      status.setStatus({ isCommitting: false })
-      history.reset()
-    },
+    onSettled: () => status.setStatus({ isCommitting: false }),
     onSuccess: async (_, submitted) => {
       await Promise.all([
         queryClient.invalidateQueries({
@@ -136,6 +133,7 @@ export const useSaveStaged = ({
           }),
       ])
       status.settle(submitted)
+      history.reset()
       const rows = new Set(
         submitted.drafts.map((draft) => primaryKeysKey(draft.primaryKeys))
       )
