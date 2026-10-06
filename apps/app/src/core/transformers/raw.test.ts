@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 
-import { createJsonTransformer, createUuidTransformer } from './raw'
+import {
+  createJsonTransformer,
+  createNumberTransformer,
+  createUuidTransformer,
+} from './raw'
 
 describe('createJsonTransformer', () => {
   const t = createJsonTransformer()
@@ -35,5 +39,32 @@ describe('createUuidTransformer', () => {
 
   it('rejects text that is not a uuid', () => {
     expect(() => t.toConnection.fromRaw('qa_pasted')).toThrow('Enter a UUID')
+  })
+})
+
+describe('createNumberTransformer', () => {
+  const { fromRaw } = createNumberTransformer(true).toConnection
+
+  it('reads the number shapes engines accept', () => {
+    for (const text of [
+      '42',
+      '-3.14',
+      '.5',
+      '1e5',
+      '1_000',
+      '1,000.50',
+      '$1.00',
+      '0x1F',
+      'NaN',
+      '-Infinity',
+    ]) {
+      expect(fromRaw(text)).toBe(text)
+    }
+  })
+
+  it('refuses text with letters and empties a nullable cell to NULL', () => {
+    expect(() => fromRaw('12abc')).toThrow('Enter a number')
+    expect(() => fromRaw('why? 7')).toThrow('Enter a number')
+    expect(fromRaw('  ')).toBeNull()
   })
 })

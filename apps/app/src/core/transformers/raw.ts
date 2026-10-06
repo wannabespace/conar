@@ -36,10 +36,10 @@ export const createBytesTransformer = (): ValueTransformer<unknown> => ({
   },
 })
 
-const DIGIT_REGEX = /\d/u
-const NON_FINITE_REGEX = /^[+-]?(?:inf(?:inity)?|nan)$/iu
+// Lenient on purpose: engines also read `1_000`, `1,000.50`, `$1.00` (money) and `0x1F`.
+const NUMBER_REGEX =
+  /^[+-]?[$€£]?(?:[\d_,]*\.?\d[\d_]*(?:e[+-]?\d+)?|0x[\da-f_]+|inf(?:inity)?|nan)$/iu
 
-// Lenient on purpose: engines read `1_000`, `0x1F` or `$1.00` too, so only text with no number in it is refused here.
 export const createNumberTransformer = (
   nullable: boolean
 ): ValueTransformer<unknown> => ({
@@ -50,7 +50,7 @@ export const createNumberTransformer = (
       if (text === '' && nullable) {
         return null
       }
-      if (!DIGIT_REGEX.test(text) && !NON_FINITE_REGEX.test(text)) {
+      if (!NUMBER_REGEX.test(text)) {
         throw new Error('Enter a number, like 42 or 3.14')
       }
       return text
