@@ -125,7 +125,9 @@ export const mysqlColumns = async (
             'sys',
           ])
     )
-    .orderBy(['TABLE_SCHEMA', 'TABLE_NAME', 'ORDINAL_POSITION'])
+    .orderBy('TABLE_SCHEMA')
+    .orderBy('TABLE_NAME')
+    .orderBy('ORDINAL_POSITION')
     .execute()
 
   return query.map((column) => ({
@@ -191,7 +193,9 @@ export const postgresColumns = async (
             .where('table_schema', 'not like', 'pg_%')
             .where('table_schema', '!=', 'information_schema')
     )
-    .orderBy(['table_schema', 'table_name', 'ordinal_position'])
+    .orderBy('table_schema')
+    .orderBy('table_name')
+    .orderBy('ordinal_position')
     .execute()
 
   // information_schema.columns skips materialized views; pg_attribute
@@ -249,7 +253,9 @@ export const postgresColumns = async (
                 .where('n.nspname', 'not like', 'pg_%')
                 .where('n.nspname', '!=', 'information_schema')
         )
-        .orderBy(['n.nspname', 'c.relname', 'a.attnum'])
+        .orderBy('n.nspname')
+        .orderBy('c.relname')
+        .orderBy('a.attnum')
         .execute()
     : []
   const fallbackColumns = fallback.map((row) => ({

@@ -187,22 +187,24 @@ export const CellField = ({
   const props = { column, cursor, edit, readOnly }
 
   useHotkeys(
-    [
-      { callback: () => cursor.fill(), hotkey: 'Mod+Enter' },
-      { callback: cursor.cancel, hotkey: 'Escape' },
-      // Code fields keep Tab for indenting.
-      {
-        callback: () => cursor.leave(0, 1),
-        hotkey: 'Tab',
-        options: { enabled: !language },
-      },
-      {
-        callback: () => cursor.leave(0, -1),
-        hotkey: 'Shift+Tab',
-        options: { enabled: !language },
-      },
-    ],
-    { enabled: !!popup, ignoreInputs: false, target: popup }
+    popup
+      ? [
+          { callback: () => cursor.fill(), hotkey: 'Mod+Enter' },
+          { callback: cursor.cancel, hotkey: 'Escape' },
+          // Code fields keep Tab for indenting.
+          {
+            callback: () => cursor.leave(0, 1),
+            hotkey: 'Tab',
+            options: { enabled: !language },
+          },
+          {
+            callback: () => cursor.leave(0, -1),
+            hotkey: 'Shift+Tab',
+            options: { enabled: !language },
+          },
+        ]
+      : [],
+    { ignoreInputs: false, target: popup }
   )
 
   const field = () => {

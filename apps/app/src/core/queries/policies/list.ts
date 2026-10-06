@@ -88,7 +88,8 @@ const query = createQuery({
           'table_schema.name as schema',
           't.name as table',
         ])
-        .orderBy(['sp.object_id', 'pr.security_predicate_id'])
+        .orderBy('sp.object_id')
+        .orderBy('pr.security_predicate_id')
         .execute()
 
       return [...Map.groupBy(rows, (row) => row.object_id).values()].map(
