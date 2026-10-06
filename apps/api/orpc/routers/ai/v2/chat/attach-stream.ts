@@ -5,10 +5,11 @@ import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
 import { chatPersist } from '~/lib/chat-persist'
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 export const attachStream = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .input(type({ chatId: 'string.uuid.v7' }))
   .handler(async function* attachStream({ context, input }) {
     const owned = await db.query.chats.findFirst({

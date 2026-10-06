@@ -3,12 +3,13 @@ import { members, workspaces } from '@tamery/db/schema'
 import { type } from 'arktype'
 
 import { workspaceSlug } from '~/lib/workspace'
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 import { publisher } from './events'
 
 export const create = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('workspace.create'))
   .input(type({ name: 'string > 0' }))
   .handler(async ({ context, input }) => {
     const workspace = await db.transaction(async (tx) => {

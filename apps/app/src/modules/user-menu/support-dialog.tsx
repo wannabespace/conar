@@ -28,6 +28,7 @@ export const SupportDialog = ({
 
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
+      meta: { event: 'support_message_sent' },
       onError: (err) => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')

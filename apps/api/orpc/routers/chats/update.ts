@@ -3,12 +3,13 @@ import { chats, chatsUpdateSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
 
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 import { publisher } from './events'
 
 export const update = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.chat.use'))
   .input(
     type.and(
       chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId'),

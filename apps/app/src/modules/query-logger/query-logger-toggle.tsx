@@ -11,12 +11,17 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useParams } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
+import { posthog } from '~/lib/posthog'
+
 import { loggerOpen } from './logger-open'
 
 const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
   const open = loggerOpen(resourceId)
   const loggerOpened = useSubscription(open)
-  const toggleLogger = () => open.set((opened) => !opened)
+  const toggleLogger = () => {
+    open.set((opened) => !opened)
+    posthog.capture('query_logger_toggled')
+  }
 
   useHotkey('Mod+J', (e) => {
     e.preventDefault()

@@ -281,6 +281,7 @@ const EnumInspector = ({
   selectedSchema,
 }: SectionInspectorProps<EnumItem>) => {
   const mutation = useMutation({
+    meta: { event: 'enum_saved' },
     mutationFn: async (draft: EnumDraft) => {
       await saveEnum({ connectionResource, draft, item, run })
       await refreshColumns(connectionResource)

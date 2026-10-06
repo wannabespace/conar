@@ -12,6 +12,7 @@ import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
 import type { AppMenuNode } from '~/components/app-menu'
 import type { CellMenuExtra } from '~/core/table/cell/cell-menu'
 import type { Column } from '~/core/table/cell/utils'
+import { posthog } from '~/lib/posthog'
 
 import type { TablePageStore } from '../../lib/store'
 import { columnsOrder } from '../../lib/store'
@@ -95,7 +96,7 @@ export const tableCellMenu = ({
             disabled: value === null || value === undefined,
             icon: FilterAddIcon,
             label: 'Filter by Value',
-            onSelect: () =>
+            onSelect: () => {
               store.set((state) => ({
                 ...state,
                 filters: [
@@ -106,7 +107,9 @@ export const tableCellMenu = ({
                     values: cellToFilterValues(EQUAL_FILTER, value),
                   },
                 ],
-              })),
+              }))
+              posthog.capture('cell_filter_added')
+            },
           },
           {
             icon: Sorting01Icon,

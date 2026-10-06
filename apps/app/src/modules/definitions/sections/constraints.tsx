@@ -287,6 +287,7 @@ const ConstraintInspector = ({
 }: SectionInspectorProps<GroupedConstraint>) => {
   const kinds = capabilitiesOf(connectionType).constraintKinds
   const mutation = useMutation({
+    meta: { event: 'constraint_saved' },
     mutationFn: (draft: ConstraintDraft) => {
       const shape: ConstraintShape = {
         columns: draft.columns,

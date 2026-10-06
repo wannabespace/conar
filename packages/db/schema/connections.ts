@@ -21,7 +21,7 @@ export const connections = d.snakeCase.table(
   {
     ...baseTable,
     color: d.text(),
-    connectionString: encryptedText().notNull(),
+    connectionString: encryptedText(),
     isPasswordExists: d.boolean('password_exists').notNull(),
     label: d.text(),
     name: d.text().notNull(),

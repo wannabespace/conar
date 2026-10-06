@@ -63,6 +63,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   }))
 
   const { mutate: dropTable, isPending } = useMutation({
+    meta: { event: 'table_dropped' },
     mutationFn: async () => {
       await dropTableQuery({ cascade, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)

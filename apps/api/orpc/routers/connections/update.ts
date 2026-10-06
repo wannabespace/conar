@@ -1,11 +1,10 @@
 import { db } from '@tamery/db'
 import { connections, connectionsUpdateSchema } from '@tamery/db/schema'
-import { decrypt, encrypt } from '@tamery/shared/crypto-node'
-import { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/safe-url'
+import { decrypt } from '@tamery/shared/crypto-node'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
+import { encryptConnectionString } from '~/lib/connection-string'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
@@ -29,6 +28,7 @@ export const update = orpc
   })
   .handler(async ({ context, errors, input }) => {
     const { id, ...changes } = input
+
     const [found] = await db
       .select()
       .from(connections)
@@ -43,22 +43,19 @@ export const update = orpc
 
     const secret = await context.getWorkspaceSecret(found.workspaceId)
 
-    const newConnectionString = new SafeURL(
+    const connectionString =
       changes.connectionString ??
-        decrypt({ encryptedText: found.connectionString, secret })
-    )
-
-    if ((changes.syncType ?? found.syncType) !== SyncType.Cloud) {
-      newConnectionString.password = ''
-    }
+      (found.connectionString &&
+        decrypt({ encryptedText: found.connectionString, secret }))
 
     const [connection] = await db
       .update(connections)
       .set({
         ...changes,
-        connectionString: encrypt({
+        connectionString: encryptConnectionString({
+          connectionString,
           secret,
-          text: newConnectionString.toString(),
+          syncType: changes.syncType ?? found.syncType,
         }),
       })
       .where(

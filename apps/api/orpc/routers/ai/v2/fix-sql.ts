@@ -5,10 +5,11 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
-import { orpc, subscriptionMiddleware } from '~/orpc'
+import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 export const fixSQL = orpc
-  .use(subscriptionMiddleware)
+  .use(permissionsMiddleware)
+  .use(permix.checkMiddleware('ai.sql.use'))
   .input(
     type({
       context: `string <= ${AI_SQL_LIMITS.context}`,

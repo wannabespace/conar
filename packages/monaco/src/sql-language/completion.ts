@@ -87,7 +87,7 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       if (
         openedByGap &&
         context.expects === 'column' &&
-        context.subject &&
+        context.comparedColumn &&
         !items.some((item) => item.kind === 'enum' || item.kind === 'value')
       ) {
         void silently(() => loading)

@@ -8,8 +8,8 @@ export const SOCIAL_LINKS = {
 
 export const RELEASES_URL = 'https://tamery.app/releases' as const
 
-export const MIN_WINDOW_WIDTH = 900
-export const MIN_WINDOW_HEIGHT = 600
+export const MIN_WINDOW_WIDTH = 600
+export const MIN_WINDOW_HEIGHT = 300
 
 export const GITHUB_REPO_OWNER = 'wannabespace' as const
 export const GITHUB_REPO_NAME = 'tamery' as const
@@ -44,6 +44,7 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
 ] as const
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
+export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 
 export const API_KEY_PERMISSIONS = {
   connections: ['read', 'write'] as const,

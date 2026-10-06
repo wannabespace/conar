@@ -15,11 +15,12 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { useSubscription } from '~/core/user/use-subscription'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { useIsAnonymous } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -40,9 +41,9 @@ const WorkspaceGlyph = ({
 export const WorkspaceSwitcher = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const isAnonymous = useIsAnonymous()
   const [createOpen, setCreateOpen] = useState(false)
   const { data: activeWorkspace, workspaces } = useActiveWorkspace()
-  const { subscription, isPending: isSubscriptionPending } = useSubscription()
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -52,16 +53,15 @@ export const WorkspaceSwitcher = () => {
     }
 
     workspaceSelection.set(id)
+    posthog.capture('workspace_switched')
     await navigate({ to: '/' })
   }
 
   const handleCreate = () => {
     setOpen(false)
 
-    if (subscription || isSubscriptionPending) {
+    if (checkOrUpgrade('workspace.create')) {
       setCreateOpen(true)
-    } else {
-      setIsSubscriptionDialogOpen(true)
     }
   }
 
@@ -118,7 +118,10 @@ export const WorkspaceSwitcher = () => {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleCreate}>
+          <DropdownMenuItem
+            className={isAnonymous ? 'opacity-50' : undefined}
+            onClick={handleCreate}
+          >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Create workspace
           </DropdownMenuItem>

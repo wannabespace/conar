@@ -1,7 +1,8 @@
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
-import { organizationClient } from 'better-auth/client/plugins'
+import { anonymousClient, organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
+import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
@@ -11,9 +12,11 @@ import {
   isAuthLocation,
   lastLocationStorageValue,
 } from './last-location'
+import { subscriptionQueryClient } from './query-client'
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
+const SESSION_CACHE_KEY = 'tamery.session'
 
 export const bearerToken = createWebStorageValue({
   defaultValue: null,
@@ -52,29 +55,60 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient()],
+  plugins: [anonymousClient(), organizationClient()],
 })
 
-export const isSignedIn = async () => {
+const sessionCache = createWebStorageValue({
+  defaultValue: null,
+  key: SESSION_CACHE_KEY,
+  schema: type('object | null').as<typeof authClient.$Infer.Session | null>(),
+  type: 'localStorage',
+})
+
+// Must run before anything subscribes to the session atom; hydrateSession only fills an empty atom.
+authClient.hydrateSession(sessionCache.get())
+authClient.$store.atoms.session?.listen(({ data }) => sessionCache.set(data))
+
+export const getSessionUser = async () => {
+  const user = sessionCache.get()?.user
+
+  if (user) {
+    return user
+  }
+
   const { data } = await tryCatchAsync(authClient.getSession)
 
-  return !!data?.data?.user
+  return data?.data?.user
 }
+
+export const isAnonymous = () => !!sessionCache.get()?.user.isAnonymous
+
+export const useIsAnonymous = () =>
+  useSubscription(sessionCache, {
+    selector: (session) => !!session?.user.isAnonymous,
+  })
+
+export const isSignedIn = async () => !!(await getSessionUser())
 
 export const fullSignOut = async () => {
   await authClient.signOut()
   bearerToken.clear()
+  sessionCache.clear()
   lastLocationStorageValue.clear()
 
   if (!isAuthLocation()) {
     history.push('/auth')
   }
 
-  const [{ cleanCollections }, { clearDb }] = await Promise.all([
-    import('~/core/collections'),
-    import('./sync'),
-  ])
+  const [{ cleanCollections }, { clearDb }, { subscriptionsCache }] =
+    await Promise.all([
+      import('~/core/collections'),
+      import('./sync'),
+      import('~/core/user/use-subscription'),
+    ])
 
   cleanCollections()
+  subscriptionsCache.clear()
+  subscriptionQueryClient.clear()
   await Promise.all([clearDb(), encryptionKey.reset()])
 }

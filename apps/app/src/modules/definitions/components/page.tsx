@@ -111,6 +111,7 @@ export const DefinitionsPage = <T extends { name: string }>({
     : `Tamery can’t add ${plural} to this database yet.`
 
   const dropMutation = useMutation({
+    meta: { event: 'definition_dropped' },
     mutationFn: (item: T) => dropItem(item, cascade),
     onSuccess: async (_result, item) => {
       await queryClient.invalidateQueries({ queryKey })

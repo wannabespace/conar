@@ -5,10 +5,10 @@ import { eq } from 'drizzle-orm'
 
 import { env } from '~/env'
 import { stripe } from '~/lib/stripe'
-import { authMiddleware, orpc } from '~/orpc'
+import { accountMiddleware, orpc } from '~/orpc'
 
 export const upgrade = orpc
-  .use(authMiddleware)
+  .use(accountMiddleware)
   .input(
     type({
       cancelUrl: 'string',

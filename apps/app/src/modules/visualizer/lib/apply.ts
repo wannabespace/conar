@@ -60,6 +60,7 @@ export const useApplyDrafts = ({
   const { connection, connectionResource } = useRouteContext()
   const { ddlRollback } = gatesOf(connection.type)
   const mutation = useMutation({
+    meta: { event: 'diagram_changes_applied' },
     mutationFn: async (pending: DiagramDraft[]) => {
       const params = await connectionResourceToQueryParams(connectionResource)
       const ordered = inApplyOrder(pending)

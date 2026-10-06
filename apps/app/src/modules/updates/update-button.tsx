@@ -9,7 +9,13 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
-import { checkForUpdates, updatesStore } from './updates-observer'
+import { posthog } from '~/lib/posthog'
+
+import {
+  checkForUpdates,
+  installUpdate,
+  updatesStore,
+} from './updates-observer'
 
 export const UpdateButton = () => {
   const status = useSubscription(updatesStore, {
@@ -22,7 +28,7 @@ export const UpdateButton = () => {
 
   if (status === 'ready') {
     return (
-      <Button size="xs" onClick={() => window.electron?.app.quitAndInstall()}>
+      <Button size="xs" onClick={installUpdate}>
         Restart to update
       </Button>
     )
@@ -71,7 +77,10 @@ export const VersionButton = () => {
             type="button"
             aria-label="Check for updates"
             className="text-2xs text-muted-foreground/60 hover:bg-foreground/5 hover:text-muted-foreground rounded-md px-1.5 py-0.5 tabular-nums"
-            onClick={() => checkForUpdates()}
+            onClick={() => {
+              posthog.capture('update_check_requested')
+              checkForUpdates()
+            }}
           />
         }
       >

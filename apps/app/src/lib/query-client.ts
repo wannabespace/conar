@@ -1,4 +1,16 @@
-import { keepPreviousData, QueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  MutationCache,
+  QueryClient,
+} from '@tanstack/react-query'
+
+import { posthog } from './posthog'
+
+declare module '@tanstack/react-query' {
+  interface Register {
+    mutationMeta: { event?: string }
+  }
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,6 +21,13 @@ export const queryClient = new QueryClient({
       throwOnError: true,
     },
   },
+  mutationCache: new MutationCache({
+    onSettled: (_data, error, _variables, _context, mutation) => {
+      if (mutation.meta?.event) {
+        posthog.capture(mutation.meta.event, { success: !error })
+      }
+    },
+  }),
 })
 
 export const subscriptionQueryClient = new QueryClient({

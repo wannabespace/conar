@@ -2,7 +2,6 @@ import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { challenge } from '@tamery/shared/challenge'
 import { title } from '@tamery/shared/title'
-import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
@@ -13,6 +12,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
+import { resetGuestState } from '~/core/user/permissions'
 import {
   authClient,
   bearerToken,
@@ -21,6 +21,7 @@ import {
 } from '~/lib/auth'
 import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
+import { posthog } from '~/lib/posthog'
 
 const signInUrl = (type: 'web' | 'desktop') => {
   const verifier = challenge.noble.generateVerifier()
@@ -73,7 +74,7 @@ const AuthSidePanel = () => {
 
 const AuthPage = () => {
   const router = useRouter()
-  const { refetch } = authClient.useSession()
+  const { data: session, refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
@@ -104,13 +105,31 @@ const AuthPage = () => {
   const { mutate: exchange } = useMutation(
     orpc.account.challenge.exchange.mutationOptions({
       onSuccess: async (exchangeData) => {
+        const wasGuest = !!session?.user.isAnonymous
         bearerToken.set(exchangeData.token)
         await refetch()
+
+        if (wasGuest) {
+          await resetGuestState()
+        }
+
         await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
+        posthog.capture(exchangeData.newUser ? 'signed_up' : 'signed_in')
         successAuthToast(!!exchangeData.newUser)
       },
     })
   )
+
+  const { mutate: continueAnonymously, isPending: isContinuing } = useMutation({
+    meta: { event: 'signed_in_as_guest' },
+    mutationFn: () =>
+      authClient.signIn.anonymous({ fetchOptions: { throw: true } }),
+    onSuccess: async ({ token }) => {
+      bearerToken.set(token)
+      await refetch()
+      router.navigate({ to: '/' })
+    },
+  })
 
   useEffect(() => {
     if (!data?.ready || !codeChallenge || !verifier) {
@@ -209,23 +228,37 @@ const AuthPage = () => {
               </div>
             )}
           </div>
-          <motion.div
-            className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
-            initial={{
-              opacity: 0,
-              transform: 'translateY(10px)',
-              filter: 'blur(4px)',
-            }}
-            animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <Button className="w-full" variant="secondary">
-              Continue without an account
-              <Badge variant="secondary" className="ml-1">
-                Soon
-              </Badge>
-            </Button>
-          </motion.div>
+          {window.electron && (
+            <motion.div
+              className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
+              initial={{
+                opacity: 0,
+                transform: 'translateY(10px)',
+                filter: 'blur(4px)',
+              }}
+              animate={{
+                opacity: 1,
+                transform: 'translateY(0)',
+                filter: 'none',
+              }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={isContinuing}
+                onClick={() =>
+                  session?.user.isAnonymous
+                    ? router.navigate({
+                        href: lastLocationStorageValue.get() ?? '/',
+                      })
+                    : continueAnonymously()
+                }
+              >
+                Continue without an account
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </>

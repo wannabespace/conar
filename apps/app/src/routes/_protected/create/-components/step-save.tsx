@@ -14,7 +14,6 @@ import {
 import { Group } from '@tamery/ui/components/group'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
-import { Switch } from '@tamery/ui/components/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -26,9 +25,29 @@ import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
-import { OptionField } from '~/components/option-field'
 import { useCollections } from '~/core/collections'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
+
+const SYNC_OPTIONS = [
+  {
+    description:
+      'The full connection string, including the password, is encrypted and synced to every device.',
+    label: 'With password',
+    value: SyncType.Cloud,
+  },
+  {
+    description:
+      'The connection string is synced without the password. Enter the password on each device.',
+    label: 'Without password',
+    value: SyncType.CloudWithoutPassword,
+  },
+  {
+    description:
+      'Only the name, label and color are synced. The connection string stays on this device.',
+    label: 'Without connection string',
+    value: SyncType.CloudWithoutConnectionString,
+  },
+]
 
 export const StepSave = ({
   type,
@@ -79,7 +98,6 @@ export const StepSave = ({
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
-  const syncPasswordId = useId()
 
   return (
     <Card className="w-full">
@@ -190,22 +208,27 @@ export const StepSave = ({
               </div>
             </div>
           </div>
-          <OptionField
-            htmlFor={syncPasswordId}
-            title="Sync password"
-            description="Open this connection on any device without typing the password again. Off, the cloud keeps the connection string without it."
-          >
-            <Switch
-              id={syncPasswordId}
-              size="sm"
-              checked={syncType === SyncType.Cloud}
-              onCheckedChange={(checked) =>
-                setSyncType(
-                  checked ? SyncType.Cloud : SyncType.CloudWithoutPassword
-                )
+          <div className="flex flex-col gap-2">
+            <Label>Sync</Label>
+            <Group>
+              {SYNC_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  variant={syncType === option.value ? 'default' : 'outline'}
+                  size="xs"
+                  onClick={() => setSyncType(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </Group>
+            <div className="text-muted-foreground/50 text-xs text-balance">
+              {
+                SYNC_OPTIONS.find((option) => option.value === syncType)
+                  ?.description
               }
-            />
-          </OptionField>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

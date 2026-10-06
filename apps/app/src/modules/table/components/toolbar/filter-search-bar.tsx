@@ -38,6 +38,7 @@ import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { getColumnUiType } from '~/core/table/cell/utils'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
@@ -374,127 +375,132 @@ const FilterCommandList = ({
   query: string
   stage: Stage
   trimmedQuery: string
-}) => (
-  <CommandList className="max-h-64">
-    {stage.step === 'idle' && (
-      <CommandGroup>
-        {matchingColumns.map((column) => (
-          <CommandItem
-            key={column.id}
-            value={`column:${column.id}`}
-            onSelect={() => pickColumn(column.id)}
-          >
-            <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
-            <span data-mask className="min-w-0 flex-1 truncate">
-              Filter by {column.id}
-            </span>
-            {column.type && (
-              <CommandShortcut>
-                {column.typeLabel || column.type}
-              </CommandShortcut>
-            )}
-          </CommandItem>
-        ))}
-        {matchingRelated.map(({ column, via }) => (
-          <CommandItem
-            key={`${column}:${via.target}`}
-            value={`related:${column}:${via.target}`}
-            onSelect={() => pickColumn(column, via)}
-          >
-            <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
-            <span data-mask className="min-w-0 flex-1 truncate">
-              Filter by {filterLabel({ column, via })}
-            </span>
-            <CommandShortcut data-mask>via {column}</CommandShortcut>
-          </CommandItem>
-        ))}
-        {trimmedQuery.length > 0 && (
-          <CommandItem
-            value={`ai:${trimmedQuery.toLowerCase()}`}
-            disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-            onSelect={askAi}
-          >
-            <HugeiconsIcon
-              icon={SparklesIcon}
-              strokeWidth={2}
-              className="text-primary/75 size-4"
-            />
-            <span className="min-w-0 flex-1 truncate">
-              Ask AI: “{trimmedQuery}”
-            </span>
-            {freeAiUsage && (
-              <CommandShortcut>
-                {freeAiUsage.remaining}/{freeAiUsage.max} left
-              </CommandShortcut>
-            )}
-          </CommandItem>
-        )}
-        {trimmedQuery.length === 0 && filtersCount > 0 && (
-          <CommandItem value="clear-filters" onSelect={onClearFilters}>
-            <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} />
-            Clear all filters
-          </CommandItem>
-        )}
-      </CommandGroup>
-    )}
-    {stage.step === 'operator' &&
-      matchingOperators.map((group) => (
-        <CommandGroup key={group.group} heading={FILTER_GROUPS[group.group]}>
-          {group.filters.map((filter) => (
+}) => {
+  const aiLocked = !usePermissions().check('ai.filter.use')
+
+  return (
+    <CommandList className="max-h-64">
+      {stage.step === 'idle' && (
+        <CommandGroup>
+          {matchingColumns.map((column) => (
             <CommandItem
-              key={filter.operator}
-              value={`operator:${filter.operator}`}
-              onSelect={() => pickOperator(filter)}
+              key={column.id}
+              value={`column:${column.id}`}
+              onSelect={() => pickColumn(column.id)}
             >
-              <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-              <CommandShortcut>{filter.symbol}</CommandShortcut>
+              <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
+              <span data-mask className="min-w-0 flex-1 truncate">
+                Filter by {column.id}
+              </span>
+              {column.type && (
+                <CommandShortcut>
+                  {column.typeLabel || column.type}
+                </CommandShortcut>
+              )}
             </CommandItem>
           ))}
+          {matchingRelated.map(({ column, via }) => (
+            <CommandItem
+              key={`${column}:${via.target}`}
+              value={`related:${column}:${via.target}`}
+              onSelect={() => pickColumn(column, via)}
+            >
+              <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
+              <span data-mask className="min-w-0 flex-1 truncate">
+                Filter by {filterLabel({ column, via })}
+              </span>
+              <CommandShortcut data-mask>via {column}</CommandShortcut>
+            </CommandItem>
+          ))}
+          {trimmedQuery.length > 0 && (
+            <CommandItem
+              value={`ai:${trimmedQuery.toLowerCase()}`}
+              disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
+              className={aiLocked ? 'opacity-50' : undefined}
+              onSelect={() => checkOrUpgrade('ai.filter.use') && askAi()}
+            >
+              <HugeiconsIcon
+                icon={SparklesIcon}
+                strokeWidth={2}
+                className="text-primary/75 size-4"
+              />
+              <span className="min-w-0 flex-1 truncate">
+                Ask AI: “{trimmedQuery}”
+              </span>
+              {freeAiUsage && (
+                <CommandShortcut>
+                  {freeAiUsage.remaining}/{freeAiUsage.max} left
+                </CommandShortcut>
+              )}
+            </CommandItem>
+          )}
+          {trimmedQuery.length === 0 && filtersCount > 0 && (
+            <CommandItem value="clear-filters" onSelect={onClearFilters}>
+              <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} />
+              Clear all filters
+            </CommandItem>
+          )}
         </CommandGroup>
-      ))}
-    {stage.step === 'value' && (
-      <>
-        {matchingValues.length > 0 && (
-          <CommandGroup heading="Suggested values">
-            {matchingValues.map((value) => (
+      )}
+      {stage.step === 'operator' &&
+        matchingOperators.map((group) => (
+          <CommandGroup key={group.group} heading={FILTER_GROUPS[group.group]}>
+            {group.filters.map((filter) => (
               <CommandItem
-                key={value}
-                value={`suggest:${value.toLowerCase()}`}
-                onSelect={() => pickSuggestedValue(value)}
+                key={filter.operator}
+                value={`operator:${filter.operator}`}
+                onSelect={() => pickOperator(filter)}
               >
-                <HugeiconsIcon
-                  icon={Tick02Icon}
-                  strokeWidth={2}
-                  className={cn(
-                    'size-4',
-                    committedParts.includes(value)
-                      ? 'text-foreground'
-                      : 'opacity-0'
-                  )}
-                />
-                <span data-mask className="min-w-0 flex-1 truncate">
-                  {value}
-                </span>
+                <span className="min-w-0 flex-1 truncate">{filter.label}</span>
+                <CommandShortcut>{filter.symbol}</CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>
-        )}
-        <CommandGroup>
-          <CommandItem value="apply-value" onSelect={applyValue}>
-            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
-            <span data-mask className="min-w-0 flex-1 truncate">
-              Apply: {filterLabel(stage)} {stage.ref.symbol}{' '}
-              {query === '' ? '(empty)' : query}
-            </span>
-            <CommandShortcut>
-              <EnterIcon />
-            </CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
-      </>
-    )}
-  </CommandList>
-)
+        ))}
+      {stage.step === 'value' && (
+        <>
+          {matchingValues.length > 0 && (
+            <CommandGroup heading="Suggested values">
+              {matchingValues.map((value) => (
+                <CommandItem
+                  key={value}
+                  value={`suggest:${value.toLowerCase()}`}
+                  onSelect={() => pickSuggestedValue(value)}
+                >
+                  <HugeiconsIcon
+                    icon={Tick02Icon}
+                    strokeWidth={2}
+                    className={cn(
+                      'size-4',
+                      committedParts.includes(value)
+                        ? 'text-foreground'
+                        : 'opacity-0'
+                    )}
+                  />
+                  <span data-mask className="min-w-0 flex-1 truncate">
+                    {value}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          <CommandGroup>
+            <CommandItem value="apply-value" onSelect={applyValue}>
+              <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
+              <span data-mask className="min-w-0 flex-1 truncate">
+                Apply: {filterLabel(stage)} {stage.ref.symbol}{' '}
+                {query === '' ? '(empty)' : query}
+              </span>
+              <CommandShortcut>
+                <EnterIcon />
+              </CommandShortcut>
+            </CommandItem>
+          </CommandGroup>
+        </>
+      )}
+    </CommandList>
+  )
+}
 
 const AiSummaryRow = ({
   hasList,
@@ -603,6 +609,7 @@ export const FilterSearchBar = ({
 
   const { mutate: generateFilter, isPending } = useMutation(
     orpc.ai.filters.mutationOptions({
+      meta: { event: 'ai_filter_generated' },
       onError: (error) => {
         if (isDefinedError(error) && error.code === 'FORBIDDEN') {
           setFreeAiUsage(error.data)

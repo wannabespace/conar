@@ -33,6 +33,7 @@ export const PasswordForm = ({
   const [password, setPassword] = useState('')
 
   const { mutate: savePassword, status } = useMutation({
+    meta: { event: 'connection_password_saved' },
     mutationFn: async (passwordValue: string) => {
       const baseString = await connectionStringsCollection.utils.decrypt(
         connection.id

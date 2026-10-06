@@ -23,16 +23,14 @@ mock.module('@tamery/db', () => ({
     },
   },
 }))
-mock.module('@tamery/shared/crypto-node', () => ({
-  decrypt: () => 'postgres://user:p@ss@host/default?sslmode=require',
-}))
 mock.module('~/env', () => ({ env: { PROXY_SHARED_SECRET: 'secret' } }))
 const orpc = os.$context<Context>()
 mock.module('~/orpc', () => ({
   authMiddleware: orpc.middleware(({ next }) =>
     next({
       context: {
-        getWorkspaceSecret: () => Promise.resolve('key'),
+        decryptConnectionString: () =>
+          Promise.resolve('postgres://user:p@ss@host/default?sslmode=require'),
         user: { id: 'user' },
       },
     })

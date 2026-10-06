@@ -1,10 +1,10 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
 import {
-  changesSchema,
+  invalidatesCatalog,
   dialects,
   leavesTransactionOpen,
-  transactionParts,
+  unwrapTransaction,
 } from '@tamery/sql'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -20,6 +20,7 @@ import {
   cancelQuery,
   connectionResourceToQueryParams,
 } from '~/core/runtime/query'
+import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
 import { runHistory } from './history'
@@ -90,7 +91,7 @@ const queryFor = (
   signal: AbortSignal
 ) => {
   const dialect = dialects[connectionType]
-  const transaction = transactionParts(text, dialect)
+  const transaction = unwrapTransaction(text, dialect)
   if (transaction) {
     return transactionQuery(transaction, signal)
   }
@@ -225,11 +226,16 @@ export const runStatements = async ({
   run.running = false
   publish()
   runHistory.add(connectionResource.id, ran)
-
   const connectionType = params?.type
+  posthog.capture('query_run', {
+    failed: failedAt !== undefined,
+    statements: statements.length,
+    stopped: signal.aborted,
+    type: connectionType,
+  })
   if (
     connectionType &&
-    changesSchema(
+    invalidatesCatalog(
       statements.map((statement) => statement.text).join(';\n'),
       dialects[connectionType]
     )

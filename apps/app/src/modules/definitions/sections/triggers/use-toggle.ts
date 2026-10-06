@@ -17,6 +17,7 @@ export const useToggle = ({
   run,
 }: Pick<SectionInspectorProps<TriggerItem>, 'queryKey' | 'run'>) =>
   useMutation({
+    meta: { event: 'trigger_toggled' },
     mutationFn: ({ enabled, item }: TriggerToggle) =>
       run(
         setTriggerEnabledQuery({

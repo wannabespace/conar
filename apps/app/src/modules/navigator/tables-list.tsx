@@ -320,7 +320,13 @@ export const TablesList = ({
         </SidebarMenu>
       </SidebarContent>
       {stickyRow && (
-        <SidebarMenu data-mask className="absolute inset-x-0 top-0 z-10 pl-2">
+        <SidebarMenu
+          data-mask
+          className="absolute inset-x-0 top-0 z-10 pl-2"
+          onWheel={(event) =>
+            parentRef.current?.scrollBy({ top: event.deltaY })
+          }
+        >
           <li className="group/menu-item h-(--sticky-height)">
             {renderSchemaRow(stickyRow)}
           </li>

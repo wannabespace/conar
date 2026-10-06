@@ -6,11 +6,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -38,7 +33,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -47,7 +41,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { SidebarButton } from '~/components/sidebar-link'
 import { getValueForEditor } from '~/core/connection/utils'
 import { distinctQuery } from '~/core/queries/rows/distinct'
 import { insertQuery } from '~/core/queries/rows/insert'
@@ -55,9 +48,9 @@ import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import { useSubscription as useUserSubscription } from '~/core/user/use-subscription'
+import { checkOrUpgrade } from '~/core/user/permissions'
+import { useIsAnonymous } from '~/lib/auth'
 import { queryClient } from '~/lib/query-client'
-import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { useTablePageStore } from '../../../lib/store'
@@ -80,15 +73,14 @@ import {
 import {
   FREE_SEED_LIMIT,
   incrementSeedUsage,
-  seedUsageValue,
+  useSeedQuota,
 } from '../../../seeds/usage'
 import { ColumnType } from '../../table/column-type'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const SEED_INSPECTOR_ID = 'seed-inspector'
-const MAX_SEED_ROWS = 10_000
 const PREVIEW_ROWS = 3
+const MAX_SEED_ROWS = 10_000
 
 const generatorLabel = (
   generator: Generator,
@@ -327,12 +319,7 @@ const Inspector = ({
     generator.generatorId !== SKIP_GENERATOR
 
   return (
-    <div
-      id={SEED_INSPECTOR_ID}
-      role="tabpanel"
-      aria-labelledby={`seed-column-${column.id}`}
-      className="flex min-w-0 flex-1 flex-col"
-    >
+    <div className="flex min-w-0 flex-1 flex-col">
       <div className="flex h-9 shrink-0 items-center gap-1.5 border-b px-3">
         <span data-mask className="truncate text-sm font-medium">
           {column.id}
@@ -420,10 +407,8 @@ export const SeedPanel = ({
     columnsRef.current?.focus({ preventScroll: true })
   }, [])
 
-  const { subscription } = useUserSubscription()
-  const seedUsageCount = useSubscription(seedUsageValue)
-  const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
-  const hasReachedFreeLimit = !subscription && remainingFreeSeeds === 0
+  const { hasReachedLimit, remaining, unlimited } = useSeedQuota()
+  const isGuest = useIsAnonymous()
 
   const columnGenerators = Object.fromEntries(
     columns.map((column): [string, Generator] => {
@@ -455,26 +440,8 @@ export const SeedPanel = ({
         }) satisfies typeof state
     )
 
-  const selectAt = (index: number) => {
-    const column = columns.at(Math.min(index, columns.length - 1))
-    if (column) {
-      setSelectedId(column.id)
-    }
-  }
-
-  const selectedIndex = columns.findIndex(
-    (column) => column.id === selectedColumn?.id
-  )
-
   useHotkeys(
     [
-      { callback: () => selectAt(selectedIndex + 1), hotkey: 'ArrowDown' },
-      {
-        callback: () => selectAt(Math.max(0, selectedIndex - 1)),
-        hotkey: 'ArrowUp',
-      },
-      { callback: () => selectAt(0), hotkey: 'Home' },
-      { callback: () => selectAt(columns.length - 1), hotkey: 'End' },
       { callback: () => searchRef.current?.focus(), hotkey: 'ArrowRight' },
       { callback: () => searchRef.current?.focus(), hotkey: 'Enter' },
     ],
@@ -490,9 +457,10 @@ export const SeedPanel = ({
       !generator.customExpression?.trim()
   )
   const canSeed =
-    activeGenerators.length > 0 && !hasEmptyExpression && !hasReachedFreeLimit
+    activeGenerators.length > 0 && !hasEmptyExpression && !hasReachedLimit
 
   const { mutate: seed, isPending } = useMutation({
+    meta: { event: 'table_seeded' },
     mutationFn: async () => {
       const queryParams =
         await connectionResourceToQueryParams(connectionResource)
@@ -537,7 +505,7 @@ export const SeedPanel = ({
       toast.error('Failed to seed data', { description: error.message })
     },
     onSuccess: () => {
-      if (!subscription) {
+      if (!unlimited) {
         incrementSeedUsage()
       }
       toast.success(
@@ -561,85 +529,50 @@ export const SeedPanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {!subscription && (
-        <div className="border-b p-3">
-          <Alert>
-            <HugeiconsIcon
-              icon={CrownIcon}
-              strokeWidth={2}
-              className="text-primary"
-            />
-            <AlertDescription>
-              {hasReachedFreeLimit
-                ? 'You have used all your free seed runs.'
-                : `${remainingFreeSeeds} of ${FREE_SEED_LIMIT} free seed runs left.`}
-            </AlertDescription>
-            <AlertAction>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={() => setIsSubscriptionDialogOpen(true)}
-              >
-                Upgrade
-              </Button>
-            </AlertAction>
-          </Alert>
-        </div>
-      )}
       <div className="flex min-h-0 flex-1">
-        <div
-          ref={columnsRef}
-          role="tablist"
-          aria-orientation="vertical"
-          tabIndex={-1}
-          aria-label="Columns"
-          aria-activedescendant={
-            selectedColumn && `seed-column-${selectedColumn.id}`
-          }
-          className="no-scrollbar scroll-fade flex w-72 shrink-0 flex-col gap-px overflow-y-auto border-r p-2 outline-none"
-        >
-          {columns.map((column) => {
-            const generator = columnGenerators[column.id]
-            const active = column.id === selectedColumn?.id
-            return (
-              generator && (
-                <SidebarButton
-                  key={column.id}
-                  id={`seed-column-${column.id}`}
-                  role="tab"
-                  tabIndex={-1}
-                  aria-controls={SEED_INSPECTOR_ID}
-                  aria-selected={active}
-                  active={active}
-                  onClick={() => setSelectedId(column.id)}
-                >
-                  <span data-mask className="min-w-0 flex-1 truncate text-left">
-                    {column.id}
-                  </span>
-                  <span
-                    data-mask
-                    className={cn(
-                      'flex max-w-28 shrink-0 items-center gap-1 text-xs',
-                      active
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {generator.generatorId === REFERENCE_GENERATOR && (
-                      <HugeiconsIcon
-                        icon={Link01Icon}
-                        strokeWidth={2}
-                        className="size-3! shrink-0 text-current!"
-                      />
-                    )}
-                    <span className="truncate">
-                      {generatorLabel(generator, column, generators)}
-                    </span>
-                  </span>
-                </SidebarButton>
-              )
-            )
-          })}
+        <div className="flex w-72 shrink-0 flex-col border-r">
+          <Command
+            ref={columnsRef}
+            tabIndex={-1}
+            label="Columns"
+            value={selectedColumn?.id}
+            onValueChange={setSelectedId}
+            shouldFilter={false}
+            disablePointerSelection
+            variant="flat"
+          >
+            <CommandList className="scroll-fade max-h-none flex-1">
+              <CommandGroup>
+                {columns.map((column) => {
+                  const generator = columnGenerators[column.id]
+                  return (
+                    generator && (
+                      <CommandItem key={column.id} value={column.id}>
+                        <span data-mask className="min-w-0 flex-1 truncate">
+                          {column.id}
+                        </span>
+                        <span
+                          data-mask
+                          className="text-muted-foreground flex max-w-28 shrink-0 items-center gap-1 text-xs"
+                        >
+                          {generator.generatorId === REFERENCE_GENERATOR && (
+                            <HugeiconsIcon
+                              icon={Link01Icon}
+                              strokeWidth={2}
+                              className="size-3!"
+                            />
+                          )}
+                          <span className="truncate">
+                            {generatorLabel(generator, column, generators)}
+                          </span>
+                        </span>
+                      </CommandItem>
+                    )
+                  )
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
         </div>
         {selectedColumn && selectedGenerator && (
           <Inspector
@@ -674,7 +607,7 @@ export const SeedPanel = ({
                 }) satisfies typeof state
             )
           }
-          className="mr-auto w-28"
+          className="w-28"
         >
           <NumberFieldGroup>
             <NumberFieldDecrement />
@@ -682,23 +615,37 @@ export const SeedPanel = ({
             <NumberFieldIncrement />
           </NumberFieldGroup>
         </NumberField>
-        <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+        {!unlimited && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground tabular-nums">
+              {remaining} of {FREE_SEED_LIMIT} free runs
+            </span>
+            <Button
+              variant="link"
+              size="xs"
+              className={isGuest ? 'opacity-50' : undefined}
+              onClick={() => checkOrUpgrade('seed.unlimited')}
+            >
+              Upgrade
+            </Button>
+          </div>
+        )}
+        <DrawerClose render={<Button variant="outline" className="ml-auto" />}>
+          Cancel
+        </DrawerClose>
         <Button
-          onClick={() => {
-            if (hasReachedFreeLimit) {
-              setIsSubscriptionDialogOpen(true)
-              return
-            }
-            seed()
-          }}
-          disabled={isPending || (!canSeed && !hasReachedFreeLimit)}
+          onClick={() =>
+            hasReachedLimit ? checkOrUpgrade('seed.unlimited') : seed()
+          }
+          disabled={isPending || (!canSeed && !hasReachedLimit)}
+          className={isGuest && hasReachedLimit ? 'opacity-50' : undefined}
         >
           <LoadingContent loading={isPending}>
             <HugeiconsIcon
-              icon={hasReachedFreeLimit ? CrownIcon : SproutIcon}
+              icon={hasReachedLimit ? CrownIcon : SproutIcon}
               strokeWidth={2}
             />
-            {hasReachedFreeLimit ? (
+            {hasReachedLimit ? (
               'Upgrade to seed'
             ) : (
               <NumberFlow

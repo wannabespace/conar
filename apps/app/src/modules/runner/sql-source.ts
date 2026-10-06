@@ -2,7 +2,7 @@ import type { SqlSource, TableRef } from '@tamery/monaco/sql-language'
 import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
-import { dialects, locateTable } from '@tamery/sql'
+import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
 
 import { defaultSchemaOf } from '~/core/catalog/capabilities'
@@ -10,7 +10,7 @@ import type { ConnectionResource } from '~/core/connection/sync'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { hasSubscription } from '~/core/user/use-subscription'
+import { permix } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
@@ -75,7 +75,7 @@ export const sqlSourceFor = (
     const current = catalog()
     return refs.flatMap((ref) => {
       // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
-      const found = locateTable(current, ref.name, ref.schema)
+      const found = findTableWithSchema(current, ref.name, ref.schema)
       return found?.table.columns === null
         ? [
             resourceTableColumnsQueryOptions({
@@ -89,12 +89,12 @@ export const sqlSourceFor = (
   }
   const loadMissing = async (refs: TableRef[]) => {
     await Promise.all([
-      queryClient.ensureQueryData(tablesOptions),
-      queryClient.ensureQueryData(enumsOptions),
+      queryClient.query({ ...tablesOptions, staleTime: 'static' }),
+      queryClient.query({ ...enumsOptions, staleTime: 'static' }),
     ])
     await Promise.all(
       uncachedColumns(refs).map((options) =>
-        queryClient.ensureQueryData(options)
+        queryClient.query({ ...options, staleTime: 'static' })
       )
     )
   }
@@ -106,7 +106,7 @@ export const sqlSourceFor = (
         { context: { silent: true }, signal }
       ),
     ghostTextEnabled: () =>
-      appStore.get().isOnline && (hasSubscription() ?? false),
+      appStore.get().isOnline && permix.check('ai.sql.use'),
     load: (refs) =>
       [tablesOptions, enumsOptions].every(
         (options) => queryClient.getQueryData(options.queryKey) !== undefined

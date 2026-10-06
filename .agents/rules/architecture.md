@@ -7,7 +7,8 @@
 | Table page state | Two seitu stores per `{id, schema, table}`: `tablePageStore` (localStorage) and `tableSessionStore` (memory). **Selection and drafts never persist** — they are large, change per click, and every cell subscribes, so persisting them makes each notify re-read and re-compare the stored JSON. |
 | Persisted collections | `persistedCollectionOptions` takes `schemaVersion: PERSISTED_SCHEMA_VERSION`, never a literal — mixed versions reset each other's tables on every boot. Bump the const to invalidate all local data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
-| Auth | Better Auth — not custom JWT, not NextAuth. Client plugins come from `better-auth/client/plugins` or a plugin's own subpath; `better-auth/plugins` is the **server** barrel and drags the schema builders into the browser. |
+| Permissions | Permix, defined once in `packages/shared/permissions.ts`: `permissionsOf({ subscription, user })` maps the user and their active subscription to rules (anonymous = guest, else subscription = pro, else free). Server procedures `.use(permissionsMiddleware)` then `permix.checkMiddleware('<entity>.<action>')`, or check `context.permissions` inline when the refusal needs its own declared error. The client instance (`core/user/permissions.ts`) starts with no rules (`check` throws until `setup`), so the `_protected` guard awaits `loadPermissions()` (session and subscription list from their `localStorage` caches, network only when empty; guests skip the subscription) before anything renders or a child guard checks; `usePermissionsSync` then keeps the rules current. **Render reads `usePermissions().check`** (a plain `permix.check` in render never sees the real access arrive); A press on a locked control goes through `checkOrUpgrade(path, data?)`, which prompts a guest to sign in (hint per permission group) or opens the subscription dialog; plain `permix.check` is for route guards and lazily built menus. Only user/plan grants live here — what a database engine supports stays the `capabilities.ts` record. |
+| Auth | Better Auth — not custom JWT, not NextAuth. The client session is mirrored to `localStorage` and fed back through `hydrateSession` at boot (`lib/auth.ts`), so a signed-in user boots offline; read it via `getSessionUser`, not `authClient.getSession`, which always hits the network. Client plugins come from `better-auth/client/plugins` or a plugin's own subpath; `better-auth/plugins` is the **server** barrel and drags the schema builders into the browser. |
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
 | Testing | Bun test for unit tests, Playwright for E2E. |
@@ -17,22 +18,23 @@
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
 | Styles | TailwindCSS v4 — no inline `style=` for layout or theme values, except where a library hard-codes inline styles no class can beat. |
 | Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. The compiler also skips a `use*` function that calls no hooks — mark it `'use memo'` when its return values feed props or context. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
+| Analytics | PostHog through the lazy `~/lib/posthog` facade. A user-facing `useMutation` names its event in `meta: { event: 'object_verb' }` and the `queryClient` mutation cache captures it with `success`; other actions call `posthog.capture` directly. Properties carry enums and counts only — never SQL, names, values or error messages (privacy policy promises anonymized events). |
 | Feature code | A feature is a module folder (see Modules). Core single-page files live next to the route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`); `core/<domain>/` holds data and code shared across modules (see Core layout). |
 
 ## Modules
 
-`apps/app` and `apps/main` are a core plus `src/modules/<name>/` folders. **Deleting a module folder removes the feature and the app still compiles** — that is the contract every change keeps.
+`apps/app` and `apps/main` are a core plus `src/modules/<name>/` folders. Core is everything outside `src/modules/`.
 
-- Modules are found by eager `import.meta.glob`, never listed anywhere. Core is everything outside `src/modules/`.
-- **A module imports only core and its own folder** (`src/lib/modules.test.ts` fails otherwise). Code two modules need moves into core; core never names a module. Cross-feature wiring goes through a slot or a core contract (table tab ids in `core/tabs/ids.ts`, `definitionKey`, `lib/panels.ts`).
-- **Never read a registry at module top level.** The globs import every module eagerly, and modules import the registries back, so a registry's value exists only once evaluation finishes — read it inside a function or render.
+- **A module imports only core and its own folder**. Code two modules need moves into core. Core reaches a module only through its entry file, `module.ts(x)`.
+- In `apps/app`, **deleting a module folder removes the feature and the app still compiles**: modules are found by eager `import.meta.glob`, never listed anywhere, and core never names a module. Cross-feature wiring goes through a slot or a core contract (table tab ids in `core/tabs/ids.ts`, `definitionKey`, `lib/panels.ts`).
+- **Never read an `apps/app` registry at module top level.** The globs import every module eagerly, and modules import the registries back, so a registry's value exists only once evaluation finishes — read it inside a function or render.
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
   - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries.
   - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
-- `apps/main` contracts are `src/lib/module.ts`: `module.tsx` fills header/footer links, the auth footer, account nav and home sections. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
+- `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 
 ## Core layout (`apps/app/src/core`)
 

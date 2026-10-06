@@ -67,6 +67,7 @@ export const ActionsDelete = ({
   const noun = only ? 'row' : `${selected.length} rows`
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
+    meta: { event: 'rows_deleted' },
     mutationFn: async () => {
       await deleteRowsQuery({ primaryKeys: selected, schema, table }).run(
         await connectionResourceToQueryParams(connectionResource)

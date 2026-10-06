@@ -1,4 +1,5 @@
 import { getConnectionResourceStore } from '~/core/connection/stores'
+import { permix } from '~/core/user/permissions'
 
 import { resolveTab } from './kinds'
 import type { ConnectionTab } from './types'
@@ -26,7 +27,25 @@ export const setActiveTab = (id: string, tabId: string | null) => {
   )
 }
 
+export const removeTab = (id: string, tabId: string) => {
+  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
+  resolveTab(tabId)?.kind.onClose?.(id, tabId)
+}
+
+const closeOtherTabsUnlessMultiple = (id: string, tabId: string) => {
+  if (permix.check('tab.multiple')) {
+    return
+  }
+
+  for (const tab of getConnectionResourceStore(id).get().tabs) {
+    if (tab.id !== tabId) {
+      removeTab(id, tab.id)
+    }
+  }
+}
+
 export const ensureTab = (id: string, tabId: string) => {
+  closeOtherTabsUnlessMultiple(id, tabId)
   setTabs(id, (tabs) => {
     if (tabs.some((item) => item.id === tabId)) {
       return tabs
@@ -60,6 +79,7 @@ export const replaceTabId = (id: string, from: string, to: string) => {
 }
 
 export const openTab = (id: string, tabId: string, preview = false) => {
+  closeOtherTabsUnlessMultiple(id, tabId)
   setTabs(id, (tabs) => {
     const existingIndex = tabs.findIndex((item) => item.id === tabId)
 
@@ -85,11 +105,6 @@ export const openTab = (id: string, tabId: string, preview = false) => {
   })
 
   return tabId
-}
-
-export const removeTab = (id: string, tabId: string) => {
-  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
-  resolveTab(tabId)?.kind.onClose?.(id, tabId)
 }
 
 export const updateTabs = (id: string, tabs: ConnectionTab[]) => {

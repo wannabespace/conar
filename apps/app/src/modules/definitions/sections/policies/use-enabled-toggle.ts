@@ -22,6 +22,7 @@ export const useEnabledToggle = ({
   subject: string
 }) =>
   useMutation({
+    meta: { event: 'policy_toggled' },
     mutationFn: ({ enabled }: { enabled: boolean }) =>
       run(
         setRowLevelSecurityQuery({

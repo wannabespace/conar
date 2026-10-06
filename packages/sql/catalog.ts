@@ -34,13 +34,13 @@ export interface SqlCatalog {
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'accent' })
 
-const same = (catalog: SqlCatalog, a: string, b: string) =>
+const namesMatch = (catalog: SqlCatalog, a: string, b: string) =>
   catalog.exactNames ? a === b : collator.compare(a, b) === 0
 
 export const findSchema = (catalog: SqlCatalog, name: string) =>
-  catalog.schemas.find((schema) => same(catalog, schema.name, name))
+  catalog.schemas.find((schema) => namesMatch(catalog, schema.name, name))
 
-export const locateTable = (
+export const findTableWithSchema = (
   catalog: SqlCatalog,
   name: string,
   schema: string | null
@@ -55,7 +55,7 @@ export const locateTable = (
       ]
   for (const candidate of schemas) {
     const table = candidate?.tables.find((item) =>
-      same(catalog, item.name, name)
+      namesMatch(catalog, item.name, name)
     )
     if (candidate && table) {
       return { schema: candidate.name, table }
@@ -67,13 +67,13 @@ export const findTable = (
   catalog: SqlCatalog,
   name: string,
   schema: string | null
-) => locateTable(catalog, name, schema)?.table
+) => findTableWithSchema(catalog, name, schema)?.table
 
 export const findColumn = (
   catalog: SqlCatalog,
   table: SqlTable,
   name: string
-) => table.columns?.find((column) => same(catalog, column.name, name))
+) => table.columns?.find((column) => namesMatch(catalog, column.name, name))
 
 export const findEnum = (
   catalog: SqlCatalog,

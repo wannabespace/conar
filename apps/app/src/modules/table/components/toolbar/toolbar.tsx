@@ -43,7 +43,7 @@ import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
 import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
-import { ActionsSeed, importSeedPanel } from './actions/actions-seed'
+import { ActionsSeed } from './actions/actions-seed'
 import { ActionsView } from './actions/actions-view'
 import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
@@ -287,13 +287,7 @@ export const TableToolbar = ({
         <ActionsColumns />
         <ActionsOrder />
         <ActionsView />
-        <DropdownMenu
-          onOpenChange={(menuOpen) => {
-            if (menuOpen && tableType === 'table') {
-              void importSeedPanel()
-            }
-          }}
-        >
+        <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
               aria-label="More actions"

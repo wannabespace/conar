@@ -36,6 +36,7 @@ export const RenameSchemaDialog = ({
   }))
 
   const { mutate: renameSchema, isPending } = useMutation({
+    meta: { event: 'schema_renamed' },
     mutationFn: async (name: string) => {
       await renameSchemaQuery({ name, schema }).run(
         await connectionResourceToQueryParams(connectionResource)

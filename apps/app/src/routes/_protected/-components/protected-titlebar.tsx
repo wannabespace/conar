@@ -34,6 +34,7 @@ import { ConnectionResourceLink } from '~/core/connection/connection-resource-li
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
+import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { protectedModules } from '~/lib/protected-modules'
 
@@ -142,6 +143,9 @@ const ConnectionsDropdown = ({
 }) => {
   const [open, setOpen] = useState(false)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
+  const atGuestLimit = !usePermissions().check('connection.create', {
+    count: groups.length,
+  })
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -209,7 +213,15 @@ const ConnectionsDropdown = ({
           )
         })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link to="/create" activateOn="click" />}>
+        <DropdownMenuItem
+          className={atGuestLimit ? 'opacity-50' : undefined}
+          render={
+            <Link to="/create" activateOn="click" disabled={atGuestLimit} />
+          }
+          onClick={() =>
+            checkOrUpgrade('connection.create', { count: groups.length })
+          }
+        >
           <HugeiconsIcon
             icon={PlusSignIcon}
             strokeWidth={2}

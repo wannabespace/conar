@@ -9,23 +9,24 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useHotkey } from '@tanstack/react-hotkeys'
 
-import { useSubscription as useUserSubscription } from '~/core/user/use-subscription'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { checkOrUpgrade } from '~/core/user/permissions'
+import { useIsAnonymous } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { chatOpen } from './stores'
 
-export const toggleChat = (resourceId: string, canUseChat: boolean) => {
-  if (!canUseChat) {
-    setIsSubscriptionDialogOpen(true)
+export const toggleChat = (resourceId: string) => {
+  if (!checkOrUpgrade('ai.chat.use')) {
     return
   }
 
   chatOpen(resourceId).set((opened) => !opened)
+  posthog.capture('ai_chat_toggled')
 }
 
 export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
-  const { isPending, subscription } = useUserSubscription()
-  const toggle = () => toggleChat(resourceId, !!(subscription || isPending))
+  const isGuest = useIsAnonymous()
+  const toggle = () => toggleChat(resourceId)
 
   useHotkey('Mod+L', (e) => {
     e.preventDefault()
@@ -40,6 +41,7 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             variant="ghost-muted"
             size="icon-xs"
             aria-label="AI chat"
+            className={isGuest ? 'opacity-50' : undefined}
             onClick={toggle}
           />
         }

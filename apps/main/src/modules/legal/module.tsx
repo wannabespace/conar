@@ -1,23 +1,21 @@
 import { Link } from '@tanstack/react-router'
 
-import type { MainModule } from '~/lib/module'
-
 const footerLinkClassName =
   'text-muted-foreground hover:text-foreground text-sm transition-colors'
 
-const TermsLink = () => (
+export const TermsLink = () => (
   <Link to="/terms-of-service" className={footerLinkClassName}>
     Terms of Service
   </Link>
 )
 
-const PrivacyLink = () => (
+export const PrivacyLink = () => (
   <Link to="/privacy-policy" className={footerLinkClassName}>
     Privacy Policy
   </Link>
 )
 
-const Consent = () => (
+export const Consent = () => (
   <p className="text-muted-foreground px-6 text-center text-xs">
     By clicking continue, you agree to our{' '}
     <Link
@@ -36,11 +34,3 @@ const Consent = () => (
     .
   </p>
 )
-
-export default {
-  authFooter: [{ Component: Consent, order: 0 }],
-  footerLinks: [
-    { Component: TermsLink, order: 0 },
-    { Component: PrivacyLink, order: 1 },
-  ],
-} satisfies MainModule

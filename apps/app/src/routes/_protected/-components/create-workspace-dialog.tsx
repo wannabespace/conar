@@ -29,6 +29,7 @@ export const CreateWorkspaceDialog = ({
   const [name, setName] = useState('')
 
   const { mutate, isPending: loading } = useMutation({
+    meta: { event: 'workspace_created' },
     mutationFn: createWorkspace,
     onSuccess: async () => {
       toast.success('Workspace created')
