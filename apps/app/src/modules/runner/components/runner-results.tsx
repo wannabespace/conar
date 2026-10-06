@@ -26,6 +26,11 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tamery/ui/components/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -77,16 +82,24 @@ const ResultError = ({
       title="The statement failed"
       description={result.error}
     >
-      <Button
-        size="sm"
-        variant="outline"
-        className={isAnonymous ? 'opacity-50' : undefined}
-        onClick={() => fixWithAi(result)}
+      <Tooltip
+        shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />}
       >
-        <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
-        Fix with AI
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
-      </Button>
+        <TooltipTrigger
+          render={
+            <Button
+              size="sm"
+              variant="outline"
+              className={isAnonymous ? 'opacity-50' : undefined}
+              onClick={() => fixWithAi(result)}
+            />
+          }
+        >
+          <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
+          Fix with AI
+        </TooltipTrigger>
+        <TooltipContent>Rewrite the failed statement</TooltipContent>
+      </Tooltip>
     </PaneEmpty>
   )
 }

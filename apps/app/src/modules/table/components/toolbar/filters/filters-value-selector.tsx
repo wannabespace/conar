@@ -2,6 +2,11 @@ import { Button } from '@tamery/ui/components/button'
 import { Command, CommandInput } from '@tamery/ui/components/command'
 import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { Kbd } from '@tamery/ui/components/kbd'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import type { Ref } from 'react'
 
 const hintFor = (operator: string, isArray: boolean) => {
@@ -61,12 +66,18 @@ export const FiltersValueSelector = ({
           {operator}
           {hint && ` · ${hint}`}
         </div>
-        <Button onClick={onApply} size="xs">
-          Apply
-          <Kbd>
-            <EnterIcon />
-          </Kbd>
-        </Button>
+        <Tooltip
+          shortcut={
+            <Kbd>
+              <EnterIcon />
+            </Kbd>
+          }
+        >
+          <TooltipTrigger render={<Button onClick={onApply} size="xs" />}>
+            Apply
+          </TooltipTrigger>
+          <TooltipContent>Apply filter</TooltipContent>
+        </Tooltip>
       </div>
     </Command>
   )

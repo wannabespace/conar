@@ -10,6 +10,11 @@ import {
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
 import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
@@ -76,10 +81,16 @@ export const RunnerAlertDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-          <AlertDialogCancel variant="warning" onClick={onConfirm}>
-            Run anyway
-            <KbdCtrlEnter userAgent={navigator.userAgent} />
-          </AlertDialogCancel>
+          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+            <TooltipTrigger
+              render={
+                <AlertDialogCancel variant="warning" onClick={onConfirm} />
+              }
+            >
+              Run anyway
+            </TooltipTrigger>
+            <TooltipContent>Run the statements</TooltipContent>
+          </Tooltip>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

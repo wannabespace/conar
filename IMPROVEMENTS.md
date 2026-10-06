@@ -25,7 +25,9 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Table
 
 - **Hold-⌘ hints for shortcuts without a control.** Tooltips with a shortcut reveal on ⌘; undo/redo (⌘Z/⇧⌘Z), the grid's copy/paste/fill (⌘C/⌘V/⌘D, listed only in the cell menu) and the Schema pages' ⌘D drop have no control to carry a hint, so they stay undiscoverable until something on screen names them.
+- **Esc hints on dialog and drawer closes.** Every `Cancel`/`Close` that Esc fires (dialogs, drawers, the seed panel) carries no hint while ⌘ is held; a kit-level `shortcut` on the close components would cover all of them at once. The editable list's reorder keys (`⌥↑ ⌥↓`) are still unicode in its tooltip text rather than a `shortcut` glyph.
 - **Referenced columns on the columns context.** Each header still calls `useReferencedColumns` for its own column; the fetch is shared through the query cache, but one lookup on `ColumnsContext` would drop the per-header hook.
+- **Drag threshold on column headers.** Any pointer move after a header press starts a reorder drag (`packages/table/src/use-column-drag.ts`), so a click with a pixel of jitter lifts the column with its drag shadow for one settle animation; a few pixels of dead zone before `moved` flips would keep plain clicks still.
 - **Exact row count once the grid hits the end.** The toolbar badge keeps the planner estimate ("~3") after every row is loaded and "No more rows" shows 7; the loaded count is exact at that point.
 - **Readable rows in the delete dialog.** It lists primary keys only (UUIDs); showing the row's label column (the one **Show Labels** picks) beside each key makes it clear which rows are going.
 - **Keep staged edits across a reload.** A page reload drops every staged cell edit and new row without a prompt; persist drafts per table, or at least confirm before unload while any are staged.

@@ -86,7 +86,7 @@ export const CellFieldActions = ({
           >
             Apply
           </TooltipTrigger>
-          <TooltipContent side="bottom">Apply with</TooltipContent>
+          <TooltipContent side="bottom">Apply</TooltipContent>
         </Tooltip>
       )}
     </div>
