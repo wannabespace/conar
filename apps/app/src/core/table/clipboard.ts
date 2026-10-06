@@ -1,6 +1,6 @@
-import { parseTsv, toTsv } from '@tamery/shared/files'
 import type { GridRow } from '@tamery/table'
 import { copy } from '@tamery/ui/lib/copy'
+import { tsvFormatRows, tsvParseRows } from 'd3-dsv'
 
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { posthog } from '~/lib/posthog'
@@ -94,13 +94,13 @@ export const gridClipboard = (
       }
       copiedCell = null
       copy(
-        toTsv(cells.map((row) => row.map(textOf))),
+        tsvFormatRows(cells.map((row) => row.map(textOf))),
         `${rest.length + 1} cells copied`
       )
     },
     /** One value over the cursor cell types into its editor, so a misfit shows there; anything else is written at once. */
     paste: (text: string) => {
-      const block = text === copiedCell ? [[text]] : parseTsv(text)
+      const block = text === copiedCell ? [[text]] : tsvParseRows(text)
       const at = store.get().cursor
       const [first] = block
       if (!at || !first) {

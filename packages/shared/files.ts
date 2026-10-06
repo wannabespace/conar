@@ -1,3 +1,5 @@
+import { csvFormatRows } from 'd3-dsv'
+
 import { valueToText } from './value-text'
 
 export const downloadFile = (
@@ -22,82 +24,17 @@ export const downloadFile = (
   }
 }
 
-const escapeCSVValue = (value: unknown, delimiter = ','): string => {
-  const str = valueToText(value)
-
-  return str.includes(delimiter) ||
-    str.includes('\n') ||
-    str.includes('\r') ||
-    str.includes('"')
-    ? `"${str.replaceAll('"', '""')}"`
-    : str
-}
-
 export const toCSV = (
   columns: {
     key: string
     header?: string
   }[],
   data: Record<string, unknown>[]
-): string => {
-  const headerRow = columns
-    .map((c) => escapeCSVValue(c.header ?? c.key))
-    .join(',')
-  const dataRows = data.map((row) =>
-    columns.map((c) => escapeCSVValue(row[c.key])).join(',')
-  )
-  return [headerRow, ...dataRows].join('\n')
-}
-
-export const toTsv = (rows: string[][]) =>
-  rows
-    .map((row) => row.map((field) => escapeCSVValue(field, '\t')).join('\t'))
-    .join('\n')
-
-/** Reads what Sheets, Excel and Numbers put on the clipboard; one trailing newline is not a row. */
-export const parseTsv = (text: string): string[][] => {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let quoted = false
-  let index = 0
-  while (index < text.length) {
-    const char = text[index]
-    if (quoted) {
-      if (char === '"' && text[index + 1] === '"') {
-        field += '"'
-        index += 2
-        continue
-      }
-      if (char === '"') {
-        quoted = false
-      } else {
-        field += char
-      }
-    } else if (char === '"' && field === '') {
-      quoted = true
-    } else if (char === '\t') {
-      row.push(field)
-      field = ''
-    } else if (char === '\n' || char === '\r') {
-      row.push(field)
-      rows.push(row)
-      row = []
-      field = ''
-      if (char === '\r' && text[index + 1] === '\n') {
-        index += 1
-      }
-    } else {
-      field += char
-    }
-    index += 1
-  }
-  if (field !== '' || row.length > 0) {
-    row.push(field)
-    rows.push(row)
-  }
-  return rows
-}
+): string =>
+  csvFormatRows([
+    columns.map((c) => c.header ?? c.key),
+    ...data.map((row) => columns.map((c) => valueToText(row[c.key]))),
+  ])
 
 const escapeMarkdownTableCell = (raw: string): string =>
   raw

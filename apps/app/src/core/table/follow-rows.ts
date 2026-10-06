@@ -15,31 +15,28 @@ export const useFollowRows = ({
 }) => {
   const before = useRef({ rowKey, rows })
   useLayoutEffect(() => {
-    const previous = before.current
+    const { rowKey: keyBefore, rows: rowsBefore } = before.current
     before.current = { rowKey, rows }
-    if (!rowKey || !previous.rowKey || previous.rows === rows) {
-      return
-    }
     const { anchor, cursor } = store.get()
-    const keyAt = (position: CellPosition | null) =>
-      position && position.row < previous.rows.length
-        ? previous.rowKey?.(position.row)
-        : undefined
-    const [anchorKey, cursorKey] = [keyAt(anchor), keyAt(cursor)]
-    const stays = (position: CellPosition | null, key?: string) =>
-      !position || (position.row < rows.length && rowKey(position.row) === key)
-    if (stays(anchor, anchorKey) && stays(cursor, cursorKey)) {
+    if (!cursor || !rowKey || !keyBefore || rowsBefore === rows) {
       return
     }
-    const indexByKey = new Map(rows.map((_, index) => [rowKey(index), index]))
-    const follow = (position: CellPosition | null, key?: string) => {
-      const row = key === undefined ? undefined : indexByKey.get(key)
-      return position && row !== undefined ? { ...position, row } : null
+    const follow = (position: CellPosition) => {
+      const key = keyBefore(position.row)
+      if (rowKey(position.row) === key) {
+        return position
+      }
+      const row = rows.findIndex((_, index) => rowKey(index) === key)
+      return row === -1 ? null : { ...position, row }
     }
-    const next = follow(cursor, cursorKey)
+    const next = follow(cursor)
+    const nextAnchor = anchor && follow(anchor)
+    if (next === cursor && nextAnchor === anchor) {
+      return
+    }
     store.set((state) =>
       next
-        ? { ...state, anchor: follow(anchor, anchorKey), cursor: next }
+        ? { ...state, anchor: nextAnchor, cursor: next }
         : { anchor: null, cursor: null, edit: null, peek: false }
     )
   })

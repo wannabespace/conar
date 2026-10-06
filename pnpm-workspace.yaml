@@ -75,6 +75,7 @@ catalog:
   '@todesktop/cli': ^1.28.1
   '@todesktop/runtime': ^2.1.4
   '@types/bun': ^1.4.0
+  '@types/d3-dsv': ^3.0.7
   '@types/mssql': ^12.3.0
   '@types/pg': ^8.23.1
   '@types/react': ^19.3.0
@@ -98,6 +99,7 @@ catalog:
   cn: ^0.4.0
   consola: ^3.4.2
   cross-env: ^10.1.0
+  d3-dsv: ^3.0.1
   date-fns: ^4.4.0
   drizzle-kit: ^1.0.0-rc.4
   drizzle-orm: ^1.0.0-rc.4

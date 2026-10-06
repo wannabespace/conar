@@ -86,4 +86,4 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 
 ## Reach for the library before writing machinery
 
-Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.
+Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. A well-known format or algorithm (CSV/TSV, diff, glob, semver) goes to a small, maintained package rather than a hand-written parser; adding the dependency is the user's call, so propose it. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.
