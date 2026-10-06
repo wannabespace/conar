@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
+import type { MaybePromise } from '@tamery/shared/utils'
 import { silently } from '@tamery/shared/utils'
 
 import type { QueryExecuteResult, QueryExecutor, RunOptions } from '.'
@@ -11,9 +12,9 @@ export interface TxHandle {
     values: unknown[],
     options: RunOptions
   ) => Promise<QueryExecuteResult>
-  commit: () => Promise<void>
-  rollback: () => Promise<void>
-  release: () => Promise<void>
+  commit: () => MaybePromise<void>
+  rollback: () => MaybePromise<void>
+  release: () => MaybePromise<void>
 }
 
 interface OwnedTx {
@@ -79,7 +80,7 @@ const disposeTransaction = (txId: string, ownerId?: string) => {
   return entry.handle
 }
 
-const settle = async (handle: TxHandle, finish: () => Promise<void>) => {
+const settle = async (handle: TxHandle, finish: () => MaybePromise<void>) => {
   try {
     await finish()
   } finally {

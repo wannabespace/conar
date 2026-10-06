@@ -1,14 +1,10 @@
-import { tryParseJson } from '@tamery/shared/utils'
+import { noop, tryParseJson } from '@tamery/shared/utils'
 
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { runQuery } from './run'
-
-const noop = async () => {
-  /* empty */
-}
 
 export const query = {
   ...transactionQueries,
