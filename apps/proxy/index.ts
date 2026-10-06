@@ -3,6 +3,7 @@ import process from 'node:process'
 
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { querySerializer } from '@tamery/query-proxy/serializer'
 import { sanitizeLogData } from '@tamery/shared/sanitize-log'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -43,6 +44,7 @@ const handler = new RPCHandler(router, {
       }
     },
   ],
+  serializer: querySerializer,
 })
 
 const app = new Hono<{
@@ -107,7 +109,6 @@ const app = new Hono<{
     if (status >= 400) {
       console.error(log)
     } else {
-      // oxlint-disable-next-line no-console
       console.info(log)
     }
   })

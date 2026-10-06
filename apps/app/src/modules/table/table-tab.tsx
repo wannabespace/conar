@@ -38,15 +38,9 @@ const TableContent = ({ table, schema }: { table: string; schema: string }) => {
           openTab(connectionResource.id, tableTabId(schema, table))
         }
       >
-        <div className="relative min-h-0 flex-1">
+        <TableToolbar table={table} schema={schema} onAddColumn={addColumn} />
+        <div className="relative min-h-0 flex-1 border-t">
           <Table table={table} schema={schema} onAddColumn={addColumn} />
-          <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex flex-col items-center">
-            <TableToolbar
-              table={table}
-              schema={schema}
-              onAddColumn={addColumn}
-            />
-          </div>
         </div>
       </div>
       <AddColumnDialog schema={schema} table={table} />

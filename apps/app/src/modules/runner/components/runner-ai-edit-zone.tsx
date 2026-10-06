@@ -9,6 +9,7 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from '@tamery/ui/components/input-group'
+import { Kbd } from '@tamery/ui/components/kbd'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
   Tooltip,
@@ -36,10 +37,14 @@ const RejectButton = ({
   label: string
   onClick: () => void
 }) => (
-  <Button size="xs" variant="ghost" onClick={onClick}>
-    {label}
-    <span className="text-muted-foreground text-2xs font-normal">Esc</span>
-  </Button>
+  <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+    <TooltipTrigger
+      render={<Button size="xs" variant="ghost" onClick={onClick} />}
+    >
+      {label}
+    </TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
 )
 
 export const AiEditZone = ({
@@ -189,7 +194,13 @@ export const AiEditZone = ({
               {phase.busy ? (
                 <Spinner className="text-muted-foreground m-1.25 size-3.5" />
               ) : (
-                <Tooltip>
+                <Tooltip
+                  shortcut={
+                    <Kbd>
+                      <EnterIcon />
+                    </Kbd>
+                  }
+                >
                   <TooltipTrigger
                     render={
                       <InputGroupButton
@@ -226,10 +237,12 @@ export const AiEditZone = ({
             {phase.fix ? 'Review the fix' : 'Review the rewrite'}
           </span>
           <RejectButton label="Reject" onClick={onClose} />
-          <Button size="xs" onClick={onAccept}>
-            Accept
-            <KbdCtrlEnter userAgent={navigator.userAgent} />
-          </Button>
+          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+            <TooltipTrigger render={<Button size="xs" onClick={onAccept} />}>
+              Accept
+            </TooltipTrigger>
+            <TooltipContent>Accept</TooltipContent>
+          </Tooltip>
         </>
       )}
     </form>

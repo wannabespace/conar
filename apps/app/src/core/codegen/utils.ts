@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '~/core/table/cell/utils'
 
@@ -273,12 +273,20 @@ export const getColumnType = (
     : (mapping[dialect] ?? identity)(type)
 }
 
-export const formatValue = (value: unknown) => {
+const BACKSLASH_ESCAPING_DIALECTS = new Set<ConnectionType>([
+  ConnectionType.ClickHouse,
+  ConnectionType.MySQL,
+])
+
+export const formatValue = (value: unknown, dialect: ConnectionType) => {
   if (value === null) {
     return 'NULL'
   }
   if (typeof value === 'string') {
-    return `'${value.replaceAll("'", "''")}'`
+    const text = BACKSLASH_ESCAPING_DIALECTS.has(dialect)
+      ? value.replaceAll('\\', '\\\\')
+      : value
+    return `'${text.replaceAll("'", "''")}'`
   }
   if (typeof value === 'number') {
     return String(value)

@@ -1,19 +1,9 @@
 import { SafeURL } from '@tamery/shared/safe-url'
+import { valueToText } from '@tamery/shared/value-text'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
-export const getValueForEditor = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return ''
-  }
-  if (value instanceof Date) {
-    return value.toISOString()
-  }
-  if (typeof value === 'string') {
-    return value
-  }
-  return JSON.stringify(value, null, 2)
-}
+export const getValueForEditor = (value: unknown) => valueToText(value, 2)
 
 export const wrapExplainQuery = (query: string) => {
   const trimmedQuery = query.trim().toLowerCase()

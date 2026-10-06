@@ -93,6 +93,12 @@ export const mysqlColumns = async (
               .end(),
           ])
           .as('attributes'),
+        eb
+          .and([
+            eb.not(extraHas('VIRTUAL GENERATED')),
+            eb.not(extraHas('STORED GENERATED')),
+          ])
+          .as('editable'),
         isAutoIncrement.as('isIdentity'),
         eb
           .or([
@@ -168,7 +174,9 @@ export const postgresColumns = async (
         'isGenerated'
       ),
       sql<boolean>`is_nullable = 'YES'`.as('nullable'),
-      sql<boolean>`is_updatable = 'YES'`.as('editable'),
+      sql<boolean>`is_updatable = 'YES' AND is_generated <> 'ALWAYS' AND identity_generation IS DISTINCT FROM 'ALWAYS'`.as(
+        'editable'
+      ),
       sql<boolean>`is_identity = 'YES'`.as('isIdentity'),
     ])
     .$call((qb) =>

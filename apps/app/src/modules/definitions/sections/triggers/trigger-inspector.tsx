@@ -6,6 +6,7 @@ import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { createTriggerQuery } from '~/core/queries/triggers/create'
@@ -31,7 +32,6 @@ import {
 import type { SectionInspectorProps } from '../../components/inspector'
 import {
   Inspector,
-  InspectorOption,
   InspectorSection,
   InspectorSql,
   replaceWarning,
@@ -147,7 +147,7 @@ export const TriggerInspector = ({
     >
       {item && options.toggle && (
         <InspectorSection title="Status">
-          <InspectorOption
+          <OptionField
             htmlFor="trigger-enabled"
             title="Enabled"
             description="A disabled trigger stays defined but never fires."
@@ -159,7 +159,7 @@ export const TriggerInspector = ({
               checked={item.enabled !== false}
               onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
             />
-          </InspectorOption>
+          </OptionField>
         </InspectorSection>
       )}
       <InspectorSection

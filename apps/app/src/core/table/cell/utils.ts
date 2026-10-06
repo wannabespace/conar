@@ -1,6 +1,7 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
 
 export interface Column {
@@ -85,6 +86,11 @@ export const getColumnUiType = (
     return 'boolean'
   }
 
+  // Postgres `daterange` holds bounds like `[2026-01-01,2026-02-01)`, not a date.
+  if (column.type.toLowerCase().includes('range')) {
+    return 'raw'
+  }
+
   if (
     column.type.toLowerCase().includes('datetime') ||
     column.type.toLowerCase().includes('timestamp')
@@ -103,34 +109,19 @@ export const getColumnUiType = (
   return 'raw'
 }
 
-export interface ColumnHandlers {
-  onQueueValue?: (rowIndex: number, newValue: unknown) => void
-  onAddFilter?: (filter: ActiveFilter) => void
-  onOrder?: (order?: 'ASC' | 'DESC' | null) => void
-  onResize?: (newWidth: number) => void
-  onRename?: () => void
-}
+const NUMERIC_TYPE_REGEX =
+  /^(?:u?int\d*|tinyint|smallint|mediumint|bigint|integer|numeric|decimal|float\d*|double|real|money|smallmoney|serial|bigserial|smallserial|number)\b/iu
 
-const COMPACT_CHARS_PER_LINE = 48
-const COMPACT_LINE_HEIGHT = 20
-const COMPACT_VERTICAL_CHROME = 36
-const COMPACT_MIN_HEIGHT = 56
-const COMPACT_MAX_HEIGHT = 160
+export const isNumericColumn = (column: Column) =>
+  column.uiType === 'raw' && NUMERIC_TYPE_REGEX.test(column.type ?? '')
 
-export const estimateCompactHeight = (text: string) => {
-  const lines = text
-    .split('\n')
-    .reduce(
-      (total, line) =>
-        total + Math.max(1, Math.ceil(line.length / COMPACT_CHARS_PER_LINE)),
-      0
-    )
+export const hasTabularFigures = (column: Column) =>
+  column.uiType !== 'raw' || isNumericColumn(column)
 
-  return Math.min(
-    COMPACT_MAX_HEIGHT,
-    Math.max(
-      COMPACT_MIN_HEIGHT,
-      lines * COMPACT_LINE_HEIGHT + COMPACT_VERTICAL_CHROME
-    )
-  )
-}
+export const canWriteDefault = (
+  connectionType: ConnectionType,
+  column: Column
+) =>
+  capabilitiesOf(connectionType).setDefault &&
+  column.defaultValue !== null &&
+  column.defaultValue !== undefined

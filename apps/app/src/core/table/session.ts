@@ -1,9 +1,10 @@
 import { omit } from '@tamery/shared/utils'
-import type { ShiftSelectionState } from '@tamery/table/hooks'
-import { INITIAL_SHIFT_SELECTION_STATE } from '@tamery/table/hooks'
+import type { GridRow } from '@tamery/table'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
+
+import { posthog } from '~/lib/posthog'
 
 export type PrimaryKeys = Record<string, unknown>
 
@@ -15,18 +16,31 @@ export interface Draft {
   isCommitting?: boolean
 }
 
+export interface NewRow {
+  id: string
+  values: Record<string, unknown>
+  error?: string
+  isCommitting?: boolean
+}
+
 export interface TableSessionState {
   drafts: Record<string, Draft>
+  /** Cells (by `draftKey`) whose values changed in the latest refetch; `at` re-keys the flash so a second change replays it. */
+  flash: { at: number; keys: ReadonlySet<string> } | null
   lastClickedIndex: number | null
+  /** Staged inserts, newest first; they lead the grid (`stagedGrid`). */
+  newRows: NewRow[]
   selected: PrimaryKeys[]
-  selectionState: ShiftSelectionState
+  selectionState: { anchorIndex: number | null; focusIndex: number | null }
 }
 
 const defaultSessionState: TableSessionState = {
   drafts: {},
+  flash: null,
   lastClickedIndex: null,
+  newRows: [],
   selected: [],
-  selectionState: INITIAL_SHIFT_SELECTION_STATE,
+  selectionState: { anchorIndex: null, focusIndex: null },
 }
 
 export const tableSessionStore = memoize(
@@ -34,7 +48,7 @@ export const tableSessionStore = memoize(
     createStore(defaultSessionState)
 )
 
-type TableSessionStore = ReturnType<typeof tableSessionStore>
+export type TableSessionStore = ReturnType<typeof tableSessionStore>
 
 export const TableSessionStoreContext = createContext<TableSessionStore | null>(
   null
@@ -73,6 +87,8 @@ export const getRowKeyByPrimaryKeys = (
 export const draftKey = (primaryKeys: PrimaryKeys, columnId: string) =>
   `${primaryKeysKey(primaryKeys)}:${columnId}`
 
+type StagedStatus = Partial<Pick<Draft, 'error' | 'isCommitting'>>
+
 export const draftsActions = (store: TableSessionStore) => {
   const setDrafts = (
     update: (drafts: Record<string, Draft>) => Record<string, Draft>
@@ -98,35 +114,137 @@ export const draftsActions = (store: TableSessionStore) => {
     )
   }
 
-  const upsert = (draft: Draft) => {
-    const key = draftKey(draft.primaryKeys, draft.columnId)
-    setDrafts((drafts) => ({ ...drafts, [key]: { ...drafts[key], ...draft } }))
-  }
-
+  // A row saves as one statement, so its error stops applying once any of its changes goes.
   const remove = (primaryKeys: PrimaryKeys, columnId: string) => {
-    setDrafts((drafts) => omit(drafts, [draftKey(primaryKeys, columnId)]))
-  }
-
-  const clear = () => {
-    setDrafts(() => ({}))
-  }
-
-  const setRowStatus = (
-    primaryKeys: PrimaryKeys,
-    patch: Partial<Pick<Draft, 'error' | 'isCommitting'>>
-  ) => {
-    updateRow(primaryKeys, (draft) => ({ ...draft, ...patch }))
-  }
-
-  const removeRow = (primaryKeys: PrimaryKeys) => {
-    updateRow(primaryKeys, () => null)
+    updateRow(primaryKeys, (draft) =>
+      draft.columnId === columnId ? null : { ...draft, error: undefined }
+    )
   }
 
   return {
-    clear,
+    clear: () => {
+      store.set((state) => ({ ...state, drafts: {}, newRows: [] }))
+    },
+    discard: (primaryKeys: PrimaryKeys, columnId: string) => {
+      posthog.capture('draft_discarded')
+      remove(primaryKeys, columnId)
+    },
+    discardRow: (primaryKeys: PrimaryKeys) => {
+      posthog.capture('row_changes_discarded')
+      updateRow(primaryKeys, () => null)
+    },
     remove,
-    removeRow,
-    setRowStatus,
-    upsert,
+    setRowStatus: (primaryKeys: PrimaryKeys, status: StagedStatus) =>
+      updateRow(primaryKeys, (draft) => ({ ...draft, ...status })),
+    upsert: (draft: Draft) =>
+      setDrafts((drafts) => ({
+        ...drafts,
+        [draftKey(draft.primaryKeys, draft.columnId)]: draft,
+      })),
+  }
+}
+
+export const isSaving = ({
+  drafts,
+  newRows,
+}: Pick<TableSessionState, 'drafts' | 'newRows'>) =>
+  Object.values(drafts).some((draft) => draft.isCommitting) ||
+  newRows.some((row) => row.isCommitting)
+
+export const stagedActions = (store: TableSessionStore) => ({
+  setStatus: (status: StagedStatus) =>
+    store.set((state) => ({
+      ...state,
+      drafts: Object.fromEntries(
+        Object.entries(state.drafts).map(([key, draft]) => [
+          key,
+          { ...draft, ...status },
+        ])
+      ),
+      newRows: state.newRows.map((row) => ({ ...row, ...status })),
+    })),
+  /** Drops exactly the drafts and staged rows a save submitted. */
+  settle: (submitted: { drafts: Draft[]; newRows: NewRow[] }) => {
+    const ids = new Set(submitted.newRows.map((row) => row.id))
+    store.set((state) => ({
+      ...state,
+      drafts: omit(
+        state.drafts,
+        submitted.drafts.map((draft) =>
+          draftKey(draft.primaryKeys, draft.columnId)
+        )
+      ),
+      newRows: state.newRows.filter((row) => !ids.has(row.id)),
+    }))
+  },
+})
+
+export type GridEntry =
+  | { kind: 'new'; newRow: NewRow }
+  | { kind: 'saved'; index: number; keys: PrimaryKeys; row: GridRow }
+
+export const stagedGrid = (
+  newRows: NewRow[],
+  rows: GridRow[],
+  primaryColumns: string[]
+) => {
+  const rowAt = (index: number): GridEntry => {
+    const newRow = newRows[index]
+    if (newRow) {
+      return { kind: 'new', newRow }
+    }
+    const row = rows[index - newRows.length] ?? {}
+    return {
+      index: index - newRows.length,
+      keys: getRowPrimaryKeysValues(row, primaryColumns),
+      kind: 'saved',
+      row,
+    }
+  }
+  return {
+    rowAt,
+    /** Survives the rows above being inserted, saved or refetched. */
+    rowKey: (index: number) => {
+      const entry = rowAt(index)
+      return entry.kind === 'new' ? entry.newRow.id : primaryKeysKey(entry.keys)
+    },
+    rows: [...newRows.map((newRow) => newRow.values), ...rows],
+  }
+}
+
+export const newRowsActions = (store: TableSessionStore) => {
+  const update = (id: string, patch: (row: NewRow) => NewRow | null) =>
+    store.set((state) => ({
+      ...state,
+      newRows: state.newRows.flatMap((row) => {
+        if (row.id !== id) {
+          return [row]
+        }
+        const next = patch(row)
+        return next ? [next] : []
+      }),
+    }))
+
+  return {
+    add: (values: Record<string, unknown>) => {
+      const id = crypto.randomUUID()
+      store.set((state) => ({
+        ...state,
+        newRows: [{ id, values }, ...state.newRows],
+      }))
+      return id
+    },
+    discard: (id: string) => {
+      posthog.capture('staged_row_discarded')
+      update(id, () => null)
+    },
+    setStatus: (id: string, status: StagedStatus) =>
+      update(id, (row) => ({ ...row, ...status })),
+    setValue: (id: string, columnId: string, value: unknown) =>
+      update(id, (row) => ({
+        ...row,
+        error: undefined,
+        values: { ...row.values, [columnId]: value },
+      })),
   }
 }

@@ -10,14 +10,18 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
+// SQL Server gives every fixed database role (db_owner, db_datareader, …) a schema of its own, numbered from here up.
+const MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID = 16_384
+
 const tableTypes = ['base table', 'view', 'materialized view'] as const
 
 export type RelationKind = 'table' | 'view'
 
+// Every dialect with schemas reads from its schema catalog, so an empty schema is one row whose table is null.
 export const tablesAndSchemasType = type({
-  'row_level_security?': 'boolean',
+  'row_level_security?': 'boolean | null',
   schema: 'string',
-  table: 'string',
+  table: 'string | null',
   type: type.or(
     type.enumerated(...tableTypes),
     type.enumerated(
@@ -30,7 +34,7 @@ export const tablesAndSchemasType = type({
   const formattedType = rawType.toLowerCase() as (typeof tableTypes)[number]
   return {
     ...props,
-    rowLevelSecurity,
+    rowLevelSecurity: rowLevelSecurity ?? undefined,
     type: formattedType === 'base table' ? ('table' as const) : formattedType,
   }
 })
@@ -66,8 +70,13 @@ export const resourceTablesAndSchemasQuery = memoize(
         // (spt_*, MSreplication_options) from the user's own.
         mssql: (db) =>
           db
-            .selectFrom('sys.objects as o')
-            .innerJoin('sys.schemas as s', 's.schema_id', 'o.schema_id')
+            .selectFrom('sys.schemas as s')
+            .leftJoin('sys.objects as o', (join) =>
+              join
+                .onRef('o.schema_id', '=', 's.schema_id')
+                .on('o.type', 'in', ['U', 'V'])
+                .on('o.is_ms_shipped', '=', false)
+            )
             .select([
               's.name as schema',
               'o.name as table',
@@ -81,27 +90,31 @@ export const resourceTablesAndSchemasQuery = memoize(
                   .as('type'),
             ])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
-            .where('o.type', 'in', ['U', 'V'])
-            .where('o.is_ms_shipped', '=', false)
+            .where('s.schema_id', '<', MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID)
             .execute(),
         mysql: (db) =>
           db
-            .selectFrom('information_schema.TABLES')
+            .selectFrom('information_schema.SCHEMATA as s')
+            .leftJoin('information_schema.TABLES as t', (join) =>
+              join
+                .onRef('t.TABLE_SCHEMA', '=', 's.SCHEMA_NAME')
+                .on('t.TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+            )
             .select([
-              'TABLE_SCHEMA as schema',
-              'TABLE_NAME as table',
-              'TABLE_TYPE as type',
+              's.SCHEMA_NAME as schema',
+              't.TABLE_NAME as table',
+              (eb) =>
+                eb.fn.coalesce('t.TABLE_TYPE', eb.val('BASE TABLE')).as('type'),
             ])
-            .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
             .execute(),
         postgres: (db) =>
           db
-            .selectFrom('pg_catalog.pg_class as c')
-            .innerJoin(
-              'pg_catalog.pg_namespace as n',
-              'n.oid',
-              'c.relnamespace'
+            .selectFrom('pg_catalog.pg_namespace as n')
+            .leftJoin('pg_catalog.pg_class as c', (join) =>
+              join
+                .onRef('c.relnamespace', '=', 'n.oid')
+                .on('c.relkind', 'in', ['r', 'p', 'v', 'm'])
             )
             .select([
               'n.nspname as schema',
@@ -121,7 +134,6 @@ export const resourceTablesAndSchemasQuery = memoize(
             .$narrowType<{
               type: 'base table' | 'materialized view' | 'view'
             }>()
-            .where('c.relkind', 'in', ['r', 'p', 'v', 'm'])
             .where(({ eb, and, not }) =>
               and([
                 not(eb('n.nspname', 'like', 'pg_toast%')),
@@ -164,11 +176,17 @@ export const resourceTablesAndSchemasQueryOptions = ({
         .filter(([schema]) => showSystem || !systemSchemas.includes(schema))
         .map(([schema, tables = []]) => ({
           name: schema,
-          tables: tables.map((table) => ({
-            name: table.table,
-            rowLevelSecurity: table.rowLevelSecurity,
-            type: table.type,
-          })),
+          tables: tables.flatMap((table) =>
+            table.table === null
+              ? []
+              : [
+                  {
+                    name: table.table,
+                    rowLevelSecurity: table.rowLevelSecurity,
+                    type: table.type,
+                  },
+                ]
+          ),
         }))
 
       return {

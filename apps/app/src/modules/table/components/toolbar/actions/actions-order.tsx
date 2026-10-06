@@ -28,9 +28,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { getRouteApi } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { plural } from '~/lib/plural'
+
+import { isSortable } from '../../../lib/column-menu'
 import { useTableColumnsContext } from '../../../lib/columns'
 import { columnsOrder, useTablePageStore } from '../../../lib/store'
 
@@ -85,15 +89,18 @@ const SortedItem = ({
       >
         <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
       </TooltipTrigger>
-      <TooltipContent side="top">Remove sort</TooltipContent>
+      <TooltipContent side="bottom">Remove sort</TooltipContent>
     </Tooltip>
   </CommandItem>
 )
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 export const ActionsOrder = () => {
+  const { connection } = useRouteContext()
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, {
-    selector: (state) => Object.entries(state.orderBy || {}),
+    selector: (state) => Object.entries(state.orderBy),
   })
   const { columns, isPending } = useTableColumnsContext()
   const [open, setOpen] = useState(false)
@@ -108,13 +115,23 @@ export const ActionsOrder = () => {
   }
 
   const activeCount = orderEntries.length
-  const availableColumns =
-    columns?.filter((col) => !orderEntries.some(([id]) => id === col.id)) || []
+  const availableColumns = columns.filter(
+    (column) =>
+      isSortable(connection.type, column) &&
+      !orderEntries.some(([id]) => id === column.id)
+  )
+  let label = 'Sort order'
+  if (isPending) {
+    label = 'Loading columns…'
+  } else if (activeCount > 0) {
+    label = `Sorted by ${plural(activeCount, 'column')}`
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger
+          aria-label={label}
           render={
             <PopoverTrigger
               render={
@@ -141,18 +158,11 @@ export const ActionsOrder = () => {
             />
           )}
         </TooltipTrigger>
-        <TooltipContent side="top">
-          {isPending && 'Loading columns…'}
-          {!isPending &&
-            (activeCount > 0
-              ? `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
-              : 'Sort order')}
-        </TooltipContent>
+        <TooltipContent side="bottom">{label}</TooltipContent>
       </Tooltip>
       <PopoverContent
         // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
         className="w-72 gap-0 p-0"
-        side="bottom"
         align="end"
       >
         <Command

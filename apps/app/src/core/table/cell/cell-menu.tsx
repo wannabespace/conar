@@ -1,198 +1,124 @@
 import {
+  ArrowDown02Icon,
+  BracesIcon,
   CodeIcon,
   Copy01Icon,
   Csv01Icon,
-  EraserIcon,
-  FilterIcon,
   PencilEdit02Icon,
-  Sorting01Icon,
   TextIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons'
-import {
-  formatValueForPlainCell,
-  recordToMarkdownTable,
-  toCSV,
-} from '@tamery/shared/files'
-import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
-import { useTableContext } from '@tamery/table/hooks'
+import { recordToMarkdownTable, toCSV } from '@tamery/shared/files'
+import { valueToText } from '@tamery/shared/value-text'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { copy } from '@tamery/ui/lib/copy'
-import type { CSSProperties, ReactNode } from 'react'
-import { toast } from 'sonner'
 
-import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
-import { posthog } from '~/lib/posthog'
 
-import { useCellContext } from './cell-context'
-import { INTERNAL_COLUMN_IDS } from './utils'
+import type { DataGridCell, GridCursor } from '../cursor'
 
-const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
+export interface CellMenuExtra {
+  cell?: AppMenuNode[]
+  /** Whole groups shown between the cell and row groups, e.g. a host's Column group. */
+  groups?: AppMenuNode[]
+  row?: AppMenuNode[]
+}
 
-export const TableCellContextMenu = ({
-  open,
-  onOpenChange,
-  style,
-  onSetNull,
-  children,
+export const cellMenu = ({
+  columns,
+  cursor,
+  extra,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  style?: CSSProperties
-  onSetNull?: () => void
-  children: ReactNode
-}) => {
-  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } =
-    useCellContext()
-  const row = useTableContext(({ rows }) => rows[rowIndex] ?? {})
-  const tableColumns = useTableContext(({ columns }) => columns)
-  const columnKeys = tableColumns
-    .map((c) => c.id)
-    .filter((id) => !internalColumnIds.includes(id))
-  const rowCopyDisabled = columnKeys.length === 0
-
-  const items: AppMenuNode[] = [
+  columns: string[]
+  cursor: GridCursor
+  extra?: (
+    cell: DataGridCell,
+    element: Element | null | undefined
+  ) => CellMenuExtra
+}): AppMenuNode[] => {
+  const cell = cursor.current()
+  if (!cell) {
+    return []
+  }
+  const { row } = cell
+  const editable = cursor.isEditable(cell.column)
+  const cells = cursor.selection().flat().length
+  const extras = extra?.(cell, cursor.element()) ?? {}
+  const keys = columns.map((key) => ({ key }))
+  return [
     {
       items: [
         {
-          icon: Copy01Icon,
-          label: 'Copy value',
-          onSelect: () =>
-            copy(formatValueForPlainCell(value), 'Cell value copied'),
+          icon: editable ? PencilEdit02Icon : ViewIcon,
+          label: editable ? 'Edit Value' : 'View Value',
+          onSelect: () => cursor.edit(),
         },
-        ...(onSetNull
+        ...(cursor.canPeek(cell)
+          ? [{ icon: BracesIcon, label: 'Show JSON', onSelect: cursor.preview }]
+          : []),
+        {
+          accelerator: 'CmdOrCtrl+C',
+          icon: Copy01Icon,
+          label: cells > 1 ? `Copy ${cells} Cells` : 'Copy Value',
+          onSelect: cursor.copy,
+          shortcut: (
+            <KbdCtrlLetter userAgent={navigator.userAgent} letter="C" />
+          ),
+        },
+        ...(editable && cursor.selection().length > 1
           ? [
               {
-                disabled: value === null,
-                icon: EraserIcon,
-                label: 'Set null',
-                onSelect: onSetNull,
-              } as const,
+                accelerator: 'CmdOrCtrl+D',
+                icon: ArrowDown02Icon,
+                label: 'Fill Down',
+                onSelect: cursor.fillDown,
+                shortcut: (
+                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="D" />
+                ),
+              },
             ]
           : []),
+        ...(extras.cell ?? []),
       ],
       label: 'Cell',
       type: 'group',
     },
-  ]
-
-  if (onRename || onAddFilter || onOrder) {
-    const columnItems: AppMenuNode[] = []
-
-    if (onRename) {
-      columnItems.push({
-        icon: PencilEdit02Icon,
-        label: 'Rename',
-        onSelect: onRename,
-      })
-    }
-
-    if (onAddFilter) {
-      columnItems.push({
-        disabled: value === null || value === undefined,
-        icon: FilterIcon,
-        label: 'Filter by value',
-        onSelect: () => {
-          onAddFilter({
-            column: column.id,
-            ref: EQUAL_FILTER,
-            values: cellToFilterValues(EQUAL_FILTER, value),
-          })
-          posthog.capture('cell_filter_added')
-          toast.success('Filter added')
-        },
-      })
-    }
-
-    if (onOrder) {
-      columnItems.push({
-        icon: Sorting01Icon,
-        items: [
-          {
-            onValueChange: (nextValue) => {
-              onOrder(
-                nextValue === 'default' ? null : (nextValue as 'ASC' | 'DESC')
-              )
-            },
-            options: [
-              { label: 'None', value: 'default' },
-              { label: 'Ascending', value: 'ASC' },
-              { label: 'Descending', value: 'DESC' },
-            ],
-            type: 'radio',
-            value: order ?? 'default',
-          },
-        ],
-        label: 'Sort',
-        type: 'sub',
-      })
-    }
-
-    items.push(
-      { type: 'separator' },
-      { items: columnItems, label: 'Column', type: 'group' }
-    )
-  }
-
-  items.push(
+    ...(extras.groups
+      ? [{ type: 'separator' } as const, ...extras.groups]
+      : []),
     { type: 'separator' },
     {
       items: [
+        ...(extras.row ?? []),
         {
-          disabled: rowCopyDisabled,
           icon: Copy01Icon,
           items: [
             {
-              disabled: rowCopyDisabled,
               icon: CodeIcon,
               label: 'JSON',
-              onSelect: () =>
-                copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
+              onSelect: () => copy(valueToText(row, 2), 'Row copied as JSON'),
             },
             {
-              disabled: rowCopyDisabled,
               icon: Csv01Icon,
               label: 'CSV',
-              onSelect: () =>
-                copy(
-                  toCSV(
-                    columnKeys.map((key) => ({ key })),
-                    [row]
-                  ),
-                  'Row copied as CSV'
-                ),
+              onSelect: () => copy(toCSV(keys, [row]), 'Row copied as CSV'),
             },
             {
-              disabled: rowCopyDisabled,
               icon: TextIcon,
-              label: 'Markdown table',
+              label: 'Markdown',
               onSelect: () =>
                 copy(
-                  recordToMarkdownTable(
-                    row,
-                    columnKeys.map((key) => ({ key }))
-                  ),
+                  recordToMarkdownTable(row, keys),
                   'Row copied as Markdown table'
                 ),
             },
           ],
-          label: 'Copy as',
+          label: 'Copy Row As',
           type: 'sub',
         },
       ],
       label: 'Row',
       type: 'group',
-    }
-  )
-
-  return (
-    <AppContextMenu
-      open={open}
-      onOpenChange={onOpenChange}
-      className="flex h-full min-h-0 min-w-0 shrink-0"
-      style={style}
-      items={items}
-    >
-      {children}
-    </AppContextMenu>
-  )
+    },
+  ]
 }

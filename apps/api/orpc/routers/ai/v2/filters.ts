@@ -76,7 +76,10 @@ export const filters = orpc
       }),
     })
 
-    if (!unlimited && result.filters.length > 0) {
+    if (
+      !unlimited &&
+      (result.filters.length > 0 || Object.keys(result.orderBy).length > 0)
+    ) {
       usage = await redisUsage.increment(context.user.id)
     }
 

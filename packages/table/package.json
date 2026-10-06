@@ -4,19 +4,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./hooks": "./src/hooks.ts",
-    "./utils": "./src/utils.ts",
     "./constants": "./src/constants.ts"
   },
   "scripts": {
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
+    "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-virtual": "catalog:",
-    "react": "catalog:",
-    "seitu": "catalog:"
+    "motion": "catalog:",
+    "react": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",

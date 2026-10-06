@@ -1,6 +1,10 @@
-import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import {
+  FolderAddIcon,
+  LayoutTable02Icon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { matchesSearch } from '@tamery/shared/utils'
+import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
@@ -15,12 +19,14 @@ import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
 
+import { createSchemaDialogRef } from './create-schema-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { pinnedTable } from './pinned-tables'
 import {
   SidebarContent,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from './primitives'
@@ -29,11 +35,14 @@ import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
 import { navigatorStore } from './stores'
 import { TableRow } from './table-row'
+import { buildTreeRows } from './tree-row'
 import type { TreeRow } from './tree-row'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const ROW_HEIGHTS = {
+  empty: 30,
+  'new-schema': 44,
   schema: 32,
   separator: 13,
   table: 30,
@@ -45,7 +54,7 @@ export const TablesList = ({
   search,
 }: {
   className?: string
-  onCreateTable: (schema: string) => void
+  onCreateTable: (schema?: string) => void
   search?: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
@@ -89,65 +98,13 @@ export const TablesList = ({
     )
   }, [connectionResource, tablesAndSchemas])
 
-  const pinnedSet = new Set(pinnedTables.map((t) => `${t.schema}:${t.table}`))
-  const rows: TreeRow[] = []
-
-  for (const schema of tablesAndSchemas?.schemas ?? []) {
-    const tables = schema.tables
-      .filter((table) => matchesSearch(search, table.name))
-      .toSorted((a, b) => a.name.localeCompare(b.name))
-
-    if (tables.length === 0) {
-      continue
-    }
-
-    const open =
-      !showSchemaRows || !!search || openedSchemas.includes(schema.name)
-
-    if (showSchemaRows) {
-      rows.push({
-        id: `schema:${schema.name}`,
-        kind: 'schema',
-        name: schema.name,
-        open,
-      })
-    }
-
-    if (!open) {
-      continue
-    }
-
-    const pinned = tables.filter((table) =>
-      pinnedSet.has(`${schema.name}:${table.name}`)
-    )
-    const unpinned = tables.filter(
-      (table) => !pinnedSet.has(`${schema.name}:${table.name}`)
-    )
-
-    for (const table of pinned) {
-      rows.push({
-        id: `table:${schema.name}:${table.name}`,
-        kind: 'table',
-        pinned: true,
-        schema: schema.name,
-        table,
-      })
-    }
-
-    if (pinned.length > 0 && unpinned.length > 0) {
-      rows.push({ id: `separator:${schema.name}`, kind: 'separator' })
-    }
-
-    for (const table of unpinned) {
-      rows.push({
-        id: `table:${schema.name}:${table.name}`,
-        kind: 'table',
-        pinned: false,
-        schema: schema.name,
-        table,
-      })
-    }
-  }
+  const rows = buildTreeRows({
+    openedSchemas,
+    pinnedTables,
+    schemas: tablesAndSchemas?.schemas ?? [],
+    search,
+    showSchemaRows,
+  })
 
   const { virtualItems, totalSize, scrollToIndex, range } = useVirtualizer({
     count: rows.length,
@@ -207,7 +164,6 @@ export const TablesList = ({
       <SidebarContent className={cn('overflow-hidden pl-2', className)}>
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
-            // oxlint-disable-next-line react/no-array-index-key
             <SidebarMenuItem key={index}>
               <SidebarMenuSkeleton seed={index} showIcon />
             </SidebarMenuItem>
@@ -230,7 +186,20 @@ export const TablesList = ({
           strokeWidth={2}
           className="text-muted-foreground/50 mb-2 size-8"
         />
-        <p className="text-muted-foreground text-sm">No tables found</p>
+        <p className="text-muted-foreground text-sm">
+          {search ? 'No tables found' : 'No tables yet'}
+        </p>
+        {!search && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => onCreateTable()}
+          >
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            New table
+          </Button>
+        )}
       </SidebarContent>
     )
   }
@@ -250,6 +219,28 @@ export const TablesList = ({
             }
             onToggle={() => toggleSchema(row.name)}
           />
+        </div>
+      )
+    }
+
+    if (row.kind === 'empty') {
+      return (
+        <p className="text-muted-foreground flex h-full items-center pb-0.5 pl-2 text-xs">
+          No tables
+        </p>
+      )
+    }
+
+    if (row.kind === 'new-schema') {
+      return (
+        <div className="pt-4">
+          <SidebarMenuButton
+            className="text-muted-foreground"
+            onClick={() => createSchemaDialogRef.current?.create()}
+          >
+            <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />
+            <span>New schema</span>
+          </SidebarMenuButton>
         </div>
       )
     }
@@ -286,9 +277,9 @@ export const TablesList = ({
       <SidebarContent
         ref={parentRef}
         className={cn(
-          'scroll-fade block overflow-y-auto pb-2 pl-2',
+          'scroll-fade block flex-1 overflow-y-auto pb-2 pl-2',
           stickyRow &&
-            '[--scroll-fade-mask:linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)]'
+            '[--scroll-fade-mask:linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)]!'
         )}
       >
         <DropSchemaDialog ref={dropSchemaDialogRef} />
@@ -317,6 +308,7 @@ export const TablesList = ({
                     : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
                 }
                 className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
+                inert={row === stickyRow}
                 style={
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
@@ -330,7 +322,7 @@ export const TablesList = ({
       {stickyRow && (
         <SidebarMenu
           data-mask
-          className="absolute inset-x-0 top-0 pl-2"
+          className="absolute inset-x-0 top-0 z-10 pl-2"
           onWheel={(event) =>
             parentRef.current?.scrollBy({ top: event.deltaY })
           }

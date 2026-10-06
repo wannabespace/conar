@@ -24,9 +24,10 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
-import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/core/collections'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
+
+import { ConnectionDetails } from './connection-details'
 
 const SYNC_OPTIONS = [
   {

@@ -1,34 +1,8 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { ColumnRenderer } from '@tamery/table'
-import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
-import type { ColumnPosition } from '@tamery/table/utils'
-import { formatCellValue } from '@tamery/table/utils'
-import { cn } from '@tamery/ui/lib/utils'
+import { valueToText } from '@tamery/shared/value-text'
 
-import { TableCell } from '~/core/table/cell/cell'
-
-const ResultColumnHeader = ({
-  columnId,
-  position,
-  style,
-}: {
-  columnId: string
-  position: ColumnPosition
-  style?: React.CSSProperties
-}) => (
-  <div
-    className={cn(
-      'flex w-full shrink-0 items-center px-2 py-1.5',
-      position === 'first' && 'pl-4',
-      position === 'last' && 'pr-4'
-    )}
-    style={style}
-  >
-    <div data-mask className="truncate text-xs font-medium" title={columnId}>
-      {columnId}
-    </div>
-  </div>
-)
+import type { Column } from '~/core/table/cell/utils'
+import { DataGrid } from '~/core/table/data-grid'
 
 const CHAR_WIDTH = 7
 const CELL_PADDING = 40
@@ -46,32 +20,13 @@ const columnWidth = (
     columnId.length,
     ...rows
       .slice(0, SAMPLED_ROWS)
-      .map((row) => formatCellValue(row[columnId]).length)
+      .map((row) => valueToText(row[columnId]).length)
   )
   return Math.min(
     Math.max(longest * CHAR_WIDTH + CELL_PADDING, MIN_WIDTH),
     isLast ? MAX_LAST_WIDTH : MAX_WIDTH
   )
 }
-
-const resultColumn = (
-  columnId: string,
-  connectionType: ConnectionType,
-  size: number
-): ColumnRenderer => ({
-  cell: (props) => (
-    <TableCell
-      {...props}
-      column={{ id: columnId, uiType: 'raw' }}
-      connectionType={connectionType}
-    />
-  ),
-  header: ({ position, style }) => (
-    <ResultColumnHeader columnId={columnId} position={position} style={style} />
-  ),
-  id: columnId,
-  size,
-})
 
 export const RunnerResultsTable = ({
   columns,
@@ -82,19 +37,12 @@ export const RunnerResultsTable = ({
   rows: Record<string, unknown>[]
   connectionType: ConnectionType
 }) => (
-  <TableProvider
+  <DataGrid
     rows={rows}
-    columns={columns.map((columnId, index) =>
-      resultColumn(
-        columnId,
-        connectionType,
-        columnWidth(columnId, rows, index === columns.length - 1)
-      )
-    )}
-  >
-    <Table className="h-full">
-      <TableHeader />
-      <TableBody data-mask zebra className="bg-transparent" />
-    </Table>
-  </TableProvider>
+    columns={columns.map((id): Column => ({ id, uiType: 'raw' }))}
+    connectionType={connectionType}
+    sizeOf={(column) =>
+      columnWidth(column.id, rows, column.id === columns.at(-1))
+    }
+  />
 )

@@ -24,12 +24,14 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import type { CSSProperties, ComponentRef } from 'react'
 import { useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
 import { useCollections } from '~/core/collections'
 import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
+import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
@@ -55,26 +57,26 @@ const CurrentTick = ({ className }: { className?: string }) => (
 
 const ConnectionSubMenu = ({
   group: { connection, resources },
-  firstResource,
+  lastResource,
   currentResourceId,
   onRemove,
   onNavigate,
 }: {
   group: ConnectionGroup
-  firstResource: ConnectionResource
+  lastResource: ConnectionResource
   currentResourceId: string | undefined
   onRemove: (connection: Connection) => void
   onNavigate: () => void
 }) => {
   const navigate = useNavigate()
-  const firstResourceLink = useConnectionResourceLinkParams(firstResource.id)
+  const lastResourceLink = useConnectionResourceLinkParams(lastResource.id)
 
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger
         onClick={() => {
           onNavigate()
-          navigate(firstResourceLink)
+          navigate(lastResourceLink)
         }}
       >
         <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
@@ -140,6 +142,7 @@ const ConnectionsDropdown = ({
   onRemove: (connection: Connection) => void
 }) => {
   const [open, setOpen] = useState(false)
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const atGuestLimit = !usePermissions().check('connection.create', {
     count: groups.length,
   })
@@ -189,15 +192,20 @@ const ConnectionsDropdown = ({
           </div>
         )}
         {groups.map((group) => {
-          const [firstResource] = group.resources
-          if (!firstResource) {
+          const lastOpenedId = lastOpenedResources.find((id) =>
+            group.resources.some((resource) => resource.id === id)
+          )
+          const lastResource =
+            group.resources.find((resource) => resource.id === lastOpenedId) ??
+            group.resources[0]
+          if (!lastResource) {
             return null
           }
           return (
             <ConnectionSubMenu
               key={group.connection.id}
               group={group}
-              firstResource={firstResource}
+              lastResource={lastResource}
               currentResourceId={currentResourceId}
               onRemove={onRemove}
               onNavigate={() => setOpen(false)}

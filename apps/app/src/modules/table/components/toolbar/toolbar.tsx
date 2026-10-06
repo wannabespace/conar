@@ -1,7 +1,5 @@
 import {
-  HashtagIcon,
   MoreHorizontalIcon,
-  PlusSignIcon,
   SourceCodeIcon,
   SproutIcon,
 } from '@hugeicons/core-free-icons'
@@ -9,173 +7,45 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
-import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { ExportDataMenu } from '~/components/export-data'
+import { ExportDataMenu } from '~/core/export/export-data'
 import {
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
 } from '~/core/queries/rows/list'
-import { resourceTableTotalQueryOptions } from '~/core/queries/rows/total'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
 
+import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
+import { ActionsAdd } from './actions/actions-add'
 import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
-import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
 import { ActionsSeed } from './actions/actions-seed'
-import { DraftsActions } from './drafts-actions'
+import { ActionsView } from './actions/actions-view'
 import { FilterSearchBar } from './filter-search-bar'
+import { TableStats } from './table-stats'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const fetchAllRows = async ({
-  connectionResource,
-  exportFilters,
-  filters,
-  orderBy,
-  schema,
-  table,
-}: {
-  connectionResource: Parameters<typeof connectionResourceToQueryParams>[0]
-  exportFilters?: ActiveFilter[]
-  filters: ActiveFilter[]
-  orderBy: Record<string, 'ASC' | 'DESC'>
-  schema: string
-  table: string
-}) => {
-  const data: Record<string, unknown>[] = []
-  const limit = 1000
-  let offset = 0
-  const queryParams = await connectionResourceToQueryParams(connectionResource)
-
-  while (true) {
-    // oxlint-disable-next-line no-await-in-loop
-    const batch = await resourceRowsQuery({
-      limit,
-      offset,
-      query: {
-        filters: exportFilters || filters,
-        filtersConcatOperator: exportFilters ? 'OR' : 'AND',
-        orderBy,
-      },
-      schema,
-      table,
-    }).run(queryParams)
-
-    data.push(...batch)
-
-    if (batch.length < limit) {
-      break
-    }
-
-    offset += limit
-  }
-
-  return data
-}
-
-const COMPACT_COUNT_FORMAT = {
-  maximumFractionDigits: 1,
-  notation: 'compact',
-} as const
-
-const TableStats = ({
-  exact,
-  failed,
-  isTotalFetching,
-  onRequestExact,
-  total,
-  totalUpdatedAt,
-}: {
-  exact: boolean
-  failed: boolean
-  isTotalFetching: boolean
-  onRequestExact: () => void
-  total?: { count: number; isEstimated?: boolean }
-  totalUpdatedAt: number
-}) => {
-  const canRequestExact = !failed && !exact && total?.isEstimated === true
-
-  return (
-    <Tooltip>
-      <TooltipTrigger render={<span className="flex" />}>
-        <Button
-          variant="outline"
-          disabled={!canRequestExact}
-          // oxlint-disable-next-line shadcn/no-restyle -- toolbar counters share one compact shape
-          className="gap-1.5 px-2.5 disabled:opacity-100"
-          onClick={onRequestExact}
-        >
-          <HugeiconsIcon
-            icon={HashtagIcon}
-            strokeWidth={2}
-            className="text-muted-foreground/60"
-          />
-          <span
-            className={cn(
-              'text-2xs font-normal tabular-nums',
-              canRequestExact &&
-                'decoration-muted-foreground/50 underline decoration-dotted underline-offset-2'
-            )}
-          >
-            {failed && <span className="text-muted-foreground">–</span>}
-            {!failed && total && (
-              <NumberFlow
-                value={total.count}
-                format={COMPACT_COUNT_FORMAT}
-                className={cn(
-                  'tabular-nums',
-                  isTotalFetching && 'text-muted-foreground/50 animate-pulse'
-                )}
-                prefix={total.isEstimated ? '~' : ''}
-              />
-            )}
-            {!failed && !total && (
-              <Skeleton className="h-2.5 w-6 rounded-full" />
-            )}
-          </span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="top">
-        {failed && 'No row count — the query failed.'}
-        {!failed && total && (
-          <div className="flex flex-col gap-0.5">
-            <span>
-              {total.isEstimated ? '~' : ''}
-              {total.count.toLocaleString()} row{total.count === 1 ? '' : 's'}
-              {canRequestExact && '. Click to get the exact count.'}
-            </span>
-            <span className="opacity-70">
-              Updated: {new Date(totalUpdatedAt).toLocaleTimeString()}
-            </span>
-          </div>
-        )}
-        {!failed && !total && 'Counting rows…'}
-      </TooltipContent>
-    </Tooltip>
-  )
-}
+const EXPORT_PAGE_SIZE = 1000
 
 export const TableToolbar = ({
   onAddColumn,
@@ -187,6 +57,7 @@ export const TableToolbar = ({
   schema: string
 }) => {
   const { connectionResource } = useRouteContext()
+  const { columns } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
@@ -198,6 +69,7 @@ export const TableToolbar = ({
     tablesAndSchemas?.schemas
       .find((s) => s.name === schema)
       ?.tables?.find((t) => t.name === table)?.type ?? 'table'
+  const isTable = tableType === 'table'
   const { filters, orderBy } = useSubscription(store, {
     selector: (state) => ({
       filters: enabledFilters(state.filters),
@@ -207,16 +79,17 @@ export const TableToolbar = ({
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
-  const [exact, setExact] = useState(false)
 
   const {
     data: rows = [],
+    hasNextPage,
     isError: isRowsError,
     isPending,
     isPlaceholderData: isRowsPlaceholder,
     isSuccess: isRowsSuccess,
   } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
+      columns,
       connectionResource,
       query: { filters, orderBy },
       schema,
@@ -224,70 +97,77 @@ export const TableToolbar = ({
     })
   )
 
-  const {
-    data: total,
-    isFetching: isTotalFetching,
-    dataUpdatedAt: totalUpdatedAt,
-  } = useQuery({
-    ...resourceTableTotalQueryOptions({
-      connectionResource,
-      query: { exact, filters },
-      schema,
-      table,
-    }),
-    enabled: isRowsSuccess && !isRowsPlaceholder,
-  })
-
   const getData = async ({
+    filters: selection,
     limit,
-    filters: dataFilters,
   }: {
-    limit?: number
     filters?: ActiveFilter[]
+    limit?: number
   }) => {
-    if (limit) {
-      return resourceRowsQuery({
-        limit,
-        offset: 0,
+    const queryParams =
+      await connectionResourceToQueryParams(connectionResource)
+    const fetchRows = (offset: number, pageSize: number) =>
+      resourceRowsQuery({
+        columns,
+        limit: pageSize,
+        offset,
         query: {
-          filters: dataFilters || filters,
-          filtersConcatOperator: dataFilters ? 'OR' : 'AND',
-          orderBy,
+          filters: selection ?? filters,
+          filtersConcatOperator: selection ? 'OR' : 'AND',
+          orderBy: {
+            ...orderBy,
+            ...Object.fromEntries(
+              columns
+                .filter(
+                  (column) => column.primaryKey && !(column.id in orderBy)
+                )
+                .map((column) => [column.id, 'ASC' as const])
+            ),
+          },
         },
         schema,
         table,
-      }).run(await connectionResourceToQueryParams(connectionResource))
+      }).run(queryParams)
+
+    if (limit) {
+      return fetchRows(0, limit)
     }
 
-    return fetchAllRows({
-      connectionResource,
-      exportFilters: dataFilters,
-      filters,
-      orderBy,
-      schema,
-      table,
-    })
+    const allRows: Record<string, unknown>[] = []
+    for (let offset = 0; ; offset += EXPORT_PAGE_SIZE) {
+      // oxlint-disable-next-line no-await-in-loop -- a short page is the only end signal
+      const page = await fetchRows(offset, EXPORT_PAGE_SIZE)
+      allRows.push(...page)
+      if (page.length < EXPORT_PAGE_SIZE) {
+        return allRows
+      }
+    }
   }
 
   return (
-    <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
+    <div className="flex shrink-0 items-start gap-2 px-3 py-2">
       <TableStats
-        exact={exact}
         failed={isRowsError}
-        isTotalFetching={isTotalFetching}
-        onRequestExact={() => setExact(true)}
-        total={total}
-        totalUpdatedAt={totalUpdatedAt}
+        filters={filters}
+        loaded={
+          isRowsSuccess && !isRowsPlaceholder && !hasNextPage
+            ? rows.length
+            : undefined
+        }
+        ready={isRowsSuccess && !isRowsPlaceholder}
+        schema={schema}
+        table={table}
       />
       <FilterSearchBar table={table} schema={schema} />
-      <DraftsActions table={table} schema={schema} />
-      {tableType === 'table' && <ActionsDelete table={table} schema={schema} />}
       <div className="flex shrink-0 items-center gap-1">
         <ActionsColumns />
         <ActionsOrder />
+        <ActionsView />
+        {isTable && <ActionsAdd onAddColumn={onAddColumn} />}
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
+              aria-label="More actions"
               render={
                 <DropdownMenuTrigger
                   render={<Button variant="outline" size="icon" />}
@@ -296,16 +176,10 @@ export const TableToolbar = ({
             >
               <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
             </TooltipTrigger>
-            <TooltipContent side="top">More actions</TooltipContent>
+            <TooltipContent side="bottom">More actions</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent side="top" align="end" className="min-w-44">
-            {tableType === 'table' && (
-              <DropdownMenuItem onClick={onAddColumn}>
-                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-                Add column
-              </DropdownMenuItem>
-            )}
-            {tableType === 'table' && (
+          <DropdownMenuContent align="end" className="min-w-44">
+            {isTable && (
               <DropdownMenuItem onClick={() => setSeedOpen(true)}>
                 <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />
                 Seed data
@@ -315,9 +189,9 @@ export const TableToolbar = ({
               selected={selected}
               filename={`${schema}_${table}`}
               getData={getData}
-              disabled={rows?.length === 0 || isPending}
+              disabled={rows.length === 0 || isPending}
             />
-            {tableType === 'table' && (
+            {isTable && (
               <DropdownMenuItem onClick={() => setCodeOpen(true)}>
                 <HugeiconsIcon icon={SourceCodeIcon} strokeWidth={2} />
                 Code
@@ -325,21 +199,21 @@ export const TableToolbar = ({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        {tableType === 'table' && (
-          <ActionsSeed
-            table={table}
-            schema={schema}
-            open={seedOpen}
-            onOpenChange={setSeedOpen}
-          />
-        )}
-        {tableType === 'table' && (
-          <ActionsCopy
-            table={table}
-            schema={schema}
-            open={codeOpen}
-            onOpenChange={setCodeOpen}
-          />
+        {isTable && (
+          <>
+            <ActionsSeed
+              table={table}
+              schema={schema}
+              open={seedOpen}
+              onOpenChange={setSeedOpen}
+            />
+            <ActionsCopy
+              table={table}
+              schema={schema}
+              open={codeOpen}
+              onOpenChange={setCodeOpen}
+            />
+          </>
         )}
       </div>
     </div>

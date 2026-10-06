@@ -2,12 +2,12 @@ import { partialMatchKey, useIsFetching } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { TabRefreshButton } from '~/components/tab-refresh-button'
 import { structureQueryKey } from '~/core/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/core/queries/policies/list'
 import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { resourceTriggersQueryOptions } from '~/core/queries/triggers/list'
+import { TabRefreshButton } from '~/core/tabs/refresh-button'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/lib/query-client'
 

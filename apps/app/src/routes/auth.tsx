@@ -113,7 +113,7 @@ const AuthPage = () => {
           await resetGuestState()
         }
 
-        router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
+        await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         posthog.capture(exchangeData.newUser ? 'signed_up' : 'signed_in')
         successAuthToast(!!exchangeData.newUser)
       },

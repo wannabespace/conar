@@ -7,6 +7,7 @@ import {
   transaction,
 } from '~/core/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
+import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
 
 import { gatesOf } from './context'
@@ -16,9 +17,6 @@ import { inApplyOrder, isDrop } from './statements'
 import type { DiagramDraft } from './statements'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-export const plural = (count: number, noun: string) =>
-  `${count} ${noun}${count === 1 ? '' : 's'}`
 
 export const applyConsequence = (
   drafts: DiagramDraft[],

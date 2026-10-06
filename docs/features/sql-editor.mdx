@@ -40,7 +40,7 @@ A **Run** button and a **⋯** menu (Explain, Edit with AI, Save statement; <kbd
 
 While a run is in flight, **Run all** turns into **Stop**, which cancels the statement on the database itself, not just in the editor. Results of statements that already finished stay; the rest show as **Stopped**. Closing a query tab stops its run too. A run also stops at the first statement that fails, so a script never carries on past an error.
 
-After a statement that changes the schema (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`, or a `DO`/`EXEC`/`CALL` that might) runs, table, column and enum suggestions refresh.
+After a statement that changes the schema (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`, or a `DO`/`EXEC`/`CALL` that might) runs, table, column and enum suggestions refresh. After one that writes rows (`INSERT`, `UPDATE`, `DELETE`, `MERGE`, `COPY`, or a `DO`/`EXEC`/`CALL`), open tables reload their rows and row counts.
 
 A `BEGIN … COMMIT` (or `ROLLBACK`, and Postgres's `END`/`ABORT`) block runs as one transaction: each statement inside it is sent separately within the same transaction, `ROLLBACK TO SAVEPOINT` stays inside it, and a failure or **Stop** rolls the whole block back. An isolation level or `READ ONLY`/`READ WRITE` on the opening statement applies to the block. MySQL commits DDL (`CREATE`, `ALTER`, `DROP`) the moment it runs, so a `ROLLBACK` cannot undo it there. **Explain** on a block explains each statement inside it. Run the block together with its `COMMIT` or `ROLLBACK` — a lone `BEGIN` is refused, since an open transaction would hold the connection the rest of the app uses. ClickHouse has no transactions, so there `BEGIN` is refused too.
 

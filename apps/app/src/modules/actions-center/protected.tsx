@@ -14,7 +14,9 @@ import { actionCenterOpen } from './action-center-open'
 import { ActionsCenter } from './actions-center'
 
 const CommandPaletteButton = () => (
-  <Tooltip>
+  <Tooltip
+    shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />}
+  >
     <TooltipTrigger
       render={
         <Button
@@ -27,10 +29,7 @@ const CommandPaletteButton = () => (
     >
       <HugeiconsIcon icon={CommandIcon} strokeWidth={2} className="size-4" />
     </TooltipTrigger>
-    <TooltipContent side="bottom">
-      Command palette
-      <KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />
-    </TooltipContent>
+    <TooltipContent side="bottom">Command palette</TooltipContent>
   </Tooltip>
 )
 

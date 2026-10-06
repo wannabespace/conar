@@ -24,7 +24,9 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
-import { applyConsequence, plural } from '../lib/apply'
+import { plural } from '~/lib/plural'
+
+import { applyConsequence } from '../lib/apply'
 import { tableMatches, useDiagram } from '../lib/context'
 import { isDrop } from '../lib/statements'
 import type { DiagramDraft } from '../lib/statements'
@@ -131,7 +133,13 @@ export const Toolbar = ({
                   Review changes and their SQL
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
+              <Tooltip
+                shortcut={
+                  !applying && (
+                    <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
+                  )
+                }
+              >
                 <TooltipTrigger
                   render={
                     <Button
@@ -146,15 +154,10 @@ export const Toolbar = ({
                   </LoadingContent>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <div className="flex flex-col gap-0.5">
-                    <span>
-                      {drafts.some(isDrop)
-                        ? `Review ${plural(drafts.length, 'change')} before applying. `
-                        : `Apply ${plural(drafts.length, 'change')} to the database. `}
-                      {consequence.description}
-                    </span>
-                    <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
-                  </div>
+                  {drafts.some(isDrop)
+                    ? `Review ${plural(drafts.length, 'change')} before applying. `
+                    : `Apply ${plural(drafts.length, 'change')} to the database. `}
+                  {consequence.description}
                 </TooltipContent>
               </Tooltip>
             </motion.div>

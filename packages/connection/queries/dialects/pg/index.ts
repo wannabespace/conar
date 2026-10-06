@@ -1,4 +1,4 @@
-import type { QueryExecutor, TransactionSettings } from '../..'
+import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
 import { registerTransaction, transactionQueries } from '../../transactions'
@@ -9,15 +9,7 @@ export const query = {
   ...transactionQueries,
 
   beginTransaction: handleQueryError(
-    async ({
-      accessMode,
-      connectionString,
-      isolationLevel,
-      ownerId,
-    }: {
-      connectionString: string
-      ownerId?: string
-    } & TransactionSettings) => {
+    async ({ accessMode, connectionString, isolationLevel, ownerId }) => {
       const pool = await getPool(connectionString)
       const client = await pool.connect()
 
@@ -41,8 +33,8 @@ export const query = {
           commit: async () => {
             await client.query('COMMIT')
           },
-          execute: (sqlText, values, options) =>
-            runOn({ client, connectionString, pool }, sqlText, values, options),
+          execute: (sql, values, options) =>
+            runOn(client, { connectionString, pool, sql, values }, options),
           release: () => {
             client.release()
             return Promise.resolve()
@@ -53,20 +45,20 @@ export const query = {
         },
         ownerId
       )
-
       return { txId }
     }
   ),
+
   cancel,
+
   execute: handleQueryError(
-    async ({ connectionString, query: sqlText, values = [], ...options }) => {
+    async ({ connectionString, query: sql, values = [], ...options }) => {
       const pool = await getPool(connectionString)
       const client = await pool.connect()
       try {
         return await runOn(
-          { client, connectionString, pool },
-          sqlText,
-          values,
+          client,
+          { connectionString, pool, sql, values },
           options
         )
       } finally {

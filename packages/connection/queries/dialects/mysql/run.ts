@@ -4,27 +4,47 @@ import type * as mysql2Promise from 'mysql2/promise'
 import type { RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
-import { killQuery } from './cancel'
+import { mysql2 } from './client'
 
-const affectedRowsOf = (header: unknown) =>
-  typeof header === 'object' &&
-  header !== null &&
-  'affectedRows' in header &&
-  typeof header.affectedRows === 'number'
-    ? header.affectedRows
-    : null
+const setOf = (rows: unknown, fields: unknown, maxRows?: number) => {
+  if (Array.isArray(rows) && Array.isArray(fields)) {
+    return resultSet(
+      {
+        affectedRows: null,
+        columns: fields.map((field: mysql2Promise.FieldPacket) => field.name),
+        rows,
+      },
+      maxRows
+    )
+  }
+  const affectedRows =
+    typeof rows === 'object' &&
+    rows !== null &&
+    'affectedRows' in rows &&
+    typeof rows.affectedRows === 'number'
+      ? rows.affectedRows
+      : null
+  return resultSet({ affectedRows, columns: [], rows: [] }, maxRows)
+}
 
-const setOf = (rows: unknown, fields: unknown, maxRows?: number) =>
-  resultSet(
-    Array.isArray(rows) && Array.isArray(fields)
-      ? {
-          affectedRows: null,
-          columns: fields.map((field: mysql2Promise.FieldPacket) => field.name),
-          rows,
-        }
-      : { affectedRows: affectedRowsOf(rows), columns: [], rows: [] },
-    maxRows
-  )
+// mysql2 fills every `?`, so one inside a quoted literal or identifier would take a later placeholder's value.
+const placeholderRegex =
+  /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`]|``)*`|\?/gu
+
+export const inlineValues = (
+  sql: string,
+  values: unknown[],
+  escape: (value: unknown) => string
+) => {
+  let index = 0
+  return sql.replace(placeholderRegex, (token) => {
+    if (token !== '?') {
+      return token
+    }
+    index += 1
+    return escape(values[index - 1])
+  })
+}
 
 export const runOn = async (
   connection: mysql2Promise.PoolConnection,
@@ -41,14 +61,27 @@ export const runOn = async (
   },
   { maxRows, queryId }: RunOptions
 ) => {
+  // The pool holds one connection and it is busy, so `KILL QUERY` needs its own.
+  const cancel = async () => {
+    const killer = await mysql2.createConnection(conf)
+    try {
+      await killer.query('KILL QUERY ?', [connection.threadId])
+    } finally {
+      await killer.end()
+    }
+  }
+
   const start = performance.now()
   const [rows, fields] = await cancellable(
-    {
-      cancel: () => killQuery(conf, connection.threadId),
-      connectionString,
-      queryId,
-    },
-    () => connection.query({ rowsAsArray: true, sql }, values)
+    { cancel, connectionString, queryId },
+    () =>
+      connection.query({
+        rowsAsArray: true,
+        sql:
+          values.length > 0
+            ? inlineValues(sql, values, (value) => connection.escape(value))
+            : sql,
+      })
   )
   const fieldSets: unknown[] = fields ?? []
   // `CALL` answers with one row set per SELECT inside the procedure, then a status header.

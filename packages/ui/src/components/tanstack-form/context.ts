@@ -3,8 +3,7 @@ import { createFormHookContexts } from '@tanstack/react-form'
 import type { ComponentProps } from 'react'
 
 export const isFieldInvalid = (field: AnyFieldApi) =>
-  !field.state.meta.isValid &&
-  (field.state.meta.isBlurred || field.form.state.submissionAttempts > 0)
+  !field.state.meta.isValid && field.state.meta.isBlurred
 
 export const fieldErrorMessage = (field: AnyFieldApi) => {
   if (!isFieldInvalid(field)) {

@@ -1,10 +1,4 @@
-import {
-  CloudIcon,
-  CrownIcon,
-  DatabaseIcon,
-  LinkSquare02Icon,
-  SparklesIcon,
-} from '@hugeicons/core-free-icons'
+import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -23,21 +17,6 @@ import { useSubscription as useUserSubscription } from '~/core/user/use-subscrip
 import { posthog } from '~/lib/posthog'
 import { accountUrl } from '~/lib/urls'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
-
-const perks = [
-  {
-    icon: DatabaseIcon,
-    label: 'Unlimited connections and workspaces',
-  },
-  {
-    icon: SparklesIcon,
-    label: 'Unlimited AI assistant',
-  },
-  {
-    icon: CloudIcon,
-    label: 'Cloud sync on all your devices',
-  },
-]
 
 export const SubscriptionModal = () => {
   const isSubscriptionDialogOpen = useSubscription(appStore, {
@@ -60,72 +39,39 @@ export const SubscriptionModal = () => {
       open={isSubscriptionDialogOpen}
       onOpenChange={setIsSubscriptionDialogOpen}
     >
-      {/* oxlint-disable-next-line shadcn/no-restyle -- the upsell modal's brand gradient */}
-      <DialogContent className="from-primary/8 via-background to-background gap-7 bg-linear-to-b via-40% sm:max-w-lg">
-        <DialogHeader className="mt-4 items-center text-center">
-          <div className="relative mb-3">
-            <div className="bg-primary/20 absolute -inset-5 rounded-full blur-2xl" />
-            <div className="bg-primary/10 inset-ring-primary/15 relative flex size-14 items-center justify-center rounded-2xl inset-ring">
-              <HugeiconsIcon
-                icon={CrownIcon}
-                strokeWidth={2}
-                className="text-primary size-7"
-              />
-            </div>
-          </div>
-          {/* oxlint-disable-next-line shadcn/no-restyle -- the upsell modal's headline */}
-          <DialogTitle className="text-lg font-semibold">
-            Tamery Pro
-          </DialogTitle>
-          <DialogDescription className="mt-1">
-            Everything Tamery can do, without limits.
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>This one is part of Pro</DialogTitle>
+          <DialogDescription>
+            Upgrade to unlock this and everything else. Tamery is independent,
+            and your support is what keeps it going.
           </DialogDescription>
         </DialogHeader>
-        <ul className="divide-foreground/5 bg-foreground/3 divide-y rounded-xl">
-          {perks.map((perk) => (
-            <li key={perk.label} className="flex items-center gap-3 px-4 py-3">
-              <HugeiconsIcon
-                icon={perk.icon}
-                strokeWidth={2}
-                className="text-primary size-4.5 shrink-0"
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setIsSubscriptionDialogOpen(false)}
+          >
+            Maybe Later
+          </Button>
+          <Button
+            render={
+              <a
+                href={accountUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Upgrade to Pro"
               />
-              <span className="text-sm">{perk.label}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="space-y-4">
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsSubscriptionDialogOpen(false)}
-              className="sm:flex-1"
-            >
-              Maybe Later
-            </Button>
-            <Button
-              className="sm:flex-1"
-              render={
-                <a
-                  href={accountUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Upgrade to Pro"
-                />
-              }
-            >
-              Upgrade to Pro
-              <HugeiconsIcon
-                icon={LinkSquare02Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
-            </Button>
-          </DialogFooter>
-          <p className="text-muted-foreground text-center text-xs">
-            Indie-built and user-supported — your subscription funds
-            development.
-          </p>
-        </div>
+            }
+          >
+            Upgrade to Pro
+            <HugeiconsIcon
+              icon={LinkSquare02Icon}
+              strokeWidth={2}
+              className="size-4"
+            />
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

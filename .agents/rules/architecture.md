@@ -7,7 +7,7 @@
 | Table page state | Two seitu stores per `{id, schema, table}`: `tablePageStore` (localStorage) and `tableSessionStore` (memory). **Selection and drafts never persist** — they are large, change per click, and every cell subscribes, so persisting them makes each notify re-read and re-compare the stored JSON. |
 | Persisted collections | `persistedCollectionOptions` takes `schemaVersion: PERSISTED_SCHEMA_VERSION`, never a literal — mixed versions reset each other's tables on every boot. Bump the const to invalidate all local data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
-| Permissions | Permix, defined once in `packages/shared/permissions.ts`: `permissionsOf({ subscription, user })` maps the user and their active subscription to rules (anonymous = guest, else subscription = pro, else free). Server procedures `.use(permissionsMiddleware)` then `permix.checkMiddleware('<entity>.<action>')`, or check `context.permissions` inline when the refusal needs its own declared error. The client instance (`core/user/permissions.ts`) starts with no rules (`check` throws until `setup`), so the `_protected` guard awaits `loadPermissions()` (session and subscription list from their `localStorage` caches, network only when empty; guests skip the subscription) before anything renders or a child guard checks; `usePermissionsSync` then keeps the rules current. **Render reads `usePermissions().check`** (a plain `permix.check` in render never sees the real access arrive); A press on a locked control goes through `checkOrUpgrade(path, data?)`, which prompts a guest to sign in (hint per permission group) or opens the subscription dialog; plain `permix.check` is for route guards and lazily built menus. Only user/plan grants live here — what a database engine supports stays the `capabilities.ts` record. |
+| Permissions | Permix, defined once in `packages/shared/permissions.ts`: `permissionsOf({ subscription, user })` maps the user and their active subscription to rules (anonymous = guest, else subscription = pro, else free). Server procedures `.use(permissionsMiddleware)` then `permix.checkMiddleware('<entity>.<action>')`, or check `context.permissions` inline when the refusal needs its own declared error. The client instance (`core/user/permissions.ts`) has no rules until `loadPermissions()`, which the `_protected` guard awaits before anything renders. **Render reads `usePermissions().check`** (a plain `permix.check` in render never sees the real access arrive); a press on a locked control goes through `checkOrUpgrade(path, data?)`, which prompts a guest to sign in or opens the subscription dialog for a member; plain `permix.check` is for route guards and lazily built menus. Only user/plan grants live here — what a database engine supports stays the `capabilities.ts` record. |
 | Auth | Better Auth — not custom JWT, not NextAuth. The client session is mirrored to `localStorage` and fed back through `hydrateSession` at boot (`lib/auth.ts`), so a signed-in user boots offline; read it via `getSessionUser`, not `authClient.getSession`, which always hits the network. Client plugins come from `better-auth/client/plugins` or a plugin's own subpath; `better-auth/plugins` is the **server** barrel and drags the schema builders into the browser. |
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
@@ -17,7 +17,7 @@
 | Markdown | Kit `Response` (streamdown) — never react-markdown or a bespoke pipeline. |
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
 | Styles | TailwindCSS v4 — no inline `style=` for layout or theme values, except where a library hard-codes inline styles no class can beat. |
-| Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
+| Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. The compiler also skips a `use*` function that calls no hooks — mark it `'use memo'` when its return values feed props or context. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
 | Analytics | PostHog through the lazy `~/lib/posthog` facade. A user-facing `useMutation` names its event in `meta: { event: 'object_verb' }` and the `queryClient` mutation cache captures it with `success`; other actions call `posthog.capture` directly. Properties carry enums and counts only — never SQL, names, values or error messages (privacy policy promises anonymized events). |
 | Feature code | A feature is a module folder (see Modules). Core single-page files live next to the route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`); `core/<domain>/` holds data and code shared across modules (see Core layout). |
 
@@ -32,13 +32,13 @@
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
   - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries.
-  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane, the FK reference table.
+  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
 - `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 
 ## Core layout (`apps/app/src/core`)
 
-One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`, generic UI in `components/`.
+One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder.
 
 | Folder | Holds |
 | --- | --- |
@@ -46,12 +46,14 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `workspace/`, `user/` | Workspace records and hooks; the user's subscription |
 | `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link |
 | `runtime/` | Running SQL: `createQuery`, the proxy, per-engine Kysely dialects, the query log |
-| `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types |
+| `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types; the drop confirmation dialog |
 | `queries/<subject>/` | One file per catalog or row statement (see below) |
-| `tabs/` | Tab ids, kind resolution, open/close/rename actions |
+| `tabs/` | Tab ids, kind resolution, open/close/rename actions, the tab refresh button |
 | `table/` | Data-grid cells, the table session store, the table and column forms |
+| `drafts/` | The staged-changes review drawer and discard button the table and visualizer share |
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
+| `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
 
 ## ArkType config ordering
 
@@ -73,7 +75,7 @@ Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the act
 
 ## Connection introspection queries
 
-`core/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped and **every query is its own file** (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`), each exporting one `<verb><Subject>Query`; the statement builders they share sit in `shape.ts` (`dialects.md`). **No barrels** — import the leaf file. A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's. Query files hold queries only: a feature that saves several objects at once (the visualizer's Apply) picks and sequences the queries in its own route code.
+`core/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped and **every query is its own file** (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`), each exporting one `<verb><Subject>Query`; the statement builders they share sit in `shape.ts` (`dialects.md`). A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's. Query files hold queries only: a feature that saves several objects at once (the visualizer's Apply) picks and sequences the queries in its own route code.
 
 Each file is one statement, as a `createQuery` covering every dialect — what a dialect that cannot run it does is `dialects.md`. To run several queries atomically, open `transaction(queryParams)` from `runtime/query.ts` and pass its `tx` as `run`'s second argument.
 
@@ -84,8 +86,4 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 
 ## Reach for the library before writing machinery
 
-Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.
-
-- **A cast is a smell.** Model the shape in ArkType instead of `as` — a schema deletes both the cast and the validation gap. A surviving cast sits at a wire boundary with a comment saying why.
-- **Numbers need a reason.** A magic bound gets a comment explaining the trade-off; no reason → no constant.
-- **Simplify on the way out.** A hook keeping cached state + a comparison key + a stale guard usually wants one derived value; two render paths for the same content usually want one normalized shape.
+Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. A well-known format or algorithm (CSV/TSV, diff, glob, semver) goes to a small, maintained package rather than a hand-written parser; adding the dependency is the user's call, so propose it. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.

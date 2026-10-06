@@ -194,6 +194,7 @@ export const EditableList = ({
   addLabel = 'Add item',
   error,
   items,
+  onBlur,
   onItemsChange,
   placeholder = 'Value',
   readOnly = false,
@@ -201,6 +202,7 @@ export const EditableList = ({
   addLabel?: string
   error?: string | undefined
   items: EditableListItem[]
+  onBlur?: () => void
   onItemsChange: (items: EditableListItem[]) => void
   placeholder?: string
   readOnly?: boolean
@@ -286,7 +288,7 @@ export const EditableList = ({
   }
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-2" onBlur={onBlur}>
       {rows.length > 0 && (
         <div
           data-invalid={listError ? true : undefined}

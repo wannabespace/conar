@@ -30,14 +30,48 @@ const MONGO_CONDITIONS: Record<
   notLike: ([value]) => ({ $not: { $regex: likeToRegex(value) } }),
 }
 
-export const toMongoFilter = (
+const condition = ({ ref, values }: Pick<ActiveFilter, 'ref' | 'values'>) =>
+  MONGO_CONDITIONS[ref.operator](values)
+
+const viaField = (index: number) => `__via_${index}`
+
+// `$lookup` combining `localField` with `pipeline` needs MongoDB 5.0+, and its `from` cannot leave the current database, so `via.schema` goes unused.
+export const toMongoPipeline = (
   filters: ActiveFilter[],
   concatOperator: 'AND' | 'OR' = 'AND'
-) =>
-  filters.length === 0
-    ? {}
-    : {
-        [concatOperator === 'AND' ? '$and' : '$or']: filters.map((filter) => ({
-          [filter.column]: MONGO_CONDITIONS[filter.ref.operator](filter.values),
-        })),
-      }
+) => {
+  if (filters.length === 0) {
+    return []
+  }
+  const lookups = filters.flatMap(({ column, via, ...filter }, index) =>
+    via
+      ? [
+          {
+            $lookup: {
+              as: viaField(index),
+              foreignField: via.key,
+              from: via.table,
+              localField: column,
+              pipeline: [
+                { $match: { [via.target]: condition(filter) } },
+                { $limit: 1 },
+              ],
+            },
+          },
+        ]
+      : []
+  )
+  const match = {
+    $match: {
+      [concatOperator === 'AND' ? '$and' : '$or']: filters.map(
+        (filter, index) =>
+          filter.via
+            ? { [viaField(index)]: { $ne: [] } }
+            : { [filter.column]: condition(filter) }
+      ),
+    },
+  }
+  return lookups.length === 0
+    ? [match]
+    : [...lookups, match, { $unset: lookups.map(({ $lookup }) => $lookup.as) }]
+}

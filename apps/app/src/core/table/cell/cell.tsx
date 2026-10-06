@@ -1,510 +1,219 @@
-import {
-  ArrowDownLeft01Icon,
-  ArrowUpRight01Icon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { sleep } from '@tamery/shared/utils'
-import type { TableCellProps } from '@tamery/table'
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@tamery/ui/components/popover'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { Checkbox } from '@tamery/ui/components/checkbox'
 import { cn } from '@tamery/ui/lib/utils'
-import type { ComponentProps } from 'react'
-import { useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
+import { useRef } from 'react'
 
 import { createTransformer } from '~/core/transformers/create-transformer'
+import type { ValueTransformer } from '~/core/transformers/value-transformer'
+import { isNested } from '~/core/transformers/value-transformer'
 
-import { TableCellContent } from './cell-content'
-import type { SaveStatus } from './cell-context'
-import { useCellContext } from './cell-context'
-import { TableCellContextMenu } from './cell-menu'
-import { CellPopoverContent } from './cell-popover'
-import { TableCellProvider } from './cell-provider'
-import { TableCellReferences } from './cell-references'
-import { ReferenceTable } from './reference-table'
-import type { Column, ColumnHandlers } from './utils'
+import type { DataGridLayout } from '../cursor'
+import { useCellCursor } from '../cursor'
+import type { Draft } from '../session'
+import { CellField } from './cell-editor'
+import { Tag } from './cell-select'
+import { JsonPeek, JsonTree } from './json-tree'
+import type { Column } from './utils'
+import { hasTabularFigures } from './utils'
 
-const SetNullAlertDialog = ({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) => {
-  const { value, onQueueValue } = useCellContext()
-
-  const setNull = () => {
-    if (!onQueueValue) {
-      return
-    }
-
-    onQueueValue(null)
-    onOpenChange(false)
-  }
-
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Set value to null?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will set the cell value to{' '}
-            <code className="font-mono">null</code>. This action can be undone
-            by editing the cell again.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-          <AlertDialogCancel
-            variant="warning"
-            onClick={setNull}
-            disabled={value === null}
-          >
-            Set to null
-          </AlertDialogCancel>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-}
-
-const ForeignButton = (props: ComponentProps<'button'>) => (
-  <Button variant="ghost" size="icon-xs" {...props}>
-    <HugeiconsIcon
-      icon={ArrowUpRight01Icon}
-      strokeWidth={2}
-      className="text-muted-foreground size-3"
-    />
-  </Button>
-)
-
-const ReferenceButton = ({
-  children,
-  ...props
-}: ComponentProps<typeof Button>) => (
-  <Button
-    variant="ghost"
-    size="xs"
-    // oxlint-disable-next-line shadcn/no-restyle -- a tight chip inside a table cell
-    className="px-1.5"
-    {...props}
-  >
-    <HugeiconsIcon
-      icon={ArrowDownLeft01Icon}
-      strokeWidth={2}
-      className="text-muted-foreground size-3"
-    />
-    <span className="text-muted-foreground text-xs">{children}</span>
-  </Button>
-)
-
-export interface TableCellDraft {
-  value: unknown
-  error?: string
-  isCommitting?: boolean
-}
-
-const getDraftSaveStatus = (
-  draft: TableCellDraft | undefined,
-  hasDraft: boolean
-): SaveStatus => {
-  if (draft?.error) {
-    return 'error'
-  }
-  if (draft?.isCommitting) {
-    return 'pending'
-  }
-  if (hasDraft) {
-    return 'draft'
-  }
-  return 'idle'
-}
-
-const getCellClassName = ({
-  isPopoverOpen,
-  isForeignOpen,
-  isReferencesOpen,
-  status,
+const CellValue = ({
   column,
-}: {
-  isPopoverOpen: boolean
-  isForeignOpen: boolean
-  isReferencesOpen: boolean
-  status: SaveStatus
-  column: Column
-}) =>
-  cn(
-    isPopoverOpen && 'bg-primary/8 inset-ring-primary/60',
-    (isForeignOpen || isReferencesOpen) && 'bg-accent inset-ring-border',
-    status === 'error' && 'bg-destructive/10 inset-ring-destructive/40',
-    status === 'pending' && 'bg-primary/8 animate-pulse',
-    status === 'draft' && 'bg-primary/12 inset-ring-primary/30 italic',
-    (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!'
-  )
-
-const CellForeignPopover = ({
-  isOpen,
-  onOpenChange,
-  onActivate,
-  foreign,
-  value,
-}: {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onActivate: () => void
-  foreign: NonNullable<Column['foreign']>
-  value: unknown
-}) => (
-  <Popover open={isOpen} onOpenChange={onOpenChange}>
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <PopoverTrigger
-            render={
-              <ForeignButton
-                onDoubleClick={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onActivate()
-                }}
-              />
-            }
-          />
-        }
-      />
-      <TooltipContent side="right">See foreign record</TooltipContent>
-    </Tooltip>
-    <PopoverContent
-      // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
-      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
-      onDoubleClick={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <ReferenceTable
-        schema={foreign.schema}
-        table={foreign.table}
-        column={foreign.column}
-        value={value}
-      />
-    </PopoverContent>
-  </Popover>
-)
-
-const CellReferencesPopover = ({
-  isOpen,
-  onOpenChange,
-  onActivate,
-  references,
-  value,
-}: {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onActivate: () => void
-  references: NonNullable<Column['references']>
-  value: unknown
-}) => (
-  <Popover open={isOpen} onOpenChange={onOpenChange}>
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <PopoverTrigger
-            render={
-              <ReferenceButton
-                onDoubleClick={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onActivate()
-                }}
-              />
-            }
-          />
-        }
-      >
-        {references.length}
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        See referenced records from {references.length} table
-        {references.length === 1 ? '' : 's'}
-      </TooltipContent>
-    </Tooltip>
-    <PopoverContent
-      // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
-      className="h-[45vh] w-[80vw] gap-0 overflow-hidden p-0"
-      onDoubleClick={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <TableCellReferences references={references} value={value} />
-    </PopoverContent>
-  </Popover>
-)
-
-const InteractiveTableCell = ({
-  column,
-  displayValue,
-  draftError,
-  effectiveValue,
-  onAddFilter,
-  onDisableInteract,
-  onOrder,
-  onQueueValue,
-  onRename,
-  order,
-  position,
-  rowIndex,
-  status,
-  style,
+  label,
+  layout,
+  size,
   transformer,
+  value,
 }: {
   column: Column
-  displayValue: string
-  draftError?: string
-  effectiveValue: unknown
-  onDisableInteract: () => void
-  order?: 'ASC' | 'DESC' | null
-  position: TableCellProps['position']
-  rowIndex: number
-  status: SaveStatus
-  style: TableCellProps['style']
-  transformer: ReturnType<typeof createTransformer>
-} & ColumnHandlers) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [isForeignOpen, setIsForeignOpen] = useState(false)
-  const [isReferencesOpen, setIsReferencesOpen] = useState(false)
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
-  const [isBig, setIsBig] = useState(false)
-  const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
-
-  const cellClassName = getCellClassName({
-    column,
-    isForeignOpen,
-    isPopoverOpen,
-    isReferencesOpen,
-    status,
-  })
-
-  const anyOverlayOpen =
-    isPopoverOpen ||
-    isForeignOpen ||
-    isReferencesOpen ||
-    isContextMenuOpen ||
-    isSetNullDialogOpen
-
-  const disableInteractIfPossible = async () => {
-    if (!anyOverlayOpen) {
-      await sleep(200)
-      onDisableInteract()
+  label?: string
+  layout: DataGridLayout
+  size: number
+  transformer: ValueTransformer
+  value: unknown
+}) => {
+  if (value === undefined) {
+    return <span className="italic">default</span>
+  }
+  if (value !== null) {
+    switch (column.uiType) {
+      case 'boolean': {
+        return (
+          <Checkbox
+            aria-label={`Value of ${column.id}`}
+            checked={transformer.fromConnection(value).toUI() === true}
+            readOnly
+            tabIndex={-1}
+            className={cn(layout === 'documents' && 'my-0.5')}
+          />
+        )
+      }
+      case 'select': {
+        return <Tag column={column} value={String(value)} />
+      }
+      case 'list': {
+        const items: unknown = transformer.fromConnection(value).toUI()
+        if (Array.isArray(items) && items.length > 0) {
+          return (
+            <div
+              className={cn(
+                'flex min-w-0 flex-1 gap-1',
+                layout === 'documents'
+                  ? 'flex-wrap py-0.5'
+                  : 'end-fade overflow-hidden'
+              )}
+            >
+              {items.map((item, index) => (
+                <Tag key={index} column={column} value={String(item)} />
+              ))}
+            </div>
+          )
+        }
+        break
+      }
+      default: {
+        break
+      }
+    }
+    if (label !== undefined) {
+      return (
+        <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="max-w-2/3 shrink-0 truncate">{label}</span>
+          <span className="text-muted-foreground min-w-0 truncate tabular-nums">
+            {transformer.toDisplay(value, size)}
+          </span>
+        </span>
+      )
+    }
+    if (layout === 'documents' && isNested(value)) {
+      return (
+        <div className="min-w-0 flex-1 py-0.5">
+          <JsonTree value={value} />
+        </div>
+      )
     }
   }
-
   return (
-    <TableCellProvider
-      column={column}
-      rowIndex={rowIndex}
-      transformer={transformer}
-      value={effectiveValue}
-      onQueueValue={onQueueValue}
-      onAddFilter={onAddFilter}
-      onOrder={onOrder}
-      order={order}
-      onRename={onRename}
+    <span
+      data-mask
+      className={cn(
+        layout === 'documents'
+          ? 'my-0.5 line-clamp-4 min-w-0 flex-1 wrap-break-word whitespace-pre-wrap'
+          : 'truncate',
+        hasTabularFigures(column) && 'tabular-nums'
+      )}
     >
-      <SetNullAlertDialog
-        open={isSetNullDialogOpen}
-        onOpenChange={(open) => {
-          setIsSetNullDialogOpen(open)
-          if (!open) {
-            disableInteractIfPossible()
-          }
-        }}
-      />
-      <TableCellContextMenu
-        open={isContextMenuOpen}
-        onOpenChange={(open) => {
-          setIsContextMenuOpen(open)
-          if (!open) {
-            disableInteractIfPossible()
-          }
-        }}
-        style={style}
-        onSetNull={
-          onQueueValue && column.isNullable
-            ? () => setIsSetNullDialogOpen(true)
-            : undefined
-        }
-      >
-        <Popover
-          open={isPopoverOpen}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setIsPopoverOpen(isOpen)
-              setIsBig(false)
-            }
-          }}
-        >
-          <PopoverTrigger
-            nativeButton={false}
-            onDoubleClick={() => setIsPopoverOpen(true)}
-            onMouseLeave={disableInteractIfPossible}
-            render={
-              <TableCellContent
-                style={style}
-                value={effectiveValue}
-                position={position}
-                className={cellClassName}
-                column={column}
-                title={draftError}
-              />
-            }
-          >
-            <span className="truncate">{displayValue}</span>
-            {!!effectiveValue && column.foreign && (
-              <CellForeignPopover
-                isOpen={isForeignOpen}
-                onOpenChange={setIsForeignOpen}
-                onActivate={() => {
-                  setIsForeignOpen(true)
-                  setIsPopoverOpen(false)
-                  setIsReferencesOpen(false)
-                }}
-                foreign={column.foreign}
-                value={effectiveValue}
-              />
-            )}
-            {!!effectiveValue &&
-              column.references &&
-              column.references.length > 0 && (
-                <CellReferencesPopover
-                  isOpen={isReferencesOpen}
-                  onOpenChange={setIsReferencesOpen}
-                  onActivate={() => {
-                    setIsReferencesOpen(true)
-                    setIsPopoverOpen(false)
-                    setIsForeignOpen(false)
-                  }}
-                  references={column.references}
-                  value={effectiveValue}
-                />
-              )}
-          </PopoverTrigger>
-          <PopoverContent
-            className={cn(
-              // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
-              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s]`,
-              isBig && `w-[min(50vw,60rem)]`
-            )}
-            onAnimationEnd={disableInteractIfPossible}
-          >
-            <CellPopoverContent
-              isBig={isBig}
-              setIsBig={setIsBig}
-              onClose={() => setIsPopoverOpen(false)}
-              hasUpdateFn={!!onQueueValue}
-              onSetNull={() => setIsSetNullDialogOpen(true)}
-            />
-          </PopoverContent>
-        </Popover>
-      </TableCellContextMenu>
-    </TableCellProvider>
+      {transformer.toDisplay(value, size)}
+    </span>
   )
+}
+
+const overlayClass = (
+  state: ReturnType<typeof useCellCursor>['state'],
+  draft: Pick<Draft, 'error' | 'isCommitting'> | undefined
+) =>
+  cn(
+    'pointer-events-none absolute inset-0 -z-10',
+    draft && 'bg-warning/15',
+    draft?.error && 'bg-destructive/10 inset-ring-destructive/40 inset-ring',
+    (state === 'cursor' || state === 'peek' || state === 'range-cursor') &&
+      'inset-ring-foreground/20 group-focus-within/grid:inset-ring-ring/50 inset-ring-3',
+    (state === 'range' || state === 'range-cursor') && 'bg-primary/10'
+  )
+
+/** Where the grid layout places a cell; the documents layout has none, so a value there is never truncated. */
+export interface CellGeometry {
+  isDragging?: boolean
+  pinned?: boolean
+  size?: number
+  style?: CSSProperties
 }
 
 export const TableCell = ({
-  value,
-  rowIndex,
+  children,
   column,
-  style,
-  position,
-  size,
-  onQueueValue,
-  onAddFilter,
-  onOrder,
-  order,
-  onRename,
   connectionType,
   draft,
-}: {
+  flash,
+  isDragging,
+  label,
+  pinned,
+  rowIndex,
+  size = Number.MAX_SAFE_INTEGER,
+  style,
+  value,
+}: CellGeometry & {
+  children?: ReactNode
   column: Column
-  order?: 'ASC' | 'DESC' | null
   connectionType: ConnectionType
-  draft?: TableCellDraft
-} & TableCellProps &
-  ColumnHandlers) => {
-  const transformer = createTransformer(connectionType, column)
-  const hasDraft = !!draft
-  const effectiveValue = hasDraft ? draft.value : value
-  const displayValue = transformer.toDisplay(effectiveValue, size)
-  const status = getDraftSaveStatus(draft, hasDraft)
-  const [canInteract, setCanInteract] = useState(false)
-
-  const staticClassName = getCellClassName({
-    column,
-    isForeignOpen: false,
-    isPopoverOpen: false,
-    isReferencesOpen: false,
-    status,
+  draft?: Pick<Draft, 'error' | 'isCommitting'>
+  /** Set when a refetch changed the value; a new number replays the flash. */
+  flash?: number
+  /** A readable stand-in for the value, e.g. the referenced row's name; the value stays beside it. */
+  label?: string
+  rowIndex: number
+  value: unknown
+}) => {
+  const { cursor, state } = useCellCursor({
+    column: column.id,
+    row: rowIndex,
   })
-
-  if (!canInteract) {
-    return (
-      <TableCellContent
-        column={column}
-        className={staticClassName}
-        onMouseOver={() => setCanInteract(true)}
-        onMouseLeave={async () => {
-          await sleep(200)
-          setCanInteract(false)
-        }}
-        style={style}
-        value={effectiveValue}
-        position={position}
-        title={draft?.error}
-      >
-        <span className="truncate">{displayValue}</span>
-        {!!effectiveValue && column.foreign && <ForeignButton />}
-        {!!effectiveValue &&
-          column.references &&
-          column.references.length > 0 && (
-            <ReferenceButton>{column.references.length}</ReferenceButton>
-          )}
-      </TableCellContent>
-    )
-  }
+  const { layout } = cursor
+  const ref = useRef<HTMLDivElement>(null)
+  const transformer = createTransformer(connectionType, column)
 
   return (
-    <InteractiveTableCell
-      column={column}
-      displayValue={displayValue}
-      draftError={draft?.error}
-      effectiveValue={effectiveValue}
-      onAddFilter={onAddFilter}
-      onDisableInteract={() => setCanInteract(false)}
-      onOrder={onOrder}
-      onQueueValue={onQueueValue}
-      onRename={onRename}
-      order={order}
-      position={position}
-      rowIndex={rowIndex}
-      status={status}
+    <div
+      ref={ref}
+      role="gridcell"
+      aria-selected={state !== null}
+      data-cell
+      data-cursor={state && state !== 'range' ? '' : undefined}
+      data-column={column.id}
+      data-row={rowIndex}
+      title={draft?.error}
       style={style}
-      transformer={transformer}
-    />
+      className={cn(
+        'group/cell relative isolate flex h-full scroll-mt-(--table-header-height) items-center gap-1 px-2 text-xs select-none',
+        layout === 'documents' && 'min-w-0 py-1.5',
+        (value === null || value === undefined || value === '') &&
+          'text-muted-foreground/60',
+        draft?.isCommitting && 'animate-pulse',
+        pinned && 'bg-background group-hover/row:bg-accent z-10',
+        isDragging && 'bg-background z-10'
+      )}
+    >
+      {flash !== undefined && (
+        <div
+          key={flash}
+          aria-hidden
+          className="bg-primary/20 animate-out fade-out fill-mode-forwards pointer-events-none absolute inset-0 -z-10 duration-1500 ease-out"
+        />
+      )}
+      {(state || draft) && (
+        <div aria-hidden className={overlayClass(state, draft)} />
+      )}
+      <CellValue
+        column={column}
+        label={label}
+        layout={layout}
+        size={size}
+        transformer={transformer}
+        value={value}
+      />
+      {children}
+      {state === 'peek' && isNested(value) && (
+        <JsonPeek
+          anchor={ref}
+          column={column.id}
+          onClose={() => cursor.closePeek()}
+          value={value}
+        />
+      )}
+      {state === 'editing' && (
+        <CellField anchor={ref} column={column} value={value} />
+      )}
+    </div>
   )
 }

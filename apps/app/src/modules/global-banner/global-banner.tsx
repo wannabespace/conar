@@ -98,6 +98,26 @@ const bannerDismissedValue = createWebStorageValue({
   type: 'localStorage',
 })
 
+const lastBannersValue = createWebStorageValue({
+  defaultValue: [],
+  key: 'banner-last',
+  schema: type('object[]').as<BannerItem[]>(),
+  type: 'localStorage',
+})
+
+const listQueryOptions = orpc.banner.queryOptions({
+  placeholderData: () => lastBannersValue.get(),
+})
+
+const bannerQueryOptions = {
+  ...listQueryOptions,
+  queryFn: async (context: Parameters<typeof listQueryOptions.queryFn>[0]) => {
+    const items = await listQueryOptions.queryFn(context)
+    lastBannersValue.set(items)
+    return items
+  },
+}
+
 const Banner = ({
   className,
   children,
@@ -199,31 +219,30 @@ export const GlobalBanner = () => {
   const dismissed = useSubscription(bannerDismissedValue)
   const delayPassed = useDelay(INITIAL_DELAY)
 
-  const { data = [] } = useQuery(
-    orpc.banner.queryOptions({
-      enabled: delayPassed,
-      refetchInterval: 1000 * 60 * 5,
-      select: (bannerItems) => {
-        const filtered = bannerItems?.filter(
-          (item) => !dismissed.includes(item.text)
-        )
-        return [
-          ...(isOnline
-            ? []
-            : [
-                {
-                  dismissible: false,
-                  text: 'You are currently offline. Some features may be unavailable until your internet connection is restored.',
-                  type: 'info',
-                } satisfies BannerItem,
-              ]),
-          ...filtered,
-        ]
-      },
-      staleTime: 1000 * 60 * 5,
-      throwOnError: false,
-    })
-  )
+  const { data = [] } = useQuery({
+    ...bannerQueryOptions,
+    enabled: delayPassed,
+    refetchInterval: 1000 * 60 * 5,
+    select: (bannerItems) => {
+      const filtered = bannerItems.filter(
+        (item) => !dismissed.includes(item.text)
+      )
+      return [
+        ...(isOnline
+          ? []
+          : [
+              {
+                dismissible: false,
+                text: 'You are currently offline. Some features may be unavailable until your internet connection is restored.',
+                type: 'info',
+              } satisfies BannerItem,
+            ]),
+        ...filtered,
+      ]
+    },
+    staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+  })
 
   return (
     <AnimatePresence initial={false} mode="popLayout">

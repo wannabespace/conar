@@ -4,9 +4,11 @@ import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
+import { getConnectionResourceStore } from '~/core/connection/stores'
 import { renameSchemaQuery } from '~/core/queries/schemas/rename'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { removeTab } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -47,11 +49,17 @@ export const RenameSchemaDialog = ({
     },
     onSuccess: async () => {
       setOpen(false)
-      queryClient.invalidateQueries(
-        resourceTablesAndSchemasQueryOptions({ connectionResource })
-      )
-      const active = tabId ? parseTableTabId(tabId) : null
-      if (active?.schema === schema) {
+      queryClient.invalidateQueries({
+        queryKey: ['connection-resource', connectionResource.id],
+      })
+      // Before navigating: the resource index redirects back to the active tab while it is still listed.
+      for (const tab of getConnectionResourceStore(connectionResource.id).get()
+        .tabs) {
+        if (parseTableTabId(tab.id)?.schema === schema) {
+          removeTab(connectionResource.id, tab.id)
+        }
+      }
+      if (tabId && parseTableTabId(tabId)?.schema === schema) {
         await router.navigate({
           params: { resourceId: connectionResource.id },
           to: '/connection/$resourceId',

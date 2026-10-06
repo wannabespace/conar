@@ -40,7 +40,7 @@ Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `ac
 
 Desktop-only "Continue without an account" signs in through Better Auth's `anonymous` plugin, so an anonymous user is a real server user with a default workspace and its own Infisical secret — every sync and encryption path stays shared.
 
-- Limits are the `guest` plan in `packages/shared/permissions.ts`: one connection (`connection.create` with the current count), no AI (`ai.*`), no workspaces, one open tab per resource (`tab.multiple`, client-only: `openTab`/`ensureTab` close the other tabs first, so opening another replaces it silently). Guests can edit the database like any member. Every locked control calls `requestUpgrade(feature)` from `~/store`: a member gets the upsell dialog, a guest gets the guest banner prompt (`promptSignIn`, which also sends the PostHog event `guest_feature_blocked { feature }` — the signal for which limits push guests to sign up). For a guest the control is dimmed, never disabled, so the press reaches it. The server checks are the real gate; `handleError` shows a guest's `FORBIDDEN` message in the banner (toasts on `/auth`, which has no banner).
+- Limits are the `guest` plan in `packages/shared/permissions.ts`: one connection (`connection.create` with the current count), no AI (`ai.*`), no workspaces, one open tab per resource (`tab.multiple`, client-only: `openTab`/`ensureTab` close the other tabs first, so opening another replaces it silently). Guests can edit the database like any member. A locked control's press goes through `checkOrUpgrade` (`architecture.md` → Permissions), which for a guest is the banner prompt `promptSignIn` — it also sends the PostHog event `guest_feature_blocked { hint }`, the signal for which limits push guests to sign up. How a locked control looks is `tamery-ui` patterns. The server checks are the real gate; `handleError` shows a guest's `FORBIDDEN` message in the banner (toasts on `/auth`, which has no banner).
 - Upgrading goes through the desktop challenge `exchange`, which still carries the anonymous bearer: it moves the anonymous user's connections (same ids; a guest's have no stored string, so nothing is re-encrypted) and queries into the real user's default workspace, then deletes the anonymous user. A failed move fails the exchange — the transaction rolls back and the guest session stays valid, so signing in again retries it. Better Auth's own `onLinkAccount` never fires here — the real sign-in happens in the browser, not in the anonymous session. The client reloads afterwards so sync streams reopen as the new user.
 
 ## Tabs
@@ -49,10 +49,11 @@ Tabs live in `connectionResourceStore.tabs` as `{ id, preview?, title? }`, persi
 
 - A tab id is readable, self-describing, and the single route path param; `resolveTab` turns one back into a kind and params, so deep links work; an id no registered kind matches is closed. Runner is the **only** multi-instance type.
 - `$tabId`'s `beforeLoad` must stay **pure** — it runs on hover preload and must not touch the store; a component effect calls `ensureTab` + `setActiveTab`.
+- The resource index redirects to the active tab while it is still listed, so code that leaves a tab whose object is gone (a dropped table, a dropped or renamed schema) **removes the tab before navigating** to the index — the other order lands back on the stale tab.
 - `tabLabels` derives the whole strip at once, since qualification and numbering depend on the other open tabs.
-- Activating a table tab records it in the table module's recent list (last 5); the empty pane lists the ones still present in the catalog.
+- Activating a table tab records it in the table module's recent list; the empty pane lists the ones still present in the catalog.
 - Table tabs carry `preview`: single click is a preview (italic, reused), double click promotes it. A tab may also carry an optional user `title`, cleared when emptied or equal to the derived label.
 
 ## Navigator
 
-No action icons (`tamery-ui` patterns). Which list is up is deliberately **not persisted** — every reload opens on Tables. <kbd>Mod+B</kbd> toggles.
+Which list is up is deliberately **not persisted** — every reload opens on Tables.

@@ -19,9 +19,7 @@ New rule file: H1 title in `.agents/rules/`, add a row above — the table is th
 
 ## Design decisions go in the skill
 
-`ui.md` = process; the design system = `tamery-ui` skill (`.agents/skills/tamery-ui/`), whose `SKILL.md` holds the hard rules — **review blockers, load it before any UI work** — and indexes the topic files.
-
-Record **any** UI pattern, motion recipe, kit gotcha or design decision established during a task in the matching topic file, same task — even when no rule file changes. Improvements that stay only in code get lost. Append to the topic file; never grow `SKILL.md` beyond hard rules + index.
+The design system is the `tamery-ui` skill (`.agents/skills/tamery-ui/`). Record **any** UI pattern, motion recipe, kit gotcha or design decision established during a task in its matching topic file, same task — even when no rule file changes; improvements that stay only in code get lost. Never grow its `SKILL.md` beyond hard rules + index.
 
 ## Always applies
 

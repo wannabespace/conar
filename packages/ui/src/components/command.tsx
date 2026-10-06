@@ -22,15 +22,18 @@ const commandVariants = {
 
 export const Command = ({
   className,
+  size = 'default',
   variant = 'popup',
   ...props
 }: React.ComponentProps<typeof CommandPrimitive> & {
+  size?: 'default' | 'sm'
   variant?: keyof typeof commandVariants
 }) => (
   <CommandPrimitive
     data-slot="command"
+    data-size={size}
     className={cn(
-      'flex size-full flex-col overflow-hidden outline-none',
+      'group/command flex size-full flex-col overflow-hidden outline-none',
       commandVariants[variant],
       className
     )}
@@ -96,7 +99,7 @@ export const CommandInput = ({
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          `w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50`,
+          `w-full text-sm outline-hidden group-data-[size=sm]/command:text-xs disabled:cursor-not-allowed disabled:opacity-50`,
           className
         )}
         {...props}
@@ -170,7 +173,7 @@ export const CommandItem = ({
   <CommandPrimitive.Item
     data-slot="command-item"
     className={cn(
-      `group/command-item data-selected:bg-accent data-selected:text-accent-foreground *:[svg]:text-foreground/70 data-selected:*:[svg]:text-foreground font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `group/command-item data-selected:bg-accent data-selected:text-accent-foreground *:[svg]:text-foreground/70 data-selected:*:[svg]:text-foreground font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none group-data-[size=sm]/command:text-xs data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}
@@ -179,7 +182,7 @@ export const CommandItem = ({
     <HugeiconsIcon
       icon={Tick02Icon}
       strokeWidth={2}
-      className="ml-auto hidden opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-checked/command-item:block group-data-[checked=true]/command-item:opacity-100"
+      className="ml-auto hidden size-4 opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-checked/command-item:block group-data-[checked=true]/command-item:opacity-100 group-data-[size=sm]/command:size-3"
     />
   </CommandPrimitive.Item>
 )

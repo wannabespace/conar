@@ -1,34 +1,44 @@
-import { CornerDownLeftIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Command, CommandInput } from '@tamery/ui/components/command'
-import { Separator } from '@tamery/ui/components/separator'
-import type { Ref } from 'react'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
+import { Kbd } from '@tamery/ui/components/kbd'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+
+const hintFor = (operator: string, isArray: boolean) => {
+  if (isArray) {
+    return 'Separate values with commas'
+  }
+  if (operator.toLowerCase().includes('like')) {
+    return '% matches any text'
+  }
+  return null
+}
 
 export const FiltersValueSelector = ({
-  ref,
   column,
   operator,
   values,
   isArray,
   onChange,
   onApply,
-  onBackspace,
 }: {
-  ref?: Ref<HTMLInputElement>
   column: string
   operator: string
   isArray: boolean
   values: unknown[]
-  onChange: (value: string[]) => void
+  onChange: (values: string[]) => void
   onApply: () => void
-  onBackspace?: () => void
-}) => (
-  <Command>
-    <div>
+}) => {
+  const hint = hintFor(operator, isArray)
+
+  return (
+    <Command>
       <CommandInput
-        ref={ref}
-        value={isArray ? values.join(',') : (values[0] as string)}
+        value={values.join(',')}
         onValueChange={(value) =>
           onChange(isArray ? value.split(',') : [value])
         }
@@ -37,72 +47,29 @@ export const FiltersValueSelector = ({
           if (e.key === 'Enter') {
             onApply()
           }
-          if (e.key === 'Backspace') {
-            onBackspace?.()
-          }
         }}
       />
-      <div className="flex flex-col gap-4 p-4 text-sm">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Filtering</span>
-            <span data-mask className="text-primary font-medium">
-              {column}
-            </span>
-          </div>
-          <Separator />
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Operator</span>
-            <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-xs font-medium">
-              {operator}
-            </span>
-          </div>
+      <div className="flex items-center gap-2 p-1 pl-3">
+        <div className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+          <span data-mask className="text-foreground font-medium">
+            {column}
+          </span>{' '}
+          {operator}
+          {hint && ` · ${hint}`}
         </div>
-        {operator.toLowerCase().includes('like') && (
-          <div className="border-primary/20 bg-primary/5 text-foreground rounded-md border px-3 py-2 text-xs">
-            <span className="text-primary font-semibold">Tip:</span>{' '}
-            <span>
-              Use
-              <kbd className="bg-muted rounded-sm border px-1.5 py-0.5 text-xs">
-                %
-              </kbd>{' '}
-              as wildcard
-            </span>
-          </div>
-        )}
-        {operator.toLowerCase().includes('in') && (
-          <div className="border-primary/20 bg-primary/5 text-foreground rounded-md border px-3 py-2 text-xs">
-            <span className="text-primary font-semibold">Tip:</span>{' '}
-            <span>
-              Separate multiple values with commas{' '}
-              <kbd className="bg-muted rounded-sm border px-1.5 py-0.5 text-xs">
-                ,
-              </kbd>
-            </span>
-          </div>
-        )}
-        {operator.toLowerCase().includes('between') && (
-          <div className="border-primary/20 bg-primary/5 text-foreground rounded-md border px-3 py-2 text-xs">
-            <span className="text-primary font-semibold">Tip:</span>{' '}
-            <span>
-              Separate range values with{' '}
-              <kbd className="bg-muted rounded-sm border px-1.5 py-0.5 text-xs">
-                AND
-              </kbd>
-            </span>
-          </div>
-        )}
+        <Tooltip
+          shortcut={
+            <Kbd>
+              <EnterIcon />
+            </Kbd>
+          }
+        >
+          <TooltipTrigger render={<Button onClick={onApply} size="xs" />}>
+            Apply
+          </TooltipTrigger>
+          <TooltipContent>Apply filter</TooltipContent>
+        </Tooltip>
       </div>
-      <div className="flex justify-end border-t p-2">
-        <Button onClick={onApply} size="xs">
-          Apply Filter
-          <HugeiconsIcon
-            icon={CornerDownLeftIcon}
-            strokeWidth={2}
-            className="size-3"
-          />
-        </Button>
-      </div>
-    </div>
-  </Command>
-)
+    </Command>
+  )
+}
