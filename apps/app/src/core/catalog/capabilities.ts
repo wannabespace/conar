@@ -68,7 +68,15 @@ interface TriggerCapabilities {
   toggle: boolean
 }
 
+export interface ArrayType {
+  close: string
+  open: string
+}
+
 interface ConnectionCapabilities {
+  arrayType: ArrayType | null
+  // Column types whose values the driver hands over as bytes; Postgres reads `bytea` as text, so it lists none.
+  bytesColumnTypes: readonly string[]
   cascade: boolean
   columnTypes: readonly string[]
   constraintKinds: readonly ConstraintKind[]
@@ -80,6 +88,8 @@ interface ConnectionCapabilities {
   functions: FunctionCapabilities
   idColumnType: string
   indexes: IndexCapabilities
+  // Column types edited as JSON text; ClickHouse reads its composite types back as JSON too.
+  jsonColumnType: RegExp
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
@@ -88,6 +98,8 @@ interface ConnectionCapabilities {
   renameSchema: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>
+  // `UPDATE … SET column = DEFAULT`; ClickHouse's ALTER UPDATE takes expressions only.
+  setDefault: boolean
   systemSchemas: readonly string[]
   triggers: TriggerCapabilities
 }
@@ -122,8 +134,12 @@ const noTriggers: TriggerCapabilities = {
   toggle: false,
 }
 
+const JSON_COLUMN_TYPE = /^json$/iu
+
 const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   [ConnectionType.ClickHouse]: {
+    arrayType: { close: ')', open: 'Array(' },
+    bytesColumnTypes: [],
     cascade: false,
     columnTypes: COLUMN_TYPES[ConnectionType.ClickHouse],
     constraintKinds: ['check'],
@@ -134,6 +150,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     functions: noFunctions,
     idColumnType: 'UInt64',
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
+    jsonColumnType: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -155,10 +172,13 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: false,
       triggers: false,
     },
+    setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
   },
   [ConnectionType.MSSQL]: {
+    arrayType: null,
+    bytesColumnTypes: ['binary', 'image', 'varbinary'],
     cascade: false,
     columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
     constraintKinds: CONSTRAINT_KINDS,
@@ -175,6 +195,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     idColumnType: 'int',
     indexes: btreeIndexes,
+    jsonColumnType: JSON_COLUMN_TYPE,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -193,7 +214,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: false,
       triggers: full,
     },
-    systemSchemas: ['sys', 'INFORMATION_SCHEMA'],
+    setDefault: true,
+    systemSchemas: ['sys', 'INFORMATION_SCHEMA', 'guest'],
     triggers: {
       body: true,
       events: ROW_EVENTS,
@@ -205,6 +227,16 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
   },
   [ConnectionType.MySQL]: {
+    arrayType: null,
+    bytesColumnTypes: [
+      'binary',
+      'bit',
+      'blob',
+      'longblob',
+      'mediumblob',
+      'tinyblob',
+      'varbinary',
+    ],
     cascade: false,
     columnTypes: COLUMN_TYPES[ConnectionType.MySQL],
     constraintKinds: CONSTRAINT_KINDS,
@@ -223,6 +255,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     idColumnType: 'int',
     indexes: btreeIndexes,
+    jsonColumnType: JSON_COLUMN_TYPE,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -242,6 +275,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: { create: true, drop: true },
       triggers: full,
     },
+    setDefault: true,
     systemSchemas: ['mysql', 'information_schema', 'performance_schema', 'sys'],
     triggers: {
       body: true,
@@ -254,6 +288,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
   },
   [ConnectionType.Postgres]: {
+    arrayType: { close: '[]', open: '' },
+    bytesColumnTypes: [],
     cascade: true,
     columnTypes: COLUMN_TYPES[ConnectionType.Postgres],
     constraintKinds: CONSTRAINT_KINDS,
@@ -270,6 +306,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     idColumnType: 'integer',
     indexes: btreeIndexes,
+    jsonColumnType: /^jsonb?$/iu,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
@@ -291,6 +328,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       privileges: false,
       triggers: full,
     },
+    setDefault: true,
     systemSchemas: ['pg_catalog', 'information_schema'],
     triggers: {
       body: false,

@@ -1,12 +1,4 @@
 import { Button } from '@tamery/ui/components/button'
-import { Checkbox } from '@tamery/ui/components/checkbox'
-import {
-  Autocomplete,
-  ComboboxContent,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@tamery/ui/components/combobox'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
@@ -23,10 +15,15 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@tamery/ui/components/input-group'
-import { Label } from '@tamery/ui/components/label'
+import { Switch } from '@tamery/ui/components/switch'
+import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { OptionField } from '~/components/option-field'
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { DraftState, NewColumn } from '~/core/queries/tables/shape'
+
+import { arrayTypes, TypeField } from './column-type-field'
 
 interface EditableColumn extends NewColumn {
   // Name in the database; differs from `name` while a rename is pending.
@@ -47,6 +44,8 @@ export interface ColumnDialogRequest<
   column: Column | null
   table: Table
 }
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
@@ -77,50 +76,32 @@ const errorsOf = (
   }
 }
 
-const Footer = ({
-  disabled,
-  label,
-  pending,
-}: {
-  disabled: boolean
-  label: string
-  pending: boolean
-}) => (
-  <DialogFooter>
-    <DialogClose render={<Button type="button" variant="outline" />}>
-      Cancel
-    </DialogClose>
-    <Button type="submit" form={FORM_ID} disabled={pending || disabled}>
-      <LoadingContent loading={pending}>{label}</LoadingContent>
-    </Button>
-  </DialogFooter>
-)
-
 const ColumnForm = ({
-  canRename,
-  columnTypes,
   onSubmit,
   pending,
   request,
 }: {
-  canRename: boolean
-  columnTypes: readonly string[]
   onSubmit: (column: NewColumn) => void
   pending: boolean
   request: ColumnDialogRequest
 }) => {
   const { column, table } = request
+  const { connection } = useRouteContext()
+  const { arrayType, renameColumns } = capabilitiesOf(connection.type)
   const [name, setName] = useState(column?.name ?? '')
-  const [type, setType] = useState(column?.type ?? '')
+  const initialType = arrayTypes.split(arrayType, column?.type ?? '')
+  const [type, setType] = useState(initialType.element)
+  const [array, setArray] = useState(initialType.array)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
   const [submitted, setSubmitted] = useState(false)
-  const nameLocked = column !== null && !canRename && column.state !== 'added'
+  const nameLocked =
+    column !== null && !renameColumns && column.state !== 'added'
   const next: NewColumn = {
     name: name.trim(),
     nullable: primaryKey ? false : nullable,
     primaryKey,
-    type: type.trim(),
+    type: arrayTypes.join(arrayType, array, type.trim()),
   }
   const errors = errorsOf(request, next, submitted)
 
@@ -163,63 +144,68 @@ const ColumnForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
-        <Field>
-          <FieldLabel htmlFor="column-dialog-type">Type</FieldLabel>
-          <Autocomplete
-            items={columnTypes}
-            value={type}
-            onValueChange={setType}
-          >
-            <ComboboxInput
-              id="column-dialog-type"
-              aria-invalid={!!errors.type}
-              autoFocus={nameLocked}
-              spellCheck={false}
-              autoComplete="off"
-              placeholder="integer, varchar(255)…"
-              className="w-full"
-              data-mask
-            >
-              {errors.type && (
-                <InputGroupAddon align="inline-end">
-                  <FieldError>{errors.type}</FieldError>
-                </InputGroupAddon>
-              )}
-            </ComboboxInput>
-            <ComboboxContent>
-              <ComboboxList>
-                {(item: string) => (
-                  <ComboboxItem key={item} value={item}>
-                    {item}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Autocomplete>
-        </Field>
-        <Label variant="checkbox">
-          <Checkbox
-            checked={primaryKey ? false : nullable}
-            disabled={primaryKey}
-            onCheckedChange={(checked) => setNullable(checked === true)}
-          />
-          Allow NULL
-        </Label>
+        <TypeField
+          autoFocus={nameLocked}
+          error={errors.type}
+          value={type}
+          onValueChange={setType}
+        />
         {column === null && table.state === 'added' && (
-          <Label variant="checkbox">
-            <Checkbox
+          <OptionField
+            htmlFor="column-dialog-primary-key"
+            title="Primary key"
+            description="Identifies each row, so it never holds NULL."
+          >
+            <Switch
+              id="column-dialog-primary-key"
+              size="sm"
               checked={primaryKey}
-              onCheckedChange={(checked) => setPrimaryKey(checked === true)}
+              onCheckedChange={setPrimaryKey}
             />
-            Primary key
-          </Label>
+          </OptionField>
+        )}
+        <OptionField
+          htmlFor="column-dialog-nullable"
+          title="Allow NULL"
+          description="Rows may leave this column empty."
+        >
+          <Switch
+            id="column-dialog-nullable"
+            size="sm"
+            checked={next.nullable}
+            disabled={primaryKey}
+            onCheckedChange={setNullable}
+          />
+        </OptionField>
+        {arrayType && (
+          <OptionField
+            htmlFor="column-dialog-array"
+            title="Array"
+            description="Each value is a list of the type above."
+          >
+            <Switch
+              id="column-dialog-array"
+              size="sm"
+              checked={array}
+              onCheckedChange={setArray}
+            />
+          </OptionField>
         )}
       </form>
-      <Footer
-        disabled={!changed(column, next)}
-        label={column ? 'Save' : 'Add column'}
-        pending={pending}
-      />
+      <DialogFooter>
+        <DialogClose render={<Button type="button" variant="outline" />}>
+          Cancel
+        </DialogClose>
+        <Button
+          type="submit"
+          form={FORM_ID}
+          disabled={pending || !changed(column, next)}
+        >
+          <LoadingContent loading={pending}>
+            {column ? 'Save' : 'Add column'}
+          </LoadingContent>
+        </Button>
+      </DialogFooter>
     </>
   )
 }
@@ -228,15 +214,11 @@ export const ColumnDialog = <
   Table extends EditableTable,
   Column extends EditableColumn,
 >({
-  canRename,
-  columnTypes,
   onOpenChange,
   onSubmit,
   pending = false,
   request,
 }: {
-  canRename: boolean
-  columnTypes: readonly string[]
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: ColumnDialogRequest<Table, Column>,
@@ -256,8 +238,6 @@ export const ColumnDialog = <
         {shown && (
           <ColumnForm
             key={`${shown.table.name}:${shown.column?.id ?? ''}`}
-            canRename={canRename}
-            columnTypes={columnTypes}
             pending={pending}
             request={shown}
             onSubmit={(column) => onSubmit(shown, column)}

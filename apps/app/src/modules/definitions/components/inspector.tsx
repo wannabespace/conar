@@ -12,14 +12,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@tamery/ui/components/drawer'
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldTitle,
-} from '@tamery/ui/components/field'
+import { FieldDescription, FieldGroup } from '@tamery/ui/components/field'
 import { Form, formContext } from '@tamery/ui/components/tanstack-form'
 import {
   Tooltip,
@@ -208,28 +201,6 @@ export const InspectorSection = ({
       {children}
     </FieldGroup>
   </section>
-)
-
-export const InspectorOption = ({
-  children,
-  description,
-  htmlFor,
-  title,
-}: {
-  children: ReactNode
-  description: string
-  htmlFor: string
-  title: string
-}) => (
-  <FieldLabel htmlFor={htmlFor}>
-    <Field orientation="horizontal">
-      <FieldContent>
-        <FieldTitle>{title}</FieldTitle>
-        <FieldDescription>{description}</FieldDescription>
-      </FieldContent>
-      {children}
-    </Field>
-  </FieldLabel>
 )
 
 export const InspectorDefinition = ({ code }: { code: string }) => (

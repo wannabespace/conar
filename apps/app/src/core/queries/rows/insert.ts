@@ -2,6 +2,8 @@ import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
+import { insertRows } from './shape'
+
 interface InsertParams {
   schema: string
   table: string
@@ -17,12 +19,11 @@ const insertInBatches = (
   db.transaction().execute(async (trx) => {
     for (let index = 0; index < rows.length; index += batchSize) {
       // oxlint-disable-next-line no-await-in-loop
-      await trx
-        .withSchema(schema)
-        .$extendTables<Record<string, Record<string, unknown>>>()
-        .insertInto(table)
-        .values(rows.slice(index, index + batchSize))
-        .execute()
+      await insertRows(
+        trx,
+        { schema, table },
+        rows.slice(index, index + batchSize)
+      )
     }
   })
 

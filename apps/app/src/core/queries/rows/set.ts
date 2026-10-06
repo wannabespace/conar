@@ -1,55 +1,35 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
-import { memoize } from 'memoza'
+import type { Kysely } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-export const setQuery = memoize(
-  ({
-    schema,
-    table,
-    values,
-    filters,
-  }: {
-    schema: string
-    table: string
-    values: Record<string, unknown>
-    filters: ActiveFilter[]
-  }) =>
-    createQuery({
-      query: {
-        clickhouse: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .updateTable(table)
-            .set(values)
-            .where((eb) => toKyselyFilter(eb, filters))
-            .execute(),
-        mssql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .updateTable(table)
-            .set(values)
-            .where((eb) => toKyselyFilter(eb, filters))
-            .execute(),
-        mysql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .updateTable(table)
-            .set(values)
-            .where((eb) => toKyselyFilter(eb, filters))
-            .execute(),
-        postgres: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .updateTable(table)
-            .set(values)
-            .where((eb) => toKyselyFilter(eb, filters))
-            .execute(),
-      },
-    })
-)
+interface SetParams {
+  schema: string
+  table: string
+  values: Record<string, unknown>
+  filters: ActiveFilter[]
+}
+
+const updateRows = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { schema, table, values, filters }: SetParams
+) =>
+  db
+    .withSchema(schema)
+    .$extendTables<Record<string, Record<string, unknown>>>()
+    .updateTable(table)
+    .set(values)
+    .where((eb) => toKyselyFilter(eb, filters))
+    .execute()
+
+export const setQuery = (params: SetParams) =>
+  createQuery({
+    query: {
+      clickhouse: (db) => updateRows(db, params),
+      mssql: (db) => updateRows(db, params),
+      mysql: (db) => updateRows(db, params),
+      postgres: (db) => updateRows(db, params),
+    },
+  })

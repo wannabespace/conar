@@ -46,16 +46,21 @@ export const toKyselyFilter = <E extends ExpressionBuilder<any, any>>(
 ) => {
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
+  const predicate = (column: string, filter: ActiveFilter) =>
+    sql.join(
+      [
+        sql.ref(column),
+        sql.raw(SQL_OPERATORS[filter.ref.operator]),
+        filterValueExpression(filter),
+      ].filter(Boolean),
+      sql.raw(' ')
+    )
+
   return concat(
-    filters.map((filter) =>
-      sql.join(
-        [
-          sql.ref(filter.column),
-          sql.raw(SQL_OPERATORS[filter.ref.operator]),
-          filterValueExpression(filter),
-        ].filter(Boolean),
-        sql.raw(' ')
-      )
+    filters.map(({ via, ...filter }) =>
+      via
+        ? sql`${sql.ref(filter.column)} in (select ${sql.ref(via.key)} from ${sql.table(`${via.schema}.${via.table}`)} where ${predicate(via.target, filter)})`
+        : predicate(filter.column, filter)
     )
   )
 }

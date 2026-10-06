@@ -30,6 +30,7 @@ export const getPool = memoize(async (connectionString: string) => {
     ...config,
     connectionLimit: 1,
     dateStrings: true,
+    supportBigNumbers: true,
     ...(ssl ? { ssl: readSSLFiles(ssl) } : {}),
   }
   const hasSsl = conf.ssl !== undefined

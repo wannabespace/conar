@@ -18,7 +18,6 @@ export const workspaceModules = {
   panelIn: (region: Panel['region']) =>
     panels.find((panel) => panel.region === region),
   panels,
-  referenceTable: list.find((module) => module.referenceTable)?.referenceTable,
   tabBarEnd: byOrder(list.flatMap((module) => module.tabBarEnd ?? [])),
   tabs: Object.fromEntries(
     list.flatMap((module) => Object.entries(module.tabs ?? {}))

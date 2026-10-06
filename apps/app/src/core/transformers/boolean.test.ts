@@ -43,9 +43,14 @@ describe('createBooleanTransformer', () => {
   })
 
   describe('toConnection.fromRaw', () => {
-    it('passes through raw editor text', () => {
-      expect(t.toConnection.fromRaw('true')).toBe('true')
-      expect(t.toConnection.fromRaw('false')).toBe('false')
+    it('reads spreadsheet and database spellings as booleans', () => {
+      expect(t.toConnection.fromRaw('TRUE')).toBe(true)
+      expect(t.toConnection.fromRaw('f')).toBe(false)
+      expect(t.toConnection.fromRaw('0')).toBe(false)
+    })
+
+    it('rejects text that is not a boolean', () => {
+      expect(() => t.toConnection.fromRaw('maybe')).toThrow()
     })
   })
 })

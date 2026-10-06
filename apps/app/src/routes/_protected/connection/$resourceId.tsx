@@ -85,13 +85,11 @@ const ResourcePage = () => {
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
-    if (!last.includes(connectionResource.id)) {
-      lastOpenedResourcesStorageValue.set(
-        [
-          connectionResource.id,
-          ...last.filter((resourceId) => resourceId !== connectionResource.id),
-        ].slice(0, 3)
-      )
+    if (last[0] !== connectionResource.id) {
+      lastOpenedResourcesStorageValue.set([
+        connectionResource.id,
+        ...last.filter((resourceId) => resourceId !== connectionResource.id),
+      ])
     }
   }, [connectionResource.id])
 

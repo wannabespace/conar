@@ -5,6 +5,7 @@ import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { queryClient } from '~/lib/query-client'
 
@@ -19,11 +20,7 @@ import type {
   InspectorWarning,
   SectionInspectorProps,
 } from '../../components/inspector'
-import {
-  Inspector,
-  InspectorOption,
-  InspectorSection,
-} from '../../components/inspector'
+import { Inspector, InspectorSection } from '../../components/inspector'
 import type { PolicyDraft, PolicyItem } from './policy-draft'
 import {
   changesOf,
@@ -124,7 +121,7 @@ export const PolicyInspector = ({
     >
       {item && rlsTables && (
         <InspectorSection title="Status">
-          <InspectorOption
+          <OptionField
             htmlFor="policy-row-level-security"
             title="Row level security"
             description="Off, the table ignores every policy on it."
@@ -138,7 +135,7 @@ export const PolicyInspector = ({
                 rowLevelSecurity.mutate({ enabled })
               }
             />
-          </InspectorOption>
+          </OptionField>
         </InspectorSection>
       )}
       <InspectorSection

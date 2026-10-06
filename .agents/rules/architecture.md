@@ -16,7 +16,7 @@
 | Markdown | Kit `Response` (streamdown) — never react-markdown or a bespoke pipeline. |
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
 | Styles | TailwindCSS v4 — no inline `style=` for layout or theme values, except where a library hard-codes inline styles no class can beat. |
-| Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
+| Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. The compiler also skips a `use*` function that calls no hooks — mark it `'use memo'` when its return values feed props or context. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
 | Feature code | A feature is a module folder (see Modules). Core single-page files live next to the route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`); `core/<domain>/` holds data and code shared across modules (see Core layout). |
 
 ## Modules
@@ -30,7 +30,7 @@
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
   - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries.
-  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane, the FK reference table.
+  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
 - `apps/main` contracts are `src/lib/module.ts`: `module.tsx` fills header/footer links, the auth footer, account nav and home sections. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 

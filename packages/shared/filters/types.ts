@@ -21,11 +21,20 @@ export interface Filter {
   hasValue?: boolean
 }
 
+/** A hop through a foreign key: the filter's `column` keeps rows whose key is among `table`'s rows matching on `target`. */
+export interface FilterVia {
+  key: string
+  schema: string
+  table: string
+  target: string
+}
+
 export interface ActiveFilter<F extends Filter = Filter, V = unknown> {
   column: string
   ref: F
   values: V[]
   disabled?: boolean
+  via?: FilterVia
 }
 
 export const enabledFilters = <T extends { disabled?: boolean }>(

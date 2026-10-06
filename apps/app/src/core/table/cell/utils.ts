@@ -1,6 +1,7 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
 
 export interface Column {
@@ -103,34 +104,49 @@ export const getColumnUiType = (
   return 'raw'
 }
 
-export interface ColumnHandlers {
-  onQueueValue?: (rowIndex: number, newValue: unknown) => void
-  onAddFilter?: (filter: ActiveFilter) => void
-  onOrder?: (order?: 'ASC' | 'DESC' | null) => void
-  onResize?: (newWidth: number) => void
-  onRename?: () => void
+const NUMERIC_TYPE_REGEX =
+  /^(?:u?int\d*|tinyint|smallint|mediumint|bigint|integer|numeric|decimal|float\d*|double|real|money|smallmoney|serial|bigserial|smallserial|number)\b/iu
+
+// Casting anything else to text can fail (SQL Server `image`, spatial types) and nobody searches or reads it as words.
+const TEXT_TYPE = /char|text|uuid|string|enum|name/iu
+
+export const isTextType = (type: string | undefined) =>
+  TEXT_TYPE.test(type ?? '')
+
+export const isNumericColumn = (column: Column) =>
+  column.uiType === 'raw' && NUMERIC_TYPE_REGEX.test(column.type ?? '')
+
+export const hasTabularFigures = (column: Column) =>
+  column.uiType !== 'raw' || isNumericColumn(column)
+
+const TAG_COLORS = [
+  'bg-blue-500',
+  'bg-green-500',
+  'bg-orange-500',
+  'bg-purple-500',
+  'bg-red-500',
+  'bg-yellow-500',
+  'bg-pink-500',
+  'bg-teal-500',
+  'bg-zinc-400',
+]
+
+export const tagColor = (column: Column, value: string) => {
+  const index = column.availableValues?.indexOf(value) ?? -1
+  const seed =
+    index === -1
+      ? [...value].reduce(
+          (hash, char) => hash * 31 + (char.codePointAt(0) ?? 0),
+          7
+        )
+      : index
+  return TAG_COLORS[Math.abs(seed) % TAG_COLORS.length]
 }
 
-const COMPACT_CHARS_PER_LINE = 48
-const COMPACT_LINE_HEIGHT = 20
-const COMPACT_VERTICAL_CHROME = 36
-const COMPACT_MIN_HEIGHT = 56
-const COMPACT_MAX_HEIGHT = 160
-
-export const estimateCompactHeight = (text: string) => {
-  const lines = text
-    .split('\n')
-    .reduce(
-      (total, line) =>
-        total + Math.max(1, Math.ceil(line.length / COMPACT_CHARS_PER_LINE)),
-      0
-    )
-
-  return Math.min(
-    COMPACT_MAX_HEIGHT,
-    Math.max(
-      COMPACT_MIN_HEIGHT,
-      lines * COMPACT_LINE_HEIGHT + COMPACT_VERTICAL_CHROME
-    )
-  )
-}
+export const canWriteDefault = (
+  connectionType: ConnectionType,
+  column: Column
+) =>
+  capabilitiesOf(connectionType).setDefault &&
+  column.defaultValue !== null &&
+  column.defaultValue !== undefined

@@ -1,6 +1,4 @@
 import { omit } from '@tamery/shared/utils'
-import type { ShiftSelectionState } from '@tamery/table/hooks'
-import { INITIAL_SHIFT_SELECTION_STATE } from '@tamery/table/hooks'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
@@ -15,18 +13,32 @@ export interface Draft {
   isCommitting?: boolean
 }
 
+export interface NewRow {
+  id: string
+  values: Record<string, unknown>
+  error?: string
+  isCommitting?: boolean
+}
+
 export interface TableSessionState {
   drafts: Record<string, Draft>
+  /** Cells (by `draftKey`) whose values changed in the latest refetch; `at` re-keys the flash so a second change replays it. */
+  flash: { at: number; keys: ReadonlySet<string> } | null
   lastClickedIndex: number | null
+  /** Staged inserts, newest first; they lead the grid, so a grid row index below `newRows.length` is its index here. */
+  newRows: NewRow[]
   selected: PrimaryKeys[]
-  selectionState: ShiftSelectionState
+  /** The Shift+↑/↓ row range: where it started and where it reaches. */
+  selectionState: { anchorIndex: number | null; focusIndex: number | null }
 }
 
 const defaultSessionState: TableSessionState = {
   drafts: {},
+  flash: null,
   lastClickedIndex: null,
+  newRows: [],
   selected: [],
-  selectionState: INITIAL_SHIFT_SELECTION_STATE,
+  selectionState: { anchorIndex: null, focusIndex: null },
 }
 
 export const tableSessionStore = memoize(
@@ -108,7 +120,7 @@ export const draftsActions = (store: TableSessionStore) => {
   }
 
   const clear = () => {
-    setDrafts(() => ({}))
+    store.set((state) => ({ ...state, drafts: {}, newRows: [] }))
   }
 
   const setRowStatus = (
@@ -128,5 +140,38 @@ export const draftsActions = (store: TableSessionStore) => {
     removeRow,
     setRowStatus,
     upsert,
+  }
+}
+
+export const newRowsActions = (store: TableSessionStore) => {
+  const update = (id: string, patch: (row: NewRow) => NewRow | null) =>
+    store.set((state) => ({
+      ...state,
+      newRows: state.newRows.flatMap((row) => {
+        if (row.id !== id) {
+          return [row]
+        }
+        const next = patch(row)
+        return next ? [next] : []
+      }),
+    }))
+
+  return {
+    add: (values: Record<string, unknown>) =>
+      store.set((state) => ({
+        ...state,
+        newRows: [{ id: crypto.randomUUID(), values }, ...state.newRows],
+      })),
+    remove: (id: string) => update(id, () => null),
+    setStatus: (
+      id: string,
+      status: Partial<Pick<NewRow, 'error' | 'isCommitting'>>
+    ) => update(id, (row) => ({ ...row, ...status })),
+    setValue: (id: string, columnId: string, value: unknown) =>
+      update(id, (row) => ({
+        ...row,
+        error: undefined,
+        values: { ...row.values, [columnId]: value },
+      })),
   }
 }

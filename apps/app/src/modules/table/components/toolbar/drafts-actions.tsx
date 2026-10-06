@@ -1,7 +1,7 @@
 import { ViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { EQUAL_FILTER, toKyselyFilter } from '@tamery/shared/filters'
+import { EQUAL_FILTER } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -12,22 +12,30 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { Kysely } from 'kysely'
+import { sql } from 'kysely'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { insertRowQuery } from '~/core/queries/rows/insert-row'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
-import { dialects } from '~/core/runtime/dialects'
-import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { selectQuery } from '~/core/queries/rows/select'
+import { setQuery } from '~/core/queries/rows/set'
+import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
+import {
+  connectionResourceToQueryParams,
+  transaction,
+} from '~/core/runtime/query'
 import type { PrimaryKeys } from '~/core/table/session'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
+  newRowsActions,
   primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
+import { createTransformer } from '~/core/transformers/create-transformer'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/lib/query-client'
 
@@ -44,7 +52,7 @@ export const DraftsActions = ({
   table: string
   schema: string
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
@@ -52,29 +60,39 @@ export const DraftsActions = ({
   const drafts = useSubscription(sessionStore, {
     selector: (state) => Object.values(state.drafts),
   })
+  const newRows = useSubscription(sessionStore, {
+    selector: (state) => state.newRows,
+  })
   const rowsWithDrafts = Map.groupBy(drafts, (d) =>
     primaryKeysKey(d.primaryKeys)
   )
   const { clear, removeRow, setRowStatus } = draftsActions(sessionStore)
+  const newRowStatus = newRowsActions(sessionStore)
+  const changeCount = drafts.length + newRows.length
   const [isReviewOpen, setIsReviewOpen] = useState(false)
 
-  const errorCount = drafts.filter((d) => !!d.error).length
-  const rowCount = rowsWithDrafts.size
+  const columnsById = new Map(columns.map((column) => [column.id, column]))
+  // A draft of `undefined` is the column's DEFAULT, staged by the editor's Default button.
+  const statementValue = (columnId: string, value: unknown) => {
+    if (value === undefined) {
+      return sql`default`
+    }
+    const column = columnsById.get(columnId)
+    return (
+      (column &&
+        createTransformer(connection.type, column).toStatement?.(value)) ??
+      value
+    )
+  }
+
+  const errorCount =
+    drafts.filter((d) => !!d.error).length +
+    newRows.filter((row) => !!row.error).length
+  const rowCount = rowsWithDrafts.size + newRows.length
 
   const handleDiscard = () => {
     clear()
     setIsReviewOpen(false)
-  }
-
-  const createDb = async () => {
-    const queryParams =
-      await connectionResourceToQueryParams(connectionResource)
-    return dialects[queryParams.type]({
-      connectionString: queryParams.connectionString,
-      log: queryParams.log,
-      resourceId: queryParams.resourceId,
-      // oxlint-disable-next-line ts/no-explicit-any
-    }) as unknown as Kysely<any>
   }
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
@@ -101,6 +119,7 @@ export const DraftsActions = ({
 
       const allRows = cachedData.pages.flatMap((page) => page.rows)
       const rowEntries = [...rowsWithDrafts.values()]
+      const newRowIds = newRows.map((row) => row.id)
 
       for (const rowDrafts of rowEntries) {
         const [firstDraft] = rowDrafts
@@ -112,13 +131,18 @@ export const DraftsActions = ({
           isCommitting: true,
         })
       }
+      for (const { id } of newRows) {
+        newRowStatus.setStatus(id, { error: undefined, isCommitting: true })
+      }
 
       let failedPrimaryKeys: PrimaryKeys | null = null
+      let failedNewRowId: string | null = null
 
-      const db = await createDb()
+      const queryParams =
+        await connectionResourceToQueryParams(connectionResource)
 
       try {
-        const commits = await db.transaction().execute(async (tx) => {
+        const commits = await transaction(queryParams).execute(async (tx) => {
           const allRowsByPrimaryKey = new Map(
             allRows.map(
               (row) =>
@@ -156,18 +180,22 @@ export const DraftsActions = ({
             }))
 
             const values: Record<string, unknown> = {}
+            const statement: Record<string, unknown> = {}
             for (const draft of rowDrafts) {
               values[draft.columnId] = draft.value
+              statement[draft.columnId] = statementValue(
+                draft.columnId,
+                draft.value
+              )
             }
 
             // oxlint-disable-next-line no-await-in-loop
-            await tx
-              .withSchema(schema)
-              .$extendTables<{ [table]: Record<string, unknown> }>()
-              .updateTable(table)
-              .set(values)
-              .where((eb) => toKyselyFilter(eb, sqlFilters))
-              .execute()
+            await setQuery({
+              filters: sqlFilters,
+              schema,
+              table,
+              values: statement,
+            }).run(queryParams, tx)
 
             const modifiedColumns = Object.keys(values)
             const updatedFilters = sqlFilters.map((filter) =>
@@ -185,21 +213,41 @@ export const DraftsActions = ({
           }
 
           failedPrimaryKeys = null
+
+          for (const { id, values } of newRows) {
+            failedNewRowId = id
+            const statement = Object.fromEntries(
+              Object.entries(values)
+                .filter(([, value]) => value !== undefined)
+                .map(([columnId, value]) => [
+                  columnId,
+                  statementValue(columnId, value),
+                ])
+            )
+            // oxlint-disable-next-line no-await-in-loop
+            await insertRowQuery({ schema, table, values: statement }).run(
+              queryParams,
+              tx
+            )
+          }
+
+          failedNewRowId = null
           return pendingCommits
         })
 
         return {
           commits,
-          filters,
-          orderBy,
-          rowEntries,
+          newRowIds,
+          queryParams,
           rowsQueryOpts,
           status: 'success' as const,
         }
       } catch (error) {
         return {
           error,
+          failedNewRowId,
           failedPrimaryKeys,
+          newRowIds,
           rowEntries,
           status: 'error' as const,
         }
@@ -210,7 +258,13 @@ export const DraftsActions = ({
     },
     onSuccess: async (data) => {
       if (data.status === 'error') {
-        const { error, failedPrimaryKeys, rowEntries } = data
+        const {
+          error,
+          failedNewRowId,
+          failedPrimaryKeys,
+          newRowIds,
+          rowEntries,
+        } = data
 
         for (const rowDrafts of rowEntries) {
           const [firstDraft] = rowDrafts
@@ -219,8 +273,15 @@ export const DraftsActions = ({
           }
           setRowStatus(firstDraft.primaryKeys, { isCommitting: false })
         }
+        for (const id of newRowIds) {
+          newRowStatus.setStatus(id, { isCommitting: false })
+        }
 
         const message = error instanceof Error ? error.message : String(error)
+
+        if (failedNewRowId !== null) {
+          newRowStatus.setStatus(failedNewRowId, { error: message })
+        }
 
         if (failedPrimaryKeys === null) {
           toast.error('Failed to save changes', {
@@ -243,9 +304,7 @@ export const DraftsActions = ({
         return
       }
 
-      const { commits, rowsQueryOpts } = data
-
-      const db = await createDb()
+      const { commits, newRowIds, queryParams, rowsQueryOpts } = data
 
       const savedValuesByRow = new Map(
         await Promise.all(
@@ -256,13 +315,13 @@ export const DraftsActions = ({
               modifiedColumns,
               updatedFilters,
             }) => {
-              const refreshed = await db
-                .withSchema(schema)
-                .$extendTables<{ [table]: Record<string, unknown> }>()
-                .selectFrom(table)
-                .select(modifiedColumns)
-                .where((eb) => toKyselyFilter(eb, updatedFilters))
-                .execute()
+              const refreshed = await selectQuery({
+                filters: updatedFilters,
+                schema,
+                select: modifiedColumns,
+                table,
+              })
+                .run(queryParams)
                 .then((rows) => rows[0])
                 .catch(() => {
                   toast.warning('Failed to refresh row', {
@@ -305,16 +364,32 @@ export const DraftsActions = ({
       for (const { primaryKeys } of savedValuesByRow.values()) {
         removeRow(primaryKeys)
       }
+      for (const id of newRowIds) {
+        newRowStatus.remove(id)
+      }
 
       const { filters, orderBy } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0) {
+      if (
+        newRowIds.length > 0 ||
+        filters.length > 0 ||
+        Object.keys(orderBy).length > 0
+      ) {
         queryClient.invalidateQueries({
           queryKey: rowsQueryOpts.queryKey.slice(0, -1),
         })
       }
+      if (newRowIds.length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: resourceTableTotalQueryKey({
+            connectionResource,
+            schema,
+            table,
+          }),
+        })
+      }
 
-      const count = savedValuesByRow.size
+      const count = savedValuesByRow.size + newRowIds.length
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
 
       setIsReviewOpen(false)
@@ -325,19 +400,19 @@ export const DraftsActions = ({
     saveDrafts()
   }
 
-  useSaveHotkey(handleSave, drafts.length === 0 || isSaving)
+  useSaveHotkey(handleSave, changeCount === 0 || isSaving)
 
   return (
     <>
       <AnimatePresence initial={false}>
-        {drafts.length > 0 && (
+        {changeCount > 0 && (
           <motion.div
             key="drafts"
             initial={{ opacity: 0, width: 0 }}
             animate={{ opacity: 1, width: 'auto' }}
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.15 }}
-            className="flex shrink-0 items-center gap-1 overflow-hidden"
+            className="flex shrink-0 items-center gap-1 overflow-x-clip"
           >
             <Tooltip>
               <TooltipTrigger
@@ -346,6 +421,7 @@ export const DraftsActions = ({
                     variant="outline"
                     size="icon"
                     className="relative overflow-visible"
+                    aria-label="Review changes"
                     onClick={() => setIsReviewOpen(true)}
                     disabled={isSaving}
                   />
@@ -361,7 +437,7 @@ export const DraftsActions = ({
                   </span>
                 )}
               </TooltipTrigger>
-              <TooltipContent side="top">
+              <TooltipContent side="bottom">
                 <div className="flex flex-col gap-0.5">
                   <span>Review changes before saving</span>
                   {errorCount > 0 && (
@@ -377,14 +453,14 @@ export const DraftsActions = ({
                 render={<Button onClick={handleSave} disabled={isSaving} />}
               >
                 <LoadingContent loading={isSaving}>
-                  Save ({drafts.length})
+                  Save ({changeCount})
                 </LoadingContent>
               </TooltipTrigger>
-              <TooltipContent side="top">
+              <TooltipContent side="bottom">
                 <div className="flex flex-col gap-0.5">
                   <span>
-                    Save {drafts.length} unsaved change
-                    {drafts.length === 1 ? '' : 's'} in {rowCount} row
+                    Save {changeCount} unsaved change
+                    {changeCount === 1 ? '' : 's'} in {rowCount} row
                     {rowCount === 1 ? '' : 's'} atomically in a transaction
                   </span>
                   <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />

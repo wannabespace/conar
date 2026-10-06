@@ -137,9 +137,15 @@ export const ActionsCopy = ({
   const [kind, setKind] = useState<Kind>('schema')
   const [formatType, setFormatType] = useState<GeneratorFormat>('sql')
 
+  const active = enabledFilters(filters)
+  // The ORM generators have no subquery for a filter through a foreign key, so only SQL can state it.
+  const throughKeys = kind === 'query' && active.some((filter) => filter.via)
   const formats = FORMATS[kind].filter((f) => {
     const compatible = GENERATOR_COMPATIBILITY[f.type]
-    return !compatible || compatible.includes(connection.type)
+    return (
+      (!compatible || compatible.includes(connection.type)) &&
+      (!throughKeys || f.type === 'sql')
+    )
   })
   const format = formats.find((f) => f.type === formatType) ?? formats[0]
 
@@ -150,7 +156,7 @@ export const ActionsCopy = ({
   const code = format.generator({
     columns,
     dialect: connection.type,
-    filters: enabledFilters(filters),
+    filters: active,
     indexes: indexes ?? [],
     schema,
     table,

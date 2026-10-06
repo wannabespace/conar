@@ -6,6 +6,8 @@
 @import 'streamdown/styles.css';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/geist/wght-italic.css';
+@import '@fontsource-variable/geist-mono/wght-italic.css';
 
 @plugin 'tailwind-scrollbar';
 @plugin '@tailwindcss/typography';
@@ -15,6 +17,8 @@
 @source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
+/* The grid's editor card renders inside its row, so hovering the card must not light the rows it covers. */
+@custom-variant row-hover (&:where([data-grid-row]:hover, [data-grid-row]:hover *));
 
 @theme inline {
   --default-border-width: 0.5px;
@@ -81,7 +85,7 @@
   --popover-foreground: oklch(0.18 0 0);
   --primary: oklch(0.5788 0.2316 259.64);
   --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.94 0 0);
+  --secondary: oklch(0.92 0 0);
   --secondary-foreground: oklch(0.21 0 0);
   --muted: oklch(0.915 0.002 282.73);
   --muted-foreground: oklch(0.55 0 0);
@@ -106,9 +110,9 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.2437 0.0059 259.64);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.2633 0.0075 259.64);
+  --popover: oklch(0.254 0.0068 259.64);
   --popover-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.3 0.007 282.73);
+  --secondary: oklch(0.345 0.007 282.73);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.2 0.007 282.73);
   --muted-foreground: oklch(0.705 0 0);
@@ -274,79 +278,41 @@
   @apply text-primary bg-white/90;
 }
 
-@utility table-fade {
+@utility table-scroller {
   --table-header-height: calc(var(--spacing) * 8);
 
-  &:has([data-footer]) {
-    --table-header-height: calc(var(--spacing) * 11);
-  }
+  container-type: inline-size;
 }
 
-@utility table-fade-anchor {
-  position: sticky;
-  left: 0;
-  z-index: 10;
-  height: 0;
-
-  &:first-child {
-    top: var(--table-header-height);
-  }
-  &:last-child {
-    bottom: 0;
-  }
+/* The grid and document list rewrite these while scrolling; an inherited custom property restyles every cell below it on each write (~20x the layout cost), so each must stay non-inherited and be set on the element that reads it. */
+@property --grid-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
 }
 
-@utility scroll-fade-edge {
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  left: 0;
-  height: calc(var(--spacing) * 10);
-  opacity: 0;
+@property --grid-height {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
 }
 
-@utility table-fade-top {
-  @apply scroll-fade-edge;
-
-  top: 0;
-  background: linear-gradient(to bottom, var(--background), transparent);
-
-  @supports (animation-timeline: scroll()) {
-    animation: table-fade-in 1ms linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: 0 calc(var(--spacing) * 24);
-  }
+@property --grid-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
 }
 
-@utility table-fade-bottom {
-  @apply scroll-fade-edge;
-
-  bottom: 0;
-  background: linear-gradient(to top, var(--background), transparent);
-
-  @supports (animation-timeline: scroll()) {
-    animation: table-fade-out 1ms linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: calc(100% - calc(var(--spacing) * 24)) 100%;
-  }
+@property --list-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
 }
 
-@keyframes table-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes table-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+@property --list-height {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
 }
 
 @utility focus-ring {

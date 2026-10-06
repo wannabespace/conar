@@ -18,10 +18,12 @@ Double-click a tab label to rename it — handy when several query tabs are open
 
 ## Filtering
 
-Use the filter field in the bottom toolbar (or press <kbd>⌘</kbd> <kbd>F</kbd>). Start typing to either:
+Use the filter field in the toolbar above the table (or press <kbd>⌘</kbd> <kbd>F</kbd>). Start typing to either:
 
 - **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `contains`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
 - **Ask AI** — type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically.
+
+Typing a column name from a table a foreign key points at also offers _Filter by users.email_ (through `user_id`): it keeps the rows whose `user_id` belongs to a user matching the condition. These filters copy as SQL only.
 
 Or right-click a cell: _Filter by value_ keeps only rows where that column equals the cell's value.
 
@@ -33,11 +35,70 @@ Conditions combine with `AND`. Filters are saved per table in local storage.
 
 Click **Sort** to pick a column and direction. Add multiple levels to break ties (e.g. `created_at` desc, then `id` asc). Stored alongside filters.
 
+## Documents view
+
+The view button next to **Sort** (or <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd>) switches a table between the grid and a documents view, like MongoDB Atlas. Each row becomes a block, headed by its row number and primary key (it stays pinned while you scroll through the row), listing every field with its type, with values wrapped up to four lines (open a field to see all of it); JSON objects and arrays expand in place. Everything else works as in the grid — editing, references, copying, the cell menu, and right-clicking a field name to sort, rename or hide its column — with <kbd>↑</kbd> / <kbd>↓</kbd> moving between fields and <kbd>←</kbd> / <kbd>→</kbd> between rows. Hidden columns and column order carry over. The choice is saved per table.
+
+## Moving around
+
+Click a cell to put the cursor on it, then move with the arrow keys. <kbd>Esc</kbd> clears the cursor. Without a cursor, hold <kbd>Shift</kbd> with <kbd>↑</kbd> / <kbd>↓</kbd> to select rows.
+
+Select a block of cells by dragging across them, <kbd>Shift</kbd>-clicking, or holding <kbd>Shift</kbd> with the arrow keys; <kbd>Esc</kbd> shrinks it back to the cursor. With a block selected:
+
+- <kbd>⌘</kbd> <kbd>C</kbd> copies it as tab-separated text that pastes into
+  Sheets, Excel or Numbers. One cell copies its plain value.
+- <kbd>⌘</kbd> <kbd>V</kbd> pastes a block copied from a spreadsheet, starting
+  at the top-left cell; a single value fills the whole selection. Empty values
+  become `NULL` in nullable columns, and boolean columns take `true`/`false`,
+  `t`/`f` or `1`/`0`. Values that do not fit their column are skipped and
+  counted in a message.
+- <kbd>⌘</kbd> <kbd>D</kbd> fills down: every selected cell takes the value at
+  the top of its column. It needs two or more rows selected.
+- A bar at the bottom of the grid shows the count of filled cells, and for numbers their sum, average, minimum and maximum.
+
+Press <kbd>Space</kbd> on a JSON cell to see the value as a tree without editing it; **Show JSON** on the cell's right-click menu does the same.
+
+Cells whose values changed since the last load flash briefly when the table refreshes.
+
+Drag a column header sideways to reorder columns. The order is saved per table and only changes Tamery's view, never the table itself; **Reset Column Order** in the header menu puts it back.
+
+The column header menu also has:
+
+- **Pin Column** keeps the column at the left edge while you scroll sideways. Pinned columns lead the grid in the order you pinned them.
+- **Distinct Values** shows how many of the column's values are unique and empty (with minimum and maximum for numbers and dates) and its most frequent values under the current filters. Search the values, then pick one to filter the table by it.
+- **Show Labels**, on foreign key columns, picks a column of the referenced table to show next to each key, such as a user's name beside their `user_id`. Columns are labelled automatically when the referenced table has an obvious one (`name`, `title`, `label`, `email`, `role` and similar); choose **Off** to hide it.
+
+## References
+
+Foreign key cells carry a ↗ button and cells other tables point at carry a ↙ button. Click either one, or put the cursor on the cell and press <kbd>Space</kbd>, to peek at the related rows without leaving the table:
+
+- A single matching row opens as a record: every field, with ↗ on its own foreign keys and a **Referenced by** list at the bottom, so you can keep following relationships in both directions.
+- Several matching rows open as a small grid; click a row to open it as a record.
+
+The trail of followed references sits at the top of the peek. Click an earlier step or press <kbd>Esc</kbd> to step back; **Open in Table** opens the current rows as a filtered tab.
+
 ## Editing
 
 <Steps>
   <Step title="Edit a cell">
-    Click a cell, type a new value. Edited cells are highlighted.
+    Start typing on the cursor cell to replace its value, or double-click it (or
+    press <kbd>Enter</kbd> or <kbd>F2</kbd>) to edit what is there — the value
+    opens in a card over the cell, and long values grow it downward.
+    <kbd>Enter</kbd> applies and stays on the cell, <kbd>Tab</kbd> applies and
+    moves right (with <kbd>⇧</kbd> left), <kbd>⌥</kbd> <kbd>Enter</kbd> adds a
+    line break, clicking elsewhere applies too, and <kbd>Esc</kbd> cancels.
+    <kbd>Backspace</kbd> on the cursor cell empties it. Nullable columns show
+    **Set null** at the bottom of the card. <kbd>⌘</kbd> <kbd>V</kbd> pastes
+    straight into the cursor cell. Booleans are checkboxes — click one (or press
+    <kbd>Enter</kbd>) to flip it. Date and time fields have a **Now** button.
+    Enum values show as colored tags and open a list of tags to pick from; sets
+    of enum values toggle and stay open. Foreign keys open a search of the
+    referenced table — type a key or any text in that row, such as a name, and
+    pick the row. Columns with a default show **Default** at the bottom of the
+    card to put the default back (not on ClickHouse). With a block of cells
+    selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of them.
+    JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
+    invalid JSON is caught before it is staged. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Click **Review changes** to see every staged edit — table, column, old
@@ -49,7 +110,11 @@ Click **Sort** to pick a column and direction. Add multiple levels to break ties
   </Step>
 </Steps>
 
-**Delete rows** — select rows via the checkboxes, click **Delete**, confirm.
+**Add rows** — click the **+** at the start of the header row to stage an empty row, or right-click a cell and choose **Duplicate Row** to stage a copy of its row (primary keys, identity and computed columns are left out). New rows appear highlighted at the top of the grid; cells show _default_ until you fill them, and those left at _default_ get the database's default. Edit them like any other cell — they are saved with **Save** in the same transaction as your other changes, and listed in the review drawer. Right-click a new row and choose **Discard Row** to drop it. Adding rows needs a table with a primary key.
+
+**Set a value in many rows** — select rows via the checkboxes, open a column's header menu and choose **Set Value in Selected Rows**. The value is staged in every selected row for you to review and save.
+
+**Delete rows** — select rows via the checkboxes, click **Delete**, and confirm; the dialog lists the rows that will go.
 
 ## Data seeding
 
@@ -71,8 +136,8 @@ The panel lists every column with its generator on the left. Select a column to 
 | **Copy data** | Copy selected rows or the whole result as TSV. |
 | **Rename schema** | Postgres only. Right-click a schema in the sidebar, or hover it and click **⋯**, then **Rename**. |
 | **Full-text search** | Filter rows across visible columns. |
-| **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, **CASCADE** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
-| **New schema** | Run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema opens **New table** right away — a schema shows in the sidebar once it holds a table. |
+| **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, turning on **Cascade** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
+| **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema shows in the sidebar and opens **New table** right away. |
 | **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key. |
 | **Rename column** | Right-click a column header. |
 | **Rename / drop table** | From the toolbar menu (with confirmation). |

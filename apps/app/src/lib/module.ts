@@ -125,12 +125,6 @@ export interface WorkspaceModule {
   header?: ComponentType
   mounts?: ComponentType[]
   panels?: Panel[]
-  referenceTable?: ComponentType<{
-    column: string
-    schema: string
-    table: string
-    value: unknown
-  }>
   tabBarEnd?: Slotted<{ resourceId: string }>[]
   tabs?: Record<string, TabView>
 }

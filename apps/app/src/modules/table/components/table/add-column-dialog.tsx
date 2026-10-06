@@ -3,7 +3,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { addColumnQuery } from '~/core/queries/tables/add-column'
 import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
@@ -26,7 +25,7 @@ export const AddColumnDialog = ({
   schema: string
   table: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const [request, setRequest] = useState<ColumnDialogRequest | null>(null)
 
@@ -71,8 +70,6 @@ export const AddColumnDialog = ({
   return (
     <ColumnDialog
       request={request}
-      canRename={capabilitiesOf(connection.type).renameColumns}
-      columnTypes={capabilitiesOf(connection.type).columnTypes}
       pending={isPending}
       onOpenChange={(open) => !open && setRequest(null)}
       onSubmit={(_, column) => addColumn(column)}

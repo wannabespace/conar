@@ -7,7 +7,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { isDefinedError } from '@orpc/client'
-import type { ActiveFilter, Filter } from '@tamery/shared/filters'
+import type { ActiveFilter, Filter, FilterVia } from '@tamery/shared/filters'
 import {
   FILTER_GROUPS,
   FILTERS_GROUPED,
@@ -28,7 +28,7 @@ import {
 import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
@@ -36,19 +36,27 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
+import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
+import { getColumnUiType } from '~/core/table/cell/utils'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
-import { FilterChip } from './filter-chip'
+import { FilterChip, filterLabel } from './filter-chip'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type Stage =
   | { step: 'idle' }
-  | { step: 'operator'; column: string }
-  | { step: 'value'; column: string; ref: Filter }
+  | { step: 'operator'; column: string; via?: FilterVia }
+  | { step: 'value'; column: string; ref: Filter; via?: FilterVia }
+
+const stageFilter = (
+  { column, via }: { column: string; via?: FilterVia },
+  ref: Filter,
+  values: unknown[]
+): ActiveFilter => ({ column, ref, values, via })
 
 const splitParts = (value: string) =>
   value
@@ -112,7 +120,7 @@ const handleFilterInputKeyDown = ({
 }) => {
   if (e.key === 'Backspace' && query === '') {
     if (stage.step === 'value') {
-      setStage({ column: stage.column, step: 'operator' })
+      setStage({ column: stage.column, step: 'operator', via: stage.via })
       return
     }
     if (stage.step === 'operator') {
@@ -176,19 +184,46 @@ const generateSummary = (
   return parts.length > 0 ? `Applied ${parts.join(' · ')}` : null
 }
 
+interface SuggestionColumn {
+  availableValues?: string[]
+  uiType?: string
+}
+
+interface RelatedColumn {
+  column: string
+  target: SuggestionColumn
+  via: FilterVia
+}
+
+const valueColumnOf = (
+  stage: Stage,
+  columns: (SuggestionColumn & { id: string })[] | undefined,
+  related: RelatedColumn[]
+) => {
+  if (stage.step !== 'value') {
+    return
+  }
+  const { column, via } = stage
+  if (via) {
+    return related.find(
+      (entry) => entry.column === column && entry.via.target === via.target
+    )?.target
+  }
+  return columns?.find(({ id }) => id === column)
+}
+
 const getStageSuggestions = ({
   columns,
   query,
+  related,
   stage,
 }: {
-  columns?: { id: string; availableValues?: string[]; uiType?: string }[]
+  columns?: (SuggestionColumn & { id: string })[]
   query: string
+  related: RelatedColumn[]
   stage: Stage
 }) => {
-  const stageColumn =
-    stage.step === 'value'
-      ? columns?.find((column) => column.id === stage.column)
-      : undefined
+  const stageColumn = valueColumnOf(stage, columns, related)
   const suggestedValues =
     stageColumn?.availableValues ??
     (stageColumn?.uiType === 'boolean' ? ['true', 'false'] : undefined)
@@ -229,13 +264,10 @@ const applyOperatorSelection = ({
     return
   }
   if (ref.hasValue === false) {
-    setFilters((current) => [
-      ...current,
-      { column: stage.column, ref, values: [] },
-    ])
+    setFilters((current) => [...current, stageFilter(stage, ref, [])])
     resetStage()
   } else {
-    setStage({ column: stage.column, ref, step: 'value' })
+    setStage({ column: stage.column, ref, step: 'value', via: stage.via })
     setHighlighted('apply-value')
     setPrompt('')
   }
@@ -259,10 +291,7 @@ const applyFilterValue = ({
     return
   }
   const values = stage.ref.isArray ? splitParts(query) : [query]
-  setFilters((current) => [
-    ...current,
-    { column: stage.column, ref: stage.ref, values },
-  ])
+  setFilters((current) => [...current, stageFilter(stage, stage.ref, values)])
   resetStage()
   focusSearchInput()
 }
@@ -300,7 +329,7 @@ const applySuggestedValue = ({
   } else {
     setFilters((current) => [
       ...current,
-      { column: stage.column, ref: stage.ref, values: [value] },
+      stageFilter(stage, stage.ref, [value]),
     ])
     resetStage()
   }
@@ -317,6 +346,7 @@ const FilterCommandList = ({
   isPending,
   matchingColumns,
   matchingOperators,
+  matchingRelated,
   matchingValues,
   onClearFilters,
   pickColumn,
@@ -335,9 +365,10 @@ const FilterCommandList = ({
   isPending: boolean
   matchingColumns: { id: string; type?: string; typeLabel?: string }[]
   matchingOperators: { group: keyof typeof FILTER_GROUPS; filters: Filter[] }[]
+  matchingRelated: { column: string; via: FilterVia }[]
   matchingValues: string[]
   onClearFilters: () => void
-  pickColumn: (columnId: string) => void
+  pickColumn: (columnId: string, via?: FilterVia) => void
   pickOperator: (ref: Filter) => void
   pickSuggestedValue: (value: string) => void
   query: string
@@ -362,6 +393,19 @@ const FilterCommandList = ({
                 {column.typeLabel || column.type}
               </CommandShortcut>
             )}
+          </CommandItem>
+        ))}
+        {matchingRelated.map(({ column, via }) => (
+          <CommandItem
+            key={`${column}:${via.target}`}
+            value={`related:${column}:${via.target}`}
+            onSelect={() => pickColumn(column, via)}
+          >
+            <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
+            <span data-mask className="min-w-0 flex-1 truncate">
+              Filter by {filterLabel({ column, via })}
+            </span>
+            <CommandShortcut data-mask>via {column}</CommandShortcut>
           </CommandItem>
         ))}
         {trimmedQuery.length > 0 && (
@@ -439,7 +483,7 @@ const FilterCommandList = ({
           <CommandItem value="apply-value" onSelect={applyValue}>
             <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
             <span data-mask className="min-w-0 flex-1 truncate">
-              Apply: {stage.column} {stage.ref.symbol}{' '}
+              Apply: {filterLabel(stage)} {stage.ref.symbol}{' '}
               {query === '' ? '(empty)' : query}
             </span>
             <CommandShortcut>
@@ -460,9 +504,9 @@ const AiSummaryRow = ({
   summary: string
 }) => (
   <motion.div
-    initial={{ height: 0, opacity: 0, y: 8 }}
+    initial={{ height: 0, opacity: 0, y: -8 }}
     animate={{ height: 'auto', opacity: 1, y: 0 }}
-    exit={{ height: 0, opacity: 0, y: 8 }}
+    exit={{ height: 0, opacity: 0, y: -8 }}
     transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
     className="overflow-hidden"
   >
@@ -550,6 +594,9 @@ export const FilterSearchBar = ({
   }
 
   const { columns } = useTableColumnsContext()
+  const foreignKeys = (columns ?? []).flatMap(({ foreign, id }) =>
+    foreign ? [{ foreign, id }] : []
+  )
   const { data: enums } = useQuery(
     resourceEnumsQueryOptions({ connectionResource })
   )
@@ -628,6 +675,35 @@ export const FilterSearchBar = ({
       (a, b) => columnRank(a.id.toLowerCase()) - columnRank(b.id.toLowerCase())
     )
 
+  const related = useQueries({
+    combine: (results) =>
+      foreignKeys.flatMap(({ foreign, id }, index) =>
+        (results[index]?.data ?? []).map((target) => ({
+          column: id,
+          target: { uiType: getColumnUiType(target) },
+          via: {
+            key: foreign.column,
+            schema: foreign.schema,
+            table: foreign.table,
+            target: target.id,
+          },
+        }))
+      ),
+    queries: foreignKeys.map(({ foreign }) =>
+      resourceTableColumnsQueryOptions({
+        connectionResource,
+        schema: foreign.schema,
+        table: foreign.table,
+      })
+    ),
+  })
+  const matchingRelated =
+    columnQuery === ''
+      ? []
+      : related.filter((entry) =>
+          filterLabel(entry).toLowerCase().includes(columnQuery)
+        )
+
   const isOpen =
     isFocused &&
     (stage.step !== 'idle' ||
@@ -650,8 +726,8 @@ export const FilterSearchBar = ({
     generateFilter({ context, prompt: trimmedQuery })
   }
 
-  const pickColumn = (columnId: string) => {
-    setStage({ column: columnId, step: 'operator' })
+  const pickColumn = (columnId: string, via?: FilterVia) => {
+    setStage({ column: columnId, step: 'operator', via })
     setPrompt('')
     setHighlighted('operator:eq')
     focusSearchInput()
@@ -680,7 +756,12 @@ export const FilterSearchBar = ({
     })
   }
 
-  const stageSuggestions = getStageSuggestions({ columns, query, stage })
+  const stageSuggestions = getStageSuggestions({
+    columns,
+    query,
+    related,
+    stage,
+  })
   const { committedParts, matchingValues } = stageSuggestions
 
   const pickSuggestedValue = (value: string) => {
@@ -739,7 +820,7 @@ export const FilterSearchBar = ({
               }
               onEdit={(next) =>
                 setFilters((current) =>
-                  current.map((f, i) => (i === index ? { ...f, ...next } : f))
+                  current.map((f, i) => (i === index ? next : f))
                 )
               }
               onToggleDisabled={() =>
@@ -757,7 +838,7 @@ export const FilterSearchBar = ({
                 data-mask
                 className="flex items-center px-1.5 text-xs font-medium"
               >
-                {stage.column}
+                {filterLabel(stage)}
               </span>
               {stage.step === 'value' && (
                 <>
@@ -772,6 +853,7 @@ export const FilterSearchBar = ({
           <CommandPrimitive.Input
             ref={inputRef}
             data-filter-search-input=""
+            aria-label="Filter rows"
             value={query}
             onValueChange={setQuery}
             placeholder={placeholder}
@@ -808,9 +890,9 @@ export const FilterSearchBar = ({
             role="presentation"
             initial={false}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
+            exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
-            className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
+            className="bg-popover ring-foreground/4 absolute top-full left-0 z-30 mt-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
             onMouseDown={(e) => e.preventDefault()}
           >
             <AnimatePresence>
@@ -829,6 +911,7 @@ export const FilterSearchBar = ({
                 isPending={isPending}
                 matchingColumns={matchingColumns}
                 matchingOperators={matchingOperators}
+                matchingRelated={matchingRelated}
                 matchingValues={matchingValues}
                 onClearFilters={() => setFilters(() => [])}
                 pickColumn={pickColumn}

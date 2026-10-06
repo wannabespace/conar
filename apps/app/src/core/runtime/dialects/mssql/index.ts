@@ -19,6 +19,15 @@ const isSelectQueryNode = (node: OperationNode): node is SelectQueryNode =>
   node.kind === 'SelectQueryNode'
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
+  // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary; a NULL literal converts to any type.
+  protected override appendValue(value: unknown) {
+    if (value === null) {
+      this.append('null')
+    } else {
+      super.appendValue(value)
+    }
+  }
+
   protected override visitOffset(node: OffsetNode) {
     const parent = this.parentNode
 

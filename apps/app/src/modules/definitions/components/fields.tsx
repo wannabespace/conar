@@ -34,7 +34,7 @@ import type { AnyFormApi } from '@tanstack/react-form'
 import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { InspectorOption } from './inspector'
+import { OptionField } from '~/components/option-field'
 
 export const editorOptions = {
   fontSize: 12,
@@ -311,11 +311,7 @@ export const SwitchField = ({
   const field = useFieldContext<boolean>()
 
   return (
-    <InspectorOption
-      htmlFor={field.name}
-      title={title}
-      description={description}
-    >
+    <OptionField htmlFor={field.name} title={title} description={description}>
       <Switch
         id={field.name}
         size="sm"
@@ -323,6 +319,6 @@ export const SwitchField = ({
         checked={field.state.value}
         onCheckedChange={field.handleChange}
       />
-    </InspectorOption>
+    </OptionField>
   )
 }

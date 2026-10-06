@@ -20,18 +20,27 @@ const commandVariants = {
   transparent: 'text-popover-foreground rounded-xl',
 }
 
+const commandSizes = {
+  default: '',
+  sm: `**:data-[slot=command-input]:text-xs **:data-[slot=command-item]:text-xs`,
+}
+
 export const Command = ({
   className,
+  size = 'default',
   variant = 'popup',
   ...props
 }: React.ComponentProps<typeof CommandPrimitive> & {
+  size?: keyof typeof commandSizes
   variant?: keyof typeof commandVariants
 }) => (
   <CommandPrimitive
     data-slot="command"
+    data-size={size}
     className={cn(
-      'flex size-full flex-col overflow-hidden outline-none',
+      'group/command flex size-full flex-col overflow-hidden outline-none',
       commandVariants[variant],
+      commandSizes[size],
       className
     )}
     {...props}
@@ -179,7 +188,7 @@ export const CommandItem = ({
     <HugeiconsIcon
       icon={Tick02Icon}
       strokeWidth={2}
-      className="ml-auto hidden opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-checked/command-item:block group-data-[checked=true]/command-item:opacity-100"
+      className="ml-auto hidden size-4 opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-checked/command-item:block group-data-[checked=true]/command-item:opacity-100 group-data-[size=sm]/command:size-3"
     />
   </CommandPrimitive.Item>
 )

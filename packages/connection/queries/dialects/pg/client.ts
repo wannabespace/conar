@@ -11,13 +11,31 @@ import { defaultSSLConfig, parseSSLConfig } from '../../../ssl/pg'
 
 export const pg = createRequire(import.meta.url)('pg') as typeof PgModule
 
-const parseDate = (value: string) => value
+// Missing from `pg.types.builtins`.
+const POINT_OID = 600
+// oxlint-disable-next-line ts/no-inferrable-types -- widened: `TypeId` rejects a literal OID missing from builtins
+const TEXT_ARRAY_OID: number = 1009
+const asTextArray = pg.types.getTypeParser(TEXT_ARRAY_OID)
+// `pg_type.typarray` of each type parsed as text below; keep the two lists in sync.
+const TEXT_ARRAY_OIDS = [719, 1001, 1017, 1115, 1182, 1183, 1185, 1187, 1270]
 
-pg.types.setTypeParser(pg.types.builtins.DATE, parseDate)
-pg.types.setTypeParser(pg.types.builtins.TIMESTAMP, parseDate)
-pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
-pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
-pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
+// Kept as Postgres prints them, so an edited cell writes back text Postgres parses; the default parsers hand back a Date, an object or a Buffer.
+for (const oid of [
+  pg.types.builtins.BYTEA,
+  pg.types.builtins.CIRCLE,
+  pg.types.builtins.DATE,
+  pg.types.builtins.INTERVAL,
+  POINT_OID,
+  pg.types.builtins.TIME,
+  pg.types.builtins.TIMESTAMP,
+  pg.types.builtins.TIMESTAMPTZ,
+  pg.types.builtins.TIMETZ,
+]) {
+  pg.types.setTypeParser(oid, (value: string) => value)
+}
+for (const oid of TEXT_ARRAY_OIDS) {
+  pg.types.setTypeParser(oid, asTextArray)
+}
 
 const connect = (options: PoolConfig) =>
   Result.tryPromise({

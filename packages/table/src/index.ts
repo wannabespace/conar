@@ -1,11 +1,9 @@
-export { TableBody } from './body'
-export { TableHeader } from './header'
-export { TableProvider } from './provider'
-export type { TableContextType } from './provider'
-export { Table } from './table'
+export type { GridColumn } from './columns'
+export { Grid } from './grid'
 export type {
-  ColumnRenderer,
-  TableCellProps,
-  TableHeaderCellProps,
-} from './types'
-export type { ColumnPosition } from './utils'
+  GridCellProps,
+  GridHeaderProps,
+  GridRow,
+  ScrollToCell,
+} from './grid'
+export { useEndReached } from './use-end-reached'

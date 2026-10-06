@@ -85,7 +85,7 @@ const SortedItem = ({
       >
         <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
       </TooltipTrigger>
-      <TooltipContent side="top">Remove sort</TooltipContent>
+      <TooltipContent side="bottom">Remove sort</TooltipContent>
     </Tooltip>
   </CommandItem>
 )
@@ -110,11 +110,18 @@ export const ActionsOrder = () => {
   const activeCount = orderEntries.length
   const availableColumns =
     columns?.filter((col) => !orderEntries.some(([id]) => id === col.id)) || []
+  let label = 'Sort order'
+  if (isPending) {
+    label = 'Loading columns…'
+  } else if (activeCount > 0) {
+    label = `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger
+          aria-label={label}
           render={
             <PopoverTrigger
               render={
@@ -141,13 +148,7 @@ export const ActionsOrder = () => {
             />
           )}
         </TooltipTrigger>
-        <TooltipContent side="top">
-          {isPending && 'Loading columns…'}
-          {!isPending &&
-            (activeCount > 0
-              ? `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
-              : 'Sort order')}
-        </TooltipContent>
+        <TooltipContent side="bottom">{label}</TooltipContent>
       </Tooltip>
       <PopoverContent
         // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding

@@ -1,5 +1,7 @@
 export {
   EQUAL_FILTER,
+  IN_FILTER,
+  IS_NULL_FILTER,
   FILTER_OPERATORS,
   FILTERS_GROUPED,
   FILTERS_LIST,
@@ -8,4 +10,10 @@ export { toMongoFilter } from './mongo'
 export { SQL_OPERATORS, toKyselyFilter } from './kysely'
 export { cellToFilterValues } from './transformers'
 export { FILTER_GROUPS, enabledFilters } from './types'
-export type { ActiveFilter, Filter, FilterGroup, FilterOperator } from './types'
+export type {
+  ActiveFilter,
+  Filter,
+  FilterGroup,
+  FilterOperator,
+  FilterVia,
+} from './types'

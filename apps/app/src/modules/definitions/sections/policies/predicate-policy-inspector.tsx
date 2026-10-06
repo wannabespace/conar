@@ -13,6 +13,7 @@ import { useStore } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { OptionField } from '~/components/option-field'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { alterPolicyQuery } from '~/core/queries/policies/alter'
 import { createPolicyQuery } from '~/core/queries/policies/create'
@@ -21,11 +22,7 @@ import { queryClient } from '~/lib/query-client'
 
 import { SchemaField, SelectField, TextField } from '../../components/fields'
 import type { SectionInspectorProps } from '../../components/inspector'
-import {
-  Inspector,
-  InspectorOption,
-  InspectorSection,
-} from '../../components/inspector'
+import { Inspector, InspectorSection } from '../../components/inspector'
 import type { PolicyItem } from './policy-draft'
 import type { PredicatePolicyDraft } from './predicate-draft'
 import {
@@ -132,7 +129,7 @@ export const PredicatePolicyInspector = ({
     >
       {item && (
         <InspectorSection title="Status">
-          <InspectorOption
+          <OptionField
             htmlFor="policy-enabled"
             title="Enabled"
             description="A disabled policy keeps its predicates but filters and blocks nothing."
@@ -144,7 +141,7 @@ export const PredicatePolicyInspector = ({
               checked={item.enabled}
               onCheckedChange={(enabled) => state.mutate({ enabled })}
             />
-          </InspectorOption>
+          </OptionField>
         </InspectorSection>
       )}
       <InspectorSection

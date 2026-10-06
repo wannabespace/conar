@@ -82,14 +82,7 @@ import {
   incrementSeedUsage,
   seedUsageValue,
 } from '../../../seeds/usage'
-import {
-  DefaultValueTooltipIcon,
-  ForeignTooltipIcon,
-  NullableTooltipIcon,
-  PrimaryKeyTooltipIcon,
-  ReadOnlyTooltipIcon,
-  UniqueTooltipIcon,
-} from '../../table/table-header-cell'
+import { ColumnType } from '../../table/column-type'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -215,11 +208,19 @@ const GeneratorPicker = ({
   onLeave: () => void
 }) => {
   const [search, setSearch] = useState('')
+  const listRef = useRef<HTMLDivElement>(null)
   const currentRef = useRef<HTMLDivElement>(null)
   const labelOf = (id: GeneratorId) => generators[id]?.label ?? id
 
   useEffect(() => {
-    currentRef.current?.scrollIntoView({ block: 'start' })
+    const { current: list } = listRef
+    const { current } = currentRef
+    // scrollIntoView would also scroll the overflow-hidden Command root and the
+    // drawer viewport mid-slide, hiding the search input and jerking the drawer
+    if (list && current) {
+      list.scrollTop +=
+        current.getBoundingClientRect().top - list.getBoundingClientRect().top
+    }
   }, [])
 
   useHotkeys(
@@ -271,7 +272,7 @@ const GeneratorPicker = ({
         value={search}
         onValueChange={setSearch}
       />
-      <CommandList className="max-h-none min-h-0 flex-1">
+      <CommandList ref={listRef} className="max-h-none min-h-0 flex-1">
         <CommandEmpty>No generators found.</CommandEmpty>
         {groups.map((group) => {
           const items = group.items.filter((id) =>
@@ -336,28 +337,9 @@ const Inspector = ({
         <span data-mask className="truncate text-sm font-medium">
           {column.id}
         </span>
-        {column.primaryKey && (
-          <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />
-        )}
-        {column.foreign && (
-          <ForeignTooltipIcon
-            name={column.foreign.name}
-            table={column.foreign.table}
-            column={column.foreign.column}
-          />
-        )}
-        {column.unique && <UniqueTooltipIcon unique={column.unique} />}
-        {column.isNullable && <NullableTooltipIcon />}
-        {column.defaultValue && (
-          <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
-        )}
-        {column.isGenerated && <ReadOnlyTooltipIcon />}
-        <span
-          data-mask
-          className="text-muted-foreground ml-auto truncate font-mono text-xs"
-        >
-          {column.typeLabel}
-        </span>
+        <div className="ml-auto min-w-0">
+          <ColumnType column={column} />
+        </div>
       </div>
       <GeneratorPicker
         column={column}
@@ -435,7 +417,7 @@ export const SeedPanel = ({
   const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    columnsRef.current?.focus()
+    columnsRef.current?.focus({ preventScroll: true })
   }, [])
 
   const { subscription } = useUserSubscription()

@@ -6,7 +6,6 @@ import {
   AlertTitle,
 } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
-import { Checkbox } from '@tamery/ui/components/checkbox'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
@@ -18,11 +17,13 @@ import {
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
+import { Switch } from '@tamery/ui/components/switch'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
+import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { dropTableQuery } from '~/core/queries/tables/drop'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
@@ -131,16 +132,18 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
             />
           </div>
           {capabilitiesOf(connection.type).cascade && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="cascade"
+            <OptionField
+              htmlFor="drop-table-cascade"
+              title="Cascade"
+              description="Also drop the objects that depend on this table."
+            >
+              <Switch
+                id="drop-table-cascade"
+                size="sm"
                 checked={cascade}
-                onCheckedChange={() => setCascade(!cascade)}
+                onCheckedChange={setCascade}
               />
-              <Label htmlFor="cascade" variant="checkbox">
-                Drop tables that depend on this table (CASCADE)
-              </Label>
-            </div>
+            </OptionField>
           )}
         </div>
         <DialogFooter>

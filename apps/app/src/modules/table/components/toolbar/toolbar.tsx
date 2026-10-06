@@ -44,6 +44,7 @@ import { ActionsCopy } from './actions/actions-copy'
 import { ActionsDelete } from './actions/actions-delete'
 import { ActionsOrder } from './actions/actions-order'
 import { ActionsSeed, importSeedPanel } from './actions/actions-seed'
+import { ActionsView } from './actions/actions-view'
 import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
 
@@ -157,7 +158,7 @@ const TableStats = ({
           </span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="top">
+      <TooltipContent side="bottom">
         {failed && 'No row count — the query failed.'}
         {!failed && total && (
           <div className="flex flex-col gap-0.5">
@@ -270,7 +271,7 @@ export const TableToolbar = ({
   }
 
   return (
-    <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
+    <div className="flex shrink-0 items-start gap-2 px-3 py-2">
       <TableStats
         exact={exact}
         failed={isRowsError}
@@ -285,6 +286,7 @@ export const TableToolbar = ({
       <div className="flex shrink-0 items-center gap-1">
         <ActionsColumns />
         <ActionsOrder />
+        <ActionsView />
         <DropdownMenu
           onOpenChange={(menuOpen) => {
             if (menuOpen && tableType === 'table') {
@@ -294,6 +296,7 @@ export const TableToolbar = ({
         >
           <Tooltip>
             <TooltipTrigger
+              aria-label="More actions"
               render={
                 <DropdownMenuTrigger
                   render={<Button variant="outline" size="icon" />}
@@ -302,9 +305,9 @@ export const TableToolbar = ({
             >
               <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
             </TooltipTrigger>
-            <TooltipContent side="top">More actions</TooltipContent>
+            <TooltipContent side="bottom">More actions</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent side="top" align="end" className="min-w-44">
+          <DropdownMenuContent align="end" className="min-w-44">
             {tableType === 'table' && (
               <DropdownMenuItem onClick={onAddColumn}>
                 <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />

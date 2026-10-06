@@ -6,6 +6,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@tamery/connection": "workspace:*",
     "@tamery/shared": "workspace:*"

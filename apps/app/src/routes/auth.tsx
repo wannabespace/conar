@@ -106,7 +106,7 @@ const AuthPage = () => {
       onSuccess: async (exchangeData) => {
         bearerToken.set(exchangeData.token)
         await refetch()
-        router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
+        await router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         successAuthToast(!!exchangeData.newUser)
       },
     })

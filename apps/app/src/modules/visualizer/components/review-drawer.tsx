@@ -26,12 +26,14 @@ import {
 } from '@tamery/ui/components/tooltip'
 
 import { cardClass } from '~/components/card'
+import { DiscardButton } from '~/components/discard-button'
 import { PaneEmpty } from '~/components/pane-empty'
 import { inlineParameters } from '~/core/codegen/formats/sql'
 import { coldDialects } from '~/core/runtime/dialects'
 import { formatSql } from '~/lib/formatter'
+import { plural } from '~/lib/plural'
 
-import { applyConsequence, plural } from '../lib/apply'
+import { applyConsequence } from '../lib/apply'
 import type { DiagramDraft } from '../lib/statements'
 import { draftStatement, inApplyOrder } from '../lib/statements'
 
@@ -139,7 +141,7 @@ export const ReviewDrawer = ({
                   <header className="border-foreground/6 flex h-9 items-center border-b px-3">
                     <span
                       data-mask
-                      className="text-2xs text-muted-foreground truncate font-mono"
+                      className="text-2xs text-foreground truncate font-mono"
                     >
                       {key}
                     </span>
@@ -156,26 +158,11 @@ export const ReviewDrawer = ({
                         >
                           {draftLabel(draft)}
                         </span>
-                        <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <Button
-                                variant="ghost-muted"
-                                size="icon-xs"
-                                aria-label="Discard change"
-                                className="shrink-0"
-                                onClick={() => onDiscard(draft.id)}
-                                disabled={applying}
-                              />
-                            }
-                          >
-                            <HugeiconsIcon
-                              icon={ArrowTurnBackwardIcon}
-                              strokeWidth={2}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>Discard change</TooltipContent>
-                        </Tooltip>
+                        <DiscardButton
+                          label="Discard change"
+                          onClick={() => onDiscard(draft.id)}
+                          disabled={applying}
+                        />
                       </div>
                       <CodeBlock
                         code={previewSql(connectionType, draft)}

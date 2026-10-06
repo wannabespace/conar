@@ -1,137 +1,135 @@
-/* oxlint-disable react/no-array-index-key */
+/* oxlint-disable react/no-array-index-key -- static placeholders */
 import { pseudoRandom } from '@tamery/shared/utils'
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
+  LEADING_COLUMN_SIZE,
 } from '@tamery/table/constants'
-import { useTableContext } from '@tamery/table/hooks'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
-import { INTERNAL_COLUMN_IDS } from '~/core/table/cell/utils'
+import {
+  DOCUMENT_HEADER_CLASS,
+  DOCUMENT_ITEM_CLASS,
+  FIELD_ROW_CLASS,
+} from '~/core/table/document-list'
 
-const ROWS_COUNT = 20
+const ROWS = 20
+const COLUMNS = 6
 const STAGGER_MS = 90
+const DOCUMENTS = 4
+const FIELDS = 6
 
-const barWidth = (rowIndex: number, columnIndex: number) => {
-  const base = 30 + pseudoRandom(columnIndex + 1) * 50
-  const jitter = (pseudoRandom(rowIndex * 31 + columnIndex * 7) - 0.5) * 44
-  return Math.round(Math.min(95, Math.max(15, base + jitter)))
+const barWidth = (row: number, column: number) => {
+  const base = 30 + pseudoRandom(column + 1) * 50
+  const jitter = (pseudoRandom(row * 31 + column * 7) - 0.5) * 44
+  return `${Math.round(Math.min(95, Math.max(15, base + jitter)))}%`
 }
 
-export const TableHeaderSkeleton = ({
+const Columns = ({
+  children,
   selectable,
-  columnsCount = 6,
 }: {
-  selectable?: boolean
-  columnsCount?: number
+  children: (column: number) => ReactNode
+  selectable: boolean
 }) => (
-  <div className="bg-background sticky top-0 z-10 flex w-fit min-w-full items-center border-b">
+  <>
+    {/* Keep in step with the grid's `GUTTER`. */}
+    <div aria-hidden className="w-2 shrink-0" />
     {selectable && (
-      <div className="shrink-0 p-2 pl-4">
-        <Skeleton className="size-4 rounded-sm" />
+      <div className="flex w-(--leading-width) shrink-0 items-center justify-end border-r pr-3">
+        <Skeleton className="size-4 rounded-md [animation-delay:var(--row-delay)]" />
       </div>
     )}
-    {Array.from({ length: columnsCount }).map((_, columnIndex) => (
+    {Array.from({ length: COLUMNS }, (_, column) => (
       <div
-        // oxlint-disable-next-line react/no-array-index-key
-        key={columnIndex}
-        className="flex w-(--column-width) shrink-0 flex-col justify-center px-2 py-1.5 first:pl-4"
+        key={column}
+        className="flex w-(--column-width) shrink-0 flex-col justify-center gap-1.5 border-r px-2"
+      >
+        {children(column)}
+      </div>
+    ))}
+  </>
+)
+
+export const TableSkeleton = ({ selectable }: { selectable: boolean }) => (
+  <div
+    aria-hidden
+    className="size-full overflow-hidden"
+    style={
+      {
+        '--column-width': `${DEFAULT_COLUMN_WIDTH}px`,
+        '--leading-width': `${LEADING_COLUMN_SIZE}px`,
+        '--row-height': `${DEFAULT_ROW_HEIGHT}px`,
+      } as CSSProperties
+    }
+  >
+    <div className="flex h-8 border-b">
+      <Columns selectable={selectable}>
+        {(column) => (
+          <Skeleton
+            className="h-3 w-(--bar-width)"
+            style={
+              {
+                '--bar-width': `${25 + pseudoRandom(column + 40) * 35}%`,
+              } as CSSProperties
+            }
+          />
+        )}
+      </Columns>
+    </div>
+    {Array.from({ length: ROWS }, (_, row) => (
+      <div
+        key={row}
+        className="flex h-(--row-height) border-b opacity-(--row-opacity) [animation-delay:var(--row-delay)]"
         style={
-          { '--column-width': `${DEFAULT_COLUMN_WIDTH}px` } as CSSProperties
+          {
+            '--row-delay': `${row * STAGGER_MS}ms`,
+            '--row-opacity': 1 - row / ROWS,
+          } as CSSProperties
         }
       >
-        <div className="flex h-4 items-center">
-          <Skeleton
-            className="h-3 w-(--bar-width) rounded-md"
-            style={
-              {
-                '--bar-width': `${25 + pseudoRandom(columnIndex + 40) * 35}%`,
-              } as CSSProperties
-            }
-          />
-        </div>
-        <div className="flex h-4 items-center">
-          <Skeleton
-            className="h-2.5 w-(--bar-width) rounded-md"
-            style={
-              {
-                '--bar-width': `${15 + pseudoRandom(columnIndex + 80) * 15}%`,
-              } as CSSProperties
-            }
-          />
-        </div>
+        <Columns selectable={selectable}>
+          {(column) => (
+            <Skeleton
+              className="h-3.5 w-(--bar-width) [animation-delay:var(--row-delay)]"
+              style={{ '--bar-width': barWidth(row, column) } as CSSProperties}
+            />
+          )}
+        </Columns>
       </div>
     ))}
   </div>
 )
 
-export const TableBodySkeleton = ({
-  className,
-  selectable,
-  columnsCount = 6,
-}: {
-  className?: string
-  selectable?: boolean
-  columnsCount?: number
-}) => {
-  const columns = useTableContext((state) => state.columns)
-  const columnsWithoutInternal = columns.filter(
-    (column) => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id)
-  )
-
-  const cols =
-    columnsWithoutInternal.length === 0
-      ? Array.from({ length: columnsCount }).map((_, index) => ({
-          id: `column-${index + 1}`,
-          size: DEFAULT_COLUMN_WIDTH,
-        }))
-      : columnsWithoutInternal.map((column) => ({
-          id: column.id,
-          size: column.size ?? DEFAULT_COLUMN_WIDTH,
-        }))
-
-  return (
-    <div aria-hidden className={cn('relative w-full', className)}>
-      {Array.from({ length: ROWS_COUNT }).map((_, rowIndex) => (
-        <div
-          key={rowIndex}
-          className={cn(
-            'flex h-(--row-height) w-fit min-w-full items-center opacity-(--row-opacity)',
-            rowIndex % 2 === 1 && 'bg-foreground/3'
-          )}
-          style={
-            {
-              '--row-delay': `${rowIndex * STAGGER_MS}ms`,
-              '--row-height': `${DEFAULT_ROW_HEIGHT}px`,
-              '--row-opacity': 1 - rowIndex / ROWS_COUNT,
-            } as CSSProperties
-          }
-        >
-          {selectable && (
-            <div className="shrink-0 p-2 pl-4">
-              <Skeleton className="size-4 rounded-sm [animation-delay:var(--row-delay)]" />
-            </div>
-          )}
-          {cols.map((column, columnIndex) => (
-            <div
-              key={column.id}
-              className="flex h-full w-(--column-width) shrink-0 items-center px-2 first:pl-4"
-              style={{ '--column-width': `${column.size}px` } as CSSProperties}
-            >
-              <Skeleton
-                className="h-3.5 w-(--bar-width) rounded-md [animation-delay:var(--row-delay)]"
-                style={
-                  {
-                    '--bar-width': `${barWidth(rowIndex, columnIndex)}%`,
-                  } as CSSProperties
-                }
-              />
-            </div>
-          ))}
+export const DocumentsSkeleton = ({ selectable }: { selectable: boolean }) => (
+  <div aria-hidden className="size-full overflow-hidden">
+    {Array.from({ length: DOCUMENTS }, (_, document) => (
+      <div key={document} data-index={document} className={DOCUMENT_ITEM_CLASS}>
+        <div className={DOCUMENT_HEADER_CLASS}>
+          {selectable && <Skeleton className="mr-2 -ml-1 size-4 rounded-md" />}
+          <Skeleton className="h-2.5 w-12" />
         </div>
-      ))}
-    </div>
-  )
-}
+        {Array.from({ length: FIELDS }, (__, field) => (
+          <div
+            key={field}
+            className={cn(
+              'flex h-8 items-center gap-4',
+              FIELD_ROW_CLASS,
+              'px-4'
+            )}
+          >
+            <Skeleton className="h-3 w-24" />
+            <Skeleton
+              className="h-3.5 w-(--bar-width)"
+              style={
+                { '--bar-width': barWidth(document, field) } as CSSProperties
+              }
+            />
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+)

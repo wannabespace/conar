@@ -20,7 +20,7 @@ export const RunnerAlertDialog = ({
   ref: React.RefObject<{
     confirm: (keywords: string[], onConfirmed: () => void) => void
   } | null>
-  /** The runner turns its own ⌘↩ and ⌘⇧↩ off while this is open, or one press would confirm and ask again. */
+  /** The runner turns its own ⌘↩ and ⇧⌘↩ off while this is open, or one press would confirm and ask again. */
   onOpenChange: (open: boolean) => void
 }) => {
   const [open, setOpen] = useState(false)

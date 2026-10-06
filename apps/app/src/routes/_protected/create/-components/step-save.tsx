@@ -11,10 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@tamery/ui/components/card'
-import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Group } from '@tamery/ui/components/group'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
+import { Switch } from '@tamery/ui/components/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +26,7 @@ import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
+import { OptionField } from '~/components/option-field'
 import { useCollections } from '~/core/collections'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 
@@ -78,6 +79,7 @@ export const StepSave = ({
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
+  const syncPasswordId = useId()
 
   return (
     <Card className="w-full">
@@ -188,28 +190,22 @@ export const StepSave = ({
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label variant="checkbox">
-              <Checkbox
-                checked={syncType === SyncType.Cloud}
-                onCheckedChange={() =>
-                  setSyncType(
-                    syncType === SyncType.Cloud
-                      ? SyncType.CloudWithoutPassword
-                      : SyncType.Cloud
-                  )
-                }
-              />
-              Do you want to sync the password in our cloud?
-            </Label>
-            <div className="text-muted-foreground/50 text-xs text-balance">
-              Syncing passwords in our cloud allows access from any device
-              without re-entering the password.
-              <br />
-              If not synced, we will store the connection string without the
-              password.
-            </div>
-          </div>
+          <OptionField
+            htmlFor={syncPasswordId}
+            title="Sync password"
+            description="Open this connection on any device without typing the password again. Off, the cloud keeps the connection string without it."
+          >
+            <Switch
+              id={syncPasswordId}
+              size="sm"
+              checked={syncType === SyncType.Cloud}
+              onCheckedChange={(checked) =>
+                setSyncType(
+                  checked ? SyncType.Cloud : SyncType.CloudWithoutPassword
+                )
+              }
+            />
+          </OptionField>
         </div>
       </CardContent>
     </Card>

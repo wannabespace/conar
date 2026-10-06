@@ -1,5 +1,4 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { type } from 'arktype'
 import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
@@ -10,7 +9,9 @@ const escapeSqlStringRegex = /[\\']/gu
 
 const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
-const dateStringType = type('string.date')
+// ISO only, the form `date_time_output_format` reads back: a looser match turns `'42'` into a date.
+const isoDateTimeRegex =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?<fraction>\d{1,9}))?(?:Z|[+-]\d{2}:?\d{2})$/u
 
 const compiledSqlRegex = /\?/gu
 const compiledSqlParameterRegex = /^update (?<table>(?:`\w+`\.)*`\w+`) set/iu
@@ -25,7 +26,7 @@ const formatArrayValue = (value: unknown) => {
   return `'${escapeSqlString(String(value))}'`
 }
 
-const prepareQuery = (compiledQuery: CompiledQuery) => {
+export const prepareQuery = (compiledQuery: CompiledQuery) => {
   let i = 0
   const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
     const param = compiledQuery.parameters[i]
@@ -51,17 +52,22 @@ const prepareQuery = (compiledQuery: CompiledQuery) => {
       return `'${escapeSqlString(JSON.stringify(param))}'`
     }
 
-    if (dateStringType.allows(param)) {
-      return `parseDateTime64BestEffort('${escapeSqlString(param)}')`
+    const isoDateTime = isoDateTimeRegex.exec(param)
+    if (isoDateTime) {
+      return `parseDateTime64BestEffort('${param}', ${isoDateTime.groups?.fraction?.length ?? 0})`
     }
 
     return `'${escapeSqlString(param)}'`
   })
 
-  return compiledSql.replace(
+  const mutation = compiledSql.replace(
     compiledSqlParameterRegex,
     'alter table $<table> update'
   )
+  // A mutation runs in the background by default, so the refresh right after a save would read the old row.
+  return mutation === compiledSql
+    ? compiledSql
+    : `${mutation} settings mutations_sync = 1`
 }
 
 const clickhouseAdapter = () => ({

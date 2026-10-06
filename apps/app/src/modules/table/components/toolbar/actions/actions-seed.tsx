@@ -8,17 +8,20 @@ import {
 import { lazy, Suspense } from 'react'
 
 import { useTableColumnsContext } from '../../../lib/columns'
+import type { SeedPanel as SeedPanelComponent } from './seed-panel'
 import { SeedPanelSkeleton } from './seed-panel-skeleton'
 
 // The panel bundles faker and every generator, so only the shell is eager: the
 // drawer paints on the click and the inspector stands in as skeleton meanwhile
-export const importSeedPanel = () => import('./seed-panel')
+let loadedSeedPanel: typeof SeedPanelComponent | undefined
 
-const SeedPanel = lazy(async () => {
-  const { SeedPanel: component } = await importSeedPanel()
+export const importSeedPanel = async () => {
+  const { SeedPanel } = await import('./seed-panel')
+  loadedSeedPanel = SeedPanel
+  return { default: SeedPanel }
+}
 
-  return { default: component }
-})
+const LazySeedPanel = lazy(importSeedPanel)
 
 export const ActionsSeed = ({
   table,
@@ -31,7 +34,13 @@ export const ActionsSeed = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
+  // The compiler would cache the first render's pick, before the preload lands
+  'use no memo'
+
   const { columns } = useTableColumnsContext()
+  // lazy() suspends on first render even when preloaded, and React then holds
+  // the skeleton 300ms, swapping it in mid-slide
+  const SeedPanel = loadedSeedPanel ?? LazySeedPanel
 
   return (
     <Drawer

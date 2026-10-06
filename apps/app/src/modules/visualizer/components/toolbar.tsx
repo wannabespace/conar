@@ -24,7 +24,9 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
-import { applyConsequence, plural } from '../lib/apply'
+import { plural } from '~/lib/plural'
+
+import { applyConsequence } from '../lib/apply'
 import { tableMatches, useDiagram } from '../lib/context'
 import { isDrop } from '../lib/statements'
 import type { DiagramDraft } from '../lib/statements'

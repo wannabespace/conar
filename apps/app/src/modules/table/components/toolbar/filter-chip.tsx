@@ -4,7 +4,7 @@ import {
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterVia } from '@tamery/shared/filters'
 import {
   Popover,
   PopoverContent,
@@ -21,6 +21,14 @@ import { useState } from 'react'
 import { FiltersColumnSelector } from './filters/filters-column-selector'
 import { FiltersOperatorSelector } from './filters/filters-operator-selector'
 import { FiltersValueSelector } from './filters/filters-value-selector'
+
+export const filterLabel = ({
+  column,
+  via,
+}: {
+  column: string
+  via?: FilterVia
+}) => (via ? `${via.table}.${via.target}` : column)
 
 const ChipSegment = ({
   className,
@@ -78,7 +86,7 @@ export const FilterChip = ({
             className="size-3.5"
           />
         </TooltipTrigger>
-        <TooltipContent side="top">
+        <TooltipContent side="bottom">
           {filter.disabled ? 'Enable filter' : 'Disable filter'}
         </TooltipContent>
       </Tooltip>
@@ -91,7 +99,7 @@ export const FilterChip = ({
             data-mask
             render={<ChipSegment className="font-medium" />}
           >
-            {filter.column}
+            {filterLabel(filter)}
           </PopoverTrigger>
           <PopoverContent
             // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
@@ -99,7 +107,12 @@ export const FilterChip = ({
           >
             <FiltersColumnSelector
               onSelect={(column) => {
-                onEdit({ ...filter, column, values })
+                onEdit({
+                  column,
+                  disabled: filter.disabled,
+                  ref: filter.ref,
+                  values,
+                })
                 setIsColumnOpen(false)
               }}
             />
@@ -177,7 +190,7 @@ export const FilterChip = ({
             className="size-3.5"
           />
         </TooltipTrigger>
-        <TooltipContent side="top">Remove filter</TooltipContent>
+        <TooltipContent side="bottom">Remove filter</TooltipContent>
       </Tooltip>
     </div>
   )

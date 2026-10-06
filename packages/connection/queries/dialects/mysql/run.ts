@@ -2,7 +2,7 @@ import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
 import type { RunOptions } from '../..'
-import { resultSet } from '../..'
+import { bindable, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { killQuery } from './cancel'
 
@@ -48,7 +48,7 @@ export const runOn = async (
       connectionString,
       queryId,
     },
-    () => connection.query({ rowsAsArray: true, sql }, values)
+    () => connection.query({ rowsAsArray: true, sql }, bindable(values))
   )
   const fieldSets: unknown[] = fields ?? []
   // `CALL` answers with one row set per SELECT inside the procedure, then a status header.

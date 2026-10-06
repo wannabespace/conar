@@ -29,7 +29,6 @@ export const gatesOf = (connectionType: ConnectionType) => {
       !!constraints.create,
     indexes: sectionAvailable('indexes', connectionType),
     policies: sectionAvailable('policies', connectionType),
-    renameColumns: capabilities.renameColumns,
     schemas: capabilities.schemas,
     triggers: sectionAvailable('triggers', connectionType),
   }

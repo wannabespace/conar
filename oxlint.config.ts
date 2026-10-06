@@ -14,7 +14,7 @@ const callSiteClasses = [
   'no-scrollbar',
   'scroll-fade',
   'scroll-fade-x',
-  'table-fade',
+  'table-scroller',
 ]
 
 export default defineConfig({

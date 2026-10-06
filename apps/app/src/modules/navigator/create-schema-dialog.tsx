@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { createSchemaQuery } from '~/core/queries/schemas/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
+import { queryClient } from '~/lib/query-client'
 
 import { createTableDialogRef } from './create-table-dialog'
 
@@ -127,6 +128,9 @@ export const CreateSchemaDialog = () => {
     },
     onSuccess: (_, schema) => {
       setOpen(false)
+      queryClient.invalidateQueries(
+        resourceTablesAndSchemasQueryOptions({ connectionResource })
+      )
       createTableDialogRef.current?.create(schema)
     },
   })

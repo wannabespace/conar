@@ -16,13 +16,28 @@ const toBooleanUiString = (value: unknown): boolean => {
   return !!value
 }
 
+const BOOLEAN_TEXT: Record<string, boolean> = {
+  0: false,
+  1: true,
+  f: false,
+  false: false,
+  t: true,
+  true: true,
+}
+
 export const createBooleanTransformer = (): ValueTransformer<boolean> => ({
   fromConnection: (value) => ({
     toRaw: () => getValueForEditor(value),
     toUI: () => toBooleanUiString(value),
   }),
   toConnection: {
-    fromRaw: (raw) => raw,
+    fromRaw: (raw) => {
+      const value = BOOLEAN_TEXT[raw.trim().toLowerCase()]
+      if (value === undefined) {
+        throw new Error('Enter true or false')
+      }
+      return value
+    },
     fromUI: (value) => value,
   },
   toDisplay: getDisplayValue,

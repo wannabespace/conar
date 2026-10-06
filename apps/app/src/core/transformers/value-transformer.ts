@@ -1,3 +1,5 @@
+import { bytesToHex } from '~/core/connection/utils'
+
 type InputFromDB = unknown
 
 export interface ValueTransformer<UI = unknown> {
@@ -10,6 +12,8 @@ export interface ValueTransformer<UI = unknown> {
     fromUI: (value: UI) => InputFromDB
     fromRaw: (value: string) => InputFromDB
   }
+  /** What the UPDATE sets for a draft value the driver cannot bind as is; a Kysely expression is fine. */
+  toStatement?: (value: InputFromDB) => unknown
 }
 
 export const getDisplayValue = (value: unknown, size: number): string => {
@@ -21,6 +25,8 @@ export const getDisplayValue = (value: unknown, size: number): string => {
     display = 'empty'
   } else if (typeof value === 'string') {
     display = value
+  } else if (value instanceof Uint8Array) {
+    display = bytesToHex(value)
   } else if (value instanceof Date) {
     display = value.toISOString()
   } else if (typeof value === 'object') {

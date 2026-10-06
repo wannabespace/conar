@@ -9,11 +9,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { Checkbox } from '@tamery/ui/components/checkbox'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Label } from '@tamery/ui/components/label'
+import { Switch } from '@tamery/ui/components/switch'
 import { AnimatePresence } from 'motion/react'
+
+import { OptionField } from './option-field'
 
 export const DropDialog = ({
   cascadable,
@@ -50,13 +51,18 @@ export const DropDialog = ({
         </AlertDialogDescription>
       </AlertDialogHeader>
       {cascadable && (
-        <Label variant="checkbox">
-          <Checkbox
+        <OptionField
+          htmlFor="drop-cascade"
+          title="Cascade"
+          description="Also drop the objects that depend on it."
+        >
+          <Switch
+            id="drop-cascade"
+            size="sm"
             checked={cascade}
-            onCheckedChange={(checked) => onCascadeChange(checked === true)}
+            onCheckedChange={onCascadeChange}
           />
-          Also drop objects that depend on it (CASCADE)
-        </Label>
+        </OptionField>
       )}
       <AnimatePresence initial={false}>
         {error && (

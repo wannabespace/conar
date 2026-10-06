@@ -2,9 +2,17 @@ import { SafeURL } from '@tamery/shared/safe-url'
 
 export const DEFAULT_PAGE_LIMIT = 100
 
+export const bytesToHex = (bytes: Uint8Array) =>
+  `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`
+
 export const getValueForEditor = (value: unknown): string => {
   if (value === null || value === undefined) {
     return ''
+  }
+  if (value instanceof Uint8Array) {
+    return bytesToHex(value)
   }
   if (value instanceof Date) {
     return value.toISOString()

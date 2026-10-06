@@ -13,6 +13,8 @@ import {
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -20,16 +22,31 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { cardClass } from '~/components/card'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
-import { useTableSessionStore } from '~/core/table/session'
+import type { PrimaryKeys } from '~/core/table/session'
+import { primaryKeysKey, useTableSessionStore } from '~/core/table/session'
+import { getDisplayValue } from '~/core/transformers/value-transformer'
 import { queryClient } from '~/lib/query-client'
 
 import { useTablePageStore } from '../../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const display = (value: unknown) =>
+  getDisplayValue(value, Number.MAX_SAFE_INTEGER)
+
+const rowLabel = (primaryKeys: PrimaryKeys) => {
+  const entries = Object.entries(primaryKeys)
+  return entries.length === 1
+    ? display(entries[0]?.[1])
+    : entries
+        .map(([column, value]) => `${column} ${display(value)}`)
+        .join(' · ')
+}
 
 export const ActionsDelete = ({
   table,
@@ -45,6 +62,9 @@ export const ActionsDelete = ({
   const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
+
+  const [only] = selected.length === 1 ? selected : []
+  const noun = only ? 'row' : `${selected.length} rows`
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
@@ -88,16 +108,39 @@ export const ActionsDelete = ({
       <AlertDialog open={isOpened} onOpenChange={setIsOpened}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Confirm row
-              {selected.length === 1 ? '' : 's'} deletion
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              selected {selected.length}{' '}
-              {selected.length === 1 ? 'row' : 'rows'} from the database.
+              {only ? (
+                <span data-mask className="text-foreground font-medium">
+                  {rowLabel(only)}
+                </span>
+              ) : (
+                'These rows'
+              )}{' '}
+              will be removed from{' '}
+              <span data-mask className="text-foreground font-medium">
+                {table}
+              </span>
+              . This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {!only && (
+            <div className={cn(cardClass, 'overflow-hidden')}>
+              <ScrollArea className="scroll-fade max-h-40">
+                <ul>
+                  {selected.map((primaryKeys) => (
+                    <li
+                      key={primaryKeysKey(primaryKeys)}
+                      data-mask
+                      className="border-foreground/6 truncate border-b px-3 py-1.5 text-xs tabular-nums last:border-0"
+                    >
+                      {rowLabel(primaryKeys)}
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
             <AlertDialogCancel
@@ -105,8 +148,7 @@ export const ActionsDelete = ({
               onClick={() => deleteRows()}
             >
               <LoadingContent loading={isDeleting}>
-                Delete {selected.length} selected row
-                {selected.length === 1 ? '' : 's'}
+                Delete {noun}
               </LoadingContent>
             </AlertDialogCancel>
           </AlertDialogFooter>

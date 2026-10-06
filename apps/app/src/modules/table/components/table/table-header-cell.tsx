@@ -1,401 +1,227 @@
+/* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
 import {
   ArrowDown02Icon,
   ArrowLeftRightIcon,
   ArrowUp02Icon,
-  BookOpen01Icon,
   Cancel01Icon,
+  ChartHistogramIcon,
   Copy01Icon,
-  EraserIcon,
-  FingerPrintIcon,
-  Key01Icon,
-  Link01Icon,
+  LayoutThreeColumnIcon,
   PencilEdit02Icon,
-  ScanTextIcon,
+  PinIcon,
+  PinOffIcon,
+  Tag01Icon,
+  TextIcon,
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { TableHeaderCellProps } from '@tamery/table'
-import { useTableContext } from '@tamery/table/hooks'
+import type { GridHeaderProps } from '@tamery/table'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
-import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
+import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import type { RefObject } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
-import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
-import type { Column, ColumnHandlers } from '~/core/table/cell/utils'
+import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
+import type { Column } from '~/core/table/cell/utils'
+import { isTextType } from '~/core/table/cell/utils'
 
-import type { tablePageType } from '../../lib/store'
-import { useTablePageStore } from '../../lib/store'
+import { labelColumnOf } from '../../lib/labels'
+import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
+import { ColumnHeading } from './column-type'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
+const OFF = '__off__'
+
+const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' } as const
 const CANNOT_SORT_TYPES = new Set(['json'])
+const MIN_WIDTH = 100
 
-export const PrimaryKeyTooltipIcon = ({
-  primaryKey,
-}: {
-  primaryKey: string
-}) => (
-  <Tooltip>
-    <TooltipTrigger>
-      <HugeiconsIcon
-        icon={Key01Icon}
-        strokeWidth={2}
-        className="text-primary size-2.5 shrink-0"
-      />
-    </TooltipTrigger>
-    <TooltipContent className="max-w-none">
-      <div className="flex flex-col items-start gap-0.5">
-        <div className="flex items-center gap-1">
-          <HugeiconsIcon
-            icon={Key01Icon}
-            strokeWidth={2}
-            className="text-primary size-3"
-          />
-          Primary key
-        </div>
-        <div data-mask className="text-xs opacity-70">
-          {primaryKey}
-        </div>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-export const NullableTooltipIcon = () => (
-  <Tooltip>
-    <TooltipTrigger
-      render={
-        <HugeiconsIcon
-          icon={EraserIcon}
-          strokeWidth={2}
-          className="size-2.5 shrink-0 opacity-70"
-        />
-      }
-    />
-    <TooltipContent>
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={EraserIcon}
-          strokeWidth={2}
-          className="size-3 opacity-70"
-        />
-        Nullable
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-export const UniqueTooltipIcon = ({ unique }: { unique: string }) => (
-  <Tooltip>
-    <TooltipTrigger>
-      <HugeiconsIcon
-        icon={FingerPrintIcon}
-        strokeWidth={2}
-        className="size-2.5 shrink-0 opacity-70"
-      />
-    </TooltipTrigger>
-    <TooltipContent className="max-w-none">
-      <div className="flex flex-col items-start gap-0.5">
-        <div className="flex items-center gap-1">
-          <HugeiconsIcon
-            icon={FingerPrintIcon}
-            strokeWidth={2}
-            className="size-3 opacity-70"
-          />
-          Unique
-        </div>
-        <div data-mask className="text-xs opacity-70">
-          {unique}
-        </div>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-export const ReadOnlyTooltipIcon = () => (
-  <Tooltip>
-    <TooltipTrigger>
-      <HugeiconsIcon
-        icon={BookOpen01Icon}
-        strokeWidth={2}
-        className="size-2.5 shrink-0 opacity-70"
-      />
-    </TooltipTrigger>
-    <TooltipContent>
-      <div className="flex items-center gap-1">
-        <HugeiconsIcon
-          icon={BookOpen01Icon}
-          strokeWidth={2}
-          className="size-3 opacity-70"
-        />
-        Read only
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-export const DefaultValueTooltipIcon = ({
-  defaultValue,
-}: {
-  defaultValue: string
-}) => (
-  <Tooltip>
-    <TooltipTrigger>
-      <HugeiconsIcon
-        icon={ScanTextIcon}
-        strokeWidth={2}
-        className="size-2.5 shrink-0 opacity-70"
-      />
-    </TooltipTrigger>
-    <TooltipContent className="max-w-none">
-      <div className="flex flex-col items-start gap-0.5">
-        <div className="flex items-center gap-1">
-          <HugeiconsIcon
-            icon={ScanTextIcon}
-            strokeWidth={2}
-            className="size-3 opacity-70"
-          />
-          Default
-        </div>
-        <div
-          data-mask
-          className="max-w-sm font-mono text-xs break-all opacity-70"
-        >
-          {defaultValue}
-        </div>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-export const ForeignTooltipIcon = ({
-  name,
-  table,
-  column,
-}: {
-  name: string
-  table: string
-  column: string
-}) => (
-  <Tooltip>
-    <TooltipTrigger
-      render={
-        <HugeiconsIcon
-          icon={Link01Icon}
-          strokeWidth={2}
-          className="size-2.5 shrink-0 opacity-70"
-        />
-      }
-    />
-    <TooltipContent className="max-w-none">
-      <div className="flex flex-col items-start gap-0.5">
-        <div className="flex items-center gap-1">
-          <HugeiconsIcon
-            icon={Link01Icon}
-            strokeWidth={2}
-            className="size-3 opacity-70"
-          />
-          Foreign key
-        </div>
-        <div data-mask className="text-xs opacity-70">
-          {name} ({table}.{column})
-        </div>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-const EnumTooltipIcon = ({
-  values,
-  children,
-}: {
-  values: string[]
-  children: ReactNode
-}) => (
-  <Tooltip>
-    <TooltipTrigger>{children}</TooltipTrigger>
-    <TooltipContent className="flex-col items-start">
-      <div className="text-xs opacity-70">Available values:</div>
-      <div
-        data-mask
-        className="flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium"
-      >
-        {values.join(', ')}
-      </div>
-    </TooltipContent>
-  </Tooltip>
-)
-
-const buildSortMenuItems = (
-  order: 'ASC' | 'DESC' | null,
-  onOrder: (order: 'ASC' | 'DESC' | null) => void
-): AppMenuNode[] => {
-  const items: AppMenuNode[] = [
-    {
-      checked: order === 'ASC' ? true : undefined,
-      className: cn(order === 'ASC' && 'text-primary *:[svg]:text-primary'),
-      icon: ArrowUp02Icon,
-      label: 'Sort Ascending',
-      onSelect: () => (order === 'ASC' ? onOrder(null) : onOrder('ASC')),
-    },
-    {
-      checked: order === 'DESC' ? true : undefined,
-      className: cn(order === 'DESC' && 'text-primary *:[svg]:text-primary'),
-      icon: ArrowDown02Icon,
-      label: 'Sort Descending',
-      onSelect: () => (order === 'DESC' ? onOrder(null) : onOrder('DESC')),
-    },
-  ]
-
-  if (order !== null) {
-    items.push({
-      icon: Cancel01Icon,
-      label: 'Clear Sort',
-      onSelect: () => onOrder(null),
-    })
-  }
-
-  items.push({ type: 'separator' })
-  return items
+interface ColumnActions {
+  onRename?: () => void
+  /** Stages one value in every selected row; absent when no row is selected or the column is read-only. */
+  onSetSelected?: { count: number; set: () => void }
+  onDistinctValues?: (anchor: Element) => void
 }
 
-const buildHeaderMenuItems = ({
-  columnId,
-  hasCustomSize,
-  isSortable,
-  onOrder,
-  onRename,
-  onResize,
-  order,
-  onHideColumn,
-  onRemoveSize,
-}: {
-  columnId: string
-  hasCustomSize: boolean
-  isSortable: boolean
-  onOrder?: (order: 'ASC' | 'DESC' | null) => void
-  onRename?: () => void
-  onResize?: (width: number) => void
-  order: 'ASC' | 'DESC' | null
-  onHideColumn: () => void
-  onRemoveSize: () => void
-}): AppMenuNode[] => {
-  const items: AppMenuNode[] = []
-
-  if (isSortable && onOrder) {
-    items.push(...buildSortMenuItems(order, onOrder))
-  }
-
-  if (onRename) {
-    items.push({
-      icon: PencilEdit02Icon,
-      label: 'Rename Column',
-      onSelect: onRename,
+const useColumnMenu = (
+  column: Column,
+  anchor: RefObject<HTMLDivElement | null>,
+  { onRename, onSetSelected, onDistinctValues }: ColumnActions
+) => {
+  const store = useTablePageStore()
+  const { hasCustomOrder, hasCustomSize, isPinned, order, storedLabel } =
+    useSubscription(store, {
+      selector: (state) => ({
+        hasCustomOrder: state.columnOrder.length > 0,
+        hasCustomSize: state.columnSizes[column.id] !== undefined,
+        isPinned: state.pinnedColumns.includes(column.id),
+        order: state.orderBy[column.id] ?? null,
+        storedLabel: state.columnLabels[column.id],
+      }),
     })
-  }
+  const layout = columnLayout(store)
+  const sorting = columnsOrder(store)
+  const { connectionResource } = useRouteContext()
+  const { data: referenced = [] } = useQuery({
+    ...resourceTableColumnsQueryOptions({
+      connectionResource,
+      schema: column.foreign?.schema ?? '',
+      table: column.foreign?.table ?? '',
+    }),
+    enabled: !!column.foreign,
+  })
+  const labelColumns = referenced
+    .filter(
+      (candidate) =>
+        candidate.id !== column.foreign?.column && isTextType(candidate.type)
+    )
+    .map((candidate) => candidate.id)
+  const label = labelColumnOf(
+    storedLabel,
+    referenced,
+    column.foreign?.column ?? ''
+  )
+  const isSortable =
+    !!column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel)
 
-  items.push(
+  const items = (): AppMenuNode[] => [
+    ...(isSortable
+      ? ([
+          {
+            checked: order === 'ASC' || undefined,
+            icon: ArrowUp02Icon,
+            label: 'Sort Ascending',
+            onSelect: () =>
+              order === 'ASC'
+                ? sorting.removeOrder(column.id)
+                : sorting.setOrder(column.id, 'ASC'),
+          },
+          {
+            checked: order === 'DESC' || undefined,
+            icon: ArrowDown02Icon,
+            label: 'Sort Descending',
+            onSelect: () =>
+              order === 'DESC'
+                ? sorting.removeOrder(column.id)
+                : sorting.setOrder(column.id, 'DESC'),
+          },
+          ...(order
+            ? [
+                {
+                  icon: Cancel01Icon,
+                  label: 'Clear Sort',
+                  onSelect: () => sorting.removeOrder(column.id),
+                },
+              ]
+            : []),
+          { type: 'separator' },
+        ] satisfies AppMenuNode[])
+      : []),
+    ...(onSetSelected
+      ? [
+          {
+            icon: TextIcon,
+            label: `Set Value in ${onSetSelected.count} Selected Row${onSetSelected.count === 1 ? '' : 's'}…`,
+            onSelect: onSetSelected.set,
+          },
+          { type: 'separator' } as const,
+        ]
+      : []),
+    ...(onRename
+      ? [{ icon: PencilEdit02Icon, label: 'Rename Column', onSelect: onRename }]
+      : []),
     {
       icon: Copy01Icon,
       label: 'Copy Name',
-      onSelect: () => copyToClipboard(columnId, 'Column name copied'),
+      onSelect: () => copy(column.id, 'Column name copied'),
     },
+    ...(onDistinctValues
+      ? [
+          {
+            icon: ChartHistogramIcon,
+            label: 'Distinct Values',
+            onSelect: () => anchor.current && onDistinctValues(anchor.current),
+          },
+        ]
+      : []),
+    ...(column.foreign && labelColumns.length > 0
+      ? [
+          {
+            icon: Tag01Icon,
+            items: [
+              {
+                onValueChange: (next: string) =>
+                  layout.setLabel(column.id, next === OFF ? '' : next),
+                options: [
+                  { label: 'Off', value: OFF },
+                  ...labelColumns.map((id) => ({ label: id, value: id })),
+                ],
+                type: 'radio',
+                value: label ?? OFF,
+              } satisfies AppMenuNode,
+            ],
+            label: 'Show Labels',
+            type: 'sub',
+          } satisfies AppMenuNode,
+        ]
+      : []),
     { type: 'separator' },
+    {
+      icon: isPinned ? PinOffIcon : PinIcon,
+      label: isPinned ? 'Unpin Column' : 'Pin Column',
+      onSelect: () => layout.togglePin(column.id),
+    },
     {
       icon: ViewOffSlashIcon,
       label: 'Hide Column',
-      onSelect: onHideColumn,
-    }
-  )
+      onSelect: () => layout.hide(column.id),
+    },
+    ...(hasCustomSize
+      ? [
+          {
+            icon: ArrowLeftRightIcon,
+            label: 'Reset Width',
+            onSelect: () => layout.resetSize(column.id),
+          },
+        ]
+      : []),
+    ...(hasCustomOrder
+      ? [
+          {
+            icon: LayoutThreeColumnIcon,
+            label: 'Reset Column Order',
+            onSelect: layout.resetOrder,
+          },
+        ]
+      : []),
+  ]
 
-  if (hasCustomSize && onResize) {
-    items.push({
-      icon: ArrowLeftRightIcon,
-      label: 'Reset Width',
-      onSelect: onRemoveSize,
-    })
-  }
-
-  return items
+  return { items, layout, order }
 }
+
+const SortArrow = ({ order }: { order: 'ASC' | 'DESC' }) => (
+  <HugeiconsIcon
+    icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
+    strokeWidth={2}
+    className="text-primary size-3 shrink-0"
+  />
+)
 
 export const TableHeaderCell = ({
   column,
-  position,
-  columnIndex,
-  className,
-  style,
-  onOrder,
-  onRename,
-  onResize,
-}: {
-  column: Column
-  className?: string
-} & TableHeaderCellProps &
-  ColumnHandlers) => {
-  const { connectionResource } = useRouteContext()
-  const store = useTablePageStore()
+  header: { column: gridColumn, dragHandle, isDragging, setWidth, style },
+  ...actions
+}: ColumnActions & { column: Column; header: GridHeaderProps }) => {
   const ref = useRef<HTMLDivElement>(null)
-  const order = useSubscription(store, {
-    selector: (state) => state.orderBy?.[column.id] ?? null,
-  })
-  const hasCustomSize = useSubscription(store, {
-    selector: (state) => state.columnSizes[column.id] !== undefined,
-  })
-  const { data: enumsData } = useQuery({
-    ...resourceEnumsQueryOptions({ connectionResource }),
-    select: (data) => data?.find((e) => e.name === column.enumName),
-  })
-  const scrollRef = useTableContext((state) => state.scrollRef)
-
-  const isSortable =
-    !!onOrder && !!column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel)
-
-  const hideColumn = () => {
-    store.set(
-      (state) =>
-        ({
-          ...state,
-          hiddenColumns: [...state.hiddenColumns, column.id],
-        }) satisfies typeof state
-    )
-  }
-
-  const removeSize = () => {
-    store.set((state) => {
-      const columnSizes = Object.fromEntries(
-        Object.entries(state.columnSizes).filter(([id]) => id !== column.id)
-      )
-      return {
-        ...state,
-        columnSizes,
-      } satisfies typeof tablePageType.infer
-    })
-  }
-
-  const items = buildHeaderMenuItems({
-    columnId: column.id,
-    hasCustomSize,
-    isSortable,
-    onHideColumn: hideColumn,
-    onOrder,
-    onRemoveSize: removeSize,
-    onRename,
-    onResize,
-    order,
-  })
+  const width = useRef(0)
+  const { items, layout, order } = useColumnMenu(column, ref, actions)
 
   return (
     <AppContextMenu
@@ -404,99 +230,75 @@ export const TableHeaderCell = ({
       render={
         <div
           ref={ref}
-          aria-label={`${column.id} column options`}
-          className={cn(
-            `group/header-cell relative flex w-full shrink-0 cursor-default items-center justify-between px-2 py-1.5 outline-none`,
-            position === 'first' && 'pl-4',
-            position === 'last' && 'pr-4',
-            order !== null && 'bg-foreground/4',
-            className
-          )}
+          role="columnheader"
+          aria-label={`${column.id} column`}
+          aria-sort={order ? ARIA_SORT[order] : undefined}
+          // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
           style={style}
-          data-position={position}
-          data-index={columnIndex}
+          className={cn(
+            'group/header relative flex items-center gap-1.5 py-1 pr-1.5 pl-2 outline-none select-none',
+            gridColumn.pinned && 'bg-background z-10',
+            isDragging && 'bg-background z-10 rounded-md shadow-md'
+          )}
+          {...dragHandle}
         />
       }
     >
-      <div className="overflow-hidden text-xs">
+      <div className="flex min-w-0 flex-1">
+        <ColumnHeading column={column} />
+      </div>
+      {order && <SortArrow order={order} />}
+      <AppMenuButton
+        variant="muted"
+        items={items}
+        contentProps={{ align: 'end', className: 'min-w-52' }}
+      />
+      <ResizeHandle
+        aria-label="Resize column"
+        min={MIN_WIDTH}
+        className="absolute inset-y-0 -right-1.5 z-10 flex w-3 justify-center"
+        getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
+        onResize={(next) => {
+          width.current = next
+          setWidth(next)
+        }}
+        onResizingChange={(resizing) => {
+          if (!resizing && width.current) {
+            layout.resize(column.id, width.current)
+          }
+          width.current = 0
+        }}
+        onDoubleClick={() => layout.resetSize(column.id)}
+      >
+        <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary w-0.5 opacity-0 transition-opacity group-hover/header:opacity-100 group-data-resizing/resize-handle:opacity-100" />
+      </ResizeHandle>
+    </AppContextMenu>
+  )
+}
+
+export const TableFieldLabel = ({
+  column,
+  ...actions
+}: ColumnActions & { column: Column }) => {
+  const ref = useRef<HTMLDivElement>(null)
+  const { items, order } = useColumnMenu(column, ref, actions)
+
+  return (
+    <AppContextMenu
+      items={items}
+      contentProps={{ align: 'start', className: 'min-w-52', side: 'bottom' }}
+      render={
         <div
-          data-mask
-          className="flex items-center gap-1 truncate font-medium"
-          title={column.id}
-        >
-          {column.id}
-        </div>
-        {column?.typeLabel && (
-          <div
-            data-footer={!!column.typeLabel}
-            className="text-2xs flex items-center gap-0.5 leading-4"
-          >
-            {column.primaryKey && (
-              <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />
-            )}
-            {column.isNullable && <NullableTooltipIcon />}
-            {column.unique && <UniqueTooltipIcon unique={column.unique} />}
-            {column.isEditable === false && <ReadOnlyTooltipIcon />}
-            {column.foreign && (
-              <ForeignTooltipIcon
-                name={column.foreign.name}
-                table={column.foreign.table}
-                column={column.foreign.column}
-              />
-            )}
-            {column.defaultValue && (
-              <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
-            )}
-            {enumsData ? (
-              <EnumTooltipIcon values={enumsData.values}>
-                <span className="text-muted-foreground truncate font-mono underline decoration-dotted">
-                  {column.typeLabel}
-                </span>
-              </EnumTooltipIcon>
-            ) : (
-              <span className="text-muted-foreground truncate font-mono">
-                {column.typeLabel}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-      <div className="flex shrink-0 items-center gap-1 self-stretch">
-        {order !== null && (
-          <span className="text-primary flex size-4 items-center justify-center">
-            <HugeiconsIcon
-              icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
-              strokeWidth={2}
-              className="size-3 shrink-0"
-            />
-          </span>
-        )}
-        <AppMenuButton
-          variant="muted"
-          items={items}
-          contentProps={{ align: 'end', className: 'min-w-52' }}
-          className="self-center opacity-0 transition-opacity group-hover/header-cell:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100"
+          ref={ref}
+          role="rowheader"
+          aria-label={`${column.id} field`}
+          aria-sort={order ? ARIA_SORT[order] : undefined}
+          className="flex h-8 min-w-0 items-center gap-1.5 px-2 select-none"
         />
-        {onResize && (
-          <ResizeHandle
-            aria-label="Resize column"
-            min={100}
-            getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
-            onResize={(width) => {
-              if (!scrollRef?.current) {
-                return
-              }
-              onResize(width)
-            }}
-            className="flex items-stretch self-stretch"
-            onDoubleClick={removeSize}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! m-1 w-0.5 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />
-          </ResizeHandle>
-        )}
-      </div>
+      }
+    >
+      <ColumnHeading column={column} />
+      {order && <SortArrow order={order} />}
     </AppContextMenu>
   )
 }

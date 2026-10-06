@@ -7,6 +7,7 @@ import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type * as apiOrpc from '@tamery/api/orpc/routers'
 import type * as proxyOrpc from '@tamery/proxy/orpc/routers'
 import type * as queryProxy from '@tamery/query-proxy'
+import { querySerializer } from '@tamery/query-proxy/serializer'
 import { isConnectionError } from '@tamery/shared/connections'
 import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { memoize } from 'memoza'
@@ -89,6 +90,7 @@ export const orpcProxy = createORPCClient(
       },
     ],
     origin: proxyUrl,
+    serializer: querySerializer,
     url: '/rpc',
   })
 ) satisfies proxyOrpc.ORPCRouter
@@ -129,6 +131,7 @@ export const createProxyClient = memoize(
           },
         ],
         origin,
+        serializer: querySerializer,
       })
     )
 )

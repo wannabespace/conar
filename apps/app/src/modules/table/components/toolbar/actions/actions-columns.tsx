@@ -4,6 +4,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { pick } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -29,22 +30,30 @@ import {
 import { useSubscription } from 'seitu/react'
 
 import { useTableColumnsContext } from '../../../lib/columns'
-import { useTablePageStore } from '../../../lib/store'
+import { orderColumns, useTablePageStore } from '../../../lib/store'
 
 export const ActionsColumns = () => {
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, {
-    selector: (state) => state.hiddenColumns,
+  const { columnOrder, hiddenColumns } = useSubscription(store, {
+    selector: (state) => pick(state, ['columnOrder', 'hiddenColumns']),
   })
-  const { columns, isPending } = useTableColumnsContext()
+  const { columns: tableColumns, isPending } = useTableColumnsContext()
+  const columns = orderColumns(tableColumns, columnOrder)
   const hiddenCount = hiddenColumns.filter((id) =>
     columns.some((column) => column.id === id)
   ).length
+  let label = `${columns.length} column${columns.length === 1 ? '' : 's'}`
+  if (isPending) {
+    label = 'Loading columns…'
+  } else if (hiddenCount > 0) {
+    label = `${columns.length} columns · ${hiddenCount} hidden`
+  }
 
   return (
     <Popover>
       <Tooltip>
         <TooltipTrigger
+          aria-label={label}
           render={
             <PopoverTrigger
               render={
@@ -72,13 +81,7 @@ export const ActionsColumns = () => {
             />
           )}
         </TooltipTrigger>
-        <TooltipContent side="top">
-          {isPending && 'Loading columns…'}
-          {!isPending &&
-            (hiddenCount > 0
-              ? `${columns.length} columns · ${hiddenCount} hidden`
-              : `${columns.length} column${columns.length === 1 ? '' : 's'}`)}
-        </TooltipContent>
+        <TooltipContent side="bottom">{label}</TooltipContent>
       </Tooltip>
       <PopoverContent
         // oxlint-disable-next-line shadcn/no-restyle -- full-bleed content owns its padding
