@@ -27,9 +27,9 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import { DropDialog } from '~/components/drop-dialog'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { DropDialog } from '~/core/catalog/drop-dialog'
 import { queryClient } from '~/lib/query-client'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'

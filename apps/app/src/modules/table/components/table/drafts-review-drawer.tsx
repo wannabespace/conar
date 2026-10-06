@@ -4,8 +4,8 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { DiscardButton } from '~/components/discard-button'
-import { ChangeGroup, StagedReviewDrawer } from '~/components/staged-review'
+import { DiscardButton } from '~/core/drafts/discard-button'
+import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import type { Draft } from '~/core/table/session'
 import {

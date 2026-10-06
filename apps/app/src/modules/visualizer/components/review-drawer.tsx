@@ -6,9 +6,9 @@ import {
 } from '@tamery/ui/components/alert'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 
-import { DiscardButton } from '~/components/discard-button'
-import { ChangeGroup, StagedReviewDrawer } from '~/components/staged-review'
 import { inlineParameters } from '~/core/codegen/formats/sql'
+import { DiscardButton } from '~/core/drafts/discard-button'
+import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { coldDialects } from '~/core/runtime/dialects'
 import { formatSql } from '~/lib/formatter'
 import { plural } from '~/lib/plural'

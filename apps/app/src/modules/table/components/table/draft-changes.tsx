@@ -4,7 +4,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { ReactNode, RefObject } from 'react'
 
-import { DiscardButton } from '~/components/discard-button'
+import { DiscardButton } from '~/core/drafts/discard-button'
 import type { Column } from '~/core/table/cell/utils'
 import type { Draft, NewRow } from '~/core/table/session'
 import {

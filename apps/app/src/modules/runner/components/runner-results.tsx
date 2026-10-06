@@ -31,9 +31,9 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useState } from 'react'
 
-import type { ExportDataProps } from '~/components/export-data'
-import { ExportData } from '~/components/export-data'
 import { PaneEmpty } from '~/components/pane-empty'
+import type { ExportDataProps } from '~/core/export/export-data'
+import { ExportData } from '~/core/export/export-data'
 import type { ResultSet } from '~/core/queries/connection/custom'
 import { useIsAnonymous } from '~/lib/auth'
 

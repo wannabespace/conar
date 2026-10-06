@@ -38,7 +38,7 @@
 
 ## Core layout (`apps/app/src/core`)
 
-One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`, generic UI in `components/`.
+One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder.
 
 | Folder | Holds |
 | --- | --- |
@@ -46,12 +46,14 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `workspace/`, `user/` | Workspace records and hooks; the user's subscription |
 | `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link |
 | `runtime/` | Running SQL: `createQuery`, the proxy, per-engine Kysely dialects, the query log |
-| `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types |
+| `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types; the drop confirmation dialog |
 | `queries/<subject>/` | One file per catalog or row statement (see below) |
-| `tabs/` | Tab ids, kind resolution, open/close/rename actions |
+| `tabs/` | Tab ids, kind resolution, open/close/rename actions, the tab refresh button |
 | `table/` | Data-grid cells, the table session store, the table and column forms |
+| `drafts/` | The staged-changes review drawer and discard button the table and visualizer share |
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
+| `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
 
 ## ArkType config ordering
 

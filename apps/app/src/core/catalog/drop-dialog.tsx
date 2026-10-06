@@ -14,7 +14,7 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Switch } from '@tamery/ui/components/switch'
 import { AnimatePresence } from 'motion/react'
 
-import { OptionField } from './option-field'
+import { OptionField } from '~/components/option-field'
 
 export const DropDialog = ({
   cascadable,

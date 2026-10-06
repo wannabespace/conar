@@ -27,7 +27,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { ExportDataMenu } from '~/components/export-data'
+import { ExportDataMenu } from '~/core/export/export-data'
 import {
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
