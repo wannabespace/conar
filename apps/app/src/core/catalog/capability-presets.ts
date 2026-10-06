@@ -19,7 +19,7 @@ export interface SectionCapabilities {
   edit?: boolean
 }
 
-export interface FunctionCapabilities {
+interface FunctionCapabilities {
   argumentPlaceholder: string
   behaviors: readonly string[]
   languages: readonly string[]
@@ -27,13 +27,13 @@ export interface FunctionCapabilities {
   securityDefiner: boolean
 }
 
-export interface IndexCapabilities {
+interface IndexCapabilities {
   rename: boolean
   // Data-skipping index types; offering any swaps Unique for Type and Granularity.
   skipTypes: readonly string[]
 }
 
-export interface PolicyCapabilities {
+interface PolicyCapabilities {
   // ClickHouse's ALTER ROW POLICY rewrites every clause, so nothing recreates.
   alterInPlace: boolean
   commands: readonly PolicyCommand[]
@@ -41,7 +41,7 @@ export interface PolicyCapabilities {
   predicates: boolean
 }
 
-export interface TriggerCapabilities {
+interface TriggerCapabilities {
   body: boolean
   events: readonly TriggerEvent[]
   insteadOfTargets: readonly RelationKind[]
@@ -85,8 +85,8 @@ export interface ConnectionCapabilities {
   setDefault: boolean
   systemSchemas: readonly string[]
   triggers: TriggerCapabilities
-  // Column types GROUP BY and COUNT(DISTINCT) reject, or whose distinct values say nothing (bytes).
-  ungroupableColumnType: RegExp
+  // Column types GROUP BY or COUNT(DISTINCT) reject; Distinct Values also skips `bytesColumnTypes`.
+  ungroupableColumnType: RegExp | null
   uuidColumnType: RegExp | null
   xmlColumnType: RegExp | null
 }

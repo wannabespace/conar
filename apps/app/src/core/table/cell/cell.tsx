@@ -65,7 +65,6 @@ const CellValue = ({
               )}
             >
               {items.map((item, index) => (
-                // oxlint-disable-next-line react/no-array-index-key -- a list may repeat a value
                 <Tag key={index} column={column} value={String(item)} />
               ))}
             </div>
@@ -174,7 +173,6 @@ export const TableCell = ({
       data-column={column.id}
       data-row={rowIndex}
       title={draft?.error}
-      // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
       style={style}
       className={cn(
         'group/cell relative isolate flex h-full scroll-mt-(--table-header-height) items-center gap-1 px-2 text-xs select-none',

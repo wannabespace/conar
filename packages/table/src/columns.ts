@@ -33,7 +33,6 @@ export const pinnedCount = (columns: GridColumn[]) => {
 const pinnedLeft = (columns: GridColumn[], index: number) =>
   `calc(${[`${GUTTER_WIDTH}px`, ...columns.slice(0, index).map((column) => `var(${columnVars(column.id).width})`)].join(' + ')})`
 
-/** How far the pinned columns reach from the left edge. */
 export const pinnedWidth = (columns: GridColumn[]) => {
   const count = pinnedCount(columns)
   return count > 0 ? pinnedLeft(columns, count) : '0px'

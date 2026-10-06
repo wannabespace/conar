@@ -9,13 +9,12 @@ interface DistinctParams {
   schema: string
   table: string
   column: string
-  limit?: number
 }
 
 const selectDistinct = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
-  { schema, table, column, limit = 1000 }: DistinctParams
+  { schema, table, column }: DistinctParams
 ) =>
   db
     .withSchema(schema)
@@ -23,7 +22,7 @@ const selectDistinct = (
     .selectFrom(table)
     .select(column)
     .distinct()
-    .limit(limit)
+    .limit(1000)
     .execute()
 
 export const distinctQuery = (params: DistinctParams) =>

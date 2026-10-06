@@ -29,6 +29,7 @@ import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { PrimaryKeys } from '~/core/table/session'
 import { primaryKeysKey, useTableSessionStore } from '~/core/table/session'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
+import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
 
 import { useTableColumnsContext } from '../../lib/columns'
@@ -83,9 +84,7 @@ export const ActionsDelete = ({
       })
     },
     onSuccess: () => {
-      toast.success(
-        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`
-      )
+      toast.success(`${plural(selected.length, 'row')} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -147,7 +146,7 @@ export const ActionsDelete = ({
             </div>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogCancel
               variant="destructive"
               onClick={() => deleteRows()}

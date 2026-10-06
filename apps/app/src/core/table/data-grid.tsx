@@ -54,7 +54,6 @@ const PlainHeader = (
 ) => (
   <div
     role="columnheader"
-    // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
     style={style}
     className="flex min-w-0 flex-col justify-center px-2 py-1.5 select-none"
     {...dragHandle}
@@ -242,13 +241,7 @@ export const DataGrid = ({
     isFetching,
     onEndReached,
     renderBody: (body) => (
-      <AppContextMenu
-        items={menu}
-        render={
-          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- the keyboard drives the cursor through the grid's hotkeys
-          <div {...pointer} />
-        }
-      >
+      <AppContextMenu items={menu} render={<div {...pointer} />}>
         {body}
       </AppContextMenu>
     ),

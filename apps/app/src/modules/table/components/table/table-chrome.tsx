@@ -52,27 +52,19 @@ export const selectColumn = ({
       entry={entryAt(rowIndex)}
       keys={keys}
       rows={rows}
-      // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
       style={style}
     />
   ),
   renderHeader: ({ style }) => (
-    <LeadingHeaderCell
-      keys={keys}
-      rows={rows}
-      // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
-      style={style}
-    />
+    <LeadingHeaderCell keys={keys} rows={rows} style={style} />
   ),
   size: LEADING_COLUMN_SIZE,
 })
 
 export const addColumnColumn = (onAddColumn?: () => void): ExtraColumn => ({
   id: INTERNAL_COLUMN_IDS.ACTIONS,
-  // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
   renderCell: ({ style }) => <div aria-hidden style={style} />,
   renderHeader: ({ style }) => (
-    // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
     <div className="flex items-center px-2" style={style}>
       {onAddColumn && (
         <Tooltip>

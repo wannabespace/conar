@@ -74,13 +74,14 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
-    ungroupableColumnType: /json|Object\(|AggregateFunction|Dynamic|Variant/iu,
+    ungroupableColumnType:
+      /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
     uuidColumnType: /\bUUID\b/u,
     xmlColumnType: null,
   },
   [ConnectionType.MSSQL]: {
     arrayType: null,
-    bytesColumnTypes: ['binary', 'image', 'varbinary'],
+    bytesColumnTypes: ['binary', 'image', 'timestamp', 'varbinary'],
     cascade: false,
     columnTypes: COLUMN_TYPES[ConnectionType.MSSQL],
     constraintKinds: CONSTRAINT_KINDS,
@@ -128,7 +129,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       toggle: true,
     },
     ungroupableColumnType:
-      /^(?:n?text|image|xml|json|geometry|geography|(?:var)?binary)$/iu,
+      /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
     uuidColumnType: /^uniqueidentifier$/iu,
     xmlColumnType: /^xml$/iu,
   },
@@ -192,8 +193,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
-    ungroupableColumnType:
-      /json|blob|binary|bit|geometry|point|linestring|polygon/iu,
+    ungroupableColumnType: null,
     uuidColumnType: null,
     xmlColumnType: null,
   },
@@ -251,7 +251,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     // Geometric types have no btree or hash operator class to group by.
     ungroupableColumnType:
-      /^(?:json|xml|bytea|point|line|lseg|box|path|polygon|circle)$/iu,
+      /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
     uuidColumnType: /^uuid$/iu,
     xmlColumnType: /^xml$/iu,
   },

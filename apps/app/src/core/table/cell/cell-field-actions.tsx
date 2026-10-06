@@ -55,7 +55,6 @@ export const CellFieldActions = ({
                 variant="ghost-muted"
                 size="xs"
                 disabled={value === undefined}
-                // oxlint-disable-next-line unicorn/no-useless-undefined -- `undefined` is the DEFAULT draft, not a missing value
                 onClick={() => cursor.set(undefined)}
               />
             }

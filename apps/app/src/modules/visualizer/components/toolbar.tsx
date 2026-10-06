@@ -154,12 +154,10 @@ export const Toolbar = ({
                   </LoadingContent>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <span>
-                    {drafts.some(isDrop)
-                      ? `Review ${plural(drafts.length, 'change')} before applying. `
-                      : `Apply ${plural(drafts.length, 'change')} to the database. `}
-                    {consequence.description}
-                  </span>
+                  {drafts.some(isDrop)
+                    ? `Review ${plural(drafts.length, 'change')} before applying. `
+                    : `Apply ${plural(drafts.length, 'change')} to the database. `}
+                  {consequence.description}
                 </TooltipContent>
               </Tooltip>
             </motion.div>

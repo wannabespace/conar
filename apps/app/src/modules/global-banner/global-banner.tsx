@@ -224,7 +224,7 @@ export const GlobalBanner = () => {
     enabled: delayPassed,
     refetchInterval: 1000 * 60 * 5,
     select: (bannerItems) => {
-      const filtered = bannerItems?.filter(
+      const filtered = bannerItems.filter(
         (item) => !dismissed.includes(item.text)
       )
       return [

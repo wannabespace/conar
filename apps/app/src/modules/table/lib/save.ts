@@ -64,7 +64,6 @@ const updatesOf = (drafts: Draft[]) => {
   return updates.values()
 }
 
-/** Writes every staged change in one transaction, then lets the rows query reload what the database kept. */
 export const useSaveStaged = ({
   onSaved,
   schema,

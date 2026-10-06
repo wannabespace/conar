@@ -1,4 +1,3 @@
-/* oxlint-disable react/no-array-index-key -- static placeholders */
 import { pseudoRandom } from '@tamery/shared/utils'
 import {
   DEFAULT_COLUMN_WIDTH,

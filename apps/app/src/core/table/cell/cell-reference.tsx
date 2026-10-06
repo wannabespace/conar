@@ -93,7 +93,6 @@ const OptionLabel = ({
 const LoadingRows = () => (
   <div aria-hidden className="flex flex-col gap-3 px-3 py-2">
     {Array.from({ length: LOADING_ROWS }, (_, index) => (
-      // oxlint-disable-next-line react/no-array-index-key -- static placeholders
       <div key={index} className="flex flex-col gap-1.5">
         <Skeleton className="h-3 w-56" />
         <Skeleton className="h-2.5 w-40" />
@@ -178,11 +177,6 @@ export const CellReference = ({
     { ignoreInputs: false, target: ref }
   )
 
-  const pick = (picked: unknown) => {
-    cursor.change(raw(picked))
-    cursor.leave(0, 0)
-  }
-
   return (
     <Command
       size="sm"
@@ -222,7 +216,10 @@ export const CellReference = ({
                 key={key}
                 value={key}
                 data-checked={hasValue && key === raw(value)}
-                onSelect={() => pick(row[foreign.column])}
+                onSelect={() => {
+                  cursor.change(key)
+                  cursor.leave(0, 0)
+                }}
               >
                 <OptionLabel
                   keyColumn={foreign.column}

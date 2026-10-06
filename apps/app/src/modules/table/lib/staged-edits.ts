@@ -32,7 +32,6 @@ export const stageRow = (
   }
 }
 
-/** The grid's rows with the staged changes over them, and every way a cell or row gets staged. */
 export const useStagedEdits = ({
   columns,
   connectionType,
@@ -78,8 +77,6 @@ export const useStagedEdits = ({
     }
     actions.upsert({
       columnId: column.id,
-      error: undefined,
-      isCommitting: false,
       primaryKeys: entry.keys,
       value,
     })
@@ -87,7 +84,6 @@ export const useStagedEdits = ({
 
   return {
     ...staged,
-    /** Stages a copy of the row as shown, drafts included, minus what the database fills in. */
     duplicate: (cell: DataGridCell) =>
       stageRow(
         sessionStore,

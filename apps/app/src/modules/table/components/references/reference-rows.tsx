@@ -28,7 +28,6 @@ const SKELETON_ROWS = 5
 const LoadingRows = () => (
   <div className="flex flex-col gap-3 p-3">
     {Array.from({ length: SKELETON_ROWS }, (_, index) => (
-      // oxlint-disable-next-line react/no-array-index-key -- static placeholders
       <div key={index} className="flex items-center gap-6">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-3 w-56" />
@@ -123,9 +122,7 @@ export const RowsView = ({
         </TableHeader>
         <TableBody ref={bodyRef}>
           {rows.map((row, index) => (
-            // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, jsx-a11y/no-noninteractive-tabindex -- Enter opens the focused row through the body's hotkey
             <TableRow
-              // oxlint-disable-next-line react/no-array-index-key -- rows of a filtered page have no key of their own
               key={index}
               data-index={index}
               tabIndex={0}

@@ -32,7 +32,6 @@ export const followReference = (
   value: unknown
 ): Hop => ({ column, kind: 'rows', schema, table, value })
 
-/** What Space or Show References opens on a cell: the row it points to, else the rows pointing at it. */
 export const cellHop = (column: Column, value: unknown): Hop | null => {
   if (value === null || value === undefined) {
     return null
@@ -45,15 +44,15 @@ export const cellHop = (column: Column, value: unknown): Hop | null => {
     : null
 }
 
-const matchFilters = ({ column, value }: RowsHop): ActiveFilter[] => [
-  { column, ref: EQUAL_FILTER, values: [value] },
-]
-
 export const tableView = (
   hop: Hop
 ): { filters: ActiveFilter[]; schema: string; table: string } | null => {
   if (hop.kind === 'rows') {
-    return { filters: matchFilters(hop), schema: hop.schema, table: hop.table }
+    return {
+      filters: [{ column: hop.column, ref: EQUAL_FILTER, values: [hop.value] }],
+      schema: hop.schema,
+      table: hop.table,
+    }
   }
   if (hop.kind === 'record' && hop.primaryKeys.length > 0) {
     return {

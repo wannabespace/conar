@@ -45,10 +45,16 @@ const RANGED_UI_TYPES = new Set<Column['uiType']>(['date', 'datetime', 'time'])
 export const hasDistinctValues = (
   connectionType: ConnectionType,
   column: Column
-) =>
-  !capabilitiesOf(connectionType).ungroupableColumnType.test(
-    column.type ?? ''
-  ) && !column.isArray
+) => {
+  const { bytesColumnTypes, ungroupableColumnType } =
+    capabilitiesOf(connectionType)
+  const type = column.type ?? ''
+  return (
+    !column.isArray &&
+    !bytesColumnTypes.includes(type) &&
+    !ungroupableColumnType?.test(type)
+  )
+}
 
 const percent = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 1,
@@ -192,7 +198,6 @@ const StatsBody = ({
                 return (
                   <CommandItem
                     // Long values truncate to the same label, and cmdk merges items sharing a `value`.
-                    // oxlint-disable-next-line react/no-array-index-key -- the list is one query's ranking, replaced whole
                     key={index}
                     value={String(index)}
                     onSelect={() =>
@@ -269,7 +274,6 @@ export const DistinctValues = ({
       {target && (
         <PopoverContent
           anchor={target.anchor}
-          side="bottom"
           align="start"
           padding="none"
           className="w-80 overflow-hidden"

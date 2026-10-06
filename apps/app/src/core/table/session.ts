@@ -87,6 +87,8 @@ export const getRowKeyByPrimaryKeys = (
 export const draftKey = (primaryKeys: PrimaryKeys, columnId: string) =>
   `${primaryKeysKey(primaryKeys)}:${columnId}`
 
+type StagedStatus = Partial<Pick<Draft, 'error' | 'isCommitting'>>
+
 export const draftsActions = (store: TableSessionStore) => {
   const setDrafts = (
     update: (drafts: Record<string, Draft>) => Record<string, Draft>
@@ -112,11 +114,6 @@ export const draftsActions = (store: TableSessionStore) => {
     )
   }
 
-  const upsert = (draft: Draft) => {
-    const key = draftKey(draft.primaryKeys, draft.columnId)
-    setDrafts((drafts) => ({ ...drafts, [key]: { ...drafts[key], ...draft } }))
-  }
-
   const remove = (primaryKeys: PrimaryKeys, columnId: string) => {
     setDrafts((drafts) => omit(drafts, [draftKey(primaryKeys, columnId)]))
   }
@@ -134,15 +131,15 @@ export const draftsActions = (store: TableSessionStore) => {
       updateRow(primaryKeys, () => null)
     },
     remove,
-    setRowStatus: (
-      primaryKeys: PrimaryKeys,
-      patch: Partial<Pick<Draft, 'error' | 'isCommitting'>>
-    ) => updateRow(primaryKeys, (draft) => ({ ...draft, ...patch })),
-    upsert,
+    setRowStatus: (primaryKeys: PrimaryKeys, status: StagedStatus) =>
+      updateRow(primaryKeys, (draft) => ({ ...draft, ...status })),
+    upsert: (draft: Draft) =>
+      setDrafts((drafts) => ({
+        ...drafts,
+        [draftKey(draft.primaryKeys, draft.columnId)]: draft,
+      })),
   }
 }
-
-type StagedStatus = Partial<Pick<Draft, 'error' | 'isCommitting'>>
 
 export const isSaving = ({
   drafts,

@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
+import { plural } from '~/lib/plural'
 import { appStore } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
@@ -26,19 +27,11 @@ const SUMMARY_VISIBLE_MS = 6000
 
 const mapGeneratedFilters = (
   filters: { column: string; operator: string; values: string[] }[]
-) =>
-  filters
-    .map(
-      (filter) =>
-        ({
-          column: filter.column,
-          ref: FILTERS_LIST.find((f) => f.operator === filter.operator),
-          values: filter.values,
-        }) satisfies Omit<ActiveFilter, 'ref'> & {
-          ref?: ActiveFilter['ref']
-        }
-    )
-    .filter((f) => !!f.ref) as ActiveFilter[]
+): ActiveFilter[] =>
+  filters.flatMap(({ column, operator, values }) => {
+    const ref = FILTERS_LIST.find((f) => f.operator === operator)
+    return ref ? [{ column, ref, values }] : []
+  })
 
 const generateSummary = (
   filters: { column: string }[],
@@ -48,9 +41,7 @@ const generateSummary = (
 
   if (filters.length > 0) {
     const columns = [...new Set(filters.map((filter) => filter.column))]
-    parts.push(
-      `${filters.length} filter${filters.length > 1 ? 's' : ''} on ${columns.join(', ')}`
-    )
+    parts.push(`${plural(filters.length, 'filter')} on ${columns.join(', ')}`)
   }
 
   for (const [column, direction] of Object.entries(orderBy)) {

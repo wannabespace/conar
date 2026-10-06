@@ -9,7 +9,6 @@ import type { ColumnActions } from '../../lib/column-menu'
 import { DistinctValues, hasDistinctValues } from './distinct-values'
 import { RenameColumnDialog } from './rename-column-dialog'
 
-/** What a column's menus offer, with the dialogs those entries open. */
 export const useColumnActions = ({
   connectionType,
   schema,

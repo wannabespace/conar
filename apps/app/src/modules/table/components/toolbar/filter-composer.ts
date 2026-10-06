@@ -88,7 +88,7 @@ export const useFilterComposer = ({
   return {
     applyValue: () => {
       if (stage.step === 'value') {
-        add(stage.target, stage.ref, isArrayValue ? splitParts(query) : [query])
+        add(stage.target, stage.ref, isArrayValue ? committedParts : [query])
       }
     },
     committedParts,

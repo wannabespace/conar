@@ -51,7 +51,6 @@ export const LeadingHeaderCell = ({
   rows: GridRow[]
   style?: CSSProperties
 }) => (
-  // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
   <div
     role="columnheader"
     className="bg-background z-10 flex items-center justify-end pr-3"
@@ -109,7 +108,6 @@ export const LeadingCell = ({
   rows: GridRow[]
   style?: CSSProperties
 }) => (
-  // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
   <div
     role="gridcell"
     className="bg-background group-hover/row:bg-accent z-10 flex items-center justify-end pr-3"

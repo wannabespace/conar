@@ -61,7 +61,6 @@ const DocumentBase = ({
       role="row"
       className={`${DOCUMENT_ITEM_CLASS} grid grid-cols-[minmax(6rem,max-content)_minmax(0,1fr)]`}
     >
-      {/* oxlint-disable-next-line jsx-a11y/label-has-associated-control -- the row checkbox `leading` renders is the control */}
       <label
         className={`bg-background sticky top-0 z-40 col-span-2 tabular-nums ${DOCUMENT_HEADER_CLASS}`}
       >

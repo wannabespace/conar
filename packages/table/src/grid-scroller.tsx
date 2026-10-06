@@ -8,7 +8,6 @@ import { DEFAULT_ROW_HEIGHT } from './constants'
 
 const END_REACHED_DISTANCE = 20 * DEFAULT_ROW_HEIGHT
 
-/** What every layout takes from its owner and hands to the scroller untouched. */
 export interface GridScrollerProps {
   footer?: ReactNode
   /** While true `onEndReached` waits; it fires again once the fetch settles if the end is still in reach. */

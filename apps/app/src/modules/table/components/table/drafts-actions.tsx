@@ -76,7 +76,7 @@ export const DraftsActions = ({
             </span>
           )}
         </TooltipTrigger>
-        <TooltipContent side="top">
+        <TooltipContent>
           <div className="flex flex-col gap-0.5">
             <span>Review changes before saving</span>
             {errorCount > 0 && (
@@ -104,7 +104,7 @@ export const DraftsActions = ({
             </span>
           </LoadingContent>
         </TooltipTrigger>
-        <TooltipContent side="top">Save in one transaction</TooltipContent>
+        <TooltipContent>Save in one transaction</TooltipContent>
       </Tooltip>
       <DraftsReviewDrawer
         open={isReviewOpen}

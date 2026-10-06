@@ -45,8 +45,8 @@ export const useGridCursor = ({
   rows: GridRow[]
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
-  const [store, setStore] = useState(createCursorStore)
-  void setStore
+  // oxlint-disable-next-line react/hook-use-state -- a stable store per mount, never replaced
+  const [store] = useState(createCursorStore)
   const byId = new Map(columns.map((column) => [column.id, column]))
   const columnIndex = new Map(
     columns.map((column, index) => [column.id, index])
