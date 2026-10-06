@@ -166,12 +166,13 @@ export const CellReference = ({
       : rows
   const keys = options.map((row) => raw(row[foreign.column]))
 
+  // A key no row matches still applies (deferred or unenforced constraints); the value's own type check rejects malformed text.
   useHotkeys(
     [
       {
         callback: () => cursor.leave(0, 0),
         hotkey: 'Enter',
-        options: { enabled: options.length === 0 },
+        options: { enabled: options.length === 0 && !isPending },
       },
     ],
     { ignoreInputs: false, target: ref }

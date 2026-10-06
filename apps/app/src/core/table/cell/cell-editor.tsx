@@ -182,6 +182,8 @@ export const CellField = ({
   const transformer = createTransformer(connectionType, column)
   const readOnly = !cursor.isEditable(column)
   const language = codeLanguage(connectionType, column, value)
+  const reference =
+    isPickColumn(column) || readOnly ? undefined : column.foreign
   const props = { column, cursor, edit, readOnly }
 
   useHotkeys(
@@ -215,11 +217,11 @@ export const CellField = ({
         />
       )
     }
-    if (column.foreign && !readOnly) {
+    if (reference) {
       return (
         <CellReference
           {...props}
-          foreign={column.foreign}
+          foreign={reference}
           transformer={transformer}
           value={value}
         />
@@ -266,7 +268,8 @@ export const CellField = ({
         onContextMenu={(event) => event.stopPropagation()}
       >
         {field()}
-        {edit?.error && (
+        {/* A reference's text is a search, and its list already says when nothing matches. */}
+        {edit?.error && !reference && (
           <p role="alert" className="text-destructive text-2xs px-2 pb-2">
             {edit.error}
           </p>

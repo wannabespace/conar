@@ -1,4 +1,3 @@
-import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Separator } from '@tamery/ui/components/separator'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ReactNode } from 'react'
@@ -13,6 +12,10 @@ export interface GridBarItem {
 }
 
 const ease = [0.32, 0.72, 0, 1] as const
+
+const statFormat = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+})
 
 const fold = {
   animate: { opacity: 1, transition: { duration: 0.15, ease }, width: 'auto' },
@@ -56,8 +59,8 @@ const Summary = ({ stats }: { stats: [string, number][] }) => (
     {stats.map(([label, value]) => (
       <span key={label} className="flex items-center gap-1">
         <span className="text-muted-foreground">{label}</span>
-        <span data-mask>
-          <NumberFlow value={value} format={{ maximumFractionDigits: 2 }} />
+        <span data-mask className="tabular-nums">
+          {statFormat.format(value)}
         </span>
       </span>
     ))}
