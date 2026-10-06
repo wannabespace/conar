@@ -15,6 +15,8 @@ import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
 
+import type { DataGridCell, GridCursor } from '../cursor'
+
 export interface CellMenuExtra {
   cell?: AppMenuNode[]
   /** Whole groups shown between the cell and row groups, e.g. a host's Column group. */
@@ -23,26 +25,25 @@ export interface CellMenuExtra {
 }
 
 export const cellMenu = ({
-  cells,
   columns,
-  editable,
+  cursor,
   extra,
-  onCopy,
-  onFillDown,
-  onOpen,
-  onShowJson,
-  row,
 }: {
-  cells: number
   columns: string[]
-  editable: boolean
-  extra: CellMenuExtra
-  onCopy: () => void
-  onFillDown?: () => void
-  onOpen: () => void
-  onShowJson?: () => void
-  row: Record<string, unknown>
+  cursor: GridCursor
+  extra?: (
+    cell: DataGridCell,
+    element: Element | null | undefined
+  ) => CellMenuExtra
 }): AppMenuNode[] => {
+  const cell = cursor.current()
+  if (!cell) {
+    return []
+  }
+  const { row } = cell
+  const editable = cursor.isEditable(cell.column)
+  const cells = cursor.selection().flat().length
+  const extras = extra?.(cell, cursor.element()) ?? {}
   const keys = columns.map((key) => ({ key }))
   return [
     {
@@ -50,43 +51,45 @@ export const cellMenu = ({
         {
           icon: editable ? PencilEdit02Icon : ViewIcon,
           label: editable ? 'Edit Value' : 'View Value',
-          onSelect: onOpen,
+          onSelect: () => cursor.edit(),
         },
-        ...(onShowJson
-          ? [{ icon: BracesIcon, label: 'Show JSON', onSelect: onShowJson }]
+        ...(cursor.canPeek(cell)
+          ? [{ icon: BracesIcon, label: 'Show JSON', onSelect: cursor.preview }]
           : []),
         {
           accelerator: 'CmdOrCtrl+C',
           icon: Copy01Icon,
           label: cells > 1 ? `Copy ${cells} Cells` : 'Copy Value',
-          onSelect: onCopy,
+          onSelect: cursor.copy,
           shortcut: (
             <KbdCtrlLetter userAgent={navigator.userAgent} letter="C" />
           ),
         },
-        ...(onFillDown
+        ...(editable && cursor.selection().length > 1
           ? [
               {
                 accelerator: 'CmdOrCtrl+D',
                 icon: ArrowDown02Icon,
                 label: 'Fill Down',
-                onSelect: onFillDown,
+                onSelect: cursor.fillDown,
                 shortcut: (
                   <KbdCtrlLetter userAgent={navigator.userAgent} letter="D" />
                 ),
               },
             ]
           : []),
-        ...(extra.cell ?? []),
+        ...(extras.cell ?? []),
       ],
       label: 'Cell',
       type: 'group',
     },
-    ...(extra.groups ? [{ type: 'separator' } as const, ...extra.groups] : []),
+    ...(extras.groups
+      ? [{ type: 'separator' } as const, ...extras.groups]
+      : []),
     { type: 'separator' },
     {
       items: [
-        ...(extra.row ?? []),
+        ...(extras.row ?? []),
         {
           icon: Copy01Icon,
           items: [

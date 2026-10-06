@@ -287,5 +287,5 @@ export const useGridCursor = ({
 
   useFollowRows({ rowKey, rows, store })
 
-  return { byId, cursor }
+  return cursor
 }
