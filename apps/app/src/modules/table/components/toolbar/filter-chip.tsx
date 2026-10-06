@@ -30,6 +30,17 @@ export const filterLabel = ({
   via?: FilterVia
 }) => (via ? `${via.table}.${via.target}` : column)
 
+export const Chip = (props: React.ComponentProps<'div'>) => (
+  <div
+    {...props}
+    className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring"
+  />
+)
+
+export const ChipDivider = () => (
+  <span aria-hidden className="bg-border w-px shrink-0" />
+)
+
 const ChipSegment = ({
   className,
   ...props
@@ -38,45 +49,38 @@ const ChipSegment = ({
     type="button"
     {...props}
     className={cn(
-      `hover:bg-accent focus-visible:bg-accent flex cursor-default items-center gap-1 px-1.5 text-xs whitespace-nowrap outline-none`,
+      'hover:bg-accent focus-visible:bg-accent flex cursor-default items-center gap-1 px-1.5 text-xs whitespace-nowrap outline-none',
       className
     )}
   />
 )
 
-const ChipDivider = () => (
-  <span aria-hidden className="bg-border w-px shrink-0" />
-)
-
 export const FilterChip = ({
   filter,
-  onRemove,
   onEdit,
-  onToggleDisabled,
+  onRemove,
 }: {
   filter: ActiveFilter
-  onRemove: () => void
   onEdit: (filter: ActiveFilter) => void
-  onToggleDisabled: () => void
+  onRemove: () => void
 }) => {
   const [isColumnOpen, setIsColumnOpen] = useState(false)
   const [isOperatorOpen, setIsOperatorOpen] = useState(false)
   const [isValueOpen, setIsValueOpen] = useState(false)
   const [values, setValues] = useState(filter.values)
-
-  const isValueEmpty =
-    filter.values?.length === 0 || filter.values?.every((value) => value === '')
+  const toggleLabel = filter.disabled ? 'Enable filter' : 'Disable filter'
+  const isValueEmpty = filter.values.every((value) => value === '')
 
   return (
-    <div className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring">
+    <Chip>
       <Tooltip>
         <TooltipTrigger
           render={
             <ChipSegment
-              aria-label={filter.disabled ? 'Enable filter' : 'Disable filter'}
+              aria-label={toggleLabel}
               aria-pressed={!filter.disabled}
               className="text-muted-foreground px-1"
-              onClick={onToggleDisabled}
+              onClick={() => onEdit({ ...filter, disabled: !filter.disabled })}
             />
           }
         >
@@ -86,9 +90,7 @@ export const FilterChip = ({
             className="size-3.5"
           />
         </TooltipTrigger>
-        <TooltipContent side="bottom">
-          {filter.disabled ? 'Enable filter' : 'Disable filter'}
-        </TooltipContent>
+        <TooltipContent side="bottom">{toggleLabel}</TooltipContent>
       </Tooltip>
       <ChipDivider />
       <div
@@ -111,7 +113,7 @@ export const FilterChip = ({
                   column,
                   disabled: filter.disabled,
                   ref: filter.ref,
-                  values,
+                  values: filter.values,
                 })
                 setIsColumnOpen(false)
               }}
@@ -130,8 +132,8 @@ export const FilterChip = ({
             className="gap-0 p-0"
           >
             <FiltersOperatorSelector
-              onSelect={(operator) => {
-                onEdit({ ...filter, ref: operator, values })
+              onSelect={(ref) => {
+                onEdit({ ...filter, ref })
                 setIsOperatorOpen(false)
               }}
             />
@@ -149,7 +151,7 @@ export const FilterChip = ({
                   {isValueEmpty ? (
                     <span className="opacity-40">empty</span>
                   ) : (
-                    filter.values?.join(', ')
+                    filter.values.join(', ')
                   )}
                 </span>
               </PopoverTrigger>
@@ -192,6 +194,6 @@ export const FilterChip = ({
         </TooltipTrigger>
         <TooltipContent side="bottom">Remove filter</TooltipContent>
       </Tooltip>
-    </div>
+    </Chip>
   )
 }

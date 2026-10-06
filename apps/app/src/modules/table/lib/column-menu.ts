@@ -12,9 +12,11 @@ import {
   Tag01Icon,
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { posthog } from '~/lib/posthog'
 
@@ -22,11 +24,16 @@ import type { TablePageStore } from './store'
 import { columnLayout, columnsOrder } from './store'
 
 const OFF = '__off__'
-const CANNOT_SORT_TYPES = new Set(['json'])
+
+export const isSortable = (connectionType: ConnectionType, column: Column) =>
+  !capabilitiesOf(connectionType).incomparableColumnType?.test(
+    column.type ?? ''
+  )
 
 export interface ColumnActions {
   onRename?: () => void
   onDistinctValues?: (anchor: Element) => void
+  sortable?: boolean
 }
 
 /** Reads the page store once, so build it when the menu opens. */
@@ -36,6 +43,7 @@ export const columnMenuItems = ({
   labels,
   onDistinctValues,
   onRename,
+  sortable,
   store,
 }: ColumnActions & {
   anchor: Element | null
@@ -50,11 +58,9 @@ export const columnMenuItems = ({
   const hasCustomSize = column.id in state.columnSizes
   const layout = columnLayout(store)
   const sorting = columnsOrder(store)
-  const isSortable =
-    !!column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel)
 
   return [
-    ...(isSortable
+    ...(sortable
       ? ([
           {
             checked: order === 'ASC' || undefined,

@@ -3,7 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
+import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { addColumnQuery } from '~/core/queries/tables/add-column'
 import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
 import type { NewColumn } from '~/core/queries/tables/shape'
@@ -57,12 +57,7 @@ export const AddColumnDialog = ({
           queryKey: resourceColumnsQueryKey({ connectionResource }),
         }),
         queryClient.invalidateQueries({
-          queryKey: resourceRowsQueryInfiniteOptions({
-            connectionResource,
-            query: { filters: [], orderBy: {} },
-            schema,
-            table,
-          }).queryKey.slice(0, -1),
+          queryKey: resourceRowsQueryKey({ connectionResource, schema, table }),
         }),
       ])
     },

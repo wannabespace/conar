@@ -7,7 +7,6 @@ import { useSubscription } from 'seitu/react'
 import { DiscardButton } from '~/core/drafts/discard-button'
 import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
-import type { Draft } from '~/core/table/session'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
@@ -79,13 +78,11 @@ export const DraftsReviewDrawer = ({
         [getRowKeyByPrimaryKeys(row, primaryColumns), { index, row }] as const
     )
   )
-  const rowIndex = ([firstDraft]: Draft[]) =>
-    (firstDraft &&
-      rowsByPrimaryKey.get(primaryKeysKey(firstDraft.primaryKeys))?.index) ??
-    Number.MAX_SAFE_INTEGER
+  const rowIndex = (key: string) =>
+    rowsByPrimaryKey.get(key)?.index ?? Number.MAX_SAFE_INTEGER
   const groups = [
-    ...Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)),
-  ].toSorted(([, a], [, b]) => rowIndex(a) - rowIndex(b))
+    ...Map.groupBy(drafts, (draft) => primaryKeysKey(draft.primaryKeys)),
+  ].toSorted(([a], [b]) => rowIndex(a) - rowIndex(b))
 
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columnsById.get(columnId)

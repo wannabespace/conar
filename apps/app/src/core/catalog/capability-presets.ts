@@ -70,6 +70,8 @@ export interface ConnectionCapabilities {
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
   functions: FunctionCapabilities
   idColumnType: string
+  // Column types ORDER BY, GROUP BY or COUNT(DISTINCT) reject; Distinct Values also skips `bytesColumnTypes`.
+  incomparableColumnType: RegExp | null
   indexes: IndexCapabilities
   // Column types edited as JSON text; ClickHouse reads its composite types back as JSON too.
   jsonColumnType: RegExp
@@ -85,8 +87,6 @@ export interface ConnectionCapabilities {
   setDefault: boolean
   systemSchemas: readonly string[]
   triggers: TriggerCapabilities
-  // Column types GROUP BY or COUNT(DISTINCT) reject; Distinct Values also skips `bytesColumnTypes`.
-  ungroupableColumnType: RegExp | null
   uuidColumnType: RegExp | null
   xmlColumnType: RegExp | null
 }

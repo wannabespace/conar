@@ -29,11 +29,12 @@ export const useFilterTargets = ({
   )
 
   const columnQuery = query.trim().toLowerCase()
-  const columnRank = (id: string) => {
-    if (id === columnQuery) {
+  const columnRank = ({ id }: Column) => {
+    const name = id.toLowerCase()
+    if (name === columnQuery) {
       return 0
     }
-    return id.startsWith(columnQuery) ? 1 : 2
+    return name.startsWith(columnQuery) ? 1 : 2
   }
 
   const target = stage.step === 'value' ? stage.target : undefined
@@ -52,10 +53,7 @@ export const useFilterTargets = ({
   return {
     matchingColumns: columns
       .filter((column) => column.id.toLowerCase().includes(columnQuery))
-      .toSorted(
-        (a, b) =>
-          columnRank(a.id.toLowerCase()) - columnRank(b.id.toLowerCase())
-      ),
+      .toSorted((a, b) => columnRank(a) - columnRank(b)),
     matchingRelated:
       columnQuery === ''
         ? []

@@ -42,7 +42,7 @@ import { DocumentsSkeleton, TableSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const TableComponent = ({
+export const Table = ({
   onAddColumn,
   schema,
   table,
@@ -81,6 +81,9 @@ const TableComponent = ({
       state.newRows.length > 0 || Object.keys(state.drafts).length > 0,
   })
   const saving = useSubscription(sessionStore, { selector: isSaving })
+  const hasSelection = useSubscription(sessionStore, {
+    selector: (state) => state.selected.length > 0,
+  })
   const filters = enabledFilters(activeFilters)
   const {
     data: rows = [],
@@ -106,9 +109,6 @@ const TableComponent = ({
         ?.tables.find((entry) => entry.name === table)?.type === 'table',
   })
   const scrollRef = useRef<HTMLDivElement>(null)
-  const hasSelection = useSubscription(sessionStore, {
-    selector: (state) => state.selected.length > 0,
-  })
   const {
     close: closePeek,
     open: openPeek,
@@ -198,10 +198,10 @@ const TableComponent = ({
             openPeek(element, hop)
           }
         }}
-        renderCell={(cell, props) => (
+        renderCell={(cell, geometry) => (
           <TableBodyCell
             cell={cell}
-            props={props}
+            geometry={geometry}
             connectionType={connection.type}
             labels={labels.get(cell.column.id)}
             entry={staged.rowAt(cell.rowIndex)}
@@ -271,5 +271,3 @@ const TableComponent = ({
     </div>
   )
 }
-
-export { TableComponent as Table }

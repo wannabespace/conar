@@ -1,13 +1,13 @@
 import { SparklesIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { isDefinedError } from '@orpc/client'
-import type { ActiveFilter } from '@tamery/shared/filters'
 import { FILTERS_LIST } from '@tamery/shared/filters'
 import { CommandItem, CommandShortcut } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
+import type { RefObject } from 'react'
 import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -25,15 +25,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const SUMMARY_VISIBLE_MS = 6000
 
-const mapGeneratedFilters = (
-  filters: { column: string; operator: string; values: string[] }[]
-): ActiveFilter[] =>
-  filters.flatMap(({ column, operator, values }) => {
-    const ref = FILTERS_LIST.find((f) => f.operator === operator)
-    return ref ? [{ column, ref, values }] : []
-  })
-
-const generateSummary = (
+const summarize = (
   filters: { column: string }[],
   orderBy: Record<string, 'ASC' | 'DESC'>
 ) => {
@@ -54,9 +46,11 @@ const generateSummary = (
 export type FilterAi = ReturnType<typeof useFilterAi>
 
 export const useFilterAi = ({
+  inputRef,
   schema,
   table,
 }: {
+  inputRef: RefObject<HTMLInputElement | null>
   schema: string
   table: string
 }) => {
@@ -99,7 +93,10 @@ export const useFilterAi = ({
           (state) =>
             ({
               ...state,
-              filters: mapGeneratedFilters(data.filters),
+              filters: data.filters.flatMap(({ column, operator, values }) => {
+                const ref = FILTERS_LIST.find((f) => f.operator === operator)
+                return ref ? [{ column, ref, values }] : []
+              }),
               orderBy: data.orderBy,
               prompt: '',
             }) satisfies typeof state
@@ -112,14 +109,8 @@ export const useFilterAi = ({
           )
         }
 
-        setSummary(generateSummary(data.filters, data.orderBy))
+        setSummary(summarize(data.filters, data.orderBy))
         setFreeAiUsage(data.freeAiUsage || null)
-
-        setTimeout(() => {
-          document
-            .querySelector<HTMLInputElement>('[data-filter-search-input]')
-            ?.focus()
-        }, 100)
       },
     })
   )
@@ -146,7 +137,13 @@ export const useFilterAi = ({
   return {
     ask: (prompt: string) => {
       if (prompt && canAsk) {
-        generateFilter({ context, prompt })
+        generateFilter(
+          { context, prompt },
+          {
+            // The input stays disabled until the pending state re-renders away.
+            onSuccess: () => setTimeout(() => inputRef.current?.focus(), 100),
+          }
+        )
       }
     },
     canAsk,

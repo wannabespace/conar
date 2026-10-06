@@ -18,6 +18,7 @@ import {
 } from '@tamery/ui/components/command'
 import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Skeleton } from '@tamery/ui/components/skeleton'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { CSSProperties } from 'react'
@@ -42,17 +43,22 @@ const TOP_VALUES = 50
 const VALUE_CHARS = 60
 const RANGED_UI_TYPES = new Set<Column['uiType']>(['date', 'datetime', 'time'])
 
+export interface DistinctValuesTarget {
+  anchor: Element
+  column: Column
+}
+
 export const hasDistinctValues = (
   connectionType: ConnectionType,
   column: Column
 ) => {
-  const { bytesColumnTypes, ungroupableColumnType } =
+  const { bytesColumnTypes, incomparableColumnType } =
     capabilitiesOf(connectionType)
   const type = column.type ?? ''
   return (
     !column.isArray &&
     !bytesColumnTypes.includes(type) &&
-    !ungroupableColumnType?.test(type)
+    !incomparableColumnType?.test(type)
   )
 }
 
@@ -216,11 +222,10 @@ const StatsBody = ({
                 >
                   <span
                     data-mask
-                    className={
-                      value === null
-                        ? 'text-muted-foreground min-w-0 flex-1 truncate'
-                        : 'min-w-0 flex-1 truncate'
-                    }
+                    className={cn(
+                      'min-w-0 flex-1 truncate',
+                      value === null && 'text-muted-foreground'
+                    )}
                   >
                     {display(value)}
                   </span>
@@ -259,7 +264,7 @@ export const DistinctValues = ({
   onClose: () => void
   schema: string
   table: string
-  target: { anchor: Element; column: Column } | null
+  target: DistinctValuesTarget | null
 }) => {
   const store = useTablePageStore()
   const filters = enabledFilters(

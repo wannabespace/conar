@@ -7,7 +7,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import type { Ref } from 'react'
 
 const hintFor = (operator: string, isArray: boolean) => {
   if (isArray) {
@@ -20,31 +19,26 @@ const hintFor = (operator: string, isArray: boolean) => {
 }
 
 export const FiltersValueSelector = ({
-  ref,
   column,
   operator,
   values,
   isArray,
   onChange,
   onApply,
-  onBackspace,
 }: {
-  ref?: Ref<HTMLInputElement>
   column: string
   operator: string
   isArray: boolean
   values: unknown[]
-  onChange: (value: string[]) => void
+  onChange: (values: string[]) => void
   onApply: () => void
-  onBackspace?: () => void
 }) => {
   const hint = hintFor(operator, isArray)
 
   return (
     <Command>
       <CommandInput
-        ref={ref}
-        value={isArray ? values.join(',') : (values[0] as string)}
+        value={values.join(',')}
         onValueChange={(value) =>
           onChange(isArray ? value.split(',') : [value])
         }
@@ -52,9 +46,6 @@ export const FiltersValueSelector = ({
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             onApply()
-          }
-          if (e.key === 'Backspace') {
-            onBackspace?.()
           }
         }}
       />

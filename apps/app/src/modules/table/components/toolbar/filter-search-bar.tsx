@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { AiSummaryRow, useFilterAi } from './filter-ai'
-import { FilterChip, filterLabel } from './filter-chip'
+import { Chip, ChipDivider, FilterChip, filterLabel } from './filter-chip'
 import { FilterCommandList } from './filter-command-list'
 import type { Stage } from './filter-composer'
 import { useFilterComposer } from './filter-composer'
@@ -46,7 +46,7 @@ export const FilterSearchBar = ({
   const chipsRef = useRef<HTMLDivElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const { columns } = useTableColumnsContext()
-  const ai = useFilterAi({ schema, table })
+  const ai = useFilterAi({ inputRef, schema, table })
   const composer = useFilterComposer({ inputRef, onQueryChange: ai.dismiss })
   const {
     filters,
@@ -103,25 +103,16 @@ export const FilterSearchBar = ({
             <FilterChip
               key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
               filter={filter}
-              onRemove={() =>
-                setFilters((current) => current.filter((_, i) => i !== index))
-              }
               onEdit={(next) =>
-                setFilters((current) =>
-                  current.map((f, i) => (i === index ? next : f))
-                )
+                setFilters((current) => current.with(index, next))
               }
-              onToggleDisabled={() =>
-                setFilters((current) =>
-                  current.map((f, i) =>
-                    i === index ? { ...f, disabled: !f.disabled } : f
-                  )
-                )
+              onRemove={() =>
+                setFilters((current) => current.toSpliced(index, 1))
               }
             />
           ))}
           {stage.step !== 'idle' && (
-            <span className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md shadow-2xs ring">
+            <Chip>
               <span
                 data-mask
                 className="flex items-center px-1.5 text-xs font-medium"
@@ -130,17 +121,16 @@ export const FilterSearchBar = ({
               </span>
               {stage.step === 'value' && (
                 <>
-                  <span aria-hidden className="bg-border w-px shrink-0" />
+                  <ChipDivider />
                   <span className="text-muted-foreground flex items-center px-1.5 text-xs">
                     {stage.ref.symbol}
                   </span>
                 </>
               )}
-            </span>
+            </Chip>
           )}
           <CommandPrimitive.Input
             ref={inputRef}
-            data-filter-search-input=""
             aria-label="Filter rows"
             value={query}
             onValueChange={setQuery}

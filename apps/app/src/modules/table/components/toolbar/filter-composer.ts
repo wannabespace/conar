@@ -13,12 +13,6 @@ export type Stage =
   | { step: 'operator'; target: FilterTarget }
   | { step: 'value'; target: FilterTarget; ref: Filter }
 
-const splitParts = (value: string) =>
-  value
-    .split(',')
-    .map((part) => part.trim())
-    .filter((part) => part !== '')
-
 export const operatorMatches = (filter: Filter, text: string) =>
   filter.label.toLowerCase().includes(text) ||
   filter.symbol.toLowerCase().includes(text)
@@ -80,10 +74,9 @@ export const useFilterComposer = ({
   }
 
   const isArrayValue = stage.step === 'value' && stage.ref.isArray
-  const committedParts = isArrayValue ? splitParts(query) : []
-  const valueFilterText = (
-    isArrayValue ? (query.split(',').at(-1) ?? '') : query
-  ).trim()
+  const parts = isArrayValue ? query.split(',').map((part) => part.trim()) : []
+  const committedParts = parts.filter((part) => part !== '')
+  const valueFilterText = isArrayValue ? (parts.at(-1) ?? '') : query.trim()
 
   return {
     applyValue: () => {

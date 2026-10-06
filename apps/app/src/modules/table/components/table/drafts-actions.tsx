@@ -33,10 +33,6 @@ export const DraftsActions = ({
   const newRows = useSubscription(sessionStore, {
     selector: (state) => state.newRows,
   })
-  const changeCount = drafts.length + newRows.length
-  const errorCount =
-    drafts.filter((d) => !!d.error).length +
-    newRows.filter((row) => !!row.error).length
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const { isSaving, save } = useSaveStaged({
     onSaved: () => setIsReviewOpen(false),
@@ -44,12 +40,12 @@ export const DraftsActions = ({
     table,
   })
 
-  const handleDiscard = () => {
-    draftsActions(sessionStore).clear()
-    setIsReviewOpen(false)
-  }
-
   useSaveHotkey(save, isSaving)
+
+  const changeCount = drafts.length + newRows.length
+  const errorCount = [...drafts, ...newRows].filter(
+    (change) => !!change.error
+  ).length
 
   return (
     <>
@@ -113,7 +109,10 @@ export const DraftsActions = ({
         schema={schema}
         isSaving={isSaving}
         onSave={save}
-        onDiscardAll={handleDiscard}
+        onDiscardAll={() => {
+          draftsActions(sessionStore).clear()
+          setIsReviewOpen(false)
+        }}
       />
     </>
   )

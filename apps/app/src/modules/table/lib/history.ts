@@ -5,6 +5,7 @@ import type { TableSessionState } from '~/core/table/session'
 import { isSaving, tableSessionStore } from '~/core/table/session'
 import { posthog } from '~/lib/posthog'
 
+import type { tablePageType } from './store'
 import { tablePageStore } from './store'
 
 type Staged = Pick<TableSessionState, 'drafts' | 'newRows'>
@@ -14,10 +15,7 @@ const stagedOf = ({ drafts, newRows }: TableSessionState): Staged => ({
   newRows,
 })
 
-const queryOf = ({
-  filters,
-  orderBy,
-}: ReturnType<ReturnType<typeof tablePageStore>['get']>) =>
+const queryOf = ({ filters, orderBy }: typeof tablePageType.infer) =>
   JSON.stringify([filters, orderBy])
 
 /** Undo/redo over the staged changes; a filter or sort change drops the drafts as an undoable step, staged rows stay. */
@@ -62,11 +60,13 @@ export const stagedHistory = memoize(
     })
 
     const restore = (from: Staged[], to: Staged[]) => {
-      const staged = from.at(-1)
-      if (!staged || isSaving(store.get())) {
+      if (isSaving(store.get())) {
         return
       }
-      from.pop()
+      const staged = from.pop()
+      if (!staged) {
+        return
+      }
       posthog.capture(from === steps.undo ? 'drafts_undone' : 'drafts_redone')
       to.push(stagedOf(store.get()))
       restoring = true

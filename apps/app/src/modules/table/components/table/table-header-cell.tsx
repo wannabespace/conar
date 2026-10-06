@@ -37,7 +37,7 @@ const useColumnMenu = (
     selector: (state) => state.columnLabels[column.id],
   })
   const referenced = useReferencedColumns([column]).get(column.id) ?? []
-  const key = column.foreign?.column ?? ''
+  const foreignColumn = column.foreign?.column ?? ''
   const items = () =>
     columnMenuItems({
       ...actions,
@@ -45,8 +45,10 @@ const useColumnMenu = (
       column,
       labels: column.foreign
         ? {
-            columns: labelCandidates(referenced, key).map(({ id }) => id),
-            current: labelColumnOf(storedLabel, referenced, key),
+            columns: labelCandidates(referenced, foreignColumn).map(
+              ({ id }) => id
+            ),
+            current: labelColumnOf(storedLabel, referenced, foreignColumn),
           }
         : undefined,
       store,

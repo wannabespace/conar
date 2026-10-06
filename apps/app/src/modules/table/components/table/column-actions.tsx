@@ -6,6 +6,8 @@ import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import type { ColumnActions } from '../../lib/column-menu'
+import { isSortable } from '../../lib/column-menu'
+import type { DistinctValuesTarget } from './distinct-values'
 import { DistinctValues, hasDistinctValues } from './distinct-values'
 import { RenameColumnDialog } from './rename-column-dialog'
 
@@ -19,10 +21,7 @@ export const useColumnActions = ({
   table: string
 }) => {
   const renameRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
-  const [distinct, setDistinct] = useState<{
-    anchor: Element
-    column: Column
-  } | null>(null)
+  const [distinct, setDistinct] = useState<DistinctValuesTarget | null>(null)
 
   const actionsOf = (column: Column): ColumnActions => ({
     onDistinctValues: hasDistinctValues(connectionType, column)
@@ -32,6 +31,7 @@ export const useColumnActions = ({
       capabilitiesOf(connectionType).renameColumns && !column.primaryKey
         ? () => renameRef.current?.rename(schema, table, column.id)
         : undefined,
+    sortable: isSortable(connectionType, column),
   })
 
   const dialogs = (

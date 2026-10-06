@@ -44,6 +44,11 @@ export const ActionsColumns = () => {
   const hiddenCount = hiddenColumns.filter((id) =>
     columns.some((column) => column.id === id)
   ).length
+  const allVisible = hiddenColumns.length === 0
+  const setHiddenColumns = (ids: string[]) =>
+    store.set(
+      (state) => ({ ...state, hiddenColumns: ids }) satisfies typeof state
+    )
   let label = plural(columns.length, 'column')
   if (isPending) {
     label = 'Loading columns…'
@@ -98,20 +103,13 @@ export const ActionsColumns = () => {
               <CommandItem
                 value="toggle-columns"
                 onSelect={() =>
-                  store.set(
-                    (state) =>
-                      ({
-                        ...state,
-                        hiddenColumns:
-                          (hiddenColumns.length === 0 &&
-                            columns?.map((col) => col.id)) ||
-                          [],
-                      }) satisfies typeof state
+                  setHiddenColumns(
+                    allVisible ? columns.map((column) => column.id) : []
                   )
                 }
               >
                 <span className="size-4">
-                  {hiddenColumns.length === 0 && (
+                  {allVisible && (
                     <HugeiconsIcon
                       icon={Tick02Icon}
                       strokeWidth={2}
@@ -125,15 +123,13 @@ export const ActionsColumns = () => {
                   className="size-4 opacity-50"
                 />
                 <span>
-                  {hiddenColumns.length === 0
-                    ? 'Hide all columns'
-                    : 'Show all columns'}
+                  {allVisible ? 'Hide all columns' : 'Show all columns'}
                 </span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              {columns?.map((column) => (
+              {columns.map((column) => (
                 <CommandItem
                   key={column.id}
                   value={column.id}
@@ -143,14 +139,10 @@ export const ActionsColumns = () => {
                     column.typeLabel ?? '',
                   ]}
                   onSelect={() =>
-                    store.set(
-                      (state) =>
-                        ({
-                          ...state,
-                          hiddenColumns: hiddenColumns.includes(column.id)
-                            ? hiddenColumns.filter((id) => id !== column.id)
-                            : [...hiddenColumns, column.id],
-                        }) satisfies typeof state
+                    setHiddenColumns(
+                      hiddenColumns.includes(column.id)
+                        ? hiddenColumns.filter((id) => id !== column.id)
+                        : [...hiddenColumns, column.id]
                     )
                   }
                 >

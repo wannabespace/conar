@@ -13,12 +13,14 @@ import {
   Tag01Icon,
   TextIcon,
 } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 
 import type { Column } from '~/core/table/cell/utils'
 import { isNumericColumn } from '~/core/table/cell/utils'
@@ -39,32 +41,30 @@ const columnClauses = (column: Column) =>
     ],
   ].filter((clause) => Array.isArray(clause))
 
+const UI_TYPE_ICONS: Partial<Record<Column['uiType'], IconSvgElement>> = {
+  boolean: CheckmarkSquare02Icon,
+  date: Calendar03Icon,
+  datetime: Calendar03Icon,
+  list: LeftToRightListBulletIcon,
+  select: Tag01Icon,
+  time: Clock01Icon,
+}
+
 const columnIcon = (column: Column) => {
-  const type = column.type?.toLowerCase() ?? ''
   if (column.primaryKey) {
     return Key01Icon
   }
   if (column.foreign) {
     return Link01Icon
   }
-  if (column.uiType === 'select') {
-    return Tag01Icon
-  }
-  if (column.uiType === 'list') {
-    return LeftToRightListBulletIcon
-  }
-  if (column.uiType === 'boolean') {
-    return CheckmarkSquare02Icon
-  }
-  if (column.uiType === 'date' || column.uiType === 'datetime') {
-    return Calendar03Icon
-  }
-  if (column.uiType === 'time') {
-    return Clock01Icon
+  const uiTypeIcon = UI_TYPE_ICONS[column.uiType]
+  if (uiTypeIcon) {
+    return uiTypeIcon
   }
   if (isNumericColumn(column)) {
     return HashtagIcon
   }
+  const type = column.type?.toLowerCase() ?? ''
   if (type.includes('json') || type.includes('xml')) {
     return BracesIcon
   }
@@ -99,11 +99,10 @@ export const ColumnHeading = ({ column }: { column: Column }) => (
         icon={columnIcon(column)}
         strokeWidth={2}
         aria-label={column.typeLabel}
-        className={
-          column.primaryKey
-            ? 'text-primary size-3.5 shrink-0'
-            : 'text-muted-foreground size-3.5 shrink-0'
-        }
+        className={cn(
+          'size-3.5 shrink-0',
+          column.primaryKey ? 'text-primary' : 'text-muted-foreground'
+        )}
       />
       <span data-mask className="truncate text-xs font-medium">
         {column.id}

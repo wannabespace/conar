@@ -14,16 +14,16 @@ export const TableBodyCell = ({
   cell: { column, row, rowIndex },
   connectionType,
   entry,
+  geometry,
   labels,
   onPeek,
-  props,
 }: {
   cell: DataGridCell
   connectionType: ConnectionType
   entry: GridEntry
+  geometry?: CellGeometry
   labels?: Map<string, string>
   onPeek: OpenPeek
-  props?: CellGeometry
 }) => {
   const sessionStore = useTableSessionStore()
   const key = entry.kind === 'saved' ? draftKey(entry.keys, column.id) : null
@@ -44,7 +44,7 @@ export const TableBodyCell = ({
 
   return (
     <TableCell
-      {...props}
+      {...geometry}
       column={column}
       connectionType={connectionType}
       draft={newRow ?? draft}

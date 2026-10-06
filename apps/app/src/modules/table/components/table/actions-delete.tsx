@@ -57,7 +57,7 @@ export const ActionsDelete = ({
   schema: string
 }) => {
   const { connectionResource } = useRouteContext()
-  const [isOpened, setIsOpened] = useState(false)
+  const [open, setOpen] = useState(false)
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
@@ -65,7 +65,7 @@ export const ActionsDelete = ({
     selector: (state) => state.selected,
   })
 
-  const [only] = selected.length === 1 ? selected : []
+  const only = selected.length === 1 ? selected[0] : undefined
   const noun = only ? 'row' : `${selected.length} rows`
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
@@ -79,19 +79,15 @@ export const ActionsDelete = ({
       }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onError: (error) => {
-      toast.error('Failed to delete rows', {
-        description: error.message,
-      })
+      toast.error('Failed to delete rows', { description: error.message })
     },
     onSuccess: () => {
+      const { filters, orderBy } = store.get()
       toast.success(`${plural(selected.length, 'row')} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
-          query: {
-            filters: enabledFilters(store.get().filters),
-            orderBy: store.get().orderBy,
-          },
+          query: { filters: enabledFilters(filters), orderBy },
           schema,
           table,
         })
@@ -109,7 +105,7 @@ export const ActionsDelete = ({
 
   return (
     <>
-      <AlertDialog open={isOpened} onOpenChange={setIsOpened}>
+      <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
@@ -158,7 +154,7 @@ export const ActionsDelete = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Button variant="destructive" size="sm" onClick={() => setIsOpened(true)}>
+      <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
         <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
         <span>
           Delete (

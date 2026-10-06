@@ -48,6 +48,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     fixedConstraintNames: {},
     functions: noFunctions,
     idColumnType: 'UInt64',
+    incomparableColumnType:
+      /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     jsonColumnType: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
     policies: {
@@ -74,8 +76,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     setDefault: false,
     systemSchemas: [],
     triggers: noTriggers,
-    ungroupableColumnType:
-      /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
     uuidColumnType: /\bUUID\b/u,
     xmlColumnType: null,
   },
@@ -97,6 +97,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       securityDefiner: false,
     },
     idColumnType: 'int',
+    incomparableColumnType:
+      /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
     indexes: btreeIndexes,
     jsonColumnType: JSON_COLUMN_TYPE,
     policies: { ...noPolicies, predicates: true },
@@ -128,8 +130,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['AFTER', 'INSTEAD OF'],
       toggle: true,
     },
-    ungroupableColumnType:
-      /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
     uuidColumnType: /^uniqueidentifier$/iu,
     xmlColumnType: /^xml$/iu,
   },
@@ -161,6 +161,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       securityDefiner: false,
     },
     idColumnType: 'int',
+    incomparableColumnType: null,
     indexes: btreeIndexes,
     jsonColumnType: JSON_COLUMN_TYPE,
     policies: noPolicies,
@@ -193,7 +194,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: ['BEFORE', 'AFTER'],
       toggle: false,
     },
-    ungroupableColumnType: null,
     uuidColumnType: null,
     xmlColumnType: null,
   },
@@ -215,6 +215,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       securityDefiner: true,
     },
     idColumnType: 'integer',
+    // Geometric types have no btree or hash operator class to sort or group by.
+    incomparableColumnType:
+      /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
     indexes: btreeIndexes,
     jsonColumnType: /^jsonb?$/iu,
     policies: {
@@ -249,9 +252,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       timings: TRIGGER_TIMINGS,
       toggle: true,
     },
-    // Geometric types have no btree or hash operator class to group by.
-    ungroupableColumnType:
-      /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
     uuidColumnType: /^uuid$/iu,
     xmlColumnType: /^xml$/iu,
   },

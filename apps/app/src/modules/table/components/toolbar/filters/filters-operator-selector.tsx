@@ -9,27 +9,14 @@ import {
   CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
-import type { Ref } from 'react'
 
 export const FiltersOperatorSelector = ({
-  ref,
   onSelect,
-  onBackspace,
 }: {
-  ref?: Ref<HTMLInputElement>
   onSelect: (filter: Filter) => void
-  onBackspace?: () => void
 }) => (
   <Command>
-    <CommandInput
-      ref={ref}
-      placeholder="Select operator..."
-      onKeyDown={(e) => {
-        if (e.key === 'Backspace') {
-          onBackspace?.()
-        }
-      }}
-    />
+    <CommandInput placeholder="Select operator..." />
     <CommandList className="h-fit max-h-[70vh]">
       <CommandEmpty>No operators found.</CommandEmpty>
       {FILTERS_GROUPED.map(({ group, filters }) => (

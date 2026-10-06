@@ -72,11 +72,10 @@ const SelectRow = ({
   rows: GridRow[]
 }) => {
   const store = useTableSessionStore()
+  const key = primaryKeysKey(rowKey)
   const isSelected = useSubscription(store, {
     selector: (state) =>
-      state.selected.some(
-        (selected) => primaryKeysKey(selected) === primaryKeysKey(rowKey)
-      ),
+      state.selected.some((selected) => primaryKeysKey(selected) === key),
   })
 
   return (

@@ -20,8 +20,12 @@ interface ShownValue {
   value: unknown
 }
 
-const emptyText = (value: unknown) =>
-  value === undefined ? 'default' : String(value ?? 'null') || 'empty'
+const emptyLabel = (value: unknown) => {
+  if (value === undefined) {
+    return 'default'
+  }
+  return value === null ? 'null' : 'empty'
+}
 
 const Value = ({
   className,
@@ -40,7 +44,7 @@ const Value = ({
         className
       )}
     >
-      {isEmpty ? emptyText(value) : display}
+      {isEmpty ? emptyLabel(value) : display}
     </span>
   )
 }
@@ -198,7 +202,8 @@ export const ChangeList = ({
     if (!draft) {
       return
     }
-    ;(buttons[index + 1] ?? buttons[index - 1])?.focus()
+    const next = buttons[index + 1] ?? buttons[index - 1]
+    next?.focus()
     discardDraft(draft.primaryKeys, draft.columnId)
   }
 

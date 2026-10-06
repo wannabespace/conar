@@ -53,66 +53,60 @@ export const tableCellMenu = ({
   const hasDraft =
     entry.kind === 'saved' &&
     draftKey(entry.keys, column.id) in sessionStore.get().drafts
-  const onDiscardChange =
-    hasDraft && !saving
-      ? () => draftsActions(sessionStore).discard(entry.keys, column.id)
-      : undefined
-  const onDiscardRow =
-    entry.kind === 'new' && !saving
-      ? () => newRowsActions(sessionStore).discard(entry.newRow.id)
-      : undefined
-  const onDuplicateRow = canInsert
-    ? () => {
-        posthog.capture('row_duplicated')
-        staged.duplicate(cell)
-      }
-    : undefined
-  const peek = hop && element ? () => onPeek(element, hop) : undefined
-  const onSetNull =
+  const canSetNull =
     isEditable && column.isEditable !== false && column.isNullable
-      ? () => staged.edit(cell, null)
-      : undefined
-  const columnItems = columnMenuItems({
-    ...actions,
-    anchor: element ?? null,
-    column,
-    store,
-  })
 
   const rowItems: AppMenuNode[] = [
-    ...(onDuplicateRow
-      ? [{ icon: Copy02Icon, label: 'Duplicate Row', onSelect: onDuplicateRow }]
+    ...(canInsert
+      ? [
+          {
+            icon: Copy02Icon,
+            label: 'Duplicate Row',
+            onSelect: () => {
+              posthog.capture('row_duplicated')
+              staged.duplicate(cell)
+            },
+          },
+        ]
       : []),
-    ...(onDiscardRow
+    ...(entry.kind === 'new' && !saving
       ? [
           {
             icon: ArrowTurnBackwardIcon,
             label: 'Discard Row',
-            onSelect: onDiscardRow,
+            onSelect: () =>
+              newRowsActions(sessionStore).discard(entry.newRow.id),
           },
         ]
       : []),
   ]
   const cellItems: AppMenuNode[] = [
-    ...(onDiscardChange
+    ...(hasDraft && !saving
       ? [
           {
             icon: ArrowTurnBackwardIcon,
             label: 'Discard Change',
-            onSelect: onDiscardChange,
+            onSelect: () =>
+              draftsActions(sessionStore).discard(entry.keys, column.id),
           },
         ]
       : []),
-    ...(peek
-      ? [{ icon: Link01Icon, label: 'Show References', onSelect: peek }]
+    ...(hop && element
+      ? [
+          {
+            icon: Link01Icon,
+            label: 'Show References',
+            onSelect: () => onPeek(element, hop),
+          },
+        ]
       : []),
-    ...(onSetNull
+    ...(canSetNull
       ? [
           {
             disabled: value === null,
             icon: EraserIcon,
             label: 'Set Null',
-            onSelect: onSetNull,
+            onSelect: () => staged.edit(cell, null),
           },
         ]
       : []),
@@ -143,7 +137,12 @@ export const tableCellMenu = ({
             },
           },
           { type: 'separator' },
-          ...columnItems,
+          ...columnMenuItems({
+            ...actions,
+            anchor: element ?? null,
+            column,
+            store,
+          }),
         ],
         label: 'Column',
         type: 'group',
