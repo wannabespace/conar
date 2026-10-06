@@ -72,12 +72,11 @@ export const Grid = ({
   })
 
   useLayoutEffect(() => {
-    const element = scrollRef.current
     for (const column of columns) {
-      const { width } = columnVars(column.id)
-      if (element?.style.getPropertyValue(width) !== `${column.size}px`) {
-        element?.style.setProperty(width, `${column.size}px`)
-      }
+      scrollRef.current?.style.setProperty(
+        columnVars(column.id).width,
+        `${column.size}px`
+      )
     }
   }, [columns, scrollRef])
 

@@ -34,8 +34,8 @@ const targetOrder = (columns: GridColumn[], drag: Drag, offset: number) => {
   const others = columns.filter((column) => column.id !== drag.column.id)
   const center =
     (drag.slots.get(drag.column.id) ?? 0) + offset + drag.column.size / 2
-  const first = others.findIndex((column) => !holdsSlot(column))
-  const last = others.findLastIndex((column) => !holdsSlot(column)) + 1
+  const first = columns.findIndex((column) => !holdsSlot(column))
+  const last = columns.findLastIndex((column) => !holdsSlot(column))
   const crossed = others.filter(
     (column) => (drag.slots.get(column.id) ?? 0) + column.size / 2 < center
   ).length
@@ -90,7 +90,9 @@ export const useColumnDrag = ({
       animate(shift, 0, {
         ...COLUMN_TRANSITION,
         onComplete: () =>
-          column.id === current.column.id && !drag.current && setDragging(null),
+          column.id === current.column.id &&
+          !drag.current?.moved &&
+          setDragging(null),
       })
     }
 
