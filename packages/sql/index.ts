@@ -14,6 +14,10 @@ export {
 } from './statements'
 export type { TokenizerState } from './tokenizer'
 export { INITIAL_STATE, tokenize } from './tokenizer'
-export { invalidatesCatalog, destructiveKeywords } from './destructive'
+export {
+  destructiveKeywords,
+  invalidatesCatalog,
+  writesData,
+} from './destructive'
 export { statementScope } from './scope'
 export { findTable, findTableWithSchema } from './catalog'

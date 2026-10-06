@@ -54,14 +54,33 @@ export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
 
 const DDL_KEYWORDS = new Set(['ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE'])
 
-export const invalidatesCatalog = (text: string, dialect: DialectSpec) =>
-  splitStatements(text, dialect).some(
-    (statement) =>
-      !isPlanOnlyExplain(statement) &&
-      statement.tokens.some(
+const DATA_WRITE_KEYWORDS = new Set([
+  'COPY',
+  'DELETE',
+  'INSERT',
+  'MERGE',
+  'REPLACE',
+  'TRUNCATE',
+  'UPDATE',
+])
+
+const runsAny =
+  (keywords: Set<string>) => (text: string, dialect: DialectSpec) =>
+    splitStatements(text, dialect).some((statement) => {
+      if (isPlanOnlyExplain(statement)) {
+        return false
+      }
+      const words = statement.tokens.map((token) => token.text.toUpperCase())
+      return statement.tokens.some(
         (token, index) =>
-          (index === 0 && DYNAMIC_SQL_COMMANDS.has(token.text.toUpperCase())) ||
+          (index === 0 && DYNAMIC_SQL_COMMANDS.has(words[index] ?? '')) ||
           ((token.kind === 'keyword' || index === 0) &&
-            DDL_KEYWORDS.has(token.text.toUpperCase()))
+            keywords.has(words[index] ?? '') &&
+            !locksOrReferences(words, index))
       )
-  )
+    })
+
+export const invalidatesCatalog = runsAny(DDL_KEYWORDS)
+
+/** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
+export const writesData = runsAny(DATA_WRITE_KEYWORDS)
