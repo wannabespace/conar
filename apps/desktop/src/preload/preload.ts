@@ -70,6 +70,10 @@ const onEvent = <T>(
 let mcpSource: McpSource | null = null
 
 const answer = (source: McpSource, request: McpRequest, port: MessagePort) => {
+  const onAbort = (listener: () => void) => {
+    port.addEventListener('message', listener)
+    port.start()
+  }
   if (request.method === 'connections') {
     return source.connections()
   }
@@ -79,10 +83,10 @@ const answer = (source: McpSource, request: McpRequest, port: MessagePort) => {
   if (request.method === 'tables') {
     return source.tables(request.args)
   }
-  return source.query(request.args, (listener) => {
-    port.addEventListener('message', listener)
-    port.start()
-  })
+  if (request.method === 'execute') {
+    return source.execute(request.args, onAbort)
+  }
+  return source.query(request.args, onAbort)
 }
 
 ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
@@ -154,6 +158,9 @@ contextBridge.exposeInMainWorld('electron', {
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
     ),
+    notify: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.notify', arg)
+    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),
@@ -165,9 +172,6 @@ contextBridge.exposeInMainWorld('electron', {
     },
     setAccess: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setAccess', arg)
-    ),
-    setConnectionEnabled: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('mcp.setConnectionEnabled', arg)
     ),
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)

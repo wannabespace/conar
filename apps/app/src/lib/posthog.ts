@@ -22,18 +22,16 @@ const init = async () => {
       maskTextSelector: '[data-mask]',
     },
   })
-  // PostHog persists an opt-out across reloads, and init only runs while analytics is on.
-  if (client.has_opted_out_capturing()) {
-    client.opt_in_capturing({ captureEventName: false })
-  }
-  // Autocapture and session recording run inside the loaded client, so turning analytics off must opt it out, not just stop our own calls.
-  analyticsStore.subscribe((isEnabled) => {
+  // Autocapture and session recording run inside the loaded client, so turning analytics off must opt it out, not just stop our own calls. Applied once too: the choice may have changed during the import, and PostHog persists an opt-out across reloads.
+  const apply = (isEnabled: boolean) => {
     if (isEnabled) {
       client.opt_in_capturing({ captureEventName: false })
     } else {
       client.opt_out_capturing()
     }
-  })
+  }
+  apply(analyticsStore.get())
+  analyticsStore.subscribe(apply)
   return client
 }
 

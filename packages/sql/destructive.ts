@@ -66,12 +66,14 @@ const DATA_WRITE_KEYWORDS = new Set([
   'UPDATE',
 ])
 
-// Most commands are not keywords in any dialect's list, so a bare word counts too.
-const isWord = (token: Token) =>
-  !token.quoted && (token.kind === 'keyword' || token.kind === 'identifier')
+const keywordOrFirst = (token: Token, index: number) =>
+  token.kind === 'keyword' || index === 0
 
 const statementRunsAny =
-  (keywords: Set<string>) =>
+  (
+    keywords: Set<string>,
+    isCommand: (token: Token, index: number) => boolean
+  ) =>
   (statement: Statement): boolean => {
     if (isPlanOnlyExplain(statement)) {
       return false
@@ -80,14 +82,14 @@ const statementRunsAny =
     return statement.tokens.some(
       (token, index) =>
         (index === 0 && DYNAMIC_SQL_COMMANDS.has(words[index] ?? '')) ||
-        (isWord(token) &&
+        (isCommand(token, index) &&
           keywords.has(words[index] ?? '') &&
           !namesWithoutRunning(words, index))
     )
   }
 
 const runsAny = (keywords: Set<string>) => {
-  const runs = statementRunsAny(keywords)
+  const runs = statementRunsAny(keywords, keywordOrFirst)
   return (text: string, dialect: DialectSpec) =>
     splitStatements(text, dialect).some(runs)
 }
@@ -96,9 +98,6 @@ export const invalidatesCatalog = runsAny(DDL_KEYWORDS)
 
 /** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
 export const writesData = runsAny(DATA_WRITE_KEYWORDS)
-
-/** A procedure or dynamic body can COMMIT on its own, so rolling back the transaction around it may not undo it. */
-export const runsDynamicSql = runsAny(DYNAMIC_SQL_COMMANDS)
 
 const READ_COMMANDS = new Set([
   'DESC',
@@ -110,6 +109,10 @@ const READ_COMMANDS = new Set([
   'VALUES',
   'WITH',
 ])
+
+// Most commands are not keywords in any dialect's list, so a bare word counts too.
+const isWord = (token: Token) =>
+  !token.quoted && (token.kind === 'keyword' || token.kind === 'identifier')
 
 // SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest.
 const writesInsideRead = statementRunsAny(
@@ -129,7 +132,8 @@ const writesInsideRead = statementRunsAny(
     'REVOKE',
     'ROLLBACK',
     'SHUTDOWN',
-  ])
+  ]),
+  isWord
 )
 
 /** A single statement that only reads, the only kind an MCP agent may run. */

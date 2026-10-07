@@ -9,18 +9,17 @@ import type { McpAccess, McpStatus } from '@tamery/shared/mcp'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
+import { notifyUnfocused } from './notify'
 
 const newToken = () => randomBytes(32).toString('base64url')
 
 const store = new Store<{
   access: Record<string, Exclude<McpAccess, 'ask'>>
-  disabledConnectionIds: string[]
   enabled: boolean
   token: string
 }>({
   defaults: {
     access: {},
-    disabledConnectionIds: [],
     enabled: true,
     token: newToken(),
   },
@@ -43,10 +42,7 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.writeHead(405).end()
     return
   }
-  const server = createMcpServer({
-    access: store.get('access'),
-    disabledConnectionIds: store.get('disabledConnectionIds'),
-  })
+  const server = createMcpServer(store.get('access'))
   const transport = new StreamableHTTPServerTransport({
     enableJsonResponse: true,
     sessionIdGenerator: undefined,
@@ -96,13 +92,11 @@ const status = (): McpStatus => {
   return error ? { error, state: 'failed' } : { state: 'off' }
 }
 
-const connectionAccess = () => ({
-  access: store.get('access'),
-  disabledIds: store.get('disabledConnectionIds'),
-})
+const connectionAccess = () => store.get('access')
 
 export const mcp = {
   connectionAccess,
+  notify: notifyUnfocused,
   regenerateToken: () => {
     store.set('token', newToken())
     return status()
@@ -118,22 +112,6 @@ export const mcp = {
     store.set(
       'access',
       access === 'ask' ? others : { ...others, [connectionId]: access }
-    )
-    return connectionAccess()
-  },
-  setConnectionEnabled: ({
-    connectionId,
-    enabled,
-  }: {
-    connectionId: string
-    enabled: boolean
-  }) => {
-    const others = store
-      .get('disabledConnectionIds')
-      .filter((id) => id !== connectionId)
-    store.set(
-      'disabledConnectionIds',
-      enabled ? others : [...others, connectionId]
     )
     return connectionAccess()
   },

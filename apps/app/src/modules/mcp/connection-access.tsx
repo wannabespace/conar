@@ -6,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { Switch } from '@tamery/ui/components/switch'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -19,6 +18,7 @@ import { queryClient } from '~/lib/query-client'
 import type { ElectronMcp } from './electron-mcp'
 
 const ACCESS: { label: string; value: McpAccess }[] = [
+  { label: 'Not shared', value: 'off' },
   { label: 'Read only', value: 'read' },
   { label: 'Ask before writing', value: 'ask' },
   { label: 'Read and write', value: 'write' },
@@ -38,13 +38,6 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
     queryFn: () => mcp.connectionAccess(),
     queryKey: accessQueryKey,
   })
-  const { mutate: setEnabled } = useMutation({
-    meta: { event: 'mcp_connection_toggled' },
-    mutationFn: (args: Parameters<ElectronMcp['setConnectionEnabled']>[0]) =>
-      mcp.setConnectionEnabled(args),
-    onError: (error) => toast.error(error.message),
-    onSuccess: (next) => queryClient.setQueryData(accessQueryKey, next),
-  })
   const { mutate: setAccess } = useMutation({
     meta: { event: 'mcp_connection_access_changed' },
     mutationFn: (args: Parameters<ElectronMcp['setAccess']>[0]) =>
@@ -60,9 +53,7 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
   return (
     <SettingsGroup title="Connection access">
       {connections.map((connection) => {
-        const enabled = !access.disabledIds.includes(connection.id)
-        const connectionAccess: McpAccess =
-          access.access[connection.id] ?? 'ask'
+        const connectionAccess: McpAccess = access[connection.id] ?? 'ask'
 
         return (
           <SettingsRow
@@ -75,7 +66,6 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
             }
           >
             <Select
-              disabled={!enabled}
               items={ACCESS}
               value={connectionAccess}
               onValueChange={(value) => {
@@ -99,15 +89,6 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
                 ))}
               </SelectContent>
             </Select>
-            <Switch
-              size="sm"
-              className="ml-2"
-              aria-label={`Share ${connection.name} with agents`}
-              checked={enabled}
-              onCheckedChange={(next) =>
-                setEnabled({ connectionId: connection.id, enabled: next })
-              }
-            />
           </SettingsRow>
         )
       })}

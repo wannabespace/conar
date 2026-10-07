@@ -1,15 +1,19 @@
-import type { McpSource } from '@tamery/shared/mcp'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { silently } from '@tamery/shared/utils'
 import { dialects, readsOnly, splitStatements } from '@tamery/sql'
 
 import { getCollections } from '~/core/collections'
+import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import type { ResultSet } from '~/core/queries/connection/custom'
 import {
   refreshAfterRun,
   statementQuery,
 } from '~/core/queries/connection/statement'
 import { transactionQuery } from '~/core/queries/connection/transaction'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
+import type { QueryParams } from '~/core/runtime/query'
 import {
   cancelQuery,
   connectionResourceToQueryParams,
@@ -26,6 +30,46 @@ import {
   resolveTarget,
 } from './target'
 
+const agentParams = async (
+  connection: Connection,
+  resource: ConnectionResource | undefined
+) => ({
+  ...(await (resource
+    ? connectionResourceToQueryParams(resource)
+    : connectionToQueryParams(connection))),
+  resultSets: { maxRows: MCP_MAX_ROWS },
+})
+
+const abortSignalOf = (onAbort: (listener: () => void) => void) => {
+  const controller = new AbortController()
+  onAbort(() => controller.abort())
+  return controller.signal
+}
+
+const runForAgent = async (
+  params: QueryParams,
+  {
+    queryIds,
+    run,
+  }: { queryIds: string[]; run: (params: QueryParams) => Promise<ResultSet[]> },
+  event: { access: McpAccess; connection_type: ConnectionType },
+  signal: AbortSignal
+) => {
+  signal.addEventListener('abort', () => {
+    for (const queryId of queryIds) {
+      void silently(() => cancelQuery(params, queryId))
+    }
+  })
+  let success = false
+  try {
+    const sets = await run(params)
+    success = true
+    return sets
+  } finally {
+    posthog.capture('mcp_query_run', { ...event, success })
+  }
+}
+
 export const mcpSource: McpSource = {
   connections: () =>
     getCollections().connectionsCollection.toArray.map((connection) => ({
@@ -35,64 +79,52 @@ export const mcpSource: McpSource = {
       type: connection.type,
     })),
   describeTable,
-  query: async ({ access, sql, ...target }, onAbort) => {
+  execute: async ({ approve, sql, ...target }, onAbort) => {
     const { connection, resource } = resolveTarget(target)
-    const dialect = dialects[connection.type]
-    const write = access !== 'read'
-    if (write && splitStatements(sql, dialect).length !== 1) {
+    if (splitStatements(sql, dialects[connection.type]).length !== 1) {
       throw new Error(
         'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together.'
       )
     }
-    if (!write && !readsOnly(sql, dialect)) {
+    const params = await agentParams(connection, resource)
+    const signal = abortSignalOf(onAbort)
+    if (approve) {
+      await approval.request({ connection, params, signal, sql })
+    }
+    const sets = await runForAgent(
+      params,
+      statementQuery(sql, connection.type, signal),
+      { access: approve ? 'ask' : 'write', connection_type: connection.type },
+      signal
+    )
+    if (resource) {
+      refreshAfterRun(resource, connection.type, [{ text: sql }])
+    }
+    if (!approve) {
+      void window.electron?.mcp.notify({
+        body: sql,
+        title: `An agent changed ${connection.name}`,
+      })
+    }
+    return sets
+  },
+  query: async ({ sql, ...target }, onAbort) => {
+    const { connection, resource } = resolveTarget(target)
+    if (!readsOnly(sql, dialects[connection.type])) {
       throw new Error(
         'Only one read-only statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) runs at a time.'
       )
     }
-
-    const params = {
-      ...(await (resource
-        ? connectionResourceToQueryParams(resource)
-        : connectionToQueryParams(connection))),
-      resultSets: { maxRows: MCP_MAX_ROWS },
-    }
-    const controller = new AbortController()
-    onAbort(() => controller.abort())
-    if (access === 'ask') {
-      await approval.request({
-        connection,
-        params,
-        signal: controller.signal,
-        sql,
-      })
-    }
-    const { queryIds, run } = write
-      ? statementQuery(sql, connection.type, controller.signal)
-      : transactionQuery(
-          { accessMode: 'read only', commit: false, statements: [sql] },
-          controller.signal
-        )
-    controller.signal.addEventListener('abort', () => {
-      for (const queryId of queryIds) {
-        void silently(() => cancelQuery(params, queryId))
-      }
-    })
-
-    let success = false
-    try {
-      const sets = await run(params)
-      success = true
-      if (write && resource) {
-        refreshAfterRun(resource, connection.type, [{ text: sql }])
-      }
-      return sets
-    } finally {
-      posthog.capture('mcp_query_run', {
-        access,
-        connection_type: connection.type,
-        success,
-      })
-    }
+    const signal = abortSignalOf(onAbort)
+    return runForAgent(
+      await agentParams(connection, resource),
+      transactionQuery(
+        { accessMode: 'read only', commit: false, statements: [sql] },
+        signal
+      ),
+      { access: 'read', connection_type: connection.type },
+      signal
+    )
   },
   tables: async ({ schema, ...target }) => {
     const { connection, resource } = resolveResource(target)

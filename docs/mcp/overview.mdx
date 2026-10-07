@@ -17,23 +17,22 @@ The server is on by default: it starts with the desktop app and listens only on 
 
 ## Connection access
 
-Every connection is shared with agents, **Ask before writing**, until you change it. In **Settings** → **MCP**, **Connection access** lists your connections, each with one of three levels:
+Every connection is shared with agents, **Ask before writing**, until you change it. In **Settings** → **MCP**, **Connection access** lists your connections, each with one of four levels:
 
 | Level | What agents can do |
 | --- | --- |
+| **Not shared** | Nothing: the connection is missing from `list_connections` and every tool refuses it. |
 | **Read only** | Read data and schema. `execute` is refused. |
 | **Ask before writing** | Read freely. Each `execute` waits until you approve it in Tamery. |
 | **Read and write** | Read, and change data and schema with `execute` straight away. A system notification shows each committed statement while Tamery is in the background. |
 
-Turn off a connection's switch to hide it from agents completely: it disappears from `list_connections` and every tool refuses it. These choices are stored on this device only and apply to the next tool call, without restarting the agent.
+These choices are stored on this device only and apply to the next tool call, without restarting the agent.
 
 ## Approving a write
 
 On a connection set to **Ask before writing**, an agent's `execute` opens a dialog in Tamery showing the statement. If Tamery is in the background, a system notification tells you, and clicking it brings Tamery forward; on macOS the Dock icon also bounces until you switch to it. **Run** commits it; **Decline** (or <kbd>Esc</kbd>) refuses it, and the agent is told you declined. If the agent stops waiting, the dialog closes by itself.
 
-While the dialog is open, Tamery tries the statement inside a transaction and rolls it back, then shows how many rows it would change, or the error it would fail with. There is no preview where a rollback would not undo the statement: on ClickHouse, which has no transactions, for schema changes on MySQL, which commits them at once, and for procedure calls and dynamic SQL, which can commit on their own. A preview runs the statement for real inside the transaction, so it takes the same locks and time; Tamery stops it after 3 seconds and says so, rather than holding locks on a large change while you decide.
-
-On PostgreSQL and MySQL the dialog also shows the database's own estimate of how many rows a data change touches. It comes from `EXPLAIN`, which plans the statement without running it, so it appears at once, even where there is no preview or the preview was stopped. It is an estimate and can be far off.
+Nothing the agent sent runs before you choose **Run**. On PostgreSQL and MySQL, for a single `INSERT`, `UPDATE`, `DELETE` or `MERGE`, the dialog shows the database's own estimate of how many rows it touches. It comes from `EXPLAIN`, which plans the statement without running it. It is an estimate and can be far off.
 
 ## Connect an agent
 

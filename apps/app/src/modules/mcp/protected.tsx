@@ -4,35 +4,29 @@ import { useEffect } from 'react'
 import type { ProtectedModule } from '~/lib/module'
 
 import { ApprovalDialog } from './approval-dialog'
-import type { ElectronMcp } from './electron-mcp'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
-const McpSource = ({ mcp }: { mcp: ElectronMcp }) => {
-  useEffect(() => mcp.serve(mcpSource), [mcp])
+const McpSourceMount = () => {
+  useEffect(() => window.electron?.mcp.serve(mcpSource), [])
 
   return null
 }
 
-// React Compiler hoists hook callbacks out of nested components, dropping this closure — hooks go in McpSource/McpSettings, which take `mcp` as a prop.
-const desktopModule = (mcp: ElectronMcp): ProtectedModule => {
-  const McpSourceMount = () => <McpSource mcp={mcp} />
-  const Settings = () => <McpSettings mcp={mcp} />
-
-  return {
-    mounts: [McpSourceMount, ApprovalDialog],
-    settings: [
-      {
-        Component: Settings,
-        icon: McpServerIcon,
-        id: 'mcp',
-        label: 'MCP',
-        order: 10,
-      },
-    ],
-  }
-}
+const Settings = () =>
+  window.electron ? <McpSettings mcp={window.electron.mcp} /> : null
 
 export default (window.electron
-  ? desktopModule(window.electron.mcp)
+  ? {
+      mounts: [McpSourceMount, ApprovalDialog],
+      settings: [
+        {
+          Component: Settings,
+          icon: McpServerIcon,
+          id: 'mcp',
+          label: 'MCP',
+          order: 10,
+        },
+      ],
+    }
   : {}) satisfies ProtectedModule

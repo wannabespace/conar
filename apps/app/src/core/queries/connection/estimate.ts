@@ -1,10 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import {
-  dialects,
-  runsDynamicSql,
-  splitStatements,
-  writesData,
-} from '@tamery/sql'
+import { dialects, splitStatements } from '@tamery/sql'
 import { type } from 'arktype'
 
 import type { QueryParams } from '~/core/runtime/query'
@@ -54,6 +49,15 @@ const plans: Record<
   },
 }
 
+// Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run.
+const ESTIMATED_COMMANDS = new Set([
+  'DELETE',
+  'INSERT',
+  'MERGE',
+  'REPLACE',
+  'UPDATE',
+])
+
 /** The planner's guess at how many rows one write touches, without running it; `null` where the engine or statement has none. */
 export const estimateQuery = (
   text: string,
@@ -61,12 +65,11 @@ export const estimateQuery = (
   signal: AbortSignal
 ) => {
   const plan = plans[connectionType]
-  const dialect = dialects[connectionType]
+  const [statement, ...rest] = splitStatements(text, dialects[connectionType])
   if (
     !plan ||
-    splitStatements(text, dialect).length !== 1 ||
-    !writesData(text, dialect) ||
-    runsDynamicSql(text, dialect)
+    rest.length > 0 ||
+    !ESTIMATED_COMMANDS.has(statement?.tokens[0]?.text.toUpperCase() ?? '')
   ) {
     return null
   }

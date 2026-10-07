@@ -1,4 +1,4 @@
-import { destructiveKeywords, dialects, writesData } from '@tamery/sql'
+import { destructiveKeywords, dialects } from '@tamery/sql'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +13,9 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { plural } from '~/lib/plural'
+
 import { approval } from './approval'
-import { ImpactNote } from './impact-note'
 
 export const ApprovalDialog = () => {
   const [item] = useSubscription(approval.store, {
@@ -55,11 +56,12 @@ export const ApprovalDialog = () => {
             wrap
             className="max-h-60"
           />
-          <ImpactNote
-            estimate={item.estimate}
-            impact={item.impact}
-            writesRows={writesData(item.sql, dialects[item.connection.type])}
-          />
+          {item.estimate !== undefined && (
+            <p className="text-muted-foreground text-xs">
+              The database estimates it changes about{' '}
+              {plural(item.estimate, 'row')}.
+            </p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel ref={declineRef}>Decline</AlertDialogCancel>
             <AlertDialogAction

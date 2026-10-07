@@ -1,12 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { McpAccess, McpRequest } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
-import { silently } from '@tamery/shared/utils'
 import { app } from 'electron'
 import { z } from 'zod'
 
 import { askRenderer } from './mcp-renderer'
-import { notifyUnfocused } from './notify'
 
 const jsonContent = (value: unknown) => ({
   content: [
@@ -33,31 +31,7 @@ const sqlInput = { ...targetInput, sql: z.string() }
 
 const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels and no tool edits them. Find it before answering — pick the likely tables from their names and columns, search them with query (case-insensitive, partial match), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema, and only on connections whose access is "ask" or "write". On "ask" the user reviews each statement in Tamery and approves or declines it, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables.`
 
-const NAME_LOOKUP_TIMEOUT_MS = 2000
-
-// Not the tool call's signal: the request closes, and aborts it, as soon as the tool returns.
-const notifyAbout = (
-  connectionId: string,
-  message: (name: string) => { body: string; title: string }
-) =>
-  silently(async () => {
-    const connections = await askRenderer(
-      { args: undefined, method: 'connections' },
-      AbortSignal.timeout(NAME_LOOKUP_TIMEOUT_MS)
-    )
-    const name =
-      connections.find((connection) => connection.id === connectionId)?.name ??
-      'a connection'
-    notifyUnfocused(message(name))
-  })
-
-export const createMcpServer = ({
-  access,
-  disabledConnectionIds,
-}: {
-  access: Record<string, McpAccess>
-  disabledConnectionIds: string[]
-}) => {
+export const createMcpServer = (access: Record<string, McpAccess>) => {
   const server = new McpServer(
     { name: 'tamery', version: app.getVersion() },
     { instructions: INSTRUCTIONS }
@@ -65,15 +39,21 @@ export const createMcpServer = ({
   const accessOf = (connectionId: string): McpAccess =>
     access[connectionId] ?? 'ask'
 
+  const sharedAccessOf = (connectionId: string) => {
+    const connectionAccess = accessOf(connectionId)
+    if (connectionAccess === 'off') {
+      throw new Error(
+        `Connection "${connectionId}" is not shared with agents. The user can share it in Tamery → Settings → MCP.`
+      )
+    }
+    return connectionAccess
+  }
+
   const askShared = (
     request: Exclude<McpRequest, { method: 'connections' }>,
     signal: AbortSignal
   ) => {
-    if (disabledConnectionIds.includes(request.args.connectionId)) {
-      throw new Error(
-        `Connection "${request.args.connectionId}" is not shared with agents. The user can share it in Tamery → Settings → MCP.`
-      )
-    }
+    sharedAccessOf(request.args.connectionId)
     return askRenderer(request, signal)
   }
 
@@ -90,14 +70,12 @@ export const createMcpServer = ({
         signal
       )
       return jsonContent(
-        connections
-          .filter(
-            (connection) => !disabledConnectionIds.includes(connection.id)
-          )
-          .map((connection) => ({
-            ...connection,
-            access: accessOf(connection.id),
-          }))
+        connections.flatMap((connection) => {
+          const connectionAccess = accessOf(connection.id)
+          return connectionAccess === 'off'
+            ? []
+            : [{ ...connection, access: connectionAccess }]
+        })
       )
     }
   )
@@ -110,12 +88,7 @@ export const createMcpServer = ({
       inputSchema: sqlInput,
     },
     async (args, { signal }) =>
-      jsonContent(
-        await askShared(
-          { args: { ...args, access: 'read' }, method: 'query' },
-          signal
-        )
-      )
+      jsonContent(await askShared({ args, method: 'query' }, signal))
   )
 
   server.registerTool(
@@ -157,34 +130,21 @@ export const createMcpServer = ({
       inputSchema: sqlInput,
     },
     async (args, { signal }) => {
-      const connectionAccess = accessOf(args.connectionId)
+      const connectionAccess = sharedAccessOf(args.connectionId)
       if (connectionAccess === 'read') {
         throw new Error(
           `Connection "${args.connectionId}" is read-only for agents. The user can allow writes in Tamery → Settings → MCP.`
         )
       }
-      // askShared throws at once for a connection the user hid, so nothing below announces it.
-      const pending = askShared(
-        { args: { ...args, access: connectionAccess }, method: 'query' },
-        signal
-      )
-      const bounce =
-        connectionAccess === 'ask' ? app.dock?.bounce('critical') : undefined
-      if (connectionAccess === 'ask') {
-        void notifyAbout(args.connectionId, (name) => ({
-          body: 'Review the statement in Tamery to run or decline it.',
-          title: `An agent wants to change ${name}`,
-        }))
-      }
+      const approve = connectionAccess === 'ask'
+      const bounce = approve ? app.dock?.bounce('critical') : undefined
       try {
-        const result = await pending
-        if (connectionAccess === 'write') {
-          void notifyAbout(args.connectionId, (name) => ({
-            body: args.sql,
-            title: `An agent changed ${name}`,
-          }))
-        }
-        return jsonContent(result)
+        return jsonContent(
+          await askRenderer(
+            { args: { ...args, approve }, method: 'execute' },
+            signal
+          )
+        )
       } finally {
         if (bounce !== undefined) {
           app.dock?.cancelBounce(bounce)
