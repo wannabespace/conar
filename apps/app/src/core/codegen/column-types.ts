@@ -1,4 +1,6 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 
 import type { TypedColumn } from './types'
 import { toStringLiteral } from './utils'
@@ -10,23 +12,30 @@ const firstMatch = <T extends string>(
   type: string,
   fallback: T,
   rules: [pattern: RegExp, result: T][]
-) => rules.find(([pattern]) => pattern.test(type))?.[1] ?? fallback
+) => {
+  // Postgres reports an array column as `json[]`; capability patterns are anchored on the element type.
+  const elementType = type.replace(/\[\]$/u, '')
+  return rules.find(([pattern]) => pattern.test(elementType))?.[1] ?? fallback
+}
 
-const tsType = (type: string) =>
+const jsonType = (dialect: ConnectionType) =>
+  capabilitiesOf(dialect).columnTypes.json
+
+const tsType = (type: string, dialect: ConnectionType) =>
   firstMatch(type, 'string', [
+    [jsonType(dialect), 'unknown'],
     [INT_RE, 'number'],
-    [/float|decimal|number|double|numeric/iu, 'number'],
+    [/float|decimal|number|double|numeric|real/iu, 'number'],
     [/bool|bit/iu, 'boolean'],
     [/date|time/iu, 'Date'],
-    [/json/iu, 'unknown'],
   ])
 
-export const tsColumnType = (column: TypedColumn) => {
+export const tsColumnType = (column: TypedColumn, dialect: ConnectionType) => {
   if (column.enumName && column.availableValues?.length) {
     const union = column.availableValues.map(toStringLiteral).join(' | ')
     return column.isArray ? `(${union})[]` : union
   }
-  return `${tsType(column.type)}${column.isArray ? '[]' : ''}`
+  return `${tsType(column.type, dialect)}${column.isArray ? '[]' : ''}`
 }
 
 const ZOD_BY_TS_TYPE: Record<ReturnType<typeof tsType>, string> = {
@@ -37,8 +46,8 @@ const ZOD_BY_TS_TYPE: Record<ReturnType<typeof tsType>, string> = {
   unknown: 'z.json()',
 }
 
-export const zodType = (column: TypedColumn) => {
-  const type = tsType(column.type)
+export const zodType = (column: TypedColumn, dialect: ConnectionType) => {
+  const type = tsType(column.type, dialect)
   if (type === 'string' && column.maxLength && column.maxLength > 0) {
     return `z.string().max(${column.maxLength})`
   }
@@ -48,12 +57,12 @@ export const zodType = (column: TypedColumn) => {
   return ZOD_BY_TS_TYPE[type]
 }
 
-export const prismaType = (type: string) =>
+export const prismaType = (type: string, dialect: ConnectionType) =>
   firstMatch(type, 'String', [
+    [jsonType(dialect), 'Json'],
     [/decimal|numeric/iu, 'Decimal'],
     [/bool/iu, 'Boolean'],
     [/date|timestamp/iu, 'DateTime'],
-    [/json/iu, 'Json'],
     [/bigint|bigserial|\bint8\b/iu, 'BigInt'],
     [INT_RE, 'Int'],
     [/float|double|real/iu, 'Float'],
@@ -89,7 +98,7 @@ const DRIZZLE_TYPES: Record<
     [/date/iu, 'date'],
     [/decimal|numeric/iu, 'decimal'],
     [/double|float|real/iu, 'double'],
-    [/json/iu, 'json'],
+    [jsonType(ConnectionType.MySQL), 'json'],
   ],
   postgres: [
     [/serial/iu, 'serial'],
@@ -107,7 +116,7 @@ const DRIZZLE_TYPES: Record<
     [/decimal|numeric/iu, 'numeric'],
     [/real|float4/iu, 'real'],
     [/double|float/iu, 'doublePrecision'],
-    [/json/iu, 'json'],
+    [jsonType(ConnectionType.Postgres), 'json'],
   ],
 }
 

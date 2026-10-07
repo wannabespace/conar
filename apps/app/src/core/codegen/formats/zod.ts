@@ -4,12 +4,16 @@ import { zodType } from '~/core/codegen/column-types'
 import type { SchemaParams } from '~/core/codegen/types'
 import { hasType, toLiteralKey, toStringLiteral } from '~/core/codegen/utils'
 
-export const generateSchemaZod = ({ table, columns }: SchemaParams) => {
+export const generateSchemaZod = ({
+  table,
+  columns,
+  dialect,
+}: SchemaParams) => {
   const fields = columns.filter(hasType).map((column) => {
     const base =
       column.enumName && column.availableValues?.length
         ? `z.enum([${column.availableValues.map(toStringLiteral).join(', ')}])`
-        : zodType(column)
+        : zodType(column, dialect)
     const array = column.isArray ? '.array()' : ''
     const nullable = column.isNullable ? '.nullable()' : ''
     return `  ${toLiteralKey(column.id)}: ${base}${array}${nullable},`

@@ -19,11 +19,7 @@ const callSiteClasses = [
 
 export default defineConfig({
   extends: [core, react, tanstack],
-  ignorePatterns: [
-    // The preset skips every `codegen` dir as generated output; ours is source.
-    ...(core.ignorePatterns || []).filter((p) => p !== '**/codegen'),
-    ...ignorePatterns,
-  ],
+  ignorePatterns: [...(core.ignorePatterns || []), ...ignorePatterns],
   jsPlugins: ['oxlint-tailwindcss', '@shadcn/lint'],
   overrides: [
     {

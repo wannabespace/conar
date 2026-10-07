@@ -59,6 +59,20 @@ const columns: Column[] = [
   },
 ]
 
+const typeScriptFor = (dialect: ConnectionType, types: string[]) =>
+  generateSchemaTypeScript({
+    columns: types.map((type, i) => ({
+      id: `c${i}`,
+      isArray: type.endsWith('[]'),
+      isNullable: false,
+      type,
+      uiType: 'raw',
+    })),
+    dialect,
+    schema: 'app',
+    table: 't',
+  })
+
 describe('generators (postgres)', () => {
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
@@ -83,6 +97,18 @@ describe('generators (postgres)', () => {
     })
     expect(ts).toContain('tags: string[] | null;')
     expect(ts).toContain('duration: string | null;')
+  })
+
+  it('types json by the engine, real as a number', () => {
+    expect(
+      typeScriptFor(ConnectionType.Postgres, ['json[]', 'jsonpath', 'real'])
+    ).toContain('c0: unknown[];\n  c1: string;\n  c2: number;')
+    expect(
+      typeScriptFor(ConnectionType.ClickHouse, [
+        'Map(String, DateTime)',
+        'Tuple(Int32, String)',
+      ])
+    ).toContain('c0: unknown;\n  c1: unknown;')
   })
 
   it('prisma emits defaults, uuid and lists', () => {

@@ -287,7 +287,7 @@ export const generateSchemaPrisma = ({
   const schemaAttributes = tableSchema ? [`@@schema("${tableSchema}")`] : []
 
   for (const c of columns.filter(hasType)) {
-    let fieldType: string = prismaType(c.type)
+    let fieldType: string = prismaType(c.type, dialect)
     if (c.enumName && c.availableValues?.length) {
       fieldType = pascalCase(c.enumName)
       enumBlocks.add(enumBlock(c.enumName, c.availableValues, schemaAttributes))

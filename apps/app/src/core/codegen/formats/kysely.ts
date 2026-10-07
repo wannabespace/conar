@@ -58,7 +58,7 @@ export const generateSchemaKysely = ({
     .filter(hasType)
     .map((c) => {
       const isGenerated = c.isIdentity || typeof c.defaultValue === 'string'
-      const tsType = tsColumnType(c)
+      const tsType = tsColumnType(c, dialect)
       const typeDef = isGenerated ? `Generated<${tsType}>` : tsType
       return `  ${toLiteralKey(c.id)}: ${typeDef}${c.isNullable ? ' | null' : ''};`
     })
