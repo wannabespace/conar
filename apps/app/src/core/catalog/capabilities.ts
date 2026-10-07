@@ -57,6 +57,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     functions: noFunctions,
     ilike: true,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
+    materializedViews: true,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -108,6 +109,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     ilike: false,
     indexes: btreeIndexes,
+    materializedViews: false,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -166,6 +168,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     ilike: false,
     indexes: btreeIndexes,
+    materializedViews: false,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -225,6 +228,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     },
     ilike: true,
     indexes: btreeIndexes,
+    materializedViews: true,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,

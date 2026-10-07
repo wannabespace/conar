@@ -25,7 +25,10 @@ import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import type { TableType } from '~/core/catalog/table-type'
+import { tableTypeLabel } from '~/core/catalog/table-type'
 import { dropTableQuery } from '~/core/queries/tables/drop'
+import { dropViewQuery } from '~/core/queries/views/drop'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { tableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
@@ -34,9 +37,17 @@ import { pinnedTable } from './pinned-tables'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
+const dropConsequence = {
+  'materialized view':
+    'This will permanently delete the materialized view and the rows it stores. The tables it reads stay as they are.',
+  table:
+    'This will permanently delete the table and all its data from the database.',
+  view: 'This will permanently delete the view. The tables it reads stay as they are.',
+} satisfies Record<TableType, string>
+
 interface DropTableDialogProps {
   ref: React.RefObject<{
-    drop: (schema: string, table: string) => void
+    drop: (schema: string, table: string, type: TableType) => void
   } | null>
 }
 
@@ -47,14 +58,18 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   const [confirmationText, setConfirmationText] = useState('')
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
+  const [type, setType] = useState<TableType>('table')
   const [open, setOpen] = useState(false)
   const [cascade, setCascade] = useState(false)
   const isCurrentTable = activeTabId === tableTabId(schema, table)
+  const label = tableTypeLabel[type]
+  const noun = label.toLowerCase()
 
   useImperativeHandle(ref, () => ({
-    drop: (nextSchema, nextTable) => {
+    drop: (nextSchema, nextTable, nextType) => {
       setSchema(nextSchema)
       setTable(nextTable)
+      setType(nextType)
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
@@ -62,17 +77,24 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   }))
 
   const { mutate: dropTable, isPending } = useMutation({
-    meta: { event: 'table_dropped' },
+    meta: { event: type === 'table' ? 'table_dropped' : 'view_dropped' },
     mutationFn: async () => {
-      await dropTableQuery({ cascade, schema, table }).run(
-        await connectionResourceToQueryParams(connectionResource)
-      )
+      await (
+        type === 'table'
+          ? dropTableQuery({ cascade, schema, table })
+          : dropViewQuery({
+              cascade,
+              materialized: type === 'materialized view',
+              schema,
+              view: table,
+            })
+      ).run(await connectionResourceToQueryParams(connectionResource))
     },
     onError: (error) => {
-      toast.error(`Failed to drop table "${error.message}".`)
+      toast.error(`Failed to drop ${noun} "${error.message}".`)
     },
     onSuccess: async () => {
-      toast.success(`Table "${table}" successfully dropped`)
+      toast.success(`${label} "${table}" successfully dropped`)
       setOpen(false)
       setConfirmationText('')
       setCascade(false)
@@ -98,7 +120,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Drop Table</DialogTitle>
+          <DialogTitle>Drop {noun}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Alert variant="destructive">
@@ -108,10 +130,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               className="text-destructive size-5"
             />
             <AlertTitle>This action cannot be undone.</AlertTitle>
-            <AlertDescription>
-              This will permanently delete the table and all its data from the
-              database.
-            </AlertDescription>
+            <AlertDescription>{dropConsequence[type]}</AlertDescription>
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="confirmation">
@@ -136,7 +155,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
             <OptionField
               htmlFor="drop-table-cascade"
               title="Cascade"
-              description="Also drop the objects that depend on this table."
+              description={`Also drop the objects that depend on this ${noun}.`}
             >
               <Switch
                 id="drop-table-cascade"
@@ -162,7 +181,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
             onClick={() => dropTable()}
             disabled={!canConfirm || isPending}
           >
-            <LoadingContent loading={isPending}>Drop Table</LoadingContent>
+            <LoadingContent loading={isPending}>Drop {noun}</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

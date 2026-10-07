@@ -1,10 +1,5 @@
 import { Monaco } from '@tamery/monaco/editor'
-import {
-  attachGhostTextEscape,
-  attachSqlDiagnostics,
-  bindSqlModel,
-  sqlLanguageIds,
-} from '@tamery/monaco/sql-language'
+import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -14,6 +9,8 @@ import { useSubscription } from 'seitu/react'
 
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
+import { SQL_COMPLETION_OPTIONS } from '~/core/sql-editor/options'
+import { attachSqlSource } from '~/core/sql-editor/sql-source'
 import { usePanelOpen } from '~/lib/panels'
 
 import { useRunnerActions } from '../lib/actions'
@@ -23,7 +20,6 @@ import { runnerResultsOptions } from '../lib/run'
 import type { RunAnchor } from '../lib/statement-band'
 import { sameSpot, useStatementBand } from '../lib/statement-band'
 import { setQuery, useRunnerPageStore, useRunnerTab } from '../lib/store'
-import { sqlSourceFor } from '../sql-source'
 import { openMenuFromKeyboard, StatementControls } from './statement-controls'
 
 const { useRouteContext } = getRouteApi(
@@ -32,23 +28,11 @@ const { useRouteContext } = getRouteApi(
 
 const MONACO_OPTIONS = {
   contextmenu: false,
+  ...SQL_COMPLETION_OPTIONS,
   folding: false,
-  inlineSuggest: {
-    enabled: true,
-    showToolbar: 'never',
-  },
   lineNumbersMinChars: 3,
-  // `other` defaults to 'offWhenInlineCompletions': the list would wait on the AI ghost-text request.
-  quickSuggestions: { comments: 'off', other: 'on', strings: 'on' },
-  quickSuggestionsDelay: 0,
   renderLineHighlight: 'none',
   scrollBeyondLastLine: false,
-  // `preview` stays off: the row's own preview draws as ghost text and would read as an AI suggestion.
-  suggest: {
-    preview: false,
-    selectionMode: 'whenQuickSuggestion',
-    showWords: false,
-  },
   wordWrap: 'on',
 } satisfies editor.IStandaloneEditorConstructionOptions
 
@@ -126,18 +110,9 @@ export const RunnerEditor = ({
 
   useEffect(() => {
     const codeEditor = editorRef.current
-    const model = codeEditor?.getModel()
-    if (!codeEditor || !model) {
-      return
-    }
-    const source = sqlSourceFor(connectionResource, connection.type)
-    bindSqlModel(model, source)
-    const detachDiagnostics = attachSqlDiagnostics(codeEditor, source)
-    const detachEscape = attachGhostTextEscape(codeEditor)
-    return () => {
-      detachDiagnostics()
-      detachEscape()
-    }
+    return codeEditor
+      ? attachSqlSource(codeEditor, connectionResource, connection.type)
+      : undefined
   }, [editorRef, connectionResource, connection.type])
 
   return (

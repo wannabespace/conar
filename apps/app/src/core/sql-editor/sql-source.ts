@@ -1,9 +1,15 @@
 import type { SqlSource, TableRef } from '@tamery/monaco/sql-language'
-import { EMPTY_CATALOG } from '@tamery/monaco/sql-language'
+import {
+  attachGhostTextEscape,
+  attachSqlDiagnostics,
+  bindSqlModel,
+  EMPTY_CATALOG,
+} from '@tamery/monaco/sql-language'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
+import type { editor } from 'monaco-editor'
 
 import { defaultSchemaOf } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -62,7 +68,7 @@ const sqlCatalogOf = (
   }
 }
 
-export const sqlSourceFor = (
+const sqlSourceFor = (
   connectionResource: ConnectionResource,
   connectionType: ConnectionType
 ): SqlSource => {
@@ -126,5 +132,23 @@ export const sqlSourceFor = (
         }
       }),
     type: connectionType,
+  }
+}
+
+export const attachSqlSource = (
+  codeEditor: editor.IStandaloneCodeEditor,
+  connectionResource: ConnectionResource,
+  connectionType: ConnectionType
+) => {
+  const source = sqlSourceFor(connectionResource, connectionType)
+  const model = codeEditor.getModel()
+  if (model) {
+    bindSqlModel(model, source)
+  }
+  const detachDiagnostics = attachSqlDiagnostics(codeEditor, source)
+  const detachEscape = attachGhostTextEscape(codeEditor)
+  return () => {
+    detachDiagnostics()
+    detachEscape()
   }
 }

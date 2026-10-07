@@ -23,6 +23,7 @@ import { pressNavProps } from '~/lib/press-nav'
 
 import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
+import { CreateViewDialog } from './create-view-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
 import { getNavigatorStore, navigatorStore } from './stores'
@@ -186,6 +187,7 @@ export const Navigator = () => {
       <NavigatorFooter />
       <CreateTableDialog />
       <CreateSchemaDialog />
+      <CreateViewDialog />
     </div>
   )
 }

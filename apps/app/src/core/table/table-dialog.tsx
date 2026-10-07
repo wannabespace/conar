@@ -38,12 +38,14 @@ const FORM_ID = 'table-dialog'
 
 const TableForm = ({
   isTaken,
+  noun,
   onSubmit,
   pending,
   request: { schema: initialSchema, table },
   schemas: knownSchemas,
 }: {
   isTaken: (schema: string, name: string) => boolean
+  noun: string
   onSubmit: (schema: string, name: string) => void
   pending: boolean
   request: TableDialogRequest
@@ -61,16 +63,16 @@ const TableForm = ({
   if (taken) {
     nameError =
       schemas.length > 1
-        ? `${schema} already has a table with this name`
-        : 'A table with this name already exists'
+        ? `${schema} already has a ${noun} with this name`
+        : `A ${noun} with this name already exists`
   } else if (submitted && !trimmed) {
-    nameError = 'Give the table a name.'
+    nameError = `Give the ${noun} a name.`
   }
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{table ? 'Rename table' : 'New table'}</DialogTitle>
+        <DialogTitle>{table ? `Rename ${noun}` : 'New table'}</DialogTitle>
         <DialogDescription>
           {table ? (
             <span data-mask>{`${table.schema}.${table.name}`}</span>
@@ -150,6 +152,7 @@ const TableForm = ({
 
 export const TableDialog = <Table extends TableTarget>({
   isTaken,
+  noun = 'table',
   onOpenChange,
   onSubmit,
   pending = false,
@@ -157,6 +160,7 @@ export const TableDialog = <Table extends TableTarget>({
   schemas,
 }: {
   isTaken: (schema: string, name: string) => boolean
+  noun?: string
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: TableDialogRequest<Table>,
@@ -179,6 +183,7 @@ export const TableDialog = <Table extends TableTarget>({
           <TableForm
             key={shown.table ? `${shown.table.schema}.${shown.table.name}` : ''}
             isTaken={isTaken}
+            noun={noun}
             pending={pending}
             request={shown}
             schemas={schemas}

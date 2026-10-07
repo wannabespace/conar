@@ -114,7 +114,11 @@ export const renameTableStatement = (
   db: Db,
   { newName, schema, table }: TableTarget & { newName: string }
 ) => {
-  if (dialectType === ConnectionType.ClickHouse) {
+  // MySQL's ALTER TABLE refuses a view; RENAME TABLE takes both.
+  if (
+    dialectType === ConnectionType.ClickHouse ||
+    dialectType === ConnectionType.MySQL
+  ) {
     return sql`RENAME TABLE ${sql.id(schema, table)} TO ${sql.id(schema, newName)}`.compile(
       db
     )

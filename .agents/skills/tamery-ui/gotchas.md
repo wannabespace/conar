@@ -96,6 +96,7 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 - **Kit controls inside the editor (view zones, injected buttons) get Monaco's square focus outline**: its stylesheet outlines every focused `button`, `input`, `textarea` and `[tabindex]` under `.monaco-editor` with a selector that beats `outline-none`. Our themes set `focusBorder` transparent, so the kit's own focus styles are the only ones.
 - **Never use Monaco's own hover widgets** (`glyphMarginHoverMessage`, marker hovers are fine): they render in Monaco's stock chrome, not the kit's.
 - **Marker hovers wear the kit tooltip** (`monaco.css`): inverted fill, `text-xs` sans, no status bar, no copy button (the text is selectable). Recolour through Monaco's `--vscode-*` vars, never the properties — its stylesheet is injected after ours. Font needs `!important`: Monaco stamps the editor's mono font inline on the hover and every marker.
+- **A rounded Monaco box never clips with `overflow-hidden`.** The suggest list sizes itself against the window and overflows the editor, so the container's clip cuts it off; `monaco.css` makes the editor inherit the container's radius and clip its own text. A ring + `rounded-*` on the wrapper is enough.
 
 ## Platform
 

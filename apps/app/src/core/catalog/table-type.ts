@@ -3,7 +3,7 @@ import type { IconSvgElement } from '@hugeicons/react'
 
 import type { tablesAndSchemasType } from '~/core/queries/tables/list'
 
-type TableType = (typeof tablesAndSchemasType.infer)['type']
+export type TableType = (typeof tablesAndSchemasType.infer)['type']
 
 export const tableTypeIcon = {
   'materialized view': ViewIcon,

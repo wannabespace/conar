@@ -147,13 +147,12 @@ test('SQL Server renames through sp_rename with a bracketed name', () => {
   expect(renameColumn.parameters).toEqual(['[s].[t].[a]', 'b'])
 })
 
-test('ClickHouse renames a table with RENAME TABLE', () => {
-  expect(
-    renameTableStatement(ConnectionType.ClickHouse, mysql, {
-      ...target,
-      newName: 'u',
-    }).sql
-  ).toBe('RENAME TABLE `s`.`t` TO `s`.`u`')
+test('ClickHouse and MySQL rename with RENAME TABLE, which also takes a view', () => {
+  for (const dialectType of [ConnectionType.ClickHouse, ConnectionType.MySQL]) {
+    expect(
+      renameTableStatement(dialectType, mysql, { ...target, newName: 'u' }).sql
+    ).toBe('RENAME TABLE `s`.`t` TO `s`.`u`')
+  }
 })
 
 test('only Postgres cascades a table drop', () => {

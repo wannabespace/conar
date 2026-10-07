@@ -38,6 +38,10 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Say when a filter or sort change drops staged edits.** The save bar just disappears; a toast with an Undo action would make the ⌘Z recovery discoverable.
 - **Horizontal scroll re-renders every visible row.** A column-range change hands each memoized `Row` a new `virtualColumns`, so all ~45 rows re-render and re-lay out (~40% of a horizontal step). Positioning cells per column (one spacer per row read from a CSS variable) would let a range change touch only the columns that enter and leave.
 - **Keep `GridScroller` chrome out of range renders.** Every row or column range change re-renders the body's `AppContextMenu` wrapper (~2ms in dev) because its child element is new each render.
+- **Edit a view's query.** Views can be created, renamed and dropped from the navigator, but changing what one selects still needs the query runner (`CREATE OR REPLACE VIEW`, or drop and recreate for a materialized view).
+- **Refresh a materialized view.** Postgres materialized views only change on `REFRESH MATERIALIZED VIEW`; a menu item on the view's row (with `CONCURRENTLY` when it has a unique index) would keep its tab from showing stale rows.
+- **Catalog completion in routine bodies.** The Schema pages' function and trigger body editors get keywords only; `attachSqlSource` would give them the runner's table and column completion, as New View has.
+- **SQL Server indexed views.** SQL Server's equivalent of a materialized view is a `SCHEMABINDING` view with a unique clustered index, so New View offers no Materialized option there yet.
 
 ## Offline writes
 

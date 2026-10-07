@@ -35,17 +35,10 @@ import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { OptionField } from '~/components/option-field'
-
-export const editorOptions = {
-  fontSize: 12,
-  lineNumbersMinChars: 3,
-  padding: { top: 8 },
-  scrollBeyondLastLine: false,
-  wordWrap: 'on',
-} satisfies monaco.editor.IStandaloneEditorConstructionOptions
+import { FIELD_EDITOR_OPTIONS } from '~/core/sql-editor/options'
 
 export const readOnlyEditorOptions = {
-  ...editorOptions,
+  ...FIELD_EDITOR_OPTIONS,
   readOnly: true,
 } satisfies monaco.editor.IStandaloneEditorConstructionOptions
 
@@ -163,11 +156,11 @@ export const BodyField = ({
     <Labelled description={description} label={label}>
       <Monaco
         data-mask
-        className="ring-foreground/4 h-56 overflow-hidden rounded-xl ring"
+        className="ring-foreground/4 h-56 rounded-xl ring"
         language={language}
         value={field.state.value}
         options={{
-          ...(disabled ? readOnlyEditorOptions : editorOptions),
+          ...(disabled ? readOnlyEditorOptions : FIELD_EDITOR_OPTIONS),
           ariaLabel: label,
         }}
         // Monaco swallows its own keys, so the editor carries the save shortcut.
