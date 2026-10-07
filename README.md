@@ -43,7 +43,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 - oRPC
 - Drizzle ORM
 - Better Auth
-- Vercel AI SDK with Anthropic
+- Vercel AI SDK with OpenRouter
 - Railway
 - PostHog
 - Resend

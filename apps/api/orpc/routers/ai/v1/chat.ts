@@ -1,7 +1,5 @@
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
 import { webSearch } from '@exalabs/ai-sdk'
+import { openrouter } from '@openrouter/ai-sdk-provider'
 import { ORPCError, streamToAsyncIteratorObject } from '@orpc/server'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { FILTER_OPERATORS } from '@tamery/shared/filters'
@@ -26,8 +24,11 @@ import { orpc, permissionsMiddleware, permix } from '~/orpc'
 const MIN_CHAT_VERSION_MINOR = 32
 
 const model = createRetryableModel({
-  model: anthropic('claude-opus-4-8'),
-  retries: [openai('gpt-5.3-codex'), google('gemini-pro-latest')],
+  model: openrouter('anthropic/claude-opus-4.8'),
+  retries: [
+    openrouter('openai/gpt-5.3-codex'),
+    openrouter('~google/gemini-pro-latest'),
+  ],
 })
 
 const tools: ToolSet = {

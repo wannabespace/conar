@@ -31,7 +31,10 @@ export const getModelCost = async (
 ) => {
   const prices = await fetchPrices().catch(() => null)
   const price =
-    prices?.[modelId] ?? prices?.[modelId.replace(/-\d{8}$/u, '')] ?? null
+    prices?.[`openrouter/${modelId}`] ??
+    prices?.[modelId] ??
+    prices?.[modelId.replace(/-\d{8}$/u, '')] ??
+    null
 
   if (!price) {
     return null

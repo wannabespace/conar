@@ -18,6 +18,8 @@ const eventMap = new Map<
   ['customer.subscription.updated', subscriptionUpdated],
 ])
 
+const prices = new Set([env.STRIPE_MONTH_PRICE_ID, env.STRIPE_ANNUAL_PRICE_ID])
+
 export const stripe = orpc
   .errors({
     BAD_REQUEST: { message: 'Stripe event not found' },
@@ -31,6 +33,15 @@ export const stripe = orpc
 
       if (!handler) {
         throw errors.BAD_REQUEST()
+      }
+
+      const subscription = event.data.object
+
+      if (
+        subscription.object === 'subscription' &&
+        !subscription.items.data.some((item) => prices.has(item.price.id))
+      ) {
+        return true
       }
 
       await handler(event).catch(async (error) => {
