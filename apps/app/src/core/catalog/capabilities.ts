@@ -68,6 +68,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: false,
     renameConstraints: false,
     renameSchema: false,
+    renameViews: true,
     rowLevelSecurity: false,
     schemas: false,
     sections: {
@@ -117,6 +118,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: true,
     renameSchema: false,
+    // sp_rename leaves the old name in the view's stored definition, which a refresh or scripted recreate brings back.
+    renameViews: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -177,6 +180,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: false,
     renameSchema: false,
+    renameViews: true,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -239,6 +243,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: true,
     renameSchema: true,
+    renameViews: true,
     rowLevelSecurity: true,
     schemas: true,
     sections: {

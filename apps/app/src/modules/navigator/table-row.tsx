@@ -47,7 +47,7 @@ export const TableRow = ({
 }: {
   row: Extract<TreeRow, { kind: 'table' }>
   search?: string
-  onRename: () => void
+  onRename?: () => void
   onDrop: () => void
 }) => {
   const { connectionResource } = useRouteContext()
@@ -102,11 +102,9 @@ export const TableRow = ({
         pinnedTable.toggle(connectionResource.id, row.schema, row.table.name),
     },
     { type: 'separator' },
-    {
-      icon: PencilEdit01Icon,
-      label: 'Rename',
-      onSelect: onRename,
-    },
+    ...(onRename
+      ? [{ icon: PencilEdit01Icon, label: 'Rename', onSelect: onRename }]
+      : []),
     ...rowLevelSecurityItems,
     {
       icon: Delete02Icon,

@@ -88,6 +88,7 @@ export interface ConnectionCapabilities {
   renameColumns: boolean
   renameConstraints: boolean
   renameSchema: boolean
+  renameViews: boolean
   rowLevelSecurity: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>

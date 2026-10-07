@@ -260,12 +260,16 @@ export const TablesList = ({
         <TableRow
           row={row}
           search={search}
-          onRename={() =>
-            renameTableDialogRef.current?.rename(
-              row.schema,
-              row.table.name,
-              row.table.type
-            )
+          onRename={
+            row.table.type === 'table' ||
+            capabilitiesOf(connection.type).renameViews
+              ? () =>
+                  renameTableDialogRef.current?.rename(
+                    row.schema,
+                    row.table.name,
+                    row.table.type
+                  )
+              : undefined
           }
           onDrop={() =>
             dropTableDialogRef.current?.drop(
