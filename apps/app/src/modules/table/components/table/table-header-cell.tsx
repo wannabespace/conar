@@ -5,12 +5,13 @@ import type { GridHeaderProps } from '@tamery/table'
 import { isHeaderPress } from '@tamery/table'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import { cn } from '@tamery/ui/lib/utils'
-import type { MouseEvent, RefObject } from 'react'
+import type { RefObject } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { Column } from '~/core/table/cell/utils'
+import { useGridCursorContext } from '~/core/table/cursor'
 import {
   labelCandidates,
   useReferencedColumns,
@@ -56,11 +57,11 @@ const useColumnMenu = (
       store,
     })
 
-  const cycleOrder = (event: MouseEvent) => {
-    const next = columnsOrder(store).cycleOrder(column.id, event.shiftKey)
+  const cycleOrder = (addToSort: boolean) => {
+    columnsOrder(store).cycleOrder(column.id, addToSort)
     posthog.capture('column_sort_cycled', {
-      keep_others: event.shiftKey,
-      order: next ?? 'none',
+      add_to_sort: addToSort,
+      order: store.get().orderBy[column.id] ?? 'none',
     })
   }
 
@@ -82,6 +83,8 @@ export const TableHeaderCell = ({
 }: ColumnActions & { column: Column; header: GridHeaderProps }) => {
   const ref = useRef<HTMLDivElement>(null)
   const width = useRef(0)
+  const pressClosedEditor = useRef(false)
+  const cursor = useGridCursorContext()
   const { cycleOrder, items, layout, order } = useColumnMenu(
     column,
     ref,
@@ -102,15 +105,19 @@ export const TableHeaderCell = ({
           // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
           style={style}
           className={cn(
-            'group/header relative flex items-center gap-1.5 py-1 pr-1.5 pl-2 outline-none select-none',
+            'group/header relative flex items-center gap-1.5 py-1 pr-3 pl-2 outline-none select-none',
             gridColumn.pinned && 'bg-background z-10',
             isDragging && 'bg-background z-10 rounded-md shadow-md'
           )}
+          // Read on press: the press blurs an open cell edit, which commits and clears it before the click.
+          onPointerDownCapture={() => {
+            pressClosedEditor.current = !!cursor.store.get().edit
+          }}
           onClick={(event) =>
             actions.sortable &&
-            !isDragging &&
+            !pressClosedEditor.current &&
             isHeaderPress(event) &&
-            cycleOrder(event)
+            cycleOrder(event.shiftKey)
           }
           {...dragHandle}
         />
@@ -128,7 +135,10 @@ export const TableHeaderCell = ({
       <ResizeHandle
         aria-label="Resize column"
         min={MIN_WIDTH}
-        className="absolute inset-y-0 right-0 z-10 flex w-1.5 justify-end"
+        className={cn(
+          'absolute inset-y-0 right-0 z-10 flex w-3 justify-end',
+          isDragging && 'hidden'
+        )}
         getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
         onResize={(next) => {
           width.current = next

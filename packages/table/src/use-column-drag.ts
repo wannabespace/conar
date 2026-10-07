@@ -3,6 +3,7 @@ import type { MotionValue } from 'motion'
 import { animate, clamp, motionValue, moveItem, styleEffect } from 'motion'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
 import { useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import type { GridColumn } from './columns'
 import { columnSlots, columnVars } from './columns'
@@ -62,6 +63,7 @@ export const useColumnDrag = ({
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
   const drag = useRef<Drag | null>(null)
+  const dragged = useRef(false)
   const shifts = useRef(new Map<string, MotionValue<number>>())
   const [dragging, setDragging] = useState<string | null>(null)
 
@@ -111,8 +113,15 @@ export const useColumnDrag = ({
   useHotkey('Escape', () => settle(false), { enabled: dragging !== null })
 
   const handlers = {
+    onClickCapture: (event: MouseEvent) => {
+      if (dragged.current) {
+        dragged.current = false
+        event.stopPropagation()
+      }
+    },
     onLostPointerCapture: () => settle(true),
     onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      dragged.current = false
       const from = columns.findIndex(
         (column) => column.id === event.currentTarget.dataset.gridColumn
       )
@@ -149,7 +158,9 @@ export const useColumnDrag = ({
       }
       if (!current.moved) {
         current.moved = true
-        setDragging(current.column.id)
+        dragged.current = true
+        // A pointermove update renders after the shift has already painted, so the lifted column slides a few frames without its background.
+        flushSync(() => setDragging(current.column.id))
       }
       shiftOf(current.column.id).jump(offset)
 

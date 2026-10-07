@@ -77,47 +77,30 @@ export const useTablePageStore = () => {
   return store
 }
 
-const NEXT_ORDER = { ASC: 'DESC', DESC: null, NONE: 'ASC' } as const
+const NEXT_ORDER = { ASC: 'DESC', DESC: null } as const
+
+type OrderBy = typeof tablePageType.infer.orderBy
 
 export const columnsOrder = (store: TablePageStore) => {
-  const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
+  const updateOrderBy = (update: (orderBy: OrderBy) => OrderBy) =>
     store.set(
       (state) =>
-        ({
-          ...state,
-          orderBy: {
-            ...state.orderBy,
-            [columnId]: order,
-          },
-        }) satisfies typeof state
+        ({ ...state, orderBy: update(state.orderBy) }) satisfies typeof state
     )
-  }
 
-  const removeOrder = (columnId: string) => {
-    store.set(
-      (state) =>
-        ({
-          ...state,
-          orderBy: omit(state.orderBy, [columnId]),
-        }) satisfies typeof state
-    )
-  }
+  const setOrder = (columnId: string, order: 'ASC' | 'DESC') =>
+    updateOrderBy((orderBy) => ({ ...orderBy, [columnId]: order }))
 
-  const cycleOrder = (columnId: string, keepOthers: boolean) => {
-    const { orderBy } = store.get()
-    const next = NEXT_ORDER[orderBy[columnId] ?? 'NONE']
-    const others = keepOthers ? orderBy : {}
-    store.set(
-      (state) =>
-        ({
-          ...state,
-          orderBy: next
-            ? { ...others, [columnId]: next }
-            : omit(others, [columnId]),
-        }) satisfies typeof state
-    )
-    return next
-  }
+  const removeOrder = (columnId: string) =>
+    updateOrderBy((orderBy) => omit(orderBy, [columnId]))
+
+  const cycleOrder = (columnId: string, addToSort: boolean) =>
+    updateOrderBy((orderBy) => {
+      const current = orderBy[columnId]
+      const next = current ? NEXT_ORDER[current] : 'ASC'
+      const others = addToSort || current ? orderBy : {}
+      return next ? { ...others, [columnId]: next } : omit(others, [columnId])
+    })
 
   return {
     cycleOrder,

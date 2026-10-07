@@ -1401,6 +1401,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
     devDependencies:
       '@tamery/configs':
         specifier: workspace:*
@@ -1408,6 +1411,9 @@ importers:
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
 
   packages/ui:
     dependencies:
