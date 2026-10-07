@@ -34,7 +34,6 @@ export const CreateWorkspaceDialog = ({
     onSuccess: async () => {
       toast.success('Workspace created')
       onOpenChange(false)
-      setName('')
       await navigate({ to: '/' })
     },
     onError: (err: Error) => {
@@ -51,7 +50,11 @@ export const CreateWorkspaceDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(nextOpen) => !nextOpen && setName('')}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create workspace</DialogTitle>

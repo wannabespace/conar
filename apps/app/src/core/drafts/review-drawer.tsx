@@ -54,6 +54,7 @@ export const StagedReviewDrawer = ({
   notice,
   onDiscardAll,
   onOpenChange,
+  onOpenChangeComplete,
   onSubmit,
   open,
   submit,
@@ -70,6 +71,7 @@ export const StagedReviewDrawer = ({
   notice?: ReactNode
   onDiscardAll: () => void
   onOpenChange: (open: boolean) => void
+  onOpenChangeComplete?: (open: boolean) => void
   onSubmit: () => void
   open: boolean
   submit: {
@@ -81,6 +83,7 @@ export const StagedReviewDrawer = ({
   <Drawer
     open={open}
     onOpenChange={onOpenChange}
+    onOpenChangeComplete={onOpenChangeComplete}
     swipeDirection="right"
     size="sm"
   >

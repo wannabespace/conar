@@ -38,7 +38,6 @@ export const SupportDialog = ({
           'Support message sent successfully! We will get back to you as soon as possible.'
         )
         onOpenChange(false)
-        setMessage('')
       },
     })
   )
@@ -49,7 +48,11 @@ export const SupportDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(nextOpen) => !nextOpen && setMessage('')}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
