@@ -61,6 +61,7 @@ const init = () => {
   current = {
     collections,
     offline: startOfflineExecutor({
+      // The spread gives the interface the index signature the executor's type needs.
       collections: { ...collections },
       mutationFns: {
         // Sequential: a connection must land before the resource referencing it.
@@ -100,8 +101,9 @@ export const mutateOffline = (mutate: () => void) => {
     mutationFnName: 'push',
   })
   const transaction = tx.mutate(mutate)
-  // A rejection is a server error the oRPC link has already toasted.
+  // A rollback rejects both promises; the oRPC link has already toasted it.
   silently(() => tx.commit())
+  silently(() => transaction.isPersisted.promise)
   return transaction
 }
 

@@ -84,15 +84,9 @@ export type SyncEventsFn<T> = (params: {
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
 
-const nextOnline = (signal: AbortSignal) => {
-  const { promise, resolve } = Promise.withResolvers<undefined>()
-  window.addEventListener('online', () => resolve(), { once: true, signal })
-  return promise
-}
-
 interface ServerMutations<T> {
   delete?: (key: string) => Promise<unknown>
-  insert?: (value: T) => Promise<unknown>
+  insert?: (value: T) => Promise<T | undefined> | Promise<void>
   update?: (key: string, changes: Partial<T>) => Promise<unknown>
 }
 
@@ -153,16 +147,13 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
               return
             }
 
-            // Synced rows only: a row still waiting in the offline outbox is
-            // unknown to the server, which would answer with its delete and
-            // race the insert the outbox is about to send.
-            const items = await collection.toArrayWhenReady()
-            const rows = items
-              .filter((item) => item.$synced)
-              .map((item) => ({
-                id: config.getKey(item),
-                updatedAt: item.updatedAt,
-              }))
+            await collection.toArrayWhenReady()
+            // Server versions, not visible rows: an unsent insert would come
+            // back as a delete racing the outbox, and a row with a pending
+            // edit or delete would come back as new, overwriting the replay.
+            const rows = [...collection._state.syncedData.values()].map(
+              (item) => ({ id: config.getKey(item), updatedAt: item.updatedAt })
+            )
             writeItems(await config.sync({ rows, signal }))
           },
         })
@@ -170,7 +161,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         if (result.isErr() && !signal.aborted) {
           if (isUnauthorizedError(result.error)) {
             abortController.abort(`${config.id} sync unauthorized`)
-          } else {
+          } else if (navigator.onLine) {
             posthog.captureException(result.error)
           }
         }
@@ -184,8 +175,13 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         while (!signal.aborted) {
           if (!navigator.onLine) {
             firstSync.resolve()
+            const online = Promise.withResolvers<undefined>()
+            window.addEventListener('online', () => online.resolve(), {
+              once: true,
+              signal,
+            })
             // oxlint-disable-next-line no-await-in-loop
-            await nextOnline(signal)
+            await online.promise
           }
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
@@ -259,10 +255,15 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           return
         }
 
-        await (mutation.type === 'insert'
-          ? serverMutation('insert')(mutation.modified)
-          : serverMutation('update')(mutation.key, mutation.changes))
-        writeSynced?.([{ type: 'update', value: mutation.modified }])
+        if (mutation.type === 'update') {
+          await serverMutation('update')(mutation.key, mutation.changes)
+          writeSynced?.([{ type: 'update', value: mutation.modified }])
+          return
+        }
+
+        // A conflicting insert keeps the server's row, which may have another id.
+        const stored = await serverMutation('insert')(mutation.modified)
+        writeSynced?.([{ type: 'update', value: stored ?? mutation.modified }])
       },
       whenSynced: () => firstSync.promise,
     },
