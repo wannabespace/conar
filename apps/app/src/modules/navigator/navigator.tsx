@@ -1,8 +1,4 @@
-import {
-  PlusSignIcon,
-  Search01Icon,
-  Settings02Icon,
-} from '@hugeicons/core-free-icons'
+import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
@@ -20,6 +16,7 @@ import { useSubscription } from 'seitu/react'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { appModules } from '~/lib/modules'
 import { pressNavProps } from '~/lib/press-nav'
+import { workspaceModules } from '~/lib/workspace-modules'
 
 import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
@@ -133,20 +130,9 @@ const NavigatorFooter = () => {
           {action.label}
         </Button>
       ))}
-      <Button
-        variant="ghost-row"
-        size="sm"
-        disabled
-        // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-        className="h-7 w-full justify-start gap-2 rounded-md px-2"
-      >
-        <HugeiconsIcon
-          icon={Settings02Icon}
-          strokeWidth={2}
-          className="text-muted-foreground size-4 shrink-0"
-        />
-        Settings
-      </Button>
+      {workspaceModules.navigatorFooter.map(({ Component }, index) => (
+        <Component key={index} />
+      ))}
     </div>
   )
 }

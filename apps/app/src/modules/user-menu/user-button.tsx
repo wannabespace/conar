@@ -39,7 +39,7 @@ import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import { authClient } from '~/lib/auth'
-import { protectedModules } from '~/lib/protected-modules'
+import { ANALYTICS_STORAGE_KEY } from '~/lib/posthog'
 import { clearDb } from '~/lib/sync'
 import { accountUrl } from '~/lib/urls'
 
@@ -56,7 +56,7 @@ const clearLocalAppCache = async () => {
 
   await clearDb()
   for (const key of Object.keys(localStorage)) {
-    if (!key.includes('bearer_token')) {
+    if (!key.includes('bearer_token') && key !== ANALYTICS_STORAGE_KEY) {
       localStorage.removeItem(key)
     }
   }
@@ -126,15 +126,13 @@ export const UserButton = ({
             Account
           </DropdownMenuItem>
         )}
-        {protectedModules.settings.length > 0 && (
-          <DropdownMenuItem render={<Link to="/settings" activateOn="click" />}>
-            <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-            Settings
-            <DropdownMenuShortcut>
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="," />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem render={<Link to="/settings" activateOn="click" />}>
+          <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
+          Settings
+          <DropdownMenuShortcut>
+            <KbdCtrlLetter userAgent={navigator.userAgent} letter="," />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
         {window.electron && (
           <DropdownMenuItem
             onClick={() =>

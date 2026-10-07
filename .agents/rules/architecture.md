@@ -18,7 +18,7 @@
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
 | Styles | TailwindCSS v4 — no inline `style=` for layout or theme values, except where a library hard-codes inline styles no class can beat. |
 | Memoization | React Compiler is on in `apps/app` + `apps/main` and reaches `packages/*`. No `useMemo`/`useCallback` — derive inline. **The compiler bails out of any component calling TanStack Virtual's `useVirtualizer` directly**, so never import it: use the `@tamery/ui/hooks/use-virtualizer` wrapper, which isolates the bailout behind `'use no memo'`. The compiler also skips a `use*` function that calls no hooks — mark it `'use memo'` when its return values feed props or context. Verify a suspected bailout by running `babel-plugin-react-compiler` on the file with a `logger`, not by reading source. |
-| Analytics | PostHog through the lazy `~/lib/posthog` facade. A user-facing `useMutation` names its event in `meta: { event: 'object_verb' }` and the `queryClient` mutation cache captures it with `success`; other actions call `posthog.capture` directly. Properties carry enums and counts only — never SQL, names, values or error messages (privacy policy promises anonymized events). |
+| Analytics | PostHog through the lazy `~/lib/posthog` facade. A user-facing `useMutation` names its event in `meta: { event: 'object_verb' }` and the `queryClient` mutation cache captures it with `success`; other actions call `posthog.capture` directly. Properties carry enums and counts only — never SQL, names, values or error messages (privacy policy promises anonymized events). The user can turn analytics off (Settings → Privacy, `analyticsStore`): the facade then never loads posthog-js, and a client already loaded is opted out, since its autocapture and session recording bypass the facade — so nothing may import posthog-js except the facade. |
 | Feature code | A feature is a module folder (see Modules). Core single-page files live next to the route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`); `core/<domain>/` holds data and code shared across modules (see Core layout). |
 
 ## Modules
@@ -32,7 +32,7 @@
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
   - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries, Settings page sections.
-  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane.
+  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, navigator footer rows, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
 - `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 

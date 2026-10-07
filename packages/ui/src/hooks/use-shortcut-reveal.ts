@@ -1,9 +1,20 @@
 import { useKeyHold } from '@tanstack/react-hotkeys'
+import { type } from 'arktype'
 import { useEffect, useState } from 'react'
+import { useSubscription } from 'seitu/react'
+import { createWebStorageValue } from 'seitu/web'
 
-const REVEAL_DELAY_MS = 400
+const REVEAL_DELAY_MS = 800
+
+export const shortcutRevealStore = createWebStorageValue({
+  defaultValue: true,
+  key: 'shortcut-reveal',
+  schema: type('boolean'),
+  type: 'localStorage',
+})
 
 export const useShortcutReveal = () => {
+  const isEnabled = useSubscription(shortcutRevealStore)
   const isHeld = useKeyHold(
     navigator.userAgent.includes('Mac') ? 'Meta' : 'Control'
   )
@@ -20,5 +31,5 @@ export const useShortcutReveal = () => {
     }
   }, [isHeld])
 
-  return isHeld && heldLongEnough
+  return isEnabled && isHeld && heldLongEnough
 }

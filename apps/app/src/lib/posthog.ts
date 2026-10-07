@@ -1,9 +1,20 @@
+import { type } from 'arktype'
 import type { PostHog } from 'posthog-js'
+import { createWebStorageValue } from 'seitu/web'
+
+export const ANALYTICS_STORAGE_KEY = 'analytics-enabled'
+
+export const analyticsStore = createWebStorageValue({
+  defaultValue: true,
+  key: ANALYTICS_STORAGE_KEY,
+  schema: type('boolean'),
+  type: 'localStorage',
+})
 
 const init = async () => {
   const { default: posthogJs } = await import('posthog-js')
 
-  return posthogJs.init(import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN, {
+  const client = posthogJs.init(import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN, {
     api_host: 'https://eu.i.posthog.com',
     defaults: '2026-01-30',
     session_recording: {
@@ -11,33 +22,36 @@ const init = async () => {
       maskTextSelector: '[data-mask]',
     },
   })
+  // PostHog persists an opt-out across reloads, and init only runs while analytics is on.
+  if (client.has_opted_out_capturing()) {
+    client.opt_in_capturing({ captureEventName: false })
+  }
+  // Autocapture and session recording run inside the loaded client, so turning analytics off must opt it out, not just stop our own calls.
+  analyticsStore.subscribe((isEnabled) => {
+    if (isEnabled) {
+      client.opt_in_capturing({ captureEventName: false })
+    } else {
+      client.opt_out_capturing()
+    }
+  })
+  return client
 }
 
 let instance: Promise<PostHog> | null = null
 
-const load = () => (instance ??= init())
+const withClient = async (run: (client: PostHog) => void) => {
+  if (analyticsStore.get()) {
+    run(await (instance ??= init()))
+  }
+}
 
 export const posthog = {
-  capture: async (...args: Parameters<PostHog['capture']>) => {
-    const client = await load()
-
-    client.capture(...args)
-  },
-  captureException: async (
-    ...args: Parameters<PostHog['captureException']>
-  ) => {
-    const client = await load()
-
-    client.captureException(...args)
-  },
-  identify: async (...args: Parameters<PostHog['identify']>) => {
-    const client = await load()
-
-    client.identify(...args)
-  },
-  reset: async (...args: Parameters<PostHog['reset']>) => {
-    const client = await load()
-
-    client.reset(...args)
-  },
+  capture: (...args: Parameters<PostHog['capture']>) =>
+    withClient((client) => client.capture(...args)),
+  captureException: (...args: Parameters<PostHog['captureException']>) =>
+    withClient((client) => client.captureException(...args)),
+  identify: (...args: Parameters<PostHog['identify']>) =>
+    withClient((client) => client.identify(...args)),
+  reset: (...args: Parameters<PostHog['reset']>) =>
+    withClient((client) => client.reset(...args)),
 }

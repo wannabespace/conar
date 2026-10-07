@@ -44,6 +44,7 @@ const itemVariants = cva(
       },
       variant: {
         default: 'border-transparent',
+        grouped: `border-foreground/6 rounded-none border-0 border-b last:border-b-0`,
         muted: 'bg-muted/50 border-transparent',
         outline: 'border-border',
       },

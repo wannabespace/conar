@@ -15,12 +15,27 @@ const TooltipProvider = ({
   />
 )
 
-const noShortcut = { isGlyphOnly: false, shortcut: null }
+const noShortcut = {
+  isGlyphOnly: false,
+  setTrigger: undefined,
+  shortcut: null,
+}
 
 const ShortcutContext = createContext<{
   isGlyphOnly: boolean
+  setTrigger: ((trigger: HTMLElement | null) => void) | undefined
   shortcut: ReactNode
 }>(noShortcut)
+
+const isOnTop = (element: HTMLElement | null) => {
+  if (!element) {
+    return false
+  }
+  const { left, top, width, height } = element.getBoundingClientRect()
+  return element.contains(
+    document.elementFromPoint(left + width / 2, top + height / 2)
+  )
+}
 
 const ShortcutTooltip = ({
   onOpenChange,
@@ -30,7 +45,9 @@ const ShortcutTooltip = ({
   ...props
 }: TooltipPrimitive.Root.Props & { shortcut: ReactNode }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const isRevealed = useShortcutReveal()
+  const [trigger, setTrigger] = useState<HTMLElement | null>(null)
+  // A control under an open menu or dialog keeps its hint hidden, or it paints over the overlay.
+  const isRevealed = useShortcutReveal() && isOnTop(trigger)
   // A hint ⌘ opened stays glyph-only through its exit animation, or releasing ⌘ flashes the full label.
   const [isClosingReveal, setIsClosingReveal] = useState(false)
   const isOpenByReveal = isRevealed && !isHovered
@@ -42,6 +59,7 @@ const ShortcutTooltip = ({
     <ShortcutContext
       value={{
         isGlyphOnly: isOpenByReveal || (isClosingReveal && !isHovered),
+        setTrigger,
         shortcut,
       }}
     >
@@ -83,9 +101,16 @@ const Tooltip = ({
     </ShortcutContext>
   )
 
-const TooltipTrigger = ({ ...props }: TooltipPrimitive.Trigger.Props) => (
-  <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
-)
+const TooltipTrigger = (props: TooltipPrimitive.Trigger.Props) => {
+  const { setTrigger } = use(ShortcutContext)
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      ref={setTrigger}
+      {...props}
+    />
+  )
+}
 
 const TooltipContent = ({
   className,

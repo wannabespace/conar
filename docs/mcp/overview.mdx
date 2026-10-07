@@ -17,15 +17,18 @@ The server is on by default: it starts with the desktop app and listens only on 
 
 ## Connect an agent
 
-**Settings** → **MCP** shows ready-to-copy config with your access token filled in.
+**Settings** → **MCP** shows the server URL and access token, and a tab per client with its config ready to copy, token filled in:
 
-**Claude Code**: run the copied command:
+| Client      | Where it goes                                           |
+| ----------- | ------------------------------------------------------- |
+| Claude Code | Run the copied `claude mcp add` command in a terminal   |
+| Codex       | `~/.codex/config.toml`                                  |
+| Cursor      | **Add to Cursor**, or `~/.cursor/mcp.json`              |
+| VS Code     | **Add to VS Code**, or **MCP: Open User Configuration** |
+| Gemini CLI  | `~/.gemini/settings.json`                               |
+| Windsurf    | `~/.codeium/windsurf/mcp_config.json`                   |
 
-```bash
-claude mcp add --transport http tamery http://127.0.0.1:8264/mcp --header "Authorization: Bearer <token>"
-```
-
-**Cursor and other clients**: add the copied JSON to the client's MCP config (for Cursor, `~/.cursor/mcp.json`):
+Any other client that supports Streamable HTTP works too: point it at the URL and send the token as an `Authorization: Bearer <token>` header. Most take this JSON:
 
 ```json
 {

@@ -7,12 +7,15 @@ import type { ElectronMcp } from './mcp-settings'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
-const desktopModule = (mcp: ElectronMcp): ProtectedModule => {
-  const McpSourceMount = () => {
-    useEffect(() => mcp.serve(mcpSource), [])
+const McpSource = ({ mcp }: { mcp: ElectronMcp }) => {
+  useEffect(() => mcp.serve(mcpSource), [mcp])
 
-    return null
-  }
+  return null
+}
+
+// React Compiler hoists hook callbacks out of nested components, dropping this closure — hooks go in McpSource/McpSettings, which take `mcp` as a prop.
+const desktopModule = (mcp: ElectronMcp): ProtectedModule => {
+  const McpSourceMount = () => <McpSource mcp={mcp} />
   const Settings = () => <McpSettings mcp={mcp} />
 
   return {

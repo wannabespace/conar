@@ -4,7 +4,6 @@ import type { ProtectedModule } from '~/lib/module'
 import { posthog } from '~/lib/posthog'
 
 import { loggerOpen } from './logger-open'
-import { QueryLoggerToggle } from './query-logger-toggle'
 
 export default {
   commands: ({ current }) =>
@@ -24,5 +23,4 @@ export default {
           },
         ]
       : [],
-  titlebar: [{ Component: QueryLoggerToggle, order: 50 }],
 } satisfies ProtectedModule

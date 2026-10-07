@@ -46,6 +46,9 @@ const NEW_WINDOW_OFFSET = 28
 
 let mainWindow: BrowserWindow | null = null
 
+// Allowlist: any other scheme hands the renderer a way to launch arbitrary local apps. cursor: and vscode: carry the MCP install links.
+const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
+
 export const createWindow = (route?: string) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
@@ -105,8 +108,7 @@ export const createWindow = (route?: string) => {
   }
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    const { protocol } = new URL(url)
-    if (protocol === 'http:' || protocol === 'https:') {
+    if (EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
       shell.openExternal(url)
     }
     return { action: 'deny' }

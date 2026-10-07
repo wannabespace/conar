@@ -86,6 +86,7 @@ const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
   },
   variants: {
     padding: {
+      item: 'px-3.5 py-3',
       popup: 'px-3 py-2.5',
     },
     size: {
@@ -96,6 +97,7 @@ const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
       destructive: 'text-destructive',
       field: 'bg-input ring-foreground/4 rounded-xl py-1.5 shadow-xs ring',
       ghost: '',
+      inset: 'bg-body border-foreground/6 border-t',
     },
     wrap: {
       true: 'whitespace-pre-wrap',

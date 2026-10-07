@@ -129,6 +129,7 @@ export interface WorkspaceModule {
   emptyPane?: Slotted[]
   header?: ComponentType
   mounts?: ComponentType[]
+  navigatorFooter?: Slotted[]
   panels?: Panel[]
   tabBarEnd?: Slotted<{ resourceId: string }>[]
   tabs?: Record<string, TabView>

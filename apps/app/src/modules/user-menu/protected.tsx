@@ -2,20 +2,15 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useNavigate } from '@tanstack/react-router'
 
 import type { ProtectedModule } from '~/lib/module'
-import { protectedModules } from '~/lib/protected-modules'
 
 import { UserButton } from './user-button'
 
 const UserMenu = () => {
   const navigate = useNavigate()
 
-  useHotkey(
-    'Mod+,',
-    () => {
-      void navigate({ to: '/settings' })
-    },
-    { enabled: protectedModules.settings.length > 0 }
-  )
+  useHotkey('Mod+,', () => {
+    void navigate({ to: '/settings' })
+  })
 
   return (
     <>

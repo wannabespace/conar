@@ -15,6 +15,7 @@ import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { SidebarMenuButton } from '~/components/sidebar-menu-button'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
@@ -27,7 +28,6 @@ import { pinnedTable } from './pinned-tables'
 import {
   SidebarContent,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from './primitives'

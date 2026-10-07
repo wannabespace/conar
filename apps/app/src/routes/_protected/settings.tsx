@@ -1,11 +1,17 @@
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { title } from '@tamery/shared/title'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { Kbd } from '@tamery/ui/components/kbd'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
-  redirect,
   useCanGoBack,
   useNavigate,
   useRouter,
@@ -13,10 +19,14 @@ import {
 import { type } from 'arktype'
 import { useRef } from 'react'
 
-import { SidebarButton } from '~/components/sidebar-link'
+import { SidebarMenuButton } from '~/components/sidebar-menu-button'
+import { settingsSections } from '~/core/settings/sections'
 import { pressNavProps } from '~/lib/press-nav'
-import { protectedModules } from '~/lib/protected-modules'
-import { centeredPageClassName } from '~/shell'
+import {
+  resourcePanelClassName,
+  settingsPageClassName,
+  settingsSidebarClassName,
+} from '~/shell'
 
 const { useSearch } = getRouteApi('/_protected/settings')
 
@@ -26,7 +36,7 @@ const SettingsPage = () => {
   const router = useRouter()
   const canGoBack = useCanGoBack()
   const navRef = useRef<HTMLElement>(null)
-  const sections = protectedModules.settings
+  const sections = settingsSections()
   const activeIndex = Math.max(
     sections.findIndex(({ id }) => id === section),
     0
@@ -60,40 +70,58 @@ const SettingsPage = () => {
   useHotkey('ArrowUp', () => stepSection(-1), { target: navRef })
 
   return (
-    <ScrollArea className="overflow-auto">
-      <div className={centeredPageClassName}>
-        <div className="flex gap-8">
-          <nav ref={navRef} className="flex w-40 shrink-0 flex-col gap-0.5">
-            {sections.map(({ icon, id, label }, index) => (
-              <SidebarButton
-                key={id}
-                active={index === activeIndex}
-                autoFocus={index === activeIndex}
-                {...pressNavProps(() => openSection(index))}
-              >
-                <HugeiconsIcon icon={icon} strokeWidth={2} />
-                {label}
-              </SidebarButton>
-            ))}
-          </nav>
-          {active && (
-            <section className="flex min-w-0 flex-1 flex-col gap-4">
-              <h1 className="text-lg font-semibold">{active.label}</h1>
+    <div className={settingsPageClassName}>
+      <aside className={settingsSidebarClassName}>
+        <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+          <TooltipTrigger
+            render={<SidebarMenuButton {...pressNavProps(leave)} />}
+          >
+            <HugeiconsIcon
+              icon={ArrowLeft01Icon}
+              strokeWidth={2}
+              className="text-muted-foreground"
+            />
+            Back to app
+          </TooltipTrigger>
+          <TooltipContent side="right">Back to app</TooltipContent>
+        </Tooltip>
+        <nav ref={navRef} className="flex flex-col gap-0.5">
+          {sections.map(({ icon, id, label }, index) => (
+            <SidebarMenuButton
+              key={id}
+              isActive={index === activeIndex}
+              autoFocus={index === activeIndex}
+              {...pressNavProps(() => openSection(index))}
+            >
+              <HugeiconsIcon
+                icon={icon}
+                strokeWidth={2}
+                className={
+                  index === activeIndex
+                    ? 'text-primary-foreground'
+                    : 'text-primary/75'
+                }
+              />
+              {label}
+            </SidebarMenuButton>
+          ))}
+        </nav>
+      </aside>
+      {active && (
+        <div className={resourcePanelClassName}>
+          <ScrollArea className="min-h-0 flex-1">
+            <section className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-8 py-10">
+              <h1 className="px-3.5 text-xl font-semibold">{active.label}</h1>
               <active.Component />
             </section>
-          )}
+          </ScrollArea>
         </div>
-      </div>
-    </ScrollArea>
+      )}
+    </div>
   )
 }
 
 export const Route = createFileRoute('/_protected/settings')({
-  beforeLoad: () => {
-    if (protectedModules.settings.length === 0) {
-      throw redirect({ to: '/' })
-    }
-  },
   component: SettingsPage,
   head: () => ({
     meta: [{ title: title('Settings') }],

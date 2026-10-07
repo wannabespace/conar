@@ -8,6 +8,7 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
+import { SidebarMenuButton } from '~/components/sidebar-menu-button'
 import { openTab } from '~/core/tabs/actions'
 import { appModules } from '~/lib/modules'
 
@@ -15,7 +16,6 @@ import {
   SidebarContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from './primitives'
 

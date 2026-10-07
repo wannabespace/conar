@@ -22,6 +22,7 @@ import { useSubscription } from 'seitu/react'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
+import { SidebarMenuButton } from '~/components/sidebar-menu-button'
 import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
@@ -30,7 +31,7 @@ import { checkOrUpgrade } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import { pinnedTable } from './pinned-tables'
-import { SidebarMenuAction, SidebarMenuButton } from './primitives'
+import { SidebarMenuAction } from './primitives'
 import {
   RowLevelSecurityMark,
   useRowLevelSecurityItems,

@@ -15,6 +15,9 @@ export const workspaceModules = {
   emptyPane: byOrder(list.flatMap((module) => module.emptyPane ?? [])),
   headers: list.flatMap((module) => (module.header ? [module.header] : [])),
   mounts: list.flatMap((module) => module.mounts ?? []),
+  navigatorFooter: byOrder(
+    list.flatMap((module) => module.navigatorFooter ?? [])
+  ),
   panelIn: (region: Panel['region']) =>
     panels.find((panel) => panel.region === region),
   panels,

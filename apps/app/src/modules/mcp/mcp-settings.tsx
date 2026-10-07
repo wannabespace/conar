@@ -1,49 +1,17 @@
-import type { McpStatus } from '@tamery/shared/mcp'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { OptionField } from '~/components/option-field'
+import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
-import { ConfigSnippet } from './config-snippet'
+import { ClientSetup } from './client-setup'
+import { ServerDetails } from './server-details'
 
 export type ElectronMcp = NonNullable<Window['electron']>['mcp']
 
 const statusQueryKey = ['mcp', 'status']
-
-const ClientConfigs = ({
-  token,
-  url,
-}: Extract<McpStatus, { state: 'running' }>) => {
-  const authorization = `Bearer ${token}`
-
-  return (
-    <>
-      <ConfigSnippet
-        client="claude_code"
-        label="Claude Code"
-        language="bash"
-        code={`claude mcp add --transport http tamery ${url} --header "Authorization: ${authorization}"`}
-      />
-      <ConfigSnippet
-        client="json"
-        label="Cursor and other clients"
-        language="json"
-        code={JSON.stringify(
-          {
-            mcpServers: {
-              tamery: { headers: { Authorization: authorization }, url },
-            },
-          },
-          null,
-          2
-        )}
-      />
-    </>
-  )
-}
 
 export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
   const { data: status } = useQuery({
@@ -62,19 +30,21 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <OptionField
-        htmlFor="mcp-enabled"
-        title="Run MCP server"
-        description="Starts with Tamery and lets AI agents such as Claude Code and Cursor list your connections and run read-only queries on them."
-      >
-        <Switch
-          id="mcp-enabled"
-          size="sm"
-          checked={status.state !== 'off'}
-          onCheckedChange={(enabled) => setEnabled(enabled)}
-        />
-      </OptionField>
+    <>
+      <SettingsGroup>
+        <SettingsRow
+          htmlFor="mcp-enabled"
+          title="Run MCP server"
+          description="Lets AI agents and editors list your connections and run read-only queries on them."
+        >
+          <Switch
+            id="mcp-enabled"
+            size="sm"
+            checked={status.state !== 'off'}
+            onCheckedChange={(enabled) => setEnabled(enabled)}
+          />
+        </SettingsRow>
+      </SettingsGroup>
       {status.state === 'failed' && (
         <Alert variant="destructive">
           <AlertDescription className="wrap-break-word">
@@ -82,7 +52,12 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
           </AlertDescription>
         </Alert>
       )}
-      {status.state === 'running' && <ClientConfigs {...status} />}
-    </div>
+      {status.state === 'running' && (
+        <>
+          <ServerDetails token={status.token} url={status.url} />
+          <ClientSetup server={status} />
+        </>
+      )}
+    </>
   )
 }
