@@ -1,4 +1,4 @@
-import { probeOpenRouter } from '@tamery/ai/models'
+import { probeAi } from '@tamery/ai/models'
 import { db } from '@tamery/db'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
@@ -37,7 +37,7 @@ export const healthRouter = new Hono().get('/', async (c) => {
           error instanceof Error ? error.message : 'Database connection failed'
         )
       ),
-    probeOpenRouter()
+    probeAi()
       .then((text) =>
         text
           ? createAnswer('ok', 'openrouter', text)

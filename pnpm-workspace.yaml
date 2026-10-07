@@ -42,6 +42,7 @@ catalog:
   '@noble/hashes': ^2.4.0
   '@number-flow/react': ^0.6.2
   '@octokit/rest': ^22.0.1
+  '@openrouter/ai-sdk-provider': ^3.1.0
   '@orpc/client': 2.0.0-beta.41
   '@orpc/publisher': 2.0.0-beta.41
   '@orpc/server': 2.0.0-beta.41
@@ -159,7 +160,6 @@ catalog:
   ultracite: ^7.10.7
   sf-symbols-typescript: ^2.2.0
   '@shadcn/lint': ^0.2.0
-  '@openrouter/ai-sdk-provider': ^3.1.0
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false
