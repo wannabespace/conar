@@ -1,4 +1,5 @@
 import { replaceErrorPrefix } from '@tamery/connection/queries'
+import type { McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -25,6 +26,9 @@ export type ElectronPreload = Promisified<typeof electron> & {
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
     openWindow: (route: string) => Promise<void>
+  }
+  mcp: {
+    serve: (source: McpSource) => () => void
   }
   versions: {
     node: () => string
@@ -62,6 +66,31 @@ const onEvent = <T>(
   ipcRenderer.on(channel, listener)
   return () => ipcRenderer.off(channel, listener)
 }
+
+let mcpSource: McpSource | null = null
+
+ipcRenderer.on(
+  'mcp.request',
+  async (
+    event,
+    {
+      args,
+      method,
+    }: { method: keyof McpSource; args: Parameters<McpSource['target']>[0] }
+  ) => {
+    const [port] = event.ports
+    try {
+      if (!mcpSource) {
+        throw new Error('Sign in to Tamery first.')
+      }
+      port?.postMessage({ result: await mcpSource[method](args) })
+    } catch (error) {
+      port?.postMessage({
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+)
 
 const dialectQueryBridge = (dialect: string) => ({
   beginTransaction: handleElectronError((arg: unknown) =>
@@ -110,6 +139,18 @@ contextBridge.exposeInMainWorld('electron', {
     encrypt: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('encryption.encrypt', arg)
     ),
+  },
+  mcp: {
+    serve: (source) => {
+      mcpSource = source
+      return () => {
+        mcpSource = null
+      }
+    },
+    setEnabled: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setEnabled', arg)
+    ),
+    status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },
   menu: {
     popup: handleElectronError((arg: unknown) =>

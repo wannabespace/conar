@@ -109,10 +109,17 @@ export interface AppModule {
   tabs?: TabKind[]
 }
 
+export interface SettingsSection extends Slotted {
+  icon: IconSvgElement
+  id: string
+  label: string
+}
+
 /** `modules/<name>/protected.tsx` — loaded with the signed-in layout. */
 export interface ProtectedModule {
   banners?: Slotted[]
   mounts?: ComponentType[]
+  settings?: SettingsSection[]
   titlebar?: Slotted[]
   commands?: (context: CommandContext) => CommandEntry[]
 }

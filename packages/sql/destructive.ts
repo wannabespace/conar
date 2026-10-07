@@ -84,3 +84,43 @@ export const invalidatesCatalog = runsAny(DDL_KEYWORDS)
 
 /** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
 export const writesData = runsAny(DATA_WRITE_KEYWORDS)
+
+const READ_COMMANDS = new Set([
+  'DESC',
+  'DESCRIBE',
+  'EXPLAIN',
+  'SELECT',
+  'SHOW',
+  'TABLE',
+  'VALUES',
+  'WITH',
+])
+
+// SELECT … INTO writes a table or a server file, and SQL Server runs a second statement that has no `;` before it.
+const WRITES_INSIDE_READ = new Set([
+  'CALL',
+  'COMMIT',
+  'EXEC',
+  'EXECUTE',
+  'INTO',
+  'KILL',
+  'SHUTDOWN',
+])
+
+/** A single statement that only reads, the only kind an MCP agent may run. */
+export const readsOnly = (text: string, dialect: DialectSpec) => {
+  const [statement, ...rest] = splitStatements(text, dialect)
+  return (
+    !!statement &&
+    rest.length === 0 &&
+    READ_COMMANDS.has(statement.tokens[0]?.text.toUpperCase() ?? '') &&
+    !statement.tokens.some(
+      (token) =>
+        !token.quoted &&
+        token.kind !== 'string' &&
+        WRITES_INSIDE_READ.has(token.text.toUpperCase())
+    ) &&
+    !writesData(text, dialect) &&
+    !invalidatesCatalog(text, dialect)
+  )
+}

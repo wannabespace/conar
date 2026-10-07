@@ -1,32 +1,60 @@
 ---
 title: 'MCP Overview'
 sidebarTitle: 'Overview'
-description: 'Overview of the Tamery MCP (Model Context Protocol) integration — connect your databases to AI agents.'
+description: 'Let Claude Code, Cursor and other AI agents list your Tamery connections and run read-only queries through the Model Context Protocol (MCP).'
 ---
 
-The Model Context Protocol (MCP) integration lets external AI agents and tools work with your Tamery connections through a standard interface.
+The Tamery desktop app can run an MCP server. AI agents such as Claude Code and Cursor connect to it to list your saved connections and run read-only SQL against them. Your connection strings stay inside Tamery and never appear in the agent's config.
 
 <Note>
-  The MCP integration is in active development and not yet generally available.
-  This page will be expanded with setup steps, available tools, and examples as
-  the integration ships.
+  The MCP server runs inside the desktop app. It is not available in the web
+  app.
 </Note>
 
-## How it will work
+## The server
 
-MCP access is authenticated with an **API key** you generate from your account page. You create a key (for example, named `local-mcp` or `ci-bot`), give it to your MCP client, and the client can then run queries against your saved connections on your behalf.
+The server is on by default: it starts with the desktop app and listens only on your machine, at `http://127.0.0.1:8264/mcp`. To turn it off, click your avatar → **Settings** (or press <kbd>⌘</kbd> <kbd>,</kbd>), open **MCP** and turn off **Run MCP server**.
 
-To create an API key today:
+## Connect an agent
 
-1. Go to your account page at [tamery.app/account](https://tamery.app/account).
-2. Open the **API keys** section.
-3. Click **Create API key**, give it a recognisable name, and copy the generated key — it is shown only once.
+**Settings** → **MCP** shows ready-to-copy config with your access token filled in.
+
+**Claude Code**: run the copied command:
+
+```bash
+claude mcp add --transport http tamery http://127.0.0.1:8264/mcp --header "Authorization: Bearer <token>"
+```
+
+**Cursor and other clients**: add the copied JSON to the client's MCP config (for Cursor, `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "tamery": {
+      "headers": { "Authorization": "Bearer <token>" },
+      "url": "http://127.0.0.1:8264/mcp"
+    }
+  }
+}
+```
 
 <Warning>
-  Treat API keys like passwords. Anyone with a key can act on your behalf. Store
-  keys securely and revoke any key you no longer use from the same account page.
+  The token lets anything that holds it read your databases while Tamery is
+  running. Keep it out of shared or committed config files.
 </Warning>
 
-## What's next
+## Tools
 
-Detailed MCP client configuration, the list of exposed tools, and end-to-end examples will be published here once the integration is released. In the meantime, the [CLI](/cli/overview) covers terminal and scripting workflows.
+| Tool | What it does |
+| --- | --- |
+| `list_connections` | Lists your connections: id, name, engine, and the databases you have opened in each. |
+| `query` | Runs one read-only SQL statement on a connection, optionally in a specific database. Returns at most 200 rows and says when there were more. |
+
+Agents explore the schema with the engine's own catalog, for example `information_schema` on PostgreSQL, MySQL and SQL Server, or `system.tables` on ClickHouse.
+
+## What agents can and cannot do
+
+- **Read only.** Tamery accepts a single statement starting with `SELECT`, `WITH`, `SHOW`, `DESCRIBE` or `EXPLAIN`, and rejects any that writes or changes the schema. It runs in a read-only transaction that is always rolled back.
+- **PostgreSQL and MySQL** enforce read-only mode in the database itself. **SQL Server and ClickHouse** have no read-only transactions, so Tamery relies on checking the statement. For a hard guarantee there, connect with a database user that has read permissions only.
+- **Tamery must be open and signed in.** Tamery decrypts connection strings inside the app window, so the server answers only while a signed-in window is open.
+- **Saved passwords only.** If a connection's password isn't saved on this device, open the connection in Tamery and enter it first.

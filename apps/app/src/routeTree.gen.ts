@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
 import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
 import { Route as ProtectedConnectionResourceIdIndexRouteImport } from './routes/_protected/connection/$resourceId/index'
@@ -29,6 +30,11 @@ const AuthRoute = AuthRouteImport.update({
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedConnectionResourceIdRoute =
@@ -58,6 +64,7 @@ const ProtectedConnectionResourceIdTabIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
+  '/settings': typeof ProtectedSettingsRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/create/': typeof ProtectedCreateIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/settings': typeof ProtectedSettingsRoute
   '/': typeof ProtectedIndexRoute
   '/create': typeof ProtectedCreateIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_protected/settings': typeof ProtectedSettingsRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/_protected/create/': typeof ProtectedCreateIndexRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/settings'
     | '/connection/$resourceId'
     | '/create/'
     | '/connection/$resourceId/$tabId'
@@ -92,6 +102,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/settings'
     | '/'
     | '/create'
     | '/connection/$resourceId/$tabId'
@@ -100,6 +111,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_protected'
     | '/auth'
+    | '/_protected/settings'
     | '/_protected/'
     | '/_protected/connection/$resourceId'
     | '/_protected/create/'
@@ -133,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/settings': {
+      id: '/_protected/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ProtectedSettingsRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/connection/$resourceId': {
@@ -185,12 +204,14 @@ const ProtectedConnectionResourceIdRouteWithChildren =
   )
 
 interface ProtectedRouteChildren {
+  ProtectedSettingsRoute: typeof ProtectedSettingsRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedConnectionResourceIdRoute: typeof ProtectedConnectionResourceIdRouteWithChildren
   ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedSettingsRoute: ProtectedSettingsRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedConnectionResourceIdRoute:
     ProtectedConnectionResourceIdRouteWithChildren,

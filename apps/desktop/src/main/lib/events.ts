@@ -1,58 +1,15 @@
-import type { QueryExecutor } from '@tamery/connection/queries'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
 import { decrypt, encrypt } from '@tamery/shared/crypto-node'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
+import { mcp } from './mcp'
+import { queryExecutors } from './query'
 import { autoUpdater } from './todesktop'
-
-const lazyQueryExecutor = (
-  load: () => Promise<{ query: QueryExecutor }>
-): QueryExecutor => {
-  const loadQuery = async () => {
-    const dialect = await load()
-
-    return dialect.query
-  }
-
-  return {
-    beginTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.beginTransaction(args)
-    },
-    cancel: async (args) => {
-      const query = await loadQuery()
-
-      return query.cancel(args)
-    },
-    commitTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.commitTransaction(args)
-    },
-    execute: async (args) => {
-      const query = await loadQuery()
-
-      return query.execute(args)
-    },
-    executeTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.executeTransaction(args)
-    },
-    rollbackTransaction: async (args) => {
-      const query = await loadQuery()
-
-      return query.rollbackTransaction(args)
-    },
-  }
-}
 
 export const electron = {
   app: {
@@ -68,26 +25,14 @@ export const electron = {
     decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
     encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
   },
+  mcp,
   menu: {
     popup: ((arg: MenuPopupRequest, event?: IpcMainInvokeEvent) =>
       popupNativeContextMenu(arg, event)) as (
       arg: MenuPopupRequest
     ) => Promise<MenuPopupResult>,
   },
-  query: {
-    clickhouse: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/clickhouse')
-    ),
-    mssql: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/mssql')
-    ),
-    mysql: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/mysql')
-    ),
-    postgres: lazyQueryExecutor(
-      () => import('@tamery/connection/queries/dialects/pg')
-    ),
-  } satisfies Record<ConnectionType, QueryExecutor>,
+  query: queryExecutors,
   versions: {
     app: () => app.getVersion(),
   },

@@ -12,7 +12,7 @@
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
 | Testing | Bun test for unit tests, Playwright for E2E. |
-| Schemas | ArkType everywhere — oRPC inputs, env validation, stores, **form validators** (`validators: { onChange: schema, onMount: schema }`; TanStack Form reads the issues only, so a schema covering the checked fields is enough, and `.configure({ message })` replaces ArkType's generated wording). Zod is legacy, surviving only inside frozen chat v1 (`api.md`). |
+| Schemas | ArkType everywhere — oRPC inputs, env validation, stores, **form validators** (`validators: { onChange: schema, onMount: schema }`; TanStack Form reads the issues only, so a schema covering the checked fields is enough, and `.configure({ message })` replaces ArkType's generated wording). Zod survives only inside frozen chat v1 (`api.md`) and in MCP tool schemas, the only kind the MCP SDK's `registerTool` accepts. |
 | UI components | shadcn registry first — search before writing markup, vendor missing pieces into `packages/ui` in kit style. Hand-rolled re-implementations are a review blocker (`tamery-ui` skill, hard rule 0). |
 | Markdown | Kit `Response` (streamdown) — never react-markdown or a bespoke pipeline. |
 | Ids | uuid v7 everywhere (`baseTable.id`). A library that mints its own format is mapped in the persistence layer, never by widening a column. |
@@ -31,7 +31,7 @@
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
-  - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries.
+  - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries, Settings page sections.
   - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
 - `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
@@ -84,6 +84,14 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 - A `memoize`d query factory takes the values its SQL reads, not the whole `ConnectionResource` — memoza keys structurally, so the record means a fresh entry on every unrelated field change. The `...QueryOptions` wrapper is not worth memoizing unless it carries a `select` whose identity must hold.
 - `queryClient` runs queries and mutations with `networkMode: 'always'`: most of them reach the user's database, often a local one (Electron IPC, the web build's local proxy), so the browser's offline state must not pause them. **A query that calls the Tamery API sets `networkMode: 'online'`** — otherwise it fires offline and, under `throwOnError`, fails into the error boundary. `subscriptionQueryClient` holds only API queries and keeps the default.
 - The query client defaults to `placeholderData: keepPreviousData`, so on a connection switch a resource-keyed query paints the previous connection's data. Where that is visible (the navigator tree), `placeholderData` drops the previous data unless the resource id matches, so the skeleton shows instead; the smoothing still applies to same-resource key changes.
+
+## MCP server (desktop)
+
+`apps/desktop/src/main/lib/mcp.ts` serves MCP over HTTP on `127.0.0.1:PORTS.MCP`, on by default and started on launch unless turned off in Settings (its own electron-store file).
+
+- **The main process holds no connections.** Connections and the key that decrypts their strings live in the renderer, so every tool call asks the first window over a `MessageChannelMain` port; the window answers through the `McpSource` the `mcp` module passes to `window.electron.mcp.serve` (`@tamery/shared/mcp`). No signed-in window, no answers — the preload replies with an error rather than leaving the request hanging.
+- **Read-only is two layers**: `readsOnly` (`@tamery/sql`) admits one statement that starts with a read verb and carries no write keyword, then it runs inside a `read only` transaction that is always rolled back. Postgres and MySQL enforce the access mode; SQL Server and ClickHouse have only the statement check (and SQL Server the rollback), so a hard guarantee there needs a read-only database login.
+- Requests need the bearer token stored beside the toggle; without it any local process or a DNS-rebound web page could query the user's databases.
 
 ## Reach for the library before writing machinery
 

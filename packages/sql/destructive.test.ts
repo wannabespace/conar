@@ -5,6 +5,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   destructiveKeywords,
   invalidatesCatalog,
+  readsOnly,
   writesData,
 } from './destructive'
 import { dialects } from './dialect'
@@ -127,5 +128,33 @@ describe('destructiveKeywords', () => {
     expect(writesData('SELECT * FROM t FOR UPDATE', pg)).toBe(false)
     expect(writesData("SELECT 'DELETE' FROM t", mysql)).toBe(false)
     expect(writesData('EXPLAIN UPDATE t SET a = 1', pg)).toBe(false)
+  })
+})
+
+describe('readsOnly', () => {
+  const mssql = dialects[ConnectionType.MSSQL]
+
+  it('accepts one reading statement', () => {
+    expect(readsOnly('select * from users where id = 1;', pg)).toBe(true)
+    expect(readsOnly('WITH t AS (SELECT 1) SELECT * FROM t', pg)).toBe(true)
+    expect(readsOnly("select 'drop table users'", pg)).toBe(true)
+    expect(readsOnly('SHOW TABLES', mysql)).toBe(true)
+  })
+
+  it('rejects writes hidden in or after a read', () => {
+    expect(readsOnly('select 1; delete from users', pg)).toBe(false)
+    expect(
+      readsOnly('WITH d AS (DELETE FROM t RETURNING *) SELECT * FROM d', pg)
+    ).toBe(false)
+    expect(readsOnly('SELECT * INTO copy FROM users', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 COMMIT DROP TABLE users', mssql)).toBe(false)
+    expect(readsOnly("SELECT 1 EXEC('DROP TABLE users')", mssql)).toBe(false)
+    expect(readsOnly('EXPLAIN ANALYZE DELETE FROM users', pg)).toBe(false)
+  })
+
+  it('rejects anything that is not a read', () => {
+    expect(readsOnly('COMMIT', pg)).toBe(false)
+    expect(readsOnly('SET search_path TO evil', pg)).toBe(false)
+    expect(readsOnly('', pg)).toBe(false)
   })
 })

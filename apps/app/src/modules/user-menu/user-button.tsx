@@ -8,11 +8,13 @@ import {
   Logout03Icon,
   Message01Icon,
   NewTwitterIcon,
+  Settings02Icon,
   UserIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { RELEASES_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import {
   DropdownMenu,
@@ -21,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import {
@@ -36,6 +39,7 @@ import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import { authClient } from '~/lib/auth'
+import { protectedModules } from '~/lib/protected-modules'
 import { clearDb } from '~/lib/sync'
 import { accountUrl } from '~/lib/urls'
 
@@ -120,6 +124,15 @@ export const UserButton = ({
           <DropdownMenuItem onClick={() => window.open(accountUrl, '_blank')}>
             <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
             Account
+          </DropdownMenuItem>
+        )}
+        {protectedModules.settings.length > 0 && (
+          <DropdownMenuItem render={<Link to="/settings" activateOn="click" />}>
+            <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
+            Settings
+            <DropdownMenuShortcut>
+              <KbdCtrlLetter userAgent={navigator.userAgent} letter="," />
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}
         {window.electron && (

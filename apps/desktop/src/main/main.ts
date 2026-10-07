@@ -11,6 +11,7 @@ import Store from 'electron-store'
 
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
+import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
 import { autoUpdater } from './lib/todesktop'
 
@@ -202,6 +203,8 @@ app.on('ready', () => {
   })
 
   setupProtocolHandler(win)
+
+  void restoreMcpServer()
 
   setInterval(() => autoUpdater?.checkForUpdates(), 1000 * 60 * 10)
 })
