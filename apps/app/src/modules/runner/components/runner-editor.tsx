@@ -1,5 +1,8 @@
 import { Monaco } from '@tamery/monaco/editor'
-import { sqlLanguageIds } from '@tamery/monaco/sql-language'
+import {
+  SQL_COMPLETION_OPTIONS,
+  sqlLanguageIds,
+} from '@tamery/monaco/sql-language'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -9,7 +12,6 @@ import { useSubscription } from 'seitu/react'
 
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { SQL_COMPLETION_OPTIONS } from '~/core/sql-editor/options'
 import { attachSqlSource } from '~/core/sql-editor/sql-source'
 import { usePanelOpen } from '~/lib/panels'
 

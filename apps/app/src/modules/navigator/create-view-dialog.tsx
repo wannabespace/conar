@@ -1,5 +1,8 @@
-import { Monaco } from '@tamery/monaco/editor'
-import { sqlLanguageIds } from '@tamery/monaco/sql-language'
+import { FIELD_EDITOR_OPTIONS, Monaco } from '@tamery/monaco/editor'
+import {
+  SQL_COMPLETION_OPTIONS,
+  sqlLanguageIds,
+} from '@tamery/monaco/sql-language'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
@@ -22,10 +25,6 @@ import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
-import {
-  FIELD_EDITOR_OPTIONS,
-  SQL_COMPLETION_OPTIONS,
-} from '~/core/sql-editor/options'
 import { attachSqlSource } from '~/core/sql-editor/sql-source'
 import type { TableDialogRequest } from '~/core/table/table-dialog'
 import { TableDialog } from '~/core/table/table-dialog'

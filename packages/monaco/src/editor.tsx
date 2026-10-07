@@ -82,6 +82,14 @@ resolvedTheme.subscribe(
   { immediate: true }
 )
 
+export const FIELD_EDITOR_OPTIONS = {
+  fontSize: 12,
+  lineNumbersMinChars: 3,
+  padding: { top: 8 },
+  scrollBeyondLastLine: false,
+  wordWrap: 'on',
+} satisfies monaco.editor.IStandaloneEditorConstructionOptions
+
 export const Monaco = ({
   ref,
   value,

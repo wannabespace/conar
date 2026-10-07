@@ -1,4 +1,4 @@
-import { Monaco } from '@tamery/monaco/editor'
+import { FIELD_EDITOR_OPTIONS, Monaco } from '@tamery/monaco/editor'
 import {
   Combobox,
   ComboboxChip,
@@ -35,7 +35,6 @@ import type * as monaco from 'monaco-editor'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { FIELD_EDITOR_OPTIONS } from '~/core/sql-editor/options'
 
 export const readOnlyEditorOptions = {
   ...FIELD_EDITOR_OPTIONS,
