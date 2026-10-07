@@ -1,8 +1,10 @@
 import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
+import { openContextMenuOn } from '~/components/app-context-menu'
 
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
@@ -44,7 +46,24 @@ export const useGridHotkeys = ({
   const isEditing = useSubscription(cursor.store, {
     selector: (state) => state.edit !== null,
   })
-  const navigating = hasCursor && !isEditing
+  const [gridFocused, setGridFocused] = useState(false)
+  const steering = gridFocused && !isEditing
+  const navigating = steering && hasCursor
+
+  // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
+  useEffect(() => {
+    const scroller = scrollRef.current
+    if (!scroller) {
+      return
+    }
+    const track = () => setGridFocused(document.activeElement === scroller)
+    scroller.addEventListener('focusin', track)
+    scroller.addEventListener('focusout', track)
+    return () => {
+      scroller.removeEventListener('focusin', track)
+      scroller.removeEventListener('focusout', track)
+    }
+  }, [scrollRef])
 
   useHotkeys(
     [
@@ -59,7 +78,7 @@ export const useGridHotkeys = ({
         {
           callback: () => cursor.step(down, right),
           hotkey,
-          options: { enabled: !isEditing },
+          options: { enabled: steering },
         },
         {
           callback: () => {
@@ -70,7 +89,7 @@ export const useGridHotkeys = ({
             }
           },
           hotkey: `Shift+${hotkey}` as const,
-          options: { enabled: !isEditing },
+          options: { enabled: steering },
         },
       ]),
       ...(['Enter', 'F2'] as const).map((hotkey) => ({
@@ -107,6 +126,16 @@ export const useGridHotkeys = ({
       {
         callback: cursor.preview,
         hotkey: 'Space',
+        options: { enabled: navigating },
+      },
+      {
+        callback: () => {
+          const cell = cursor.element()
+          if (cell) {
+            openContextMenuOn(cell)
+          }
+        },
+        hotkey: 'Mod+.',
         options: { enabled: navigating },
       },
       {

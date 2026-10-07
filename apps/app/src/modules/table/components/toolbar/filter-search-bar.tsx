@@ -51,7 +51,6 @@ export const FilterSearchBar = ({
   const {
     filters,
     highlighted,
-    keyDown,
     query,
     setFilters,
     setHighlighted,
@@ -139,7 +138,6 @@ export const FilterSearchBar = ({
             className="placeholder:text-muted-foreground h-6 min-w-32 flex-1 bg-transparent text-sm outline-none"
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            onKeyDown={keyDown}
           />
         </div>
         <KbdCtrlLetter

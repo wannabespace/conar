@@ -1,6 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { FILTERS_GROUPED } from '@tamery/shared/filters'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { getRouteApi } from '@tanstack/react-router'
 import type { RefObject } from 'react'
 import { useState } from 'react'
@@ -98,6 +99,40 @@ export const useFilterComposer = ({
   const committedParts = parts.filter((part) => part !== '')
   const valueFilterText = isArrayValue ? (parts.at(-1) ?? '') : query.trim()
 
+  useHotkeys(
+    [
+      {
+        callback: () => {
+          if (stage.step === 'value') {
+            setStage({ step: 'operator', target: stage.target })
+          } else if (stage.step === 'operator') {
+            setStage({ step: 'idle' })
+          } else {
+            setFilters((current) => current.slice(0, -1))
+          }
+        },
+        hotkey: 'Backspace',
+        options: {
+          enabled:
+            query === '' && (stage.step !== 'idle' || filters.length > 0),
+        },
+      },
+      {
+        callback: () => {
+          setQuery('')
+          if (stage.step === 'value') {
+            setStage({ step: 'operator', target: stage.target })
+          } else {
+            setStage({ step: 'idle' })
+          }
+        },
+        hotkey: 'Escape',
+        options: { enabled: stage.step !== 'idle' || query !== '' },
+      },
+    ],
+    { target: inputRef }
+  )
+
   return {
     applyValue: () => {
       if (stage.step === 'value') {
@@ -107,29 +142,6 @@ export const useFilterComposer = ({
     committedParts,
     filters,
     highlighted,
-    keyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Backspace' && query === '') {
-        if (stage.step === 'value') {
-          setStage({ step: 'operator', target: stage.target })
-        } else if (stage.step === 'operator') {
-          setStage({ step: 'idle' })
-        } else if (filters.length > 0) {
-          setFilters((current) => current.slice(0, -1))
-        }
-        return
-      }
-      if (e.key !== 'Escape') {
-        return
-      }
-      if (stage.step === 'idle') {
-        e.currentTarget.blur()
-        return
-      }
-      e.preventDefault()
-      e.stopPropagation()
-      setStage({ step: 'idle' })
-      setQuery('')
-    },
     pickColumn: (target: FilterTarget) => {
       setStage({ step: 'operator', target })
       setPrompt('')

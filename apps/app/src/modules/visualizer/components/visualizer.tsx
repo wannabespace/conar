@@ -122,6 +122,7 @@ export const Visualizer = ({
   > | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const selectedTable =
     diagram.tables.find((table) => table.id === selectedId) ?? null
   const selectedRelation = diagram.relations.find(
@@ -173,7 +174,10 @@ export const Visualizer = ({
       }
       setSelectedId(null)
     },
-    { enabled: (!!selectedRelation || selectedId !== null) && idle }
+    {
+      enabled: (!!selectedRelation || selectedId !== null) && idle,
+      target: rootRef,
+    }
   )
   useHotkeys(
     (['Backspace', 'Delete'] as const).map((hotkey) => ({
@@ -199,7 +203,10 @@ export const Visualizer = ({
 
   return (
     <DiagramContext value={context}>
-      <div className="relative flex size-full min-h-0 flex-1 overflow-hidden rounded-lg">
+      <div
+        ref={rootRef}
+        className="relative flex size-full min-h-0 flex-1 overflow-hidden rounded-lg"
+      >
         <div className="relative min-w-0 flex-1">
           <Toolbar
             applying={apply.applying}

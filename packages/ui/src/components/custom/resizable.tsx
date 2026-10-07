@@ -7,7 +7,11 @@ export const ResizableGroup = (props: ComponentProps<typeof Group>) => (
 )
 
 export const ResizablePanel = (props: ComponentProps<typeof Panel>) => (
-  <Panel data-slot="resizable-panel" {...props} />
+  <Panel
+    data-slot="resizable-panel"
+    inert={'collapsed' in props && props.collapsed}
+    {...props}
+  />
 )
 
 export const ResizableSeparator = ({

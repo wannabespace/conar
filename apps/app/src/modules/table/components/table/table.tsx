@@ -172,6 +172,7 @@ export const Table = ({
   return (
     <div className="relative size-full">
       <DataGrid
+        autoFocus
         bar={tableBar({
           canDelete: !!isBaseTable && hasSelection,
           hasChanges,

@@ -2,6 +2,7 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 
 import type { WorkspaceModule } from '~/lib/module'
 
+import { useEscapeToNavigator } from './keyboard'
 import { Navigator } from './navigator'
 import { navigatorOpenValue } from './stores'
 
@@ -10,6 +11,7 @@ const NavigatorHotkey = () => {
     e.preventDefault()
     navigatorOpenValue.set((open) => !open)
   })
+  useEscapeToNavigator()
 
   return null
 }

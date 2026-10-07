@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
 import type { ReactNode, Ref, RefObject } from 'react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 
@@ -27,6 +27,7 @@ const valueOf = ({ column, row }: DataGridCell) => row[column.id]
 const columnEditable = (column: Column) => column.isEditable !== false
 
 export const DataGrid = ({
+  autoFocus,
   bar,
   canEdit = columnEditable,
   columns,
@@ -53,6 +54,7 @@ export const DataGrid = ({
   sizeOf,
   trailing,
 }: {
+  autoFocus?: boolean
   /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
   bar?: GridBarItem[]
   canEdit?: (column: Column, rowIndex: number) => boolean
@@ -105,6 +107,11 @@ export const DataGrid = ({
   })
   useGridHotkeys({ canEdit: !!onEdit, cursor, onExtendRows, scrollRef })
   const pointer = useGridPointer(cursor)
+  useEffect(() => {
+    if (autoFocus) {
+      scrollRef.current?.focus({ preventScroll: true })
+    }
+  }, [autoFocus, scrollRef])
   const scrollToCell = useGridHandle({
     cursor,
     cursorRef,

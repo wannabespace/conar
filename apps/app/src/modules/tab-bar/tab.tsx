@@ -16,6 +16,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
@@ -72,6 +73,8 @@ export const Tab = ({
   const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
+  const [renameInput, setRenameInput] = useState<HTMLInputElement | null>(null)
+  const refocusTab = useRef(false)
   const resolved = resolveTab(tab.id)
   const isPreview = !!tab.preview
   const isRenaming = draft !== null
@@ -97,6 +100,24 @@ export const Tab = ({
     )
     setDraft(null)
   }
+
+  const finishRename = (finish: () => void) => {
+    refocusTab.current = true
+    finish()
+  }
+
+  useHotkeys(
+    renameInput
+      ? [
+          { callback: () => finishRename(commitRename), hotkey: 'Enter' },
+          {
+            callback: () => finishRename(() => setDraft(null)),
+            hotkey: 'Escape',
+          },
+        ]
+      : [],
+    { target: renameInput }
+  )
 
   const items: AppMenuNode[] = [
     {
@@ -207,6 +228,7 @@ export const Tab = ({
         <div data-mask className={tabClasses}>
           {icon}
           <input
+            ref={setRenameInput}
             autoFocus
             aria-label="Tab name"
             value={draft ?? ''}
@@ -214,15 +236,6 @@ export const Tab = ({
             onChange={(e) => setDraft(e.target.value)}
             onFocus={(e) => e.target.select()}
             onBlur={commitRename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                commitRename()
-              } else if (e.key === 'Escape') {
-                e.preventDefault()
-                setDraft(null)
-              }
-            }}
           />
         </div>
       </Reorder.Item>
@@ -247,6 +260,12 @@ export const Tab = ({
         items={items}
       >
         <button
+          ref={(button) => {
+            if (button && refocusTab.current) {
+              refocusTab.current = false
+              button.focus()
+            }
+          }}
           data-mask
           type="button"
           aria-label={`${label} tab`}
@@ -268,8 +287,8 @@ export const Tab = ({
           >
             <TooltipTrigger
               render={
-                // Nested button is invalid HTML (parent tab is already a button).
-                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
+                // Nested button is invalid HTML (parent tab is already a button); the keyboard closes a tab from its ⌘. menu.
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
                 <span
                   tabIndex={-1}
                   aria-label="Close tab"
@@ -278,13 +297,6 @@ export const Tab = ({
                   onClick={(e) => {
                     e.stopPropagation()
                     onClose()
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onClose()
-                    }
                   }}
                 />
               }

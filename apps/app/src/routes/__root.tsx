@@ -16,6 +16,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
+import { openContextMenuOn } from '~/components/app-context-menu'
 import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
 import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
 import { globalHooks } from '~/lib/global-hooks'
@@ -37,6 +38,11 @@ const RootDocument = () => {
   useWindowFullscreenObserver()
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
+  useHotkey('Mod+.', () => {
+    if (document.activeElement && document.activeElement !== document.body) {
+      openContextMenuOn(document.activeElement)
+    }
+  })
 
   return (
     <>

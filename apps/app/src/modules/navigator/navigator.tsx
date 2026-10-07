@@ -1,23 +1,10 @@
-import {
-  PlusSignIcon,
-  Search01Icon,
-  Settings02Icon,
-} from '@hugeicons/core-free-icons'
+import { PlusSignIcon, Settings02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
-import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { appModules } from '~/lib/modules'
 import { pressNavProps } from '~/lib/press-nav'
 
@@ -26,81 +13,10 @@ import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
 import { CreateViewDialog } from './create-view-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
-import { getNavigatorStore, navigatorStore } from './stores'
+import { getNavigatorStore } from './stores'
 import { TablesList } from './tables-list'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const TablesPanel = ({
-  onCreateTable,
-}: {
-  onCreateTable: (schema?: string) => void
-}) => {
-  const { connectionResource } = useRouteContext()
-  const store = navigatorStore(connectionResource.id)
-  const search = useSubscription(store, {
-    selector: (state) => state.tablesSearch,
-  })
-  const setSearch = (tablesSearch: string) =>
-    store.set((state) => ({ ...state, tablesSearch }) satisfies typeof state)
-  const {
-    refetch: refetchTablesAndSchemas,
-    isFetching: isRefreshingTablesAndSchemas,
-    dataUpdatedAt,
-  } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource }))
-
-  return (
-    <>
-      <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <SearchInput
-          className="flex-1"
-          size="sm"
-          data-mask
-          placeholder="Search"
-          aria-label="Search tables"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-          start={
-            <HugeiconsIcon
-              icon={Search01Icon}
-              strokeWidth={2}
-              className="text-muted-foreground/70 size-3.5"
-            />
-          }
-        />
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <RefreshButton
-                variant="outline-muted"
-                size="icon-sm"
-                onClick={() => refetchTablesAndSchemas()}
-                refreshing={isRefreshingTablesAndSchemas}
-              />
-            }
-          />
-          <TooltipContent side="bottom">
-            <div className="flex flex-col gap-0.5">
-              <span>Refresh tables and schemas</span>
-              <span className="opacity-70">
-                Last updated:{' '}
-                {dataUpdatedAt
-                  ? new Date(dataUpdatedAt).toLocaleTimeString()
-                  : 'never'}
-              </span>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <TablesList
-        className="min-h-0 flex-1"
-        search={search}
-        onCreateTable={onCreateTable}
-      />
-    </>
-  )
-}
 
 const NavigatorFooter = () => {
   const { connectionResource } = useRouteContext()
@@ -177,7 +93,10 @@ export const Navigator = () => {
             className="flex min-h-0 flex-1 flex-col"
           >
             {navigator === 'tables' ? (
-              <TablesPanel onCreateTable={createTable} />
+              <TablesList
+                className="min-h-0 flex-1"
+                onCreateTable={createTable}
+              />
             ) : (
               <DefinitionsPanel />
             )}

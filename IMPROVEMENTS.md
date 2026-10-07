@@ -60,3 +60,13 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Exact cost from OpenRouter.** Usage rows are priced from the LiteLLM sheet (`packages/ai/models/price.ts`), so caching discounts, provider routing and fallbacks are approximated. OpenRouter reports the billed cost per call in `providerMetadata.openrouter.usage.cost`; recording that drops the daily sheet fetch and makes `cost` exact.
 - **Codestral completion through OpenRouter.** Inline completion still calls Mistral's FIM endpoint directly (`@mistralai/mistralai`, `MISTRAL_API_KEY`) because OpenRouter does not pass `suffix` through. Move it once OpenRouter supports fill-in-the-middle, leaving one provider key.
+
+## Keyboard
+
+- **Row actions in the runner's Saved and History popovers.** Append, Rename, Delete and Remove from history are `tabIndex={-1}` buttons inside a cmdk item, so a keyboard user can open a saved query but never rename or delete one. A ⌘. menu on the highlighted item (matching the rest of the app) would cover them.
+- **Query logger rows.** Every row is its own Tab stop with no arrow movement, and the detail pane sits after all rendered rows, so it is effectively unreachable. Give the list a cursor like the Schema pages (search-field or roving highlight).
+- **Visualizer off-screen tables.** `onlyRenderVisibleElements` drops tables outside the viewport from the DOM and there is no keyboard panning, so a keyboard user only reaches them through Zoom out/Arrange. The inspector also opens without focus and closes to `body`.
+- **Grid gaps.** Column reorder is drag-only and the column resize handle is a focusable separator with no key handling; the cell editor's Set null/Default/Now buttons can never take focus (Tab leaves the cell); an edit whose cell is virtualised away leaves the grid deaf until it scrolls back.
+- **Focus after self-unmounting actions.** Removing a filter chip, Run all ↔ Stop, chat send ↔ stop, Clear log, banner Dismiss and the review drawer closing on its last discard all drop focus to `body`. The Escape ladder recovers (it lands in the Navigator), but each should hand focus to its neighbour.
+- **⌘↩ runs SQL from anywhere.** The runner binds ⌘↩/⇧⌘↩ on `document`, and ⌘-combos fire inside inputs, so ⌘↩ typed in the chat box or the results search runs the statement under the editor caret.
+- **Preview tabs from the keyboard.** A preview tab becomes permanent on a click inside its page or a double-click on its row, so a keyboard user's tabs keep replacing each other.

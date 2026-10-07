@@ -185,6 +185,7 @@ export const ConnectionCard = ({
           <ConnectionResourceLink
             resourceId={selectedResource.id}
             className="absolute inset-0 cursor-default"
+            aria-label={`Open ${connection.name}`}
             preload={false}
             data-resource-link
           />

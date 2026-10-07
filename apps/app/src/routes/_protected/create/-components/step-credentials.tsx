@@ -13,6 +13,7 @@ import {
   FieldLabel,
 } from '@tamery/ui/components/field'
 import { Input } from '@tamery/ui/components/input'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import type { RefObject } from 'react'
 import { useId } from 'react'
 
@@ -34,6 +35,8 @@ export const StepCredentials = ({
   const id = useId()
   const localProxyAvailable = useLocalProxyAvailable()
 
+  useHotkey('Enter', onEnter, { target: ref })
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -52,12 +55,6 @@ export const StepCredentials = ({
             autoFocus
             value={connectionString}
             onChange={(e) => setConnectionString(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                onEnter()
-              }
-            }}
           />
           {!window.electron && (
             <FieldDescription>

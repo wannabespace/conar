@@ -13,7 +13,7 @@ export const SidebarContent = ({
   <div
     data-slot="sidebar-content"
     className={cn(
-      'no-scrollbar flex min-h-0 flex-1 flex-col gap-2 overflow-auto',
+      'no-scrollbar -mt-0.5 -mr-0.5 flex min-h-0 flex-1 flex-col gap-2 overflow-auto pt-0.5 pr-0.5',
       className
     )}
     {...props}
@@ -51,7 +51,7 @@ export const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button text-foreground hover:bg-foreground/5 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button text-foreground hover:bg-foreground/5 not-data-active:group-data-highlighted/menu-item:bg-foreground/10 data-active:group-data-highlighted/menu-item:ring-primary/30 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 data-active:group-data-highlighted/menu-item:ring-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           className
         ),
       },
@@ -136,7 +136,7 @@ export const SidebarGroupLabel = ({
     props: mergeProps<'div'>(
       {
         className: cn(
-          `text-foreground/70 focus-visible:focus-ring flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-foreground/70 group-data-highlighted/menu-item:bg-foreground/10 focus-visible:focus-ring flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           className
         ),
       },
