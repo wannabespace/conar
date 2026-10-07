@@ -144,6 +144,7 @@ export const Table = ({
 
   const { actionsOf, dialogs } = useColumnActions({
     connectionType: connection.type,
+    editable: !!isBaseTable,
     schema,
     table,
   })

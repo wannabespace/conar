@@ -31,7 +31,7 @@ export const isSortable = (connectionType: ConnectionType, column: Column) =>
   )
 
 export interface ColumnActions {
-  onRename?: () => void
+  onEdit?: () => void
   onDistinctValues?: (anchor: Element) => void
   sortable?: boolean
 }
@@ -42,7 +42,7 @@ export const columnMenuItems = ({
   column,
   labels,
   onDistinctValues,
-  onRename,
+  onEdit,
   sortable,
   store,
 }: ColumnActions & {
@@ -92,8 +92,8 @@ export const columnMenuItems = ({
           { type: 'separator' },
         ] satisfies AppMenuNode[])
       : []),
-    ...(onRename
-      ? [{ icon: PencilEdit02Icon, label: 'Rename Column', onSelect: onRename }]
+    ...(onEdit
+      ? [{ icon: PencilEdit02Icon, label: 'Edit Column', onSelect: onEdit }]
       : []),
     {
       icon: Copy01Icon,

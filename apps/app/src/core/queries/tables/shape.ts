@@ -228,6 +228,21 @@ export const renameColumnStatement = (
     .compile()
 }
 
+export const restatedType = ({
+  original,
+  type: columnType,
+}: Pick<AlterColumnTarget, 'original' | 'type'>) => {
+  const kept = [
+    columnType === original.type &&
+      original.collation &&
+      `COLLATE ${original.collation}`,
+    original.attributes,
+  ]
+    .filter(Boolean)
+    .join(' ')
+  return sql.raw(kept ? `${columnType} ${kept}` : columnType)
+}
+
 export const alterColumnStatement = (
   dialectType: ConnectionType,
   db: Db,
@@ -263,13 +278,7 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  const kept = [
-    !retyped && original.collation && `COLLATE ${original.collation}`,
-    original.attributes,
-  ]
-    .filter(Boolean)
-    .join(' ')
-  const definition = sql.raw(kept ? `${columnType} ${kept}` : columnType)
+  const definition = restatedType(target)
 
   if (dialectType === ConnectionType.MSSQL) {
     const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${definition} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`

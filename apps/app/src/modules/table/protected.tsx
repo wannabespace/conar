@@ -5,7 +5,7 @@ import { parseTableTabId } from '~/core/tabs/ids'
 import type { ProtectedModule } from '~/lib/module'
 import { queryClient } from '~/lib/query-client'
 
-import { addColumnDialogRef } from './components/table/add-column-dialog'
+import { columnDialogRef } from './components/table/column-dialog'
 
 export default {
   commands: ({ current, tabId }) => {
@@ -28,7 +28,7 @@ export default {
     return isBaseTable
       ? [
           {
-            action: () => addColumnDialogRef.current?.add(),
+            action: () => columnDialogRef.current?.add(),
             group: 'Database',
             icon: PlusSignIcon,
             keywords: ['create', 'new', 'column', active.table],

@@ -49,6 +49,19 @@ export interface ConstraintTarget {
   table: string
 }
 
+export const foreignKeyName = (
+  table: string,
+  column: string,
+  taken: Set<string>
+) => {
+  const base = `${table}_${column}_fkey`
+  let name = base
+  for (let suffix = 2; taken.has(name); suffix += 1) {
+    name = `${base}_${suffix}`
+  }
+  return name
+}
+
 export const addConstraint = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,

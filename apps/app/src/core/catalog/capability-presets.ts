@@ -3,6 +3,7 @@ import type {
   ReferentialAction,
 } from '~/core/queries/constraints/shape'
 import type { PolicyCommand } from '~/core/queries/policies/shape'
+import type { InlineEnum } from '~/core/queries/shared/inline-enum'
 import type { RelationKind } from '~/core/queries/tables/list'
 import type {
   TriggerEvent,
@@ -60,6 +61,7 @@ interface ColumnTypeCapabilities {
   array: ArrayType | null
   // The driver hands these values over as bytes; Postgres reads `bytea` as text, so it matches none.
   bytes: RegExp | null
+  enum: InlineEnum | null
   id: string
   // ORDER BY, GROUP BY or COUNT(DISTINCT) reject these; Distinct Values also skips `bytes`.
   incomparable: RegExp | null
@@ -87,6 +89,8 @@ export interface ConnectionCapabilities {
   renameColumns: boolean
   renameConstraints: boolean
   renameSchema: boolean
+  // A primary key column's type and nullability; SQL Server and ClickHouse refuse the ALTER.
+  retypeKeyColumns: boolean
   rowLevelSecurity: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>

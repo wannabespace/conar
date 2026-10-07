@@ -10,6 +10,7 @@ import {
 } from '~/core/queries/functions/shape'
 import { SKIP_INDEX_TYPES } from '~/core/queries/indexes/shape'
 import { POLICY_COMMANDS } from '~/core/queries/policies/shape'
+import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import {
   TRIGGER_EVENTS,
   TRIGGER_ORIENTATIONS,
@@ -41,6 +42,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     columnTypes: {
       array: { close: ')', open: 'Array(' },
       bytes: null,
+      enum: clickhouseEnum,
       id: 'UInt64',
       incomparable:
         /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
@@ -67,6 +69,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: false,
     renameConstraints: false,
     renameSchema: false,
+    retypeKeyColumns: false,
     rowLevelSecurity: false,
     schemas: false,
     sections: {
@@ -87,6 +90,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     columnTypes: {
       array: null,
       bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
+      enum: null,
       id: 'int identity',
       incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
       json: JSON_COLUMN_TYPE,
@@ -115,6 +119,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: true,
     renameSchema: false,
+    retypeKeyColumns: false,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -143,6 +148,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     columnTypes: {
       array: null,
       bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
+      enum: mysqlEnum,
       id: 'int auto_increment',
       incomparable: null,
       json: JSON_COLUMN_TYPE,
@@ -174,6 +180,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: false,
     renameSchema: false,
+    retypeKeyColumns: true,
     rowLevelSecurity: false,
     schemas: true,
     sections: {
@@ -202,6 +209,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     columnTypes: {
       array: { close: '[]', open: '' },
       bytes: null,
+      enum: null,
       id: 'serial',
       // Geometric types have no btree or hash operator class to sort or group by.
       incomparable:
@@ -235,6 +243,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     renameColumns: true,
     renameConstraints: true,
     renameSchema: true,
+    retypeKeyColumns: true,
     rowLevelSecurity: true,
     schemas: true,
     sections: {
@@ -276,3 +285,7 @@ export const sectionCapabilitiesOf = (
   section: DefinitionsSection,
   type: ConnectionType
 ): SectionCapabilities => capabilities[type].sections[section] || readOnly
+
+export const foreignKeysCreatable = (type: ConnectionType) =>
+  capabilities[type].constraintKinds.includes('foreignKey') &&
+  !!sectionCapabilitiesOf('constraints', type).create
