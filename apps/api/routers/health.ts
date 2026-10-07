@@ -1,14 +1,7 @@
-import { providers } from '@tamery/ai/models'
+import { probeOpenRouter } from '@tamery/ai/models'
 import { db } from '@tamery/db'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
-
-const providerLabels = {
-  anthropic: 'Anthropic',
-  google: 'Google',
-  openai: 'OpenAI',
-  xai: 'XAI',
-}
 
 export const healthRouter = new Hono().get('/', async (c) => {
   const hostname = c.req.header('host')
@@ -44,23 +37,21 @@ export const healthRouter = new Hono().get('/', async (c) => {
           error instanceof Error ? error.message : 'Database connection failed'
         )
       ),
-    ...providers.list.map((provider) => {
-      const failed = `${providerLabels[provider]} connection failed`
-      return providers
-        .probe(provider)
-        .then((text) =>
-          text
-            ? createAnswer('ok', provider, text)
-            : createAnswer('error', provider, failed)
+    probeOpenRouter()
+      .then((text) =>
+        text
+          ? createAnswer('ok', 'openrouter', text)
+          : createAnswer('error', 'openrouter', 'OpenRouter connection failed')
+      )
+      .catch((error) =>
+        createAnswer(
+          'error',
+          'openrouter',
+          error instanceof Error
+            ? error.message
+            : 'OpenRouter connection failed'
         )
-        .catch((error) =>
-          createAnswer(
-            'error',
-            provider,
-            error instanceof Error ? error.message : failed
-          )
-        )
-    }),
+      ),
   ])
 
   const error = promises.find((promise) => promise.status === 'error')

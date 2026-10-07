@@ -4,7 +4,7 @@ import { getModelCost } from './price'
 
 const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
   Response.json({
-    'claude-opus-5': {
+    'openrouter/anthropic/claude-opus-5': {
       cache_creation_input_token_cost: 6.25e-6,
       cache_read_input_token_cost: 0.5e-6,
       input_cost_per_token: 5e-6,
@@ -30,15 +30,8 @@ const usage = {
 }
 
 it('prices uncached, cached and output tokens separately', async () => {
-  expect(await getModelCost('claude-opus-5', usage)).toBeCloseTo(
+  expect(await getModelCost('anthropic/claude-opus-5', usage)).toBeCloseTo(
     600 * 5e-6 + 400 * 0.5e-6 + 200 * 6.25e-6 + 100 * 25e-6,
-    10
-  )
-})
-
-it('matches a dated model id against its base entry', async () => {
-  expect(await getModelCost('claude-opus-5-20260101', usage)).toBeCloseTo(
-    await (getModelCost('claude-opus-5', usage) as Promise<number>),
     10
   )
 })

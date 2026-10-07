@@ -36,12 +36,13 @@ When you use AI features, we send:
 
 In rare cases, an AI model may invoke a database query tool to fetch a limited number of rows to assist you — this only happens as part of an explicit AI action, not automatically. Sensitive columns are masked when possible.
 
-AI requests are routed to **Anthropic** (primary), **OpenAI**, and **Google** as fallback providers depending on the feature.
+AI requests are routed through **OpenRouter** to **Anthropic** (primary), **OpenAI**, and **Google** as fallback providers depending on the feature.
 
 ## 5. Third-Party Services
 
 | Service                    | Purpose                                     |
 | -------------------------- | ------------------------------------------- |
+| OpenRouter                 | Routing AI requests to the model providers  |
 | Anthropic, OpenAI, Google  | AI-powered SQL generation and assistance    |
 | Stripe                     | Subscription billing and payment processing |
 | PostHog (EU)               | Usage analytics (inputs masked)             |

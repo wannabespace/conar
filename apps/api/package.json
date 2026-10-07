@@ -9,14 +9,12 @@
     "better-auth:generate": "cross-env NODE_ENV=development pnpx auth generate --output ../../packages/db/schema/auth.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "catalog:",
-    "@ai-sdk/google": "catalog:",
-    "@ai-sdk/openai": "catalog:",
     "@better-auth/api-key": "catalog:",
     "@better-auth/core": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
+    "@openrouter/ai-sdk-provider": "catalog:",
     "@orpc/publisher": "catalog:",
     "@orpc/server": "catalog:",
     "@react-email/components": "catalog:",

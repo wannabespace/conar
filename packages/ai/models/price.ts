@@ -30,8 +30,7 @@ export const getModelCost = async (
   usage: LanguageModelUsage
 ) => {
   const prices = await fetchPrices().catch(() => null)
-  const price =
-    prices?.[modelId] ?? prices?.[modelId.replace(/-\d{8}$/u, '')] ?? null
+  const price = prices?.[`openrouter/${modelId}`]
 
   if (!price) {
     return null
