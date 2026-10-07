@@ -28,7 +28,7 @@ export const enhancePrompt = orpc
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
-      model: withPosthog(openrouter('openai/gpt-4o-mini'), {
+      model: withPosthog(openrouter('openai/gpt-6-luna'), {
         chatId: input.chatId,
         prompt: input.prompt,
         userId: context.user.id,

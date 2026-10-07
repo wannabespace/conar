@@ -12,8 +12,8 @@ import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryableModel({
-  model: openrouter('anthropic/claude-opus-4.8'),
-  retries: [openrouter('openai/gpt-5.3-codex'), openrouter('~google/gemini-pro-latest')],
+  model: openrouter('anthropic/claude-opus-5.5'),
+  retries: [openrouter('openai/gpt-6.1-sol'), openrouter('~google/gemini-pro-latest')],
 })
 
 function handleError(error: unknown) {

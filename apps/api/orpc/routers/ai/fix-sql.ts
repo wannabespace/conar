@@ -17,7 +17,7 @@ export const fixSQL = orpc
   )
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(openrouter('anthropic/claude-sonnet-4.5'), {
+      model: withPosthog(openrouter('anthropic/claude-sonnet-5.5'), {
         userId: context.user.id,
       }),
       abortSignal: signal,

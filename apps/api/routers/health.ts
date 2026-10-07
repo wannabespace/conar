@@ -37,7 +37,7 @@ export const healthRouter = new Hono().get('/', async c => {
         ),
       ),
     generateText({
-      model: openrouter('openai/gpt-5-nano'),
+      model: openrouter('openai/gpt-6-luna'),
       prompt: 'Hello, how are you?',
     })
       .then(result => {
