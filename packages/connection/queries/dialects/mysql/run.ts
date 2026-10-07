@@ -1,31 +1,12 @@
-import type { PoolOptions } from 'mysql2'
+import { once } from 'node:events'
+
+import type { Connection, PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
-import type { RunOptions } from '../..'
+import type { ResultSet, RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { mysql2 } from './client'
-
-const setOf = (rows: unknown, fields: unknown, maxRows?: number) => {
-  if (Array.isArray(rows) && Array.isArray(fields)) {
-    return resultSet(
-      {
-        affectedRows: null,
-        columns: fields.map((field: mysql2Promise.FieldPacket) => field.name),
-        rows,
-      },
-      maxRows
-    )
-  }
-  const affectedRows =
-    typeof rows === 'object' &&
-    rows !== null &&
-    'affectedRows' in rows &&
-    typeof rows.affectedRows === 'number'
-      ? rows.affectedRows
-      : null
-  return resultSet({ affectedRows, columns: [], rows: [] }, maxRows)
-}
 
 // mysql2 fills every `?`, so one inside a quoted literal or identifier would take a later placeholder's value.
 const placeholderRegex =
@@ -72,22 +53,49 @@ export const runOn = async (
   }
 
   const start = performance.now()
-  const [rows, fields] = await cancellable(
-    { cancel, connectionString, queryId },
-    () =>
-      connection.query({
+  const limit = maxRows ?? Infinity
+  // `CALL` answers with one row set per SELECT inside the procedure, then a status header; each starts with `fields`.
+  const sets: Omit<ResultSet, 'truncated'>[] = []
+  await cancellable({ cancel, connectionString, queryId }, () => {
+    // mysql2 types the promise wrapper's inner connection as another promise one; at runtime it is the core connection, whose `query` streams events.
+    const core = connection.connection as unknown as Connection
+    const query = core
+      .query({
         rowsAsArray: true,
         sql:
           values.length > 0
             ? inlineValues(sql, values, (value) => connection.escape(value))
             : sql,
       })
-  )
-  const fieldSets: unknown[] = fields ?? []
-  // `CALL` answers with one row set per SELECT inside the procedure, then a status header.
-  const sets =
-    Array.isArray(rows) && Array.isArray(fieldSets[0])
-      ? rows.map((item, index) => setOf(item, fieldSets[index], maxRows))
-      : [setOf(rows, fields, maxRows)]
-  return { duration: performance.now() - start, result: sets }
+      .on('fields', (fields?: mysql2Promise.FieldPacket[]) => {
+        sets.push({
+          affectedRows: null,
+          columns: fields?.map((field) => field.name) ?? [],
+          rows: [],
+        })
+      })
+      .on('result', (result: unknown) => {
+        const set = sets.at(-1)
+        if (!set) {
+          return
+        }
+        if (Array.isArray(result)) {
+          if (set.rows.length <= limit) {
+            set.rows.push(result)
+          }
+        } else if (
+          typeof result === 'object' &&
+          result !== null &&
+          'affectedRows' in result &&
+          typeof result.affectedRows === 'number'
+        ) {
+          set.affectedRows = result.affectedRows
+        }
+      })
+    return once(query, 'end')
+  })
+  return {
+    duration: performance.now() - start,
+    result: sets.map((set) => resultSet(set, maxRows)),
+  }
 }

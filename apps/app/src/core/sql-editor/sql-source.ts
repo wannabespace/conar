@@ -56,11 +56,13 @@ const sqlCatalogOf = (
               }).queryKey
             )
             ?.map((column) => ({
+              comment: column.comment ?? undefined,
               name: column.id,
               nullable: column.isNullable,
               // Postgres reports enum columns as `USER-DEFINED`; the label names the enum.
               type: column.typeLabel,
             })) ?? null,
+        comment: table.comment,
         kind: table.type,
         name: table.name,
       })),

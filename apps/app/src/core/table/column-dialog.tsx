@@ -25,12 +25,15 @@ import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 import type { DraftState, NewColumn } from '~/core/queries/tables/shape'
 
+import { CommentField } from './column-comment-field'
 import { ReferenceField } from './column-reference-field'
 import { TypeField } from './column-type-field'
 import { useColumnType } from './use-column-type'
 import type { ColumnReference, ReferenceTarget } from './use-reference-targets'
 
 interface EditableColumn extends NewColumn {
+  // Set only by callers that save it; the Comment field shows only then.
+  comment?: string | null
   foreign: boolean
   // Name in the database; differs from `name` while a rename is pending.
   id: string
@@ -42,6 +45,8 @@ interface EditableTable {
   name: string
   state?: DraftState
 }
+
+export type SubmittedColumn = NewColumn & { comment: string | null }
 
 export interface ColumnDialogRequest<
   Table extends EditableTable = EditableTable,
@@ -57,14 +62,27 @@ const FORM_ID = 'column-dialog'
 
 const changed = (
   column: EditableColumn | null,
-  next: NewColumn,
+  next: SubmittedColumn,
   reference: ReferenceTarget | null
 ) =>
   column === null ||
   reference !== null ||
   next.name !== column.name ||
   next.type !== column.type ||
-  next.nullable !== column.nullable
+  next.nullable !== column.nullable ||
+  next.comment !== (column.comment ?? null)
+
+const submittedColumn = ({
+  comment,
+  primaryKey,
+  ...column
+}: NewColumn & { comment: string | null | undefined }): SubmittedColumn => ({
+  ...column,
+  comment: comment?.trim() || null,
+  name: column.name.trim(),
+  nullable: primaryKey ? false : column.nullable,
+  primaryKey,
+})
 
 const errorsOf = (
   { column, table }: ColumnDialogRequest,
@@ -114,7 +132,7 @@ const ColumnForm = ({
   request,
 }: {
   onSubmit: (
-    column: NewColumn,
+    column: SubmittedColumn,
     reference: ColumnReference | null,
     renamedValues: RenamedValue[]
   ) => void
@@ -137,14 +155,16 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
+  const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
   const locked = lockedFields(connection.type, column)
-  const next: NewColumn = {
-    name: name.trim(),
-    nullable: primaryKey ? false : nullable,
+  const next = submittedColumn({
+    comment,
+    name,
+    nullable,
     primaryKey,
     type: columnType.type,
-  }
+  })
   const errors = errorsOf(request, next, enumValues, submitted)
 
   return (
@@ -203,6 +223,7 @@ const ColumnForm = ({
             }
           }}
         />
+        <CommentField value={comment} onValueChange={setComment} />
         {column === null && table.state === 'added' && (
           <OptionField
             htmlFor="column-dialog-primary-key"
@@ -275,7 +296,7 @@ export const ColumnDialog = <
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: ColumnDialogRequest<Table, Column>,
-    column: NewColumn,
+    column: SubmittedColumn,
     reference: ColumnReference | null,
     renamedValues: RenamedValue[]
   ) => void

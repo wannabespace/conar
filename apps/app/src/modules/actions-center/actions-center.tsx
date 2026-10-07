@@ -44,6 +44,7 @@ import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
+import { settingsSections } from '~/core/settings/sections'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
@@ -376,6 +377,15 @@ export const ActionsCenter = () => {
     {
       entries: [
         ...entriesIn('Application'),
+        ...settingsSections().map(({ icon, id, label }, index) =>
+          actionEntry(
+            `${label} settings`,
+            ['settings', 'preferences', 'options'],
+            icon,
+            () => router.navigate({ search: { section: id }, to: '/settings' }),
+            index === 0 ? ',' : undefined
+          )
+        ),
         actionEntry(
           'Reload window',
           ['restart', 'refresh'],

@@ -1,10 +1,10 @@
 ---
 title: 'MCP Overview'
 sidebarTitle: 'Overview'
-description: 'Let Claude Code, Cursor and other AI agents list your Tamery connections and run read-only queries through the Model Context Protocol (MCP).'
+description: 'Let Claude Code, Cursor and other AI agents list your Tamery connections and query them through the Model Context Protocol (MCP), asking you before every write unless you change it per connection.'
 ---
 
-The Tamery desktop app can run an MCP server. AI agents such as Claude Code and Cursor connect to it to list your saved connections and run read-only SQL against them. Your connection strings stay inside Tamery and never appear in the agent's config.
+The Tamery desktop app can run an MCP server. AI agents such as Claude Code and Cursor connect to it to list your saved connections and run SQL against them. By default they read freely and every write waits for your approval in Tamery. Your connection strings stay inside Tamery and never appear in the agent's config.
 
 <Note>
   The MCP server runs inside the desktop app. It is not available in the web
@@ -15,18 +15,38 @@ The Tamery desktop app can run an MCP server. AI agents such as Claude Code and 
 
 The server is on by default: it starts with the desktop app and listens only on your machine, at `http://127.0.0.1:8264/mcp`. To turn it off, click your avatar → **Settings** (or press <kbd>⌘</kbd> <kbd>,</kbd>), open **MCP** and turn off **Run MCP server**.
 
+## Connection access
+
+Every connection is shared with agents, **Ask before writing**, until you change it. In **Settings** → **MCP**, **Connection access** lists your connections, each with one of three levels:
+
+| Level | What agents can do |
+| --- | --- |
+| **Read only** | Read data and schema. `execute` is refused. |
+| **Ask before writing** | Read freely. Each `execute` waits until you approve it in Tamery. |
+| **Read and write** | Read, and change data and schema with `execute` straight away. A system notification shows each committed statement while Tamery is in the background. |
+
+Turn off a connection's switch to hide it from agents completely: it disappears from `list_connections` and every tool refuses it. These choices are stored on this device only and apply to the next tool call, without restarting the agent.
+
+## Approving a write
+
+On a connection set to **Ask before writing**, an agent's `execute` opens a dialog in Tamery showing the statement. If Tamery is in the background, a system notification tells you, and clicking it brings Tamery forward; on macOS the Dock icon also bounces until you switch to it. **Run** commits it; **Decline** (or <kbd>Esc</kbd>) refuses it, and the agent is told you declined. If the agent stops waiting, the dialog closes by itself.
+
+While the dialog is open, Tamery tries the statement inside a transaction and rolls it back, then shows how many rows it would change, or the error it would fail with. There is no preview where a rollback would not undo the statement: on ClickHouse, which has no transactions, for schema changes on MySQL, which commits them at once, and for procedure calls and dynamic SQL, which can commit on their own. A preview runs the statement for real inside the transaction, so it takes the same locks and time; Tamery stops it after 3 seconds and says so, rather than holding locks on a large change while you decide.
+
+On PostgreSQL and MySQL the dialog also shows the database's own estimate of how many rows a data change touches. It comes from `EXPLAIN`, which plans the statement without running it, so it appears at once, even where there is no preview or the preview was stopped. It is an estimate and can be far off.
+
 ## Connect an agent
 
-**Settings** → **MCP** shows the server URL and access token, and a tab per client with its config ready to copy, token filled in:
+**Settings** → **MCP** shows the server URL and access token, and a tab per client with its config ready to copy, token filled in. If the token leaks, **Regenerate** it beside **Copy token**: every client using the old one loses access until you paste the new one into its config.
 
-| Client      | Where it goes                                           |
-| ----------- | ------------------------------------------------------- |
-| Claude Code | Run the copied `claude mcp add` command in a terminal   |
-| Codex       | `~/.codex/config.toml`                                  |
-| Cursor      | **Add to Cursor**, or `~/.cursor/mcp.json`              |
-| VS Code     | **Add to VS Code**, or **MCP: Open User Configuration** |
-| Gemini CLI  | `~/.gemini/settings.json`                               |
-| Windsurf    | `~/.codeium/windsurf/mcp_config.json`                   |
+| Client | Where it goes |
+| --- | --- |
+| Claude Code | Run the copied `claude mcp add` command in a terminal; it adds Tamery to every project |
+| Codex | `~/.codex/config.toml` |
+| Cursor | **Add to Cursor**, or `~/.cursor/mcp.json` |
+| VS Code | **Add to VS Code**, or **MCP: Open User Configuration** |
+| Gemini CLI | `~/.gemini/settings.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 
 Any other client that supports Streamable HTTP works too: point it at the URL and send the token as an `Authorization: Bearer <token>` header. Most take this JSON:
 
@@ -42,22 +62,26 @@ Any other client that supports Streamable HTTP works too: point it at the URL an
 ```
 
 <Warning>
-  The token lets anything that holds it read your databases while Tamery is
-  running. Keep it out of shared or committed config files.
+  The token lets anything that holds it read your databases, and write to the
+  ones you allowed, while Tamery is running. Keep it out of shared or committed
+  config files.
 </Warning>
 
 ## Tools
 
 | Tool | What it does |
 | --- | --- |
-| `list_connections` | Lists your connections: id, name, engine, and the databases you have opened in each. |
+| `list_connections` | Lists your connections: id, name, engine, the databases you have opened in each, and its access level (`read`, `ask` or `write`). |
+| `list_tables` | Lists a database's schemas with their tables and views, or only one schema's when the agent passes `schema`. |
+| `describe_table` | Describes one table or view: columns with their types, defaults and enum values, constraints (primary key, foreign keys and what they reference, unique, check) and indexes. |
 | `query` | Runs one read-only SQL statement on a connection, optionally in one of the databases `list_connections` returned. Returns at most 200 rows and says when there were more. |
+| `execute` | Runs one SQL statement that may change data or schema and commits it: at once on a connection set to **Read and write**, after your approval on one set to **Ask before writing**. Several statements run together when wrapped in `BEGIN … COMMIT`. On a read-only connection it fails and tells the agent to ask you. |
 
-Agents explore the schema with the engine's own catalog, for example `information_schema` on PostgreSQL, MySQL and SQL Server, or `system.tables` on ClickHouse.
+`list_tables` and `describe_table` read the schema the same way on every engine, through the queries Tamery's own navigator uses, so agents don't need to know each engine's system tables. Both read live: a change the agent makes with `execute` shows up right away, and one made outside Tamery, such as a migration run from the agent's shell, within a few seconds. After an `execute`, Tamery's navigator and open tables refresh too.
 
 ## What agents can and cannot do
 
-- **Read only.** Tamery accepts a single statement starting with `SELECT`, `WITH`, `SHOW`, `DESCRIBE` or `EXPLAIN`, and rejects any that writes, changes the schema or permissions, or ends the transaction. It runs in a read-only transaction that is always rolled back.
+- **Writes only where you allow them.** `query` accepts a single statement starting with `SELECT`, `WITH`, `SHOW`, `DESCRIBE` or `EXPLAIN`, and rejects any that writes, changes the schema or permissions, or ends the transaction. It runs in a read-only transaction that is always rolled back. Only `execute` commits changes, and only on a connection set to **Ask before writing** or **Read and write**.
 - **PostgreSQL, MySQL and ClickHouse** enforce read-only mode in the database itself. On PostgreSQL, extensions that open their own connection, such as `dblink`, are outside it. **SQL Server** has no read-only transactions, so Tamery relies on checking the statement and rolling back. For a hard guarantee there, connect with a database user that has read permissions only.
 - **Same route as the app.** Queries go through the connection's proxy settings like any other query in Tamery, and queries on a named database appear in that database's query log. Stopping the agent cancels its running query.
 - **Tamery must be open and signed in.** Tamery decrypts connection strings inside the app window, so the server answers only while a signed-in window is open.

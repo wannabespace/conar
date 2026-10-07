@@ -6,6 +6,7 @@ import {
   destructiveKeywords,
   invalidatesCatalog,
   readsOnly,
+  runsDynamicSql,
   writesData,
 } from './destructive'
 import { dialects } from './dialect'
@@ -172,5 +173,13 @@ describe('readsOnly', () => {
     expect(readsOnly('COMMIT', pg)).toBe(false)
     expect(readsOnly('SET search_path TO evil', pg)).toBe(false)
     expect(readsOnly('', pg)).toBe(false)
+  })
+})
+
+describe('runsDynamicSql', () => {
+  it('flags procedure calls and dynamic bodies, not plain writes', () => {
+    expect(runsDynamicSql('CALL archive_orders()', mysql)).toBe(true)
+    expect(runsDynamicSql('DO $$ BEGIN COMMIT; END $$', pg)).toBe(true)
+    expect(runsDynamicSql('UPDATE t SET a = 1 WHERE id = 2', pg)).toBe(false)
   })
 })

@@ -7,11 +7,10 @@ import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
 import { ClientSetup } from './client-setup'
+import { ConnectionAccess } from './connection-access'
+import type { ElectronMcp } from './electron-mcp'
+import { statusQueryKey } from './electron-mcp'
 import { ServerDetails } from './server-details'
-
-export type ElectronMcp = NonNullable<Window['electron']>['mcp']
-
-const statusQueryKey = ['mcp', 'status']
 
 export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
   const { data: status } = useQuery({
@@ -35,7 +34,7 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
         <SettingsRow
           htmlFor="mcp-enabled"
           title="Run MCP server"
-          description="Lets AI agents and editors list your connections and run read-only queries on them."
+          description="Lets AI agents and editors list your connections and query them. Agents read freely and ask you before each write; change that per connection."
         >
           <Switch
             id="mcp-enabled"
@@ -54,7 +53,8 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
       )}
       {status.state === 'running' && (
         <>
-          <ServerDetails token={status.token} url={status.url} />
+          <ServerDetails mcp={mcp} token={status.token} url={status.url} />
+          <ConnectionAccess mcp={mcp} />
           <ClientSetup server={status} />
         </>
       )}

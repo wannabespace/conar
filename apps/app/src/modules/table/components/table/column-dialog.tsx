@@ -22,7 +22,10 @@ import {
   transaction,
 } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
-import type { ColumnDialogRequest } from '~/core/table/column-dialog'
+import type {
+  ColumnDialogRequest,
+  SubmittedColumn,
+} from '~/core/table/column-dialog'
 import { ColumnDialog } from '~/core/table/column-dialog'
 import type { ColumnReference } from '~/core/table/use-reference-targets'
 import { queryClient } from '~/lib/query-client'
@@ -37,6 +40,7 @@ export const columnDialogRef = createRef<{
 }>()
 
 interface TableColumn extends NewColumn {
+  comment: string | null
   foreign: boolean
   id: string
   original: ColumnDefinition
@@ -68,6 +72,7 @@ export const TableColumnDialog = ({
     edit: (column) => {
       const original = columnDefinitionOf(column)
       open({
+        comment: original.comment,
         foreign: !!column.foreign,
         id: column.id,
         name: column.id,
@@ -87,7 +92,7 @@ export const TableColumnDialog = ({
       renamedValues,
       request: { column },
     }: {
-      next: NewColumn
+      next: SubmittedColumn
       reference: ColumnReference | null
       renamedValues: RenamedValue[]
       request: Request
@@ -129,6 +134,7 @@ export const TableColumnDialog = ({
             })
           : editColumnQuery({
               column: column.id,
+              comment: next.comment,
               newName: next.name,
               nullable: next.nullable,
               original: column.original,

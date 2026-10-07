@@ -1,21 +1,24 @@
 import type { McpStatus } from '@tamery/shared/mcp'
 
-export type McpServer = Omit<Extract<McpStatus, { state: 'running' }>, 'state'>
+export type McpEndpoint = Omit<
+  Extract<McpStatus, { state: 'running' }>,
+  'state'
+>
 
 const SERVER_NAME = 'tamery'
 
-const headersOf = ({ token }: McpServer) => ({
+const headersOf = ({ token }: McpEndpoint) => ({
   Authorization: `Bearer ${token}`,
 })
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
 
 export interface McpClient {
-  code: (server: McpServer) => string
+  code: (server: McpEndpoint) => string
   file?: string
   id: string
   instruction: string
-  installLink?: (server: McpServer) => string
+  installLink?: (server: McpEndpoint) => string
   label: string
   language: string
 }
@@ -23,7 +26,7 @@ export interface McpClient {
 export const MCP_CLIENTS: McpClient[] = [
   {
     code: (server) =>
-      `claude mcp add --transport http ${SERVER_NAME} ${server.url} --header "Authorization: ${headersOf(server).Authorization}"`,
+      `claude mcp add --transport http --scope user ${SERVER_NAME} ${server.url} --header "Authorization: ${headersOf(server).Authorization}"`,
     id: 'claude_code',
     instruction: 'Run in a terminal',
     label: 'Claude Code',

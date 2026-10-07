@@ -68,6 +68,7 @@ const draftColumn = (column: NewColumn): DiagramColumn => ({
   original: {
     attributes: '',
     collation: null,
+    comment: null,
     nullable: column.nullable,
     type: column.type,
   },

@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 
 import type { ProtectedModule } from '~/lib/module'
 
-import type { ElectronMcp } from './mcp-settings'
+import { ApprovalDialog } from './approval-dialog'
+import type { ElectronMcp } from './electron-mcp'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
@@ -19,7 +20,7 @@ const desktopModule = (mcp: ElectronMcp): ProtectedModule => {
   const Settings = () => <McpSettings mcp={mcp} />
 
   return {
-    mounts: [McpSourceMount],
+    mounts: [McpSourceMount, ApprovalDialog],
     settings: [
       {
         Component: Settings,

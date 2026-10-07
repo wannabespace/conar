@@ -21,6 +21,7 @@ export interface NewColumn {
 export interface ColumnDefinition {
   attributes: string
   collation: string | null
+  comment: string | null
   nullable: boolean
   type: string
 }
@@ -247,6 +248,9 @@ export const restatedType = ({
   return sql.raw(kept ? `${columnType} ${kept}` : columnType)
 }
 
+export const mysqlComment = (comment: string | null) =>
+  comment ? sql` COMMENT ${sql.lit(comment)}` : sql``
+
 export const alterColumnStatement = (
   dialectType: ConnectionType,
   db: Db,
@@ -294,8 +298,10 @@ export const alterColumnStatement = (
   }
 
   return alter
-    .modifyColumn(column, definition, (builder) =>
-      nullable ? builder : builder.notNull()
+    .modifyColumn(
+      column,
+      sql`${definition}${mysqlComment(original.comment)}`,
+      (builder) => (nullable ? builder : builder.notNull())
     )
     .compile()
 }

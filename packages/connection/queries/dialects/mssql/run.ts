@@ -67,6 +67,25 @@ export const runRequest = async (
     request.input(`${index + 1}`, bindable(value))
   }
   request.arrayRowMode = true
+  request.stream = true
+  const limit = maxRows ?? Infinity
+  const sets: { columns: ColumnMetadata[]; rows: unknown[][] }[] = []
+  const errors: Error[] = []
+  request.on('recordset', (columns: ColumnMetadata[]) => {
+    sets.push({ columns, rows: [] })
+  })
+  request.on('row', (row: unknown[]) => {
+    const set = sets.at(-1)
+    if (set && set.rows.length <= limit) {
+      set.rows.push(
+        row.map((value, position) => dateAsText(value, set.columns[position]))
+      )
+    }
+  })
+  // A stream reports each error as an event, then still resolves; without this listener the emit throws.
+  request.on('error', (error: Error) => {
+    errors.push(error)
+  })
   const start = performance.now()
   const result = await cancellable(
     {
@@ -74,29 +93,27 @@ export const runRequest = async (
       connectionString,
       queryId,
     },
-    () => request.query<unknown[][]>(sql)
+    () => request.query(sql)
   )
+  const error = errors.at(-1)
+  if (error) {
+    throw error
+  }
 
-  // Array row mode puts each recordset's columns on `result.columns`, which the typings lack.
-  const columnSets: unknown[] =
-    'columns' in result && Array.isArray(result.columns) ? result.columns : []
-  const sets = result.recordsets.map((rows, index) => {
-    const columns: ColumnMetadata[] = Array.isArray(columnSets[index])
-      ? columnSets[index]
-      : []
-    return resultSet(
-      {
-        affectedRows: null,
-        columns: columns.map((column) => column.name),
-        rows: rows.map((row) =>
-          row.map((value, position) => dateAsText(value, columns[position]))
-        ),
-      },
-      maxRows
-    )
-  })
   if (sets.length > 0) {
-    return { duration: performance.now() - start, result: sets }
+    return {
+      duration: performance.now() - start,
+      result: sets.map(({ columns, rows }) =>
+        resultSet(
+          {
+            affectedRows: null,
+            columns: columns.map((column) => column.name),
+            rows,
+          },
+          maxRows
+        )
+      ),
+    }
   }
 
   const affectedRows = result.rowsAffected.reduce((sum, n) => sum + n, 0)

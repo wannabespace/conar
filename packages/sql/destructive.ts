@@ -97,6 +97,9 @@ export const invalidatesCatalog = runsAny(DDL_KEYWORDS)
 /** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
 export const writesData = runsAny(DATA_WRITE_KEYWORDS)
 
+/** A procedure or dynamic body can COMMIT on its own, so rolling back the transaction around it may not undo it. */
+export const runsDynamicSql = runsAny(DYNAMIC_SQL_COMMANDS)
+
 const READ_COMMANDS = new Set([
   'DESC',
   'DESCRIBE',

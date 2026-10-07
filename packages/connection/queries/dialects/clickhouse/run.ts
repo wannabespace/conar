@@ -88,11 +88,31 @@ export const runQuery = ({
           result_overflow_mode: 'break',
         }),
       },
-      format: 'JSONCompact',
+      format: 'JSONCompactEachRowWithNamesAndTypes',
       query: sql,
       query_id: clickhouseQueryId,
     })
-    const { data, meta = [] } = await response.json<unknown[][]>()
+    const limit = maxRows ?? Infinity
+    // `break` overflows to the end of a block, so the read itself stops at the cap. The first two rows are the names and types.
+    const header: unknown[][] = []
+    const rows: unknown[][] = []
+    for await (const batch of response.stream()) {
+      for (const row of batch) {
+        if (header.length < 2) {
+          header.push(row.json())
+        } else if (rows.length <= limit) {
+          rows.push(row.json())
+        }
+      }
+      if (rows.length > limit) {
+        break
+      }
+    }
+    const [names = [], types = []] = header
+    const meta = names.map((name, index) => ({
+      name: String(name),
+      type: String(types[index]),
+    }))
     return {
       duration: performance.now() - start,
       result: [
@@ -100,7 +120,7 @@ export const runQuery = ({
           {
             affectedRows: null,
             columns: meta.map((column) => column.name),
-            rows: unquoteSafeIntegers(meta, data),
+            rows: unquoteSafeIntegers(meta, rows),
           },
           maxRows
         ),

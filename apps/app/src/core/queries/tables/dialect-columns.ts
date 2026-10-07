@@ -81,18 +81,11 @@ export const mysqlColumns = async (
               )
               .end(),
             eb.case().when(extraHas('INVISIBLE')).then('INVISIBLE').end(),
-            eb
-              .case()
-              .when('COLUMN_COMMENT', '!=', '')
-              .then(
-                eb.fn('concat', [
-                  eb.val('COMMENT '),
-                  eb.fn('quote', ['COLUMN_COMMENT']),
-                ])
-              )
-              .end(),
           ])
           .as('attributes'),
+        eb
+          .fn<string | null>('nullif', ['COLUMN_COMMENT', eb.val('')])
+          .as('comment'),
         eb
           .and([
             eb.not(extraHas('VIRTUAL GENERATED')),
@@ -155,6 +148,12 @@ export const postgresColumns = async (
       'character_maximum_length as max_length',
       'numeric_precision as precision',
       'numeric_scale as scale',
+      eb
+        .fn<string | null>('col_description', [
+          sql`(quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass`,
+          'ordinal_position',
+        ])
+        .as('comment'),
       eb
         .selectFrom('pg_catalog.pg_attribute as a')
         .select((sub) =>
@@ -232,6 +231,9 @@ export const postgresColumns = async (
               eb.ref('a.atttypmod'),
             ])
             .as('type'),
+          eb
+            .fn<string | null>('col_description', ['a.attrelid', 'a.attnum'])
+            .as('comment'),
           sql<boolean>`not a.attnotnull`.as('nullable'),
         ])
         .where(({ and, eb }) =>

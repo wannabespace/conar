@@ -17,6 +17,7 @@ export const columnType = type({
   // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.
   'attributes?': 'string',
   'collation?': 'string | null',
+  'comment?': 'string | null',
   // Full type as a DDL statement spells it, length and precision included.
   'declaredType?': 'string | null',
   default: 'string | null',
@@ -50,6 +51,7 @@ type CatalogColumn = Partial<
     typeof columnType.infer,
     | 'attributes'
     | 'collation'
+    | 'comment'
     | 'declaredType'
     | 'isGenerated'
     | 'isIdentity'
@@ -63,6 +65,7 @@ export const columnDefinitionOf = (
 ): ColumnDefinition => ({
   attributes: column.attributes ?? '',
   collation: column.collation ?? null,
+  comment: column.comment ?? null,
   nullable: !!column.isNullable,
   type: column.declaredType ?? column.typeLabel ?? '',
 })
@@ -112,6 +115,10 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'name as id',
             'default_expression as default',
             'type',
+            (eb) =>
+              eb
+                .fn<string | null>('nullIf', ['comment', eb.val('')])
+                .as('comment'),
             sql<boolean>`default_kind IN ('MATERIALIZED', 'ALIAS')`.as(
               'isGenerated'
             ),
@@ -157,6 +164,22 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
             'COLLATION_NAME as collation',
+            eb
+              .selectFrom('sys.extended_properties')
+              .select(sql<string>`CAST(value AS nvarchar(max))`.as('comment'))
+              .where('class', '=', 1)
+              .where('name', '=', 'MS_Description')
+              .where(
+                'major_id',
+                '=',
+                sql<number>`OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME))`
+              )
+              .where(
+                'minor_id',
+                '=',
+                sql<number>`COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'ColumnId')`
+              )
+              .as('comment'),
             eb
               .case()
               .when('DATA_TYPE', 'in', [

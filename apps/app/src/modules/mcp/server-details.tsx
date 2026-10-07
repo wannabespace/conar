@@ -1,12 +1,18 @@
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
 
-import type { McpServer } from './clients'
+import type { McpEndpoint } from './clients'
 import { CopyValue } from './copy-value'
+import type { ElectronMcp } from './electron-mcp'
+import { RegenerateToken } from './regenerate-token'
 
 const VISIBLE_TOKEN_CHARS = 4
 
-export const ServerDetails = ({ token, url }: McpServer) => (
+export const ServerDetails = ({
+  mcp,
+  token,
+  url,
+}: McpEndpoint & { mcp: ElectronMcp }) => (
   <SettingsGroup title="Server">
     <SettingsRow
       title="URL"
@@ -23,7 +29,7 @@ export const ServerDetails = ({ token, url }: McpServer) => (
     </SettingsRow>
     <SettingsRow
       title="Access token"
-      description="Clients send it as a Bearer token in the Authorization header."
+      description="Clients send it as a Bearer token in the Authorization header. Regenerate it if it leaks."
     >
       <code data-mask className="text-muted-foreground font-mono text-xs">
         ••••••••{token.slice(-VISIBLE_TOKEN_CHARS)}
@@ -35,6 +41,7 @@ export const ServerDetails = ({ token, url }: McpServer) => (
           posthog.capture('mcp_server_value_copied', { value: 'token' })
         }
       />
+      <RegenerateToken mcp={mcp} />
     </SettingsRow>
   </SettingsGroup>
 )

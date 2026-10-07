@@ -193,6 +193,7 @@ describe('alterColumn', () => {
   const original = {
     attributes: '',
     collation: null,
+    comment: null,
     nullable: true,
     type: 'integer',
   }
@@ -219,8 +220,9 @@ describe('alterColumn', () => {
 
   test('MySQL restates the clauses MODIFY would drop', () => {
     const mysqlOriginal = {
-      attributes: "DEFAULT 'x' INVISIBLE COMMENT 'note'",
+      attributes: "DEFAULT 'x' INVISIBLE",
       collation: 'utf8mb4_bin',
+      comment: "it's a note",
       nullable: true,
       type: 'varchar(20)',
     }
@@ -231,7 +233,7 @@ describe('alterColumn', () => {
         type: 'varchar(20)',
       }).sql
     ).toBe(
-      "alter table `s`.`t` modify column `a` varchar(20) COLLATE utf8mb4_bin DEFAULT 'x' INVISIBLE COMMENT 'note' not null"
+      "alter table `s`.`t` modify column `a` varchar(20) COLLATE utf8mb4_bin DEFAULT 'x' INVISIBLE COMMENT 'it''s a note' not null"
     )
   })
 

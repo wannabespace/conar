@@ -203,6 +203,10 @@ export const useReferencePeek = (
   return {
     close: () => setTarget(null),
     open: (anchor: Element, hop: Hop) => {
+      if (target?.anchor === anchor && target.hop.kind === hop.kind) {
+        setTarget(null)
+        return
+      }
       posthog.capture('reference_peek_opened')
       setTarget({ anchor, hop })
     },
@@ -239,6 +243,16 @@ export const ReferencePeek = ({
       open={!!target}
       onOpenChange={(open, details) => {
         if (open) {
+          return
+        }
+        const pressed = details.event.target
+        // The cell's peek buttons toggle the popover; closing on their press would let the click reopen it.
+        if (
+          details.reason === 'outside-press' &&
+          pressed instanceof Element &&
+          target?.anchor.contains(pressed.closest('button'))
+        ) {
+          details.cancel()
           return
         }
         if (details.reason === 'escape-key' && hops.length > 1) {

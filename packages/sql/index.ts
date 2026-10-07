@@ -18,6 +18,7 @@ export {
   destructiveKeywords,
   invalidatesCatalog,
   readsOnly,
+  runsDynamicSql,
   writesData,
 } from './destructive'
 export { statementScope } from './scope'

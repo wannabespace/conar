@@ -19,7 +19,6 @@ export interface RunOptions {
   maxRows?: number
 }
 
-// ponytail: rows are fetched whole and cut here; stream through a cursor if proxy memory matters.
 export const resultSet = (
   { affectedRows, columns, rows }: Omit<ResultSet, 'truncated'>,
   maxRows = Infinity

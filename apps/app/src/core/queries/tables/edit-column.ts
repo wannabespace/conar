@@ -14,11 +14,13 @@ import { createQuery } from '~/core/runtime/query'
 import type { AlterColumnTarget } from './shape'
 import {
   alterColumnStatement,
+  mysqlComment,
   renameColumnStatement,
   restatedType,
 } from './shape'
 
 interface EditColumnTarget extends AlterColumnTarget {
+  comment: string | null
   newName: string
   reference?: ConstraintShape
   renamedValues: RenamedValue[]
@@ -26,6 +28,9 @@ interface EditColumnTarget extends AlterColumnTarget {
 
 const altered = ({ nullable, original, type }: EditColumnTarget) =>
   type !== original.type || nullable !== original.nullable
+
+const commented = ({ comment, original }: EditColumnTarget) =>
+  comment !== original.comment
 
 // Alters under the old name first, so a failing alter leaves the column as it
 // was; the key names the new one.
@@ -123,19 +128,43 @@ export const editColumnQuery = (target: EditColumnTarget) =>
   createQuery({
     query: {
       clickhouse: async (db) => {
+        const { comment, newName, schema, table } = target
         await clickhouseRefuseHeldValues(db, target)
         await editInSteps(ConnectionType.ClickHouse, db, target)
+        if (commented(target)) {
+          await sql`ALTER TABLE ${sql.id(schema, table)} COMMENT COLUMN ${sql.id(newName)} ${sql.lit(comment ?? '')}`.execute(
+            db
+          )
+        }
       },
-      mssql: (db) => editInSteps(ConnectionType.MSSQL, db, target),
+      mssql: async (db) => {
+        const { comment, newName, original, schema, table } = target
+        await editInSteps(ConnectionType.MSSQL, db, target)
+        if (!commented(target)) {
+          return
+        }
+        const column = sql`@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`
+        if (original.comment !== null) {
+          await sql`EXEC sp_dropextendedproperty @name = N'MS_Description', ${column}`.execute(
+            db
+          )
+        }
+        if (comment !== null) {
+          await sql`EXEC sp_addextendedproperty @name = N'MS_Description', @value = ${comment}, ${column}`.execute(
+            db
+          )
+        }
+      },
       // MySQL commits each DDL statement, so the rename, the alter and the key
       // go in one ALTER: a part that fails leaves the column untouched.
       mysql: async (db) => {
         const { column, newName, nullable, reference, schema, table } = target
         await mysqlMoveRenamedValues(db, target)
-        const columnAction = altered(target)
-          ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${restatedType(target)}${sql.raw(nullable ? '' : ' NOT NULL')}`
-          : newName !== column &&
-            sql`RENAME COLUMN ${sql.id(column)} TO ${sql.id(newName)}`
+        const columnAction =
+          altered(target) || commented(target)
+            ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${restatedType(target)}${sql.raw(nullable ? '' : ' NOT NULL')}${mysqlComment(target.comment)}`
+            : newName !== column &&
+              sql`RENAME COLUMN ${sql.id(column)} TO ${sql.id(newName)}`
         const actions = [
           columnAction,
           reference && sql`ADD ${constraintClause(reference)}`,
@@ -146,6 +175,14 @@ export const editColumnQuery = (target: EditColumnTarget) =>
           )
         }
       },
-      postgres: (db) => editInSteps(ConnectionType.Postgres, db, target),
+      postgres: async (db) => {
+        const { comment, newName, schema, table } = target
+        await editInSteps(ConnectionType.Postgres, db, target)
+        if (commented(target)) {
+          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${comment === null ? sql`NULL` : sql.lit(comment)}`.execute(
+            db
+          )
+        }
+      },
     },
   })

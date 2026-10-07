@@ -37,7 +37,7 @@ export const SettingsRow = ({
   title,
 }: {
   children: ReactNode
-  description: ReactNode
+  description?: ReactNode
   htmlFor?: string
   title: ReactNode
 }) => (
@@ -49,7 +49,7 @@ export const SettingsRow = ({
   >
     <ItemContent>
       <ItemTitle>{title}</ItemTitle>
-      <ItemDescription>{description}</ItemDescription>
+      {description && <ItemDescription>{description}</ItemDescription>}
     </ItemContent>
     <ItemActions>{children}</ItemActions>
   </Item>

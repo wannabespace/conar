@@ -12,11 +12,11 @@ import {
 import { SettingsGroup } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
 
-import type { McpServer } from './clients'
+import type { McpEndpoint } from './clients'
 import { MCP_CLIENTS } from './clients'
 import { CopyValue } from './copy-value'
 
-export const ClientSetup = ({ server }: { server: McpServer }) => (
+export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
     <Tabs defaultValue={MCP_CLIENTS[0]?.id}>
       <div className="px-3.5 pt-3.5">
