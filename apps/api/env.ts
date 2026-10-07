@@ -17,7 +17,6 @@ if (nodeEnv === 'development') {
 
 const envType = type({
   ALERTS_EMAIL: 'string',
-  ANTHROPIC_API_KEY: 'string',
   API_URL: 'string',
   BANNER_TEXT: 'string?',
   BETTER_AUTH_SECRET: 'string',
@@ -28,11 +27,10 @@ const envType = type({
   GITHUB_TOKEN: 'string',
   GOOGLE_CLIENT_ID: 'string',
   GOOGLE_CLIENT_SECRET: 'string',
-  GOOGLE_GENERATIVE_AI_API_KEY: 'string',
   MAIN_URL: 'string',
   MIN_DESKTOP_VERSION: type('string').pipe(Number),
   MISTRAL_API_KEY: 'string',
-  OPENAI_API_KEY: 'string',
+  OPENROUTER_API_KEY: 'string',
   PROXY_SHARED_SECRET: 'string',
   REDIS_URL: 'string',
   RESEND_API_KEY: 'string',
@@ -42,7 +40,6 @@ const envType = type({
   STRIPE_SECRET_KEY: 'string',
   STRIPE_WEBHOOK_SECRET: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
-  XAI_API_KEY: 'string',
 }).and(dbEnvType)
 
 const devOptionalEnvs = [
@@ -53,10 +50,7 @@ const devOptionalEnvs = [
   'STRIPE_MONTH_PRICE_ID',
   'STRIPE_ANNUAL_PRICE_ID',
   'RESEND_API_KEY',
-  'OPENAI_API_KEY',
-  'ANTHROPIC_API_KEY',
-  'GOOGLE_GENERATIVE_AI_API_KEY',
-  'XAI_API_KEY',
+  'OPENROUTER_API_KEY',
   'MISTRAL_API_KEY',
   'GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET',

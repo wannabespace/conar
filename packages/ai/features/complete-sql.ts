@@ -45,7 +45,7 @@ const chatCompleteSql = async (data: CompleteSqlInput) => {
     instructions: {
       content: completeSqlInstructions(data),
       providerOptions: {
-        anthropic: { cacheControl: { type: 'ephemeral' } },
+        openrouter: { cacheControl: { type: 'ephemeral' } },
       },
       role: 'system',
     },
