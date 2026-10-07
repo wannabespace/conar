@@ -212,7 +212,12 @@ export const TableCell = ({
         />
       )}
       {state === 'editing' && (
-        <CellField anchor={ref} column={column} value={value} />
+        <CellField
+          anchor={ref}
+          column={column}
+          rowIndex={rowIndex}
+          value={value}
+        />
       )}
     </div>
   )

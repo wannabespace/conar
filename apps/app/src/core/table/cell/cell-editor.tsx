@@ -166,10 +166,12 @@ const CodeField = ({
 export const CellField = ({
   anchor,
   column,
+  rowIndex,
   value,
 }: {
   anchor: RefObject<HTMLElement | null>
   column: Column
+  rowIndex: number
   value: unknown
 }) => {
   const cursor = useGridCursorContext()
@@ -180,7 +182,7 @@ export const CellField = ({
     selector: (state) => state.edit,
   })
   const transformer = createTransformer(connectionType, column)
-  const readOnly = !cursor.isEditable(column)
+  const readOnly = !cursor.isEditable(column, rowIndex)
   const language = codeLanguage(connectionType, column, value)
   const reference =
     isPickColumn(column) || readOnly ? undefined : column.foreign
