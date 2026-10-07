@@ -11,6 +11,13 @@ export const query = {
   beginTransaction: handleQueryError(async ({ connectionString, ownerId }) => {
     const pool = await getPool(connectionString)
     const transaction = pool.transaction()
+    // A statement that aborts the transaction makes SQL Server roll it back;
+    // mssql then rejects rollback() with EABORT, which would replace the
+    // statement's own error.
+    let aborted = false
+    transaction.on('rollback', (byServer: boolean) => {
+      aborted = byServer
+    })
     await transaction.begin()
 
     const txId = registerTransaction(
@@ -25,7 +32,7 @@ export const query = {
         release: async () => {
           // mssql's `Transaction` releases its connection internally on commit/rollback.
         },
-        rollback: () => transaction.rollback(),
+        rollback: () => (aborted ? undefined : transaction.rollback()),
       },
       ownerId
     )
