@@ -1,71 +1,28 @@
-import * as templates from '~/core/codegen/templates'
+import { camelCase, pascalCase } from 'change-case'
+
+import { zodType } from '~/core/codegen/column-types'
 import type { SchemaParams } from '~/core/codegen/types'
-import {
-  getColumnType,
-  toLiteralKey,
-  toStringLiteral,
-} from '~/core/codegen/utils'
+import { hasType, toLiteralKey, toStringLiteral } from '~/core/codegen/utils'
 
-const buildZodType = (
-  column: SchemaParams['columns'][number],
-  dialect: SchemaParams['dialect']
-): string | null => {
-  let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
+export const generateSchemaZod = ({ table, columns }: SchemaParams) => {
+  const fields = columns.filter(hasType).map((column) => {
+    const base =
+      column.enumName && column.availableValues?.length
+        ? `z.enum([${column.availableValues.map(toStringLiteral).join(', ')}])`
+        : zodType(column)
+    const array = column.isArray ? '.array()' : ''
+    const nullable = column.isNullable ? '.nullable()' : ''
+    return `  ${toLiteralKey(column.id)}: ${base}${array}${nullable},`
+  })
+  const schemaName = `${camelCase(table)}Schema`
 
-  if (!zodType) {
-    return null
-  }
-
-  if (column.enumName && column.availableValues?.length) {
-    zodType = `z.enum([${column.availableValues.map(toStringLiteral).join(', ')}])`
-  }
-
-  if (
-    column.maxLength &&
-    column.maxLength > 0 &&
-    zodType.includes('z.string')
-  ) {
-    zodType = zodType.replace(
-      'z.string()',
-      `z.string().max(${column.maxLength})`
-    )
-  }
-
-  if (
-    zodType.includes('z.number()') &&
-    column.type &&
-    /int/iu.test(column.type)
-  ) {
-    zodType = zodType.replace('z.number()', 'z.int()')
-  }
-
-  if (column.isArray) {
-    zodType += '.array()'
-  }
-  if (column.isNullable) {
-    zodType += '.nullable()'
-  }
-  return zodType
-}
-
-export const generateSchemaZod = ({
-  table,
-  columns,
-  dialect,
-}: SchemaParams) => {
-  const lines = columns
-    .map((column) => {
-      const key = toLiteralKey(column.id)
-      const zodType = buildZodType(column, dialect)
-
-      if (!zodType) {
-        return null
-      }
-
-      return `  ${key}: ${zodType},`
-    })
-    .filter(Boolean)
-    .join('\n')
-
-  return templates.zodSchemaTemplate(table, lines)
+  return [
+    `import * as z from 'zod';`,
+    '',
+    `export const ${schemaName} = z.object({`,
+    fields.join('\n'),
+    '});',
+    '',
+    `export type ${pascalCase(table)} = z.infer<typeof ${schemaName}>;`,
+  ].join('\n')
 }

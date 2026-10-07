@@ -1,13 +1,10 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 
-import * as templates from '~/core/codegen/templates'
+import { explicitIndexes } from '~/core/codegen/indexes'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
 import {
-  filterExplicitIndexes,
   formatValue,
-  getColumnType,
-  groupIndexes,
   isSerialDefault,
   isSingleColumnConstraint,
   quoteIdentifier,
@@ -62,8 +59,6 @@ export const generateQuerySQL = ({
   )
 }
 
-const escapeSqlString = (s: string): string => s.replaceAll("'", "''")
-
 const SERIAL_BY_INT_TYPE: Record<string, string> = {
   BIGINT: 'BIGSERIAL',
   INTEGER: 'SERIAL',
@@ -77,7 +72,7 @@ const formatEnumType = (
   dialect: ConnectionType
 ) => {
   if (dialect === ConnectionType.MySQL) {
-    const valuesList = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
+    const valuesList = values.map((v) => formatValue(v, dialect)).join(', ')
     return `${c.type === 'set' ? 'SET' : 'ENUM'}(${valuesList})`
   }
   if (dialect === ConnectionType.MSSQL) {
@@ -87,18 +82,17 @@ const formatEnumType = (
 }
 
 const formatScalarType = (c: Column, dialect: ConnectionType) => {
-  const columnType =
+  let typeDef =
     dialect === ConnectionType.ClickHouse ? c.type : (c.typeLabel ?? c.type)
-  if (!columnType) {
+  if (!typeDef) {
     throw new Error(`Missing type for column ${c.id}`)
   }
   if (dialect === ConnectionType.ClickHouse) {
-    return columnType
+    return typeDef
   }
   if (dialect !== ConnectionType.Postgres && c.declaredType) {
     return c.declaredType.replace(/^[^']*/u, (head) => head.toUpperCase())
   }
-  let typeDef = getColumnType(columnType, 'sql', dialect)
 
   if (typeof c.maxLength === 'number') {
     const len = c.maxLength === -1 ? 'MAX' : c.maxLength
@@ -189,59 +183,40 @@ const buildColumnParts = (
   return { foreignKey, parts }
 }
 
-const buildPostgresEnumStatements = (
-  usedEnums: Map<string, string[]>
-): string[] =>
-  Array.from(usedEnums.entries(), ([name, values]) => {
-    const vals = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
-    return `CREATE TYPE "${name}" AS ENUM (${vals});`
-  })
-
-const appendIndexStatements = (
-  statement: string,
+const indexStatement = (
+  idx: ReturnType<typeof explicitIndexes>[number],
   qualifiedTable: string,
-  columns: Column[],
-  groupedIndexes: ReturnType<typeof groupIndexes>,
   dialect: ConnectionType
-): string => {
-  const explicit = filterExplicitIndexes(groupedIndexes, columns)
-  if (explicit.length === 0) {
-    return statement
-  }
-
-  const lines = explicit.map((idx) =>
-    idx.custom && idx.definition
-      ? idx.definition
-      : [
-          'CREATE',
-          idx.isUnique ? 'UNIQUE' : '',
-          'INDEX',
-          `${quoteIdentifier(idx.name, dialect)}`,
-          'ON',
-          qualifiedTable,
-          dialect === ConnectionType.Postgres && idx.type
-            ? `USING ${idx.type}`
-            : '',
-          `(${idx.keys
-            .map((key) =>
-              'column' in key
-                ? quoteIdentifier(key.column, dialect)
-                : key.expression
-            )
-            .join(', ')})`,
-        ]
-          .filter(Boolean)
-          .join(' ')
-  )
-  return `${statement}\n\n${lines.join(';\n')};`
-}
+) =>
+  idx.custom && idx.definition
+    ? idx.definition
+    : [
+        'CREATE',
+        idx.isUnique ? 'UNIQUE' : '',
+        'INDEX',
+        quoteIdentifier(idx.name, dialect),
+        'ON',
+        qualifiedTable,
+        dialect === ConnectionType.Postgres && idx.type
+          ? `USING ${idx.type}`
+          : '',
+        `(${idx.keys
+          .map((key) =>
+            'column' in key
+              ? quoteIdentifier(key.column, dialect)
+              : key.expression
+          )
+          .join(', ')})`,
+      ]
+        .filter(Boolean)
+        .join(' ')
 
 export const generateSchemaSQL = ({
   table,
   schema,
   columns,
   dialect,
-  indexes = [],
+  indexes,
 }: SchemaParams) => {
   const usedEnums = new Map<string, string[]>()
   const pkColumns: string[] = []
@@ -274,38 +249,36 @@ export const generateSchemaSQL = ({
     }
   }
 
-  const constraints = [...foreignKeys]
-  if (pkColumns.length > 0 && dialect !== ConnectionType.ClickHouse) {
-    constraints.unshift(`  PRIMARY KEY (${pkColumns.join(', ')})`)
-  }
-
+  const primaryKey =
+    pkColumns.length > 0 && dialect !== ConnectionType.ClickHouse
+      ? [`  PRIMARY KEY (${pkColumns.join(', ')})`]
+      : []
   const qualifiedTable = qualify(schema, table, dialect)
-  let statement = templates.sqlSchemaTemplate(
-    qualifiedTable,
-    [...columnLines, ...constraints].join(',\n')
-  )
+  const createTable = `CREATE TABLE ${qualifiedTable} (\n${[...columnLines, ...primaryKey, ...foreignKeys].join(',\n')}\n)`
 
   if (dialect === ConnectionType.ClickHouse) {
     const orderBy =
       pkColumns.length > 0 ? `(${pkColumns.join(', ')})` : 'tuple()'
-    return statement.replace(
-      /\);\s*$/u,
-      `) ENGINE = MergeTree() ORDER BY ${orderBy};`
-    )
+    return `${createTable} ENGINE = MergeTree() ORDER BY ${orderBy};`
   }
 
-  statement = appendIndexStatements(
-    statement,
-    qualifiedTable,
-    columns,
-    groupIndexes(indexes, schema, table),
-    dialect
+  const enumStatements = Array.from(
+    usedEnums,
+    ([name, values]) =>
+      `CREATE TYPE "${name}" AS ENUM (${values.map((v) => formatValue(v, dialect)).join(', ')});`
   )
+  const indexStatements = explicitIndexes({
+    columns,
+    indexes,
+    schema,
+    table,
+  }).map((idx) => `${indexStatement(idx, qualifiedTable, dialect)};`)
 
-  const enumStatements =
-    usedEnums.size > 0
-      ? `${buildPostgresEnumStatements(usedEnums).join('\n')}\n\n`
-      : ''
-
-  return `${enumStatements}${statement}`
+  return [
+    enumStatements.join('\n'),
+    `${createTable};`,
+    indexStatements.join('\n'),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 }

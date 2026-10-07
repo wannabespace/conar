@@ -2,14 +2,18 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
-import * as templates from '~/core/codegen/templates'
-import type { QueryParams, SchemaParams } from '~/core/codegen/types'
+import { drizzleType } from '~/core/codegen/column-types'
+import { explicitIndexes } from '~/core/codegen/indexes'
+import type {
+  QueryParams,
+  SchemaParams,
+  TypedColumn,
+} from '~/core/codegen/types'
 import {
-  filterExplicitIndexes,
-  getColumnType,
-  groupIndexes,
-  isNowDefault,
+  claimRelationName,
   explicitSchema,
+  hasType,
+  isNowDefault,
   isSerialDefault,
   isSingleColumnConstraint,
   isValidIdentifier,
@@ -49,15 +53,13 @@ const dialectConfig: Record<
   },
 }
 
-const FK_SUFFIX_RE = /(?<suffix>_id|Id)$/u
+const FK_SUFFIX_RE = /(?:_id|Id)$/u
 
 const SERIAL_BY_INT_TYPE: Record<string, string> = {
   bigint: 'bigserial',
   integer: 'serial',
   smallint: 'smallserial',
 }
-
-const resolveRefTable = (table: string): string => camelCase(table)
 
 const DRIZZLE_FUNCTIONS: Record<FilterOperator, string> = {
   eq: 'eq',
@@ -78,49 +80,51 @@ const DRIZZLE_FUNCTIONS: Record<FilterOperator, string> = {
 export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
   const varName = camelCase(table)
 
-  const conditions = filters
-    .map((f) => {
-      const fn = DRIZZLE_FUNCTIONS[f.ref.operator]
-      const col = `${varName}.${camelCase(f.column)}`
-      if (f.ref.hasValue === false) {
-        return `${fn}(${col})`
-      }
-      const value = f.ref.isArray ? f.values : f.values[0]
-      return `${fn}(${col}, ${JSON.stringify(value)})`
-    })
-    .join(',\n    ')
+  if (filters.length === 0) {
+    return `await db.select().from(${varName})`
+  }
 
-  return templates.drizzleQueryTemplate(varName, conditions)
+  const conditions = filters.map((f) => {
+    const fn = DRIZZLE_FUNCTIONS[f.ref.operator]
+    const col = `${varName}.${camelCase(f.column)}`
+    if (f.ref.hasValue === false) {
+      return `${fn}(${col})`
+    }
+    const value = f.ref.isArray ? f.values : f.values[0]
+    return `${fn}(${col}, ${JSON.stringify(value)})`
+  })
+
+  return [
+    'await db.select()',
+    `  .from(${varName})`,
+    '  .where(and(',
+    `    ${conditions.join(',\n    ')}`,
+    '  ))',
+  ].join('\n')
 }
 
-const buildColumnOptions = (
-  c: SchemaParams['columns'][number],
-  typeFunc: string
-): string => {
+const buildColumnOptions = (c: TypedColumn, typeFunc: string): string => {
   if (
     c.maxLength &&
     c.maxLength !== -1 &&
     ['varchar', 'char', 'nvarchar'].includes(typeFunc)
   ) {
-    return `, { length: ${c.maxLength} }`
+    return `{ length: ${c.maxLength} }`
   }
   if (['bigint', 'bigserial'].includes(typeFunc)) {
-    return ", { mode: 'number' }"
+    return "{ mode: 'number' }"
   }
-  if (
-    typeFunc === 'timestamp' &&
-    /with time zone|timestamptz/iu.test(c.type ?? '')
-  ) {
-    return ', { withTimezone: true }'
+  if (typeFunc === 'timestamp' && /with time zone|timestamptz/iu.test(c.type)) {
+    return '{ withTimezone: true }'
   }
   if (['decimal', 'numeric'].includes(typeFunc) && c.precision) {
-    return `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
+    return `{ precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
   }
   return ''
 }
 
 const buildGeneratedChain = (
-  c: SchemaParams['columns'][number],
+  c: TypedColumn,
   dialect: ConnectionType,
   coreImports: Set<string>
 ): string => {
@@ -141,7 +145,7 @@ const buildGeneratedChain = (
 }
 
 const buildColumnChain = (
-  c: SchemaParams['columns'][number],
+  c: TypedColumn,
   typeFunc: string,
   options: string,
   { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>,
@@ -149,12 +153,8 @@ const buildColumnChain = (
   foreignKeyImports: Set<string>,
   coreImports: Set<string>
 ): string => {
-  const key = camelCase(c.id)
-  const sameCase = key === c.id
-
-  let chain = sameCase
-    ? `${typeFunc}(${options ? options.slice(2).trim() : ''})`
-    : `${typeFunc}(${toStringLiteral(c.id)}${options})`
+  const name = camelCase(c.id) === c.id ? '' : toStringLiteral(c.id)
+  let chain = `${typeFunc}(${[name, options].filter(Boolean).join(', ')})`
 
   if (c.isArray && dialect === ConnectionType.Postgres) {
     chain += '.array()'
@@ -170,8 +170,8 @@ const buildColumnChain = (
     chain += '.unique()'
   }
 
-  if (c.foreign && dialect !== 'clickhouse') {
-    const refTable = resolveRefTable(c.foreign.table)
+  if (c.foreign) {
+    const refTable = camelCase(c.foreign.table)
     const fkOptions = []
     if (c.foreign.onDelete) {
       fkOptions.push(`onDelete: '${c.foreign.onDelete.toLowerCase()}'`)
@@ -197,7 +197,6 @@ const tableColumn = (column: string) => {
 
 const buildRelationships = (
   columns: SchemaParams['columns'],
-  dialect: ConnectionType,
   varName: string
 ) => {
   const relationships: string[] = []
@@ -205,8 +204,8 @@ const buildRelationships = (
   const usedNames = new Set<string>()
 
   for (const c of columns) {
-    if (c.foreign && dialect !== 'clickhouse') {
-      const refTable = resolveRefTable(c.foreign.table)
+    if (c.foreign) {
+      const refTable = camelCase(c.foreign.table)
       const fieldName = camelCase(c.id.replace(FK_SUFFIX_RE, ''))
       usedNames.add(fieldName)
       relationships.push(
@@ -215,16 +214,11 @@ const buildRelationships = (
     }
 
     for (const ref of c.references ?? []) {
-      const refTable = resolveRefTable(ref.table)
-      let fieldName = camelCase(ref.table)
-      if (usedNames.has(fieldName)) {
-        fieldName = camelCase(`${ref.table}_${ref.column}`)
-      }
-      usedNames.add(fieldName)
-      const rel = ref.isUnique
-        ? `  ${fieldName}: one(${refTable}),`
-        : `  ${fieldName}: many(${refTable}),`
-      relationships.push(rel)
+      const refTable = camelCase(ref.table)
+      const fieldName = claimRelationName(usedNames, ref.table, ref.column)
+      relationships.push(
+        `  ${fieldName}: ${ref.isUnique ? 'one' : 'many'}(${refTable}),`
+      )
       relationshipFkImports.add(`import { ${refTable} } from './${ref.table}';`)
     }
   }
@@ -237,7 +231,7 @@ export const generateSchemaDrizzle = ({
   schema,
   columns,
   dialect,
-  indexes = [],
+  indexes,
 }: SchemaParams) => {
   if (dialect === ConnectionType.ClickHouse) {
     return ''
@@ -254,13 +248,9 @@ export const generateSchemaDrizzle = ({
   const varName = camelCase(table)
 
   const cols = columns
-    .filter((c) => c.type)
+    .filter(hasType)
     .map((c) => {
-      const columnType = c.type
-      if (!columnType) {
-        return ''
-      }
-      let typeFunc = getColumnType(columnType, 'drizzle', dialect)
+      let typeFunc = drizzleType(c.type, dialect)
       if (
         dialect === ConnectionType.Postgres &&
         isSerialDefault(c.defaultValue)
@@ -274,7 +264,7 @@ export const generateSchemaDrizzle = ({
         dialectImports.add(enumFunc)
         if (dialect === ConnectionType.MySQL) {
           typeFunc = enumFunc
-          options = `, ${values}`
+          options = values
         } else {
           typeFunc = `${camelCase(c.enumName)}Enum`
           extras.push(
@@ -304,22 +294,15 @@ export const generateSchemaDrizzle = ({
 
       return `  ${safeKey}: ${chain},`
     })
-    .filter(Boolean)
     .join('\n')
 
   const { relationships, relationshipFkImports } = buildRelationships(
     columns,
-    dialect,
     varName
   )
 
   const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
   allFkImports.delete(`import { ${varName} } from './${table}';`)
-
-  const explicitIndexes = filterExplicitIndexes(
-    groupIndexes(indexes, schema, table),
-    columns
-  )
 
   if (relationships.length > 0) {
     coreImports.add('relations')
@@ -333,7 +316,7 @@ export const generateSchemaDrizzle = ({
       `  primaryKey({ columns: [${primaryColumns.map((c) => tableColumn(c.id)).join(', ')}] }),`
     )
   }
-  for (const idx of explicitIndexes) {
+  for (const idx of explicitIndexes({ columns, indexes, schema, table })) {
     const func = idx.isUnique ? 'uniqueIndex' : 'index'
     dialectImports.add(func)
     const on = idx.keys.map((key) => {
@@ -358,30 +341,22 @@ export const generateSchemaDrizzle = ({
     dialectImports.add(tableFunc)
   }
 
-  const base = templates.drizzleSchemaTemplate({
-    columns: cols,
-    coreImports: [...coreImports],
-    dialectImportPath,
-    dialectImports: [...dialectImports],
-    extraConfig: config.join('\n'),
-    table,
-    tableFunc,
-  })
+  const imports = [
+    ...allFkImports,
+    ...(coreImports.size > 0
+      ? [`import { ${[...coreImports].join(', ')} } from 'drizzle-orm';`]
+      : []),
+    `import { ${[...dialectImports].join(', ')} } from '${dialectImportPath}';`,
+  ]
+  const tableConfig =
+    config.length > 0 ? `, (t) => [\n${config.join('\n')}\n]` : ''
+  const definitions = [
+    [...new Set(extras)].join('\n\n'),
+    `export const ${varName} = ${tableFunc}(${toStringLiteral(table)}, {\n${cols}\n}${tableConfig});`,
+    relationships.length > 0
+      ? `export const ${varName}Relations = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`
+      : '',
+  ]
 
-  const exportStart = base.indexOf('\n\nexport')
-  const baseImports = exportStart === -1 ? '' : base.slice(0, exportStart)
-  const baseBody = exportStart === -1 ? base : base.slice(exportStart).trim()
-
-  const allImports = [...allFkImports, baseImports].filter(Boolean).join('\n')
-
-  const definitions = [[...new Set(extras)].join('\n\n'), baseBody]
-
-  if (relationships.length > 0) {
-    const relName = `${varName}Relations`
-    definitions.push(
-      `export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`
-    )
-  }
-
-  return `${allImports}\n\n${definitions.filter(Boolean).join('\n\n')}`
+  return `${imports.join('\n')}\n\n${definitions.filter(Boolean).join('\n\n')}`
 }

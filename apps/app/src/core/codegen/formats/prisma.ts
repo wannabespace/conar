@@ -2,13 +2,17 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, FilterOperator } from '@tamery/shared/filters'
 import { camelCase, pascalCase } from 'change-case'
 
-import * as templates from '~/core/codegen/templates'
-import type { QueryParams, SchemaParams } from '~/core/codegen/types'
+import { prismaType } from '~/core/codegen/column-types'
+import { explicitIndexes } from '~/core/codegen/indexes'
+import type {
+  QueryParams,
+  SchemaParams,
+  TypedColumn,
+} from '~/core/codegen/types'
 import {
+  claimRelationName,
   explicitSchema,
-  filterExplicitIndexes,
-  getColumnType,
-  groupIndexes,
+  hasType,
   isNowDefault,
   isSerialDefault,
   isSingleColumnConstraint,
@@ -87,26 +91,25 @@ const singleFilterToPrisma = (
 }
 
 export const generateQueryPrisma = ({ table, filters }: QueryParams) => {
-  const tableName = camelCase(table)
+  const findMany = `await prisma.${camelCase(table)}.findMany`
   const conditions = filters.flatMap((f) => {
     const value = singleFilterToPrisma(f)
     return value === null ? [] : [{ [camelCase(f.column)]: value }]
   })
+  if (conditions.length === 0) {
+    return `${findMany}()`
+  }
+
   const fields = conditions.flatMap(Object.keys)
   const where =
     new Set(fields).size === fields.length
       ? Object.assign({}, ...conditions)
       : { AND: conditions }
+  const whereLiteral = JSON.stringify(where, null, 2)
+    .replaceAll(/"(?<key>[^"]+)":/gu, '$<key>:')
+    .replaceAll('\n', '\n  ')
 
-  const jsonWhere =
-    conditions.length > 0
-      ? JSON.stringify(where, null, 2).replaceAll(
-          /"(?<key>[^"]+)":/gu,
-          '$<key>:'
-        )
-      : '{}'
-
-  return templates.prismaQueryTemplate(tableName, jsonWhere)
+  return `${findMany}({\n  where: ${whereLiteral}\n})`
 }
 
 const FK_ACTION_MAP: Record<string, string> = {
@@ -129,10 +132,19 @@ interface PrismaField {
   name: string
   type: string
   attributes: string[]
-  isRelation: boolean
 }
 
-const prismaDefault = (c: SchemaParams['columns'][number]): string | null => {
+const block = (header: string, body: string, attributes: string[]) =>
+  [
+    `${header} {`,
+    body,
+    ...(attributes.length
+      ? ['', ...attributes.map((attribute) => `  ${attribute}`)]
+      : []),
+    '}',
+  ].join('\n')
+
+const prismaDefault = (c: TypedColumn): string | null => {
   if (c.isIdentity || isSerialDefault(c.defaultValue)) {
     return 'autoincrement()'
   }
@@ -161,16 +173,21 @@ const SIZED_STRING_TYPES: Record<string, string> = {
   varchar: 'VarChar',
 }
 
-const POSTGRES_NATIVE_TYPES: Record<string, string> = {
-  date: '@db.Date',
-  'time without time zone': '@db.Time',
-  'timestamp with time zone': '@db.Timestamptz',
-  uuid: '@db.Uuid',
+const NATIVE_TYPES: Record<ConnectionType, Record<string, string>> = {
+  clickhouse: {},
+  mssql: { date: '@db.Date' },
+  mysql: { date: '@db.Date' },
+  postgres: {
+    date: '@db.Date',
+    'time without time zone': '@db.Time',
+    'timestamp with time zone': '@db.Timestamptz',
+    uuid: '@db.Uuid',
+  },
 }
 
 const buildFieldAttributes = (
-  c: SchemaParams['columns'][number],
-  prismaType: string,
+  c: TypedColumn,
+  fieldType: string,
   needsMap: boolean,
   { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>
 ): string[] => {
@@ -186,19 +203,19 @@ const buildFieldAttributes = (
     attributes.push(`@default(${defaultValue})`)
   }
 
-  const sizedString = SIZED_STRING_TYPES[c.type ?? '']
-  if (prismaType === 'String' && sizedString && c.maxLength) {
+  const sizedString = SIZED_STRING_TYPES[c.type]
+  if (fieldType === 'String' && sizedString && c.maxLength) {
     attributes.push(
       `@db.${sizedString}(${c.maxLength === -1 ? 'Max' : c.maxLength})`
     )
   }
 
-  const nativeType = POSTGRES_NATIVE_TYPES[c.type ?? '']
-  if (dialect === ConnectionType.Postgres && nativeType) {
+  const nativeType = NATIVE_TYPES[dialect][c.type]
+  if (nativeType) {
     attributes.push(nativeType)
   }
 
-  if (prismaType === 'Decimal' && c.precision) {
+  if (fieldType === 'Decimal' && c.precision) {
     attributes.push(`@db.Decimal(${c.precision}, ${c.scale || 0})`)
   }
 
@@ -209,75 +226,50 @@ const buildFieldAttributes = (
   return attributes
 }
 
-const appendEnumBlock = (
-  c: SchemaParams['columns'][number],
-  extraBlocks: string[],
-  blockAttributes: string[]
-): string | null => {
-  if (!(c.enumName && c.availableValues?.length)) {
-    return null
-  }
-  const enumName = pascalCase(c.enumName)
-  const availableValues = c.availableValues
-    .map((v) => {
-      if (/^[a-z]\w*$/iu.test(v)) {
-        return `  ${v}`
-      }
-      return `  ${v.replaceAll(/\W/gu, '_')} @map("${v}")`
-    })
-    .join('\n')
-  const attributes = [
-    ...(enumName === c.enumName ? [] : [`@@map("${c.enumName}")`]),
-    ...blockAttributes,
-  ]
-  const attributeLines = attributes.length
-    ? `\n\n${attributes.map((a) => `  ${a}`).join('\n')}`
-    : ''
-  extraBlocks.push(`enum ${enumName} {\n${availableValues}${attributeLines}\n}`)
-  return enumName
+const enumBlock = (
+  enumName: string,
+  values: string[],
+  schemaAttributes: string[]
+) => {
+  const name = pascalCase(enumName)
+  const members = values.map((v) =>
+    /^[a-z]\w*$/iu.test(v)
+      ? `  ${v}`
+      : `  ${v.replaceAll(/\W/gu, '_')} @map("${v}")`
+  )
+  return block(`enum ${name}`, members.join('\n'), [
+    ...(name === enumName ? [] : [`@@map("${enumName}")`]),
+    ...schemaAttributes,
+  ])
 }
 
-const appendForeignAndRefs = (
-  c: SchemaParams['columns'][number],
+const relationFields = (
+  c: TypedColumn,
   fieldName: string,
-  fields: PrismaField[],
   usedNames: Set<string>
 ) => {
+  const fields: PrismaField[] = []
   if (c.foreign) {
-    let relName = camelCase(c.foreign.table)
-    if (usedNames.has(relName)) {
-      relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
-    }
-    usedNames.add(relName)
-
-    const relType = pascalCase(c.foreign.table)
     const onDelete = foreignActionToPrisma(c.foreign.onDelete ?? '', 'onDelete')
     const onUpdate = foreignActionToPrisma(c.foreign.onUpdate ?? '', 'onUpdate')
-
     fields.push({
       attributes: [
         `@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`,
       ],
-      isRelation: true,
-      name: relName,
-      type: relType,
+      name: claimRelationName(usedNames, c.foreign.table, c.foreign.column),
+      type: pascalCase(c.foreign.table),
     })
   }
 
   for (const ref of c.references ?? []) {
     const refType = pascalCase(ref.table)
-    let refFieldName = camelCase(ref.table)
-    if (usedNames.has(refFieldName)) {
-      refFieldName = camelCase(`${ref.table}_${ref.column}`)
-    }
-    usedNames.add(refFieldName)
     fields.push({
       attributes: [],
-      isRelation: true,
-      name: refFieldName,
+      name: claimRelationName(usedNames, ref.table, ref.column),
       type: ref.isUnique ? `${refType}?` : `${refType}[]`,
     })
   }
+  return fields
 }
 
 export const generateSchemaPrisma = ({
@@ -285,51 +277,41 @@ export const generateSchemaPrisma = ({
   schema,
   columns,
   dialect,
-  indexes = [],
+  indexes,
 }: SchemaParams) => {
-  const fields: PrismaField[] = []
-  const extraBlocks: string[] = []
+  const scalarFields: PrismaField[] = []
+  const relations: PrismaField[] = []
+  const enumBlocks = new Set<string>()
   const usedNames = new Set<string>()
   const tableSchema = explicitSchema(schema, dialect)
   const schemaAttributes = tableSchema ? [`@@schema("${tableSchema}")`] : []
 
-  for (const c of columns) {
-    if (!c.type) {
-      continue
-    }
-
-    let prismaType = getColumnType(c.type, 'prisma', dialect)
-    const enumName = appendEnumBlock(c, extraBlocks, schemaAttributes)
-    if (enumName) {
-      prismaType = enumName
+  for (const c of columns.filter(hasType)) {
+    let fieldType: string = prismaType(c.type)
+    if (c.enumName && c.availableValues?.length) {
+      fieldType = pascalCase(c.enumName)
+      enumBlocks.add(enumBlock(c.enumName, c.availableValues, schemaAttributes))
     }
 
     const fieldName = camelCase(c.id)
-    const needsMap = fieldName !== c.id
     usedNames.add(fieldName)
 
     const isList = c.isArray && dialect === ConnectionType.Postgres
-    fields.push({
-      attributes: buildFieldAttributes(c, prismaType, needsMap, {
+    scalarFields.push({
+      attributes: buildFieldAttributes(c, fieldType, fieldName !== c.id, {
         columns,
         dialect,
       }),
-      isRelation: false,
       name: fieldName,
-      type: isList ? `${prismaType}[]` : prismaType + (c.isNullable ? '?' : ''),
+      type: isList ? `${fieldType}[]` : fieldType + (c.isNullable ? '?' : ''),
     })
-
-    appendForeignAndRefs(c, fieldName, fields, usedNames)
+    relations.push(...relationFields(c, fieldName, usedNames))
   }
 
-  const allFields = [
-    ...fields.filter((f) => !f.isRelation),
-    ...fields.filter((f) => f.isRelation),
-  ]
-  const maxNameLen = Math.max(...allFields.map((f) => f.name.length), 0)
-  const maxTypeLen = Math.max(...allFields.map((f) => f.type.length), 0)
-
-  const cols = allFields.map((f) => {
+  const fields = [...scalarFields, ...relations]
+  const maxNameLen = Math.max(...fields.map((f) => f.name.length), 0)
+  const maxTypeLen = Math.max(...fields.map((f) => f.type.length), 0)
+  const fieldLines = fields.map((f) => {
     const parts = [
       f.name.padEnd(maxNameLen),
       f.type.padEnd(maxTypeLen),
@@ -338,33 +320,25 @@ export const generateSchemaPrisma = ({
     return `  ${parts.join(' ').trimEnd()}`
   })
 
-  const explicitIndexes = filterExplicitIndexes(
-    groupIndexes(indexes, schema, table),
-    columns
-  )
-
   const primaryFields = columns
     .filter((c) => c.primaryKey)
     .map((c) => camelCase(c.id))
-  const indexAttributes = explicitIndexes
+  const indexAttributes = explicitIndexes({ columns, indexes, schema, table })
     .filter((idx) => idx.keys.every((key) => 'column' in key))
     .map((idx) => {
       const fieldNames = idx.columns.map((col) => camelCase(col))
       const type = idx.isUnique ? '@@unique' : '@@index'
       return `${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
     })
-  const modelAttributes = [
+  const modelName = pascalCase(table)
+  const model = block(`model ${modelName}`, fieldLines.join('\n'), [
     ...(primaryFields.length > 1
       ? [`@@id([${primaryFields.join(', ')}])`]
       : []),
     ...indexAttributes,
     ...schemaAttributes,
-  ]
+    ...(modelName === table ? [] : [`@@map("${table}")`]),
+  ])
 
-  const uniqueExtras = [...new Set(extraBlocks)]
-
-  return (
-    templates.prismaSchemaTemplate(table, cols.join('\n'), modelAttributes) +
-    (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
-  )
+  return [model, ...enumBlocks].join('\n\n')
 }

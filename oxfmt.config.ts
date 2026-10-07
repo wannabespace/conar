@@ -6,7 +6,11 @@ import { ignorePatterns } from './oxc.ignore.ts'
 
 export default defineConfig({
   ...ultracite,
-  ignorePatterns: [...(ultracite.ignorePatterns || []), ...ignorePatterns],
+  ignorePatterns: [
+    // The preset skips every `codegen` dir as generated output; ours is source.
+    ...(ultracite.ignorePatterns || []).filter((p) => p !== '**/codegen'),
+    ...ignorePatterns,
+  ],
   semi: false,
   singleQuote: true,
 })
