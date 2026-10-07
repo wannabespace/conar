@@ -1,8 +1,9 @@
 import { useHotkey } from '@tanstack/react-hotkeys'
 import type { MotionValue } from 'motion'
 import { animate, clamp, motionValue, moveItem, styleEffect } from 'motion'
-import type { PointerEvent, RefObject } from 'react'
+import type { MouseEvent, PointerEvent, RefObject } from 'react'
 import { useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import type { GridColumn } from './columns'
 import { columnSlots, columnVars } from './columns'
@@ -11,6 +12,7 @@ const COLUMN_TRANSITION = {
   duration: 0.22,
   ease: [0.32, 0.72, 0, 1],
 } as const
+const DRAG_THRESHOLD = 4
 
 interface Drag {
   column: GridColumn
@@ -26,6 +28,15 @@ export type ColumnDragHandle = ReturnType<typeof useColumnDrag>['handlers'] & {
 }
 
 const holdsSlot = (column: GridColumn) => column.fixed || column.pinned
+
+/** False for presses on the header's own controls and on its portalled menus, which React bubbles through the header. */
+export const isHeaderPress = (event: MouseEvent<HTMLElement>) => {
+  const target = event.target instanceof Element ? event.target : null
+  return (
+    !target?.closest('button, [role="separator"]') &&
+    event.currentTarget.contains(target)
+  )
+}
 
 const targetIndex = (columns: GridColumn[], drag: Drag, offset: number) => {
   const center =
@@ -52,6 +63,7 @@ export const useColumnDrag = ({
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
   const drag = useRef<Drag | null>(null)
+  const dragged = useRef(false)
   const shifts = useRef(new Map<string, MotionValue<number>>())
   const [dragging, setDragging] = useState<string | null>(null)
 
@@ -101,23 +113,26 @@ export const useColumnDrag = ({
   useHotkey('Escape', () => settle(false), { enabled: dragging !== null })
 
   const handlers = {
+    onClickCapture: (event: MouseEvent) => {
+      if (dragged.current) {
+        dragged.current = false
+        event.stopPropagation()
+      }
+    },
     onLostPointerCapture: () => settle(true),
     onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      dragged.current = false
       const from = columns.findIndex(
         (column) => column.id === event.currentTarget.dataset.gridColumn
       )
       const column = columns[from]
-      const target = event.target instanceof Element ? event.target : null
-      const isControl = target?.closest('button, [role="separator"]')
-      // React bubbles the header's portalled menus through here; capturing their press swallows the item's click.
-      const isPortalled = !event.currentTarget.contains(target)
+      // Capturing a portalled menu item's press swallows the item's click.
       if (
         !column ||
         holdsSlot(column) ||
         !onReorder ||
         event.button !== 0 ||
-        isControl ||
-        isPortalled
+        !isHeaderPress(event)
       ) {
         return
       }
@@ -138,9 +153,14 @@ export const useColumnDrag = ({
         return
       }
       const offset = event.clientX + element.scrollLeft - current.startX
+      if (!current.moved && Math.abs(offset) < DRAG_THRESHOLD) {
+        return
+      }
       if (!current.moved) {
         current.moved = true
-        setDragging(current.column.id)
+        dragged.current = true
+        // A pointermove update renders after the shift has already painted, so the lifted column slides a few frames without its background.
+        flushSync(() => setDragging(current.column.id))
       }
       shiftOf(current.column.id).jump(offset)
 
