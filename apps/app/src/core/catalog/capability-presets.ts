@@ -82,11 +82,13 @@ export interface ConnectionCapabilities {
   functions: FunctionCapabilities
   ilike: boolean
   indexes: IndexCapabilities
+  materializedViews: boolean
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   renameConstraints: boolean
   renameSchema: boolean
+  renameViews: boolean
   rowLevelSecurity: boolean
   schemas: boolean
   sections: Record<DefinitionsSection, SectionCapabilities | false>

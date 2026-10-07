@@ -82,26 +82,32 @@ const clickhouseSkipIndexes = async (db: Kysely<ClickhouseDatabase>) => {
   })
 }
 
+const clickhousePrimaryKeys = async (db: Kysely<ClickhouseDatabase>) => {
+  // ClickHouse resolves an alias anywhere in the query: selecting a literal
+  // `as name` here would turn `name as column` into that literal.
+  const rows = await db
+    .selectFrom('system.columns')
+    .select(['database as schema', 'table', 'name as column'])
+    .where('is_in_primary_key', '=', 1)
+    .where('database', 'not in', ['system', 'information_schema'])
+    .orderBy('database')
+    .orderBy('table')
+    .orderBy('position')
+    .execute()
+
+  return rows.map((row) => ({
+    ...row,
+    is_primary: true,
+    // A ClickHouse sorting key orders rows; it enforces nothing.
+    is_unique: false,
+    name: 'primary_key',
+  }))
+}
+
 export const resourceIndexesQuery = createQuery({
   query: {
     clickhouse: async (db) => [
-      ...(await db
-        .selectFrom('system.columns')
-        .select([
-          'database as schema',
-          'table',
-          'name as column',
-          sql.lit('primary_key').as('name'),
-          sql.lit(true).as('is_primary'),
-          // A ClickHouse sorting key orders rows; it enforces nothing.
-          sql.lit(false).as('is_unique'),
-        ])
-        .where('is_in_primary_key', '=', 1)
-        .where('database', 'not in', ['system', 'information_schema'])
-        .orderBy('database')
-        .orderBy('table')
-        .orderBy('position')
-        .execute()),
+      ...(await clickhousePrimaryKeys(db)),
       ...(await clickhouseSkipIndexes(db)),
     ],
 

@@ -25,6 +25,7 @@ import { useFollowRows } from './follow-rows'
 import { glideIntoView } from './glide-into-view'
 
 export const useGridCursor = ({
+  canEdit,
   columns,
   connectionType,
   getValue,
@@ -35,6 +36,7 @@ export const useGridCursor = ({
   rows,
   scrollRef,
 }: {
+  canEdit: (column: Column, rowIndex: number) => boolean
   columns: Column[]
   connectionType: ConnectionType
   getValue: (cell: DataGridCell) => unknown
@@ -59,13 +61,14 @@ export const useGridCursor = ({
     return column && row ? { column, row, rowIndex: position.row } : null
   }
   const current = () => cellAt(store.get().cursor)
-  const isEditable = (column: Column) => !!onEdit && column.isEditable !== false
+  const isEditable = (column: Column, rowIndex: number) =>
+    !!onEdit && canEdit(column, rowIndex)
   const focusGrid = () => scrollRef.current?.focus({ preventScroll: true })
 
   const writeAll = (writes: [DataGridCell, string | null][]) => {
     let rejected = 0
     for (const [cell, text] of writes) {
-      if (!isEditable(cell.column)) {
+      if (!isEditable(cell.column, cell.rowIndex)) {
         continue
       }
       const { data, error } = parseCellText(connectionType, cell.column, text)
@@ -85,7 +88,7 @@ export const useGridCursor = ({
   const cursor: GridCursor = {
     apply: (value) => {
       const cell = current()
-      if (cell && isEditable(cell.column)) {
+      if (cell && isEditable(cell.column, cell.rowIndex)) {
         onEdit?.(cell, value)
       }
     },
@@ -102,7 +105,7 @@ export const useGridCursor = ({
       if (!edit || !cell) {
         return true
       }
-      if (isEditable(cell.column)) {
+      if (isEditable(cell.column, cell.rowIndex)) {
         const { data, error } = parseCellText(
           connectionType,
           cell.column,
@@ -135,7 +138,7 @@ export const useGridCursor = ({
       if (
         !cell ||
         store.get().edit ||
-        (text !== undefined && !isEditable(cell.column))
+        (text !== undefined && !isEditable(cell.column, cell.rowIndex))
       ) {
         return
       }
@@ -190,7 +193,7 @@ export const useGridCursor = ({
       for (const row of below) {
         for (const [index, cell] of row.entries()) {
           const source = top[index]
-          if (source && isEditable(cell.column)) {
+          if (source && isEditable(cell.column, cell.rowIndex)) {
             onEdit?.(cell, getValue(source))
           }
         }

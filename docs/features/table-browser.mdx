@@ -100,8 +100,9 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
     invalid JSON, a value missing from an enum, and text a number, date,
     timestamp or UUID column cannot read, are caught before they are staged.
-    Columns the database fills itself (identity, computed and generated columns,
-    and ClickHouse sorting keys) are read-only. Edited cells are highlighted.
+    Columns the database fills itself (identity, computed and generated columns)
+    are read-only. ClickHouse sorting keys take a value on a new row but cannot
+    change once saved. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Staged changes show up in a bar at the bottom of the grid. Click its
@@ -148,5 +149,6 @@ The panel lists every column with its generator on the left. Select a column to 
 | **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, turning on **Cascade** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
 | **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema shows in the sidebar and opens **New table** right away. |
 | **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key the database numbers itself (on ClickHouse, a plain `UInt64` sorting key). |
+| **New view** | Right-click a schema in the sidebar (or hover it and click **⋯**) and choose **New View**, or run **New view…** from the command menu. Name it and write the `SELECT` it saves; it opens like a table once created. On Postgres and ClickHouse, turn on **Materialized** to store the query's rows instead of running it on every read (on ClickHouse it starts empty and stores the rows inserted into its source table from then on). |
 | **Rename column** | Right-click a column header. |
-| **Rename / drop table** | Right-click the table in the sidebar. Renaming keeps the table's filters, sort and column layout. |
+| **Rename / drop table or view** | Right-click the table or view in the sidebar. Renaming keeps its filters, sort and column layout. Dropping a view leaves the tables it reads untouched; on Postgres, **Cascade** also drops what depends on it. |

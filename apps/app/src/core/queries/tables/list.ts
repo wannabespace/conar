@@ -13,6 +13,8 @@ import {
 // SQL Server gives every fixed database role (db_owner, db_datareader, …) a schema of its own, numbered from here up.
 const MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID = 16_384
 
+const CLICKHOUSE_MATERIALIZED_VIEW_STORAGE = '.inner%'
+
 const tableTypes = ['base table', 'view', 'materialized view'] as const
 
 export type RelationKind = 'table' | 'view'
@@ -65,6 +67,7 @@ export const resourceTablesAndSchemasQuery = memoize(
             }>()
             .where('database', '=', database)
             .where('is_temporary', '=', 0)
+            .where('name', 'not like', CLICKHOUSE_MATERIALIZED_VIEW_STORAGE)
             .execute(),
         // information_schema cannot tell the tables SQL Server ships in master
         // (spt_*, MSreplication_options) from the user's own.

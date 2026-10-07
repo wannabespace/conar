@@ -24,8 +24,11 @@ import { useGridHotkeys, useGridPointer } from './grid-input'
 
 const valueOf = ({ column, row }: DataGridCell) => row[column.id]
 
+const columnEditable = (column: Column) => column.isEditable !== false
+
 export const DataGrid = ({
   bar,
+  canEdit = columnEditable,
   columns,
   connectionType,
   cursorRef,
@@ -52,6 +55,7 @@ export const DataGrid = ({
 }: {
   /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
   bar?: GridBarItem[]
+  canEdit?: (column: Column, rowIndex: number) => boolean
   columns: Column[]
   connectionType: ConnectionType
   cursorRef?: Ref<DataGridHandle>
@@ -88,6 +92,7 @@ export const DataGrid = ({
   const ownScrollRef = useRef<HTMLDivElement>(null)
   const scrollRef = externalScrollRef ?? ownScrollRef
   const cursor = useGridCursor({
+    canEdit,
     columns,
     connectionType,
     getValue,

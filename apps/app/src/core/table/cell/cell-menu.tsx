@@ -41,7 +41,7 @@ export const cellMenu = ({
     return []
   }
   const { row } = cell
-  const editable = cursor.isEditable(cell.column)
+  const editable = cursor.isEditable(cell.column, cell.rowIndex)
   const cells = cursor.selection().flat().length
   const extras = extra?.(cell, cursor.element()) ?? {}
   const keys = columns.map((key) => ({ key }))
