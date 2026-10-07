@@ -6,15 +6,11 @@ import { createServer } from 'node:http'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { PORTS } from '@tamery/shared/constants'
-import type { McpSource, McpStatus, McpTarget } from '@tamery/shared/mcp'
-import { dialects, readsOnly } from '@tamery/sql'
+import type { McpReply, McpRequest, McpStatus } from '@tamery/shared/mcp'
+import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { app, BrowserWindow, MessageChannelMain } from 'electron'
 import Store from 'electron-store'
 import { z } from 'zod'
-
-import { queryExecutors } from './query'
-
-const MAX_ROWS = 200
 
 const store = new Store<{ enabled: boolean; token: string }>({
   defaults: { enabled: true, token: randomBytes(32).toString('base64url') },
@@ -24,50 +20,47 @@ const store = new Store<{ enabled: boolean; token: string }>({
 let httpServer: Server | null = null
 let error: string | null = null
 
-const askRenderer = async <K extends keyof McpSource>(
-  method: K,
-  args?: Parameters<McpSource[K]>[0]
-): Promise<Awaited<ReturnType<McpSource[K]>>> => {
-  const [window] = BrowserWindow.getAllWindows()
-  if (!window) {
-    throw new Error('Open a Tamery window first.')
-  }
+const ask = async (
+  window: BrowserWindow,
+  request: McpRequest,
+  signal: AbortSignal
+): Promise<McpReply> => {
+  signal.throwIfAborted()
   const { port1, port2 } = new MessageChannelMain()
-  window.webContents.postMessage('mcp.request', { args, method }, [port2])
+  const closed = new AbortController()
+  const abort = () => port1.postMessage('abort')
+  port1.once('close', () => closed.abort())
+  signal.addEventListener('abort', abort, { once: true })
   port1.start()
-  const [{ data }] = await once(port1, 'message')
-  port1.close()
-  if (data.error) {
-    throw new Error(data.error)
+  window.webContents.postMessage('mcp.request', request, [port2])
+  try {
+    const [{ data }] = await once(port1, 'message', {
+      signal: AbortSignal.any([signal, closed.signal]),
+    })
+    port1.close()
+    return data
+  } catch (askError) {
+    throw closed.signal.aborted
+      ? new Error('The Tamery window closed before answering.')
+      : askError
+  } finally {
+    signal.removeEventListener('abort', abort)
   }
-  return data.result
 }
 
-const runReadOnly = async (
-  { connectionString, type }: McpTarget,
-  sql: string
-) => {
-  if (!readsOnly(sql, dialects[type])) {
-    throw new Error(
-      'Only one read-only statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) runs at a time.'
-    )
+const askRenderer = async (request: McpRequest, signal: AbortSignal) => {
+  for (const window of BrowserWindow.getAllWindows()) {
+    // Sequential by design: the first window serving answers, the rest are never asked.
+    // oxlint-disable-next-line no-await-in-loop
+    const reply = await ask(window, request, signal)
+    if ('error' in reply) {
+      throw new Error(reply.error)
+    }
+    if ('result' in reply) {
+      return reply.result
+    }
   }
-  const executor = queryExecutors[type]
-  const { txId } = await executor.beginTransaction({
-    accessMode: 'read only',
-    connectionString,
-  })
-  try {
-    const { result } = await executor.executeTransaction({
-      maxRows: MAX_ROWS,
-      query: sql,
-      txId,
-      values: [],
-    })
-    return result
-  } finally {
-    await executor.rollbackTransaction({ txId })
-  }
+  throw new Error('Open Tamery and sign in first.')
 }
 
 const jsonContent = (value: unknown) => ({
@@ -91,32 +84,30 @@ const createMcpServer = () => {
       description:
         'List the database connections saved in Tamery: id, name, engine and the databases opened in it.',
     },
-    async () => jsonContent(await askRenderer('connections'))
+    async ({ signal }) =>
+      jsonContent(
+        await askRenderer({ args: undefined, method: 'connections' }, signal)
+      )
   )
 
   server.registerTool(
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Writes are rejected and the statement runs in a transaction that is always rolled back. At most ${MAX_ROWS} rows come back; "truncated" says there were more. Explore the schema through the engine's catalog (information_schema, system tables).`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Writes are rejected and the statement runs in a transaction that is always rolled back. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Explore the schema through the engine's catalog (information_schema, system tables).`,
       inputSchema: {
         connectionId: z.string().describe('Id from list_connections'),
         database: z
           .string()
           .optional()
           .describe(
-            "Database to run in; defaults to the connection's own database"
+            "Database from list_connections to run in; defaults to the connection's own database"
           ),
         sql: z.string(),
       },
     },
-    async ({ connectionId, database, sql }) =>
-      jsonContent(
-        await runReadOnly(
-          await askRenderer('target', { connectionId, database }),
-          sql
-        )
-      )
+    async (args, { signal }) =>
+      jsonContent(await askRenderer({ args, method: 'query' }, signal))
   )
 
   return server
@@ -140,6 +131,7 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     enableJsonResponse: true,
     sessionIdGenerator: undefined,
   })
+  // Closing the server aborts each tool call's `signal`, which cancels its query in the renderer.
   res.on('close', () => {
     void server.close()
   })
@@ -173,12 +165,16 @@ const stop = () => {
   error = null
 }
 
-const status = (): McpStatus => ({
-  enabled: store.get('enabled'),
-  error,
-  token: store.get('token'),
-  url: `http://127.0.0.1:${PORTS.MCP}/mcp`,
-})
+const status = (): McpStatus => {
+  if (httpServer) {
+    return {
+      state: 'running',
+      token: store.get('token'),
+      url: `http://127.0.0.1:${PORTS.MCP}/mcp`,
+    }
+  }
+  return error ? { error, state: 'failed' } : { state: 'off' }
+}
 
 export const mcp = {
   setEnabled: async (enabled: boolean) => {

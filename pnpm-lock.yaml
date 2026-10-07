@@ -969,9 +969,6 @@ importers:
       '@tamery/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@tamery/sql':
-        specifier: workspace:*
-        version: link:../../packages/sql
       '@todesktop/cli':
         specifier: 'catalog:'
         version: 1.28.1(@opentelemetry/core@2.9.0(@opentelemetry/api@1.9.1))(@types/react@19.3.0)(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)

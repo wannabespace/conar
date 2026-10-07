@@ -37,7 +37,12 @@ export const runQuery = ({
   maxRows,
   query: sql,
   queryId,
-}: { connectionString: string; query: string } & RunOptions) => {
+  readOnly,
+}: {
+  connectionString: string
+  query: string
+  readOnly?: boolean
+} & RunOptions) => {
   const client = getClient(connectionString)
   const controller = new AbortController()
   // ClickHouse keeps running a query whose HTTP request was dropped, so a cancel kills it by id.
@@ -60,6 +65,8 @@ export const runQuery = ({
     if (!ROW_RETURNING_KEYWORDS.some((word) => statement.startsWith(word))) {
       await client.command({
         abort_signal: controller.signal,
+        // 2, not 1: 1 also forbids the output settings every query passes.
+        ...(readOnly && { clickhouse_settings: { readonly: '2' } }),
         query: sql,
         query_id: clickhouseQueryId,
       })
@@ -74,6 +81,7 @@ export const runQuery = ({
       clickhouse_settings: {
         output_format_json_quote_64bit_integers: 1,
         output_format_json_quote_decimals: 1,
+        ...(readOnly && { readonly: '2' }),
         // One row past the cap is how `truncated` finds out there were more.
         ...(maxRows !== undefined && {
           max_result_rows: String(maxRows + 1),

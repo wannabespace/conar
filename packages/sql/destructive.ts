@@ -1,6 +1,7 @@
 import type { DialectSpec } from './dialect'
 import type { Statement } from './statements'
 import { splitStatements } from './statements'
+import type { Token } from './tokenizer'
 import { isKeyword } from './tokenizer'
 
 // EXPLAIN only plans the statement; EXPLAIN ANALYZE runs it.
@@ -8,11 +9,12 @@ const isPlanOnlyExplain = ({ tokens }: Statement) =>
   isKeyword(tokens[0], 'EXPLAIN') &&
   !tokens.some((token) => token.text.toUpperCase() === 'ANALYZE')
 
-/** `FOR [NO KEY] UPDATE` locks rows, `ON DELETE`/`ON UPDATE` names a referential action. */
-const locksOrReferences = (words: string[], index: number) =>
+/** `FOR [NO KEY] UPDATE` locks rows, `ON DELETE`/`ON UPDATE` names a referential action, `SHOW CREATE` prints a definition. */
+const namesWithoutRunning = (words: string[], index: number) =>
   words[index - 1] === 'FOR' ||
   words[index - 1] === 'ON' ||
-  (words[index - 3] === 'FOR' && words[index - 2] === 'NO')
+  (words[index - 3] === 'FOR' && words[index - 2] === 'NO') ||
+  (index === 1 && words[0] === 'SHOW')
 
 const DESTRUCTIVE = new Set([
   'ALTER',
@@ -46,7 +48,7 @@ export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
             (index === 0 && DYNAMIC_SQL_COMMANDS.has(word)) ||
             ((tokens[index]?.kind === 'keyword' || index === 0) &&
               DESTRUCTIVE.has(word) &&
-              !locksOrReferences(words, index))
+              !namesWithoutRunning(words, index))
         )
       })
   ),
@@ -64,21 +66,31 @@ const DATA_WRITE_KEYWORDS = new Set([
   'UPDATE',
 ])
 
-const runsAny =
-  (keywords: Set<string>) => (text: string, dialect: DialectSpec) =>
-    splitStatements(text, dialect).some((statement) => {
-      if (isPlanOnlyExplain(statement)) {
-        return false
-      }
-      const words = statement.tokens.map((token) => token.text.toUpperCase())
-      return statement.tokens.some(
-        (token, index) =>
-          (index === 0 && DYNAMIC_SQL_COMMANDS.has(words[index] ?? '')) ||
-          ((token.kind === 'keyword' || index === 0) &&
-            keywords.has(words[index] ?? '') &&
-            !locksOrReferences(words, index))
-      )
-    })
+// Most commands are not keywords in any dialect's list, so a bare word counts too.
+const isWord = (token: Token) =>
+  !token.quoted && (token.kind === 'keyword' || token.kind === 'identifier')
+
+const statementRunsAny =
+  (keywords: Set<string>) =>
+  (statement: Statement): boolean => {
+    if (isPlanOnlyExplain(statement)) {
+      return false
+    }
+    const words = statement.tokens.map((token) => token.text.toUpperCase())
+    return statement.tokens.some(
+      (token, index) =>
+        (index === 0 && DYNAMIC_SQL_COMMANDS.has(words[index] ?? '')) ||
+        (isWord(token) &&
+          keywords.has(words[index] ?? '') &&
+          !namesWithoutRunning(words, index))
+    )
+  }
+
+const runsAny = (keywords: Set<string>) => {
+  const runs = statementRunsAny(keywords)
+  return (text: string, dialect: DialectSpec) =>
+    splitStatements(text, dialect).some(runs)
+}
 
 export const invalidatesCatalog = runsAny(DDL_KEYWORDS)
 
@@ -96,16 +108,26 @@ const READ_COMMANDS = new Set([
   'WITH',
 ])
 
-// SELECT … INTO writes a table or a server file, and SQL Server runs a second statement that has no `;` before it.
-const WRITES_INSIDE_READ = new Set([
-  'CALL',
-  'COMMIT',
-  'EXEC',
-  'EXECUTE',
-  'INTO',
-  'KILL',
-  'SHUTDOWN',
-])
+// SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest.
+const writesInsideRead = statementRunsAny(
+  new Set([
+    ...DDL_KEYWORDS,
+    ...DATA_WRITE_KEYWORDS,
+    ...DYNAMIC_SQL_COMMANDS,
+    'BACKUP',
+    'COMMIT',
+    'DBCC',
+    'DENY',
+    'GRANT',
+    'INTO',
+    'KILL',
+    'RECONFIGURE',
+    'RESTORE',
+    'REVOKE',
+    'ROLLBACK',
+    'SHUTDOWN',
+  ])
+)
 
 /** A single statement that only reads, the only kind an MCP agent may run. */
 export const readsOnly = (text: string, dialect: DialectSpec) => {
@@ -114,13 +136,6 @@ export const readsOnly = (text: string, dialect: DialectSpec) => {
     !!statement &&
     rest.length === 0 &&
     READ_COMMANDS.has(statement.tokens[0]?.text.toUpperCase() ?? '') &&
-    !statement.tokens.some(
-      (token) =>
-        !token.quoted &&
-        token.kind !== 'string' &&
-        WRITES_INSIDE_READ.has(token.text.toUpperCase())
-    ) &&
-    !writesData(text, dialect) &&
-    !invalidatesCatalog(text, dialect)
+    !writesInsideRead(statement)
   )
 }

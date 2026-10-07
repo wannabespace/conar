@@ -5,10 +5,13 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
+  redirect,
+  useCanGoBack,
   useNavigate,
   useRouter,
 } from '@tanstack/react-router'
 import { type } from 'arktype'
+import { useRef } from 'react'
 
 import { SidebarButton } from '~/components/sidebar-link'
 import { pressNavProps } from '~/lib/press-nav'
@@ -21,23 +24,52 @@ const SettingsPage = () => {
   const { section } = useSearch()
   const navigate = useNavigate()
   const router = useRouter()
+  const canGoBack = useCanGoBack()
+  const navRef = useRef<HTMLElement>(null)
   const sections = protectedModules.settings
-  const active = sections.find(({ id }) => id === section) ?? sections[0]
+  const activeIndex = Math.max(
+    sections.findIndex(({ id }) => id === section),
+    0
+  )
+  const active = sections[activeIndex]
+  const openSection = (index: number) => {
+    const next = sections[index]
+    if (next) {
+      void navigate({
+        replace: true,
+        search: { section: next.id },
+        to: '/settings',
+      })
+    }
+  }
 
-  useHotkey('Escape', () => router.history.back())
+  const leave = () => {
+    if (canGoBack) {
+      router.history.back()
+    } else {
+      void navigate({ to: '/' })
+    }
+  }
+  const stepSection = (step: number) => {
+    navRef.current?.querySelectorAll('button')[activeIndex + step]?.focus()
+    openSection(activeIndex + step)
+  }
+
+  useHotkey('Escape', leave)
+  useHotkey('ArrowDown', () => stepSection(1), { target: navRef })
+  useHotkey('ArrowUp', () => stepSection(-1), { target: navRef })
 
   return (
     <ScrollArea className="overflow-auto">
       <div className={centeredPageClassName}>
         <div className="flex gap-8">
-          <nav className="flex w-40 shrink-0 flex-col gap-0.5">
-            {sections.map(({ icon, id, label }) => (
+          <nav ref={navRef} className="flex w-40 shrink-0 flex-col gap-0.5">
+            {sections.map(({ icon, id, label }, index) => (
               <SidebarButton
                 key={id}
-                active={id === active?.id}
-                {...pressNavProps(() =>
-                  navigate({ search: { section: id }, to: '/settings' })
-                )}
+                active={index === activeIndex}
+                autoFocus={index === activeIndex}
+                {...pressNavProps(() => openSection(index))}
               >
                 <HugeiconsIcon icon={icon} strokeWidth={2} />
                 {label}
@@ -57,6 +89,11 @@ const SettingsPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/settings')({
+  beforeLoad: () => {
+    if (protectedModules.settings.length === 0) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: SettingsPage,
   head: () => ({
     meta: [{ title: title('Settings') }],

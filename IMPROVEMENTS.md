@@ -7,7 +7,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Ranked
 
 1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff.
-2. **MCP beyond the desktop server.** The desktop app serves read-only `list_connections` and `query` while it runs. Still open: `tamery mcp` in the CLI for web-only users (API keys + `cli query`), per-connection policy (allow writes, row limit, masked columns), schema tools (`list_tables`, `describe_table`) built on the catalog queries so agents need not write catalog SQL per engine, MCP queries in the query logger, and a way to rotate the token.
+2. **MCP beyond the desktop server.** The desktop app serves read-only `list_connections` and `query` while it runs. Still open: `tamery mcp` in the CLI for web-only users (API keys + `cli query`), per-connection policy (allow writes, row limit, masked columns), schema tools (`list_tables`, `describe_table`) built on the catalog queries so agents need not write catalog SQL per engine, a way to rotate the token, its own connection per database so an agent's slow query never queues the app's queries on the single pooled connection, and rows streamed through a cursor so the 200-row cap also bounds memory (today the drivers fetch the whole result before it is cut).
 3. **Impact preview before a destructive run.** For `UPDATE`/`DELETE`: run inside a transaction, show the affected row count and a sample of changed rows, then roll back. Required on connections marked as prod. Same mechanism gates the agent's writes.
 4. **Undo for applied changes.** Store inverse statements when a draft is applied; offer "Undo last apply" in the query logger.
 5. **Schema notes (semantic layer).** Per-table and per-column descriptions ("status 3 = refunded", "amounts in cents"), AI-drafted, user-edited, synced per workspace. Added to every AI prompt so filters, completion and chat all get more accurate.
@@ -43,6 +43,10 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Show and unstick the outbox.** Writes replay in order and the executor retries any 5xx or network error forever, so one write a server bug keeps rejecting holds every later one, and web connection creation (which waits for its write) spins until it lands. Nothing on screen says writes are pending; a pending count plus a way to discard a stuck write would make that recoverable without signing out.
 - **Offline writes from every tab.** Only the tab holding the executor's leader lock queues writes; another tab falls back to a plain transaction that rolls back when offline after the save toast already showed. Forwarding non-leader writes to the leader (or failing them up front with a clear message) would close the gap.
+
+## Settings
+
+- **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
 
 ## Developer experience
 

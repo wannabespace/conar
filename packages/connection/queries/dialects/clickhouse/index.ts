@@ -9,23 +9,30 @@ import { runQuery } from './run'
 export const query = {
   ...transactionQueries,
 
-  beginTransaction: handleQueryError(({ connectionString, ownerId }) => {
-    const txId = registerTransaction(
-      {
-        commit: noop,
-        execute: (sql, _values, options) =>
-          query.execute({ connectionString, query: sql, ...options }),
-        release: noop,
-        rollback: noop,
-      },
-      ownerId
-    )
-    return Promise.resolve({ txId })
-  }),
+  beginTransaction: handleQueryError(
+    ({ accessMode, connectionString, ownerId }) => {
+      const txId = registerTransaction(
+        {
+          commit: noop,
+          execute: (sql, _values, options) =>
+            query.execute({
+              connectionString,
+              query: sql,
+              readOnly: accessMode === 'read only',
+              ...options,
+            }),
+          release: noop,
+          rollback: noop,
+        },
+        ownerId
+      )
+      return Promise.resolve({ txId })
+    }
+  ),
 
   cancel,
 
-  execute: async (args) => {
+  execute: async (args: Parameters<typeof runQuery>[0]) => {
     try {
       return await handleQueryError(runQuery)(args)
     } catch (error) {

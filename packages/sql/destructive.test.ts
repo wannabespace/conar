@@ -12,6 +12,7 @@ import { dialects } from './dialect'
 
 const mysql = dialects[ConnectionType.MySQL]
 const pg = dialects[ConnectionType.Postgres]
+const clickhouse = dialects[ConnectionType.ClickHouse]
 
 describe('destructiveKeywords', () => {
   it('flags statements that change or remove existing data', () => {
@@ -139,6 +140,8 @@ describe('readsOnly', () => {
     expect(readsOnly('WITH t AS (SELECT 1) SELECT * FROM t', pg)).toBe(true)
     expect(readsOnly("select 'drop table users'", pg)).toBe(true)
     expect(readsOnly('SHOW TABLES', mysql)).toBe(true)
+    expect(readsOnly('SHOW CREATE TABLE users', mysql)).toBe(true)
+    expect(readsOnly('SHOW CREATE TABLE users', clickhouse)).toBe(true)
   })
 
   it('rejects writes hidden in or after a read', () => {
@@ -150,6 +153,19 @@ describe('readsOnly', () => {
     expect(readsOnly('SELECT 1 COMMIT DROP TABLE users', mssql)).toBe(false)
     expect(readsOnly("SELECT 1 EXEC('DROP TABLE users')", mssql)).toBe(false)
     expect(readsOnly('EXPLAIN ANALYZE DELETE FROM users', pg)).toBe(false)
+  })
+
+  it('rejects a SQL Server batch that ends the transaction and writes', () => {
+    expect(
+      readsOnly(
+        'SELECT 1 ROLLBACK TRANSACTION GRANT CONTROL SERVER TO public',
+        mssql
+      )
+    ).toBe(false)
+    expect(
+      readsOnly("SELECT 1 ROLLBACK RESTORE DATABASE db FROM DISK = 'x'", mssql)
+    ).toBe(false)
+    expect(readsOnly('SELECT 1 DBCC SHRINKDATABASE(db)', mssql)).toBe(false)
   })
 
   it('rejects anything that is not a read', () => {

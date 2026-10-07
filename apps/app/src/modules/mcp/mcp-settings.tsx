@@ -1,26 +1,65 @@
+import type { McpStatus } from '@tamery/shared/mcp'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Switch } from '@tamery/ui/components/switch'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
 import { ConfigSnippet } from './config-snippet'
 
+export type ElectronMcp = NonNullable<Window['electron']>['mcp']
+
 const statusQueryKey = ['mcp', 'status']
 
-export const McpSettings = () => {
+const ClientConfigs = ({
+  token,
+  url,
+}: Extract<McpStatus, { state: 'running' }>) => {
+  const authorization = `Bearer ${token}`
+
+  return (
+    <>
+      <ConfigSnippet
+        client="claude_code"
+        label="Claude Code"
+        language="bash"
+        code={`claude mcp add --transport http tamery ${url} --header "Authorization: ${authorization}"`}
+      />
+      <ConfigSnippet
+        client="json"
+        label="Cursor and other clients"
+        language="json"
+        code={JSON.stringify(
+          {
+            mcpServers: {
+              tamery: { headers: { Authorization: authorization }, url },
+            },
+          },
+          null,
+          2
+        )}
+      />
+    </>
+  )
+}
+
+export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
   const { data: status } = useQuery({
-    queryFn: () => window.electron?.mcp.status() ?? null,
+    queryFn: () => mcp.status(),
     queryKey: statusQueryKey,
+  })
+  const { mutate: setEnabled } = useMutation({
+    meta: { event: 'mcp_server_toggled' },
+    mutationFn: (enabled: boolean) => mcp.setEnabled(enabled),
+    onError: (error) => toast.error(error.message),
+    onSuccess: (next) => queryClient.setQueryData(statusQueryKey, next),
   })
 
   if (!status) {
     return null
   }
-
-  const authorization = `Bearer ${status.token}`
 
   return (
     <div className="flex flex-col gap-4">
@@ -32,48 +71,18 @@ export const McpSettings = () => {
         <Switch
           id="mcp-enabled"
           size="sm"
-          checked={status.enabled}
-          onCheckedChange={async (enabled) => {
-            queryClient.setQueryData(
-              statusQueryKey,
-              await window.electron?.mcp.setEnabled(enabled)
-            )
-            posthog.capture('mcp_server_toggled', { enabled })
-          }}
+          checked={status.state !== 'off'}
+          onCheckedChange={(enabled) => setEnabled(enabled)}
         />
       </OptionField>
-      {status.enabled && status.error && (
+      {status.state === 'failed' && (
         <Alert variant="destructive">
           <AlertDescription className="wrap-break-word">
             The server could not start: {status.error}
           </AlertDescription>
         </Alert>
       )}
-      {status.enabled && !status.error && (
-        <>
-          <ConfigSnippet
-            label="Claude Code"
-            language="bash"
-            code={`claude mcp add --transport http tamery ${status.url} --header "Authorization: ${authorization}"`}
-          />
-          <ConfigSnippet
-            label="Cursor and other clients"
-            language="json"
-            code={JSON.stringify(
-              {
-                mcpServers: {
-                  tamery: {
-                    headers: { Authorization: authorization },
-                    url: status.url,
-                  },
-                },
-              },
-              null,
-              2
-            )}
-          />
-        </>
-      )}
+      {status.state === 'running' && <ClientConfigs {...status} />}
     </div>
   )
 }

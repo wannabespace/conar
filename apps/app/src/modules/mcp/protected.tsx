@@ -3,26 +3,32 @@ import { useEffect } from 'react'
 
 import type { ProtectedModule } from '~/lib/module'
 
+import type { ElectronMcp } from './mcp-settings'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
-const McpSourceMount = () => {
-  useEffect(() => window.electron?.mcp.serve(mcpSource), [])
+const desktopModule = (mcp: ElectronMcp): ProtectedModule => {
+  const McpSourceMount = () => {
+    useEffect(() => mcp.serve(mcpSource), [])
 
-  return null
+    return null
+  }
+  const Settings = () => <McpSettings mcp={mcp} />
+
+  return {
+    mounts: [McpSourceMount],
+    settings: [
+      {
+        Component: Settings,
+        icon: McpServerIcon,
+        id: 'mcp',
+        label: 'MCP',
+        order: 10,
+      },
+    ],
+  }
 }
 
 export default (window.electron
-  ? {
-      mounts: [McpSourceMount],
-      settings: [
-        {
-          Component: McpSettings,
-          icon: McpServerIcon,
-          id: 'mcp',
-          label: 'MCP',
-          order: 10,
-        },
-      ],
-    }
+  ? desktopModule(window.electron.mcp)
   : {}) satisfies ProtectedModule

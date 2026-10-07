@@ -30,7 +30,6 @@
     "@tamery/configs": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/shared": "workspace:*",
-    "@tamery/sql": "workspace:*",
     "@todesktop/cli": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

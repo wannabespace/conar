@@ -7,11 +7,15 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { posthog } from '~/lib/posthog'
+
 export const ConfigSnippet = ({
+  client,
   code,
   label,
   language,
 }: {
+  client: 'claude_code' | 'json'
   code: string
   label: string
   language: string
@@ -27,6 +31,7 @@ export const ConfigSnippet = ({
               variant="ghost-muted"
               aria-label="Copy"
               text={code}
+              onClick={() => posthog.capture('mcp_config_copied', { client })}
             />
           }
         />

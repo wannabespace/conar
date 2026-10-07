@@ -1,5 +1,5 @@
 import { replaceErrorPrefix } from '@tamery/connection/queries'
-import type { McpSource } from '@tamery/shared/mcp'
+import type { McpReply, McpRequest, McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -69,28 +69,30 @@ const onEvent = <T>(
 
 let mcpSource: McpSource | null = null
 
-ipcRenderer.on(
-  'mcp.request',
-  async (
-    event,
-    {
-      args,
-      method,
-    }: { method: keyof McpSource; args: Parameters<McpSource['target']>[0] }
-  ) => {
-    const [port] = event.ports
-    try {
-      if (!mcpSource) {
-        throw new Error('Sign in to Tamery first.')
-      }
-      port?.postMessage({ result: await mcpSource[method](args) })
-    } catch (error) {
-      port?.postMessage({
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
+ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
+  const [port] = event.ports
+  if (!port) {
+    return
   }
-)
+  const reply = (message: McpReply) => port.postMessage(message)
+  if (!mcpSource) {
+    reply({ idle: true })
+    return
+  }
+  try {
+    reply({
+      result:
+        request.method === 'connections'
+          ? mcpSource.connections()
+          : await mcpSource.query(request.args, (listener) => {
+              port.addEventListener('message', listener)
+              port.start()
+            }),
+    })
+  } catch (error) {
+    reply({ error: error instanceof Error ? error.message : String(error) })
+  }
+})
 
 const dialectQueryBridge = (dialect: string) => ({
   beginTransaction: handleElectronError((arg: unknown) =>

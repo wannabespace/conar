@@ -1,7 +1,16 @@
 import type { McpSource } from '@tamery/shared/mcp'
-import { SafeURL } from '@tamery/shared/safe-url'
+import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
+import { silently } from '@tamery/shared/utils'
+import { dialects, readsOnly } from '@tamery/sql'
 
 import { getCollections } from '~/core/collections'
+import { connectionFetchingConfig } from '~/core/connection/fetching'
+import { transactionQuery } from '~/core/queries/connection/transaction'
+import {
+  cancelQuery,
+  connectionResourceToQueryParams,
+  connectionToQueryParams,
+} from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 
 export const mcpSource: McpSource = {
@@ -21,35 +30,66 @@ export const mcpSource: McpSource = {
       type: connection.type,
     }))
   },
-  target: async ({ connectionId, database }) => {
-    const { connectionsCollection, connectionStringsCollection } =
+  query: async ({ connectionId, database, sql }, onAbort) => {
+    const { connectionsCollection, connectionsResourcesCollection } =
       getCollections()
     const connection = connectionsCollection.get(connectionId)
-
     if (!connection) {
       throw new Error(
         `Connection "${connectionId}" not found. Call list_connections for valid ids.`
       )
     }
 
-    if (
-      connection.isPasswordExists &&
-      !connectionStringsCollection.get(connectionId)?.isPasswordPopulated
-    ) {
+    const { canSend, reason } = connectionFetchingConfig(connection)
+    if (!canSend) {
+      throw new Error(reason ?? `Open "${connection.name}" in Tamery first.`)
+    }
+
+    const resource = database
+      ? connectionsResourcesCollection.toArray.find(
+          (item) => item.connectionId === connectionId && item.name === database
+        )
+      : undefined
+    if (database && !resource) {
       throw new Error(
-        `"${connection.name}" needs its password. Open it in Tamery and enter the password first.`
+        `"${connection.name}" has no database "${database}". Call list_connections for its databases.`
       )
     }
 
-    const url = new SafeURL(
-      await connectionStringsCollection.utils.decrypt(connectionId)
-    )
-    if (database) {
-      url.pathname = database
+    if (!readsOnly(sql, dialects[connection.type])) {
+      throw new Error(
+        'Only one read-only statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) runs at a time.'
+      )
     }
 
-    posthog.capture('mcp_query_run', { connection_type: connection.type })
+    const params = {
+      ...(await (resource
+        ? connectionResourceToQueryParams(resource)
+        : connectionToQueryParams(connection))),
+      resultSets: { maxRows: MCP_MAX_ROWS },
+    }
+    const controller = new AbortController()
+    const { queryIds, run } = transactionQuery(
+      { accessMode: 'read only', commit: false, statements: [sql] },
+      controller.signal
+    )
+    onAbort(() => {
+      controller.abort()
+      for (const queryId of queryIds) {
+        void silently(() => cancelQuery(params, queryId))
+      }
+    })
 
-    return { connectionString: url.toString(), type: connection.type }
+    let success = false
+    try {
+      const sets = await run(params)
+      success = true
+      return sets
+    } finally {
+      posthog.capture('mcp_query_run', {
+        connection_type: connection.type,
+        success,
+      })
+    }
   },
 }

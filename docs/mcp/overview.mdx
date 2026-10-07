@@ -48,13 +48,14 @@ claude mcp add --transport http tamery http://127.0.0.1:8264/mcp --header "Autho
 | Tool | What it does |
 | --- | --- |
 | `list_connections` | Lists your connections: id, name, engine, and the databases you have opened in each. |
-| `query` | Runs one read-only SQL statement on a connection, optionally in a specific database. Returns at most 200 rows and says when there were more. |
+| `query` | Runs one read-only SQL statement on a connection, optionally in one of the databases `list_connections` returned. Returns at most 200 rows and says when there were more. |
 
 Agents explore the schema with the engine's own catalog, for example `information_schema` on PostgreSQL, MySQL and SQL Server, or `system.tables` on ClickHouse.
 
 ## What agents can and cannot do
 
-- **Read only.** Tamery accepts a single statement starting with `SELECT`, `WITH`, `SHOW`, `DESCRIBE` or `EXPLAIN`, and rejects any that writes or changes the schema. It runs in a read-only transaction that is always rolled back.
-- **PostgreSQL and MySQL** enforce read-only mode in the database itself. **SQL Server and ClickHouse** have no read-only transactions, so Tamery relies on checking the statement. For a hard guarantee there, connect with a database user that has read permissions only.
+- **Read only.** Tamery accepts a single statement starting with `SELECT`, `WITH`, `SHOW`, `DESCRIBE` or `EXPLAIN`, and rejects any that writes, changes the schema or permissions, or ends the transaction. It runs in a read-only transaction that is always rolled back.
+- **PostgreSQL, MySQL and ClickHouse** enforce read-only mode in the database itself. On PostgreSQL, extensions that open their own connection, such as `dblink`, are outside it. **SQL Server** has no read-only transactions, so Tamery relies on checking the statement and rolling back. For a hard guarantee there, connect with a database user that has read permissions only.
+- **Same route as the app.** Queries go through the connection's proxy settings like any other query in Tamery, and queries on a named database appear in that database's query log. Stopping the agent cancels its running query.
 - **Tamery must be open and signed in.** Tamery decrypts connection strings inside the app window, so the server answers only while a signed-in window is open.
 - **Saved passwords only.** If a connection's password isn't saved on this device, open the connection in Tamery and enter it first.

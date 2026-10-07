@@ -17,6 +17,17 @@ import { queryClient } from '~/lib/query-client'
 import { fetchingConfig } from './fetching-config'
 import { getConnectionStore } from './stores'
 
+export const connectionFetchingConfig = (connection: Connection) => {
+  const { connectionStringsCollection } = getCollections()
+  const connectionString = connectionStringsCollection.get(connection.id)
+  return fetchingConfig(connection, {
+    hasLocalConnectionString: !!connectionString,
+    isLocalhost: connectionString?.isLocalhost,
+    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    proxy: getConnectionStore(connection.id).get().proxy,
+  })
+}
+
 export const prefetchConnectionResourceCore = async (
   connectionResource: ConnectionResource
 ) => {
