@@ -21,6 +21,7 @@ import type { Workspace } from '~/core/workspace/sync'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { useIsAnonymous } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
+import { useIsOnline } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
@@ -44,6 +45,7 @@ export const WorkspaceSwitcher = () => {
   const isAnonymous = useIsAnonymous()
   const [createOpen, setCreateOpen] = useState(false)
   const { data: activeWorkspace, workspaces } = useActiveWorkspace()
+  const isOnline = useIsOnline()
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -120,6 +122,7 @@ export const WorkspaceSwitcher = () => {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className={isAnonymous ? 'opacity-50' : undefined}
+            disabled={!isOnline}
             onClick={handleCreate}
           >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />

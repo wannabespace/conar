@@ -19,7 +19,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 
-import { useCollections } from '~/core/collections'
+import { mutateOffline, useCollections } from '~/core/collections'
 import { posthog } from '~/lib/posthog'
 
 import type { Query } from '../sync'
@@ -71,21 +71,25 @@ export const RunnerSaveDialog = ({
 
   const confirm = () => {
     if (request?.kind === 'rename') {
-      queriesCollection.update(request.query.id, (draft) => {
-        draft.name = name.trim()
-        draft.updatedAt = new Date()
-      })
+      mutateOffline(() =>
+        queriesCollection.update(request.query.id, (draft) => {
+          draft.name = name.trim()
+          draft.updatedAt = new Date()
+        })
+      )
       posthog.capture('saved_query_renamed')
       toast.success(`Renamed to "${name.trim()}"`)
     } else {
-      queriesCollection.insert({
-        connectionResourceId: connectionResource.id,
-        createdAt: new Date(),
-        id: v7(),
-        name: name.trim(),
-        query: sql,
-        updatedAt: new Date(),
-      })
+      mutateOffline(() =>
+        queriesCollection.insert({
+          connectionResourceId: connectionResource.id,
+          createdAt: new Date(),
+          id: v7(),
+          name: name.trim(),
+          query: sql,
+          updatedAt: new Date(),
+        })
+      )
       posthog.capture('query_saved')
       toast.success(`Saved "${name.trim()}"`)
     }

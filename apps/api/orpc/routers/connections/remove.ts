@@ -7,39 +7,29 @@ import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const input = type({
-  id: 'string.uuid.v7',
-})
+const input = type({ id: 'string.uuid.v7' })
 
 export const remove = orpc
   .use(authMiddleware)
+  // Installed desktop builds still send an array; keep accepting it.
   .input(
     type
       .or(input, input.array())
       .pipe((data) => (Array.isArray(data) ? data : [data]))
   )
-  .errors({
-    BAD_REQUEST: { message: 'No connections to remove' },
-  })
-  .handler(async ({ context, errors, input: items }) => {
-    if (items.length === 0) {
-      throw errors.BAD_REQUEST()
-    }
+  .handler(async ({ context, input: items }) => {
+    const ids = items.map((item) => item.id)
 
-    await db.delete(connections).where(
-      and(
-        inArray(
-          connections.id,
-          items.map((item) => item.id)
-        ),
-        eq(connections.userId, context.user.id)
+    await db
+      .delete(connections)
+      .where(
+        and(
+          inArray(connections.id, ids),
+          eq(connections.userId, context.user.id)
+        )
       )
-    )
 
-    for (const item of items) {
-      publisher.publish(context.user.id, {
-        key: item.id,
-        type: 'delete',
-      })
+    for (const id of ids) {
+      publisher.publish(context.user.id, { key: id, type: 'delete' })
     }
   })

@@ -96,6 +96,7 @@ const Toaster = () => {
               flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
               p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
               select-none
+              data-[expanded=false]:data-[front=false]:*:opacity-0
             `,
           },
           unstyled: true,

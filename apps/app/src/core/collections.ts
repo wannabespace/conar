@@ -1,3 +1,10 @@
+import { ORPCError } from '@orpc/client'
+import { silently } from '@tamery/shared/utils'
+import type { OfflineExecutor } from '@tanstack/offline-transactions'
+import {
+  NonRetriableError,
+  startOfflineExecutor,
+} from '@tanstack/offline-transactions'
 import { getRouteApi } from '@tanstack/react-router'
 
 import { createConnectionStringsCollection } from '~/core/connection/connection-strings'
@@ -6,6 +13,7 @@ import {
   createConnectionsResourcesCollection,
 } from '~/core/connection/sync'
 import { createWorkspacesCollection } from '~/core/workspace/sync'
+import { isServerError } from '~/lib/error'
 
 // Modules add their collections by augmenting this interface in `collections.ts`.
 export interface Collections {
@@ -26,16 +34,17 @@ const moduleCollections = Object.values(
   )
 )
 
-let current: Collections | null = null
+let current: { collections: Collections; offline: OfflineExecutor } | null =
+  null
 
-export const getCollections = (): Collections => {
+const init = () => {
   if (current) {
     return current
   }
 
   const connectionStringsCollection = createConnectionStringsCollection()
 
-  current = {
+  const collections: Collections = {
     // Each module's factory fills exactly the keys its augmentation declares.
     ...(Object.assign(
       {},
@@ -49,11 +58,64 @@ export const getCollections = (): Collections => {
     workspacesCollection: createWorkspacesCollection(),
   }
 
+  current = {
+    collections,
+    offline: startOfflineExecutor({
+      // The spread gives the interface the index signature the executor's type needs.
+      collections: { ...collections },
+      mutationFns: {
+        // Sequential: a connection must land before the resource referencing it.
+        push: async ({ transaction }) => {
+          for (const mutation of transaction.mutations) {
+            const { push } = mutation.collection.utils
+            // Local-only collections (connection strings) have no `push`.
+            if (!push) {
+              throw new NonRetriableError(
+                `${mutation.collection.id} cannot be written offline`
+              )
+            }
+            // oxlint-disable-next-line no-await-in-loop
+            await push(mutation).catch((error: unknown) => {
+              // The executor retries every other error forever.
+              if (error instanceof ORPCError && !isServerError(error)) {
+                throw new NonRetriableError(error.message)
+              }
+              throw error
+            })
+          }
+        },
+      },
+    }),
+  }
+
   return current
 }
 
-export const cleanCollections = () => {
+export const getCollections = (): Collections => init().collections
+
+export const whenOfflineReady = () => init().offline.waitForInit()
+
+export const mutateOffline = (mutate: () => void) => {
+  const tx = init().offline.createOfflineTransaction({
+    autoCommit: false,
+    mutationFnName: 'push',
+  })
+  const transaction = tx.mutate(mutate)
+  // A rollback rejects both promises; the oRPC link has already toasted it.
+  silently(() => tx.commit())
+  silently(() => transaction.isPersisted.promise)
+  return transaction
+}
+
+export const cleanCollections = async () => {
+  if (!current) {
+    return
+  }
+
+  const { offline } = current
   current = null
+  await offline.clearOutbox()
+  offline.dispose()
 }
 
 const { useRouteContext } = getRouteApi('/_protected')

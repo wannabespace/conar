@@ -8,7 +8,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { RefObject } from 'react'
 import { useEffect, useState } from 'react'
-import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -16,7 +15,7 @@ import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { orpc } from '~/lib/orpc'
 import { plural } from '~/lib/plural'
-import { appStore } from '~/store'
+import { useIsOnline } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { useTablePageStore } from '../../lib/store'
@@ -55,9 +54,7 @@ export const useFilterAi = ({
   schema: string
   table: string
 }) => {
-  const isOnline = useSubscription(appStore, {
-    selector: (state) => state.isOnline,
-  })
+  const isOnline = useIsOnline()
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const { columns } = useTableColumnsContext()

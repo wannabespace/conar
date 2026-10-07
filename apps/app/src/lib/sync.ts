@@ -1,5 +1,6 @@
 import { sleep } from '@tamery/shared/utils'
-import type { SyncConfig } from '@tanstack/react-db'
+import { NonRetriableError } from '@tanstack/offline-transactions'
+import type { PendingMutation, SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
@@ -75,12 +76,6 @@ export type SyncMessage<T> =
   | { type: 'update'; value: T }
   | { type: 'delete'; key: string }
 
-type MutationFn<T> = (params: {
-  transaction: {
-    mutations: { key: string; modified: T; changes: Partial<T> }[]
-  }
-}) => Promise<void>
-
 export type SyncEventsFn<T> = (params: {
   signal: AbortSignal
   write: (message: SyncMessage<T>) => void
@@ -88,6 +83,12 @@ export type SyncEventsFn<T> = (params: {
 
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
+
+interface ServerMutations<T> {
+  delete?: (key: string) => Promise<unknown>
+  insert?: (value: T) => Promise<T | undefined> | Promise<void>
+  update?: (key: string, changes: Partial<T>) => Promise<unknown>
+}
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
@@ -97,9 +98,7 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
     rows: { id: string; updatedAt: Date }[]
     signal: AbortSignal
   }) => Promise<SyncMessage<T>[]>
-  onInsert?: MutationFn<T>
-  onUpdate?: MutationFn<T>
-  onDelete?: MutationFn<T>
+  mutations?: ServerMutations<T>
 }
 
 export const syncCollectionOptions = <T extends { updatedAt: Date }>(
@@ -107,6 +106,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
 ) => {
   const tracker = createSyncTracker()
   const firstSync = Promise.withResolvers<undefined>()
+  let writeSynced: ((items: SyncMessage<T>[]) => void) | null = null
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -118,16 +118,21 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           write({ key: item.key, type: 'delete' })
           return
         }
-        write({ type: item.type, value: item.value })
+        // Always an upsert: `push` may already have written the row as synced,
+        // and an `insert` of a differing value throws DuplicateKeySyncError.
+        write({ type: 'update', value: item.value })
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
-      const writeItems = (items: SyncMessage<T>[]) => {
+      const writeItems = (
+        items: SyncMessage<T>[],
+        options?: { immediate: boolean }
+      ) => {
         if (signal.aborted) {
           return
         }
 
-        begin()
+        begin(options)
         for (const item of items) {
           writeItem(item)
         }
@@ -142,11 +147,13 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
               return
             }
 
-            const items = await collection.toArrayWhenReady()
-            const rows = items.map((item) => ({
-              id: config.getKey(item),
-              updatedAt: item.updatedAt,
-            }))
+            await collection.toArrayWhenReady()
+            // Server versions, not visible rows: an unsent insert would come
+            // back as a delete racing the outbox, and a row with a pending
+            // edit or delete would come back as new, overwriting the replay.
+            const rows = [...collection._state.syncedData.values()].map(
+              (item) => ({ id: config.getKey(item), updatedAt: item.updatedAt })
+            )
             writeItems(await config.sync({ rows, signal }))
           },
         })
@@ -154,7 +161,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         if (result.isErr() && !signal.aborted) {
           if (isUnauthorizedError(result.error)) {
             abortController.abort(`${config.id} sync unauthorized`)
-          } else {
+          } else if (navigator.onLine) {
             posthog.captureException(result.error)
           }
         }
@@ -166,6 +173,16 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         let failures = 0
 
         while (!signal.aborted) {
+          if (!navigator.onLine) {
+            firstSync.resolve()
+            const online = Promise.withResolvers<undefined>()
+            window.addEventListener('online', () => online.resolve(), {
+              once: true,
+              signal,
+            })
+            // oxlint-disable-next-line no-await-in-loop
+            await online.promise
+          }
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
             catch: (error) => error,
@@ -184,7 +201,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
             abortController.abort(`${config.id} sync unauthorized`)
             return
           } else {
-            posthog.captureException(result.error)
+            if (navigator.onLine) {
+              posthog.captureException(result.error)
+            }
             failures += 1
           }
 
@@ -196,6 +215,10 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
       }
 
+      // Immediate: a plain sync commit waits for every persisting transaction
+      // on the collection, so the row would vanish while a later outbox write
+      // is still pending.
+      writeSynced = (items) => writeItems(items, { immediate: true })
       markReady()
       run()
 
@@ -206,17 +229,42 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     },
   }
 
+  // Non-retriable: the outbox is FIFO, so a retried write blocks every later one.
+  const serverMutation = <K extends keyof ServerMutations<T>>(type: K) => {
+    const send = config.mutations?.[type]
+    if (!send) {
+      throw new NonRetriableError(`${config.id} has no server ${type}`)
+    }
+    return send
+  }
+
   return {
     autoIndex: 'eager' as const,
     defaultIndexType: BasicIndex,
     getKey: config.getKey,
     id: config.id,
-    onDelete: config.onDelete,
-    onInsert: config.onInsert,
-    onUpdate: config.onUpdate,
     sync,
     utils: {
       awaitChange: tracker.awaitChange,
+      // Sends one offline-outbox mutation, then writes it as synced so the row
+      // holds still between the optimistic layer dropping and the server echo.
+      push: async (mutation: PendingMutation<T>) => {
+        if (mutation.type === 'delete') {
+          await serverMutation('delete')(mutation.key)
+          writeSynced?.([{ key: mutation.key, type: 'delete' }])
+          return
+        }
+
+        if (mutation.type === 'update') {
+          await serverMutation('update')(mutation.key, mutation.changes)
+          writeSynced?.([{ type: 'update', value: mutation.modified }])
+          return
+        }
+
+        // A conflicting insert keeps the server's row, which may have another id.
+        const stored = await serverMutation('insert')(mutation.modified)
+        writeSynced?.([{ type: 'update', value: stored ?? mutation.modified }])
+      },
       whenSynced: () => firstSync.promise,
     },
   }

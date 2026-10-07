@@ -3,12 +3,14 @@ import { useEffect } from 'react'
 
 import { useCollections } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
+import { useIsOnline } from '~/store'
 
 export const useConnectionStringsSync = () => {
   const collections = useCollections()
+  const isOnline = useIsOnline()
 
   useEffect(() => {
-    if (!collections) {
+    if (!collections || !isOnline) {
       return
     }
 
@@ -56,5 +58,5 @@ export const useConnectionStringsSync = () => {
       abortController.abort()
       effect.dispose()
     }
-  }, [collections])
+  }, [collections, isOnline])
 }

@@ -62,10 +62,12 @@ const ProtectedLayout = () => {
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
-    const { getCollections } = await import('~/core/collections')
+    const { getCollections, whenOfflineReady } =
+      await import('~/core/collections')
     const c = getCollections()
 
     await Promise.all([
+      whenOfflineReady(),
       c.connectionStringsCollection.stateWhenReady(),
       c.connectionsCollection.stateWhenReady(),
       c.connectionsResourcesCollection.stateWhenReady(),

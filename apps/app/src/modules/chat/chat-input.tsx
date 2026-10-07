@@ -16,6 +16,8 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { useIsOnline } from '~/store'
+
 import { chatOpen } from './stores'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -31,6 +33,7 @@ export const ChatInput = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const isOpened = useSubscription(chatOpen(connectionResource.id))
+  const isOnline = useIsOnline()
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -42,7 +45,7 @@ export const ChatInput = ({
 
   const submit = () => {
     const text = value.trim()
-    if (!text || isStreaming) {
+    if (!text || isStreaming || !isOnline) {
       return
     }
     onSend(text)
@@ -97,7 +100,7 @@ export const ChatInput = ({
                   aria-label={isStreaming ? 'Stop generating' : 'Send message'}
                   {...(isStreaming
                     ? { onClick: onStop }
-                    : { disabled: !value.trim(), type: 'submit' })}
+                    : { disabled: !value.trim() || !isOnline, type: 'submit' })}
                 />
               }
             >

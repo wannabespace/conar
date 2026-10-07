@@ -107,8 +107,7 @@ export const fullSignOut = async () => {
       import('~/core/user/use-subscription'),
     ])
 
-  cleanCollections()
   subscriptionsCache.clear()
   subscriptionQueryClient.clear()
-  await Promise.all([clearDb(), encryptionKey.reset()])
+  await Promise.all([cleanCollections(), clearDb(), encryptionKey.reset()])
 }

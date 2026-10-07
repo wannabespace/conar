@@ -7,27 +7,18 @@ import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const input = type({
-  id: 'string.uuid.v7',
-})
+const input = type({ id: 'string.uuid.v7' })
 
 export const remove = orpc
   .use(authMiddleware)
+  // Installed desktop builds still send an array; keep accepting it.
   .input(
     type
       .or(input, input.array())
       .pipe((data) => (Array.isArray(data) ? data : [data]))
   )
-  .errors({
-    BAD_REQUEST: { message: 'No connection resources to remove' },
-    NOT_FOUND: { message: 'Some connection resources not found' },
-  })
-  .handler(async ({ context, errors, input: items }) => {
-    if (items.length === 0) {
-      throw errors.BAD_REQUEST()
-    }
-
-    const resources = await db.query.connectionsResources.findMany({
+  .handler(async ({ context, input: items }) => {
+    const owned = await db.query.connectionsResources.findMany({
       columns: {
         id: true,
       },
@@ -42,22 +33,13 @@ export const remove = orpc
         },
       },
     })
+    const ids = owned.map((resource) => resource.id)
 
-    if (resources.length !== items.length) {
-      throw errors.NOT_FOUND()
-    }
+    await db
+      .delete(connectionsResources)
+      .where(inArray(connectionsResources.id, ids))
 
-    await db.delete(connectionsResources).where(
-      inArray(
-        connectionsResources.id,
-        items.map((item) => item.id)
-      )
-    )
-
-    for (const item of items) {
-      publisher.publish(context.user.id, {
-        key: item.id,
-        type: 'delete',
-      })
+    for (const id of ids) {
+      publisher.publish(context.user.id, { key: id, type: 'delete' })
     }
   })

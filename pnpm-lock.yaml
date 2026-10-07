@@ -141,6 +141,9 @@ catalogs:
     '@tanstack/db-sqlite-persistence-core':
       specifier: ^0.2.20
       version: 0.2.20
+    '@tanstack/offline-transactions':
+      specifier: 1.0.53
+      version: 1.0.53
     '@tanstack/react-db':
       specifier: ^0.3.7
       version: 0.3.7
@@ -690,6 +693,9 @@ importers:
       '@tanstack/db-sqlite-persistence-core':
         specifier: 'catalog:'
         version: 0.2.20(typescript@7.0.2)
+      '@tanstack/offline-transactions':
+        specifier: 'catalog:'
+        version: 1.0.53(typescript@7.0.2)
       '@tanstack/react-db':
         specifier: 'catalog:'
         version: 0.3.7(react@19.3.0)(typescript@7.0.2)
@@ -4584,6 +4590,17 @@ packages:
   '@tanstack/hotkeys@0.8.0':
     resolution: {integrity: sha512-vqH7X9nb0MTJ/O08++dB5bP9jgj4+BIPOUu/U+6myG86lDsirZSVSobpq5UQpE7nBuk62i8eIYeOhd+OMl/UrA==}
     engines: {node: '>=18'}
+
+  '@tanstack/offline-transactions@1.0.53':
+    resolution: {integrity: sha512-8ayPO7HFcO3jTng5Nbm7/HNH9cqoY7yL+DiFrhG4l93ha7Dt/6Acj/6XXrkbuais4u1MOE8E4C6mOYw3Tr6oyg==}
+    peerDependencies:
+      '@react-native-community/netinfo': '>=11.0.0'
+      react-native: '>=0.70.0'
+    peerDependenciesMeta:
+      '@react-native-community/netinfo':
+        optional: true
+      react-native:
+        optional: true
 
   '@tanstack/pacer-lite@0.1.1':
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
@@ -13376,6 +13393,12 @@ snapshots:
   '@tanstack/hotkeys@0.8.0':
     dependencies:
       '@tanstack/store': 0.11.0
+
+  '@tanstack/offline-transactions@1.0.53(typescript@7.0.2)':
+    dependencies:
+      '@tanstack/db': 0.8.7(typescript@7.0.2)
+    transitivePeerDependencies:
+      - typescript
 
   '@tanstack/pacer-lite@0.1.1': {}
 

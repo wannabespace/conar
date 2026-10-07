@@ -38,10 +38,22 @@ export const create = orpc
       .onConflictDoNothing()
       .returning()
 
-    if (inserted) {
-      publisher.publish(context.user.id, {
-        type: 'insert',
-        value: inserted,
+    if (!inserted) {
+      // A null name never conflicts on (connectionId, name), only on the id.
+      return db.query.connectionsResources.findFirst({
+        where:
+          input.name === null || input.name === undefined
+            ? { id: { eq: input.id } }
+            : {
+                connectionId: { eq: input.connectionId },
+                name: { eq: input.name },
+              },
       })
     }
+
+    publisher.publish(context.user.id, {
+      type: 'insert',
+      value: inserted,
+    })
+    return inserted
   })

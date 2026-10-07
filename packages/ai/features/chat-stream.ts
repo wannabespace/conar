@@ -14,8 +14,8 @@ const CHAT_INSTRUCTIONS = [
   'Be concise. Use fenced code blocks with a language tag for SQL and code.',
 ].join('\n')
 
-const redis = createClient({ url: env.REDIS_URL })
-const subscriber = redis.duplicate()
+const redis = createClient({ url: env.REDIS_URL }).on('error', console.error)
+const subscriber = redis.duplicate().on('error', console.error)
 await redis.connect()
 
 const activeStream = {

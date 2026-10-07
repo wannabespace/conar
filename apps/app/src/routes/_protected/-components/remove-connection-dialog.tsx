@@ -12,7 +12,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections'
+import { mutateOffline, useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
@@ -72,7 +72,7 @@ export const RemoveConnectionDialog = ({
       await navigate({ to: '/' })
     }
 
-    connectionsCollection.delete(connection.id)
+    mutateOffline(() => connectionsCollection.delete(connection.id))
 
     const idsToRemove = [...resourcesIds, connection.id]
 

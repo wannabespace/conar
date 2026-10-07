@@ -73,7 +73,9 @@ export const resourceConstraintsQuery = createQuery({
         .select(['database as schema', 'table', 'name as column'])
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
-        .orderBy(['database', 'table', 'position'])
+        .orderBy('database')
+        .orderBy('table')
+        .orderBy('position')
         .execute()
 
       const tables = await db

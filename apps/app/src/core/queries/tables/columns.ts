@@ -104,7 +104,9 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
                 )
               : qb.where('database', 'not in', ['system', 'information_schema'])
           )
-          .orderBy(['database', 'table', 'position'])
+          .orderBy('database')
+          .orderBy('table')
+          .orderBy('position')
           .execute()
 
         return query.map((row) => ({
@@ -181,7 +183,9 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
                   'INFORMATION_SCHEMA',
                 ])
           )
-          .orderBy(['TABLE_SCHEMA', 'TABLE_NAME', 'ORDINAL_POSITION'])
+          .orderBy('TABLE_SCHEMA')
+          .orderBy('TABLE_NAME')
+          .orderBy('ORDINAL_POSITION')
           .execute()
 
         return query.map(

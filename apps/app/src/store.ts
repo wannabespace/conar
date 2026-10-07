@@ -1,4 +1,5 @@
 import { createStore } from 'seitu'
+import { useSubscription } from 'seitu/react'
 
 import { posthog } from '~/lib/posthog'
 
@@ -22,6 +23,9 @@ const updateOnline = () => {
 
 window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
+
+export const useIsOnline = () =>
+  useSubscription(appStore, { selector: (state) => state.isOnline })
 
 export const promptSignIn = (hint: string) => {
   void posthog.capture('guest_feature_blocked', { hint })

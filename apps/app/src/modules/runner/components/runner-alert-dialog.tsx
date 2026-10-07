@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
 export const RunnerAlertDialog = ({
@@ -35,6 +35,7 @@ export const RunnerAlertDialog = ({
   }
   const [keywords, setKeywords] = useState<string[]>([])
   const callbackRef = useRef<() => void>(null)
+  const [popup, setPopup] = useState<HTMLDivElement | null>(null)
 
   useImperativeHandle(ref, () => ({
     confirm: (pendingKeywords, onConfirmed) => {
@@ -49,7 +50,9 @@ export const RunnerAlertDialog = ({
     changeOpen(false)
   }
 
-  useHotkey('Mod+Enter', onConfirm, { enabled: open })
+  useHotkeys(popup ? [{ callback: onConfirm, hotkey: 'Mod+Enter' }] : [], {
+    target: popup,
+  })
 
   return (
     <AlertDialog
@@ -61,7 +64,7 @@ export const RunnerAlertDialog = ({
         }
       }}
     >
-      <AlertDialogContent>
+      <AlertDialogContent ref={setPopup}>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center">
             <HugeiconsIcon

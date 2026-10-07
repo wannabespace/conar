@@ -24,8 +24,7 @@ import {
   StepperList,
   StepperTrigger,
 } from '~/components/stepper'
-import { useCollections } from '~/core/collections'
-import { createConnectionTransaction } from '~/core/connection/create'
+import { mutateOffline, useCollections } from '~/core/collections'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
@@ -80,16 +79,21 @@ const CreateConnectionPage = () => {
         const resourceId = v7()
         const updatedAt = new Date()
         const createdAt = new Date()
-        const { connectionStringsCollection, connectionsResourcesCollection } =
-          collections
+        const {
+          connectionsCollection,
+          connectionStringsCollection,
+          connectionsResourcesCollection,
+        } = collections
 
-        const tx = createConnectionTransaction({
-          connectionString: await connectionStringsCollection.utils.prepare({
+        connectionStringsCollection.insert(
+          await connectionStringsCollection.utils.prepare({
             connectionId: id,
             connectionString: url.toString(),
             updatedAt,
-          }),
-          connection: {
+          })
+        )
+        const tx = mutateOffline(() => {
+          connectionsCollection.insert({
             id,
             workspaceId: activeWorkspace.id,
             name: data.name,
@@ -100,15 +104,23 @@ const CreateConnectionPage = () => {
             syncType: data.syncType,
             createdAt,
             updatedAt,
-          },
-          resource: {
+          })
+          connectionsResourcesCollection.insert({
             id: resourceId,
             connectionId: id,
             name: resource,
             createdAt,
             updatedAt,
-          },
+          })
         })
+        const dropStringOnRollback = async () => {
+          try {
+            await tx.isPersisted.promise
+          } catch {
+            connectionStringsCollection.delete(id)
+          }
+        }
+        void dropStringOnRollback()
 
         if (resource) {
           getConnectionStore(id).set((state) => ({
@@ -117,7 +129,7 @@ const CreateConnectionPage = () => {
           }))
         }
 
-        if (!window.electron) {
+        if (!window.electron && navigator.onLine) {
           await tx.isPersisted.promise
         }
 
