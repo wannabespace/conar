@@ -9,27 +9,42 @@ import {
   getColumnType,
   groupIndexes,
   isNowDefault,
+  explicitSchema,
   isSerialDefault,
+  isSingleColumnConstraint,
   isValidIdentifier,
   toLiteralKey,
+  toStringLiteral,
 } from '~/core/codegen/utils'
 
 const dialectConfig: Record<
   Exclude<ConnectionType, ConnectionType.ClickHouse>,
-  { tableFunc: string; dialectImportPath: string; enumFunc?: string }
+  {
+    anyColumn: string
+    schemaFunc: string
+    tableFunc: string
+    dialectImportPath: string
+    enumFunc?: string
+  }
 > = {
   mssql: {
+    anyColumn: 'AnyMsSqlColumn',
     dialectImportPath: 'drizzle-orm/mssql-core',
+    schemaFunc: 'mssqlSchema',
     tableFunc: 'mssqlTable',
   },
   mysql: {
+    anyColumn: 'AnyMySqlColumn',
     dialectImportPath: 'drizzle-orm/mysql-core',
     enumFunc: 'mysqlEnum',
+    schemaFunc: 'mysqlSchema',
     tableFunc: 'mysqlTable',
   },
   postgres: {
+    anyColumn: 'AnyPgColumn',
     dialectImportPath: 'drizzle-orm/pg-core',
     enumFunc: 'pgEnum',
+    schemaFunc: 'pgSchema',
     tableFunc: 'pgTable',
   },
 }
@@ -80,12 +95,8 @@ export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
 
 const buildColumnOptions = (
   c: SchemaParams['columns'][number],
-  typeFunc: string,
-  isEnum: boolean | string | undefined
+  typeFunc: string
 ): string => {
-  if (isEnum) {
-    return ''
-  }
   if (
     c.maxLength &&
     c.maxLength !== -1 &&
@@ -133,7 +144,8 @@ const buildColumnChain = (
   c: SchemaParams['columns'][number],
   typeFunc: string,
   options: string,
-  dialect: ConnectionType,
+  { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>,
+  selfReferenceType: string | null,
   foreignKeyImports: Set<string>,
   coreImports: Set<string>
 ): string => {
@@ -142,7 +154,7 @@ const buildColumnChain = (
 
   let chain = sameCase
     ? `${typeFunc}(${options ? options.slice(2).trim() : ''})`
-    : `${typeFunc}('${c.id}'${options})`
+    : `${typeFunc}(${toStringLiteral(c.id)}${options})`
 
   if (c.isArray && dialect === ConnectionType.Postgres) {
     chain += '.array()'
@@ -151,10 +163,10 @@ const buildColumnChain = (
   if (!c.isNullable) {
     chain += '.notNull()'
   }
-  if (c.primaryKey) {
+  if (isSingleColumnConstraint(c, columns, 'primaryKey')) {
     chain += '.primaryKey()'
   }
-  if (c.unique && !c.primaryKey) {
+  if (isSingleColumnConstraint(c, columns, 'unique') && !c.primaryKey) {
     chain += '.unique()'
   }
 
@@ -169,12 +181,18 @@ const buildColumnChain = (
     }
 
     const optionStr = fkOptions.length ? `, { ${fkOptions.join(', ')} }` : ''
-    chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)}${optionStr})`
+    const returnType = selfReferenceType ? `: ${selfReferenceType}` : ''
+    chain += `.references(()${returnType} => ${refTable}.${camelCase(c.foreign.column)}${optionStr})`
 
     foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
   }
 
   return chain
+}
+
+const tableColumn = (column: string) => {
+  const key = camelCase(column)
+  return isValidIdentifier(key) ? `t.${key}` : `t[${toStringLiteral(key)}]`
 }
 
 const buildRelationships = (
@@ -224,7 +242,9 @@ export const generateSchemaDrizzle = ({
   if (dialect === ConnectionType.ClickHouse) {
     return ''
   }
-  const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
+  const { anyColumn, dialectImportPath, enumFunc, schemaFunc } =
+    dialectConfig[dialect]
+  let { tableFunc } = dialectConfig[dialect]
 
   const coreImports = new Set<string>()
   const dialectImports = new Set<string>()
@@ -248,31 +268,36 @@ export const generateSchemaDrizzle = ({
         typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
       }
 
-      dialectImports.add(typeFunc)
-
-      const isEnum = !!(enumFunc && c.enumName && c.availableValues?.length)
-      if (isEnum && enumFunc) {
-        const eName = c.enumName || `${table}_${c.id}`
-        const enumTypeName = `${camelCase(eName)}Enum`
-        const valuesList = (c.availableValues ?? [])
-          .map((v) => `'${v}'`)
-          .join(', ')
-
+      let options = ''
+      if (enumFunc && c.enumName && c.availableValues?.length) {
+        const values = `[${c.availableValues.map(toStringLiteral).join(', ')}]`
         dialectImports.add(enumFunc)
-        extras.push(
-          `export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`
-        )
+        if (dialect === ConnectionType.MySQL) {
+          typeFunc = enumFunc
+          options = `, ${values}`
+        } else {
+          typeFunc = `${camelCase(c.enumName)}Enum`
+          extras.push(
+            `export const ${typeFunc} = ${enumFunc}(${toStringLiteral(c.enumName)}, ${values});`
+          )
+        }
+      } else {
+        dialectImports.add(typeFunc)
+        options = buildColumnOptions(c, typeFunc)
+      }
 
-        typeFunc = enumTypeName
+      const isSelfReference = c.foreign?.table === table
+      if (isSelfReference) {
+        dialectImports.add(anyColumn)
       }
 
       const safeKey = toLiteralKey(camelCase(c.id))
-      const options = buildColumnOptions(c, typeFunc, isEnum)
       const chain = buildColumnChain(
         c,
         typeFunc,
         options,
-        dialect,
+        { columns, dialect },
+        isSelfReference ? anyColumn : null,
         foreignKeyImports,
         coreImports
       )
@@ -289,6 +314,7 @@ export const generateSchemaDrizzle = ({
   )
 
   const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
+  allFkImports.delete(`import { ${varName} } from './${table}';`)
 
   const explicitIndexes = filterExplicitIndexes(
     groupIndexes(indexes, schema, table),
@@ -299,27 +325,37 @@ export const generateSchemaDrizzle = ({
     coreImports.add('relations')
   }
 
-  if (explicitIndexes.some((idx) => idx.customExpressions.length > 0)) {
-    coreImports.add('sql')
+  const config: string[] = []
+  const primaryColumns = columns.filter((c) => c.primaryKey)
+  if (primaryColumns.length > 1) {
+    dialectImports.add('primaryKey')
+    config.push(
+      `  primaryKey({ columns: [${primaryColumns.map((c) => tableColumn(c.id)).join(', ')}] }),`
+    )
+  }
+  for (const idx of explicitIndexes) {
+    const func = idx.isUnique ? 'uniqueIndex' : 'index'
+    dialectImports.add(func)
+    const on = idx.keys.map((key) => {
+      if ('column' in key) {
+        return tableColumn(key.column)
+      }
+      coreImports.add('sql')
+      return `sql\`${key.expression}\``
+    })
+    config.push(`  ${func}(${toStringLiteral(idx.name)}).on(${on.join(', ')}),`)
   }
 
-  let extraConfig = ''
-  if (explicitIndexes.length > 0) {
-    const idxDecls = explicitIndexes.map((idx) => {
-      const func = idx.isUnique ? 'uniqueIndex' : 'index'
-      if (idx.isUnique) {
-        dialectImports.add('uniqueIndex')
-      } else {
-        dialectImports.add('index')
-      }
-
-      const onCols = idx.columns.map((col) => {
-        const key = camelCase(col)
-        return isValidIdentifier(key) ? `t.${key}` : `t['${key}']`
-      })
-      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map((c) => `sql\`${c}\``)].join(', ')}),`
-    })
-    extraConfig = idxDecls.join('\n')
+  const tableSchema = explicitSchema(schema, dialect)
+  if (tableSchema) {
+    const schemaVar = `${camelCase(tableSchema)}Schema`
+    dialectImports.add(schemaFunc)
+    extras.unshift(
+      `export const ${schemaVar} = ${schemaFunc}(${toStringLiteral(tableSchema)});`
+    )
+    tableFunc = `${schemaVar}.table`
+  } else {
+    dialectImports.add(tableFunc)
   }
 
   const base = templates.drizzleSchemaTemplate({
@@ -327,7 +363,7 @@ export const generateSchemaDrizzle = ({
     coreImports: [...coreImports],
     dialectImportPath,
     dialectImports: [...dialectImports],
-    extraConfig,
+    extraConfig: config.join('\n'),
     table,
     tableFunc,
   })
@@ -338,7 +374,7 @@ export const generateSchemaDrizzle = ({
 
   const allImports = [...allFkImports, baseImports].filter(Boolean).join('\n')
 
-  const definitions = [extras.join('\n\n'), baseBody]
+  const definitions = [[...new Set(extras)].join('\n\n'), baseBody]
 
   if (relationships.length > 0) {
     const relName = `${varName}Relations`

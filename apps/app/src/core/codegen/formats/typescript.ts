@@ -1,6 +1,10 @@
 import * as templates from '~/core/codegen/templates'
 import type { SchemaParams } from '~/core/codegen/types'
-import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '~/core/codegen/utils'
+import {
+  formatEnumAsUnionType,
+  getColumnType,
+  toLiteralKey,
+} from '~/core/codegen/utils'
 
 export const generateSchemaTypeScript = ({
   table,
@@ -22,7 +26,7 @@ export const generateSchemaTypeScript = ({
         typeScriptType += ' | null'
       }
 
-      return `  ${literalKey}${c.isNullable ? '?' : ''}: ${typeScriptType};`
+      return `  ${literalKey}: ${typeScriptType};`
     })
     .join('\n')
 

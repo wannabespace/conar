@@ -1,8 +1,7 @@
 import { camelCase, pascalCase } from 'change-case'
 
-import { toLiteralKey } from './utils'
+import { toLiteralKey, toStringLiteral } from './utils'
 
-const SINGLE_QUOTE_RE = /'/gu
 const NEWLINE_RE = /\n/gu
 
 export const sqlSchemaTemplate = (table: string, columns: string) =>
@@ -27,10 +26,24 @@ export const zodSchemaTemplate = (table: string, columns: string) => {
   ].join('\n')
 }
 
-export const prismaSchemaTemplate = (table: string, columns: string) => {
+export const prismaSchemaTemplate = (
+  table: string,
+  fields: string,
+  attributes: string[]
+) => {
   const modelName = pascalCase(table)
-  const mapAttribute = modelName === table ? '' : `\n\n  @@map("${table}")`
-  return [`model ${modelName} {`, columns + mapAttribute, '}'].join('\n')
+  const blockAttributes = [
+    ...attributes,
+    ...(modelName === table ? [] : [`@@map("${table}")`]),
+  ]
+  return [
+    `model ${modelName} {`,
+    fields,
+    ...(blockAttributes.length
+      ? ['', ...blockAttributes.map((attribute) => `  ${attribute}`)]
+      : []),
+    '}',
+  ].join('\n')
 }
 
 export const drizzleSchemaTemplate = ({
@@ -38,8 +51,8 @@ export const drizzleSchemaTemplate = ({
   coreImports,
   dialectImports,
   columns,
-  tableFunc = 'pgTable',
-  dialectImportPath = 'drizzle-orm/pg-core',
+  tableFunc,
+  dialectImportPath,
   extraConfig,
 }: {
   table: string
@@ -47,32 +60,36 @@ export const drizzleSchemaTemplate = ({
   dialectImports: string[]
   columns: string
   tableFunc: string
-  dialectImportPath?: string
+  dialectImportPath: string
   extraConfig?: string
 }) => {
-  const escapedTable = table.replace(SINGLE_QUOTE_RE, "\\'")
   const varName = camelCase(table)
   const imports = [
     coreImports.length > 0
       ? `import { ${coreImports.join(', ')} } from 'drizzle-orm';`
       : '',
-    `import { ${dialectImports.join(', ')}, ${tableFunc} } from '${dialectImportPath}';`,
+    `import { ${dialectImports.join(', ')} } from '${dialectImportPath}';`,
   ].filter(Boolean)
   return [
     ...imports,
     '',
-    `export const ${varName} = ${tableFunc}('${escapedTable}', {`,
+    `export const ${varName} = ${tableFunc}(${toStringLiteral(table)}, {`,
     columns,
     `}${extraConfig ? `, (t) => [\n${extraConfig}\n]` : ''});`,
   ].join('\n')
 }
 
-export const kyselySchemaTemplate = (table: string, body: string) => {
+export const kyselySchemaTemplate = (
+  table: string,
+  qualifiedTable: string,
+  body: string
+) => {
   const pascalTable = pascalCase(table)
-  const tableKey = toLiteralKey(table)
+  const tableKey = toLiteralKey(qualifiedTable)
   return [
-    `import { Generated } from 'kysely';`,
-    '',
+    ...(body.includes('Generated<')
+      ? [`import type { Generated } from 'kysely';`, '']
+      : []),
     `export interface ${pascalTable}Table {`,
     body,
     '}',
@@ -108,13 +125,13 @@ export const drizzleQueryTemplate = (table: string, conditions: string) =>
     : `await db.select().from(${table})`
 
 export const kyselyQueryTemplate = (table: string, conditions: string) => {
-  const escapedTable = table.replace(SINGLE_QUOTE_RE, "\\'")
+  const tableLiteral = toStringLiteral(table)
   return conditions
     ? [
-        `await db.selectFrom('${escapedTable}')`,
+        `await db.selectFrom(${tableLiteral})`,
         '  .selectAll()',
         `  .where(${conditions})`,
         '  .execute()',
       ].join('\n')
-    : `await db.selectFrom('${escapedTable}').selectAll().execute()`
+    : `await db.selectFrom(${tableLiteral}).selectAll().execute()`
 }

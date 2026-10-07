@@ -3,13 +3,14 @@ import { describe, expect, it, mock } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '~/core/table/cell/utils'
+
 import { generateSchemaDrizzle } from './drizzle'
-import { generateQueryKysely } from './kysely'
-import { generateSchemaPrisma } from './prisma'
+import { generateQueryKysely, generateSchemaKysely } from './kysely'
+import { generateQueryPrisma, generateSchemaPrisma } from './prisma'
 import { generateSchemaTypeScript } from './typescript'
 
 mock.module('../../runtime/dialects', () => ({ coldDialects: {} }))
-const { generateSchemaSQL } = await import('./sql')
+const { generateSchemaSQL, inlineParameters } = await import('./sql')
 
 const columns: Column[] = [
   {
@@ -80,8 +81,8 @@ describe('generators (postgres)', () => {
       schema: 'app',
       table: 'events',
     })
-    expect(ts).toContain('tags?: string[] | null;')
-    expect(ts).toContain('duration?: string | null;')
+    expect(ts).toContain('tags: string[] | null;')
+    expect(ts).toContain('duration: string | null;')
   })
 
   it('prisma emits defaults, uuid and lists', () => {
@@ -147,7 +148,7 @@ describe('generators (postgres)', () => {
         },
       ],
       dialect: ConnectionType.Postgres,
-      schema: 'app',
+      schema: 'public',
       table: 'invoices',
     })
     expect(code).toContain(
@@ -158,6 +159,7 @@ describe('generators (postgres)', () => {
 
   it('kysely null checks compile to (column, is, null)', () => {
     const query = generateQueryKysely({
+      dialect: ConnectionType.Postgres,
       filters: [
         {
           column: 'user_id',
@@ -178,7 +180,229 @@ describe('generators (postgres)', () => {
       schema: 'app',
       table: 'events',
     })
+    expect(query).toContain("selectFrom('app.events')")
     expect(query).toContain(".where('user_id', 'is', null)")
     expect(query).toContain(".where('id', 'in', [1,2])")
+  })
+
+  it('terminates every index statement', () => {
+    const sql = generateSchemaSQL({
+      columns,
+      dialect: ConnectionType.Postgres,
+      indexes: ['a', 'b'].map((column) => ({
+        column,
+        isPrimary: false,
+        isUnique: false,
+        name: `events_${column}_index`,
+        schema: 'app',
+        table: 'events',
+      })),
+      schema: 'app',
+      table: 'events',
+    })
+    expect(sql).toContain('("a");\nCREATE INDEX')
+    expect(sql.endsWith('("b");')).toBe(true)
+  })
+
+  it('states a composite unique once, not on each column', () => {
+    const pair: Column[] = ['a', 'b'].map((id) => ({
+      id,
+      isNullable: false,
+      type: 'int',
+      uiType: 'raw',
+      unique: 'pair_key',
+    }))
+    const sql = generateSchemaSQL({
+      columns: pair,
+      dialect: ConnectionType.Postgres,
+      schema: 'app',
+      table: 'pairs',
+    })
+    expect(sql).not.toContain('UNIQUE')
+  })
+
+  it('kysely marks a key Generated only when the database fills it', () => {
+    const kysely = generateSchemaKysely({
+      columns: [
+        {
+          id: 'id',
+          isNullable: false,
+          primaryKey: 'pk',
+          type: 'uuid',
+          uiType: 'raw',
+        },
+      ],
+      dialect: ConnectionType.Postgres,
+      schema: 'app',
+      table: 'events',
+    })
+    expect(kysely).toContain('  id: string;')
+    expect(kysely).not.toContain('Generated')
+  })
+
+  it('prisma turns LIKE patterns into string filters', () => {
+    const query = generateQueryPrisma({
+      dialect: ConnectionType.Postgres,
+      filters: [
+        {
+          column: 'title',
+          ref: { label: 'Ilike', operator: 'ilike', symbol: 'ILIKE' },
+          values: ['%draft%'],
+        },
+        {
+          column: 'slug',
+          ref: { label: 'Not like', operator: 'notLike', symbol: 'NOT LIKE' },
+          values: ['tmp-%'],
+        },
+      ],
+      schema: 'app',
+      table: 'posts',
+    })
+    expect(query).toContain('contains: "draft"')
+    expect(query).toContain('mode: "insensitive"')
+    expect(query).toContain('startsWith: "tmp-"')
+  })
+
+  it('inlines placeholders but not look-alikes inside identifiers', () => {
+    expect(
+      inlineParameters(
+        'select `a?` from `t` where `b` = ?',
+        ['x'],
+        ConnectionType.MySQL
+      )
+    ).toBe("select `a?` from `t` where `b` = 'x'")
+  })
+
+  it('prisma keeps every filter on a repeated column', () => {
+    const query = generateQueryPrisma({
+      dialect: ConnectionType.Postgres,
+      filters: ['alice', 'bob'].map((value) => ({
+        column: 'name',
+        ref: { label: 'Equal', operator: 'eq', symbol: '=' },
+        values: [value],
+      })),
+      schema: 'public',
+      table: 'users',
+    })
+    expect(query).toContain('AND: [')
+    expect(query).toContain('name: "alice"')
+    expect(query).toContain('name: "bob"')
+  })
+
+  it('declares a composite primary key once in the ORMs', () => {
+    const params = {
+      columns: ['a', 'b'].map((id) => ({
+        id,
+        isNullable: false,
+        primaryKey: 'pk',
+        type: 'integer',
+        uiType: 'raw' as const,
+      })),
+      dialect: ConnectionType.Postgres,
+      schema: 'public',
+      table: 'pairs',
+    }
+    const prisma = generateSchemaPrisma(params)
+    expect(prisma).not.toContain('@id ')
+    expect(prisma).toContain('@@id([a, b])')
+    const drizzle = generateSchemaDrizzle(params)
+    expect(drizzle).not.toContain('.primaryKey()')
+    expect(drizzle).toContain('primaryKey({ columns: [t.a, t.b] })')
+  })
+
+  it('copies a custom index from its definition, keeps key order otherwise', () => {
+    const index = {
+      isPrimary: false,
+      isUnique: false,
+      schema: 'app',
+      table: 'events',
+    }
+    const sql = generateSchemaSQL({
+      columns,
+      dialect: ConnectionType.Postgres,
+      indexes: [
+        {
+          ...index,
+          column: 'id',
+          custom: true,
+          definition:
+            'CREATE INDEX recent ON app.events USING btree (id DESC) WHERE (id > 0)',
+          name: 'recent',
+        },
+        { ...index, column: null, customExpression: 'lower(b)', name: 'mixed' },
+        { ...index, column: 'a', name: 'mixed' },
+      ],
+      schema: 'app',
+      table: 'events',
+    })
+    expect(sql).toContain('btree (id DESC) WHERE (id > 0);')
+    expect(sql).toContain('(lower(b), "a")')
+  })
+
+  it('qualifies a table outside the default schema in the ORMs', () => {
+    const params = {
+      columns: [
+        {
+          id: 'id',
+          isNullable: false,
+          primaryKey: 'pk',
+          type: 'uuid',
+          uiType: 'raw' as const,
+        },
+      ],
+      dialect: ConnectionType.Postgres,
+      schema: 'auth',
+      table: 'users',
+    }
+    expect(generateSchemaDrizzle(params)).toContain(
+      "export const authSchema = pgSchema('auth');\n\nexport const users = authSchema.table('users', {"
+    )
+    expect(generateSchemaPrisma(params)).toContain('@@schema("auth")')
+    expect(generateSchemaKysely(params)).toContain("'auth.users': UsersTable;")
+    expect(generateSchemaKysely({ ...params, schema: 'public' })).toContain(
+      '  users: UsersTable;'
+    )
+  })
+})
+
+describe('generators (mysql)', () => {
+  it('drizzle declares an enum inline as the column builder', () => {
+    const code = generateSchemaDrizzle({
+      columns: [
+        {
+          availableValues: ['a', 'b'],
+          enumName: 'status',
+          id: 'status',
+          isNullable: false,
+          type: 'enum',
+          uiType: 'select',
+        },
+      ],
+      dialect: ConnectionType.MySQL,
+      schema: 'app',
+      table: 'jobs',
+    })
+    expect(code).toContain("status: mysqlEnum(['a', 'b']).notNull(),")
+    expect(code).toContain(
+      "import { mysqlEnum, mysqlTable } from 'drizzle-orm/mysql-core';"
+    )
+  })
+
+  it('emits AUTO_INCREMENT only for auto-increment columns', () => {
+    const sql = generateSchemaSQL({
+      columns: [
+        {
+          id: 'id',
+          isNullable: false,
+          primaryKey: 'pk',
+          type: 'int',
+          uiType: 'raw',
+        },
+      ],
+      dialect: ConnectionType.MySQL,
+      schema: 'app',
+      table: 'jobs',
+    })
+    expect(sql).not.toContain('AUTO_INCREMENT')
   })
 })

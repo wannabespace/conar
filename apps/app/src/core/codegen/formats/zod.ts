@@ -1,6 +1,10 @@
 import * as templates from '~/core/codegen/templates'
 import type { SchemaParams } from '~/core/codegen/types'
-import { getColumnType, toLiteralKey } from '~/core/codegen/utils'
+import {
+  getColumnType,
+  toLiteralKey,
+  toStringLiteral,
+} from '~/core/codegen/utils'
 
 const buildZodType = (
   column: SchemaParams['columns'][number],
@@ -13,7 +17,7 @@ const buildZodType = (
   }
 
   if (column.enumName && column.availableValues?.length) {
-    zodType = `z.enum([${column.availableValues.map((v) => `'${v}'`).join(', ')}])`
+    zodType = `z.enum([${column.availableValues.map(toStringLiteral).join(', ')}])`
   }
 
   if (

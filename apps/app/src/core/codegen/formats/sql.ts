@@ -1,10 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { toKyselyFilter } from '@tamery/shared/filters'
 
-import { formatSql } from '~/lib/formatter'
-
-import type { Column } from '~/core/table/cell/utils'
-import { coldDialects } from '~/core/runtime/dialects'
 import * as templates from '~/core/codegen/templates'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
 import {
@@ -13,19 +9,33 @@ import {
   getColumnType,
   groupIndexes,
   isSerialDefault,
+  isSingleColumnConstraint,
   quoteIdentifier,
 } from '~/core/codegen/utils'
+import { coldDialects } from '~/core/runtime/dialects'
+import type { Column } from '~/core/table/cell/utils'
+import { formatSql } from '~/lib/formatter'
 
 export const inlineParameters = (
   sql: string,
   parameters: readonly unknown[],
   dialect: ConnectionType
 ): string => {
-  let i = 0
-  return sql.replaceAll(/\$\d+|@\d+|\?/gu, () => {
-    i += 1
-    return formatValue(parameters[i - 1], dialect)
-  })
+  let next = 0
+  return sql.replaceAll(
+    /"(?:[^"]|"")*"|`(?:[^`]|``)*`|\[(?:[^\]]|\]\])*\]|'(?:[^']|'')*'|[$@](?<index>\d+)|\?/gu,
+    (token, ...args) => {
+      if (!/^[$@?]/u.test(token)) {
+        return token
+      }
+      const index = args.at(-1)?.index
+      next += 1
+      return formatValue(
+        parameters[index ? Number(index) - 1 : next - 1],
+        dialect
+      )
+    }
+  )
 }
 
 const qualify = (schema: string, table: string, dialect: ConnectionType) =>
@@ -35,7 +45,7 @@ export const generateQuerySQL = ({
   table,
   schema,
   filters,
-  dialect = ConnectionType.Postgres,
+  dialect,
 }: QueryParams) => {
   const db = coldDialects[dialect]()
   const base = db
@@ -46,7 +56,10 @@ export const generateQuerySQL = ({
   const query =
     filters.length > 0 ? base.where((eb) => toKyselyFilter(eb, filters)) : base
   const compiled = query.compile()
-  return formatSql(inlineParameters(compiled.sql, compiled.parameters, dialect), dialect)
+  return formatSql(
+    inlineParameters(compiled.sql, compiled.parameters, dialect),
+    dialect
+  )
 }
 
 const escapeSqlString = (s: string): string => s.replaceAll("'", "''")
@@ -81,6 +94,9 @@ const formatScalarType = (c: Column, dialect: ConnectionType) => {
   }
   if (dialect === ConnectionType.ClickHouse) {
     return columnType
+  }
+  if (dialect !== ConnectionType.Postgres && c.declaredType) {
+    return c.declaredType.replace(/^[^']*/u, (head) => head.toUpperCase())
   }
   let typeDef = getColumnType(columnType, 'sql', dialect)
 
@@ -122,6 +138,7 @@ const buildColumnParts = (
   typeDef: string,
   dialect: ConnectionType,
   pkColumns: string[],
+  unique: boolean,
   defaultValue?: string | null
 ): { parts: string[]; foreignKey: string | null } => {
   const quoted = quoteIdentifier(c.id, dialect)
@@ -129,11 +146,11 @@ const buildColumnParts = (
 
   if (c.primaryKey) {
     pkColumns.push(quoted)
-    if (dialect === ConnectionType.MySQL && /int|serial/iu.test(c.type ?? '')) {
-      parts.push('AUTO_INCREMENT')
-    }
   }
 
+  if (c.isIdentity && dialect === ConnectionType.MySQL) {
+    parts.push('AUTO_INCREMENT')
+  }
   if (c.isIdentity && dialect === ConnectionType.MSSQL) {
     parts.push('IDENTITY(1,1)')
   }
@@ -149,7 +166,7 @@ const buildColumnParts = (
     parts.push('NOT NULL')
   }
 
-  if (c.unique && !c.primaryKey && dialect !== ConnectionType.ClickHouse) {
+  if (unique && !c.primaryKey && dialect !== ConnectionType.ClickHouse) {
     parts.push('UNIQUE')
   }
 
@@ -193,25 +210,30 @@ const appendIndexStatements = (
   }
 
   const lines = explicit.map((idx) =>
-    [
-      'CREATE',
-      idx.isUnique ? 'UNIQUE' : '',
-      'INDEX',
-      `${quoteIdentifier(idx.name, dialect)}`,
-      'ON',
-      qualifiedTable,
-      dialect === ConnectionType.Postgres && idx.type
-        ? `USING ${idx.type}`
-        : '',
-      `(${[
-        ...idx.columns.map((c) => quoteIdentifier(c, dialect)),
-        ...idx.customExpressions,
-      ].join(', ')})`,
-    ]
-      .filter(Boolean)
-      .join(' ')
+    idx.custom && idx.definition
+      ? idx.definition
+      : [
+          'CREATE',
+          idx.isUnique ? 'UNIQUE' : '',
+          'INDEX',
+          `${quoteIdentifier(idx.name, dialect)}`,
+          'ON',
+          qualifiedTable,
+          dialect === ConnectionType.Postgres && idx.type
+            ? `USING ${idx.type}`
+            : '',
+          `(${idx.keys
+            .map((key) =>
+              'column' in key
+                ? quoteIdentifier(key.column, dialect)
+                : key.expression
+            )
+            .join(', ')})`,
+        ]
+          .filter(Boolean)
+          .join(' ')
   )
-  return `${statement}\n\n${lines.join('\n')}`
+  return `${statement}\n\n${lines.join(';\n')};`
 }
 
 export const generateSchemaSQL = ({
@@ -243,6 +265,7 @@ export const generateSchemaSQL = ({
       typeDef,
       dialect,
       pkColumns,
+      isSingleColumnConstraint(c, columns, 'unique'),
       defaultValue
     )
     columnLines.push(`  ${parts.join(' ')}`)

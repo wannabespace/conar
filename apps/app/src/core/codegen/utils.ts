@@ -1,5 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 export type GeneratorFormat =
@@ -17,29 +18,36 @@ export interface Index {
   name: string
   column: string | null
   customExpression?: string
+  custom?: boolean
+  definition?: string
   isUnique: boolean
   isPrimary: boolean
 }
 
+export type IndexKey = { column: string } | { expression: string }
+
 export interface GroupedIndex extends Pick<
   Index,
-  'type' | 'name' | 'isUnique' | 'isPrimary'
+  'type' | 'name' | 'isUnique' | 'isPrimary' | 'custom' | 'definition'
 > {
   columns: string[]
-  customExpressions: string[]
+  keys: IndexKey[]
 }
 
 export const isValidIdentifier = (name: string): boolean =>
   /^[a-z_$][\w$]*$/iu.test(name)
 
+export const toStringLiteral = (value: string) =>
+  `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
+
 export const toLiteralKey = (name: string) =>
-  isValidIdentifier(name) ? name : `'${name}'`
+  isValidIdentifier(name) ? name : toStringLiteral(name)
 
 export const formatEnumAsUnionType = (
   values: string[],
   isArray?: boolean
 ): string => {
-  const union = values.map((v) => `'${v}'`).join(' | ')
+  const union = values.map(toStringLiteral).join(' | ')
   return isArray ? `(${union})[]` : union
 }
 
@@ -81,7 +89,7 @@ const zodMapper = (t: string) => {
     return 'z.date()'
   }
   if (/json/iu.test(t)) {
-    return 'z.record(z.string(), z.any())'
+    return 'z.json()'
   }
   return 'z.string()'
 }
@@ -99,7 +107,7 @@ const prismaScalarMapper = (t: string) => {
   if (/json/iu.test(t)) {
     return 'Json'
   }
-  if (/bigint|bigserial/iu.test(t)) {
+  if (/bigint|bigserial|\bint8\b/iu.test(t)) {
     return 'BigInt'
   }
   if (INT_RE.test(t)) {
@@ -199,10 +207,10 @@ const drizzlePostgresMapper: TypeMapper = (t) => {
   if (/serial/iu.test(t)) {
     return 'serial'
   }
-  if (/bigint/iu.test(t)) {
+  if (/bigint|\bint8\b/iu.test(t)) {
     return 'bigint'
   }
-  if (/smallint/iu.test(t)) {
+  if (/smallint|\bint2\b/iu.test(t)) {
     return 'smallint'
   }
   if (INT_RE.test(t)) {
@@ -226,13 +234,19 @@ const drizzlePostgresMapper: TypeMapper = (t) => {
   if (/timestamp/iu.test(t)) {
     return 'timestamp'
   }
+  if (/^time/iu.test(t)) {
+    return 'time'
+  }
   if (/date/iu.test(t)) {
     return 'date'
   }
   if (/decimal|numeric/iu.test(t)) {
     return 'numeric'
   }
-  if (/double|float|real/iu.test(t)) {
+  if (/real|float4/iu.test(t)) {
+    return 'real'
+  }
+  if (/double|float/iu.test(t)) {
     return 'doublePrecision'
   }
   if (/json/iu.test(t)) {
@@ -291,6 +305,9 @@ export const formatValue = (value: unknown, dialect: ConnectionType) => {
   if (typeof value === 'number') {
     return String(value)
   }
+  if (typeof value === 'boolean' && dialect === ConnectionType.MSSQL) {
+    return value ? '1' : '0'
+  }
   if (typeof value === 'boolean') {
     return value ? 'TRUE' : 'FALSE'
   }
@@ -301,10 +318,10 @@ export const formatValue = (value: unknown, dialect: ConnectionType) => {
 }
 
 const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
-  clickhouse: (name: string) => `\`${name}\``,
-  mssql: (name: string) => `[${name}]`,
-  mysql: (name: string) => `\`${name}\``,
-  postgres: (name: string) => `"${name}"`,
+  clickhouse: (name: string) => `\`${name.replaceAll('`', '``')}\``,
+  mssql: (name: string) => `[${name.replaceAll(']', ']]')}]`,
+  mysql: (name: string) => `\`${name.replaceAll('`', '``')}\``,
+  postgres: (name: string) => `"${name.replaceAll('"', '""')}"`,
 }
 
 export const quoteIdentifier = (name: string, dialect: ConnectionType) =>
@@ -322,27 +339,39 @@ export const groupIndexes = (
       continue
     }
 
-    const existing = grouped.get(idx.name)
-    if (existing) {
-      if (idx.column) {
-        existing.columns.push(idx.column)
-      }
-      if (idx.customExpression) {
-        existing.customExpressions.push(idx.customExpression)
-      }
-    } else {
-      grouped.set(idx.name, {
-        columns: idx.column ? [idx.column] : [],
-        customExpressions: idx.customExpression ? [idx.customExpression] : [],
-        isPrimary: idx.isPrimary,
-        isUnique: idx.isUnique,
-        name: idx.name,
-        type: idx.type,
-      })
+    const entry = grouped.get(idx.name) ?? {
+      columns: [],
+      custom: idx.custom,
+      definition: idx.definition,
+      isPrimary: idx.isPrimary,
+      isUnique: idx.isUnique,
+      keys: [],
+      name: idx.name,
+      type: idx.type,
+    }
+    grouped.set(idx.name, entry)
+    if (idx.column) {
+      entry.columns.push(idx.column)
+      entry.keys.push({ column: idx.column })
+    } else if (idx.customExpression) {
+      entry.keys.push({ expression: idx.customExpression })
     }
   }
 
   return [...grouped.values()]
+}
+
+export const isSingleColumnConstraint = (
+  column: Column,
+  columns: Column[],
+  constraint: 'primaryKey' | 'unique'
+) =>
+  !!column[constraint] &&
+  columns.filter((c) => c[constraint] === column[constraint]).length === 1
+
+export const explicitSchema = (schema: string, dialect: ConnectionType) => {
+  const { defaultSchema } = capabilitiesOf(dialect)
+  return defaultSchema && schema !== defaultSchema ? schema : null
 }
 
 export const filterExplicitIndexes = (
@@ -352,9 +381,14 @@ export const filterExplicitIndexes = (
   grouped.filter(
     (idx) =>
       !idx.isPrimary &&
+      idx.keys.length > 0 &&
       !(
         idx.isUnique &&
         idx.columns.length === 1 &&
-        columns.some((c) => c.id === idx.columns[0] && c.unique)
+        columns.some(
+          (c) =>
+            c.id === idx.columns[0] &&
+            isSingleColumnConstraint(c, columns, 'unique')
+        )
       )
   )

@@ -2,25 +2,50 @@ import { SQL_OPERATORS } from '@tamery/shared/filters'
 
 import * as templates from '~/core/codegen/templates'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
-import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '~/core/codegen/utils'
+import {
+  explicitSchema,
+  formatEnumAsUnionType,
+  getColumnType,
+  toLiteralKey,
+  toStringLiteral,
+} from '~/core/codegen/utils'
 
-export const generateQueryKysely = ({ table, filters }: QueryParams) => {
+const qualifiedTable = (
+  table: string,
+  schema: string,
+  dialect: QueryParams['dialect']
+) => {
+  const tableSchema = explicitSchema(schema, dialect)
+  return tableSchema ? `${tableSchema}.${table}` : table
+}
+
+export const generateQueryKysely = ({
+  table,
+  schema,
+  filters,
+  dialect,
+}: QueryParams) => {
   const conditions = filters
     .map((f) => {
+      const column = toStringLiteral(f.column)
       if (f.ref.hasValue === false) {
-        return `'${f.column}', '${f.ref.operator === 'isNull' ? 'is' : 'is not'}', null`
+        return `${column}, '${f.ref.operator === 'isNull' ? 'is' : 'is not'}', null`
       }
       const op = SQL_OPERATORS[f.ref.operator]
       const value = f.ref.isArray ? f.values : f.values[0]
-      return `'${f.column}', '${op}', ${JSON.stringify(value)}`
+      return `${column}, '${op}', ${JSON.stringify(value)}`
     })
     .join(')\n  .where(')
 
-  return templates.kyselyQueryTemplate(table, conditions)
+  return templates.kyselyQueryTemplate(
+    qualifiedTable(table, schema, dialect),
+    conditions
+  )
 }
 
 export const generateSchemaKysely = ({
   table,
+  schema,
   columns,
   dialect,
 }: SchemaParams) => {
@@ -38,8 +63,7 @@ export const generateSchemaKysely = ({
         tsType += '[]'
       }
 
-      const isGenerated =
-        c.primaryKey || c.isIdentity || typeof c.defaultValue === 'string'
+      const isGenerated = c.isIdentity || typeof c.defaultValue === 'string'
       let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
       if (c.isNullable) {
         typeDef += ' | null'
@@ -50,5 +74,9 @@ export const generateSchemaKysely = ({
     .filter((line) => line !== null)
     .join('\n')
 
-  return templates.kyselySchemaTemplate(table, body)
+  return templates.kyselySchemaTemplate(
+    table,
+    qualifiedTable(table, schema, dialect),
+    body
+  )
 }
