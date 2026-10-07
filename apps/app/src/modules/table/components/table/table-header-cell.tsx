@@ -2,9 +2,10 @@
 import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridHeaderProps } from '@tamery/table'
+import { isHeaderPress } from '@tamery/table'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import { cn } from '@tamery/ui/lib/utils'
-import type { RefObject } from 'react'
+import type { MouseEvent, RefObject } from 'react'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -14,11 +15,12 @@ import {
   labelCandidates,
   useReferencedColumns,
 } from '~/core/table/referenced-columns'
+import { posthog } from '~/lib/posthog'
 
 import type { ColumnActions } from '../../lib/column-menu'
 import { columnMenuItems } from '../../lib/column-menu'
 import { labelColumnOf } from '../../lib/labels'
-import { columnLayout, useTablePageStore } from '../../lib/store'
+import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
 import { ColumnHeading } from './column-type'
 
 const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' } as const
@@ -54,7 +56,15 @@ const useColumnMenu = (
       store,
     })
 
-  return { items, layout: columnLayout(store), order }
+  const cycleOrder = (event: MouseEvent) => {
+    const next = columnsOrder(store).cycleOrder(column.id, event.shiftKey)
+    posthog.capture('column_sort_cycled', {
+      keep_others: event.shiftKey,
+      order: next ?? 'none',
+    })
+  }
+
+  return { cycleOrder, items, layout: columnLayout(store), order }
 }
 
 const SortArrow = ({ order }: { order: 'ASC' | 'DESC' }) => (
@@ -72,13 +82,18 @@ export const TableHeaderCell = ({
 }: ColumnActions & { column: Column; header: GridHeaderProps }) => {
   const ref = useRef<HTMLDivElement>(null)
   const width = useRef(0)
-  const { items, layout, order } = useColumnMenu(column, ref, actions)
+  const { cycleOrder, items, layout, order } = useColumnMenu(
+    column,
+    ref,
+    actions
+  )
 
   return (
     <AppContextMenu
       items={items}
       contentProps={{ align: 'start', className: 'min-w-52', side: 'bottom' }}
       render={
+        // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus -- a pointer shortcut; the keyboard sorts through the column menu
         <div
           ref={ref}
           role="columnheader"
@@ -91,6 +106,12 @@ export const TableHeaderCell = ({
             gridColumn.pinned && 'bg-background z-10',
             isDragging && 'bg-background z-10 rounded-md shadow-md'
           )}
+          onClick={(event) =>
+            actions.sortable &&
+            !isDragging &&
+            isHeaderPress(event) &&
+            cycleOrder(event)
+          }
           {...dragHandle}
         />
       }
@@ -107,7 +128,7 @@ export const TableHeaderCell = ({
       <ResizeHandle
         aria-label="Resize column"
         min={MIN_WIDTH}
-        className="absolute inset-y-0 -right-1.5 z-10 flex w-3 justify-center"
+        className="absolute inset-y-0 right-0 z-10 flex w-1.5 justify-end"
         getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
         onResize={(next) => {
           width.current = next

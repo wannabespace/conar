@@ -77,6 +77,8 @@ export const useTablePageStore = () => {
   return store
 }
 
+const NEXT_ORDER = { ASC: 'DESC', DESC: null, NONE: 'ASC' } as const
+
 export const columnsOrder = (store: TablePageStore) => {
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
     store.set(
@@ -101,7 +103,24 @@ export const columnsOrder = (store: TablePageStore) => {
     )
   }
 
+  const cycleOrder = (columnId: string, keepOthers: boolean) => {
+    const { orderBy } = store.get()
+    const next = NEXT_ORDER[orderBy[columnId] ?? 'NONE']
+    const others = keepOthers ? orderBy : {}
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          orderBy: next
+            ? { ...others, [columnId]: next }
+            : omit(others, [columnId]),
+        }) satisfies typeof state
+    )
+    return next
+  }
+
   return {
+    cycleOrder,
     removeOrder,
     setOrder,
   }
