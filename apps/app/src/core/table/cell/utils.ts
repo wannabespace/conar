@@ -9,6 +9,7 @@ export interface Column {
   uiType: 'select' | 'list' | 'boolean' | 'date' | 'time' | 'datetime' | 'raw'
   type?: string
   typeLabel?: string
+  declaredType?: string | null
   enumName?: string
   availableValues?: string[]
   isArray?: boolean

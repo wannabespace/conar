@@ -34,8 +34,11 @@ import {
 import { generateQuerySQL, generateSchemaSQL } from '~/core/codegen/formats/sql'
 import { generateSchemaTypeScript } from '~/core/codegen/formats/typescript'
 import { generateSchemaZod } from '~/core/codegen/formats/zod'
-import type { QueryParams, SchemaParams } from '~/core/codegen/types'
-import type { GeneratorFormat } from '~/core/codegen/utils'
+import type {
+  GeneratorFormat,
+  QueryParams,
+  SchemaParams,
+} from '~/core/codegen/types'
 import { resourceIndexesQueryOptions } from '~/core/queries/indexes/list'
 
 import { useTableColumnsContext } from '../../../lib/columns'

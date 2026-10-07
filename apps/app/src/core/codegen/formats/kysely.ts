@@ -1,54 +1,81 @@
 import { SQL_OPERATORS } from '@tamery/shared/filters'
+import { pascalCase } from 'change-case'
 
-import * as templates from '~/core/codegen/templates'
+import { tsColumnType } from '~/core/codegen/column-types'
 import type { QueryParams, SchemaParams } from '~/core/codegen/types'
-import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '~/core/codegen/utils'
+import {
+  explicitSchema,
+  hasType,
+  toLiteralKey,
+  toStringLiteral,
+} from '~/core/codegen/utils'
 
-export const generateQueryKysely = ({ table, filters }: QueryParams) => {
-  const conditions = filters
-    .map((f) => {
-      if (f.ref.hasValue === false) {
-        return `'${f.column}', '${f.ref.operator === 'isNull' ? 'is' : 'is not'}', null`
-      }
-      const op = SQL_OPERATORS[f.ref.operator]
-      const value = f.ref.isArray ? f.values : f.values[0]
-      return `'${f.column}', '${op}', ${JSON.stringify(value)}`
-    })
-    .join(')\n  .where(')
+const qualifiedTable = (
+  table: string,
+  schema: string,
+  dialect: QueryParams['dialect']
+) => {
+  const tableSchema = explicitSchema(schema, dialect)
+  return tableSchema ? `${tableSchema}.${table}` : table
+}
 
-  return templates.kyselyQueryTemplate(table, conditions)
+export const generateQueryKysely = ({
+  table,
+  schema,
+  filters,
+  dialect,
+}: QueryParams) => {
+  const from = `db.selectFrom(${toStringLiteral(qualifiedTable(table, schema, dialect))})`
+  if (filters.length === 0) {
+    return `await ${from}.selectAll().execute()`
+  }
+
+  const conditions = filters.map((f) => {
+    const column = toStringLiteral(f.column)
+    if (f.ref.hasValue === false) {
+      return `${column}, '${f.ref.operator === 'isNull' ? 'is' : 'is not'}', null`
+    }
+    const op = SQL_OPERATORS[f.ref.operator]
+    const value = f.ref.isArray ? f.values : f.values[0]
+    return `${column}, '${op}', ${JSON.stringify(value)}`
+  })
+
+  return [
+    `await ${from}`,
+    '  .selectAll()',
+    ...conditions.map((condition) => `  .where(${condition})`),
+    '  .execute()',
+  ].join('\n')
 }
 
 export const generateSchemaKysely = ({
   table,
+  schema,
   columns,
   dialect,
 }: SchemaParams) => {
   const body = columns
-    .filter((c) => c.type)
+    .filter(hasType)
     .map((c) => {
-      const columnType = c.type
-      if (!columnType) {
-        return null
-      }
-      let tsType = getColumnType(columnType, 'ts', dialect)
-      if (c.enumName && c.availableValues?.length) {
-        tsType = formatEnumAsUnionType(c.availableValues, c.isArray)
-      } else if (c.isArray) {
-        tsType += '[]'
-      }
-
-      const isGenerated =
-        c.primaryKey || c.isIdentity || typeof c.defaultValue === 'string'
-      let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
-      if (c.isNullable) {
-        typeDef += ' | null'
-      }
-      const safeKey = toLiteralKey(c.id)
-      return `  ${safeKey}: ${typeDef};`
+      const isGenerated = c.isIdentity || typeof c.defaultValue === 'string'
+      const tsType = tsColumnType(c, dialect)
+      const typeDef = isGenerated ? `Generated<${tsType}>` : tsType
+      return `  ${toLiteralKey(c.id)}: ${typeDef}${c.isNullable ? ' | null' : ''};`
     })
-    .filter((line) => line !== null)
     .join('\n')
+  const pascalTable = pascalCase(table)
+  const tableKey = toLiteralKey(qualifiedTable(table, schema, dialect))
 
-  return templates.kyselySchemaTemplate(table, body)
+  return [
+    ...(body.includes('Generated<')
+      ? [`import type { Generated } from 'kysely';`, '']
+      : []),
+    `export interface ${pascalTable}Table {`,
+    body,
+    '}',
+    '',
+    'export interface Database {',
+    `  ${tableKey}: ${pascalTable}Table;`,
+    '}',
+  ].join('\n')
 }
