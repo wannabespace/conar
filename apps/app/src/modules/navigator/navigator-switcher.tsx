@@ -24,9 +24,8 @@ export const NavigatorSwitcher = () => {
   return (
     <Button
       variant="ghost-row"
-      size="sm"
-      // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-      className="h-7 w-full justify-start gap-2 rounded-md px-2"
+      size="row"
+      className="w-full justify-start"
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       onClick={() =>
         navigatorStore.set(isDefinitions ? 'tables' : 'definitions')

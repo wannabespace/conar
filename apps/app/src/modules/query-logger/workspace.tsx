@@ -5,8 +5,9 @@ import type { WorkspaceModule } from '~/lib/module'
 import { resourcePanelClassName } from '~/shell'
 
 import { loggerOpen } from './logger-open'
+import { QueryLoggerHotkey } from './query-logger-hotkey'
 import { QueryLoggerSkeleton } from './query-logger-skeleton'
-import { QueryLoggerHotkey, QueryLoggerToggle } from './query-logger-toggle'
+import { QueryLoggerToggle } from './query-logger-toggle'
 
 const QueryLogger = lazy(async () => {
   const { QueryLogger: component } = await import('./query-logger')

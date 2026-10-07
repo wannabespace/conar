@@ -2,7 +2,8 @@ import type { McpTarget } from '@tamery/shared/mcp'
 import type { FetchQueryOptions, QueryKey } from '@tanstack/react-query'
 
 import { getCollections } from '~/core/collections'
-import { connectionFetchingConfig } from '~/core/connection/fetching'
+import { fetchingConfig } from '~/core/connection/fetching-config'
+import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { queryClient } from '~/lib/query-client'
 
@@ -47,15 +48,18 @@ export const resolveTarget = ({
     )
   }
 
-  const { canSend, reason } = connectionFetchingConfig(connection)
+  const connectionString = connectionStringsCollection.get(connectionId)
+  const { canSend, reason } = fetchingConfig(connection, {
+    hasLocalConnectionString: !!connectionString,
+    isLocalhost: connectionString?.isLocalhost,
+    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    proxy: getConnectionStore(connectionId).get().proxy,
+  })
   if (!canSend) {
     throw new Error(reason ?? `Open "${connection.name}" in Tamery first.`)
   }
 
-  const name =
-    resourceName ??
-    connectionStringsCollection.get(connectionId)?.defaultResourceName ??
-    null
+  const name = resourceName ?? connectionString?.defaultResourceName ?? null
   const resource = connectionsResourcesCollection.toArray.find(
     (item) => item.connectionId === connectionId && item.name === name
   )

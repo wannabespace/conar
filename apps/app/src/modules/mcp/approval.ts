@@ -18,10 +18,9 @@ export type Impact =
   | { error: string; state: 'failed' }
   | { sets: ResultSet[]; state: 'checked' }
 
-export interface Approval {
+interface Approval {
   connection: Connection
   decide: (approved: boolean) => void
-  /** The planner's row estimate, where the engine has one. */
   estimate?: number
   id: string
   impact: Impact

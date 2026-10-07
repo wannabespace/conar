@@ -13,7 +13,7 @@ const headersOf = ({ token }: McpEndpoint) => ({
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
 
-export interface McpClient {
+interface McpClient {
   code: (server: McpEndpoint) => string
   file?: string
   id: string

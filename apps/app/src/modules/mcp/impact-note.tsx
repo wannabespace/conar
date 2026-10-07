@@ -1,20 +1,12 @@
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Spinner } from '@tamery/ui/components/spinner'
 
-import type { ResultSet } from '~/core/queries/connection/custom'
 import { plural } from '~/lib/plural'
 
 import type { Impact } from './approval'
 import { PREVIEW_BUDGET_MS } from './approval'
 
 const PREVIEW_BUDGET_SECONDS = PREVIEW_BUDGET_MS / 1000
-
-const changedRows = (sets: ResultSet[]) =>
-  sets.reduce(
-    // A write with RETURNING (or OUTPUT) reports its rows instead of a count.
-    (sum, set) => sum + (set.affectedRows ?? set.rows.length),
-    0
-  )
 
 const summary = (
   impact: Exclude<Impact, { state: 'failed' }>,
@@ -35,7 +27,11 @@ const summary = (
   if (!writesRows) {
     return 'Runs without errors, tried in a transaction that rolled back.'
   }
-  const changed = changedRows(impact.sets)
+  const changed = impact.sets.reduce(
+    // A write with RETURNING (or OUTPUT) reports its rows instead of a count.
+    (sum, set) => sum + (set.affectedRows ?? set.rows.length),
+    0
+  )
   return `${changed ? `Changes ${plural(changed, 'row')}` : 'Matches no rows, so it changes nothing'}, tried in a transaction that rolled back.`
 }
 

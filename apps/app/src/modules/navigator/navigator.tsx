@@ -109,9 +109,8 @@ const NavigatorFooter = () => {
         <Button
           key={action.label}
           variant="ghost-row"
-          size="sm"
-          // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-          className="h-7 w-full justify-start gap-2 rounded-md px-2"
+          size="row"
+          className="w-full justify-start"
           {...pressNavProps(() =>
             router.navigate({
               params: {

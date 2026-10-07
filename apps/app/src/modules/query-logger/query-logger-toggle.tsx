@@ -7,31 +7,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
-import { posthog } from '~/lib/posthog'
-
-import { loggerOpen } from './logger-open'
+import { loggerOpen, toggleLogger } from './logger-open'
 
 const { useParams } = getRouteApi('/_protected/connection/$resourceId')
-
-const toggleLogger = (resourceId: string) => {
-  loggerOpen(resourceId).set((opened) => !opened)
-  posthog.capture('query_logger_toggled')
-}
-
-export const QueryLoggerHotkey = () => {
-  const { resourceId } = useParams()
-
-  useHotkey('Mod+J', (e) => {
-    e.preventDefault()
-    toggleLogger(resourceId)
-  })
-
-  return null
-}
 
 export const QueryLoggerToggle = () => {
   const { resourceId } = useParams()
@@ -45,10 +26,9 @@ export const QueryLoggerToggle = () => {
         render={
           <Button
             variant="ghost-row"
-            size="sm"
+            size="row"
             aria-pressed={loggerOpened}
-            // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-            className="h-7 w-full justify-start gap-2 rounded-md px-2"
+            className="w-full justify-start"
             onClick={() => toggleLogger(resourceId)}
           />
         }
@@ -56,7 +36,7 @@ export const QueryLoggerToggle = () => {
         <HugeiconsIcon
           icon={File01Icon}
           strokeWidth={2}
-          className="text-muted-foreground size-4 shrink-0"
+          className="text-muted-foreground"
         />
         Query logger
       </TooltipTrigger>

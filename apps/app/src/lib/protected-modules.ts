@@ -15,6 +15,6 @@ export const protectedModules = {
   commands: (context: CommandContext) =>
     list.flatMap((module) => module.commands?.(context) ?? []),
   mounts: list.flatMap((module) => module.mounts ?? []),
-  settings: byOrder(list.flatMap((module) => module.settings ?? [])),
+  settings: list.flatMap((module) => module.settings ?? []),
   titlebar: byOrder(list.flatMap((module) => module.titlebar ?? [])),
 }
