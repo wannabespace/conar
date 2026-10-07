@@ -33,11 +33,11 @@ Conditions combine with `AND`. `ilike` (case-insensitive match) is offered on Po
 
 ## Sorting
 
-Click **Sort** to pick a column and direction. Add multiple levels to break ties (e.g. `created_at` desc, then `id` asc). Stored alongside filters.
+Click a column header to sort by it: ascending, then descending, then off. Clicking an unsorted column replaces the current sort; <kbd>⇧</kbd>-click adds it as the next level instead. Clicking a column that is already sorted changes only its direction and keeps the other levels. Dragging a header still reorders the columns. Or click **Sort** to pick a column and direction. Add multiple levels to break ties (e.g. `created_at` desc, then `id` asc). Stored alongside filters.
 
 ## Documents view
 
-The view button next to **Sort** (or <kbd>⇧</kbd> <kbd>⌘</kbd> <kbd>E</kbd>) switches a table between the grid and a documents view, like MongoDB Atlas. Each row becomes a block, headed by its row number and primary key (it stays pinned while you scroll through the row), listing every field with its type, with values wrapped up to four lines (open a field to see all of it); JSON objects and arrays expand in place. Everything else works as in the grid — editing, references, copying, the cell menu, and right-clicking a field name to sort, rename or hide its column — with <kbd>↑</kbd> / <kbd>↓</kbd> moving between fields and <kbd>←</kbd> / <kbd>→</kbd> between rows. Hidden columns and column order carry over. The choice is saved per table.
+The view button next to **Sort** (or <kbd>⇧</kbd> <kbd>⌘</kbd> <kbd>E</kbd>) switches a table between the grid and a documents view, like MongoDB Atlas. Each row becomes a block, headed by its row number and primary key (it stays pinned while you scroll through the row), listing every field with its type, with values wrapped up to four lines (open a field to see all of it); JSON objects and arrays expand in place. Everything else works as in the grid — editing, references, copying, the cell menu, and right-clicking a field name to sort, edit or hide its column — with <kbd>↑</kbd> / <kbd>↓</kbd> moving between fields and <kbd>←</kbd> / <kbd>→</kbd> between rows. Hidden columns and column order carry over. The choice is saved per table.
 
 ## Moving around
 
@@ -100,8 +100,9 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
     invalid JSON, a value missing from an enum, and text a number, date,
     timestamp or UUID column cannot read, are caught before they are staged.
-    Columns the database fills itself (identity, computed and generated columns,
-    and ClickHouse sorting keys) are read-only. Edited cells are highlighted.
+    Columns the database fills itself (identity, computed and generated columns)
+    are read-only. ClickHouse sorting keys take a value on a new row but cannot
+    change once saved. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Staged changes show up in a bar at the bottom of the grid. Click its
@@ -140,7 +141,7 @@ The panel lists every column with its generator on the left. Select a column to 
 
 | Action | Description |
 | --- | --- |
-| **Add column** | The **+** after the last column header, the toolbar's **+**, or **Add column…** from the command menu. |
+| **Add column** | The **+** after the last column header, the toolbar's **+**, or **Add column…** from the command menu. On MySQL and ClickHouse, pick the `enum` type to list the column's values. **References** picks a primary or unique key to point a foreign key at (not on ClickHouse); the column takes that key's type unless you set one, and the column and its foreign key are added together. |
 | **Column visibility** | Hide/show columns (hidden, not deleted). |
 | **Copy data** | Copy selected rows or the whole result as TSV. |
 | **Rename schema** | Postgres only. Right-click a schema in the sidebar, or hover it and click **⋯**, then **Rename**. |
@@ -148,5 +149,6 @@ The panel lists every column with its generator on the left. Select a column to 
 | **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, turning on **Cascade** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
 | **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema shows in the sidebar and opens **New table** right away. |
 | **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key the database numbers itself (on ClickHouse, a plain `UInt64` sorting key). |
-| **Rename column** | Right-click a column header. |
-| **Rename / drop table** | Right-click the table in the sidebar. Renaming keeps the table's filters, sort and column layout. |
+| **New view** | Right-click a schema in the sidebar (or hover it and click **⋯**) and choose **New View**, or run **New view…** from the command menu. Name it and write the `SELECT` it saves; it opens like a table once created. On Postgres and ClickHouse, turn on **Materialized** to store the query's rows instead of running it on every read (on ClickHouse it starts empty and stores the rows inserted into its source table from then on). |
+| **Edit column** | Right-click a column header and choose **Edit Column** to change its name, type, nullability or foreign key — the same options as **Add column**, saved together. Renaming an enum value keeps the rows that hold it; on ClickHouse, removing a value that rows still hold is refused until you change them. Not on views or computed columns; ClickHouse keeps the name fixed, and SQL Server and ClickHouse keep a primary key's type. |
+| **Rename / drop table or view** | Right-click the table or view in the sidebar. Renaming keeps its filters, sort and column layout. Dropping a view leaves the tables it reads untouched; on Postgres, **Cascade** also drops what depends on it. |

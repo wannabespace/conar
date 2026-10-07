@@ -390,32 +390,34 @@ const IndexInspector = ({
         />
       </InspectorSection>
       {skipTypes.length > 0 ? (
-        <InspectorSection
-          title="Options"
-          description="What the index keeps per block of granules. Existing rows are indexed in the background."
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <form.AppField name="skipType">
-              {() => (
-                <SelectField
-                  label="Type"
-                  disabled={locked.shape}
-                  options={skipTypes}
-                  placeholder="Type"
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="granularity">
-              {() => (
-                <TextField
-                  label="Granularity"
-                  disabled={locked.shape}
-                  inputMode="numeric"
-                />
-              )}
-            </form.AppField>
-          </div>
-        </InspectorSection>
+        item?.kind !== 'primary' && (
+          <InspectorSection
+            title="Options"
+            description="What the index keeps per block of granules. Existing rows are indexed in the background."
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <form.AppField name="skipType">
+                {() => (
+                  <SelectField
+                    label="Type"
+                    disabled={locked.shape}
+                    options={skipTypes}
+                    placeholder="Type"
+                  />
+                )}
+              </form.AppField>
+              <form.AppField name="granularity">
+                {() => (
+                  <TextField
+                    label="Granularity"
+                    disabled={locked.shape}
+                    inputMode="numeric"
+                  />
+                )}
+              </form.AppField>
+            </div>
+          </InspectorSection>
+        )
       ) : (
         <InspectorSection title="Options">
           <form.AppField name="unique">

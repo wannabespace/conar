@@ -1,28 +1,25 @@
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
-import { xai } from '@ai-sdk/xai'
+import { openrouter } from '@openrouter/ai-sdk-provider'
 import { createRetryableModel } from 'ai-retry/language-model'
 
 export const models = {
   chat: createRetryableModel({
-    model: anthropic('claude-opus-5'),
+    model: openrouter('anthropic/claude-opus-5.5'),
     retries: [
-      openai('gpt-5.6-sol'),
-      xai('grok-latest'),
-      google('gemini-pro-latest'),
+      openrouter('openai/gpt-6.1-sol'),
+      openrouter('x-ai/grok-4.7'),
+      openrouter('~google/gemini-pro-latest'),
     ],
   }),
   fast: createRetryableModel({
-    model: anthropic('claude-haiku-4-5'),
-    retries: [google('gemini-flash-latest')],
+    model: openrouter('anthropic/claude-haiku-4.5'),
+    retries: [openrouter('google/gemini-3.8-flash')],
   }),
   filters: createRetryableModel({
-    model: anthropic('claude-sonnet-5'),
-    retries: [xai('grok-latest')],
+    model: openrouter('anthropic/claude-sonnet-5.5'),
+    retries: [openrouter('x-ai/grok-4.7')],
   }),
   sql: createRetryableModel({
-    model: anthropic('claude-opus-5'),
-    retries: [xai('grok-latest')],
+    model: openrouter('anthropic/claude-opus-5.5'),
+    retries: [openrouter('x-ai/grok-4.7')],
   }),
 }

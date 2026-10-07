@@ -6,6 +6,7 @@ import { registerCompletion } from './completion'
 import { registerGhostText } from './ghost-text'
 import { registerLanguage, sqlLanguageIds } from './language'
 
+export { SQL_COMPLETION_OPTIONS } from './completion'
 export { attachSqlDiagnostics } from './diagnostics'
 export {
   acceptGhostText,

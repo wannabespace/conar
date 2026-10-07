@@ -11,6 +11,7 @@ import {
 
 import type { ColumnsFilter } from './dialect-columns'
 import { mysqlColumns, postgresColumns } from './dialect-columns'
+import type { ColumnDefinition } from './shape'
 
 export const columnType = type({
   // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.
@@ -43,6 +44,31 @@ export const columnType = type({
     typeLabel: typeLabel ?? data.type,
   })
 )
+
+type CatalogColumn = Partial<
+  Pick<
+    typeof columnType.infer,
+    | 'attributes'
+    | 'collation'
+    | 'declaredType'
+    | 'isGenerated'
+    | 'isIdentity'
+    | 'isNullable'
+    | 'typeLabel'
+  >
+>
+
+export const columnDefinitionOf = (
+  column: CatalogColumn
+): ColumnDefinition => ({
+  attributes: column.attributes ?? '',
+  collation: column.collation ?? null,
+  nullable: !!column.isNullable,
+  type: column.declaredType ?? column.typeLabel ?? '',
+})
+
+export const isComputed = (column: CatalogColumn) =>
+  !!column.isGenerated && !column.isIdentity
 
 const clickhouseEnumRegex = /^Enum\d+/u
 

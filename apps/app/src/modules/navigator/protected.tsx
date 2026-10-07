@@ -2,6 +2,7 @@ import {
   FolderAddIcon,
   PlusSignIcon,
   SidebarLeftIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -9,6 +10,7 @@ import type { CommandEntry, ProtectedModule } from '~/lib/module'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createTableDialogRef } from './create-table-dialog'
+import { createViewDialogRef } from './create-view-dialog'
 import { navigatorOpenValue } from './stores'
 
 export default {
@@ -22,6 +24,14 @@ export default {
             keywords: ['create', 'add', 'table'],
             order: 10,
             value: 'New table…',
+          },
+          {
+            action: () => createViewDialogRef.current?.create(),
+            group: 'Database',
+            icon: ViewIcon,
+            keywords: ['create', 'add', 'view', 'materialized'],
+            order: 15,
+            value: 'New view…',
           },
           ...(capabilitiesOf(current.connection.type).schemas
             ? [

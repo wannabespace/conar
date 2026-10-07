@@ -24,20 +24,28 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Table
 
+- **Name the ClickHouse error when a read fails mid-stream.** A table whose rows no longer fit its column type (an enum value dropped outside Tamery) fails every read, but ClickHouse has already sent HTTP 200, so the client rejects with a bare `aborted` and the grid's error view says nothing useful; one QA pass on an older server even showed `This table is empty.` The column form now refuses dropping a value rows still hold.
+- **Column form gaps.** MySQL `SET` columns could take the same values list as `enum`; **References** always writes `NO ACTION` for ON DELETE / ON UPDATE and only on a column without a foreign key, so changing or dropping a column's reference still means the Schema page or the visualizer; ClickHouse lists enum values by their stored number, so dragging them in the list changes nothing and the grip could hide there. The visualizer applies one statement per draft, so renaming a MySQL enum value there is still refused in strict mode; the table grid's form moves the rows.
 - **Hold-⌘ hints for shortcuts without a control.** Tooltips with a shortcut reveal on ⌘; undo/redo (⌘Z/⇧⌘Z), the grid's copy/paste/fill (⌘C/⌘V/⌘D, listed only in the cell menu) and the Schema pages' ⌘D drop have no control to carry a hint, so they stay undiscoverable until something on screen names them.
 - **Esc hints on dialog and drawer closes.** Every `Cancel`/`Close` that Esc fires (dialogs, drawers, the seed panel) carries no hint while ⌘ is held; a kit-level `shortcut` on the close components would cover all of them at once. The editable list's reorder keys (`⌥↑ ⌥↓`) are still unicode in its tooltip text rather than a `shortcut` glyph.
 - **Referenced columns on the columns context.** Each header still calls `useReferencedColumns` for its own column; the fetch is shared through the query cache, but one lookup on `ColumnsContext` would drop the per-header hook.
-- **Drag threshold on column headers.** Any pointer move after a header press starts a reorder drag (`packages/table/src/use-column-drag.ts`), so a click with a pixel of jitter lifts the column with its drag shadow for one settle animation; a few pixels of dead zone before `moved` flips would keep plain clicks still.
 - **Readable rows in the delete dialog.** It lists primary keys only (UUIDs); showing the row's label column (the one **Show Labels** picks) beside each key makes it clear which rows are going.
 - **Keep staged edits across a reload.** A page reload drops every staged cell edit and new row without a prompt; persist drafts per table, or at least confirm before unload while any are staged.
 - **Drop and change type from the column menu.** The grid can add and rename a column but not drop it or change its type; both need the query runner today.
 - **Default value in Add column.** The dialog offers name, type, nullability and array only, so on Postgres and SQL Server a `NOT NULL` column cannot be added to a table that has rows (the engine has nothing to fill them with), and a default needs SQL.
+- **Sort from the cell cursor.** A header click cycles its column's sort, but from the keyboard the only route is the column menu; a grid hotkey cycling the cursor's column (⇧ to add it to the sort) would match the click.
 - **Sort in Code → Query.** The generated SQL, Kysely, Drizzle and Prisma queries carry the table's filters but not its sort.
+- **Faithful dialect types and defaults in schema copy.** ClickHouse SQL copy must omit an empty default expression; MySQL `SET` columns must preserve multiple-value semantics in ORM output or clearly disclose that the format cannot represent them.
+- **Lossless custom indexes and composite foreign keys in Code → Schema.** Postgres copies a custom index from `pg_get_indexdef`, but MySQL (prefix length, descending, functional) and SQL Server (filtered, included columns, descending) custom indexes still come out as plain column lists, and a multi-column foreign key is emitted as one key per column.
 - **SQL Server `bit` as a checkbox.** Only Postgres `boolean` gets the boolean editor; a `bit` cell is free text, so `t`/`f` fails at Save. MySQL's `bit(n)` is a bit field, not a boolean, so the mapping has to be per engine.
 - **Stable row order without a sort.** An unsorted grid follows the database's physical order, so a saved row jumps from the top to the bottom, and offset paging without `ORDER BY` can repeat or skip rows between pages. Ordering by the primary key fixes both, but the key comes from the constraints query, which the tab-open prefetch does not wait for — the prefetched first page would sit under a different query key.
 - **Say when a filter or sort change drops staged edits.** The save bar just disappears; a toast with an Undo action would make the ⌘Z recovery discoverable.
 - **Horizontal scroll re-renders every visible row.** A column-range change hands each memoized `Row` a new `virtualColumns`, so all ~45 rows re-render and re-lay out (~40% of a horizontal step). Positioning cells per column (one spacer per row read from a CSS variable) would let a range change touch only the columns that enter and leave.
 - **Keep `GridScroller` chrome out of range renders.** Every row or column range change re-renders the body's `AppContextMenu` wrapper (~2ms in dev) because its child element is new each render.
+- **Edit a view's query.** Views can be created, renamed and dropped from the navigator, but changing what one selects still needs the query runner (`CREATE OR REPLACE VIEW`, or drop and recreate for a materialized view).
+- **Refresh a materialized view.** Postgres materialized views only change on `REFRESH MATERIALIZED VIEW`; a menu item on the view's row (with `CONCURRENTLY` when it has a unique index) would keep its tab from showing stale rows.
+- **Catalog completion in routine bodies.** The Schema pages' function and trigger body editors get keywords only; `attachSqlSource` would give them the runner's table and column completion, as New View has.
+- **SQL Server indexed views.** SQL Server's equivalent of a materialized view is a `SCHEMABINDING` view with a unique clustered index, so New View offers no Materialized option there yet.
 
 ## Offline writes
 
@@ -51,3 +59,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
+
+## AI
+
+- **Exact cost from OpenRouter.** Usage rows are priced from the LiteLLM sheet (`packages/ai/models/price.ts`), so caching discounts, provider routing and fallbacks are approximated. OpenRouter reports the billed cost per call in `providerMetadata.openrouter.usage.cost`; recording that drops the daily sheet fetch and makes `cost` exact.
+- **Codestral completion through OpenRouter.** Inline completion still calls Mistral's FIM endpoint directly (`@mistralai/mistralai`, `MISTRAL_API_KEY`) because OpenRouter does not pass `suffix` through. Move it once OpenRouter supports fill-in-the-middle, leaving one provider key.

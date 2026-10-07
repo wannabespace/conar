@@ -104,7 +104,7 @@ export interface GridCursor {
   fillDown: () => void
   getValue: (cell: DataGridCell) => unknown
   indexOf: (column: string) => number
-  isEditable: (column: Column) => boolean
+  isEditable: (column: Column, rowIndex: number) => boolean
   layout: DataGridLayout
   leave: (down: number, right: number) => void
   paste: (text: string) => void

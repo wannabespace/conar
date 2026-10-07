@@ -267,12 +267,8 @@ export const Visualizer = ({
       />
       <ReviewDrawer
         open={reviewOpen}
-        onOpenChange={(open) => {
-          setReviewOpen(open)
-          if (!open) {
-            apply.reset()
-          }
-        }}
+        onOpenChange={setReviewOpen}
+        onOpenChangeComplete={(open) => !open && apply.reset()}
         connectionType={connection.type}
         ddlRollback={can.ddlRollback}
         drafts={drafts}

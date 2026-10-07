@@ -144,6 +144,7 @@ export const Table = ({
 
   const { actionsOf, dialogs } = useColumnActions({
     connectionType: connection.type,
+    editable: !!isBaseTable,
     schema,
     table,
   })
@@ -177,6 +178,7 @@ export const Table = ({
           schema,
           table,
         })}
+        canEdit={staged.canEdit}
         connectionType={connection.type}
         getValue={staged.valueOf}
         onEdit={isEditable && !saving ? staged.edit : undefined}

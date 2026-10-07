@@ -2,6 +2,7 @@ import type { constraintsType } from '~/core/queries/constraints/list'
 import type { indexesType } from '~/core/queries/indexes/list'
 import type { policyType } from '~/core/queries/policies/list'
 import type { columnType } from '~/core/queries/tables/columns'
+import { columnDefinitionOf, isComputed } from '~/core/queries/tables/columns'
 import type {
   ColumnDefinition,
   DraftState,
@@ -170,24 +171,19 @@ export const buildDiagram = ({
           state = 'changed'
         }
 
-        const type = column.declaredType ?? column.typeLabel
+        const original = columnDefinitionOf(column)
 
         return {
           foreign: foreignColumns.has(key),
-          generated: column.isGenerated && !column.isIdentity,
+          generated: isComputed(column),
           id: column.id,
           label: altered ? altered.type : column.typeLabel,
           name: renamed ? renamed.newName : column.id,
           nullable: altered ? altered.nullable : column.isNullable,
-          original: {
-            attributes: column.attributes ?? '',
-            collation: column.collation ?? null,
-            nullable: column.isNullable,
-            type,
-          },
+          original,
           primaryKey: primaryKeys.has(key),
           state,
-          type: altered ? altered.type : type,
+          type: altered ? altered.type : original.type,
           unique: uniques.has(key),
         }
       }

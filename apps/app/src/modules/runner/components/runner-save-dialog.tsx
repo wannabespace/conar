@@ -55,19 +55,19 @@ export const RunnerSaveDialog = ({
   const { connectionResource } = useRouteContext()
   const [request, setRequest] = useState<SaveRequest | null>(null)
   const [name, setName] = useState('')
+  const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
     open: (next) => {
       setRequest(next)
       setName(next.kind === 'rename' ? next.query.name : '')
+      setOpen(true)
     },
   }))
 
   const sql = request && request.kind !== 'rename' ? request.sql : ''
   const empty = request?.kind !== 'rename' && !sql.trim()
   const canConfirm = Boolean(name.trim()) && !empty
-
-  const close = () => setRequest(null)
 
   const confirm = () => {
     if (request?.kind === 'rename') {
@@ -93,11 +93,11 @@ export const RunnerSaveDialog = ({
       posthog.capture('query_saved')
       toast.success(`Saved "${name.trim()}"`)
     }
-    close()
+    setOpen(false)
   }
 
   return (
-    <Dialog open={request !== null} onOpenChange={(open) => !open && close()}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{request ? TITLES[request.kind] : ''}</DialogTitle>

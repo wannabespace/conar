@@ -17,6 +17,7 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'Date',
     'DateTime',
     'DateTime64(3)',
+    'Enum',
   ],
   [ConnectionType.MSSQL]: [
     'int',
@@ -52,6 +53,7 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'timestamp',
     'json',
     'blob',
+    'enum',
   ],
   [ConnectionType.Postgres]: [
     'integer',

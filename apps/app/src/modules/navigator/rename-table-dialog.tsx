@@ -3,6 +3,8 @@ import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
+import type { TableType } from '~/core/catalog/table-type'
+import { tableTypeLabel } from '~/core/catalog/table-type'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { renameTableQuery } from '~/core/queries/tables/rename'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -17,7 +19,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
-    rename: (schema: string, table: string) => void
+    rename: (schema: string, table: string, type: TableType) => void
   } | null>
 }
 
@@ -26,17 +28,23 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
+  const [type, setType] = useState<TableType>('table')
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = tablesAndSchemas?.schemas ?? []
+  const label = tableTypeLabel[type]
+  const noun = label.toLowerCase()
 
   useImperativeHandle(ref, () => ({
-    rename: (schema, name) => setRequest({ schema, table: { name, schema } }),
+    rename: (schema, name, nextType) => {
+      setType(nextType)
+      setRequest({ schema, table: { name, schema } })
+    },
   }))
 
   const { mutate: renameTable, isPending } = useMutation({
-    meta: { event: 'table_renamed' },
+    meta: { event: type === 'table' ? 'table_renamed' : 'view_renamed' },
     mutationFn: async ({
       newTable,
       schema,
@@ -51,10 +59,10 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
       )
     },
     onError: (error) => {
-      toast.error(`Failed to rename table "${error.message}".`)
+      toast.error(`Failed to rename ${noun} "${error.message}".`)
     },
     onSuccess: async (_, { newTable, schema, table }) => {
-      toast.success(`Table "${table}" successfully renamed to "${newTable}"`)
+      toast.success(`${label} "${table}" successfully renamed to "${newTable}"`)
       setRequest(null)
 
       await queryClient.invalidateQueries({
@@ -77,6 +85,7 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
 
   return (
     <TableDialog
+      noun={noun}
       request={request}
       schemas={schemas.map(({ name }) => name)}
       isTaken={(schema, name) =>
