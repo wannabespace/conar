@@ -1,4 +1,4 @@
-export interface EnumValue {
+interface EnumValue {
   // The catalog value this one was loaded as, so a renamed value keeps its
   // stored number; absent for a value added in the form.
   origin?: string
