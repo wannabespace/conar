@@ -59,7 +59,7 @@ Tamery is a database management tool that provides:
 - AI generates SQL and provides database assistance — treat output as a suggestion, not authoritative advice
 - **Review and validate all AI-generated SQL before executing it**
 - We are not responsible for issues caused by AI-generated code
-- Your database schema is sent to AI providers (Anthropic, OpenAI, Google) to generate accurate results — see our Privacy Policy for details
+- Your database schema is sent to AI providers (via OpenRouter to Anthropic, OpenAI, Google) to generate accurate results — see our Privacy Policy for details
 - AI may occasionally query a small number of rows from your database as part of an explicit AI action
 - We reserve the right to modify or limit AI features
 
