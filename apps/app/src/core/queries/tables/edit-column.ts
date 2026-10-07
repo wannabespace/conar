@@ -8,7 +8,7 @@ import {
   constraintClause,
 } from '~/core/queries/constraints/shape'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
-import { mysqlEnum } from '~/core/queries/shared/inline-enum'
+import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import { createQuery } from '~/core/runtime/query'
 
 import type { AlterColumnTarget } from './shape'
@@ -86,10 +86,46 @@ const mysqlMoveRenamedValues = async (
   )
 }
 
+// ClickHouse accepts an enum MODIFY that drops a value rows still hold, then
+// fails the rewrite in the background and those rows stop reading.
+const clickhouseRefuseHeldValues = async (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  target: EditColumnTarget
+) => {
+  const { column, original, renamedValues, schema, table } = target
+  const next = clickhouseEnum.parse(target.type)
+  if (!next) {
+    return
+  }
+  const kept = new Set([...next, ...renamedValues.map(({ from }) => from)])
+  const dropped = (clickhouseEnum.parse(original.type) ?? []).filter(
+    (value) => !kept.has(value)
+  )
+  if (dropped.length === 0) {
+    return
+  }
+  const {
+    rows: [held],
+  } = await sql<{
+    value: string
+  }>`SELECT ${sql.id(column)} AS value FROM ${sql.id(schema, table)} WHERE ${sql.id(column)} IN (${sql.join(dropped)}) LIMIT 1`.execute(
+    db
+  )
+  if (held) {
+    throw new Error(
+      `Rows still hold "${held.value}". Change them before removing the value.`
+    )
+  }
+}
+
 export const editColumnQuery = (target: EditColumnTarget) =>
   createQuery({
     query: {
-      clickhouse: (db) => editInSteps(ConnectionType.ClickHouse, db, target),
+      clickhouse: async (db) => {
+        await clickhouseRefuseHeldValues(db, target)
+        await editInSteps(ConnectionType.ClickHouse, db, target)
+      },
       mssql: (db) => editInSteps(ConnectionType.MSSQL, db, target),
       // MySQL commits each DDL statement, so the rename, the alter and the key
       // go in one ALTER: a part that fails leaves the column untouched.
