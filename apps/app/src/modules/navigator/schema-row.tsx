@@ -4,6 +4,7 @@ import {
   Delete02Icon,
   PencilEdit01Icon,
   PlusSignIcon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
@@ -30,18 +31,22 @@ const useActiveTable = () => {
 export const SchemaRow = ({
   row,
   onCreateTable,
+  onCreateView,
   onDrop,
   onRename,
   onToggle,
 }: {
   row: Extract<TreeRow, { kind: 'schema' }>
   onCreateTable: () => void
+  onCreateView: () => void
   onDrop: () => void
   onRename?: () => void
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
   const items: AppMenuNode[] = [
+    { icon: ViewIcon, label: 'New View', onSelect: onCreateView },
+    { type: 'separator' },
     ...(onRename
       ? [{ icon: PencilEdit01Icon, label: 'Rename', onSelect: onRename }]
       : []),

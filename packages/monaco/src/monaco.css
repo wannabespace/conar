@@ -44,3 +44,9 @@
   .hover-row.hover-row-with-copy {
   padding-right: 0;
 }
+
+/* The suggest list overflows the editor, so a rounded container cannot clip with overflow-hidden; the editor clips its own text instead. */
+.monaco-editor,
+.monaco-editor .overflow-guard {
+  border-radius: inherit;
+}

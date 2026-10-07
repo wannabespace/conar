@@ -84,11 +84,13 @@ export interface ConnectionCapabilities {
   functions: FunctionCapabilities
   ilike: boolean
   indexes: IndexCapabilities
+  materializedViews: boolean
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   renameConstraints: boolean
   renameSchema: boolean
+  renameViews: boolean
   // A primary key column's type and nullability; SQL Server and ClickHouse refuse the ALTER.
   retypeKeyColumns: boolean
   rowLevelSecurity: boolean

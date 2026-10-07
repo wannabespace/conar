@@ -22,7 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { useState } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import type { ReactNode } from 'react'
+import { useRef, useState } from 'react'
 
 interface TableTarget {
   name: string
@@ -37,21 +43,30 @@ export interface TableDialogRequest<Table extends TableTarget = TableTarget> {
 const FORM_ID = 'table-dialog'
 
 const TableForm = ({
+  children,
+  description,
   isTaken,
+  noun,
   onSubmit,
   pending,
   request: { schema: initialSchema, table },
   schemas: knownSchemas,
+  shortcut,
 }: {
+  children?: ReactNode
+  description?: ReactNode
   isTaken: (schema: string, name: string) => boolean
+  noun: string
   onSubmit: (schema: string, name: string) => void
   pending: boolean
   request: TableDialogRequest
   schemas: string[]
+  shortcut?: ReactNode
 }) => {
   const schemas = knownSchemas.includes(initialSchema)
     ? knownSchemas
     : [initialSchema, ...knownSchemas]
+  const nameRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState(table?.name ?? '')
   const [schema, setSchema] = useState(initialSchema)
   const [submitted, setSubmitted] = useState(false)
@@ -59,23 +74,27 @@ const TableForm = ({
   const taken = trimmed !== table?.name && isTaken(schema, trimmed)
   let nameError: string | null = null
   if (taken) {
-    nameError =
-      schemas.length > 1
-        ? `${schema} already has a table with this name`
-        : 'A table with this name already exists'
+    nameError = 'A table or view with this name already exists'
   } else if (submitted && !trimmed) {
-    nameError = 'Give the table a name.'
+    nameError = `Give the ${noun} a name.`
   }
+  const submit = (
+    <Button
+      type="submit"
+      form={FORM_ID}
+      disabled={pending || trimmed === table?.name}
+    />
+  )
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{table ? 'Rename table' : 'New table'}</DialogTitle>
+        <DialogTitle>{table ? `Rename ${noun}` : `New ${noun}`}</DialogTitle>
         <DialogDescription>
           {table ? (
             <span data-mask>{`${table.schema}.${table.name}`}</span>
           ) : (
-            'The table is created with an id primary key.'
+            description
           )}
         </DialogDescription>
       </DialogHeader>
@@ -84,9 +103,14 @@ const TableForm = ({
         className="flex flex-col gap-3"
         onSubmit={(e) => {
           e.preventDefault()
+          if (pending) {
+            return
+          }
           setSubmitted(true)
           if (trimmed && !taken) {
             onSubmit(schema, trimmed)
+          } else {
+            nameRef.current?.focus()
           }
         }}
       >
@@ -115,6 +139,7 @@ const TableForm = ({
           <FieldLabel htmlFor="table-dialog-name">Name</FieldLabel>
           <InputGroup>
             <InputGroupInput
+              ref={nameRef}
               id="table-dialog-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -129,34 +154,41 @@ const TableForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
+        {children}
       </form>
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>
           Cancel
         </DialogClose>
-        <Button
-          type="submit"
-          form={FORM_ID}
-          disabled={pending || trimmed === table?.name}
-        >
-          <LoadingContent loading={pending}>
-            {table ? 'Rename' : 'Create table'}
-          </LoadingContent>
-        </Button>
+        <Tooltip shortcut={!pending && shortcut}>
+          <TooltipTrigger render={submit}>
+            <LoadingContent loading={pending}>
+              {table ? 'Rename' : `Create ${noun}`}
+            </LoadingContent>
+          </TooltipTrigger>
+          {shortcut && <TooltipContent />}
+        </Tooltip>
       </DialogFooter>
     </>
   )
 }
 
 export const TableDialog = <Table extends TableTarget>({
+  children,
+  description = 'The table is created with an id primary key.',
   isTaken,
+  noun = 'table',
   onOpenChange,
   onSubmit,
   pending = false,
   request,
   schemas,
+  shortcut,
 }: {
+  children?: ReactNode
+  description?: ReactNode
   isTaken: (schema: string, name: string) => boolean
+  noun?: string
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: TableDialogRequest<Table>,
@@ -166,6 +198,7 @@ export const TableDialog = <Table extends TableTarget>({
   pending?: boolean
   request: TableDialogRequest<Table> | null
   schemas: string[]
+  shortcut?: ReactNode
 }) => {
   const [shown, setShown] = useState(request)
   if (request && request !== shown) {
@@ -178,12 +211,17 @@ export const TableDialog = <Table extends TableTarget>({
         {shown && (
           <TableForm
             key={shown.table ? `${shown.table.schema}.${shown.table.name}` : ''}
+            description={description}
             isTaken={isTaken}
+            noun={noun}
             pending={pending}
             request={shown}
             schemas={schemas}
+            shortcut={shortcut}
             onSubmit={(schema, name) => onSubmit(shown, schema, name)}
-          />
+          >
+            {children}
+          </TableForm>
         )}
       </DialogContent>
     </Dialog>

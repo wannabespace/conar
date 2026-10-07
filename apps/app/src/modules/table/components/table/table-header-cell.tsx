@@ -2,6 +2,7 @@
 import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridHeaderProps } from '@tamery/table'
+import { isHeaderPress } from '@tamery/table'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import { cn } from '@tamery/ui/lib/utils'
 import type { RefObject } from 'react'
@@ -10,15 +11,17 @@ import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { Column } from '~/core/table/cell/utils'
+import { useGridCursorContext } from '~/core/table/cursor'
 import {
   labelCandidates,
   useReferencedColumns,
 } from '~/core/table/referenced-columns'
+import { posthog } from '~/lib/posthog'
 
 import type { ColumnActions } from '../../lib/column-menu'
 import { columnMenuItems } from '../../lib/column-menu'
 import { labelColumnOf } from '../../lib/labels'
-import { columnLayout, useTablePageStore } from '../../lib/store'
+import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
 import { ColumnHeading } from './column-type'
 
 const ARIA_SORT = { ASC: 'ascending', DESC: 'descending' } as const
@@ -54,7 +57,15 @@ const useColumnMenu = (
       store,
     })
 
-  return { items, layout: columnLayout(store), order }
+  const cycleOrder = (addToSort: boolean) => {
+    columnsOrder(store).cycleOrder(column.id, addToSort)
+    posthog.capture('column_sort_cycled', {
+      add_to_sort: addToSort,
+      order: store.get().orderBy[column.id] ?? 'none',
+    })
+  }
+
+  return { cycleOrder, items, layout: columnLayout(store), order }
 }
 
 const SortArrow = ({ order }: { order: 'ASC' | 'DESC' }) => (
@@ -72,13 +83,20 @@ export const TableHeaderCell = ({
 }: ColumnActions & { column: Column; header: GridHeaderProps }) => {
   const ref = useRef<HTMLDivElement>(null)
   const width = useRef(0)
-  const { items, layout, order } = useColumnMenu(column, ref, actions)
+  const pressClosedEditor = useRef(false)
+  const cursor = useGridCursorContext()
+  const { cycleOrder, items, layout, order } = useColumnMenu(
+    column,
+    ref,
+    actions
+  )
 
   return (
     <AppContextMenu
       items={items}
       contentProps={{ align: 'start', className: 'min-w-52', side: 'bottom' }}
       render={
+        // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus -- a pointer shortcut; the keyboard sorts through the column menu
         <div
           ref={ref}
           role="columnheader"
@@ -87,10 +105,20 @@ export const TableHeaderCell = ({
           // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
           style={style}
           className={cn(
-            'group/header relative flex items-center gap-1.5 py-1 pr-1.5 pl-2 outline-none select-none',
+            'group/header relative flex items-center gap-1.5 py-1 pr-3 pl-2 outline-none select-none',
             gridColumn.pinned && 'bg-background z-10',
             isDragging && 'bg-background z-10 rounded-md shadow-md'
           )}
+          // Read on press: the press blurs an open cell edit, which commits and clears it before the click.
+          onPointerDownCapture={() => {
+            pressClosedEditor.current = !!cursor.store.get().edit
+          }}
+          onClick={(event) =>
+            actions.sortable &&
+            !pressClosedEditor.current &&
+            isHeaderPress(event) &&
+            cycleOrder(event.shiftKey)
+          }
           {...dragHandle}
         />
       }
@@ -107,7 +135,10 @@ export const TableHeaderCell = ({
       <ResizeHandle
         aria-label="Resize column"
         min={MIN_WIDTH}
-        className="absolute inset-y-0 -right-1.5 z-10 flex w-3 justify-center"
+        className={cn(
+          'absolute inset-y-0 right-0 z-10 flex w-3 justify-end',
+          isDragging && 'hidden'
+        )}
         getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
         onResize={(next) => {
           width.current = next

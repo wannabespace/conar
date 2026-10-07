@@ -14,10 +14,12 @@
     "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "motion": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",
-    "@types/react": "catalog:"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:"
   }
 }

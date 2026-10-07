@@ -20,6 +20,7 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { tableTabId } from '~/core/tabs/ids'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
+import { createViewDialogRef } from './create-view-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { pinnedTable } from './pinned-tables'
@@ -211,6 +212,7 @@ export const TablesList = ({
           <SchemaRow
             row={row}
             onCreateTable={() => onCreateTable(row.name)}
+            onCreateView={() => createViewDialogRef.current?.create(row.name)}
             onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
             onRename={
               capabilitiesOf(connection.type).renameSchema
@@ -258,11 +260,23 @@ export const TablesList = ({
         <TableRow
           row={row}
           search={search}
-          onRename={() =>
-            renameTableDialogRef.current?.rename(row.schema, row.table.name)
+          onRename={
+            row.table.type === 'table' ||
+            capabilitiesOf(connection.type).renameViews
+              ? () =>
+                  renameTableDialogRef.current?.rename(
+                    row.schema,
+                    row.table.name,
+                    row.table.type
+                  )
+              : undefined
           }
           onDrop={() =>
-            dropTableDialogRef.current?.drop(row.schema, row.table.name)
+            dropTableDialogRef.current?.drop(
+              row.schema,
+              row.table.name,
+              row.table.type
+            )
           }
         />
       </div>

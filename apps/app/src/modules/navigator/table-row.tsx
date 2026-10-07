@@ -47,7 +47,7 @@ export const TableRow = ({
 }: {
   row: Extract<TreeRow, { kind: 'table' }>
   search?: string
-  onRename: () => void
+  onRename?: () => void
   onDrop: () => void
 }) => {
   const { connectionResource } = useRouteContext()
@@ -57,7 +57,6 @@ export const TableRow = ({
     select: (params) => params.tabId === tabId,
     strict: false,
   })
-  const isReadOnly = row.table.type !== 'table'
   const Icon = tableTypeIcon[row.table.type]
   const store = tableSessionStore({
     id: connectionResource.id,
@@ -103,15 +102,11 @@ export const TableRow = ({
         pinnedTable.toggle(connectionResource.id, row.schema, row.table.name),
     },
     { type: 'separator' },
-    {
-      disabled: isReadOnly,
-      icon: PencilEdit01Icon,
-      label: 'Rename',
-      onSelect: onRename,
-    },
+    ...(onRename
+      ? [{ icon: PencilEdit01Icon, label: 'Rename', onSelect: onRename }]
+      : []),
     ...rowLevelSecurityItems,
     {
-      disabled: isReadOnly,
       icon: Delete02Icon,
       label: 'Drop',
       onSelect: onDrop,
@@ -154,28 +149,28 @@ export const TableRow = ({
           />
         }
       >
-        <span
-          className="relative shrink-0"
-          title={tableTypeLabel[row.table.type]}
-        >
-          <HugeiconsIcon
-            icon={Icon}
-            strokeWidth={2}
-            className={cn(
-              'size-4',
-              isActive ? 'text-primary-foreground' : 'text-primary/75'
-            )}
-          />
-          {hasDrafts && (
-            <Indicator
+        <Tooltip>
+          <TooltipTrigger render={<span className="relative shrink-0" />}>
+            <HugeiconsIcon
+              icon={Icon}
+              strokeWidth={2}
               className={cn(
-                '-top-0.5 -right-0.5 size-1.5',
-                // oxlint-disable-next-line shadcn/no-restyle -- the dot inverts on the active primary row
-                isActive && 'bg-primary-foreground'
+                'size-4',
+                isActive ? 'text-primary-foreground' : 'text-primary/75'
               )}
             />
-          )}
-        </span>
+            {hasDrafts && (
+              <Indicator
+                className={cn(
+                  '-top-0.5 -right-0.5 size-1.5',
+                  // oxlint-disable-next-line shadcn/no-restyle -- the dot inverts on the active primary row
+                  isActive && 'bg-primary-foreground'
+                )}
+              />
+            )}
+          </TooltipTrigger>
+          <TooltipContent>{tableTypeLabel[row.table.type]}</TooltipContent>
+        </Tooltip>
         <span
           className={cn(
             'flex min-w-0 flex-1 items-center gap-1',

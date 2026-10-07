@@ -84,6 +84,9 @@ export const useStagedEdits = ({
 
   return {
     ...staged,
+    canEdit: (column: Column, rowIndex: number) =>
+      column.isEditable !== false ||
+      (staged.rowAt(rowIndex).kind === 'new' && !isFilledByDatabase(column)),
     duplicate: (cell: DataGridCell) =>
       stageRow(
         sessionStore,
