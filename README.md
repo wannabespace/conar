@@ -43,7 +43,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 - oRPC
 - Drizzle ORM
 - Better Auth
-- AI SDK with Anthropic, OpenAI, Gemini and XAI
+- AI SDK with OpenRouter (Anthropic, OpenAI, Gemini)
 - Railway
 - PostHog
 - Resend

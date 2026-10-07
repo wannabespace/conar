@@ -1,11 +1,9 @@
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
-import { xai } from '@ai-sdk/xai'
 import { db } from '@conar/db'
 import { generateText } from 'ai'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
+
+import { openrouter } from '~/lib/openrouter'
 
 function createAnswer(status: 'error' | 'ok', service: string, message: string) {
   return {
@@ -39,72 +37,22 @@ export const healthRouter = new Hono().get('/', async c => {
         ),
       ),
     generateText({
-      model: openai('gpt-5-nano'),
+      model: openrouter('openai/gpt-5-nano'),
       prompt: 'Hello, how are you?',
     })
       .then(result => {
         if (!result.text) {
-          return createAnswer('error', 'openai', 'OpenAI connection failed')
+          return createAnswer('error', 'openrouter', 'OpenRouter connection failed')
         }
 
-        return createAnswer('ok', 'openai', result.text)
+        return createAnswer('ok', 'openrouter', result.text)
       })
       .catch(e =>
         createAnswer(
           'error',
-          'openai',
-          e instanceof Error ? e.message : 'OpenAI connection failed',
+          'openrouter',
+          e instanceof Error ? e.message : 'OpenRouter connection failed',
         ),
-      ),
-    generateText({
-      model: google('gemini-flash-latest'),
-      prompt: 'Hello, how are you?',
-    })
-      .then(result => {
-        if (!result.text) {
-          return createAnswer('error', 'google', 'Google connection failed')
-        }
-
-        return createAnswer('ok', 'google', result.text)
-      })
-      .catch(e =>
-        createAnswer(
-          'error',
-          'google',
-          e instanceof Error ? e.message : 'Google connection failed',
-        ),
-      ),
-    generateText({
-      model: anthropic('claude-opus-4-6'),
-      prompt: 'Hello, how are you?',
-    })
-      .then(result => {
-        if (!result.text) {
-          return createAnswer('error', 'anthropic', 'Anthropic connection failed')
-        }
-
-        return createAnswer('ok', 'anthropic', result.text)
-      })
-      .catch(e =>
-        createAnswer(
-          'error',
-          'anthropic',
-          e instanceof Error ? e.message : 'Anthropic connection failed',
-        ),
-      ),
-    generateText({
-      model: xai('grok-4-latest'),
-      prompt: 'Hello, how are you?',
-    })
-      .then(result => {
-        if (!result.text) {
-          return createAnswer('error', 'xai', 'XAI connection failed')
-        }
-
-        return createAnswer('ok', 'xai', result.text)
-      })
-      .catch(e =>
-        createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed'),
       ),
   ])
 

@@ -1,6 +1,3 @@
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
 import { tools } from '@conar/ai/tools'
 import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
@@ -10,12 +7,13 @@ import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 
+import { openrouter } from '~/lib/openrouter'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryableModel({
-  model: anthropic('claude-opus-4-8'),
-  retries: [openai('gpt-5.3-codex'), google('gemini-pro-latest')],
+  model: openrouter('anthropic/claude-opus-4.8'),
+  retries: [openrouter('openai/gpt-5.3-codex'), openrouter('~google/gemini-pro-latest')],
 })
 
 function handleError(error: unknown) {

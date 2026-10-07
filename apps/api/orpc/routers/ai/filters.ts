@@ -1,4 +1,3 @@
-import { google } from '@ai-sdk/google'
 import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@conar/shared/constants'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { generateText, Output } from 'ai'
@@ -6,6 +5,7 @@ import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 import * as z from 'zod/mini'
 
+import { openrouter } from '~/lib/openrouter'
 import { withPosthog } from '~/lib/posthog'
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
@@ -83,7 +83,7 @@ export const filters = orpc
     }
 
     const { output: result } = await generateText({
-      model: withPosthog(google('gemini-flash-latest'), {
+      model: withPosthog(openrouter('~google/gemini-flash-latest'), {
         prompt: input.prompt,
         context: input.context,
         userId: context.user.id,

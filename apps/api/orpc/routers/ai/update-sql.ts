@@ -1,8 +1,8 @@
-import { anthropic } from '@ai-sdk/anthropic'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 
+import { openrouter } from '~/lib/openrouter'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
@@ -18,7 +18,7 @@ export const updateSQL = orpc
   )
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-opus-4-6'), {
+      model: withPosthog(openrouter('anthropic/claude-opus-4.6'), {
         userId: context.user.id,
       }),
       messages: [
