@@ -83,7 +83,7 @@ export const filters = orpc
     }
 
     const { output: result } = await generateText({
-      model: withPosthog(openrouter('~google/gemini-flash-latest'), {
+      model: withPosthog(openrouter('google/gemini-3.8-flash'), {
         prompt: input.prompt,
         context: input.context,
         userId: context.user.id,
