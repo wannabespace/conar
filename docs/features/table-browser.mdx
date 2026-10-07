@@ -100,8 +100,9 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
     invalid JSON, a value missing from an enum, and text a number, date,
     timestamp or UUID column cannot read, are caught before they are staged.
-    Columns the database fills itself (identity, computed and generated columns,
-    and ClickHouse sorting keys) are read-only. Edited cells are highlighted.
+    Columns the database fills itself (identity, computed and generated columns)
+    are read-only. ClickHouse sorting keys take a value on a new row but cannot
+    change once saved. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Staged changes show up in a bar at the bottom of the grid. Click its

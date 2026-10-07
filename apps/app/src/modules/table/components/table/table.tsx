@@ -177,6 +177,7 @@ export const Table = ({
           schema,
           table,
         })}
+        canEdit={staged.canEdit}
         connectionType={connection.type}
         getValue={staged.valueOf}
         onEdit={isEditable && !saving ? staged.edit : undefined}

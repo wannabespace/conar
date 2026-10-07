@@ -54,7 +54,7 @@ export const tableCellMenu = ({
     entry.kind === 'saved' &&
     draftKey(entry.keys, column.id) in sessionStore.get().drafts
   const canSetNull =
-    isEditable && column.isEditable !== false && column.isNullable
+    isEditable && staged.canEdit(column, cell.rowIndex) && column.isNullable
 
   const rowItems: AppMenuNode[] = [
     ...(canInsert
