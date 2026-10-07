@@ -24,7 +24,7 @@ import { orpc, permissionsMiddleware, permix } from '~/orpc'
 const MIN_CHAT_VERSION_MINOR = 32
 
 const model = createRetryableModel({
-  model: openrouter('anthropic/claude-opus-4.8'),
+  model: openrouter('anthropic/claude-opus-5.5'),
   retries: [
     openrouter('openai/gpt-5.3-codex'),
     openrouter('~google/gemini-pro-latest'),

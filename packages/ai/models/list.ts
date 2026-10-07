@@ -3,23 +3,23 @@ import { createRetryableModel } from 'ai-retry/language-model'
 
 export const models = {
   chat: createRetryableModel({
-    model: openrouter('anthropic/claude-opus-5'),
+    model: openrouter('anthropic/claude-opus-5.5'),
     retries: [
-      openrouter('openai/gpt-5.6-sol'),
-      openrouter('~x-ai/grok-latest'),
+      openrouter('openai/gpt-6.1-sol'),
+      openrouter('x-ai/grok-4.7'),
       openrouter('~google/gemini-pro-latest'),
     ],
   }),
   fast: createRetryableModel({
     model: openrouter('anthropic/claude-haiku-4.5'),
-    retries: [openrouter('~google/gemini-flash-latest')],
+    retries: [openrouter('google/gemini-3.8-flash')],
   }),
   filters: createRetryableModel({
-    model: openrouter('anthropic/claude-sonnet-5'),
-    retries: [openrouter('~x-ai/grok-latest')],
+    model: openrouter('anthropic/claude-sonnet-5.5'),
+    retries: [openrouter('x-ai/grok-4.7')],
   }),
   sql: createRetryableModel({
-    model: openrouter('anthropic/claude-opus-5'),
-    retries: [openrouter('~x-ai/grok-latest')],
+    model: openrouter('anthropic/claude-opus-5.5'),
+    retries: [openrouter('x-ai/grok-4.7')],
   }),
 }
