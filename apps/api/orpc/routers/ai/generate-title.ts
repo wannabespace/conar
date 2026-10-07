@@ -1,10 +1,10 @@
-import { google } from '@ai-sdk/google'
 import { db } from '@conar/db'
 import { chats, chatsMessages } from '@conar/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
 
+import { openrouter } from '~/lib/openrouter'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -43,7 +43,7 @@ export const generateTitle = orpc
     })
 
     const { text } = await generateText({
-      model: withPosthog(google('gemini-flash-latest'), {
+      model: withPosthog(openrouter('~google/gemini-flash-latest'), {
         chatId: input.chatId,
         userId: context.user.id,
       }),

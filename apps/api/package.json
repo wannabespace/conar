@@ -9,11 +9,7 @@
     "better-auth:generate": "cross-env NODE_ENV=development pnpx https://pkg.pr.new/auth@9489 generate --output ../../packages/db/schema/auth.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "catalog:",
-    "@ai-sdk/google": "catalog:",
-    "@ai-sdk/openai": "catalog:",
     "@ai-sdk/provider": "catalog:",
-    "@ai-sdk/xai": "catalog:",
     "@better-auth/api-key": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",
     "@conar/ai": "workspace:*",
@@ -23,6 +19,7 @@
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
+    "@openrouter/ai-sdk-provider": "catalog:",
     "@orpc/experimental-publisher": "catalog:",
     "@orpc/server": "catalog:",
     "@posthog/ai": "catalog:",
