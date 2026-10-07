@@ -72,6 +72,7 @@ export const ReviewDrawer = ({
   onDiscard,
   onDiscardAll,
   onOpenChange,
+  onOpenChangeComplete,
   open,
 }: {
   applying: boolean
@@ -83,6 +84,7 @@ export const ReviewDrawer = ({
   onDiscard: (id: string) => void
   onDiscardAll: () => void
   onOpenChange: (open: boolean) => void
+  onOpenChangeComplete: (open: boolean) => void
   open: boolean
 }) => {
   const groups = [
@@ -97,6 +99,7 @@ export const ReviewDrawer = ({
     <StagedReviewDrawer
       open={open}
       onOpenChange={onOpenChange}
+      onOpenChangeComplete={onOpenChangeComplete}
       busy={applying}
       count={drafts.length}
       description={`${plural(drafts.length, 'change')} · ${consequence.description}`}

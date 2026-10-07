@@ -8,9 +8,9 @@ import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 
 import {
-  AddColumnDialog,
-  addColumnDialogRef,
-} from './components/table/add-column-dialog'
+  columnDialogRef,
+  TableColumnDialog,
+} from './components/table/column-dialog'
 import { Table } from './components/table/table'
 import { TableToolbar } from './components/toolbar/toolbar'
 import { ColumnsContext, useTableColumnsQuery } from './lib/columns'
@@ -19,7 +19,7 @@ import type { TableParams } from './lib/tab'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const addColumn = () => addColumnDialogRef.current?.add()
+const addColumn = () => columnDialogRef.current?.add()
 
 const TableContent = ({ table, schema }: { table: string; schema: string }) => {
   const { connectionResource } = useRouteContext()
@@ -43,7 +43,7 @@ const TableContent = ({ table, schema }: { table: string; schema: string }) => {
           <Table table={table} schema={schema} onAddColumn={addColumn} />
         </div>
       </div>
-      <AddColumnDialog schema={schema} table={table} />
+      <TableColumnDialog schema={schema} table={table} />
     </ColumnsContext>
   )
 }

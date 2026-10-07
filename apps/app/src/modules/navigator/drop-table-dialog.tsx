@@ -96,8 +96,6 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
     onSuccess: async () => {
       toast.success(`${label} "${table}" successfully dropped`)
       setOpen(false)
-      setConfirmationText('')
-      setCascade(false)
 
       queryClient.invalidateQueries({
         queryKey: ['connection-resource', connectionResource.id],
@@ -167,13 +165,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
           )}
         </div>
         <DialogFooter>
-          <DialogClose
-            render={<Button variant="outline" />}
-            onClick={() => {
-              setConfirmationText('')
-              setCascade(false)
-            }}
-          >
+          <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
           <Button

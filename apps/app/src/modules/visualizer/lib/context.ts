@@ -5,6 +5,7 @@ import { createStore } from 'seitu'
 
 import {
   capabilitiesOf,
+  foreignKeysCreatable,
   sectionAvailable,
   sectionCapabilitiesOf,
 } from '~/core/catalog/capabilities'
@@ -24,9 +25,7 @@ export const gatesOf = (connectionType: ConnectionType) => {
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,
-    foreignKeys:
-      capabilities.constraintKinds.includes('foreignKey') &&
-      !!constraints.create,
+    foreignKeys: foreignKeysCreatable(connectionType),
     indexes: sectionAvailable('indexes', connectionType),
     policies: sectionAvailable('policies', connectionType),
     schemas: capabilities.schemas,

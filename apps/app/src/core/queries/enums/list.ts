@@ -3,6 +3,10 @@ import { type } from 'arktype'
 
 import type { ConnectionResource } from '~/core/connection/sync'
 import {
+  clickhouseEnumEntries,
+  mysqlQuotedValues,
+} from '~/core/queries/shared/inline-enum'
+import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
@@ -39,21 +43,6 @@ export const findEnum = ({
       (column.type && e.name === column.type)
   )
 
-const clickhouseQuotedRegex = /'(?<value>(?:[^'\\]|\\.)*)'/gu
-const clickhouseEscapeRegex = /\\(?<char>.)/gu
-
-const parseClickhouseEnum = (dataType: string) =>
-  Array.from(dataType.matchAll(clickhouseQuotedRegex), (match) =>
-    (match.groups?.value ?? '').replaceAll(clickhouseEscapeRegex, '$1')
-  )
-
-const mysqlQuotedRegex = /'(?<value>(?:[^']|'')*)'/gu
-
-const parseMysqlEnumOrSet = (columnType: string) =>
-  Array.from(columnType.matchAll(mysqlQuotedRegex), (match) =>
-    (match.groups?.value ?? '').replaceAll("''", "'")
-  )
-
 const resourceEnumsQuery = createQuery({
   query: {
     clickhouse: async (db) => {
@@ -87,7 +76,9 @@ const resourceEnumsQuery = createQuery({
               },
               name: row.name,
               schema: row.schema,
-              values: parseClickhouseEnum(row.type),
+              values: clickhouseEnumEntries(row.type).map(
+                (entry) => entry.value
+              ),
             }) satisfies typeof enumType.infer
         )
         .filter((res) => res.values.length > 0)
@@ -124,7 +115,7 @@ const resourceEnumsQuery = createQuery({
             },
             name: row.name,
             schema: row.schema,
-            values: parseMysqlEnumOrSet(row.value),
+            values: mysqlQuotedValues(row.value),
           }) satisfies typeof enumType.infer
       )
     },

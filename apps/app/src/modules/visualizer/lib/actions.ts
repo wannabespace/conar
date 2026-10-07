@@ -4,9 +4,11 @@ import type { Dispatch, SetStateAction } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { constraintsType } from '~/core/queries/constraints/list'
+import { foreignKeyName } from '~/core/queries/constraints/shape'
 import type { NewColumn } from '~/core/queries/tables/shape'
 import type { ColumnDialogRequest } from '~/core/table/column-dialog'
 import type { TableDialogRequest } from '~/core/table/table-dialog'
+import type { ColumnReference } from '~/core/table/use-reference-targets'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
@@ -21,14 +23,6 @@ import { tableNodeId } from './schema'
 import type { DiagramDraft } from './statements'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const freeName = (base: string, taken: Set<string>) => {
-  let name = base
-  for (let suffix = 2; taken.has(name); suffix += 1) {
-    name = `${base}_${suffix}`
-  }
-  return name
-}
 
 export const useDiagramActions = ({
   constraints,
@@ -57,6 +51,33 @@ export const useDiagramActions = ({
   const router = useRouter()
   const flow = useReactFlow()
 
+  const addForeignKey = (
+    source: DiagramTable,
+    column: string,
+    target: ColumnReference
+  ) => {
+    const taken = new Set([
+      ...constraints
+        .filter((c) => c.schema === source.schema)
+        .map((c) => c.name),
+      ...drafts.flatMap((draft) =>
+        draft.kind === 'addForeignKey' ? [draft.name] : []
+      ),
+    ])
+    edit.addForeignKey({
+      columns: [column],
+      foreignColumns: [target.column],
+      foreignSchema: target.schema,
+      foreignTable: target.table,
+      kind: 'addForeignKey',
+      name: foreignKeyName(source.table, column, taken),
+      onDelete: 'NO ACTION',
+      onUpdate: 'NO ACTION',
+      schema: source.schema,
+      table: source.table,
+    })
+  }
+
   const actions: DiagramActions = {
     addColumn: (table) => setColumnRequest({ column: null, table }),
     createTable: () => setTableRequest({ schema, table: null }),
@@ -80,29 +101,9 @@ export const useDiagramActions = ({
     linkColumns: ({ column, foreignColumn, foreignTable, table }) => {
       const source = diagram.tables.find((t) => t.id === table)
       const target = diagram.tables.find((t) => t.id === foreignTable)
-      if (!source || !target) {
-        return
+      if (source && target) {
+        addForeignKey(source, column, { ...target, column: foreignColumn })
       }
-      const taken = new Set([
-        ...constraints
-          .filter((c) => c.schema === source.schema)
-          .map((c) => c.name),
-        ...drafts.flatMap((draft) =>
-          draft.kind === 'addForeignKey' ? [draft.name] : []
-        ),
-      ])
-      edit.addForeignKey({
-        columns: [column],
-        foreignColumns: [foreignColumn],
-        foreignSchema: target.schema,
-        foreignTable: target.table,
-        kind: 'addForeignKey',
-        name: freeName(`${source.table}_${column}_fkey`, taken),
-        onDelete: 'NO ACTION',
-        onUpdate: 'NO ACTION',
-        schema: source.schema,
-        table: source.table,
-      })
     },
     openTable: (table, newWindow) => {
       const location = {
@@ -135,8 +136,11 @@ export const useDiagramActions = ({
 
   const submitColumn = (
     { column, table }: ColumnDialogRequest<DiagramTable, DiagramColumn>,
-    next: NewColumn
+    next: NewColumn,
+    reference: ColumnReference | null
   ) => {
+    const id =
+      column === null || column.state === 'added' ? next.name : column.id
     if (column === null) {
       edit.addColumn(table, next)
     } else {
@@ -144,7 +148,6 @@ export const useDiagramActions = ({
         edit.renameColumn(table, column.id, next.name)
       }
       if (next.type !== column.type || next.nullable !== column.nullable) {
-        const id = column.state === 'added' ? next.name : column.id
         edit.alterColumn(
           table,
           id,
@@ -152,6 +155,9 @@ export const useDiagramActions = ({
           column.original
         )
       }
+    }
+    if (reference) {
+      addForeignKey(table, id, reference)
     }
     setColumnRequest(null)
   }

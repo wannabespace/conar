@@ -140,7 +140,7 @@ const ComboboxContent = ({
         data-slot="combobox-content"
         data-chips={!!anchor}
         className={cn(
-          `group/combobox-content bg-popover/70 text-popover-foreground ring-foreground/4 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] overflow-hidden rounded-2xl shadow-xl ring before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 data-empty:not-has-data-[slot=combobox-empty]:hidden data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
+          `group/combobox-content bg-popover text-popover-foreground ring-foreground/4 **:focus:data-[slot$=-item]:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:focus:data-[slot$=-trigger]:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input **:data-[variant=destructive]:**:text-accent-foreground! **:data-[variant=destructive]:text-accent-foreground! **:focus:data-[variant=destructive]:bg-foreground/10! relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] overflow-hidden rounded-2xl shadow-xl ring data-empty:not-has-data-[slot=combobox-empty]:hidden data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none`,
           className
         )}
         {...props}
@@ -334,6 +334,5 @@ export {
   ComboboxSeparator,
   ComboboxTrigger,
   ComboboxValue,
-  // oxlint-disable-next-line react/only-export-components
   useComboboxAnchor,
 }
