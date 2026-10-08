@@ -6,7 +6,6 @@ import {
   addConstraint,
   dropConstraintStatement,
 } from '~/core/queries/constraints/shape'
-import { alterColumnStatement } from '~/core/queries/tables/alter-column-statement'
 import type { AlterColumnTarget, NewColumn } from '~/core/queries/tables/shape'
 import {
   addColumnStatement,
@@ -16,6 +15,7 @@ import {
   renameColumnStatement,
   renameTableStatement,
 } from '~/core/queries/tables/shape'
+import { alterColumnStatement } from '~/core/queries/tables/shape/alter-column'
 
 export interface TableRef {
   schema: string

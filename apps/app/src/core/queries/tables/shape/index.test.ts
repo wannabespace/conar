@@ -15,7 +15,6 @@ import {
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 
-import { alterColumnStatement } from './alter-column-statement'
 import {
   addColumnStatement,
   createTableStatement,
@@ -23,7 +22,8 @@ import {
   dropTableStatement,
   renameColumnStatement,
   renameTableStatement,
-} from './shape'
+} from '.'
+import { alterColumnStatement } from './alter-column'
 
 // The app's own cold dialects reach the browser runtime, so compiling here
 // stays on Kysely's own compilers; ClickHouse compiles through MySQL's.

@@ -8,11 +8,11 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { clickhouseColumns } from './clickhouse-columns'
-import { mssqlColumns } from './mssql-columns'
-import { mysqlColumns } from './mysql-columns'
-import { postgresColumns } from './postgres-columns'
-import type { ColumnDefinition, ColumnsFilter } from './shape'
+import type { ColumnDefinition, ColumnsFilter } from '../shape'
+import { clickhouseColumns } from './clickhouse'
+import { mssqlColumns } from './mssql'
+import { mysqlColumns } from './mysql'
+import { postgresColumns } from './postgres'
 
 export const columnType = type({
   // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.

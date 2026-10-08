@@ -3,7 +3,7 @@ import { sql } from 'kysely'
 
 import type { Database as MysqlDatabase } from '~/core/runtime/dialects/mysql/schema'
 
-import type { ColumnsFilter } from './shape'
+import type { ColumnsFilter } from '../shape'
 
 export const mysqlColumns = async (
   db: Kysely<MysqlDatabase>,

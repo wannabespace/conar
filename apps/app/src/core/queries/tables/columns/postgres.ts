@@ -3,7 +3,7 @@ import { sql } from 'kysely'
 
 import type { Database as PostgresDatabase } from '~/core/runtime/dialects/postgres/schema'
 
-import type { ColumnsFilter } from './shape'
+import type { ColumnsFilter } from '../shape'
 
 const getPgColumnType = (sqlType: string, udtName: string) => {
   if (sqlType === 'ARRAY') {

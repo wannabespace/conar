@@ -11,12 +11,12 @@ import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import { createQuery } from '~/core/runtime/query'
 
+import type { AlterColumnTarget } from './shape'
+import { renameColumnStatement } from './shape'
 import {
   alterColumnStatement,
   mysqlColumnDefinition,
-} from './alter-column-statement'
-import type { AlterColumnTarget } from './shape'
-import { renameColumnStatement } from './shape'
+} from './shape/alter-column'
 
 interface EditColumnTarget extends AlterColumnTarget {
   // Omitted leaves the stored comment alone.

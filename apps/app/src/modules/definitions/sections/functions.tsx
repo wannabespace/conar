@@ -16,8 +16,7 @@ import { dropFunctionQuery } from '~/core/queries/functions/drop'
 import type { functionsType } from '~/core/queries/functions/list'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { recreateFunctionQuery } from '~/core/queries/functions/recreate'
-import type { RoutineKind } from '~/core/queries/functions/routine-kind'
-import type { FunctionShape } from '~/core/queries/functions/shape'
+import type { FunctionShape, RoutineKind } from '~/core/queries/functions/shape'
 import {
   functionBodyTemplateOf,
   replacesRoutine,

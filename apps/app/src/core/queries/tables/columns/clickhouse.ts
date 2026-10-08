@@ -3,7 +3,7 @@ import { sql } from 'kysely'
 
 import type { Database as ClickhouseDatabase } from '~/core/runtime/dialects/clickhouse/schema'
 
-import type { ColumnsFilter } from './shape'
+import type { ColumnsFilter } from '../shape'
 
 const clickhouseEnumRegex = /^Enum\d+/u
 

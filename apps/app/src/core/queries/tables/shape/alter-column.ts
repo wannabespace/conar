@@ -2,8 +2,8 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { AlterColumnBuilder } from 'kysely'
 import { sql } from 'kysely'
 
-import type { AlterColumnTarget, Db } from './shape'
-import { clickhouseColumnType, mssqlDefaultConstraint } from './shape'
+import type { AlterColumnTarget, Db } from '.'
+import { clickhouseColumnType, mssqlDefaultConstraint } from '.'
 
 const restatedType = ({
   original,

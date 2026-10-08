@@ -76,7 +76,7 @@ Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the act
 
 ## Connection introspection queries
 
-`core/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped and **every query is its own file** (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`), each exporting one `<verb><Subject>Query`; the statement builders they share sit in `shape.ts` or a statement file beside it (`dialects.md`). A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's. Query files hold queries only: a feature that saves several objects at once (the visualizer's Apply) picks and sequences the queries in its own route code.
+`core/queries/<subject>/` — one folder per thing the UI edits, plus `shared/` for what crosses subjects. Inside a folder the subject prefix is dropped and **every query is its own file** (`list.ts`, `create.ts`, `drop.ts`, `rename.ts`, `recreate.ts`), each exporting one `<verb><Subject>Query`; the statement builders they share sit in `shape.ts`, or a `shape/` folder once it outgrows one file (`dialects.md`). A helper used by two subjects moves to `shared/`; a subject folder never imports another subject's. Query files hold queries only: a feature that saves several objects at once (the visualizer's Apply) picks and sequences the queries in its own route code.
 
 Each file is one statement, as a `createQuery` covering every dialect — what a dialect that cannot run it does is `dialects.md`. To run several queries atomically, open `transaction(queryParams)` from `runtime/query.ts` and pass its `tx` as `run`'s second argument.
 
