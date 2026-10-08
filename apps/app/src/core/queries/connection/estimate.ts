@@ -64,23 +64,19 @@ export const estimateQuery = (text: string, connectionType: ConnectionType) => {
     query: {
       clickhouse: unsupported('Row estimates'),
       mssql: unsupported('Row estimates'),
-      mysql: async (db, signal) => {
+      mysql: async (db) => {
         // Not read only: MySQL refuses even EXPLAIN of a write there.
         // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
-        const [set] = await runInTransaction(
-          db,
-          { commit: false },
-          [CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`)],
-          signal
-        )
+        const [set] = await runInTransaction(db, { commit: false }, [
+          CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`),
+        ])
         return mysqlRows(set)
       },
-      postgres: async (db, signal) => {
+      postgres: async (db) => {
         const [set] = await runInTransaction(
           db,
           { accessMode: 'read only', commit: false },
-          [CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)],
-          signal
+          [CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)]
         )
         return postgresRows.assert(set?.rows[0]?.[0])
       },

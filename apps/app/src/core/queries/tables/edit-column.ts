@@ -11,15 +11,16 @@ import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import { createQuery } from '~/core/runtime/query'
 
-import type { AlterColumnTarget } from './shape'
 import {
   alterColumnStatement,
   mysqlColumnDefinition,
-  renameColumnStatement,
-} from './shape'
+} from './alter-column-statement'
+import type { AlterColumnTarget } from './shape'
+import { renameColumnStatement } from './shape'
 
 interface EditColumnTarget extends AlterColumnTarget {
-  comment: string | null
+  // Omitted leaves the stored comment alone.
+  comment?: string | null
   newName: string
   reference?: ConstraintShape
   renamedValues: RenamedValue[]
@@ -28,8 +29,10 @@ interface EditColumnTarget extends AlterColumnTarget {
 const altered = ({ nullable, original, type }: EditColumnTarget) =>
   type !== original.type || nullable !== original.nullable
 
-const commented = ({ comment, original }: EditColumnTarget) =>
-  comment !== original.comment
+const commented = (
+  target: EditColumnTarget
+): target is EditColumnTarget & { comment: string | null } =>
+  target.comment !== undefined && target.comment !== target.original.comment
 
 // Alters under the old name first, so a failing alter leaves the column as it
 // was; the key names the new one.
@@ -146,9 +149,10 @@ export const editColumnQuery = (target: EditColumnTarget) =>
         }
       },
       mssql: async (db) => {
-        const { comment, newName, original, schema, table } = target
+        const { newName, original, schema, table } = target
         await editInSteps(ConnectionType.MSSQL, db, target)
         if (commented(target)) {
+          const { comment } = target
           const value = comment === null ? sql`` : sql`@value = ${comment}, `
           await sql`EXEC ${mssqlCommentProcedure(original.comment, comment)} @name = N'MS_Description', ${value}@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`.execute(
             db

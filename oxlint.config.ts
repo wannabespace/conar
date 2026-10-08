@@ -79,7 +79,7 @@ export default defineConfig({
           {
             allow: [...callSiteClasses, 'spacing'],
             pattern:
-              '^(InputGroupTextarea|MessageScrollerContent|MessageScrollerViewport|ResizableGroup)$',
+              '^(InputGroupTextarea|MessageScrollerContent|MessageScrollerViewport|ResizableGroup|SidebarContent|SidebarMenu)$',
           },
           { allow: [...callSiteClasses, 'divide-y'], pattern: '^Form$' },
           {

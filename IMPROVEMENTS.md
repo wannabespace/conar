@@ -16,7 +16,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
    - A Settings switch for agent-created connections: today nothing stops an agent adding one, and it always starts at Ask before writing.
    - `query` is read-only and always rolled back, so it could retry once on a dropped connection like typed catalog reads do; today the first query after a server closes an idle connection fails with "Connection lost".
    - Row estimates beyond Postgres and MySQL: SQL Server's `SHOWPLAN_XML` `EstimateRows`, ClickHouse's `EXPLAIN ESTIMATE` for the `SELECT` a mutation filters on.
-   - The weekly MCP limit is enforced on the device and only reconciled with the account when the API answers, so a device kept offline with its store file deleted starts the week again. Signing the device's count would close that without needing the network.
    - A token per client: every client shares one token, so **Connected clients** trusts the name each reports and none can be cut off alone. Per-client tokens make the list trustworthy and revocable, at the cost of a different config per client.
 3. **Impact preview before a destructive run.** The runner, and MCP's Ask before writing, could try an `UPDATE`/`DELETE` in a transaction that rolls back, show the changed rows, and require it on connections marked as prod. Only an allowlist is safe to try: one plain DML statement with no transaction-control, `INTO`, `COPY` or procedure word, since a SQL Server batch can `COMMIT` mid-statement and some statements act outside the transaction.
 4. **Undo for applied changes.** Store inverse statements when a draft is applied; offer "Undo last apply" in the query logger.
@@ -71,6 +70,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
 - **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
 - **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
+- **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
 
 ## Developer experience
 

@@ -48,9 +48,10 @@ export const describeTable: McpSource['describeTable'] = async ({
       nullable: column.isNullable,
       type: column.declaredType ?? column.typeLabel,
     })),
-    comment: catalog.schemas
-      .find((item) => item.name === schema)
-      ?.tables.find((item) => item.name === table)?.comment,
+    comment:
+      catalog.schemas
+        .find((item) => item.name === schema)
+        ?.tables.find((item) => item.name === table)?.comment ?? undefined,
     constraints: [
       ...Map.groupBy(constraints.filter(inTable), (row) => row.name),
     ].map(([name, group]) => {

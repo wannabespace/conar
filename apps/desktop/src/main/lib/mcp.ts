@@ -12,6 +12,7 @@ import {
 import { PORTS } from '@tamery/shared/constants'
 import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
@@ -33,6 +34,8 @@ const store = new Store<{
   },
   name: 'mcp',
 })
+
+const connectionAccess = () => store.get('access')
 
 let httpServer: Server | null = null
 let error: string | null = null
@@ -93,7 +96,7 @@ const startSession = async (
     },
     sessionIdGenerator: randomUUID,
   })
-  await createMcpServer(() => store.get('access')).connect(transport)
+  await createMcpServer(connectionAccess).connect(transport)
   await transport.handleRequest(req, res, body)
 }
 
@@ -129,9 +132,15 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.writeHead(401).end()
     return
   }
+  const { data: body, error: parseError } = await tryCatchAsync(() =>
+    req.method === 'POST' ? json(req) : Promise.resolve()
+  )
+  if (parseError) {
+    reject(res, 400, 'Parse error: Invalid JSON')
+    return
+  }
   const sessionId = req.headers['mcp-session-id']
   try {
-    const body = req.method === 'POST' ? await json(req) : undefined
     if (sessionId === undefined) {
       await startSession(req, res, body)
       return
@@ -182,8 +191,6 @@ const status = (): McpStatus => {
   }
   return error ? { error, state: 'failed' } : { state: 'off' }
 }
-
-const connectionAccess = () => store.get('access')
 
 const lastSeenAt = (name: string, saved: number) =>
   Math.max(

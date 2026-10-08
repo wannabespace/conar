@@ -98,6 +98,10 @@ describe('destructiveKeywords', () => {
     expect(destructiveKeywords('EXPLAIN ANALYSE DELETE FROM t', pg)).toEqual([
       'DELETE',
     ])
+    expect(
+      destructiveKeywords('EXPLAIN ("analyze") DELETE FROM t', pg)
+    ).toEqual(['DELETE'])
+    expect(writesData('EXPLAIN ("analyze") DELETE FROM t', pg)).toBe(true)
   })
 
   it('flags upserts that overwrite rows', () => {
@@ -191,6 +195,24 @@ describe('readsOnly', () => {
     expect(readsOnly("SELECT 1 EXEC('DROP TABLE users')", mssql)).toBe(false)
     expect(readsOnly('EXPLAIN ANALYZE DELETE FROM users', pg)).toBe(false)
     expect(readsOnly('EXPLAIN ANALYSE DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('EXPLAIN DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('SHOW DELETE FROM t', mysql)).toBe(false)
+  })
+
+  it('rejects a SQL Server batch that opens with a procedure call', () => {
+    for (const text of [
+      'EXPLAIN 1 DELETE FROM t COMMIT',
+      'EXPLAIN 1 SHUTDOWN',
+      'EXPLAIN 1 KILL 55',
+      'SHOW KILL 55',
+      'SHOW SHUTDOWN WITH NOWAIT',
+      'SHOW DELETE FROM t',
+      'SHOW DROP TABLE t',
+      'EXPLAIN SELECT 1',
+      'SHOW TABLES',
+    ]) {
+      expect(readsOnly(text, mssql)).toBe(false)
+    }
   })
 
   it('rejects a write after a SQL Server setting that ends in ON', () => {

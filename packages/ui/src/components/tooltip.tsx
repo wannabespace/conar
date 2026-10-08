@@ -27,16 +27,6 @@ const ShortcutContext = createContext<{
   shortcut: ReactNode
 }>(noShortcut)
 
-const isOnTop = (element: HTMLElement | null) => {
-  if (!element) {
-    return false
-  }
-  const { left, top, width, height } = element.getBoundingClientRect()
-  return element.contains(
-    document.elementFromPoint(left + width / 2, top + height / 2)
-  )
-}
-
 const ShortcutTooltip = ({
   onOpenChange,
   onOpenChangeComplete,
@@ -46,8 +36,7 @@ const ShortcutTooltip = ({
 }: TooltipPrimitive.Root.Props & { shortcut: ReactNode }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [trigger, setTrigger] = useState<HTMLElement | null>(null)
-  // A control under an open menu or dialog keeps its hint hidden, or it paints over the overlay.
-  const isRevealed = useShortcutReveal() && isOnTop(trigger)
+  const isRevealed = useShortcutReveal(trigger)
   // A hint ⌘ opened stays glyph-only through its exit animation, or releasing ⌘ flashes the full label.
   const [isClosingReveal, setIsClosingReveal] = useState(false)
   const isOpenByReveal = isRevealed && !isHovered

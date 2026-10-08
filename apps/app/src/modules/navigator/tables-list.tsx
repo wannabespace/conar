@@ -6,6 +6,13 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
+import {
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+} from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
@@ -15,13 +22,6 @@ import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from '~/components/sidebar'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
@@ -237,7 +237,7 @@ export const TablesList = ({
       return (
         <div className="pt-4">
           <SidebarMenuButton
-            className="text-muted-foreground"
+            variant="muted"
             onClick={() => createSchemaDialogRef.current?.create()}
           >
             <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />

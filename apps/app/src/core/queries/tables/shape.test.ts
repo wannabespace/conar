@@ -15,9 +15,9 @@ import {
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 
+import { alterColumnStatement } from './alter-column-statement'
 import {
   addColumnStatement,
-  alterColumnStatement,
   createTableStatement,
   dropColumnStatement,
   dropTableStatement,

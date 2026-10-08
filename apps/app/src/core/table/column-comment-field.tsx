@@ -10,13 +10,13 @@ export const CommentField = ({
   value,
 }: {
   onValueChange: (value: string) => void
-  value: string
+  value: string | null
 }) => (
   <Field>
     <FieldLabel htmlFor="column-dialog-comment">Comment</FieldLabel>
     <Textarea
       id="column-dialog-comment"
-      value={value}
+      value={value ?? ''}
       onChange={(e) => onValueChange(e.target.value)}
       data-mask
     />

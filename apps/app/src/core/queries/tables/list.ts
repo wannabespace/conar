@@ -220,7 +220,7 @@ export const resourceTablesAndSchemasQueryOptions = ({
               ? []
               : [
                   {
-                    comment: table.comment ?? undefined,
+                    comment: table.comment,
                     name: table.table,
                     rowLevelSecurity: table.rowLevelSecurity,
                     type: table.type,

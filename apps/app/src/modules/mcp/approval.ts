@@ -6,6 +6,8 @@ import { estimateQuery } from '~/core/queries/connection/estimate'
 import type { QueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 
+import { mcp } from './electron-mcp'
+
 interface Approval {
   connection: Connection
   decide: (approved: boolean) => void
@@ -71,7 +73,7 @@ const request = async ({
       { connection, decide: decision.resolve, id, resourceName, sql },
     ],
   }))
-  void window.electron?.mcp.notify({
+  void mcp.notify({
     body: 'Review the statement in Tamery to run or decline it.',
     title: `An agent wants to change ${connection.name}`,
   })

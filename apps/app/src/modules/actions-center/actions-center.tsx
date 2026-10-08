@@ -8,7 +8,6 @@ import {
   Moon02Icon,
   Refresh01Icon,
   Search01Icon,
-  Settings02Icon,
   Sun03Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -45,7 +44,6 @@ import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { settingsSections } from '~/core/settings/sections'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
@@ -57,6 +55,7 @@ import { posthog } from '~/lib/posthog'
 import { protectedModules } from '~/lib/protected-modules'
 
 import { actionCenterOpen } from './action-center-open'
+import { settingsCommands } from './settings-commands'
 
 const REFRESH_SHORTCUT_LETTER = window.electron ? 'R' : undefined
 
@@ -377,25 +376,7 @@ export const ActionsCenter = () => {
     },
     {
       entries: [
-        ...entriesIn('Application'),
-        actionEntry(
-          'Settings',
-          ['preferences', 'options', 'general'],
-          Settings02Icon,
-          () => router.navigate({ to: '/settings' }),
-          ','
-        ),
-        // Bare Settings opens the first section, so it has no entry of its own.
-        ...settingsSections()
-          .slice(1)
-          .map(({ icon, label, to }) =>
-            actionEntry(
-              `${label} settings`,
-              ['settings', 'preferences', 'options'],
-              icon,
-              () => router.navigate({ to })
-            )
-          ),
+        ...entriesIn('Application', settingsCommands(router)),
         actionEntry(
           'Reload window',
           ['restart', 'refresh'],

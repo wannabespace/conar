@@ -17,8 +17,7 @@ interface TransactionOptions {
 export const runInTransaction = async <DB>(
   db: Kysely<DB>,
   { accessMode, commit, isolationLevel }: TransactionOptions,
-  compiled: CompiledQuery[],
-  signal?: AbortSignal
+  compiled: CompiledQuery[]
 ) => {
   let begin = db.startTransaction()
   if (accessMode) {
@@ -31,13 +30,10 @@ export const runInTransaction = async <DB>(
   try {
     const sets: ResultSet[] = []
     for (const query of compiled) {
-      // A Stop can land between statements, where there is nothing to cancel: never reach COMMIT after it.
-      signal?.throwIfAborted()
       // Sequential by design: the statements run in order inside one transaction.
       // oxlint-disable-next-line no-await-in-loop
       sets.push(...resultSetsType.assert(await trx.executeQuery(query)))
     }
-    signal?.throwIfAborted()
     await (commit ? trx.commit() : trx.rollback()).execute()
     return sets
   } catch (error) {
@@ -50,12 +46,11 @@ export const transactionQuery = ({
   statements,
   ...options
 }: TransactionOptions & { statements: string[] }) => {
-  const run = <DB>(db: Kysely<DB>, signal?: AbortSignal) =>
+  const run = <DB>(db: Kysely<DB>) =>
     runInTransaction(
       db,
       options,
-      statements.map((statement) => CompiledQuery.raw(statement)),
-      signal
+      statements.map((statement) => CompiledQuery.raw(statement))
     )
 
   return createQuery<Type<ResultSet[]>>({

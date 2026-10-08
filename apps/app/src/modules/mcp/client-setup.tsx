@@ -2,12 +2,14 @@ import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
+import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@tamery/ui/components/tabs'
+import { cn } from '@tamery/ui/lib/utils'
 
 import { SettingsGroup } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
@@ -19,7 +21,7 @@ import { CopyValue } from './copy-value'
 export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
     <Tabs defaultValue={MCP_CLIENTS[0]?.id}>
-      <div className="px-3.5 pt-3.5">
+      <div className={cn(smallItemInsetClassName, 'pt-3.5')}>
         <TabsList className="w-full">
           {MCP_CLIENTS.map(({ id, label }) => (
             <TabsTrigger key={id} value={id}>
@@ -34,7 +36,12 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
 
         return (
           <TabsContent key={client.id} value={client.id}>
-            <div className="flex min-h-12 items-center gap-2 px-3.5 py-3">
+            <div
+              className={cn(
+                smallItemInsetClassName,
+                'flex min-h-12 items-center gap-2 py-3'
+              )}
+            >
               <p className="text-muted-foreground min-w-0 flex-1 truncate">
                 {client.instruction}{' '}
                 {client.file && (

@@ -1,6 +1,6 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { PermixProvider } from 'permix/react'
 import { useEffect } from 'react'
 
@@ -18,13 +18,15 @@ import { subscriptionQueryClient } from '~/lib/query-client'
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 const ProtectedLayout = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   usePermissionsSync()
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
 
   useHotkey('Mod+,', () => {
-    void navigate({ to: '/settings' })
+    if (!router.matchRoute({ to: '/settings' }, { fuzzy: true })) {
+      void router.navigate({ to: '/settings' })
+    }
   })
 
   useEffect(() => {

@@ -105,8 +105,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
     [D in ConnectionType]: (
-      dialect: ReturnType<(typeof dialects)[D]>,
-      signal?: AbortSignal
+      dialect: ReturnType<(typeof dialects)[D]>
     ) => Promise<T extends Type ? T['inferIn'] : unknown>
   }
 }) => {
@@ -177,7 +176,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
           }
 
           // oxlint-disable-next-line ts/no-explicit-any
-          return queryFn(instance as any, queryParams.signal)
+          return queryFn(instance as any)
         },
       },
       {

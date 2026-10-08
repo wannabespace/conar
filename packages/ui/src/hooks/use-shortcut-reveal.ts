@@ -13,7 +13,7 @@ export const shortcutRevealStore = createWebStorageValue({
   type: 'localStorage',
 })
 
-export const useShortcutReveal = () => {
+export const useShortcutReveal = (trigger: HTMLElement | null) => {
   const isEnabled = useSubscription(shortcutRevealStore)
   const isHeld = useKeyHold(
     navigator.userAgent.includes('Mac') ? 'Meta' : 'Control'
@@ -21,11 +21,18 @@ export const useShortcutReveal = () => {
   const [heldLongEnough, setHeldLongEnough] = useState(false)
 
   useEffect(() => {
-    if (!isHeld) {
+    if (!isHeld || !trigger) {
       return
     }
-    const timeout = setTimeout(() => setHeldLongEnough(true), REVEAL_DELAY_MS)
-    // Hints hit-test their trigger only when they render, so a shortcut pressed mid-hold ends the reveal: the dialog or menu it opens would sit under hints nothing re-checks.
+    // The trigger is hit-tested once, as the reveal starts, so a hint never paints over a menu or dialog covering it. A shortcut pressed mid-hold therefore ends the reveal: the dialog or menu it opens would sit under hints nothing re-checks.
+    const timeout = setTimeout(() => {
+      const { left, top, width, height } = trigger.getBoundingClientRect()
+      setHeldLongEnough(
+        trigger.contains(
+          document.elementFromPoint(left + width / 2, top + height / 2)
+        )
+      )
+    }, REVEAL_DELAY_MS)
     const combo = getKeyStateTracker().store.subscribe(({ heldKeys }) => {
       if (heldKeys.length > 1) {
         clearTimeout(timeout)
@@ -37,7 +44,7 @@ export const useShortcutReveal = () => {
       combo.unsubscribe()
       setHeldLongEnough(false)
     }
-  }, [isHeld])
+  }, [isHeld, trigger])
 
   return isEnabled && isHeld && heldLongEnough
 }

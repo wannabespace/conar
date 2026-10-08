@@ -23,33 +23,18 @@ import { useState } from 'react'
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
-import type {
-  ColumnDefinition,
-  DraftState,
-  NewColumn,
-} from '~/core/queries/tables/shape'
 
 import { CommentField } from './column-comment-field'
 import { ReferenceField } from './column-reference-field'
 import { TypeField } from './column-type-field'
+import type {
+  EditableColumn,
+  EditableTable,
+  SubmittedColumn,
+} from './submitted-column'
+import { changed, errorsOf, normalized } from './submitted-column'
 import { useColumnType } from './use-column-type'
 import type { ColumnReference, ReferenceTarget } from './use-reference-targets'
-
-interface EditableColumn extends NewColumn {
-  foreign: boolean
-  // Name in the database; differs from `name` while a rename is pending.
-  id: string
-  original: Pick<ColumnDefinition, 'comment'>
-  state?: DraftState
-}
-
-interface EditableTable {
-  columns: Pick<EditableColumn, 'id' | 'name'>[]
-  name: string
-  state?: DraftState
-}
-
-export type SubmittedColumn = NewColumn & { comment: string | null }
 
 export interface ColumnDialogRequest<
   Table extends EditableTable = EditableTable,
@@ -62,65 +47,6 @@ export interface ColumnDialogRequest<
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
-
-const changed = (
-  column: EditableColumn | null,
-  next: SubmittedColumn,
-  reference: ReferenceTarget | null
-) =>
-  column === null ||
-  reference !== null ||
-  next.name !== column.name ||
-  next.type !== column.type ||
-  next.nullable !== column.nullable ||
-  next.comment !== column.original.comment
-
-const commentOf = (column: EditableColumn | null) =>
-  column?.original.comment ?? ''
-
-const normalized = ({
-  comment,
-  name,
-  nullable,
-  primaryKey,
-  type,
-}: SubmittedColumn): SubmittedColumn => ({
-  comment: comment?.trim() || null,
-  name: name.trim(),
-  nullable: primaryKey ? false : nullable,
-  primaryKey,
-  type,
-})
-
-const errorsOf = (
-  { column, table }: ColumnDialogRequest,
-  next: NewColumn,
-  enumValues: string[] | null,
-  submitted: boolean
-) => {
-  const nameBecomesId = column === null || column.state === 'added'
-  const taken = table.columns.some(
-    (other) =>
-      other.id !== column?.id &&
-      (other.name === next.name || (nameBecomesId && other.id === next.name))
-  )
-  const missingName = submitted ? 'Give the column a name.' : undefined
-  const missingValues =
-    submitted && enumValues?.length === 0
-      ? 'Add at least one value.'
-      : undefined
-  return {
-    name: next.name
-      ? taken && 'This table already has a column with this name'
-      : missingName,
-    type:
-      submitted && !next.type ? "Pick or write the column's type." : undefined,
-    values:
-      enumValues && new Set(enumValues).size < enumValues.length
-        ? 'Each value must be unique.'
-        : missingValues,
-  }
-}
 
 const lockedFields = (
   connectionType: ConnectionType,
@@ -135,12 +61,10 @@ const lockedFields = (
 }
 
 const ColumnForm = ({
-  commentable,
   onSubmit,
   pending,
   request,
 }: {
-  commentable: boolean
   onSubmit: (
     column: SubmittedColumn,
     reference: ColumnReference | null,
@@ -165,10 +89,10 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
-  const [comment, setComment] = useState(commentOf(column))
+  const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
   const locked = lockedFields(connection.type, column)
-  const next = normalized({
+  const next = normalized(column, {
     comment,
     name,
     nullable,
@@ -233,7 +157,7 @@ const ColumnForm = ({
             }
           }}
         />
-        {commentable && (
+        {comment !== undefined && (
           <CommentField value={comment} onValueChange={setComment} />
         )}
         {column === null && table.state === 'added' && (
@@ -300,13 +224,11 @@ export const ColumnDialog = <
   Table extends EditableTable,
   Column extends EditableColumn,
 >({
-  commentable = false,
   onOpenChange,
   onSubmit,
   pending = false,
   request,
 }: {
-  commentable?: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: ColumnDialogRequest<Table, Column>,
@@ -328,7 +250,6 @@ export const ColumnDialog = <
         {shown && (
           <ColumnForm
             key={`${shown.table.name}:${shown.column?.id ?? ''}`}
-            commentable={commentable && shown.column !== null}
             pending={pending}
             request={shown}
             onSubmit={(column, reference, renamedValues) =>

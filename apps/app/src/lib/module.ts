@@ -1,6 +1,5 @@
 import type { IconSvgElement } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { LinkProps } from '@tanstack/react-router'
 import type { ComponentType, ReactNode } from 'react'
 import type { Readable, Subscribable, Writable } from 'seitu'
 
@@ -110,12 +109,13 @@ export interface AppModule {
   tabs?: TabKind[]
 }
 
-/** A sidebar entry; its page is a route file under `routes/_protected/settings/`. */
+/** A Settings page, served at `/settings/<slug>` by the `$section` route. */
 export interface SettingsSection {
+  component: ComponentType
   icon: IconSvgElement
   label: string
   order: number
-  to: LinkProps['to']
+  slug: string
 }
 
 /** `modules/<name>/protected.tsx` — loaded with the signed-in layout. */

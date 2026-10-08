@@ -234,6 +234,8 @@ export const createKyselyDriver = (
       if (!state?.txId) {
         return
       }
+      // A Stop after the last statement has nothing left to cancel: never COMMIT after it.
+      options.signal?.throwIfAborted()
       await provider.commitTransaction({ txId: state.txId })
       state.txId = null
     },

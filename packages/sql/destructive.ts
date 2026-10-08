@@ -6,26 +6,31 @@ import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
 const RUNNING_EXPLAIN_OPTIONS = new Set(['ANALYSE', 'ANALYZE'])
 
-// EXPLAIN only plans the statement; EXPLAIN ANALYZE runs it.
+// EXPLAIN only plans the statement; EXPLAIN ANALYZE runs it. Never a read-only admission: SQL Server runs `EXPLAIN 1 DELETE FROM t` as a procedure call, then the DELETE.
 const isPlanOnlyExplain = ({ tokens }: Statement) =>
   isKeyword(tokens[0], 'EXPLAIN') &&
-  !tokens.some((token) => RUNNING_EXPLAIN_OPTIONS.has(token.text.toUpperCase()))
+  !tokens.some((token) =>
+    RUNNING_EXPLAIN_OPTIONS.has(identifierName(token).toUpperCase())
+  )
 
 const showsDefinition = (words: string[], index: number) =>
-  index === 1 && words[0] === 'SHOW'
+  index === 1 && words[0] === 'SHOW' && words[1] === 'CREATE'
 
 const REFERENTIAL_ACTIONS = new Set(['CASCADE', 'NO', 'RESTRICT', 'SET'])
 
 /** `FOR [NO KEY] UPDATE` locks rows, `ON UPDATE` names a referential action, a column's `ON UPDATE CURRENT_TIMESTAMP` or a rule's event, `SHOW CREATE` prints a definition. */
-const namesWithoutRunning =
-  (dialect: DialectSpec) => (words: string[], index: number) =>
-    words[index - 1] === 'FOR' ||
-    (words[index - 1] === 'ON' &&
-      // SQL Server runs `SET NOCOUNT ON DELETE FROM t` as a setting and a DELETE.
-      (!dialect.separatorFreeStatements ||
-        REFERENTIAL_ACTIONS.has(words[index + 1] ?? ''))) ||
-    (words[index - 3] === 'FOR' && words[index - 2] === 'NO') ||
-    showsDefinition(words, index)
+const namesWithoutRunning = (
+  words: string[],
+  index: number,
+  dialect: DialectSpec
+) =>
+  words[index - 1] === 'FOR' ||
+  (words[index - 1] === 'ON' &&
+    // SQL Server runs `SET NOCOUNT ON DELETE FROM t` as a setting and a DELETE.
+    (!dialect.separatorFreeStatements ||
+      REFERENTIAL_ACTIONS.has(words[index + 1] ?? ''))) ||
+  (words[index - 3] === 'FOR' && words[index - 2] === 'NO') ||
+  showsDefinition(words, index)
 
 const DESTRUCTIVE = new Set([
   'ALTER',
@@ -40,28 +45,6 @@ const DESTRUCTIVE = new Set([
 
 // A body the tokenizer sees as one string (`DO $$ … $$`, `EXEC 'DROP …'`) or a procedure could drop anything.
 const DYNAMIC_SQL_COMMANDS = new Set(['CALL', 'DO', 'EXEC', 'EXECUTE'])
-
-const runningWords = (
-  statement: Statement,
-  keywords: Set<string>,
-  isCommand: (token: Token | undefined, index: number) => boolean,
-  isExempt: (words: string[], index: number) => boolean
-) => {
-  const words = statement.tokens.map((token) => token.text.toUpperCase())
-  if (
-    isPlanOnlyExplain(statement) ||
-    ['GRANT', 'REVOKE'].includes(words[0] ?? '')
-  ) {
-    return []
-  }
-  return words.filter(
-    (word, index) =>
-      (index === 0 && DYNAMIC_SQL_COMMANDS.has(word)) ||
-      (keywords.has(word) &&
-        isCommand(statement.tokens[index], index) &&
-        !isExempt(words, index))
-  )
-}
 
 const DDL_KEYWORDS = new Set(['ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE'])
 
@@ -80,15 +63,23 @@ const keywordsRun = (
   text: string,
   dialect: DialectSpec
 ) =>
-  splitStatements(text, dialect).flatMap((statement) =>
-    runningWords(
-      statement,
-      keywords,
-      // A first word counts whatever it tokenized as: MySQL's `REPLACE INTO` and `MERGE` are not keywords in every dialect's list.
-      (token, index) => token?.kind === 'keyword' || index === 0,
-      namesWithoutRunning(dialect)
+  splitStatements(text, dialect).flatMap((statement) => {
+    const words = statement.tokens.map((token) => token.text.toUpperCase())
+    if (
+      isPlanOnlyExplain(statement) ||
+      ['GRANT', 'REVOKE'].includes(words[0] ?? '')
+    ) {
+      return []
+    }
+    return words.filter(
+      (word, index) =>
+        (index === 0 && DYNAMIC_SQL_COMMANDS.has(word)) ||
+        (keywords.has(word) &&
+          // A first word counts whatever it tokenized as: MySQL's `REPLACE INTO` and `MERGE` are not keywords in every dialect's list.
+          (statement.tokens[index]?.kind === 'keyword' || index === 0) &&
+          !namesWithoutRunning(words, index, dialect))
     )
-  )
+  })
 
 /** Additive writes (INSERT, CREATE) are left out on purpose. */
 export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
@@ -116,6 +107,9 @@ const READ_COMMANDS = new Set([
   'VALUES',
   'WITH',
 ])
+
+// SQL Server has no EXPLAIN, SHOW, DESCRIBE, TABLE or VALUES statement: a batch's first bare word runs as a procedure.
+const SQL_SERVER_READ_COMMANDS = new Set(['SELECT', 'WITH'])
 
 // Most commands are not keywords in any dialect's list, so a bare word counts too.
 const isWord = (token: Token | undefined) =>
@@ -157,25 +151,6 @@ const SESSION_COMMANDS = new Set([
 const SIDE_EFFECT_FUNCTION =
   /^(?:DBLINK\w*|GET_LOCK|OPEN(?:DATASOURCE|QUERY|ROWSET)|PG_(?:CANCEL|TERMINATE)_BACKEND|PG_(?:TRY_)?ADVISORY_LOCK(?:_SHARED)?)$/u
 
-// `NEXT VALUE FOR` (SQL Server, MariaDB) advances a sequence, which no rollback undoes; `FETCH NEXT … ROWS` is paging.
-const outlivesRollback = ({ tokens }: Statement, dialect: DialectSpec) => {
-  const words = tokens.filter(isWord).map((token) => token.text.toUpperCase())
-  return (
-    words.some(
-      (word, index) =>
-        (dialect.separatorFreeStatements && SESSION_COMMANDS.has(word)) ||
-        (word === 'NEXT' &&
-          words[index + 1] === 'VALUE' &&
-          words[index + 2] === 'FOR')
-    ) ||
-    tokens.some(
-      (token, index) =>
-        isPunctuation(tokens[index + 1], '(') &&
-        SIDE_EFFECT_FUNCTION.test(identifierName(token).toUpperCase())
-    )
-  )
-}
-
 // MySQL and MariaDB run `/*! … */` and `/*M! … */` as SQL; the tokenizer reads them as comments.
 const isExecutableComment = (token: Token) =>
   token.kind === 'comment' &&
@@ -184,13 +159,31 @@ const isExecutableComment = (token: Token) =>
 export const readsOnly = (text: string, dialect: DialectSpec) => {
   const { tokens } = tokenize(text, dialect)
   const [statement, ...rest] = statementsFromTokens(text, tokens, dialect)
+  if (!statement || rest.length > 0) {
+    return false
+  }
+  const words = statement.tokens
+    .filter(isWord)
+    .map((token) => token.text.toUpperCase())
   return (
-    !!statement &&
-    rest.length === 0 &&
-    READ_COMMANDS.has(statement.tokens[0]?.text.toUpperCase() ?? '') &&
-    runningWords(statement, WRITES_INSIDE_READ, isWord, showsDefinition)
-      .length === 0 &&
-    !outlivesRollback(statement, dialect) &&
+    (dialect.separatorFreeStatements
+      ? SQL_SERVER_READ_COMMANDS
+      : READ_COMMANDS
+    ).has(statement.tokens[0]?.text.toUpperCase() ?? '') &&
+    !words.some(
+      (word, index) =>
+        (WRITES_INSIDE_READ.has(word) && !showsDefinition(words, index)) ||
+        (dialect.separatorFreeStatements && SESSION_COMMANDS.has(word)) ||
+        // `NEXT VALUE FOR` (SQL Server, MariaDB) advances a sequence, which no rollback undoes; `FETCH NEXT … ROWS` is paging.
+        (word === 'NEXT' &&
+          words[index + 1] === 'VALUE' &&
+          words[index + 2] === 'FOR')
+    ) &&
+    !statement.tokens.some(
+      (token, index) =>
+        isPunctuation(statement.tokens[index + 1], '(') &&
+        SIDE_EFFECT_FUNCTION.test(identifierName(token).toUpperCase())
+    ) &&
     !tokens.some(isExecutableComment)
   )
 }

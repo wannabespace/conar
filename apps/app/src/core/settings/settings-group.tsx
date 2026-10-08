@@ -3,6 +3,7 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
+  smallItemInsetClassName,
   ItemTitle,
 } from '@tamery/ui/components/item'
 import { cn } from '@tamery/ui/lib/utils'
@@ -19,7 +20,12 @@ export const SettingsGroup = ({
 }) => (
   <section className="flex flex-col gap-2">
     {title && (
-      <h2 className="text-muted-foreground px-3.5 text-xs font-medium">
+      <h2
+        className={cn(
+          smallItemInsetClassName,
+          'text-muted-foreground text-xs font-medium'
+        )}
+      >
         {title}
       </h2>
     )}

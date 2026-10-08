@@ -1,5 +1,6 @@
 import type { HighlightOptions } from '@streamdown/code'
 import { code as highlighter } from '@streamdown/code'
+import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
@@ -86,7 +87,7 @@ const codeBlockVariants = cva('scrollbar-thin overflow-auto px-2 font-mono', {
   },
   variants: {
     padding: {
-      item: 'px-3.5 py-3',
+      item: `${smallItemInsetClassName} py-3`,
       popup: 'px-3 py-2.5',
     },
     size: {

@@ -1,5 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { AlterColumnBuilder, CreateTableBuilder, Kysely } from 'kysely'
+import type { CreateTableBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import {
@@ -26,6 +26,8 @@ export interface ColumnDefinition {
   type: string
 }
 
+export type ColumnsFilter = { schema: string; table: string } | null
+
 interface TableTarget {
   schema: string
   table: string
@@ -42,7 +44,7 @@ export interface AlterColumnTarget extends ColumnTarget {
 }
 
 // oxlint-disable-next-line ts/no-explicit-any
-type Db = Kysely<any>
+export type Db = Kysely<any>
 
 const LOW_CARDINALITY = 'LowCardinality('
 
@@ -50,7 +52,7 @@ const clickhouseNeverNullableRegex = /^(?:Array|Map|Tuple)\(/u
 
 // ClickHouse spells nullability as a type wrapper, never as a NULL keyword,
 // and it has to sit inside LowCardinality. Array, Map and Tuple reject it.
-const clickhouseColumnType = ({
+export const clickhouseColumnType = ({
   nullable,
   type: columnType,
 }: Pick<NewColumn, 'nullable' | 'type'>) => {
@@ -172,7 +174,11 @@ export const addColumnStatement = (
 
 // SQL Server refuses to drop or retype a column a DEFAULT constraint depends on
 // (Msg 5074), and only the catalog knows that constraint's name.
-const mssqlDefaultConstraint = ({ column, schema, table }: ColumnTarget) => {
+export const mssqlDefaultConstraint = ({
+  column,
+  schema,
+  table,
+}: ColumnTarget) => {
   const qualified = mssqlQualified(schema, table)
 
   return {
@@ -230,80 +236,5 @@ export const renameColumnStatement = (
     .withSchema(schema)
     .schema.alterTable(table)
     .renameColumn(column, newName)
-    .compile()
-}
-
-export const restatedType = ({
-  original,
-  type: columnType,
-}: Pick<AlterColumnTarget, 'original' | 'type'>) => {
-  const kept = [
-    columnType === original.type &&
-      original.collation &&
-      `COLLATE ${original.collation}`,
-    original.attributes,
-  ]
-    .filter(Boolean)
-    .join(' ')
-  return sql.raw(kept ? `${columnType} ${kept}` : columnType)
-}
-
-// MySQL drops the comment on a MODIFY or CHANGE COLUMN that does not restate it.
-export const mysqlColumnDefinition = (
-  target: Pick<AlterColumnTarget, 'original' | 'type'>,
-  comment: string | null
-) =>
-  sql`${restatedType(target)}${comment ? sql` COMMENT ${sql.lit(comment)}` : sql``}`
-
-export const alterColumnStatement = (
-  dialectType: ConnectionType,
-  db: Db,
-  target: AlterColumnTarget
-) => {
-  const { column, nullable, original, schema, table, type: columnType } = target
-  const retyped = columnType !== original.type
-  const alter = db.withSchema(schema).schema.alterTable(table)
-
-  if (dialectType === ConnectionType.ClickHouse) {
-    return alter
-      .modifyColumn(
-        column,
-        sql.raw(clickhouseColumnType({ nullable, type: columnType }))
-      )
-      .compile()
-  }
-
-  if (dialectType === ConnectionType.Postgres) {
-    const nullability = (builder: AlterColumnBuilder) =>
-      nullable ? builder.dropNotNull() : builder.setNotNull()
-
-    if (!retyped) {
-      return alter.alterColumn(column, nullability).compile()
-    }
-
-    const newType = sql.raw(columnType)
-    return alter
-      .alterColumn(column, (builder) =>
-        builder.setDataType(sql`${newType} USING ${sql.id(column)}::${newType}`)
-      )
-      .alterColumn(column, nullability)
-      .compile()
-  }
-
-  if (dialectType === ConnectionType.MSSQL) {
-    const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${restatedType(target)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
-    if (!retyped) {
-      return statement.compile(db)
-    }
-    const { drop, restore } = mssqlDefaultConstraint(target)
-    return sql`${drop}${statement}${restore}`.compile(db)
-  }
-
-  return alter
-    .modifyColumn(
-      column,
-      mysqlColumnDefinition(target, original.comment),
-      (builder) => (nullable ? builder : builder.notNull())
-    )
     .compile()
 }

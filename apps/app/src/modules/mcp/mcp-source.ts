@@ -24,6 +24,7 @@ import { posthog } from '~/lib/posthog'
 
 import { approval } from './approval'
 import { describeTable } from './describe-table'
+import { mcp } from './electron-mcp'
 import {
   resourcesOf,
   fetchForAgent,
@@ -104,7 +105,7 @@ export const mcpSource: McpSource = {
       connection_type: type,
       sync_type: syncType,
     })
-    void window.electron?.mcp.notify({
+    void mcp.notify({
       body: name,
       title: 'An agent created a connection',
     })
@@ -140,7 +141,7 @@ export const mcpSource: McpSource = {
       refreshAfterRun(resource, connection.type, sql)
     }
     if (!approve) {
-      void window.electron?.mcp.notify({
+      void mcp.notify({
         body: sql,
         title: `An agent changed ${connection.name}`,
       })
@@ -169,13 +170,13 @@ export const mcpSource: McpSource = {
   },
   tables: async ({ schema, ...target }) => {
     const { connection, resource } = resolveResource(target)
+    const { schemas } = await fetchForAgent(
+      resourceTablesAndSchemasQueryOptions({ connectionResource: resource })
+    )
     posthog.capture('mcp_tables_listed', {
       connection_type: connection.type,
       filtered: !!schema,
     })
-    const { schemas } = await fetchForAgent(
-      resourceTablesAndSchemasQueryOptions({ connectionResource: resource })
-    )
     if (!schema) {
       return { schemas }
     }

@@ -1,13 +1,13 @@
 import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
 import { Switch } from '@tamery/ui/components/switch'
 import { shortcutRevealStore } from '@tamery/ui/hooks/use-shortcut-reveal'
-import { createFileRoute } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
 
-const GeneralSettings = () => {
+import { SettingsGroup, SettingsRow } from './settings-group'
+
+export const GeneralSettings = () => {
   const isShortcutRevealOn = useSubscription(shortcutRevealStore)
 
   return (
@@ -35,7 +35,3 @@ const GeneralSettings = () => {
     </SettingsGroup>
   )
 }
-
-export const Route = createFileRoute('/_protected/settings/general')({
-  component: GeneralSettings,
-})

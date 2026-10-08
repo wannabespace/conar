@@ -1,7 +1,7 @@
 import { File01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
   TooltipContent,
@@ -24,11 +24,8 @@ export const QueryLoggerToggle = () => {
     >
       <TooltipTrigger
         render={
-          <Button
-            variant="ghost-row"
-            size="row"
+          <SidebarMenuButton
             aria-pressed={loggerOpened}
-            className="w-full justify-start"
             onClick={() => toggleLogger(resourceId)}
           />
         }

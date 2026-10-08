@@ -3,25 +3,51 @@ import { FREE_WEEKLY_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 
 import { redis } from './redis'
 
+const unlimitedPermission = {
+  filters: 'ai.filter.unlimited',
+  mcp: 'mcp.unlimited',
+} as const satisfies Record<MeteredFeature, string>
+
+interface UsageContext {
+  permissions: {
+    check: (path: (typeof unlimitedPermission)[MeteredFeature]) => boolean
+  }
+  user: { id: string }
+}
+
 const keyOf = (userId: string, feature: MeteredFeature, resetsAt: number) =>
   `usage:${userId}:${feature}:${resetsAt}`
 
-export const getUsage = async (userId: string, feature: MeteredFeature) =>
-  Number((await redis.get(keyOf(userId, feature, usageResetsAt()))) ?? 0)
-
-export const recordUsage = async (userId: string, feature: MeteredFeature) => {
-  const resetsAt = usageResetsAt()
-  const key = keyOf(userId, feature, resetsAt)
-  const [used] = await redis
-    .multi()
-    .incr(key)
-    .expireAt(key, new Date(resetsAt))
-    .exec()
-  return Number(used)
-}
-
-export const quotaOf = (feature: MeteredFeature, used: number) => ({
+const quotaOf = (feature: MeteredFeature, used: number) => ({
   max: FREE_WEEKLY_LIMITS[feature],
   resetAt: new Date(usageResetsAt()),
   used,
 })
+
+export const usage = {
+  get: async ({ permissions, user }: UsageContext, feature: MeteredFeature) =>
+    permissions.check(unlimitedPermission[feature])
+      ? null
+      : quotaOf(
+          feature,
+          Number(
+            (await redis.get(keyOf(user.id, feature, usageResetsAt()))) ?? 0
+          )
+        ),
+  record: async (
+    { permissions, user }: UsageContext,
+    feature: MeteredFeature
+  ) => {
+    if (permissions.check(unlimitedPermission[feature])) {
+      return null
+    }
+    const resetsAt = usageResetsAt()
+    const key = keyOf(user.id, feature, resetsAt)
+    const [used] = await redis
+      .multi()
+      .incr(key)
+      .expireAt(key, new Date(resetsAt))
+      .exec()
+    return quotaOf(feature, Number(used))
+  },
+}

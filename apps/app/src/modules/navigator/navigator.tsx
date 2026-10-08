@@ -1,8 +1,8 @@
 import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
   TooltipContent,
@@ -106,11 +106,8 @@ const NavigatorFooter = () => {
   return (
     <div className="flex shrink-0 flex-col gap-0.5 pt-1.5 pb-0.5 pl-2">
       {appModules.newTabActions.map((action) => (
-        <Button
+        <SidebarMenuButton
           key={action.label}
-          variant="ghost-row"
-          size="row"
-          className="w-full justify-start"
           {...pressNavProps(() =>
             router.navigate({
               params: {
@@ -124,10 +121,10 @@ const NavigatorFooter = () => {
           <HugeiconsIcon
             icon={PlusSignIcon}
             strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
+            className="text-muted-foreground"
           />
           {action.label}
-        </Button>
+        </SidebarMenuButton>
       ))}
       {workspaceModules.navigatorFooter.map(({ Component }, index) => (
         <Component key={index} />

@@ -29,6 +29,8 @@ const ItemSeparator = ({
   />
 )
 
+const smallItemInsetClassName = 'px-3.5'
+
 const itemVariants = cva(
   `group/item focus-visible:focus-ring [a]:hover:bg-accent flex w-full flex-wrap items-center rounded-2xl border text-sm transition-colors duration-100 outline-none [a]:transition-colors`,
   {
@@ -39,7 +41,7 @@ const itemVariants = cva(
     variants: {
       size: {
         default: 'gap-3.5 px-4 py-3.5',
-        sm: 'gap-3.5 px-3.5 py-3',
+        sm: `gap-3.5 ${smallItemInsetClassName} py-3`,
         xs: `gap-2 px-2.5 py-2 in-data-[slot=dropdown-menu-content]:p-0`,
       },
       variant: {
@@ -181,4 +183,5 @@ export {
   ItemMedia,
   ItemSeparator,
   ItemTitle,
+  smallItemInsetClassName,
 }

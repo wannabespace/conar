@@ -6,10 +6,10 @@ import {
   addConstraint,
   dropConstraintStatement,
 } from '~/core/queries/constraints/shape'
+import { alterColumnStatement } from '~/core/queries/tables/alter-column-statement'
 import type { AlterColumnTarget, NewColumn } from '~/core/queries/tables/shape'
 import {
   addColumnStatement,
-  alterColumnStatement,
   createTableStatement,
   dropColumnStatement,
   dropTableStatement,
