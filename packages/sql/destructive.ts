@@ -2,19 +2,27 @@ import type { DialectSpec } from './dialect'
 import type { Statement } from './statements'
 import { splitStatements } from './statements'
 import type { Token } from './tokenizer'
-import { isKeyword } from './tokenizer'
+import { isKeyword, tokenize } from './tokenizer'
+
+const RUNNING_EXPLAIN_OPTIONS = new Set(['ANALYSE', 'ANALYZE'])
 
 // EXPLAIN only plans the statement; EXPLAIN ANALYZE runs it.
 const isPlanOnlyExplain = ({ tokens }: Statement) =>
   isKeyword(tokens[0], 'EXPLAIN') &&
-  !tokens.some((token) => token.text.toUpperCase() === 'ANALYZE')
+  !tokens.some((token) => RUNNING_EXPLAIN_OPTIONS.has(token.text.toUpperCase()))
 
-/** `FOR [NO KEY] UPDATE` locks rows, `ON DELETE`/`ON UPDATE` names a referential action, `SHOW CREATE` prints a definition. */
+const showsDefinition = (words: string[], index: number) =>
+  index === 1 && words[0] === 'SHOW'
+
+const REFERENTIAL_ACTIONS = new Set(['CASCADE', 'NO', 'RESTRICT', 'SET'])
+
+/** `FOR [NO KEY] UPDATE` locks rows, `ON DELETE CASCADE` names a referential action, `SHOW CREATE` prints a definition. */
 const namesWithoutRunning = (words: string[], index: number) =>
   words[index - 1] === 'FOR' ||
-  words[index - 1] === 'ON' ||
+  (words[index - 1] === 'ON' &&
+    REFERENTIAL_ACTIONS.has(words[index + 1] ?? '')) ||
   (words[index - 3] === 'FOR' && words[index - 2] === 'NO') ||
-  (index === 1 && words[0] === 'SHOW')
+  showsDefinition(words, index)
 
 const DESTRUCTIVE = new Set([
   'ALTER',
@@ -72,7 +80,8 @@ const keywordOrFirst = (token: Token, index: number) =>
 const statementRunsAny =
   (
     keywords: Set<string>,
-    isCommand: (token: Token, index: number) => boolean
+    isCommand: (token: Token, index: number) => boolean,
+    isExempt = namesWithoutRunning
   ) =>
   (statement: Statement): boolean => {
     if (isPlanOnlyExplain(statement)) {
@@ -84,7 +93,7 @@ const statementRunsAny =
         (index === 0 && DYNAMIC_SQL_COMMANDS.has(words[index] ?? '')) ||
         (isCommand(token, index) &&
           keywords.has(words[index] ?? '') &&
-          !namesWithoutRunning(words, index))
+          !isExempt(words, index))
     )
   }
 
@@ -114,7 +123,7 @@ const READ_COMMANDS = new Set([
 const isWord = (token: Token) =>
   !token.quoted && (token.kind === 'keyword' || token.kind === 'identifier')
 
-// SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest.
+// SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest. No `FOR`/`ON` exemption: `SET NOCOUNT ON COMMIT` would pass as a referential action.
 const writesInsideRead = statementRunsAny(
   new Set([
     ...DDL_KEYWORDS,
@@ -133,8 +142,39 @@ const writesInsideRead = statementRunsAny(
     'ROLLBACK',
     'SHUTDOWN',
   ]),
-  isWord
+  isWord,
+  showsDefinition
 )
+
+// A session setting (`SET ROWCOUNT 1`, `USE`), an open transaction or a held lock outlives the rollback on the app's one pooled connection.
+const SESSION_COMMANDS = new Set([
+  'BEGIN',
+  'DECLARE',
+  'SAVE',
+  'SET',
+  'USE',
+  'WAITFOR',
+])
+
+// `NEXT VALUE FOR` (SQL Server, MariaDB) advances a sequence, which no rollback undoes; `FETCH NEXT … ROWS` is paging.
+const outlivesRollback = ({ tokens }: Statement, dialect: DialectSpec) => {
+  const words = tokens.filter(isWord).map((token) => token.text.toUpperCase())
+  return words.some(
+    (word, index) =>
+      (dialect.separatorFreeStatements && SESSION_COMMANDS.has(word)) ||
+      (word === 'NEXT' &&
+        words[index + 1] === 'VALUE' &&
+        words[index + 2] === 'FOR')
+  )
+}
+
+// MySQL and MariaDB run `/*! … */` and `/*M! … */` as SQL; the tokenizer reads them as comments.
+const hasExecutableComment = (text: string, dialect: DialectSpec) =>
+  tokenize(text, dialect).tokens.some(
+    (token) =>
+      token.kind === 'comment' &&
+      (token.text.startsWith('/*!') || token.text.startsWith('/*M!'))
+  )
 
 /** A single statement that only reads, the only kind an MCP agent may run. */
 export const readsOnly = (text: string, dialect: DialectSpec) => {
@@ -143,6 +183,8 @@ export const readsOnly = (text: string, dialect: DialectSpec) => {
     !!statement &&
     rest.length === 0 &&
     READ_COMMANDS.has(statement.tokens[0]?.text.toUpperCase() ?? '') &&
-    !writesInsideRead(statement)
+    !writesInsideRead(statement) &&
+    !outlivesRollback(statement, dialect) &&
+    !hasExecutableComment(text, dialect)
   )
 }

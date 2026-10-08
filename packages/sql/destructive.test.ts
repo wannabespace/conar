@@ -73,8 +73,17 @@ describe('destructiveKeywords', () => {
         pg
       )
     ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'SET NOCOUNT ON DELETE FROM users',
+        dialects[ConnectionType.MSSQL]
+      )
+    ).toEqual(['DELETE'])
     expect(destructiveKeywords('EXPLAIN DELETE FROM t', pg)).toEqual([])
     expect(destructiveKeywords('EXPLAIN ANALYZE DELETE FROM t', pg)).toEqual([
+      'DELETE',
+    ])
+    expect(destructiveKeywords('EXPLAIN ANALYSE DELETE FROM t', pg)).toEqual([
       'DELETE',
     ])
   })
@@ -143,6 +152,19 @@ describe('readsOnly', () => {
     expect(readsOnly('SHOW TABLES', mysql)).toBe(true)
     expect(readsOnly('SHOW CREATE TABLE users', mysql)).toBe(true)
     expect(readsOnly('SHOW CREATE TABLE users', clickhouse)).toBe(true)
+    expect(
+      readsOnly('SELECT * FROM t USE INDEX (i) JOIN u ON u.id = t.id', mysql)
+    ).toBe(true)
+    expect(
+      readsOnly("SELECT CAST('a' AS CHAR CHARACTER SET utf8mb4)", mysql)
+    ).toBe(true)
+    expect(
+      readsOnly(
+        'SELECT * FROM t ORDER BY id OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY',
+        mssql
+      )
+    ).toBe(true)
+    expect(readsOnly('SELECT 1 /* note */', mysql)).toBe(true)
   })
 
   it('rejects writes hidden in or after a read', () => {
@@ -154,6 +176,41 @@ describe('readsOnly', () => {
     expect(readsOnly('SELECT 1 COMMIT DROP TABLE users', mssql)).toBe(false)
     expect(readsOnly("SELECT 1 EXEC('DROP TABLE users')", mssql)).toBe(false)
     expect(readsOnly('EXPLAIN ANALYZE DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('EXPLAIN ANALYSE DELETE FROM users', pg)).toBe(false)
+  })
+
+  it('rejects a write after a SQL Server setting that ends in ON', () => {
+    expect(
+      readsOnly(
+        'SELECT 1 SET NOCOUNT ON COMMIT SET XACT_ABORT ON DELETE FROM users',
+        mssql
+      )
+    ).toBe(false)
+  })
+
+  it('rejects what outlives the rollback', () => {
+    expect(readsOnly('SELECT 1 SET ROWCOUNT 1', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 SET IMPLICIT_TRANSACTIONS ON', mssql)).toBe(
+      false
+    )
+    expect(readsOnly('SELECT 1 USE master', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 BEGIN TRAN', mssql)).toBe(false)
+    expect(readsOnly("SELECT 1 WAITFOR DELAY '00:10'", mssql)).toBe(false)
+    expect(readsOnly('SELECT NEXT VALUE FOR dbo.seq', mssql)).toBe(false)
+    expect(readsOnly('SELECT NEXT VALUE FOR seq', mysql)).toBe(false)
+    expect(readsOnly('SELECT next, value FROM t', pg)).toBe(true)
+  })
+
+  it('rejects MySQL executable comments', () => {
+    expect(readsOnly("SELECT 1 /*! INTO DUMPFILE '/tmp/x' */", mysql)).toBe(
+      false
+    )
+    expect(
+      readsOnly("SELECT 1 /*!50000 INTO OUTFILE '/tmp/mcp-write' */", mysql)
+    ).toBe(false)
+    expect(readsOnly("SELECT 1 /*M! INTO OUTFILE '/tmp/x' */", mysql)).toBe(
+      false
+    )
   })
 
   it('rejects a SQL Server batch that ends the transaction and writes', () => {

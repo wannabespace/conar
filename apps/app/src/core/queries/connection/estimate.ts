@@ -60,9 +60,17 @@ export const estimateQuery = (
   // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
   const mysql = CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`)
   const postgres = CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)
-  // Not read only: MySQL refuses even EXPLAIN of a write there.
-  const explain = async <DB>(db: Kysely<DB>, query: CompiledQuery) => {
-    const [set] = await runInTransaction(db, { commit: false }, [query], signal)
+  const explain = async <DB>(
+    db: Kysely<DB>,
+    query: CompiledQuery,
+    accessMode?: 'read only'
+  ) => {
+    const [set] = await runInTransaction(
+      db,
+      { accessMode, commit: false },
+      [query],
+      signal
+    )
     return set
   }
   return {
@@ -71,11 +79,12 @@ export const estimateQuery = (
         clickhouse: unsupported('Row estimates'),
         mssql: unsupported('Row estimates'),
         mysql: async (db) => {
+          // Not read only: MySQL refuses even EXPLAIN of a write there.
           const set = await explain(db, mysql)
           return set ? mysqlRows(set) : null
         },
         postgres: async (db) => {
-          const set = await explain(db, postgres)
+          const set = await explain(db, postgres, 'read only')
           return postgresRows.assert(set?.rows[0]?.[0])
         },
       },
