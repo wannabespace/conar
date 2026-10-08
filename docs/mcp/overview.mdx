@@ -13,7 +13,7 @@ The Tamery desktop app can run an MCP server. AI agents such as Claude Code and 
 
 ## The server
 
-The server is on by default: it starts with the desktop app and listens only on your machine, at `http://127.0.0.1:8264/mcp`. To turn it off, click your avatar → **Settings** (or press <kbd>⌘</kbd> <kbd>,</kbd>), open **MCP** and turn off **Run MCP server**.
+The server is on by default: it starts with the desktop app and listens only on your machine, at `http://127.0.0.1:26381/mcp`. To turn it off, click your avatar → **Settings** (or press <kbd>⌘</kbd> <kbd>,</kbd>), open **MCP** and turn off **Run MCP server**.
 
 ## Weekly limit
 
@@ -60,7 +60,7 @@ Any other client that supports Streamable HTTP works too: point it at the URL an
   "mcpServers": {
     "tamery": {
       "headers": { "Authorization": "Bearer <token>" },
-      "url": "http://127.0.0.1:8264/mcp"
+      "url": "http://127.0.0.1:26381/mcp"
     }
   }
 }
