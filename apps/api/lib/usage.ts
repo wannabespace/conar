@@ -1,5 +1,5 @@
 import type { MeteredFeature } from '@tamery/shared/usage'
-import { FREE_LIMITS, usageResetsAt } from '@tamery/shared/usage'
+import { FREE_WEEKLY_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 
 import { redis } from './redis'
 
@@ -7,10 +7,10 @@ const keyOf = (userId: string, feature: MeteredFeature, resetsAt: number) =>
   `usage:${userId}:${feature}:${resetsAt}`
 
 export const getUsage = async (userId: string, feature: MeteredFeature) =>
-  Number((await redis.get(keyOf(userId, feature, usageResetsAt(feature)))) ?? 0)
+  Number((await redis.get(keyOf(userId, feature, usageResetsAt()))) ?? 0)
 
 export const recordUsage = async (userId: string, feature: MeteredFeature) => {
-  const resetsAt = usageResetsAt(feature)
+  const resetsAt = usageResetsAt()
   const key = keyOf(userId, feature, resetsAt)
   const [used] = await redis
     .multi()
@@ -21,7 +21,7 @@ export const recordUsage = async (userId: string, feature: MeteredFeature) => {
 }
 
 export const quotaOf = (feature: MeteredFeature, used: number) => ({
-  max: FREE_LIMITS[feature].max,
-  resetAt: new Date(usageResetsAt(feature)),
+  max: FREE_WEEKLY_LIMITS[feature],
+  resetAt: new Date(usageResetsAt()),
   used,
 })

@@ -1,6 +1,6 @@
 import { generateFilters } from '@tamery/ai/features'
 import { AiFeature } from '@tamery/ai/usage'
-import { FREE_LIMITS, usageResetsAt } from '@tamery/shared/usage'
+import { FREE_WEEKLY_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -32,13 +32,13 @@ export const filters = orpc
 
     if (
       !unlimited &&
-      (await getUsage(context.user.id, 'filters')) >= FREE_LIMITS.filters.max
+      (await getUsage(context.user.id, 'filters')) >= FREE_WEEKLY_LIMITS.filters
     ) {
       throw errors.FORBIDDEN({
         data: {
-          max: FREE_LIMITS.filters.max,
+          max: FREE_WEEKLY_LIMITS.filters,
           remaining: 0,
-          resetAt: new Date(usageResetsAt('filters')),
+          resetAt: new Date(usageResetsAt()),
         },
       })
     }

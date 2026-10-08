@@ -1,4 +1,4 @@
-import { FREE_LIMITS } from '@tamery/shared/usage'
+import { FREE_WEEKLY_LIMITS } from '@tamery/shared/usage'
 import { Button } from '@tamery/ui/components/button'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -22,7 +22,7 @@ export const WeeklyQuota = () => {
     <SettingsGroup>
       <SettingsRow
         title="Agent queries this week"
-        description={`The free plan includes ${FREE_LIMITS.mcp.max} a week, counting each query and execute. They come back on ${format(usage.mcp.resetAt, 'EEEE')}; Pro removes the limit.`}
+        description={`The free plan includes ${FREE_WEEKLY_LIMITS.mcp} a week, counting each query and execute. They come back on ${format(usage.mcp.resetAt, 'EEEE')}; Pro removes the limit.`}
       >
         <span className="text-muted-foreground text-xs tabular-nums">
           {Math.max(0, usage.mcp.max - usage.mcp.used)} left

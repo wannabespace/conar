@@ -1,15 +1,10 @@
-export const FREE_LIMITS = {
-  filters: { max: 50, period: 'month' },
-  mcp: { max: 100, period: 'week' },
-} as const satisfies Record<string, { max: number; period: 'month' | 'week' }>
+export const FREE_WEEKLY_LIMITS = { filters: 20, mcp: 100 } as const
 
-export type MeteredFeature = keyof typeof FREE_LIMITS
+export type MeteredFeature = keyof typeof FREE_WEEKLY_LIMITS
 
-export const usageResetsAt = (feature: MeteredFeature, now = new Date()) =>
-  FREE_LIMITS[feature].period === 'month'
-    ? Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)
-    : Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate() - ((now.getUTCDay() + 6) % 7) + 7
-      )
+export const usageResetsAt = (now = new Date()) =>
+  Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - ((now.getUTCDay() + 6) % 7) + 7
+  )
