@@ -1,6 +1,5 @@
 import { SparklesIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { isDefinedError } from '@orpc/client'
 import { CommandItem, CommandShortcut } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -13,8 +12,10 @@ import { toast } from 'sonner'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
+import { usageQueryOptions } from '~/core/user/usage'
 import { orpc } from '~/lib/orpc'
 import { plural } from '~/lib/plural'
+import { queryClient } from '~/lib/query-client'
 import { useIsOnline } from '~/store'
 
 import { useTableColumnsContext } from '../../lib/columns'
@@ -61,10 +62,14 @@ export const useFilterAi = ({
   const { data: enums } = useQuery(
     resourceEnumsQueryOptions({ connectionResource })
   )
-  const [freeAiUsage, setFreeAiUsage] = useState<{
-    remaining: number
-    max: number
-  } | null>(null)
+  const { data: usage } = useQuery({
+    ...usageQueryOptions,
+    enabled: usePermissions().check('ai.filter.use'),
+  })
+  const freeAiUsage = usage?.filters && {
+    max: usage.filters.max,
+    remaining: Math.max(0, usage.filters.max - usage.filters.used),
+  }
   const [summary, setSummary] = useState<string | null>(null)
 
   useEffect(() => {
@@ -80,13 +85,9 @@ export const useFilterAi = ({
   const { mutate: generateFilter, isPending } = useMutation(
     orpc.ai.filters.mutationOptions({
       meta: { event: 'ai_filter_generated' },
-      onError: (error) => {
-        if (isDefinedError(error) && error.code === 'FORBIDDEN') {
-          setFreeAiUsage(error.data)
-        }
-      },
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: usageQueryOptions.queryKey }),
       onSuccess: (data) => {
-        setFreeAiUsage(data.freeAiUsage || null)
         const known = new Set(columns.map((column) => column.id))
         const offered = offeredFilters(connection.type).flatMap(
           (group) => group.filters

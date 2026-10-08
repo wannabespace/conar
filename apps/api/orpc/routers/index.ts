@@ -14,10 +14,10 @@ import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
 import * as internal from './internal'
-import * as mcp from './mcp'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
+import { usage } from './usage'
 import * as webhooks from './webhooks'
 import * as workspaces from './workspaces'
 
@@ -32,10 +32,10 @@ export const router = {
   connectionsResources,
   contact,
   internal,
-  mcp,
   queries,
   releases,
   repo,
+  usage,
   webhooks,
   workspaces,
 }

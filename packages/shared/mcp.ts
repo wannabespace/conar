@@ -14,14 +14,6 @@ export interface McpUsage {
   resetsAt: number
 }
 
-/** Next Monday 00:00 UTC — the device and the API must agree on the week, since the higher of their counts wins. */
-export const mcpQuotaResetsAt = (now = new Date()) =>
-  Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() - ((now.getUTCDay() + 6) % 7) + 7
-  )
-
 export interface McpConnection {
   id: string
   name: string

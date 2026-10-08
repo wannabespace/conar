@@ -1,7 +1,6 @@
 import { LinkSquare02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { FREE_MCP_QUERIES_WEEKLY_LIMIT } from '@tamery/shared/constants'
-import { mcpQuotaResetsAt } from '@tamery/shared/mcp'
+import { FREE_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 import { Button } from '@tamery/ui/components/button'
 import {
   Dialog,
@@ -33,9 +32,9 @@ export const LimitDialog = () => {
           <DialogHeader>
             <DialogTitle>Agents used this week&rsquo;s queries</DialogTitle>
             <DialogDescription>
-              The free plan includes {FREE_MCP_QUERIES_WEEKLY_LIMIT} agent
-              queries a week through MCP. They come back on{' '}
-              {format(mcpQuotaResetsAt(), 'EEEE, MMMM d')}, or upgrade to Pro
+              The free plan includes {FREE_LIMITS.mcp.max} agent queries a week
+              through MCP. They come back on{' '}
+              {format(usageResetsAt('mcp'), 'EEEE, MMMM d')}, or upgrade to Pro
               for no limit.
             </DialogDescription>
           </DialogHeader>
