@@ -1,52 +1,37 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 import { dialects, splitStatements } from '@tamery/sql'
+import type { Type } from 'arktype'
 import { type } from 'arktype'
+import type { Kysely } from 'kysely'
+import { CompiledQuery } from 'kysely'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { QueryParams } from '~/core/runtime/query'
+import { createQuery } from '~/core/runtime/query'
 
 import type { ResultSet } from './custom'
-import { transactionQuery } from './transaction'
+import { runInTransaction } from './transaction'
 
-const postgresPlan = type({
-  Plan: {
-    'Node Type': 'string',
-    'Plan Rows': 'number',
-    'Plans?': type({ 'Plan Rows': 'number' }).array(),
+const postgresRows = type([
+  {
+    Plan: {
+      'Node Type': 'string',
+      'Plan Rows': 'number',
+      'Plans?': type({ 'Plan Rows': 'number' }).array(),
+    },
   },
-}).array()
-
-const postgresRows = (value: unknown) => {
-  const top = postgresPlan.assert(value)[0]?.Plan
-  if (!top) {
-    return
-  }
-  return top['Node Type'] === 'ModifyTable'
-    ? top.Plans?.[0]?.['Plan Rows']
-    : top['Plan Rows']
-}
+]).pipe(([{ Plan }]) =>
+  Plan['Node Type'] === 'ModifyTable'
+    ? Plan.Plans?.[0]?.['Plan Rows']
+    : Plan['Plan Rows']
+)
 
 const mysqlRows = ({ columns, rows }: ResultSet) => {
   const rowsAt = columns.indexOf('rows')
-  const filteredAt = columns.indexOf('filtered')
   const row = rows.find((item) => typeof item[rowsAt] === 'number')
-  return row && (Number(row[rowsAt]) * Number(row[filteredAt] ?? 100)) / 100
-}
-
-const plans: Record<
-  ConnectionType,
-  { explain: string; rows: (plan: ResultSet) => number | undefined } | null
-> = {
-  [ConnectionType.ClickHouse]: null,
-  [ConnectionType.MSSQL]: null,
-  // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
-  [ConnectionType.MySQL]: {
-    explain: 'EXPLAIN FORMAT=TRADITIONAL',
-    rows: mysqlRows,
-  },
-  [ConnectionType.Postgres]: {
-    explain: 'EXPLAIN (FORMAT JSON)',
-    rows: (plan) => postgresRows(plan.rows[0]?.[0]),
-  },
+  const filtered = row?.[columns.indexOf('filtered')] ?? 100
+  return row && (Number(row[rowsAt]) * Number(filtered)) / 100
 }
 
 // Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run.
@@ -64,25 +49,40 @@ export const estimateQuery = (
   connectionType: ConnectionType,
   signal: AbortSignal
 ) => {
-  const plan = plans[connectionType]
   const [statement, ...rest] = splitStatements(text, dialects[connectionType])
   if (
-    !plan ||
+    !capabilitiesOf(connectionType).explain ||
     rest.length > 0 ||
     !ESTIMATED_COMMANDS.has(statement?.tokens[0]?.text.toUpperCase() ?? '')
   ) {
     return null
   }
-  // Not read only: MySQL refuses even EXPLAIN of a write there. EXPLAIN without ANALYZE never runs the statement.
-  const query = transactionQuery(
-    { commit: false, statements: [`${plan.explain} ${text}`] },
-    signal
-  )
+  // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
+  const mysql = CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`)
+  const postgres = CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)
+  // Not read only: MySQL refuses even EXPLAIN of a write there.
+  const explain = async <DB>(db: Kysely<DB>, query: CompiledQuery) => {
+    const [set] = await runInTransaction(db, { commit: false }, [query], signal)
+    return set
+  }
+  const query = createQuery<Type<number | undefined>>({
+    query: {
+      clickhouse: unsupported('Row estimates'),
+      mssql: unsupported('Row estimates'),
+      mysql: async (db) => {
+        const set = await explain(db, mysql)
+        return set && mysqlRows(set)
+      },
+      postgres: async (db) => {
+        const set = await explain(db, postgres)
+        return postgresRows.assert(set?.rows[0]?.[0])
+      },
+    },
+  })
   return {
-    queryIds: query.queryIds,
+    queryIds: [mysql.queryId.queryId, postgres.queryId.queryId],
     run: async (params: QueryParams) => {
-      const [set] = await query.run(params)
-      const rows = set && plan.rows(set)
+      const rows = await query.run(params)
       return rows === undefined ? null : Math.round(rows)
     },
   }
