@@ -10,10 +10,7 @@ const unlimitedPermission = {
   mcp: 'mcp.unlimited',
 } as const satisfies Record<MeteredFeature, typeof permix.$inferPath>
 
-interface UsageContext {
-  permissions: {
-    check: (path: typeof permix.$inferPath) => boolean
-  }
+type UsageContext = ReturnType<typeof permix.setupContext> & {
   user: { id: string }
 }
 
