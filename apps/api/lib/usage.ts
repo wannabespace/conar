@@ -1,16 +1,18 @@
 import type { MeteredFeature } from '@tamery/shared/usage'
 import { FREE_WEEKLY_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 
+import type { permix } from '~/orpc'
+
 import { redis } from './redis'
 
 const unlimitedPermission = {
   filters: 'ai.filter.unlimited',
   mcp: 'mcp.unlimited',
-} as const satisfies Record<MeteredFeature, string>
+} as const satisfies Record<MeteredFeature, typeof permix.$inferPath>
 
 interface UsageContext {
   permissions: {
-    check: (path: (typeof unlimitedPermission)[MeteredFeature]) => boolean
+    check: (path: typeof permix.$inferPath) => boolean
   }
   user: { id: string }
 }
