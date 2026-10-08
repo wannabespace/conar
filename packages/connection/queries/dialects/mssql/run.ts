@@ -1,7 +1,7 @@
 import type * as mssqlModule from 'mssql'
 
 import type { RunOptions } from '../..'
-import { resultSet } from '../..'
+import { hasRoom, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 
 interface ColumnMetadata {
@@ -68,7 +68,6 @@ export const runRequest = async (
   }
   request.arrayRowMode = true
   request.stream = true
-  const limit = maxRows ?? Infinity
   const sets: { columns: ColumnMetadata[]; rows: unknown[][] }[] = []
   const errors: Error[] = []
   request.on('recordset', (columns: ColumnMetadata[]) => {
@@ -76,7 +75,7 @@ export const runRequest = async (
   })
   request.on('row', (row: unknown[]) => {
     const set = sets.at(-1)
-    if (set && set.rows.length <= limit) {
+    if (set && hasRoom(set.rows, maxRows)) {
       set.rows.push(
         row.map((value, position) => dateAsText(value, set.columns[position]))
       )

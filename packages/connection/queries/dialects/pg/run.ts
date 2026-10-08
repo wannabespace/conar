@@ -3,7 +3,7 @@ import { once } from 'node:events'
 import type { Pool, PoolClient, QueryArrayConfig, QueryResult } from 'pg'
 
 import type { RunOptions } from '../..'
-import { resultSet } from '../..'
+import { hasRoom, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { pg } from './client'
 
@@ -39,7 +39,6 @@ export const runOn = async (
   },
   { maxRows, queryId }: RunOptions
 ) => {
-  const limit = maxRows ?? Infinity
   const pid = queryId ? await backendPid(client) : undefined
   // The pool holds one connection and it is busy, so `pg_cancel_backend` needs its own.
   const cancel = async () => {
@@ -67,7 +66,7 @@ export const runOn = async (
           .on('row', (row: unknown[], result) => {
             const rows = rowsOf.get(result) ?? []
             rowsOf.set(result, rows)
-            if (rows.length <= limit) {
+            if (hasRoom(rows, maxRows)) {
               rows.push(row)
             }
           }),

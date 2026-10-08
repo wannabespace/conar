@@ -19,6 +19,10 @@ export interface RunOptions {
   maxRows?: number
 }
 
+/** One row past `maxRows` is kept, so `resultSet` can tell the set was truncated. */
+export const hasRoom = (rows: unknown[][], maxRows = Infinity) =>
+  rows.length <= maxRows
+
 export const resultSet = (
   { affectedRows, columns, rows }: Omit<ResultSet, 'truncated'>,
   maxRows = Infinity

@@ -4,7 +4,7 @@ import type { Connection, PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
 import type { ResultSet, RunOptions } from '../..'
-import { resultSet } from '../..'
+import { hasRoom, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { mysql2 } from './client'
 
@@ -53,7 +53,6 @@ export const runOn = async (
   }
 
   const start = performance.now()
-  const limit = maxRows ?? Infinity
   // `CALL` answers with one row set per SELECT inside the procedure, then a status header; each starts with `fields`.
   const sets: Omit<ResultSet, 'truncated'>[] = []
   await cancellable({ cancel, connectionString, queryId }, () => {
@@ -80,7 +79,7 @@ export const runOn = async (
           return
         }
         if (Array.isArray(result)) {
-          if (set.rows.length <= limit) {
+          if (hasRoom(set.rows, maxRows)) {
             set.rows.push(result)
           }
         } else if (

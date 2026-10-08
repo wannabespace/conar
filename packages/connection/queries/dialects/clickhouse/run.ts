@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import type { RunOptions } from '../..'
-import { resultSet } from '../..'
+import { hasRoom, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { getClient } from './client'
 
@@ -92,7 +92,6 @@ export const runQuery = ({
       query: sql,
       query_id: clickhouseQueryId,
     })
-    const limit = maxRows ?? Infinity
     // `break` overflows to the end of a block, so the read itself stops at the cap. The first two rows are the names and types.
     const header: unknown[][] = []
     const rows: unknown[][] = []
@@ -100,11 +99,11 @@ export const runQuery = ({
       for (const row of batch) {
         if (header.length < 2) {
           header.push(row.json())
-        } else if (rows.length <= limit) {
+        } else if (hasRoom(rows, maxRows)) {
           rows.push(row.json())
         }
       }
-      if (rows.length > limit) {
+      if (!hasRoom(rows, maxRows)) {
         break
       }
     }
