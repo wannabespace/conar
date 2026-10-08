@@ -6,6 +6,8 @@ export const MCP_MAX_ROWS = 200
 /** `off` hides the connection from agents; `ask` holds each `execute` until the user approves it in Tamery. */
 export type McpAccess = 'off' | 'read' | 'ask' | 'write'
 
+export const DEFAULT_MCP_ACCESS: McpAccess = 'ask'
+
 export interface McpConnection {
   id: string
   name: string

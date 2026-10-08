@@ -13,7 +13,7 @@ const headersOf = ({ token }: McpEndpoint) => ({
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
 
-interface McpClient {
+interface McpClientSetup {
   code: (server: McpEndpoint) => string
   file?: string
   id: string
@@ -23,7 +23,7 @@ interface McpClient {
   language: string
 }
 
-export const MCP_CLIENTS: McpClient[] = [
+export const MCP_CLIENTS: McpClientSetup[] = [
   {
     code: (server) =>
       `claude mcp add --transport http --scope user ${SERVER_NAME} ${server.url} --header "Authorization: ${headersOf(server).Authorization}"`,

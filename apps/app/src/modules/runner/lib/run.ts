@@ -1,4 +1,4 @@
-import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -11,8 +11,8 @@ import {
 } from '~/core/queries/connection/statement'
 import type { QueryParams } from '~/core/runtime/query'
 import {
-  cancelQuery,
   connectionResourceToQueryParams,
+  runCancellable,
 } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
@@ -100,20 +100,12 @@ const runOne = async (
   signal: AbortSignal
 ): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
-  let cancel = noop
   try {
-    const { queryIds, run } = statementQuery(
-      statement.text,
-      params.type,
+    const sets = await runCancellable(
+      params,
+      statementQuery(statement.text, params.type, signal),
       signal
     )
-    cancel = () => {
-      for (const queryId of queryIds) {
-        void silently(() => cancelQuery(params, queryId))
-      }
-    }
-    signal.addEventListener('abort', cancel, { once: true })
-    const sets = await run(params)
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
       resultOf(statement, { duration, set })
@@ -126,8 +118,6 @@ const runOne = async (
         stopped: signal.aborted,
       }),
     ]
-  } finally {
-    signal.removeEventListener('abort', cancel)
   }
 }
 

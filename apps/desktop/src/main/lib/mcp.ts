@@ -5,9 +5,13 @@ import { createServer } from 'node:http'
 import { json } from 'node:stream/consumers'
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js'
+import {
+  isInitializeRequest,
+  isJSONRPCRequest,
+} from '@modelcontextprotocol/sdk/types.js'
 import { PORTS } from '@tamery/shared/constants'
 import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
+import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
@@ -16,7 +20,7 @@ import { notifyUnfocused } from './notify'
 const newToken = () => randomBytes(32).toString('base64url')
 
 const store = new Store<{
-  access: Record<string, Exclude<McpAccess, 'ask'>>
+  access: Record<string, McpAccess>
   clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
   token: string
@@ -33,27 +37,24 @@ const store = new Store<{
 let httpServer: Server | null = null
 let error: string | null = null
 
+const SESSION_IDLE_MS = 30 * 60 * 1000
+
 const sessions = new Map<
   string,
-  { client: string; transport: StreamableHTTPServerTransport }
+  {
+    client: string
+    lastSeenAt: number
+    transport: StreamableHTTPServerTransport
+  }
 >()
 
-const updateClient = (
-  name: string,
-  update: Partial<Omit<McpClient, 'name'>>
-) => {
-  const clients = store.get('clients')
-  store.set('clients', {
-    ...clients,
-    [name]: { ...clients[name], ...update },
-  })
-}
-
-const closeSessions = () => {
-  for (const { transport } of sessions.values()) {
-    void transport.close()
+const closeSessions = (idleSince = Infinity) => {
+  for (const [sessionId, { lastSeenAt, transport }] of sessions) {
+    if (lastSeenAt < idleSince) {
+      void transport.close()
+      sessions.delete(sessionId)
+    }
   }
-  sessions.clear()
 }
 
 const reject = (res: ServerResponse, status: number, message: string) => {
@@ -75,6 +76,7 @@ const startSession = async (
     reject(res, 400, 'Bad Request: No valid session ID provided')
     return
   }
+  closeSessions(Date.now() - SESSION_IDLE_MS)
   const client = body.params.clientInfo
   const transport = new StreamableHTTPServerTransport({
     enableJsonResponse: true,
@@ -82,16 +84,40 @@ const startSession = async (
       sessions.delete(sessionId)
     },
     onsessioninitialized: (sessionId) => {
-      sessions.set(sessionId, { client: client.name, transport })
-      updateClient(client.name, {
-        lastSeenAt: Date.now(),
-        version: client.version,
+      const lastSeenAt = Date.now()
+      sessions.set(sessionId, { client: client.name, lastSeenAt, transport })
+      store.set('clients', {
+        ...store.get('clients'),
+        [client.name]: { lastSeenAt, version: client.version },
       })
     },
     sessionIdGenerator: randomUUID,
   })
   await createMcpServer(() => store.get('access')).connect(transport)
   await transport.handleRequest(req, res, body)
+}
+
+// The SDK aborts a tool call only on `notifications/cancelled`, which a client that drops the HTTP request never sends.
+const cancelOnDisconnect = (
+  res: ServerResponse,
+  transport: StreamableHTTPServerTransport,
+  body: unknown
+) => {
+  const requestIds = [body]
+    .flat()
+    .flatMap((message) => (isJSONRPCRequest(message) ? [message.id] : []))
+  res.on('close', () => {
+    if (res.writableFinished) {
+      return
+    }
+    for (const requestId of requestIds) {
+      transport.onmessage?.({
+        jsonrpc: '2.0',
+        method: 'notifications/cancelled',
+        params: { reason: 'The client disconnected.', requestId },
+      })
+    }
+  })
 }
 
 const handle = async (req: IncomingMessage, res: ServerResponse) => {
@@ -115,7 +141,8 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
       reject(res, 404, 'Session not found')
       return
     }
-    updateClient(session.client, { lastSeenAt: Date.now() })
+    session.lastSeenAt = Date.now()
+    cancelOnDisconnect(res, session.transport, body)
     await session.transport.handleRequest(req, res, body)
   } catch {
     res.destroy()
@@ -158,9 +185,21 @@ const status = (): McpStatus => {
 
 const connectionAccess = () => store.get('access')
 
+const lastSeenAt = (name: string, saved: number) =>
+  Math.max(
+    saved,
+    ...[...sessions.values()].flatMap((session) =>
+      session.client === name ? [session.lastSeenAt] : []
+    )
+  )
+
 const clients = (): McpClient[] =>
   Object.entries(store.get('clients'))
-    .map(([name, client]) => ({ name, ...client }))
+    .map(([name, client]) => ({
+      ...client,
+      lastSeenAt: lastSeenAt(name, client.lastSeenAt),
+      name,
+    }))
     .toSorted((a, b) => b.lastSeenAt - a.lastSeenAt)
 
 export const mcp = {
@@ -182,7 +221,9 @@ export const mcp = {
     const { [connectionId]: _previous, ...others } = store.get('access')
     store.set(
       'access',
-      access === 'ask' ? others : { ...others, [connectionId]: access }
+      access === DEFAULT_MCP_ACCESS
+        ? others
+        : { ...others, [connectionId]: access }
     )
     return connectionAccess()
   },

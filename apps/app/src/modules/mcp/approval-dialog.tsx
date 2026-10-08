@@ -44,7 +44,16 @@ export const ApprovalDialog = () => {
               An agent wants to run it on{' '}
               <span data-mask className="text-foreground font-medium">
                 {item.connection.name}
-              </span>{' '}
+              </span>
+              {item.resourceName && (
+                <>
+                  , database{' '}
+                  <span data-mask className="text-foreground font-medium">
+                    {item.resourceName}
+                  </span>
+                  ,
+                </>
+              )}{' '}
               through MCP. It commits and cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

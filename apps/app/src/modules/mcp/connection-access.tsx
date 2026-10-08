@@ -1,4 +1,5 @@
 import type { McpAccess } from '@tamery/shared/mcp'
+import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import {
   Select,
   SelectContent,
@@ -53,7 +54,7 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
   return (
     <SettingsGroup title="Connection access">
       {connections.map((connection) => {
-        const connectionAccess: McpAccess = access[connection.id] ?? 'ask'
+        const connectionAccess = access[connection.id] ?? DEFAULT_MCP_ACCESS
 
         return (
           <SettingsRow

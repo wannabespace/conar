@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { McpAccess, McpRequest } from '@tamery/shared/mcp'
-import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
+import { DEFAULT_MCP_ACCESS, MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { app } from 'electron'
 import { z } from 'zod'
 
@@ -39,7 +39,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     { instructions: INSTRUCTIONS }
   )
   const accessOf = (connectionId: string): McpAccess =>
-    access()[connectionId] ?? 'ask'
+    access()[connectionId] ?? DEFAULT_MCP_ACCESS
 
   const sharedAccessOf = (connectionId: string) => {
     const connectionAccess = accessOf(connectionId)
@@ -120,7 +120,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Writes are rejected and the statement runs in a transaction that is always rolled back. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected and it runs in a read-only transaction that is always rolled back, but a function with side effects can still act; only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
     async (args, { signal }) =>

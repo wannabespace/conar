@@ -1,10 +1,10 @@
-import { silently, tryCatchAsync } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { createStore } from 'seitu'
 
 import type { Connection } from '~/core/connection/sync'
 import { estimateQuery } from '~/core/queries/connection/estimate'
 import type { QueryParams } from '~/core/runtime/query'
-import { cancelQuery } from '~/core/runtime/query'
+import { runCancellable } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 
 interface Approval {
@@ -12,6 +12,7 @@ interface Approval {
   decide: (approved: boolean) => void
   estimate?: number
   id: string
+  resourceName: string | null
   sql: string
 }
 
@@ -23,41 +24,33 @@ const store = createStore<{ pending: Approval[] }>({ pending: [] })
 const request = async ({
   connection,
   params,
+  resourceName,
   signal,
   sql,
 }: {
   connection: Connection
   params: QueryParams
+  resourceName: string | null
   signal: AbortSignal
   sql: string
 }) => {
   signal.throwIfAborted()
   const id = crypto.randomUUID()
-  const estimating = new AbortController()
-  const estimate = estimateQuery(
-    sql,
-    connection.type,
-    AbortSignal.any([signal, estimating.signal])
-  )
-  let isEstimating = !!estimate
-  const stopEstimating = () => {
-    if (!isEstimating) {
-      return
-    }
-    estimating.abort()
-    for (const queryId of estimate?.queryIds ?? []) {
-      void silently(() => cancelQuery(params, queryId))
-    }
-  }
+  const decided = new AbortController()
   // A lock (a migration's, say) can stall EXPLAIN, and it holds the pool's only connection while the dialog is open.
-  const budget = setTimeout(stopEstimating, ESTIMATE_BUDGET_MS)
+  const estimating = AbortSignal.any([
+    signal,
+    decided.signal,
+    AbortSignal.timeout(ESTIMATE_BUDGET_MS),
+  ])
+  const estimate = estimateQuery(sql, connection.type, estimating)
   const estimated = (async () => {
     if (!estimate) {
       return
     }
-    const { data: rows } = await tryCatchAsync(() => estimate.run(params))
-    isEstimating = false
-    clearTimeout(budget)
+    const { data: rows } = await tryCatchAsync(() =>
+      runCancellable(params, estimate, estimating)
+    )
     if (rows !== null) {
       store.set(({ pending }) => ({
         pending: pending.map((item) =>
@@ -74,7 +67,10 @@ const request = async ({
     { once: true }
   )
   store.set(({ pending }) => ({
-    pending: [...pending, { connection, decide: decision.resolve, id, sql }],
+    pending: [
+      ...pending,
+      { connection, decide: decision.resolve, id, resourceName, sql },
+    ],
   }))
   void window.electron?.mcp.notify({
     body: 'Review the statement in Tamery to run or decline it.',
@@ -95,8 +91,7 @@ const request = async ({
     store.set(({ pending }) => ({
       pending: pending.filter((item) => item.id !== id),
     }))
-    clearTimeout(budget)
-    stopEstimating()
+    decided.abort()
     // The pool holds one connection: the approved statement must not start before the estimate has rolled back.
     await estimated
   }

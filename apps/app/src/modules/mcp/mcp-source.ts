@@ -2,7 +2,6 @@ import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
-import { silently } from '@tamery/shared/utils'
 import { dialects, readsOnly, splitStatements } from '@tamery/sql'
 
 import { getCollections } from '~/core/collections'
@@ -18,9 +17,9 @@ import { transactionQuery } from '~/core/queries/connection/transaction'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import type { QueryParams } from '~/core/runtime/query'
 import {
-  cancelQuery,
   connectionResourceToQueryParams,
   connectionToQueryParams,
+  runCancellable,
 } from '~/core/runtime/query'
 import { permix } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
@@ -53,21 +52,16 @@ const abortSignalOf = (onAbort: (listener: () => void) => void) => {
 
 const runForAgent = async (
   params: QueryParams,
-  {
-    queryIds,
-    run,
-  }: { queryIds: string[]; run: (params: QueryParams) => Promise<ResultSet[]> },
+  query: {
+    queryIds: string[]
+    run: (params: QueryParams) => Promise<ResultSet[]>
+  },
   event: { access: McpAccess; connection_type: ConnectionType },
   signal: AbortSignal
 ) => {
-  signal.addEventListener('abort', () => {
-    for (const queryId of queryIds) {
-      void silently(() => cancelQuery(params, queryId))
-    }
-  })
   let success = false
   try {
-    const sets = await run(params)
+    const sets = await runCancellable(params, query, signal)
     success = true
     return sets
   } finally {
@@ -133,7 +127,13 @@ export const mcpSource: McpSource = {
     const params = await agentParams(connection, resource)
     const signal = abortSignalOf(onAbort)
     if (approve) {
-      await approval.request({ connection, params, signal, sql })
+      await approval.request({
+        connection,
+        params,
+        resourceName: resource?.name ?? null,
+        signal,
+        sql,
+      })
     }
     const sets = await runForAgent(
       params,
