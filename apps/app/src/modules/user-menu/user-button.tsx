@@ -126,7 +126,9 @@ export const UserButton = ({
             Account
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem render={<Link to="/settings" activateOn="click" />}>
+        <DropdownMenuItem
+          render={<Link to="/settings/{-$section}" activateOn="click" />}
+        >
           <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
           Settings
           <DropdownMenuShortcut>

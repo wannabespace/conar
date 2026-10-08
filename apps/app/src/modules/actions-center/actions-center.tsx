@@ -382,7 +382,11 @@ export const ActionsCenter = () => {
             `${label} settings`,
             ['settings', 'preferences', 'options'],
             icon,
-            () => router.navigate({ search: { section: id }, to: '/settings' }),
+            () =>
+              router.navigate({
+                params: { section: id },
+                to: '/settings/{-$section}',
+              }),
             index === 0 ? ',' : undefined
           )
         ),

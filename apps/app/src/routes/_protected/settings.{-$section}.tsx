@@ -16,7 +16,6 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router'
-import { type } from 'arktype'
 import { useRef } from 'react'
 
 import { SidebarMenuButton } from '~/components/sidebar-menu-button'
@@ -28,10 +27,10 @@ import {
   settingsSidebarClassName,
 } from '~/shell'
 
-const { useSearch } = getRouteApi('/_protected/settings')
+const { useParams } = getRouteApi('/_protected/settings/{-$section}')
 
 const SettingsPage = () => {
-  const { section } = useSearch()
+  const { section } = useParams()
   const navigate = useNavigate()
   const router = useRouter()
   const canGoBack = useCanGoBack()
@@ -46,9 +45,9 @@ const SettingsPage = () => {
     const next = sections[index]
     if (next) {
       void navigate({
+        params: { section: next.id },
         replace: true,
-        search: { section: next.id },
-        to: '/settings',
+        to: '/settings/{-$section}',
       })
     }
   }
@@ -121,12 +120,9 @@ const SettingsPage = () => {
   )
 }
 
-export const Route = createFileRoute('/_protected/settings')({
+export const Route = createFileRoute('/_protected/settings/{-$section}')({
   component: SettingsPage,
   head: () => ({
     meta: [{ title: title('Settings') }],
-  }),
-  validateSearch: type({
-    'section?': 'string',
   }),
 })

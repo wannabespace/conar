@@ -9,7 +9,7 @@ const UserMenu = () => {
   const navigate = useNavigate()
 
   useHotkey('Mod+,', () => {
-    void navigate({ to: '/settings' })
+    void navigate({ to: '/settings/{-$section}' })
   })
 
   return (

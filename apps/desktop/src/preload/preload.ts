@@ -77,6 +77,9 @@ const answer = (source: McpSource, request: McpRequest, port: MessagePort) => {
   if (request.method === 'connections') {
     return source.connections()
   }
+  if (request.method === 'createConnection') {
+    return source.createConnection(request.args)
+  }
   if (request.method === 'describeTable') {
     return source.describeTable(request.args)
   }
@@ -155,6 +158,7 @@ contextBridge.exposeInMainWorld('electron', {
     ),
   },
   mcp: {
+    clients: handleElectronError(() => ipcRenderer.invoke('mcp.clients')),
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
     ),

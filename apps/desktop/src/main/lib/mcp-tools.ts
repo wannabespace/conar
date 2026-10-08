@@ -1,4 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { McpAccess, McpRequest } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { app } from 'electron'
@@ -29,7 +31,7 @@ const targetInput = {
 
 const sqlInput = { ...targetInput, sql: z.string() }
 
-const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels and no tool edits them. Find it before answering — pick the likely tables from their names and columns, search them with query (case-insensitive, partial match), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema, and only on connections whose access is "ask" or "write". On "ask" the user reviews each statement in Tamery and approves or declines it, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables.`
+const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels and no tool edits them. Find it before answering — pick the likely tables from their names and columns, search them with query (case-insensitive, partial match), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema, and only on connections whose access is "ask" or "write". On "ask" the user reviews each statement in Tamery and approves or declines it, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables. create_connection saves a new connection from a connection string the user gives you; no tool edits or removes one.`
 
 export const createMcpServer = (access: Record<string, McpAccess>) => {
   const server = new McpServer(
@@ -50,7 +52,10 @@ export const createMcpServer = (access: Record<string, McpAccess>) => {
   }
 
   const askShared = (
-    request: Exclude<McpRequest, { method: 'connections' }>,
+    request: Exclude<
+      McpRequest,
+      { method: 'connections' | 'createConnection' }
+    >,
     signal: AbortSignal
   ) => {
     sharedAccessOf(request.args.connectionId)
@@ -77,6 +82,37 @@ export const createMcpServer = (access: Record<string, McpAccess>) => {
             : [{ ...connection, access: connectionAccess }]
         })
       )
+    }
+  )
+
+  server.registerTool(
+    'create_connection',
+    {
+      annotations: { destructiveHint: false, readOnlyHint: false },
+      description:
+        "Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is \"ask\". Existing connections cannot be edited or removed through MCP.",
+      inputSchema: {
+        connectionString: z
+          .string()
+          .describe(
+            'URL with credentials, e.g. postgres://user:pass@host:5432/db'
+          ),
+        name: z.string().min(2),
+        syncType: z
+          .enum(SyncType)
+          .default(SyncType.Cloud)
+          .describe(
+            'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_password" without the password, "cloud_without_connection_string" not at all'
+          ),
+        type: z.enum(ConnectionType),
+      },
+    },
+    async (args, { signal }) => {
+      const connection = await askRenderer(
+        { args, method: 'createConnection' },
+        signal
+      )
+      return jsonContent({ ...connection, access: accessOf(connection.id) })
     }
   )
 

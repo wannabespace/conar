@@ -4,7 +4,7 @@ sidebarTitle: 'Overview'
 description: 'Let Claude Code, Cursor and other AI agents list your Tamery connections and query them through the Model Context Protocol (MCP), asking you before every write unless you change it per connection.'
 ---
 
-The Tamery desktop app can run an MCP server. AI agents such as Claude Code and Cursor connect to it to list your saved connections and run SQL against them. By default they read freely and every write waits for your approval in Tamery. Your connection strings stay inside Tamery and never appear in the agent's config.
+The Tamery desktop app can run an MCP server. AI agents such as Claude Code and Cursor connect to it to list your saved connections, add new ones and run SQL against them. By default they read freely and every write waits for your approval in Tamery. Your connection strings stay inside Tamery and never appear in the agent's config.
 
 <Note>
   The MCP server runs inside the desktop app. It is not available in the web
@@ -47,6 +47,8 @@ Nothing the agent sent runs before you choose **Run**. On PostgreSQL and MySQL, 
 | Gemini CLI | `~/.gemini/settings.json` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 
+Once a client connects, **Connected clients** lists it by the name and version it reports, with when it last connected. A client connects when it starts, so the time is not when it last ran a tool. Regenerating the token clears the list.
+
 Any other client that supports Streamable HTTP works too: point it at the URL and send the token as an `Authorization: Bearer <token>` header. Most take this JSON:
 
 ```json
@@ -71,6 +73,7 @@ Any other client that supports Streamable HTTP works too: point it at the URL an
 | Tool | What it does |
 | --- | --- |
 | `list_connections` | Lists your connections: id, name, engine, the databases you have opened in each, and its access level (`read`, `ask` or `write`). |
+| `create_connection` | Saves a new connection from a connection string, engine and name the agent gives, after testing that it connects. A database in the string's path opens as its first database. It syncs like one you create, by default with the whole string encrypted; the agent can pick to sync it without the password or not at all. The new connection starts at **Ask before writing**. Agents can only add connections: no tool edits or removes one. |
 | `list_tables` | Lists a database's schemas with their tables and views, or only one schema's when the agent passes `schema`. |
 | `describe_table` | Describes one table or view: columns with their types, defaults and enum values, constraints (primary key, foreign keys and what they reference, unique, check) and indexes. |
 | `query` | Runs one read-only SQL statement on a connection, optionally in one of the databases `list_connections` returned. Returns at most 200 rows and says when there were more. |

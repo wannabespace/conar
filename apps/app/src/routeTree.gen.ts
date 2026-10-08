@@ -12,9 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
-import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
 import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
+import { Route as ProtectedSettingsChar123SectionChar125RouteImport } from './routes/_protected/settings.{-$section}'
 import { Route as ProtectedConnectionResourceIdIndexRouteImport } from './routes/_protected/connection/$resourceId/index'
 import { Route as ProtectedConnectionResourceIdTabIdRouteImport } from './routes/_protected/connection/$resourceId/$tabId'
 
@@ -32,11 +32,6 @@ const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => ProtectedRoute,
-} as any)
 const ProtectedConnectionResourceIdRoute =
   ProtectedConnectionResourceIdRouteImport.update({
     id: '/connection/$resourceId',
@@ -48,6 +43,12 @@ const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedSettingsChar123SectionChar125Route =
+  ProtectedSettingsChar123SectionChar125RouteImport.update({
+    id: '/settings/{-$section}',
+    path: '/settings/{-$section}',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedConnectionResourceIdIndexRoute =
   ProtectedConnectionResourceIdIndexRouteImport.update({
     id: '/',
@@ -64,16 +65,16 @@ const ProtectedConnectionResourceIdTabIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
-  '/settings': typeof ProtectedSettingsRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
+  '/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
   '/create/': typeof ProtectedCreateIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/connection/$resourceId/': typeof ProtectedConnectionResourceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
-  '/settings': typeof ProtectedSettingsRoute
   '/': typeof ProtectedIndexRoute
+  '/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
   '/create': typeof ProtectedCreateIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdIndexRoute
@@ -82,9 +83,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_protected/settings': typeof ProtectedSettingsRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
+  '/_protected/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
   '/_protected/create/': typeof ProtectedCreateIndexRoute
   '/_protected/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/_protected/connection/$resourceId/': typeof ProtectedConnectionResourceIdIndexRoute
@@ -94,16 +95,16 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/settings'
     | '/connection/$resourceId'
+    | '/settings/{-$section}'
     | '/create/'
     | '/connection/$resourceId/$tabId'
     | '/connection/$resourceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/settings'
     | '/'
+    | '/settings/{-$section}'
     | '/create'
     | '/connection/$resourceId/$tabId'
     | '/connection/$resourceId'
@@ -111,9 +112,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_protected'
     | '/auth'
-    | '/_protected/settings'
     | '/_protected/'
     | '/_protected/connection/$resourceId'
+    | '/_protected/settings/{-$section}'
     | '/_protected/create/'
     | '/_protected/connection/$resourceId/$tabId'
     | '/_protected/connection/$resourceId/'
@@ -147,13 +148,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/settings': {
-      id: '/_protected/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof ProtectedSettingsRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
     '/_protected/connection/$resourceId': {
       id: '/_protected/connection/$resourceId'
       path: '/connection/$resourceId'
@@ -166,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/create/'
       preLoaderRoute: typeof ProtectedCreateIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/settings/{-$section}': {
+      id: '/_protected/settings/{-$section}'
+      path: '/settings/{-$section}'
+      fullPath: '/settings/{-$section}'
+      preLoaderRoute: typeof ProtectedSettingsChar123SectionChar125RouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/connection/$resourceId/': {
@@ -204,17 +205,18 @@ const ProtectedConnectionResourceIdRouteWithChildren =
   )
 
 interface ProtectedRouteChildren {
-  ProtectedSettingsRoute: typeof ProtectedSettingsRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedConnectionResourceIdRoute: typeof ProtectedConnectionResourceIdRouteWithChildren
+  ProtectedSettingsChar123SectionChar125Route: typeof ProtectedSettingsChar123SectionChar125Route
   ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedSettingsRoute: ProtectedSettingsRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedConnectionResourceIdRoute:
     ProtectedConnectionResourceIdRouteWithChildren,
+  ProtectedSettingsChar123SectionChar125Route:
+    ProtectedSettingsChar123SectionChar125Route,
   ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 

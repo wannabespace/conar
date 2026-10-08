@@ -1,4 +1,5 @@
 import type { ConnectionType } from './enums/connection-type'
+import type { SyncType } from './enums/sync-type'
 
 export const MCP_MAX_ROWS = 200
 
@@ -20,6 +21,12 @@ export interface McpTarget {
 /** Answered by a signed-in window: connections, their decryption key and the query runtime live in the renderer. Main owns each connection's access and refuses a call it does not allow before asking, so the window runs whatever it is asked. */
 export interface McpSource {
   connections: () => McpConnection[]
+  createConnection: (args: {
+    connectionString: string
+    name: string
+    syncType: SyncType
+    type: ConnectionType
+  }) => Promise<McpConnection>
   describeTable: (
     args: McpTarget & { schema: string; table: string }
   ) => Promise<unknown>
@@ -41,6 +48,12 @@ export type McpRequest = {
 }[keyof McpSource]
 
 export type McpReply = { result: unknown } | { error: string } | { idle: true }
+
+export interface McpClient {
+  connectedAt: number
+  name: string
+  version: string
+}
 
 export type McpStatus =
   | { state: 'off' }

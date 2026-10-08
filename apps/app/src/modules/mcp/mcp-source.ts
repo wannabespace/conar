@@ -1,3 +1,4 @@
+import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
@@ -5,12 +6,14 @@ import { silently } from '@tamery/shared/utils'
 import { dialects, readsOnly, splitStatements } from '@tamery/sql'
 
 import { getCollections } from '~/core/collections'
+import { createConnection } from '~/core/connection/create'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import type { ResultSet } from '~/core/queries/connection/custom'
 import {
   refreshAfterRun,
   statementQuery,
 } from '~/core/queries/connection/statement'
+import { testConnectionQuery } from '~/core/queries/connection/test'
 import { transactionQuery } from '~/core/queries/connection/transaction'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import type { QueryParams } from '~/core/runtime/query'
@@ -19,6 +22,8 @@ import {
   connectionResourceToQueryParams,
   connectionToQueryParams,
 } from '~/core/runtime/query'
+import { permix } from '~/core/user/permissions'
+import { workspaceSelection } from '~/core/workspace/utils'
 import { posthog } from '~/lib/posthog'
 
 import { approval } from './approval'
@@ -70,14 +75,53 @@ const runForAgent = async (
   }
 }
 
+const toMcpConnection = ({
+  id,
+  name,
+  type,
+}: Pick<Connection, 'id' | 'name' | 'type'>) => ({
+  id,
+  name,
+  resources: resourcesOf(id),
+  type,
+})
+
 export const mcpSource: McpSource = {
   connections: () =>
-    getCollections().connectionsCollection.toArray.map((connection) => ({
-      id: connection.id,
-      name: connection.name,
-      resources: resourcesOf(connection.id),
-      type: connection.type,
-    })),
+    getCollections().connectionsCollection.toArray.map(toMcpConnection),
+  createConnection: async ({ connectionString, name, syncType, type }) => {
+    const { connectionsCollection, workspacesCollection } = getCollections()
+    if (
+      !permix.check('connection.create', {
+        count: connectionsCollection.size,
+      })
+    ) {
+      throw new Error(GUEST_CONNECTIONS_MESSAGE)
+    }
+    const workspace = workspaceSelection.current(workspacesCollection.toArray)
+    if (!workspace) {
+      throw new Error('Tamery is still loading. Try again in a moment.')
+    }
+    await testConnectionQuery.run({ connectionString, type })
+    const { id } = await createConnection({
+      color: null,
+      connectionString,
+      label: null,
+      name,
+      syncType,
+      type,
+      workspaceId: workspace.id,
+    })
+    posthog.capture('mcp_connection_created', {
+      connection_type: type,
+      sync_type: syncType,
+    })
+    void window.electron?.mcp.notify({
+      body: name,
+      title: 'An agent created a connection',
+    })
+    return toMcpConnection({ id, name, type })
+  },
   describeTable,
   execute: async ({ approve, sql, ...target }, onAbort) => {
     const { connection, resource } = resolveTarget(target)

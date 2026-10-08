@@ -7,7 +7,6 @@ import type { Kysely } from 'kysely'
 import { CompiledQuery } from 'kysely'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import type { QueryParams } from '~/core/runtime/query'
 import { createQuery } from '~/core/runtime/query'
 
 import type { ResultSet } from './custom'
@@ -21,17 +20,18 @@ const postgresRows = type([
       'Plans?': type({ 'Plan Rows': 'number' }).array(),
     },
   },
-]).pipe(([{ Plan }]) =>
-  Plan['Node Type'] === 'ModifyTable'
-    ? Plan.Plans?.[0]?.['Plan Rows']
-    : Plan['Plan Rows']
+]).pipe(
+  ([{ Plan }]) =>
+    (Plan['Node Type'] === 'ModifyTable'
+      ? Plan.Plans?.[0]?.['Plan Rows']
+      : Plan['Plan Rows']) ?? null
 )
 
 const mysqlRows = ({ columns, rows }: ResultSet) => {
   const rowsAt = columns.indexOf('rows')
   const row = rows.find((item) => typeof item[rowsAt] === 'number')
   const filtered = row?.[columns.indexOf('filtered')] ?? 100
-  return row && (Number(row[rowsAt]) * Number(filtered)) / 100
+  return row ? Math.round((Number(row[rowsAt]) * Number(filtered)) / 100) : null
 }
 
 // Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run.
@@ -65,25 +65,21 @@ export const estimateQuery = (
     const [set] = await runInTransaction(db, { commit: false }, [query], signal)
     return set
   }
-  const query = createQuery<Type<number | undefined>>({
-    query: {
-      clickhouse: unsupported('Row estimates'),
-      mssql: unsupported('Row estimates'),
-      mysql: async (db) => {
-        const set = await explain(db, mysql)
-        return set && mysqlRows(set)
-      },
-      postgres: async (db) => {
-        const set = await explain(db, postgres)
-        return postgresRows.assert(set?.rows[0]?.[0])
-      },
-    },
-  })
   return {
+    ...createQuery<Type<number | null>>({
+      query: {
+        clickhouse: unsupported('Row estimates'),
+        mssql: unsupported('Row estimates'),
+        mysql: async (db) => {
+          const set = await explain(db, mysql)
+          return set ? mysqlRows(set) : null
+        },
+        postgres: async (db) => {
+          const set = await explain(db, postgres)
+          return postgresRows.assert(set?.rows[0]?.[0])
+        },
+      },
+    }),
     queryIds: [mysql.queryId.queryId, postgres.queryId.queryId],
-    run: async (params: QueryParams) => {
-      const rows = await query.run(params)
-      return rows === undefined ? null : Math.round(rows)
-    },
   }
 }

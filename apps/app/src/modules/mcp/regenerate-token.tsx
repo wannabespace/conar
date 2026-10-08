@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 import { queryClient } from '~/lib/query-client'
 
 import type { ElectronMcp } from './electron-mcp'
-import { statusQueryKey } from './electron-mcp'
+import { clientsQueryKey, statusQueryKey } from './electron-mcp'
 
 export const RegenerateToken = ({ mcp }: { mcp: ElectronMcp }) => {
   const [open, setOpen] = useState(false)
@@ -33,6 +33,7 @@ export const RegenerateToken = ({ mcp }: { mcp: ElectronMcp }) => {
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => {
       queryClient.setQueryData(statusQueryKey, next)
+      queryClient.setQueryData(clientsQueryKey, [])
       setOpen(false)
     },
   })

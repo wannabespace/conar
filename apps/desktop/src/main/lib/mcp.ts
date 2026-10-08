@@ -5,7 +5,7 @@ import { createServer } from 'node:http'
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { PORTS } from '@tamery/shared/constants'
-import type { McpAccess, McpStatus } from '@tamery/shared/mcp'
+import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
@@ -15,11 +15,13 @@ const newToken = () => randomBytes(32).toString('base64url')
 
 const store = new Store<{
   access: Record<string, Exclude<McpAccess, 'ask'>>
+  clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
   token: string
 }>({
   defaults: {
     access: {},
+    clients: {},
     enabled: true,
     token: newToken(),
   },
@@ -28,6 +30,13 @@ const store = new Store<{
 
 let httpServer: Server | null = null
 let error: string | null = null
+
+const recordClient = (client: Pick<McpClient, 'name' | 'version'>) => {
+  store.set('clients', {
+    ...store.get('clients'),
+    [client.name]: { connectedAt: Date.now(), version: client.version },
+  })
+}
 
 const handle = async (req: IncomingMessage, res: ServerResponse) => {
   if (req.url !== '/mcp') {
@@ -49,6 +58,10 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
   })
   // Closing the server aborts each tool call's `signal`, which cancels its query in the renderer.
   res.on('close', () => {
+    const client = server.server.getClientVersion()
+    if (client) {
+      recordClient(client)
+    }
     void server.close()
   })
   try {
@@ -95,10 +108,15 @@ const status = (): McpStatus => {
 const connectionAccess = () => store.get('access')
 
 export const mcp = {
+  clients: (): McpClient[] =>
+    Object.entries(store.get('clients'))
+      .map(([name, client]) => ({ name, ...client }))
+      .toSorted((a, b) => b.connectedAt - a.connectedAt),
   connectionAccess,
   notify: notifyUnfocused,
   regenerateToken: () => {
     store.set('token', newToken())
+    store.set('clients', {})
     return status()
   },
   setAccess: ({

@@ -7,6 +7,7 @@ import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
 import { ClientSetup } from './client-setup'
+import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
 import type { ElectronMcp } from './electron-mcp'
 import { statusQueryKey } from './electron-mcp'
@@ -54,6 +55,7 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
       {status.state === 'running' && (
         <>
           <ServerDetails mcp={mcp} token={status.token} url={status.url} />
+          <ConnectedClients mcp={mcp} />
           <ConnectionAccess mcp={mcp} />
           <ClientSetup server={status} />
         </>

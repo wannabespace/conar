@@ -13,7 +13,7 @@ const read = <T>(key: string): T | undefined => {
 const isElectron = !!window.electron
 const lastLocation = read<string>(LAST_LOCATION_KEY)
 const isConnection = /\/connection\/[^/?#]+/u.test(lastLocation ?? '')
-const isSettings = /\/settings(?:[?#]|$)/u.test(lastLocation ?? '')
+const isSettings = /\/settings(?:[/?#]|$)/u.test(lastLocation ?? '')
 const layout = isConnection
   ? (read<Record<string, number>>(SHELL_LAYOUT_KEY) ?? {})
   : {}
