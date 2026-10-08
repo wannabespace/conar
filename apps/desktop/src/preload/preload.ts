@@ -180,7 +180,11 @@ contextBridge.exposeInMainWorld('electron', {
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
     ),
+    setUsage: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setUsage', arg)
+    ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
+    usage: handleElectronError(() => ipcRenderer.invoke('mcp.usage')),
   },
   menu: {
     popup: handleElectronError((arg: unknown) =>

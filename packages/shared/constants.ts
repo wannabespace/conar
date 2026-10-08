@@ -44,6 +44,7 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
 ] as const
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
+export const FREE_MCP_QUERIES_WEEKLY_LIMIT = 100 as const
 export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 
 export const API_KEY_PERMISSIONS = {

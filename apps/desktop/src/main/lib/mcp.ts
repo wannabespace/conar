@@ -10,7 +10,12 @@ import {
   isJSONRPCRequest,
 } from '@modelcontextprotocol/sdk/types.js'
 import { PORTS } from '@tamery/shared/constants'
-import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
+import type {
+  McpAccess,
+  McpClient,
+  McpStatus,
+  McpUsage,
+} from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import Store from 'electron-store'
 
@@ -24,12 +29,14 @@ const store = new Store<{
   clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
   token: string
+  usage: McpUsage
 }>({
   defaults: {
     access: {},
     clients: {},
     enabled: true,
     token: newToken(),
+    usage: { count: 0, resetsAt: 0 },
   },
   name: 'mcp',
 })
@@ -232,7 +239,9 @@ export const mcp = {
     await (enabled ? start() : stop())
     return status()
   },
+  setUsage: (usage: McpUsage) => store.set('usage', usage),
   status,
+  usage: () => store.get('usage'),
 }
 
 export const restoreMcpServer = async () => {

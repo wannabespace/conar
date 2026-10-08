@@ -12,6 +12,7 @@ import { ConnectionAccess } from './connection-access'
 import type { ElectronMcp } from './electron-mcp'
 import { statusQueryKey } from './electron-mcp'
 import { ServerDetails } from './server-details'
+import { WeeklyQuota } from './weekly-quota'
 
 export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
   const { data: status } = useQuery({
@@ -54,6 +55,7 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
       )}
       {status.state === 'running' && (
         <>
+          <WeeklyQuota />
           <ServerDetails mcp={mcp} token={status.token} url={status.url} />
           <ConnectedClients mcp={mcp} />
           <ConnectionAccess mcp={mcp} />

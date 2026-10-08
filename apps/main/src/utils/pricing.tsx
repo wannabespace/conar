@@ -50,7 +50,7 @@ export const PRO_PLAN: PricingPlan = {
       name: 'Everything in Hobby',
     },
     {
-      description: 'More AI features and unlimited queries',
+      description: 'More AI features, unlimited queries and MCP',
       name: 'Advanced AI',
     },
     {

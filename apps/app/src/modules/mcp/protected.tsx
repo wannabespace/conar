@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import type { ProtectedModule } from '~/lib/module'
 
 import { ApprovalDialog } from './approval-dialog'
+import { LimitDialog } from './limit-dialog'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
@@ -18,7 +19,7 @@ const Settings = () =>
 
 export default (window.electron
   ? {
-      mounts: [McpSourceMount, ApprovalDialog],
+      mounts: [McpSourceMount, ApprovalDialog, LimitDialog],
       settings: [
         {
           Component: Settings,

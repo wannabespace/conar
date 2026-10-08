@@ -14,6 +14,7 @@ import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
 import * as internal from './internal'
+import * as mcp from './mcp'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
@@ -31,6 +32,7 @@ export const router = {
   connectionsResources,
   contact,
   internal,
+  mcp,
   queries,
   releases,
   repo,

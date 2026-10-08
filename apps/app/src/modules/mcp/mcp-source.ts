@@ -33,6 +33,7 @@ import {
   resolveResource,
   resolveTarget,
 } from './target'
+import { assertQuota, recordQuery } from './usage'
 
 const agentParams = async (
   connection: Connection,
@@ -63,6 +64,7 @@ const runForAgent = async (
   try {
     const sets = await runCancellable(params, query, signal)
     success = true
+    void recordQuery()
     return sets
   } finally {
     posthog.capture('mcp_query_run', { ...event, success })
@@ -124,6 +126,7 @@ export const mcpSource: McpSource = {
         'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together.'
       )
     }
+    await assertQuota()
     const params = await agentParams(connection, resource)
     const signal = abortSignalOf(onAbort)
     if (approve) {
@@ -159,6 +162,7 @@ export const mcpSource: McpSource = {
         'Only one read-only statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) runs at a time.'
       )
     }
+    await assertQuota()
     const signal = abortSignalOf(onAbort)
     return runForAgent(
       await agentParams(connection, resource),

@@ -8,6 +8,20 @@ export type McpAccess = 'off' | 'read' | 'ask' | 'write'
 
 export const DEFAULT_MCP_ACCESS: McpAccess = 'ask'
 
+/** Agent `query` and `execute` runs this device counted toward the free plan's weekly limit. */
+export interface McpUsage {
+  count: number
+  resetsAt: number
+}
+
+/** Next Monday 00:00 UTC — the device and the API must agree on the week, since the higher of their counts wins. */
+export const mcpQuotaResetsAt = (now = new Date()) =>
+  Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - ((now.getUTCDay() + 6) % 7) + 7
+  )
+
 export interface McpConnection {
   id: string
   name: string
