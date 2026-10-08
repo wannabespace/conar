@@ -62,9 +62,10 @@ export const useFilterAi = ({
   const { data: enums } = useQuery(
     resourceEnumsQueryOptions({ connectionResource })
   )
+  const { check } = usePermissions()
   const { data: usage } = useQuery({
     ...usageQueryOptions,
-    enabled: usePermissions().check('ai.filter.use'),
+    enabled: check('ai.filter.use') && !check('ai.filter.unlimited'),
   })
   const freeAiUsage = usage?.filters && {
     max: usage.filters.max,

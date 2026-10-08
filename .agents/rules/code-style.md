@@ -2,7 +2,9 @@
 
 Lint + format = **Ultracite** (Oxlint + Oxfmt preset): `pnpm run check` (read-only), `pnpm run fix` (autofix), or per-file `pnpm oxlint --fix <paths>` + `pnpm oxfmt <paths>`. Most style issues are autofixable — run `fix` and spend attention on what it cannot check: naming, business logic, architecture, edge cases.
 
-`oxlint.config.ts` turns rules **off** only where a preset rule contradicts how this repo works, each with the reason inline. A rule that merely fails is a defect to fix, not an entry to add.
+`oxlint.config.ts` turns rules **off** only where a preset rule contradicts how this repo works, each with the reason inline. A rule that merely fails is a defect to fix, not an entry to add. Directives that suppress nothing: `pnpm exec oxlint -c oxlint.config.ts --report-unused-disable-directives <paths>`.
+
+Lint vetoes some obvious rewrites: `no-nested-ternary` (a three-way value is an `if` chain); `prefer-array-index-of` rejects `findIndex((x) => x === v)`, so an `indexOf(… as HTMLElement)` cast stays; `hook-use-state` rejects destructuring an object state in the `useState` line — take `[thing, setThing]` and destructure on the next line.
 
 ## Design-system lint (`@shadcn/lint`)
 
@@ -26,7 +28,10 @@ The `shadcn/*` rules enforce the `tamery-ui` hard rules: `no-restyle` is rule 11
 
 ## Repo-specific, not linted
 
-- React 19: `ref` as a prop, no `forwardRef`. No `useMemo`/`useCallback` (`architecture.md` → Memoization).
+- The app is unreleased: no compatibility shims, aliases or migration fallbacks are owed.
+- React 19: `ref` as a prop, no `forwardRef`. No `useMemo`/`useCallback` (`architecture.md` → Memoization) — but `react-hooks(exhaustive-deps)` outranks that: where it demands a stable identity, the memo stays.
+- Separate seitu `useSubscription`s that feed effect deps stay separate: it deep-compares selector results, so folding them into one `pick` changes which references the effect sees.
+- Kit variants live in `<component>.utils.ts` as `cva`, not as a record inside the `.tsx`.
 - **A file holds one subject.** A second component, a hook with its own state, a layout branch or a helper set goes in its own file, however short the file is; 300 lines is the ceiling, not the trigger, and one past it is always more than one subject. Split by subject, and move anything not tied to a Tamery feature into the package that owns the library (Monaco plumbing into `@tamery/monaco`).
 - **A file is named after its subject; `utils.ts` is the only generic name.** Never `lib`, `helpers`, `shared`, `common` — one word or none. `utils.ts` is the leftover bin for unrelated one-offs with no shared subject, at most one per folder; a file with a real subject takes the subject's name (`base64.ts`, `slugify.ts`, `layout.ts`). A `utils/` **folder** is the same word twice — put the files at the parent level instead.
 - **A cast is a smell.** Narrow, or model the shape in ArkType instead of `as` — a schema deletes both the cast and the validation gap. A surviving cast sits at a wire boundary with a warning comment saying why.

@@ -1,6 +1,6 @@
 import { generateFilters } from '@tamery/ai/features'
 import { AiFeature } from '@tamery/ai/usage'
-import { FREE_LIMITS } from '@tamery/shared/usage'
+import { FREE_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -18,6 +18,7 @@ export const filters = orpc
   )
   .errors({
     FORBIDDEN: {
+      data: type({ max: 'number', remaining: 'number', resetAt: 'Date' }),
       message:
         'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
     },
@@ -33,7 +34,13 @@ export const filters = orpc
       !unlimited &&
       (await getUsage(context.user.id, 'filters')) >= FREE_LIMITS.filters.max
     ) {
-      throw errors.FORBIDDEN()
+      throw errors.FORBIDDEN({
+        data: {
+          max: FREE_LIMITS.filters.max,
+          remaining: 0,
+          resetAt: new Date(usageResetsAt('filters')),
+        },
+      })
     }
 
     const result = await generateFilters({

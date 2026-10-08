@@ -8,12 +8,6 @@ export type McpAccess = 'off' | 'read' | 'ask' | 'write'
 
 export const DEFAULT_MCP_ACCESS: McpAccess = 'ask'
 
-/** Agent `query` and `execute` runs this device counted toward the free plan's weekly limit. */
-export interface McpUsage {
-  count: number
-  resetsAt: number
-}
-
 export interface McpConnection {
   id: string
   name: string
@@ -26,29 +20,38 @@ export interface McpTarget {
   resource?: string
 }
 
-/** Answered by a signed-in window: connections, their decryption key and the query runtime live in the renderer. Main owns each connection's access and refuses a call it does not allow before asking, so the window runs whatever it is asked. */
+/** Registers the listener the caller fires when the agent goes away; an `AbortSignal` cannot cross the context bridge. */
+type OnAbort = (listener: () => void) => void
+
+/** Answered by a signed-in window: connections, their decryption key and the query runtime live in the renderer. Main owns each connection's access and refuses a call it does not allow before asking, so the window runs whatever it is asked. Every method takes `(args, onAbort)` so the bridge dispatches by name. */
 export interface McpSource {
-  connections: () => McpConnection[]
-  createConnection: (args: {
-    connectionString: string
-    name: string
-    syncType: SyncType
-    type: ConnectionType
-  }) => Promise<McpConnection>
+  connections: (args: undefined, onAbort: OnAbort) => McpConnection[]
+  createConnection: (
+    args: {
+      connectionString: string
+      name: string
+      syncType: SyncType
+      type: ConnectionType
+    },
+    onAbort: OnAbort
+  ) => Promise<McpConnection>
   describeTable: (
-    args: McpTarget & { schema: string; table: string }
+    args: McpTarget & { schema: string; table: string },
+    onAbort: OnAbort
   ) => Promise<unknown>
-  /** `approve`: hold the statement until the user approves it. `onAbort` as in `query`. */
+  /** `approve`: hold the statement until the user approves it. */
   execute: (
     args: McpTarget & { sql: string; approve: boolean },
-    onAbort: (listener: () => void) => void
+    onAbort: OnAbort
   ) => Promise<unknown>
-  /** `onAbort` registers the listener the caller fires when the agent goes away; an `AbortSignal` cannot cross the context bridge. */
   query: (
     args: McpTarget & { sql: string },
-    onAbort: (listener: () => void) => void
+    onAbort: OnAbort
   ) => Promise<unknown>
-  tables: (args: McpTarget & { schema?: string }) => Promise<unknown>
+  tables: (
+    args: McpTarget & { schema?: string },
+    onAbort: OnAbort
+  ) => Promise<unknown>
 }
 
 export type McpRequest = {

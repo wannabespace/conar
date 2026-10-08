@@ -74,10 +74,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Developer experience
 
-- **MCP read-only boundary.** Reject MySQL executable comments that can hide `INTO OUTFILE` and SQL Server's `NEXT VALUE FOR`, whose sequence changes survive rollback. Keep regression coverage at the SQL admission boundary.
-- **MCP request cancellation.** Cancel pending approvals and running queries when the HTTP caller disconnects; check an already-aborted signal before execution and carry cancellation through query startup so a cancel cannot miss a queued write.
-- **MCP approval target.** Show the selected database beside the connection name, so writes to different databases on one connection have distinguishable approval dialogs.
-
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
 
 ## AI

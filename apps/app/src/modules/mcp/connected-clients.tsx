@@ -3,13 +3,13 @@ import { formatDistanceStrict } from 'date-fns'
 
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 
-import type { ElectronMcp } from './electron-mcp'
+import { mcp } from './electron-mcp'
 
-export const ConnectedClients = ({ mcp }: { mcp: ElectronMcp }) => {
+export const ConnectedClients = () => {
   const { data: clients, dataUpdatedAt } = useQuery({
     queryFn: () => mcp.clients(),
     queryKey: ['mcp', 'clients'],
-    refetchInterval: 1000,
+    refetchInterval: 10_000,
   })
 
   if (!clients?.length) {

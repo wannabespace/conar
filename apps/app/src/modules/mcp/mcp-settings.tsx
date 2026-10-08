@@ -9,12 +9,11 @@ import { queryClient } from '~/lib/query-client'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
-import type { ElectronMcp } from './electron-mcp'
-import { statusQueryKey } from './electron-mcp'
+import { mcp, statusQueryKey } from './electron-mcp'
 import { ServerDetails } from './server-details'
 import { WeeklyQuota } from './weekly-quota'
 
-export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
+export const McpSettings = () => {
   const { data: status } = useQuery({
     queryFn: () => mcp.status(),
     queryKey: statusQueryKey,
@@ -56,9 +55,9 @@ export const McpSettings = ({ mcp }: { mcp: ElectronMcp }) => {
       {status.state === 'running' && (
         <>
           <WeeklyQuota />
-          <ServerDetails mcp={mcp} token={status.token} url={status.url} />
-          <ConnectedClients mcp={mcp} />
-          <ConnectionAccess mcp={mcp} />
+          <ServerDetails token={status.token} url={status.url} />
+          <ConnectedClients />
+          <ConnectionAccess />
           <ClientSetup server={status} />
         </>
       )}

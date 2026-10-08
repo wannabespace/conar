@@ -3,16 +3,11 @@ import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'
 import { CopyValue } from './copy-value'
-import type { ElectronMcp } from './electron-mcp'
 import { RegenerateToken } from './regenerate-token'
 
 const VISIBLE_TOKEN_CHARS = 4
 
-export const ServerDetails = ({
-  mcp,
-  token,
-  url,
-}: McpEndpoint & { mcp: ElectronMcp }) => (
+export const ServerDetails = ({ token, url }: McpEndpoint) => (
   <SettingsGroup title="Server">
     <SettingsRow
       title="URL"
@@ -41,7 +36,7 @@ export const ServerDetails = ({
           posthog.capture('mcp_server_value_copied', { value: 'token' })
         }
       />
-      <RegenerateToken mcp={mcp} />
+      <RegenerateToken />
     </SettingsRow>
   </SettingsGroup>
 )

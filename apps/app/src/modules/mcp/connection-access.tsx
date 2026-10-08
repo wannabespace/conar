@@ -16,7 +16,7 @@ import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
-import type { ElectronMcp } from './electron-mcp'
+import { mcp } from './electron-mcp'
 
 const ACCESS: { label: string; value: McpAccess }[] = [
   { label: 'Not shared', value: 'off' },
@@ -27,7 +27,7 @@ const ACCESS: { label: string; value: McpAccess }[] = [
 
 const accessQueryKey = ['mcp', 'connection-access']
 
-export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
+export const ConnectionAccess = () => {
   const { connectionsCollection } = useCollections()
   const { data: connections } = useLiveQuery({
     query: (q) =>
@@ -41,7 +41,7 @@ export const ConnectionAccess = ({ mcp }: { mcp: ElectronMcp }) => {
   })
   const { mutate: setAccess } = useMutation({
     meta: { event: 'mcp_connection_access_changed' },
-    mutationFn: (args: Parameters<ElectronMcp['setAccess']>[0]) =>
+    mutationFn: (args: Parameters<typeof mcp.setAccess>[0]) =>
       mcp.setAccess(args),
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => queryClient.setQueryData(accessQueryKey, next),

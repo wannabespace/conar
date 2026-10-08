@@ -15,7 +15,13 @@ import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { SidebarMenuButton } from '~/components/sidebar-menu-button'
+import {
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+} from '~/components/sidebar'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
@@ -25,12 +31,6 @@ import { createViewDialogRef } from './create-view-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { pinnedTable } from './pinned-tables'
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from './primitives'
 import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
@@ -166,7 +166,7 @@ export const TablesList = ({
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
             <SidebarMenuItem key={index}>
-              <SidebarMenuSkeleton seed={index} showIcon />
+              <SidebarMenuSkeleton seed={index} />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

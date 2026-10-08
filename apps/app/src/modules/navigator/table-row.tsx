@@ -22,7 +22,7 @@ import { useSubscription } from 'seitu/react'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
-import { SidebarMenuButton } from '~/components/sidebar-menu-button'
+import { SidebarMenuAction, SidebarMenuButton } from '~/components/sidebar'
 import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
@@ -31,7 +31,6 @@ import { checkOrUpgrade } from '~/core/user/permissions'
 import { openNewWindow } from '~/lib/new-window'
 
 import { pinnedTable } from './pinned-tables'
-import { SidebarMenuAction } from './primitives'
 import {
   RowLevelSecurityMark,
   useRowLevelSecurityItems,
@@ -155,7 +154,7 @@ export const TableRow = ({
             <HugeiconsIcon
               icon={Icon}
               strokeWidth={2}
-              className="text-primary/75 size-4"
+              className="text-primary/75"
             />
             {hasDrafts && (
               <Indicator

@@ -4,25 +4,23 @@ import { useEffect } from 'react'
 import type { ProtectedModule } from '~/lib/module'
 
 import { ApprovalDialog } from './approval-dialog'
+import { mcp } from './electron-mcp'
 import { LimitDialog } from './limit-dialog'
 import { McpSettings } from './mcp-settings'
 import { mcpSource } from './mcp-source'
 
 const McpSourceMount = () => {
-  useEffect(() => window.electron?.mcp.serve(mcpSource), [])
+  useEffect(() => mcp.serve(mcpSource), [])
 
   return null
 }
-
-const Settings = () =>
-  window.electron ? <McpSettings mcp={window.electron.mcp} /> : null
 
 export default (window.electron
   ? {
       mounts: [McpSourceMount, ApprovalDialog, LimitDialog],
       settings: [
         {
-          Component: Settings,
+          Component: McpSettings,
           icon: McpServerIcon,
           id: 'mcp',
           label: 'MCP',

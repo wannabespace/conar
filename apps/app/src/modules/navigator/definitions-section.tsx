@@ -7,16 +7,15 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
-import { SidebarMenuButton } from '~/components/sidebar-menu-button'
-import { openTab } from '~/core/tabs/actions'
-import { appModules } from '~/lib/modules'
-
 import {
   SidebarContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
-} from './primitives'
+} from '~/components/sidebar'
+import { openTab } from '~/core/tabs/actions'
+import { appModules } from '~/lib/modules'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -92,7 +91,7 @@ export const DefinitionsPanel = () => {
                     <HugeiconsIcon
                       icon={icon}
                       strokeWidth={2}
-                      className="text-muted-foreground size-4 shrink-0"
+                      className="text-muted-foreground"
                     />
                     <span className="truncate">
                       <HighlightText text={label} match={search} />

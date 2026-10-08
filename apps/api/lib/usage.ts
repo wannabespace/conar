@@ -12,9 +12,12 @@ export const getUsage = async (userId: string, feature: MeteredFeature) =>
 export const recordUsage = async (userId: string, feature: MeteredFeature) => {
   const resetsAt = usageResetsAt(feature)
   const key = keyOf(userId, feature, resetsAt)
-  const used = await redis.incr(key)
-  await redis.expire(key, Math.ceil((resetsAt - Date.now()) / 1000))
-  return used
+  const [used] = await redis
+    .multi()
+    .incr(key)
+    .expireAt(key, new Date(resetsAt))
+    .exec()
+  return Number(used)
 }
 
 export const quotaOf = (feature: MeteredFeature, used: number) => ({

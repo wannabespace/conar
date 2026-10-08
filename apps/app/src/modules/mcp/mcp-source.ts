@@ -100,9 +100,7 @@ export const mcpSource: McpSource = {
     }
     await testConnectionQuery.run({ connectionString, type })
     const { id } = await createConnection({
-      color: null,
       connectionString,
-      label: null,
       name,
       syncType,
       type,

@@ -43,7 +43,6 @@ const ESTIMATED_COMMANDS = new Set([
   'UPDATE',
 ])
 
-/** The planner's guess at how many rows one write touches, without running it; `null` where the engine or statement has none. */
 export const estimateQuery = (
   text: string,
   connectionType: ConnectionType,

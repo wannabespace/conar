@@ -27,42 +27,40 @@ export const LimitDialog = () => {
       open={open}
       onOpenChange={(next) => limitDialog.set({ open: next })}
     >
-      {open && (
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Agents used this week&rsquo;s queries</DialogTitle>
-            <DialogDescription>
-              The free plan includes {FREE_LIMITS.mcp.max} agent queries a week
-              through MCP. They come back on{' '}
-              {format(usageResetsAt('mcp'), 'EEEE, MMMM d')}, or upgrade to Pro
-              for no limit.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={close}>
-              Later
-            </Button>
-            <Button
-              render={
-                <a
-                  href={accountUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Upgrade to Pro"
-                />
-              }
-              onClick={close}
-            >
-              Upgrade to Pro
-              <HugeiconsIcon
-                icon={LinkSquare02Icon}
-                strokeWidth={2}
-                data-icon="inline-end"
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Agents used this week&rsquo;s queries</DialogTitle>
+          <DialogDescription>
+            The free plan includes {FREE_LIMITS.mcp.max} agent queries a week
+            through MCP. They come back on{' '}
+            {format(usageResetsAt('mcp'), 'EEEE, MMMM d')}, or upgrade to Pro
+            for no limit.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={close}>
+            Later
+          </Button>
+          <Button
+            render={
+              <a
+                href={accountUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Upgrade to Pro"
               />
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      )}
+            }
+            onClick={close}
+          >
+            Upgrade to Pro
+            <HugeiconsIcon
+              icon={LinkSquare02Icon}
+              strokeWidth={2}
+              data-icon="inline-end"
+            />
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   )
 }

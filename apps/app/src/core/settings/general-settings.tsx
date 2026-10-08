@@ -28,7 +28,7 @@ export const GeneralSettings = () => {
           checked={isShortcutRevealOn}
           onCheckedChange={(enabled) => {
             shortcutRevealStore.set(enabled)
-            void posthog.capture('shortcut_reveal_toggled', { enabled })
+            posthog.capture('shortcut_reveal_toggled', { enabled })
           }}
         />
       </SettingsRow>

@@ -1,4 +1,4 @@
-import { useKeyHold } from '@tanstack/react-hotkeys'
+import { getKeyStateTracker, useKeyHold } from '@tanstack/react-hotkeys'
 import { type } from 'arktype'
 import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -25,8 +25,16 @@ export const useShortcutReveal = () => {
       return
     }
     const timeout = setTimeout(() => setHeldLongEnough(true), REVEAL_DELAY_MS)
+    // Hints hit-test their trigger only when they render, so a shortcut pressed mid-hold ends the reveal: the dialog or menu it opens would sit under hints nothing re-checks.
+    const combo = getKeyStateTracker().store.subscribe(({ heldKeys }) => {
+      if (heldKeys.length > 1) {
+        clearTimeout(timeout)
+        setHeldLongEnough(false)
+      }
+    })
     return () => {
       clearTimeout(timeout)
+      combo.unsubscribe()
       setHeldLongEnough(false)
     }
   }, [isHeld])

@@ -1,18 +1,20 @@
-import { FREE_LIMITS, usageResetsAt } from '@tamery/shared/usage'
+import { FREE_LIMITS } from '@tamery/shared/usage'
 import { Button } from '@tamery/ui/components/button'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
-
-import { usedQueryOptions } from './usage'
+import { usageQueryOptions } from '~/core/user/usage'
 
 export const WeeklyQuota = () => {
   const unlimited = usePermissions().check('mcp.unlimited')
-  const { data: used } = useQuery({ ...usedQueryOptions, enabled: !unlimited })
+  const { data: usage } = useQuery({
+    ...usageQueryOptions,
+    enabled: !unlimited,
+  })
 
-  if (unlimited || used === undefined) {
+  if (unlimited || !usage?.mcp) {
     return null
   }
 
@@ -20,10 +22,10 @@ export const WeeklyQuota = () => {
     <SettingsGroup>
       <SettingsRow
         title="Agent queries this week"
-        description={`The free plan includes ${FREE_LIMITS.mcp.max} a week, counting each query and execute. They come back on ${format(usageResetsAt('mcp'), 'EEEE')}; Pro removes the limit.`}
+        description={`The free plan includes ${FREE_LIMITS.mcp.max} a week, counting each query and execute. They come back on ${format(usage.mcp.resetAt, 'EEEE')}; Pro removes the limit.`}
       >
         <span className="text-muted-foreground text-xs tabular-nums">
-          {Math.max(0, FREE_LIMITS.mcp.max - used)} left
+          {Math.max(0, usage.mcp.max - usage.mcp.used)} left
         </span>
         <Button
           size="xs"

@@ -17,7 +17,7 @@ import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
-import { usage } from './usage'
+import * as usage from './usage'
 import * as webhooks from './webhooks'
 import * as workspaces from './workspaces'
 

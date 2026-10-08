@@ -7,7 +7,7 @@
 | Table page state | Two seitu stores per `{id, schema, table}`: `tablePageStore` (localStorage) and `tableSessionStore` (memory). **Selection and drafts never persist** — they are large, change per click, and every cell subscribes, so persisting them makes each notify re-read and re-compare the stored JSON. |
 | Persisted collections | `persistedCollectionOptions` takes `schemaVersion: PERSISTED_SCHEMA_VERSION`, never a literal — mixed versions reset each other's tables on every boot. Bump the const to invalidate all local data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
-| Permissions | Permix, defined once in `packages/shared/permissions.ts`: `permissionsOf({ subscription, user })` maps the user and their active subscription to rules (anonymous = guest, else subscription = pro, else free). Server procedures `.use(permissionsMiddleware)` then `permix.checkMiddleware('<entity>.<action>')`, or check `context.permissions` inline when the refusal needs its own declared error. The client instance (`core/user/permissions.ts`) has no rules until `loadPermissions()`, which the `_protected` guard awaits before anything renders. **Render reads `usePermissions().check`** (a plain `permix.check` in render never sees the real access arrive); a press on a locked control goes through `checkOrUpgrade(path, data?)`, which prompts a guest to sign in or opens the subscription dialog for a member; plain `permix.check` is for route guards and lazily built menus. Only user/plan grants live here — what a database engine supports stays the `capabilities.ts` record. Metered free-plan features (AI filters, MCP) take their limit and period from `FREE_LIMITS` (`@tamery/shared/usage`), count in Redis through `apps/api/lib/usage.ts`, and report through the one `usage` endpoint; the matching `unlimited` permission skips the count. |
+| Permissions | Permix, defined once in `packages/shared/permissions.ts`: `permissionsOf({ subscription, user })` maps the user and their active subscription to rules (anonymous = guest, else subscription = pro, else free). Server procedures `.use(permissionsMiddleware)` then `permix.checkMiddleware('<entity>.<action>')`, or check `context.permissions` inline when the refusal needs its own declared error. The client instance (`core/user/permissions.ts`) has no rules until `loadPermissions()`, which the `_protected` guard awaits before anything renders. **Render reads `usePermissions().check`** (a plain `permix.check` in render never sees the real access arrive); a press on a locked control goes through `checkOrUpgrade(path, data?)`, which prompts a guest to sign in or opens the subscription dialog for a member; plain `permix.check` is for route guards and lazily built menus. Only user/plan grants live here — what a database engine supports stays the `capabilities.ts` record. Metered free-plan features (AI filters, MCP) take their limit and period from `FREE_LIMITS` (`@tamery/shared/usage`), count in Redis through `apps/api/lib/usage.ts`, and report through the `usage.get` endpoint (`usage.record` counts what the client runs itself); the matching `unlimited` permission skips the count. |
 | Auth | Better Auth — not custom JWT, not NextAuth. The client session is mirrored to `localStorage` and fed back through `hydrateSession` at boot (`lib/auth.ts`), so a signed-in user boots offline; read it via `getSessionUser`, not `authClient.getSession`, which always hits the network. Client plugins come from `better-auth/client/plugins` or a plugin's own subpath; `better-auth/plugins` is the **server** barrel and drags the schema builders into the browser. |
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
@@ -54,6 +54,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
 | `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
+| `settings/` | The Settings page's core sections and the `SettingsGroup`/`SettingsRow` they and module sections are built from; a module adds a section through `ProtectedModule.settings` |
 
 ## ArkType config ordering
 
@@ -94,11 +95,35 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 - **Agents add connections, never change them**: `create_connection` goes through `createConnection` (`core/connection/create.ts`), the create page's own path, after `testConnectionQuery`; no tool edits, renames or removes a connection.
 - **Access is per connection, per device, and main is the only gate**: one `McpAccess` per connection in main's store (`off`, `read`, `ask`, `write`; absent means `ask`), and main refuses a call the access does not allow before asking a window, so the window runs whatever it is asked. `execute` is always registered and access is read on every call, since a session's server outlives an access change.
 - **Nothing an agent sends runs before an `ask` is approved**, and approval happens in the window, never in main. The only query before it is the planner's row estimate (`estimateQuery`), an `EXPLAIN` of a single statement that opens with a data verb, so no `ANALYZE` or procedure call can make it execute; it is cancelled after a few seconds, since a lock can stall it on the pool's only connection. A rollback is not a safe preview: SQL Server's batch can `COMMIT` mid-statement, and `COPY … TO PROGRAM`, `dblink` or `INTO OUTFILE` act outside the transaction.
-- **Read-only is two layers**: `readsOnly` (`@tamery/sql`) admits one statement that starts with a read verb and carries no write, permission or transaction-control word, then the transaction itself is read-only and always rolled back. Postgres and MySQL enforce the access mode, ClickHouse gets `readonly=2`; SQL Server has only the statement check and the rollback, so a hard guarantee there needs a read-only database login.
+- **Read-only is two layers**: `readsOnly` (`@tamery/sql`) admits one statement that starts with a read verb and carries no write, permission, transaction-control or session word and no listed side-effect function (`dblink`, `OPENQUERY`, advisory locks, `GET_LOCK`), then the transaction itself is read-only (ClickHouse: `readonly=2`; SQL Server: none) and always rolled back. The access mode only stops writes to the connected database — a function can still reach another server, hold a lock or signal another session — and the check is a denylist, so a hard guarantee on any engine needs a read-only database login.
 - **Sessions are the SDK's stateful Streamable HTTP mode**, one transport and server per session, kept in memory: a restart or half an hour idle drops them and clients start a new session on the 404. A client that drops its HTTP request never sends `notifications/cancelled`, so main sends it for them and the tool call's signal aborts. Clients are known only by the name they report at `initialize`, so that name is never an access control — the token is.
-- **Free plans get `FREE_LIMITS.mcp` runs of `query` and `execute` a week, enforced on the device so MCP works offline** (`modules/mcp/usage.ts`): the count lives in main's store, not `localStorage`, and each run is reported through `usage({ record: 'mcp' })`; whenever the API answers, the higher of the device's and the account's count wins, so clearing a device's data cannot reset the week. A refused call opens the limit dialog.
+- **Free plans get `FREE_LIMITS.mcp` runs of `query` and `execute` a week, counted only by the API** (`modules/mcp/usage.ts`): each run checks the account's `usage.get` and reports through `usage.record`, which returns the fresh quota into the same cache. With the API unreachable a run is neither checked nor counted — fail open, so local connections keep working offline. A refused call opens the limit dialog.
 - Requests need the bearer token stored beside the toggle; without it any local process or a DNS-rebound web page could query the user's databases.
 
 ## Reach for the library before writing machinery
 
 Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. A well-known format or algorithm (CSV/TSV, diff, glob, semver) goes to a small, maintained package rather than a hand-written parser; adding the dependency is the user's call, so propose it. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.
+
+What already owns a concern here — a dependency resolves only in a workspace that declares it:
+
+| Hand-rolled | Owner |
+| --- | --- |
+| An effect copying fetched or derived data into `useState` | Derive inline; TanStack Query `select`; `useLiveQuery` |
+| Loading / error / pending flags around a call | `useQuery` / `useMutation` state |
+| An async function cached by its arguments | `memoize` (`memoza`) |
+| UI state shared across components or persisted locally | seitu `createStore` / `createWebStorageValue`, read with `useSubscription` |
+| A `keydown` listener or container `onKeyDown` | `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
+| An app-wide event (save, refresh pressed) | `globalHooks` (`~/lib/global-hooks`, hookable) |
+| `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |
+| A runtime check followed by `as` | An ArkType schema |
+| `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
+| `n === 1 ? '' : 's'` | `plural` (`~/lib/plural`) |
+| CSV / TSV | `d3-dsv` |
+| Identifier casing | `change-case` |
+| Date math or formatting | `date-fns`, `@date-fns/tz` for zones |
+| SQL pretty-printing | `formatSql` (`~/lib/formatter`) |
+| A long list | `@tamery/ui/hooks/use-virtualizer` |
+| Scroll pinned to the bottom | `use-stick-to-bottom` |
+| An animated number | Kit `NumberFlow` |
+| A class string switched on props | A `cva` variant in `<component>.utils.ts`, `cn` at the call site |
+| Markup a registry component covers | The kit, else `pnpm dlx shadcn@latest search @shadcn -q <term>` |

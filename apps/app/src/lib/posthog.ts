@@ -11,6 +11,9 @@ export const analyticsStore = createWebStorageValue({
   type: 'localStorage',
 })
 
+let instance: Promise<PostHog> | null = null
+let identity: Parameters<PostHog['identify']> | null = null
+
 const init = async () => {
   const { default: posthogJs } = await import('posthog-js')
 
@@ -32,13 +35,15 @@ const init = async () => {
   }
   apply(analyticsStore.get())
   analyticsStore.subscribe(apply)
+  if (identity) {
+    client.identify(...identity)
+  }
   return client
 }
 
-let instance: Promise<PostHog> | null = null
-
+// A loaded client keeps receiving identify/reset while opted out, or the next opt-in sends events under the previous user's id.
 const withClient = async (run: (client: PostHog) => void) => {
-  if (analyticsStore.get()) {
+  if (analyticsStore.get() || instance) {
     run(await (instance ??= init()))
   }
 }
@@ -48,8 +53,12 @@ export const posthog = {
     withClient((client) => client.capture(...args)),
   captureException: (...args: Parameters<PostHog['captureException']>) =>
     withClient((client) => client.captureException(...args)),
-  identify: (...args: Parameters<PostHog['identify']>) =>
-    withClient((client) => client.identify(...args)),
-  reset: (...args: Parameters<PostHog['reset']>) =>
-    withClient((client) => client.reset(...args)),
+  identify: (...args: Parameters<PostHog['identify']>) => {
+    identity = args
+    return withClient((client) => client.identify(...args))
+  },
+  reset: (...args: Parameters<PostHog['reset']>) => {
+    identity = null
+    return withClient((client) => client.reset(...args))
+  },
 }

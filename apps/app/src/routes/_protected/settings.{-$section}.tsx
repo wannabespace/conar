@@ -19,7 +19,7 @@ import {
 } from '@tanstack/react-router'
 import { useRef } from 'react'
 
-import { SidebarMenuButton } from '~/components/sidebar-menu-button'
+import { SidebarMenuButton } from '~/components/sidebar'
 import { settingsSections } from '~/core/settings/sections'
 import { pressNavProps } from '~/lib/press-nav'
 import {
@@ -31,7 +31,7 @@ import {
 const routeApi = getRouteApi('/_protected/settings/{-$section}')
 
 const SettingsPage = () => {
-  const { activeSection, sections } = routeApi.useRouteContext()
+  const { activeSection, sections } = routeApi.useLoaderData()
   const navigate = useNavigate()
   const router = useRouter()
   const canGoBack = useCanGoBack()
@@ -118,7 +118,7 @@ const SettingsPage = () => {
 }
 
 export const Route = createFileRoute('/_protected/settings/{-$section}')({
-  beforeLoad: ({ params }) => {
+  loader: ({ params }) => {
     const sections = settingsSections()
     const activeSection = params.section
       ? sections.find(({ id }) => id === params.section)

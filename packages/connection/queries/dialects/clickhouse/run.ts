@@ -5,14 +5,20 @@ import { hasRoom, resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { getClient } from './client'
 
-const ROW_RETURNING_KEYWORDS = [
+// `client.query` appends a FORMAT clause, which only a statement that returns rows accepts.
+const ROW_RETURNING_COMMANDS = new Set([
+  'CHECK',
+  'DESC',
+  'DESCRIBE',
+  'EXISTS',
+  'EXPLAIN',
   'SELECT',
   'SHOW',
-  'DESCRIBE',
-  'EXPLAIN',
   'WITH',
-  'CHECK',
-]
+])
+// Leading comments and parentheses skipped. Each comment matches exactly one way, or a text without a word backtracks exponentially.
+const FIRST_WORD =
+  /^(?:\s|\(|(?:--|#)[^\n]*(?:\n|$)|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?<command>\w+)/u
 
 const bigIntegerType = /^(?:Nullable\()?U?Int(?:64|128|256)\b/u
 
@@ -61,8 +67,8 @@ export const runQuery = ({
   }
 
   return cancellable({ cancel, connectionString, queryId }, async () => {
-    const statement = sql.trim().toUpperCase()
-    if (!ROW_RETURNING_KEYWORDS.some((word) => statement.startsWith(word))) {
+    const command = FIRST_WORD.exec(sql)?.groups?.command?.toUpperCase() ?? ''
+    if (!ROW_RETURNING_COMMANDS.has(command)) {
       await client.command({
         abort_signal: controller.signal,
         // 2, not 1: 1 also forbids the output settings every query passes.

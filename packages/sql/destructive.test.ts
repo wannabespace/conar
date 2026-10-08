@@ -79,6 +79,18 @@ describe('destructiveKeywords', () => {
         dialects[ConnectionType.MSSQL]
       )
     ).toEqual(['DELETE'])
+    expect(
+      destructiveKeywords(
+        'CREATE TABLE t (ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)',
+        mysql
+      )
+    ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'CREATE RULE r AS ON UPDATE TO t DO INSTEAD NOTHING',
+        pg
+      )
+    ).toEqual([])
     expect(destructiveKeywords('EXPLAIN DELETE FROM t', pg)).toEqual([])
     expect(destructiveKeywords('EXPLAIN ANALYZE DELETE FROM t', pg)).toEqual([
       'DELETE',
@@ -199,6 +211,27 @@ describe('readsOnly', () => {
     expect(readsOnly('SELECT NEXT VALUE FOR dbo.seq', mssql)).toBe(false)
     expect(readsOnly('SELECT NEXT VALUE FOR seq', mysql)).toBe(false)
     expect(readsOnly('SELECT next, value FROM t', pg)).toBe(true)
+  })
+
+  it('rejects functions that act outside the transaction or outlive it', () => {
+    expect(
+      readsOnly("SELECT dblink_exec('dbname=x', 'DROP TABLE users')", pg)
+    ).toBe(false)
+    expect(readsOnly('SELECT pg_advisory_lock(1)', pg)).toBe(false)
+    expect(readsOnly('SELECT pg_terminate_backend(42)', pg)).toBe(false)
+    expect(readsOnly("SELECT GET_LOCK('a', 10)", mysql)).toBe(false)
+    expect(
+      readsOnly("SELECT * FROM OPENQUERY(srv, 'DELETE FROM users')", mssql)
+    ).toBe(false)
+    expect(readsOnly("SELECT 1 SETUSER 'dbo'", mssql)).toBe(false)
+    expect(
+      readsOnly(
+        'SELECT 1 OPEN SYMMETRIC KEY k DECRYPTION BY PASSWORD = 1',
+        mssql
+      )
+    ).toBe(false)
+    expect(readsOnly('SELECT 1 REVERT', mssql)).toBe(false)
+    expect(readsOnly('SELECT get_lock FROM t', mysql)).toBe(true)
   })
 
   it('rejects MySQL executable comments', () => {

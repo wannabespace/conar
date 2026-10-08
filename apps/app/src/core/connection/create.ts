@@ -11,8 +11,8 @@ export const createConnection = async (data: {
   name: string
   type: ConnectionType
   syncType: SyncType
-  label: string | null
-  color: string | null
+  label?: string | null
+  color?: string | null
   workspaceId: string
 }) => {
   const id = v7()

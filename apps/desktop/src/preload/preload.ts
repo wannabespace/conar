@@ -74,22 +74,12 @@ const answer = (source: McpSource, request: McpRequest, port: MessagePort) => {
     port.addEventListener('message', listener)
     port.start()
   }
-  if (request.method === 'connections') {
-    return source.connections()
-  }
-  if (request.method === 'createConnection') {
-    return source.createConnection(request.args)
-  }
-  if (request.method === 'describeTable') {
-    return source.describeTable(request.args)
-  }
-  if (request.method === 'tables') {
-    return source.tables(request.args)
-  }
-  if (request.method === 'execute') {
-    return source.execute(request.args, onAbort)
-  }
-  return source.query(request.args, onAbort)
+  // TS cannot correlate `request.method` with `request.args` across the union.
+  const method = source[request.method] as (
+    args: McpRequest['args'],
+    onAbort: (listener: () => void) => void
+  ) => unknown
+  return method(request.args, onAbort)
 }
 
 ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
@@ -180,11 +170,7 @@ contextBridge.exposeInMainWorld('electron', {
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
     ),
-    setUsage: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('mcp.setUsage', arg)
-    ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
-    usage: handleElectronError(() => ipcRenderer.invoke('mcp.usage')),
   },
   menu: {
     popup: handleElectronError((arg: unknown) =>

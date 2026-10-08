@@ -33,7 +33,7 @@ export const AppearanceSettings = () => {
           onValueChange={(next) => {
             if (next) {
               themeStore.set(next)
-              void posthog.capture('theme_changed', { theme: next })
+              posthog.capture('theme_changed', { theme: next })
             }
           }}
         >

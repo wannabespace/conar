@@ -380,23 +380,26 @@ export const ActionsCenter = () => {
         ...entriesIn('Application'),
         actionEntry(
           'Settings',
-          ['preferences', 'options'],
+          ['preferences', 'options', 'general'],
           Settings02Icon,
           () => router.navigate({ to: '/settings/{-$section}' }),
           ','
         ),
-        ...settingsSections().map(({ icon, id, label }) =>
-          actionEntry(
-            `${label} settings`,
-            ['settings', 'preferences', 'options'],
-            icon,
-            () =>
-              router.navigate({
-                params: { section: id },
-                to: '/settings/{-$section}',
-              })
-          )
-        ),
+        // Bare Settings opens the first section, so it has no entry of its own.
+        ...settingsSections()
+          .slice(1)
+          .map(({ icon, id, label }) =>
+            actionEntry(
+              `${label} settings`,
+              ['settings', 'preferences', 'options'],
+              icon,
+              () =>
+                router.navigate({
+                  params: { section: id },
+                  to: '/settings/{-$section}',
+                })
+            )
+          ),
         actionEntry(
           'Reload window',
           ['restart', 'refresh'],

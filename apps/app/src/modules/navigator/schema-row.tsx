@@ -18,9 +18,9 @@ import { useParams } from '@tanstack/react-router'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
+import { SidebarGroupLabel, SidebarMenuAction } from '~/components/sidebar'
 import { parseTableTabId } from '~/core/tabs/ids'
 
-import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
 
 const useActiveTable = () => {
