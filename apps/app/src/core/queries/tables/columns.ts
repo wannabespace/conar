@@ -154,6 +154,21 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
       mssql: async (db) => {
         const query = await db
           .selectFrom('information_schema.COLUMNS')
+          .leftJoin('sys.extended_properties as ep', (join) =>
+            join
+              .on(
+                'ep.major_id',
+                '=',
+                sql<number>`OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME))`
+              )
+              .on(
+                'ep.minor_id',
+                '=',
+                sql<number>`COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'ColumnId')`
+              )
+              .on('ep.class', '=', 1)
+              .on('ep.name', '=', 'MS_Description')
+          )
           .select((eb) => [
             'TABLE_SCHEMA as schema',
             'TABLE_NAME as table',
@@ -164,22 +179,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
             'COLLATION_NAME as collation',
-            eb
-              .selectFrom('sys.extended_properties')
-              .select(sql<string>`CAST(value AS nvarchar(max))`.as('comment'))
-              .where('class', '=', 1)
-              .where('name', '=', 'MS_Description')
-              .where(
-                'major_id',
-                '=',
-                sql<number>`OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME))`
-              )
-              .where(
-                'minor_id',
-                '=',
-                sql<number>`COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'ColumnId')`
-              )
-              .as('comment'),
+            sql<string | null>`CAST(ep.value AS nvarchar(max))`.as('comment'),
             eb
               .case()
               .when('DATA_TYPE', 'in', [

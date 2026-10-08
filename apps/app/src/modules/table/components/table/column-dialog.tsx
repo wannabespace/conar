@@ -40,7 +40,6 @@ export const columnDialogRef = createRef<{
 }>()
 
 interface TableColumn extends NewColumn {
-  comment: string | null
   foreign: boolean
   id: string
   original: ColumnDefinition
@@ -72,7 +71,6 @@ export const TableColumnDialog = ({
     edit: (column) => {
       const original = columnDefinitionOf(column)
       open({
-        comment: original.comment,
         foreign: !!column.foreign,
         id: column.id,
         name: column.id,
@@ -174,6 +172,7 @@ export const TableColumnDialog = ({
 
   return (
     <ColumnDialog
+      commentable
       request={request}
       pending={isPending}
       onOpenChange={(isOpen) => !isOpen && setRequest(null)}

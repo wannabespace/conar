@@ -23,7 +23,11 @@ import { useState } from 'react'
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
-import type { DraftState, NewColumn } from '~/core/queries/tables/shape'
+import type {
+  ColumnDefinition,
+  DraftState,
+  NewColumn,
+} from '~/core/queries/tables/shape'
 
 import { CommentField } from './column-comment-field'
 import { ReferenceField } from './column-reference-field'
@@ -32,11 +36,10 @@ import { useColumnType } from './use-column-type'
 import type { ColumnReference, ReferenceTarget } from './use-reference-targets'
 
 interface EditableColumn extends NewColumn {
-  // Set only by callers that save it; the Comment field shows only then.
-  comment?: string | null
   foreign: boolean
   // Name in the database; differs from `name` while a rename is pending.
   id: string
+  original: Pick<ColumnDefinition, 'comment'>
   state?: DraftState
 }
 
@@ -70,18 +73,23 @@ const changed = (
   next.name !== column.name ||
   next.type !== column.type ||
   next.nullable !== column.nullable ||
-  next.comment !== (column.comment ?? null)
+  next.comment !== column.original.comment
 
-const submittedColumn = ({
+const commentOf = (column: EditableColumn | null) =>
+  column?.original.comment ?? ''
+
+const normalized = ({
   comment,
+  name,
+  nullable,
   primaryKey,
-  ...column
-}: NewColumn & { comment: string | null | undefined }): SubmittedColumn => ({
-  ...column,
+  type,
+}: SubmittedColumn): SubmittedColumn => ({
   comment: comment?.trim() || null,
-  name: column.name.trim(),
-  nullable: primaryKey ? false : column.nullable,
+  name: name.trim(),
+  nullable: primaryKey ? false : nullable,
   primaryKey,
+  type,
 })
 
 const errorsOf = (
@@ -127,10 +135,12 @@ const lockedFields = (
 }
 
 const ColumnForm = ({
+  commentable,
   onSubmit,
   pending,
   request,
 }: {
+  commentable: boolean
   onSubmit: (
     column: SubmittedColumn,
     reference: ColumnReference | null,
@@ -155,10 +165,10 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
-  const [comment, setComment] = useState(column?.comment)
+  const [comment, setComment] = useState(commentOf(column))
   const [submitted, setSubmitted] = useState(false)
   const locked = lockedFields(connection.type, column)
-  const next = submittedColumn({
+  const next = normalized({
     comment,
     name,
     nullable,
@@ -223,7 +233,9 @@ const ColumnForm = ({
             }
           }}
         />
-        <CommentField value={comment} onValueChange={setComment} />
+        {commentable && (
+          <CommentField value={comment} onValueChange={setComment} />
+        )}
         {column === null && table.state === 'added' && (
           <OptionField
             htmlFor="column-dialog-primary-key"
@@ -288,11 +300,13 @@ export const ColumnDialog = <
   Table extends EditableTable,
   Column extends EditableColumn,
 >({
+  commentable = false,
   onOpenChange,
   onSubmit,
   pending = false,
   request,
 }: {
+  commentable?: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: ColumnDialogRequest<Table, Column>,
@@ -314,6 +328,7 @@ export const ColumnDialog = <
         {shown && (
           <ColumnForm
             key={`${shown.table.name}:${shown.column?.id ?? ''}`}
+            commentable={commentable && shown.column !== null}
             pending={pending}
             request={shown}
             onSubmit={(column, reference, renamedValues) =>

@@ -124,6 +124,15 @@ const clickhouseRefuseHeldValues = async (
   }
 }
 
+const mssqlCommentProcedure = (from: string | null, to: string | null) => {
+  if (to === null) {
+    return sql`sp_dropextendedproperty`
+  }
+  return from === null
+    ? sql`sp_addextendedproperty`
+    : sql`sp_updateextendedproperty`
+}
+
 export const editColumnQuery = (target: EditColumnTarget) =>
   createQuery({
     query: {
@@ -143,17 +152,10 @@ export const editColumnQuery = (target: EditColumnTarget) =>
         if (!commented(target)) {
           return
         }
-        const column = sql`@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`
-        if (original.comment !== null) {
-          await sql`EXEC sp_dropextendedproperty @name = N'MS_Description', ${column}`.execute(
-            db
-          )
-        }
-        if (comment !== null) {
-          await sql`EXEC sp_addextendedproperty @name = N'MS_Description', @value = ${comment}, ${column}`.execute(
-            db
-          )
-        }
+        const value = comment === null ? sql`` : sql`@value = ${comment}, `
+        await sql`EXEC ${mssqlCommentProcedure(original.comment, comment)} @name = N'MS_Description', ${value}@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`.execute(
+          db
+        )
       },
       // MySQL commits each DDL statement, so the rename, the alter and the key
       // go in one ALTER: a part that fails leaves the column untouched.
