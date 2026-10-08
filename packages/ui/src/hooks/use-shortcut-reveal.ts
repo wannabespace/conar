@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
-const REVEAL_DELAY_MS = 800
+const REVEAL_DELAY_MS = 400
 
 export const shortcutRevealStore = createWebStorageValue({
   defaultValue: true,

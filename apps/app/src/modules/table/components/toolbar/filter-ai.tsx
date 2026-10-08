@@ -139,7 +139,6 @@ export const useFilterAi = ({
           Schema name: ${schema}
           Columns: ${JSON.stringify(
             columns.map((col) => ({
-              comment: col.comment ?? undefined,
               default: col.defaultValue,
               id: col.id,
               isNullable: col.isNullable,

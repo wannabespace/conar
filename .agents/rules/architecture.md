@@ -103,27 +103,3 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 ## Reach for the library before writing machinery
 
 Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. A well-known format or algorithm (CSV/TSV, diff, glob, semver) goes to a small, maintained package rather than a hand-written parser; adding the dependency is the user's call, so propose it. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.
-
-What already owns a concern here — a dependency resolves only in a workspace that declares it:
-
-| Hand-rolled | Owner |
-| --- | --- |
-| An effect copying fetched or derived data into `useState` | Derive inline; TanStack Query `select`; `useLiveQuery` |
-| Loading / error / pending flags around a call | `useQuery` / `useMutation` state |
-| An async function cached by its arguments | `memoize` (`memoza`) |
-| UI state shared across components or persisted locally | seitu `createStore` / `createWebStorageValue`, read with `useSubscription` |
-| A `keydown` listener or container `onKeyDown` | `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
-| An app-wide event (save, refresh pressed) | `globalHooks` (`~/lib/global-hooks`, hookable) |
-| `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |
-| A runtime check followed by `as` | An ArkType schema |
-| `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
-| `n === 1 ? '' : 's'` | `plural` (`~/lib/plural`) |
-| CSV / TSV | `d3-dsv` |
-| Identifier casing | `change-case` |
-| Date math or formatting | `date-fns`, `@date-fns/tz` for zones |
-| SQL pretty-printing | `formatSql` (`~/lib/formatter`) |
-| A long list | `@tamery/ui/hooks/use-virtualizer` |
-| Scroll pinned to the bottom | `use-stick-to-bottom` |
-| An animated number | Kit `NumberFlow` |
-| A class string switched on props | A `cva` variant in `<component>.utils.ts`, `cn` at the call site |
-| Markup a registry component covers | The kit, else `pnpm dlx shadcn@latest search @shadcn -q <term>` |

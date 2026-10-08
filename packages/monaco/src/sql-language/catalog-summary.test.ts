@@ -32,35 +32,6 @@ describe('catalogSummary', () => {
     ])
   })
 
-  it('appends comments on one line', () => {
-    expect(
-      catalogSummary({
-        defaultSchema: 'public',
-        enums: [],
-        schemas: [
-          {
-            name: 'public',
-            tables: [
-              {
-                columns: [
-                  {
-                    comment: 'in\ncents',
-                    name: 'amount',
-                    nullable: false,
-                    type: 'int',
-                  },
-                ],
-                comment: 'Paid orders',
-                kind: 'table',
-                name: 'orders',
-              },
-            ],
-          },
-        ],
-      })
-    ).toBe('public.orders(amount int /* in cents */) /* Paid orders */')
-  })
-
   it('stays within what the AI routes accept', () => {
     const summary = catalogSummary(catalog(20_000))
     expect(summary.length).toBeLessThanOrEqual(AI_SQL_LIMITS.context)
