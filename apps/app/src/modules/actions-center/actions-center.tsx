@@ -8,6 +8,7 @@ import {
   Moon02Icon,
   Refresh01Icon,
   Search01Icon,
+  Settings02Icon,
   Sun03Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -377,7 +378,14 @@ export const ActionsCenter = () => {
     {
       entries: [
         ...entriesIn('Application'),
-        ...settingsSections().map(({ icon, id, label }, index) =>
+        actionEntry(
+          'Settings',
+          ['preferences', 'options'],
+          Settings02Icon,
+          () => router.navigate({ to: '/settings/{-$section}' }),
+          ','
+        ),
+        ...settingsSections().map(({ icon, id, label }) =>
           actionEntry(
             `${label} settings`,
             ['settings', 'preferences', 'options'],
@@ -386,8 +394,7 @@ export const ActionsCenter = () => {
               router.navigate({
                 params: { section: id },
                 to: '/settings/{-$section}',
-              }),
-            index === 0 ? ',' : undefined
+              })
           )
         ),
         actionEntry(

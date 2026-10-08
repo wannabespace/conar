@@ -155,10 +155,7 @@ export const TableRow = ({
             <HugeiconsIcon
               icon={Icon}
               strokeWidth={2}
-              className={cn(
-                'size-4',
-                isActive ? 'text-primary-foreground' : 'text-primary/75'
-              )}
+              className="text-primary/75 size-4"
             />
             {hasDrafts && (
               <Indicator

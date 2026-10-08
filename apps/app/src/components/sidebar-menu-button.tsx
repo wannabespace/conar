@@ -17,7 +17,7 @@ export const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button text-foreground hover:bg-foreground/5 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground data-active:bg-primary data-active:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button text-foreground hover:bg-foreground/5 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground data-active:bg-primary data-active:text-primary-foreground data-active:[&_svg]:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           className
         ),
       },

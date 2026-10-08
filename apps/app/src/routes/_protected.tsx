@@ -1,5 +1,6 @@
 import { cn } from '@tamery/ui/lib/utils'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { PermixProvider } from 'permix/react'
 import { useEffect } from 'react'
 
@@ -17,9 +18,14 @@ import { subscriptionQueryClient } from '~/lib/query-client'
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 const ProtectedLayout = () => {
+  const navigate = useNavigate()
   usePermissionsSync()
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
+
+  useHotkey('Mod+,', () => {
+    void navigate({ to: '/settings/{-$section}' })
+  })
 
   useEffect(() => {
     const handleFocus = () => {

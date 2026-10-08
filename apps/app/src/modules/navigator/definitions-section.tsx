@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -93,12 +92,7 @@ export const DefinitionsPanel = () => {
                     <HugeiconsIcon
                       icon={icon}
                       strokeWidth={2}
-                      className={cn(
-                        'size-4 shrink-0',
-                        isActive
-                          ? 'text-primary-foreground'
-                          : 'text-muted-foreground'
-                      )}
+                      className="text-muted-foreground size-4 shrink-0"
                     />
                     <span className="truncate">
                       <HighlightText text={label} match={search} />

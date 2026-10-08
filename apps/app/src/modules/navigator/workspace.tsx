@@ -19,6 +19,7 @@ export default {
   panels: [
     {
       Component: Navigator,
+      // Sync with settingsSidebarClassName's width in shell.tsx.
       defaultSize: 280,
       id: 'navigator',
       label: 'navigator',

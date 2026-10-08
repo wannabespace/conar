@@ -12,6 +12,7 @@ export const centeredPageClassName =
 
 export const settingsPageClassName = 'flex min-h-0 flex-1 p-2'
 
+// w-70 is the navigator panel's defaultSize (modules/navigator/workspace.tsx): keep them equal or the panel edge jumps entering Settings.
 export const settingsSidebarClassName =
   'flex w-70 shrink-0 flex-col gap-4 pt-0.5 pr-1.5 pl-2'
 

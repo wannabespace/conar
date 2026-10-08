@@ -22,7 +22,7 @@ const init = async () => {
       maskTextSelector: '[data-mask]',
     },
   })
-  // Autocapture and session recording run inside the loaded client, so turning analytics off must opt it out, not just stop our own calls. Applied once too: the choice may have changed during the import, and PostHog persists an opt-out across reloads.
+  // Applied once after init too: the choice may have changed during the import, and PostHog persists an opt-out across reloads.
   const apply = (isEnabled: boolean) => {
     if (isEnabled) {
       client.opt_in_capturing({ captureEventName: false })
