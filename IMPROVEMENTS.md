@@ -75,6 +75,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
+- **Name the missing AI key in dev.** `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are dev-optional in `apps/api/env.ts`, so a worktree whose `.env` predates them boots fine and every AI call answers an opaque `INTERNAL_SERVER_ERROR`. A startup warning listing the unset AI keys would point straight at the `.env`.
 
 ## AI
 
