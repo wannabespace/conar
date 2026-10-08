@@ -52,6 +52,10 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Show and unstick the outbox.** Writes replay in order and the executor retries any 5xx or network error forever, so one write a server bug keeps rejecting holds every later one, and web connection creation (which waits for its write) spins until it lands. Nothing on screen says writes are pending; a pending count plus a way to discard a stuck write would make that recoverable without signing out.
 - **Offline writes from every tab.** Only the tab holding the executor's leader lock queues writes; another tab falls back to a plain transaction that rolls back when offline after the save toast already showed. Forwarding non-leader writes to the leader (or failing them up front with a clear message) would close the gap.
 
+## Connections
+
+- **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
+
 ## Settings
 
 - **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
