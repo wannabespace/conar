@@ -1,7 +1,7 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import type { SqlCatalog } from '@tamery/sql'
 
-const noted = (text: string, comment: string | undefined) =>
+const noted = (text: string, comment?: string | null) =>
   comment ? `${text} /* ${comment.replaceAll(/\s+/gu, ' ')} */` : text
 
 export const catalogSummary = (catalog: SqlCatalog) => {

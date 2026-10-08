@@ -56,7 +56,7 @@ const sqlCatalogOf = (
               }).queryKey
             )
             ?.map((column) => ({
-              comment: column.comment ?? undefined,
+              comment: column.comment,
               name: column.id,
               nullable: column.isNullable,
               // Postgres reports enum columns as `USER-DEFINED`; the label names the enum.

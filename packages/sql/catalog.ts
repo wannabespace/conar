@@ -2,7 +2,7 @@ export interface SqlColumn {
   name: string
   type: string
   nullable: boolean
-  comment?: string
+  comment?: string | null
 }
 
 export interface SqlTable {
@@ -10,7 +10,7 @@ export interface SqlTable {
   kind: string
   /** `null` while the columns have not been loaded — column checks and suggestions skip the table. */
   columns: SqlColumn[] | null
-  comment?: string
+  comment?: string | null
 }
 
 interface SqlSchema {
