@@ -50,7 +50,7 @@ export type McpRequest = {
 export type McpReply = { result: unknown } | { error: string } | { idle: true }
 
 export interface McpClient {
-  connectedAt: number
+  lastSeenAt: number
   name: string
   version: string
 }

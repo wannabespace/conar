@@ -30,7 +30,7 @@ These choices are stored on this device only and apply to the next tool call, wi
 
 ## Approving a write
 
-On a connection set to **Ask before writing**, an agent's `execute` opens a dialog in Tamery showing the statement. If Tamery is in the background, a system notification tells you, and clicking it brings Tamery forward; on macOS the Dock icon also bounces until you switch to it. **Run** commits it; **Decline** (or <kbd>Esc</kbd>) refuses it, and the agent is told you declined. If the agent stops waiting, the dialog closes by itself.
+On a connection set to **Ask before writing**, an agent's `execute` opens a dialog in Tamery showing the statement. If Tamery is in the background, a system notification tells you, and clicking it brings Tamery forward; on macOS the Dock icon also bounces until you switch to it. **Run** commits it; **Decline** (or <kbd>Esc</kbd>) refuses it, and the agent is told you declined. If the agent cancels the call or disconnects, the dialog closes by itself.
 
 Nothing the agent sent runs before you choose **Run**. On PostgreSQL and MySQL, for a single `INSERT`, `UPDATE`, `DELETE` or `MERGE`, the dialog shows the database's own estimate of how many rows it touches. It comes from `EXPLAIN`, which plans the statement without running it. It is an estimate and can be far off.
 
@@ -47,7 +47,7 @@ Nothing the agent sent runs before you choose **Run**. On PostgreSQL and MySQL, 
 | Gemini CLI | `~/.gemini/settings.json` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 
-Once a client connects, **Connected clients** lists it by the name and version it reports, with when it last connected. A client connects when it starts, so the time is not when it last ran a tool. Regenerating the token clears the list.
+Once a client connects, **Connected clients** lists it by the name and version it reports, with when it was last active. To cut off every client, regenerate the token.
 
 Any other client that supports Streamable HTTP works too: point it at the URL and send the token as an `Authorization: Bearer <token>` header. Most take this JSON:
 

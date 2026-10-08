@@ -33,13 +33,13 @@ const sqlInput = { ...targetInput, sql: z.string() }
 
 const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels and no tool edits them. Find it before answering — pick the likely tables from their names and columns, search them with query (case-insensitive, partial match), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema, and only on connections whose access is "ask" or "write". On "ask" the user reviews each statement in Tamery and approves or declines it, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables. create_connection saves a new connection from a connection string the user gives you; no tool edits or removes one.`
 
-export const createMcpServer = (access: Record<string, McpAccess>) => {
+export const createMcpServer = (access: () => Record<string, McpAccess>) => {
   const server = new McpServer(
     { name: 'tamery', version: app.getVersion() },
     { instructions: INSTRUCTIONS }
   )
   const accessOf = (connectionId: string): McpAccess =>
-    access[connectionId] ?? 'ask'
+    access()[connectionId] ?? 'ask'
 
   const sharedAccessOf = (connectionId: string) => {
     const connectionAccess = accessOf(connectionId)

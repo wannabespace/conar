@@ -1,9 +1,11 @@
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { once } from 'node:events'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import { createServer } from 'node:http'
+import { json } from 'node:stream/consumers'
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js'
 import { PORTS } from '@tamery/shared/constants'
 import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
 import Store from 'electron-store'
@@ -31,11 +33,65 @@ const store = new Store<{
 let httpServer: Server | null = null
 let error: string | null = null
 
-const recordClient = (client: Pick<McpClient, 'name' | 'version'>) => {
+const sessions = new Map<
+  string,
+  { client: string; transport: StreamableHTTPServerTransport }
+>()
+
+const updateClient = (
+  name: string,
+  update: Partial<Omit<McpClient, 'name'>>
+) => {
+  const clients = store.get('clients')
   store.set('clients', {
-    ...store.get('clients'),
-    [client.name]: { connectedAt: Date.now(), version: client.version },
+    ...clients,
+    [name]: { ...clients[name], ...update },
   })
+}
+
+const closeSessions = () => {
+  for (const { transport } of sessions.values()) {
+    void transport.close()
+  }
+  sessions.clear()
+}
+
+const reject = (res: ServerResponse, status: number, message: string) => {
+  res.writeHead(status, { 'Content-Type': 'application/json' }).end(
+    JSON.stringify({
+      error: { code: -32_000, message },
+      id: null,
+      jsonrpc: '2.0',
+    })
+  )
+}
+
+const startSession = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+  body: unknown
+) => {
+  if (!isInitializeRequest(body)) {
+    reject(res, 400, 'Bad Request: No valid session ID provided')
+    return
+  }
+  const client = body.params.clientInfo
+  const transport = new StreamableHTTPServerTransport({
+    enableJsonResponse: true,
+    onsessionclosed: (sessionId) => {
+      sessions.delete(sessionId)
+    },
+    onsessioninitialized: (sessionId) => {
+      sessions.set(sessionId, { client: client.name, transport })
+      updateClient(client.name, {
+        lastSeenAt: Date.now(),
+        version: client.version,
+      })
+    },
+    sessionIdGenerator: randomUUID,
+  })
+  await createMcpServer(() => store.get('access')).connect(transport)
+  await transport.handleRequest(req, res, body)
 }
 
 const handle = async (req: IncomingMessage, res: ServerResponse) => {
@@ -47,26 +103,20 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.writeHead(401).end()
     return
   }
-  if (req.method !== 'POST') {
-    res.writeHead(405).end()
-    return
-  }
-  const server = createMcpServer(store.get('access'))
-  const transport = new StreamableHTTPServerTransport({
-    enableJsonResponse: true,
-    sessionIdGenerator: undefined,
-  })
-  // Closing the server aborts each tool call's `signal`, which cancels its query in the renderer.
-  res.on('close', () => {
-    const client = server.server.getClientVersion()
-    if (client) {
-      recordClient(client)
-    }
-    void server.close()
-  })
+  const sessionId = req.headers['mcp-session-id']
   try {
-    await server.connect(transport)
-    await transport.handleRequest(req, res)
+    const body = req.method === 'POST' ? await json(req) : undefined
+    if (sessionId === undefined) {
+      await startSession(req, res, body)
+      return
+    }
+    const session = sessions.get(String(sessionId))
+    if (!session) {
+      reject(res, 404, 'Session not found')
+      return
+    }
+    updateClient(session.client, { lastSeenAt: Date.now() })
+    await session.transport.handleRequest(req, res, body)
   } catch {
     res.destroy()
   }
@@ -89,6 +139,7 @@ const start = async () => {
 }
 
 const stop = () => {
+  closeSessions()
   httpServer?.close()
   httpServer = null
   error = null
@@ -107,16 +158,18 @@ const status = (): McpStatus => {
 
 const connectionAccess = () => store.get('access')
 
+const clients = (): McpClient[] =>
+  Object.entries(store.get('clients'))
+    .map(([name, client]) => ({ name, ...client }))
+    .toSorted((a, b) => b.lastSeenAt - a.lastSeenAt)
+
 export const mcp = {
-  clients: (): McpClient[] =>
-    Object.entries(store.get('clients'))
-      .map(([name, client]) => ({ name, ...client }))
-      .toSorted((a, b) => b.connectedAt - a.connectedAt),
+  clients,
   connectionAccess,
   notify: notifyUnfocused,
   regenerateToken: () => {
     store.set('token', newToken())
-    store.set('clients', {})
+    closeSessions()
     return status()
   },
   setAccess: ({
