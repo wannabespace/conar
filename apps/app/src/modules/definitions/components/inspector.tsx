@@ -23,7 +23,7 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
 import { useHotkeys } from '@tanstack/react-hotkeys'
-import type { UseQueryOptions } from '@tanstack/react-query'
+import type { QueryKey, UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
@@ -46,7 +46,7 @@ export type SectionInspectorProps<T> = DefinitionsState & {
   onOpenChange: (open: boolean) => void
   // Set by a `?create=` link: which starter the new-item form opens on.
   preset?: string
-  queryKey: readonly unknown[]
+  queryKey: QueryKey
 }
 
 export const Inspector = ({

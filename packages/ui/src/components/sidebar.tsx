@@ -118,7 +118,7 @@ const SidebarGroupLabel = ({
   className,
   render,
   ...props
-}: useRender.ComponentProps<'div'> & ComponentProps<'div'>) =>
+}: useRender.ComponentProps<'div'>) =>
   useRender({
     defaultTagName: 'div',
     props: mergeProps<'div'>(

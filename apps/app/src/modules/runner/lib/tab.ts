@@ -1,14 +1,9 @@
 import { PlayIcon } from '@hugeicons/core-free-icons'
-import { nanoid } from 'nanoid'
 
-import { openTab } from '~/core/tabs/actions'
-import type { TabKind } from '~/lib/module'
+import type { TabKind } from '~/core/tabs/types'
 
 export const runnerStoreKey = (resourceId: string, tabId: string) =>
   `${resourceId}.${tabId}.store`
-
-export const openRunnerTab = (resourceId: string) =>
-  openTab(resourceId, `runner:${nanoid(10)}`)
 
 export interface RunnerParams {
   id: string

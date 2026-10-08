@@ -32,6 +32,7 @@ import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { skipToken, useQuery } from '@tanstack/react-query'
+import type { RegisteredRouter } from '@tanstack/react-router'
 import { useParams, useRouter } from '@tanstack/react-router'
 import type { ComponentRef, ReactNode } from 'react'
 import { useRef, useState } from 'react'
@@ -46,13 +47,18 @@ import { useConnectionResourceLinkParams } from '~/core/connection/use-connectio
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
+import { schemaGroups } from '~/core/tabs/kinds'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
-import type { CommandEntry } from '~/lib/module'
-import { appModules, byOrder } from '~/lib/modules'
 import { posthog } from '~/lib/posthog'
-import { protectedModules } from '~/lib/protected-modules'
+import type { CommandEntry } from '~/modules/actions-center/types'
+import { chatCommands } from '~/modules/chat/commands'
+import { navigatorCommands } from '~/modules/navigator/commands'
+import { queryLoggerCommands } from '~/modules/query-logger/commands'
+import { newQueryAction } from '~/modules/runner/lib/new-query'
+import { tableCommands } from '~/modules/table/commands'
+import { updatesCommands } from '~/modules/updates/commands'
 
 import { actionCenterOpen } from './action-center-open'
 import { settingsCommands } from './settings-commands'
@@ -137,7 +143,7 @@ const ConnectionItem = ({
 }
 
 const tableEntries = (
-  router: ReturnType<typeof useRouter>,
+  router: RegisteredRouter,
   resourceId: string,
   schemas: {
     name: string
@@ -250,12 +256,19 @@ export const ActionsCenter = () => {
   })
 
   const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
-  const moduleEntries = protectedModules.commands({ current, tabId })
+  const moduleEntries = [
+    ...chatCommands({ current }),
+    ...navigatorCommands({ current }),
+    ...queryLoggerCommands({ current }),
+    ...tableCommands({ current, tabId }),
+    ...updatesCommands(),
+  ]
   const entriesIn = (
     group: CommandEntry['group'],
     coreEntries: CommandEntry[] = []
   ) =>
-    byOrder([...moduleEntries, ...coreEntries])
+    [...moduleEntries, ...coreEntries]
+      .toSorted((a, b) => a.order - b.order)
       .filter((entry) => entry.group === group)
       .map((entry) =>
         actionEntry(
@@ -295,23 +308,25 @@ export const ActionsCenter = () => {
         ),
         ...(current
           ? [
-              ...appModules.newTabActions.map((action) =>
-                actionEntry(
-                  action.label,
-                  ['open', 'go to', ...action.keywords, action.label],
-                  action.icon,
-                  () =>
-                    router.navigate({
-                      params: {
-                        resourceId: current.connectionResource.id,
-                        tabId: action.open(current.connectionResource.id),
-                      },
-                      to: '/connection/$resourceId/$tabId',
-                    })
-                )
+              actionEntry(
+                newQueryAction.label,
+                [
+                  'open',
+                  'go to',
+                  ...newQueryAction.keywords,
+                  newQueryAction.label,
+                ],
+                newQueryAction.icon,
+                () =>
+                  router.navigate({
+                    params: {
+                      resourceId: current.connectionResource.id,
+                      tabId: newQueryAction.open(current.connectionResource.id),
+                    },
+                    to: '/connection/$resourceId/$tabId',
+                  })
               ),
-              ...appModules
-                .schemaGroups(current.connection.type)
+              ...schemaGroups(current.connection.type)
                 .flatMap((group) => group.items)
                 .map((item) =>
                   actionEntry(

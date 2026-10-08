@@ -1,13 +1,11 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 
-import type { WorkspaceModule } from '~/lib/module'
+import type { Panel } from '~/lib/panels'
 import { resourcePanelClassName } from '~/shell'
 
 import { loggerOpen } from './logger-open'
-import { QueryLoggerHotkey } from './query-logger-hotkey'
 import { QueryLoggerSkeleton } from './query-logger-skeleton'
-import { QueryLoggerToggle } from './query-logger-toggle'
 
 const QueryLogger = lazy(async () => {
   const { QueryLogger: component } = await import('./query-logger')
@@ -31,19 +29,13 @@ const QueryLoggerPanel = () => {
   )
 }
 
-export default {
-  mounts: [QueryLoggerHotkey],
-  navigatorFooter: [{ Component: QueryLoggerToggle, order: 0 }],
-  panels: [
-    {
-      Component: QueryLoggerPanel,
-      defaultSize: 240,
-      id: 'query-logger',
-      label: 'query logger',
-      maxSize: '60%',
-      minSize: 120,
-      open: loggerOpen,
-      region: 'bottom',
-    },
-  ],
-} satisfies WorkspaceModule
+export const queryLoggerPanel: Panel = {
+  Component: QueryLoggerPanel,
+  defaultSize: 240,
+  id: 'query-logger',
+  label: 'query logger',
+  maxSize: '60%',
+  minSize: 120,
+  open: loggerOpen,
+  region: 'bottom',
+}

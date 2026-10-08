@@ -31,7 +31,7 @@ import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
-import { openNewWindow } from '~/lib/new-window'
+import { openNewWindow } from '~/utils/new-window'
 
 import { pinnedTable } from './pinned-tables'
 import {

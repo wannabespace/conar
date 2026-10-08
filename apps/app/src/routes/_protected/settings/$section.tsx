@@ -12,9 +12,7 @@ const SettingsSectionPage = () => {
 
 export const Route = createFileRoute('/_protected/settings/$section')({
   loader: ({ params }) => {
-    const section = settingsSections().find(
-      ({ slug }) => slug === params.section
-    )
+    const section = settingsSections.find(({ slug }) => slug === params.section)
     if (!section) {
       throw notFound()
     }

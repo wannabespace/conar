@@ -1,6 +1,6 @@
 import { silently } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
-import type { AccessMode, IsolationLevel, Kysely } from 'kysely'
+import type { Kysely, TransactionSettings } from 'kysely'
 import { CompiledQuery } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
@@ -8,10 +8,8 @@ import { createQuery } from '~/core/runtime/query'
 import type { ResultSet } from './custom'
 import { resultSetsType } from './custom'
 
-interface TransactionOptions {
-  accessMode?: AccessMode
+interface TransactionOptions extends TransactionSettings {
   commit: boolean
-  isolationLevel?: IsolationLevel
 }
 
 export const runInTransaction = async <DB>(

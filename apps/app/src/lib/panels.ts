@@ -1,13 +1,27 @@
 import { type } from 'arktype'
 import { memoize } from 'memoza'
+import type { ComponentType } from 'react'
 import { useEffect } from 'react'
-import { createStore } from 'seitu'
-import { useSubscription } from 'seitu/react'
+import type { WebStorageValue } from 'seitu/web'
 import { createWebStorageValue } from 'seitu/web'
 
 import { SHELL_LAYOUT_KEY } from '~/lib/constants'
-import type { Panel } from '~/lib/module'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { chatPanel } from '~/modules/chat/panel'
+import { navigatorPanel } from '~/modules/navigator/panel'
+import { queryLoggerPanel } from '~/modules/query-logger/panel'
+
+export interface Panel {
+  Component: ComponentType
+  defaultSize: number
+  id: string
+  label: string
+  maxSize: number | `${number}%`
+  minSize: number
+  open: (resourceId: string) => WebStorageValue<boolean>
+  region: 'left' | 'right' | 'bottom'
+}
+
+const PANELS = [navigatorPanel, queryLoggerPanel, chatPanel]
 
 export const panelSize = memoize(
   (panel: Panel) =>
@@ -23,19 +37,18 @@ export const panelSize = memoize(
 // boot.ts reads this before any JS module loads to size the shell placeholders.
 export const useShellLayout = (resourceId: string) => {
   useEffect(() => {
-    const { panels } = workspaceModules
     const write = () =>
       localStorage.setItem(
         SHELL_LAYOUT_KEY,
         JSON.stringify(
           Object.fromEntries(
-            panels
-              .filter((panel) => panel.open(resourceId).get())
-              .map((panel) => [panel.region, panelSize(panel).get()])
+            PANELS.filter((panel) => panel.open(resourceId).get()).map(
+              (panel) => [panel.region, panelSize(panel).get()]
+            )
           )
         )
       )
-    const unsubscribes = panels.flatMap((panel) => [
+    const unsubscribes = PANELS.flatMap((panel) => [
       panel.open(resourceId).subscribe(write),
       panelSize(panel).subscribe(write),
     ])
@@ -49,10 +62,3 @@ export const useShellLayout = (resourceId: string) => {
     }
   }, [resourceId])
 }
-
-const neverOpen = createStore(false)
-
-export const usePanelOpen = (region: Panel['region'], resourceId: string) =>
-  useSubscription(
-    workspaceModules.panelIn(region)?.open(resourceId) ?? neverOpen
-  )

@@ -8,7 +8,6 @@ import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list
 import { resourceColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { TableError } from '~/core/table/table-error'
-import type { WorkspaceModule } from '~/lib/module'
 
 import { Visualizer } from './components/visualizer'
 import { diagramDraftsStore } from './lib/drafts'
@@ -64,8 +63,7 @@ const VisualizerTab = () => {
   )
 }
 
-export default {
-  tabs: {
-    visualizer: { Content: VisualizerTab, Refresh: VisualizerRefresh },
-  },
-} satisfies WorkspaceModule
+export const visualizerView = {
+  Content: VisualizerTab,
+  Refresh: VisualizerRefresh,
+}

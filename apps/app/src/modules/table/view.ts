@@ -2,9 +2,8 @@ import { enabledFilters } from '@tamery/shared/filters'
 
 import { prefetchConnectionResourceTableCore } from '~/core/connection/fetching'
 import type { ConnectionResource } from '~/core/connection/sync'
-import type { TabView, WorkspaceModule } from '~/lib/module'
+import type { TabView } from '~/core/tabs/types'
 
-import { RecentTables } from './components/recent-tables'
 import { TableRefresh } from './components/table-refresh'
 import { tablePageStore } from './lib/store'
 import type { TableParams } from './lib/tab'
@@ -26,15 +25,10 @@ const prefetch = (
   })
 }
 
-const tableView: TabView<TableParams> = {
+export const tableView: TabView<TableParams> = {
   Content: TableTab,
   Refresh: TableRefresh,
   load: ({ connectionResource, params }) =>
     prefetch(connectionResource, params),
   prefetch,
 }
-
-export default {
-  emptyPane: [{ Component: RecentTables, order: 0 }],
-  tabs: { table: tableView },
-} satisfies WorkspaceModule

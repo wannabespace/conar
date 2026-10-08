@@ -1,9 +1,39 @@
-import { appModules } from '~/lib/modules'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { ConnectionTab } from './types'
+import {
+  definitionsSchemaItems,
+  definitionsTab,
+} from '~/modules/definitions/lib/tab'
+import { runnerTab } from '~/modules/runner/lib/tab'
+import { tableTab } from '~/modules/table/lib/tab'
+import {
+  visualizerSchemaItem,
+  visualizerTab,
+} from '~/modules/visualizer/lib/tab'
+
+import { SCHEMA_GROUPS } from './types'
+import type { ConnectionTab, TabKind } from './types'
+
+const TAB_KINDS: TabKind[] = [
+  definitionsTab,
+  runnerTab,
+  tableTab,
+  visualizerTab,
+]
+
+export const schemaItems = [visualizerSchemaItem, ...definitionsSchemaItems]
+
+export const schemaGroups = (connectionType: ConnectionType) =>
+  SCHEMA_GROUPS.map((label) => ({
+    items: schemaItems.filter(
+      (item) =>
+        item.group === label && (item.available?.(connectionType) ?? true)
+    ),
+    label,
+  })).filter((group) => group.items.length > 0)
 
 export const resolveTab = (id: string) => {
-  for (const kind of appModules.tabs) {
+  for (const kind of TAB_KINDS) {
     const params = kind.match(id)
 
     if (params !== null) {

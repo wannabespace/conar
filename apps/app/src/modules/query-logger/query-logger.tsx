@@ -42,7 +42,7 @@ import { useCollections } from '~/core/collections'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
-import { formatSql } from '~/lib/formatter'
+import { formatSql } from '~/utils/formatter'
 
 import { loggerOpen } from './logger-open'
 

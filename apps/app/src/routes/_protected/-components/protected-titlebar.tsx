@@ -36,7 +36,10 @@ import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
-import { protectedModules } from '~/lib/protected-modules'
+import { CommandPaletteButton } from '~/modules/actions-center/command-palette-button'
+import { OpenInWeb } from '~/modules/open-in-web/open-in-web'
+import { UpdateButton, VersionButton } from '~/modules/updates/update-button'
+import { UserMenu } from '~/modules/user-menu/user-menu'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'
@@ -392,9 +395,11 @@ export const ProtectedTitleBar = () => {
             }
           />
           <div className="ml-auto flex h-full shrink-0 items-center gap-1">
-            {protectedModules.titlebar.map(({ Component }, index) => (
-              <Component key={index} />
-            ))}
+            <VersionButton />
+            <UpdateButton />
+            <OpenInWeb />
+            <CommandPaletteButton />
+            <UserMenu />
           </div>
         </div>
       </TitleBar>

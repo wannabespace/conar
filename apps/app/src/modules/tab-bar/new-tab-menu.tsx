@@ -15,7 +15,8 @@ import { useRouter } from '@tanstack/react-router'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
-import { appModules } from '~/lib/modules'
+import { schemaGroups } from '~/core/tabs/kinds'
+import { newQueryAction } from '~/modules/runner/lib/new-query'
 
 interface TablesAndSchemas {
   schemas: { name: string; tables: { name: string }[] }[]
@@ -33,9 +34,9 @@ export const NewTabMenu = ({
   const router = useRouter()
   const schemas = tablesAndSchemas?.schemas ?? []
   const showSchema = schemas.length > 1
-  const schemaItems = appModules
-    .schemaGroups(connection.type)
-    .flatMap((group) => group.items)
+  const schemaItems = schemaGroups(connection.type).flatMap(
+    (group) => group.items
+  )
 
   const goToTab = (tabId: string) =>
     router.navigate({
@@ -56,15 +57,12 @@ export const NewTabMenu = ({
         align="end"
         className="max-h-[70vh] min-w-48 overflow-auto"
       >
-        {appModules.newTabActions.map((action) => (
-          <DropdownMenuItem
-            key={action.label}
-            onClick={() => goToTab(action.open(connectionResource.id))}
-          >
-            <HugeiconsIcon icon={action.icon} strokeWidth={2} />
-            {action.label}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuItem
+          onClick={() => goToTab(newQueryAction.open(connectionResource.id))}
+        >
+          <HugeiconsIcon icon={newQueryAction.icon} strokeWidth={2} />
+          {newQueryAction.label}
+        </DropdownMenuItem>
         {schemaItems.length > 0 && (
           <>
             <DropdownMenuSeparator />

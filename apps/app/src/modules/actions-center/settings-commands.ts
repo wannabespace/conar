@@ -1,12 +1,10 @@
-import type { useRouter } from '@tanstack/react-router'
+import type { RegisteredRouter } from '@tanstack/react-router'
 
 import { settingsSections } from '~/core/settings/sections'
-import type { CommandEntry } from '~/lib/module'
+import type { CommandEntry } from '~/modules/actions-center/types'
 
-export const settingsCommands = (
-  router: ReturnType<typeof useRouter>
-): CommandEntry[] =>
-  settingsSections().map(({ icon, label, slug }, index) => ({
+export const settingsCommands = (router: RegisteredRouter): CommandEntry[] =>
+  settingsSections.map(({ icon, label, slug }, index) => ({
     action: () =>
       router.navigate({ params: { section: slug }, to: '/settings/$section' }),
     group: 'Application',

@@ -1,5 +1,3 @@
-import { existsSync, readdirSync } from 'node:fs'
-
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { setupPortlessEnvs } from '@tamery/shared/portless-env'
@@ -14,12 +12,6 @@ setupPortlessEnvs({
   VITE_PUBLIC_WEB_URL: 'app.local.tamery',
 })
 
-// Read once at startup: restart dev after adding or deleting a module that owns routes.
-const modulesDir = new URL('src/modules/', import.meta.url)
-const moduleRoutes = (existsSync(modulesDir) ? readdirSync(modulesDir) : [])
-  .filter((name) => existsSync(new URL(`${name}/routes`, modulesDir)))
-  .map((name) => physical('', `../modules/${name}/routes`))
-
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -27,7 +19,13 @@ export default defineConfig({
       router: {
         virtualRouteConfig: rootRoute('__root.tsx', [
           physical('', '.'),
-          ...moduleRoutes,
+          physical('', '../modules/ai-usage/routes'),
+          physical('', '../modules/api-keys/routes'),
+          physical('', '../modules/billing/routes'),
+          physical('', '../modules/deep-link/routes'),
+          physical('', '../modules/legal/routes'),
+          physical('', '../modules/releases/routes'),
+          physical('', '../modules/settings/routes'),
         ]),
       },
     }),

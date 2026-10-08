@@ -13,7 +13,7 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { plural } from '~/lib/plural'
+import { plural } from '~/utils/plural'
 
 import { approval } from './approval'
 

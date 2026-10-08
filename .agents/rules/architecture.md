@@ -25,24 +25,18 @@
 
 `apps/app` and `apps/main` are a core plus `src/modules/<name>/` folders. Core is everything outside `src/modules/`.
 
-- **A module imports only core and its own folder**. Code two modules need moves into core. Core reaches a module only through its entry file, `module.ts(x)`.
-- In `apps/app`, **deleting a module folder removes the feature and the app still compiles**: modules are found by eager `import.meta.glob`, never listed anywhere, and core never names a module. Cross-feature wiring goes through a slot or a core contract (table tab ids in `core/tabs/ids.ts`, `definitionKey`, `lib/panels.ts`).
-- **Never read an `apps/app` registry at module top level.** The globs import every module eagerly, and modules import the registries back, so a registry's value exists only once evaluation finishes — read it inside a function or render.
+- **No registries.** Whoever renders or runs a feature imports it directly from the module file that defines it — a titlebar button in the titlebar, a panel in the workspace layout, a command in the actions center, a tab kind in `core/tabs/kinds.ts`, a tab view in `core/tabs/views.ts`, a collection in `core/collections.ts`. Deleting a module means deleting its folder and those imports. Never add an `import.meta.glob` module loader or a slot array: it hides the wiring from find-references.
+- **Import where the chunk loads.** A module's import lands in its importer's chunk, so wire a feature from the layout that shows it (root, `_protected`, the connection workspace); anything reachable from the entry must stay off `lib/database`.
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
-- `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
-  - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
-  - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries, Settings sections.
-  - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, navigator footer rows, empty pane.
-  - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
-- `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
+- In `apps/main`, a module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`), and each module's `routes/` folder is listed in `vite.config.ts`'s `virtualRouteConfig`.
 
 ## Core layout (`apps/app/src/core`)
 
-One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder. Core holds only what more than one route or module uses: a page's own UI lives in its route file (or a `-components/` folder beside it), never in core.
+One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/` (clients, singletons, contracts); stateless helpers with no domain go in `utils/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder. Core holds only what more than one route or module uses: a page's own UI lives in its route file (or a `-components/` folder beside it), never in core.
 
 | Folder | Holds |
 | --- | --- |
-| `collections.ts` | The collection registry modules augment |
+| `collections.ts` | Every synced collection, core and module alike |
 | `workspace/`, `user/` | Workspace records and hooks; the user's subscription |
 | `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link, refreshing a resource's cache after a statement runs |
 | `runtime/` | Running SQL: `createQuery`, the proxy, per-engine Kysely dialects, the query log |
@@ -54,7 +48,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
 | `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
-| `settings/` | The core Settings sections (one file per page) and the `SettingsGroup`/`SettingsRow` every section is built from. A section is a registry entry carrying its page `component`, rendered by the single `routes/_protected/settings/$section.tsx` route, which 404s on an unregistered slug; a module adds its section through `ProtectedModule.settings` |
+| `settings/` | The core Settings sections (one file per page) and the `SettingsGroup`/`SettingsRow` every section is built from. `sections.ts` lists every page, module pages included, each carrying its `component`, rendered by the single `routes/_protected/settings/$section.tsx` route, which 404s on an unlisted slug |
 
 ## ArkType config ordering
 
@@ -72,7 +66,7 @@ Every app's entry imports `@tamery/shared/arktype-config` first. ArkType scopes 
 
 ## Connection routes
 
-Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the active tab when it still exists) and `$resourceId/$tabId.tsx`, which resolves the id through the registered tab kinds (`core/tabs/kinds.ts`) and renders that kind's `workspace.tsx` view; the layout renders the registered panels by region and the header. Runner state is per **tab** (`runnerPageStore({ resourceId, tabId })` via `RunnerTabContext`), never off the resource store. The visualizer has no page store — its state is keyed by resource id alone: persisted viewport and node positions on its own store (`modules/visualizer/lib/positions.ts`), pending DDL drafts in a memory seitu store per resource (`modules/visualizer/lib/drafts.ts`) that survives closing the tab but not an app reload, since a draft is a statement nobody has run. A new key on `connectionResourceType` can be required: seitu repairs a schema-invalid stored value by filling missing keys from the defaults and keeping every stored key whose `typeof` matches, so existing tabs survive. Changing an existing key's `typeof` does drop that key.
+Exactly two routes: `$resourceId/index.tsx` (empty state, redirecting to the active tab when it still exists) and `$resourceId/$tabId.tsx`, which resolves the id through the tab kinds in `core/tabs/kinds.ts` and renders that kind's view from `core/tabs/views.ts`; the layout renders the navigator, query-logger and chat panels and the tab bar. Runner state is per **tab** (`runnerPageStore({ resourceId, tabId })` via `RunnerTabContext`), never off the resource store. The visualizer has no page store — its state is keyed by resource id alone: persisted viewport and node positions on its own store (`modules/visualizer/lib/positions.ts`), pending DDL drafts in a memory seitu store per resource (`modules/visualizer/lib/drafts.ts`) that survives closing the tab but not an app reload, since a draft is a statement nobody has run. A new key on `connectionResourceType` can be required: seitu repairs a schema-invalid stored value by filling missing keys from the defaults and keeping every stored key whose `typeof` matches, so existing tabs survive. Changing an existing key's `typeof` does drop that key.
 
 ## Connection introspection queries
 
@@ -117,11 +111,11 @@ What already owns a concern here — a dependency resolves only in a workspace t
 | `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |
 | A runtime check followed by `as` | An ArkType schema |
 | `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
-| `n === 1 ? '' : 's'` | `plural` (`~/lib/plural`) |
+| `n === 1 ? '' : 's'` | `plural` (`~/utils/plural`) |
 | CSV / TSV | `d3-dsv` |
 | Identifier casing | `change-case` |
 | Date math or formatting | `date-fns`, `@date-fns/tz` for zones |
-| SQL pretty-printing | `formatSql` (`~/lib/formatter`) |
+| SQL pretty-printing | `formatSql` (`~/utils/formatter`) |
 | A long list | `@tamery/ui/hooks/use-virtualizer` |
 | Scroll pinned to the bottom | `use-stick-to-bottom` |
 | An animated number | Kit `NumberFlow` |

@@ -1,11 +1,9 @@
 import {
   FlashIcon,
   Key01Icon,
-  LayoutTable02Icon,
   LeftToRightListDashIcon,
   Link01Icon,
   SecurityCheckIcon,
-  ViewIcon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -23,6 +21,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { AppContextMenu } from '~/components/app-context-menu'
+import { tableTypeIcon } from '~/core/catalog/table-type'
 
 import {
   COMPACT_ZOOM,
@@ -30,17 +29,11 @@ import {
   tableMatches,
   useDiagram,
 } from '../lib/context'
-import type { DiagramColumn, DiagramTable, TableKind } from '../lib/schema'
+import type { DiagramColumn, DiagramTable } from '../lib/schema'
 import { columnMenu, tableMenu } from './menus'
 import { RowHandles } from './row-handles'
 
 export type TableNode = Node<{ table: DiagramTable }, 'table'>
-
-const kindIcons: Record<TableKind, IconSvgElement> = {
-  'materialized view': ViewIcon,
-  table: LayoutTable02Icon,
-  view: ViewIcon,
-}
 
 export const draftStateClass = {
   added: 'bg-success/8',
@@ -157,7 +150,7 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
           )}
         >
           <HugeiconsIcon
-            icon={kindIcons[table.kind]}
+            icon={tableTypeIcon[table.kind]}
             strokeWidth={2}
             className="text-muted-foreground size-4 shrink-0"
           />

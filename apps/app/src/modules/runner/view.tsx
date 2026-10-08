@@ -1,7 +1,5 @@
 import { getRouteApi } from '@tanstack/react-router'
 
-import type { WorkspaceModule } from '~/lib/module'
-
 import { Runner } from './components/runner'
 import { RunnerTabContext } from './lib/store'
 
@@ -19,6 +17,4 @@ const RunnerTab = ({ id: tabId }: { id: string }) => {
   )
 }
 
-export default {
-  tabs: { runner: { Content: RunnerTab } },
-} satisfies WorkspaceModule
+export const runnerView = { Content: RunnerTab }

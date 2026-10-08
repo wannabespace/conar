@@ -13,10 +13,20 @@ import {
   createConnectionsResourcesCollection,
 } from '~/core/connection/sync'
 import { createWorkspacesCollection } from '~/core/workspace/sync'
-import { isServerError } from '~/lib/error'
+import {
+  createChatsCollection,
+  createChatsMessagesCollection,
+  createChatsMessagesPartsCollection,
+} from '~/modules/chat/sync'
+import { createQueriesCollection } from '~/modules/runner/sync'
+import { isServerError } from '~/utils/error'
 
-// Modules add their collections by augmenting this interface in `collections.ts`.
 export interface Collections {
+  chatsCollection: ReturnType<typeof createChatsCollection>
+  chatsMessagesCollection: ReturnType<typeof createChatsMessagesCollection>
+  chatsMessagesPartsCollection: ReturnType<
+    typeof createChatsMessagesPartsCollection
+  >
   connectionsCollection: ReturnType<typeof createConnectionsCollection>
   connectionsResourcesCollection: ReturnType<
     typeof createConnectionsResourcesCollection
@@ -24,15 +34,9 @@ export interface Collections {
   connectionStringsCollection: ReturnType<
     typeof createConnectionStringsCollection
   >
+  queriesCollection: ReturnType<typeof createQueriesCollection>
   workspacesCollection: ReturnType<typeof createWorkspacesCollection>
 }
-
-const moduleCollections = Object.values(
-  import.meta.glob<() => Partial<Collections>>(
-    '/src/modules/*/collections.ts',
-    { eager: true, import: 'default' }
-  )
-)
 
 let current: { collections: Collections; offline: OfflineExecutor } | null =
   null
@@ -45,16 +49,15 @@ const init = () => {
   const connectionStringsCollection = createConnectionStringsCollection()
 
   const collections: Collections = {
-    // Each module's factory fills exactly the keys its augmentation declares.
-    ...(Object.assign(
-      {},
-      ...moduleCollections.map((create) => create())
-    ) as Collections),
+    chatsCollection: createChatsCollection(),
+    chatsMessagesCollection: createChatsMessagesCollection(),
+    chatsMessagesPartsCollection: createChatsMessagesPartsCollection(),
     connectionStringsCollection,
     connectionsCollection: createConnectionsCollection(
       connectionStringsCollection
     ),
     connectionsResourcesCollection: createConnectionsResourcesCollection(),
+    queriesCollection: createQueriesCollection(),
     workspacesCollection: createWorkspacesCollection(),
   }
 

@@ -14,9 +14,9 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { appModules } from '~/lib/modules'
-import { pressNavProps } from '~/lib/press-nav'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { QueryLoggerToggle } from '~/modules/query-logger/query-logger-toggle'
+import { newQueryAction } from '~/modules/runner/lib/new-query'
+import { pressNavProps } from '~/utils/press-nav'
 
 import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
@@ -105,30 +105,25 @@ const NavigatorFooter = () => {
 
   return (
     <div className="flex shrink-0 flex-col gap-0.5 pt-1.5 pb-0.5 pl-2">
-      {appModules.newTabActions.map((action) => (
-        <SidebarMenuButton
-          key={action.label}
-          {...pressNavProps(() =>
-            router.navigate({
-              params: {
-                resourceId: connectionResource.id,
-                tabId: action.open(connectionResource.id),
-              },
-              to: '/connection/$resourceId/$tabId',
-            })
-          )}
-        >
-          <HugeiconsIcon
-            icon={PlusSignIcon}
-            strokeWidth={2}
-            className="text-muted-foreground"
-          />
-          {action.label}
-        </SidebarMenuButton>
-      ))}
-      {workspaceModules.navigatorFooter.map(({ Component }, index) => (
-        <Component key={index} />
-      ))}
+      <SidebarMenuButton
+        {...pressNavProps(() =>
+          router.navigate({
+            params: {
+              resourceId: connectionResource.id,
+              tabId: newQueryAction.open(connectionResource.id),
+            },
+            to: '/connection/$resourceId/$tabId',
+          })
+        )}
+      >
+        <HugeiconsIcon
+          icon={PlusSignIcon}
+          strokeWidth={2}
+          className="text-muted-foreground"
+        />
+        {newQueryAction.label}
+      </SidebarMenuButton>
+      <QueryLoggerToggle />
     </div>
   )
 }

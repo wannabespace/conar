@@ -22,9 +22,14 @@ import {
   MAX_REMEMBERED_RESOURCES,
 } from '~/core/connection/last-opened-resources'
 import { workspaceSelection } from '~/core/workspace/utils'
-import type { Panel } from '~/lib/module'
+import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { chatPanel } from '~/modules/chat/panel'
+import { NavigatorHotkey } from '~/modules/navigator/navigator-hotkey'
+import { navigatorPanel } from '~/modules/navigator/panel'
+import { queryLoggerPanel } from '~/modules/query-logger/panel'
+import { QueryLoggerHotkey } from '~/modules/query-logger/query-logger-hotkey'
+import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
 import { PasswordForm } from './-components/password-form'
@@ -99,9 +104,6 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
-  const leftPanel = workspaceModules.panelIn('left')
-  const bottomPanel = workspaceModules.panelIn('bottom')
-  const rightPanel = workspaceModules.panelIn('right')
 
   if (fetching.type === 'waiting-for-password') {
     return (
@@ -114,34 +116,28 @@ const ResourcePage = () => {
 
   return (
     <>
-      {workspaceModules.mounts.map((Mount, index) => (
-        <Mount key={index} />
-      ))}
+      <NavigatorHotkey />
+      <QueryLoggerHotkey />
       <ResizableGroup orientation="horizontal" className="p-2">
-        {leftPanel && (
-          <RegionPanel panel={leftPanel} resourceId={connectionResource.id} />
-        )}
+        <RegionPanel
+          panel={navigatorPanel}
+          resourceId={connectionResource.id}
+        />
         <ResizablePanel className="flex flex-col">
           <ResizableGroup orientation="vertical">
             <ResizablePanel className="flex flex-col">
               <div className={resourcePanelClassName}>
-                {workspaceModules.headers.map((Header, index) => (
-                  <Header key={index} />
-                ))}
+                <TabBar />
                 <Outlet />
               </div>
             </ResizablePanel>
-            {bottomPanel && (
-              <RegionPanel
-                panel={bottomPanel}
-                resourceId={connectionResource.id}
-              />
-            )}
+            <RegionPanel
+              panel={queryLoggerPanel}
+              resourceId={connectionResource.id}
+            />
           </ResizableGroup>
         </ResizablePanel>
-        {rightPanel && (
-          <RegionPanel panel={rightPanel} resourceId={connectionResource.id} />
-        )}
+        <RegionPanel panel={chatPanel} resourceId={connectionResource.id} />
       </ResizableGroup>
     </>
   )

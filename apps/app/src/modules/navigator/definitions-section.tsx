@@ -15,7 +15,7 @@ import { useState } from 'react'
 
 import { Link } from '~/components/link'
 import { openTab } from '~/core/tabs/actions'
-import { appModules } from '~/lib/modules'
+import { schemaGroups } from '~/core/tabs/kinds'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -24,8 +24,7 @@ export const DefinitionsPanel = () => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
 
-  const filtered = appModules
-    .schemaGroups(connection.type)
+  const filtered = schemaGroups(connection.type)
     .map((group) => ({
       ...group,
       items: group.items.filter(({ label }) => matchesSearch(search, label)),

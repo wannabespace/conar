@@ -8,12 +8,9 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
-import type { ProtectedModule } from '~/lib/module'
-
 import { actionCenterOpen } from './action-center-open'
-import { ActionsCenter } from './actions-center'
 
-const CommandPaletteButton = () => (
+export const CommandPaletteButton = () => (
   <Tooltip
     shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />}
   >
@@ -32,8 +29,3 @@ const CommandPaletteButton = () => (
     <TooltipContent side="bottom">Command palette</TooltipContent>
   </Tooltip>
 )
-
-export default {
-  mounts: [ActionsCenter],
-  titlebar: [{ Component: CommandPaletteButton, order: 90 }],
-} satisfies ProtectedModule

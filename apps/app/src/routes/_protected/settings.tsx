@@ -23,22 +23,21 @@ import {
 import { useRef } from 'react'
 
 import { settingsSections } from '~/core/settings/sections'
-import { pressNavProps } from '~/lib/press-nav'
 import {
   resourcePanelClassName,
   settingsPageClassName,
   settingsSidebarClassName,
 } from '~/shell'
+import { pressNavProps } from '~/utils/press-nav'
 
 const SettingsPage = () => {
-  const sections = settingsSections()
   const { section } = useParams({ strict: false })
   const navigate = useNavigate()
   const router = useRouter()
   const canGoBack = useCanGoBack()
   const pageRef = useRef<HTMLDivElement>(null)
   const navRef = useRef<HTMLElement>(null)
-  const activeIndex = sections.findIndex(({ slug }) => slug === section)
+  const activeIndex = settingsSections.findIndex(({ slug }) => slug === section)
   const openSection = (slug: string) => {
     void navigate({
       params: { section: slug },
@@ -47,7 +46,7 @@ const SettingsPage = () => {
     })
   }
   const stepSection = (step: number) => {
-    const next = sections[activeIndex + step]
+    const next = settingsSections[activeIndex + step]
     if (next) {
       navRef.current
         ?.querySelector<HTMLElement>(`[data-section="${next.slug}"]`)
@@ -86,7 +85,7 @@ const SettingsPage = () => {
           <TooltipContent side="right">Back to app</TooltipContent>
         </Tooltip>
         <nav ref={navRef} className="flex flex-col gap-0.5">
-          {sections.map(({ icon, label, slug }, index) => (
+          {settingsSections.map(({ icon, label, slug }, index) => (
             <SidebarMenuButton
               key={slug}
               data-section={slug}
@@ -110,7 +109,7 @@ const SettingsPage = () => {
             <h1
               className={cn(smallItemInsetClassName, 'text-xl font-semibold')}
             >
-              {sections[activeIndex]?.label}
+              {settingsSections[activeIndex]?.label}
             </h1>
             <Outlet />
           </section>

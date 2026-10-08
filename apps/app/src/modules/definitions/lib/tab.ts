@@ -5,7 +5,7 @@ import { sectionAvailable } from '~/core/catalog/capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import { definitionsSectionType } from '~/core/catalog/sections'
 import { definitionsTabId } from '~/core/tabs/ids'
-import type { SchemaItem, TabKind } from '~/lib/module'
+import type { SchemaItem, TabKind } from '~/core/tabs/types'
 
 import { sectionMetaOf } from '../section-meta'
 
@@ -41,7 +41,7 @@ const SECTION_GROUPS: [DefinitionsSection, SchemaItem['group']][] = [
 ]
 
 export const definitionsSchemaItems = SECTION_GROUPS.map(
-  ([section, group], index): SchemaItem => {
+  ([section, group]): SchemaItem => {
     const { icon, title } = sectionMetaOf(section)
 
     return {
@@ -49,7 +49,6 @@ export const definitionsSchemaItems = SECTION_GROUPS.map(
       group,
       icon,
       label: title,
-      order: 10 + index,
       tabId: definitionsTabId(section),
     }
   }

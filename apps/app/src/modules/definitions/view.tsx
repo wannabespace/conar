@@ -3,7 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { openTab } from '~/core/tabs/actions'
 import { definitionsTabId } from '~/core/tabs/ids'
-import type { TabView, WorkspaceModule } from '~/lib/module'
+import type { TabView } from '~/core/tabs/types'
 
 import { DefinitionsRefresh } from './definitions-refresh'
 import type { DefinitionsParams } from './lib/tab'
@@ -48,11 +48,7 @@ const DefinitionsTab = ({
   )
 }
 
-const definitionsView: TabView<DefinitionsParams> = {
+export const definitionsView: TabView<DefinitionsParams> = {
   Content: DefinitionsTab,
   Refresh: DefinitionsRefresh,
 }
-
-export default {
-  tabs: { definitions: definitionsView },
-} satisfies WorkspaceModule

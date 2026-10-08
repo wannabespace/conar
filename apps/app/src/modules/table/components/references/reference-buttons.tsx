@@ -14,8 +14,8 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import type { Column } from '~/core/table/cell/utils'
-import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
+import { plural } from '~/utils/plural'
 
 import type { Hop } from './hops'
 import { followReference } from './hops'

@@ -9,8 +9,8 @@ import {
   parseCellText,
 } from '~/core/transformers/create-transformer'
 import { isNested } from '~/core/transformers/value-transformer'
-import { plural } from '~/lib/plural'
 import { posthog } from '~/lib/posthog'
+import { plural } from '~/utils/plural'
 
 import type { Column } from './cell/utils'
 import { gridClipboard } from './clipboard'
