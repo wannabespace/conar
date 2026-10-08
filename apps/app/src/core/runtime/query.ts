@@ -1,7 +1,7 @@
 import { isConnectionError } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
-import { noop, silently } from '@tamery/shared/utils'
+import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
 import type { Transaction } from 'kysely'
@@ -14,7 +14,6 @@ import { getConnectionStringToShow } from '~/core/connection/utils'
 
 import { dialects } from './dialects'
 import type { DialectOptions } from './dialects/driver'
-import { createDialectProvider } from './dialects/driver'
 import { logQuery } from './log'
 import { watchForSlowQuery } from './slow-queries'
 
@@ -64,6 +63,7 @@ export interface QueryParams {
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
+  signal?: AbortSignal
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -74,36 +74,6 @@ export interface QueryParams {
   }) => void
 }
 
-export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
-  createDialectProvider(queryParams.type, {
-    connectionId: queryParams.connectionId,
-    connectionString: queryParams.connectionString,
-    resourceId: queryParams.resourceId,
-  }).cancel(queryId)
-
-/** Cancels the started queries when `signal` aborts; a cancel that lands before a query starts finds nothing to stop. */
-export const runCancellable = async <T>(
-  params: QueryParams,
-  {
-    queryIds,
-    run,
-  }: { queryIds: string[]; run: (params: QueryParams) => Promise<T> },
-  signal: AbortSignal
-) => {
-  signal.throwIfAborted()
-  const cancel = () => {
-    for (const queryId of queryIds) {
-      void silently(() => cancelQuery(params, queryId))
-    }
-  }
-  signal.addEventListener('abort', cancel, { once: true })
-  try {
-    return await run(params)
-  } finally {
-    signal.removeEventListener('abort', cancel)
-  }
-}
-
 const dialectOf = (queryParams: QueryParams) =>
   dialects[queryParams.type]({
     connectionId: queryParams.connectionId,
@@ -111,6 +81,7 @@ const dialectOf = (queryParams: QueryParams) =>
     log: queryParams.log,
     resourceId: queryParams.resourceId,
     resultSets: queryParams.resultSets,
+    signal: queryParams.signal,
   })
 
 export const transaction = (queryParams: QueryParams) =>
@@ -134,7 +105,8 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
     [D in ConnectionType]: (
-      dialect: ReturnType<(typeof dialects)[D]>
+      dialect: ReturnType<(typeof dialects)[D]>,
+      signal?: AbortSignal
     ) => Promise<T extends Type ? T['inferIn'] : unknown>
   }
 }) => {
@@ -205,7 +177,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
           }
 
           // oxlint-disable-next-line ts/no-explicit-any
-          return queryFn(instance as any)
+          return queryFn(instance as any, queryParams.signal)
         },
       },
       {

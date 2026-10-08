@@ -6,12 +6,10 @@ import { dialects, readsOnly, splitStatements } from '@tamery/sql'
 
 import { getCollections } from '~/core/collections'
 import { createConnection } from '~/core/connection/create'
+import { refreshAfterRun } from '~/core/connection/refresh-after-run'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import type { ResultSet } from '~/core/queries/connection/custom'
-import {
-  refreshAfterRun,
-  statementQuery,
-} from '~/core/queries/connection/statement'
+import { statementQuery } from '~/core/queries/connection/statement'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { transactionQuery } from '~/core/queries/connection/transaction'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
@@ -19,7 +17,6 @@ import type { QueryParams } from '~/core/runtime/query'
 import {
   connectionResourceToQueryParams,
   connectionToQueryParams,
-  runCancellable,
 } from '~/core/runtime/query'
 import { permix } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
@@ -53,16 +50,13 @@ const abortSignalOf = (onAbort: (listener: () => void) => void) => {
 
 const runForAgent = async (
   params: QueryParams,
-  query: {
-    queryIds: string[]
-    run: (params: QueryParams) => Promise<ResultSet[]>
-  },
+  query: { run: (params: QueryParams) => Promise<ResultSet[]> },
   event: { access: McpAccess; connection_type: ConnectionType },
   signal: AbortSignal
 ) => {
   let success = false
   try {
-    const sets = await runCancellable(params, query, signal)
+    const sets = await query.run({ ...params, signal })
     success = true
     void recordQuery()
     return sets
@@ -138,12 +132,12 @@ export const mcpSource: McpSource = {
     }
     const sets = await runForAgent(
       params,
-      statementQuery(sql, connection.type, signal),
+      statementQuery(sql, connection.type),
       { access: approve ? 'ask' : 'write', connection_type: connection.type },
       signal
     )
     if (resource) {
-      refreshAfterRun(resource, connection.type, [{ text: sql }])
+      refreshAfterRun(resource, connection.type, sql)
     }
     if (!approve) {
       void window.electron?.mcp.notify({
@@ -164,10 +158,11 @@ export const mcpSource: McpSource = {
     const signal = abortSignalOf(onAbort)
     return runForAgent(
       await agentParams(connection, resource),
-      transactionQuery(
-        { accessMode: 'read only', commit: false, statements: [sql] },
-        signal
-      ),
+      transactionQuery({
+        accessMode: 'read only',
+        commit: false,
+        statements: [sql],
+      }),
       { access: 'read', connection_type: connection.type },
       signal
     )

@@ -17,7 +17,7 @@ export const columnType = type({
   // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.
   'attributes?': 'string',
   'collation?': 'string | null',
-  'comment?': 'string | null',
+  comment: 'string | null',
   // Full type as a DDL statement spells it, length and precision included.
   'declaredType?': 'string | null',
   default: 'string | null',
@@ -152,19 +152,16 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
         }))
       },
       mssql: async (db) => {
+        const tableId = sql<number>`OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME))`
         const query = await db
           .selectFrom('information_schema.COLUMNS')
           .leftJoin('sys.extended_properties as ep', (join) =>
             join
-              .on(
-                'ep.major_id',
-                '=',
-                sql<number>`OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME))`
-              )
+              .on('ep.major_id', '=', tableId)
               .on(
                 'ep.minor_id',
                 '=',
-                sql<number>`COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'ColumnId')`
+                sql<number>`COLUMNPROPERTY(${tableId}, COLUMN_NAME, 'ColumnId')`
               )
               .on('ep.class', '=', 1)
               .on('ep.name', '=', 'MS_Description')
@@ -179,7 +176,9 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
             'COLLATION_NAME as collation',
-            sql<string | null>`CAST(ep.value AS nvarchar(max))`.as('comment'),
+            sql<string | null>`NULLIF(CAST(ep.value AS nvarchar(max)), '')`.as(
+              'comment'
+            ),
             eb
               .case()
               .when('DATA_TYPE', 'in', [

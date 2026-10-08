@@ -12,8 +12,9 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
-  redirect,
+  Outlet,
   useCanGoBack,
+  useLocation,
   useNavigate,
   useRouter,
 } from '@tanstack/react-router'
@@ -21,6 +22,7 @@ import { useRef } from 'react'
 
 import { SidebarMenuButton } from '~/components/sidebar'
 import { settingsSections } from '~/core/settings/sections'
+import type { SettingsSection } from '~/lib/module'
 import { pressNavProps } from '~/lib/press-nav'
 import {
   resourcePanelClassName,
@@ -28,30 +30,27 @@ import {
   settingsSidebarClassName,
 } from '~/shell'
 
-const routeApi = getRouteApi('/_protected/settings/{-$section}')
+const routeApi = getRouteApi('/_protected/settings')
 
 const SettingsPage = () => {
-  const { activeSection, sections } = routeApi.useLoaderData()
+  const { sections } = routeApi.useLoaderData()
+  const { pathname } = useLocation()
   const navigate = useNavigate()
   const router = useRouter()
   const canGoBack = useCanGoBack()
   const pageRef = useRef<HTMLDivElement>(null)
   const navRef = useRef<HTMLElement>(null)
-  const activeIndex = sections.indexOf(activeSection)
-  const openSection = (id: string) => {
-    void navigate({
-      params: { section: id },
-      replace: true,
-      to: '/settings/{-$section}',
-    })
+  const activeIndex = sections.findIndex(({ to }) => to === pathname)
+  const openSection = (to: SettingsSection['to']) => {
+    void navigate({ replace: true, to })
   }
   const stepSection = (step: number) => {
     const next = sections[activeIndex + step]
     if (next) {
       navRef.current
-        ?.querySelector<HTMLElement>(`[data-section="${next.id}"]`)
+        ?.querySelector<HTMLElement>(`[data-section="${next.to}"]`)
         ?.focus()
-      openSection(next.id)
+      openSection(next.to)
     }
   }
 
@@ -85,13 +84,13 @@ const SettingsPage = () => {
           <TooltipContent side="right">Back to app</TooltipContent>
         </Tooltip>
         <nav ref={navRef} className="flex flex-col gap-0.5">
-          {sections.map(({ icon, id, label }, index) => (
+          {sections.map(({ icon, label, to }, index) => (
             <SidebarMenuButton
-              key={id}
-              data-section={id}
+              key={to}
+              data-section={to}
               isActive={index === activeIndex}
               autoFocus={index === activeIndex}
-              {...pressNavProps(() => openSection(id))}
+              {...pressNavProps(() => openSection(to))}
             >
               <HugeiconsIcon
                 icon={icon}
@@ -107,9 +106,9 @@ const SettingsPage = () => {
         <ScrollArea className="min-h-0 flex-1">
           <section className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-8 py-10">
             <h1 className="px-3.5 text-xl font-semibold">
-              {activeSection.label}
+              {sections[activeIndex]?.label}
             </h1>
-            <activeSection.Component />
+            <Outlet />
           </section>
         </ScrollArea>
       </div>
@@ -117,21 +116,8 @@ const SettingsPage = () => {
   )
 }
 
-export const Route = createFileRoute('/_protected/settings/{-$section}')({
-  loader: ({ params }) => {
-    const sections = settingsSections()
-    const activeSection = params.section
-      ? sections.find(({ id }) => id === params.section)
-      : sections[0]
-    if (!activeSection) {
-      throw redirect({
-        params: { section: undefined },
-        replace: true,
-        to: '/settings/{-$section}',
-      })
-    }
-    return { activeSection, sections }
-  },
+export const Route = createFileRoute('/_protected/settings')({
+  loader: () => ({ sections: settingsSections() }),
   component: SettingsPage,
   head: () => ({
     meta: [{ title: title('Settings') }],

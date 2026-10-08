@@ -8,31 +8,24 @@ import type { SettingsSection } from '~/lib/module'
 import { byOrder } from '~/lib/modules'
 import { protectedModules } from '~/lib/protected-modules'
 
-import { AppearanceSettings } from './appearance-settings'
-import { GeneralSettings } from './general-settings'
-import { PrivacySettings } from './privacy-settings'
-
 const coreSections: SettingsSection[] = [
   {
-    Component: GeneralSettings,
     icon: Settings02Icon,
-    id: 'general',
     label: 'General',
     order: 0,
+    to: '/settings/general',
   },
   {
-    Component: AppearanceSettings,
     icon: PaintBoardIcon,
-    id: 'appearance',
     label: 'Appearance',
     order: 5,
+    to: '/settings/appearance',
   },
   {
-    Component: PrivacySettings,
     icon: SecurityLockIcon,
-    id: 'privacy',
     label: 'Privacy',
     order: 100,
+    to: '/settings/privacy',
   },
 ]
 

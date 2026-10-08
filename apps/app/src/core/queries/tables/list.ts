@@ -22,7 +22,7 @@ export type RelationKind = 'table' | 'view'
 
 // Every dialect with schemas reads from its schema catalog, so an empty schema is one row whose table is null.
 export const tablesAndSchemasType = type({
-  'comment?': 'string | null',
+  comment: 'string | null',
   'row_level_security?': 'boolean | null',
   schema: 'string',
   table: 'string | null',
@@ -96,7 +96,9 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               's.name as schema',
               'o.name as table',
-              sql<string | null>`CAST(ep.value AS nvarchar(max))`.as('comment'),
+              sql<
+                string | null
+              >`NULLIF(CAST(ep.value AS nvarchar(max)), '')`.as('comment'),
               (eb) =>
                 eb
                   .case()
@@ -120,6 +122,7 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               's.SCHEMA_NAME as schema',
               't.TABLE_NAME as table',
+              // A view's TABLE_COMMENT is the word VIEW, not a comment.
               (eb) =>
                 eb
                   .case()

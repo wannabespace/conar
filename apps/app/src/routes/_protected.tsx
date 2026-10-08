@@ -24,7 +24,7 @@ const ProtectedLayout = () => {
   useLastOpenedResourcesSync()
 
   useHotkey('Mod+,', () => {
-    void navigate({ to: '/settings/{-$section}' })
+    void navigate({ to: '/settings' })
   })
 
   useEffect(() => {

@@ -248,8 +248,12 @@ export const restatedType = ({
   return sql.raw(kept ? `${columnType} ${kept}` : columnType)
 }
 
-export const mysqlComment = (comment: string | null) =>
-  comment ? sql` COMMENT ${sql.lit(comment)}` : sql``
+// MySQL drops the comment on a MODIFY or CHANGE COLUMN that does not restate it.
+export const mysqlColumnDefinition = (
+  target: Pick<AlterColumnTarget, 'original' | 'type'>,
+  comment: string | null
+) =>
+  sql`${restatedType(target)}${comment ? sql` COMMENT ${sql.lit(comment)}` : sql``}`
 
 export const alterColumnStatement = (
   dialectType: ConnectionType,
@@ -286,10 +290,8 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  const definition = restatedType(target)
-
   if (dialectType === ConnectionType.MSSQL) {
-    const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${definition} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
+    const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${restatedType(target)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
     if (!retyped) {
       return statement.compile(db)
     }
@@ -300,7 +302,7 @@ export const alterColumnStatement = (
   return alter
     .modifyColumn(
       column,
-      sql`${definition}${mysqlComment(original.comment)}`,
+      mysqlColumnDefinition(target, original.comment),
       (builder) => (nullable ? builder : builder.notNull())
     )
     .compile()

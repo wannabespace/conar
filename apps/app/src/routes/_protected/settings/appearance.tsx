@@ -7,10 +7,10 @@ import {
 } from '@tamery/ui/components/select'
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
+import { createFileRoute } from '@tanstack/react-router'
 
+import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
-
-import { SettingsGroup, SettingsRow } from './settings-group'
 
 const THEMES: { label: string; value: Theme }[] = [
   { label: 'System', value: 'system' },
@@ -18,7 +18,7 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: 'Dark', value: 'dark' },
 ]
 
-export const AppearanceSettings = () => {
+const AppearanceSettings = () => {
   const theme = useTheme()
 
   return (
@@ -52,3 +52,7 @@ export const AppearanceSettings = () => {
     </SettingsGroup>
   )
 }
+
+export const Route = createFileRoute('/_protected/settings/appearance')({
+  component: AppearanceSettings,
+})

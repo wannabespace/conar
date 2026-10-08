@@ -2,18 +2,13 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { refreshAfterRun } from '~/core/connection/refresh-after-run'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { ResultSet } from '~/core/queries/connection/custom'
-import {
-  refreshAfterRun,
-  statementQuery,
-} from '~/core/queries/connection/statement'
+import { statementQuery } from '~/core/queries/connection/statement'
 import type { QueryParams } from '~/core/runtime/query'
-import {
-  connectionResourceToQueryParams,
-  runCancellable,
-} from '~/core/runtime/query'
+import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
@@ -101,11 +96,10 @@ const runOne = async (
 ): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
   try {
-    const sets = await runCancellable(
-      params,
-      statementQuery(statement.text, params.type, signal),
-      signal
-    )
+    const sets = await statementQuery(statement.text, params.type).run({
+      ...params,
+      signal,
+    })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
       resultOf(statement, { duration, set })
@@ -201,7 +195,11 @@ export const runStatements = async ({
     type: connectionType,
   })
   if (connectionType) {
-    refreshAfterRun(connectionResource, connectionType, statements)
+    refreshAfterRun(
+      connectionResource,
+      connectionType,
+      statements.map((statement) => statement.text).join(';\n')
+    )
   }
 
   if (!current()) {

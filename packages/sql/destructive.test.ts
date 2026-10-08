@@ -121,6 +121,7 @@ describe('destructiveKeywords', () => {
       true
     )
     expect(invalidatesCatalog("UPDATE t SET a = 'DROP'", mysql)).toBe(false)
+    expect(invalidatesCatalog("COMMENT ON COLUMN t.a IS 'x'", pg)).toBe(true)
     expect(
       invalidatesCatalog('DO $$ BEGIN CREATE TABLE t (); END $$', pg)
     ).toBe(true)
@@ -161,6 +162,7 @@ describe('readsOnly', () => {
     expect(readsOnly('select * from users where id = 1;', pg)).toBe(true)
     expect(readsOnly('WITH t AS (SELECT 1) SELECT * FROM t', pg)).toBe(true)
     expect(readsOnly("select 'drop table users'", pg)).toBe(true)
+    expect(readsOnly('SELECT comment FROM posts', pg)).toBe(true)
     expect(readsOnly('SHOW TABLES', mysql)).toBe(true)
     expect(readsOnly('SHOW CREATE TABLE users', mysql)).toBe(true)
     expect(readsOnly('SHOW CREATE TABLE users', clickhouse)).toBe(true)

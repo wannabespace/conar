@@ -3,7 +3,6 @@ import { unsupported } from '@tamery/shared/unsupported'
 import { dialects, splitStatements } from '@tamery/sql'
 import type { Type } from 'arktype'
 import { type } from 'arktype'
-import type { Kysely } from 'kysely'
 import { CompiledQuery } from 'kysely'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -27,14 +26,23 @@ const postgresRows = type([
       : Plan['Plan Rows']) ?? null
 )
 
-const mysqlRows = ({ columns, rows }: ResultSet) => {
-  const rowsAt = columns.indexOf('rows')
-  const row = rows.find((item) => typeof item[rowsAt] === 'number')
-  const filtered = row?.[columns.indexOf('filtered')] ?? 100
-  return row ? Math.round((Number(row[rowsAt]) * Number(filtered)) / 100) : null
+// A plan row counts its table's rows per row of the tables joined before it, so only a target alone in its join gives a total.
+const mysqlRows = (set: ResultSet | undefined) => {
+  if (!set) {
+    return null
+  }
+  const at = (column: string) => set.columns.indexOf(column)
+  const [target, ...joined] = set.rows.filter(
+    (row) => row[at('id')] === set.rows[0]?.[at('id')]
+  )
+  const rows = target?.[at('rows')]
+  if (joined.length > 0 || typeof rows !== 'number') {
+    return null
+  }
+  return Math.round((rows * Number(target?.[at('filtered')] ?? 100)) / 100)
 }
 
-// Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run.
+// Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run. Planning can still call its functions (architecture.md → MCP server).
 const ESTIMATED_COMMANDS = new Set([
   'DELETE',
   'INSERT',
@@ -43,11 +51,7 @@ const ESTIMATED_COMMANDS = new Set([
   'UPDATE',
 ])
 
-export const estimateQuery = (
-  text: string,
-  connectionType: ConnectionType,
-  signal: AbortSignal
-) => {
+export const estimateQuery = (text: string, connectionType: ConnectionType) => {
   const [statement, ...rest] = splitStatements(text, dialects[connectionType])
   if (
     !capabilitiesOf(connectionType).explain ||
@@ -56,38 +60,30 @@ export const estimateQuery = (
   ) {
     return null
   }
-  // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
-  const mysql = CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`)
-  const postgres = CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)
-  const explain = async <DB>(
-    db: Kysely<DB>,
-    query: CompiledQuery,
-    accessMode?: 'read only'
-  ) => {
-    const [set] = await runInTransaction(
-      db,
-      { accessMode, commit: false },
-      [query],
-      signal
-    )
-    return set
-  }
-  return {
-    ...createQuery<Type<number | null>>({
-      query: {
-        clickhouse: unsupported('Row estimates'),
-        mssql: unsupported('Row estimates'),
-        mysql: async (db) => {
-          // Not read only: MySQL refuses even EXPLAIN of a write there.
-          const set = await explain(db, mysql)
-          return set ? mysqlRows(set) : null
-        },
-        postgres: async (db) => {
-          const set = await explain(db, postgres, 'read only')
-          return postgresRows.assert(set?.rows[0]?.[0])
-        },
+  return createQuery<Type<number | null>>({
+    query: {
+      clickhouse: unsupported('Row estimates'),
+      mssql: unsupported('Row estimates'),
+      mysql: async (db, signal) => {
+        // Not read only: MySQL refuses even EXPLAIN of a write there.
+        // MySQL 9's JSON plan has no row estimate for a single-table UPDATE or DELETE; the tabular one always has.
+        const [set] = await runInTransaction(
+          db,
+          { commit: false },
+          [CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`)],
+          signal
+        )
+        return mysqlRows(set)
       },
-    }),
-    queryIds: [mysql.queryId.queryId, postgres.queryId.queryId],
-  }
+      postgres: async (db, signal) => {
+        const [set] = await runInTransaction(
+          db,
+          { accessMode: 'read only', commit: false },
+          [CompiledQuery.raw(`EXPLAIN (FORMAT JSON) ${text}`)],
+          signal
+        )
+        return postgresRows.assert(set?.rows[0]?.[0])
+      },
+    },
+  })
 }

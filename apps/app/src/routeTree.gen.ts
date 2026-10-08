@@ -12,9 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
 import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
-import { Route as ProtectedSettingsChar123SectionChar125RouteImport } from './routes/_protected/settings.{-$section}'
+import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
+import { Route as ProtectedSettingsAppearanceRouteImport } from './routes/_protected/settings/appearance'
+import { Route as ProtectedSettingsGeneralRouteImport } from './routes/_protected/settings/general'
+import { Route as ProtectedSettingsMcpRouteImport } from './routes/_protected/settings/mcp'
+import { Route as ProtectedSettingsPrivacyRouteImport } from './routes/_protected/settings/privacy'
 import { Route as ProtectedConnectionResourceIdIndexRouteImport } from './routes/_protected/connection/$resourceId/index'
 import { Route as ProtectedConnectionResourceIdTabIdRouteImport } from './routes/_protected/connection/$resourceId/$tabId'
 
@@ -32,6 +37,11 @@ const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedSettingsRoute = ProtectedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedConnectionResourceIdRoute =
   ProtectedConnectionResourceIdRouteImport.update({
     id: '/connection/$resourceId',
@@ -43,11 +53,33 @@ const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ProtectedSettingsChar123SectionChar125Route =
-  ProtectedSettingsChar123SectionChar125RouteImport.update({
-    id: '/settings/{-$section}',
-    path: '/settings/{-$section}',
-    getParentRoute: () => ProtectedRoute,
+const ProtectedSettingsIndexRoute = ProtectedSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProtectedSettingsRoute,
+} as any)
+const ProtectedSettingsAppearanceRoute =
+  ProtectedSettingsAppearanceRouteImport.update({
+    id: '/appearance',
+    path: '/appearance',
+    getParentRoute: () => ProtectedSettingsRoute,
+  } as any)
+const ProtectedSettingsGeneralRoute =
+  ProtectedSettingsGeneralRouteImport.update({
+    id: '/general',
+    path: '/general',
+    getParentRoute: () => ProtectedSettingsRoute,
+  } as any)
+const ProtectedSettingsMcpRoute = ProtectedSettingsMcpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => ProtectedSettingsRoute,
+} as any)
+const ProtectedSettingsPrivacyRoute =
+  ProtectedSettingsPrivacyRouteImport.update({
+    id: '/privacy',
+    path: '/privacy',
+    getParentRoute: () => ProtectedSettingsRoute,
   } as any)
 const ProtectedConnectionResourceIdIndexRoute =
   ProtectedConnectionResourceIdIndexRouteImport.update({
@@ -65,17 +97,26 @@ const ProtectedConnectionResourceIdTabIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
+  '/settings': typeof ProtectedSettingsRouteWithChildren
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
-  '/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
+  '/settings/appearance': typeof ProtectedSettingsAppearanceRoute
+  '/settings/general': typeof ProtectedSettingsGeneralRoute
+  '/settings/mcp': typeof ProtectedSettingsMcpRoute
+  '/settings/privacy': typeof ProtectedSettingsPrivacyRoute
   '/create/': typeof ProtectedCreateIndexRoute
+  '/settings/': typeof ProtectedSettingsIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/connection/$resourceId/': typeof ProtectedConnectionResourceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/': typeof ProtectedIndexRoute
-  '/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
+  '/settings/appearance': typeof ProtectedSettingsAppearanceRoute
+  '/settings/general': typeof ProtectedSettingsGeneralRoute
+  '/settings/mcp': typeof ProtectedSettingsMcpRoute
+  '/settings/privacy': typeof ProtectedSettingsPrivacyRoute
   '/create': typeof ProtectedCreateIndexRoute
+  '/settings': typeof ProtectedSettingsIndexRoute
   '/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdIndexRoute
 }
@@ -83,10 +124,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_protected/settings': typeof ProtectedSettingsRouteWithChildren
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
-  '/_protected/settings/{-$section}': typeof ProtectedSettingsChar123SectionChar125Route
+  '/_protected/settings/appearance': typeof ProtectedSettingsAppearanceRoute
+  '/_protected/settings/general': typeof ProtectedSettingsGeneralRoute
+  '/_protected/settings/mcp': typeof ProtectedSettingsMcpRoute
+  '/_protected/settings/privacy': typeof ProtectedSettingsPrivacyRoute
   '/_protected/create/': typeof ProtectedCreateIndexRoute
+  '/_protected/settings/': typeof ProtectedSettingsIndexRoute
   '/_protected/connection/$resourceId/$tabId': typeof ProtectedConnectionResourceIdTabIdRoute
   '/_protected/connection/$resourceId/': typeof ProtectedConnectionResourceIdIndexRoute
 }
@@ -95,27 +141,41 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/settings'
     | '/connection/$resourceId'
-    | '/settings/{-$section}'
+    | '/settings/appearance'
+    | '/settings/general'
+    | '/settings/mcp'
+    | '/settings/privacy'
     | '/create/'
+    | '/settings/'
     | '/connection/$resourceId/$tabId'
     | '/connection/$resourceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
     | '/'
-    | '/settings/{-$section}'
+    | '/settings/appearance'
+    | '/settings/general'
+    | '/settings/mcp'
+    | '/settings/privacy'
     | '/create'
+    | '/settings'
     | '/connection/$resourceId/$tabId'
     | '/connection/$resourceId'
   id:
     | '__root__'
     | '/_protected'
     | '/auth'
+    | '/_protected/settings'
     | '/_protected/'
     | '/_protected/connection/$resourceId'
-    | '/_protected/settings/{-$section}'
+    | '/_protected/settings/appearance'
+    | '/_protected/settings/general'
+    | '/_protected/settings/mcp'
+    | '/_protected/settings/privacy'
     | '/_protected/create/'
+    | '/_protected/settings/'
     | '/_protected/connection/$resourceId/$tabId'
     | '/_protected/connection/$resourceId/'
   fileRoutesById: FileRoutesById
@@ -148,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/settings': {
+      id: '/_protected/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ProtectedSettingsRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/connection/$resourceId': {
       id: '/_protected/connection/$resourceId'
       path: '/connection/$resourceId'
@@ -162,12 +229,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedCreateIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/settings/{-$section}': {
-      id: '/_protected/settings/{-$section}'
-      path: '/settings/{-$section}'
-      fullPath: '/settings/{-$section}'
-      preLoaderRoute: typeof ProtectedSettingsChar123SectionChar125RouteImport
-      parentRoute: typeof ProtectedRoute
+    '/_protected/settings/': {
+      id: '/_protected/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof ProtectedSettingsIndexRouteImport
+      parentRoute: typeof ProtectedSettingsRoute
+    }
+    '/_protected/settings/appearance': {
+      id: '/_protected/settings/appearance'
+      path: '/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof ProtectedSettingsAppearanceRouteImport
+      parentRoute: typeof ProtectedSettingsRoute
+    }
+    '/_protected/settings/general': {
+      id: '/_protected/settings/general'
+      path: '/general'
+      fullPath: '/settings/general'
+      preLoaderRoute: typeof ProtectedSettingsGeneralRouteImport
+      parentRoute: typeof ProtectedSettingsRoute
+    }
+    '/_protected/settings/mcp': {
+      id: '/_protected/settings/mcp'
+      path: '/mcp'
+      fullPath: '/settings/mcp'
+      preLoaderRoute: typeof ProtectedSettingsMcpRouteImport
+      parentRoute: typeof ProtectedSettingsRoute
+    }
+    '/_protected/settings/privacy': {
+      id: '/_protected/settings/privacy'
+      path: '/privacy'
+      fullPath: '/settings/privacy'
+      preLoaderRoute: typeof ProtectedSettingsPrivacyRouteImport
+      parentRoute: typeof ProtectedSettingsRoute
     }
     '/_protected/connection/$resourceId/': {
       id: '/_protected/connection/$resourceId/'
@@ -185,6 +280,25 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ProtectedSettingsRouteChildren {
+  ProtectedSettingsAppearanceRoute: typeof ProtectedSettingsAppearanceRoute
+  ProtectedSettingsGeneralRoute: typeof ProtectedSettingsGeneralRoute
+  ProtectedSettingsMcpRoute: typeof ProtectedSettingsMcpRoute
+  ProtectedSettingsPrivacyRoute: typeof ProtectedSettingsPrivacyRoute
+  ProtectedSettingsIndexRoute: typeof ProtectedSettingsIndexRoute
+}
+
+const ProtectedSettingsRouteChildren: ProtectedSettingsRouteChildren = {
+  ProtectedSettingsAppearanceRoute: ProtectedSettingsAppearanceRoute,
+  ProtectedSettingsGeneralRoute: ProtectedSettingsGeneralRoute,
+  ProtectedSettingsMcpRoute: ProtectedSettingsMcpRoute,
+  ProtectedSettingsPrivacyRoute: ProtectedSettingsPrivacyRoute,
+  ProtectedSettingsIndexRoute: ProtectedSettingsIndexRoute,
+}
+
+const ProtectedSettingsRouteWithChildren =
+  ProtectedSettingsRoute._addFileChildren(ProtectedSettingsRouteChildren)
 
 interface ProtectedConnectionResourceIdRouteChildren {
   ProtectedConnectionResourceIdTabIdRoute: typeof ProtectedConnectionResourceIdTabIdRoute
@@ -205,18 +319,17 @@ const ProtectedConnectionResourceIdRouteWithChildren =
   )
 
 interface ProtectedRouteChildren {
+  ProtectedSettingsRoute: typeof ProtectedSettingsRouteWithChildren
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedConnectionResourceIdRoute: typeof ProtectedConnectionResourceIdRouteWithChildren
-  ProtectedSettingsChar123SectionChar125Route: typeof ProtectedSettingsChar123SectionChar125Route
   ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedSettingsRoute: ProtectedSettingsRouteWithChildren,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedConnectionResourceIdRoute:
     ProtectedConnectionResourceIdRouteWithChildren,
-  ProtectedSettingsChar123SectionChar125Route:
-    ProtectedSettingsChar123SectionChar125Route,
   ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 

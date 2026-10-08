@@ -14,9 +14,8 @@ import { createQuery } from '~/core/runtime/query'
 import type { AlterColumnTarget } from './shape'
 import {
   alterColumnStatement,
-  mysqlComment,
+  mysqlColumnDefinition,
   renameColumnStatement,
-  restatedType,
 } from './shape'
 
 interface EditColumnTarget extends AlterColumnTarget {
@@ -149,22 +148,22 @@ export const editColumnQuery = (target: EditColumnTarget) =>
       mssql: async (db) => {
         const { comment, newName, original, schema, table } = target
         await editInSteps(ConnectionType.MSSQL, db, target)
-        if (!commented(target)) {
-          return
+        if (commented(target)) {
+          const value = comment === null ? sql`` : sql`@value = ${comment}, `
+          await sql`EXEC ${mssqlCommentProcedure(original.comment, comment)} @name = N'MS_Description', ${value}@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`.execute(
+            db
+          )
         }
-        const value = comment === null ? sql`` : sql`@value = ${comment}, `
-        await sql`EXEC ${mssqlCommentProcedure(original.comment, comment)} @name = N'MS_Description', ${value}@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`.execute(
-          db
-        )
       },
       // MySQL commits each DDL statement, so the rename, the alter and the key
       // go in one ALTER: a part that fails leaves the column untouched.
       mysql: async (db) => {
-        const { column, newName, nullable, reference, schema, table } = target
+        const { column, comment, newName, nullable, reference, schema, table } =
+          target
         await mysqlMoveRenamedValues(db, target)
         const columnAction =
           altered(target) || commented(target)
-            ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${restatedType(target)}${sql.raw(nullable ? '' : ' NOT NULL')}${mysqlComment(target.comment)}`
+            ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${mysqlColumnDefinition(target, comment)}${sql.raw(nullable ? '' : ' NOT NULL')}`
             : newName !== column &&
               sql`RENAME COLUMN ${sql.id(column)} TO ${sql.id(newName)}`
         const actions = [

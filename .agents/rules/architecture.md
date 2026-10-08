@@ -31,20 +31,20 @@
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
 - `apps/app` contracts are `src/lib/module.ts`, one entry file per host, each globbed where that host's chunk loads:
   - `module.ts` — the entry chunk, so it must stay off `lib/database`: tab kinds, schema items, new-tab actions, root mounts.
-  - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries, Settings page sections.
+  - `protected.tsx` — the signed-in layout: titlebar items, banners, mounts, command-palette entries, Settings sidebar entries.
   - `workspace.tsx` — the connection workspace: panels (one per region), tab views, header, tab-bar items, navigator footer rows, empty pane.
   - `collections.ts` — a factory whose keys augment `Collections` in `core/collections`.
 - `apps/main` has no registry: a module's `module.tsx` exports its components and core imports them where they render, so deleting a module means deleting its folder and those imports. A module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`); `vite.config.ts` mounts every `modules/*/routes` through `virtualRouteConfig`, read once at startup, so restart dev after adding or deleting one.
 
 ## Core layout (`apps/app/src/core`)
 
-One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder.
+One folder per domain; a file goes in the domain it is about, never in a technical bucket. Infrastructure with no domain stays in `lib/`. `components/` holds only app-global UI that belongs to no feature (app chrome, menus, empty states); UI that several modules share for one feature goes in that feature's core folder. Core holds only what more than one route or module uses: a page's own UI lives in its route file (or a `-components/` folder beside it), never in core.
 
 | Folder | Holds |
 | --- | --- |
 | `collections.ts` | The collection registry modules augment |
 | `workspace/`, `user/` | Workspace records and hooks; the user's subscription |
-| `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link |
+| `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link, refreshing a resource's cache after a statement runs |
 | `runtime/` | Running SQL: `createQuery`, the proxy, per-engine Kysely dialects, the query log |
 | `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types; the drop confirmation dialog |
 | `queries/<subject>/` | One file per catalog or row statement (see below) |
@@ -54,7 +54,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
 | `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
-| `settings/` | The Settings page's core sections and the `SettingsGroup`/`SettingsRow` they and module sections are built from; a module adds a section through `ProtectedModule.settings` |
+| `settings/` | The Settings sidebar's core entries and the `SettingsGroup`/`SettingsRow` every section is built from. A section is a route under the `routes/_protected/settings.tsx` layout; a module adds its sidebar entry through `ProtectedModule.settings` |
 
 ## ArkType config ordering
 
@@ -94,7 +94,7 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 - **An MCP call is an ordinary app query** — through `connection(Resource)ToQueryParams`, so proxy routing, `fetchingConfig` gating, the query logger and cancellation apply unchanged. Schema tools reuse the app's catalog `queryOptions` with a few-second `staleTime`, since the app's cache is otherwise infinite and an agent often migrates from its own shell. `execute` goes through `statementQuery` and `refreshAfterRun`, the runner's own path.
 - **Agents add connections, never change them**: `create_connection` goes through `createConnection` (`core/connection/create.ts`), the create page's own path, after `testConnectionQuery`; no tool edits, renames or removes a connection.
 - **Access is per connection, per device, and main is the only gate**: one `McpAccess` per connection in main's store (`off`, `read`, `ask`, `write`; absent means `ask`), and main refuses a call the access does not allow before asking a window, so the window runs whatever it is asked. `execute` is always registered and access is read on every call, since a session's server outlives an access change.
-- **Nothing an agent sends runs before an `ask` is approved**, and approval happens in the window, never in main. The only query before it is the planner's row estimate (`estimateQuery`), an `EXPLAIN` of a single statement that opens with a data verb, so no `ANALYZE` or procedure call can make it execute; it is cancelled after a few seconds, since a lock can stall it on the pool's only connection. A rollback is not a safe preview: SQL Server's batch can `COMMIT` mid-statement, and `COPY … TO PROGRAM`, `dblink` or `INTO OUTFILE` act outside the transaction.
+- **Nothing an agent sends runs before an `ask` is approved**, and approval happens in the window, never in main. The only query before it is the planner's row estimate (`estimateQuery`), an `EXPLAIN` of a single statement that opens with a data verb, so no `ANALYZE` or procedure call can make the statement execute; it is cancelled after a few seconds, since a lock can stall it on the pool's only connection. Planning can still call a function the statement names — Postgres evaluates `IMMUTABLE` and `STABLE` ones, MySQL a stored function with constant arguments — so a function already in the database can act before approval. Accepted: Postgres plans read-only, both engines roll back, so only an effect outside the transaction survives, and an agent cannot create such a function without an approved write. MySQL's estimate takes the plan row of a target alone in its join and is empty otherwise, since a joined row counts per row of the tables before it. A rollback is not a safe preview: SQL Server's batch can `COMMIT` mid-statement, and `COPY … TO PROGRAM`, `dblink` or `INTO OUTFILE` act outside the transaction.
 - **Read-only is two layers**: `readsOnly` (`@tamery/sql`) admits one statement that starts with a read verb and carries no write, permission, transaction-control or session word and no listed side-effect function (`dblink`, `OPENQUERY`, advisory locks, `GET_LOCK`), then the transaction itself is read-only (ClickHouse: `readonly=2`; SQL Server: none) and always rolled back. The access mode only stops writes to the connected database — a function can still reach another server, hold a lock or signal another session — and the check is a denylist, so a hard guarantee on any engine needs a read-only database login.
 - **Sessions are the SDK's stateful Streamable HTTP mode**, one transport and server per session, kept in memory: a restart or half an hour idle drops them and clients start a new session on the 404. A client that drops its HTTP request never sends `notifications/cancelled`, so main sends it for them and the tool call's signal aborts. Clients are known only by the name they report at `initialize`, so that name is never an access control — the token is.
 - **Free plans get `FREE_WEEKLY_LIMITS.mcp` runs of `query` and `execute` a week, counted only by the API** (`modules/mcp/usage.ts`): each run checks the account's `usage.get` and reports through `usage.record`, which returns the fresh quota into the same cache. With the API unreachable a run is neither checked nor counted — fail open, so local connections keep working offline. A refused call opens the limit dialog.

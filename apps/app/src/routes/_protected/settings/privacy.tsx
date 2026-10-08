@@ -1,11 +1,11 @@
 import { Switch } from '@tamery/ui/components/switch'
+import { createFileRoute } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
+import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { analyticsStore } from '~/lib/posthog'
 
-import { SettingsGroup, SettingsRow } from './settings-group'
-
-export const PrivacySettings = () => {
+const PrivacySettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)
 
   return (
@@ -25,3 +25,7 @@ export const PrivacySettings = () => {
     </SettingsGroup>
   )
 }
+
+export const Route = createFileRoute('/_protected/settings/privacy')({
+  component: PrivacySettings,
+})

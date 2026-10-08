@@ -95,8 +95,12 @@ export const destructiveKeywords = (text: string, dialect: DialectSpec) => [
   ...new Set(keywordsRun(DESTRUCTIVE, text, dialect)),
 ]
 
+// COMMENT counts only as a statement's first word: as a keyword it would make `SELECT comment` a write to `readsOnly`.
 export const invalidatesCatalog = (text: string, dialect: DialectSpec) =>
-  keywordsRun(DDL_KEYWORDS, text, dialect).length > 0
+  keywordsRun(DDL_KEYWORDS, text, dialect).length > 0 ||
+  splitStatements(text, dialect).some(
+    ({ tokens }) => tokens[0]?.text.toUpperCase() === 'COMMENT'
+  )
 
 /** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
 export const writesData = (text: string, dialect: DialectSpec) =>

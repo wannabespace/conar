@@ -4,7 +4,6 @@ import { createStore } from 'seitu'
 import type { Connection } from '~/core/connection/sync'
 import { estimateQuery } from '~/core/queries/connection/estimate'
 import type { QueryParams } from '~/core/runtime/query'
-import { runCancellable } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 
 interface Approval {
@@ -43,13 +42,13 @@ const request = async ({
     decided.signal,
     AbortSignal.timeout(ESTIMATE_BUDGET_MS),
   ])
-  const estimate = estimateQuery(sql, connection.type, estimating)
+  const estimate = estimateQuery(sql, connection.type)
   const estimated = (async () => {
     if (!estimate) {
       return
     }
     const { data: rows } = await tryCatchAsync(() =>
-      runCancellable(params, estimate, estimating)
+      estimate.run({ ...params, signal: estimating })
     )
     if (rows !== null) {
       store.set(({ pending }) => ({

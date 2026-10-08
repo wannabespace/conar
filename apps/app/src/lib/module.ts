@@ -1,5 +1,6 @@
 import type { IconSvgElement } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { LinkProps } from '@tanstack/react-router'
 import type { ComponentType, ReactNode } from 'react'
 import type { Readable, Subscribable, Writable } from 'seitu'
 
@@ -109,10 +110,12 @@ export interface AppModule {
   tabs?: TabKind[]
 }
 
-export interface SettingsSection extends Slotted {
+/** A sidebar entry; its page is a route file under `routes/_protected/settings/`. */
+export interface SettingsSection {
   icon: IconSvgElement
-  id: string
   label: string
+  order: number
+  to: LinkProps['to']
 }
 
 /** `modules/<name>/protected.tsx` — loaded with the signed-in layout. */

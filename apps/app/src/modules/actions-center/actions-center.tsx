@@ -382,22 +382,18 @@ export const ActionsCenter = () => {
           'Settings',
           ['preferences', 'options', 'general'],
           Settings02Icon,
-          () => router.navigate({ to: '/settings/{-$section}' }),
+          () => router.navigate({ to: '/settings' }),
           ','
         ),
         // Bare Settings opens the first section, so it has no entry of its own.
         ...settingsSections()
           .slice(1)
-          .map(({ icon, id, label }) =>
+          .map(({ icon, label, to }) =>
             actionEntry(
               `${label} settings`,
               ['settings', 'preferences', 'options'],
               icon,
-              () =>
-                router.navigate({
-                  params: { section: id },
-                  to: '/settings/{-$section}',
-                })
+              () => router.navigate({ to })
             )
           ),
         actionEntry(

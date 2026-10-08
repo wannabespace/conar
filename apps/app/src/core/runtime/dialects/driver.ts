@@ -22,6 +22,7 @@ export interface DialectOptions {
   connectionId?: string
   resourceId?: string
   resultSets?: { maxRows: number }
+  signal?: AbortSignal
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -176,18 +177,24 @@ export const createKyselyDriver = (
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
   const executeAndLog = (compiledQuery: CompiledQuery, txId: string | null) => {
-    const payload = {
-      ...transformQuery(compiledQuery),
-      queryId: compiledQuery.queryId.queryId,
+    const { signal } = options
+    signal?.throwIfAborted()
+    const { queryId } = compiledQuery.queryId
+    const payload = { ...transformQuery(compiledQuery), queryId }
+    const cancel = () => {
+      void silently(() => provider.cancel(queryId))
     }
+    signal?.addEventListener('abort', cancel, { once: true })
     const promise = (
       txId
         ? provider.executeTransaction({ txId, ...payload })
         : provider.execute(payload)
-    ).then(({ duration, result }) => ({
-      duration,
-      result: options.resultSets ? result : rowObjects(result),
-    }))
+    )
+      .then(({ duration, result }) => ({
+        duration,
+        result: options.resultSets ? result : rowObjects(result),
+      }))
+      .finally(() => signal?.removeEventListener('abort', cancel))
     options.log?.({
       promise,
       query: compiledQuery.sql,
