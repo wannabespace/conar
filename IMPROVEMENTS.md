@@ -52,6 +52,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Show and unstick the outbox.** Writes replay in order and the executor retries any 5xx or network error forever, so one write a server bug keeps rejecting holds every later one, and web connection creation (which waits for its write) spins until it lands. Nothing on screen says writes are pending; a pending count plus a way to discard a stuck write would make that recoverable without signing out.
 - **Offline writes from every tab.** Only the tab holding the executor's leader lock queues writes; another tab falls back to a plain transaction that rolls back when offline after the save toast already showed. Forwarding non-leader writes to the leader (or failing them up front with a clear message) would close the gap.
 
+## Sign-in
+
+- **Welcome new code sign-ups.** An email code creates the account on first use, but the client can't tell it was new: the web redirect never gets `newUser=true`, so the desktop shows "Welcome back!" and captures `signed_in` instead of `signed_up`. Returning a new-user flag from `/sign-in/email-otp` (an after hook comparing `createdAt` to the session) would fix both.
+- **Ask a code sign-up for a name.** Accounts created by a code have an empty `name`; a one-field step after the first code sign-in would fill it.
+- **Drop `magicLinkClient`.** `apps/main/src/lib/auth.ts` registers it, but the server has no magic-link plugin.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.

@@ -11,10 +11,17 @@ import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
+import {
+  authClient,
+  getLastUsedLoginMethod,
+  twoFactorRedirectSchema,
+} from '~/lib/auth'
 import { handleError } from '~/utils/error'
+
+import { EmailCode, sendSignInCode } from './email-code'
 
 const { useSearch } = getRouteApi('/_auth')
 
@@ -27,11 +34,9 @@ const baseAuthSchema = type({
   }),
 })
 
-const twoFactorRedirectSchema = type({
-  twoFactorRedirect: 'true',
-})
-
 const signInSchema = baseAuthSchema
+
+const emailSchema = baseAuthSchema.pick('email')
 
 const signUpSchema = baseAuthSchema.and({
   name: type('string').configure({ message: 'Name is required' }),
@@ -121,6 +126,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
   const search = useSearch()
   const lastMethod = getLastUsedLoginMethod()
   const router = useRouter()
+  const [codeEmail, setCodeEmail] = useState<string | null>(null)
 
   const form = useAppForm({
     defaultValues:
@@ -193,6 +199,17 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
   })
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const email = useStore(form.store, (state) => state.values.email)
+
+  const { mutate: sendCode, isPending: isSendingCode } = useMutation({
+    mutationFn: () => sendSignInCode(email),
+    onSuccess: () => setCodeEmail(email),
+    onError: handleError,
+  })
+
+  if (codeEmail) {
+    return <EmailCode email={codeEmail} onBack={() => setCodeEmail(null)} />
+  }
 
   return (
     <>
@@ -275,6 +292,19 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
             </LoadingContent>
             {authType === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
+          {authType === 'sign-in' && (
+            <Button
+              variant="ghost-muted"
+              className="relative w-full"
+              onClick={() => sendCode()}
+              disabled={isSendingCode || !emailSchema.allows({ email })}
+            >
+              <LoadingContent loading={isSendingCode}>
+                Email me a code instead
+              </LoadingContent>
+              {lastMethod === 'email-otp' && <Last />}
+            </Button>
+          )}
         </FieldSet>
       </Form>
       <div className="relative">

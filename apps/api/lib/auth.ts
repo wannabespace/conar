@@ -15,6 +15,7 @@ import { createAuthMiddleware } from 'better-auth/api'
 import {
   anonymous,
   bearer,
+  emailOTP,
   lastLoginMethod,
   organization,
   twoFactor,
@@ -30,6 +31,8 @@ import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
 import { ensureDefaultWorkspace } from './workspace'
+
+const twoFactorPlugin = twoFactor()
 
 export const auth = betterAuth({
   advanced: {
@@ -214,7 +217,27 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
-    twoFactor(),
+    twoFactorPlugin,
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp }) => {
+        await sendEmail({
+          props: { code: otp },
+          subject: `${otp} is your Tamery code`,
+          template: 'SignInCode',
+          to: email,
+        })
+      },
+    }),
+    {
+      // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
+      hooks: {
+        after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
+          handler,
+          matcher: (context) => context.path === '/sign-in/email-otp',
+        })),
+      },
+      id: 'email-otp-two-factor',
+    },
     organization({
       allowUserToCreateOrganization: async (user) =>
         permissionsOf({

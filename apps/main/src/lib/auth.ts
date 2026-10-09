@@ -1,7 +1,9 @@
 import { apiKeyClient } from '@better-auth/api-key/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { type } from 'arktype'
 import {
+  emailOTPClient,
   lastLoginMethodClient,
   magicLinkClient,
   organizationClient,
@@ -38,9 +40,14 @@ export const authClient = createAuthClient({
     organizationClient(),
     twoFactorClient(),
     magicLinkClient(),
+    emailOTPClient(),
     lastLoginMethodClient(),
     apiKeyClient(),
   ],
+})
+
+export const twoFactorRedirectSchema = type({
+  twoFactorRedirect: 'true',
 })
 
 const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'
