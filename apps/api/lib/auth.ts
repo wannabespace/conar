@@ -11,13 +11,14 @@ import {
 import { permissionsOf } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { createAuthMiddleware } from 'better-auth/api'
+import { createAuthMiddleware, isAPIError } from 'better-auth/api'
 import {
   anonymous,
   bearer,
   emailOTP,
   lastLoginMethod,
   organization,
+  twoFactor,
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
@@ -29,8 +30,12 @@ import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
-import { twoFactorOnEverySignIn } from './two-factor'
 import { ensureDefaultWorkspace } from './workspace'
+
+const twoFactorPlugin = twoFactor({ allowPasswordless: true })
+
+const isOAuthCallback = ({ path }: { path?: string }) =>
+  path?.startsWith('/callback/') === true
 
 export const auth = betterAuth({
   advanced: {
@@ -190,7 +195,38 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
-    twoFactorOnEverySignIn,
+    {
+      ...twoFactorPlugin,
+      hooks: {
+        after: [
+          // twoFactor() only challenges password sign-ins; without this an email code or Google/GitHub skips TOTP.
+          ...twoFactorPlugin.hooks.after.map(({ handler }) => ({
+            handler,
+            matcher: (context: { path?: string }) =>
+              context.path === '/sign-in/email-otp' || isOAuthCallback(context),
+          })),
+          {
+            // An OAuth callback must redirect, so the challenge's JSON becomes /two-factor; `location` is still the callback's target.
+            handler: createAuthMiddleware((ctx) => {
+              if (isAPIError(ctx.context.returned)) {
+                return Promise.resolve()
+              }
+
+              const { pathname, search } = new URL(
+                ctx.context.responseHeaders?.get('location') ?? env.MAIN_URL
+              )
+
+              return Promise.reject(
+                ctx.redirect(
+                  `${env.MAIN_URL}/two-factor?redirectPath=${encodeURIComponent(pathname + search)}`
+                )
+              )
+            }),
+            matcher: isOAuthCallback,
+          },
+        ],
+      },
+    },
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
         await sendEmail({
