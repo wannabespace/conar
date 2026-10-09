@@ -11,16 +11,14 @@ import { queryClient } from '~/lib/query-client'
 
 export const limitDialog = createStore({ open: false })
 
-const isUnlimited = () => permix.check('mcp.unlimited')
-
 /** Refuses the agent and opens the limit dialog once this week's free `query` and `execute` runs are used up. */
 export const assertQuota = async () => {
-  if (isUnlimited()) {
+  if (permix.check('mcp.unlimited')) {
     return
   }
   // `networkMode: 'always'`: offline, an 'online' query pauses instead of failing and the agent would hang.
   const { data: usage } = await tryCatchAsync(() =>
-    queryClient.fetchQuery({
+    queryClient.query({
       ...usageQueryOptions,
       networkMode: 'always',
       staleTime: 0,
@@ -37,7 +35,7 @@ export const assertQuota = async () => {
 }
 
 export const recordQuery = async () => {
-  if (isUnlimited()) {
+  if (permix.check('mcp.unlimited')) {
     return
   }
   await silently(async () => {

@@ -97,9 +97,10 @@ export const TableColumnDialog = ({
     }) => {
       const params = await connectionResourceToQueryParams(connectionResource)
       const constraints = reference
-        ? await queryClient.ensureQueryData(
-            resourceConstraintsQueryOptions({ connectionResource })
-          )
+        ? await queryClient.query({
+            ...resourceConstraintsQueryOptions({ connectionResource }),
+            staleTime: 'static',
+          })
         : []
       const foreignKey: ConstraintShape | undefined = reference
         ? {

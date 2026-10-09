@@ -1,5 +1,5 @@
 import type { McpTarget } from '@tamery/shared/mcp'
-import type { FetchQueryOptions, QueryKey } from '@tanstack/react-query'
+import type { QueryExecuteOptions, QueryKey } from '@tanstack/react-query'
 
 import { getCollections } from '~/core/collections'
 import { fetchingConfig } from '~/core/connection/fetching-config'
@@ -13,10 +13,17 @@ export const fetchForAgent = <
   TQueryFnData,
   TError,
   TData,
+  TQueryData,
   TQueryKey extends QueryKey,
 >(
-  options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey>
-) => queryClient.fetchQuery({ ...options, staleTime: AGENT_STALE_TIME })
+  options: QueryExecuteOptions<
+    TQueryFnData,
+    TError,
+    TData,
+    TQueryData,
+    TQueryKey
+  >
+) => queryClient.query({ ...options, staleTime: AGENT_STALE_TIME })
 
 export const resourcesOf = (connectionId: string) =>
   getCollections().connectionsResourcesCollection.toArray.flatMap((resource) =>

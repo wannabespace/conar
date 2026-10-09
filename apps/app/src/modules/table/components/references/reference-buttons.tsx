@@ -4,6 +4,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { silently } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
@@ -55,8 +56,10 @@ const ReferenceTrigger = ({
             onDoubleClick={(event) => event.stopPropagation()}
             onPointerEnter={() => {
               if (hop.kind === 'rows') {
-                queryClient.prefetchInfiniteQuery(
-                  matchingRowsQueryOptions({ connectionResource, ...hop })
+                void silently(() =>
+                  queryClient.infiniteQuery(
+                    matchingRowsQueryOptions({ connectionResource, ...hop })
+                  )
                 )
               }
             }}
