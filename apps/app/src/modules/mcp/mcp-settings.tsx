@@ -9,20 +9,20 @@ import { queryClient } from '~/lib/query-client'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
-import { mcp, statusQueryKey } from './electron-mcp'
 import { ServerDetails } from './server-details'
 import { WeeklyQuota } from './weekly-quota'
 
 export const McpSettings = () => {
   const { data: status } = useQuery({
-    queryFn: () => mcp.status(),
-    queryKey: statusQueryKey,
+    queryFn: () => window.electron?.mcp.status(),
+    queryKey: ['mcp', 'status'],
   })
   const { mutate: setEnabled } = useMutation({
     meta: { event: 'mcp_server_toggled' },
-    mutationFn: (enabled: boolean) => mcp.setEnabled(enabled),
+    mutationFn: async (enabled: boolean) =>
+      await window.electron?.mcp.setEnabled(enabled),
     onError: (error) => toast.error(error.message),
-    onSuccess: (next) => queryClient.setQueryData(statusQueryKey, next),
+    onSuccess: (next) => queryClient.setQueryData(['mcp', 'status'], next),
   })
 
   if (!status) {

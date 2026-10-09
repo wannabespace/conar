@@ -16,8 +16,6 @@ import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
-import { mcp } from './electron-mcp'
-
 const ACCESS: { label: string; value: McpAccess }[] = [
   { label: 'Not shared', value: 'off' },
   { label: 'Read only', value: 'read' },
@@ -36,13 +34,13 @@ export const ConnectionAccess = () => {
         .orderBy(({ connection }) => connection.name),
   })
   const { data: access } = useQuery({
-    queryFn: () => mcp.connectionAccess(),
+    queryFn: () => window.electron?.mcp.connectionAccess(),
     queryKey: accessQueryKey,
   })
   const { mutate: setAccess } = useMutation({
     meta: { event: 'mcp_connection_access_changed' },
-    mutationFn: (args: Parameters<typeof mcp.setAccess>[0]) =>
-      mcp.setAccess(args),
+    mutationFn: async (args: { access: McpAccess; connectionId: string }) =>
+      await window.electron?.mcp.setAccess(args),
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => queryClient.setQueryData(accessQueryKey, next),
   })

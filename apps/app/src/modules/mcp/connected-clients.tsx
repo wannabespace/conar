@@ -3,11 +3,9 @@ import { formatDistanceStrict } from 'date-fns'
 
 import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 
-import { mcp } from './electron-mcp'
-
 export const ConnectedClients = () => {
   const { data: clients, dataUpdatedAt } = useQuery({
-    queryFn: () => mcp.clients(),
+    queryFn: () => window.electron?.mcp.clients(),
     queryKey: ['mcp', 'clients'],
     refetchInterval: 10_000,
   })
