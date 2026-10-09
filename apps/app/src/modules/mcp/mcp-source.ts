@@ -13,7 +13,6 @@ import { statementQuery } from '~/core/queries/connection/statement'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { transactionQuery } from '~/core/queries/connection/transaction'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import type { QueryParams } from '~/core/runtime/query'
 import {
   connectionResourceToQueryParams,
   connectionToQueryParams,
@@ -50,14 +49,12 @@ const abortSignalOf = (onAbort: (listener: () => void) => void) => {
 }
 
 const runForAgent = async (
-  params: QueryParams,
-  query: { run: (params: QueryParams) => Promise<ResultSet[]> },
-  event: { access: McpAccess; connection_type: ConnectionType },
-  signal: AbortSignal
+  run: Promise<ResultSet[]>,
+  event: { access: McpAccess; connection_type: ConnectionType }
 ) => {
   let success = false
   try {
-    const sets = await query.run({ ...params, signal })
+    const sets = await run
     success = true
     void recordQuery()
     return sets
@@ -132,10 +129,8 @@ export const mcpSource: McpSource = {
       })
     }
     const sets = await runForAgent(
-      params,
-      statementQuery(sql, connection.type),
-      { access: approve ? 'ask' : 'write', connection_type: connection.type },
-      signal
+      statementQuery(sql, connection.type).run({ ...params, signal }),
+      { access: approve ? 'ask' : 'write', connection_type: connection.type }
     )
     if (resource) {
       refreshAfterRun(resource, connection.type, sql)
@@ -158,14 +153,12 @@ export const mcpSource: McpSource = {
     await assertQuota()
     const signal = abortSignalOf(onAbort)
     return runForAgent(
-      await agentParams(connection, resource),
       transactionQuery({
         accessMode: 'read only',
         commit: false,
         statements: [sql],
-      }),
-      { access: 'read', connection_type: connection.type },
-      signal
+      }).run({ ...(await agentParams(connection, resource)), signal }),
+      { access: 'read', connection_type: connection.type }
     )
   },
   tables: async ({ schema, ...target }) => {

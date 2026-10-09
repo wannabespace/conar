@@ -55,7 +55,6 @@ export const runOn = async (
   }
 
   const start = performance.now()
-  const rowsOf = new Map<unknown, unknown[][]>()
   const config: QueryArrayConfig = { rowMode: 'array', text: sql, values }
   const [results = []]: (QueryResult | QueryResult[])[] = await cancellable(
     { cancel, connectionString, queryId },
@@ -63,11 +62,10 @@ export const runOn = async (
       once(
         client
           .query(new pg.Query(config))
+          // A `row` listener stops pg filling `rows` itself.
           .on('row', (row: unknown[], result) => {
-            const rows = rowsOf.get(result) ?? []
-            rowsOf.set(result, rows)
-            if (hasRoom(rows, maxRows)) {
-              rows.push(row)
+            if (result && hasRoom(result.rows, maxRows)) {
+              result.rows.push(row)
             }
           }),
         'end'
@@ -81,7 +79,7 @@ export const runOn = async (
         {
           affectedRows: item.fields.length === 0 ? item.rowCount : null,
           columns: item.fields.map((field) => field.name),
-          rows: rowsOf.get(item) ?? [],
+          rows: item.rows,
         },
         maxRows
       )

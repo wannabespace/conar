@@ -184,7 +184,7 @@ export const editColumnQuery = (target: EditColumnTarget) =>
         const { comment, newName, schema, table } = target
         await editInSteps(ConnectionType.Postgres, db, target)
         if (commented(target)) {
-          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${comment === null ? sql`NULL` : sql.lit(comment)}`.execute(
+          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment)}`.execute(
             db
           )
         }

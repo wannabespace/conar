@@ -2,6 +2,7 @@ import { replaceErrorPrefix } from '@tamery/connection/queries'
 import type { McpReply, McpRequest, McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { electron } from '../main/lib/events'
@@ -69,19 +70,6 @@ const onEvent = <T>(
 
 let mcpSource: McpSource | null = null
 
-const answer = (source: McpSource, request: McpRequest, port: MessagePort) => {
-  const onAbort = (listener: () => void) => {
-    port.addEventListener('message', listener)
-    port.start()
-  }
-  // TS cannot correlate `request.method` with `request.args` across the union.
-  const method = source[request.method] as (
-    args: McpRequest['args'],
-    onAbort: (listener: () => void) => void
-  ) => unknown
-  return method(request.args, onAbort)
-}
-
 ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
   const [port] = event.ports
   if (!port) {
@@ -92,11 +80,20 @@ ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
     reply({ idle: true })
     return
   }
-  try {
-    reply({ result: await answer(mcpSource, request, port) })
-  } catch (error) {
-    reply({ error: error instanceof Error ? error.message : String(error) })
-  }
+  // TS cannot correlate `request.method` with `request.args` across the union.
+  const method = mcpSource[request.method] as (
+    args: McpRequest['args'],
+    onAbort: (listener: () => void) => void
+  ) => unknown
+  const { data, error } = await tryCatchAsync(() =>
+    Promise.resolve(
+      method(request.args, (listener) => {
+        port.addEventListener('message', listener)
+        port.start()
+      })
+    )
+  )
+  reply(error ? { error: error.message } : { result: data })
 })
 
 const dialectQueryBridge = (dialect: string) => ({

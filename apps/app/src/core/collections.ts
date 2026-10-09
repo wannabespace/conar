@@ -21,34 +21,10 @@ import {
 import { createQueriesCollection } from '~/modules/runner/sync'
 import { isServerError } from '~/utils/error'
 
-export interface Collections {
-  chatsCollection: ReturnType<typeof createChatsCollection>
-  chatsMessagesCollection: ReturnType<typeof createChatsMessagesCollection>
-  chatsMessagesPartsCollection: ReturnType<
-    typeof createChatsMessagesPartsCollection
-  >
-  connectionsCollection: ReturnType<typeof createConnectionsCollection>
-  connectionsResourcesCollection: ReturnType<
-    typeof createConnectionsResourcesCollection
-  >
-  connectionStringsCollection: ReturnType<
-    typeof createConnectionStringsCollection
-  >
-  queriesCollection: ReturnType<typeof createQueriesCollection>
-  workspacesCollection: ReturnType<typeof createWorkspacesCollection>
-}
-
-let current: { collections: Collections; offline: OfflineExecutor } | null =
-  null
-
-const init = () => {
-  if (current) {
-    return current
-  }
-
+const createCollections = () => {
   const connectionStringsCollection = createConnectionStringsCollection()
 
-  const collections: Collections = {
+  return {
     chatsCollection: createChatsCollection(),
     chatsMessagesCollection: createChatsMessagesCollection(),
     chatsMessagesPartsCollection: createChatsMessagesPartsCollection(),
@@ -60,12 +36,24 @@ const init = () => {
     queriesCollection: createQueriesCollection(),
     workspacesCollection: createWorkspacesCollection(),
   }
+}
+
+type Collections = ReturnType<typeof createCollections>
+
+let current: { collections: Collections; offline: OfflineExecutor } | null =
+  null
+
+const init = () => {
+  if (current) {
+    return current
+  }
+
+  const collections = createCollections()
 
   current = {
     collections,
     offline: startOfflineExecutor({
-      // The spread gives the interface the index signature the executor's type needs.
-      collections: { ...collections },
+      collections,
       mutationFns: {
         // Sequential: a connection must land before the resource referencing it.
         push: async ({ transaction }) => {

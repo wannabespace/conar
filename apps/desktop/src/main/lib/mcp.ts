@@ -164,13 +164,12 @@ const start = async () => {
   }
   const server = createServer(handle)
   server.listen(PORTS.MCP, '127.0.0.1')
-  try {
-    await once(server, 'listening')
+  const { error: listenError } = await tryCatchAsync(() =>
+    once(server, 'listening')
+  )
+  error = listenError?.message ?? null
+  if (!listenError) {
     httpServer = server
-    error = null
-  } catch (listenError) {
-    error =
-      listenError instanceof Error ? listenError.message : String(listenError)
   }
 }
 
@@ -192,19 +191,17 @@ const status = (): McpStatus => {
   return error ? { error, state: 'failed' } : { state: 'off' }
 }
 
-const lastSeenAt = (name: string, saved: number) =>
-  Math.max(
-    saved,
-    ...[...sessions.values()].flatMap((session) =>
-      session.client === name ? [session.lastSeenAt] : []
-    )
-  )
-
 const clients = (): McpClient[] =>
   Object.entries(store.get('clients'))
     .map(([name, client]) => ({
       ...client,
-      lastSeenAt: lastSeenAt(name, client.lastSeenAt),
+      lastSeenAt: Math.max(
+        client.lastSeenAt,
+        ...sessions
+          .values()
+          .filter((session) => session.client === name)
+          .map((session) => session.lastSeenAt)
+      ),
       name,
     }))
     .toSorted((a, b) => b.lastSeenAt - a.lastSeenAt)

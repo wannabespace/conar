@@ -4,6 +4,7 @@ import {
   ResizableSeparator,
   ResizablePanel,
 } from '@tamery/ui/components/custom/resizable'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
@@ -25,10 +26,10 @@ import { workspaceSelection } from '~/core/workspace/utils'
 import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
 import { chatPanel } from '~/modules/chat/panel'
-import { NavigatorHotkey } from '~/modules/navigator/navigator-hotkey'
 import { navigatorPanel } from '~/modules/navigator/panel'
+import { navigatorOpenValue } from '~/modules/navigator/stores'
+import { toggleLogger } from '~/modules/query-logger/logger-open'
 import { queryLoggerPanel } from '~/modules/query-logger/panel'
-import { QueryLoggerHotkey } from '~/modules/query-logger/query-logger-hotkey'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
@@ -104,8 +105,16 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
+  const locked = fetching.type === 'waiting-for-password'
 
-  if (fetching.type === 'waiting-for-password') {
+  useHotkey('Mod+B', () => navigatorOpenValue.set((open) => !open), {
+    enabled: !locked,
+  })
+  useHotkey('Mod+J', () => toggleLogger(connectionResource.id), {
+    enabled: !locked,
+  })
+
+  if (locked) {
     return (
       <PasswordForm
         connection={connection}
@@ -115,31 +124,24 @@ const ResourcePage = () => {
   }
 
   return (
-    <>
-      <NavigatorHotkey />
-      <QueryLoggerHotkey />
-      <ResizableGroup orientation="horizontal" className="p-2">
-        <RegionPanel
-          panel={navigatorPanel}
-          resourceId={connectionResource.id}
-        />
-        <ResizablePanel className="flex flex-col">
-          <ResizableGroup orientation="vertical">
-            <ResizablePanel className="flex flex-col">
-              <div className={resourcePanelClassName}>
-                <TabBar />
-                <Outlet />
-              </div>
-            </ResizablePanel>
-            <RegionPanel
-              panel={queryLoggerPanel}
-              resourceId={connectionResource.id}
-            />
-          </ResizableGroup>
-        </ResizablePanel>
-        <RegionPanel panel={chatPanel} resourceId={connectionResource.id} />
-      </ResizableGroup>
-    </>
+    <ResizableGroup orientation="horizontal" className="p-2">
+      <RegionPanel panel={navigatorPanel} resourceId={connectionResource.id} />
+      <ResizablePanel className="flex flex-col">
+        <ResizableGroup orientation="vertical">
+          <ResizablePanel className="flex flex-col">
+            <div className={resourcePanelClassName}>
+              <TabBar />
+              <Outlet />
+            </div>
+          </ResizablePanel>
+          <RegionPanel
+            panel={queryLoggerPanel}
+            resourceId={connectionResource.id}
+          />
+        </ResizableGroup>
+      </ResizablePanel>
+      <RegionPanel panel={chatPanel} resourceId={connectionResource.id} />
+    </ResizableGroup>
   )
 }
 

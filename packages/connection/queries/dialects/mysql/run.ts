@@ -1,6 +1,6 @@
 import { once } from 'node:events'
 
-import type { Connection, PoolOptions } from 'mysql2'
+import type { Connection, PoolOptions, ResultSetHeader } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
 import type { ResultSet, RunOptions } from '../..'
@@ -73,22 +73,15 @@ export const runOn = async (
           rows: [],
         })
       })
-      .on('result', (result: unknown) => {
+      .on('result', (result: unknown[] | ResultSetHeader) => {
         const set = sets.at(-1)
         if (!set) {
           return
         }
-        if (Array.isArray(result)) {
-          if (hasRoom(set.rows, maxRows)) {
-            set.rows.push(result)
-          }
-        } else if (
-          typeof result === 'object' &&
-          result !== null &&
-          'affectedRows' in result &&
-          typeof result.affectedRows === 'number'
-        ) {
+        if (!Array.isArray(result)) {
           set.affectedRows = result.affectedRows
+        } else if (hasRoom(set.rows, maxRows)) {
+          set.rows.push(result)
         }
       })
     return once(query, 'end')

@@ -49,7 +49,7 @@ export const tabSearchType = type({
   'schema?': 'string',
 })
 
-export type TabSearch = typeof tabSearchType.infer
+type TabSearch = typeof tabSearchType.infer
 
 export const SCHEMA_GROUPS = [
   'Overview',

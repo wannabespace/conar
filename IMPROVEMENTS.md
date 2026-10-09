@@ -76,6 +76,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
 - **Name the missing AI key in dev.** `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are dev-optional in `apps/api/env.ts`, so a worktree whose `.env` predates them boots fine and every AI call answers an opaque `INTERNAL_SERVER_ERROR`. A startup warning listing the unset AI keys would point straight at the `.env`.
+- **Close the kit sidebar's gaps.** Navigator call sites still restyle `@tamery/ui` sidebar parts: five pass `text-muted-foreground` to a `SidebarMenuButton` icon, `schema-row.tsx` turns `SidebarGroupLabel` into a hoverable row, and two use `size-3.5!` against the button's `[&_svg]:size-4`. A muted-icon default, an interactive group-label variant and a small trailing-icon size would move those into the kit (`tamery-ui` rule 11).
+- **Track the navigator toggle.** ⌘B, the tab-bar button and the command toggle the navigator with no PostHog event, while the query-logger and chat toggles send one. A `toggleNavigator` beside `navigatorOpenValue` could fire it from all three.
 
 ## AI
 

@@ -39,7 +39,7 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { CommandPaletteButton } from '~/modules/actions-center/command-palette-button'
 import { OpenInWeb } from '~/modules/open-in-web/open-in-web'
 import { UpdateButton, VersionButton } from '~/modules/updates/update-button'
-import { UserMenu } from '~/modules/user-menu/user-menu'
+import { UserButton } from '~/modules/user-menu/user-button'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'
@@ -399,7 +399,8 @@ export const ProtectedTitleBar = () => {
             <UpdateButton />
             <OpenInWeb />
             <CommandPaletteButton />
-            <UserMenu />
+            <span className="bg-border mx-1 h-4 w-px shrink-0 self-center" />
+            <UserButton side="bottom" align="end" />
           </div>
         </div>
       </TitleBar>

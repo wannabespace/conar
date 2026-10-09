@@ -62,17 +62,13 @@ export const mssqlColumns = async (
         .as('declaredType'),
       sql<number | null>`
         CASE WHEN DATA_TYPE IN ('timestamp', 'rowversion')
-          OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsIdentity') = 1
-          OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsComputed') = 1
+          OR COLUMNPROPERTY(${tableId}, COLUMN_NAME, 'IsIdentity') = 1
+          OR COLUMNPROPERTY(${tableId}, COLUMN_NAME, 'IsComputed') = 1
         THEN 1 ELSE 0 END
       `.as('isGenerated'),
-      sql<number | null>`
-        COLUMNPROPERTY(
-          OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)),
-          COLUMN_NAME,
-          'IsIdentity'
-        )
-      `.as('isIdentity'),
+      sql<
+        number | null
+      >`COLUMNPROPERTY(${tableId}, COLUMN_NAME, 'IsIdentity')`.as('isIdentity'),
       sql<1 | 0>`IIF(IS_NULLABLE = 'YES', 1, 0)`.as('nullable'),
     ])
     .$call((qb) =>

@@ -18,8 +18,7 @@ export const createConnection = async (data: {
   const id = v7()
   const url = new SafeURL(data.connectionString.trim())
 
-  const resource =
-    url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+  const resource = url.pathname.slice(1) || null
   const resourceId = v7()
   const updatedAt = new Date()
   const createdAt = new Date()

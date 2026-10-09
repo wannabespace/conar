@@ -26,10 +26,9 @@ export const customQuery = ({
   query: string
   values?: unknown[]
 }) => {
+  const compiled = CompiledQuery.raw(query, values)
   const run = async <DB>(db: Kysely<DB>) =>
-    resultSetsType.assert(
-      await db.executeQuery(CompiledQuery.raw(query, values))
-    )
+    resultSetsType.assert(await db.executeQuery(compiled))
 
   return createQuery<Type<ResultSet[]>>({
     query: {

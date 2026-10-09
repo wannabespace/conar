@@ -1,7 +1,6 @@
 import type { DialectSpec } from './dialect'
 import type { Statement } from './statements'
 import { splitStatements, statementsFromTokens } from './statements'
-import type { Token } from './tokenizer'
 import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
 const RUNNING_EXPLAIN_OPTIONS = new Set(['ANALYSE', 'ANALYZE'])
@@ -111,10 +110,6 @@ const READ_COMMANDS = new Set([
 // SQL Server has no EXPLAIN, SHOW, DESCRIBE, TABLE or VALUES statement: a batch's first bare word runs as a procedure.
 const SQL_SERVER_READ_COMMANDS = new Set(['SELECT', 'WITH'])
 
-// Most commands are not keywords in any dialect's list, so a bare word counts too.
-const isWord = (token: Token | undefined) =>
-  token?.kind === 'keyword' || (token?.kind === 'identifier' && !token.quoted)
-
 // SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest. No `FOR`/`ON` exemption: `SET NOCOUNT ON COMMIT` would pass as a referential action.
 const WRITES_INSIDE_READ = new Set([
   ...DDL_KEYWORDS,
@@ -151,11 +146,6 @@ const SESSION_COMMANDS = new Set([
 const SIDE_EFFECT_FUNCTION =
   /^(?:DBLINK\w*|GET_LOCK|OPEN(?:DATASOURCE|QUERY|ROWSET)|PG_(?:CANCEL|TERMINATE)_BACKEND|PG_(?:TRY_)?ADVISORY_LOCK(?:_SHARED)?)$/u
 
-// MySQL and MariaDB run `/*! … */` and `/*M! … */` as SQL; the tokenizer reads them as comments.
-const isExecutableComment = (token: Token) =>
-  token.kind === 'comment' &&
-  (token.text.startsWith('/*!') || token.text.startsWith('/*M!'))
-
 export const readsOnly = (text: string, dialect: DialectSpec) => {
   const { tokens } = tokenize(text, dialect)
   const [statement, ...rest] = statementsFromTokens(text, tokens, dialect)
@@ -163,7 +153,11 @@ export const readsOnly = (text: string, dialect: DialectSpec) => {
     return false
   }
   const words = statement.tokens
-    .filter(isWord)
+    // Most commands are not keywords in any dialect's list, so a bare word counts too.
+    .filter(
+      ({ kind, quoted }) =>
+        kind === 'keyword' || (kind === 'identifier' && !quoted)
+    )
     .map((token) => token.text.toUpperCase())
   return (
     (dialect.separatorFreeStatements
@@ -184,6 +178,9 @@ export const readsOnly = (text: string, dialect: DialectSpec) => {
         isPunctuation(statement.tokens[index + 1], '(') &&
         SIDE_EFFECT_FUNCTION.test(identifierName(token).toUpperCase())
     ) &&
-    !tokens.some(isExecutableComment)
+    // MySQL and MariaDB run `/*! … */` and `/*M! … */` as SQL; the tokenizer reads them as comments.
+    !tokens.some(
+      (token) => token.kind === 'comment' && /^\/\*M?!/u.test(token.text)
+    )
   )
 }

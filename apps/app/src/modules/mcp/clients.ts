@@ -13,6 +13,13 @@ const headersOf = ({ token }: McpEndpoint) => ({
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
 
+const mcpServersJson = (urlKey: string) => (server: McpEndpoint) =>
+  json({
+    mcpServers: {
+      [SERVER_NAME]: { headers: headersOf(server), [urlKey]: server.url },
+    },
+  })
+
 interface McpClientSetup {
   code: (server: McpEndpoint) => string
   file?: string
@@ -42,12 +49,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     language: 'toml',
   },
   {
-    code: (server) =>
-      json({
-        mcpServers: {
-          [SERVER_NAME]: { headers: headersOf(server), url: server.url },
-        },
-      }),
+    code: mcpServersJson('url'),
     file: '~/.cursor/mcp.json',
     id: 'cursor',
     installLink: (server) =>
@@ -85,12 +87,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     language: 'json',
   },
   {
-    code: (server) =>
-      json({
-        mcpServers: {
-          [SERVER_NAME]: { headers: headersOf(server), httpUrl: server.url },
-        },
-      }),
+    code: mcpServersJson('httpUrl'),
     file: '~/.gemini/settings.json',
     id: 'gemini',
     instruction: 'Add to',
@@ -98,12 +95,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     language: 'json',
   },
   {
-    code: (server) =>
-      json({
-        mcpServers: {
-          [SERVER_NAME]: { headers: headersOf(server), serverUrl: server.url },
-        },
-      }),
+    code: mcpServersJson('serverUrl'),
     file: '~/.codeium/windsurf/mcp_config.json',
     id: 'windsurf',
     instruction: 'Add to',
@@ -111,12 +103,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     language: 'json',
   },
   {
-    code: (server) =>
-      json({
-        mcpServers: {
-          [SERVER_NAME]: { headers: headersOf(server), url: server.url },
-        },
-      }),
+    code: mcpServersJson('url'),
     id: 'other',
     instruction:
       'Any client that supports Streamable HTTP works with this URL and header',

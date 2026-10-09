@@ -15,15 +15,11 @@ const TooltipProvider = ({
   />
 )
 
-const noShortcut = {
-  isGlyphOnly: false,
-  setTrigger: undefined,
-  shortcut: null,
-}
+const noShortcut = { isGlyphOnly: false, shortcut: null }
 
 const ShortcutContext = createContext<{
   isGlyphOnly: boolean
-  setTrigger: ((trigger: HTMLElement | null) => void) | undefined
+  setTrigger?: (trigger: HTMLElement | null) => void
   shortcut: ReactNode
 }>(noShortcut)
 

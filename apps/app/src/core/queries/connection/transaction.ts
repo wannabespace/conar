@@ -44,12 +44,8 @@ export const transactionQuery = ({
   statements,
   ...options
 }: TransactionOptions & { statements: string[] }) => {
-  const run = <DB>(db: Kysely<DB>) =>
-    runInTransaction(
-      db,
-      options,
-      statements.map((statement) => CompiledQuery.raw(statement))
-    )
+  const compiled = statements.map((statement) => CompiledQuery.raw(statement))
+  const run = <DB>(db: Kysely<DB>) => runInTransaction(db, options, compiled)
 
   return createQuery<Type<ResultSet[]>>({
     query: {

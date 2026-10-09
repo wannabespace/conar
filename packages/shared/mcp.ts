@@ -8,7 +8,7 @@ export type McpAccess = 'off' | 'read' | 'ask' | 'write'
 
 export const DEFAULT_MCP_ACCESS: McpAccess = 'ask'
 
-export interface McpConnection {
+interface McpConnection {
   id: string
   name: string
   type: ConnectionType

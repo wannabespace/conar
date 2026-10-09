@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import type { McpAccess, McpRequest } from '@tamery/shared/mcp'
+import type { McpAccess, McpRequest, McpTarget } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS, MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { app } from 'electron'
 import { z } from 'zod'
@@ -52,10 +52,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
   }
 
   const askShared = (
-    request: Exclude<
-      McpRequest,
-      { method: 'connections' | 'createConnection' }
-    >,
+    request: Extract<McpRequest, { args: McpTarget }>,
     signal: AbortSignal
   ) => {
     sharedAccessOf(request.args.connectionId)

@@ -1,4 +1,4 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { silently } from '@tamery/shared/utils'
 import { createStore } from 'seitu'
 
 import type { Connection } from '~/core/connection/sync'
@@ -45,21 +45,16 @@ const request = async ({
     AbortSignal.timeout(ESTIMATE_BUDGET_MS),
   ])
   const estimate = estimateQuery(sql, connection.type)
-  const estimated = (async () => {
-    if (!estimate) {
-      return
-    }
-    const { data: rows } = await tryCatchAsync(() =>
-      estimate.run({ ...params, signal: estimating })
-    )
-    if (rows !== null) {
+  const estimated = silently(async () => {
+    const rows = await estimate?.run({ ...params, signal: estimating })
+    if (typeof rows === 'number') {
       store.set(({ pending }) => ({
         pending: pending.map((item) =>
           item.id === id ? { ...item, estimate: rows } : item
         ),
       }))
     }
-  })()
+  })
 
   const decision = Promise.withResolvers<boolean>()
   signal.addEventListener(
