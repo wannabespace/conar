@@ -18,7 +18,6 @@ import {
   emailOTP,
   lastLoginMethod,
   organization,
-  twoFactor,
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
@@ -30,9 +29,8 @@ import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
+import { twoFactorOnEverySignIn } from './two-factor'
 import { ensureDefaultWorkspace } from './workspace'
-
-const twoFactorPlugin = twoFactor({ allowPasswordless: true })
 
 export const auth = betterAuth({
   advanced: {
@@ -192,17 +190,7 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
-    {
-      ...twoFactorPlugin,
-      hooks: {
-        ...twoFactorPlugin.hooks,
-        // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
-        after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
-          handler,
-          matcher: (context) => context.path === '/sign-in/email-otp',
-        })),
-      },
-    },
+    twoFactorOnEverySignIn,
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
         await sendEmail({
