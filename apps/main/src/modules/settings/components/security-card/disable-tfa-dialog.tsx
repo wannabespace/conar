@@ -8,10 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Input } from '@tamery/ui/components/input'
-import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
@@ -24,17 +21,9 @@ export const DisableTfaDialog = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
-  const [password, setPassword] = useState('')
   const { mutate, isPending } = useMutation({
-    mutationFn: async (passwordValue: string) => {
-      const { error } = await authClient.twoFactor.disable({
-        password: passwordValue,
-      })
-
-      if (error) {
-        throw error
-      }
-    },
+    mutationFn: () =>
+      authClient.twoFactor.disable({ fetchOptions: { throw: true } }),
     onError: handleError,
     onSuccess: () => {
       toast.success('2FA disabled')
@@ -48,28 +37,16 @@ export const DisableTfaDialog = ({
         className="sm:max-w-sm"
         onSubmit={(e) => {
           e.preventDefault()
-          mutate(password)
+          mutate()
         }}
         render={<form />}
       >
         <DialogHeader>
           <DialogTitle>Disable 2FA</DialogTitle>
           <DialogDescription>
-            Enter your password to turn off two-factor authentication.
+            Sign-in will no longer ask for a code from your authenticator app.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="disable-password">Password</Label>
-          <Input
-            id="disable-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isPending}
-            autoComplete="current-password"
-            autoFocus
-          />
-        </div>
         <DialogFooter>
           <Button
             variant="outline"
@@ -83,7 +60,7 @@ export const DisableTfaDialog = ({
             type="submit"
             variant="destructive"
             className="w-full sm:w-auto"
-            disabled={isPending || password.length === 0}
+            disabled={isPending}
           >
             <LoadingContent loading={isPending}>Disable</LoadingContent>
           </Button>

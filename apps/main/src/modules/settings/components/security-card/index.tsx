@@ -1,5 +1,3 @@
-import { InformationCircleIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Card,
   CardContent,
@@ -8,32 +6,48 @@ import {
 } from '@tamery/ui/components/card'
 import { Label } from '@tamery/ui/components/label'
 import { Switch } from '@tamery/ui/components/switch'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { authClient } from '~/lib/auth'
+import { handleError } from '~/utils/error'
 
 import { DisableTfaDialog } from './disable-tfa-dialog'
+import type { TotpSetup } from './enable-tfa-dialog'
 import { EnableTfaDialog } from './enable-tfa-dialog'
+
+const NO_SETUP: TotpSetup = { backupCodes: [], totpURI: '' }
 
 export const SecurityCard = () => {
   const { data } = authClient.useSession()
-  const { data: accounts } = useQuery({
-    queryFn: () => authClient.listAccounts(),
-    queryKey: ['accounts'],
-  })
-
-  const hasCredentialAccount = accounts?.data?.some(
-    (account) => account.providerId === 'credential'
-  )
   const twoFactorEnabled = data?.user?.twoFactorEnabled ?? false
 
   const [enableOpen, setEnableOpen] = useState(false)
   const [disableOpen, setDisableOpen] = useState(false)
 
+  const {
+    mutate: enable,
+    isPending: isEnabling,
+    data: setup = NO_SETUP,
+  } = useMutation({
+    mutationFn: async () => {
+      const result = await authClient.twoFactor.enable({
+        fetchOptions: { throw: true },
+      })
+
+      return result.method === 'totp' ? result : NO_SETUP
+    },
+    onError: handleError,
+    onSuccess: () => setEnableOpen(true),
+  })
+
   return (
     <>
-      <EnableTfaDialog open={enableOpen} onOpenChange={setEnableOpen} />
+      <EnableTfaDialog
+        open={enableOpen}
+        onOpenChange={setEnableOpen}
+        setup={setup}
+      />
       <DisableTfaDialog open={disableOpen} onOpenChange={setDisableOpen} />
       <Card>
         <CardHeader>
@@ -46,33 +60,17 @@ export const SecurityCard = () => {
                 Two-factor authentication
               </span>
               <p className="text-muted-foreground text-xs">
-                {(() => {
-                  if (twoFactorEnabled) {
-                    return 'A code for your authenticator app is required when you sign in.'
-                  }
-                  if (hasCredentialAccount) {
-                    return 'Turn on to require an authenticator code at sign-in.'
-                  }
-                  return (
-                    <span className="flex items-center gap-1">
-                      <HugeiconsIcon
-                        icon={InformationCircleIcon}
-                        strokeWidth={2}
-                        className="size-4"
-                      />
-                      2FA is only available for accounts that can sign in with
-                      email and password.
-                    </span>
-                  )
-                })()}
+                {twoFactorEnabled
+                  ? 'A code for your authenticator app is required when you sign in.'
+                  : 'Turn on to require an authenticator code at sign-in.'}
               </p>
             </div>
             <Switch
               checked={twoFactorEnabled}
               onCheckedChange={() =>
-                twoFactorEnabled ? setDisableOpen(true) : setEnableOpen(true)
+                twoFactorEnabled ? setDisableOpen(true) : enable()
               }
-              disabled={!hasCredentialAccount}
+              disabled={isEnabling}
             />
           </Label>
         </CardContent>

@@ -2,8 +2,8 @@ import { apiKeyClient } from '@better-auth/api-key/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import {
+  emailOTPClient,
   lastLoginMethodClient,
-  magicLinkClient,
   organizationClient,
   twoFactorClient,
 } from 'better-auth/client/plugins'
@@ -37,7 +37,7 @@ export const authClient = createAuthClient({
   plugins: [
     organizationClient(),
     twoFactorClient(),
-    magicLinkClient(),
+    emailOTPClient(),
     lastLoginMethodClient(),
     apiKeyClient(),
   ],

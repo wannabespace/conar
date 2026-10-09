@@ -11,10 +11,11 @@ import {
 import { permissionsOf } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { createAuthMiddleware } from 'better-auth/api'
+import { createAuthMiddleware, isAPIError } from 'better-auth/api'
 import {
   anonymous,
   bearer,
+  emailOTP,
   lastLoginMethod,
   organization,
   twoFactor,
@@ -30,6 +31,11 @@ import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
 import { ensureDefaultWorkspace } from './workspace'
+
+const twoFactorPlugin = twoFactor({ allowPasswordless: true })
+
+const isOAuthCallback = ({ path }: { path?: string }) =>
+  path?.startsWith('/callback/') === true
 
 export const auth = betterAuth({
   advanced: {
@@ -136,31 +142,6 @@ export const auth = betterAuth({
       },
     },
   },
-  emailAndPassword: {
-    enabled: true,
-    onPasswordReset: async ({ user: { name, email } }) => {
-      await sendEmail({
-        props: {
-          name: name || email,
-        },
-        subject: 'Your password has been reset',
-        template: 'OnPasswordReset',
-        to: email,
-      })
-    },
-    requireEmailVerification: false,
-    sendResetPassword: async ({ user: { name, email }, url }) => {
-      await sendEmail({
-        props: {
-          name: name || email,
-          url,
-        },
-        subject: 'Reset your password',
-        template: 'ResetPassword',
-        to: email,
-      })
-    },
-  },
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
@@ -214,7 +195,48 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
-    twoFactor(),
+    {
+      ...twoFactorPlugin,
+      hooks: {
+        after: [
+          // twoFactor() only challenges password sign-ins; without this an email code or Google/GitHub skips TOTP.
+          ...twoFactorPlugin.hooks.after.map(({ handler }) => ({
+            handler,
+            matcher: (context: { path?: string }) =>
+              context.path === '/sign-in/email-otp' || isOAuthCallback(context),
+          })),
+          {
+            // An OAuth callback must redirect, so the challenge's JSON becomes /two-factor; `location` is still the callback's target.
+            handler: createAuthMiddleware((ctx) => {
+              if (isAPIError(ctx.context.returned)) {
+                return Promise.resolve()
+              }
+
+              const { pathname, search } = new URL(
+                ctx.context.responseHeaders?.get('location') ?? env.MAIN_URL
+              )
+
+              return Promise.reject(
+                ctx.redirect(
+                  `${env.MAIN_URL}/two-factor?redirectPath=${encodeURIComponent(pathname + search)}`
+                )
+              )
+            }),
+            matcher: isOAuthCallback,
+          },
+        ],
+      },
+    },
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp }) => {
+        await sendEmail({
+          props: { code: otp },
+          subject: `${otp} is your Tamery code`,
+          template: 'SignInCode',
+          to: email,
+        })
+      },
+    }),
     organization({
       allowUserToCreateOrganization: async (user) =>
         permissionsOf({
