@@ -1,6 +1,6 @@
 import { enabledFilters } from '@tamery/shared/filters'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import {
   Dialog,
   DialogCloseButton,
@@ -8,11 +8,6 @@ import {
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -200,21 +195,7 @@ export const ActionsCopy = ({
               </TabsTrigger>
             ))}
             <div className="flex flex-1 items-center justify-end border-b px-1">
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <CopyButton
-                      size="icon-xs"
-                      variant="ghost-muted"
-                      aria-label="Copy"
-                      text={code}
-                    />
-                  }
-                />
-                <TooltipContent side="bottom">
-                  Copy {format.label}
-                </TooltipContent>
-              </Tooltip>
+              <CopyIconButton label={`Copy ${format.label}`} text={code} />
             </div>
           </TabsList>
           <CodeBlock

@@ -20,6 +20,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { useHotkeys } from '@tanstack/react-hotkeys'
+import type { QueryKey } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ComponentType, ReactNode } from 'react'
@@ -67,7 +68,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   keyOf: (item: T) => string
   loading: boolean
   match: (item: T) => boolean
-  queryKey: readonly unknown[]
+  queryKey: QueryKey
   rowMenu?: (item: T) => AppMenuNode[]
   state: DefinitionsState
   toolbar?: ReactNode

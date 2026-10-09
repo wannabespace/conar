@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { useState } from 'react'
 
 import { Button } from '../button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip'
 import { ContentSwitch } from './content-switch'
 
 const defaultCopyIcon = <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} />
@@ -49,3 +50,26 @@ export const CopyButton = ({
     </Button>
   )
 }
+
+export const CopyIconButton = ({
+  label,
+  side = 'bottom',
+  ...props
+}: {
+  label: string
+  side?: ComponentProps<typeof TooltipContent>['side']
+} & ComponentProps<typeof CopyButton>) => (
+  <Tooltip>
+    <TooltipTrigger
+      render={
+        <CopyButton
+          size="icon-xs"
+          variant="ghost-muted"
+          aria-label={label}
+          {...props}
+        />
+      }
+    />
+    <TooltipContent side={side}>{label}</TooltipContent>
+  </Tooltip>
+)

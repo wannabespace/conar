@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
@@ -21,6 +22,7 @@ export type RelationKind = 'table' | 'view'
 
 // Every dialect with schemas reads from its schema catalog, so an empty schema is one row whose table is null.
 export const tablesAndSchemasType = type({
+  comment: 'string | null',
   'row_level_security?': 'boolean | null',
   schema: 'string',
   table: 'string | null',
@@ -53,6 +55,10 @@ export const resourceTablesAndSchemasQuery = memoize(
               'name as table',
               (eb) =>
                 eb
+                  .fn<string | null>('nullIf', ['comment', eb.val('')])
+                  .as('comment'),
+              (eb) =>
+                eb
                   .case()
                   .when('engine', '=', 'MaterializedView')
                   .then('materialized view')
@@ -80,9 +86,19 @@ export const resourceTablesAndSchemasQuery = memoize(
                 .on('o.type', 'in', ['U', 'V'])
                 .on('o.is_ms_shipped', '=', false)
             )
+            .leftJoin('sys.extended_properties as ep', (join) =>
+              join
+                .onRef('ep.major_id', '=', 'o.object_id')
+                .on('ep.minor_id', '=', 0)
+                .on('ep.class', '=', 1)
+                .on('ep.name', '=', 'MS_Description')
+            )
             .select([
               's.name as schema',
               'o.name as table',
+              sql<
+                string | null
+              >`NULLIF(CAST(ep.value AS nvarchar(max)), '')`.as('comment'),
               (eb) =>
                 eb
                   .case()
@@ -106,6 +122,19 @@ export const resourceTablesAndSchemasQuery = memoize(
             .select([
               's.SCHEMA_NAME as schema',
               't.TABLE_NAME as table',
+              // A view's TABLE_COMMENT is the word VIEW, not a comment.
+              (eb) =>
+                eb
+                  .case()
+                  .when('t.TABLE_TYPE', '=', 'BASE TABLE')
+                  .then(
+                    eb.fn<string | null>('nullif', [
+                      't.TABLE_COMMENT',
+                      eb.val(''),
+                    ])
+                  )
+                  .end()
+                  .as('comment'),
               (eb) =>
                 eb.fn.coalesce('t.TABLE_TYPE', eb.val('BASE TABLE')).as('type'),
             ])
@@ -123,6 +152,13 @@ export const resourceTablesAndSchemasQuery = memoize(
               'n.nspname as schema',
               'c.relname as table',
               'c.relrowsecurity as row_level_security',
+              (eb) =>
+                eb
+                  .fn<string | null>('obj_description', [
+                    'c.oid',
+                    eb.val('pg_class'),
+                  ])
+                  .as('comment'),
               (eb) =>
                 eb
                   .case('c.relkind')
@@ -184,6 +220,7 @@ export const resourceTablesAndSchemasQueryOptions = ({
               ? []
               : [
                   {
+                    comment: table.comment,
                     name: table.table,
                     rowLevelSecurity: table.rowLevelSecurity,
                     type: table.type,

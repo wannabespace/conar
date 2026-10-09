@@ -17,13 +17,13 @@ import { useRef } from 'react'
 import { useCollections } from '~/core/collections'
 
 import { useRunnerActions } from '../lib/actions'
+import { openRunnerTab } from '../lib/new-query'
 import {
   appendQuery,
   runnerPageStore,
   setQuery,
   useRunnerPageStore,
 } from '../lib/store'
-import { openRunnerTab } from '../lib/tab'
 import type { Query } from '../sync'
 import { ListEmpty, PopoverCommand, RowAction } from './popover-list'
 import { RemoveQueryDialog } from './remove-query-dialog'

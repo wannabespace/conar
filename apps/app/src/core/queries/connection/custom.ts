@@ -30,15 +30,12 @@ export const customQuery = ({
   const run = async <DB>(db: Kysely<DB>) =>
     resultSetsType.assert(await db.executeQuery(compiled))
 
-  return {
-    ...createQuery<Type<ResultSet[]>>({
-      query: {
-        clickhouse: run,
-        mssql: run,
-        mysql: run,
-        postgres: run,
-      },
-    }),
-    queryId: compiled.queryId.queryId,
-  }
+  return createQuery<Type<ResultSet[]>>({
+    query: {
+      clickhouse: run,
+      mssql: run,
+      mysql: run,
+      postgres: run,
+    },
+  })
 }

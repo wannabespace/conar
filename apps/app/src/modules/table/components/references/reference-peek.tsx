@@ -203,6 +203,10 @@ export const useReferencePeek = (
   return {
     close: () => setTarget(null),
     open: (anchor: Element, hop: Hop) => {
+      if (target?.anchor === anchor && target.hop.kind === hop.kind) {
+        setTarget(null)
+        return
+      }
       posthog.capture('reference_peek_opened')
       setTarget({ anchor, hop })
     },
@@ -218,19 +222,23 @@ export const ReferencePeek = ({
   target: { anchor: Element; hop: Hop } | null
 }) => {
   const ref = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(target)
+  if (target && target !== shown) {
+    setShown(target)
+  }
   const [trail, setTrail] = useState({
     direction: 1,
     hops: [] as Hop[],
     target,
   })
-  const shown =
-    trail.target === target
+  const current =
+    trail.target === shown
       ? trail
-      : { direction: 1, hops: target ? [target.hop] : [] }
-  const { hops } = shown
+      : { direction: 1, hops: shown ? [shown.hop] : [] }
+  const { hops } = current
 
   const step = (next: Hop[], direction: number) => {
-    setTrail({ direction, hops: next, target })
+    setTrail({ direction, hops: next, target: shown })
     ref.current?.focus()
   }
 
@@ -241,6 +249,16 @@ export const ReferencePeek = ({
         if (open) {
           return
         }
+        const pressed = details.event.target
+        // The cell's peek buttons toggle the popover; closing on their press would let the click reopen it.
+        if (
+          details.reason === 'outside-press' &&
+          pressed instanceof Element &&
+          target?.anchor.contains(pressed.closest('button'))
+        ) {
+          details.cancel()
+          return
+        }
         if (details.reason === 'escape-key' && hops.length > 1) {
           details.cancel()
           step(hops.slice(0, -1), -1)
@@ -248,10 +266,15 @@ export const ReferencePeek = ({
         }
         onClose()
       }}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setShown(null)
+        }
+      }}
     >
-      {target && (
+      {shown && (
         <PopoverContent
-          anchor={target.anchor}
+          anchor={shown.anchor}
           align="start"
           collisionAvoidance={{ align: 'shift' }}
           collisionPadding={16}
@@ -264,7 +287,7 @@ export const ReferencePeek = ({
           <Trail
             ref={ref}
             hops={hops}
-            direction={shown.direction}
+            direction={current.direction}
             onFollow={(next) => step([...hops, next], 1)}
             onJump={(index) => step(hops.slice(0, index + 1), -1)}
           />

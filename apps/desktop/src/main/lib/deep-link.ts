@@ -7,7 +7,7 @@ const DEEPLINK_PROTOCOL = 'tamery'
 
 let mainWindow: BrowserWindow | null = null
 
-const focusMainWindow = () => {
+export const focusMainWindow = () => {
   if (!mainWindow) {
     return
   }

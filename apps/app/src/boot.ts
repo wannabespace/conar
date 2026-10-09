@@ -13,6 +13,7 @@ const read = <T>(key: string): T | undefined => {
 const isElectron = !!window.electron
 const lastLocation = read<string>(LAST_LOCATION_KEY)
 const isConnection = /\/connection\/[^/?#]+/u.test(lastLocation ?? '')
+const isSettings = /\/settings(?:[/?#]|$)/u.test(lastLocation ?? '')
 const layout = isConnection
   ? (read<Record<string, number>>(SHELL_LAYOUT_KEY) ?? {})
   : {}
@@ -26,7 +27,8 @@ const classes = {
   mac: isElectron && /Mac/u.test(navigator.userAgent),
   'shell-auth': lastLocation === undefined,
   'shell-connection': isConnection,
-  'shell-dashboard': lastLocation !== undefined && !isConnection,
+  'shell-dashboard': lastLocation !== undefined && !isConnection && !isSettings,
+  'shell-settings': isSettings,
   ...Object.fromEntries(
     Object.keys(layout).map((region) => [`shell-${region}`, true])
   ),

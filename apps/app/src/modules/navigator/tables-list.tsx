@@ -6,6 +6,13 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
+import {
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+} from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
@@ -24,13 +31,6 @@ import { createViewDialogRef } from './create-view-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { pinnedTable } from './pinned-tables'
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from './primitives'
 import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
@@ -166,7 +166,7 @@ export const TablesList = ({
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
             <SidebarMenuItem key={index}>
-              <SidebarMenuSkeleton seed={index} showIcon />
+              <SidebarMenuSkeleton seed={index} />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -237,7 +237,7 @@ export const TablesList = ({
       return (
         <div className="pt-4">
           <SidebarMenuButton
-            className="text-muted-foreground"
+            variant="muted"
             onClick={() => createSchemaDialogRef.current?.create()}
           >
             <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />

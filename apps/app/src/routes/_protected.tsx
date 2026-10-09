@@ -1,5 +1,6 @@
 import { cn } from '@tamery/ui/lib/utils'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { useHotkey } from '@tanstack/react-hotkeys'
+import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { PermixProvider } from 'permix/react'
 import { useEffect } from 'react'
 
@@ -11,15 +12,25 @@ import {
 } from '~/core/user/permissions'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
-import { protectedModules } from '~/lib/protected-modules'
 import { subscriptionQueryClient } from '~/lib/query-client'
+import { ActionsCenter } from '~/modules/actions-center/actions-center'
+import { GlobalBanner } from '~/modules/global-banner/global-banner'
+import { McpHost } from '~/modules/mcp/mcp-host'
+import { SubscriptionModal } from '~/modules/subscription/subscription-modal'
 
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 const ProtectedLayout = () => {
+  const router = useRouter()
   usePermissionsSync()
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
+
+  useHotkey('Mod+,', () => {
+    if (!router.matchRoute({ to: '/settings' }, { fuzzy: true })) {
+      void router.navigate({ to: '/settings' })
+    }
+  })
 
   useEffect(() => {
     const handleFocus = () => {
@@ -37,14 +48,12 @@ const ProtectedLayout = () => {
   return (
     <PermixProvider permix={permix}>
       <EventsProvider>
-        {protectedModules.mounts.map((Mount, index) => (
-          <Mount key={index} />
-        ))}
+        <ActionsCenter />
+        {window.electron && <McpHost />}
+        <SubscriptionModal />
         <div className="flex h-full flex-col">
           <ProtectedTitleBar />
-          {protectedModules.banners.map(({ Component }, index) => (
-            <Component key={index} />
-          ))}
+          <GlobalBanner />
           <div
             className={cn(
               'min-h-0 flex-1',

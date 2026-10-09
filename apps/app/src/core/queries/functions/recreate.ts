@@ -3,9 +3,12 @@ import { sql } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
 
-import { routineKeyword } from './routine-kind'
 import type { FunctionShape, RoutineTarget } from './shape'
-import { createFunctionStatements, dropRoutineStatements } from './shape'
+import {
+  createFunctionStatements,
+  dropRoutineStatements,
+  routineKeyword,
+} from './shape'
 
 // replacesObject marks a signature the engine cannot replace in place.
 export const recreateFunctionQuery = ({

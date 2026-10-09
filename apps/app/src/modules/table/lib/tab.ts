@@ -4,7 +4,7 @@ import { memoize } from 'memoza'
 import { createWebStorageValue } from 'seitu/web'
 
 import { parseTableTabId } from '~/core/tabs/ids'
-import type { TabKind } from '~/lib/module'
+import type { TabKind } from '~/core/tabs/types'
 
 import { tablePageStore } from './store'
 

@@ -12,13 +12,15 @@ import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import { createQuery } from '~/core/runtime/query'
 
 import type { AlterColumnTarget } from './shape'
+import { renameColumnStatement } from './shape'
 import {
   alterColumnStatement,
-  renameColumnStatement,
-  restatedType,
-} from './shape'
+  mysqlColumnDefinition,
+} from './shape/alter-column'
 
 interface EditColumnTarget extends AlterColumnTarget {
+  // Omitted leaves the stored comment alone.
+  comment?: string | null
   newName: string
   reference?: ConstraintShape
   renamedValues: RenamedValue[]
@@ -26,6 +28,11 @@ interface EditColumnTarget extends AlterColumnTarget {
 
 const altered = ({ nullable, original, type }: EditColumnTarget) =>
   type !== original.type || nullable !== original.nullable
+
+const commented = (
+  target: EditColumnTarget
+): target is EditColumnTarget & { comment: string | null } =>
+  target.comment !== undefined && target.comment !== target.original.comment
 
 // Alters under the old name first, so a failing alter leaves the column as it
 // was; the key names the new one.
@@ -119,23 +126,50 @@ const clickhouseRefuseHeldValues = async (
   }
 }
 
+const mssqlCommentProcedure = (from: string | null, to: string | null) => {
+  if (to === null) {
+    return sql`sp_dropextendedproperty`
+  }
+  return from === null
+    ? sql`sp_addextendedproperty`
+    : sql`sp_updateextendedproperty`
+}
+
 export const editColumnQuery = (target: EditColumnTarget) =>
   createQuery({
     query: {
       clickhouse: async (db) => {
+        const { comment, newName, schema, table } = target
         await clickhouseRefuseHeldValues(db, target)
         await editInSteps(ConnectionType.ClickHouse, db, target)
+        if (commented(target)) {
+          await sql`ALTER TABLE ${sql.id(schema, table)} COMMENT COLUMN ${sql.id(newName)} ${sql.lit(comment ?? '')}`.execute(
+            db
+          )
+        }
       },
-      mssql: (db) => editInSteps(ConnectionType.MSSQL, db, target),
+      mssql: async (db) => {
+        const { newName, original, schema, table } = target
+        await editInSteps(ConnectionType.MSSQL, db, target)
+        if (commented(target)) {
+          const { comment } = target
+          const value = comment === null ? sql`` : sql`@value = ${comment}, `
+          await sql`EXEC ${mssqlCommentProcedure(original.comment, comment)} @name = N'MS_Description', ${value}@level0type = N'SCHEMA', @level0name = ${schema}, @level1type = N'TABLE', @level1name = ${table}, @level2type = N'COLUMN', @level2name = ${newName}`.execute(
+            db
+          )
+        }
+      },
       // MySQL commits each DDL statement, so the rename, the alter and the key
       // go in one ALTER: a part that fails leaves the column untouched.
       mysql: async (db) => {
-        const { column, newName, nullable, reference, schema, table } = target
+        const { column, comment, newName, nullable, reference, schema, table } =
+          target
         await mysqlMoveRenamedValues(db, target)
-        const columnAction = altered(target)
-          ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${restatedType(target)}${sql.raw(nullable ? '' : ' NOT NULL')}`
-          : newName !== column &&
-            sql`RENAME COLUMN ${sql.id(column)} TO ${sql.id(newName)}`
+        const columnAction =
+          altered(target) || commented(target)
+            ? sql`CHANGE COLUMN ${sql.id(column)} ${sql.id(newName)} ${mysqlColumnDefinition(target, comment)}${sql.raw(nullable ? '' : ' NOT NULL')}`
+            : newName !== column &&
+              sql`RENAME COLUMN ${sql.id(column)} TO ${sql.id(newName)}`
         const actions = [
           columnAction,
           reference && sql`ADD ${constraintClause(reference)}`,
@@ -146,6 +180,14 @@ export const editColumnQuery = (target: EditColumnTarget) =>
           )
         }
       },
-      postgres: (db) => editInSteps(ConnectionType.Postgres, db, target),
+      postgres: async (db) => {
+        const { comment, newName, schema, table } = target
+        await editInSteps(ConnectionType.Postgres, db, target)
+        if (commented(target)) {
+          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment)}`.execute(
+            db
+          )
+        }
+      },
     },
   })

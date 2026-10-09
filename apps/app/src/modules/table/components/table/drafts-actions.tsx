@@ -14,7 +14,7 @@ import { useSubscription } from 'seitu/react'
 
 import { draftsActions, useTableSessionStore } from '~/core/table/session'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
-import { plural } from '~/lib/plural'
+import { plural } from '~/utils/plural'
 
 import { useSaveStaged } from '../../lib/save'
 import { DraftsReviewDrawer } from './drafts-review-drawer'

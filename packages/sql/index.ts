@@ -17,6 +17,7 @@ export { INITIAL_STATE, tokenize } from './tokenizer'
 export {
   destructiveKeywords,
   invalidatesCatalog,
+  readsOnly,
   writesData,
 } from './destructive'
 export { statementScope } from './scope'

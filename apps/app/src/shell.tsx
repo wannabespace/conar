@@ -10,6 +10,12 @@ export const resourcePanelClassName =
 export const centeredPageClassName =
   'mx-auto flex min-h-full w-full max-w-2xl flex-col px-6 py-12'
 
+export const settingsPageClassName = 'flex min-h-0 flex-1 p-2'
+
+// w-70 is the navigator panel's defaultSize (modules/navigator/panel.ts): keep them equal or, at the default width, the panel edge jumps entering Settings.
+export const settingsSidebarClassName =
+  'flex w-70 shrink-0 flex-col gap-4 pt-0.5 pr-1.5 pl-2'
+
 const ShellFrame = ({
   children,
   id,
@@ -74,6 +80,15 @@ const DashboardShell = () => (
   </ShellFrame>
 )
 
+const SettingsShell = () => (
+  <ShellFrame id="shell-settings">
+    <div className={settingsPageClassName}>
+      <div className={settingsSidebarClassName} />
+      <div className={resourcePanelClassName} />
+    </div>
+  </ShellFrame>
+)
+
 const AuthShell = () => (
   <div
     aria-hidden
@@ -90,6 +105,7 @@ export const Shells = () => (
   <>
     <AuthShell />
     <DashboardShell />
+    <SettingsShell />
     <ConnectionShell />
   </>
 )

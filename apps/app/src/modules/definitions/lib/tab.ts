@@ -5,7 +5,7 @@ import { sectionAvailable } from '~/core/catalog/capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import { definitionsSectionType } from '~/core/catalog/sections'
 import { definitionsTabId } from '~/core/tabs/ids'
-import type { SchemaItem, TabKind } from '~/lib/module'
+import type { SchemaItem, TabKind } from '~/core/tabs/types'
 
 import { sectionMetaOf } from '../section-meta'
 
@@ -30,27 +30,15 @@ export const definitionsTab: TabKind<DefinitionsParams> = {
   type: 'definitions',
 }
 
-const SECTION_GROUPS: [DefinitionsSection, SchemaItem['group']][] = [
-  ['indexes', 'Structure'],
-  ['constraints', 'Structure'],
-  ['enums', 'Types'],
-  ['functions', 'Logic'],
-  ['triggers', 'Logic'],
-  ['policies', 'Security'],
-  ['privileges', 'Security'],
-]
+export const definitionsSchemaItem = (
+  section: DefinitionsSection
+): SchemaItem => {
+  const { icon, title } = sectionMetaOf(section)
 
-export const definitionsSchemaItems = SECTION_GROUPS.map(
-  ([section, group], index): SchemaItem => {
-    const { icon, title } = sectionMetaOf(section)
-
-    return {
-      available: (connectionType) => sectionAvailable(section, connectionType),
-      group,
-      icon,
-      label: title,
-      order: 10 + index,
-      tabId: definitionsTabId(section),
-    }
+  return {
+    available: (connectionType) => sectionAvailable(section, connectionType),
+    icon,
+    label: title,
+    tabId: definitionsTabId(section),
   }
-)
+}

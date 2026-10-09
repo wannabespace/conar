@@ -1,13 +1,13 @@
 import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
-import { type } from 'arktype'
 import { AnimateView } from 'motion/react-animate-view'
 import { useDeferredValue, useEffect } from 'react'
 
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { ensureTab, setActiveTab } from '~/core/tabs/actions'
 import { resolveTab, tabFullTitle } from '~/core/tabs/kinds'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { tabSearchType } from '~/core/tabs/types'
+import { tabViews } from '~/core/tabs/views'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -25,7 +25,7 @@ const TabPage = () => {
   // Router state commits through useSyncExternalStore, which never starts a view transition; the deferred re-render does.
   const shownResourceId = useDeferredValue(connectionResource.id)
   const shownTab = useDeferredValue(tab)
-  const view = workspaceModules.tabs[shownTab.kind.type]
+  const view = tabViews[shownTab.kind.type]
 
   return (
     <AnimateView
@@ -43,11 +43,7 @@ export const Route = createFileRoute(
   '/_protected/connection/$resourceId/$tabId'
 )({
   component: TabPage,
-  validateSearch: type({
-    'create?': 'string',
-    'open?': 'string',
-    'schema?': 'string',
-  }),
+  validateSearch: tabSearchType,
   beforeLoad: ({ context, params }) => {
     const resolved = resolveTab(params.tabId)
 
@@ -69,7 +65,7 @@ export const Route = createFileRoute(
     const { connection, connectionResource, tab } = context
 
     prefetchConnectionResourceCore(connectionResource)
-    workspaceModules.tabs[tab.kind.type]?.load?.({
+    tabViews[tab.kind.type]?.load?.({
       connection,
       connectionResource,
       params: tab.params,

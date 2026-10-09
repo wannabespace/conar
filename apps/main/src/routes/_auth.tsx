@@ -10,7 +10,7 @@ import {
 import { type } from 'arktype'
 
 import { SEO } from '~/constants'
-import { Consent } from '~/modules/legal/module'
+import { Consent } from '~/modules/legal/legal-links'
 
 const AuthLayout = () => {
   const match = useMatches({

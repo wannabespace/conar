@@ -1,6 +1,6 @@
-import { Features } from '~/modules/features/module'
-import { Pricing } from '~/modules/pricing/module'
-import { Testimonials } from '~/modules/testimonials/module'
+import { Features } from '~/modules/features/features'
+import { Pricing } from '~/modules/pricing/pricing'
+import { Testimonials } from '~/modules/testimonials/testimonials'
 
 import { Demo } from './-components/demo'
 import { Hero } from './-components/hero'

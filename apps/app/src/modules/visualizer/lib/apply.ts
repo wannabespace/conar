@@ -7,8 +7,8 @@ import {
   transaction,
 } from '~/core/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
-import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
+import { plural } from '~/utils/plural'
 
 import { gatesOf } from './context'
 import type { diagramDrafts } from './drafts'

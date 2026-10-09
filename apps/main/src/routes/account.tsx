@@ -29,11 +29,11 @@ import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { SidebarLink } from '~/components/sidebar-button'
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { AiUsageLink } from '~/modules/ai-usage/module'
-import { BillingLink } from '~/modules/billing/module'
-import { ReleasesLink } from '~/modules/releases/module'
-import { SettingsLink } from '~/modules/settings/module'
-import { SupportButton } from '~/modules/support/module'
+import { AiUsageLink } from '~/modules/ai-usage/ai-usage-link'
+import { BillingLink } from '~/modules/billing/billing-link'
+import { ReleasesLink } from '~/modules/releases/releases-link'
+import { SettingsLink } from '~/modules/settings/settings-link'
+import { SupportButton } from '~/modules/support/support-button'
 
 const { useLoaderData } = getRouteApi('/account')
 

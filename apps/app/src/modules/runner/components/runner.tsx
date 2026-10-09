@@ -53,7 +53,7 @@ import { toast } from 'sonner'
 import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
 import { checkOrUpgrade } from '~/core/user/permissions'
-import { formatSql } from '~/lib/formatter'
+import { formatSql } from '~/utils/formatter'
 
 import type { RunnerActions } from '../lib/actions'
 import { RunnerActionsContext } from '../lib/actions'
