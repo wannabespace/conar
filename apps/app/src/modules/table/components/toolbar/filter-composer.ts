@@ -99,18 +99,20 @@ export const useFilterComposer = ({
   const committedParts = parts.filter((part) => part !== '')
   const valueFilterText = isArrayValue ? (parts.at(-1) ?? '') : query.trim()
 
+  const stepBack = () =>
+    setStage(
+      stage.step === 'value'
+        ? { step: 'operator', target: stage.target }
+        : { step: 'idle' }
+    )
+
   useHotkeys(
     [
       {
-        callback: () => {
-          if (stage.step === 'value') {
-            setStage({ step: 'operator', target: stage.target })
-          } else if (stage.step === 'operator') {
-            setStage({ step: 'idle' })
-          } else {
-            setFilters((current) => current.slice(0, -1))
-          }
-        },
+        callback: () =>
+          stage.step === 'idle'
+            ? setFilters((current) => current.slice(0, -1))
+            : stepBack(),
         hotkey: 'Backspace',
         options: {
           enabled:
@@ -118,14 +120,7 @@ export const useFilterComposer = ({
         },
       },
       {
-        callback: () => {
-          setQuery('')
-          if (stage.step === 'value') {
-            setStage({ step: 'operator', target: stage.target })
-          } else {
-            setStage({ step: 'idle' })
-          }
-        },
+        callback: () => (query === '' ? stepBack() : setQuery('')),
         hotkey: 'Escape',
         options: { enabled: stage.step !== 'idle' || query !== '' },
       },

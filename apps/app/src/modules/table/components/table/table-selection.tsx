@@ -7,7 +7,6 @@ import { useSubscription } from 'seitu/react'
 import type { GridEntry, PrimaryKeys } from '~/core/table/session'
 import {
   getRowPrimaryKeysValues,
-  primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
 
@@ -72,10 +71,8 @@ const SelectRow = ({
   rows: GridRow[]
 }) => {
   const store = useTableSessionStore()
-  const key = primaryKeysKey(rowKey)
   const isSelected = useSubscription(store, {
-    selector: (state) =>
-      state.selected.some((selected) => primaryKeysKey(selected) === key),
+    selector: (state) => rowSelection.has(state, rowKey),
   })
 
   return (

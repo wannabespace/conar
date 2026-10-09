@@ -173,10 +173,10 @@ export const ConnectionCard = ({
         render={
           <div
             className={cn(
-              'group relative flex h-9 items-center gap-3 pr-2 pl-3 select-none',
+              'group has-[[data-row-link]:focus-visible]:bg-accent relative flex h-9 items-center gap-3 pr-2 pl-3 select-none',
               selectedResource &&
                 canOpenResource &&
-                'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
+                'hover:bg-accent has-[[data-row-link]:hover]:bg-accent'
             )}
           />
         }
@@ -184,10 +184,10 @@ export const ConnectionCard = ({
         {selectedResource && canOpenResource && (
           <ConnectionResourceLink
             resourceId={selectedResource.id}
-            className="absolute inset-0 cursor-default"
+            className="focus-visible:inset-ring-ring/50 absolute inset-0 cursor-default outline-hidden focus-visible:inset-ring-3"
             aria-label={`Open ${connection.name}`}
             preload={false}
-            data-resource-link
+            data-row-link
           />
         )}
         {connection.color && (

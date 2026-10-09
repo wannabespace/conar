@@ -35,7 +35,15 @@ export const StepCredentials = ({
   const id = useId()
   const localProxyAvailable = useLocalProxyAvailable()
 
-  useHotkey('Enter', onEnter, { target: ref })
+  useHotkey(
+    'Enter',
+    (event) => {
+      if (!event.isComposing) {
+        onEnter()
+      }
+    },
+    { target: ref }
+  )
 
   return (
     <Card className="w-full">

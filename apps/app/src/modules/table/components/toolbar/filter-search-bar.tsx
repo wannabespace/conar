@@ -35,6 +35,10 @@ const getFilterPlaceholder = ({
   return 'Filter or ask AI…'
 }
 
+let mountedInput: HTMLInputElement | null = null
+
+export const focusFilterInput = () => mountedInput?.focus()
+
 export const FilterSearchBar = ({
   table,
   schema,
@@ -66,9 +70,17 @@ export const FilterSearchBar = ({
     }
   }, [filters.length])
 
-  useHotkey('Mod+F', () => {
-    inputRef.current?.focus()
-  })
+  useHotkey('Mod+F', focusFilterInput)
+
+  useEffect(() => {
+    const input = inputRef.current
+    mountedInput = input
+    return () => {
+      if (mountedInput === input) {
+        mountedInput = null
+      }
+    }
+  }, [])
 
   const isOpen =
     isFocused &&

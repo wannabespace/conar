@@ -272,18 +272,15 @@ export const useGridCursor = ({
       const index = indexOf(position?.column ?? '')
       const column =
         columns[Math.min(Math.max(index + columnStep, 0), columns.length - 1)]
-      if (column && rows.length > 0) {
-        cursor.place(
-          {
-            column: column.id,
-            row: Math.min(
-              Math.max((position?.row ?? -1) + rowStep, 0),
-              rows.length - 1
-            ),
-          },
-          extend
-        )
+      if (!column || rows.length === 0) {
+        return false
       }
+      const row = Math.min(
+        Math.max((position?.row ?? -1) + rowStep, 0),
+        rows.length - 1
+      )
+      cursor.place({ column: column.id, row }, extend)
+      return position?.row !== row || position.column !== column.id
     },
     store,
   }

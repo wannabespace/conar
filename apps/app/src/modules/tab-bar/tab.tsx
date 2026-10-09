@@ -20,6 +20,7 @@ import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
@@ -43,6 +44,7 @@ export const Tab = ({
   defaultLabel,
   connectionResource,
   isActive,
+  isTabStop,
   isDragging,
   onDragStateChange,
   onClose,
@@ -57,6 +59,7 @@ export const Tab = ({
   label: string
   defaultLabel: string
   isActive: boolean
+  isTabStop: boolean
   isDragging: boolean
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
@@ -74,7 +77,6 @@ export const Tab = ({
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
   const [renameInput, setRenameInput] = useState<HTMLInputElement | null>(null)
-  const refocusTab = useRef(false)
   const resolved = resolveTab(tab.id)
   const isPreview = !!tab.preview
   const isRenaming = draft !== null
@@ -101,15 +103,24 @@ export const Tab = ({
     setDraft(null)
   }
 
+  const focusTab = () => ref.current?.querySelector('button')?.focus()
+
   const finishRename = (finish: () => void) => {
-    refocusTab.current = true
-    finish()
+    flushSync(finish)
+    focusTab()
   }
 
   useHotkeys(
     renameInput
       ? [
-          { callback: () => finishRename(commitRename), hotkey: 'Enter' },
+          {
+            callback: (event) => {
+              if (!event.isComposing) {
+                finishRename(commitRename)
+              }
+            },
+            hotkey: 'Enter',
+          },
           {
             callback: () => finishRename(() => setDraft(null)),
             hotkey: 'Escape',
@@ -258,16 +269,17 @@ export const Tab = ({
         onOpenChange={setContextMenuOpen}
         className="block h-full"
         items={items}
+        contentProps={{
+          // Rename unmounts this menu's trigger; base-ui's fallback return target would steal focus from the rename field.
+          finalFocus: focusTab,
+        }}
       >
         <button
-          ref={(button) => {
-            if (button && refocusTab.current) {
-              refocusTab.current = false
-              button.focus()
-            }
-          }}
           data-mask
           type="button"
+          role="tab"
+          aria-selected={isActive}
+          tabIndex={isTabStop ? 0 : -1}
           aria-label={`${label} tab`}
           className={tabClasses}
           onDoubleClick={startRename}

@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
 import type { ReactNode, Ref, RefObject } from 'react'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 
@@ -18,6 +18,7 @@ import { DocumentList } from './document-list'
 import type { GridBarItem } from './grid-bar'
 import { GridBar } from './grid-bar'
 import { useGridCursor } from './grid-cursor'
+import { useGridFocusRequest } from './grid-focus'
 import type { DataGridHandle } from './grid-handle'
 import { useGridHandle } from './grid-handle'
 import { useGridHotkeys, useGridPointer } from './grid-input'
@@ -27,12 +28,12 @@ const valueOf = ({ column, row }: DataGridCell) => row[column.id]
 const columnEditable = (column: Column) => column.isEditable !== false
 
 export const DataGrid = ({
-  autoFocus,
   bar,
   canEdit = columnEditable,
   columns,
   connectionType,
   cursorRef,
+  focusKey,
   footer,
   getValue = valueOf,
   isFetching,
@@ -41,7 +42,10 @@ export const DataGrid = ({
   menuItems,
   onEdit,
   onEndReached,
+  onExitLeft,
+  onExitTop,
   onExtendRows,
+  onToggleRows,
   onPreview,
   onReorder,
   pinned,
@@ -54,13 +58,14 @@ export const DataGrid = ({
   sizeOf,
   trailing,
 }: {
-  autoFocus?: boolean
   /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
   bar?: GridBarItem[]
   canEdit?: (column: Column, rowIndex: number) => boolean
   columns: Column[]
   connectionType: ConnectionType
   cursorRef?: Ref<DataGridHandle>
+  /** The grid takes focus when `requestGridFocus` names this key, now or once it mounts. */
+  focusKey?: string
   footer?: ReactNode
   /** The value the cell shows and the editor starts from, e.g. a pending draft. */
   getValue?: (cell: DataGridCell) => unknown
@@ -73,8 +78,14 @@ export const DataGrid = ({
   ) => CellMenuExtra
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onEndReached?: () => void
+  /** A fresh ← on the first column (first document in documents) leaves the grid here. */
+  onExitLeft?: () => void
+  /** A fresh ↑ on the first row (first field in documents) leaves the grid here. */
+  onExitTop?: () => void
   /** Shift+↑/↓ while no cell has the cursor. */
   onExtendRows?: (direction: 'up' | 'down') => void
+  /** Shift+Space: the rows the cursor or its block covers. */
+  onToggleRows?: (rowIndexes: number[]) => void
   /** Space on the cursor cell, like Quick Look; `anchor` is the cell element. */
   onPreview?: (cell: DataGridCell, anchor: Element) => void
   onReorder?: (ids: string[]) => void
@@ -105,13 +116,17 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
-  useGridHotkeys({ canEdit: !!onEdit, cursor, onExtendRows, scrollRef })
+  useGridHotkeys({
+    canEdit: !!onEdit,
+    cursor,
+    onExitLeft,
+    onExitTop,
+    onExtendRows,
+    onToggleRows,
+    scrollRef,
+  })
   const pointer = useGridPointer(cursor)
-  useEffect(() => {
-    if (autoFocus) {
-      scrollRef.current?.focus({ preventScroll: true })
-    }
-  }, [autoFocus, scrollRef])
+  useGridFocusRequest(focusKey, scrollRef)
   const scrollToCell = useGridHandle({
     cursor,
     cursorRef,

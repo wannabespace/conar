@@ -27,6 +27,7 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
 import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
+import { requestGridFocus } from '~/core/table/grid-focus'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
@@ -136,19 +137,11 @@ export const TableRow = ({
             preload="intent"
             preloadDelay={200}
             data-mask
-            onClick={() =>
-              openTab(
-                connectionResource.id,
-                tableTabId(row.schema, row.table.name),
-                true
-              )
-            }
-            onDoubleClick={() =>
-              openTab(
-                connectionResource.id,
-                tableTabId(row.schema, row.table.name)
-              )
-            }
+            onClick={() => {
+              openTab(connectionResource.id, tabId, true)
+              requestGridFocus(tabId)
+            }}
+            onDoubleClick={() => openTab(connectionResource.id, tabId)}
           />
         }
       >

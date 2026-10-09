@@ -13,7 +13,9 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { DataGrid } from '~/core/table/data-grid'
 import { isSaving, useTableSessionStore } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
+import { tableTabId } from '~/core/tabs/ids'
 import { posthog } from '~/lib/posthog'
+import { focusNavigator } from '~/modules/navigator/keyboard'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { tableGridRef } from '../../lib/grid-ref'
@@ -25,6 +27,7 @@ import { useStagedEdits } from '../../lib/staged-edits'
 import { columnLayout, columnView, useTablePageStore } from '../../lib/store'
 import { cellHop } from '../references/hops'
 import { ReferencePeek, useReferencePeek } from '../references/reference-peek'
+import { focusFilterInput } from '../toolbar/filter-search-bar'
 import { useColumnActions } from './column-actions'
 import { TableBodyCell } from './table-body-cell'
 import { tableCellMenu } from './table-cell-menu'
@@ -172,7 +175,6 @@ export const Table = ({
   return (
     <div className="relative size-full">
       <DataGrid
-        autoFocus
         bar={tableBar({
           canDelete: !!isBaseTable && hasSelection,
           hasChanges,
@@ -181,6 +183,7 @@ export const Table = ({
         })}
         canEdit={staged.canEdit}
         connectionType={connection.type}
+        focusKey={tableTabId(schema, table)}
         getValue={staged.valueOf}
         onEdit={isEditable && !saving ? staged.edit : undefined}
         onExtendRows={
@@ -192,6 +195,23 @@ export const Table = ({
                     keysInRange: keysInRange(rows, primaryColumns),
                     rowCount: rows.length,
                   })
+                )
+            : undefined
+        }
+        onExitLeft={focusNavigator}
+        onExitTop={focusFilterInput}
+        onToggleRows={
+          isEditable
+            ? (rowIndexes) =>
+                sessionStore.set((state) =>
+                  rowSelection.toggle(
+                    state,
+                    rowIndexes
+                      .map(staged.rowAt)
+                      .flatMap((entry) =>
+                        entry.kind === 'saved' ? [entry.keys] : []
+                      )
+                  )
                 )
             : undefined
         }

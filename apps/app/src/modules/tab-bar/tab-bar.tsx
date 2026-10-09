@@ -10,11 +10,11 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkey } from '@tanstack/react-hotkeys'
+import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { getConnectionResourceStore } from '~/core/connection/stores'
@@ -175,6 +175,24 @@ export const TabBar = ({ className }: { className?: string }) => {
   const labels = tabLabels(tabs)
   const tabIds = tabs.map((tab) => tab.id)
   const [isDragging, setIsDragging] = useState(false)
+  const stripRef = useRef<HTMLUListElement>(null)
+  const tabStopId = tabIds.includes(activeTabId ?? '') ? activeTabId : tabIds[0]
+
+  const focusSiblingTab = (delta: number) => {
+    const tabButtons = [
+      ...(stripRef.current?.querySelectorAll<HTMLElement>('[role=tab]') ?? []),
+    ]
+    const index = tabButtons.indexOf(document.activeElement as HTMLElement)
+    tabButtons[index + delta]?.focus()
+  }
+
+  useHotkeys(
+    [
+      { callback: () => focusSiblingTab(-1), hotkey: 'ArrowLeft' },
+      { callback: () => focusSiblingTab(1), hotkey: 'ArrowRight' },
+    ],
+    { target: stripRef }
+  )
 
   return (
     <div
@@ -221,6 +239,8 @@ export const TabBar = ({ className }: { className?: string }) => {
                     .filter((tab) => !!tab)
                 )
               }
+              ref={stripRef}
+              role="tablist"
               className="flex items-stretch"
             >
               {tabs.map((tab, index) => (
@@ -230,6 +250,7 @@ export const TabBar = ({ className }: { className?: string }) => {
                   label={labels[index]?.label ?? ''}
                   defaultLabel={labels[index]?.defaultLabel ?? ''}
                   isActive={tab.id === activeTabId}
+                  isTabStop={tab.id === tabStopId}
                   isDragging={isDragging}
                   onDragStateChange={setIsDragging}
                   connectionResource={connectionResource}

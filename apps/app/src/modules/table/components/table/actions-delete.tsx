@@ -14,7 +14,14 @@ import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -103,6 +110,8 @@ export const ActionsDelete = ({
     },
   })
 
+  useHotkey('Mod+Backspace', () => setOpen(true), { ignoreInputs: true })
+
   return (
     <>
       <AlertDialog open={open} onOpenChange={setOpen}>
@@ -154,13 +163,30 @@ export const ActionsDelete = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
-        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-        <span>
-          Delete (
-          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
-        </span>
-      </Button>
+      <Tooltip
+        shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="⌫" />}
+      >
+        <TooltipTrigger
+          render={
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setOpen(true)}
+            />
+          }
+        >
+          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+          <span>
+            Delete (
+            <NumberFlow
+              spinTiming={{ duration: 200 }}
+              value={selected.length}
+            />
+            )
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top">Delete selected rows</TooltipContent>
+      </Tooltip>
     </>
   )
 }

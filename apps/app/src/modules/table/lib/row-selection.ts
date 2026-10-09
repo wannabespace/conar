@@ -95,4 +95,25 @@ export const rowSelection = {
       selectionState: { anchorIndex, focusIndex: focus },
     }
   },
+  has: (state: TableSessionState, rowKey: PrimaryKeys) => {
+    const key = primaryKeysKey(rowKey)
+    return state.selected.some((row) => primaryKeysKey(row) === key)
+  },
+  toggle: (
+    state: TableSessionState,
+    rowKeys: PrimaryKeys[]
+  ): TableSessionState => {
+    const selectedKeys = new Set(state.selected.map(primaryKeysKey))
+    const toggledKeys = new Set(rowKeys.map(primaryKeysKey))
+    const allSelected = [...toggledKeys].every((key) => selectedKeys.has(key))
+    return {
+      ...state,
+      selected: allSelected
+        ? state.selected.filter((row) => !toggledKeys.has(primaryKeysKey(row)))
+        : [
+            ...state.selected,
+            ...rowKeys.filter((row) => !selectedKeys.has(primaryKeysKey(row))),
+          ],
+    }
+  },
 }

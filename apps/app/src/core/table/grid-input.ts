@@ -32,12 +32,18 @@ const isCheckbox = (event: MouseEvent) =>
 export const useGridHotkeys = ({
   canEdit,
   cursor,
+  onExitLeft,
+  onExitTop,
   onExtendRows,
+  onToggleRows,
   scrollRef,
 }: {
   canEdit: boolean
   cursor: GridCursor
+  onExitLeft?: () => void
+  onExitTop?: () => void
   onExtendRows?: (direction: 'up' | 'down') => void
+  onToggleRows?: (rowIndexes: number[]) => void
   scrollRef: RefObject<HTMLDivElement | null>
 }) => {
   const hasCursor = useSubscription(cursor.store, {
@@ -47,21 +53,19 @@ export const useGridHotkeys = ({
     selector: (state) => state.edit !== null,
   })
   const [gridFocused, setGridFocused] = useState(false)
-  const steering = gridFocused && !isEditing
-  const navigating = steering && hasCursor
+  const ownsKeys = gridFocused && !isEditing
+  const navigating = ownsKeys && hasCursor
 
   // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
+  // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
   useEffect(() => {
-    const scroller = scrollRef.current
-    if (!scroller) {
-      return
-    }
-    const track = () => setGridFocused(document.activeElement === scroller)
-    scroller.addEventListener('focusin', track)
-    scroller.addEventListener('focusout', track)
+    const track = () =>
+      setGridFocused(document.activeElement === scrollRef.current)
+    document.addEventListener('focusin', track)
+    document.addEventListener('focusout', track)
     return () => {
-      scroller.removeEventListener('focusin', track)
-      scroller.removeEventListener('focusout', track)
+      document.removeEventListener('focusin', track)
+      document.removeEventListener('focusout', track)
     }
   }, [scrollRef])
 
@@ -69,16 +73,20 @@ export const useGridHotkeys = ({
     [
       ...(
         [
-          ['ArrowUp', -1, 0],
-          ['ArrowDown', 1, 0],
-          ['ArrowLeft', 0, -1],
-          ['ArrowRight', 0, 1],
+          ['ArrowUp', -1, 0, onExitTop],
+          ['ArrowDown', 1, 0, undefined],
+          ['ArrowLeft', 0, -1, onExitLeft],
+          ['ArrowRight', 0, 1, undefined],
         ] as const
-      ).flatMap(([hotkey, down, right]) => [
+      ).flatMap(([hotkey, down, right, exit]) => [
         {
-          callback: () => cursor.step(down, right),
+          callback: (event: KeyboardEvent) => {
+            if (!cursor.step(down, right) && !event.repeat) {
+              exit?.()
+            }
+          },
           hotkey,
-          options: { enabled: steering },
+          options: { enabled: ownsKeys },
         },
         {
           callback: () => {
@@ -89,7 +97,7 @@ export const useGridHotkeys = ({
             }
           },
           hotkey: `Shift+${hotkey}` as const,
-          options: { enabled: steering },
+          options: { enabled: ownsKeys },
         },
       ]),
       ...(['Enter', 'F2'] as const).map((hotkey) => ({
@@ -127,6 +135,14 @@ export const useGridHotkeys = ({
         callback: cursor.preview,
         hotkey: 'Space',
         options: { enabled: navigating },
+      },
+      {
+        callback: () =>
+          onToggleRows?.(
+            cursor.selection().flatMap((row) => row[0]?.rowIndex ?? [])
+          ),
+        hotkey: 'Shift+Space',
+        options: { enabled: navigating && !!onToggleRows },
       },
       {
         callback: () => {

@@ -125,6 +125,7 @@ const EditableListRow = ({
                   <InputGroupButton
                     size="icon-xs"
                     aria-label={`Reorder item ${index + 1}`}
+                    tabIndex={-1}
                     onPointerDown={(event) => dragControls.start(event)}
                   >
                     <HugeiconsIcon

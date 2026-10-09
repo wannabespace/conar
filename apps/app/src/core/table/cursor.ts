@@ -113,7 +113,8 @@ export interface GridCursor {
   selection: () => DataGridCell[][]
   /** Writes a value picked in the editor and closes it. */
   set: (value: unknown) => void
-  step: (down: number, right: number, extend?: boolean) => void
+  /** False when the cursor was already at the edge it stepped toward. */
+  step: (down: number, right: number, extend?: boolean) => boolean
   store: CursorStore
 }
 
