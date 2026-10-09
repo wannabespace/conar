@@ -1,6 +1,5 @@
 import { COMMON_ERROR_STATUS_MAP, ORPCError } from '@orpc/client'
 import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
-import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { fullSignOut, isAnonymous } from '~/lib/auth'
@@ -19,9 +18,7 @@ const isSessionExpiredError = (error: unknown) =>
   (typeof error === 'object' &&
     error !== null &&
     'status' in error &&
-    'code' in error &&
-    error.status === 401 &&
-    error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
+    error.status === 401) ||
   isUnauthorizedError(error)
 
 const errorStatus: Record<string, number | undefined> = COMMON_ERROR_STATUS_MAP

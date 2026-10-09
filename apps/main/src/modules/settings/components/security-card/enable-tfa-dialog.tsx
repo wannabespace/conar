@@ -1,16 +1,10 @@
-import { Button } from '@tamery/ui/components/button'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@tamery/ui/components/dialog'
-import { Input } from '@tamery/ui/components/input'
-import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
@@ -23,51 +17,21 @@ import { handleError } from '~/utils/error'
 export const EnableTfaDialog = ({
   open,
   onOpenChange,
+  totpURI,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  totpURI: string
 }) => {
-  const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
-  const [setupOpen, setSetupOpen] = useState(false)
 
-  const {
-    mutate: enableTotp,
-    isPending: isEnableTotpPending,
-    data: totpURI,
-  } = useMutation({
-    mutationFn: async (passwordValue: string) => {
-      const { data, error } = await authClient.twoFactor.enable({
-        password: passwordValue,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      if (data.method === 'totp') {
-        return data.totpURI
-      }
-
-      return null
-    },
-    onError: handleError,
-    onSuccess: () => {
-      setSetupOpen(true)
-    },
-  })
-
-  const { mutate: verifyTotp, isPending: isVerifyTotpPending } = useMutation({
-    mutationFn: async (codeValue: string) => {
-      const { error } = await authClient.twoFactor.verifyTotp({
+  const { mutate: verifyTotp, isPending } = useMutation({
+    mutationFn: (codeValue: string) =>
+      authClient.twoFactor.verifyTotp({
         code: codeValue,
+        fetchOptions: { throw: true },
         trustDevice: true,
-      })
-
-      if (error) {
-        throw error
-      }
-    },
+      }),
     onError: (e) => {
       handleError(e)
       setCode('')
@@ -75,89 +39,35 @@ export const EnableTfaDialog = ({
     onSuccess: () => {
       toast.success('2FA enabled')
       onOpenChange(false)
-      setSetupOpen(false)
     },
   })
 
-  const handleClose = () => {
-    onOpenChange(false)
-    setSetupOpen(false)
-    setPassword('')
-    setCode('')
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:max-w-sm"
-        onSubmit={(e) => {
-          e.preventDefault()
-          enableTotp(password)
-        }}
-        render={<form />}
-      >
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(nextOpen) => !nextOpen && setCode('')}
+    >
+      <DialogContent className="sm:max-w-xs">
         <DialogHeader>
-          <DialogTitle>Enable 2FA</DialogTitle>
+          <DialogTitle>Scan QR Code</DialogTitle>
           <DialogDescription>
-            Enter your password to continue.
+            Scan this QR Code with your authenticator app.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="enable-password">Password</Label>
-          <Input
-            id="enable-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isEnableTotpPending}
-            autoComplete="current-password"
+        <div className="flex flex-col items-center gap-4">
+          <div className="rounded-lg bg-white p-4">
+            <QRCode value={totpURI} size={176} />
+          </div>
+          <TotpCodeInput
+            label="Verification code"
+            value={code}
+            onChange={setCode}
+            onComplete={verifyTotp}
+            disabled={isPending}
             autoFocus
           />
         </div>
-        <DialogFooter>
-          <Dialog
-            open={setupOpen}
-            onOpenChange={(nextOpen) => !nextOpen && handleClose()}
-          >
-            <DialogTrigger
-              className="w-full sm:w-auto"
-              disabled={isEnableTotpPending || password.length === 0}
-              render={<Button type="submit" variant="outline" />}
-            >
-              <LoadingContent loading={isEnableTotpPending}>
-                Continue
-              </LoadingContent>
-            </DialogTrigger>
-            <DialogContent
-              className="flex flex-col gap-6 sm:max-w-xs"
-              showCloseButton={false}
-              onSubmit={(e) => {
-                e.preventDefault()
-                verifyTotp(code)
-              }}
-              render={<form />}
-            >
-              <DialogHeader>
-                <DialogTitle>Scan QR Code</DialogTitle>
-                <DialogDescription>
-                  Scan this QR Code with your authenticator app.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col items-center gap-4">
-                <div className="rounded-lg bg-white p-4">
-                  {!!totpURI && <QRCode value={totpURI} size={176} />}
-                </div>
-                <TotpCodeInput
-                  label="Verification code"
-                  value={code}
-                  onChange={(value) => setCode(value)}
-                  onComplete={(value) => verifyTotp(value)}
-                  disabled={isVerifyTotpPending}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

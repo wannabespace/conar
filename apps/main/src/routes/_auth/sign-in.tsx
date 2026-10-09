@@ -4,7 +4,7 @@ import { authClient } from '~/lib/auth'
 
 import { AuthForm } from './-components/auth-form'
 
-const SignInPage = () => <AuthForm type="sign-in" />
+const SignInPage = () => <AuthForm />
 
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,

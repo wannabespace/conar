@@ -9,9 +9,10 @@ import {
   AUTH_COOKIE_PREFIX,
 } from '@tamery/shared/constants'
 import { permissionsOf } from '@tamery/shared/permissions'
+import type { BetterAuthPlugin } from 'better-auth'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { APIError, createAuthMiddleware } from 'better-auth/api'
+import { createAuthMiddleware } from 'better-auth/api'
 import {
   anonymous,
   bearer,
@@ -32,7 +33,18 @@ import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
 import { ensureDefaultWorkspace } from './workspace'
 
-const twoFactorPlugin = twoFactor()
+const twoFactorPlugin = twoFactor({ allowPasswordless: true })
+
+// twoFactor() never gates /sign-in/email-otp; without this an emailed code skips the TOTP step.
+const twoFactorOnEmailCode = {
+  hooks: {
+    after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
+      handler,
+      matcher: (context) => context.path === '/sign-in/email-otp',
+    })),
+  },
+  id: 'two-factor-email-code',
+} satisfies BetterAuthPlugin
 
 export const auth = betterAuth({
   advanced: {
@@ -139,31 +151,6 @@ export const auth = betterAuth({
       },
     },
   },
-  emailAndPassword: {
-    enabled: true,
-    onPasswordReset: async ({ user: { name, email } }) => {
-      await sendEmail({
-        props: {
-          name: name || email,
-        },
-        subject: 'Your password has been reset',
-        template: 'OnPasswordReset',
-        to: email,
-      })
-    },
-    requireEmailVerification: false,
-    sendResetPassword: async ({ user: { name, email }, url }) => {
-      await sendEmail({
-        props: {
-          name: name || email,
-          url,
-        },
-        subject: 'Reset your password',
-        template: 'ResetPassword',
-        to: email,
-      })
-    },
-  },
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
@@ -218,6 +205,7 @@ export const auth = betterAuth({
   plugins: [
     bearer(),
     twoFactorPlugin,
+    twoFactorOnEmailCode,
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
         await sendEmail({
@@ -228,40 +216,6 @@ export const auth = betterAuth({
         })
       },
     }),
-    {
-      hooks: {
-        // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
-        after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
-          handler,
-          matcher: (context) => context.path === '/sign-in/email-otp',
-        })),
-        // A code sign-in to an unverified account deletes its password, OAuth links and sessions.
-        before: [
-          {
-            handler: createAuthMiddleware(async (ctx) => {
-              if (ctx.body?.type !== 'sign-in') {
-                return
-              }
-
-              const found = await ctx.context.internalAdapter.findUserByEmail(
-                ctx.body.email
-              )
-
-              if (found && !found.user.emailVerified) {
-                throw APIError.from('BAD_REQUEST', {
-                  code: 'EMAIL_NOT_VERIFIED',
-                  message:
-                    'This account signs in with a password. Use it, or reset it with Forgot password.',
-                })
-              }
-            }),
-            matcher: (context) =>
-              context.path === '/email-otp/send-verification-otp',
-          },
-        ],
-      },
-      id: 'email-otp-sign-in',
-    },
     organization({
       allowUserToCreateOrganization: async (user) =>
         permissionsOf({

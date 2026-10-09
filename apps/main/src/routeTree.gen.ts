@@ -16,9 +16,7 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as OpenRouteImport } from './modules/deep-link/routes/open'
 import { Route as AuthEmailCodeRouteImport } from './routes/_auth/email-code'
-import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
-import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
@@ -29,9 +27,6 @@ import { Route as LayoutTermsOfServiceRouteImport } from './modules/legal/routes
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
 
-const AuthForgotPasswordDotlazyRouteImport = createFileRoute(
-  '/_auth/forgot-password',
-)()
 const AccountAiUsageDotlazyRouteImport = createFileRoute('/account/ai-usage')()
 const AccountApiKeysDotlazyRouteImport = createFileRoute('/account/api-keys')()
 const AccountBillingDotlazyRouteImport = createFileRoute('/account/billing')()
@@ -61,27 +56,9 @@ const AuthEmailCodeRoute = AuthEmailCodeRouteImport.update({
   path: '/email-code',
   getParentRoute: () => AuthRoute,
 } as any)
-const AuthForgotPasswordDotlazyRoute =
-  AuthForgotPasswordDotlazyRouteImport.update({
-    id: '/forgot-password',
-    path: '/forgot-password',
-    getParentRoute: () => AuthRoute,
-  } as any).lazy(() =>
-    import('./routes/_auth/forgot-password.lazy').then((d) => d.Route),
-  )
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AuthRoute,
-} as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthSignUpRoute = AuthSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
   getParentRoute: () => AuthRoute,
 } as any)
 const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
@@ -178,9 +155,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
   '/email-code': typeof AuthEmailCodeRoute
-  '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
-  '/sign-up': typeof AuthSignUpRoute
   '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
@@ -188,7 +163,6 @@ export interface FileRoutesByFullPath {
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/forgot-password': typeof AuthForgotPasswordDotlazyRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
   '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
@@ -199,9 +173,7 @@ export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/open': typeof OpenRoute
   '/email-code': typeof AuthEmailCodeRoute
-  '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
-  '/sign-up': typeof AuthSignUpRoute
   '/two-factor': typeof AuthTwoFactorRoute
   '/download': typeof LayoutDownloadRoute
   '/home': typeof LayoutHomeRoute
@@ -209,7 +181,6 @@ export interface FileRoutesByTo {
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/forgot-password': typeof AuthForgotPasswordDotlazyRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
   '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
@@ -223,9 +194,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
   '/_auth/email-code': typeof AuthEmailCodeRoute
-  '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
-  '/_auth/sign-up': typeof AuthSignUpRoute
   '/_auth/two-factor': typeof AuthTwoFactorRoute
   '/_layout/download': typeof LayoutDownloadRoute
   '/_layout/home': typeof LayoutHomeRoute
@@ -233,7 +202,6 @@ export interface FileRoutesById {
   '/_layout/releases': typeof LayoutReleasesRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/_auth/forgot-password': typeof AuthForgotPasswordDotlazyRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
   '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
@@ -248,9 +216,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/open'
     | '/email-code'
-    | '/reset-password'
     | '/sign-in'
-    | '/sign-up'
     | '/two-factor'
     | '/download'
     | '/home'
@@ -258,7 +224,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/terms-of-service'
     | '/deep/sign-in'
-    | '/forgot-password'
     | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
@@ -269,9 +234,7 @@ export interface FileRouteTypes {
     | '/'
     | '/open'
     | '/email-code'
-    | '/reset-password'
     | '/sign-in'
-    | '/sign-up'
     | '/two-factor'
     | '/download'
     | '/home'
@@ -279,7 +242,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/terms-of-service'
     | '/deep/sign-in'
-    | '/forgot-password'
     | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
@@ -292,9 +254,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/open'
     | '/_auth/email-code'
-    | '/_auth/reset-password'
     | '/_auth/sign-in'
-    | '/_auth/sign-up'
     | '/_auth/two-factor'
     | '/_layout/download'
     | '/_layout/home'
@@ -302,7 +262,6 @@ export interface FileRouteTypes {
     | '/_layout/releases'
     | '/_layout/terms-of-service'
     | '/deep/sign-in'
-    | '/_auth/forgot-password'
     | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
@@ -356,32 +315,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmailCodeRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordDotlazyRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/reset-password': {
-      id: '/_auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
     '/_auth/sign-in': {
       id: '/_auth/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/_auth/sign-up': {
-      id: '/_auth/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_auth/two-factor': {
@@ -480,20 +418,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteChildren {
   AuthEmailCodeRoute: typeof AuthEmailCodeRoute
-  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
-  AuthSignUpRoute: typeof AuthSignUpRoute
   AuthTwoFactorRoute: typeof AuthTwoFactorRoute
-  AuthForgotPasswordDotlazyRoute: typeof AuthForgotPasswordDotlazyRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthEmailCodeRoute: AuthEmailCodeRoute,
-  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
-  AuthSignUpRoute: AuthSignUpRoute,
   AuthTwoFactorRoute: AuthTwoFactorRoute,
-  AuthForgotPasswordDotlazyRoute: AuthForgotPasswordDotlazyRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)

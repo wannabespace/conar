@@ -1,13 +1,8 @@
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { type } from 'arktype'
 
 import { authClient } from '~/lib/auth'
 
 const { useSearch } = getRouteApi('/_auth')
-
-export const twoFactorRedirectSchema = type({
-  twoFactorRedirect: 'true',
-})
 
 export const sendSignInCode = (email: string) =>
   authClient.emailOtp.sendVerificationOtp({

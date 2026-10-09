@@ -15,19 +15,21 @@ import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-import {
-  sendSignInCode,
-  twoFactorRedirectSchema,
-  useFinishSignIn,
-} from './-lib/sign-in'
+import { NameStep } from './-components/name-step'
+import { sendSignInCode, useFinishSignIn } from './-lib/sign-in'
 
 const { useSearch } = getRouteApi('/_auth/email-code')
+
+const twoFactorRedirectSchema = type({
+  twoFactorRedirect: 'true',
+})
 
 const EmailCodePage = () => {
   const router = useRouter()
   const { email, redirectPath } = useSearch()
   const finishSignIn = useFinishSignIn()
   const [code, setCode] = useState('')
+  const [isNewAccount, setIsNewAccount] = useState(false)
 
   const { mutate: resend, isPending: isResending } = useMutation({
     mutationFn: () => sendSignInCode(email),
@@ -36,21 +38,33 @@ const EmailCodePage = () => {
   })
 
   const { mutate: verify, isPending } = useMutation({
-    mutationFn: (otp: string) =>
-      authClient.signIn.emailOtp({
-        email,
-        fetchOptions: { throw: true },
-        otp,
-      }),
-    onSuccess: (data) =>
-      twoFactorRedirectSchema.allows(data)
-        ? router.navigate({ to: '/two-factor', search: { redirectPath } })
-        : finishSignIn(),
+    mutationFn: async (otp: string) => {
+      const { data, error } = await authClient.signIn.emailOtp({ email, otp })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      if (twoFactorRedirectSchema.allows(data)) {
+        await router.navigate({ to: '/two-factor', search: { redirectPath } })
+      } else if (data.user.name) {
+        await finishSignIn()
+      } else {
+        setIsNewAccount(true)
+      }
+    },
     onError: (error) => {
       setCode('')
       handleError(error)
     },
   })
+
+  if (isNewAccount) {
+    return <NameStep />
+  }
 
   return (
     <div className="flex flex-col items-center gap-6">
