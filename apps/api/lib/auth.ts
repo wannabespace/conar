@@ -9,7 +9,6 @@ import {
   AUTH_COOKIE_PREFIX,
 } from '@tamery/shared/constants'
 import { permissionsOf } from '@tamery/shared/permissions'
-import type { BetterAuthPlugin } from 'better-auth'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -34,17 +33,6 @@ import { getSubscription } from './subscription'
 import { ensureDefaultWorkspace } from './workspace'
 
 const twoFactorPlugin = twoFactor({ allowPasswordless: true })
-
-// twoFactor() never gates /sign-in/email-otp; without this an emailed code skips the TOTP step.
-const twoFactorOnEmailCode = {
-  hooks: {
-    after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
-      handler,
-      matcher: (context) => context.path === '/sign-in/email-otp',
-    })),
-  },
-  id: 'two-factor-email-code',
-} satisfies BetterAuthPlugin
 
 export const auth = betterAuth({
   advanced: {
@@ -204,8 +192,17 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
-    twoFactorPlugin,
-    twoFactorOnEmailCode,
+    {
+      ...twoFactorPlugin,
+      hooks: {
+        ...twoFactorPlugin.hooks,
+        // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
+        after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
+          handler,
+          matcher: (context) => context.path === '/sign-in/email-otp',
+        })),
+      },
+    },
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
         await sendEmail({

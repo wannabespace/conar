@@ -63,6 +63,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Sign-in
 
+- **New backup codes from Settings.** Backup codes are shown once, when 2FA turns on; someone who lost them or used them up has to turn 2FA off and on again. A "Regenerate backup codes" action (`twoFactor.generateBackupCodes`) would cover it.
 - **Track web auth actions.** `apps/main` has no PostHog, so sign-in, code and two-factor actions on the web are invisible; only the desktop's `signed_in`/`signed_up` after the exchange is captured.
 
 ## Connections

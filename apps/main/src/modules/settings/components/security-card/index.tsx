@@ -13,7 +13,10 @@ import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
 import { DisableTfaDialog } from './disable-tfa-dialog'
+import type { TotpSetup } from './enable-tfa-dialog'
 import { EnableTfaDialog } from './enable-tfa-dialog'
+
+const NO_SETUP: TotpSetup = { backupCodes: [], totpURI: '' }
 
 export const SecurityCard = () => {
   const { data } = authClient.useSession()
@@ -25,14 +28,14 @@ export const SecurityCard = () => {
   const {
     mutate: enable,
     isPending: isEnabling,
-    data: totpURI = '',
+    data: setup = NO_SETUP,
   } = useMutation({
     mutationFn: async () => {
       const result = await authClient.twoFactor.enable({
         fetchOptions: { throw: true },
       })
 
-      return result.method === 'totp' ? result.totpURI : ''
+      return result.method === 'totp' ? result : NO_SETUP
     },
     onError: handleError,
     onSuccess: () => setEnableOpen(true),
@@ -43,7 +46,7 @@ export const SecurityCard = () => {
       <EnableTfaDialog
         open={enableOpen}
         onOpenChange={setEnableOpen}
-        totpURI={totpURI}
+        setup={setup}
       />
       <DisableTfaDialog open={disableOpen} onOpenChange={setDisableOpen} />
       <Card>

@@ -1,3 +1,7 @@
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { Field, FieldLabel } from '@tamery/ui/components/field'
+import { Input } from '@tamery/ui/components/input'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -11,19 +15,23 @@ import { useFinishSignIn } from './-lib/sign-in'
 const TwoFactorPage = () => {
   const finishSignIn = useFinishSignIn()
   const [code, setCode] = useState('')
+  const [isBackupCode, setIsBackupCode] = useState(false)
 
-  const { mutate: verifyTotp, isPending } = useMutation({
-    mutationFn: async (totpCode: string) => {
-      const { error } = await authClient.twoFactor.verifyTotp({
-        code: totpCode,
-      })
+  const { mutate: verify, isPending } = useMutation({
+    mutationFn: async (value: string) => {
+      const { error } = isBackupCode
+        ? await authClient.twoFactor.verifyBackupCode({ code: value })
+        : await authClient.twoFactor.verifyTotp({ code: value })
 
       if (error) {
         throw error
       }
     },
     onSuccess: () => finishSignIn(),
-    onError: handleError,
+    onError: (error) => {
+      setCode('')
+      handleError(error)
+    },
   })
 
   return (
@@ -33,17 +41,60 @@ const TwoFactorPage = () => {
           Two-factor authentication
         </h1>
         <p className="text-muted-foreground text-sm">
-          Enter the code from your authenticator app.
+          {isBackupCode
+            ? 'Enter one of the backup codes you saved when you turned on 2FA.'
+            : 'Enter the code from your authenticator app.'}
         </p>
       </div>
-      <TotpCodeInput
-        label="Verification code"
-        value={code}
-        onChange={(value) => setCode(value)}
-        onComplete={() => verifyTotp(code)}
-        disabled={isPending}
-        autoFocus
-      />
+      {isBackupCode ? (
+        <form
+          className="flex w-full flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            verify(code.trim())
+          }}
+        >
+          <Field>
+            <FieldLabel htmlFor="backup-code">Backup code</FieldLabel>
+            <Input
+              id="backup-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="xxxxx-xxxxx"
+              autoComplete="one-time-code"
+              spellCheck={false}
+              disabled={isPending}
+              autoFocus
+            />
+          </Field>
+          <Button
+            className="w-full"
+            type="submit"
+            disabled={isPending || !code}
+          >
+            <LoadingContent loading={isPending}>Verify</LoadingContent>
+          </Button>
+        </form>
+      ) : (
+        <TotpCodeInput
+          label="Verification code"
+          value={code}
+          onChange={setCode}
+          onComplete={verify}
+          disabled={isPending}
+          autoFocus
+        />
+      )}
+      <Button
+        variant="link-muted"
+        size="xs"
+        onClick={() => {
+          setCode('')
+          setIsBackupCode(!isBackupCode)
+        }}
+      >
+        {isBackupCode ? 'Use your authenticator app' : 'Use a backup code'}
+      </Button>
     </div>
   )
 }

@@ -1,10 +1,13 @@
+import { Button } from '@tamery/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
+import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
@@ -14,16 +17,54 @@ import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
+export interface TotpSetup {
+  backupCodes: string[]
+  totpURI: string
+}
+
+const BackupCodes = ({
+  codes,
+  onDone,
+}: {
+  codes: string[]
+  onDone: () => void
+}) => (
+  <>
+    <DialogHeader>
+      <DialogTitle>Save your backup codes</DialogTitle>
+      <DialogDescription>
+        Each code signs you in once if you lose your authenticator app. They
+        won&apos;t be shown again.
+      </DialogDescription>
+    </DialogHeader>
+    <div data-mask className="grid grid-cols-2 gap-2 font-mono text-sm">
+      {codes.map((code) => (
+        <span key={code}>{code}</span>
+      ))}
+    </div>
+    <DialogFooter>
+      <Button
+        variant="outline"
+        onClick={() => copy(codes.join('\n'), 'Backup codes copied')}
+      >
+        Copy
+      </Button>
+      <Button onClick={onDone}>Done</Button>
+    </DialogFooter>
+  </>
+)
+
 export const EnableTfaDialog = ({
   open,
   onOpenChange,
-  totpURI,
+  setup,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  totpURI: string
+  setup: TotpSetup
 }) => {
   const [code, setCode] = useState('')
+  const [isVerified, setIsVerified] = useState(false)
 
   const { mutate: verifyTotp, isPending } = useMutation({
     mutationFn: (codeValue: string) =>
@@ -38,7 +79,7 @@ export const EnableTfaDialog = ({
     },
     onSuccess: () => {
       toast.success('2FA enabled')
-      onOpenChange(false)
+      setIsVerified(true)
     },
   })
 
@@ -46,28 +87,42 @@ export const EnableTfaDialog = ({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      onOpenChangeComplete={(nextOpen) => !nextOpen && setCode('')}
+      onOpenChangeComplete={(nextOpen) => {
+        if (!nextOpen) {
+          setCode('')
+          setIsVerified(false)
+        }
+      }}
     >
       <DialogContent className="sm:max-w-xs">
-        <DialogHeader>
-          <DialogTitle>Scan QR Code</DialogTitle>
-          <DialogDescription>
-            Scan this QR Code with your authenticator app.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col items-center gap-4">
-          <div className="rounded-lg bg-white p-4">
-            <QRCode value={totpURI} size={176} />
-          </div>
-          <TotpCodeInput
-            label="Verification code"
-            value={code}
-            onChange={setCode}
-            onComplete={verifyTotp}
-            disabled={isPending}
-            autoFocus
+        {isVerified ? (
+          <BackupCodes
+            codes={setup.backupCodes}
+            onDone={() => onOpenChange(false)}
           />
-        </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Scan QR Code</DialogTitle>
+              <DialogDescription>
+                Scan this QR Code with your authenticator app.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-lg bg-white p-4">
+                <QRCode value={setup.totpURI} size={176} />
+              </div>
+              <TotpCodeInput
+                label="Verification code"
+                value={code}
+                onChange={setCode}
+                onComplete={verifyTotp}
+                disabled={isPending}
+                autoFocus
+              />
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
