@@ -6,7 +6,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Ranked
 
-1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff.
+1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff. Tools are schema-only in `packages/ai` (no `execute`) and run in the renderer, where connections live: MCP's implementations (`modules/mcp/describe-table.ts`, the `tables`/`query` methods in `mcp-source.ts`, `fetchForAgent`) move to `core/agent/` taking a resolved `connectionResource`, with `modules/mcp` and `modules/chat` each a thin adapter (target resolution, error hints, events).
 2. **MCP beyond the desktop server.**
    - `tamery mcp` in the CLI for web-only users (API keys + `cli query`).
    - More per-connection policy: row limit, masked columns.
@@ -78,7 +78,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
 - **Name the missing AI key in dev.** `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are dev-optional in `apps/api/env.ts`, so a worktree whose `.env` predates them boots fine and every AI call answers an opaque `INTERNAL_SERVER_ERROR`. A startup warning listing the unset AI keys would point straight at the `.env`.
 - **Close the kit sidebar's gaps.** Navigator call sites still restyle `@tamery/ui` sidebar parts: five pass `text-muted-foreground` to a `SidebarMenuButton` icon, `schema-row.tsx` turns `SidebarGroupLabel` into a hoverable row, and two use `size-3.5!` against the button's `[&_svg]:size-4`. A muted-icon default, an interactive group-label variant and a small trailing-icon size would move those into the kit (`tamery-ui` rule 11). Its `variant` is a `variant === 'muted' &&` switch inside `sidebar.tsx`; with those additions it becomes a `cva` in `sidebar.utils.ts` like every other kit variant.
-- **A tooltip on the kit `CopyButton`.** An icon-only copy button wrapped in a `Tooltip` repeating its `aria-label` is hand-built three times — `modules/mcp/copy-value.tsx`, the definitions inspector and the query logger. A `tooltip` prop on `CopyButton` would delete `copy-value.tsx` and the other two wrappers.
 - **Track the navigator toggle.** ⌘B, the tab-bar button and the command toggle the navigator with no PostHog event, while the query-logger and chat toggles send one. A `toggleNavigator` beside `navigatorOpenValue` could fire it from all three.
 
 ## AI
