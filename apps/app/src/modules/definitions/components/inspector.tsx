@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
@@ -212,20 +212,12 @@ export const InspectorDefinition = ({ code }: { code: string }) => (
     title="SQL"
     description="How the database defines this object today. Read-only."
     action={
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <CopyButton
-              size="icon-xs"
-              variant="ghost-muted"
-              className="-mt-0.5"
-              aria-label="Copy SQL"
-              text={code}
-            />
-          }
-        />
-        <TooltipContent side="left">Copy SQL</TooltipContent>
-      </Tooltip>
+      <CopyIconButton
+        label="Copy SQL"
+        side="left"
+        className="-mt-0.5"
+        text={code}
+      />
     }
   >
     <CodeBlock code={code} language="sql" size="xs" variant="field" wrap />

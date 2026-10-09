@@ -2,6 +2,7 @@ import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
+import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import {
   Tabs,
@@ -16,7 +17,6 @@ import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'
 import { MCP_CLIENTS } from './clients'
-import { CopyValue } from './copy-value'
 
 export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
@@ -69,10 +69,10 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
                   />
                 </Button>
               )}
-              <CopyValue
+              <CopyIconButton
                 label="Copy"
                 text={code}
-                onCopy={() =>
+                onClick={() =>
                   posthog.capture('mcp_config_copied', { client: client.id })
                 }
               />
