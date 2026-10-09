@@ -181,9 +181,7 @@ export const createKyselyDriver = (
     signal?.throwIfAborted()
     const { queryId } = compiledQuery.queryId
     const payload = { ...transformQuery(compiledQuery), queryId }
-    const cancel = () => {
-      void silently(() => provider.cancel(queryId))
-    }
+    const cancel = () => silently(() => provider.cancel(queryId))
     signal?.addEventListener('abort', cancel, { once: true })
     const promise = (
       txId

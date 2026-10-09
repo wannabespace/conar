@@ -8,7 +8,6 @@ import { CompiledQuery } from 'kysely'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { createQuery } from '~/core/runtime/query'
 
-import type { ResultSet } from './custom'
 import { runInTransaction } from './transaction'
 
 const postgresRows = type([
@@ -25,22 +24,6 @@ const postgresRows = type([
       ? Plan.Plans?.[0]?.['Plan Rows']
       : Plan['Plan Rows']) ?? null
 )
-
-// A plan row counts its table's rows per row of the tables joined before it, so only a target alone in its join gives a total.
-const mysqlRows = (set: ResultSet | undefined) => {
-  if (!set) {
-    return null
-  }
-  const at = (column: string) => set.columns.indexOf(column)
-  const [target, ...joined] = set.rows.filter(
-    (row) => row[at('id')] === set.rows[0]?.[at('id')]
-  )
-  const rows = target?.[at('rows')]
-  if (joined.length > 0 || typeof rows !== 'number') {
-    return null
-  }
-  return Math.round((rows * Number(target?.[at('filtered')] ?? 100)) / 100)
-}
 
 // Only a statement that opens with a data verb: EXPLAIN takes no `ANALYZE …` or procedure call that would make it run. Planning can still call its functions (architecture.md → MCP server).
 const ESTIMATED_COMMANDS = new Set([
@@ -70,7 +53,21 @@ export const estimateQuery = (text: string, connectionType: ConnectionType) => {
         const [set] = await runInTransaction(db, { commit: false }, [
           CompiledQuery.raw(`EXPLAIN FORMAT=TRADITIONAL ${text}`),
         ])
-        return mysqlRows(set)
+        if (!set) {
+          return null
+        }
+        const at = (column: string) => set.columns.indexOf(column)
+        // A plan row counts its table's rows per row of the tables joined before it, so only a target alone in its join gives a total.
+        const [target, ...joined] = set.rows.filter(
+          (row) => row[at('id')] === set.rows[0]?.[at('id')]
+        )
+        const rows = target?.[at('rows')]
+        if (joined.length > 0 || typeof rows !== 'number') {
+          return null
+        }
+        return Math.round(
+          (rows * Number(target?.[at('filtered')] ?? 100)) / 100
+        )
       },
       postgres: async (db) => {
         const [set] = await runInTransaction(

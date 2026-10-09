@@ -29,9 +29,7 @@ export const usage = {
       ? null
       : quotaOf(
           feature,
-          Number(
-            (await redis.get(keyOf(user.id, feature, usageResetsAt()))) ?? 0
-          )
+          Number(await redis.get(keyOf(user.id, feature, usageResetsAt())))
         ),
   record: async (
     { permissions, user }: UsageContext,

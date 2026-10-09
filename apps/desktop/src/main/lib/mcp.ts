@@ -70,59 +70,6 @@ const reject = (res: ServerResponse, status: number, message: string) => {
   )
 }
 
-const startSession = async (
-  req: IncomingMessage,
-  res: ServerResponse,
-  body: unknown
-) => {
-  if (!isInitializeRequest(body)) {
-    reject(res, 400, 'Bad Request: No valid session ID provided')
-    return
-  }
-  closeSessions(Date.now() - SESSION_IDLE_MS)
-  const client = body.params.clientInfo
-  const transport = new StreamableHTTPServerTransport({
-    enableJsonResponse: true,
-    onsessionclosed: (sessionId) => {
-      sessions.delete(sessionId)
-    },
-    onsessioninitialized: (sessionId) => {
-      const lastSeenAt = Date.now()
-      sessions.set(sessionId, { client: client.name, lastSeenAt, transport })
-      store.set('clients', {
-        ...store.get('clients'),
-        [client.name]: { lastSeenAt, version: client.version },
-      })
-    },
-    sessionIdGenerator: randomUUID,
-  })
-  await createMcpServer(connectionAccess).connect(transport)
-  await transport.handleRequest(req, res, body)
-}
-
-// The SDK aborts a tool call only on `notifications/cancelled`, which a client that drops the HTTP request never sends.
-const cancelOnDisconnect = (
-  res: ServerResponse,
-  transport: StreamableHTTPServerTransport,
-  body: unknown
-) => {
-  const requestIds = [body]
-    .flat()
-    .flatMap((message) => (isJSONRPCRequest(message) ? [message.id] : []))
-  res.on('close', () => {
-    if (res.writableFinished) {
-      return
-    }
-    for (const requestId of requestIds) {
-      transport.onmessage?.({
-        jsonrpc: '2.0',
-        method: 'notifications/cancelled',
-        params: { reason: 'The client disconnected.', requestId },
-      })
-    }
-  })
-}
-
 const handle = async (req: IncomingMessage, res: ServerResponse) => {
   if (req.url !== '/mcp') {
     res.writeHead(404).end()
@@ -142,7 +89,33 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
   const sessionId = req.headers['mcp-session-id']
   try {
     if (sessionId === undefined) {
-      await startSession(req, res, body)
+      if (!isInitializeRequest(body)) {
+        reject(res, 400, 'Bad Request: No valid session ID provided')
+        return
+      }
+      closeSessions(Date.now() - SESSION_IDLE_MS)
+      const client = body.params.clientInfo
+      const transport = new StreamableHTTPServerTransport({
+        enableJsonResponse: true,
+        onsessionclosed: (id) => {
+          sessions.delete(id)
+        },
+        onsessioninitialized: (id) => {
+          const lastSeenAt = Date.now()
+          sessions.set(id, {
+            client: client.name,
+            lastSeenAt,
+            transport,
+          })
+          store.set('clients', {
+            ...store.get('clients'),
+            [client.name]: { lastSeenAt, version: client.version },
+          })
+        },
+        sessionIdGenerator: randomUUID,
+      })
+      await createMcpServer(connectionAccess).connect(transport)
+      await transport.handleRequest(req, res, body)
       return
     }
     const session = sessions.get(String(sessionId))
@@ -151,7 +124,22 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
       return
     }
     session.lastSeenAt = Date.now()
-    cancelOnDisconnect(res, session.transport, body)
+    // The SDK aborts a tool call only on `notifications/cancelled`, which a client that drops the HTTP request never sends.
+    const requestIds = [body]
+      .flat()
+      .flatMap((message) => (isJSONRPCRequest(message) ? [message.id] : []))
+    res.on('close', () => {
+      if (res.writableFinished) {
+        return
+      }
+      for (const requestId of requestIds) {
+        session.transport.onmessage?.({
+          jsonrpc: '2.0',
+          method: 'notifications/cancelled',
+          params: { reason: 'The client disconnected.', requestId },
+        })
+      }
+    })
     await session.transport.handleRequest(req, res, body)
   } catch {
     res.destroy()

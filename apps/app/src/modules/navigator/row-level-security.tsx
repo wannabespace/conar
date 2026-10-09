@@ -80,7 +80,7 @@ export const RowLevelSecurityMark = ({ active }: { active: boolean }) => (
         strokeWidth={2}
         className={cn(
           'size-3!',
-          active ? 'text-primary-foreground/70' : 'text-muted-foreground'
+          active ? 'text-primary-foreground/70!' : 'text-muted-foreground'
         )}
       />
     </TooltipTrigger>

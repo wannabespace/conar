@@ -43,6 +43,7 @@ export const askRenderer = async <Method extends McpRequest['method']>(
       throw new Error(reply.error)
     }
     if ('result' in reply) {
+      // Wire boundary: the port carries untyped data; the preload answers with `McpSource[request.method]`'s result.
       return reply.result as Awaited<ReturnType<McpSource[Method]>>
     }
   }

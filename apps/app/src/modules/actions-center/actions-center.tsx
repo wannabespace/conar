@@ -52,7 +52,6 @@ import { checkOrUpgrade } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { globalHooks } from '~/lib/global-hooks'
 import { posthog } from '~/lib/posthog'
-import type { CommandEntry } from '~/modules/actions-center/types'
 import { chatCommands } from '~/modules/chat/commands'
 import { navigatorCommands } from '~/modules/navigator/commands'
 import { queryLoggerCommands } from '~/modules/query-logger/commands'
@@ -62,6 +61,7 @@ import { updatesCommands } from '~/modules/updates/commands'
 
 import { actionCenterOpen } from './action-center-open'
 import { settingsCommands } from './settings-commands'
+import type { CommandEntry } from './types'
 
 const REFRESH_SHORTCUT_LETTER = window.electron ? 'R' : undefined
 

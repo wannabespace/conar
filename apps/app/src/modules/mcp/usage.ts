@@ -34,11 +34,11 @@ export const assertQuota = async () => {
   )
 }
 
-export const recordQuery = async () => {
-  if (permix.check('mcp.unlimited')) {
-    return
-  }
-  await silently(async () => {
+export const recordQuery = () =>
+  silently(async () => {
+    if (permix.check('mcp.unlimited')) {
+      return
+    }
     const mcp = await orpc.usage.record.call(
       { feature: 'mcp' },
       { context: { silent: true } }
@@ -48,4 +48,3 @@ export const recordQuery = async () => {
       (usage) => usage && { ...usage, mcp }
     )
   })
-}

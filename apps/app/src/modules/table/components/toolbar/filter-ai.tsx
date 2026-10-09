@@ -86,8 +86,7 @@ export const useFilterAi = ({
   const { mutate: generateFilter, isPending } = useMutation(
     orpc.ai.filters.mutationOptions({
       meta: { event: 'ai_filter_generated' },
-      onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: usageQueryOptions.queryKey }),
+      onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
       onSuccess: (data) => {
         const known = new Set(columns.map((column) => column.id))
         const offered = offeredFilters(connection.type).flatMap(
