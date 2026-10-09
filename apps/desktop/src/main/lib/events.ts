@@ -10,6 +10,7 @@ import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
 import { mcp } from './mcp'
+import { notifyUnfocused } from './notify'
 import { autoUpdater } from './todesktop'
 
 const lazyQueryExecutor = (
@@ -75,6 +76,9 @@ export const electron = {
       popupNativeContextMenu(arg, event)) as (
       arg: MenuPopupRequest
     ) => Promise<MenuPopupResult>,
+  },
+  notifications: {
+    notify: notifyUnfocused,
   },
   query: {
     clickhouse: lazyQueryExecutor(

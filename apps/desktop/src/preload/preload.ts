@@ -149,9 +149,6 @@ contextBridge.exposeInMainWorld('electron', {
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
     ),
-    notify: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('mcp.notify', arg)
-    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),
@@ -172,6 +169,11 @@ contextBridge.exposeInMainWorld('electron', {
   menu: {
     popup: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('menu.popup', arg)
+    ),
+  },
+  notifications: {
+    notify: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('notifications.notify', arg)
     ),
   },
   query: {

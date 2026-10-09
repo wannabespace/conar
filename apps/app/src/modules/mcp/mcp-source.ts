@@ -19,11 +19,11 @@ import {
 } from '~/core/runtime/query'
 import { permix } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
+import { notifications } from '~/lib/notifications'
 import { posthog } from '~/lib/posthog'
 
 import { approval } from './approval'
 import { describeTable } from './describe-table'
-import { mcp } from './electron-mcp'
 import {
   resourcesOf,
   fetchForAgent,
@@ -102,7 +102,7 @@ export const mcpSource: McpSource = {
       connection_type: type,
       sync_type: syncType,
     })
-    void mcp.notify({
+    notifications.notify({
       body: name,
       title: 'An agent created a connection',
     })
@@ -136,7 +136,7 @@ export const mcpSource: McpSource = {
       refreshAfterRun(resource, connection.type, sql)
     }
     if (!approve) {
-      void mcp.notify({
+      notifications.notify({
         body: sql,
         title: `An agent changed ${connection.name}`,
       })

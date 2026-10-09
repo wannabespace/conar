@@ -16,7 +16,6 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
-import { notifyUnfocused } from './notify'
 
 const newToken = () => randomBytes(32).toString('base64url')
 
@@ -197,7 +196,6 @@ const clients = (): McpClient[] =>
 export const mcp = {
   clients,
   connectionAccess,
-  notify: notifyUnfocused,
   regenerateToken: () => {
     store.set('token', newToken())
     closeSessions()

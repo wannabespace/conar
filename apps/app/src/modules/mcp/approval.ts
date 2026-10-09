@@ -4,9 +4,8 @@ import { createStore } from 'seitu'
 import type { Connection } from '~/core/connection/sync'
 import { estimateQuery } from '~/core/queries/connection/estimate'
 import type { QueryParams } from '~/core/runtime/query'
+import { notifications } from '~/lib/notifications'
 import { posthog } from '~/lib/posthog'
-
-import { mcp } from './electron-mcp'
 
 interface Approval {
   connection: Connection
@@ -68,7 +67,7 @@ const request = async ({
       { connection, decide: decision.resolve, id, resourceName, sql },
     ],
   }))
-  void mcp.notify({
+  notifications.notify({
     body: 'Review the statement in Tamery to run or decline it.',
     title: `An agent wants to change ${connection.name}`,
   })

@@ -108,6 +108,7 @@ What already owns a concern here — a dependency resolves only in a workspace t
 | UI state shared across components or persisted locally | seitu `createStore` / `createWebStorageValue`, read with `useSubscription` |
 | A `keydown` listener or container `onKeyDown` | `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
 | An app-wide event (save, refresh pressed) | `globalHooks` (`~/lib/global-hooks`, hookable) |
+| A system notification | `notifications.notify` (`~/lib/notifications`) |
 | `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |
 | A runtime check followed by `as` | An ArkType schema |
 | `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
