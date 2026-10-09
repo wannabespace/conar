@@ -56,7 +56,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Welcome new code sign-ups.** An email code creates the account on first use, but the client can't tell it was new: the web redirect never gets `newUser=true`, so the desktop shows "Welcome back!" and captures `signed_in` instead of `signed_up`. Returning a new-user flag from `/sign-in/email-otp` (an after hook comparing `createdAt` to the session) would fix both.
 - **Ask a code sign-up for a name.** Accounts created by a code have an empty `name`; a one-field step after the first code sign-in would fill it.
-- **Drop `magicLinkClient`.** `apps/main/src/lib/auth.ts` registers it, but the server has no magic-link plugin.
+- **Let password accounts use codes.** Nothing verifies the email of a password sign-up, and Better Auth deletes an unverified account's password, OAuth links and sessions on its first code sign-in, so the API refuses codes for those accounts. Verifying the email at sign-up (and once for existing accounts, e.g. on next password sign-in) would let every account use a code.
+- **Track web auth actions.** `apps/main` has no PostHog, so sign-in, code, two-factor and password-reset actions on the web are invisible; only the desktop's `signed_in`/`signed_up` after the exchange is captured.
 
 ## Developer experience
 

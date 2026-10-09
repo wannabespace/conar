@@ -11,17 +11,16 @@ import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
-import { useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  authClient,
-  getLastUsedLoginMethod,
-  twoFactorRedirectSchema,
-} from '~/lib/auth'
+import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-import { EmailCode, sendSignInCode } from './email-code'
+import {
+  sendSignInCode,
+  twoFactorRedirectSchema,
+  useFinishSignIn,
+} from '../-lib/sign-in'
 
 const { useSearch } = getRouteApi('/_auth')
 
@@ -126,7 +125,7 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
   const search = useSearch()
   const lastMethod = getLastUsedLoginMethod()
   const router = useRouter()
-  const [codeEmail, setCodeEmail] = useState<string | null>(null)
+  const finishSignIn = useFinishSignIn()
 
   const form = useAppForm({
     defaultValues:
@@ -184,32 +183,21 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
         }
       }
 
-      if (search.redirectPath) {
-        const url = new URL(location.origin + search.redirectPath)
-
-        if (authType === 'sign-up') {
-          url.searchParams.set('newUser', 'true')
-        }
-
-        await router.navigate({ to: url.pathname + url.search })
-      } else {
-        await router.invalidate()
-      }
+      await finishSignIn({ newUser: authType === 'sign-up' })
     },
   })
 
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
-  const email = useStore(form.store, (state) => state.values.email)
+  const canSendCode = useStore(form.store, (state) =>
+    emailSchema.allows({ email: state.values.email })
+  )
 
   const { mutate: sendCode, isPending: isSendingCode } = useMutation({
-    mutationFn: () => sendSignInCode(email),
-    onSuccess: () => setCodeEmail(email),
+    mutationFn: sendSignInCode,
+    onSuccess: (_, email) =>
+      router.navigate({ to: '/email-code', search: { ...search, email } }),
     onError: handleError,
   })
-
-  if (codeEmail) {
-    return <EmailCode email={codeEmail} onBack={() => setCodeEmail(null)} />
-  }
 
   return (
     <>
@@ -286,7 +274,11 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
               </field.Field>
             )}
           </form.AppField>
-          <Button className="w-full" type="submit" disabled={isSubmitting}>
+          <Button
+            className="relative w-full"
+            type="submit"
+            disabled={isSubmitting}
+          >
             <LoadingContent loading={isSubmitting}>
               {authType === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>
@@ -296,8 +288,8 @@ export const AuthForm = ({ type: authType }: { type: Type }) => {
             <Button
               variant="ghost-muted"
               className="relative w-full"
-              onClick={() => sendCode()}
-              disabled={isSendingCode || !emailSchema.allows({ email })}
+              onClick={() => sendCode(form.getFieldValue('email'))}
+              disabled={isSendingCode || !canSendCode}
             >
               <LoadingContent loading={isSendingCode}>
                 Email me a code instead

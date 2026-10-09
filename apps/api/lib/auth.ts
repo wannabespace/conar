@@ -11,7 +11,7 @@ import {
 import { permissionsOf } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { createAuthMiddleware } from 'better-auth/api'
+import { APIError, createAuthMiddleware } from 'better-auth/api'
 import {
   anonymous,
   bearer,
@@ -229,14 +229,38 @@ export const auth = betterAuth({
       },
     }),
     {
-      // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
       hooks: {
+        // twoFactor() only gates password sign-ins; without this an emailed code skips the TOTP step.
         after: twoFactorPlugin.hooks.after.map(({ handler }) => ({
           handler,
           matcher: (context) => context.path === '/sign-in/email-otp',
         })),
+        // A code sign-in to an unverified account deletes its password, OAuth links and sessions.
+        before: [
+          {
+            handler: createAuthMiddleware(async (ctx) => {
+              if (ctx.body?.type !== 'sign-in') {
+                return
+              }
+
+              const found = await ctx.context.internalAdapter.findUserByEmail(
+                ctx.body.email
+              )
+
+              if (found && !found.user.emailVerified) {
+                throw APIError.from('BAD_REQUEST', {
+                  code: 'EMAIL_NOT_VERIFIED',
+                  message:
+                    'This account signs in with a password. Use it, or reset it with Forgot password.',
+                })
+              }
+            }),
+            matcher: (context) =>
+              context.path === '/email-otp/send-verification-otp',
+          },
+        ],
       },
-      id: 'email-otp-two-factor',
+      id: 'email-otp-sign-in',
     },
     organization({
       allowUserToCreateOrganization: async (user) =>

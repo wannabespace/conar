@@ -1,31 +1,32 @@
 import { Button } from '@tamery/ui/components/button'
 import { useMutation } from '@tanstack/react-query'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  getRouteApi,
+  Link,
+  redirect,
+  useRouter,
+} from '@tanstack/react-router'
+import { type } from 'arktype'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { TotpCodeInput } from '~/components/totp-code-input'
-import { authClient, twoFactorRedirectSchema } from '~/lib/auth'
+import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-const { useSearch } = getRouteApi('/_auth')
+import {
+  sendSignInCode,
+  twoFactorRedirectSchema,
+  useFinishSignIn,
+} from './-lib/sign-in'
 
-export const sendSignInCode = (email: string) =>
-  authClient.emailOtp.sendVerificationOtp({
-    email,
-    fetchOptions: { throw: true },
-    type: 'sign-in',
-  })
+const { useSearch } = getRouteApi('/_auth/email-code')
 
-export const EmailCode = ({
-  email,
-  onBack,
-}: {
-  email: string
-  onBack: () => void
-}) => {
+const EmailCodePage = () => {
   const router = useRouter()
-  const search = useSearch()
+  const { email, redirectPath } = useSearch()
+  const finishSignIn = useFinishSignIn()
   const [code, setCode] = useState('')
 
   const { mutate: resend, isPending: isResending } = useMutation({
@@ -41,17 +42,10 @@ export const EmailCode = ({
         fetchOptions: { throw: true },
         otp,
       }),
-    onSuccess: async (data) => {
-      if (twoFactorRedirectSchema.allows(data)) {
-        await router.navigate({ to: '/two-factor', search })
-      } else if (search.redirectPath) {
-        const url = new URL(location.origin + search.redirectPath)
-
-        await router.navigate({ to: url.pathname + url.search })
-      } else {
-        await router.invalidate()
-      }
-    },
+    onSuccess: (data) =>
+      twoFactorRedirectSchema.allows(data)
+        ? router.navigate({ to: '/two-factor', search: { redirectPath } })
+        : finishSignIn(),
     onError: (error) => {
       setCode('')
       handleError(error)
@@ -65,19 +59,26 @@ export const EmailCode = ({
           Check your email
         </h1>
         <p className="text-muted-foreground text-sm">
-          We sent a code to <span className="text-foreground">{email}</span>
+          We sent a code to{' '}
+          <span data-mask className="text-foreground">
+            {email}
+          </span>
         </p>
       </div>
       <TotpCodeInput
         label="Code"
         value={code}
         onChange={setCode}
-        onComplete={(value: string) => verify(value)}
+        onComplete={verify}
         disabled={isPending}
         autoFocus
       />
       <div className="flex gap-4">
-        <Button variant="link-muted" size="xs" onClick={onBack}>
+        <Button
+          variant="link-muted"
+          size="xs"
+          render={<Link to="/sign-in" search={{ redirectPath }} />}
+        >
           Use a different email
         </Button>
         <Button
@@ -92,3 +93,17 @@ export const EmailCode = ({
     </div>
   )
 }
+
+export const Route = createFileRoute('/_auth/email-code')({
+  component: EmailCodePage,
+  validateSearch: type({
+    email: 'string.email',
+  }),
+  loader: async () => {
+    const { data } = await authClient.getSession()
+
+    if (data?.user) {
+      throw redirect({ to: '/account' })
+    }
+  },
+})

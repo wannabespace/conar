@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as OpenRouteImport } from './modules/deep-link/routes/open'
+import { Route as AuthEmailCodeRouteImport } from './routes/_auth/email-code'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
@@ -54,6 +55,11 @@ const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthEmailCodeRoute = AuthEmailCodeRouteImport.update({
+  id: '/email-code',
+  path: '/email-code',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthForgotPasswordDotlazyRoute =
   AuthForgotPasswordDotlazyRouteImport.update({
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
+  '/email-code': typeof AuthEmailCodeRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/open': typeof OpenRoute
+  '/email-code': typeof AuthEmailCodeRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
+  '/_auth/email-code': typeof AuthEmailCodeRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/open'
+    | '/email-code'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/open'
+    | '/email-code'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/_layout'
     | '/account'
     | '/open'
+    | '/_auth/email-code'
     | '/_auth/reset-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
@@ -336,6 +348,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/open'
       preLoaderRoute: typeof OpenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/email-code': {
+      id: '/_auth/email-code'
+      path: '/email-code'
+      fullPath: '/email-code'
+      preLoaderRoute: typeof AuthEmailCodeRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_auth/forgot-password': {
       id: '/_auth/forgot-password'
@@ -460,6 +479,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteChildren {
+  AuthEmailCodeRoute: typeof AuthEmailCodeRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
@@ -468,6 +488,7 @@ interface AuthRouteChildren {
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthEmailCodeRoute: AuthEmailCodeRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,

@@ -1,21 +1,15 @@
 import { useMutation } from '@tanstack/react-query'
-import {
-  createFileRoute,
-  getRouteApi,
-  redirect,
-  useRouter,
-} from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-const { useSearch } = getRouteApi('/_auth/two-factor')
+import { useFinishSignIn } from './-lib/sign-in'
 
 const TwoFactorPage = () => {
-  const router = useRouter()
-  const search = useSearch()
+  const finishSignIn = useFinishSignIn()
   const [code, setCode] = useState('')
 
   const { mutate: verifyTotp, isPending } = useMutation({
@@ -28,15 +22,7 @@ const TwoFactorPage = () => {
         throw error
       }
     },
-    onSuccess: async () => {
-      if (search.redirectPath) {
-        const url = new URL(location.origin + search.redirectPath)
-
-        await router.navigate({ to: url.pathname + url.search })
-      } else {
-        await router.navigate({ to: '/account' })
-      }
-    },
+    onSuccess: () => finishSignIn(),
     onError: handleError,
   })
 
