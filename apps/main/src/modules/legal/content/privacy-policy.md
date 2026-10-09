@@ -55,7 +55,7 @@ AI requests are routed through **OpenRouter** to **Anthropic** (primary), **Open
 
 ## 6. Authentication Methods
 
-Email/password, Google OAuth, GitHub OAuth, magic links, two-factor authentication (2FA), and API keys.
+Email sign-in codes, Google OAuth, GitHub OAuth, two-factor authentication (2FA), and API keys.
 
 ## 7. Your Responsibilities — Backups and Risk
 

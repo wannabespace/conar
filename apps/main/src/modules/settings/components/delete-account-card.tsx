@@ -19,7 +19,7 @@ import {
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -35,22 +35,12 @@ const DeleteAccountDialog = ({
   onOpenChange: (open: boolean) => void
 }) => {
   const router = useRouter()
-  const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
-
-  const { data: hasCredentialAccount = false } = useQuery({
-    queryFn: () => authClient.listAccounts(),
-    queryKey: ['accounts'],
-    select: (data) =>
-      data.data?.some((account) => account.providerId === 'credential') ??
-      false,
-  })
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const { error } = await authClient.deleteUser({
         callbackURL: '/sign-in',
-        ...(password ? { password } : {}),
       })
 
       if (error) {
@@ -65,12 +55,9 @@ const DeleteAccountDialog = ({
   })
 
   const isConfirmed = confirmation === 'delete'
-  const canSubmit =
-    isConfirmed && (!hasCredentialAccount || password.length > 0)
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      setPassword('')
       setConfirmation('')
     }
     onOpenChange(nextOpen)
@@ -95,23 +82,6 @@ const DeleteAccountDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          {hasCredentialAccount && (
-            <div className="space-y-2">
-              <Label htmlFor="delete-password">Password</Label>
-              <Input
-                id="delete-password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isPending}
-                autoComplete="current-password"
-                // oxlint-disable-next-line no-autofocus
-                autoFocus
-              />
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="delete-confirmation">
               Type <span className="font-mono font-semibold">delete</span> to
@@ -126,7 +96,7 @@ const DeleteAccountDialog = ({
               disabled={isPending}
               autoComplete="off"
               // oxlint-disable-next-line no-autofocus
-              autoFocus={!hasCredentialAccount}
+              autoFocus
             />
           </div>
         </div>
@@ -144,7 +114,7 @@ const DeleteAccountDialog = ({
             type="submit"
             variant="destructive"
             className="w-full sm:w-auto"
-            disabled={!canSubmit || isPending}
+            disabled={!isConfirmed || isPending}
           >
             <LoadingContent loading={isPending}>
               <HugeiconsIcon
