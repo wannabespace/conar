@@ -31,7 +31,7 @@ const targetInput = {
 
 const sqlInput = { ...targetInput, sql: z.string() }
 
-const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels and no tool edits them. Find it before answering — pick the likely tables from their names and columns, search them with query (case-insensitive, partial match), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema, and only on connections whose access is "ask" or "write". On "ask" the user reviews each statement in Tamery and approves or declines it, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables. create_connection saves a new connection from a connection string the user gives you; no tool edits or removes one.`
+const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels. Find it before answering — pick the likely tables from their names and columns, search them with query using case-insensitive partial matches (e.g. LOWER(column) LIKE '%value%'), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema where the connection's access allows it, and on "ask" the user approves or declines each statement in Tamery, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables. create_connection saves a new connection from a connection string the user gives you; no tool edits or removes one.`
 
 export const createMcpServer = (access: () => Record<string, McpAccess>) => {
   const server = new McpServer(
@@ -86,8 +86,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description:
-        "Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is \"ask\". Existing connections cannot be edited or removed through MCP.",
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP.`,
       inputSchema: {
         connectionString: z
           .string()
@@ -117,7 +116,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected and it runs in a read-only transaction that is always rolled back, but a function with side effects can still act; only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL and ClickHouse also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
     async (args, { signal }) =>
@@ -159,7 +158,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'execute',
     {
       annotations: { destructiveHint: true, readOnlyHint: false },
-      description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
+      description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction, except on ClickHouse, which has no transactions. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
       inputSchema: sqlInput,
     },
     async (args, { signal }) => {

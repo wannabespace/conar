@@ -4,7 +4,7 @@ import type { Connection, PoolOptions, ResultSetHeader } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
 import type { ResultSet, RunOptions } from '../..'
-import { hasRoom, resultSet } from '../..'
+import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { mysql2 } from './client'
 
@@ -40,7 +40,7 @@ export const runOn = async (
     sql: string
     values: unknown[]
   },
-  { maxRows, queryId }: RunOptions
+  { maxRows = Infinity, queryId }: RunOptions
 ) => {
   // The pool holds one connection and it is busy, so `KILL QUERY` needs its own.
   const cancel = async () => {
@@ -80,7 +80,7 @@ export const runOn = async (
         }
         if (!Array.isArray(result)) {
           set.affectedRows = result.affectedRows
-        } else if (hasRoom(set.rows, maxRows)) {
+        } else if (set.rows.length <= maxRows) {
           set.rows.push(result)
         }
       })

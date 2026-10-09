@@ -3,7 +3,7 @@ import { once } from 'node:events'
 import type { Pool, PoolClient, QueryArrayConfig, QueryResult } from 'pg'
 
 import type { RunOptions } from '../..'
-import { hasRoom, resultSet } from '../..'
+import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { pg } from './client'
 
@@ -37,7 +37,7 @@ export const runOn = async (
     sql: string
     values: unknown[]
   },
-  { maxRows, queryId }: RunOptions
+  { maxRows = Infinity, queryId }: RunOptions
 ) => {
   const pid = queryId ? await backendPid(client) : undefined
   // The pool holds one connection and it is busy, so `pg_cancel_backend` needs its own.
@@ -64,7 +64,7 @@ export const runOn = async (
           .query(new pg.Query(config))
           // A `row` listener stops pg filling `rows` itself.
           .on('row', (row: unknown[], result) => {
-            if (result && hasRoom(result.rows, maxRows)) {
+            if (result && result.rows.length <= maxRows) {
               result.rows.push(row)
             }
           }),

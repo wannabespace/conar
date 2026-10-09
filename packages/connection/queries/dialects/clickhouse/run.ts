@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 import type { RunOptions } from '../..'
-import { hasRoom, resultSet } from '../..'
+import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { getClient } from './client'
 
@@ -40,7 +40,7 @@ const unquoteSafeIntegers = (meta: { type: string }[], data: unknown[][]) => {
 
 export const runQuery = ({
   connectionString,
-  maxRows,
+  maxRows = Infinity,
   query: sql,
   queryId,
   readOnly,
@@ -78,7 +78,9 @@ export const runQuery = ({
       })
       return {
         duration: performance.now() - start,
-        result: [resultSet({ affectedRows: null, columns: [], rows: [] })],
+        result: [
+          resultSet({ affectedRows: null, columns: [], rows: [] }, maxRows),
+        ],
       }
     }
 
@@ -89,7 +91,7 @@ export const runQuery = ({
         output_format_json_quote_decimals: 1,
         ...(readOnly && { readonly: '2' }),
         // One row past the cap is how `truncated` finds out there were more.
-        ...(maxRows !== undefined && {
+        ...(Number.isFinite(maxRows) && {
           max_result_rows: String(maxRows + 1),
           result_overflow_mode: 'break',
         }),
@@ -105,11 +107,11 @@ export const runQuery = ({
       for (const row of batch) {
         if (header.length < 2) {
           header.push(row.json())
-        } else if (hasRoom(rows, maxRows)) {
+        } else if (rows.length <= maxRows) {
           rows.push(row.json())
         }
       }
-      if (!hasRoom(rows, maxRows)) {
+      if (rows.length > maxRows) {
         break
       }
     }

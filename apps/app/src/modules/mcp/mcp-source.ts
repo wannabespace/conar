@@ -112,7 +112,7 @@ export const mcpSource: McpSource = {
     const { connection, resource } = resolveTarget(target)
     if (splitStatements(sql, dialects[connection.type]).length !== 1) {
       throw new Error(
-        'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together.'
+        'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together (not on ClickHouse, which has no transactions).'
       )
     }
     await assertQuota()
