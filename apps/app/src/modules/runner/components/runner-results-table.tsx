@@ -3,7 +3,6 @@ import { valueToText } from '@tamery/shared/value-text'
 
 import type { Column } from '~/core/table/cell/utils'
 import { DataGrid } from '~/core/table/data-grid'
-import { focusNavigator } from '~/modules/navigator/keyboard'
 
 const CHAR_WIDTH = 7
 const CELL_PADDING = 40
@@ -42,7 +41,6 @@ export const RunnerResultsTable = ({
     rows={rows}
     columns={columns.map((id): Column => ({ id, uiType: 'raw' }))}
     connectionType={connectionType}
-    onExitLeft={focusNavigator}
     sizeOf={(column) =>
       columnWidth(column.id, rows, column.id === columns.at(-1))
     }

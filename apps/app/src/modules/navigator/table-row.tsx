@@ -129,6 +129,7 @@ export const TableRow = ({
         className={cn(row.pinned && 'pr-12')}
         render={
           <Link
+            tabIndex={-1}
             to="/connection/$resourceId/$tabId"
             params={{
               resourceId: connectionResource.id,
@@ -182,7 +183,9 @@ export const TableRow = ({
         variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
-        render={<SidebarMenuAction showOnHover isActive={isActive} />}
+        render={
+          <SidebarMenuAction showOnHover isActive={isActive} tabIndex={-1} />
+        }
       />
       <Tooltip>
         <TooltipTrigger
@@ -190,6 +193,7 @@ export const TableRow = ({
             <SidebarMenuAction
               showOnHover={!row.pinned}
               isActive={isActive}
+              tabIndex={-1}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className="group/pin right-6"
               onClick={() =>

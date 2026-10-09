@@ -9,6 +9,7 @@ import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 
+import { tableGridRef } from '../../lib/grid-ref'
 import { useTablePageStore } from '../../lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -120,9 +121,20 @@ export const useFilterComposer = ({
         },
       },
       {
-        callback: () => (query === '' ? stepBack() : setQuery('')),
+        callback: (event) => {
+          if (query !== '') {
+            setQuery('')
+          } else if (stage.step !== 'idle') {
+            stepBack()
+          } else if (tableGridRef.current) {
+            tableGridRef.current.focus()
+          } else {
+            return
+          }
+          event.preventDefault()
+        },
         hotkey: 'Escape',
-        options: { enabled: stage.step !== 'idle' || query !== '' },
+        options: { preventDefault: false },
       },
     ],
     { target: inputRef }

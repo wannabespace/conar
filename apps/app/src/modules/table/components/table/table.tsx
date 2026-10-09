@@ -15,7 +15,6 @@ import { isSaving, useTableSessionStore } from '~/core/table/session'
 import { TableError } from '~/core/table/table-error'
 import { tableTabId } from '~/core/tabs/ids'
 import { posthog } from '~/lib/posthog'
-import { focusNavigator } from '~/modules/navigator/keyboard'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { tableGridRef } from '../../lib/grid-ref'
@@ -27,7 +26,6 @@ import { useStagedEdits } from '../../lib/staged-edits'
 import { columnLayout, columnView, useTablePageStore } from '../../lib/store'
 import { cellHop } from '../references/hops'
 import { ReferencePeek, useReferencePeek } from '../references/reference-peek'
-import { focusFilterInput } from '../toolbar/filter-search-bar'
 import { useColumnActions } from './column-actions'
 import { TableBodyCell } from './table-body-cell'
 import { tableCellMenu } from './table-cell-menu'
@@ -198,8 +196,6 @@ export const Table = ({
                 )
             : undefined
         }
-        onExitLeft={focusNavigator}
-        onExitTop={focusFilterInput}
         onToggleRows={
           isEditable
             ? (rowIndexes) =>

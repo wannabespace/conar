@@ -1,10 +1,6 @@
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { ComponentProps, MouseEvent as ReactMouseEvent } from 'react'
-import { useRef, useState } from 'react'
-
-const KEYBOARD_STEP = 10
-const KEYBOARD_STEP_LARGE = 50
+import { useState } from 'react'
 
 let dragOverlay: HTMLDivElement | undefined
 
@@ -37,10 +33,7 @@ export const ResizeHandle = ({
   max?: number
   side?: 'left' | 'right'
 } & Omit<ComponentProps<'div'>, 'onResize'>) => {
-  const ref = useRef<HTMLDivElement>(null)
   const [isResizing, setIsResizing] = useState(false)
-  const direction = side === 'right' ? 1 : -1
-  const clamp = (value: number) => Math.min(max, Math.max(min, value))
 
   const setResizing = (resizing: boolean) => {
     setIsResizing(resizing)
@@ -53,10 +46,16 @@ export const ResizeHandle = ({
 
     const startX = event.clientX
     const startValue = getValue()
+    const direction = side === 'right' ? 1 : -1
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       showDragOverlay()
-      onResize(clamp(startValue + direction * (moveEvent.clientX - startX)))
+      onResize(
+        Math.min(
+          max,
+          Math.max(min, startValue + direction * (moveEvent.clientX - startX))
+        )
+      )
     }
 
     const handleMouseUp = () => {
@@ -70,35 +69,12 @@ export const ResizeHandle = ({
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-  const nudge = (delta: number) => {
-    onResizingChange?.(true)
-    onResize(clamp(getValue() + direction * delta))
-    onResizingChange?.(false)
-  }
-
-  useHotkeys(
-    [
-      { callback: () => nudge(-KEYBOARD_STEP), hotkey: 'ArrowLeft' },
-      { callback: () => nudge(KEYBOARD_STEP), hotkey: 'ArrowRight' },
-      {
-        callback: () => nudge(-KEYBOARD_STEP_LARGE),
-        hotkey: 'Shift+ArrowLeft',
-      },
-      {
-        callback: () => nudge(KEYBOARD_STEP_LARGE),
-        hotkey: 'Shift+ArrowRight',
-      },
-    ],
-    { target: ref }
-  )
-
   return (
     <div
-      ref={ref}
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- interactive resize handle
       role="separator"
       aria-orientation="vertical"
-      tabIndex={0}
+      tabIndex={-1}
       data-resizing={isResizing || undefined}
       className={cn(
         'group/resize-handle cursor-col-resize select-none',

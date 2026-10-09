@@ -43,8 +43,6 @@ export const DataGrid = ({
   menuItems,
   onEdit,
   onEndReached,
-  onExitLeft,
-  onExitTop,
   onExtendRows,
   onToggleRows,
   onPreview,
@@ -79,10 +77,6 @@ export const DataGrid = ({
   ) => CellMenuExtra
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onEndReached?: () => void
-  /** A fresh ← on the first column (first document in documents) leaves the grid here. */
-  onExitLeft?: () => void
-  /** A fresh ↑ on the first row (first field in documents) leaves the grid here. */
-  onExitTop?: () => void
   /** Shift+↑/↓ while no cell has the cursor. */
   onExtendRows?: (direction: 'up' | 'down') => void
   /** Shift+Space: the rows the cursor or its block covers. */
@@ -117,17 +111,6 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
-  useGridHotkeys({
-    canEdit: !!onEdit,
-    cursor,
-    onExitLeft,
-    onExitTop,
-    onExtendRows,
-    onToggleRows,
-    scrollRef,
-  })
-  const pointer = useGridPointer(cursor)
-  useGridFocusRequest(focusKey, scrollRef)
   const scrollToCell = useGridHandle({
     cursor,
     cursorRef,
@@ -135,6 +118,16 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
+  useGridHotkeys({
+    canEdit: !!onEdit,
+    cursor,
+    onExtendRows,
+    onToggleRows,
+    scrollRef,
+    scrollToCell,
+  })
+  const pointer = useGridPointer(cursor)
+  useGridFocusRequest(focusKey, scrollRef)
   useMountedEffect(() => {
     const at = cursor.store.get().cursor
     if (at) {

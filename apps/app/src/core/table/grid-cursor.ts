@@ -99,6 +99,7 @@ export const useGridCursor = ({
     },
     change: (text) => store.set((state) => ({ ...state, edit: { text } })),
     closePeek: () => store.set((state) => ({ ...state, peek: false })),
+    collapse: () => store.set((state) => ({ ...state, anchor: null })),
     commit: () => {
       const { edit } = store.get()
       const cell = current()
@@ -127,12 +128,6 @@ export const useGridCursor = ({
     copy: () =>
       gridClipboard(cursor, { cellAt, columns, rows, writeAll }).copy(),
     current,
-    dismiss: () =>
-      store.set((state) =>
-        state.anchor
-          ? { ...state, anchor: null }
-          : { anchor: null, cursor: null, edit: null, peek: false }
-      ),
     edit: (text) => {
       const cell = current()
       if (
@@ -272,15 +267,18 @@ export const useGridCursor = ({
       const index = indexOf(position?.column ?? '')
       const column =
         columns[Math.min(Math.max(index + columnStep, 0), columns.length - 1)]
-      if (!column || rows.length === 0) {
-        return false
+      if (column && rows.length > 0) {
+        cursor.place(
+          {
+            column: column.id,
+            row: Math.min(
+              Math.max((position?.row ?? -1) + rowStep, 0),
+              rows.length - 1
+            ),
+          },
+          extend
+        )
       }
-      const row = Math.min(
-        Math.max((position?.row ?? -1) + rowStep, 0),
-        rows.length - 1
-      )
-      cursor.place({ column: column.id, row }, extend)
-      return position?.row !== row || position.column !== column.id
     },
     store,
   }

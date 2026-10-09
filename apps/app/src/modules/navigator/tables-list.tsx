@@ -143,6 +143,7 @@ export const TablesList = ({
           <TooltipTrigger
             render={
               <RefreshButton
+                aria-label="Refresh tables"
                 variant="outline-muted"
                 size="icon-sm"
                 onClick={() => refetch()}

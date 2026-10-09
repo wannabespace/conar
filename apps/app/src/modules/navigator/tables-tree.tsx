@@ -133,6 +133,7 @@ export const TablesTree = ({
         <div className="pt-4">
           <SidebarMenuButton
             variant="muted"
+            tabIndex={-1}
             onClick={() => createSchemaDialogRef.current?.create()}
           >
             <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />

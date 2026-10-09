@@ -90,13 +90,13 @@ export interface GridCursor {
   canPeek: (cell: DataGridCell) => boolean
   change: (text: string | null) => void
   closePeek: () => void
+  /** Shrinks the range back to the cursor cell. */
+  collapse: () => void
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
   connectionType: ConnectionType
   copy: () => void
   current: () => DataGridCell | null
-  /** Drops the range, or the cursor when there is no range. */
-  dismiss: () => void
   /** `text` types over the cell; without it the edit starts from the current value. */
   edit: (text?: string) => void
   element: () => Element | null | undefined
@@ -113,8 +113,7 @@ export interface GridCursor {
   selection: () => DataGridCell[][]
   /** Writes a value picked in the editor and closes it. */
   set: (value: unknown) => void
-  /** False when the cursor was already at the edge it stepped toward. */
-  step: (down: number, right: number, extend?: boolean) => boolean
+  step: (down: number, right: number, extend?: boolean) => void
   store: CursorStore
 }
 

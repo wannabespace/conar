@@ -26,6 +26,7 @@ const SelectAll = ({ keys, rows }: { keys: string[]; rows: GridRow[] }) => {
   return (
     <Checkbox
       aria-label="Select all rows"
+      tabIndex={-1}
       disabled={rows.length === 0}
       checked={checked}
       indeterminate={count > 0 && !checked}
@@ -78,6 +79,7 @@ const SelectRow = ({
   return (
     <Checkbox
       aria-label="Select row"
+      tabIndex={-1}
       checked={isSelected}
       onCheckedChange={(_, { event }) =>
         store.set((state) =>

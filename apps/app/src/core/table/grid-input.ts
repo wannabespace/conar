@@ -1,7 +1,8 @@
+import type { ScrollToCell } from '@tamery/table'
 import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { openContextMenuOn } from '~/components/app-context-menu'
@@ -14,6 +15,8 @@ const TYPING_KEYS = [
   ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].flatMap((key) => [key, `Shift+${key}`]),
   ...'0123456789-.',
 ] as Hotkey[]
+
+const TO_EDGE = Number.MAX_SAFE_INTEGER
 
 const positionOf = (event: MouseEvent): CellPosition | null => {
   const cell =
@@ -32,19 +35,17 @@ const isCheckbox = (event: MouseEvent) =>
 export const useGridHotkeys = ({
   canEdit,
   cursor,
-  onExitLeft,
-  onExitTop,
   onExtendRows,
   onToggleRows,
   scrollRef,
+  scrollToCell,
 }: {
   canEdit: boolean
   cursor: GridCursor
-  onExitLeft?: () => void
-  onExitTop?: () => void
   onExtendRows?: (direction: 'up' | 'down') => void
   onToggleRows?: (rowIndexes: number[]) => void
   scrollRef: RefObject<HTMLDivElement | null>
+  scrollToCell: RefObject<ScrollToCell | null>
 }) => {
   const hasCursor = useSubscription(cursor.store, {
     selector: (state) => state.cursor !== null,
@@ -52,15 +53,28 @@ export const useGridHotkeys = ({
   const isEditing = useSubscription(cursor.store, {
     selector: (state) => state.edit !== null,
   })
+  const hasBlock = useSubscription(cursor.store, {
+    selector: (state) => state.anchor !== null,
+  })
   const [gridFocused, setGridFocused] = useState(false)
   const ownsKeys = gridFocused && !isEditing
   const navigating = ownsKeys && hasCursor
 
   // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
   // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
+  const showCursor = useEffectEvent(() => {
+    if (!cursor.store.get().cursor) {
+      cursor.step(0, 0)
+    }
+  })
   useEffect(() => {
-    const track = () =>
-      setGridFocused(document.activeElement === scrollRef.current)
+    const track = () => {
+      const focused = document.activeElement === scrollRef.current
+      setGridFocused(focused)
+      if (focused) {
+        showCursor()
+      }
+    }
     document.addEventListener('focusin', track)
     document.addEventListener('focusout', track)
     return () => {
@@ -69,23 +83,38 @@ export const useGridHotkeys = ({
     }
   }, [scrollRef])
 
+  // A far edge is virtualized away, so the cursor's own glide finds no cell to scroll to.
+  const jumpToEdge = (down: number, right: number, extend?: boolean) => {
+    cursor.step(down * TO_EDGE, right * TO_EDGE, extend)
+    const at = cursor.store.get().cursor
+    if (at) {
+      scrollToCell.current?.(at.row, at.column)
+    }
+  }
+
   useHotkeys(
     [
       ...(
         [
-          ['ArrowUp', -1, 0, onExitTop],
-          ['ArrowDown', 1, 0, undefined],
-          ['ArrowLeft', 0, -1, onExitLeft],
-          ['ArrowRight', 0, 1, undefined],
+          ['ArrowUp', -1, 0],
+          ['ArrowDown', 1, 0],
+          ['ArrowLeft', 0, -1],
+          ['ArrowRight', 0, 1],
         ] as const
-      ).flatMap(([hotkey, down, right, exit]) => [
+      ).flatMap(([hotkey, down, right]) => [
         {
-          callback: (event: KeyboardEvent) => {
-            if (!cursor.step(down, right) && !event.repeat) {
-              exit?.()
-            }
-          },
+          callback: () => cursor.step(down, right),
           hotkey,
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right),
+          hotkey: `Mod+${hotkey}` as const,
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right, true),
+          hotkey: `Mod+Shift+${hotkey}` as const,
           options: { enabled: ownsKeys },
         },
         {
@@ -155,9 +184,17 @@ export const useGridHotkeys = ({
         options: { enabled: navigating },
       },
       {
-        callback: cursor.dismiss,
-        hotkey: 'Escape',
+        callback: () => {
+          cursor.step(TO_EDGE, TO_EDGE)
+          cursor.step(-TO_EDGE, -TO_EDGE, true)
+        },
+        hotkey: 'Mod+A',
         options: { enabled: navigating },
+      },
+      {
+        callback: cursor.collapse,
+        hotkey: 'Escape',
+        options: { enabled: navigating && hasBlock },
       },
     ],
     { target: scrollRef }

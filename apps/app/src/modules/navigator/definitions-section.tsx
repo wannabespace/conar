@@ -90,6 +90,7 @@ export const DefinitionsPanel = () => {
                     isActive={isActive}
                     render={
                       <Link
+                        tabIndex={-1}
                         to="/connection/$resourceId/$tabId"
                         params={{
                           resourceId: connectionResource.id,

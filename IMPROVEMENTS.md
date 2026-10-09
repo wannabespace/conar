@@ -92,7 +92,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Keyboard
 
-- **Arrows between panes.** Arrows move inside a surface (Navigator tree, tabs, grid, Schema pages), but going from one pane to the next still takes Tab or the Escape ladder: nothing goes from a tab down into its page, from the filter field back down into the grid, or from the Tables list across to the Schema panel (the grid's left and top edges do lead out, to the Navigator and the filter field). Toolbars (table, runner) and the Navigator footer are a Tab stop per button with no ←/→ roving.
+- **Toolbars as one Tab stop.** The table and runner toolbars and the Navigator footer are still a Tab stop per button; ←/→ roving would make each one stop like the tab strip.
+- **Keyboard column resize.** Header grips left the Tab order with the rest of the grid's inner controls, so a column's width is pointer-only; a Width… item in the column menu would give it a keyboard route.
 - **Query logger rows.** Every row is its own Tab stop with no arrow movement, and the detail pane sits after all rendered rows, so it is effectively unreachable. Give the list a cursor like the Schema pages (search-field or roving highlight).
 - **Visualizer off-screen tables.** `onlyRenderVisibleElements` drops tables outside the viewport from the DOM and there is no keyboard panning, so a keyboard user only reaches them through Zoom out/Arrange. The inspector also opens without focus and closes to `body`.
 - **Grid gaps.** Column reorder is drag-only; the cell editor's Set null/Default/Now buttons can never take focus (Tab leaves the cell); an edit whose cell is virtualised away leaves the grid deaf until it scrolls back.
