@@ -4,7 +4,7 @@ import {
   Layers01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
@@ -22,11 +22,7 @@ export const NavigatorSwitcher = () => {
   const isDefinitions = navigator === 'definitions'
 
   return (
-    <Button
-      variant="ghost-row"
-      size="sm"
-      // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-      className="h-7 w-full justify-start gap-2 rounded-md px-2"
+    <SidebarMenuButton
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
       onClick={() =>
         navigatorStore.set(isDefinitions ? 'tables' : 'definitions')
@@ -46,7 +42,7 @@ export const NavigatorSwitcher = () => {
               <HugeiconsIcon
                 icon={ArrowLeft01Icon}
                 strokeWidth={2}
-                className="text-muted-foreground size-4 shrink-0"
+                className="text-muted-foreground"
               />
               Tables
             </>
@@ -55,18 +51,18 @@ export const NavigatorSwitcher = () => {
               <HugeiconsIcon
                 icon={Layers01Icon}
                 strokeWidth={2}
-                className="text-muted-foreground size-4 shrink-0"
+                className="text-muted-foreground"
               />
               Schema
               <HugeiconsIcon
                 icon={ArrowRight01Icon}
                 strokeWidth={2}
-                className="text-muted-foreground/60 ml-auto size-3.5 shrink-0"
+                className="text-muted-foreground/60 ml-auto size-3.5!"
               />
             </>
           )}
         </motion.span>
       </AnimatePresence>
-    </Button>
+    </SidebarMenuButton>
   )
 }

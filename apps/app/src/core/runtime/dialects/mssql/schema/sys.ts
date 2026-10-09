@@ -16,6 +16,7 @@ export interface Sys {
   triggers: Triggers
   trigger_events: TriggerEvents
   objects: Objects
+  extended_properties: ExtendedProperties
   sql_modules: SqlModules
   security_policies: SecurityPolicies
   security_predicates: SecurityPredicates
@@ -235,6 +236,14 @@ interface Objects {
   type: string
   type_desc: string
   is_ms_shipped: boolean
+}
+
+interface ExtendedProperties {
+  class: number
+  major_id: number
+  minor_id: number
+  name: string
+  value: unknown
 }
 
 interface SqlModules {

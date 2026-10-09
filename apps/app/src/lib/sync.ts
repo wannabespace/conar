@@ -4,8 +4,9 @@ import type { PendingMutation, SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
+import { isUnauthorizedError } from '~/utils/error'
+
 import { database } from './database'
-import { isUnauthorizedError } from './error'
 import { posthog } from './posthog'
 
 export interface BaseTable {

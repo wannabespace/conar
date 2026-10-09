@@ -3,7 +3,7 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { appModules } from '~/lib/modules'
+import { schemaItems } from '~/core/tabs/kinds'
 
 export const navigatorOpenValue = createWebStorageValue({
   defaultValue: true,
@@ -39,7 +39,7 @@ export type NavigatorMode = 'tables' | 'definitions'
 export const getNavigatorStore = memoize(
   (_resourceId: string, activeTabId?: string) =>
     createStore<NavigatorMode>(
-      appModules.schemaItems.some((item) => item.tabId === activeTabId)
+      schemaItems.some((item) => item.tabId === activeTabId)
         ? 'definitions'
         : 'tables'
     ),

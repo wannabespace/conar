@@ -10,8 +10,9 @@ import { isConnectionError } from '@tamery/shared/connections'
 import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { memoize } from 'memoza'
 
+import { handleError } from '~/utils/error'
+
 import { bearerToken } from './auth'
-import { handleError } from './error'
 import { apiUrl, proxyUrl } from './urls'
 
 export interface AppClientContext {

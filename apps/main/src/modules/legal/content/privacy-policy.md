@@ -69,7 +69,7 @@ We implement reasonable security measures, but no system is fully secure. **We d
 - **Update**: Modify your profile at any time
 - **Delete**: Permanently delete your account and all associated data
 - **Remove connections**: Delete individual connection entries
-- **Opt out**: Disable analytics tracking
+- **Opt out**: Disable analytics tracking in the app under **Settings → Privacy**
 - **Password sync**: Control whether connection passwords are synced to cloud
 
 ## 9. Data Retention

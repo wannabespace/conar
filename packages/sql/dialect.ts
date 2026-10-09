@@ -144,6 +144,8 @@ export interface DialectSpec {
   foldsNames: boolean
   atVariables: boolean
   goBatches: boolean
+  /** A reserved command word starts a new statement with no `;` before it (T-SQL), so `SELECT 1 SET ROWCOUNT 1` is two statements. */
+  separatorFreeStatements: boolean
   /** `BEGIN … COMMIT` really runs as a transaction; ClickHouse's driver only fakes commit and rollback. */
   transactions: boolean
   functions: ReadonlySet<string>
@@ -165,6 +167,7 @@ const spec = (
   goBatches: false,
   hashComments: false,
   identifierQuotes: ['"'],
+  separatorFreeStatements: false,
   transactions: true,
   ...overrides,
   functions: new Set([...COMMON_FUNCTIONS, ...(overrides.functions ?? [])]),
@@ -270,6 +273,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'UNPIVOT',
       'WHILE',
     ],
+    separatorFreeStatements: true,
     types: [
       'BIT',
       'DATETIME',

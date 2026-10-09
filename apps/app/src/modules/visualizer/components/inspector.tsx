@@ -17,6 +17,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
+import type { ComponentProps } from 'react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { indexesType } from '~/core/queries/indexes/list'
@@ -235,7 +236,7 @@ export const InspectorPane = ({
   onClose,
   table,
   ...definitions
-}: Omit<Parameters<typeof Inspector>[0], 'table'> & {
+}: Omit<ComponentProps<typeof Inspector>, 'table'> & {
   table: DiagramTable | null
 }) => (
   <AnimatePresence initial={false}>

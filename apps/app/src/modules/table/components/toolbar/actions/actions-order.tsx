@@ -32,7 +32,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { plural } from '~/lib/plural'
+import { plural } from '~/utils/plural'
 
 import { isSortable } from '../../../lib/column-menu'
 import { useTableColumnsContext } from '../../../lib/columns'

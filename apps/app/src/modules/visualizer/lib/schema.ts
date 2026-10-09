@@ -1,3 +1,4 @@
+import type { TableType } from '~/core/catalog/table-type'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import type { indexesType } from '~/core/queries/indexes/list'
 import type { policyType } from '~/core/queries/policies/list'
@@ -11,8 +12,6 @@ import type {
 import type { triggersType } from '~/core/queries/triggers/list'
 
 import type { DiagramDraft } from './statements'
-
-export type TableKind = 'table' | 'view' | 'materialized view'
 
 export interface DiagramColumn {
   // Original name: the handle id and the key every draft on it carries.
@@ -38,7 +37,7 @@ export interface DiagramTable {
   // Original name: the key every draft on it carries.
   table: string
   name: string
-  kind: TableKind
+  kind: TableType
   columns: DiagramColumn[]
   counts: { indexes: number; policies: number; triggers: number }
   state?: DraftState
@@ -68,6 +67,7 @@ const draftColumn = (column: NewColumn): DiagramColumn => ({
   original: {
     attributes: '',
     collation: null,
+    comment: null,
     nullable: column.nullable,
     type: column.type,
   },
@@ -111,7 +111,7 @@ export const buildDiagram = ({
   indexes: (typeof indexesType.infer)[]
   policies: (typeof policyType.infer)[]
   schema: string
-  tables: { schema: string; table: string; type: TableKind }[]
+  tables: { schema: string; table: string; type: TableType }[]
   triggers: (typeof triggersType.infer)[]
 }): Diagram => {
   const inSchema = <T extends { schema: string }>(items: T[]) =>

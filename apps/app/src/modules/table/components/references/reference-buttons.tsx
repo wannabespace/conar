@@ -4,6 +4,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { silently } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
@@ -14,8 +15,8 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import type { Column } from '~/core/table/cell/utils'
-import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
+import { plural } from '~/utils/plural'
 
 import type { Hop } from './hops'
 import { followReference } from './hops'
@@ -55,8 +56,10 @@ const ReferenceTrigger = ({
             onDoubleClick={(event) => event.stopPropagation()}
             onPointerEnter={() => {
               if (hop.kind === 'rows') {
-                queryClient.prefetchInfiniteQuery(
-                  matchingRowsQueryOptions({ connectionResource, ...hop })
+                void silently(() =>
+                  queryClient.infiniteQuery(
+                    matchingRowsQueryOptions({ connectionResource, ...hop })
+                  )
                 )
               }
             }}

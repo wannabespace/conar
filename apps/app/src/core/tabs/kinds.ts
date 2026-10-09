@@ -1,9 +1,63 @@
-import { appModules } from '~/lib/modules'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { ConnectionTab } from './types'
+import {
+  definitionsSchemaItem,
+  definitionsTab,
+} from '~/modules/definitions/lib/tab'
+import { runnerTab } from '~/modules/runner/lib/tab'
+import { tableTab } from '~/modules/table/lib/tab'
+import {
+  visualizerSchemaItem,
+  visualizerTab,
+} from '~/modules/visualizer/lib/tab'
+
+import type { ConnectionTab, TabKind } from './types'
+
+const TAB_KINDS: TabKind[] = [
+  definitionsTab,
+  runnerTab,
+  tableTab,
+  visualizerTab,
+]
+
+const SCHEMA_GROUPS = [
+  { items: [visualizerSchemaItem], label: 'Overview' },
+  {
+    items: [
+      definitionsSchemaItem('indexes'),
+      definitionsSchemaItem('constraints'),
+    ],
+    label: 'Structure',
+  },
+  { items: [definitionsSchemaItem('enums')], label: 'Types' },
+  {
+    items: [
+      definitionsSchemaItem('functions'),
+      definitionsSchemaItem('triggers'),
+    ],
+    label: 'Logic',
+  },
+  {
+    items: [
+      definitionsSchemaItem('policies'),
+      definitionsSchemaItem('privileges'),
+    ],
+    label: 'Security',
+  },
+]
+
+export const schemaItems = SCHEMA_GROUPS.flatMap((group) => group.items)
+
+export const schemaGroups = (connectionType: ConnectionType) =>
+  SCHEMA_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter(
+      (item) => item.available?.(connectionType) ?? true
+    ),
+  })).filter((group) => group.items.length > 0)
 
 export const resolveTab = (id: string) => {
-  for (const kind of appModules.tabs) {
+  for (const kind of TAB_KINDS) {
     const params = kind.match(id)
 
     if (params !== null) {

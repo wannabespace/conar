@@ -12,7 +12,7 @@ import type { ColumnReference } from '~/core/table/use-reference-targets'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
-import { openNewWindow } from '~/lib/new-window'
+import { openNewWindow } from '~/utils/new-window'
 
 import type { DiagramActions } from './context'
 import type { diagramDrafts } from './drafts'

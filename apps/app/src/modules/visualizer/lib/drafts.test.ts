@@ -8,6 +8,7 @@ const users = { schema: 's', table: 'users' }
 const original = {
   attributes: '',
   collation: null,
+  comment: null,
   nullable: true,
   type: 'integer',
 }

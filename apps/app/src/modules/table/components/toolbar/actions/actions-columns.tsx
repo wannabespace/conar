@@ -29,7 +29,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
-import { plural } from '~/lib/plural'
+import { plural } from '~/utils/plural'
 
 import { useTableColumnsContext } from '../../../lib/columns'
 import { orderColumns, useTablePageStore } from '../../../lib/store'

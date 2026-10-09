@@ -206,7 +206,15 @@ export const TableDialog = <Table extends TableTarget>({
   }
 
   return (
-    <Dialog open={request !== null} onOpenChange={onOpenChange}>
+    <Dialog
+      open={request !== null}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setShown(null)
+        }
+      }}
+    >
       <DialogContent>
         {shown && (
           <TableForm

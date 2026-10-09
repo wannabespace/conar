@@ -17,6 +17,7 @@ import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
+import * as usage from './usage'
 import * as webhooks from './webhooks'
 import * as workspaces from './workspaces'
 
@@ -34,6 +35,7 @@ export const router = {
   queries,
   releases,
   repo,
+  usage,
   webhooks,
   workspaces,
 }

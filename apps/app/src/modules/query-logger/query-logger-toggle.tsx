@@ -1,32 +1,22 @@
 import { File01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
-import { useParams } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
-import { posthog } from '~/lib/posthog'
+import { loggerOpen, toggleLogger } from './logger-open'
 
-import { loggerOpen } from './logger-open'
+const { useParams } = getRouteApi('/_protected/connection/$resourceId')
 
-const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
-  const open = loggerOpen(resourceId)
-  const loggerOpened = useSubscription(open)
-  const toggleLogger = () => {
-    open.set((opened) => !opened)
-    posthog.capture('query_logger_toggled')
-  }
-
-  useHotkey('Mod+J', (e) => {
-    e.preventDefault()
-    toggleLogger()
-  })
+export const QueryLoggerToggle = () => {
+  const { resourceId } = useParams()
+  const loggerOpened = useSubscription(loggerOpen(resourceId))
 
   return (
     <Tooltip
@@ -34,24 +24,20 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
     >
       <TooltipTrigger
         render={
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            aria-label="Query logger"
+          <SidebarMenuButton
             aria-pressed={loggerOpened}
-            onClick={toggleLogger}
+            onClick={() => toggleLogger(resourceId)}
           />
         }
       >
-        <HugeiconsIcon icon={File01Icon} strokeWidth={2} className="size-4" />
+        <HugeiconsIcon
+          icon={File01Icon}
+          strokeWidth={2}
+          className="text-muted-foreground"
+        />
+        Query logger
       </TooltipTrigger>
-      <TooltipContent side="left">Query logger</TooltipContent>
+      <TooltipContent side="right">Toggle query logger</TooltipContent>
     </Tooltip>
   )
-}
-
-export const QueryLoggerToggle = () => {
-  const { resourceId } = useParams({ strict: false })
-
-  return resourceId ? <QueryLoggerButton resourceId={resourceId} /> : null
 }

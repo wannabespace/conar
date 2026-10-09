@@ -36,6 +36,7 @@ interface Tables {
   create_table_query: string
   engine: string
   is_temporary: number
+  comment: string
 }
 
 interface One {
@@ -60,6 +61,7 @@ interface Columns {
   default_kind: string
   default_expression: string
   is_in_primary_key: number
+  comment: string
 }
 
 interface Parts {

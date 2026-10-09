@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { PaneEmpty } from '~/components/pane-empty'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { resolveTab } from '~/core/tabs/kinds'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { RecentTables } from '~/modules/table/components/recent-tables'
 
 const EmptyPane = () => {
   const router = useRouter()
@@ -24,9 +24,7 @@ const EmptyPane = () => {
       title="Nothing Open"
       description="Choose a table from the sidebar, or open a new query to get started."
     >
-      {workspaceModules.emptyPane.map(({ Component }, index) => (
-        <Component key={index} />
-      ))}
+      <RecentTables />
     </PaneEmpty>
   )
 }

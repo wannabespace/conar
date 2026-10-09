@@ -6,9 +6,18 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Ranked
 
-1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff.
-2. **`tamery mcp` in the CLI.** Lets Claude Code, Cursor and other agents use saved connections without a plaintext connection string in their config. Per-connection policy: read-only, row limit, masked columns. Builds on API keys and `cli query`.
-3. **Impact preview before a destructive run.** For `UPDATE`/`DELETE`: run inside a transaction, show the affected row count and a sample of changed rows, then roll back. Required on connections marked as prod. Same mechanism gates the agent's writes.
+1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff. Tools are schema-only in `packages/ai` (no `execute`) and run in the renderer, where connections live: MCP's implementations (`modules/mcp/describe-table.ts`, the `tables`/`query` methods in `mcp-source.ts`, `fetchForAgent`) move to `core/agent/` taking a resolved `connectionResource`, with `modules/mcp` and `modules/chat` each a thin adapter (target resolution, error hints, events).
+2. **MCP beyond the desktop server.**
+   - `tamery mcp` in the CLI for web-only users (API keys + `cli query`).
+   - More per-connection policy: row limit, masked columns.
+   - A server-side row cap: on Postgres, MySQL and SQL Server the 200-row cap bounds memory but not transfer — the server still sends every row over the app's only pooled connection. SQL Server's `SET ROWCOUNT` would also cap `execute`'s writes and MySQL's `SQL_SELECT_LIMIT` is session state, so Postgres needs a cursor and the others a reset that cannot be skipped.
+   - With no signed-in window open, main could open one instead of answering "Open Tamery and sign in first.".
+   - Tools that act on Tamery itself — rename a connection, open a table or query in a tab for the user. Asked to rename a connection today, an agent has no tool for it.
+   - A Settings switch (or an approval) for agent-created connections: today nothing stops an agent adding one — even one steered by text in the rows it read — and each attempt test-connects to whatever host and port it names; the connection always starts at Ask before writing.
+   - `query` is read-only and always rolled back, so it could retry once on a dropped connection like typed catalog reads do; today the first query after a server closes an idle connection fails with "Connection lost".
+   - Row estimates beyond Postgres and MySQL: SQL Server's `SHOWPLAN_XML` `EstimateRows`, ClickHouse's `EXPLAIN ESTIMATE` for the `SELECT` a mutation filters on.
+   - A token per client: every client shares one token, so **Connected clients** trusts the name each reports and none can be cut off alone. Per-client tokens make the list trustworthy and revocable, at the cost of a different config per client.
+3. **Impact preview before a destructive run.** The runner, and MCP's Ask before writing, could try an `UPDATE`/`DELETE` in a transaction that rolls back, show the changed rows, and require it on connections marked as prod. Only an allowlist is safe to try: one plain DML statement with no transaction-control, `INTO`, `COPY` or procedure word, since a SQL Server batch can `COMMIT` mid-statement and some statements act outside the transaction.
 4. **Undo for applied changes.** Store inverse statements when a draft is applied; offer "Undo last apply" in the query logger.
 5. **Schema notes (semantic layer).** Per-table and per-column descriptions ("status 3 = refunded", "amounts in cents"), AI-drafted, user-edited, synced per workspace. Added to every AI prompt so filters, completion and chat all get more accurate.
 6. **Explain plan plus "why is this slow".** Visual plan for slow queries (already detected); AI suggests an index that lands as a visualizer draft.
@@ -59,9 +68,24 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Let password accounts use codes.** Nothing verifies the email of a password sign-up, and Better Auth deletes an unverified account's password, OAuth links and sessions on its first code sign-in, so the API refuses codes for those accounts. Verifying the email at sign-up (and once for existing accounts, e.g. on next password sign-in) would let every account use a code.
 - **Track web auth actions.** `apps/main` has no PostHog, so sign-in, code, two-factor and password-reset actions on the web are invisible; only the desktop's `signed_in`/`signed_up` after the exchange is captured.
 
+## Connections
+
+- **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
+
+## Settings
+
+- **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
+- **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
+- **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
+- **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
+- **Ask for browser notification permission from a gesture.** The web build asks on the first notification, which Safari ignores outside a user gesture and which reaches every other browser while the user is away. A Settings → Notifications switch (or the first chat send) could ask instead, and let the user turn notifications off.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.
+- **Name the missing AI key in dev.** `OPENROUTER_API_KEY` and `MISTRAL_API_KEY` are dev-optional in `apps/api/env.ts`, so a worktree whose `.env` predates them boots fine and every AI call answers an opaque `INTERNAL_SERVER_ERROR`. A startup warning listing the unset AI keys would point straight at the `.env`.
+- **Close the kit sidebar's gaps.** Navigator call sites still restyle `@tamery/ui` sidebar parts: five pass `text-muted-foreground` to a `SidebarMenuButton` icon, `schema-row.tsx` turns `SidebarGroupLabel` into a hoverable row, and two use `size-3.5!` against the button's `[&_svg]:size-4`. A muted-icon default, an interactive group-label variant and a small trailing-icon size would move those into the kit (`tamery-ui` rule 11). Its `variant` is a `variant === 'muted' &&` switch inside `sidebar.tsx`; with those additions it becomes a `cva` in `sidebar.utils.ts` like every other kit variant.
+- **Track the navigator toggle.** ⌘B, the tab-bar button and the command toggle the navigator with no PostHog event, while the query-logger and chat toggles send one. A `toggleNavigator` beside `navigatorOpenValue` could fire it from all three.
 
 ## AI
 

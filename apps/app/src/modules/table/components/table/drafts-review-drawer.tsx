@@ -16,7 +16,7 @@ import {
 } from '~/core/table/session'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
-import { plural } from '~/lib/plural'
+import { plural } from '~/utils/plural'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { tableGridRef } from '../../lib/grid-ref'

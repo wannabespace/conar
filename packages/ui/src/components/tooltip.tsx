@@ -19,6 +19,7 @@ const noShortcut = { isGlyphOnly: false, shortcut: null }
 
 const ShortcutContext = createContext<{
   isGlyphOnly: boolean
+  setTrigger?: (trigger: HTMLElement | null) => void
   shortcut: ReactNode
 }>(noShortcut)
 
@@ -30,7 +31,8 @@ const ShortcutTooltip = ({
   ...props
 }: TooltipPrimitive.Root.Props & { shortcut: ReactNode }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const isRevealed = useShortcutReveal()
+  const [trigger, setTrigger] = useState<HTMLElement | null>(null)
+  const isRevealed = useShortcutReveal(trigger)
   // A hint ⌘ opened stays glyph-only through its exit animation, or releasing ⌘ flashes the full label.
   const [isClosingReveal, setIsClosingReveal] = useState(false)
   const isOpenByReveal = isRevealed && !isHovered
@@ -42,6 +44,7 @@ const ShortcutTooltip = ({
     <ShortcutContext
       value={{
         isGlyphOnly: isOpenByReveal || (isClosingReveal && !isHovered),
+        setTrigger,
         shortcut,
       }}
     >
@@ -83,9 +86,16 @@ const Tooltip = ({
     </ShortcutContext>
   )
 
-const TooltipTrigger = ({ ...props }: TooltipPrimitive.Trigger.Props) => (
-  <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
-)
+const TooltipTrigger = (props: TooltipPrimitive.Trigger.Props) => {
+  const { setTrigger } = use(ShortcutContext)
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      ref={setTrigger}
+      {...props}
+    />
+  )
+}
 
 const TooltipContent = ({
   className,

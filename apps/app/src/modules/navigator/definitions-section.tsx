@@ -3,21 +3,19 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { cn } from '@tamery/ui/lib/utils'
-import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useState } from 'react'
-
-import { Link } from '~/components/link'
-import { openTab } from '~/core/tabs/actions'
-import { appModules } from '~/lib/modules'
-
 import {
   SidebarContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from './primitives'
+} from '@tamery/ui/components/sidebar'
+import { getRouteApi, useParams } from '@tanstack/react-router'
+import { useState } from 'react'
+
+import { Link } from '~/components/link'
+import { openTab } from '~/core/tabs/actions'
+import { schemaGroups } from '~/core/tabs/kinds'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -26,8 +24,7 @@ export const DefinitionsPanel = () => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
 
-  const filtered = appModules
-    .schemaGroups(connection.type)
+  const filtered = schemaGroups(connection.type)
     .map((group) => ({
       ...group,
       items: group.items.filter(({ label }) => matchesSearch(search, label)),
@@ -63,9 +60,7 @@ export const DefinitionsPanel = () => {
         )}
         {filtered.map((group) => (
           <SidebarMenu key={group.label}>
-            <SidebarGroupLabel className="text-muted-foreground font-row h-6 px-2 text-xs">
-              {group.label}
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             {group.items.map(({ icon, label, tabId }) => {
               const isActive = activeTabId === tabId
 
@@ -93,12 +88,7 @@ export const DefinitionsPanel = () => {
                     <HugeiconsIcon
                       icon={icon}
                       strokeWidth={2}
-                      className={cn(
-                        'size-4 shrink-0',
-                        isActive
-                          ? 'text-primary-foreground'
-                          : 'text-muted-foreground'
-                      )}
+                      className="text-muted-foreground"
                     />
                     <span className="truncate">
                       <HighlightText text={label} match={search} />

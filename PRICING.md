@@ -20,7 +20,7 @@ Why this model (and not feature gating):
 | --- | --- | --- |
 | Connections | 3 | Unlimited |
 | Workspaces | 1 (personal, auto-created) | Unlimited |
-| AI requests | Limited per month, or unlimited with BYOK | Unlimited filters; included credits, then bought credits, for the rest |
+| AI requests | Limited per week, or unlimited with BYOK | Unlimited filters; included credits, then bought credits, for the rest |
 | Cloud sync | Included (within connection limit) | Included |
 | Chats & query history | Limited retention | Unlimited |
 
@@ -76,22 +76,22 @@ Commitments we don't walk back — churning these breaks trust:
 
 Where today's wiring contradicts the framework. Read the routers for the current state; this is the direction, in priority order, each naming the principle it serves.
 
-1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one monthly counter (`FREE_AI_USAGE_MONTHLY_LIMIT`, Redis `ai:usage:{userId}:{yyyy-MM}`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI filters per month free, unlimited on Pro; other AI spends Pro credits, buy more when they run out."
+1. **One pooled AI quota instead of a hard paywall.** Every AI endpoint shares one weekly counter (a `FREE_WEEKLY_LIMITS` entry, counted through `apps/api/lib/usage.ts`) behind `optionalSubscriptionMiddleware`; a subscription skips it. A hard gate hides the product's best conversion surface from free users, and per-feature counters produce a plan nobody can describe. The story has to fit one sentence: "N AI filters a week free, unlimited on Pro; other AI spends Pro credits, buy more when they run out."
 2. **Gate generation, never chat persistence.** Storing chat rows costs nothing, and a lapsed subscriber must not lose the ability to edit or delete their own history. Chats and messages mutations belong on `authMiddleware`; the model call is the enforcement point. Retention, if ever needed, is a quantity limit.
 3. **Implement the connection limit before tiers launch** — it is the model's primary quantity lever. Count server-side in `connections/create`, block only new creates, and ship the UI mirror in the same release: a silent server rejection reads as a bug, not a plan.
 4. **BYOK is the free tier's AI escape hatch.** A user-stored provider key (per-user secret in Infisical, same path as encryption secrets) routes AI calls to it and skips the quota entirely — which makes the free story honest, serves privacy-sensitive users, and removes token cost as an argument for hard gates.
-5. **One limit-error contract.** Every limit rejection carries the typed `{ max, remaining, resetAt }` shape, so clients share one upgrade-prompt component instead of per-feature paywall screens.
+5. **One limit contract.** Every limit, metered or quantity, reports through `usage.get` as a `{ max, used, resetAt }` quota, so clients share one upgrade-prompt component instead of per-feature paywall screens.
 6. **Workspace gating stays as it is** — one free personal workspace is a quantity limit. When members and invitations ship, resist moving _collaboration_ under Pro: multi-player belongs to a per-seat Team tier and Pro stays a single-player scale upgrade. Deciding this now avoids re-gating workspaces twice.
 
 ## Implementation rules
 
 How to wire a gate once the framework has decided where a feature lands:
 
-1. **Gate at the API boundary, never only in the client.** The desktop app, web app, and CLI all speak to the same oRPC routers; a client-side check is a suggestion, not a limit. UI may _mirror_ the limit (disable buttons, show upgrade prompts) but the router enforces it.
-2. **Metered features copy the `ai/filters` pattern** (`apps/api/orpc/routers/ai/v2/filters.ts`): `permissionsMiddleware`, Redis counter keyed `ai:usage:{userId}:{feature}:{yyyy-MM}` with expiry at end of month, skip the counter when `context.permissions.check('ai.filter.unlimited')` passes.
-3. **Limit errors carry the numbers.** Follow the `ai/filters` FORBIDDEN error shape — `{ max, remaining, resetAt }` in `errors({...})` typed data — so every client can render "37 of 50 left, resets March 1" instead of a bare rejection. Never return a plain string error for a limit.
-4. **Limit constants live in `packages/shared/constants.ts`**, named `FREE_<FEATURE>_..._LIMIT` (see `FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT`). Shared package so clients render the same numbers the server enforces — no hardcoded copies in UI code.
-5. **Boolean gates use `permix.checkMiddleware('<entity>.<action>')` after `permissionsMiddleware`; metered ones check `context.permissions` inline.** Reserve the hard check for things that are structurally Pro/Team (extra workspaces, future member management), not for capping usage.
+1. **Gate at the API boundary, never only in the client.** The desktop app, web app, and CLI all speak to the same oRPC routers; a client-side check is a suggestion, not a limit. UI may _mirror_ the limit (disable buttons, show upgrade prompts) but the router enforces it. The one exception is work the client runs itself (MCP queries against the user's own database): the API can only count it, so the client checks `usage.get` before a run and reports it through `usage.record`, which never refuses, and an unreachable API fails open. Meter that way only what costs us nothing when bypassed.
+2. **Metered features copy the `ai/filters` pattern** (`apps/api/orpc/routers/ai/v2/filters.ts`): `permissionsMiddleware`, then `usage.get` before the work and `usage.record` after it (`apps/api/lib/usage.ts`, Redis `usage:{userId}:{feature}:{resetsAt}` expiring when the period ends). That file maps each feature to its `unlimited` permission; when it passes, both return `null` and nothing is counted. Clients read every quota from the one `usage.get` endpoint; the `usage.record` endpoint exists only for runs the client performs itself (rule 1).
+3. **Clients read the numbers from `usage.get`, not from the error.** The quota it returns (`{ max, used, resetAt }`) lets every client render "37 of 50 left, resets March 1" and the upgrade prompt before the call; refresh it after a metered call. A refusal is a declared `FORBIDDEN` with an upgrade message and no data — never a per-feature error payload.
+4. **Limits live in `FREE_WEEKLY_LIMITS` (`packages/shared/usage.ts`)**, one weekly max per metered feature, all resetting Monday 00:00 UTC. Shared package so clients render the same numbers the server enforces — no hardcoded copies in UI code.
+5. **Boolean gates use `permix.checkMiddleware('<entity>.<action>')` after `permissionsMiddleware`; metered ones go through `usage` (rule 2).** Reserve the hard check for things that are structurally Pro/Team (extra workspaces, future member management), not for capping usage.
 6. **Quantity limits (connections, workspaces) are enforced on create**, counting server-side rows — never trust a client-reported count. Existing over-limit data stays readable when a subscription lapses; the limit blocks _new_ creates only. Downgrade must never lock users out of their data.
 7. **Grandfathering by app version already has a pattern**: permix's `onForbidden` (`apps/api/orpc/index.ts`) branches its message on `LATEST_VERSION_BEFORE_SUBSCRIPTION`. When a previously free surface gains a gate, keep the version-aware messaging so old clients get an actionable error.
 

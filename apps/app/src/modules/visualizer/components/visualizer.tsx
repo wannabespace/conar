@@ -6,6 +6,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { defaultSchemaOf } from '~/core/catalog/capabilities'
+import type { TableType } from '~/core/catalog/table-type'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { resourceIndexesQueryOptions } from '~/core/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/core/queries/policies/list'
@@ -23,7 +24,7 @@ import { DiagramContext, diagramViewStore, gatesOf } from '../lib/context'
 import { diagramDrafts, diagramDraftsStore } from '../lib/drafts'
 import { usePositions } from '../lib/layout'
 import { visualizerLayout, visualizerStore } from '../lib/positions'
-import type { DiagramColumn, DiagramTable, TableKind } from '../lib/schema'
+import type { DiagramColumn, DiagramTable } from '../lib/schema'
 import { buildDiagram, tableNodeId } from '../lib/schema'
 import { Canvas, fitViewOptions } from './canvas'
 import { InspectorPane } from './inspector'
@@ -41,7 +42,7 @@ export const Visualizer = ({
 }: {
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
-  tables: { schema: string; table: string; type: TableKind }[]
+  tables: { schema: string; table: string; type: TableType }[]
 }) => {
   const { connection, connectionResource } = useRouteContext()
   const flow = useReactFlow()

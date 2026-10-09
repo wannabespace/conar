@@ -14,7 +14,7 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
-import { Fragment, useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { getConnectionResourceStore } from '~/core/connection/stores'
@@ -22,7 +22,8 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { removeTab, setActiveTab, updateTabs } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
 import { resolveTab, tabLabels } from '~/core/tabs/kinds'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { ChatToggle } from '~/modules/chat/chat-toggle'
+import { navigatorOpenValue } from '~/modules/navigator/stores'
 
 import { HistoryNav } from './history-nav'
 import { NewTabMenu } from './new-tab-menu'
@@ -42,9 +43,6 @@ export const TabBar = ({ className }: { className?: string }) => {
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: (state) => state.tabs })
-  const leftPanel = workspaceModules.panelIn('left')
-  const toggleLeftPanel = () =>
-    leftPanel?.open(connectionResource.id).set((open) => !open)
 
   const goToTab = (tabId: string | null) => {
     if (!tabId) {
@@ -183,30 +181,26 @@ export const TabBar = ({ className }: { className?: string }) => {
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
     >
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
-        {leftPanel && (
-          <>
-            <Tooltip
-              shortcut={
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
-              }
-            >
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost-muted"
-                    size="icon-xs"
-                    aria-label="Toggle sidebar"
-                    onClick={toggleLeftPanel}
-                  />
-                }
-              >
-                <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
-            </Tooltip>
-            <Separator orientation="vertical" className="mx-0.5 h-4!" />
-          </>
-        )}
+        <Tooltip
+          shortcut={
+            <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
+          }
+        >
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost-muted"
+                size="icon-xs"
+                aria-label="Toggle sidebar"
+                onClick={() => navigatorOpenValue.set((open) => !open)}
+              />
+            }
+          >
+            <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
+        </Tooltip>
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
         <HistoryNav />
         <TabRefresh tabId={activeTabId} />
       </div>
@@ -262,12 +256,8 @@ export const TabBar = ({ className }: { className?: string }) => {
           connectionResource={connectionResource}
           tablesAndSchemas={tablesAndSchemas}
         />
-        {workspaceModules.tabBarEnd.map(({ Component }, index) => (
-          <Fragment key={index}>
-            <Separator orientation="vertical" className="mx-0.5 h-4!" />
-            <Component resourceId={connectionResource.id} />
-          </Fragment>
-        ))}
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
+        <ChatToggle resourceId={connectionResource.id} />
       </div>
     </div>
   )

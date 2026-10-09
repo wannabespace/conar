@@ -6,7 +6,7 @@ import { createTableQuery } from '~/core/queries/tables/create'
 import { dropTableQuery } from '~/core/queries/tables/drop'
 import { dropColumnQuery } from '~/core/queries/tables/drop-column'
 import { renameTableQuery } from '~/core/queries/tables/rename'
-import { renameColumnQuery } from '~/core/queries/tables/rename-columns'
+import { renameColumnQuery } from '~/core/queries/tables/rename-column'
 
 import type { DiagramDraft } from './statements'
 

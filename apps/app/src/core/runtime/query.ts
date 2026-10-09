@@ -14,7 +14,6 @@ import { getConnectionStringToShow } from '~/core/connection/utils'
 
 import { dialects } from './dialects'
 import type { DialectOptions } from './dialects/driver'
-import { createDialectProvider } from './dialects/driver'
 import { logQuery } from './log'
 import { watchForSlowQuery } from './slow-queries'
 
@@ -64,6 +63,7 @@ export interface QueryParams {
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
+  signal?: AbortSignal
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -74,13 +74,6 @@ export interface QueryParams {
   }) => void
 }
 
-export const cancelQuery = (queryParams: QueryParams, queryId: string) =>
-  createDialectProvider(queryParams.type, {
-    connectionId: queryParams.connectionId,
-    connectionString: queryParams.connectionString,
-    resourceId: queryParams.resourceId,
-  }).cancel(queryId)
-
 const dialectOf = (queryParams: QueryParams) =>
   dialects[queryParams.type]({
     connectionId: queryParams.connectionId,
@@ -88,6 +81,7 @@ const dialectOf = (queryParams: QueryParams) =>
     log: queryParams.log,
     resourceId: queryParams.resourceId,
     resultSets: queryParams.resultSets,
+    signal: queryParams.signal,
   })
 
 export const transaction = (queryParams: QueryParams) =>

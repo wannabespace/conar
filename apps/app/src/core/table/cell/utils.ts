@@ -5,7 +5,10 @@ import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
 
 export interface Column extends Partial<
-  Pick<typeof columnType.infer, 'attributes' | 'collation' | 'declaredType'>
+  Pick<
+    typeof columnType.infer,
+    'attributes' | 'collation' | 'comment' | 'declaredType'
+  >
 > {
   id: string
   uiType: 'select' | 'list' | 'boolean' | 'date' | 'time' | 'datetime' | 'raw'
