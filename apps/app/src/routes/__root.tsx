@@ -40,8 +40,13 @@ const RootDocument = () => {
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
   useHotkey('Mod+.', () => {
-    if (document.activeElement && document.activeElement !== document.body) {
-      openContextMenuOn(document.activeElement)
+    const focused = document.activeElement
+    const activeId = focused?.getAttribute('aria-activedescendant')
+    const target = activeId
+      ? document.querySelector(`#${CSS.escape(activeId)}`)
+      : focused
+    if (target && target !== document.body) {
+      openContextMenuOn(target)
     }
   })
 

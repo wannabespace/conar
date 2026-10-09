@@ -76,7 +76,7 @@ export const Tab = ({
   const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
-  const [renameInput, setRenameInput] = useState<HTMLInputElement | null>(null)
+  const renameRef = useRef<HTMLInputElement>(null)
   const resolved = resolveTab(tab.id)
   const isPreview = !!tab.preview
   const isRenaming = draft !== null
@@ -111,23 +111,21 @@ export const Tab = ({
   }
 
   useHotkeys(
-    renameInput
-      ? [
-          {
-            callback: (event) => {
-              if (!event.isComposing) {
-                finishRename(commitRename)
-              }
-            },
-            hotkey: 'Enter',
-          },
-          {
-            callback: () => finishRename(() => setDraft(null)),
-            hotkey: 'Escape',
-          },
-        ]
-      : [],
-    { target: renameInput }
+    [
+      {
+        callback: (event) => {
+          if (!event.isComposing) {
+            finishRename(commitRename)
+          }
+        },
+        hotkey: 'Enter',
+      },
+      {
+        callback: () => finishRename(() => setDraft(null)),
+        hotkey: 'Escape',
+      },
+    ],
+    { target: renameRef }
   )
 
   const items: AppMenuNode[] = [
@@ -239,7 +237,7 @@ export const Tab = ({
         <div data-mask className={tabClasses}>
           {icon}
           <input
-            ref={setRenameInput}
+            ref={renameRef}
             autoFocus
             aria-label="Tab name"
             value={draft ?? ''}

@@ -12,26 +12,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import type { ComponentProps, RefObject } from 'react'
 import { createContext, use, useRef } from 'react'
 
-import {
-  AppContextMenu,
-  openContextMenuOn,
-} from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
+import type { AppMenuItem } from '~/components/app-menu'
 
 // An action can unmount its own row, so focus returns to the search through a ref the row does not own.
 const SearchRefContext = createContext<RefObject<HTMLInputElement | null>>({
   current: null,
 })
-
-export interface RowAction {
-  destructive?: boolean
-  icon: IconSvgElement
-  label: string
-  onSelect: () => void
-}
 
 export const PopoverCommand = ({
   children,
@@ -41,19 +31,6 @@ export const PopoverCommand = ({
   searchPlaceholder: string
 }) => {
   const searchRef = useRef<HTMLInputElement>(null)
-
-  useHotkey(
-    'Mod+.',
-    () => {
-      const item = searchRef.current
-        ?.closest('[cmdk-root]')
-        ?.querySelector('[cmdk-item][data-selected="true"]')
-      if (item) {
-        openContextMenuOn(item)
-      }
-    },
-    { target: searchRef }
-  )
 
   return (
     <Command loop>
@@ -82,26 +59,29 @@ export const ActionItem = ({
   actions,
   children,
   ...props
-}: ComponentProps<typeof CommandItem> & { actions: RowAction[] }) => {
+}: ComponentProps<typeof CommandItem> & {
+  actions: (AppMenuItem & { icon: IconSvgElement })[]
+}) => {
   const searchRef = use(SearchRefContext)
 
   return (
     <AppContextMenu
-      items={actions.map(({ destructive, ...action }) => ({
-        ...action,
-        variant: destructive ? 'destructive' : 'default',
-      }))}
+      items={actions}
       contentProps={{ finalFocus: () => searchRef.current?.focus() }}
       render={<CommandItem {...props} />}
     >
       {children}
       <div className="flex shrink-0 items-center">
-        {actions.map(({ destructive, icon, label, onSelect }) => (
+        {actions.map(({ icon, label, onSelect, variant }) => (
           <Tooltip key={label}>
             <TooltipTrigger
               render={
                 <Button
-                  variant={destructive ? 'ghost-destructive' : 'ghost-muted'}
+                  variant={
+                    variant === 'destructive'
+                      ? 'ghost-destructive'
+                      : 'ghost-muted'
+                  }
                   size="icon-xs"
                   aria-label={label}
                   tabIndex={-1}

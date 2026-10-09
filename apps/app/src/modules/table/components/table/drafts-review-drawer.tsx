@@ -133,15 +133,14 @@ export const DraftsReviewDrawer = ({
         finalFocus: () => {
           const target = jumpTarget.current
           jumpTarget.current = null
-          if (target) {
-            tableGridRef.current?.reveal(target)
-            return false
+          if (!target) {
+            if (changeCount === 0) {
+              requestGridFocus(tableTabId(schema, table))
+            }
+            return changeCount > 0
           }
-          if (changeCount === 0) {
-            requestGridFocus(tableTabId(schema, table))
-            return false
-          }
-          return true
+          tableGridRef.current?.reveal(target)
+          return false
         },
         initialFocus: () =>
           listRef.current?.querySelector<HTMLElement>('[data-change]') ?? true,

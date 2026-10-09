@@ -9,13 +9,12 @@ import {
 } from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { CSSProperties, ComponentRef, Ref } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import { tableTabId } from '~/core/tabs/ids'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createViewDialogRef } from './create-view-dialog'
@@ -38,7 +37,7 @@ const ROW_HEIGHTS = {
 } satisfies Record<TreeRow['kind'], number>
 
 export const TablesTree = ({
-  className,
+  activeId,
   highlightedId,
   onCreateTable,
   onToggleSchema,
@@ -46,7 +45,7 @@ export const TablesTree = ({
   rows,
   search,
 }: {
-  className?: string
+  activeId?: string
   highlightedId?: string
   onCreateTable: (schema?: string) => void
   onToggleSchema: (name: string) => void
@@ -55,7 +54,6 @@ export const TablesTree = ({
   search: string
 }) => {
   const { connection } = useRouteContext()
-  const router = useRouter()
   const dropSchemaDialogRef =
     useRef<ComponentRef<typeof DropSchemaDialog>>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
@@ -81,34 +79,22 @@ export const TablesTree = ({
       (row, index) => row.kind === 'schema' && index <= range.startIndex
     )
 
-  const scrollToActiveEvent = useEffectEvent(() => {
-    const params = router.state.matches.at(-1)?.params
-    const tabId = params && 'tabId' in params ? params.tabId : undefined
-    const index = rows.findIndex(
-      (row) =>
-        row.kind === 'table' && tableTabId(row.schema, row.table.name) === tabId
-    )
-
-    if (index !== -1) {
-      scrollToIndex(index, { align: 'auto' })
+  const revealEvent = useEffectEvent((id?: string) => {
+    if (id) {
+      scrollToIndex(
+        rows.findIndex((row) => row.id === id),
+        { align: 'auto' }
+      )
     }
   })
+  const revealActiveEvent = useEffectEvent(() => revealEvent(activeId))
 
   useEffect(() => {
-    scrollToActiveEvent()
+    revealActiveEvent()
   }, [])
 
-  const revealEvent = useEffectEvent((id: string) =>
-    scrollToIndex(
-      rows.findIndex((row) => row.id === id),
-      { align: 'auto' }
-    )
-  )
-
   useEffect(() => {
-    if (highlightedId) {
-      revealEvent(highlightedId)
-    }
+    revealEvent(highlightedId)
   }, [highlightedId])
 
   const deferredSearch = useDeferredValue(search)
@@ -195,7 +181,7 @@ export const TablesTree = ({
   return (
     <div
       ref={ref}
-      className={cn('relative flex flex-col', className)}
+      className="relative flex min-h-0 flex-1 flex-col"
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
       <SidebarContent

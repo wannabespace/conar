@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from '@tamery/ui/components/sidebar'
 import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { Link } from '~/components/link'
 import { openTab } from '~/core/tabs/actions'
@@ -26,7 +26,6 @@ export const DefinitionsPanel = () => {
   const { connection, connectionResource } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
-  const listRef = useRef<HTMLDivElement>(null)
 
   const filtered = schemaGroups(connection.type)
     .map((group) => ({
@@ -35,10 +34,11 @@ export const DefinitionsPanel = () => {
     }))
     .filter((group) => group.items.length > 0)
 
-  const { highlightedId, searchProps } = useNavigatorSearch({
+  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
     activeId: activeTabId,
-    ids: filtered.flatMap((group) => group.items.map((item) => item.tabId)),
-    listRef,
+    nodes: filtered.flatMap((group) =>
+      group.items.map(({ tabId }) => ({ id: tabId }))
+    ),
     onBack: () => getNavigatorStore(connectionResource.id).set('tables'),
     onClear: () => setSearch(''),
     search,

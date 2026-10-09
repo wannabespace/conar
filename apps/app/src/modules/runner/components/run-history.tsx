@@ -67,11 +67,11 @@ export const RunHistoryButton = () => {
                   onSelect={() => append(entry.sql)}
                   actions={[
                     {
-                      destructive: true,
                       icon: Cancel01Icon,
                       label: 'Remove from History',
                       onSelect: () =>
                         runHistory.remove(connectionResource.id, entry.id),
+                      variant: 'destructive',
                     },
                   ]}
                 >

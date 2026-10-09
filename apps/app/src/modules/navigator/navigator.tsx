@@ -74,10 +74,7 @@ export const Navigator = () => {
             className="flex min-h-0 flex-1 flex-col"
           >
             {navigator === 'tables' ? (
-              <TablesList
-                className="min-h-0 flex-1"
-                onCreateTable={createTable}
-              />
+              <TablesList onCreateTable={createTable} />
             ) : (
               <DefinitionsPanel />
             )}

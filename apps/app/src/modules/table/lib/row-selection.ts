@@ -105,10 +105,9 @@ export const rowSelection = {
   ): TableSessionState => {
     const selectedKeys = new Set(state.selected.map(primaryKeysKey))
     const toggledKeys = new Set(rowKeys.map(primaryKeysKey))
-    const allSelected = [...toggledKeys].every((key) => selectedKeys.has(key))
     return {
       ...state,
-      selected: allSelected
+      selected: toggledKeys.isSubsetOf(selectedKeys)
         ? state.selected.filter((row) => !toggledKeys.has(primaryKeysKey(row)))
         : [
             ...state.selected,

@@ -1,5 +1,4 @@
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
-import type { RefObject } from 'react'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
@@ -26,11 +25,6 @@ export const useEscapeToNavigator = (enabled: boolean) =>
     { enabled, preventDefault: false, target: window }
   )
 
-interface TreeNode {
-  open?: boolean
-  parent?: string
-}
-
 const claimsCaretEdge = (event: KeyboardEvent, edge: 'start' | 'end') => {
   const input = event.target
   const atEdge =
@@ -45,30 +39,30 @@ const claimsCaretEdge = (event: KeyboardEvent, edge: 'start' | 'end') => {
 
 export const useNavigatorSearch = ({
   activeId,
-  ids,
-  listRef,
-  nodeOf,
+  nodes,
   search,
   onBack,
   onClear,
 }: {
   activeId?: string
-  ids: string[]
-  listRef: RefObject<HTMLElement | null>
-  nodeOf?: (id: string) => TreeNode | undefined
+  nodes: { id: string; open?: boolean; parent?: string }[]
   search: string
   onBack?: () => void
   onClear: () => void
 }) => {
   const searchRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const [focused, setFocused] = useState(false)
   const [moved, setMoved] = useState<{ id: string; search: string } | null>(
     null
   )
+  const ids = nodes.map(({ id }) => id)
   const fallback =
     !search && activeId && ids.includes(activeId) ? activeId : ids[0]
   const highlighted =
     moved?.search === search && ids.includes(moved.id) ? moved.id : fallback
+  const index = nodes.findIndex((candidate) => candidate.id === highlighted)
+  const node = nodes[index]
   const highlightedId = focused ? highlighted : undefined
 
   // A virtualized list must keep the highlighted row rendered (TablesTree scrolls it into view), or Enter and ⌘. find nothing.
@@ -78,31 +72,9 @@ export const useNavigatorSearch = ({
     )
 
   const move = (delta: number) => {
-    const index = highlighted ? ids.indexOf(highlighted) : -1
     const next = ids[Math.min(ids.length - 1, Math.max(0, index + delta))]
     if (next) {
       setMoved({ id: next, search })
-    }
-  }
-
-  const stepIn = () => {
-    if (highlighted && nodeOf?.(highlighted)?.open) {
-      move(1)
-    } else {
-      highlightedControl()?.click()
-    }
-  }
-
-  const stepOut = () => {
-    const node = highlighted ? nodeOf?.(highlighted) : undefined
-    if (node?.open) {
-      highlightedControl()?.click()
-    } else if (node?.parent) {
-      setMoved({ id: node.parent, search })
-    } else if (onBack) {
-      // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
-      flushSync(onBack)
-      mountedSearch?.focus()
     }
   }
 
@@ -112,8 +84,13 @@ export const useNavigatorSearch = ({
       { callback: () => move(-1), hotkey: 'ArrowUp' },
       {
         callback: (event) => {
-          if (claimsCaretEdge(event, 'end')) {
-            stepIn()
+          if (!claimsCaretEdge(event, 'end')) {
+            return
+          }
+          if (node?.open) {
+            move(1)
+          } else {
+            highlightedControl()?.click()
           }
         },
         hotkey: 'ArrowRight',
@@ -121,8 +98,17 @@ export const useNavigatorSearch = ({
       },
       {
         callback: (event) => {
-          if (claimsCaretEdge(event, 'start')) {
-            stepOut()
+          if (!claimsCaretEdge(event, 'start')) {
+            return
+          }
+          if (node?.open) {
+            highlightedControl()?.click()
+          } else if (node?.parent) {
+            setMoved({ id: node.parent, search })
+          } else if (onBack) {
+            // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
+            flushSync(onBack)
+            mountedSearch?.focus()
           }
         },
         hotkey: 'ArrowLeft',
@@ -152,6 +138,7 @@ export const useNavigatorSearch = ({
 
   return {
     highlightedId,
+    listRef,
     searchProps: {
       onBlur: () => setFocused(false),
       onFocus: () => {

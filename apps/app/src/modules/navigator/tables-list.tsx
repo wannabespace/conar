@@ -18,10 +18,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -33,18 +32,12 @@ import { pinnedTable } from './pinned-tables'
 import { navigatorStore } from './stores'
 import { TablesTree } from './tables-tree'
 import { buildTreeRows } from './tree-row'
-import type { TreeRow } from './tree-row'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const isNavigable = (row: TreeRow) =>
-  row.kind === 'schema' || row.kind === 'table' || row.kind === 'new-schema'
-
 export const TablesList = ({
-  className,
   onCreateTable,
 }: {
-  className?: string
   onCreateTable: (schema?: string) => void
 }) => {
   const { connection, connectionResource } = useRouteContext()
@@ -71,7 +64,6 @@ export const TablesList = ({
         tablesAndSchemas?.schemas[0]?.name ?? 'public',
       ],
   })
-  const listRef = useRef<HTMLDivElement>(null)
 
   const showSchemaRows = capabilitiesOf(connection.type).schemas
 
@@ -111,23 +103,17 @@ export const TablesList = ({
     )
   }
 
-  const { highlightedId, searchProps } = useNavigatorSearch({
-    activeId: rows.find(
-      (row) =>
-        row.kind === 'table' &&
-        tableTabId(row.schema, row.table.name) === activeTabId
-    )?.id,
-    ids: rows.filter(isNavigable).map((row) => row.id),
-    listRef,
-    nodeOf: (id) => {
-      const row = rows.find((candidate) => candidate.id === id)
-      if (row?.kind === 'schema') {
-        return { open: row.open }
-      }
-      if (row?.kind === 'table' && showSchemaRows) {
-        return { parent: `schema:${row.schema}` }
-      }
-    },
+  const activeId = rows.find(
+    (row) =>
+      row.kind === 'table' &&
+      tableTabId(row.schema, row.table.name) === activeTabId
+  )?.id
+
+  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
+    activeId,
+    nodes: rows.filter(
+      (row) => row.kind !== 'empty' && row.kind !== 'separator'
+    ),
     onClear: () => setSearch(''),
     search,
   })
@@ -178,7 +164,7 @@ export const TablesList = ({
         </Tooltip>
       </div>
       {isPending && (
-        <SidebarContent className={cn('overflow-hidden pl-2', className)}>
+        <SidebarContent className="overflow-hidden pl-2">
           <SidebarMenu>
             {Array.from({ length: 12 }).map((_, index) => (
               <SidebarMenuItem key={index}>
@@ -189,12 +175,7 @@ export const TablesList = ({
         </SidebarContent>
       )}
       {!isPending && rows.length === 0 && (
-        <SidebarContent
-          className={cn(
-            'items-center justify-center py-8 text-center',
-            className
-          )}
-        >
+        <SidebarContent className="items-center justify-center py-8 text-center">
           <HugeiconsIcon
             icon={LayoutTable02Icon}
             strokeWidth={2}
@@ -219,7 +200,7 @@ export const TablesList = ({
       {rows.length > 0 && (
         <TablesTree
           ref={listRef}
-          className={className}
+          activeId={activeId}
           highlightedId={highlightedId}
           rows={rows}
           search={search}

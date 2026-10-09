@@ -21,7 +21,7 @@ export const useGridFocusRequest = (
   scrollRef: RefObject<HTMLElement | null>
 ) => {
   const requested = useSubscription(request, {
-    selector: (pending) => pending?.key === key,
+    selector: (pending) => !!pending && pending.key === key,
   })
   useEffect(() => {
     if (requested) {

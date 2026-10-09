@@ -185,7 +185,7 @@ export const ActionsDelete = ({
             )
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top">Delete selected rows</TooltipContent>
+        <TooltipContent>Delete selected rows</TooltipContent>
       </Tooltip>
     </>
   )

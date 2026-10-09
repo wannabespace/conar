@@ -94,10 +94,10 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
                     },
                   },
                   {
-                    destructive: true,
                     icon: Delete02Icon,
                     label: 'Delete',
                     onSelect: () => removeDialogRef.current?.remove(query),
+                    variant: 'destructive',
                   },
                 ]}
               >
