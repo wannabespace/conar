@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import {
-  definitionsSchemaItems,
+  definitionsSchemaItem,
   definitionsTab,
 } from '~/modules/definitions/lib/tab'
 import { runnerTab } from '~/modules/runner/lib/tab'
@@ -11,7 +11,6 @@ import {
   visualizerTab,
 } from '~/modules/visualizer/lib/tab'
 
-import { SCHEMA_GROUPS } from './types'
 import type { ConnectionTab, TabKind } from './types'
 
 const TAB_KINDS: TabKind[] = [
@@ -21,15 +20,40 @@ const TAB_KINDS: TabKind[] = [
   visualizerTab,
 ]
 
-export const schemaItems = [visualizerSchemaItem, ...definitionsSchemaItems]
+const SCHEMA_GROUPS = [
+  { items: [visualizerSchemaItem], label: 'Overview' },
+  {
+    items: [
+      definitionsSchemaItem('indexes'),
+      definitionsSchemaItem('constraints'),
+    ],
+    label: 'Structure',
+  },
+  { items: [definitionsSchemaItem('enums')], label: 'Types' },
+  {
+    items: [
+      definitionsSchemaItem('functions'),
+      definitionsSchemaItem('triggers'),
+    ],
+    label: 'Logic',
+  },
+  {
+    items: [
+      definitionsSchemaItem('policies'),
+      definitionsSchemaItem('privileges'),
+    ],
+    label: 'Security',
+  },
+]
+
+export const schemaItems = SCHEMA_GROUPS.flatMap((group) => group.items)
 
 export const schemaGroups = (connectionType: ConnectionType) =>
-  SCHEMA_GROUPS.map((label) => ({
-    items: schemaItems.filter(
-      (item) =>
-        item.group === label && (item.available?.(connectionType) ?? true)
+  SCHEMA_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter(
+      (item) => item.available?.(connectionType) ?? true
     ),
-    label,
   })).filter((group) => group.items.length > 0)
 
 export const resolveTab = (id: string) => {

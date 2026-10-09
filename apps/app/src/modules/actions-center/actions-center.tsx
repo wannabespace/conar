@@ -326,12 +326,11 @@ export const ActionsCenter = () => {
                     to: '/connection/$resourceId/$tabId',
                   })
               ),
-              ...schemaGroups(current.connection.type)
-                .flatMap((group) => group.items)
-                .map((item) =>
+              ...schemaGroups(current.connection.type).flatMap((group) =>
+                group.items.map((item) =>
                   actionEntry(
                     item.label,
-                    ['open', 'go to', item.group, 'definitions'],
+                    ['open', 'go to', group.label, 'definitions'],
                     item.icon,
                     () =>
                       router.navigate({
@@ -345,7 +344,8 @@ export const ActionsCenter = () => {
                         to: '/connection/$resourceId/$tabId',
                       })
                   )
-                ),
+                )
+              ),
             ]
           : []),
         ...entriesIn('Navigation'),

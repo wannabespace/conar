@@ -51,17 +51,8 @@ export const tabSearchType = type({
 
 type TabSearch = typeof tabSearchType.infer
 
-export const SCHEMA_GROUPS = [
-  'Overview',
-  'Structure',
-  'Types',
-  'Logic',
-  'Security',
-] as const
-
 export interface SchemaItem {
   available?: (connectionType: ConnectionType) => boolean
-  group: (typeof SCHEMA_GROUPS)[number]
   icon: IconSvgElement
   label: string
   tabId: string

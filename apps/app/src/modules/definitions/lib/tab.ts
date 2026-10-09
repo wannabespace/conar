@@ -30,26 +30,15 @@ export const definitionsTab: TabKind<DefinitionsParams> = {
   type: 'definitions',
 }
 
-const SECTION_GROUPS: [DefinitionsSection, SchemaItem['group']][] = [
-  ['indexes', 'Structure'],
-  ['constraints', 'Structure'],
-  ['enums', 'Types'],
-  ['functions', 'Logic'],
-  ['triggers', 'Logic'],
-  ['policies', 'Security'],
-  ['privileges', 'Security'],
-]
+export const definitionsSchemaItem = (
+  section: DefinitionsSection
+): SchemaItem => {
+  const { icon, title } = sectionMetaOf(section)
 
-export const definitionsSchemaItems = SECTION_GROUPS.map(
-  ([section, group]): SchemaItem => {
-    const { icon, title } = sectionMetaOf(section)
-
-    return {
-      available: (connectionType) => sectionAvailable(section, connectionType),
-      group,
-      icon,
-      label: title,
-      tabId: definitionsTabId(section),
-    }
+  return {
+    available: (connectionType) => sectionAvailable(section, connectionType),
+    icon,
+    label: title,
+    tabId: definitionsTabId(section),
   }
-)
+}
