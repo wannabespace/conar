@@ -43,7 +43,10 @@ const init = async () => {
 
 // A loaded client keeps receiving identify/reset while opted out, or the next opt-in sends events under the previous user's id.
 const withClient = async (run: (client: PostHog) => void) => {
-  if (analyticsStore.get() || instance) {
+  if (
+    import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN &&
+    (analyticsStore.get() || instance)
+  ) {
     run(await (instance ??= init()))
   }
 }

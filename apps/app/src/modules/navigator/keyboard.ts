@@ -8,18 +8,14 @@ import { navigatorOpenValue } from './stores'
 
 let mountedSearch: HTMLInputElement | null = null
 
-export const focusNavigator = () => {
-  flushSync(() => navigatorOpenValue.set(true))
-  mountedSearch?.focus()
-}
-
 // Must stay on window: base-ui popups and scoped hotkeys stop a consumed Escape at the document, so only an unconsumed one arrives here.
 export const useEscapeToNavigator = (enabled: boolean) =>
   useHotkey(
     'Escape',
     (event) => {
       if (!event.defaultPrevented) {
-        focusNavigator()
+        flushSync(() => navigatorOpenValue.set(true))
+        mountedSearch?.focus()
       }
     },
     { enabled, preventDefault: false, target: window }
@@ -53,14 +49,22 @@ export const useNavigatorSearch = ({
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const [focused, setFocused] = useState(false)
-  const [moved, setMoved] = useState<{ id: string; search: string } | null>(
-    null
-  )
+  const [moved, setMoved] = useState<{
+    activeId?: string
+    id: string
+    search: string
+  } | null>(null)
   const ids = nodes.map(({ id }) => id)
   const fallback =
-    !search && activeId && ids.includes(activeId) ? activeId : ids[0]
+    !search && activeId && ids.includes(activeId)
+      ? activeId
+      : (nodes.find(({ open }) => !open)?.id ?? ids[0])
   const highlighted =
-    moved?.search === search && ids.includes(moved.id) ? moved.id : fallback
+    moved?.search === search &&
+    moved.activeId === activeId &&
+    ids.includes(moved.id)
+      ? moved.id
+      : fallback
   const index = nodes.findIndex((candidate) => candidate.id === highlighted)
   const node = nodes[index]
   const highlightedId = focused ? highlighted : undefined
@@ -74,7 +78,7 @@ export const useNavigatorSearch = ({
   const move = (delta: number) => {
     const next = ids[Math.min(ids.length - 1, Math.max(0, index + delta))]
     if (next) {
-      setMoved({ id: next, search })
+      setMoved({ activeId, id: next, search })
     }
   }
 
@@ -104,7 +108,7 @@ export const useNavigatorSearch = ({
           if (node?.open) {
             highlightedControl()?.click()
           } else if (node?.parent) {
-            setMoved({ id: node.parent, search })
+            setMoved({ activeId, id: node.parent, search })
           } else if (onBack) {
             // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
             flushSync(onBack)
@@ -141,10 +145,7 @@ export const useNavigatorSearch = ({
     listRef,
     searchProps: {
       onBlur: () => setFocused(false),
-      onFocus: () => {
-        setFocused(true)
-        setMoved(null)
-      },
+      onFocus: () => setFocused(true),
       ref: (input: HTMLInputElement) => {
         searchRef.current = input
         mountedSearch = input

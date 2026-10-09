@@ -14,7 +14,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
@@ -73,7 +72,6 @@ export const Tab = ({
 }) => {
   const router = useRouter()
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
   const renameRef = useRef<HTMLInputElement>(null)
@@ -182,13 +180,15 @@ export const Tab = ({
   ]
 
   useEffect(() => {
-    if (!isVisible && isActive && ref.current) {
-      ref.current.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      })
+    const reveal = async () => {
+      // The label font swaps in after mount and widens every tab, so a reveal before it lands leaves this tab clipped.
+      await document.fonts.ready
+      ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     }
-  }, [isActive, isVisible])
+    if (isActive) {
+      reveal()
+    }
+  }, [isActive])
 
   const prefetch = () => {
     if (resolved) {
@@ -282,7 +282,13 @@ export const Tab = ({
           className={tabClasses}
           onDoubleClick={startRename}
           onMouseOver={prefetch}
-          onFocus={prefetch}
+          onFocus={(event) => {
+            prefetch()
+            event.currentTarget.scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            })
+          }}
           {...pressNavProps(goToTab)}
         >
           {icon}

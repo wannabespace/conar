@@ -187,6 +187,7 @@ export const TablesTree = ({
     >
       <SidebarContent
         ref={parentRef}
+        tabIndex={-1}
         className={cn(
           'scroll-fade block flex-1 overflow-y-auto pb-2 pl-2',
           stickyRow &&

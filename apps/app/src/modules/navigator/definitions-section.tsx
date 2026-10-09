@@ -68,6 +68,7 @@ export const DefinitionsPanel = () => {
       </div>
       <SidebarContent
         ref={listRef}
+        tabIndex={-1}
         className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2"
       >
         {filtered.length === 0 && (
