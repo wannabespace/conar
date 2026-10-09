@@ -112,6 +112,7 @@ What already owns a concern here — a dependency resolves only in a workspace t
 | A runtime check followed by `as` | An ArkType schema |
 | `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
 | `n === 1 ? '' : 's'` | `plural` (`~/utils/plural`) |
+| A query key rebuilt by slicing another query's `queryOptions(...).queryKey` | The subject's exported `*QueryKey` builder |
 | CSV / TSV | `d3-dsv` |
 | Identifier casing | `change-case` |
 | Date math or formatting | `date-fns`, `@date-fns/tz` for zones |

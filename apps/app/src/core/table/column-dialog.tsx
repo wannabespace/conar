@@ -245,7 +245,15 @@ export const ColumnDialog = <
   }
 
   return (
-    <Dialog open={request !== null} onOpenChange={onOpenChange}>
+    <Dialog
+      open={request !== null}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setShown(null)
+        }
+      }}
+    >
       <DialogContent>
         {shown && (
           <ColumnForm

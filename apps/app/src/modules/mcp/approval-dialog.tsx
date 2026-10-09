@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { plural } from '~/utils/plural'
@@ -18,17 +18,26 @@ import { plural } from '~/utils/plural'
 import { approval } from './approval'
 
 export const ApprovalDialog = () => {
-  const [item] = useSubscription(approval.store, {
+  const [pending] = useSubscription(approval.store, {
     selector: (state) => state.pending,
   })
+  const [item, setItem] = useState(pending)
+  if (pending && pending !== item) {
+    setItem(pending)
+  }
   const declineRef = useRef<HTMLButtonElement>(null)
 
   return (
     <AlertDialog
-      open={!!item}
+      open={!!pending}
       onOpenChange={(open) => {
         if (!open) {
-          item?.decide(false)
+          pending?.decide(false)
+        }
+      }}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setItem(undefined)
         }
       }}
     >

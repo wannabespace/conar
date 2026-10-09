@@ -3,6 +3,7 @@
 ## oRPC
 
 - Copy the shape from a neighbouring router in `apps/api/orpc/routers/` and register it in `routers/index.ts`. `authMiddleware` puts `user`/`session` on context; `accountMiddleware` does the same and rejects guests (`FORBIDDEN`); `permissionsMiddleware` adds `context.permissions` (`architecture.md` → Permissions). Clients call through the generated `ORPCRouter` type, never a manual fetch.
+- `apps/api` is a composite project whose emitted `.types` are what clients type-check against: after changing a router, run `tsc` in `apps/api` before `check-types` elsewhere, or clients check against the old contract.
 - `create` procedures take exactly one item — never `type.or(schema, schema.array())`; the offline outbox sends one row per call.
 - `remove` procedures of synced collections accept one item **or** an array: installed desktop builds still send arrays, and the API deploys before they update.
 - **No `.output()` schemas** — the handler's inferred return type already is the client contract; an output schema only duplicates it and re-validates the server's own data on every call. The exception is a schema that also types something else — the sync collections' Redis publisher, `banner`'s accumulated items.
