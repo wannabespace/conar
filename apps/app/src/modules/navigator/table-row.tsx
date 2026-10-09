@@ -137,9 +137,9 @@ export const TableRow = ({
             preload="intent"
             preloadDelay={200}
             data-mask
-            onClick={() => {
+            onClick={(event) => {
               openTab(connectionResource.id, tabId, true)
-              requestGridFocus(tabId)
+              requestGridFocus(tabId, event.currentTarget)
             }}
             onDoubleClick={() => openTab(connectionResource.id, tabId)}
           />

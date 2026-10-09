@@ -13,13 +13,18 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import type { ComponentProps } from 'react'
-import { useRef } from 'react'
+import type { ComponentProps, RefObject } from 'react'
+import { createContext, use, useRef } from 'react'
 
 import {
   AppContextMenu,
   openContextMenuOn,
 } from '~/components/app-context-menu'
+
+// An action can unmount its own row, so focus returns to the search through a ref the row does not own.
+const SearchRefContext = createContext<RefObject<HTMLInputElement | null>>({
+  current: null,
+})
 
 export interface RowAction {
   destructive?: boolean
@@ -53,7 +58,7 @@ export const PopoverCommand = ({
   return (
     <Command loop>
       <CommandInput ref={searchRef} placeholder={searchPlaceholder} autoFocus />
-      {children}
+      <SearchRefContext value={searchRef}>{children}</SearchRefContext>
     </Command>
   )
 }
@@ -78,7 +83,7 @@ export const ActionItem = ({
   children,
   ...props
 }: ComponentProps<typeof CommandItem> & { actions: RowAction[] }) => {
-  const itemRef = useRef<HTMLDivElement>(null)
+  const searchRef = use(SearchRefContext)
 
   return (
     <AppContextMenu
@@ -86,14 +91,8 @@ export const ActionItem = ({
         ...action,
         variant: destructive ? 'destructive' : 'default',
       }))}
-      contentProps={{
-        finalFocus: () =>
-          itemRef.current
-            ?.closest('[cmdk-root]')
-            ?.querySelector<HTMLElement>('[cmdk-input]')
-            ?.focus(),
-      }}
-      render={<CommandItem ref={itemRef} {...props} />}
+      contentProps={{ finalFocus: () => searchRef.current?.focus() }}
+      render={<CommandItem {...props} />}
     >
       {children}
       <div className="flex shrink-0 items-center">
