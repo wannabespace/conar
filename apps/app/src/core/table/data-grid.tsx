@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
+import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import type { ReactNode, Ref, RefObject } from 'react'
 import { useRef } from 'react'
 
@@ -134,6 +135,12 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
+  useMountedEffect(() => {
+    const at = cursor.store.get().cursor
+    if (at) {
+      scrollToCell.current?.(at.row, at.column)
+    }
+  }, [layout])
 
   const renderDataCell = (cell: DataGridCell, geometry?: CellGeometry) =>
     renderCell ? (

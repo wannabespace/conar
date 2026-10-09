@@ -224,6 +224,7 @@ export const TabBar = ({ className }: { className?: string }) => {
       </div>
       {tabs.length > 0 && (
         <ScrollArea
+          viewportProps={{ tabIndex: -1 }}
           className="h-full min-w-0 flex-1"
           viewportClassName="scroll-fade-x [--scroll-fade-mask:linear-gradient(to_top,#000_1px,transparent_1px),var(--scroll-fade-inline)] [-webkit-mask-composite:source-over]! [mask-composite:add]!"
         >

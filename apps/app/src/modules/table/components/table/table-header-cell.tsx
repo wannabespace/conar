@@ -133,7 +133,7 @@ export const TableHeaderCell = ({
         contentProps={{ align: 'end', className: 'min-w-52' }}
       />
       <ResizeHandle
-        aria-label="Resize column"
+        aria-label={`Resize ${column.id} column`}
         min={MIN_WIDTH}
         className={cn(
           'absolute inset-y-0 right-0 z-10 flex w-3 justify-end',

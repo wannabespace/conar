@@ -26,9 +26,14 @@ const ScrollBar = ({
 const ScrollArea = ({
   className,
   viewportClassName,
+  viewportProps,
   children,
   ...props
-}: ScrollAreaPrimitive.Root.Props & { viewportClassName?: string }) => (
+}: ScrollAreaPrimitive.Root.Props & {
+  viewportClassName?: string
+  /** An overflowing viewport is a Tab stop so the keyboard can scroll it; pass `tabIndex: -1` when its content already takes focus and scrolls itself into view. */
+  viewportProps?: Pick<ScrollAreaPrimitive.Viewport.Props, 'tabIndex'>
+}) => (
   <ScrollAreaPrimitive.Root
     data-slot="scroll-area"
     className={cn('relative', className)}
@@ -40,6 +45,7 @@ const ScrollArea = ({
         `focus-visible:focus-ring size-full rounded-[inherit] transition-[color,box-shadow] outline-none`,
         viewportClassName
       )}
+      {...viewportProps}
     >
       {children}
     </ScrollAreaPrimitive.Viewport>
