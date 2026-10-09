@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
-import { handleError } from '~/lib/error'
 import { queryClient } from '~/lib/query-client'
+import { handleError } from '~/utils/error'
 
 const AUTH_PAGE_TRANSITION_MS = 1000
 

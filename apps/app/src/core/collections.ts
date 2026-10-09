@@ -13,26 +13,32 @@ import {
   createConnectionsResourcesCollection,
 } from '~/core/connection/sync'
 import { createWorkspacesCollection } from '~/core/workspace/sync'
-import { isServerError } from '~/lib/error'
+import {
+  createChatsCollection,
+  createChatsMessagesCollection,
+  createChatsMessagesPartsCollection,
+} from '~/modules/chat/sync'
+import { createQueriesCollection } from '~/modules/runner/sync'
+import { isServerError } from '~/utils/error'
 
-// Modules add their collections by augmenting this interface in `collections.ts`.
-export interface Collections {
-  connectionsCollection: ReturnType<typeof createConnectionsCollection>
-  connectionsResourcesCollection: ReturnType<
-    typeof createConnectionsResourcesCollection
-  >
-  connectionStringsCollection: ReturnType<
-    typeof createConnectionStringsCollection
-  >
-  workspacesCollection: ReturnType<typeof createWorkspacesCollection>
+const createCollections = () => {
+  const connectionStringsCollection = createConnectionStringsCollection()
+
+  return {
+    chatsCollection: createChatsCollection(),
+    chatsMessagesCollection: createChatsMessagesCollection(),
+    chatsMessagesPartsCollection: createChatsMessagesPartsCollection(),
+    connectionStringsCollection,
+    connectionsCollection: createConnectionsCollection(
+      connectionStringsCollection
+    ),
+    connectionsResourcesCollection: createConnectionsResourcesCollection(),
+    queriesCollection: createQueriesCollection(),
+    workspacesCollection: createWorkspacesCollection(),
+  }
 }
 
-const moduleCollections = Object.values(
-  import.meta.glob<() => Partial<Collections>>(
-    '/src/modules/*/collections.ts',
-    { eager: true, import: 'default' }
-  )
-)
+type Collections = ReturnType<typeof createCollections>
 
 let current: { collections: Collections; offline: OfflineExecutor } | null =
   null
@@ -42,27 +48,12 @@ const init = () => {
     return current
   }
 
-  const connectionStringsCollection = createConnectionStringsCollection()
-
-  const collections: Collections = {
-    // Each module's factory fills exactly the keys its augmentation declares.
-    ...(Object.assign(
-      {},
-      ...moduleCollections.map((create) => create())
-    ) as Collections),
-    connectionStringsCollection,
-    connectionsCollection: createConnectionsCollection(
-      connectionStringsCollection
-    ),
-    connectionsResourcesCollection: createConnectionsResourcesCollection(),
-    workspacesCollection: createWorkspacesCollection(),
-  }
+  const collections = createCollections()
 
   current = {
     collections,
     offline: startOfflineExecutor({
-      // The spread gives the interface the index signature the executor's type needs.
-      collections: { ...collections },
+      collections,
       mutationFns: {
         // Sequential: a connection must land before the resource referencing it.
         push: async ({ transaction }) => {

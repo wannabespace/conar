@@ -18,8 +18,8 @@ import {
   stagedActions,
   useTableSessionStore,
 } from '~/core/table/session'
-import { plural } from '~/lib/plural'
 import { queryClient } from '~/lib/query-client'
+import { plural } from '~/utils/plural'
 
 import { useTableColumnsContext } from './columns'
 import { tableGridRef } from './grid-ref'

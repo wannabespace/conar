@@ -16,7 +16,6 @@ import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { v7 } from 'uuid'
 
 import {
   Stepper,
@@ -24,16 +23,16 @@ import {
   StepperList,
   StepperTrigger,
 } from '~/components/stepper'
-import { mutateOffline, useCollections } from '~/core/collections'
+import { useCollections } from '~/core/collections'
+import { createConnection } from '~/core/connection/create'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { fetchingConfig } from '~/core/connection/fetching-config'
-import { getConnectionStore } from '~/core/connection/stores'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { permix } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
-import { generateRandomName } from '~/lib/faker'
 import { posthog } from '~/lib/posthog'
+import { generateRandomName } from '~/utils/faker'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -69,71 +68,17 @@ const CreateConnectionPage = () => {
           throw new Error('Workspace is still loading. Please try again.')
         }
 
-        const id = v7()
-        const url = new SafeURL(data.connectionString.trim())
-
-        const resource =
-          url.pathname === '/' || url.pathname === ''
-            ? null
-            : url.pathname.slice(1)
-        const resourceId = v7()
-        const updatedAt = new Date()
-        const createdAt = new Date()
-        const {
-          connectionsCollection,
-          connectionStringsCollection,
-          connectionsResourcesCollection,
-        } = collections
-
-        connectionStringsCollection.insert(
-          await connectionStringsCollection.utils.prepare({
-            connectionId: id,
-            connectionString: url.toString(),
-            updatedAt,
-          })
-        )
-        const tx = mutateOffline(() => {
-          connectionsCollection.insert({
-            id,
-            workspaceId: activeWorkspace.id,
-            name: data.name,
-            type: data.type,
-            label: data.label || null,
-            color: data.color || null,
-            isPasswordExists: !!url.password,
-            syncType: data.syncType,
-            createdAt,
-            updatedAt,
-          })
-          connectionsResourcesCollection.insert({
-            id: resourceId,
-            connectionId: id,
-            name: resource,
-            createdAt,
-            updatedAt,
-          })
+        const { resourceId, tx } = await createConnection({
+          ...data,
+          workspaceId: activeWorkspace.id,
         })
-        const dropStringOnRollback = async () => {
-          try {
-            await tx.isPersisted.promise
-          } catch {
-            connectionStringsCollection.delete(id)
-          }
-        }
-        void dropStringOnRollback()
-
-        if (resource) {
-          getConnectionStore(id).set((state) => ({
-            ...state,
-            lastOpenedResourceName: resource,
-          }))
-        }
 
         if (!window.electron && navigator.onLine) {
           await tx.isPersisted.promise
         }
 
-        const createdResource = connectionsResourcesCollection.get(resourceId)
+        const createdResource =
+          collections.connectionsResourcesCollection.get(resourceId)
         if (!createdResource) {
           throw new Error('Connection resource not found after create')
         }

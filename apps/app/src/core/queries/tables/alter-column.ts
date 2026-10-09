@@ -3,7 +3,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { createQuery } from '~/core/runtime/query'
 
 import type { AlterColumnTarget } from './shape'
-import { alterColumnStatement } from './shape'
+import { alterColumnStatement } from './shape/alter-column'
 
 export const alterColumnQuery = (target: AlterColumnTarget) =>
   createQuery({

@@ -1,11 +1,11 @@
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 
 import { resolveTab } from '~/core/tabs/kinds'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { tabViews } from '~/core/tabs/views'
 
 export const TabRefresh = ({ tabId }: { tabId: string | undefined }) => {
   const resolved = tabId ? resolveTab(tabId) : null
-  const view = resolved && workspaceModules.tabs[resolved.kind.type]
+  const view = resolved && tabViews[resolved.kind.type]
 
   if (resolved && view?.Refresh) {
     return <view.Refresh params={resolved.params} />

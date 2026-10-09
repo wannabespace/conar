@@ -11,7 +11,7 @@ import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
-import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import {
   Empty,
   EmptyDescription,
@@ -42,7 +42,7 @@ import { useCollections } from '~/core/collections'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
-import { formatSql } from '~/lib/formatter'
+import { formatSql } from '~/utils/formatter'
 
 import { loggerOpen } from './logger-open'
 
@@ -366,21 +366,10 @@ export const QueryLogger = ({
                   </TabsTrigger>
                 ))}
                 <div className="flex flex-1 items-center justify-end border-b px-1">
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <CopyButton
-                          size="icon-xs"
-                          variant="ghost-muted"
-                          aria-label="Copy"
-                          text={activeTab.code}
-                        />
-                      }
-                    />
-                    <TooltipContent side="bottom">
-                      Copy {activeTab.label}
-                    </TooltipContent>
-                  </Tooltip>
+                  <CopyIconButton
+                    label={`Copy ${activeTab.label}`}
+                    text={activeTab.code}
+                  />
                 </div>
               </TabsList>
             )}

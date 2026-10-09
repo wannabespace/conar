@@ -1,6 +1,8 @@
 import { replaceErrorPrefix } from '@tamery/connection/queries'
+import type { McpReply, McpRequest, McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { electron } from '../main/lib/events'
@@ -25,6 +27,9 @@ export type ElectronPreload = Promisified<typeof electron> & {
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
     openWindow: (route: string) => Promise<void>
+  }
+  mcp: {
+    serve: (source: McpSource) => () => void
   }
   versions: {
     node: () => string
@@ -62,6 +67,34 @@ const onEvent = <T>(
   ipcRenderer.on(channel, listener)
   return () => ipcRenderer.off(channel, listener)
 }
+
+let mcpSource: McpSource | null = null
+
+ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
+  const [port] = event.ports
+  if (!port) {
+    return
+  }
+  const reply = (message: McpReply) => port.postMessage(message)
+  if (!mcpSource) {
+    reply({ idle: true })
+    return
+  }
+  // TS cannot correlate `request.method` with `request.args` across the union.
+  const method = mcpSource[request.method] as (
+    args: McpRequest['args'],
+    onAbort: (listener: () => void) => void
+  ) => unknown
+  const { data, error } = await tryCatchAsync(() =>
+    Promise.resolve(
+      method(request.args, (listener) => {
+        port.addEventListener('message', listener)
+        port.start()
+      })
+    )
+  )
+  reply(error ? { error: error.message } : { result: data })
+})
 
 const dialectQueryBridge = (dialect: string) => ({
   beginTransaction: handleElectronError((arg: unknown) =>
@@ -111,9 +144,36 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('encryption.encrypt', arg)
     ),
   },
+  mcp: {
+    clients: handleElectronError(() => ipcRenderer.invoke('mcp.clients')),
+    connectionAccess: handleElectronError(() =>
+      ipcRenderer.invoke('mcp.connectionAccess')
+    ),
+    regenerateToken: handleElectronError(() =>
+      ipcRenderer.invoke('mcp.regenerateToken')
+    ),
+    serve: (source) => {
+      mcpSource = source
+      return () => {
+        mcpSource = null
+      }
+    },
+    setAccess: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setAccess', arg)
+    ),
+    setEnabled: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setEnabled', arg)
+    ),
+    status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
+  },
   menu: {
     popup: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('menu.popup', arg)
+    ),
+  },
+  notifications: {
+    notify: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('notifications.notify', arg)
     ),
   },
   query: {

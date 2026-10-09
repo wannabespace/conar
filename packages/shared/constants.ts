@@ -43,7 +43,6 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
   'past_due',
 ] as const
 
-export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
 export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 
 export const API_KEY_PERMISSIONS = {

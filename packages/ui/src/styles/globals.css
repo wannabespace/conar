@@ -169,6 +169,7 @@
 
 .shell-auth #shell-auth,
 .shell-dashboard #shell-dashboard,
+.shell-settings #shell-settings,
 .shell-connection #shell-connection {
   display: revert-layer;
 }

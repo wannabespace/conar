@@ -13,7 +13,7 @@ const focusNavigator = () => {
 }
 
 // Must stay on window: base-ui popups and scoped hotkeys stop a consumed Escape at the document, so only an unconsumed one arrives here.
-export const useEscapeToNavigator = () =>
+export const useEscapeToNavigator = (enabled: boolean) =>
   useHotkey(
     'Escape',
     (event) => {
@@ -21,7 +21,7 @@ export const useEscapeToNavigator = () =>
         focusNavigator()
       }
     },
-    { preventDefault: false, target: window }
+    { enabled, preventDefault: false, target: window }
   )
 
 export const useNavigatorSearch = ({

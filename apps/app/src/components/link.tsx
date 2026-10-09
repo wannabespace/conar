@@ -4,7 +4,7 @@ import { createLink } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
 import { useRef } from 'react'
 
-import { isPlainPress } from '~/lib/press-nav'
+import { isPlainPress } from '~/utils/press-nav'
 
 interface PressAnchorProps extends ComponentProps<'a'> {
   activateOn?: 'press' | 'click'

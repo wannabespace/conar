@@ -10,6 +10,13 @@ import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { Separator } from '@tamery/ui/components/separator'
 import {
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+} from '@tamery/ui/components/sidebar'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -34,13 +41,6 @@ import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { useNavigatorSearch } from './keyboard'
 import { pinnedTable } from './pinned-tables'
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from './primitives'
 import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
@@ -271,7 +271,7 @@ export const TablesList = ({
           <SidebarMenu>
             {Array.from({ length: 12 }).map((_, index) => (
               <SidebarMenuItem key={index}>
-                <SidebarMenuSkeleton seed={index} showIcon />
+                <SidebarMenuSkeleton seed={index} />
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
@@ -346,7 +346,7 @@ export const TablesList = ({
       return (
         <div className="pt-4">
           <SidebarMenuButton
-            className="text-muted-foreground"
+            variant="muted"
             onClick={() => createSchemaDialogRef.current?.create()}
           >
             <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />

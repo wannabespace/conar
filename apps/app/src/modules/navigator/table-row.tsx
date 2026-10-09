@@ -10,6 +10,10 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import {
+  SidebarMenuAction,
+  SidebarMenuButton,
+} from '@tamery/ui/components/sidebar'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -27,10 +31,9 @@ import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { checkOrUpgrade } from '~/core/user/permissions'
-import { openNewWindow } from '~/lib/new-window'
+import { openNewWindow } from '~/utils/new-window'
 
 import { pinnedTable } from './pinned-tables'
-import { SidebarMenuAction, SidebarMenuButton } from './primitives'
 import {
   RowLevelSecurityMark,
   useRowLevelSecurityItems,
@@ -154,10 +157,7 @@ export const TableRow = ({
             <HugeiconsIcon
               icon={Icon}
               strokeWidth={2}
-              className={cn(
-                'size-4',
-                isActive ? 'text-primary-foreground' : 'text-primary/75'
-              )}
+              className="text-primary/75"
             />
             {hasDrafts && (
               <Indicator
@@ -189,26 +189,16 @@ export const TableRow = ({
         variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
-        render={
-          <SidebarMenuAction
-            showOnHover
-            className={cn(
-              isActive &&
-                'text-primary-foreground/80! hover:bg-primary-foreground/20 hover:text-primary-foreground!'
-            )}
-          />
-        }
+        render={<SidebarMenuAction showOnHover isActive={isActive} />}
       />
       <Tooltip>
         <TooltipTrigger
           render={
             <SidebarMenuAction
               showOnHover={!row.pinned}
+              isActive={isActive}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
-              className={cn(
-                'group/pin right-6',
-                isActive && 'hover:bg-primary-foreground/20'
-              )}
+              className="group/pin right-6"
               onClick={() =>
                 pinnedTable.toggle(
                   connectionResource.id,

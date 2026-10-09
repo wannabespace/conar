@@ -14,7 +14,7 @@ import {
 } from '~/core/runtime/query'
 
 import type { functionsType } from './list'
-import { routineKeyword } from './routine-kind'
+import { routineKeyword } from './shape'
 
 type FunctionItem = typeof functionsType.infer
 

@@ -18,6 +18,7 @@
 
 Setup and the command list live in `README.md` and the root `package.json`. Not obvious:
 
+- Feature branches start from `tamery` (the integration branch) or `main`; a PR targets whichever the branch is based on, and diffs are taken against the nearer of the two.
 - `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
 - A dead backend shows up in the browser as a **CORS error**: portless answers for a stopped server with a 502 that has no CORS headers. `bun --watch` stays down after a crash until a watched file changes, and it ignores `node_modules`, so a crash on a not-yet-installed package needs `dev` restarted after `pnpm install`.
 - Portless dev URLs live only while `dev` runs. In a linked git worktree portless prefixes the branch name, so worktrees run alongside the main checkout.

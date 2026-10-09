@@ -1,12 +1,13 @@
-import { PlusSignIcon, Settings02Icon } from '@hugeicons/core-free-icons'
+import { PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { appModules } from '~/lib/modules'
-import { pressNavProps } from '~/lib/press-nav'
+import { QueryLoggerToggle } from '~/modules/query-logger/query-logger-toggle'
+import { newQueryAction } from '~/modules/runner/lib/new-query'
+import { pressNavProps } from '~/utils/press-nav'
 
 import { CreateSchemaDialog } from './create-schema-dialog'
 import { CreateTableDialog, createTableDialogRef } from './create-table-dialog'
@@ -24,45 +25,25 @@ const NavigatorFooter = () => {
 
   return (
     <div className="flex shrink-0 flex-col gap-0.5 pt-1.5 pb-0.5 pl-2">
-      {appModules.newTabActions.map((action) => (
-        <Button
-          key={action.label}
-          variant="ghost-row"
-          size="sm"
-          // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-          className="h-7 w-full justify-start gap-2 rounded-md px-2"
-          {...pressNavProps(() =>
-            router.navigate({
-              params: {
-                resourceId: connectionResource.id,
-                tabId: action.open(connectionResource.id),
-              },
-              to: '/connection/$resourceId/$tabId',
-            })
-          )}
-        >
-          <HugeiconsIcon
-            icon={PlusSignIcon}
-            strokeWidth={2}
-            className="text-muted-foreground size-4 shrink-0"
-          />
-          {action.label}
-        </Button>
-      ))}
-      <Button
-        variant="ghost-row"
-        size="sm"
-        disabled
-        // oxlint-disable-next-line shadcn/no-restyle -- navigator footer rows match the list rows above
-        className="h-7 w-full justify-start gap-2 rounded-md px-2"
+      <SidebarMenuButton
+        {...pressNavProps(() =>
+          router.navigate({
+            params: {
+              resourceId: connectionResource.id,
+              tabId: newQueryAction.open(connectionResource.id),
+            },
+            to: '/connection/$resourceId/$tabId',
+          })
+        )}
       >
         <HugeiconsIcon
-          icon={Settings02Icon}
+          icon={PlusSignIcon}
           strokeWidth={2}
-          className="text-muted-foreground size-4 shrink-0"
+          className="text-muted-foreground"
         />
-        Settings
-      </Button>
+        {newQueryAction.label}
+      </SidebarMenuButton>
+      <QueryLoggerToggle />
     </div>
   )
 }

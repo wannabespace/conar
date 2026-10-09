@@ -287,18 +287,31 @@ export const DistinctValues = ({
     selector: (state) => state.columnLabels,
   })
 
+  const [shown, setShown] = useState(target)
+  if (target && target !== shown) {
+    setShown(target)
+  }
+
   return (
-    <Popover open={!!target} onOpenChange={(open) => !open && onClose()}>
-      {target && (
+    <Popover
+      open={!!target}
+      onOpenChange={(open) => !open && onClose()}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setShown(null)
+        }
+      }}
+    >
+      {shown && (
         <PopoverContent
-          anchor={target.anchor}
+          anchor={shown.anchor}
           align="start"
           padding="none"
           className="w-80 overflow-hidden"
         >
           <StatsBody
-            key={target.column.id}
-            column={target.column}
+            key={shown.column.id}
+            column={shown.column}
             columnLabels={columnLabels}
             filters={filters}
             schema={schema}

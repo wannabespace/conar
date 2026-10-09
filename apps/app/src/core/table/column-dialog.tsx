@@ -23,25 +23,18 @@ import { useState } from 'react'
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
-import type { DraftState, NewColumn } from '~/core/queries/tables/shape'
 
+import { CommentField } from './column-comment-field'
 import { ReferenceField } from './column-reference-field'
 import { TypeField } from './column-type-field'
+import type {
+  EditableColumn,
+  EditableTable,
+  SubmittedColumn,
+} from './submitted-column'
+import { changed, errorsOf, normalized } from './submitted-column'
 import { useColumnType } from './use-column-type'
 import type { ColumnReference, ReferenceTarget } from './use-reference-targets'
-
-interface EditableColumn extends NewColumn {
-  foreign: boolean
-  // Name in the database; differs from `name` while a rename is pending.
-  id: string
-  state?: DraftState
-}
-
-interface EditableTable {
-  columns: Pick<EditableColumn, 'id' | 'name'>[]
-  name: string
-  state?: DraftState
-}
 
 export interface ColumnDialogRequest<
   Table extends EditableTable = EditableTable,
@@ -54,47 +47,6 @@ export interface ColumnDialogRequest<
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
-
-const changed = (
-  column: EditableColumn | null,
-  next: NewColumn,
-  reference: ReferenceTarget | null
-) =>
-  column === null ||
-  reference !== null ||
-  next.name !== column.name ||
-  next.type !== column.type ||
-  next.nullable !== column.nullable
-
-const errorsOf = (
-  { column, table }: ColumnDialogRequest,
-  next: NewColumn,
-  enumValues: string[] | null,
-  submitted: boolean
-) => {
-  const nameBecomesId = column === null || column.state === 'added'
-  const taken = table.columns.some(
-    (other) =>
-      other.id !== column?.id &&
-      (other.name === next.name || (nameBecomesId && other.id === next.name))
-  )
-  const missingName = submitted ? 'Give the column a name.' : undefined
-  const missingValues =
-    submitted && enumValues?.length === 0
-      ? 'Add at least one value.'
-      : undefined
-  return {
-    name: next.name
-      ? taken && 'This table already has a column with this name'
-      : missingName,
-    type:
-      submitted && !next.type ? "Pick or write the column's type." : undefined,
-    values:
-      enumValues && new Set(enumValues).size < enumValues.length
-        ? 'Each value must be unique.'
-        : missingValues,
-  }
-}
 
 const lockedFields = (
   connectionType: ConnectionType,
@@ -114,7 +66,7 @@ const ColumnForm = ({
   request,
 }: {
   onSubmit: (
-    column: NewColumn,
+    column: SubmittedColumn,
     reference: ColumnReference | null,
     renamedValues: RenamedValue[]
   ) => void
@@ -137,14 +89,16 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
+  const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
   const locked = lockedFields(connection.type, column)
-  const next: NewColumn = {
-    name: name.trim(),
-    nullable: primaryKey ? false : nullable,
+  const next = normalized(column, {
+    comment,
+    name,
+    nullable,
     primaryKey,
     type: columnType.type,
-  }
+  })
   const errors = errorsOf(request, next, enumValues, submitted)
 
   return (
@@ -203,6 +157,9 @@ const ColumnForm = ({
             }
           }}
         />
+        {comment !== undefined && (
+          <CommentField value={comment} onValueChange={setComment} />
+        )}
         {column === null && table.state === 'added' && (
           <OptionField
             htmlFor="column-dialog-primary-key"
@@ -275,7 +232,7 @@ export const ColumnDialog = <
   onOpenChange: (open: boolean) => void
   onSubmit: (
     request: ColumnDialogRequest<Table, Column>,
-    column: NewColumn,
+    column: SubmittedColumn,
     reference: ColumnReference | null,
     renamedValues: RenamedValue[]
   ) => void
@@ -288,7 +245,15 @@ export const ColumnDialog = <
   }
 
   return (
-    <Dialog open={request !== null} onOpenChange={onOpenChange}>
+    <Dialog
+      open={request !== null}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(open) => {
+        if (!open) {
+          setShown(null)
+        }
+      }}
+    >
       <DialogContent>
         {shown && (
           <ColumnForm

@@ -4,6 +4,7 @@ import {
   ResizableSeparator,
   ResizablePanel,
 } from '@tamery/ui/components/custom/resizable'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
@@ -22,9 +23,15 @@ import {
   MAX_REMEMBERED_RESOURCES,
 } from '~/core/connection/last-opened-resources'
 import { workspaceSelection } from '~/core/workspace/utils'
-import type { Panel } from '~/lib/module'
+import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { chatPanel } from '~/modules/chat/panel'
+import { useEscapeToNavigator } from '~/modules/navigator/keyboard'
+import { navigatorPanel } from '~/modules/navigator/panel'
+import { navigatorOpenValue } from '~/modules/navigator/stores'
+import { toggleLogger } from '~/modules/query-logger/logger-open'
+import { queryLoggerPanel } from '~/modules/query-logger/panel'
+import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
 import { PasswordForm } from './-components/password-form'
@@ -99,11 +106,17 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
-  const leftPanel = workspaceModules.panelIn('left')
-  const bottomPanel = workspaceModules.panelIn('bottom')
-  const rightPanel = workspaceModules.panelIn('right')
+  const locked = fetching.type === 'waiting-for-password'
 
-  if (fetching.type === 'waiting-for-password') {
+  useHotkey('Mod+B', () => navigatorOpenValue.set((open) => !open), {
+    enabled: !locked,
+  })
+  useHotkey('Mod+J', () => toggleLogger(connectionResource.id), {
+    enabled: !locked,
+  })
+  useEscapeToNavigator(!locked)
+
+  if (locked) {
     return (
       <PasswordForm
         connection={connection}
@@ -113,37 +126,24 @@ const ResourcePage = () => {
   }
 
   return (
-    <>
-      {workspaceModules.mounts.map((Mount, index) => (
-        <Mount key={index} />
-      ))}
-      <ResizableGroup orientation="horizontal" className="p-2">
-        {leftPanel && (
-          <RegionPanel panel={leftPanel} resourceId={connectionResource.id} />
-        )}
-        <ResizablePanel className="flex flex-col">
-          <ResizableGroup orientation="vertical">
-            <ResizablePanel className="flex flex-col">
-              <div className={resourcePanelClassName}>
-                {workspaceModules.headers.map((Header, index) => (
-                  <Header key={index} />
-                ))}
-                <Outlet />
-              </div>
-            </ResizablePanel>
-            {bottomPanel && (
-              <RegionPanel
-                panel={bottomPanel}
-                resourceId={connectionResource.id}
-              />
-            )}
-          </ResizableGroup>
-        </ResizablePanel>
-        {rightPanel && (
-          <RegionPanel panel={rightPanel} resourceId={connectionResource.id} />
-        )}
-      </ResizableGroup>
-    </>
+    <ResizableGroup orientation="horizontal" className="p-2">
+      <RegionPanel panel={navigatorPanel} resourceId={connectionResource.id} />
+      <ResizablePanel className="flex flex-col">
+        <ResizableGroup orientation="vertical">
+          <ResizablePanel className="flex flex-col">
+            <div className={resourcePanelClassName}>
+              <TabBar />
+              <Outlet />
+            </div>
+          </ResizablePanel>
+          <RegionPanel
+            panel={queryLoggerPanel}
+            resourceId={connectionResource.id}
+          />
+        </ResizableGroup>
+      </ResizablePanel>
+      <RegionPanel panel={chatPanel} resourceId={connectionResource.id} />
+    </ResizableGroup>
   )
 }
 

@@ -20,8 +20,9 @@ import { openContextMenuOn } from '~/components/app-context-menu'
 import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
 import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
 import { globalHooks } from '~/lib/global-hooks'
-import { appModules } from '~/lib/modules'
 import { queryClient } from '~/lib/query-client'
+import { UpdatesObserver } from '~/modules/updates/updates-observer'
+import { WindowTooSmall } from '~/modules/window-too-small/window-too-small'
 
 const isElectron = !!window.electron
 
@@ -73,9 +74,8 @@ const RootDocument = () => {
             />
           )}
         </QueryClientProvider>
-        {appModules.mounts.map((Mount, index) => (
-          <Mount key={index} />
-        ))}
+        <UpdatesObserver />
+        <WindowTooSmall />
         <Toaster />
       </TooltipProvider>
     </>

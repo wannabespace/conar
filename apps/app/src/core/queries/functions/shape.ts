@@ -3,8 +3,10 @@ import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
 
-import type { RoutineKind } from './routine-kind'
-import { routineKeyword } from './routine-kind'
+export type RoutineKind = 'function' | 'procedure'
+
+export const routineKeyword = (kind: RoutineKind) =>
+  sql.raw(kind === 'procedure' ? 'PROCEDURE' : 'FUNCTION')
 
 export const FUNCTION_VOLATILITIES = [
   'VOLATILE',

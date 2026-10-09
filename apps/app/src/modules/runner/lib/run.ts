@@ -1,26 +1,14 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
-import {
-  dialects,
-  invalidatesCatalog,
-  leavesTransactionOpen,
-  unwrapTransaction,
-  writesData,
-} from '@tamery/sql'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { refreshAfterRun } from '~/core/connection/refresh-after-run'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { ResultSet } from '~/core/queries/connection/custom'
-import { customQuery } from '~/core/queries/connection/custom'
-import { transactionQuery } from '~/core/queries/connection/transaction'
-import { resourceColumnsQueryKey } from '~/core/queries/tables/columns'
+import { statementQuery } from '~/core/queries/connection/statement'
 import type { QueryParams } from '~/core/runtime/query'
-import {
-  cancelQuery,
-  connectionResourceToQueryParams,
-} from '~/core/runtime/query'
+import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
@@ -86,27 +74,6 @@ const watchTab = (tab: RunnerTab) => {
   )
 }
 
-const queryFor = (
-  text: string,
-  connectionType: ConnectionType,
-  signal: AbortSignal
-) => {
-  const dialect = dialects[connectionType]
-  const transaction = unwrapTransaction(text, dialect)
-  if (transaction) {
-    return transactionQuery(transaction, signal)
-  }
-  if (leavesTransactionOpen(text, dialect)) {
-    throw new Error(
-      dialect.transactions
-        ? 'Run BEGIN together with its COMMIT or ROLLBACK. A transaction left open would hold the connection the rest of the app uses.'
-        : 'This database has no transactions. Run the statements without BEGIN.'
-    )
-  }
-  const single = customQuery({ query: text })
-  return { queryIds: [single.queryId], run: single.run }
-}
-
 const resultOf = (
   statement: RunnerStatement,
   patch: Partial<RunnerResult> = {}
@@ -128,16 +95,11 @@ const runOne = async (
   signal: AbortSignal
 ): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
-  let cancel = noop
   try {
-    const { queryIds, run } = queryFor(statement.text, params.type, signal)
-    cancel = () => {
-      for (const queryId of queryIds) {
-        void silently(() => cancelQuery(params, queryId))
-      }
-    }
-    signal.addEventListener('abort', cancel, { once: true })
-    const sets = await run(params)
+    const sets = await statementQuery(statement.text, params.type).run({
+      ...params,
+      signal,
+    })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
       resultOf(statement, { duration, set })
@@ -150,30 +112,6 @@ const runOne = async (
         stopped: signal.aborted,
       }),
     ]
-  } finally {
-    signal.removeEventListener('abort', cancel)
-  }
-}
-
-const refreshAfterRun = (
-  connectionResource: ConnectionResource,
-  connectionType: ConnectionType,
-  statements: { text: string }[]
-) => {
-  const text = statements.map((statement) => statement.text).join(';\n')
-  if (invalidatesCatalog(text, dialects[connectionType])) {
-    void queryClient.invalidateQueries({
-      queryKey: ['connection-resource', connectionResource.id],
-    })
-    queryClient.removeQueries({
-      queryKey: resourceColumnsQueryKey({ connectionResource }),
-      type: 'inactive',
-    })
-  } else if (writesData(text, dialects[connectionType])) {
-    // Sync with resourceRowsQueryKey and resourceTableTotalQueryKey: every row-data key starts with this prefix.
-    void queryClient.invalidateQueries({
-      queryKey: ['connection-resource', connectionResource.id, 'schema'],
-    })
   }
 }
 
@@ -257,7 +195,11 @@ export const runStatements = async ({
     type: connectionType,
   })
   if (connectionType) {
-    refreshAfterRun(connectionResource, connectionType, statements)
+    refreshAfterRun(
+      connectionResource,
+      connectionType,
+      statements.map((statement) => statement.text).join(';\n')
+    )
   }
 
   if (!current()) {

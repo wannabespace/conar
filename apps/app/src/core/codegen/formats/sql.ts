@@ -11,7 +11,7 @@ import {
 } from '~/core/codegen/utils'
 import { coldDialects } from '~/core/runtime/dialects'
 import type { Column } from '~/core/table/cell/utils'
-import { formatSql } from '~/lib/formatter'
+import { formatSql } from '~/utils/formatter'
 
 export const inlineParameters = (
   sql: string,

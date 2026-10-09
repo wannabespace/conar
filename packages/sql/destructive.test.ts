@@ -5,12 +5,14 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   destructiveKeywords,
   invalidatesCatalog,
+  readsOnly,
   writesData,
 } from './destructive'
 import { dialects } from './dialect'
 
 const mysql = dialects[ConnectionType.MySQL]
 const pg = dialects[ConnectionType.Postgres]
+const clickhouse = dialects[ConnectionType.ClickHouse]
 
 describe('destructiveKeywords', () => {
   it('flags statements that change or remove existing data', () => {
@@ -71,10 +73,35 @@ describe('destructiveKeywords', () => {
         pg
       )
     ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'SET NOCOUNT ON DELETE FROM users',
+        dialects[ConnectionType.MSSQL]
+      )
+    ).toEqual(['DELETE'])
+    expect(
+      destructiveKeywords(
+        'CREATE TABLE t (ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)',
+        mysql
+      )
+    ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'CREATE RULE r AS ON UPDATE TO t DO INSTEAD NOTHING',
+        pg
+      )
+    ).toEqual([])
     expect(destructiveKeywords('EXPLAIN DELETE FROM t', pg)).toEqual([])
     expect(destructiveKeywords('EXPLAIN ANALYZE DELETE FROM t', pg)).toEqual([
       'DELETE',
     ])
+    expect(destructiveKeywords('EXPLAIN ANALYSE DELETE FROM t', pg)).toEqual([
+      'DELETE',
+    ])
+    expect(
+      destructiveKeywords('EXPLAIN ("analyze") DELETE FROM t', pg)
+    ).toEqual(['DELETE'])
+    expect(writesData('EXPLAIN ("analyze") DELETE FROM t', pg)).toBe(true)
   })
 
   it('flags upserts that overwrite rows', () => {
@@ -98,6 +125,7 @@ describe('destructiveKeywords', () => {
       true
     )
     expect(invalidatesCatalog("UPDATE t SET a = 'DROP'", mysql)).toBe(false)
+    expect(invalidatesCatalog("COMMENT ON COLUMN t.a IS 'x'", pg)).toBe(true)
     expect(
       invalidatesCatalog('DO $$ BEGIN CREATE TABLE t (); END $$', pg)
     ).toBe(true)
@@ -127,5 +155,137 @@ describe('destructiveKeywords', () => {
     expect(writesData('SELECT * FROM t FOR UPDATE', pg)).toBe(false)
     expect(writesData("SELECT 'DELETE' FROM t", mysql)).toBe(false)
     expect(writesData('EXPLAIN UPDATE t SET a = 1', pg)).toBe(false)
+    expect(writesData('SELECT copy FROM t', pg)).toBe(false)
+  })
+})
+
+describe('readsOnly', () => {
+  const mssql = dialects[ConnectionType.MSSQL]
+
+  it('accepts one reading statement', () => {
+    expect(readsOnly('select * from users where id = 1;', pg)).toBe(true)
+    expect(readsOnly('WITH t AS (SELECT 1) SELECT * FROM t', pg)).toBe(true)
+    expect(readsOnly("select 'drop table users'", pg)).toBe(true)
+    expect(readsOnly('SELECT comment FROM posts', pg)).toBe(true)
+    expect(readsOnly('SHOW TABLES', mysql)).toBe(true)
+    expect(readsOnly('SHOW CREATE TABLE users', mysql)).toBe(true)
+    expect(readsOnly('SHOW CREATE TABLE users', clickhouse)).toBe(true)
+    expect(
+      readsOnly('SELECT * FROM t USE INDEX (i) JOIN u ON u.id = t.id', mysql)
+    ).toBe(true)
+    expect(
+      readsOnly("SELECT CAST('a' AS CHAR CHARACTER SET utf8mb4)", mysql)
+    ).toBe(true)
+    expect(
+      readsOnly(
+        'SELECT * FROM t ORDER BY id OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY',
+        mssql
+      )
+    ).toBe(true)
+    expect(readsOnly('SELECT 1 /* note */', mysql)).toBe(true)
+  })
+
+  it('rejects writes hidden in or after a read', () => {
+    expect(readsOnly('select 1; delete from users', pg)).toBe(false)
+    expect(
+      readsOnly('WITH d AS (DELETE FROM t RETURNING *) SELECT * FROM d', pg)
+    ).toBe(false)
+    expect(readsOnly('SELECT * INTO copy FROM users', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 COMMIT DROP TABLE users', mssql)).toBe(false)
+    expect(readsOnly("SELECT 1 EXEC('DROP TABLE users')", mssql)).toBe(false)
+    expect(readsOnly('EXPLAIN ANALYZE DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('EXPLAIN ANALYSE DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('EXPLAIN DELETE FROM users', pg)).toBe(false)
+    expect(readsOnly('SHOW DELETE FROM t', mysql)).toBe(false)
+  })
+
+  it('rejects a SQL Server batch that opens with a procedure call', () => {
+    for (const text of [
+      'EXPLAIN 1 DELETE FROM t COMMIT',
+      'EXPLAIN 1 SHUTDOWN',
+      'EXPLAIN 1 KILL 55',
+      'SHOW KILL 55',
+      'SHOW SHUTDOWN WITH NOWAIT',
+      'SHOW DELETE FROM t',
+      'SHOW DROP TABLE t',
+      'EXPLAIN SELECT 1',
+      'SHOW TABLES',
+    ]) {
+      expect(readsOnly(text, mssql)).toBe(false)
+    }
+  })
+
+  it('rejects a write after a SQL Server setting that ends in ON', () => {
+    expect(
+      readsOnly(
+        'SELECT 1 SET NOCOUNT ON COMMIT SET XACT_ABORT ON DELETE FROM users',
+        mssql
+      )
+    ).toBe(false)
+  })
+
+  it('rejects what outlives the rollback', () => {
+    expect(readsOnly('SELECT 1 SET ROWCOUNT 1', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 SET IMPLICIT_TRANSACTIONS ON', mssql)).toBe(
+      false
+    )
+    expect(readsOnly('SELECT 1 USE master', mssql)).toBe(false)
+    expect(readsOnly('SELECT 1 BEGIN TRAN', mssql)).toBe(false)
+    expect(readsOnly("SELECT 1 WAITFOR DELAY '00:10'", mssql)).toBe(false)
+    expect(readsOnly('SELECT NEXT VALUE FOR dbo.seq', mssql)).toBe(false)
+    expect(readsOnly('SELECT NEXT VALUE FOR seq', mysql)).toBe(false)
+    expect(readsOnly('SELECT next, value FROM t', pg)).toBe(true)
+  })
+
+  it('rejects functions that act outside the transaction or outlive it', () => {
+    expect(
+      readsOnly("SELECT dblink_exec('dbname=x', 'DROP TABLE users')", pg)
+    ).toBe(false)
+    expect(readsOnly('SELECT pg_advisory_lock(1)', pg)).toBe(false)
+    expect(readsOnly('SELECT pg_terminate_backend(42)', pg)).toBe(false)
+    expect(readsOnly("SELECT GET_LOCK('a', 10)", mysql)).toBe(false)
+    expect(
+      readsOnly("SELECT * FROM OPENQUERY(srv, 'DELETE FROM users')", mssql)
+    ).toBe(false)
+    expect(readsOnly("SELECT 1 SETUSER 'dbo'", mssql)).toBe(false)
+    expect(
+      readsOnly(
+        'SELECT 1 OPEN SYMMETRIC KEY k DECRYPTION BY PASSWORD = 1',
+        mssql
+      )
+    ).toBe(false)
+    expect(readsOnly('SELECT 1 REVERT', mssql)).toBe(false)
+    expect(readsOnly('SELECT get_lock FROM t', mysql)).toBe(true)
+  })
+
+  it('rejects MySQL executable comments', () => {
+    expect(readsOnly("SELECT 1 /*! INTO DUMPFILE '/tmp/x' */", mysql)).toBe(
+      false
+    )
+    expect(
+      readsOnly("SELECT 1 /*!50000 INTO OUTFILE '/tmp/mcp-write' */", mysql)
+    ).toBe(false)
+    expect(readsOnly("SELECT 1 /*M! INTO OUTFILE '/tmp/x' */", mysql)).toBe(
+      false
+    )
+  })
+
+  it('rejects a SQL Server batch that ends the transaction and writes', () => {
+    expect(
+      readsOnly(
+        'SELECT 1 ROLLBACK TRANSACTION GRANT CONTROL SERVER TO public',
+        mssql
+      )
+    ).toBe(false)
+    expect(
+      readsOnly("SELECT 1 ROLLBACK RESTORE DATABASE db FROM DISK = 'x'", mssql)
+    ).toBe(false)
+    expect(readsOnly('SELECT 1 DBCC SHRINKDATABASE(db)', mssql)).toBe(false)
+  })
+
+  it('rejects anything that is not a read', () => {
+    expect(readsOnly('COMMIT', pg)).toBe(false)
+    expect(readsOnly('SET search_path TO evil', pg)).toBe(false)
+    expect(readsOnly('', pg)).toBe(false)
   })
 })

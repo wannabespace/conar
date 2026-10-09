@@ -7,7 +7,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 
-import { PrivacyLink, TermsLink } from '~/modules/legal/module'
+import { PrivacyLink, TermsLink } from '~/modules/legal/legal-links'
 
 export const Footer = () => (
   <footer className="container mx-auto flex flex-col items-center justify-between gap-4 p-4 sm:flex-row sm:gap-0 sm:px-0">

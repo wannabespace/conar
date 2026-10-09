@@ -14,7 +14,7 @@ import type { ComponentProps } from 'react'
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { ReleasesLink } from '~/modules/releases/module'
+import { ReleasesLink } from '~/modules/releases/releases-link'
 
 import { NavbarTextLogo } from './navbar-text-logo'
 

@@ -8,6 +8,10 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
+  SidebarGroupLabel,
+  SidebarMenuAction,
+} from '@tamery/ui/components/sidebar'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -20,7 +24,6 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { parseTableTabId } from '~/core/tabs/ids'
 
-import { SidebarGroupLabel, SidebarMenuAction } from './primitives'
 import type { TreeRow } from './tree-row'
 
 const useActiveTable = () => {
@@ -78,7 +81,7 @@ export const SchemaRow = ({
             onClick={onToggle}
           />
         }
-        className="group hover:bg-foreground/5 h-full w-full gap-1 px-1.5"
+        className="group hover:bg-foreground/5 text-foreground/70 h-full w-full gap-1 px-1.5"
       >
         <HugeiconsIcon
           icon={ArrowRight01Icon}
@@ -111,7 +114,7 @@ export const SchemaRow = ({
             <SidebarMenuAction
               showOnHover
               aria-label={`New table in ${row.name}`}
-              className="text-muted-foreground top-1/2 right-6 -translate-y-1/2"
+              className="top-1/2 right-6 -translate-y-1/2"
               onClick={onCreateTable}
             />
           }

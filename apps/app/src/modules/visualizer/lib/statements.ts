@@ -9,13 +9,13 @@ import {
 import type { AlterColumnTarget, NewColumn } from '~/core/queries/tables/shape'
 import {
   addColumnStatement,
-  alterColumnStatement,
   createTableStatement,
   dropColumnStatement,
   dropTableStatement,
   renameColumnStatement,
   renameTableStatement,
 } from '~/core/queries/tables/shape'
+import { alterColumnStatement } from '~/core/queries/tables/shape/alter-column'
 
 export interface TableRef {
   schema: string

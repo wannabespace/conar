@@ -27,8 +27,8 @@ import type { ConnectionResource } from '~/core/connection/sync'
 import { openTab, renameTab } from '~/core/tabs/actions'
 import { resolveTab } from '~/core/tabs/kinds'
 import type { ConnectionTab } from '~/core/tabs/types'
-import { pressNavProps } from '~/lib/press-nav'
-import { workspaceModules } from '~/lib/workspace-modules'
+import { tabViews } from '~/core/tabs/views'
+import { pressNavProps } from '~/utils/press-nav'
 
 const isElectron = !!window.electron
 
@@ -183,7 +183,7 @@ export const Tab = ({
 
   const prefetch = () => {
     if (resolved) {
-      workspaceModules.tabs[resolved.kind.type]?.prefetch?.(
+      tabViews[resolved.kind.type]?.prefetch?.(
         connectionResource,
         resolved.params
       )

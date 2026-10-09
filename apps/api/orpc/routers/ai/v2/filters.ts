@@ -1,28 +1,10 @@
 import { generateFilters } from '@tamery/ai/features'
 import { AiFeature } from '@tamery/ai/usage'
-import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
 import { type } from 'arktype'
-import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 
 import { aiUsage } from '~/lib/ai-usage'
-import { redis } from '~/lib/redis'
+import { usage } from '~/lib/usage'
 import { orpc, permissionsMiddleware, permix } from '~/orpc'
-
-const redisUsage = {
-  get: async (userId: string) => {
-    const value = await redis.get(
-      `ai:usage:${userId}:filters:${format(new Date(), 'yyyy-MM')}`
-    )
-    return value ? Number(value) : 0
-  },
-  increment: async (userId: string) => {
-    const now = new Date()
-    const key = `ai:usage:${userId}:filters:${format(now, 'yyyy-MM')}`
-    const value = await redis.incr(key)
-    await redis.expire(key, differenceInSeconds(endOfMonth(now), now))
-    return value
-  },
-}
 
 export const filters = orpc
   .use(permissionsMiddleware)
@@ -35,11 +17,8 @@ export const filters = orpc
   )
   .errors({
     FORBIDDEN: {
-      data: type({
-        max: 'number',
-        remaining: 'number',
-        resetAt: 'Date',
-      }),
+      message:
+        'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
     },
   })
   .handler(async ({ input, signal, context, errors }) => {
@@ -47,23 +26,10 @@ export const filters = orpc
       filterInput: input.prompt,
     })
 
-    let usage = 0
-    const unlimited = context.permissions.check('ai.filter.unlimited')
+    const quota = await usage.get(context, 'filters')
 
-    if (!unlimited) {
-      usage = await redisUsage.get(context.user.id)
-
-      if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
-        throw errors.FORBIDDEN({
-          data: {
-            max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
-            remaining: 0,
-            resetAt: addDays(endOfMonth(new Date()), 1),
-          },
-          message:
-            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
-        })
-      }
+    if (quota && quota.used >= quota.max) {
+      throw errors.FORBIDDEN()
     }
 
     const result = await generateFilters({
@@ -76,30 +42,11 @@ export const filters = orpc
       }),
     })
 
-    if (
-      !unlimited &&
-      (result.filters.length > 0 || Object.keys(result.orderBy).length > 0)
-    ) {
-      usage = await redisUsage.increment(context.user.id)
+    if (result.filters.length > 0 || Object.keys(result.orderBy).length > 0) {
+      await usage.record(context, 'filters')
     }
 
-    const remainingFreeAiUsage = unlimited
-      ? null
-      : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
+    context.addLogData({ filterResult: result })
 
-    context.addLogData({
-      filterResult: result,
-      ...(remainingFreeAiUsage !== null && { remainingFreeAiUsage }),
-    })
-
-    return {
-      ...result,
-      ...(remainingFreeAiUsage !== null && {
-        freeAiUsage: {
-          max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
-          remaining: remainingFreeAiUsage,
-          resetAt: addDays(endOfMonth(new Date()), 1),
-        },
-      }),
-    }
+    return result
   })

@@ -18,11 +18,13 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@modelcontextprotocol/sdk": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",
