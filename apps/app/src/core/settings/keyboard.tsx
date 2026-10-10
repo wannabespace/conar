@@ -8,12 +8,12 @@ import { posthog } from '~/lib/posthog'
 import { SettingsGroup, SettingsRow } from './settings-group'
 import { ShortcutsList } from './shortcuts'
 
-export const GeneralSettings = () => {
+export const KeyboardSettings = () => {
   const isShortcutRevealOn = useSubscription(shortcutRevealStore)
 
   return (
     <>
-      <SettingsGroup title="Keyboard">
+      <SettingsGroup>
         <SettingsRow
           htmlFor="shortcut-reveal"
           title={
