@@ -69,7 +69,7 @@ export const useNavigatorSearch = ({
   const node = nodes[index]
   const highlightedId = focused ? highlighted : undefined
 
-  // A virtualized list must keep the highlighted row rendered (TablesTree scrolls it into view), or Enter and ⌘. find nothing.
+  // A virtualized list must keep the highlighted row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
   const highlightedControl = () =>
     listRef.current?.querySelector<HTMLElement>(
       '[data-highlighted] :is(a, button)'

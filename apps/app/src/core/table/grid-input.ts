@@ -1,4 +1,3 @@
-import type { ScrollToCell } from '@tamery/table'
 import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
@@ -38,14 +37,14 @@ export const useGridHotkeys = ({
   onExtendRows,
   onToggleRows,
   scrollRef,
-  scrollToCell,
+  scrollToCursor,
 }: {
   canEdit: boolean
   cursor: GridCursor
   onExtendRows?: (direction: 'up' | 'down') => void
   onToggleRows?: (rowIndexes: number[]) => void
   scrollRef: RefObject<HTMLDivElement | null>
-  scrollToCell: RefObject<ScrollToCell | null>
+  scrollToCursor: () => void
 }) => {
   const hasCursor = useSubscription(cursor.store, {
     selector: (state) => state.cursor !== null,
@@ -62,34 +61,26 @@ export const useGridHotkeys = ({
 
   // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
   // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
-  const showCursor = useEffectEvent(() => {
-    if (!cursor.store.get().cursor) {
+  const track = useEffectEvent(() => {
+    const focused = document.activeElement === scrollRef.current
+    setGridFocused(focused)
+    if (focused && !cursor.store.get().cursor) {
       cursor.step(0, 0)
     }
   })
   useEffect(() => {
-    const track = () => {
-      const focused = document.activeElement === scrollRef.current
-      setGridFocused(focused)
-      if (focused) {
-        showCursor()
-      }
-    }
     document.addEventListener('focusin', track)
     document.addEventListener('focusout', track)
     return () => {
       document.removeEventListener('focusin', track)
       document.removeEventListener('focusout', track)
     }
-  }, [scrollRef])
+  }, [])
 
   // A far edge is virtualized away, so the cursor's own glide finds no cell to scroll to.
   const jumpToEdge = (down: number, right: number, extend?: boolean) => {
     cursor.step(down * TO_EDGE, right * TO_EDGE, extend)
-    const at = cursor.store.get().cursor
-    if (at) {
-      scrollToCell.current?.(at.row, at.column)
-    }
+    scrollToCursor()
   }
 
   useHotkeys(

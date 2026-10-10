@@ -121,20 +121,17 @@ export const useFilterComposer = ({
         },
       },
       {
-        callback: (event) => {
+        callback: () => {
           if (query !== '') {
             setQuery('')
-          } else if (stage.step !== 'idle') {
-            stepBack()
-          } else if (tableGridRef.current) {
-            tableGridRef.current.focus()
+          } else if (stage.step === 'idle') {
+            inputRef.current?.blur()
+            tableGridRef.current?.focus()
           } else {
-            return
+            stepBack()
           }
-          event.preventDefault()
         },
         hotkey: 'Escape',
-        options: { preventDefault: false },
       },
     ],
     { target: inputRef }

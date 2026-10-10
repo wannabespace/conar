@@ -43,7 +43,7 @@ const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button text-foreground hover:bg-foreground/5 not-data-active:group-data-highlighted/menu-item:bg-foreground/10 data-active:group-data-highlighted/menu-item:ring-primary/30 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground aria-pressed:bg-foreground/10 data-active:bg-primary data-active:text-primary-foreground data-active:[&_svg]:text-primary-foreground hover:data-active:bg-primary hover:data-active:text-primary-foreground flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 data-active:group-data-highlighted/menu-item:ring-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button text-foreground hover:bg-foreground/5 not-data-active:group-data-highlighted/menu-item:bg-foreground/10 data-active:group-data-highlighted/menu-item:ring-primary/30 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground aria-pressed:bg-foreground/10 data-active:bg-foreground/15 hover:data-active:bg-foreground/15 flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 data-active:group-data-highlighted/menu-item:ring-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           variant === 'muted' && 'text-muted-foreground',
           className
         ),
@@ -60,13 +60,11 @@ const SidebarMenuButton = ({
 
 const SidebarMenuAction = ({
   className,
-  isActive = false,
   render,
   showOnHover,
   ...props
 }: useRender.ComponentProps<'button'> &
   ComponentProps<'button'> & {
-    isActive?: boolean
     showOnHover?: boolean
   }) =>
   useRender({
@@ -74,7 +72,7 @@ const SidebarMenuAction = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `text-muted-foreground peer-hover/menu-button:text-accent-foreground hover:bg-foreground/10 hover:text-accent-foreground focus-visible:focus-ring data-active:text-primary-foreground/80! hover:data-active:bg-primary-foreground/20 hover:data-active:text-primary-foreground! absolute top-1 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-muted-foreground peer-hover/menu-button:text-accent-foreground hover:bg-foreground/10 hover:text-accent-foreground focus-visible:focus-ring absolute top-1 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           showOnHover &&
             `peer-data-active/menu-button:text-accent-foreground opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100`,
           className
@@ -84,7 +82,6 @@ const SidebarMenuAction = ({
     ),
     render,
     state: {
-      active: isActive,
       sidebar: 'menu-action',
       slot: 'sidebar-menu-action',
     },

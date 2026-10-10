@@ -118,22 +118,23 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
+  const scrollToCursor = () => {
+    const at = cursor.store.get().cursor
+    if (at) {
+      scrollToCell.current?.(at.row, at.column)
+    }
+  }
   useGridHotkeys({
     canEdit: !!onEdit,
     cursor,
     onExtendRows,
     onToggleRows,
     scrollRef,
-    scrollToCell,
+    scrollToCursor,
   })
   const pointer = useGridPointer(cursor)
   useGridFocusRequest(focusKey, scrollRef)
-  useMountedEffect(() => {
-    const at = cursor.store.get().cursor
-    if (at) {
-      scrollToCell.current?.(at.row, at.column)
-    }
-  }, [layout])
+  useMountedEffect(scrollToCursor, [layout])
 
   const renderDataCell = (cell: DataGridCell, geometry?: CellGeometry) =>
     renderCell ? (

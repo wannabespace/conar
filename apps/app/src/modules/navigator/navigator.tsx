@@ -15,7 +15,7 @@ import { CreateViewDialog } from './create-view-dialog'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
 import { getNavigatorStore } from './stores'
-import { TablesList } from './tables-list'
+import { TablesPanel } from './tables-panel'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -74,7 +74,7 @@ export const Navigator = () => {
             className="flex min-h-0 flex-1 flex-col"
           >
             {navigator === 'tables' ? (
-              <TablesList onCreateTable={createTable} />
+              <TablesPanel onCreateTable={createTable} />
             ) : (
               <DefinitionsPanel />
             )}

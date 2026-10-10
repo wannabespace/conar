@@ -7,7 +7,6 @@ import { useSubscription } from 'seitu/react'
 import { DiscardButton } from '~/core/drafts/discard-button'
 import { ChangeGroup, StagedReviewDrawer } from '~/core/drafts/review-drawer'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
-import { requestGridFocus } from '~/core/table/grid-focus'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
@@ -15,7 +14,6 @@ import {
   primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
-import { tableTabId } from '~/core/tabs/ids'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
 import { plural } from '~/utils/plural'
@@ -135,7 +133,7 @@ export const DraftsReviewDrawer = ({
           jumpTarget.current = null
           if (!target) {
             if (changeCount === 0) {
-              requestGridFocus(tableTabId(schema, table))
+              tableGridRef.current?.focus()
             }
             return changeCount > 0
           }

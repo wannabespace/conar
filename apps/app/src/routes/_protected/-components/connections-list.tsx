@@ -63,6 +63,19 @@ const groupValue = createWebStorageValue({
   defaultValue: 'label',
 })
 
+const focusRow = (event: KeyboardEvent, delta: 1 | -1) => {
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-row-link]')]
+  const index = rows.indexOf(document.activeElement as HTMLElement)
+  if (index === -1 && document.activeElement !== document.body) {
+    return
+  }
+  const next = index === -1 ? rows.at(delta > 0 ? 0 : -1) : rows[index + delta]
+  if (next) {
+    event.preventDefault()
+    next.focus()
+  }
+}
+
 export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
@@ -129,25 +142,6 @@ export const ConnectionsList = () => {
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
-  const listRef = useRef<HTMLDivElement>(null)
-  const focusRow = (event: KeyboardEvent, delta: 1 | -1) => {
-    const rows = [
-      ...(listRef.current?.querySelectorAll<HTMLElement>('[data-row-link]') ??
-        []),
-    ]
-    const focused = document.activeElement
-    const index = rows.indexOf(focused as HTMLElement)
-    if (index === -1 && focused !== document.body) {
-      return
-    }
-    const next =
-      index === -1 ? rows.at(delta > 0 ? 0 : -1) : rows[index + delta]
-    if (next) {
-      event.preventDefault()
-      next.focus()
-    }
-  }
-
   useHotkeys(
     [
       { callback: (event) => focusRow(event, 1), hotkey: 'ArrowDown' },
@@ -157,7 +151,7 @@ export const ConnectionsList = () => {
   )
 
   return (
-    <div ref={listRef} className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
       {showLastOpened && <LastOpenedResources />}
       {data.length > 1 && (
