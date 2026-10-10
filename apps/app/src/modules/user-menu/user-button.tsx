@@ -102,7 +102,10 @@ export const UserButton = ({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="size-5 cursor-default rounded-sm">
+      <DropdownMenuTrigger
+        aria-label="Account"
+        className="size-5 cursor-default rounded-sm"
+      >
         <UserAvatar className="size-full" user={data?.user} />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" side={side} align={align}>

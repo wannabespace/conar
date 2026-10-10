@@ -4,11 +4,7 @@ import {
   PlayListAddIcon,
   Bookmark02Icon,
 } from '@hugeicons/core-free-icons'
-import {
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@tamery/ui/components/command'
+import { CommandGroup, CommandList } from '@tamery/ui/components/command'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
@@ -25,7 +21,7 @@ import {
   useRunnerPageStore,
 } from '../lib/store'
 import type { Query } from '../sync'
-import { ListEmpty, PopoverCommand, RowAction } from './popover-list'
+import { ActionItem, ListEmpty, PopoverCommand } from './popover-list'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 const { useRouteContext } = getRouteApi(
@@ -75,11 +71,35 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
           </ListEmpty>
           <CommandGroup>
             {queries.map((query) => (
-              <CommandItem
+              <ActionItem
                 key={query.id}
                 value={query.id}
                 keywords={[query.name, query.query]}
                 onSelect={() => openInNewTab(query)}
+                actions={[
+                  {
+                    icon: PlayListAddIcon,
+                    label: 'Append to This Tab',
+                    onSelect: () => {
+                      appendQuery(store, query.query)
+                      onPicked()
+                    },
+                  },
+                  {
+                    icon: PencilEdit02Icon,
+                    label: 'Rename',
+                    onSelect: () => {
+                      onPicked()
+                      renameSaved(query)
+                    },
+                  },
+                  {
+                    icon: Delete02Icon,
+                    label: 'Delete',
+                    onSelect: () => removeDialogRef.current?.remove(query),
+                    variant: 'destructive',
+                  },
+                ]}
               >
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span data-mask className="truncate">
@@ -92,31 +112,7 @@ export const SavedQueries = ({ onPicked }: { onPicked: () => void }) => {
                     {query.query}
                   </span>
                 </div>
-                <div className="flex shrink-0 items-center">
-                  <RowAction
-                    icon={PlayListAddIcon}
-                    label="Append to this tab"
-                    onClick={() => {
-                      appendQuery(store, query.query)
-                      onPicked()
-                    }}
-                  />
-                  <RowAction
-                    icon={PencilEdit02Icon}
-                    label="Rename"
-                    onClick={() => {
-                      onPicked()
-                      renameSaved(query)
-                    }}
-                  />
-                  <RowAction
-                    destructive
-                    icon={Delete02Icon}
-                    label="Delete"
-                    onClick={() => removeDialogRef.current?.remove(query)}
-                  />
-                </div>
-              </CommandItem>
+              </ActionItem>
             ))}
           </CommandGroup>
         </CommandList>

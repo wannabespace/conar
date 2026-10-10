@@ -27,6 +27,18 @@ import {
   renderWebNodes,
 } from '~/components/app-menu-web'
 
+export const openContextMenuOn = (element: Element) => {
+  const { bottom, left } = element.getBoundingClientRect()
+  element.dispatchEvent(
+    new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: left,
+      clientY: bottom,
+    })
+  )
+}
+
 const WebMenuItems = ({
   items,
   parts,

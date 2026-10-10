@@ -14,11 +14,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
@@ -42,6 +43,7 @@ export const Tab = ({
   defaultLabel,
   connectionResource,
   isActive,
+  isTabStop,
   isDragging,
   onDragStateChange,
   onClose,
@@ -56,6 +58,7 @@ export const Tab = ({
   label: string
   defaultLabel: string
   isActive: boolean
+  isTabStop: boolean
   isDragging: boolean
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
@@ -69,9 +72,9 @@ export const Tab = ({
 }) => {
   const router = useRouter()
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
+  const renameRef = useRef<HTMLInputElement>(null)
   const resolved = resolveTab(tab.id)
   const isPreview = !!tab.preview
   const isRenaming = draft !== null
@@ -97,6 +100,31 @@ export const Tab = ({
     )
     setDraft(null)
   }
+
+  const focusTab = () => ref.current?.querySelector('button')?.focus()
+
+  const finishRename = (finish: () => void) => {
+    flushSync(finish)
+    focusTab()
+  }
+
+  useHotkeys(
+    [
+      {
+        callback: (event) => {
+          if (!event.isComposing) {
+            finishRename(commitRename)
+          }
+        },
+        hotkey: 'Enter',
+      },
+      {
+        callback: () => finishRename(() => setDraft(null)),
+        hotkey: 'Escape',
+      },
+    ],
+    { target: renameRef }
+  )
 
   const items: AppMenuNode[] = [
     {
@@ -152,13 +180,15 @@ export const Tab = ({
   ]
 
   useEffect(() => {
-    if (!isVisible && isActive && ref.current) {
-      ref.current.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      })
+    const reveal = async () => {
+      // The label font swaps in after mount and widens every tab, so a reveal before it lands leaves this tab clipped.
+      await document.fonts.ready
+      ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     }
-  }, [isActive, isVisible])
+    if (isActive) {
+      reveal()
+    }
+  }, [isActive])
 
   const prefetch = () => {
     if (resolved) {
@@ -207,6 +237,7 @@ export const Tab = ({
         <div data-mask className={tabClasses}>
           {icon}
           <input
+            ref={renameRef}
             autoFocus
             aria-label="Tab name"
             value={draft ?? ''}
@@ -214,15 +245,6 @@ export const Tab = ({
             onChange={(e) => setDraft(e.target.value)}
             onFocus={(e) => e.target.select()}
             onBlur={commitRename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                commitRename()
-              } else if (e.key === 'Escape') {
-                e.preventDefault()
-                setDraft(null)
-              }
-            }}
           />
         </div>
       </Reorder.Item>
@@ -245,15 +267,28 @@ export const Tab = ({
         onOpenChange={setContextMenuOpen}
         className="block h-full"
         items={items}
+        contentProps={{
+          // Rename unmounts this menu's trigger; base-ui's fallback return target would steal focus from the rename field.
+          finalFocus: focusTab,
+        }}
       >
         <button
           data-mask
           type="button"
+          role="tab"
+          aria-selected={isActive}
+          tabIndex={isTabStop ? 0 : -1}
           aria-label={`${label} tab`}
           className={tabClasses}
           onDoubleClick={startRename}
           onMouseOver={prefetch}
-          onFocus={prefetch}
+          onFocus={(event) => {
+            prefetch()
+            event.currentTarget.scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            })
+          }}
           {...pressNavProps(goToTab)}
         >
           {icon}
@@ -268,8 +303,8 @@ export const Tab = ({
           >
             <TooltipTrigger
               render={
-                // Nested button is invalid HTML (parent tab is already a button).
-                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
+                // Nested button is invalid HTML (parent tab is already a button); the keyboard closes a tab from its ⌘. menu.
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
                 <span
                   tabIndex={-1}
                   aria-label="Close tab"
@@ -278,13 +313,6 @@ export const Tab = ({
                   onClick={(e) => {
                     e.stopPropagation()
                     onClose()
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onClose()
-                    }
                   }}
                 />
               }

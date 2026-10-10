@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
+import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import type { ReactNode, Ref, RefObject } from 'react'
 import { useRef } from 'react'
 
@@ -18,6 +19,7 @@ import { DocumentList } from './document-list'
 import type { GridBarItem } from './grid-bar'
 import { GridBar } from './grid-bar'
 import { useGridCursor } from './grid-cursor'
+import { useGridFocusRequest } from './grid-focus'
 import type { DataGridHandle } from './grid-handle'
 import { useGridHandle } from './grid-handle'
 import { useGridHotkeys, useGridPointer } from './grid-input'
@@ -32,6 +34,7 @@ export const DataGrid = ({
   columns,
   connectionType,
   cursorRef,
+  focusKey,
   footer,
   getValue = valueOf,
   isFetching,
@@ -41,6 +44,7 @@ export const DataGrid = ({
   onEdit,
   onEndReached,
   onExtendRows,
+  onToggleRows,
   onPreview,
   onReorder,
   pinned,
@@ -59,6 +63,8 @@ export const DataGrid = ({
   columns: Column[]
   connectionType: ConnectionType
   cursorRef?: Ref<DataGridHandle>
+  /** The grid takes focus when `requestGridFocus` names this key, now or once it mounts. */
+  focusKey?: string
   footer?: ReactNode
   /** The value the cell shows and the editor starts from, e.g. a pending draft. */
   getValue?: (cell: DataGridCell) => unknown
@@ -73,6 +79,8 @@ export const DataGrid = ({
   onEndReached?: () => void
   /** Shift+↑/↓ while no cell has the cursor. */
   onExtendRows?: (direction: 'up' | 'down') => void
+  /** Shift+Space: the rows the cursor or its block covers. */
+  onToggleRows?: (rowIndexes: number[]) => void
   /** Space on the cursor cell, like Quick Look; `anchor` is the cell element. */
   onPreview?: (cell: DataGridCell, anchor: Element) => void
   onReorder?: (ids: string[]) => void
@@ -103,8 +111,6 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
-  useGridHotkeys({ canEdit: !!onEdit, cursor, onExtendRows, scrollRef })
-  const pointer = useGridPointer(cursor)
   const scrollToCell = useGridHandle({
     cursor,
     cursorRef,
@@ -112,6 +118,23 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
+  const scrollToCursor = () => {
+    const at = cursor.store.get().cursor
+    if (at) {
+      scrollToCell.current?.(at.row, at.column)
+    }
+  }
+  useGridHotkeys({
+    canEdit: !!onEdit,
+    cursor,
+    onExtendRows,
+    onToggleRows,
+    scrollRef,
+    scrollToCursor,
+  })
+  const pointer = useGridPointer(cursor)
+  useGridFocusRequest(focusKey, scrollRef)
+  useMountedEffect(scrollToCursor, [layout])
 
   const renderDataCell = (cell: DataGridCell, geometry?: CellGeometry) =>
     renderCell ? (

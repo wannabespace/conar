@@ -1,8 +1,10 @@
 import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
-import { useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
+import { openContextMenuOn } from '~/components/app-context-menu'
 
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
@@ -12,6 +14,8 @@ const TYPING_KEYS = [
   ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].flatMap((key) => [key, `Shift+${key}`]),
   ...'0123456789-.',
 ] as Hotkey[]
+
+const TO_EDGE = Number.MAX_SAFE_INTEGER
 
 const positionOf = (event: MouseEvent): CellPosition | null => {
   const cell =
@@ -31,12 +35,16 @@ export const useGridHotkeys = ({
   canEdit,
   cursor,
   onExtendRows,
+  onToggleRows,
   scrollRef,
+  scrollToCursor,
 }: {
   canEdit: boolean
   cursor: GridCursor
   onExtendRows?: (direction: 'up' | 'down') => void
+  onToggleRows?: (rowIndexes: number[]) => void
   scrollRef: RefObject<HTMLDivElement | null>
+  scrollToCursor: () => void
 }) => {
   const hasCursor = useSubscription(cursor.store, {
     selector: (state) => state.cursor !== null,
@@ -44,7 +52,36 @@ export const useGridHotkeys = ({
   const isEditing = useSubscription(cursor.store, {
     selector: (state) => state.edit !== null,
   })
-  const navigating = hasCursor && !isEditing
+  const hasBlock = useSubscription(cursor.store, {
+    selector: (state) => state.anchor !== null,
+  })
+  const [gridFocused, setGridFocused] = useState(false)
+  const ownsKeys = gridFocused && !isEditing
+  const navigating = ownsKeys && hasCursor
+
+  // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
+  // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
+  const track = useEffectEvent(() => {
+    const focused = document.activeElement === scrollRef.current
+    setGridFocused(focused)
+    if (focused && !cursor.store.get().cursor) {
+      cursor.step(0, 0)
+    }
+  })
+  useEffect(() => {
+    document.addEventListener('focusin', track)
+    document.addEventListener('focusout', track)
+    return () => {
+      document.removeEventListener('focusin', track)
+      document.removeEventListener('focusout', track)
+    }
+  }, [])
+
+  // A far edge is virtualized away, so the cursor's own glide finds no cell to scroll to.
+  const jumpToEdge = (down: number, right: number, extend?: boolean) => {
+    cursor.step(down * TO_EDGE, right * TO_EDGE, extend)
+    scrollToCursor()
+  }
 
   useHotkeys(
     [
@@ -59,7 +96,17 @@ export const useGridHotkeys = ({
         {
           callback: () => cursor.step(down, right),
           hotkey,
-          options: { enabled: !isEditing },
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right),
+          hotkey: `Mod+${hotkey}` as const,
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right, true),
+          hotkey: `Mod+Shift+${hotkey}` as const,
+          options: { enabled: ownsKeys },
         },
         {
           callback: () => {
@@ -70,7 +117,7 @@ export const useGridHotkeys = ({
             }
           },
           hotkey: `Shift+${hotkey}` as const,
-          options: { enabled: !isEditing },
+          options: { enabled: ownsKeys },
         },
       ]),
       ...(['Enter', 'F2'] as const).map((hotkey) => ({
@@ -110,9 +157,35 @@ export const useGridHotkeys = ({
         options: { enabled: navigating },
       },
       {
-        callback: cursor.dismiss,
-        hotkey: 'Escape',
+        callback: () =>
+          onToggleRows?.(
+            cursor.selection().flatMap((row) => row[0]?.rowIndex ?? [])
+          ),
+        hotkey: 'Shift+Space',
+        options: { enabled: navigating && !!onToggleRows },
+      },
+      {
+        callback: () => {
+          const cell = cursor.element()
+          if (cell) {
+            openContextMenuOn(cell)
+          }
+        },
+        hotkey: 'Mod+.',
         options: { enabled: navigating },
+      },
+      {
+        callback: () => {
+          cursor.step(TO_EDGE, TO_EDGE)
+          cursor.step(-TO_EDGE, -TO_EDGE, true)
+        },
+        hotkey: 'Mod+A',
+        options: { enabled: navigating },
+      },
+      {
+        callback: cursor.collapse,
+        hotkey: 'Escape',
+        options: { enabled: navigating && hasBlock },
       },
     ],
     { target: scrollRef }

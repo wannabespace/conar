@@ -26,6 +26,7 @@ import { workspaceSelection } from '~/core/workspace/utils'
 import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
 import { chatPanel } from '~/modules/chat/panel'
+import { useEscapeToNavigator } from '~/modules/navigator/keyboard'
 import { navigatorPanel } from '~/modules/navigator/panel'
 import { navigatorOpenValue } from '~/modules/navigator/stores'
 import { toggleLogger } from '~/modules/query-logger/logger-open'
@@ -113,6 +114,7 @@ const ResourcePage = () => {
   useHotkey('Mod+J', () => toggleLogger(connectionResource.id), {
     enabled: !locked,
   })
+  useEscapeToNavigator(!locked)
 
   if (locked) {
     return (

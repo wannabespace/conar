@@ -77,6 +77,7 @@ export const SchemaRow = ({
         render={
           <button
             type="button"
+            tabIndex={-1}
             aria-label={`Toggle ${row.name} schema`}
             onClick={onToggle}
           />
@@ -105,7 +106,11 @@ export const SchemaRow = ({
         items={items}
         contentProps={{ className: 'min-w-48' }}
         render={
-          <SidebarMenuAction showOnHover className="top-1/2 -translate-y-1/2" />
+          <SidebarMenuAction
+            showOnHover
+            tabIndex={-1}
+            className="top-1/2 -translate-y-1/2"
+          />
         }
       />
       <Tooltip>
@@ -113,6 +118,7 @@ export const SchemaRow = ({
           render={
             <SidebarMenuAction
               showOnHover
+              tabIndex={-1}
               aria-label={`New table in ${row.name}`}
               className="top-1/2 right-6 -translate-y-1/2"
               onClick={onCreateTable}

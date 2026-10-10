@@ -59,6 +59,16 @@ export const KbdCtrlLetter = ({
   </Kbd>
 )
 
+export const KbdShiftLetter = ({
+  letter,
+  ...props
+}: ComponentProps<typeof Kbd> & { letter: string }) => (
+  <Kbd {...props}>
+    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
+    <span>{letter}</span>
+  </Kbd>
+)
+
 export const KbdShiftCtrlLetter = ({
   userAgent,
   letter,

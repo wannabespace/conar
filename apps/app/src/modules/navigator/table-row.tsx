@@ -27,6 +27,7 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
 import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
+import { requestGridFocus } from '~/core/table/grid-focus'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
@@ -128,6 +129,7 @@ export const TableRow = ({
         className={cn(row.pinned && 'pr-12')}
         render={
           <Link
+            tabIndex={-1}
             to="/connection/$resourceId/$tabId"
             params={{
               resourceId: connectionResource.id,
@@ -136,19 +138,11 @@ export const TableRow = ({
             preload="intent"
             preloadDelay={200}
             data-mask
-            onClick={() =>
-              openTab(
-                connectionResource.id,
-                tableTabId(row.schema, row.table.name),
-                true
-              )
-            }
-            onDoubleClick={() =>
-              openTab(
-                connectionResource.id,
-                tableTabId(row.schema, row.table.name)
-              )
-            }
+            onClick={(event) => {
+              openTab(connectionResource.id, tabId, true)
+              requestGridFocus(tabId, event.currentTarget)
+            }}
+            onDoubleClick={() => openTab(connectionResource.id, tabId)}
           />
         }
       >
@@ -160,13 +154,7 @@ export const TableRow = ({
               className="text-primary/75"
             />
             {hasDrafts && (
-              <Indicator
-                className={cn(
-                  '-top-0.5 -right-0.5 size-1.5',
-                  // oxlint-disable-next-line shadcn/no-restyle -- the dot inverts on the active primary row
-                  isActive && 'bg-primary-foreground'
-                )}
-              />
+              <Indicator className="-top-0.5 -right-0.5 size-1.5" />
             )}
           </TooltipTrigger>
           <TooltipContent>{tableTypeLabel[row.table.type]}</TooltipContent>
@@ -180,23 +168,21 @@ export const TableRow = ({
           <span className="truncate">
             <HighlightText text={row.table.name} match={search} />
           </span>
-          {row.table.rowLevelSecurity && (
-            <RowLevelSecurityMark active={isActive} />
-          )}
+          {row.table.rowLevelSecurity && <RowLevelSecurityMark />}
         </span>
       </SidebarMenuButton>
       <AppMenuButton
         variant="muted"
         items={items}
         contentProps={{ className: 'min-w-48' }}
-        render={<SidebarMenuAction showOnHover isActive={isActive} />}
+        render={<SidebarMenuAction showOnHover tabIndex={-1} />}
       />
       <Tooltip>
         <TooltipTrigger
           render={
             <SidebarMenuAction
               showOnHover={!row.pinned}
-              isActive={isActive}
+              tabIndex={-1}
               aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
               className="group/pin right-6"
               onClick={() =>
@@ -214,30 +200,19 @@ export const TableRow = ({
               <HugeiconsIcon
                 icon={PinIcon}
                 strokeWidth={2}
-                className={cn(
-                  'size-3! group-hover/pin:hidden',
-                  isActive ? 'text-primary-foreground' : 'text-primary'
-                )}
+                className="text-primary size-3! group-hover/pin:hidden"
               />
               <HugeiconsIcon
                 icon={PinOffIcon}
                 strokeWidth={2}
-                className={cn(
-                  'hidden size-3! group-hover/pin:block',
-                  isActive ? 'text-primary-foreground' : 'text-foreground'
-                )}
+                className="text-foreground hidden size-3! group-hover/pin:block"
               />
             </>
           ) : (
             <HugeiconsIcon
               icon={PinIcon}
               strokeWidth={2}
-              className={cn(
-                'size-3!',
-                isActive
-                  ? 'text-primary-foreground/80 group-hover/pin:text-primary-foreground'
-                  : 'text-muted-foreground group-hover/pin:text-foreground'
-              )}
+              className="text-muted-foreground group-hover/pin:text-foreground size-3!"
             />
           )}
         </TooltipTrigger>

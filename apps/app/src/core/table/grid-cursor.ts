@@ -99,6 +99,7 @@ export const useGridCursor = ({
     },
     change: (text) => store.set((state) => ({ ...state, edit: { text } })),
     closePeek: () => store.set((state) => ({ ...state, peek: false })),
+    collapse: () => store.set((state) => ({ ...state, anchor: null })),
     commit: () => {
       const { edit } = store.get()
       const cell = current()
@@ -127,12 +128,6 @@ export const useGridCursor = ({
     copy: () =>
       gridClipboard(cursor, { cellAt, columns, rows, writeAll }).copy(),
     current,
-    dismiss: () =>
-      store.set((state) =>
-        state.anchor
-          ? { ...state, anchor: null }
-          : { anchor: null, cursor: null, edit: null, peek: false }
-      ),
     edit: (text) => {
       const cell = current()
       if (

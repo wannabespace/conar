@@ -1,42 +1,29 @@
-import {
-  FolderAddIcon,
-  LayoutTable02Icon,
-  PlusSignIcon,
-} from '@hugeicons/core-free-icons'
+import { FolderAddIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
 import {
   SidebarContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
 } from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import { useQuery } from '@tanstack/react-query'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import type { CSSProperties, ComponentRef } from 'react'
+import type { CSSProperties, ComponentRef, Ref } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
-import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
-import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { tableTabId } from '~/core/tabs/ids'
 
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createViewDialogRef } from './create-view-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
-import { pinnedTable } from './pinned-tables'
 import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 import { SchemaRow } from './schema-row'
-import { navigatorStore } from './stores'
 import { TableRow } from './table-row'
-import { buildTreeRows } from './tree-row'
 import type { TreeRow } from './tree-row'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -50,28 +37,23 @@ const ROW_HEIGHTS = {
 } satisfies Record<TreeRow['kind'], number>
 
 export const TablesList = ({
-  className,
+  activeId,
+  highlightedId,
   onCreateTable,
+  onToggleSchema,
+  ref,
+  rows,
   search,
 }: {
-  className?: string
+  activeId?: string
+  highlightedId?: string
   onCreateTable: (schema?: string) => void
+  onToggleSchema: (name: string) => void
+  ref: Ref<HTMLDivElement>
+  rows: TreeRow[]
   search?: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
-  const store = navigatorStore(connectionResource.id)
-  const { data: tablesAndSchemas, isPending } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource })
-  )
-  const pinnedTables = useSubscription(store, {
-    selector: (state) => state.pinnedTables,
-  })
-  const openedSchemas = useSubscription(store, {
-    selector: (state) =>
-      state.tablesTreeOpenedSchemas ?? [
-        tablesAndSchemas?.schemas[0]?.name ?? 'public',
-      ],
-  })
+  const { connection } = useRouteContext()
   const dropSchemaDialogRef =
     useRef<ComponentRef<typeof DropSchemaDialog>>(null)
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
@@ -80,32 +62,6 @@ export const TablesList = ({
   const renameTableDialogRef =
     useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
-
-  const showSchemaRows = capabilitiesOf(connection.type).schemas
-
-  useEffect(() => {
-    if (!tablesAndSchemas) {
-      return
-    }
-
-    pinnedTable.cleanup(
-      connectionResource.id,
-      tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.map((table) => ({
-          schema: schema.name,
-          table: table.name,
-        }))
-      )
-    )
-  }, [connectionResource, tablesAndSchemas])
-
-  const rows = buildTreeRows({
-    openedSchemas,
-    pinnedTables,
-    schemas: tablesAndSchemas?.schemas ?? [],
-    search,
-    showSchemaRows,
-  })
 
   const { virtualItems, totalSize, scrollToIndex, range } = useVirtualizer({
     count: rows.length,
@@ -123,87 +79,26 @@ export const TablesList = ({
       (row, index) => row.kind === 'schema' && index <= range.startIndex
     )
 
-  const router = useRouter()
-  const scrollToActiveEvent = useEffectEvent(() => {
-    const params = router.state.matches.at(-1)?.params
-    const tabId = params && 'tabId' in params ? params.tabId : undefined
-    const index = rows.findIndex(
-      (row) =>
-        row.kind === 'table' && tableTabId(row.schema, row.table.name) === tabId
-    )
+  const scrollToEvent = useEffectEvent((id = activeId) => {
+    const index = rows.findIndex((row) => row.id === id)
 
     if (index !== -1) {
       scrollToIndex(index, { align: 'auto' })
     }
   })
 
-  const hasData = rows.length > 0
+  useEffect(() => {
+    scrollToEvent()
+  }, [])
 
   useEffect(() => {
-    if (hasData) {
-      scrollToActiveEvent()
+    if (highlightedId) {
+      scrollToEvent(highlightedId)
     }
-  }, [hasData])
+  }, [highlightedId])
 
   const deferredSearch = useDeferredValue(search)
   const isSearchSettled = deferredSearch === search
-
-  const toggleSchema = (name: string) => {
-    store.set(
-      (state) =>
-        ({
-          ...state,
-          tablesTreeOpenedSchemas: openedSchemas.includes(name)
-            ? openedSchemas.filter((schema) => schema !== name)
-            : [...openedSchemas, name],
-        }) satisfies typeof state
-    )
-  }
-
-  if (isPending) {
-    return (
-      <SidebarContent className={cn('overflow-hidden pl-2', className)}>
-        <SidebarMenu>
-          {Array.from({ length: 12 }).map((_, index) => (
-            <SidebarMenuItem key={index}>
-              <SidebarMenuSkeleton seed={index} />
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-    )
-  }
-
-  if (rows.length === 0) {
-    return (
-      <SidebarContent
-        className={cn(
-          'items-center justify-center py-8 text-center',
-          className
-        )}
-      >
-        <HugeiconsIcon
-          icon={LayoutTable02Icon}
-          strokeWidth={2}
-          className="text-muted-foreground/50 mb-2 size-8"
-        />
-        <p className="text-muted-foreground text-sm">
-          {search ? 'No tables found' : 'No tables yet'}
-        </p>
-        {!search && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            onClick={() => onCreateTable()}
-          >
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-            New table
-          </Button>
-        )}
-      </SidebarContent>
-    )
-  }
 
   const rowContentOf = (row: TreeRow) => {
     if (row.kind === 'schema') {
@@ -219,7 +114,7 @@ export const TablesList = ({
                 ? () => renameSchemaDialogRef.current?.rename(row.name)
                 : undefined
             }
-            onToggle={() => toggleSchema(row.name)}
+            onToggle={() => onToggleSchema(row.name)}
           />
         </div>
       )
@@ -238,6 +133,7 @@ export const TablesList = ({
         <div className="pt-4">
           <SidebarMenuButton
             variant="muted"
+            tabIndex={-1}
             onClick={() => createSchemaDialogRef.current?.create()}
           >
             <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />
@@ -285,11 +181,13 @@ export const TablesList = ({
 
   return (
     <div
-      className={cn('relative flex flex-col', className)}
+      ref={ref}
+      className="relative flex min-h-0 flex-1 flex-col"
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
       <SidebarContent
         ref={parentRef}
+        tabIndex={-1}
         className={cn(
           'scroll-fade block flex-1 overflow-y-auto pb-2 pl-2',
           stickyRow &&
@@ -323,6 +221,9 @@ export const TablesList = ({
                 }
                 className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
                 inert={row === stickyRow}
+                data-highlighted={
+                  (row !== stickyRow && row.id === highlightedId) || undefined
+                }
                 style={
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
@@ -341,7 +242,10 @@ export const TablesList = ({
             parentRef.current?.scrollBy({ top: event.deltaY })
           }
         >
-          <SidebarMenuItem className="h-(--sticky-height)">
+          <SidebarMenuItem
+            className="h-(--sticky-height)"
+            data-highlighted={stickyRow.id === highlightedId || undefined}
+          >
             {rowContentOf(stickyRow)}
           </SidebarMenuItem>
         </SidebarMenu>

@@ -132,7 +132,10 @@ export const DraftsReviewDrawer = ({
           const target = jumpTarget.current
           jumpTarget.current = null
           if (!target) {
-            return true
+            if (changeCount === 0) {
+              tableGridRef.current?.focus()
+            }
+            return changeCount > 0
           }
           tableGridRef.current?.reveal(target)
           return false

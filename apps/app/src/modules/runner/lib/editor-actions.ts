@@ -53,7 +53,8 @@ const EDITOR_ACTIONS = [
     keybinding: KeyCode.Escape,
     label: 'Reject AI edit',
     name: 'rejectAi',
-    precondition: AI_REVIEW_CONTEXT_KEY,
+    // An action's keybinding outranks Monaco's own Escape, so it must yield while one of its widgets is open.
+    precondition: `${AI_REVIEW_CONTEXT_KEY} && !suggestWidgetVisible && !findWidgetVisible && !inlineSuggestionVisible && !parameterHintsVisible`,
   },
 ] as const
 /* oxlint-enable no-bitwise */

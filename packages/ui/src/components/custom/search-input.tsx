@@ -46,7 +46,13 @@ export const SearchInput = ({
                     size="icon-xs"
                     aria-label="Clear"
                     className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-                    onClick={onClear}
+                    onClick={(event) => {
+                      onClear()
+                      event.currentTarget
+                        .closest('[data-slot=input-group]')
+                        ?.querySelector('input')
+                        ?.focus()
+                    }}
                   />
                 }
               >

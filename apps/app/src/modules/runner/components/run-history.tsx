@@ -25,7 +25,7 @@ import { useSubscription } from 'seitu/react'
 import { useRunnerActions } from '../lib/actions'
 import { runHistory } from '../lib/history'
 import { appendQuery, useRunnerPageStore } from '../lib/store'
-import { ListEmpty, PopoverCommand, RowAction } from './popover-list'
+import { ActionItem, ListEmpty, PopoverCommand } from './popover-list'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -60,11 +60,20 @@ export const RunHistoryButton = () => {
             </ListEmpty>
             <CommandGroup>
               {history.map((entry) => (
-                <CommandItem
+                <ActionItem
                   key={entry.id}
                   value={entry.id}
                   keywords={[entry.sql]}
                   onSelect={() => append(entry.sql)}
+                  actions={[
+                    {
+                      icon: Cancel01Icon,
+                      label: 'Remove from History',
+                      onSelect: () =>
+                        runHistory.remove(connectionResource.id, entry.id),
+                      variant: 'destructive',
+                    },
+                  ]}
                 >
                   <span
                     className={cn(
@@ -88,15 +97,7 @@ export const RunHistoryButton = () => {
                         ` · ${entry.duration.toFixed(0)} ms`}
                     </span>
                   </div>
-                  <RowAction
-                    destructive
-                    icon={Cancel01Icon}
-                    label="Remove from history"
-                    onClick={() =>
-                      runHistory.remove(connectionResource.id, entry.id)
-                    }
-                  />
-                </CommandItem>
+                </ActionItem>
               ))}
             </CommandGroup>
             {history.length > 0 && (

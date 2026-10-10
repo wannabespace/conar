@@ -16,6 +16,7 @@ import {
 } from '@tamery/ui/components/select'
 import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import type { ComponentRef } from 'react'
@@ -61,6 +62,19 @@ const groupValue = createWebStorageValue({
   schema: type('string' as type.cast<(typeof groupOptions)[number]['value']>),
   defaultValue: 'label',
 })
+
+const focusRow = (event: KeyboardEvent, delta: 1 | -1) => {
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-row-link]')]
+  const index = rows.indexOf(document.activeElement as HTMLElement)
+  if (index === -1 && document.activeElement !== document.body) {
+    return
+  }
+  const next = index === -1 ? rows.at(delta > 0 ? 0 : -1) : rows[index + delta]
+  if (next) {
+    event.preventDefault()
+    next.focus()
+  }
+}
 
 export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
@@ -127,6 +141,14 @@ export const ConnectionsList = () => {
   const showHeaders = groups.some((group) => group.label !== null)
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
+
+  useHotkeys(
+    [
+      { callback: (event) => focusRow(event, 1), hotkey: 'ArrowDown' },
+      { callback: (event) => focusRow(event, -1), hotkey: 'ArrowUp' },
+    ],
+    { preventDefault: false }
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -232,11 +254,12 @@ export const ConnectionsList = () => {
           <Link
             to="/create"
             disabled={!canCreate}
+            data-row-link
             onClick={() =>
               checkOrUpgrade('connection.create', { count: data.length })
             }
             className={cn(
-              'text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150',
+              'text-muted-foreground hover:bg-card hover:text-foreground focus-visible:focus-ring flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm outline-hidden transition-colors duration-150',
               !canCreate && 'opacity-50'
             )}
           >

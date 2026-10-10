@@ -89,3 +89,15 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Exact cost from OpenRouter.** Usage rows are priced from the LiteLLM sheet (`packages/ai/models/price.ts`), so caching discounts, provider routing and fallbacks are approximated. OpenRouter reports the billed cost per call in `providerMetadata.openrouter.usage.cost`; recording that drops the daily sheet fetch and makes `cost` exact.
 - **Codestral completion through OpenRouter.** Inline completion still calls Mistral's FIM endpoint directly (`@mistralai/mistralai`, `MISTRAL_API_KEY`) because OpenRouter does not pass `suffix` through. Move it once OpenRouter supports fill-in-the-middle, leaving one provider key.
+
+## Keyboard
+
+- **Derive the Settings shortcut list.** `core/settings/shortcut-groups.ts` is written by hand beside the `useHotkey` calls it describes, so a new or rebound key drifts until someone updates it. One registry that both the bindings and the Settings list read would keep them in step.
+- **Toolbars as one Tab stop.** The table and runner toolbars, the Navigator footer and the dashboard's connection rows (each link and ⋯) are still a Tab stop per control; roving arrows would make each one stop like the tab strip.
+- **Keyboard column resize.** Header grips left the Tab order with the rest of the grid's inner controls, so a column's width is pointer-only; a Width… item in the column menu would give it a keyboard route.
+- **Query logger rows.** Every row is its own Tab stop with no arrow movement, and the detail pane sits after all rendered rows, so it is effectively unreachable. Give the list a cursor like the Schema pages (search-field or roving highlight).
+- **Visualizer off-screen tables.** `onlyRenderVisibleElements` drops tables outside the viewport from the DOM and there is no keyboard panning, so a keyboard user only reaches them through Zoom out/Arrange. The inspector also opens without focus and closes to `body`.
+- **Grid gaps.** Column reorder is drag-only; the cell editor's Set null/Default/Now buttons can never take focus (Tab leaves the cell); an edit whose cell is virtualised away leaves the grid deaf until it scrolls back.
+- **Focus after self-unmounting actions.** Removing a filter chip, Run all ↔ Stop, chat send ↔ stop, Clear log and banner Dismiss all drop focus to `body`. The Escape ladder recovers (it lands in the Navigator), but each should hand focus to its neighbour.
+- **⌘↩ runs SQL from anywhere.** The runner binds ⌘↩/⇧⌘↩ on `document`, and ⌘-combos fire inside inputs, so ⌘↩ typed in the chat box or the results search runs the statement under the editor caret.
+- **Preview tabs from the keyboard.** A preview tab becomes permanent on a click inside its page or a double-click on its row, so a keyboard user's tabs keep replacing each other.

@@ -12,6 +12,7 @@ interface RevealTarget {
 export interface DataGridHandle {
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
+  focus: () => void
   /** Scrolls a cell into view, even one virtualized away, puts the cursor on it and focuses the grid; `row` is a `rowKey`, so a row staged in the same tick is found once it renders. */
   reveal: (target: RevealTarget) => void
 }
@@ -51,6 +52,7 @@ export const useGridHandle = ({
   })
   useImperativeHandle(cursorRef, () => ({
     commit: cursor.commit,
+    focus: () => scrollRef.current?.focus({ preventScroll: true }),
     reveal: (target) => {
       revealing.current = target
       reveal()
