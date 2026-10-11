@@ -7,7 +7,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { InputGroupText } from '@tamery/ui/components/input-group'
 import {
   Select,
@@ -24,6 +23,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import type { RefObject } from 'react'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { plural } from '~/utils/plural'
 
 import { applyConsequence } from '../lib/apply'
@@ -99,9 +99,7 @@ export const Toolbar = ({
           end={
             <>
               {noMatches && <InputGroupText>No matches</InputGroupText>}
-              {!search && (
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
-              )}
+              {!search && <ShortcutKbd shortcut="search" />}
             </>
           }
         />
@@ -134,11 +132,7 @@ export const Toolbar = ({
                 </TooltipContent>
               </Tooltip>
               <Tooltip
-                shortcut={
-                  !applying && (
-                    <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
-                  )
-                }
+                shortcut={!applying && <ShortcutKbd shortcut="saveChanges" />}
               >
                 <TooltipTrigger
                   render={

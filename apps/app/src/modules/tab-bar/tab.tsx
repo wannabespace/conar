@@ -8,7 +8,6 @@ import {
   Undo02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +23,7 @@ import { flushSync } from 'react-dom'
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import type { ConnectionResource } from '~/core/connection/sync'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { openTab, renameTab } from '~/core/tabs/actions'
 import { resolveTab } from '~/core/tabs/kinds'
 import type { ConnectionTab } from '~/core/tabs/types'
@@ -145,10 +145,7 @@ export const Tab = ({
     {
       icon: Cancel01Icon,
       label: 'Close',
-      ...(isElectron && {
-        accelerator: 'CmdOrCtrl+W',
-        shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
-      }),
+      ...(isElectron && { shortcut: 'closeTab' }),
       onSelect: onClose,
     },
     { type: 'separator' },
@@ -295,10 +292,7 @@ export const Tab = ({
           <span>{label}</span>
           <Tooltip
             shortcut={
-              isActive &&
-              isElectron && (
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
-              )
+              isActive && isElectron && <ShortcutKbd shortcut="closeTab" />
             }
           >
             <TooltipTrigger

@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { openContextMenuOn } from '~/components/app-context-menu'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
@@ -120,11 +121,6 @@ export const useGridHotkeys = ({
           options: { enabled: ownsKeys },
         },
       ]),
-      ...(['Enter', 'F2'] as const).map((hotkey) => ({
-        callback: () => cursor.edit(),
-        hotkey,
-        options: { enabled: navigating },
-      })),
       ...(['Backspace', 'Delete'] as const).map((hotkey) => ({
         callback: () => cursor.edit(''),
         hotkey,
@@ -136,33 +132,48 @@ export const useGridHotkeys = ({
         options: { enabled: navigating },
       })),
       {
+        callback: cursor.collapse,
+        hotkey: 'Escape',
+        options: { enabled: navigating && hasBlock },
+      },
+    ],
+    { target: scrollRef }
+  )
+  useShortcuts(
+    [
+      {
+        callback: () => cursor.edit(),
+        options: { enabled: navigating },
+        shortcut: 'editCell',
+      },
+      {
         callback: cursor.copy,
-        hotkey: 'Mod+C',
         options: { enabled: navigating, ignoreInputs: true },
+        shortcut: 'copy',
       },
       {
         callback: async () =>
           cursor.paste(await navigator.clipboard.readText()),
-        hotkey: 'Mod+V',
         options: { enabled: navigating && canEdit, ignoreInputs: true },
+        shortcut: 'paste',
       },
       {
         callback: cursor.fillDown,
-        hotkey: 'Mod+D',
         options: { enabled: navigating && canEdit },
+        shortcut: 'fillDown',
       },
       {
         callback: cursor.preview,
-        hotkey: 'Space',
         options: { enabled: navigating },
+        shortcut: 'peek',
       },
       {
         callback: () =>
           onToggleRows?.(
             cursor.selection().flatMap((row) => row[0]?.rowIndex ?? [])
           ),
-        hotkey: 'Shift+Space',
         options: { enabled: navigating && !!onToggleRows },
+        shortcut: 'selectRows',
       },
       {
         callback: () => {
@@ -171,21 +182,16 @@ export const useGridHotkeys = ({
             openContextMenuOn(cell)
           }
         },
-        hotkey: 'Mod+.',
         options: { enabled: navigating },
+        shortcut: 'contextMenu',
       },
       {
         callback: () => {
           cursor.step(TO_EDGE, TO_EDGE)
           cursor.step(-TO_EDGE, -TO_EDGE, true)
         },
-        hotkey: 'Mod+A',
         options: { enabled: navigating },
-      },
-      {
-        callback: cursor.collapse,
-        hotkey: 'Escape',
-        options: { enabled: navigating && hasBlock },
+        shortcut: 'selectAll',
       },
     ],
     { target: scrollRef }

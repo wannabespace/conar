@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { DrawerClose, DrawerFooter } from '@tamery/ui/components/drawer'
 import {
   NumberField,
@@ -17,13 +16,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
 import { checkOrUpgrade } from '~/core/user/permissions'
@@ -173,7 +174,7 @@ export const SeedPanel = ({
     },
   })
 
-  useHotkey('Mod+Enter', () => seed(), { enabled: canSeed && !isPending })
+  useShortcut('submit', () => seed(), { enabled: canSeed && !isPending })
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -248,10 +249,7 @@ export const SeedPanel = ({
           Cancel
         </DrawerClose>
         <Tooltip
-          shortcut={
-            canSeed &&
-            !isPending && <KbdCtrlEnter userAgent={navigator.userAgent} />
-          }
+          shortcut={canSeed && !isPending && <ShortcutKbd shortcut="submit" />}
         >
           <TooltipTrigger
             render={

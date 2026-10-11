@@ -1,7 +1,6 @@
 import { SidebarLeftIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Separator } from '@tamery/ui/components/separator'
 import {
@@ -10,7 +9,7 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
@@ -18,6 +17,8 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { getConnectionResourceStore } from '~/core/connection/stores'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { removeTab, setActiveTab, updateTabs } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
@@ -118,8 +119,8 @@ export const TabBar = ({ className }: { className?: string }) => {
     removeTab(connectionResource.id, tabId)
   }
 
-  useHotkey(
-    'Mod+W',
+  useShortcut(
+    'closeTab',
     (e) => {
       e.preventDefault()
 
@@ -199,11 +200,7 @@ export const TabBar = ({ className }: { className?: string }) => {
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
     >
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
-        <Tooltip
-          shortcut={
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
-          }
-        >
+        <Tooltip shortcut={<ShortcutKbd shortcut="toggleNavigator" />}>
           <TooltipTrigger
             render={
               <Button

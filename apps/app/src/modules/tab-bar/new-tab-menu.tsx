@@ -1,7 +1,6 @@
 import { LayoutTable02Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +15,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { schemaGroups } from '~/core/tabs/kinds'
@@ -53,17 +53,11 @@ export const NewTabMenu = ({
       to: '/connection/$resourceId/$tabId',
     })
 
-  useHotkey('Mod+T', () => setOpen(true), { enabled: !!window.electron })
+  useShortcut('newTab', () => setOpen(true), { enabled: !!window.electron })
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <Tooltip
-        shortcut={
-          window.electron && (
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="T" />
-          )
-        }
-      >
+      <Tooltip shortcut={window.electron && <ShortcutKbd shortcut="newTab" />}>
         <TooltipTrigger
           aria-label="New tab"
           render={

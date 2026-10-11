@@ -1,80 +1,82 @@
-import { getOS } from '@tamery/shared/os'
+import type { Hotkey } from '@tanstack/react-hotkeys'
+import { LETTER_KEYS, parseHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
+
+import type { ShortcutId } from '~/core/keyboard/shortcuts'
+import { SHORTCUTS } from '~/core/keyboard/shortcuts'
 
 import type { RunnerActions } from './actions'
 
 const AI_REVIEW_CONTEXT_KEY = 'tameryAiReview'
 const FAILED_CONTEXT_KEY = 'tameryFailedStatement'
 
-// Monaco keybindings are bit flags; bitwise OR is required by the API.
-/* oxlint-disable no-bitwise */
 const EDITOR_ACTIONS = [
+  { label: 'Run statement', name: 'runCurrent', shortcut: 'runStatement' },
+  { label: 'Run all', name: 'runAll', shortcut: 'runAll' },
+  { label: 'Save statement', name: 'saveCurrent', shortcut: 'saveStatement' },
+  { label: 'Save all', name: 'saveAll', shortcut: 'saveTab' },
+  { label: 'Edit with AI', name: 'askAi', shortcut: 'editWithAi' },
   {
-    keybinding: KeyMod.CtrlCmd | KeyCode.Enter,
-    label: 'Run statement',
-    name: 'runCurrent',
-  },
-  {
-    keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
-    label: 'Run all',
-    name: 'runAll',
-  },
-  {
-    keybinding: KeyMod.CtrlCmd | KeyCode.KeyS,
-    label: 'Save statement',
-    name: 'saveCurrent',
-  },
-  {
-    keybinding: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyS,
-    label: 'Save all',
-    name: 'saveAll',
-  },
-  {
-    keybinding: KeyMod.CtrlCmd | KeyCode.KeyK,
-    label: 'Edit with AI',
-    name: 'askAi',
-  },
-  {
-    // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
-    keybinding: KeyMod.CtrlCmd | KeyCode.KeyI,
     label: 'Fix with AI',
     name: 'fixAi',
+    // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
     precondition: FAILED_CONTEXT_KEY,
+    shortcut: 'fixWithAi',
   },
   {
-    keybinding: KeyMod.CtrlCmd | KeyCode.Period,
     label: 'Statement actions',
     name: 'openStatementMenu',
+    shortcut: 'contextMenu',
   },
   {
-    keybinding: KeyCode.Escape,
     label: 'Reject AI edit',
     name: 'rejectAi',
     // An action's keybinding outranks Monaco's own Escape, so it must yield while one of its widgets is open.
     precondition: `${AI_REVIEW_CONTEXT_KEY} && !suggestWidgetVisible && !findWidgetVisible && !inlineSuggestionVisible && !parameterHintsVisible`,
+    shortcut: 'stepBack',
   },
 ] as const
-/* oxlint-enable no-bitwise */
 
 // Monaco swallows keys typed into it (and claims ⌘L), so the app's panel toggles are re-dispatched.
-const APP_SHORTCUTS = [
-  { keyCode: KeyCode.KeyB, letter: 'b' },
-  { keyCode: KeyCode.KeyJ, letter: 'j' },
-  { keyCode: KeyCode.KeyL, letter: 'l' },
-]
+const APP_SHORTCUTS: ShortcutId[] = ['toggleNavigator', 'queryLogger', 'aiChat']
 
-const forwardToApp = (letter: string) => {
-  const mac = getOS(navigator.userAgent).type === 'macos'
+const MONACO_KEYS: Record<string, KeyCode> = {
+  ...Object.fromEntries(
+    [...LETTER_KEYS].map((letter) => [letter, KeyCode[`Key${letter}`]])
+  ),
+  '.': KeyCode.Period,
+  Enter: KeyCode.Enter,
+  Escape: KeyCode.Escape,
+}
+
+// Monaco keybindings are bit flags; bitwise OR is required by the API.
+/* oxlint-disable no-bitwise */
+const monacoKeybinding = (hotkey: Hotkey) => {
+  // Parsed as macOS so Mod lands on meta, which is what Monaco's CtrlCmd means on every platform.
+  const { alt, key, meta, shift } = parseHotkey(hotkey, 'mac')
+  return (
+    (meta ? KeyMod.CtrlCmd : 0) |
+    (shift ? KeyMod.Shift : 0) |
+    (alt ? KeyMod.Alt : 0) |
+    (MONACO_KEYS[key] ?? KeyCode.Unknown)
+  )
+}
+/* oxlint-enable no-bitwise */
+
+const forwardToApp = (hotkey: Hotkey) => {
+  const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey)
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
+      altKey: alt,
       bubbles: true,
-      code: `Key${letter.toUpperCase()}`,
-      ctrlKey: !mac,
-      key: letter,
-      metaKey: mac,
+      code: `Key${key}`,
+      ctrlKey: ctrl,
+      key: key.toLowerCase(),
+      metaKey: meta,
+      shiftKey: shift,
     })
   )
 }
@@ -110,20 +112,21 @@ export const useEditorActions = (
     const failedKey = codeEditor.createContextKey(FAILED_CONTEXT_KEY, false)
     failedKeyRef.current = failedKey
     const disposables = [
-      ...APP_SHORTCUTS.map(({ keyCode, letter }) =>
-        codeEditor.addAction({
-          id: `tamery.app-${letter}`,
-          // oxlint-disable-next-line no-bitwise -- Monaco keybindings are bit flags
-          keybindings: [KeyMod.CtrlCmd | keyCode],
-          label: `Toggle panel (${letter.toUpperCase()})`,
-          run: () => forwardToApp(letter),
-        })
+      ...APP_SHORTCUTS.flatMap((shortcut) =>
+        SHORTCUTS[shortcut].hotkeys.map((hotkey) =>
+          codeEditor.addAction({
+            id: `tamery.app-${hotkey}`,
+            keybindings: [monacoKeybinding(hotkey)],
+            label: SHORTCUTS[shortcut].title,
+            run: () => forwardToApp(hotkey),
+          })
+        )
       ),
-      ...EDITOR_ACTIONS.map(({ keybinding, name, ...action }) =>
+      ...EDITOR_ACTIONS.map(({ name, shortcut, ...action }) =>
         codeEditor.addAction({
           ...action,
           id: `tamery.${name}`,
-          keybindings: [keybinding],
+          keybindings: SHORTCUTS[shortcut].hotkeys.map(monacoKeybinding),
           run: () => invoke(name),
         })
       ),

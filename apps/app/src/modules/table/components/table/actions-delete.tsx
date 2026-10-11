@@ -14,14 +14,12 @@ import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -29,6 +27,8 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { cardClass } from '~/components/card'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
@@ -110,7 +110,7 @@ export const ActionsDelete = ({
     },
   })
 
-  useHotkey('Mod+Backspace', () => setOpen(true), { ignoreInputs: true })
+  useShortcut('deleteRows', () => setOpen(true), { ignoreInputs: true })
 
   return (
     <>
@@ -163,9 +163,7 @@ export const ActionsDelete = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Tooltip
-        shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="⌫" />}
-      >
+      <Tooltip shortcut={<ShortcutKbd shortcut="deleteRows" />}>
         <TooltipTrigger
           render={
             <Button

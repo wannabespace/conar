@@ -7,6 +7,7 @@ import { useSubscription } from 'seitu/react'
 
 import { defaultSchemaOf } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { resourceIndexesQueryOptions } from '~/core/queries/indexes/list'
 import { resourcePoliciesQueryOptions } from '~/core/queries/policies/list'
@@ -154,7 +155,7 @@ export const Visualizer = ({
     setReviewOpen,
   })
 
-  useHotkey('Mod+F', () => searchRef.current?.focus())
+  useShortcut('search', () => searchRef.current?.focus())
   useHotkey(
     'Escape',
     () => {

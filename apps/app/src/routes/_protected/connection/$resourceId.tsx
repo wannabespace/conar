@@ -4,7 +4,6 @@ import {
   ResizableSeparator,
   ResizablePanel,
 } from '@tamery/ui/components/custom/resizable'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   getRouteApi,
@@ -22,6 +21,7 @@ import {
   lastOpenedResourcesStorageValue,
   MAX_REMEMBERED_RESOURCES,
 } from '~/core/connection/last-opened-resources'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { workspaceSelection } from '~/core/workspace/utils'
 import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
@@ -108,10 +108,14 @@ const ResourcePage = () => {
   const fetching = useFetchingConfig(connection)
   const locked = fetching.type === 'waiting-for-password'
 
-  useHotkey('Mod+B', () => navigatorOpenValue.set((open) => !open), {
-    enabled: !locked,
-  })
-  useHotkey('Mod+J', () => toggleLogger(connectionResource.id), {
+  useShortcut(
+    'toggleNavigator',
+    () => navigatorOpenValue.set((open) => !open),
+    {
+      enabled: !locked,
+    }
+  )
+  useShortcut('queryLogger', () => toggleLogger(connectionResource.id), {
     enabled: !locked,
   })
   useEscapeToNavigator(!locked)

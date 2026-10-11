@@ -1,11 +1,18 @@
 import {
+  ArrowDown02Icon,
+  ArrowLeft02Icon,
+  ArrowRight02Icon,
   ArrowUp02Icon,
   CommandIcon,
   CornerDownLeftIcon,
+  DeletePutBackIcon,
 } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
 import { cn } from '@tamery/ui/lib/utils'
+import type { Hotkey } from '@tanstack/react-hotkeys'
+import { parseHotkey } from '@tanstack/react-hotkeys'
 import type { ComponentProps } from 'react'
 
 import { Kbd } from '../kbd'
@@ -38,56 +45,42 @@ export const EnterIcon = ({ className }: { className?: string }) => (
   />
 )
 
-export const KbdCtrlEnter = ({
+const GLYPHS: Partial<Record<string, IconSvgElement>> = {
+  ArrowDown: ArrowDown02Icon,
+  ArrowLeft: ArrowLeft02Icon,
+  ArrowRight: ArrowRight02Icon,
+  ArrowUp: ArrowUp02Icon,
+  Backspace: DeletePutBackIcon,
+  Enter: CornerDownLeftIcon,
+  Meta: CommandIcon,
+  Shift: ArrowUp02Icon,
+}
+
+const LABELS: Partial<Record<string, string>> = {
+  Control: 'Ctrl',
+  Escape: 'Esc',
+}
+
+export const KbdHotkey = ({
+  hotkey,
   userAgent,
   ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) => (
-  <Kbd {...props}>
-    <Ctrl userAgent={userAgent} />
-    <EnterIcon />
-  </Kbd>
-)
+}: ComponentProps<typeof Kbd> & { hotkey: Hotkey; userAgent: string }) => {
+  const { key, modifiers } = parseHotkey(
+    hotkey,
+    getOS(userAgent).type === 'macos' ? 'mac' : 'windows'
+  )
 
-export const KbdCtrlLetter = ({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) => (
-  <Kbd {...props}>
-    <Ctrl userAgent={userAgent} />
-    <span>{letter}</span>
-  </Kbd>
-)
-
-export const KbdShiftLetter = ({
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { letter: string }) => (
-  <Kbd {...props}>
-    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
-    <span>{letter}</span>
-  </Kbd>
-)
-
-export const KbdShiftCtrlLetter = ({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) => (
-  <Kbd {...props}>
-    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
-    <Ctrl userAgent={userAgent} />
-    <span>{letter}</span>
-  </Kbd>
-)
-
-export const KbdShiftCtrlEnter = ({
-  userAgent,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) => (
-  <Kbd {...props}>
-    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
-    <Ctrl userAgent={userAgent} />
-    <EnterIcon />
-  </Kbd>
-)
+  return (
+    <Kbd {...props}>
+      {[...modifiers, key].map((part) => {
+        const glyph = GLYPHS[part]
+        return glyph ? (
+          <HugeiconsIcon key={part} icon={glyph} strokeWidth={2} />
+        ) : (
+          <span key={part}>{LABELS[part] ?? part}</span>
+        )
+      })}
+    </Kbd>
+  )
+}

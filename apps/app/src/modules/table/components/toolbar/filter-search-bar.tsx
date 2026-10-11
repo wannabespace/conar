@@ -2,12 +2,13 @@ import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { CommandPrimitive } from '@tamery/ui/components/command'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { AiSummaryRow, useFilterAi } from './filter-ai'
@@ -66,7 +67,7 @@ export const FilterSearchBar = ({
     }
   }, [filters.length])
 
-  useHotkey('Mod+F', () => {
+  useShortcut('search', () => {
     inputRef.current?.focus()
   })
 
@@ -140,14 +141,14 @@ export const FilterSearchBar = ({
             onBlur={() => setIsFocused(false)}
           />
         </div>
-        <KbdCtrlLetter
-          userAgent={navigator.userAgent}
-          letter="F"
+        <span
           className={cn(
-            'transition-opacity duration-150',
+            'flex transition-opacity duration-150',
             isFocused && 'opacity-0'
           )}
-        />
+        >
+          <ShortcutKbd shortcut="search" />
+        </span>
       </div>
       <AnimatePresence>
         {(isOpen || ai.summary) && (

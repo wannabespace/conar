@@ -9,14 +9,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 
 export const RunnerAlertDialog = ({
   ref,
@@ -50,7 +51,7 @@ export const RunnerAlertDialog = ({
     changeOpen(false)
   }
 
-  useHotkeys(popup ? [{ callback: onConfirm, hotkey: 'Mod+Enter' }] : [], {
+  useShortcuts(popup ? [{ callback: onConfirm, shortcut: 'submit' }] : [], {
     target: popup,
   })
 
@@ -84,7 +85,7 @@ export const RunnerAlertDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+          <Tooltip shortcut={<ShortcutKbd shortcut="submit" />}>
             <TooltipTrigger
               render={
                 <AlertDialogCancel variant="warning" onClick={onConfirm} />

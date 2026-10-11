@@ -1,16 +1,16 @@
 import { Grid3X2Icon, ListViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdShiftCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { requestGridFocus } from '~/core/table/grid-focus'
 import { posthog } from '~/lib/posthog'
 
@@ -32,14 +32,10 @@ export const ActionsView = () => {
     posthog.capture('table_view_toggled', { view: next })
   }
 
-  useHotkey('Mod+Shift+E', toggle)
+  useShortcut('toggleView', toggle)
 
   return (
-    <Tooltip
-      shortcut={
-        <KbdShiftCtrlLetter userAgent={navigator.userAgent} letter="E" />
-      }
-    >
+    <Tooltip shortcut={<ShortcutKbd shortcut="toggleView" />}>
       <TooltipTrigger
         render={
           <Button

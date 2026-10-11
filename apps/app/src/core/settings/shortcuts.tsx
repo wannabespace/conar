@@ -1,34 +1,24 @@
-import {
-  ArrowDown02Icon,
-  ArrowLeft02Icon,
-  ArrowRight02Icon,
-  ArrowUp02Icon,
-  CornerDownLeftIcon,
-  Search01Icon,
-} from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
+import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { Ctrl, KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import { Kbd } from '@tamery/ui/components/kbd'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRef, useState } from 'react'
 
 import { PaneEmpty } from '~/components/pane-empty'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import type { Shortcut } from '~/core/keyboard/shortcuts'
+import { SHORTCUTS } from '~/core/keyboard/shortcuts'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { SettingsGroup, SettingsRow } from './settings-group'
 import { SHORTCUT_GROUPS } from './shortcut-groups'
 
-const KEY_ICONS: Record<string, IconSvgElement> = {
-  down: ArrowDown02Icon,
-  enter: CornerDownLeftIcon,
-  left: ArrowLeft02Icon,
-  right: ArrowRight02Icon,
-  shift: ArrowUp02Icon,
-  up: ArrowUp02Icon,
-}
-
 const KEY_ALIASES: Record<string, string[]> = {
+  arrowdown: ['down', 'arrows'],
+  arrowleft: ['left', 'arrows'],
+  arrowright: ['right', 'arrows'],
+  arrowup: ['up', 'arrows'],
+  escape: ['escape', 'esc'],
   mod: ['mod', 'cmd', 'command', 'ctrl', '⌘'],
   shift: ['shift', '⇧'],
 }
@@ -38,28 +28,32 @@ export const ShortcutsList = () => {
   const searchRef = useRef<HTMLInputElement>(null)
   const terms = search.toLowerCase().match(/[⌘⇧]|[^\s+⌘⇧]+/gu) ?? []
   const groups = SHORTCUT_GROUPS.map(({ shortcuts, title }) => ({
-    shortcuts: shortcuts.filter(
-      ({ combos, desktopOnly, description, title: shortcutTitle }) => {
-        const keys = combos
-          .flatMap((combo) => combo.toLowerCase().split(' '))
-          .flatMap((key) => KEY_ALIASES[key] ?? key)
-        const names = `${title} ${shortcutTitle}`.toLowerCase()
-        const text = `${names} ${description.toLowerCase()} ${keys.join(' ')}`
-        return (
-          (!desktopOnly || window.electron) &&
-          terms.every(
-            (term) =>
-              keys.includes(term) ||
-              names.split(' ').some((word) => word.startsWith(term)) ||
-              (term.length > 2 && text.includes(term))
-          )
+    shortcuts: shortcuts.filter((id) => {
+      const {
+        description,
+        desktopOnly,
+        hotkeys,
+        title: shortcutTitle,
+      }: Shortcut = SHORTCUTS[id]
+      const keys = hotkeys
+        .flatMap((hotkey) => hotkey.toLowerCase().split('+'))
+        .flatMap((key) => KEY_ALIASES[key] ?? key)
+      const names = `${title} ${shortcutTitle}`.toLowerCase()
+      const text = `${names} ${description.toLowerCase()} ${keys.join(' ')}`
+      return (
+        (!desktopOnly || window.electron) &&
+        terms.every(
+          (term) =>
+            keys.includes(term) ||
+            names.split(' ').some((word) => word.startsWith(term)) ||
+            (term.length > 2 && text.includes(term))
         )
-      }
-    ),
+      )
+    }),
     title,
   })).filter(({ shortcuts }) => shortcuts.length > 0)
 
-  useHotkey('Mod+F', () => searchRef.current?.focus())
+  useShortcut('search', () => searchRef.current?.focus())
   useHotkey('Escape', () => setSearch(''), {
     enabled: !!search,
     target: searchRef,
@@ -75,11 +69,7 @@ export const ShortcutsList = () => {
         onChange={(event) => setSearch(event.target.value)}
         onClear={() => setSearch('')}
         start={<HugeiconsIcon icon={Search01Icon} strokeWidth={2} />}
-        end={
-          !search && (
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
-          )
-        }
+        end={!search && <ShortcutKbd shortcut="search" />}
       />
       {groups.length === 0 && (
         <PaneEmpty
@@ -90,27 +80,13 @@ export const ShortcutsList = () => {
       )}
       {groups.map(({ shortcuts, title }) => (
         <SettingsGroup key={title} title={title}>
-          {shortcuts.map(({ combos, description, title: shortcutTitle }) => (
+          {shortcuts.map((id) => (
             <SettingsRow
-              key={shortcutTitle}
-              title={shortcutTitle}
-              description={description}
+              key={id}
+              title={SHORTCUTS[id].title}
+              description={SHORTCUTS[id].description}
             >
-              {combos.map((combo) => (
-                <Kbd key={combo}>
-                  {combo.split(' ').map((key) => {
-                    if (key === 'mod') {
-                      return <Ctrl key={key} userAgent={navigator.userAgent} />
-                    }
-                    const icon = KEY_ICONS[key]
-                    return icon ? (
-                      <HugeiconsIcon key={key} icon={icon} strokeWidth={2} />
-                    ) : (
-                      <span key={key}>{key}</span>
-                    )
-                  })}
-                </Kbd>
-              ))}
+              <ShortcutKbd shortcut={id} />
             </SettingsRow>
           ))}
         </SettingsGroup>

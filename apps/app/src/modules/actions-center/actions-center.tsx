@@ -23,14 +23,10 @@ import {
   CommandShortcut,
   defaultFilter,
 } from '@tamery/ui/components/command'
-import {
-  EnterIcon,
-  KbdCtrlLetter,
-} from '@tamery/ui/components/custom/shortcuts'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { Kbd } from '@tamery/ui/components/kbd'
 import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { skipToken, useQuery } from '@tanstack/react-query'
 import type { RegisteredRouter } from '@tanstack/react-router'
 import { useParams, useRouter } from '@tanstack/react-router'
@@ -44,6 +40,9 @@ import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import type { ShortcutId } from '~/core/keyboard/shortcuts'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
@@ -63,8 +62,6 @@ import { actionCenterOpen } from './action-center-open'
 import { settingsCommands } from './settings-commands'
 import type { CommandEntry } from './types'
 
-const REFRESH_SHORTCUT_LETTER = window.electron ? 'R' : undefined
-
 const run = (action: () => void) => () => {
   actionCenterOpen.set(false)
   action()
@@ -75,7 +72,7 @@ const actionEntry = (
   keywords: string[],
   Icon: IconSvgElement,
   action: () => void,
-  shortcutLetter?: string
+  shortcut?: ShortcutId
 ) => ({
   keywords,
   node: (
@@ -89,12 +86,10 @@ const actionEntry = (
     >
       <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
-      {shortcutLetter && (
-        <KbdCtrlLetter
-          className="ml-auto"
-          userAgent={navigator.userAgent}
-          letter={shortcutLetter}
-        />
+      {shortcut && (
+        <CommandShortcut>
+          <ShortcutKbd shortcut={shortcut} />
+        </CommandShortcut>
       )}
     </CommandItem>
   ),
@@ -237,7 +232,7 @@ export const ActionsCenter = () => {
   }
   const listRef = useRef<ComponentRef<typeof CommandList>>(null)
 
-  useHotkey('Mod+P', (e) => {
+  useShortcut('commandPalette', (e) => {
     e.preventDefault()
     actionCenterOpen.set(!isOpen)
   })
@@ -363,7 +358,7 @@ export const ActionsCenter = () => {
                 icon: DatabaseSyncIcon,
                 keywords: ['reload', 'refetch', 'update'],
                 order: 30,
-                shortcut: REFRESH_SHORTCUT_LETTER,
+                shortcut: window.electron ? 'refresh' : undefined,
                 value: 'Refresh data',
               },
             ]

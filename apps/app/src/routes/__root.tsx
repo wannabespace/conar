@@ -17,6 +17,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import { openContextMenuOn } from '~/components/app-context-menu'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
 import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
 import { globalHooks } from '~/lib/global-hooks'
@@ -29,7 +30,7 @@ const isElectron = !!window.electron
 const RootDocument = () => {
   const router = useRouter()
 
-  useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'), {
+  useShortcut('refresh', () => globalHooks.callHook('refreshPressed'), {
     enabled: isElectron,
   })
   useHotkey('Mod+Shift+R', () => location.reload(), {
@@ -38,8 +39,8 @@ const RootDocument = () => {
   useWindowFocusObserver()
   useWindowFullscreenObserver()
 
-  useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
-  useHotkey('Mod+.', () => {
+  useShortcut('saveChanges', () => globalHooks.callHook('savePressed'))
+  useShortcut('contextMenu', () => {
     const focused = document.activeElement
     const activeId = focused?.getAttribute('aria-activedescendant')
     const target = activeId

@@ -7,7 +7,6 @@ import {
   Link01Icon,
 } from '@hugeicons/core-free-icons'
 import { cellToFilterValues, EQUAL_FILTER } from '@tamery/shared/filters'
-import { KbdShiftLetter } from '@tamery/ui/components/custom/shortcuts'
 
 import type { AppMenuNode } from '~/components/app-menu'
 import type { CellMenuExtra } from '~/core/table/cell/cell-menu'
@@ -61,7 +60,7 @@ export const tableCellMenu = ({
 
   const rowItems: AppMenuNode[] = [
     ...(isEditable && entry.kind === 'saved'
-      ? [
+      ? ([
           {
             icon: CheckmarkSquare02Icon,
             label: rowSelection.has(sessionStore.get(), entry.keys)
@@ -71,9 +70,9 @@ export const tableCellMenu = ({
               sessionStore.set((state) =>
                 rowSelection.toggle(state, [entry.keys])
               ),
-            shortcut: <KbdShiftLetter letter="Space" />,
+            shortcut: 'selectRows',
           },
-        ]
+        ] satisfies AppMenuNode[])
       : []),
     ...(canInsert
       ? [

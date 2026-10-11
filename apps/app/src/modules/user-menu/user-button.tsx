@@ -14,7 +14,6 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { RELEASES_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import {
   DropdownMenu,
@@ -38,6 +37,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { authClient } from '~/lib/auth'
 import { ANALYTICS_STORAGE_KEY } from '~/lib/posthog'
 import { clearDb } from '~/lib/sync'
@@ -133,7 +133,7 @@ export const UserButton = ({
           <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
           Settings
           <DropdownMenuShortcut>
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="," />
+            <ShortcutKbd shortcut="settings" />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
         {window.electron && (

@@ -92,8 +92,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Keyboard
 
-- **Derive the Settings shortcut list.** `core/settings/shortcut-groups.ts` is written by hand beside the `useHotkey` calls it describes, so a new or rebound key drifts until someone updates it. One registry that both the bindings and the Settings list read would keep them in step.
-- **One kit combo renderer.** A `KbdCombo combo="shift mod Z"` in the kit `shortcuts.tsx` would replace the fixed-shape `KbdCtrlLetter`/`KbdShiftLetter`/`KbdShiftCtrlLetter`/`KbdCtrlEnter` family and the Settings list's own `KEY_ICONS` mapping, so every hint and the Settings page draw keys one way.
+- **Rebindable shortcuts.** Every binding and hint reads its key from `core/keyboard/shortcuts.ts` by id, so rebinding is a per-device override store read in place of `SHORTCUTS[id].hotkeys` plus a recorder row in Settings → Keyboard (`useHotkeyRecorder`). Still hard-coded outside the map: the native menu accelerators in `apps/desktop/src/main/lib/menu.ts` (New window, Close tab, needs IPC) and the ghost-text Tab in `packages/monaco`. Two ids share a key in different contexts (⌘S save changes / save statement, ⌘D fill down / drop, ⌘↩ submit / run), so a recorder should only flag conflicts inside one context.
 - **Toolbars as one Tab stop.** The table and runner toolbars, the Navigator footer and the dashboard's connection rows (each link and ⋯) are still a Tab stop per control; roving arrows would make each one stop like the tab strip.
 - **Keyboard column resize.** Header grips are out of the Tab order like the grid's other inner controls, so a column's width is pointer-only; a Width… item in the column menu would give it a keyboard route.
 - **Query logger rows.** Every row is its own Tab stop with no arrow movement, and the detail pane sits after all rendered rows, so it is effectively unreachable. Give the list a cursor like the Schema pages (search-field or roving highlight).

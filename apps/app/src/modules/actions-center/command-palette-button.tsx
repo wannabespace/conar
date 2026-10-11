@@ -1,19 +1,18 @@
 import { CommandIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+
 import { actionCenterOpen } from './action-center-open'
 
 export const CommandPaletteButton = () => (
-  <Tooltip
-    shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />}
-  >
+  <Tooltip shortcut={<ShortcutKbd shortcut="commandPalette" />}>
     <TooltipTrigger
       render={
         <Button

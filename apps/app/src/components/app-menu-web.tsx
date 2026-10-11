@@ -27,6 +27,7 @@ import {
 import type { ReactNode } from 'react'
 
 import type { AppMenuNode } from '~/components/app-menu'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 const menuIcon = (icon?: IconSvgElement) =>
   icon && <HugeiconsIcon icon={icon} strokeWidth={2} />
@@ -137,7 +138,11 @@ export const renderWebNodes = (
           >
             {menuIcon(node.icon)}
             {node.label}
-            {node.shortcut && <parts.Shortcut>{node.shortcut}</parts.Shortcut>}
+            {node.shortcut && (
+              <parts.Shortcut>
+                <ShortcutKbd shortcut={node.shortcut} />
+              </parts.Shortcut>
+            )}
             {node.trailing}
           </parts.Item>
         )

@@ -10,7 +10,6 @@ import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Drawer, DrawerContent } from '@tamery/ui/components/drawer'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
@@ -31,6 +30,8 @@ import type { AppMenuNode } from '~/components/app-menu'
 import { PaneEmpty } from '~/components/pane-empty'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import { DropDialog } from '~/core/catalog/drop-dialog'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { queryClient } from '~/lib/query-client'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
@@ -180,12 +181,12 @@ export const DefinitionsPage = <T extends { name: string }>({
     { enabled: !overlayOpen, preventDefault: true, target: searchRef }
   )
 
-  useHotkeys(
+  useShortcuts(
     [
       {
         callback: () => inspector.open(null),
-        hotkey: 'Mod+N',
         options: { enabled: !overlayOpen && canCreate },
+        shortcut: 'addItem',
       },
       {
         callback: () => {
@@ -193,8 +194,8 @@ export const DefinitionsPage = <T extends { name: string }>({
             requestDrop(highlightedItem)
           }
         },
-        hotkey: 'Mod+D',
         options: { enabled: !overlayOpen && canDrop(highlightedItem) },
+        shortcut: 'dropItem',
       },
     ],
     { preventDefault: true }
@@ -227,13 +228,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   ]
 
   const addButton = (
-    <Tooltip
-      shortcut={
-        canCreate && (
-          <KbdCtrlLetter userAgent={navigator.userAgent} letter="N" />
-        )
-      }
-    >
+    <Tooltip shortcut={canCreate && <ShortcutKbd shortcut="addItem" />}>
       <TooltipTrigger
         render={
           <Button

@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import { openContextMenuOn } from '~/components/app-context-menu'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { navigatorOpenValue } from './stores'
 
@@ -125,17 +126,18 @@ export const useNavigatorSearch = ({
         },
         hotkey: 'Enter',
       },
-      {
-        callback: () => {
-          const control = highlightedControl()
-          if (control) {
-            openContextMenuOn(control)
-          }
-        },
-        hotkey: 'Mod+.',
-      },
       { callback: onClear, hotkey: 'Escape', options: { enabled: !!search } },
     ],
+    { target: searchRef }
+  )
+  useShortcut(
+    'contextMenu',
+    () => {
+      const control = highlightedControl()
+      if (control) {
+        openContextMenuOn(control)
+      }
+    },
     { target: searchRef }
   )
 
