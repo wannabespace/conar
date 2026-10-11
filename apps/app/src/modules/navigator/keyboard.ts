@@ -67,7 +67,6 @@ export const useNavigatorSearch = ({
       : fallback
   const index = nodes.findIndex((candidate) => candidate.id === highlighted)
   const node = nodes[index]
-  const highlightedId = focused ? highlighted : undefined
 
   // A virtualized list must keep the highlighted row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
   const highlightedControl = () =>
@@ -141,7 +140,7 @@ export const useNavigatorSearch = ({
   )
 
   return {
-    highlightedId,
+    highlightedId: focused ? highlighted : undefined,
     listRef,
     searchProps: {
       onBlur: () => setFocused(false),

@@ -33,30 +33,10 @@ const KEY_ALIASES: Record<string, string[]> = {
   shift: ['shift', '⇧'],
 }
 
-const ShortcutKbd = ({ combo }: { combo: string }) => (
-  <Kbd>
-    {combo.split(' ').map((key) => {
-      if (key === 'mod') {
-        return <Ctrl key={key} userAgent={navigator.userAgent} />
-      }
-      const icon = KEY_ICONS[key]
-      return icon ? (
-        <HugeiconsIcon key={key} icon={icon} strokeWidth={2} />
-      ) : (
-        <span key={key}>{key}</span>
-      )
-    })}
-  </Kbd>
-)
-
 export const ShortcutsList = () => {
   const [search, setSearch] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
-  const terms = search
-    .toLowerCase()
-    .replaceAll(/[+⌘⇧]/gu, (key) => ` ${key === '+' ? '' : key} `)
-    .trim()
-    .split(/\s+/u)
+  const terms = search.toLowerCase().match(/[⌘⇧]|[^\s+⌘⇧]+/gu) ?? []
   const groups = SHORTCUT_GROUPS.map(({ shortcuts, title }) => ({
     shortcuts: shortcuts.filter(
       ({ combos, desktopOnly, description, title: shortcutTitle }) => {
@@ -117,7 +97,19 @@ export const ShortcutsList = () => {
               description={description}
             >
               {combos.map((combo) => (
-                <ShortcutKbd key={combo} combo={combo} />
+                <Kbd key={combo}>
+                  {combo.split(' ').map((key) => {
+                    if (key === 'mod') {
+                      return <Ctrl key={key} userAgent={navigator.userAgent} />
+                    }
+                    const icon = KEY_ICONS[key]
+                    return icon ? (
+                      <HugeiconsIcon key={key} icon={icon} strokeWidth={2} />
+                    ) : (
+                      <span key={key}>{key}</span>
+                    )
+                  })}
+                </Kbd>
               ))}
             </SettingsRow>
           ))}

@@ -111,6 +111,7 @@ export const DataGrid = ({
     rows,
     scrollRef,
   })
+  const pointer = useGridPointer(cursor)
   const scrollToCell = useGridHandle({
     cursor,
     cursorRef,
@@ -132,7 +133,6 @@ export const DataGrid = ({
     scrollRef,
     scrollToCursor,
   })
-  const pointer = useGridPointer(cursor)
   useGridFocusRequest(focusKey, scrollRef)
   useMountedEffect(scrollToCursor, [layout])
 

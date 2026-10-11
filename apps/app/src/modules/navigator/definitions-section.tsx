@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from '@tamery/ui/components/sidebar'
 import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Link } from '~/components/link'
 import { openTab } from '~/core/tabs/actions'
@@ -43,6 +43,14 @@ export const DefinitionsPanel = () => {
     onClear: () => setSearch(''),
     search,
   })
+
+  useEffect(() => {
+    if (highlightedId) {
+      listRef.current
+        ?.querySelector('[data-highlighted]')
+        ?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedId, listRef])
 
   return (
     <>

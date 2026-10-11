@@ -93,8 +93,9 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Keyboard
 
 - **Derive the Settings shortcut list.** `core/settings/shortcut-groups.ts` is written by hand beside the `useHotkey` calls it describes, so a new or rebound key drifts until someone updates it. One registry that both the bindings and the Settings list read would keep them in step.
+- **One kit combo renderer.** A `KbdCombo combo="shift mod Z"` in the kit `shortcuts.tsx` would replace the fixed-shape `KbdCtrlLetter`/`KbdShiftLetter`/`KbdShiftCtrlLetter`/`KbdCtrlEnter` family and the Settings list's own `KEY_ICONS` mapping, so every hint and the Settings page draw keys one way.
 - **Toolbars as one Tab stop.** The table and runner toolbars, the Navigator footer and the dashboard's connection rows (each link and ⋯) are still a Tab stop per control; roving arrows would make each one stop like the tab strip.
-- **Keyboard column resize.** Header grips left the Tab order with the rest of the grid's inner controls, so a column's width is pointer-only; a Width… item in the column menu would give it a keyboard route.
+- **Keyboard column resize.** Header grips are out of the Tab order like the grid's other inner controls, so a column's width is pointer-only; a Width… item in the column menu would give it a keyboard route.
 - **Query logger rows.** Every row is its own Tab stop with no arrow movement, and the detail pane sits after all rendered rows, so it is effectively unreachable. Give the list a cursor like the Schema pages (search-field or roving highlight).
 - **Visualizer off-screen tables.** `onlyRenderVisibleElements` drops tables outside the viewport from the DOM and there is no keyboard panning, so a keyboard user only reaches them through Zoom out/Arrange. The inspector also opens without focus and closes to `body`.
 - **Grid gaps.** Column reorder is drag-only; the cell editor's Set null/Default/Now buttons can never take focus (Tab leaves the cell); an edit whose cell is virtualised away leaves the grid deaf until it scrolls back.

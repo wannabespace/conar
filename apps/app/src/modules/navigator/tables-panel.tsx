@@ -1,18 +1,7 @@
-import {
-  LayoutTable02Icon,
-  PlusSignIcon,
-  Search01Icon,
-} from '@hugeicons/core-free-icons'
+import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-} from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
   TooltipContent,
@@ -162,51 +151,17 @@ export const TablesPanel = ({
           </TooltipContent>
         </Tooltip>
       </div>
-      {isPending && (
-        <SidebarContent className="overflow-hidden pl-2">
-          <SidebarMenu>
-            {Array.from({ length: 12 }).map((_, index) => (
-              <SidebarMenuItem key={index}>
-                <SidebarMenuSkeleton seed={index} />
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-      )}
-      {!isPending && rows.length === 0 && (
-        <SidebarContent className="items-center justify-center py-8 text-center">
-          <HugeiconsIcon
-            icon={LayoutTable02Icon}
-            strokeWidth={2}
-            className="text-muted-foreground/50 mb-2 size-8"
-          />
-          <p className="text-muted-foreground text-sm">
-            {search ? 'No tables found' : 'No tables yet'}
-          </p>
-          {!search && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => onCreateTable()}
-            >
-              <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-              New table
-            </Button>
-          )}
-        </SidebarContent>
-      )}
-      {rows.length > 0 && (
-        <TablesList
-          ref={listRef}
-          activeId={activeId}
-          highlightedId={highlightedId}
-          rows={rows}
-          search={search}
-          onCreateTable={onCreateTable}
-          onToggleSchema={toggleSchema}
-        />
-      )}
+      <TablesList
+        ref={listRef}
+        className="min-h-0 flex-1"
+        activeId={activeId}
+        highlightedId={highlightedId}
+        isPending={isPending}
+        rows={rows}
+        search={search}
+        onCreateTable={onCreateTable}
+        onToggleSchema={toggleSchema}
+      />
     </>
   )
 }

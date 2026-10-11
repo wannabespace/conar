@@ -1,11 +1,17 @@
-import { FolderAddIcon } from '@hugeicons/core-free-icons'
+import {
+  FolderAddIcon,
+  LayoutTable02Icon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
 import {
   SidebarContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
 } from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
@@ -38,7 +44,9 @@ const ROW_HEIGHTS = {
 
 export const TablesList = ({
   activeId,
+  className,
   highlightedId,
+  isPending,
   onCreateTable,
   onToggleSchema,
   ref,
@@ -46,7 +54,9 @@ export const TablesList = ({
   search,
 }: {
   activeId?: string
+  className?: string
   highlightedId?: string
+  isPending: boolean
   onCreateTable: (schema?: string) => void
   onToggleSchema: (name: string) => void
   ref: Ref<HTMLDivElement>
@@ -87,9 +97,13 @@ export const TablesList = ({
     }
   })
 
+  const hasData = rows.length > 0
+
   useEffect(() => {
-    scrollToEvent()
-  }, [])
+    if (hasData) {
+      scrollToEvent()
+    }
+  }, [hasData])
 
   useEffect(() => {
     if (highlightedId) {
@@ -99,6 +113,51 @@ export const TablesList = ({
 
   const deferredSearch = useDeferredValue(search)
   const isSearchSettled = deferredSearch === search
+
+  if (isPending) {
+    return (
+      <SidebarContent className={cn('overflow-hidden pl-2', className)}>
+        <SidebarMenu>
+          {Array.from({ length: 12 }).map((_, index) => (
+            <SidebarMenuItem key={index}>
+              <SidebarMenuSkeleton seed={index} />
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+    )
+  }
+
+  if (rows.length === 0) {
+    return (
+      <SidebarContent
+        className={cn(
+          'items-center justify-center py-8 text-center',
+          className
+        )}
+      >
+        <HugeiconsIcon
+          icon={LayoutTable02Icon}
+          strokeWidth={2}
+          className="text-muted-foreground/50 mb-2 size-8"
+        />
+        <p className="text-muted-foreground text-sm">
+          {search ? 'No tables found' : 'No tables yet'}
+        </p>
+        {!search && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => onCreateTable()}
+          >
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            New table
+          </Button>
+        )}
+      </SidebarContent>
+    )
+  }
 
   const rowContentOf = (row: TreeRow) => {
     if (row.kind === 'schema') {
@@ -182,7 +241,7 @@ export const TablesList = ({
   return (
     <div
       ref={ref}
-      className="relative flex min-h-0 flex-1 flex-col"
+      className={cn('relative flex flex-col', className)}
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
       <SidebarContent
