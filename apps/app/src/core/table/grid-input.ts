@@ -1,4 +1,3 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -10,11 +9,13 @@ import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
 
-// Hotkeys take no wildcard; these are the keys that start an edit by typing over the cell.
-const TYPING_KEYS = [
-  ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].flatMap((key) => [key, `Shift+${key}`]),
-  ...'0123456789-.',
-] as Hotkey[]
+// Space is the peek shortcut, not a character to type over the cell.
+const isTypedCharacter = (event: KeyboardEvent) =>
+  event.key.length === 1 &&
+  event.key !== ' ' &&
+  !event.ctrlKey &&
+  !event.metaKey &&
+  !event.isComposing
 
 const TO_EDGE = Number.MAX_SAFE_INTEGER
 
@@ -69,12 +70,20 @@ export const useGridHotkeys = ({
       cursor.step(0, 0)
     }
   })
+  const typeOverCell = useEffectEvent((event: KeyboardEvent) => {
+    if (navigating && isTypedCharacter(event)) {
+      event.preventDefault()
+      cursor.edit(event.key)
+    }
+  })
   useEffect(() => {
     document.addEventListener('focusin', track)
     document.addEventListener('focusout', track)
+    document.addEventListener('keydown', typeOverCell)
     return () => {
       document.removeEventListener('focusin', track)
       document.removeEventListener('focusout', track)
+      document.removeEventListener('keydown', typeOverCell)
     }
   }, [])
 
@@ -123,11 +132,6 @@ export const useGridHotkeys = ({
       ]),
       ...(['Backspace', 'Delete'] as const).map((hotkey) => ({
         callback: () => cursor.edit(''),
-        hotkey,
-        options: { enabled: navigating },
-      })),
-      ...TYPING_KEYS.map((hotkey) => ({
-        callback: (event: KeyboardEvent) => cursor.edit(event.key),
         hotkey,
         options: { enabled: navigating },
       })),
