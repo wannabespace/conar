@@ -30,7 +30,7 @@ import {
 export const openContextMenuOn = (element: Element) => {
   const { bottom, left } = element.getBoundingClientRect()
   element.dispatchEvent(
-    new MouseEvent('contextmenu', {
+    new globalThis.MouseEvent('contextmenu', {
       bubbles: true,
       cancelable: true,
       clientX: left,
