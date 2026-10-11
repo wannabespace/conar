@@ -6,7 +6,6 @@ import {
   ArrowUpBigIcon,
   CommandIcon,
   CornerDownLeftIcon,
-  DeletePutBackIcon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -46,12 +45,35 @@ export const EnterIcon = ({ className }: { className?: string }) => (
   />
 )
 
+const BackspaceIcon: IconSvgElement = [
+  [
+    'path',
+    {
+      d: 'M9 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H9L2.5 12L9 5Z',
+      key: '0',
+      stroke: 'currentColor',
+      strokeLinejoin: 'round',
+      strokeWidth: '1.5',
+    },
+  ],
+  [
+    'path',
+    {
+      d: 'M11.5 9.5L16.5 14.5M16.5 9.5L11.5 14.5',
+      key: '1',
+      stroke: 'currentColor',
+      strokeLinecap: 'round',
+      strokeWidth: '1.5',
+    },
+  ],
+]
+
 const GLYPHS: Partial<Record<string, IconSvgElement>> = {
   ArrowDown: ArrowDown02Icon,
   ArrowLeft: ArrowLeft02Icon,
   ArrowRight: ArrowRight02Icon,
   ArrowUp: ArrowUp02Icon,
-  Backspace: DeletePutBackIcon,
+  Backspace: BackspaceIcon,
   Enter: CornerDownLeftIcon,
   Meta: CommandIcon,
   Shift: ArrowUpBigIcon,
