@@ -94,6 +94,13 @@ Each file is one statement, as a `createQuery` covering every dialect — what a
 - **Free plans get `FREE_WEEKLY_LIMITS.mcp` runs of `query` and `execute` a week, counted only by the API** (`modules/mcp/usage.ts`): each run checks the account's `usage.get` and reports through `usage.record`, which returns the fresh quota into the same cache. With the API unreachable a run is neither checked nor counted — fail open, so local connections keep working offline. A refused call opens the limit dialog.
 - Requests need the bearer token stored beside the toggle; without it any local process or a DNS-rebound web page could query the user's databases.
 
+## Beta updates (desktop)
+
+ToDesktop has no channels inside one app, so beta is a second ToDesktop app in the main app's Environment Group (`apps/desktop/todesktop.beta.json`, which extends `todesktop.json` and overrides only `id`). It keeps the stable bundle `appId`: macOS installs an update only when its signature matches the running app's, and a shared `appId` keeps userData, so switching never loses local state.
+
+- The **Beta updates** switch stores the channel in main's `updates` store, and `lib/todesktop.ts` points the updater's feed at that channel's app before every check. Feeds install whatever version they serve (the runtime allows downgrades), so turning beta off moves a beta build back to the latest stable one.
+- **Every stable release is built into and released from both apps** (the release workflow's `stable` channel builds both), or beta users stay behind stable until the next beta. A beta-only build needs a prerelease version (`0.33.0-beta.1`), which sorts below its stable `0.33.0`.
+
 ## Reach for the library before writing machinery
 
 Retry, fallback, queueing, ordering, id generation, streaming state — if a dependency owns the concern, use its API. A well-known format or algorithm (CSV/TSV, diff, glob, semver) goes to a small, maintained package rather than a hand-written parser; adding the dependency is the user's call, so propose it. Genuinely unsupported → drop the feature, move to a provider that does it, or ask; **not** hand-roll a wrapper.

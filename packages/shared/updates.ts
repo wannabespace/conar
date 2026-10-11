@@ -4,3 +4,5 @@ export type UpdatesStatus =
   | 'downloading'
   | 'ready'
   | 'error'
+
+export type UpdateChannel = 'stable' | 'beta'

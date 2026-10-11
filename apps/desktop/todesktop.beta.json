@@ -1,0 +1,5 @@
+{
+  "$schema": "./node_modules/@todesktop/cli/schemas/schema.json",
+  "extends": "./todesktop.json",
+  "id": "REPLACE_WITH_BETA_TODESKTOP_APP_ID"
+}

@@ -2,11 +2,28 @@ name: Build and release
 
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: Stable also builds into the beta app, so beta users get every stable release
+        type: choice
+        options:
+          - stable
+          - beta
+        default: stable
 
 jobs:
   build:
     name: Build
     runs-on: macos-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+      TODESKTOP_ACCESS_TOKEN: ${{ secrets.TODESKTOP_ACCESS_TOKEN }}
+      TODESKTOP_EMAIL: ${{ secrets.TODESKTOP_EMAIL }}
+      VITE_PUBLIC_API_URL: ${{ secrets.API_URL }}
+      VITE_PUBLIC_WEB_URL: ${{ secrets.WEB_URL }}
+      VITE_PUBLIC_PROXY_URL: ${{ secrets.PROXY_URL }}
+      VITE_PUBLIC_POSTHOG_TOKEN: ${{ secrets.POSTHOG_TOKEN }}
+      VITE_PUBLIC_MAIN_URL: ${{ secrets.MAIN_URL }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v7
@@ -25,13 +42,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build ToDesktop
+        if: inputs.channel == 'stable'
         run: pnpm run build:todesktop
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
-          TODESKTOP_ACCESS_TOKEN: ${{ secrets.TODESKTOP_ACCESS_TOKEN }}
-          TODESKTOP_EMAIL: ${{ secrets.TODESKTOP_EMAIL }}
-          VITE_PUBLIC_API_URL: ${{ secrets.API_URL }}
-          VITE_PUBLIC_WEB_URL: ${{ secrets.WEB_URL }}
-          VITE_PUBLIC_PROXY_URL: ${{ secrets.PROXY_URL }}
-          VITE_PUBLIC_POSTHOG_TOKEN: ${{ secrets.POSTHOG_TOKEN }}
-          VITE_PUBLIC_MAIN_URL: ${{ secrets.MAIN_URL }}
+
+      - name: Build ToDesktop beta
+        run: pnpm run build:todesktop:beta

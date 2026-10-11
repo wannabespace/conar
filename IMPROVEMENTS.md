@@ -25,6 +25,10 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 8. **Auto-charts on results.** Pick a chart from result shape (time + number = line, category + number = bar). Toggle in the results pane, no chart builder.
 9. **PII masking.** Mark columns sensitive; their values are masked before anything reaches the model or MCP. Build together with 2.
 
+## Desktop
+
+- **Leave beta without a downgrade.** Turning **Beta updates** off installs the latest stable version even when it is older than the running beta. Optionally stay on the beta until stable catches up, as Chrome and VS Code do. That needs ToDesktop's runtime to expose `allowDowngrade`, which it currently forces on.
+
 ## Deferred
 
 - **Notebooks / dashboards** — a different product; saved queries plus auto-charts cover most of it.

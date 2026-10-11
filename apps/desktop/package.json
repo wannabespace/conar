@@ -13,6 +13,7 @@
     "dev": "vite dev",
     "build": "vite build && bun ./scripts/copy-renderer.ts",
     "build:todesktop": "todesktop build",
+    "build:todesktop:beta": "todesktop build --config=./todesktop.beta.json",
     "check-types": "tsc",
     "todesktop:beforeInstall": "./scripts/todesktop-before-install.cjs"
   },

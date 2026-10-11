@@ -135,6 +135,12 @@ contextBridge.exposeInMainWorld('electron', {
     setNativeTheme: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('app.setNativeTheme', arg)
     ),
+    setUpdateChannel: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('app.setUpdateChannel', arg)
+    ),
+    updateChannel: handleElectronError(() =>
+      ipcRenderer.invoke('app.updateChannel')
+    ),
   },
   encryption: {
     decrypt: handleElectronError((arg: unknown) =>

@@ -29,6 +29,10 @@
       "dependsOn": ["build"],
       "cache": false
     },
+    "build:todesktop:beta": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
     "test": {
       "cache": false
     },

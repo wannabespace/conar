@@ -11,7 +11,7 @@ import { app, ipcMain, nativeTheme } from 'electron'
 import { popupNativeContextMenu } from './context-menu'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
-import { autoUpdater } from './todesktop'
+import { autoUpdater, setUpdateChannel, updateChannel } from './todesktop'
 
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>
@@ -65,6 +65,8 @@ export const electron = {
     setNativeTheme: (theme: 'light' | 'dark' | 'system') => {
       nativeTheme.themeSource = theme
     },
+    setUpdateChannel,
+    updateChannel,
   },
   encryption: {
     decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
