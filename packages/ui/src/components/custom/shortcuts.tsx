@@ -3,6 +3,7 @@ import {
   ArrowLeft02Icon,
   ArrowRight02Icon,
   ArrowUp02Icon,
+  ArrowUpBigIcon,
   CommandIcon,
   CornerDownLeftIcon,
   DeletePutBackIcon,
@@ -53,7 +54,7 @@ const GLYPHS: Partial<Record<string, IconSvgElement>> = {
   Backspace: DeletePutBackIcon,
   Enter: CornerDownLeftIcon,
   Meta: CommandIcon,
-  Shift: ArrowUp02Icon,
+  Shift: ArrowUpBigIcon,
 }
 
 const LABELS: Partial<Record<string, string>> = {
