@@ -27,7 +27,7 @@ import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { Link } from '~/components/link'
 import { tableTypeIcon, tableTypeLabel } from '~/core/catalog/table-type'
-import { requestGridFocus } from '~/core/table/grid-focus'
+import { focusGridWhenReady } from '~/core/table/pending-grid-focus'
 import { tableSessionStore } from '~/core/table/session'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
@@ -140,7 +140,7 @@ export const TableRow = ({
             data-mask
             onClick={(event) => {
               openTab(connectionResource.id, tabId, true)
-              requestGridFocus(tabId, event.currentTarget)
+              focusGridWhenReady(tabId, event.currentTarget)
             }}
             onDoubleClick={() => openTab(connectionResource.id, tabId)}
           />

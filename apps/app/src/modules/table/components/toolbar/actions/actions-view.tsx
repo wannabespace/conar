@@ -11,7 +11,7 @@ import { useSubscription } from 'seitu/react'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
-import { requestGridFocus } from '~/core/table/grid-focus'
+import { focusGridWhenReady } from '~/core/table/pending-grid-focus'
 import { posthog } from '~/lib/posthog'
 
 import { useTablePageStore } from '../../../lib/store'
@@ -26,7 +26,7 @@ export const ActionsView = () => {
   const toggle = () => {
     const next = view === 'grid' ? 'documents' : 'grid'
     if (document.activeElement?.closest('[role=grid]')) {
-      requestGridFocus(tabId)
+      focusGridWhenReady(tabId)
     }
     store.set((state) => ({ ...state, view: next }))
     posthog.capture('table_view_toggled', { view: next })

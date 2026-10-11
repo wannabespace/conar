@@ -19,10 +19,10 @@ import { DocumentList } from './document-list'
 import type { GridBarItem } from './grid-bar'
 import { GridBar } from './grid-bar'
 import { useGridCursor } from './grid-cursor'
-import { useGridFocusRequest } from './grid-focus'
 import type { DataGridHandle } from './grid-handle'
 import { useGridHandle } from './grid-handle'
 import { useGridHotkeys, useGridPointer } from './grid-input'
+import { usePendingGridFocus } from './pending-grid-focus'
 
 const valueOf = ({ column, row }: DataGridCell) => row[column.id]
 
@@ -63,7 +63,7 @@ export const DataGrid = ({
   columns: Column[]
   connectionType: ConnectionType
   cursorRef?: Ref<DataGridHandle>
-  /** The grid takes focus when `requestGridFocus` names this key, now or once it mounts. */
+  /** The grid takes focus when `focusGridWhenReady` names this key, now or once it mounts. */
   focusKey?: string
   footer?: ReactNode
   /** The value the cell shows and the editor starts from, e.g. a pending draft. */
@@ -133,7 +133,7 @@ export const DataGrid = ({
     scrollRef,
     scrollToCursor,
   })
-  useGridFocusRequest(focusKey, scrollRef)
+  usePendingGridFocus(focusKey, scrollRef)
   useMountedEffect(scrollToCursor, [layout])
 
   const renderDataCell = (cell: DataGridCell, geometry?: CellGeometry) =>
