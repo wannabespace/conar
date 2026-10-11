@@ -3,10 +3,12 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { themeStore } from '@tamery/ui/theme-store'
+import type { Theme } from '@tamery/ui/theme-store'
+import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import type { ComponentProps } from 'react'
 
 export const ThemeToggle = ({
@@ -14,22 +16,43 @@ export const ThemeToggle = ({
   ...props
 }: ComponentProps<typeof DropdownMenuTrigger> & {
   side?: 'top' | 'right' | 'bottom' | 'left'
-}) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger {...props} />
-    <DropdownMenuContent side={side} className="min-w-32">
-      <DropdownMenuItem onClick={() => themeStore.set('light')}>
-        <HugeiconsIcon icon={Sun03Icon} strokeWidth={2} aria-hidden="true" />
-        Light
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => themeStore.set('dark')}>
-        <HugeiconsIcon icon={Moon02Icon} strokeWidth={2} aria-hidden="true" />
-        Dark
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => themeStore.set('system')}>
-        <HugeiconsIcon icon={ComputerIcon} strokeWidth={2} aria-hidden="true" />
-        System
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-)
+}) => {
+  const theme = useTheme()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger {...props} />
+      <DropdownMenuContent side={side} className="min-w-32">
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value: Theme) => themeStore.set(value)}
+        >
+          <DropdownMenuRadioItem value="light" closeOnClick>
+            <HugeiconsIcon
+              icon={Sun03Icon}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+            Light
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark" closeOnClick>
+            <HugeiconsIcon
+              icon={Moon02Icon}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+            Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system" closeOnClick>
+            <HugeiconsIcon
+              icon={ComputerIcon}
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+            System
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

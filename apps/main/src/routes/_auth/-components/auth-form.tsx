@@ -3,8 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { FieldSet } from '@tamery/ui/components/field'
-import { Separator } from '@tamery/ui/components/separator'
+import { FieldSeparator, FieldSet } from '@tamery/ui/components/field'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
@@ -94,7 +93,7 @@ const SocialButton = ({
 }
 
 const SocialAuthForm = () => (
-  <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-2 gap-3">
     {SOCIAL_PROVIDERS.map((provider) => (
       <SocialButton key={provider.id} provider={provider} />
     ))}
@@ -136,7 +135,7 @@ export const AuthForm = () => {
               <field.Field>
                 <field.Label>Email</field.Label>
                 <field.Input
-                  placeholder="example@gmail.com"
+                  placeholder="you@company.com"
                   type="email"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -159,12 +158,7 @@ export const AuthForm = () => {
           </Button>
         </FieldSet>
       </Form>
-      <div className="relative">
-        <Separator />
-        <span className="bg-background text-muted-foreground absolute top-1/2 left-1/2 -translate-1/2 px-4 text-sm">
-          Or continue with
-        </span>
-      </div>
+      <FieldSeparator>Or continue with</FieldSeparator>
       <SocialAuthForm />
     </>
   )

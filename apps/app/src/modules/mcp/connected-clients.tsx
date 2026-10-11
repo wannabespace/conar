@@ -1,7 +1,9 @@
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceStrict } from 'date-fns'
-
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 
 export const ConnectedClients = () => {
   const { data: clients, dataUpdatedAt } = useQuery({

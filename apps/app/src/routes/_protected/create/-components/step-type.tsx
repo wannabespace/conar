@@ -10,9 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@tamery/ui/components/card'
-
-import { ConnectionIcon } from '~/core/connection/connection-icon'
-import { MongoIcon } from '~/icons/mongo'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
+import { MongoIcon } from '@tamery/ui/components/icons/mongo'
 
 export const StepType = ({
   type,

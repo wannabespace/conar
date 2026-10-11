@@ -1,20 +1,7 @@
-import {
-  DashboardSquare01Icon,
-  GithubIcon,
-  LogoutCircle01Icon,
-  Moon02Icon,
-  Sun03Icon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { SOCIAL_LINKS } from '@tamery/shared/constants'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { CrownIcon, Logout01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@tamery/ui/components/button'
-import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
-import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
-import { Separator } from '@tamery/ui/components/separator'
-import { cn } from '@tamery/ui/lib/utils'
-import { useQuery } from '@tanstack/react-query'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   createFileRoute,
   getRouteApi,
@@ -24,14 +11,14 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 
-import { Footer } from '~/components/footer'
-import { NavbarTextLogo } from '~/components/navbar-text-logo'
-import { SidebarLink } from '~/components/sidebar-button'
+import { Brand } from '~/components/brand'
+import { GithubStars } from '~/components/github-stars'
+import { SidebarIcon, SidebarLink } from '~/components/sidebar-button'
+import { ThemeButton } from '~/components/theme-button'
 import { authClient } from '~/lib/auth'
-import { orpc } from '~/lib/orpc'
 import { AiUsageLink } from '~/modules/ai-usage/ai-usage-link'
+import { ApiKeysLink } from '~/modules/api-keys/api-keys-link'
 import { BillingLink } from '~/modules/billing/billing-link'
-import { ReleasesLink } from '~/modules/releases/releases-link'
 import { SettingsLink } from '~/modules/settings/settings-link'
 import { SupportButton } from '~/modules/support/support-button'
 
@@ -39,129 +26,87 @@ const { useLoaderData } = getRouteApi('/account')
 
 const AccountLayout = () => {
   const router = useRouter()
-  const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = useLoaderData()
 
-  const handleSignOut = async () => {
+  const signOut = async () => {
     await authClient.signOut()
     await router.invalidate()
   }
 
   return (
-    <div className="container mx-auto flex min-h-screen flex-col justify-between px-4">
-      <header className="mb-10 flex h-15 items-center justify-between">
-        <NavbarTextLogo to="/home" />
-        <div className="flex flex-1 justify-center">
-          <Link to="/home" className="text-primary">
-            <AppLogo className="size-5 sm:size-6 lg:size-8" />
-          </Link>
+    <div className="flex min-h-dvh flex-col">
+      <header className="flex h-14 shrink-0 items-center gap-2 px-4 md:px-5">
+        <div className="flex flex-1 items-center">
+          <Brand to="/home" />
         </div>
-        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-          <ReleasesLink />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden gap-1 sm:flex sm:gap-2"
-            render={
-              <a
-                href={SOCIAL_LINKS.GITHUB}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-              />
-            }
-          >
-            <HugeiconsIcon
-              icon={GithubIcon}
-              strokeWidth={2}
-              className="size-3 sm:size-4"
+        <GithubStars className="hidden sm:inline-flex" />
+        <ThemeButton />
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden sm:inline-flex"
+          render={
+            <a
+              href={import.meta.env.VITE_PUBLIC_WEB_URL}
+              aria-label="Open web app"
             />
-            <NumberFlow
-              value={data?.stargazers_count || 0}
-              className={cn(
-                `text-xs tabular-nums duration-200 sm:text-sm`,
-                !data && `text-muted-foreground animate-pulse`
-              )}
-            />
-          </Button>
-          <ThemeToggle
-            side="bottom"
-            render={<Button size="icon-sm" variant="ghost" />}
-          >
-            <HugeiconsIcon
-              icon={Sun03Icon}
-              strokeWidth={2}
-              className="size-4 dark:hidden"
-            />
-            <HugeiconsIcon
-              icon={Moon02Icon}
-              strokeWidth={2}
-              className="hidden size-4 dark:block"
-            />
-          </ThemeToggle>
-          <Button
-            variant="outline"
-            size="sm"
-            render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL} />}
-          >
-            Web version
-          </Button>
-          <Button
-            size="sm"
-            className="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm"
-            render={<Link to="/download" />}
-          >
-            Download
-          </Button>
-        </div>
+          }
+        >
+          Open web app
+        </Button>
+        <Button size="sm" render={<Link to="/download" />}>
+          Download
+        </Button>
       </header>
-      <div className="mb-10 flex flex-1 gap-6">
-        <aside className="w-64 shrink-0">
-          <div className="mb-4 flex items-center gap-3">
-            <UserAvatar user={user} className="size-10" />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <p className="truncate font-medium">{user.name}</p>
-              <p className="text-muted-foreground truncate text-sm">
+      <div className="flex min-w-0 flex-1 flex-col gap-2 px-2 pb-2 md:flex-row">
+        <aside className="flex min-w-0 shrink-0 flex-col gap-4 md:sticky md:top-2 md:w-64 md:self-start md:py-2 md:pr-1.5 md:pl-2">
+          <div className="hidden items-center gap-3 px-2 md:flex">
+            <UserAvatar user={user} className="size-9" />
+            <div className="flex min-w-0 flex-col">
+              <p data-mask className="truncate text-sm font-medium">
+                {user.name}
+              </p>
+              <p data-mask className="text-muted-foreground truncate text-xs">
                 {user.email}
               </p>
             </div>
           </div>
-          <nav className="space-y-1">
-            <SidebarLink to="/account" icon={DashboardSquare01Icon}>
-              Dashboard
+          <nav
+            aria-label="Account"
+            className="flex gap-0.5 overflow-x-auto px-2 md:flex-col md:overflow-visible md:px-0"
+          >
+            <SidebarLink to="/account" icon={CrownIcon}>
+              Subscription
             </SidebarLink>
             <BillingLink />
             <AiUsageLink />
+            <ApiKeysLink />
             <SettingsLink />
             <SupportButton />
-            <Separator className="my-2" />
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
+            <SidebarMenuButton
+              className="w-auto shrink-0 md:w-full"
               onClick={() => {
-                void handleSignOut()
+                void signOut()
               }}
             >
-              <HugeiconsIcon
-                icon={LogoutCircle01Icon}
-                strokeWidth={2}
-                className="size-4"
-              />
+              <SidebarIcon icon={Logout01Icon} />
               Sign out
-            </Button>
+            </SidebarMenuButton>
           </nav>
         </aside>
-        <main className="flex-1">
-          <Outlet />
+        <main className="bg-background ring-foreground/4 min-w-0 flex-1 rounded-2xl ring">
+          <div className="mx-auto flex w-full max-w-2xl flex-col px-4 py-8 md:px-8 md:py-10">
+            <Outlet />
+          </div>
         </main>
       </div>
-      <Footer />
     </div>
   )
 }
 
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
+  head: () => ({ meta: [{ title: 'Account - Tamery' }] }),
   loader: async () => {
     const { data } = await authClient.getSession()
 

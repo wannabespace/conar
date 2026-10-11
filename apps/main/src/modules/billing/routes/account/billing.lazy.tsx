@@ -1,15 +1,16 @@
-import { LinkSquare02Icon, Wallet01Icon } from '@hugeicons/core-free-icons'
+import { ArrowUpRight01Icon, Invoice01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { uppercaseFirst } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@tamery/ui/components/card'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
@@ -19,17 +20,21 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 
+import { AccountPage } from '~/components/account-page'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 
+const SKELETON_ROWS = 4
+
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-US', {
-    style: 'currency',
     currency: 'USD',
+    style: 'currency',
   }).format(amount / 100)
 
 const RouteComponent = () => {
@@ -41,102 +46,99 @@ const RouteComponent = () => {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
 
   return (
-    <>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Billing & Invoices
-        </h2>
+    <AccountPage
+      title="Billing"
+      action={
         <Button
           variant="outline"
           size="sm"
           onClick={() => openBillingPortal()}
           disabled={isOpening}
         >
-          <LoadingContent loading={isOpening}>
-            <HugeiconsIcon
-              icon={Wallet01Icon}
-              strokeWidth={2}
-              className="size-4"
-            />
-            Manage Billing
-          </LoadingContent>
+          <LoadingContent loading={isOpening}>Manage billing</LoadingContent>
         </Button>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices</CardTitle>
-          <CardDescription>View your invoices</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!isPending && invoices.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">
-              No invoices found
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[35%]">Date</TableHead>
-                  <TableHead className="w-[25%]">Amount</TableHead>
-                  <TableHead className="w-[20%]">Status</TableHead>
-                  <TableHead className="w-[20%] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isPending
-                  ? Array.from({ length: 5 }).map((_, index) => (
-                      // oxlint-disable-next-line react/no-array-index-key
-                      <TableRow key={`skeleton-${index}`}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-40" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-20" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-4 w-16" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="ml-auto h-4 w-12" />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  : invoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell>
-                          {format(invoice.createdAt, 'MMMM d, yyyy')}
-                        </TableCell>
-                        <TableCell>{formatCurrency(invoice.amount)}</TableCell>
-                        <TableCell>
-                          {uppercaseFirst(invoice.status ?? 'unknown')}
-                        </TableCell>
-                        <TableCell>
-                          {invoice.url ? (
-                            <div className="flex justify-end">
+      }
+    >
+      <div className={cn(cardClass, 'overflow-x-auto')}>
+        {!isPending && invoices.length === 0 ? (
+          <Empty size="sm">
+            <EmptyHeader>
+              <EmptyMedia variant="muted">
+                <HugeiconsIcon icon={Invoice01Icon} strokeWidth={2} />
+              </EmptyMedia>
+              <EmptyTitle>No invoices yet</EmptyTitle>
+              <EmptyDescription>
+                Invoices appear here after your first payment.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Table className="min-w-md table-fixed">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-2/5">Date</TableHead>
+                <TableHead className="w-1/4 text-right">Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-24" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isPending
+                ? Array.from({ length: SKELETON_ROWS }, (_, row) => (
+                    <TableRow key={row}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-12" />
+                      </TableCell>
+                      <TableCell />
+                    </TableRow>
+                  ))
+                : invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell>
+                        {format(invoice.createdAt, 'MMMM d, yyyy')}
+                      </TableCell>
+                      <TableCell variant="numeric">
+                        {formatCurrency(invoice.amount)}
+                      </TableCell>
+                      <TableCell>
+                        {uppercaseFirst(invoice.status ?? 'unknown')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {invoice.url && (
+                          <Button
+                            variant="ghost-muted"
+                            size="xs"
+                            render={
                               <a
                                 href={invoice.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-foreground flex items-center gap-1 hover:underline"
-                              >
-                                View
-                                <HugeiconsIcon
-                                  icon={LinkSquare02Icon}
-                                  strokeWidth={2}
-                                  className="size-3"
-                                />
-                              </a>
-                            </div>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </>
+                                aria-label="View invoice"
+                              />
+                            }
+                          >
+                            View
+                            <HugeiconsIcon
+                              icon={ArrowUpRight01Icon}
+                              strokeWidth={2}
+                              data-icon="inline-end"
+                            />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    </AccountPage>
   )
 }
 

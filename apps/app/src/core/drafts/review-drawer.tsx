@@ -1,6 +1,7 @@
 import { ArrowTurnBackwardIcon, SaveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
@@ -20,7 +21,6 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps, ReactNode } from 'react'
 
-import { cardClass } from '~/components/card'
 import { PaneEmpty } from '~/components/pane-empty'
 
 /** `title` is not masked here; the caller masks its user values. */

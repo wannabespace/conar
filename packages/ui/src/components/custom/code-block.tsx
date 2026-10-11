@@ -16,6 +16,9 @@ const useTokens = (code: string, language: string) => {
   const cache = useRef<{ key: string; tokens?: Token[][] }>({ key: '' })
   const key = `${language}\n${code}`
 
+  const getSnapshot = () =>
+    cache.current.key === key ? cache.current.tokens : undefined
+
   return useSyncExternalStore(
     (onChange) => {
       let subscribed = true
@@ -46,7 +49,8 @@ const useTokens = (code: string, language: string) => {
         subscribed = false
       }
     },
-    () => (cache.current.key === key ? cache.current.tokens : undefined)
+    getSnapshot,
+    getSnapshot
   )
 }
 

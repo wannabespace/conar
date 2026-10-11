@@ -18,24 +18,27 @@ export interface PricingPlan {
 }
 
 export const HOBBY_PLAN: PricingPlan = {
-  description:
-    'Perfect for discovering the app and exploring the core features',
+  description: 'Every database feature, with a taste of AI',
   features: [
     {
-      description: 'Use AI to work with your data',
-      name: 'Limited AI',
+      description: 'Browse, filter and edit rows, run queries, map your schema',
+      name: 'Table browser, SQL editor and visualizer',
     },
     {
-      description: 'Sync connections across devices',
-      name: 'Cloud sync',
+      description: 'Across devices, with or without the password',
+      name: 'Unlimited synced connections',
     },
     {
-      description: 'View and browse data',
-      name: 'Data management',
+      description: 'Natural-language filters, reset every Monday',
+      name: '20 AI filters a week',
+    },
+    {
+      description: 'For Claude Code, Cursor and other agents',
+      name: '100 MCP agent queries a week',
     },
   ],
   icon: CircleIcon,
-  name: 'Hobby',
+  name: 'Free',
   price: {
     monthly: 0,
     yearly: 0,
@@ -43,25 +46,29 @@ export const HOBBY_PLAN: PricingPlan = {
 }
 
 export const PRO_PLAN: PricingPlan = {
-  description: 'Unlock more features to improve your experience',
+  description: 'The full AI assistant, without limits',
   features: [
     {
-      description: 'All features from the free plan included',
-      name: 'Everything in Hobby',
+      description: 'Every feature of the free plan',
+      name: 'Everything in Free',
     },
     {
-      description: 'More AI features, unlimited queries and MCP',
-      name: 'Advanced AI',
+      description: 'Schema-aware answers, SQL writing and fixing, data seeding',
+      name: 'AI assistant',
     },
     {
-      description: 'Unlock all data management features',
-      name: 'More data management',
+      description: 'No weekly limits on filters or agent queries',
+      name: 'Unlimited AI filters and MCP',
+    },
+    {
+      description: 'Included AI credits and extra workspaces',
+      name: 'Credits and workspaces',
     },
   ],
   icon: CrownIcon,
   name: 'Pro',
   price: {
-    monthly: 10,
-    yearly: 100,
+    monthly: 15,
+    yearly: 150,
   },
 }

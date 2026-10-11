@@ -1,10 +1,5 @@
 import { Button } from '@tamery/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@tamery/ui/components/card'
+import { Spinner } from '@tamery/ui/components/spinner'
 import { copy } from '@tamery/ui/lib/copy'
 import {
   createFileRoute,
@@ -16,6 +11,8 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 
 import { authClient } from '~/lib/auth'
+
+import { OpenStatus } from '../open-status'
 
 const { useSearch } = getRouteApi('/open')
 
@@ -32,14 +29,6 @@ const getOpenMessage = (clientType: 'web' | 'desktop' | 'cli' | undefined) => {
 const getUrl = (token: string, codeChallenge: string, newUser?: boolean) =>
   `tamery://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 
-const handleCopyUrl = (
-  token: string,
-  codeChallenge: string,
-  newUser?: boolean
-) => {
-  copy(getUrl(token, codeChallenge, newUser), 'URL copied to clipboard')
-}
-
 const OpenPageContent = () => {
   const { data } = authClient.useSession()
   const { type: clientType } = useSearch()
@@ -51,108 +40,16 @@ const OpenPageContent = () => {
   }, [clientType])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Opening Tamery</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-6">
-            <p>{getOpenMessage(clientType)}</p>
-            <div className="flex">
-              {data ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  render={<Link to="/account" />}
-                >
-                  Go to Account
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  render={<Link to="/sign-in" />}
-                >
-                  Sign in
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <OpenStatus title="Opening Tamery" description={getOpenMessage(clientType)}>
+      <Button
+        variant="outline"
+        render={data ? <Link to="/account" /> : <Link to="/sign-in" />}
+      >
+        {data ? 'Go to account' : 'Sign in'}
+      </Button>
+    </OpenStatus>
   )
 }
-
-const AuthPendingCard = () => (
-  <>
-    <CardHeader>
-      <CardTitle>Authentication</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-muted-foreground animate-pulse">
-        Loading authentication data...
-      </p>
-    </CardContent>
-  </>
-)
-
-const AuthSuccessCard = ({
-  codeChallenge,
-  newUser,
-  token,
-}: {
-  codeChallenge: string
-  newUser?: boolean
-  token: string
-}) => (
-  <>
-    <CardHeader>
-      <CardTitle>Authentication successful</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="flex flex-col gap-6">
-        <p>
-          You have successfully signed in. You can now close this tab and return
-          to the Tamery desktop app.
-        </p>
-        <div className="flex flex-col gap-4">
-          <p className="text-muted-foreground text-sm">
-            If the app didn&apos;t open automatically, use the button below to
-            copy the connection URL.
-          </p>
-          <div className="flex">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCopyUrl(token, codeChallenge, newUser)}
-              className="w-full"
-            >
-              Copy auth URL
-            </Button>
-          </div>
-          <p className="text-muted-foreground text-xs">
-            Paste this URL in the desktop app to continue.
-          </p>
-        </div>
-      </div>
-    </CardContent>
-  </>
-)
-
-const AuthFailedCard = () => (
-  <>
-    <CardHeader>
-      <CardTitle>Authentication failed</CardTitle>
-    </CardHeader>
-    <CardContent>
-      Your session has expired or is invalid. Please sign in again to continue.
-    </CardContent>
-  </>
-)
 
 const OpenPage = () => {
   const { 'code-challenge': codeChallenge, 'new-user': newUser } = useSearch()
@@ -172,23 +69,44 @@ const OpenPage = () => {
     return <OpenPageContent />
   }
 
-  let authCard = <AuthFailedCard />
   if (isPending) {
-    authCard = <AuthPendingCard />
-  } else if (data) {
-    authCard = (
-      <AuthSuccessCard
-        codeChallenge={codeChallenge}
-        newUser={newUser}
-        token={data.session.token}
-      />
+    return (
+      <OpenStatus title="Signing you in" description="Checking your session.">
+        <Spinner className="text-muted-foreground" />
+      </OpenStatus>
+    )
+  }
+
+  if (!data) {
+    return (
+      <OpenStatus
+        title="Sign-in link expired"
+        description="Your session has expired or is invalid. Sign in again to continue."
+      >
+        <Button variant="outline" render={<Link to="/sign-in" />}>
+          Sign in
+        </Button>
+      </OpenStatus>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md">{authCard}</Card>
-    </div>
+    <OpenStatus
+      title="You're signed in"
+      description="Return to the Tamery desktop app. If it didn't open, copy the sign-in link and paste it there."
+    >
+      <Button
+        variant="outline"
+        onClick={() =>
+          copy(
+            getUrl(data.session.token, codeChallenge, newUser),
+            'Sign-in link copied'
+          )
+        }
+      >
+        Copy sign-in link
+      </Button>
+    </OpenStatus>
   )
 }
 

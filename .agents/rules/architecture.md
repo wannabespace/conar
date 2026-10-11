@@ -48,7 +48,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
 | `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
-| `settings/` | The core Settings sections (one file per page) and the `SettingsGroup`/`SettingsRow` every section is built from. `sections.ts` lists every page, module pages included, each carrying its `component`, rendered by the single `routes/_protected/settings/$section.tsx` route, which 404s on an unlisted slug |
+| `settings/` | The core Settings sections (one file per page), built from the kit's `SettingsGroup`/`SettingsRow` (`@tamery/ui/components/custom/settings-group`, shared with the web account area). `sections.ts` lists every page, module pages included, each carrying its `component`, rendered by the single `routes/_protected/settings/$section.tsx` route, which 404s on an unlisted slug |
 
 ## ArkType config ordering
 

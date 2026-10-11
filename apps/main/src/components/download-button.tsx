@@ -1,6 +1,3 @@
-import { AppleIcon, WindowsNewIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import type { OS } from '@tamery/shared/os'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -8,65 +5,69 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Linux } from '@tamery/ui/components/icons/linux'
-import { cn } from '@tamery/ui/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import type { ComponentProps } from 'react'
 
-import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
+
+import { DOWNLOAD_PLATFORMS } from './download-files'
 
 const os = getOSIsomorphic()
 
-const iconsMap: Partial<
-  Record<OS, (props: { className?: string }) => React.ReactNode>
-> = {
-  linux: ({ className }) => <Linux className={className} />,
-  macos: ({ className }) => (
-    <HugeiconsIcon icon={AppleIcon} strokeWidth={2} className={className} />
-  ),
-  windows: ({ className }) => (
-    <HugeiconsIcon
-      icon={WindowsNewIcon}
-      strokeWidth={2}
-      className={className}
-    />
-  ),
-}
+export const DownloadButton = ({
+  className,
+  variant,
+}: {
+  className?: string
+  variant?: ComponentProps<typeof Button>['variant']
+}) => {
+  const platform = DOWNLOAD_PLATFORMS.find(
+    (candidate) => candidate.os === os?.type
+  )
 
-export const DownloadButton = ({ className }: { className?: string }) => {
-  const links = os
-    ? DOWNLOAD_LINKS[os.type as keyof typeof DOWNLOAD_LINKS]
-    : null
-
-  if (!os || !links) {
+  if (!os || !platform) {
     return (
-      <Button disabled variant="secondary" size="lg" className={className}>
-        No downloads for your operating system :(
-      </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              size="lg"
+              variant={variant}
+              className={className}
+              disabled
+              focusableWhenDisabled
+            />
+          }
+        >
+          Download
+        </TooltipTrigger>
+        <TooltipContent>
+          Tamery runs on macOS, Windows and Linux.
+        </TooltipContent>
+      </Tooltip>
     )
   }
 
-  const Icon = iconsMap[os.type] || null
-
-  const assets = Object.entries(links).map(([arch, link]) => ({
-    arch,
-    link,
-  }))
-
-  const [firstAsset] = assets
-  if (assets.length === 1 && firstAsset) {
+  const [firstFile] = platform.files
+  if (platform.files.length === 1 && firstFile) {
     return (
       <Button
         size="lg"
+        variant={variant}
         className={className}
         render={
           <a
-            href={firstAsset.link}
+            href={firstFile.link}
             download
             aria-label={`Download for ${os.label}`}
           />
         }
       >
-        {Icon && <Icon className="size-4" />}
+        {platform.icon}
         Download for {os.label}
       </Button>
     )
@@ -75,35 +76,28 @@ export const DownloadButton = ({ className }: { className?: string }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={
-          <Button
-            size="lg"
-            className={cn(`flex items-center justify-center`, className)}
-          />
-        }
+        render={<Button size="lg" variant={variant} className={className} />}
       >
-        {Icon && <Icon className="size-4" />}
+        {platform.icon}
         Download for {os.label}
       </DropdownMenuTrigger>
-      {assets.length > 1 && (
-        <DropdownMenuContent>
-          {assets.map((asset) => (
-            <DropdownMenuItem
-              key={asset.link}
-              render={
-                <a
-                  href={asset.link}
-                  download
-                  className="text-foreground flex gap-2"
-                  aria-label={`Download ${asset.arch}`}
-                />
-              }
-            >
-              {asset.arch}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      )}
+      <DropdownMenuContent align="start">
+        {platform.files.map((file) => (
+          <DropdownMenuItem
+            key={file.link}
+            render={
+              <a
+                href={file.link}
+                download
+                aria-label={`Download ${file.label}`}
+                className="text-foreground"
+              />
+            }
+          >
+            {file.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
     </DropdownMenu>
   )
 }

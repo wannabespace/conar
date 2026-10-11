@@ -1,112 +1,103 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@tamery/ui/components/accordion'
+import { GitBranchIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
-import { Card, CardContent } from '@tamery/ui/components/card'
-import { Separator } from '@tamery/ui/components/separator'
+import { Button } from '@tamery/ui/components/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
+import { Response } from '@tamery/ui/components/response'
 import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { format } from 'date-fns'
-import type { ComponentPropsWithoutRef } from 'react'
-import { useState } from 'react'
-import { Streamdown } from 'streamdown'
 
 import { orpc } from '~/lib/orpc'
 import { seo } from '~/utils/seo'
 
 const { useLoaderData } = getRouteApi('/_layout/releases')
 
-const ReleaseMarkdownH2 = ({ children }: ComponentPropsWithoutRef<'h2'>) => (
-  <h2 className="mb-2 text-2xl font-semibold not-first:mt-6">{children}</h2>
-)
-
-const ReleaseMarkdownH3 = ({ children }: ComponentPropsWithoutRef<'h3'>) => (
-  <h3 className="mb-2 text-xl font-semibold not-first:mt-6">{children}</h3>
-)
-
-const ReleaseMarkdownUl = ({ children }: ComponentPropsWithoutRef<'ul'>) => (
-  <ul className="list-disc pl-4">{children}</ul>
-)
-
-const releaseMarkdownComponents = {
-  h2: ReleaseMarkdownH2,
-  h3: ReleaseMarkdownH3,
-  ul: ReleaseMarkdownUl,
-}
-
-const RouteComponent = () => {
+const ReleasesPage = () => {
   const { releases } = useLoaderData()
-  const [firstRelease] = releases
-  const [expandedReleases, setExpandedReleases] = useState<string[]>(
-    firstRelease ? [String(firstRelease.id)] : []
-  )
 
   return (
-    <div className="mx-auto max-w-xl py-6">
-      <h1 className="mb-6 text-2xl leading-none font-bold lg:text-4xl">
-        Releases
-      </h1>
-      <Accordion
-        value={expandedReleases}
-        onValueChange={setExpandedReleases}
-        // oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list
-        className="space-y-6"
-      >
+    <main className="mx-auto w-full max-w-6xl px-4 pt-16 sm:px-6 sm:pt-24">
+      <header className="mb-16 flex max-w-2xl flex-col gap-4">
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Releases
+        </h1>
+        <p className="text-muted-foreground text-base text-pretty sm:text-lg">
+          New features, fixes and improvements in every version of Tamery.
+        </p>
+      </header>
+      {releases.length === 0 && (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <HugeiconsIcon icon={GitBranchIcon} strokeWidth={2} />
+            </EmptyMedia>
+            <EmptyTitle>Release notes are unavailable</EmptyTitle>
+            <EmptyDescription>
+              GitHub did not answer. Every release is also listed there.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button
+              variant="outline"
+              render={
+                <a
+                  href={`${SOCIAL_LINKS.GITHUB}/releases`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Releases on GitHub"
+                />
+              }
+            >
+              Open on GitHub
+            </Button>
+          </EmptyContent>
+        </Empty>
+      )}
+      <ol className="flex flex-col gap-16">
         {releases.map((release, index) => (
-          <AccordionItem
+          <li
             key={release.id}
-            value={String(release.id)}
-            // oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list
-            className="border-none"
-            disabled={!release.body}
+            className="grid gap-3 md:grid-cols-[12rem_1fr] md:gap-12"
           >
-            <div className="mb-2">
-              {/* oxlint-disable-next-line shadcn/no-restyle -- releases read as spaced cards, not a bordered list */}
-              <AccordionTrigger className="py-0 hover:no-underline">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-semibold">
-                      {release.tagName}
-                    </span>
-                    {index === 0 && <Badge variant="secondary">Latest</Badge>}
-                  </div>
-                  {release.publishedAt && (
-                    <p className="text-muted-foreground text-sm">
-                      Released on{' '}
-                      {format(new Date(release.publishedAt), 'MMMM dd, yyyy')}
-                    </p>
-                  )}
-                </div>
-              </AccordionTrigger>
+            <div className="flex items-center gap-2 md:sticky md:top-24 md:flex-col md:items-start md:self-start md:pt-1.5">
+              {release.publishedAt && (
+                <time
+                  dateTime={release.publishedAt}
+                  className="text-muted-foreground text-sm"
+                >
+                  {format(new Date(release.publishedAt), 'MMMM d, yyyy')}
+                </time>
+              )}
+              {index === 0 && <Badge variant="secondary">Latest</Badge>}
             </div>
-            {release.body && (
-              <AccordionContent>
-                <Card size="sm">
-                  <CardContent>
-                    <Streamdown
-                      mode="static"
-                      className="text-sm"
-                      linkSafety={{ enabled: false }}
-                      components={releaseMarkdownComponents}
-                    >
-                      {release.body || ''}
-                    </Streamdown>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            )}
-            {index < releases.length - 1 && <Separator className="mt-6" />}
-          </AccordionItem>
+            <article className="flex max-w-3xl min-w-0 flex-col gap-4">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {release.tagName}
+              </h2>
+              {release.body && (
+                <Response variant="document" mode="static">
+                  {release.body}
+                </Response>
+              )}
+            </article>
+          </li>
         ))}
-      </Accordion>
-    </div>
+      </ol>
+    </main>
   )
 }
 
 export const Route = createFileRoute('/_layout/releases')({
-  component: RouteComponent,
+  component: ReleasesPage,
   head: () =>
     seo({
       title: 'Releases - Tamery',
@@ -116,7 +107,7 @@ export const Route = createFileRoute('/_layout/releases')({
       path: '/releases',
     }),
   loader: async () => {
-    const releases = await orpc.releases.call()
-    return { releases }
+    const { data } = await tryCatchAsync(() => orpc.releases.call())
+    return { releases: data ?? [] }
   },
 })

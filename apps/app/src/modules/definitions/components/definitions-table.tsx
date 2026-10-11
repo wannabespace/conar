@@ -1,5 +1,6 @@
 import { pseudoRandom } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
@@ -14,7 +15,6 @@ import type { CSSProperties, RefObject } from 'react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
-import { cardClass } from '~/components/card'
 
 import type { CellContext, DefinitionsColumn } from '../lib/columns'
 

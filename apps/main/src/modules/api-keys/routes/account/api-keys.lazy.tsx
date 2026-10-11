@@ -8,13 +8,11 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@tamery/ui/components/card'
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,239 +20,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { Spinner } from '@tamery/ui/components/spinner'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@tamery/ui/components/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { format, formatDistanceToNow } from 'date-fns'
-import type { ComponentRef, RefObject } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import type { ComponentRef } from 'react'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
+import { AccountPage } from '~/components/account-page'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
 import { CreateApiKeyDialog } from '../../create-api-key-dialog'
 import { RevokeApiKeyDialog } from '../../revoke-api-key-dialog'
 
-const ApiKeysEmptyState = ({
-  onCreateClick,
-}: {
-  onCreateClick: () => void
-}) => (
-  <div className="bg-muted/30 flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-14 text-center">
-    <div className="bg-muted ring-border mb-4 flex size-14 items-center justify-center rounded-full ring-1">
-      <HugeiconsIcon
-        icon={Key01Icon}
-        strokeWidth={2}
-        className="text-muted-foreground size-7"
-      />
-    </div>
-    <h3 className="mb-2 text-base font-semibold tracking-tight">
-      No API keys yet
-    </h3>
-    <p className="text-muted-foreground mb-6 max-w-sm text-sm">
-      Key is shown only once. Use as Bearer or{' '}
-      <code className="bg-muted text-2xs rounded-sm px-1 py-0.5 font-mono">
-        x-api-key
-      </code>
-      .
-    </p>
-    <Button variant="outline" size="sm" onClick={onCreateClick}>
-      <HugeiconsIcon icon={Key01Icon} strokeWidth={2} className="size-4" />
-      Create a key
-    </Button>
-  </div>
-)
+const SKELETON_ROWS = 2
 
-const API_KEY_SKELETON_ROWS = 3
-
-const ApiKeysSkeletonRows = () =>
-  Array.from({ length: API_KEY_SKELETON_ROWS }, (_, row) => (
-    // oxlint-disable-next-line react/no-array-index-key
-    <TableRow key={`skeleton-${row}`}>
-      <TableCell>
-        <Skeleton className="h-4 w-32" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-24" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-24" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-16" />
-      </TableCell>
-      <TableCell />
-    </TableRow>
-  ))
-
-const ApiKeysContent = ({
-  apiKeys,
-  createDialogRef,
-  isPending,
-  isUpdatingEnabled,
-  revokeDialogRef,
-  setKeyEnabled,
-}: {
-  apiKeys: {
-    id: string
-    name: string | null
-    createdAt: Date | string | null
-    lastRequest: Date | string | null
-    enabled?: boolean
-  }[]
-  createDialogRef: RefObject<ComponentRef<typeof CreateApiKeyDialog> | null>
-  isPending: boolean
-  isUpdatingEnabled: boolean
-  revokeDialogRef: RefObject<ComponentRef<typeof RevokeApiKeyDialog> | null>
-  setKeyEnabled: (input: { keyId: string; enabled: boolean }) => void
-}) => {
-  if (!isPending && apiKeys.length === 0) {
-    return (
-      <ApiKeysEmptyState
-        onCreateClick={() => createDialogRef.current?.open()}
-      />
-    )
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[30%]">Name</TableHead>
-          <TableHead className="w-[25%]">Created</TableHead>
-          <TableHead className="w-[25%]">Last used</TableHead>
-          <TableHead className="w-[20%]">Status</TableHead>
-          <TableHead className="w-10" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {isPending && <ApiKeysSkeletonRows />}
-        {apiKeys.map((key) => (
-          <TableRow key={key.id}>
-            <TableCell>
-              <span className="font-medium">{key.name || 'Untitled key'}</span>
-            </TableCell>
-            <TableCell>
-              {key.createdAt ? (
-                <Tooltip>
-                  <TooltipTrigger render={<span className="cursor-default" />}>
-                    {formatDistanceToNow(new Date(key.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {format(new Date(key.createdAt), 'MMM d, yyyy h:mm a')}
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                'Unknown'
-              )}
-            </TableCell>
-            <TableCell>
-              {key.lastRequest ? (
-                formatDistanceToNow(new Date(key.lastRequest), {
-                  addSuffix: true,
-                })
-              ) : (
-                <span className="text-muted-foreground">Never</span>
-              )}
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline">
-                {key.enabled === false ? 'Disabled' : 'Active'}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Key actions"
-                      />
-                    }
-                  >
-                    <HugeiconsIcon
-                      icon={MoreHorizontalIcon}
-                      strokeWidth={2}
-                      className="size-4"
-                    />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {key.enabled === false ? (
-                      <DropdownMenuItem
-                        disabled={isUpdatingEnabled}
-                        onClick={() =>
-                          setKeyEnabled({
-                            keyId: key.id,
-                            enabled: true,
-                          })
-                        }
-                      >
-                        <HugeiconsIcon
-                          icon={PlayCircleIcon}
-                          strokeWidth={2}
-                          className="size-4"
-                        />
-                        Activate
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        disabled={isUpdatingEnabled}
-                        onClick={() =>
-                          setKeyEnabled({
-                            keyId: key.id,
-                            enabled: false,
-                          })
-                        }
-                      >
-                        <HugeiconsIcon
-                          icon={PauseCircleIcon}
-                          strokeWidth={2}
-                          className="size-4"
-                        />
-                        Deactivate
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => revokeDialogRef.current?.revoke(key.id)}
-                    >
-                      <HugeiconsIcon
-                        icon={Delete02Icon}
-                        strokeWidth={2}
-                        className="size-4"
-                      />
-                      Revoke
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
-}
+const ago = (date: Date | string) =>
+  formatDistanceToNow(new Date(date), { addSuffix: true })
 
 const RouteComponent = () => {
   const createDialogRef = useRef<ComponentRef<typeof CreateApiKeyDialog>>(null)
@@ -264,9 +56,7 @@ const RouteComponent = () => {
     data: apiKeys = [],
     isPending,
     refetch,
-    isFetching,
   } = useQuery({
-    queryKey: ['api-keys'],
     queryFn: async () => {
       const { data, error } = await authClient.apiKey.list()
       if (error) {
@@ -274,6 +64,7 @@ const RouteComponent = () => {
       }
       return data.apiKeys
     },
+    queryKey: ['api-keys'],
   })
 
   const { mutate: setKeyEnabled, isPending: isUpdatingEnabled } = useMutation({
@@ -284,53 +75,117 @@ const RouteComponent = () => {
       keyId: string
       enabled: boolean
     }) => {
-      const { error } = await authClient.apiKey.update({ keyId, enabled })
+      const { error } = await authClient.apiKey.update({ enabled, keyId })
       if (error) {
         throw error
       }
     },
+    onError: handleError,
     onSuccess: (_, { enabled }) => {
       refetch()
       toast.success(enabled ? 'API key activated' : 'API key deactivated')
     },
-    onError: handleError,
   })
 
-  return (
-    <>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">API Keys</h2>
-        <Button size="sm" onClick={() => createDialogRef.current?.open()}>
-          <HugeiconsIcon icon={Key01Icon} strokeWidth={2} className="size-4" />
-          Create key
-        </Button>
-      </div>
+  const createButton = (
+    <Button size="sm" onClick={() => createDialogRef.current?.open()}>
+      Create key
+    </Button>
+  )
 
+  return (
+    <AccountPage title="API keys" action={apiKeys.length > 0 && createButton}>
       <CreateApiKeyDialog ref={createDialogRef} onRefetch={refetch} />
       <RevokeApiKeyDialog ref={revokeDialogRef} onRefetch={refetch} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            Your API keys
-            {isFetching && <Spinner className="ml-2 size-4" />}
-          </CardTitle>
-          <CardDescription>
-            Revoke any key that is no longer in use.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ApiKeysContent
-            apiKeys={apiKeys}
-            createDialogRef={createDialogRef}
-            isPending={isPending}
-            isUpdatingEnabled={isUpdatingEnabled}
-            revokeDialogRef={revokeDialogRef}
-            setKeyEnabled={setKeyEnabled}
-          />
-        </CardContent>
-      </Card>
-    </>
+      {!isPending && apiKeys.length === 0 ? (
+        <div className={cardClass}>
+          <Empty size="sm">
+            <EmptyHeader>
+              <EmptyMedia variant="muted">
+                <HugeiconsIcon icon={Key01Icon} strokeWidth={2} />
+              </EmptyMedia>
+              <EmptyTitle>No API keys yet</EmptyTitle>
+              <EmptyDescription>
+                A key is shown once, when you create it. Send it as a Bearer
+                token or in the <code className="font-mono">x-api-key</code>{' '}
+                header.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>{createButton}</EmptyContent>
+          </Empty>
+        </div>
+      ) : (
+        <SettingsGroup>
+          {isPending
+            ? Array.from({ length: SKELETON_ROWS }, (_, row) => (
+                <SettingsRow
+                  key={row}
+                  title={<Skeleton className="h-4 w-32" />}
+                />
+              ))
+            : apiKeys.map((key) => (
+                <SettingsRow
+                  key={key.id}
+                  title={
+                    <span className="flex items-center gap-2">
+                      <span data-mask>{key.name || 'Untitled key'}</span>
+                      {key.enabled === false && (
+                        <Badge variant="secondary">Disabled</Badge>
+                      )}
+                    </span>
+                  }
+                  description={`Created ${key.createdAt ? ago(key.createdAt) : 'at an unknown time'}, ${key.lastRequest ? `last used ${ago(key.lastRequest)}` : 'never used'}`}
+                >
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          variant="ghost-muted"
+                          size="icon-sm"
+                          aria-label="Key actions"
+                        />
+                      }
+                    >
+                      <HugeiconsIcon
+                        icon={MoreHorizontalIcon}
+                        strokeWidth={2}
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        disabled={isUpdatingEnabled}
+                        onClick={() =>
+                          setKeyEnabled({
+                            enabled: key.enabled === false,
+                            keyId: key.id,
+                          })
+                        }
+                      >
+                        <HugeiconsIcon
+                          icon={
+                            key.enabled === false
+                              ? PlayCircleIcon
+                              : PauseCircleIcon
+                          }
+                          strokeWidth={2}
+                        />
+                        {key.enabled === false ? 'Activate' : 'Deactivate'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => revokeDialogRef.current?.revoke(key.id)}
+                      >
+                        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                        Revoke
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SettingsRow>
+              ))}
+        </SettingsGroup>
+      )}
+    </AccountPage>
   )
 }
 

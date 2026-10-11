@@ -41,6 +41,7 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 ## Focus, keyboard, input
 
 - **`autoFocus` only covers the first render of a surface** — a row appended by a click or Enter mounts unfocused, and an input mounted by an interaction is not focused at all (activeElement stays `BODY`). Focus and select from a ref callback or an effect keyed on the flag that marked the row new.
+- **A focus ring inside an `overflow-hidden` container is cut off** — `focus-ring` is an outer box-shadow, so a row in a clipped, rounded list (kit `Accordion`) shows nothing on focus. Draw it inside with `focus-visible:ring-inset`.
 - **React Flow strips the focus outline off `.react-flow__node`** (its stylesheet sets `outline: none` on `:focus-visible`), and the focusable element is its wrapper, not the custom node. A card draws its own indicator keyed off that wrapper: `in-[[aria-roledescription=node]:focus-visible]:focus-ring`.
 - Hotkeys: always `preventDefault()`; use `getOS(navigator.userAgent)` for ⌘ vs Ctrl labels.
 - Enter-to-submit fields must guard IME composition (`!event.nativeEvent.isComposing`) or CJK input submits half-composed.
@@ -64,6 +65,8 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 - Scroll-edge fades must never cover the scrollbar: masks clip it and overlay siblings paint over it. `scroll-fade` (mask) only with `no-scrollbar`. A faded scroller whose children draw a hairline border (tab strip `border-b`) unions a 1px layer into `--scroll-fade-mask` with `mask-composite: add` (plus `-webkit-mask-composite: source-over`), else the line fades with the content.
 - **A sticky header on the translucent canvas cannot hide rows with a fill** — `bg-body` carries the vibrancy alpha, so it stacks a second canvas layer and reads as a patch; and inside a `scroll-fade` scroller it fades with the content. Render it as an overlay sibling of the scroller and make the scroller's `--scroll-fade-mask` transparent for the header's height, restarting the top fade below it, and forward the overlay's `wheel` to the scroller (navigator tables list).
 - **`scrollAnchor` pins a turn to the top and releases only when the answer fills the viewport**, so the same chat in two window heights un-pins at different moments and the scrolls drift apart. Its pass also fires on equal-count mutations and scrolls to the oldest unhandled anchor. The chat anchors nothing and lets provider `autoScroll` hold the bottom.
+
+- **`dragConstraints` rescales drag offsets on resize.** motion keeps a dragged element's `x`/`y` proportional to its constraints box when the window resizes, so a start position stored in those motion values drifts (a full-page screenshot is enough to throw the cards out). Place the element with `left`/`top` and start `x`/`y` at 0; read both when drawing anything attached to it.
 
 ## Panes (`motion-panels`)
 
@@ -110,3 +113,4 @@ Upstream traps and the house answer to each. Read before debugging a kit compone
 - **`LoadingContent` lays its children out as a flex row with `gap-2`.** A label that mixes text and an element (`Save (<NumberFlow />)`) splits into spaced-out items — wrap the label in one `<span>`.
 - **A popover anchored to a virtualized grid cell closes when the grid scrolls.** Virtualization unmounts the anchor and the popup jumps to the viewport corner. Keep one popover per grid in state (`{ anchor, … } | null`) rather than one per cell, and drop it on the scroller's `scroll`, as the reference peek does.
 - **A tooltip's content must not change while it animates out.** Its popup stays mounted through the exit animation, so content keyed to a live flag (the ⌘ reveal) re-renders mid-fade and flashes. Latch the open-time state and clear it in `onOpenChangeComplete(false)`, as the kit `Tooltip`'s `shortcut` mode does.
+- **A CSS mask clips everything to its element's box, shadows included.** Fading a group of shadowed surfaces (`mask-b-from-*` on the agents demo) cuts their shadows into a hard vertical edge at the box's sides. Put the mask on a wrapper that reaches past the shadows (`-mx-20 px-20`); the marketing layout root is `overflow-x-clip`, so the overhang never scrolls the page.

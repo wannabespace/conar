@@ -1,9 +1,12 @@
 import { FREE_WEEKLY_LIMITS } from '@tamery/shared/usage'
 import { Button } from '@tamery/ui/components/button'
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { usageQueryOptions } from '~/core/user/usage'
 

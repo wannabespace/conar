@@ -1,7 +1,6 @@
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -14,6 +13,7 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { MotionConfig } from 'motion/react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
@@ -72,12 +72,14 @@ const RootComponent = () => {
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`bg-body relative`)}>
+      <body className="bg-body relative">
         <QueryClientProvider client={router.options.context.queryClient}>
-          <TooltipProvider>
-            <ThemeObserver />
-            <Outlet />
-          </TooltipProvider>
+          <MotionConfig reducedMotion="user">
+            <TooltipProvider>
+              <ThemeObserver />
+              <Outlet />
+            </TooltipProvider>
+          </MotionConfig>
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
         <Toaster />

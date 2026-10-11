@@ -1,15 +1,16 @@
-import { Calendar03Icon } from '@hugeicons/core-free-icons'
+import { AiChat02Icon, Calendar03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import type { DateRange } from '@tamery/ui/components/calendar'
 import { Calendar } from '@tamery/ui/components/calendar'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@tamery/ui/components/card'
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import {
   Popover,
   PopoverContent,
@@ -24,14 +25,18 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { endOfMonth, format, parse, startOfMonth, subMonths } from 'date-fns'
 import { useState } from 'react'
 
+import { AccountPage } from '~/components/account-page'
 import { orpc } from '~/lib/orpc'
 
 const MONTHS_SHOWN = 12
+const SKELETON_ROWS = 3
+const NUMERIC_COLUMNS = 4
 
 const defaultRange = (): DateRange => ({
   from: startOfMonth(subMonths(new Date(), MONTHS_SHOWN - 1)),
@@ -55,9 +60,9 @@ const formatRange = (range: DateRange | undefined) => {
     return 'All time'
   }
   if (!range.to) {
-    return `${format(range.from, 'MMM d, yyyy')} — …`
+    return `From ${format(range.from, 'MMM d, yyyy')}`
   }
-  return `${format(range.from, 'MMM d, yyyy')} — ${format(range.to, 'MMM d, yyyy')}`
+  return `${format(range.from, 'MMM d, yyyy')} to ${format(range.to, 'MMM d, yyyy')}`
 }
 
 const RouteComponent = () => {
@@ -69,27 +74,19 @@ const RouteComponent = () => {
   )
 
   return (
-    <>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">AI Usage</h2>
+    <AccountPage
+      title="AI usage"
+      action={
         <Popover>
           <PopoverTrigger
             render={
               <Button variant="outline" size="sm">
-                <HugeiconsIcon
-                  icon={Calendar03Icon}
-                  strokeWidth={2}
-                  className="size-4"
-                />
+                <HugeiconsIcon icon={Calendar03Icon} strokeWidth={2} />
                 {formatRange(range)}
               </Button>
             }
           />
-          <PopoverContent
-            align="end"
-            // oxlint-disable-next-line shadcn/no-restyle -- the range calendar takes a tighter inset than the form padding
-            className="w-auto gap-2 p-2"
-          >
+          <PopoverContent align="end" className="w-auto">
             <Calendar
               autoFocus
               mode="range"
@@ -99,73 +96,74 @@ const RouteComponent = () => {
             />
           </PopoverContent>
         </Popover>
+      }
+    >
+      <div className={cn(cardClass, 'overflow-x-auto')}>
+        {!isPending && usage.length === 0 ? (
+          <Empty size="sm">
+            <EmptyHeader>
+              <EmptyMedia variant="muted">
+                <HugeiconsIcon icon={AiChat02Icon} strokeWidth={2} />
+              </EmptyMedia>
+              <EmptyTitle>No AI usage in this period</EmptyTitle>
+              <EmptyDescription>
+                Requests you make with AI in Tamery are counted here by month.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Table className="min-w-lg table-fixed">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Month</TableHead>
+                <TableHead className="w-1/6 text-right">Requests</TableHead>
+                <TableHead className="w-1/5 text-right">Input tokens</TableHead>
+                <TableHead className="w-1/5 text-right">
+                  Output tokens
+                </TableHead>
+                <TableHead className="w-1/6 text-right">Cost</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isPending
+                ? Array.from({ length: SKELETON_ROWS }, (_, row) => (
+                    <TableRow key={row}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      {Array.from({ length: NUMERIC_COLUMNS }, (__, cell) => (
+                        <TableCell key={cell}>
+                          <Skeleton className="ml-auto h-4 w-12" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : usage.map((row) => (
+                    <TableRow key={row.month}>
+                      <TableCell>{formatMonth(row.month)}</TableCell>
+                      <TableCell variant="numeric">
+                        {formatTokens(row.calls)}
+                      </TableCell>
+                      <TableCell variant="numeric">
+                        {formatTokens(row.inputTokens ?? 0)}
+                      </TableCell>
+                      <TableCell variant="numeric">
+                        {formatTokens(row.outputTokens ?? 0)}
+                      </TableCell>
+                      <TableCell variant="numeric">
+                        {row.cost === null ? (
+                          <span className="text-muted-foreground">Unknown</span>
+                        ) : (
+                          formatCost(row.cost)
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly usage</CardTitle>
-          <CardDescription>
-            Tokens and estimated cost of your AI requests, per month
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!isPending && usage.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">
-              No AI usage in this period
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[28%]">Month</TableHead>
-                  <TableHead className="w-[15%] text-right">Requests</TableHead>
-                  <TableHead className="w-[19%] text-right">
-                    Input tokens
-                  </TableHead>
-                  <TableHead className="w-[19%] text-right">
-                    Output tokens
-                  </TableHead>
-                  <TableHead className="w-[19%] text-right">Cost</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isPending
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                      // oxlint-disable-next-line react/no-array-index-key
-                      <TableRow key={`skeleton-${index}`}>
-                        <TableCell>
-                          <Skeleton className="h-4 w-32" />
-                        </TableCell>
-                        {Array.from({ length: 4 }).map((__, cell) => (
-                          // oxlint-disable-next-line react/no-array-index-key
-                          <TableCell key={`skeleton-${index}-${cell}`}>
-                            <Skeleton className="ml-auto h-4 w-16" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  : usage.map((row) => (
-                      <TableRow key={row.month}>
-                        <TableCell>{formatMonth(row.month)}</TableCell>
-                        <TableCell variant="numeric">
-                          {formatTokens(row.calls)}
-                        </TableCell>
-                        <TableCell variant="numeric">
-                          {formatTokens(row.inputTokens ?? 0)}
-                        </TableCell>
-                        <TableCell variant="numeric">
-                          {formatTokens(row.outputTokens ?? 0)}
-                        </TableCell>
-                        <TableCell variant="numeric">
-                          {row.cost === null ? '—' : formatCost(row.cost)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </>
+    </AccountPage>
   )
 }
 

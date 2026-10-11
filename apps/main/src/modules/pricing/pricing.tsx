@@ -1,170 +1,189 @@
-import { ArrowRight01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { Card } from '@tamery/ui/components/card'
-import {
-  NumberFlow,
-  NumberFlowGroup,
-} from '@tamery/ui/components/custom/number-flow'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
+import { Tabs, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { cn } from '@tamery/ui/lib/utils'
-import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 
+import { Reveal } from '~/components/reveal'
+import { SectionHeading } from '~/components/section-heading'
+import { useSubscription } from '~/hooks/use-subscription'
 import { authClient } from '~/lib/auth'
 import type { PricingPlan } from '~/utils/pricing'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
 
-interface PricingSectionProps {
-  className?: string
-}
+import { ContactSalesDialog } from './contact-sales-dialog'
 
-export const Pricing = ({ className }: PricingSectionProps) => {
+type Period = 'monthly' | 'yearly'
+
+const ENTERPRISE_FEATURES: PricingPlan['features'] = [
+  { description: 'Every feature of the Pro plan', name: 'Everything in Pro' },
+  {
+    description: 'One invoice and a price that fits your team',
+    name: 'Volume pricing',
+  },
+  {
+    description: 'A direct line to the people who build it',
+    name: 'Priority support',
+  },
+  {
+    description: 'Run Tamery on your own infrastructure (AGPL-3.0)',
+    name: 'Self-hosting help',
+  },
+]
+
+const PlanCard = ({
+  action,
+  description,
+  features,
+  highlighted,
+  name,
+  price,
+}: {
+  action: ReactNode
+  description: string
+  features: PricingPlan['features']
+  highlighted?: boolean
+  name: string
+  price: ReactNode
+}) => (
+  <article
+    className={cn(
+      'bg-background flex flex-col gap-6 rounded-2xl p-6 shadow-xs ring sm:p-8',
+      highlighted ? 'ring-primary' : 'ring-foreground/4'
+    )}
+  >
+    <header className="flex flex-col gap-1">
+      <h3 className="text-lg font-medium">{name}</h3>
+      <p className="text-muted-foreground text-sm">{description}.</p>
+    </header>
+    <div className="flex h-10 items-baseline gap-1">{price}</div>
+    <ul className="flex flex-1 flex-col gap-4">
+      {features.map((feature) => (
+        <li key={feature.name} className="flex gap-3">
+          <HugeiconsIcon
+            icon={Tick02Icon}
+            strokeWidth={2}
+            className="text-primary mt-0.5 size-4 shrink-0"
+          />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">{feature.name}</span>
+            <span className="text-muted-foreground text-sm">
+              {feature.description}
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+    {action}
+  </article>
+)
+
+const Price = ({ period, plan }: { period: Period; plan: PricingPlan }) => (
+  <>
+    <NumberFlow
+      value={plan.price[period]}
+      className="text-4xl font-semibold tracking-tight"
+      format={{
+        currency: 'USD',
+        currencyDisplay: 'narrowSymbol',
+        maximumFractionDigits: 0,
+        style: 'currency',
+      }}
+    />
+    <span className="text-muted-foreground text-sm">
+      {period === 'monthly' ? '/ month' : '/ year'}
+    </span>
+  </>
+)
+
+export const Pricing = () => {
   const { data: session } = authClient.useSession()
-  const [isYearly, setIsYearly] = useState(false)
-
-  const plans: (PricingPlan & { link: LinkProps })[] = [
-    { ...HOBBY_PLAN, link: { to: '/download' } },
-    {
-      ...PRO_PLAN,
-      link: {
-        search: { period: isYearly ? 'yearly' : 'monthly' },
-        to: session ? '/account' : '/sign-in',
-      },
-    },
-  ]
+  const { subscription } = useSubscription()
+  const [period, setPeriod] = useState<Period>('monthly')
 
   return (
     <section
+      id="pricing"
       aria-labelledby="pricing-heading"
-      className={cn(
-        `bg-background text-foreground relative overflow-hidden py-8 sm:py-12 lg:py-16`,
-        className
-      )}
+      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6"
     >
-      <div className="mb-6 px-4 text-center sm:mb-10">
-        <h2
-          id="pricing-heading"
-          className="text-muted-foreground mb-3 text-center text-sm font-medium tracking-wide uppercase"
+      <Reveal className="flex flex-col items-start gap-6">
+        <SectionHeading id="pricing-heading" title="Start free.">
+          Every database feature is free. Pro adds the full AI assistant and
+          lifts the weekly limits.
+        </SectionHeading>
+        <Tabs
+          value={period}
+          onValueChange={(value: Period) => setPeriod(value)}
         >
-          Pricing
-        </h2>
-        <p className="mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance sm:text-3xl">
-          Choose the plan that fits your needs
-        </p>
-      </div>
-      <div className="mb-3 flex flex-col items-center gap-6 sm:mb-6">
-        <div className="bg-card inline-flex items-center rounded-full border p-1.5 shadow-sm">
-          {['Monthly', 'Yearly'].map((period) => (
-            <button
-              type="button"
-              key={period}
-              onClick={() => setIsYearly(period === 'Yearly')}
-              className={cn(
-                `rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-100 sm:px-8`,
-                (period === 'Yearly') === isYearly
-                  ? 'bg-primary text-primary-foreground'
-                  : `text-muted-foreground hover:text-foreground`
-              )}
+          <TabsList aria-label="Billing period">
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="yearly">Yearly, 2 months free</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </Reveal>
+      <Reveal className="mt-10 grid gap-4 lg:grid-cols-3">
+        <PlanCard
+          name={HOBBY_PLAN.name}
+          description={HOBBY_PLAN.description}
+          features={HOBBY_PLAN.features}
+          price={<Price period={period} plan={HOBBY_PLAN} />}
+          action={
+            <Button
+              size="lg"
+              variant="outline"
+              render={<Link to="/download" />}
             >
-              {period}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4 sm:gap-6 lg:grid-cols-2">
-        {plans.map((plan) => (
-          <Card
-            key={plan.name}
-            // oxlint-disable-next-line shadcn/no-restyle -- plan sections own their padding
-            className="relative flex flex-col p-0"
-          >
-            <div className="flex-1 p-6 sm:p-8">
-              <div className="mb-6 flex items-center justify-between sm:mb-8">
-                <div
-                  className={cn(
-                    'bg-muted text-muted-foreground rounded-xl p-3'
-                  )}
-                >
-                  <HugeiconsIcon
-                    icon={plan.icon}
-                    strokeWidth={2}
-                    className="text-muted-foreground size-7"
-                  />
-                </div>
-                <h3 className="text-foreground text-lg font-semibold">
-                  {plan.name}
-                </h3>
-              </div>
-              <div className="mb-6 sm:mb-8">
-                <div className="flex items-baseline gap-2">
-                  {plan.price.monthly > 0 ? (
-                    <NumberFlowGroup>
-                      <NumberFlow
-                        value={
-                          isYearly ? plan.price.yearly : plan.price.monthly
-                        }
-                        className="text-foreground [&::part(right)]:text-muted-foreground text-4xl font-bold [&::part(right)]:text-sm [&::part(right)]:font-normal"
-                        format={{
-                          currency: 'USD',
-                          currencyDisplay: 'narrowSymbol',
-                          style: 'currency',
-                        }}
-                        suffix={isYearly ? '/year' : '/month'}
-                      />
-                    </NumberFlowGroup>
-                  ) : (
-                    <span className="text-foreground text-4xl font-bold">
-                      Free
-                    </span>
-                  )}
-                </div>
-                <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-                  {plan.description}
-                </p>
-              </div>
-              <div className="space-y-4 sm:space-y-5">
-                {plan.features.map((feature) => (
-                  <div key={feature.name} className="flex gap-3 sm:gap-4">
-                    <div className="mt-1 shrink-0 rounded-full p-0.5">
-                      <HugeiconsIcon
-                        icon={Tick02Icon}
-                        strokeWidth={2}
-                        className="size-4"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-foreground text-sm font-medium sm:text-base">
-                        {feature.name}
-                      </div>
-                      <div className="text-muted-foreground text-sm/relaxed">
-                        {feature.description}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-auto p-6 pt-0 sm:p-8">
+              Download
+            </Button>
+          }
+        />
+        <PlanCard
+          highlighted
+          name={PRO_PLAN.name}
+          description={PRO_PLAN.description}
+          features={PRO_PLAN.features}
+          price={<Price period={period} plan={PRO_PLAN} />}
+          action={
+            subscription ? (
               <Button
-                className="relative w-full"
-                variant="outline"
                 size="lg"
-                render={<Link {...plan.link} />}
+                variant="outline"
+                render={<Link to="/account" />}
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {plan.price.monthly > 0 ? `Get ${plan.name}` : 'Download'}
-                  <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    strokeWidth={2}
-                    className="size-4"
-                  />
-                </span>
+                Manage plan
               </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+            ) : (
+              <Button
+                size="lg"
+                render={
+                  <Link
+                    to={session ? '/account' : '/sign-in'}
+                    search={{ period }}
+                  />
+                }
+              >
+                Try free for 7 days
+              </Button>
+            )
+          }
+        />
+        <PlanCard
+          name="Enterprise"
+          description="Tamery for your whole team, on your terms"
+          features={ENTERPRISE_FEATURES}
+          price={
+            <span className="text-4xl font-semibold tracking-tight">
+              Custom
+            </span>
+          }
+          action={<ContactSalesDialog />}
+        />
+      </Reveal>
     </section>
   )
 }

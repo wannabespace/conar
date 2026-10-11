@@ -2,8 +2,11 @@ import '@tamery/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 
+import { RoutePending } from './components/route-pending'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
+
+const PENDING_DELAY_MS = 150
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
@@ -22,7 +25,12 @@ export const getRouter = () => {
     context: {
       queryClient,
     },
+    defaultPendingComponent: RoutePending,
     defaultPendingMinMs: 0,
+    defaultPendingMs: PENDING_DELAY_MS,
+    defaultPreload: 'intent',
+    // TanStack Query owns data freshness; the router must not serve its own cached loader results.
+    defaultPreloadStaleTime: 0,
     routeTree,
     scrollRestoration: true,
   })

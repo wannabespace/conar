@@ -13,6 +13,7 @@ import * as chatsMessagesParts from './chats-messages-parts'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
+import { contactSales } from './contact-sales'
 import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
@@ -31,6 +32,7 @@ export const router = {
   connections,
   connectionsResources,
   contact,
+  contactSales,
   internal,
   queries,
   releases,

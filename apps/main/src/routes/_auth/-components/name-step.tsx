@@ -47,7 +47,7 @@ export const NameStep = () => {
               <field.Field>
                 <field.Label>Name</field.Label>
                 <field.Input
-                  placeholder="John Doe"
+                  placeholder="Ada Lovelace"
                   autoComplete="name"
                   spellCheck={false}
                   required

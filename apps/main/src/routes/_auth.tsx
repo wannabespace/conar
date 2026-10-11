@@ -1,6 +1,4 @@
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
-import { MeshBackground } from '@tamery/ui/components/custom/mesh-background'
 import {
   createFileRoute,
   Link,
@@ -9,8 +7,10 @@ import {
 } from '@tanstack/react-router'
 import { type } from 'arktype'
 
-import { SEO } from '~/constants'
+import { Brand } from '~/components/brand'
 import { Consent } from '~/modules/legal/legal-links'
+
+import { AuthSidePanel } from './_auth/-components/auth-side-panel'
 
 const AuthLayout = () => {
   const match = useMatches({
@@ -19,41 +19,28 @@ const AuthLayout = () => {
   const isSignIn = match === '/_auth/sign-in'
 
   return (
-    <div className="bg-background flex min-h-screen flex-col">
-      <div className="relative grid flex-1 shrink-0 items-center justify-center lg:grid-cols-2">
-        <div className="bg-body relative hidden h-full flex-col border-r p-10 text-white lg:flex">
-          <MeshBackground />
-          <Link
-            to="/"
-            className="relative z-20 flex items-center text-lg font-medium text-white"
+    <div className="bg-background grid min-h-dvh lg:grid-cols-2">
+      <AuthSidePanel />
+      <main className="flex flex-col px-4 py-3 sm:px-8 sm:py-6">
+        <header className="flex h-8 items-center justify-between">
+          <div className="lg:invisible">
+            <Brand to="/" />
+          </div>
+          <Button
+            variant="ghost-muted"
+            size="sm"
+            render={isSignIn ? <Link to="/" /> : <Link to="/sign-in" />}
           >
-            <AppLogo className="mr-2 size-6" />
-            Tamery
-          </Link>
-          <div className="relative z-20 mt-auto">
-            <blockquote className="leading-normal text-balance">
-              {SEO.description}
-            </blockquote>
-          </div>
-        </div>
-        <div className="flex items-center justify-center p-4 lg:p-8">
-          <div className="absolute top-4 right-4 md:top-8 md:right-8">
-            {isSignIn ? (
-              <Button variant="link" render={<Link to="/" />}>
-                Home
-              </Button>
-            ) : (
-              <Button variant="link" render={<Link to="/sign-in" />}>
-                Sign in
-              </Button>
-            )}
-          </div>
-          <div className="mx-auto flex w-full flex-col justify-center gap-6 sm:w-87.5">
+            {isSignIn ? 'Home' : 'Sign in'}
+          </Button>
+        </header>
+        <div className="flex flex-1 items-center justify-center py-12">
+          <div className="flex w-full max-w-sm flex-col gap-6">
             <Outlet />
             {isSignIn && <Consent />}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

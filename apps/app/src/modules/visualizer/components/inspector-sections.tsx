@@ -1,6 +1,7 @@
 import { ArrowRight01Icon, FocusPointIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import {
   Tooltip,
   TooltipContent,
@@ -11,7 +12,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
-import { cardClass } from '~/components/card'
 import { Link } from '~/components/link'
 import { definitionKey } from '~/core/catalog/definition-keys'
 import type { DefinitionsSection } from '~/core/catalog/sections'

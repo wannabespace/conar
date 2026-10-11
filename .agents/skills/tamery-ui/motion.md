@@ -34,6 +34,8 @@ A new animation answers to these before it picks a curve. This is a windowed des
 - **Refetching values pulse; only first load gets a skeleton.** A displayed number whose query is refetching keeps its value and dims + `animate-pulse` — gate on `isFetching`, since `isLoading` is first-load-only and a refetch would show stale data with no cue.
 - **`MeshBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
 
+- **Marketing reveals and reactions** (`apps/main`): sections enter once on scroll through `Reveal` (`whileInView`, 16px rise, 600ms house curve); `MotionConfig reducedMotion="user"` at the root turns transforms off. A bento card keeps the scroll entrance on a wrapper and drives its illustration with animation controls: children declare `hidden`/`shown` variants, and the card snaps to `hidden` then plays `shown` once at 60% in view and again on hover or tap after a cooldown. A story only plays forward and never reverses when the pointer leaves — a hover-held `active` state snaps back on leave and blinks keyframed content on every sweep. Scripted loops (the hero chat, the agents demo) run only while in view (`useInView`) and not under reduced motion, which gets one settled frame. The hero headline is the one load-time flourish: its words blur into focus in sequence, and everything else in the hero rises in after the last word.
+
 ## Pane folds
 
 `motion-panels` (`monorepo.md`) animates a sized pane's own width/height on the house curve whenever its target changes; the fill pane is plain flex, so one clock moves both. What the app has to get right:

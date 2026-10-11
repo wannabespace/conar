@@ -89,3 +89,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Exact cost from OpenRouter.** Usage rows are priced from the LiteLLM sheet (`packages/ai/models/price.ts`), so caching discounts, provider routing and fallbacks are approximated. OpenRouter reports the billed cost per call in `providerMetadata.openrouter.usage.cost`; recording that drops the daily sheet fetch and makes `cost` exact.
 - **Codestral completion through OpenRouter.** Inline completion still calls Mistral's FIM endpoint directly (`@mistralai/mistralai`, `MISTRAL_API_KEY`) because OpenRouter does not pass `suffix` through. Move it once OpenRouter supports fill-in-the-middle, leaving one provider key.
+
+## Website
+
+- **Track landing interactions.** `apps/main` has no PostHog, so bento hovers, pricing-period toggles and Enterprise contact requests are invisible. Counting them (enums and counts only) would show which features draw people in.
+- **Hide the star count when GitHub fails.** The navbar shows `0` stars whenever the repo request fails (always in dev, which gets a 404); hiding the number until it loads would avoid an unflattering zero.
+- **Centre the sign-in code field.** The OTP input sits under a left-aligned label on an otherwise centred page; a label-less, centred code field would read more natively.
+- **Scroll the active account row into view on mobile.** The account sidebar becomes a horizontal strip below `md`, but it doesn't scroll the active row into view.
+- **Even out the engines strip.** The logos under the hero carry their brand colours at very different weights — ClickHouse's solid black bars next to MySQL's thin pale dolphin — so the row reads uneven. Monochrome marks tuned to one optical weight would sit as a set.
+- **Legal copy still has em dashes.** The terms and privacy markdown use them; changing legal text needs sign-off, so they were left as is.

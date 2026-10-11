@@ -1,71 +1,17 @@
-import { TextHoverEffect } from '@tamery/ui/components/aceternity/text-hover-effect'
-import { BlurGradient } from '@tamery/ui/components/custom/blur-gradient'
-import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import type { MotionStyle } from 'motion/react'
-import { motion, useScroll, useTransform } from 'motion/react'
 
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
-import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from '~/constants'
 
-const MainLayout = () => {
-  const { scrollY } = useScroll()
-  const navbarHeight = useTransform(
-    scrollY,
-    [0, NAVBAR_HEIGHT_BASE],
-    [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED]
-  )
-  const navbarHeightPx = useTransform(
-    () => `${Math.ceil(navbarHeight.get())}px`
-  )
-  const blurTranslateY = useTransform(
-    () => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`
-  )
-
-  return (
-    <motion.div
-      className="relative isolate container mx-auto flex min-h-svh flex-col px-4"
-      style={{ '--navbar-height': navbarHeightPx } as MotionStyle}
-    >
-      <div
-        className={cn(`bg-body sticky top-0 z-50 h-(--navbar-height) w-full`)}
-      >
-        <div className="relative flex size-full items-center">
-          <Navbar className="w-full" />
-          <div className="pointer-events-none absolute inset-x-0 top-full h-10 w-full overflow-hidden">
-            <div className="ring-body h-20 w-full rounded-3xl ring-50" />
-          </div>
-        </div>
-      </div>
-      <div className="bg-background rounded-3xl">
-        <motion.div
-          className={cn('sticky inset-x-0 top-(--navbar-height) z-30 w-full')}
-          style={{
-            translateY: blurTranslateY,
-          }}
-        >
-          <BlurGradient className="absolute inset-x-0 h-48 transition-all delay-300 duration-400" />
-        </motion.div>
-        <Outlet />
-        <div className="sticky inset-x-0 bottom-0 z-30 w-full">
-          <div className="pointer-events-none relative z-20 h-10 w-full overflow-hidden">
-            <div className="ring-body absolute inset-x-0 bottom-0 h-20 rounded-3xl ring-50" />
-          </div>
-          <div className="bg-body relative z-20 h-4" />
-        </div>
-      </div>
-      <Footer />
-      <motion.div
-        initial={{ opacity: 0, y: -100 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-      >
-        <TextHoverEffect text="Tamery" />
-      </motion.div>
-    </motion.div>
-  )
-}
+const MainLayout = () => (
+  <div className="flex min-h-dvh flex-col overflow-x-clip">
+    <Navbar />
+    <div className="flex-1">
+      <Outlet />
+    </div>
+    <Footer />
+  </div>
+)
 
 export const Route = createFileRoute('/_layout')({
   component: MainLayout,

@@ -1,18 +1,17 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 
-import { DeleteAccountCard } from '../../../components/delete-account-card'
-import { SecurityCard } from '../../../components/security-card'
-import { SessionsCard } from '../../../components/sessions-card'
+import { AccountPage } from '~/components/account-page'
+
+import { DeleteAccountSettings } from '../../../components/delete-account'
+import { SecuritySettings } from '../../../components/security'
+import { SessionsSettings } from '../../../components/sessions'
 
 const SettingsPage = () => (
-  <>
-    <h2 className="mb-6 text-2xl font-semibold tracking-tight">Settings</h2>
-    <div className="space-y-4">
-      <SecurityCard />
-      <SessionsCard />
-      <DeleteAccountCard />
-    </div>
-  </>
+  <AccountPage title="Settings">
+    <SecuritySettings />
+    <SessionsSettings />
+    <DeleteAccountSettings />
+  </AccountPage>
 )
 
 export const Route = createLazyFileRoute('/account/settings/')({
