@@ -3,24 +3,30 @@ import { LETTER_KEYS, parseHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 
-import type { ShortcutId } from '~/core/keyboard/shortcuts'
 import { SHORTCUTS } from '~/core/keyboard/shortcuts'
-
-import type { RunnerActions } from './actions'
 
 const AI_REVIEW_CONTEXT_KEY = 'tameryAiReview'
 const FAILED_CONTEXT_KEY = 'tameryFailedStatement'
 
 const EDITOR_ACTIONS = [
-  { label: 'Run statement', name: 'runCurrent', shortcut: 'runStatement' },
-  { label: 'Run all', name: 'runAll', shortcut: 'runAll' },
-  { label: 'Save statement', name: 'saveCurrent', shortcut: 'saveStatement' },
-  { label: 'Save all', name: 'saveAll', shortcut: 'saveTab' },
-  { label: 'Edit with AI', name: 'askAi', shortcut: 'editWithAi' },
   {
-    label: 'Fix with AI',
+    name: 'runCurrent',
+    precondition: `!${AI_REVIEW_CONTEXT_KEY}`,
+    shortcut: 'runStatement',
+  },
+  {
+    label: 'Accept AI edit',
+    name: 'acceptAi',
+    precondition: AI_REVIEW_CONTEXT_KEY,
+    shortcut: 'runStatement',
+  },
+  { name: 'runAll', shortcut: 'runAll' },
+  { name: 'saveCurrent', shortcut: 'saveStatement' },
+  { name: 'saveAll', shortcut: 'saveTab' },
+  { name: 'askAi', shortcut: 'editWithAi' },
+  {
     name: 'fixAi',
     // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
     precondition: FAILED_CONTEXT_KEY,
@@ -40,8 +46,7 @@ const EDITOR_ACTIONS = [
   },
 ] as const
 
-// Monaco swallows keys typed into it (and claims ⌘L), so the app's panel toggles are re-dispatched.
-const APP_SHORTCUTS: ShortcutId[] = ['toggleNavigator', 'queryLogger', 'aiChat']
+type EditorActionName = (typeof EDITOR_ACTIONS)[number]['name']
 
 const MONACO_KEYS: Record<string, KeyCode> = {
   ...Object.fromEntries(
@@ -56,74 +61,58 @@ const MONACO_KEYS: Record<string, KeyCode> = {
 /* oxlint-disable no-bitwise */
 const monacoKeybinding = (hotkey: Hotkey) => {
   // Parsed as macOS so Mod lands on meta, which is what Monaco's CtrlCmd means on every platform.
-  const { alt, key, meta, shift } = parseHotkey(hotkey, 'mac')
+  const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey, 'mac')
+  const keyCode = MONACO_KEYS[key]
+  // A literal Control has no cross-platform KeyMod (WinCtrl is the Windows key off macOS).
+  if (ctrl || keyCode === undefined) {
+    throw new Error(`Monaco cannot bind ${hotkey}: extend MONACO_KEYS`)
+  }
   return (
     (meta ? KeyMod.CtrlCmd : 0) |
     (shift ? KeyMod.Shift : 0) |
     (alt ? KeyMod.Alt : 0) |
-    (MONACO_KEYS[key] ?? KeyCode.Unknown)
+    keyCode
   )
 }
 /* oxlint-enable no-bitwise */
 
-const forwardToApp = (hotkey: Hotkey) => {
-  const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey)
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      altKey: alt,
-      bubbles: true,
-      code: `Key${key}`,
-      ctrlKey: ctrl,
-      key: key.toLowerCase(),
-      metaKey: meta,
-      shiftKey: shift,
-    })
-  )
-}
-
 export const useEditorActions = (
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>,
-  actions: RunnerActions & {
-    reviewing: boolean
-    failing: boolean
-    fixAi: () => void
-    acceptAi: () => void
-    rejectAi: () => void
-    openStatementMenu: () => void
-  }
+  handlers: Record<EditorActionName, () => void>,
+  { failing, reviewing }: { failing: boolean; reviewing: boolean }
 ) => {
-  const invoke = useEffectEvent(
-    (name: (typeof EDITOR_ACTIONS)[number]['name']) =>
-      name === 'runCurrent' && actions.reviewing
-        ? actions.acceptAi()
-        : actions[name]()
-  )
-
-  const reviewKeyRef = useRef<editor.IContextKey<boolean>>(null)
-  const failedKeyRef = useRef<editor.IContextKey<boolean>>(null)
+  const invoke = useEffectEvent((name: EditorActionName) => handlers[name]())
 
   useEffect(() => {
     const codeEditor = editorRef.current
     if (!codeEditor) {
       return
     }
-    const reviewKey = codeEditor.createContextKey(AI_REVIEW_CONTEXT_KEY, false)
-    reviewKeyRef.current = reviewKey
-    const failedKey = codeEditor.createContextKey(FAILED_CONTEXT_KEY, false)
-    failedKeyRef.current = failedKey
     const disposables = [
-      ...APP_SHORTCUTS.flatMap((shortcut) =>
-        SHORTCUTS[shortcut].hotkeys.map((hotkey) =>
-          codeEditor.addAction({
-            id: `tamery.app-${hotkey}`,
-            keybindings: [monacoKeybinding(hotkey)],
-            label: SHORTCUTS[shortcut].title,
-            run: () => forwardToApp(hotkey),
-          })
-        )
+      // Monaco claims ⌘L (expand line selection) and stops it bubbling, so the app's shortcut is re-dispatched.
+      ...SHORTCUTS.aiChat.hotkeys.map((hotkey) =>
+        codeEditor.addAction({
+          id: `tamery.app-${hotkey}`,
+          keybindings: [monacoKeybinding(hotkey)],
+          label: SHORTCUTS.aiChat.title,
+          run: () => {
+            const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey)
+            document.dispatchEvent(
+              new KeyboardEvent('keydown', {
+                altKey: alt,
+                bubbles: true,
+                ctrlKey: ctrl,
+                key,
+                metaKey: meta,
+                shiftKey: shift,
+              })
+            )
+          },
+        })
       ),
       ...EDITOR_ACTIONS.map(({ name, shortcut, ...action }) =>
         codeEditor.addAction({
+          label: SHORTCUTS[shortcut].title,
           ...action,
           id: `tamery.${name}`,
           keybindings: SHORTCUTS[shortcut].hotkeys.map(monacoKeybinding),
@@ -135,16 +124,12 @@ export const useEditorActions = (
       for (const disposable of disposables) {
         disposable.dispose()
       }
-      reviewKey.reset()
-      failedKey.reset()
     }
   }, [editorRef])
 
   useEffect(() => {
-    reviewKeyRef.current?.set(actions.reviewing)
-  }, [actions.reviewing])
-
-  useEffect(() => {
-    failedKeyRef.current?.set(actions.failing)
-  }, [actions.failing])
+    const codeEditor = editorRef.current
+    codeEditor?.createContextKey(AI_REVIEW_CONTEXT_KEY, reviewing)
+    codeEditor?.createContextKey(FAILED_CONTEXT_KEY, failing)
+  }, [editorRef, failing, reviewing])
 }
