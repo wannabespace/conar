@@ -1,10 +1,11 @@
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 export const TabRefreshButton = ({
   label,
@@ -15,13 +16,7 @@ export const TabRefreshButton = ({
   refreshing: boolean
   onRefresh: () => void
 }) => (
-  <Tooltip
-    shortcut={
-      !!window.electron && (
-        <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
-      )
-    }
-  >
+  <Tooltip shortcut={!!window.electron && <ShortcutKbd shortcut="refresh" />}>
     <TooltipTrigger
       render={
         <RefreshButton

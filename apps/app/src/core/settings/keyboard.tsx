@@ -4,16 +4,16 @@ import { shortcutRevealStore } from '@tamery/ui/hooks/use-shortcut-reveal'
 import { useSubscription } from 'seitu/react'
 
 import { posthog } from '~/lib/posthog'
-import { ConnectionLinksSettings } from '~/modules/connection-links/connection-links-settings'
 
 import { SettingsGroup, SettingsRow } from './settings-group'
+import { ShortcutsList } from './shortcuts'
 
-export const GeneralSettings = () => {
+export const KeyboardSettings = () => {
   const isShortcutRevealOn = useSubscription(shortcutRevealStore)
 
   return (
     <>
-      <SettingsGroup title="Keyboard">
+      <SettingsGroup>
         <SettingsRow
           htmlFor="shortcut-reveal"
           title={
@@ -35,7 +35,7 @@ export const GeneralSettings = () => {
           />
         </SettingsRow>
       </SettingsGroup>
-      {window.electron && <ConnectionLinksSettings />}
+      <ShortcutsList />
     </>
   )
 }

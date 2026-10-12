@@ -1,6 +1,5 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
@@ -8,6 +7,8 @@ import {
 } from '@tamery/ui/components/tooltip'
 import type { MutationStatus } from '@tanstack/react-query'
 import { motion } from 'motion/react'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 import { TestStatus } from './test-status'
 
@@ -47,9 +48,7 @@ export const FormFooter = ({
         >
           Test
         </Button>
-        <Tooltip
-          shortcut={!saving && <KbdCtrlEnter userAgent={navigator.userAgent} />}
-        >
+        <Tooltip shortcut={!saving && <ShortcutKbd shortcut="submit" />}>
           <TooltipTrigger
             render={
               <Button

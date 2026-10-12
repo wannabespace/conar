@@ -8,7 +8,7 @@ import { getConnectionResourceStore } from '~/core/connection/stores'
 import { renameSchemaQuery } from '~/core/queries/schemas/rename'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
-import { removeTab } from '~/core/tabs/actions'
+import { removeTabs } from '~/core/tabs/actions'
 import { parseTableTabId } from '~/core/tabs/ids'
 import { queryClient } from '~/lib/query-client'
 
@@ -53,12 +53,13 @@ export const RenameSchemaDialog = ({
         queryKey: ['connection-resource', connectionResource.id],
       })
       // Before navigating: the resource index redirects back to the active tab while it is still listed.
-      for (const tab of getConnectionResourceStore(connectionResource.id).get()
-        .tabs) {
-        if (parseTableTabId(tab.id)?.schema === schema) {
-          removeTab(connectionResource.id, tab.id)
-        }
-      }
+      removeTabs(
+        connectionResource.id,
+        getConnectionResourceStore(connectionResource.id)
+          .get()
+          .tabs.map((tab) => tab.id)
+          .filter((id) => parseTableTabId(id)?.schema === schema)
+      )
       if (tabId && parseTableTabId(tabId)?.schema === schema) {
         await router.navigate({
           params: { resourceId: connectionResource.id },

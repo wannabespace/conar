@@ -25,10 +25,6 @@ import {
   ResizableSeparator,
 } from '@tamery/ui/components/custom/resizable'
 import {
-  KbdShiftCtrlEnter,
-  KbdShiftCtrlLetter,
-} from '@tamery/ui/components/custom/shortcuts'
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -40,7 +36,6 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -52,6 +47,8 @@ import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
 import { wrapExplainQuery } from '~/core/connection/utils'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { formatSql } from '~/utils/formatter'
 
@@ -301,20 +298,23 @@ export const Runner = () => {
     },
   }
 
-  useHotkey(
-    'Mod+Enter',
-    (event) => {
-      event.preventDefault()
-      actions.runCurrent()
-    },
-    { enabled: !confirming }
-  )
-  useHotkey(
-    'Mod+Shift+Enter',
-    (event) => {
-      event.preventDefault()
-      actions.runAll()
-    },
+  useShortcuts(
+    [
+      {
+        callback: (event) => {
+          event.preventDefault()
+          actions.runCurrent()
+        },
+        shortcut: 'runStatement',
+      },
+      {
+        callback: (event) => {
+          event.preventDefault()
+          actions.runAll()
+        },
+        shortcut: 'runAll',
+      },
+    ],
     { enabled: !confirming }
   )
 
@@ -329,9 +329,7 @@ export const Runner = () => {
                 Stop
               </Button>
             ) : (
-              <Tooltip
-                shortcut={<KbdShiftCtrlEnter userAgent={navigator.userAgent} />}
-              >
+              <Tooltip shortcut={<ShortcutKbd shortcut="runAll" />}>
                 <TooltipTrigger
                   render={
                     <Button
@@ -365,12 +363,7 @@ export const Runner = () => {
               </ToolbarButton>
               <ToolbarButton
                 label="Save tab as query"
-                shortcut={
-                  <KbdShiftCtrlLetter
-                    userAgent={navigator.userAgent}
-                    letter="S"
-                  />
-                }
+                shortcut={<ShortcutKbd shortcut="saveTab" />}
                 onClick={() => actions.saveAll()}
               >
                 <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />

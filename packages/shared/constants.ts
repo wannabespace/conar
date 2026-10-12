@@ -45,10 +45,6 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = [
 
 export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 
-export const API_KEY_PERMISSIONS = {
-  connections: ['read', 'write'] as const,
-}
-
 export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol(
   'CONNECTION_RESOURCE_ROOT'
 )

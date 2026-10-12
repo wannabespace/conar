@@ -22,7 +22,7 @@ export const ConnectionLinksSettings = () => {
   })
 
   return (
-    <SettingsGroup title="Links">
+    <SettingsGroup>
       <SettingsRow
         htmlFor="connection-links-default"
         title="Open database links in Tamery"

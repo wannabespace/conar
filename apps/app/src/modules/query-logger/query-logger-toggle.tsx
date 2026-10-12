@@ -1,6 +1,5 @@
 import { File01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
@@ -9,6 +8,8 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 import { loggerOpen, toggleLogger } from './logger-open'
 
@@ -19,9 +20,7 @@ export const QueryLoggerToggle = () => {
   const loggerOpened = useSubscription(loggerOpen(resourceId))
 
   return (
-    <Tooltip
-      shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="J" />}
-    >
+    <Tooltip shortcut={<ShortcutKbd shortcut="queryLogger" />}>
       <TooltipTrigger
         render={
           <SidebarMenuButton

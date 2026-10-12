@@ -11,6 +11,6 @@ export const settingsCommands = (router: RegisteredRouter): CommandEntry[] =>
     icon,
     keywords: ['preferences', 'options'],
     order: 20,
-    shortcut: index === 0 ? ',' : undefined,
+    shortcut: index === 0 ? 'settings' : undefined,
     value: `${label} settings`,
   }))

@@ -1,12 +1,13 @@
 import { DatabaseRestoreIcon, EraserIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 import type { CellEdit } from '../cursor'
 import { useGridCursorContext } from '../cursor'
@@ -74,7 +75,7 @@ export const CellFieldActions = ({
         </Tooltip>
       )}
       {canApply && (
-        <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+        <Tooltip shortcut={<ShortcutKbd shortcut="applyEdit" />}>
           <TooltipTrigger
             render={
               <Button

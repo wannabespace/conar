@@ -10,7 +10,6 @@ import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
-import { Kbd } from '@tamery/ui/components/kbd'
 import { Form } from '@tamery/ui/components/tanstack-form'
 import {
   Tooltip,
@@ -31,6 +30,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { permix } from '~/core/user/permissions'
@@ -187,7 +187,7 @@ const CreateConnectionPage = () => {
       <DropOverlay shown={dragging} />
       <ScrollArea className="min-h-0 flex-1">
         <Form form={form} id={FORM_ID} className="relative">
-          <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+          <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
             <TooltipTrigger
               render={
                 <Button

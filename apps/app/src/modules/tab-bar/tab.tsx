@@ -1,35 +1,30 @@
 import {
-  ArrowLeft02Icon,
-  ArrowRight02Icon,
   Cancel01Icon,
-  CancelCircleIcon,
-  CancelSquareIcon,
   PencilEdit01Icon,
   Undo02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import type { ConnectionResource } from '~/core/connection/sync'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { openTab, renameTab } from '~/core/tabs/actions'
 import { resolveTab } from '~/core/tabs/kinds'
 import type { ConnectionTab } from '~/core/tabs/types'
 import { tabViews } from '~/core/tabs/views'
 import { pressNavProps } from '~/utils/press-nav'
-
-const isElectron = !!window.electron
 
 const REORDER_TRANSITION = {
   duration: 0.2,
@@ -42,36 +37,28 @@ export const Tab = ({
   defaultLabel,
   connectionResource,
   isActive,
+  isTabStop,
   isDragging,
   onDragStateChange,
   onClose,
-  onCloseAll,
-  onCloseToTheLeft,
-  onCloseToTheRight,
-  onCloseOthers,
-  currentTabIndex,
-  totalTabs,
+  closeItems,
 }: {
   tab: ConnectionTab
   label: string
   defaultLabel: string
   isActive: boolean
+  isTabStop: boolean
   isDragging: boolean
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
   onClose: VoidFunction
-  onCloseAll: VoidFunction
-  onCloseToTheLeft: VoidFunction
-  onCloseToTheRight: VoidFunction
-  onCloseOthers: VoidFunction
-  currentTabIndex: number
-  totalTabs: number
+  closeItems: AppMenuNode[]
 }) => {
   const router = useRouter()
   const ref = useRef<HTMLDivElement>(null)
-  const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
+  const renameRef = useRef<HTMLInputElement>(null)
   const resolved = resolveTab(tab.id)
   const isPreview = !!tab.preview
   const isRenaming = draft !== null
@@ -98,6 +85,31 @@ export const Tab = ({
     setDraft(null)
   }
 
+  const focusTab = () => ref.current?.querySelector('button')?.focus()
+
+  const finishRename = (finish: () => void) => {
+    flushSync(finish)
+    focusTab()
+  }
+
+  useHotkeys(
+    [
+      {
+        callback: (event) => {
+          if (!event.isComposing) {
+            finishRename(commitRename)
+          }
+        },
+        hotkey: 'Enter',
+      },
+      {
+        callback: () => finishRename(() => setDraft(null)),
+        hotkey: 'Escape',
+      },
+    ],
+    { target: renameRef }
+  )
+
   const items: AppMenuNode[] = [
     {
       icon: PencilEdit01Icon,
@@ -114,51 +126,19 @@ export const Tab = ({
         ]
       : []),
     { type: 'separator' },
-    {
-      icon: Cancel01Icon,
-      label: 'Close',
-      ...(isElectron && {
-        accelerator: 'CmdOrCtrl+W',
-        shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
-      }),
-      onSelect: onClose,
-    },
-    { type: 'separator' },
-    {
-      disabled: totalTabs <= 1,
-      icon: CancelSquareIcon,
-      label: 'Close Others',
-      onSelect: onCloseOthers,
-    },
-    {
-      disabled: currentTabIndex === 0,
-      icon: ArrowLeft02Icon,
-      label: 'Close to the Left',
-      onSelect: onCloseToTheLeft,
-    },
-    {
-      disabled: currentTabIndex >= totalTabs - 1,
-      icon: ArrowRight02Icon,
-      label: 'Close to the Right',
-      onSelect: onCloseToTheRight,
-    },
-    { type: 'separator' },
-    {
-      disabled: totalTabs === 0,
-      icon: CancelCircleIcon,
-      label: 'Close All',
-      onSelect: onCloseAll,
-    },
+    ...closeItems,
   ]
 
   useEffect(() => {
-    if (!isVisible && isActive && ref.current) {
-      ref.current.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      })
+    const reveal = async () => {
+      // The label font swaps in after mount and widens every tab, so a reveal before it lands leaves this tab clipped.
+      await document.fonts.ready
+      ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
     }
-  }, [isActive, isVisible])
+    if (isActive) {
+      reveal()
+    }
+  }, [isActive])
 
   const prefetch = () => {
     if (resolved) {
@@ -196,7 +176,7 @@ export const Tab = ({
   if (isRenaming) {
     return (
       <Reorder.Item
-        value={tab.id}
+        value={tab}
         as="div"
         ref={ref}
         drag={false}
@@ -207,6 +187,7 @@ export const Tab = ({
         <div data-mask className={tabClasses}>
           {icon}
           <input
+            ref={renameRef}
             autoFocus
             aria-label="Tab name"
             value={draft ?? ''}
@@ -214,15 +195,6 @@ export const Tab = ({
             onChange={(e) => setDraft(e.target.value)}
             onFocus={(e) => e.target.select()}
             onBlur={commitRename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                commitRename()
-              } else if (e.key === 'Escape') {
-                e.preventDefault()
-                setDraft(null)
-              }
-            }}
           />
         </div>
       </Reorder.Item>
@@ -231,7 +203,7 @@ export const Tab = ({
 
   return (
     <Reorder.Item
-      value={tab.id}
+      value={tab}
       as="div"
       ref={ref}
       layout="position"
@@ -245,31 +217,41 @@ export const Tab = ({
         onOpenChange={setContextMenuOpen}
         className="block h-full"
         items={items}
+        contentProps={{
+          // Rename unmounts this menu's trigger; base-ui's fallback return target would steal focus from the rename field.
+          finalFocus: focusTab,
+        }}
       >
         <button
           data-mask
           type="button"
+          role="tab"
+          aria-selected={isActive}
+          tabIndex={isTabStop ? 0 : -1}
           aria-label={`${label} tab`}
           className={tabClasses}
           onDoubleClick={startRename}
           onMouseOver={prefetch}
-          onFocus={prefetch}
+          onFocus={(event) => {
+            prefetch()
+            event.currentTarget.scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            })
+          }}
           {...pressNavProps(goToTab)}
         >
           {icon}
           <span>{label}</span>
           <Tooltip
             shortcut={
-              isActive &&
-              isElectron && (
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
-              )
+              isActive && window.electron && <ShortcutKbd shortcut="closeTab" />
             }
           >
             <TooltipTrigger
               render={
-                // Nested button is invalid HTML (parent tab is already a button).
-                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
+                // Nested button is invalid HTML (parent tab is already a button); the keyboard closes a tab from its ⌘. menu.
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
                 <span
                   tabIndex={-1}
                   aria-label="Close tab"
@@ -278,13 +260,6 @@ export const Tab = ({
                   onClick={(e) => {
                     e.stopPropagation()
                     onClose()
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      onClose()
-                    }
                   }}
                 />
               }

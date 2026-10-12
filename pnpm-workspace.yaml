@@ -22,7 +22,6 @@ catalog:
   '@ai-sdk/react': ^4.0.94
   '@base-ui/react': ^1.7.0
   '@blobatar/react': ^2.7.0
-  '@better-auth/api-key': ^1.7.7
   '@better-auth/core': ^1.7.7
   '@better-auth/drizzle-adapter': ^1.7.7
   '@clack/prompts': ^1.7.0

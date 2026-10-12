@@ -55,7 +55,7 @@ export const navigatorCommands = ({
           icon: SidebarLeftIcon,
           keywords: ['navigator', 'panel', 'hide', 'show'],
           order: 10,
-          shortcut: 'B',
+          shortcut: 'toggleNavigator',
           value: 'Toggle sidebar',
         },
       ]

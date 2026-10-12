@@ -1,6 +1,6 @@
-import { useHotkeys } from '@tanstack/react-hotkeys'
 import { memoize } from 'memoza'
 
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import type { TableSessionState } from '~/core/table/session'
 import { isSaving, tableSessionStore } from '~/core/table/session'
 import { posthog } from '~/lib/posthog'
@@ -89,10 +89,10 @@ export const stagedHistory = memoize(
 export const useStagedHistoryHotkeys = (
   history: ReturnType<typeof stagedHistory>
 ) =>
-  useHotkeys(
+  useShortcuts(
     [
-      { callback: history.undo, hotkey: 'Mod+Z' },
-      { callback: history.redo, hotkey: 'Mod+Shift+Z' },
+      { callback: history.undo, shortcut: 'undo' },
+      { callback: history.redo, shortcut: 'redo' },
     ],
     { ignoreInputs: true }
   )

@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { isNested } from '~/core/transformers/value-transformer'
 
@@ -191,7 +192,6 @@ export const CellField = ({
   useHotkeys(
     popup
       ? [
-          { callback: () => cursor.fill(), hotkey: 'Mod+Enter' },
           { callback: cursor.cancel, hotkey: 'Escape' },
           // Code fields keep Tab for indenting.
           {
@@ -206,6 +206,10 @@ export const CellField = ({
           },
         ]
       : [],
+    { ignoreInputs: false, target: popup }
+  )
+  useShortcuts(
+    popup ? [{ callback: () => cursor.fill(), shortcut: 'applyEdit' }] : [],
     { ignoreInputs: false, target: popup }
   )
 

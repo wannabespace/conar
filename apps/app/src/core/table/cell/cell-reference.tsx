@@ -12,6 +12,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useDeferredValue, useRef, useState } from 'react'
 
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
 import { searchRowsQueryOptions } from '~/core/queries/rows/search'
 import type { ValueTransformer } from '~/core/transformers/value-transformer'
@@ -176,6 +177,11 @@ export const CellReference = ({
         hotkey: 'Enter',
         options: { enabled: options.length === 0 && !isPending },
       },
+    ],
+    { ignoreInputs: false, target: ref }
+  )
+  useShortcuts(
+    [
       {
         callback: () => {
           if (highlightedKey) {
@@ -183,7 +189,7 @@ export const CellReference = ({
           }
           cursor.fill()
         },
-        hotkey: 'Mod+Enter',
+        shortcut: 'applyEdit',
       },
     ],
     { ignoreInputs: false, target: ref }

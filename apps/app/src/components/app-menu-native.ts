@@ -49,6 +49,7 @@ import type {
 } from '@tamery/shared/context-menu'
 
 import type { AppMenuNode } from '~/components/app-menu'
+import { SHORTCUTS } from '~/core/keyboard/shortcuts'
 
 const sfSymbols = new Map<IconSvgElement, SFSymbol>([
   [AppWindowIcon, 'macwindow'],
@@ -179,7 +180,9 @@ export const toNativeMenu = (
           const id = `n${(counter += 1)}`
           handlers.set(id, node.onSelect)
           result.push({
-            accelerator: node.accelerator,
+            accelerator:
+              node.shortcut &&
+              SHORTCUTS[node.shortcut].hotkeys[0]?.replace('Mod', 'CmdOrCtrl'),
             checked: node.checked,
             enabled: !node.disabled,
             id,

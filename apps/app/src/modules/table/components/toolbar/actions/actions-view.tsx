@@ -1,37 +1,41 @@
 import { Grid3X2Icon, ListViewIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdShiftCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
+import { focusGridWhenReady } from '~/core/table/pending-grid-focus'
 import { posthog } from '~/lib/posthog'
 
 import { useTablePageStore } from '../../../lib/store'
 
+const { useParams } = getRouteApi('/_protected/connection/$resourceId/$tabId')
+
 export const ActionsView = () => {
+  const { tabId } = useParams()
   const store = useTablePageStore()
   const view = useSubscription(store, { selector: (state) => state.view })
   const label = view === 'grid' ? 'Show as documents' : 'Show as grid'
   const toggle = () => {
     const next = view === 'grid' ? 'documents' : 'grid'
+    if (document.activeElement?.closest('[role=grid]')) {
+      focusGridWhenReady(tabId)
+    }
     store.set((state) => ({ ...state, view: next }))
     posthog.capture('table_view_toggled', { view: next })
   }
 
-  useHotkey('Mod+Shift+E', toggle)
+  useShortcut('toggleView', toggle)
 
   return (
-    <Tooltip
-      shortcut={
-        <KbdShiftCtrlLetter userAgent={navigator.userAgent} letter="E" />
-      }
-    >
+    <Tooltip shortcut={<ShortcutKbd shortcut="toggleView" />}>
       <TooltipTrigger
         render={
           <Button
