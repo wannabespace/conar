@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 import { UAParser } from 'ua-parser-js'
 
 import { authClient } from '~/lib/auth'
+import { orpc } from '~/lib/orpc'
 import { handleError } from '~/utils/error'
 
 const electronAppNameRegex =
@@ -144,18 +145,7 @@ export const SessionsSettings = () => {
     data: sessions,
     isPending: sessionsPending,
     refetch: refetchSessions,
-  } = useQuery({
-    queryFn: async () => {
-      const { data: sessionsList, error } = await authClient.listSessions()
-
-      if (error) {
-        throw error
-      }
-
-      return sessionsList
-    },
-    queryKey: ['sessions'],
-  })
+  } = useQuery(orpc.account.sessions.queryOptions())
 
   const { mutate: revokeOtherSessions, isPending: revokingOthers } =
     useMutation({

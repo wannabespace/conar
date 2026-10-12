@@ -10,7 +10,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import type { ComponentProps } from 'react'
 
 import { getOSIsomorphic } from '~/utils/os'
 
@@ -18,13 +17,7 @@ import { DOWNLOAD_PLATFORMS } from './download-files'
 
 const os = getOSIsomorphic()
 
-export const DownloadButton = ({
-  className,
-  variant,
-}: {
-  className?: string
-  variant?: ComponentProps<typeof Button>['variant']
-}) => {
+export const DownloadButton = ({ className }: { className?: string }) => {
   const platform = DOWNLOAD_PLATFORMS.find(
     (candidate) => candidate.os === os?.type
   )
@@ -36,7 +29,6 @@ export const DownloadButton = ({
           render={
             <Button
               size="lg"
-              variant={variant}
               className={className}
               disabled
               focusableWhenDisabled
@@ -57,7 +49,6 @@ export const DownloadButton = ({
     return (
       <Button
         size="lg"
-        variant={variant}
         className={className}
         render={
           <a
@@ -75,9 +66,7 @@ export const DownloadButton = ({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button size="lg" variant={variant} className={className} />}
-      >
+      <DropdownMenuTrigger render={<Button size="lg" className={className} />}>
         {platform.icon}
         Download for {os.label}
       </DropdownMenuTrigger>

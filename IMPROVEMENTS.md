@@ -98,6 +98,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Scroll the active account row into view on mobile.** The account sidebar becomes a horizontal strip below `md`, but it doesn't scroll the active row into view.
 - **Even out the engines strip.** The logos under the hero carry their brand colours at very different weights — ClickHouse's solid black bars next to MySQL's thin pale dolphin — so the row reads uneven. Monochrome marks tuned to one optical weight would sit as a set.
 - **Legal copy still has em dashes.** The terms and privacy markdown use them; changing legal text needs sign-off, so they were left as is.
+- **Re-verify before deleting an account.** better-auth only deletes a passwordless account from a session younger than `freshAge` (a day), so anyone signed in longer gets a bare "session expired" error. Asking for a fresh email code inside the delete dialog would keep the protection without the dead end.
 
 ## Keyboard
 

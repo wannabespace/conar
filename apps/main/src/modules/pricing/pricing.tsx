@@ -113,8 +113,7 @@ export const Pricing = () => {
     >
       <Reveal className="flex flex-col items-start gap-6">
         <SectionHeading id="pricing-heading" title="Start free.">
-          Every database feature is free. Pro adds the full AI assistant and
-          lifts the weekly limits.
+          Upgrade for more AI.
         </SectionHeading>
         <Tabs
           value={period}
