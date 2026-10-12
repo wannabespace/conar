@@ -90,6 +90,9 @@ catalogs:
     '@orpc/publisher':
       specifier: 2.0.0-beta.41
       version: 2.0.0-beta.41
+    '@orpc/ratelimit':
+      specifier: 2.0.0-beta.41
+      version: 2.0.0-beta.41
     '@orpc/server':
       specifier: 2.0.0-beta.41
       version: 2.0.0-beta.41
@@ -515,6 +518,9 @@ importers:
       '@orpc/publisher':
         specifier: 'catalog:'
         version: 2.0.0-beta.41(redis@6.2.1(@opentelemetry/api@1.9.1))
+      '@orpc/ratelimit':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.41(crossws@0.4.10(srvx@0.12.7))(redis@6.2.1(@opentelemetry/api@1.9.1))
       '@orpc/server':
         specifier: 'catalog:'
         version: 2.0.0-beta.41(crossws@0.4.10(srvx@0.12.7))
@@ -3023,6 +3029,17 @@ packages:
       redis: '>=6.0.0'
     peerDependenciesMeta:
       '@upstash/redis':
+        optional: true
+      redis:
+        optional: true
+
+  '@orpc/ratelimit@2.0.0-beta.41':
+    resolution: {integrity: sha512-gAg6/MCpyGHEOeTeh7FgzN7y22zjk1JwSmCDIMno8k7UxDZDmY3YNo3QsfFtmaweXVHJgA4soeKa900hLZahZg==}
+    peerDependencies:
+      '@upstash/ratelimit': '>=2.0.8'
+      redis: '>=6.0.0'
+    peerDependenciesMeta:
+      '@upstash/ratelimit':
         optional: true
       redis:
         optional: true
@@ -12175,6 +12192,17 @@ snapshots:
       '@standard-server/core': 0.10.0
     optionalDependencies:
       redis: 6.2.1(@opentelemetry/api@1.9.1)
+
+  '@orpc/ratelimit@2.0.0-beta.41(crossws@0.4.10(srvx@0.12.7))(redis@6.2.1(@opentelemetry/api@1.9.1))':
+    dependencies:
+      '@orpc/server': 2.0.0-beta.41(crossws@0.4.10(srvx@0.12.7))
+      '@orpc/shared': 2.0.0-beta.41
+      '@standard-server/core': 0.10.0
+    optionalDependencies:
+      redis: 6.2.1(@opentelemetry/api@1.9.1)
+    transitivePeerDependencies:
+      - crossws
+      - fastify
 
   '@orpc/server@2.0.0-beta.41(crossws@0.4.10(srvx@0.11.21))':
     dependencies:

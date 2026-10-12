@@ -8,6 +8,7 @@ minimumReleaseAgeExclude:
   - '@orpc/json-schema@2.0.0-beta.41'
   - '@orpc/openapi@2.0.0-beta.41'
   - '@orpc/publisher@2.0.0-beta.41'
+  - '@orpc/ratelimit@2.0.0-beta.41'
   - '@orpc/server@2.0.0-beta.41'
   - '@orpc/shared@2.0.0-beta.41'
   - '@orpc/tanstack-query@2.0.0-beta.41'
@@ -45,6 +46,7 @@ catalog:
   '@openrouter/ai-sdk-provider': ^3.1.0
   '@orpc/client': 2.0.0-beta.41
   '@orpc/publisher': 2.0.0-beta.41
+  '@orpc/ratelimit': 2.0.0-beta.41
   '@orpc/server': 2.0.0-beta.41
   '@orpc/tanstack-query': 2.0.0-beta.41
   '@playwright/test': ^1.62.1
