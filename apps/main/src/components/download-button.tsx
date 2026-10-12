@@ -32,27 +32,23 @@ export const DownloadButton = () => {
     )
   }
 
-  const [firstFile] = platform.files
-  if (platform.files.length === 1 && firstFile) {
-    return (
-      <Button
-        size="lg"
-        render={
+  const [firstFile, ...otherFiles] = platform.files
+
+  return (
+    <Button
+      size="lg"
+      render={
+        firstFile && otherFiles.length === 0 ? (
           <a
             href={firstFile.link}
             download
             aria-label={`Download for ${os.label}`}
           />
-        }
-      >
-        {platform.icon}
-        Download for {os.label}
-      </Button>
-    )
-  }
-
-  return (
-    <Button size="lg" render={<Link to="/download" />}>
+        ) : (
+          <Link to="/download" />
+        )
+      }
+    >
       {platform.icon}
       Download for {os.label}
     </Button>

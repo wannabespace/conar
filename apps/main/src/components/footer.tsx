@@ -1,44 +1,19 @@
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 
 import { useHomePath } from '~/hooks/use-home-path'
-import { PrivacyLink, TermsLink } from '~/modules/legal/legal-links'
 
 import { Brand } from './brand'
+import { FooterColumn } from './footer-column'
 
 const linkClassName =
   'text-muted-foreground hover:text-foreground text-sm transition-colors'
 
-const ExternalLink = ({
-  href,
-  children,
-}: {
-  href: string
-  children: string
-}) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={linkClassName}
-  >
-    {children}
-  </a>
-)
-
-const Column = ({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) => (
-  <div className="flex flex-col gap-3">
-    <h2 className="text-foreground text-sm font-medium">{title}</h2>
-    {children}
-  </div>
-)
+const COMMUNITY_LINKS = [
+  { href: SOCIAL_LINKS.GITHUB, label: 'GitHub' },
+  { href: SOCIAL_LINKS.DISCORD, label: 'Discord' },
+  { href: SOCIAL_LINKS.TWITTER, label: 'X' },
+]
 
 export const Footer = () => {
   const home = useHomePath()
@@ -53,7 +28,7 @@ export const Footer = () => {
             ClickHouse.
           </p>
         </div>
-        <Column title="Product">
+        <FooterColumn title="Product">
           <Link to="/download" className={linkClassName}>
             Download
           </Link>
@@ -63,16 +38,28 @@ export const Footer = () => {
           <Link to="/releases" className={linkClassName}>
             Releases
           </Link>
-        </Column>
-        <Column title="Community">
-          <ExternalLink href={SOCIAL_LINKS.GITHUB}>GitHub</ExternalLink>
-          <ExternalLink href={SOCIAL_LINKS.DISCORD}>Discord</ExternalLink>
-          <ExternalLink href={SOCIAL_LINKS.TWITTER}>X</ExternalLink>
-        </Column>
-        <Column title="Legal">
-          <TermsLink />
-          <PrivacyLink />
-        </Column>
+        </FooterColumn>
+        <FooterColumn title="Community">
+          {COMMUNITY_LINKS.map(({ href, label }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClassName}
+            >
+              {label}
+            </a>
+          ))}
+        </FooterColumn>
+        <FooterColumn title="Legal">
+          <Link to="/terms-of-service" className={linkClassName}>
+            Terms of Service
+          </Link>
+          <Link to="/privacy-policy" className={linkClassName}>
+            Privacy Policy
+          </Link>
+        </FooterColumn>
       </div>
       <p className="text-muted-foreground mt-16 text-xs">
         © {new Date().getFullYear()} Tamery

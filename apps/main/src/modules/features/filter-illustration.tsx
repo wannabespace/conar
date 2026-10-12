@@ -4,14 +4,13 @@ import { Kbd } from '@tamery/ui/components/kbd'
 import type { Variants } from 'motion/react'
 import { motion } from 'motion/react'
 
-import type { Filter } from '~/components/filter-chip'
 import { FilterChip } from '~/components/filter-chip'
 
 import { ResultsTable } from './results-table'
 
 const SENTENCE = 'paid orders over $200 from Germany'
 
-const FILTERS: Filter[] = [
+const FILTERS = [
   { column: 'status', operator: 'is', value: 'paid' },
   { column: 'total', operator: 'over', value: '200' },
   { column: 'country', operator: 'is', value: 'Germany' },

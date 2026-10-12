@@ -127,8 +127,9 @@ const RouteComponent = () => {
 export const Route = createFileRoute('/account/billing')({
   component: RouteComponent,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(
-      orpc.account.invoices.queryOptions()
-    )
+    await context.queryClient.query({
+      ...orpc.account.invoices.queryOptions(),
+      staleTime: 'static',
+    })
   },
 })

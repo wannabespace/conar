@@ -18,8 +18,9 @@ const SettingsPage = () => (
 export const Route = createFileRoute('/account/settings/')({
   component: SettingsPage,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(
-      orpc.account.sessions.queryOptions()
-    )
+    await context.queryClient.query({
+      ...orpc.account.sessions.queryOptions(),
+      staleTime: 'static',
+    })
   },
 })

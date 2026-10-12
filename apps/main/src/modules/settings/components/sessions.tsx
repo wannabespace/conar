@@ -8,7 +8,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@tamery/ui/components/alert-dialog'
-import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -18,122 +17,12 @@ import {
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { UAParser } from 'ua-parser-js'
 
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 import { handleError } from '~/utils/error'
 
-const electronAppNameRegex =
-  /\s+(?<appName>[A-Za-z][\w.-]*)\/(?<appVersion>[\d.]+)\s+Chrome\//u
-
-const getElectronAppName = (ua: string) => {
-  const m = ua.match(electronAppNameRegex)
-  const appName = m?.groups?.appName
-  const appVersion = m?.groups?.appVersion
-  return appName && appVersion ? `${appName} ${appVersion}` : null
-}
-
-const formatDeviceLabel = (ua: string) => {
-  const parser = new UAParser(ua)
-  const browser = parser.getBrowser()
-  const os = parser.getOS()
-  let osStr: string | null = null
-  if (os.name && os.version) {
-    osStr = `${os.name} ${os.version}`
-  } else if (os.name) {
-    osStr = os.name
-  }
-  if (browser.name === 'Electron') {
-    const appName = getElectronAppName(ua)
-    if (appName) {
-      return osStr ? `${appName} on ${osStr}` : appName
-    }
-    return osStr ? `Electron on ${osStr}` : 'Electron'
-  }
-  const browserStr = browser.version
-    ? `${browser.name} ${browser.version}`
-    : browser.name
-  if (!browserStr) {
-    return osStr || 'Unknown device'
-  }
-  return osStr ? `${browserStr} on ${osStr}` : browserStr
-}
-
-const SessionItem = ({
-  userAgent,
-  ipAddress,
-  token,
-  currentToken,
-  refetchSessions,
-}: {
-  userAgent?: string | null
-  ipAddress?: string | null
-  token: string
-  currentToken?: string
-  refetchSessions: () => void
-}) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const { mutate: revokeSession, isPending: revokingSession } = useMutation({
-    mutationFn: async (sessionToken: string) => {
-      const { error } = await authClient.revokeSession({ token: sessionToken })
-
-      if (error) {
-        throw error
-      }
-    },
-    onError: handleError,
-    onSuccess: () => {
-      refetchSessions()
-      setIsOpen(false)
-      toast.success('Session revoked')
-    },
-  })
-
-  return (
-    <SettingsRow
-      title={
-        <span className="flex items-center gap-2">
-          {userAgent ? formatDeviceLabel(userAgent) : 'Unknown device'}
-          {token === currentToken && (
-            <Badge variant="secondary">This device</Badge>
-          )}
-        </span>
-      }
-      description={ipAddress && <span data-mask>{ipAddress}</span>}
-    >
-      {token !== currentToken && (
-        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-          <AlertDialogTrigger render={<Button variant="outline" size="sm" />}>
-            Revoke
-          </AlertDialogTrigger>
-          <AlertDialogContent className="sm:max-w-sm">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Revoke this session?</AlertDialogTitle>
-              <AlertDialogDescription>
-                The device is signed out right away.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel variant="outline" size="default">
-                Cancel
-              </AlertDialogCancel>
-              <Button
-                variant="destructive"
-                disabled={revokingSession}
-                onClick={() => revokeSession(token)}
-              >
-                <LoadingContent loading={revokingSession}>
-                  Revoke
-                </LoadingContent>
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-    </SettingsRow>
-  )
-}
+import { SessionItem } from './session-item'
 
 export const SessionsSettings = () => {
   const [isOpen, setIsOpen] = useState(false)

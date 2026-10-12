@@ -10,10 +10,9 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Kbd } from '@tamery/ui/components/kbd'
 
-import type { Filter } from '~/components/filter-chip'
 import { FilterChip } from '~/components/filter-chip'
 
-const FILTERS: Filter[] = [
+const FILTERS = [
   { column: 'total', operator: 'over', value: '200' },
   { column: 'users.plan', operator: 'is', value: 'pro' },
 ]

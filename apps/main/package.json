@@ -28,7 +28,6 @@
     "react-dom": "catalog:",
     "react-qr-code": "catalog:",
     "sonner": "catalog:",
-    "streamdown": "catalog:",
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {

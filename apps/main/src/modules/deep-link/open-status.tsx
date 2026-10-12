@@ -6,7 +6,7 @@ export const OpenStatus = ({
   description,
   title,
 }: {
-  children?: ReactNode
+  children: ReactNode
   description: ReactNode
   title: string
 }) => (

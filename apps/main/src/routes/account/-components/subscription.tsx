@@ -39,7 +39,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount)
 
 const statusOf = (
-  subscription: NonNullable<ReturnType<typeof useSubscription>['subscription']>,
+  subscription: NonNullable<ReturnType<typeof useSubscription>>,
   trialEndsLater: boolean
 ) => {
   if (subscription.cancelAt) {
@@ -61,40 +61,9 @@ const statusOf = (
   return 'No upcoming payment'
 }
 
-const PlanTitle = ({ name, price }: { name: string; price: string }) => (
-  <span className="flex items-baseline gap-2">
-    {name}
-    <span className="text-muted-foreground text-xs font-normal">{price}</span>
-  </span>
-)
-
-const CurrentBadge = () => <Badge variant="secondary">Current</Badge>
-
-const ProAction = ({
-  isUpgrading,
-  plan,
-  upgrade,
-}: {
-  isUpgrading: boolean
-  plan: string | undefined
-  upgrade: () => void
-}) => {
-  if (plan === 'pro') {
-    return <CurrentBadge />
-  }
-  if (plan) {
-    return null
-  }
-  return (
-    <Button size="sm" disabled={isUpgrading} onClick={upgrade}>
-      <LoadingContent loading={isUpgrading}>Upgrade</LoadingContent>
-    </Button>
-  )
-}
-
 export const Subscription = () => {
   const { period, type: clientType } = useSearch()
-  const { subscription } = useSubscription()
+  const subscription = useSubscription()
   const router = useRouter()
   const returnHref = router.buildLocation({
     search: { type: clientType },
@@ -113,8 +82,7 @@ export const Subscription = () => {
     setIsYearly(true)
   }
 
-  const isPro = subscription?.plan === 'pro'
-  const proPrice = isPro
+  const proPrice = subscription
     ? subscription.price
     : PRO_PLAN.price[isYearly ? 'yearly' : 'monthly']
 
@@ -132,14 +100,16 @@ export const Subscription = () => {
           title={HOBBY_PLAN.name}
           description={HOBBY_PLAN.description}
         >
-          {!subscription && <CurrentBadge />}
+          {!subscription && <Badge variant="secondary">Current</Badge>}
         </SettingsRow>
         <SettingsRow
           title={
-            <PlanTitle
-              name={PRO_PLAN.name}
-              price={`${formatCurrency(proPrice)}${isYearly ? '/year' : '/month'}`}
-            />
+            <span className="flex items-baseline gap-2">
+              {PRO_PLAN.name}
+              <span className="text-muted-foreground text-xs font-normal">
+                {`${formatCurrency(proPrice)}${isYearly ? '/year' : '/month'}`}
+              </span>
+            </span>
           }
           description={
             subscription
@@ -147,11 +117,17 @@ export const Subscription = () => {
               : `${PRO_PLAN.description}. Starts with a 7-day free trial.`
           }
         >
-          <ProAction
-            isUpgrading={isUpgrading}
-            plan={subscription?.plan}
-            upgrade={() => upgrade(isYearly)}
-          />
+          {subscription ? (
+            <Badge variant="secondary">Current</Badge>
+          ) : (
+            <Button
+              size="sm"
+              disabled={isUpgrading}
+              onClick={() => upgrade(isYearly)}
+            >
+              <LoadingContent loading={isUpgrading}>Upgrade</LoadingContent>
+            </Button>
+          )}
         </SettingsRow>
         {!subscription && (
           <SettingsRow

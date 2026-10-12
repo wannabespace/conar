@@ -1,7 +1,7 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 
-import { rise } from './rise'
+import { rise } from './variants'
 
 export const ResultsTable = ({
   at,

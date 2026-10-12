@@ -10,7 +10,10 @@ export const Route = createFileRoute('/_layout/')({
   loader: async ({ context }) => {
     const [{ data }] = await Promise.all([
       authClient.getSession(),
-      context.queryClient.ensureQueryData(orpc.userCount.queryOptions()),
+      context.queryClient.query({
+        ...orpc.userCount.queryOptions(),
+        staleTime: 'static',
+      }),
     ])
 
     if (data?.user) {

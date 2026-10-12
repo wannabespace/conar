@@ -5,16 +5,15 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
-import { Button } from '@tamery/ui/components/button'
 import { MeshBackground } from '@tamery/ui/components/custom/mesh-background'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { Fragment } from 'react'
 
-import { DownloadButton } from '~/components/download-button'
 import { orpc } from '~/lib/orpc'
 
+import { GetStartedButtons } from './get-started-buttons'
 import { Showcase } from './showcase/showcase'
 
 const riseClassName =
@@ -120,23 +119,7 @@ export const Hero = () => (
           </span>{' '}
           AI writes the SQL, and your agents query through MCP.
         </p>
-        <div
-          className={cn(riseClassName, 'mt-8 flex flex-wrap gap-2 delay-650')}
-        >
-          <DownloadButton />
-          <Button
-            variant="outline"
-            size="lg"
-            render={
-              <a
-                href={import.meta.env.VITE_PUBLIC_WEB_URL}
-                aria-label="Open Tamery in your browser"
-              />
-            }
-          >
-            Open in browser
-          </Button>
-        </div>
+        <GetStartedButtons className={cn(riseClassName, 'mt-8 delay-650')} />
       </div>
       <UsageLine />
     </div>

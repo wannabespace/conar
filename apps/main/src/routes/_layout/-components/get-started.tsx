@@ -1,7 +1,6 @@
-import { Button } from '@tamery/ui/components/button'
-
-import { DownloadButton } from '~/components/download-button'
 import { Reveal } from '~/components/reveal'
+
+import { GetStartedButtons } from './get-started-buttons'
 
 export const GetStarted = () => (
   <section
@@ -18,21 +17,7 @@ export const GetStarted = () => (
           Free on macOS, Windows and Linux.
         </span>
       </h2>
-      <div className="flex shrink-0 flex-wrap gap-2">
-        <DownloadButton />
-        <Button
-          variant="outline"
-          size="lg"
-          render={
-            <a
-              href={import.meta.env.VITE_PUBLIC_WEB_URL}
-              aria-label="Open Tamery in your browser"
-            />
-          }
-        >
-          Open in browser
-        </Button>
-      </div>
+      <GetStartedButtons className="shrink-0" />
     </Reveal>
   </section>
 )

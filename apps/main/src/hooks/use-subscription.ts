@@ -13,14 +13,13 @@ export const useSubscription = () => {
     })
   )
 
-  const subscription =
+  return (
     list?.find((s) =>
       ACTIVE_SUBSCRIPTION_STATUSES.includes(
         s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
       )
     ) ?? null
-
-  return { subscription }
+  )
 }
 
 export const useUpgradeSubscription = (

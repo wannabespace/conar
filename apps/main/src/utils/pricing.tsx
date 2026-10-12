@@ -1,6 +1,3 @@
-import { CircleIcon, CrownIcon } from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
-
 export interface PricingPlan {
   name: string
   price: {
@@ -9,7 +6,6 @@ export interface PricingPlan {
   }
   description: string
   features: string[]
-  icon: IconSvgElement
 }
 
 export const HOBBY_PLAN: PricingPlan = {
@@ -20,7 +16,6 @@ export const HOBBY_PLAN: PricingPlan = {
     '20 AI filters a week',
     '100 MCP agent queries a week',
   ],
-  icon: CircleIcon,
   name: 'Free',
   price: {
     monthly: 0,
@@ -36,7 +31,6 @@ export const PRO_PLAN: PricingPlan = {
     'Included AI credits',
     'Extra workspaces',
   ],
-  icon: CrownIcon,
   name: 'Pro',
   price: {
     monthly: 15,

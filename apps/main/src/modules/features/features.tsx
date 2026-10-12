@@ -34,7 +34,6 @@ export const Features = () => (
       </BentoCard>
       <BentoCard
         className="md:col-span-2"
-
         title="Filters from a sentence"
         description="Type what you want to see and Tamery turns it into filters you can still edit by hand."
       >

@@ -159,7 +159,10 @@ export const Route = createFileRoute('/account/ai-usage')({
   // The default range comes from the loader so the client reuses the server's query instead of refetching it under its own time zone.
   loader: async ({ context }) => {
     const range = defaultRange()
-    await context.queryClient.ensureQueryData(usageQueryOptions(range))
+    await context.queryClient.query({
+      ...usageQueryOptions(range),
+      staleTime: 'static',
+    })
     return range
   },
 })

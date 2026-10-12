@@ -1,13 +1,13 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 
-export interface Filter {
+const Divider = () => <span className="bg-border w-px shrink-0" />
+
+interface Filter {
   column: string
   operator: string
   value: string
 }
-
-const Divider = () => <span className="bg-border w-px shrink-0" />
 
 export const FilterChip = ({ column, operator, value }: Filter) => (
   <span className="ring-foreground/4 bg-chip flex h-5 shrink-0 items-stretch overflow-hidden rounded-md text-xs whitespace-nowrap shadow-2xs ring">

@@ -1,7 +1,7 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 
-import { HOUSE_EASE } from '~/utils/motion'
+import { pop } from './variants'
 
 const LINES = [
   ['SELECT', ' id, customer, total'],
@@ -25,15 +25,7 @@ export const CompletionIllustration = () => (
             <span className="relative">
               <span className="bg-primary inline-block h-4 w-px translate-y-0.5 animate-pulse" />
               <motion.div
-                variants={{
-                  hidden: { opacity: 0, scale: 0.96, y: -4 },
-                  shown: {
-                    opacity: 1,
-                    scale: 1,
-                    transition: { delay: 0.4, duration: 0.2, ease: HOUSE_EASE },
-                    y: 0,
-                  },
-                }}
+                variants={pop(0.4, -4)}
                 className="bg-popover ring-foreground/4 absolute top-8 left-0 w-44 origin-top-left overflow-hidden rounded-lg p-1 font-sans text-xs shadow-lg ring"
               >
                 {SUGGESTIONS.map((suggestion) => (

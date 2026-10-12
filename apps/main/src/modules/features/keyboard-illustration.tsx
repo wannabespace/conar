@@ -2,11 +2,9 @@ import { CommandIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { motion } from 'motion/react'
 
-import { HOUSE_EASE } from '~/utils/motion'
+import { pop } from './variants'
 
 const ROWS = ['Open table', 'New query', 'Toggle AI chat']
-
-const PALETTE_AT = 0.55
 
 const press = (delay: number) => ({
   hidden: { y: 0 },
@@ -19,15 +17,7 @@ const keyClassName =
 export const KeyboardIllustration = () => (
   <div className="absolute inset-0 flex flex-col items-center justify-end gap-4 pb-6">
     <motion.div
-      variants={{
-        hidden: { opacity: 0, scale: 0.96, y: 6 },
-        shown: {
-          opacity: 1,
-          scale: 1,
-          transition: { delay: PALETTE_AT, duration: 0.2, ease: HOUSE_EASE },
-          y: 0,
-        },
-      }}
+      variants={pop(0.55, 6)}
       className="bg-popover ring-foreground/4 w-52 origin-bottom overflow-hidden rounded-xl text-xs shadow-lg ring"
     >
       <div className="text-muted-foreground flex h-8 items-center gap-2 border-b px-3">

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 
 import { ResultsTable } from './results-table'
-import { rise } from './rise'
+import { rise } from './variants'
 
 const SQL = [
   ['SELECT', 'customer, sum(total)'],

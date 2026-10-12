@@ -18,15 +18,10 @@ import { authClient } from '~/lib/auth'
 import { Brand } from './brand'
 import { ThemeButton } from './theme-button'
 
-const useScrolled = () => {
+export const Navbar = () => {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 0))
-  return scrolled
-}
-
-export const Navbar = () => {
-  const scrolled = useScrolled()
   const { data: session } = authClient.useSession()
   const home = useHomePath()
   const links: { label: string; link: LinkProps }[] = [

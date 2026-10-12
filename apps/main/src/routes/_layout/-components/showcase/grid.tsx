@@ -9,7 +9,6 @@ import {
   Tag01Icon,
   TextIcon,
 } from '@hugeicons/core-free-icons'
-import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
@@ -17,12 +16,7 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 
-const COLUMNS: {
-  icon: IconSvgElement
-  id: string
-  sorted?: boolean
-  width: string
-}[] = [
+const COLUMNS = [
   { icon: Key01Icon, id: 'id', width: 'w-20' },
   { icon: Link01Icon, id: 'user_id', width: 'w-28' },
   { icon: TextIcon, id: 'customer', width: 'w-36' },
@@ -59,28 +53,13 @@ const ROWS = [
   ['58315', '1139', 'Lukas Schmidt', '$534.51', 'paid', '2026-09-18 04:57'],
   ['58331', '1166', 'Sofia Rossi', '$521.08', 'paid', '2026-09-26 10:12'],
   ['58328', '1144', 'Léa Martin', '$498.70', 'pending', '2026-09-24 23:04'],
-]
+] as const
 
 const SELECTED_ROWS = new Set(['58309', '58305'])
 const EDITED_ROW = '58338'
 
 const cellClassName =
   'flex h-full shrink-0 items-center gap-1 border-r px-2 text-xs'
-
-const Dock = () => (
-  <div className="absolute inset-x-0 bottom-4 flex justify-center">
-    <div className="bg-popover/70 ring-foreground/4 flex items-center gap-1 rounded-xl p-1 shadow-lg ring backdrop-blur">
-      <Button variant="destructive" size="sm">
-        Delete (2)
-      </Button>
-      <Separator orientation="vertical" className="mx-0.5 h-4!" />
-      <Button variant="ghost-muted" size="sm">
-        Review
-      </Button>
-      <Button size="sm">Save (1)</Button>
-    </div>
-  </div>
-)
 
 export const Grid = () => (
   <div className="relative min-h-0 flex-1 overflow-hidden border-t">
@@ -120,7 +99,7 @@ export const Grid = () => (
         </div>
       ))}
     </div>
-    {ROWS.map(([id = '', user, customer, total, status = '', created]) => (
+    {ROWS.map(([id, user, customer, total, status, created]) => (
       <div key={id} className="flex h-8 border-b">
         <div className="flex w-10 shrink-0 items-center justify-center border-r">
           <Checkbox checked={SELECTED_ROWS.has(id)} />
@@ -155,6 +134,17 @@ export const Grid = () => (
         <div className={cn(cellClassName, 'w-40 tabular-nums')}>{created}</div>
       </div>
     ))}
-    <Dock />
+    <div className="absolute inset-x-0 bottom-4 flex justify-center">
+      <div className="bg-popover/70 ring-foreground/4 flex items-center gap-1 rounded-xl p-1 shadow-lg ring backdrop-blur">
+        <Button variant="destructive" size="sm">
+          Delete (2)
+        </Button>
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
+        <Button variant="ghost-muted" size="sm">
+          Review
+        </Button>
+        <Button size="sm">Save (1)</Button>
+      </div>
+    </div>
   </div>
 )
