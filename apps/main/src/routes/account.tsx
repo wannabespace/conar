@@ -17,7 +17,6 @@ import { SidebarIcon, SidebarLink } from '~/components/sidebar-button'
 import { ThemeButton } from '~/components/theme-button'
 import { authClient } from '~/lib/auth'
 import { AiUsageLink } from '~/modules/ai-usage/ai-usage-link'
-import { ApiKeysLink } from '~/modules/api-keys/api-keys-link'
 import { BillingLink } from '~/modules/billing/billing-link'
 import { SettingsLink } from '~/modules/settings/settings-link'
 import { SupportButton } from '~/modules/support/support-button'
@@ -80,7 +79,6 @@ const AccountLayout = () => {
             </SidebarLink>
             <BillingLink />
             <AiUsageLink />
-            <ApiKeysLink />
             <SettingsLink />
             <SupportButton />
             <SidebarMenuButton

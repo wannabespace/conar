@@ -1,13 +1,9 @@
-import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import * as schema from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
-import {
-  API_KEY_PERMISSIONS,
-  AUTH_COOKIE_PREFIX,
-} from '@tamery/shared/constants'
+import { AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
 import { permissionsOf } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -53,10 +49,7 @@ export const auth = betterAuth({
   baseURL: env.API_URL,
   database: drizzleAdapter(db, {
     provider: 'pg',
-    schema: {
-      ...schema,
-      api_keys: schema.apiKeys,
-    },
+    schema,
     usePlural: true,
   }) as ReturnType<typeof drizzleAdapter>,
   databaseHooks: {
@@ -268,21 +261,6 @@ export const auth = betterAuth({
     lastLoginMethod(),
     emailHarmony(),
     anonymous(),
-    apiKey({
-      defaultPrefix: nodeEnv === 'production' ? 'tmy_' : 'tmy_test_',
-      permissions: {
-        defaultPermissions: API_KEY_PERMISSIONS,
-      },
-      requireName: true,
-      schema: {
-        apikey: {
-          modelName: 'api_key',
-        },
-      },
-      startingCharactersConfig: {
-        charactersLength: nodeEnv === 'production' ? 20 : 15,
-      },
-    }),
   ],
   secret: env.BETTER_AUTH_SECRET,
   socialProviders: {

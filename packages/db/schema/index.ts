@@ -1,7 +1,6 @@
 export { aiFeature, aiUsage } from './ai-usage'
 export {
   accounts,
-  apiKeys,
   authRelations,
   invitations,
   members,

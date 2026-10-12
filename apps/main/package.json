@@ -8,7 +8,6 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@better-auth/api-key": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",

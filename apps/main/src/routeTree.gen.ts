@@ -24,7 +24,6 @@ import { Route as LayoutReleasesRouteImport } from './modules/releases/routes/_l
 import { Route as LayoutTermsOfServiceRouteImport } from './modules/legal/routes/_layout/terms-of-service'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as AccountAiUsageRouteImport } from './modules/ai-usage/routes/account/ai-usage'
-import { Route as AccountApiKeysRouteImport } from './modules/api-keys/routes/account/api-keys'
 import { Route as AccountBillingRouteImport } from './modules/billing/routes/account/billing'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
 import { Route as AccountSettingsIndexRouteImport } from './modules/settings/routes/account/settings/index'
@@ -102,11 +101,6 @@ const AccountAiUsageRoute = AccountAiUsageRouteImport.update({
   path: '/ai-usage',
   getParentRoute: () => AccountRoute,
 } as any)
-const AccountApiKeysRoute = AccountApiKeysRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
-  getParentRoute: () => AccountRoute,
-} as any)
 const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -136,7 +130,6 @@ export interface FileRoutesByFullPath {
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
-  '/account/api-keys': typeof AccountApiKeysRoute
   '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/': typeof AccountIndexRoute
@@ -154,7 +147,6 @@ export interface FileRoutesByTo {
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
-  '/account/api-keys': typeof AccountApiKeysRoute
   '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account': typeof AccountIndexRoute
@@ -175,7 +167,6 @@ export interface FileRoutesById {
   '/_layout/releases': typeof LayoutReleasesRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/account/ai-usage': typeof AccountAiUsageRoute
-  '/account/api-keys': typeof AccountApiKeysRoute
   '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -197,7 +188,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/terms-of-service'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/deep/sign-in'
     | '/account/'
@@ -215,7 +205,6 @@ export interface FileRouteTypes {
     | '/releases'
     | '/terms-of-service'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/deep/sign-in'
     | '/account'
@@ -235,7 +224,6 @@ export interface FileRouteTypes {
     | '/_layout/releases'
     | '/_layout/terms-of-service'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/deep/sign-in'
     | '/_layout/'
@@ -358,13 +346,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountAiUsageRouteImport
       parentRoute: typeof AccountRoute
     }
-    '/account/api-keys': {
-      id: '/account/api-keys'
-      path: '/api-keys'
-      fullPath: '/account/api-keys'
-      preLoaderRoute: typeof AccountApiKeysRouteImport
-      parentRoute: typeof AccountRoute
-    }
     '/account/billing': {
       id: '/account/billing'
       path: '/billing'
@@ -426,7 +407,6 @@ const LayoutRouteWithChildren =
 
 interface AccountRouteChildren {
   AccountAiUsageRoute: typeof AccountAiUsageRoute
-  AccountApiKeysRoute: typeof AccountApiKeysRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AccountSettingsIndexRoute: typeof AccountSettingsIndexRoute
@@ -434,7 +414,6 @@ interface AccountRouteChildren {
 
 const AccountRouteChildren: AccountRouteChildren = {
   AccountAiUsageRoute: AccountAiUsageRoute,
-  AccountApiKeysRoute: AccountApiKeysRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountIndexRoute: AccountIndexRoute,
   AccountSettingsIndexRoute: AccountSettingsIndexRoute,

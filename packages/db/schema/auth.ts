@@ -143,41 +143,9 @@ export const invitations = d.snakeCase.table(
   ]
 )
 
-export const apiKeys = d.snakeCase.table(
-  'api_keys',
-  {
-    ...baseTable,
-    configId: d.text().default('default').notNull(),
-    enabled: d.boolean().default(true),
-    expiresAt: d.timestamp({ withTimezone: true }),
-    key: d.text().notNull(),
-    lastRefillAt: d.timestamp({ withTimezone: true }),
-    lastRequest: d.timestamp({ withTimezone: true }),
-    metadata: d.text(),
-    name: d.text().notNull(),
-    permissions: d.jsonb(),
-    prefix: d.text(),
-    rateLimitEnabled: d.boolean().default(true),
-    rateLimitMax: d.integer().default(10),
-    rateLimitTimeWindow: d.integer().default(86_400_000),
-    referenceId: d.text().notNull(),
-    refillAmount: d.integer(),
-    refillInterval: d.integer(),
-    remaining: d.integer(),
-    requestCount: d.integer().default(0),
-    start: d.text(),
-  },
-  (table) => [
-    d.index('api_keys_configId_idx').on(table.configId),
-    d.index('api_keys_referenceId_idx').on(table.referenceId),
-    d.index('api_keys_key_idx').on(table.key),
-  ]
-)
-
 export const authRelations = defineRelationsPart(
   {
     accounts,
-    apiKeys,
     invitations,
     members,
     sessions,
