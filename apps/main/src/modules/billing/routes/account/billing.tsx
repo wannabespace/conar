@@ -11,7 +11,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -21,15 +20,13 @@ import {
   TableRow,
 } from '@tamery/ui/components/table'
 import { cn } from '@tamery/ui/lib/utils'
-import { useQuery } from '@tanstack/react-query'
-import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 
 import { AccountPage } from '~/components/account-page'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
-
-const SKELETON_ROWS = 4
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-US', {
@@ -38,7 +35,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount / 100)
 
 const RouteComponent = () => {
-  const { data: invoices = [], isPending } = useQuery(
+  const { data: invoices } = useSuspenseQuery(
     orpc.account.invoices.queryOptions()
   )
   const router = useRouter()
@@ -60,7 +57,7 @@ const RouteComponent = () => {
       }
     >
       <div className={cn(cardClass, 'overflow-x-auto')}>
-        {!isPending && invoices.length === 0 ? (
+        {invoices.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>
               <EmptyMedia variant="muted">
@@ -83,57 +80,42 @@ const RouteComponent = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isPending
-                ? Array.from({ length: SKELETON_ROWS }, (_, row) => (
-                    <TableRow key={row}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-12" />
-                      </TableCell>
-                      <TableCell />
-                    </TableRow>
-                  ))
-                : invoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell>
-                        {format(invoice.createdAt, 'MMMM d, yyyy')}
-                      </TableCell>
-                      <TableCell variant="numeric">
-                        {formatCurrency(invoice.amount)}
-                      </TableCell>
-                      <TableCell>
-                        {uppercaseFirst(invoice.status ?? 'unknown')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {invoice.url && (
-                          <Button
-                            variant="ghost-muted"
-                            size="xs"
-                            render={
-                              <a
-                                href={invoice.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="View invoice"
-                              />
-                            }
-                          >
-                            View
-                            <HugeiconsIcon
-                              icon={ArrowUpRight01Icon}
-                              strokeWidth={2}
-                              data-icon="inline-end"
-                            />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>
+                    {format(invoice.createdAt, 'MMMM d, yyyy')}
+                  </TableCell>
+                  <TableCell variant="numeric">
+                    {formatCurrency(invoice.amount)}
+                  </TableCell>
+                  <TableCell>
+                    {uppercaseFirst(invoice.status ?? 'unknown')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {invoice.url && (
+                      <Button
+                        variant="ghost-muted"
+                        size="xs"
+                        render={
+                          <a
+                            href={invoice.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="View invoice"
+                          />
+                        }
+                      >
+                        View
+                        <HugeiconsIcon
+                          icon={ArrowUpRight01Icon}
+                          strokeWidth={2}
+                          data-icon="inline-end"
+                        />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
@@ -142,6 +124,11 @@ const RouteComponent = () => {
   )
 }
 
-export const Route = createLazyFileRoute('/account/billing')({
+export const Route = createFileRoute('/account/billing')({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      orpc.account.invoices.queryOptions()
+    )
+  },
 })

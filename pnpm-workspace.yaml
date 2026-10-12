@@ -160,6 +160,7 @@ catalog:
   ultracite: ^7.10.7
   sf-symbols-typescript: ^2.2.0
   '@shadcn/lint': ^0.2.0
+  '@tanstack/react-router-ssr-query': 1.167.1
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false

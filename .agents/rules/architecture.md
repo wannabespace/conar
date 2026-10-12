@@ -28,7 +28,8 @@
 - **No registries.** Whoever renders or runs a feature imports it directly from the module file that defines it — a titlebar button in the titlebar, a panel in the workspace layout, a command in the actions center, a tab kind in `core/tabs/kinds.ts`, a tab view in `core/tabs/views.ts`, a collection in `core/collections.ts`. Deleting a module means deleting its folder and those imports. Never add an `import.meta.glob` module loader or a slot array: it hides the wiring from find-references.
 - **Import where the chunk loads.** A module's import lands in its importer's chunk, so wire a feature from the layout that shows it (root, `_protected`, the connection workspace); anything reachable from the entry must stay off `lib/database`.
 - A module owns its state under its own storage key. The resource store keeps only `activeTabId`, `tabs` and `showSystem`.
-- In `apps/main`, a module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.lazy.tsx` nests under `/account`), and each module's `routes/` folder is listed in `vite.config.ts`'s `virtualRouteConfig`.
+- In `apps/main`, a module's pages live in its own `routes/`, mirroring where they mount (`routes/account/billing.tsx` nests under `/account`), and each module's `routes/` folder is listed in `vite.config.ts`'s `virtualRouteConfig`.
+- `apps/main` is server-rendered, so a page never shows a loading state on first paint: its route `loader` awaits `context.queryClient.ensureQueryData(...)` for every query it renders, and the router's SSR-query integration ships that cache to the client. A query left to `useQuery` alone renders its pending state into the server HTML. Auth guards go in `beforeLoad`, which runs before child loaders, never in a `loader`, which runs in parallel with them. Start splits route files itself, so no `.lazy.tsx`.
 
 ## Core layout (`apps/app/src/core`)
 

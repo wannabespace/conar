@@ -16,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
-import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -27,21 +26,26 @@ import {
 } from '@tamery/ui/components/table'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { endOfMonth, format, parse, startOfMonth, subMonths } from 'date-fns'
 import { useState } from 'react'
 
 import { AccountPage } from '~/components/account-page'
 import { orpc } from '~/lib/orpc'
 
+const { useLoaderData } = getRouteApi('/account/ai-usage')
+
 const MONTHS_SHOWN = 12
-const SKELETON_ROWS = 3
-const NUMERIC_COLUMNS = 4
 
 const defaultRange = (): DateRange => ({
   from: startOfMonth(subMonths(new Date(), MONTHS_SHOWN - 1)),
   to: endOfMonth(new Date()),
 })
+
+const usageQueryOptions = (range: DateRange | undefined) =>
+  orpc.account.aiUsage.queryOptions({
+    input: { from: range?.from, to: range?.to },
+  })
 
 const formatTokens = (value: number) => value.toLocaleString('en-US')
 
@@ -66,12 +70,8 @@ const formatRange = (range: DateRange | undefined) => {
 }
 
 const RouteComponent = () => {
-  const [range, setRange] = useState<DateRange | undefined>(defaultRange)
-  const { data: usage = [], isPending } = useQuery(
-    orpc.account.aiUsage.queryOptions({
-      input: { from: range?.from, to: range?.to },
-    })
-  )
+  const [range, setRange] = useState<DateRange | undefined>(useLoaderData())
+  const { data: usage = [] } = useQuery(usageQueryOptions(range))
 
   return (
     <AccountPage
@@ -99,7 +99,7 @@ const RouteComponent = () => {
       }
     >
       <div className={cn(cardClass, 'overflow-x-auto')}>
-        {!isPending && usage.length === 0 ? (
+        {usage.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>
               <EmptyMedia variant="muted">
@@ -125,40 +125,27 @@ const RouteComponent = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isPending
-                ? Array.from({ length: SKELETON_ROWS }, (_, row) => (
-                    <TableRow key={row}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-28" />
-                      </TableCell>
-                      {Array.from({ length: NUMERIC_COLUMNS }, (__, cell) => (
-                        <TableCell key={cell}>
-                          <Skeleton className="ml-auto h-4 w-12" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                : usage.map((row) => (
-                    <TableRow key={row.month}>
-                      <TableCell>{formatMonth(row.month)}</TableCell>
-                      <TableCell variant="numeric">
-                        {formatTokens(row.calls)}
-                      </TableCell>
-                      <TableCell variant="numeric">
-                        {formatTokens(row.inputTokens ?? 0)}
-                      </TableCell>
-                      <TableCell variant="numeric">
-                        {formatTokens(row.outputTokens ?? 0)}
-                      </TableCell>
-                      <TableCell variant="numeric">
-                        {row.cost === null ? (
-                          <span className="text-muted-foreground">Unknown</span>
-                        ) : (
-                          formatCost(row.cost)
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+              {usage.map((row) => (
+                <TableRow key={row.month}>
+                  <TableCell>{formatMonth(row.month)}</TableCell>
+                  <TableCell variant="numeric">
+                    {formatTokens(row.calls)}
+                  </TableCell>
+                  <TableCell variant="numeric">
+                    {formatTokens(row.inputTokens ?? 0)}
+                  </TableCell>
+                  <TableCell variant="numeric">
+                    {formatTokens(row.outputTokens ?? 0)}
+                  </TableCell>
+                  <TableCell variant="numeric">
+                    {row.cost === null ? (
+                      <span className="text-muted-foreground">Unknown</span>
+                    ) : (
+                      formatCost(row.cost)
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
@@ -167,6 +154,12 @@ const RouteComponent = () => {
   )
 }
 
-export const Route = createLazyFileRoute('/account/ai-usage')({
+export const Route = createFileRoute('/account/ai-usage')({
   component: RouteComponent,
+  // The default range comes from the loader so the client reuses the server's query instead of refetching it under its own time zone.
+  loader: async ({ context }) => {
+    const range = defaultRange()
+    await context.queryClient.ensureQueryData(usageQueryOptions(range))
+    return range
+  },
 })

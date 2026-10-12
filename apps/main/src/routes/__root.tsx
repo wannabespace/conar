@@ -3,14 +3,12 @@ import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { QueryClient } from '@tanstack/react-query'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
-  useRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
@@ -64,31 +62,25 @@ const analyticsScripts = [
   },
 ]
 
-const RootComponent = () => {
-  const router = useRouter()
-
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <HeadContent />
-      </head>
-      <body className="bg-body relative">
-        <QueryClientProvider client={router.options.context.queryClient}>
-          <MotionConfig reducedMotion="user">
-            <TooltipProvider>
-              <ThemeObserver />
-              <Outlet />
-            </TooltipProvider>
-          </MotionConfig>
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-        </QueryClientProvider>
-        <Toaster />
-        <TanStackRouterDevtools position="bottom-right" />
-        <Scripts />
-      </body>
-    </html>
-  )
-}
+const RootComponent = () => (
+  <html lang="en" suppressHydrationWarning>
+    <head>
+      <HeadContent />
+    </head>
+    <body className="bg-body relative">
+      <MotionConfig reducedMotion="user">
+        <TooltipProvider>
+          <ThemeObserver />
+          <Outlet />
+        </TooltipProvider>
+      </MotionConfig>
+      <ReactQueryDevtools buttonPosition="bottom-left" />
+      <Toaster />
+      <TanStackRouterDevtools position="bottom-right" />
+      <Scripts />
+    </body>
+  </html>
+)
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient

@@ -22,11 +22,11 @@ import { BillingLink } from '~/modules/billing/billing-link'
 import { SettingsLink } from '~/modules/settings/settings-link'
 import { SupportButton } from '~/modules/support/support-button'
 
-const { useLoaderData } = getRouteApi('/account')
+const { useRouteContext } = getRouteApi('/account')
 
 const AccountLayout = () => {
   const router = useRouter()
-  const { user } = useLoaderData()
+  const { user } = useRouteContext()
 
   const signOut = async () => {
     await authClient.signOut()
@@ -107,7 +107,7 @@ const AccountLayout = () => {
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
   head: () => ({ meta: [{ title: 'Account - Tamery' }] }),
-  loader: async () => {
+  beforeLoad: async () => {
     const { data } = await authClient.getSession()
 
     if (!data?.user) {

@@ -13,6 +13,7 @@ import JSConfetti from 'js-confetti'
 import { useEffect, useState } from 'react'
 
 import { AccountPage } from '~/components/account-page'
+import { orpc } from '~/lib/orpc'
 
 import { Subscription } from './-components/subscription'
 
@@ -94,4 +95,9 @@ export const Route = createFileRoute('/account/')({
     'type?': '"web" | "desktop" | "cli"',
   }),
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      orpc.account.subscription.list.queryOptions()
+    )
+  },
 })

@@ -15,8 +15,7 @@ import {
   SettingsGroup,
   SettingsRow,
 } from '@tamery/ui/components/custom/settings-group'
-import { Skeleton } from '@tamery/ui/components/skeleton'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { UAParser } from 'ua-parser-js'
@@ -141,11 +140,9 @@ export const SessionsSettings = () => {
   const { data } = authClient.useSession()
   const currentToken = data?.session?.token
 
-  const {
-    data: sessions,
-    isPending: sessionsPending,
-    refetch: refetchSessions,
-  } = useQuery(orpc.account.sessions.queryOptions())
+  const { data: sessions, refetch: refetchSessions } = useSuspenseQuery(
+    orpc.account.sessions.queryOptions()
+  )
 
   const { mutate: revokeOtherSessions, isPending: revokingOthers } =
     useMutation({
@@ -164,26 +161,20 @@ export const SessionsSettings = () => {
       },
     })
 
-  const otherSessions = sessions?.filter((s) => s.token !== currentToken) ?? []
+  const otherSessions = sessions.filter((s) => s.token !== currentToken)
 
   return (
     <SettingsGroup title="Sessions">
-      {sessionsPending ? (
-        <SettingsRow title={<Skeleton className="h-4 w-48" />}>
-          <Skeleton className="h-7 w-16 rounded-lg" />
-        </SettingsRow>
-      ) : (
-        sessions?.map((session) => (
-          <SessionItem
-            key={session.id}
-            userAgent={session.userAgent}
-            ipAddress={session.ipAddress}
-            token={session.token}
-            currentToken={currentToken}
-            refetchSessions={refetchSessions}
-          />
-        ))
-      )}
+      {sessions.map((session) => (
+        <SessionItem
+          key={session.id}
+          userAgent={session.userAgent}
+          ipAddress={session.ipAddress}
+          token={session.token}
+          currentToken={currentToken}
+          refetchSessions={refetchSessions}
+        />
+      ))}
       {otherSessions.length > 0 && (
         <SettingsRow
           title="Sign out other devices"

@@ -7,7 +7,7 @@ import { orpc } from '~/lib/orpc'
 
 export const useSubscription = () => {
   const { data } = authClient.useSession()
-  const { data: list, isPending } = useQuery(
+  const { data: list } = useQuery(
     orpc.account.subscription.list.queryOptions({
       enabled: !!data?.user.id,
     })
@@ -20,7 +20,7 @@ export const useSubscription = () => {
       )
     ) ?? null
 
-  return { isPending, subscription }
+  return { subscription }
 }
 
 export const useUpgradeSubscription = (

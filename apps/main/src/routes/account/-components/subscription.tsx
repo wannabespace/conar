@@ -14,7 +14,6 @@ import {
   SettingsRow,
 } from '@tamery/ui/components/custom/settings-group'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
-import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
@@ -72,19 +71,14 @@ const PlanTitle = ({ name, price }: { name: string; price: string }) => (
 const CurrentBadge = () => <Badge variant="secondary">Current</Badge>
 
 const ProAction = ({
-  isPending,
   isUpgrading,
   plan,
   upgrade,
 }: {
-  isPending: boolean
   isUpgrading: boolean
   plan: string | undefined
   upgrade: () => void
 }) => {
-  if (isPending) {
-    return <Skeleton className="h-7 w-20 rounded-lg" />
-  }
   if (plan === 'pro') {
     return <CurrentBadge />
   }
@@ -100,7 +94,7 @@ const ProAction = ({
 
 export const Subscription = () => {
   const { period, type: clientType } = useSearch()
-  const { subscription, isPending } = useSubscription()
+  const { subscription } = useSubscription()
   const router = useRouter()
   const returnHref = router.buildLocation({
     search: { type: clientType },
@@ -138,7 +132,7 @@ export const Subscription = () => {
           title={HOBBY_PLAN.name}
           description={HOBBY_PLAN.description}
         >
-          {!isPending && !subscription && <CurrentBadge />}
+          {!subscription && <CurrentBadge />}
         </SettingsRow>
         <SettingsRow
           title={
@@ -154,13 +148,12 @@ export const Subscription = () => {
           }
         >
           <ProAction
-            isPending={isPending}
             isUpgrading={isUpgrading}
             plan={subscription?.plan}
             upgrade={() => upgrade(isYearly)}
           />
         </SettingsRow>
-        {!isPending && !subscription && (
+        {!subscription && (
           <SettingsRow
             title="Billing period"
             description={`Yearly costs ${formatCurrency(PRO_PLAN.price.yearly)} instead of ${formatCurrency(PRO_PLAN.price.monthly * 12)}.`}
