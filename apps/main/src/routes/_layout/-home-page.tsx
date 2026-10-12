@@ -6,6 +6,7 @@ import { Engines } from './-components/engines'
 import { Faq } from './-components/faq'
 import { GetStarted } from './-components/get-started'
 import { Hero } from './-components/hero'
+import { Users } from './-components/users'
 
 export const HomePage = () => (
   <main>
@@ -13,6 +14,7 @@ export const HomePage = () => (
     <Engines />
     <Features />
     <Agents />
+    <Users />
     <Pricing />
     <Faq />
     <GetStarted />

@@ -19,6 +19,7 @@ import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
 import * as usage from './usage'
+import { userCount } from './user-count'
 import * as webhooks from './webhooks'
 import * as workspaces from './workspaces'
 
@@ -38,6 +39,7 @@ export const router = {
   releases,
   repo,
   usage,
+  userCount,
   webhooks,
   workspaces,
 }
