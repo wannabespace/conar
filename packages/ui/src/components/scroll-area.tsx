@@ -31,8 +31,7 @@ const ScrollArea = ({
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   viewportClassName?: string
-  /** An overflowing viewport is a Tab stop so the keyboard can scroll it; pass `tabIndex: -1` when its content already takes focus and scrolls itself into view. */
-  viewportProps?: Pick<ScrollAreaPrimitive.Viewport.Props, 'tabIndex'>
+  viewportProps?: ScrollAreaPrimitive.Viewport.Props
 }) => (
   <ScrollAreaPrimitive.Root
     data-slot="scroll-area"
@@ -40,12 +39,12 @@ const ScrollArea = ({
     {...props}
   >
     <ScrollAreaPrimitive.Viewport
+      {...viewportProps}
       data-slot="scroll-area-viewport"
       className={cn(
         `focus-visible:focus-ring size-full rounded-[inherit] transition-[color,box-shadow] outline-none`,
         viewportClassName
       )}
-      {...viewportProps}
     >
       {children}
     </ScrollAreaPrimitive.Viewport>

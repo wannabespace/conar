@@ -1,9 +1,5 @@
 import {
-  ArrowLeft02Icon,
-  ArrowRight02Icon,
   Cancel01Icon,
-  CancelCircleIcon,
-  CancelSquareIcon,
   PencilEdit01Icon,
   Undo02Icon,
 } from '@hugeicons/core-free-icons'
@@ -30,8 +26,6 @@ import type { ConnectionTab } from '~/core/tabs/types'
 import { tabViews } from '~/core/tabs/views'
 import { pressNavProps } from '~/utils/press-nav'
 
-const isElectron = !!window.electron
-
 const REORDER_TRANSITION = {
   duration: 0.2,
   ease: [0.32, 0.72, 0, 1],
@@ -47,12 +41,7 @@ export const Tab = ({
   isDragging,
   onDragStateChange,
   onClose,
-  onCloseAll,
-  onCloseToTheLeft,
-  onCloseToTheRight,
-  onCloseOthers,
-  currentTabIndex,
-  totalTabs,
+  closeItems,
 }: {
   tab: ConnectionTab
   label: string
@@ -63,12 +52,7 @@ export const Tab = ({
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
   onClose: VoidFunction
-  onCloseAll: VoidFunction
-  onCloseToTheLeft: VoidFunction
-  onCloseToTheRight: VoidFunction
-  onCloseOthers: VoidFunction
-  currentTabIndex: number
-  totalTabs: number
+  closeItems: AppMenuNode[]
 }) => {
   const router = useRouter()
   const ref = useRef<HTMLDivElement>(null)
@@ -142,38 +126,7 @@ export const Tab = ({
         ]
       : []),
     { type: 'separator' },
-    {
-      icon: Cancel01Icon,
-      label: 'Close',
-      ...(isElectron && { shortcut: 'closeTab' }),
-      onSelect: onClose,
-    },
-    { type: 'separator' },
-    {
-      disabled: totalTabs <= 1,
-      icon: CancelSquareIcon,
-      label: 'Close Others',
-      onSelect: onCloseOthers,
-    },
-    {
-      disabled: currentTabIndex === 0,
-      icon: ArrowLeft02Icon,
-      label: 'Close to the Left',
-      onSelect: onCloseToTheLeft,
-    },
-    {
-      disabled: currentTabIndex >= totalTabs - 1,
-      icon: ArrowRight02Icon,
-      label: 'Close to the Right',
-      onSelect: onCloseToTheRight,
-    },
-    { type: 'separator' },
-    {
-      disabled: totalTabs === 0,
-      icon: CancelCircleIcon,
-      label: 'Close All',
-      onSelect: onCloseAll,
-    },
+    ...closeItems,
   ]
 
   useEffect(() => {
@@ -223,7 +176,7 @@ export const Tab = ({
   if (isRenaming) {
     return (
       <Reorder.Item
-        value={tab.id}
+        value={tab}
         as="div"
         ref={ref}
         drag={false}
@@ -250,7 +203,7 @@ export const Tab = ({
 
   return (
     <Reorder.Item
-      value={tab.id}
+      value={tab}
       as="div"
       ref={ref}
       layout="position"
@@ -292,7 +245,7 @@ export const Tab = ({
           <span>{label}</span>
           <Tooltip
             shortcut={
-              isActive && isElectron && <ShortcutKbd shortcut="closeTab" />
+              isActive && window.electron && <ShortcutKbd shortcut="closeTab" />
             }
           >
             <TooltipTrigger

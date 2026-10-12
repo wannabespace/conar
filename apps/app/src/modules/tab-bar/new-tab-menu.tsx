@@ -53,7 +53,7 @@ export const NewTabMenu = ({
       to: '/connection/$resourceId/$tabId',
     })
 
-  useShortcut('newTab', () => setOpen(true), { enabled: !!window.electron })
+  useShortcut('newTab', () => setOpen(true))
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

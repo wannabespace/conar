@@ -228,7 +228,11 @@ export const DefinitionsPage = <T extends { name: string }>({
   ]
 
   const addButton = (
-    <Tooltip shortcut={canCreate && <ShortcutKbd shortcut="addItem" />}>
+    <Tooltip
+      shortcut={
+        canCreate && window.electron && <ShortcutKbd shortcut="addItem" />
+      }
+    >
       <TooltipTrigger
         render={
           <Button

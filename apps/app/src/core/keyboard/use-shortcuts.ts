@@ -2,7 +2,7 @@ import type { HotkeyCallback, UseHotkeyOptions } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 
 import type { ShortcutId } from './shortcuts'
-import { SHORTCUTS } from './shortcuts'
+import { isShortcutAvailable, SHORTCUTS } from './shortcuts'
 
 export const useShortcuts = (
   definitions: {
@@ -14,7 +14,12 @@ export const useShortcuts = (
 ) =>
   useHotkeys(
     definitions.flatMap(({ shortcut, ...definition }) =>
-      SHORTCUTS[shortcut].hotkeys.map((hotkey) => ({ ...definition, hotkey }))
+      isShortcutAvailable(shortcut)
+        ? SHORTCUTS[shortcut].hotkeys.map((hotkey) => ({
+            ...definition,
+            hotkey,
+          }))
+        : []
     ),
     options
   )

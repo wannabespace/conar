@@ -42,6 +42,7 @@ import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { ShortcutId } from '~/core/keyboard/shortcuts'
+import { isShortcutAvailable } from '~/core/keyboard/shortcuts'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { openTab } from '~/core/tabs/actions'
@@ -86,7 +87,7 @@ const actionEntry = (
     >
       <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
-      {shortcut && (
+      {shortcut && isShortcutAvailable(shortcut) && (
         <CommandShortcut>
           <ShortcutKbd shortcut={shortcut} />
         </CommandShortcut>
@@ -358,7 +359,7 @@ export const ActionsCenter = () => {
                 icon: DatabaseSyncIcon,
                 keywords: ['reload', 'refetch', 'update'],
                 order: 30,
-                shortcut: window.electron ? 'refresh' : undefined,
+                shortcut: 'refresh',
                 value: 'Refresh data',
               },
             ]

@@ -7,7 +7,7 @@ import { useRef, useState } from 'react'
 import { PaneEmpty } from '~/components/pane-empty'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { Shortcut } from '~/core/keyboard/shortcuts'
-import { SHORTCUTS } from '~/core/keyboard/shortcuts'
+import { isShortcutAvailable, SHORTCUTS } from '~/core/keyboard/shortcuts'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { SettingsGroup, SettingsRow } from './settings-group'
@@ -31,7 +31,6 @@ export const ShortcutsList = () => {
     shortcuts: shortcuts.filter((id) => {
       const {
         description,
-        desktopOnly,
         hotkeys,
         title: shortcutTitle,
       }: Shortcut = SHORTCUTS[id]
@@ -41,7 +40,7 @@ export const ShortcutsList = () => {
       const names = `${title} ${shortcutTitle}`.toLowerCase()
       const text = `${names} ${description.toLowerCase()} ${keys.join(' ')}`
       return (
-        (!desktopOnly || window.electron) &&
+        isShortcutAvailable(id) &&
         terms.every(
           (term) =>
             keys.includes(term) ||

@@ -244,3 +244,8 @@ export const SHORTCUTS = {
 } satisfies Record<string, Shortcut>
 
 export type ShortcutId = keyof typeof SHORTCUTS
+
+export const isShortcutAvailable = (id: ShortcutId) => {
+  const { desktopOnly }: Shortcut = SHORTCUTS[id]
+  return !desktopOnly || !!window.electron
+}

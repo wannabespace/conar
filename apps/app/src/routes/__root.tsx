@@ -30,9 +30,7 @@ const isElectron = !!window.electron
 const RootDocument = () => {
   const router = useRouter()
 
-  useShortcut('refresh', () => globalHooks.callHook('refreshPressed'), {
-    enabled: isElectron,
-  })
+  useShortcut('refresh', () => globalHooks.callHook('refreshPressed'))
   useHotkey('Mod+Shift+R', () => location.reload(), {
     enabled: isElectron,
   })

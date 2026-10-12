@@ -1,4 +1,11 @@
-import { SidebarLeftIcon } from '@hugeicons/core-free-icons'
+import {
+  ArrowLeft02Icon,
+  ArrowRight02Icon,
+  Cancel01Icon,
+  CancelCircleIcon,
+  CancelSquareIcon,
+  SidebarLeftIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
@@ -20,8 +27,8 @@ import { getConnectionResourceStore } from '~/core/connection/stores'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
-import { removeTab, setActiveTab, updateTabs } from '~/core/tabs/actions'
-import { parseTableTabId } from '~/core/tabs/ids'
+import { removeTabs, updateTabs } from '~/core/tabs/actions'
+import { parseTableTabId, tableTabId } from '~/core/tabs/ids'
 import { resolveTab, tabLabels } from '~/core/tabs/kinds'
 import { ChatToggle } from '~/modules/chat/chat-toggle'
 import { navigatorOpenValue } from '~/modules/navigator/stores'
@@ -33,128 +40,55 @@ import { TabRefresh } from './tab-refresh'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const isElectron = !!window.electron
-
 export const TabBar = ({ className }: { className?: string }) => {
   const { connection, connectionResource } = useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
+  const store = getConnectionResourceStore(connectionResource.id)
   const tabs = useSubscription(store, { selector: (state) => state.tabs })
 
-  const goToTab = (tabId: string | null) => {
-    if (!tabId) {
-      setActiveTab(connectionResource.id, null)
-      return router.navigate({
+  const tabIds = tabs.map((tab) => tab.id)
+
+  const closeTabs = (ids: string[]) => {
+    // Remove before navigating: the resource index redirects back to the active tab while it is still listed.
+    removeTabs(connectionResource.id, ids)
+    if (activeTabId && ids.includes(activeTabId)) {
+      router.navigate({
         params: { resourceId: connectionResource.id },
         to: '/connection/$resourceId',
       })
     }
-
-    return router.navigate({
-      params: { resourceId: connectionResource.id, tabId },
-      to: '/connection/$resourceId/$tabId',
-    })
   }
 
-  const closeAllTabs = async () => {
-    if (tabs.length === 0) {
-      return
+  useShortcut('closeTab', () => {
+    if (activeTabId) {
+      closeTabs([activeTabId])
     }
+  })
 
-    await goToTab(null)
-
-    for (const tab of tabs) {
-      removeTab(connectionResource.id, tab.id)
-    }
-  }
-
-  const closeTabsBeside = async (tabId: string, side: 'left' | 'right') => {
-    const currentIndex = tabs.findIndex((tab) => tab.id === tabId)
-    const tabsToClose =
-      side === 'left'
-        ? tabs.slice(0, currentIndex)
-        : tabs.slice(currentIndex + 1)
-
-    if (currentIndex === -1 || tabsToClose.length === 0) {
-      return
-    }
-
-    if (tabsToClose.some((tab) => tab.id === activeTabId)) {
-      await goToTab(tabId)
-    }
-
-    for (const tab of tabsToClose) {
-      removeTab(connectionResource.id, tab.id)
-    }
-  }
-
-  const closeOtherTabs = async (tabId: string) => {
-    const tabsToClose = tabs.filter((tab) => tab.id !== tabId)
-
-    if (tabsToClose.length === 0) {
-      return
-    }
-
-    if (activeTabId !== tabId) {
-      await goToTab(tabId)
-    }
-
-    for (const tab of tabsToClose) {
-      removeTab(connectionResource.id, tab.id)
-    }
-  }
-
-  const closeTab = async (tabId: string) => {
-    if (activeTabId === tabId) {
-      const currentIndex = tabs.findIndex((tab) => tab.id === tabId)
-      const nextTab = tabs[currentIndex + 1] ?? tabs[currentIndex - 1] ?? null
-
-      await goToTab(nextTab?.id ?? null)
-    }
-
-    removeTab(connectionResource.id, tabId)
-  }
-
-  useShortcut(
-    'closeTab',
-    (e) => {
-      e.preventDefault()
-
-      if (activeTabId) {
-        closeTab(activeTabId)
-      }
-    },
-    { enabled: isElectron }
-  )
-
-  const closeTabEvent = useEffectEvent(closeTab)
+  const closeTabsEvent = useEffectEvent(closeTabs)
 
   useEffect(() => {
-    for (const tab of tabs.filter((item) => !resolveTab(item.id))) {
-      closeTabEvent(tab.id)
-    }
+    closeTabsEvent(
+      tabs.filter((tab) => !resolveTab(tab.id)).map((tab) => tab.id)
+    )
   }, [tabs])
 
-  const cleanupTabsEvent = useEffectEvent(
-    (tables: { schema: string; table: string }[]) => {
-      const tabsToRemove = tabs.filter((tab) => {
-        const table = parseTableTabId(tab.id)
+  const closeDroppedTableTabsEvent = useEffectEvent(
+    (existingTableTabIds: Set<string>) => {
+      closeTabs(
+        tabIds.filter((id) => {
+          const table = parseTableTabId(id)
 
-        return (
-          table &&
-          !tables.some(
-            (t) => t.schema === table.schema && t.table === table.table
+          return (
+            table &&
+            !existingTableTabIds.has(tableTabId(table.schema, table.table))
           )
-        )
-      })
-
-      for (const tab of tabsToRemove) {
-        closeTab(tab.id)
-      }
+        })
+      )
     }
   )
 
@@ -163,18 +97,16 @@ export const TabBar = ({ className }: { className?: string }) => {
       return
     }
 
-    cleanupTabsEvent(
-      tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.map((table) => ({
-          schema: schema.name,
-          table: table.name,
-        }))
+    closeDroppedTableTabsEvent(
+      new Set(
+        tablesAndSchemas.schemas.flatMap((schema) =>
+          schema.tables.map((table) => tableTabId(schema.name, table.name))
+        )
       )
     )
   }, [tablesAndSchemas])
 
   const labels = tabLabels(tabs)
-  const tabIds = tabs.map((tab) => tab.id)
   const [isDragging, setIsDragging] = useState(false)
   const stripRef = useRef<HTMLUListElement>(null)
   const tabStopId = tabIds.includes(activeTabId ?? '') ? activeTabId : tabIds[0]
@@ -219,7 +151,7 @@ export const TabBar = ({ className }: { className?: string }) => {
         <HistoryNav />
         <TabRefresh tabId={activeTabId} />
       </div>
-      {tabs.length > 0 && (
+      {tabs.length > 0 ? (
         <ScrollArea
           viewportProps={{ tabIndex: -1 }}
           className="h-full min-w-0 flex-1"
@@ -228,15 +160,8 @@ export const TabBar = ({ className }: { className?: string }) => {
           <div className="flex h-8 w-max min-w-full items-stretch">
             <Reorder.Group
               axis="x"
-              values={tabIds}
-              onReorder={(newIds) =>
-                updateTabs(
-                  connectionResource.id,
-                  newIds
-                    .map((id) => tabs.find((tab) => tab.id === id))
-                    .filter((tab) => !!tab)
-                )
-              }
+              values={tabs}
+              onReorder={(next) => updateTabs(connectionResource.id, next)}
               ref={stripRef}
               role="tablist"
               className="flex items-stretch"
@@ -252,21 +177,48 @@ export const TabBar = ({ className }: { className?: string }) => {
                   isDragging={isDragging}
                   onDragStateChange={setIsDragging}
                   connectionResource={connectionResource}
-                  onClose={() => closeTab(tab.id)}
-                  onCloseAll={closeAllTabs}
-                  onCloseToTheLeft={() => closeTabsBeside(tab.id, 'left')}
-                  onCloseToTheRight={() => closeTabsBeside(tab.id, 'right')}
-                  onCloseOthers={() => closeOtherTabs(tab.id)}
-                  currentTabIndex={index}
-                  totalTabs={tabs.length}
+                  onClose={() => closeTabs([tab.id])}
+                  closeItems={[
+                    {
+                      icon: Cancel01Icon,
+                      label: 'Close',
+                      onSelect: () => closeTabs([tab.id]),
+                      shortcut: 'closeTab',
+                    },
+                    { type: 'separator' },
+                    {
+                      disabled: tabs.length <= 1,
+                      icon: CancelSquareIcon,
+                      label: 'Close Others',
+                      onSelect: () =>
+                        closeTabs(tabIds.filter((id) => id !== tab.id)),
+                    },
+                    {
+                      disabled: index === 0,
+                      icon: ArrowLeft02Icon,
+                      label: 'Close to the Left',
+                      onSelect: () => closeTabs(tabIds.slice(0, index)),
+                    },
+                    {
+                      disabled: index === tabs.length - 1,
+                      icon: ArrowRight02Icon,
+                      label: 'Close to the Right',
+                      onSelect: () => closeTabs(tabIds.slice(index + 1)),
+                    },
+                    { type: 'separator' },
+                    {
+                      icon: CancelCircleIcon,
+                      label: 'Close All',
+                      onSelect: () => closeTabs(tabIds),
+                    },
+                  ]}
                 />
               ))}
             </Reorder.Group>
             <div aria-hidden className="flex-1 border-b" />
           </div>
         </ScrollArea>
-      )}
-      {tabs.length === 0 && (
+      ) : (
         <div aria-hidden className="min-w-0 flex-1 border-b" />
       )}
       <div className="flex shrink-0 items-center gap-0.5 border-b border-l px-1">
