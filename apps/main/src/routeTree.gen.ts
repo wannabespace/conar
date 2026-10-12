@@ -28,7 +28,6 @@ import { Route as AccountIndexRouteImport } from './routes/account/index'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
 
 const AccountAiUsageDotlazyRouteImport = createFileRoute('/account/ai-usage')()
-const AccountApiKeysDotlazyRouteImport = createFileRoute('/account/api-keys')()
 const AccountBillingDotlazyRouteImport = createFileRoute('/account/billing')()
 const AccountSettingsIndexDotlazyRouteImport =
   createFileRoute('/account/settings/')()
@@ -118,15 +117,6 @@ const AccountAiUsageDotlazyRoute = AccountAiUsageDotlazyRouteImport.update({
     (d) => d.Route,
   ),
 )
-const AccountApiKeysDotlazyRoute = AccountApiKeysDotlazyRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
-  getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./modules/api-keys/routes/account/api-keys.lazy').then(
-    (d) => d.Route,
-  ),
-)
 const AccountBillingDotlazyRoute = AccountBillingDotlazyRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -164,7 +154,6 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
   '/account/': typeof AccountIndexRoute
   '/account/settings/': typeof AccountSettingsIndexDotlazyRoute
@@ -182,7 +171,6 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
   '/account': typeof AccountIndexRoute
   '/account/settings': typeof AccountSettingsIndexDotlazyRoute
@@ -203,7 +191,6 @@ export interface FileRoutesById {
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
   '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/api-keys': typeof AccountApiKeysDotlazyRoute
   '/account/billing': typeof AccountBillingDotlazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
@@ -225,7 +212,6 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/account/'
     | '/account/settings/'
@@ -243,7 +229,6 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/account'
     | '/account/settings'
@@ -263,7 +248,6 @@ export interface FileRouteTypes {
     | '/_layout/terms-of-service'
     | '/deep/sign-in'
     | '/account/ai-usage'
-    | '/account/api-keys'
     | '/account/billing'
     | '/_layout/'
     | '/account/'
@@ -385,13 +369,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountAiUsageDotlazyRouteImport
       parentRoute: typeof AccountRoute
     }
-    '/account/api-keys': {
-      id: '/account/api-keys'
-      path: '/api-keys'
-      fullPath: '/account/api-keys'
-      preLoaderRoute: typeof AccountApiKeysDotlazyRouteImport
-      parentRoute: typeof AccountRoute
-    }
     '/account/billing': {
       id: '/account/billing'
       path: '/billing'
@@ -453,7 +430,6 @@ const LayoutRouteWithChildren =
 
 interface AccountRouteChildren {
   AccountAiUsageDotlazyRoute: typeof AccountAiUsageDotlazyRoute
-  AccountApiKeysDotlazyRoute: typeof AccountApiKeysDotlazyRoute
   AccountBillingDotlazyRoute: typeof AccountBillingDotlazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AccountSettingsIndexDotlazyRoute: typeof AccountSettingsIndexDotlazyRoute
@@ -461,7 +437,6 @@ interface AccountRouteChildren {
 
 const AccountRouteChildren: AccountRouteChildren = {
   AccountAiUsageDotlazyRoute: AccountAiUsageDotlazyRoute,
-  AccountApiKeysDotlazyRoute: AccountApiKeysDotlazyRoute,
   AccountBillingDotlazyRoute: AccountBillingDotlazyRoute,
   AccountIndexRoute: AccountIndexRoute,
   AccountSettingsIndexDotlazyRoute: AccountSettingsIndexDotlazyRoute,

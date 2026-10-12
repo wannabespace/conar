@@ -8,7 +8,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 1. **Agent chat where every AI write is a reviewable draft.** The chat (`packages/ai/features/chat-stream.ts`) gets no schema and no tools today. Add tools — `listTables`, `describeTable`, `runReadOnly` (row-capped, through the client proxy) and `proposeChange`. `proposeChange` writes into the existing table/visualizer drafts and review drawer, so the AI never writes to the database directly; the user approves a diff. Tools are schema-only in `packages/ai` (no `execute`) and run in the renderer, where connections live: MCP's implementations (`modules/mcp/describe-table.ts`, the `tables`/`query` methods in `mcp-source.ts`, `fetchForAgent`) move to `core/agent/` taking a resolved `connectionResource`, with `modules/mcp` and `modules/chat` each a thin adapter (target resolution, error hints, events).
 2. **MCP beyond the desktop server.**
-   - `tamery mcp` in the CLI for web-only users (API keys + `cli query`).
+   - `tamery mcp` in the CLI for web-only users (needs a CLI sign-in + `cli query`).
    - More per-connection policy: row limit, masked columns.
    - A server-side row cap: on Postgres, MySQL and SQL Server the 200-row cap bounds memory but not transfer — the server still sends every row over the app's only pooled connection. SQL Server's `SET ROWCOUNT` would also cap `execute`'s writes and MySQL's `SQL_SELECT_LIMIT` is session state, so Postgres needs a cursor and the others a reset that cannot be skipped.
    - With no signed-in window open, main could open one instead of answering "Open Tamery and sign in first.".
