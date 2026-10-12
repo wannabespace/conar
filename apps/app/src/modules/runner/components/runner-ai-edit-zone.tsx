@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AttachmentGroup } from '@tamery/ui/components/attachment'
 import { Button } from '@tamery/ui/components/button'
-import { EnterIcon, KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import {
   InputGroup,
   InputGroupButton,
@@ -23,6 +23,8 @@ import { useSubscription } from 'seitu/react'
 import { createElementSize } from 'seitu/web'
 import { toast } from 'sonner'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+
 import { PastedImage } from './pasted-image'
 
 export type Phase =
@@ -37,7 +39,7 @@ const RejectButton = ({
   label: string
   onClick: () => void
 }) => (
-  <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+  <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
     <TooltipTrigger
       render={<Button size="xs" variant="ghost" onClick={onClick} />}
     >
@@ -237,7 +239,7 @@ export const AiEditZone = ({
             {phase.fix ? 'Review the fix' : 'Review the rewrite'}
           </span>
           <RejectButton label="Reject" onClick={onClose} />
-          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+          <Tooltip shortcut={<ShortcutKbd shortcut="runStatement" />}>
             <TooltipTrigger render={<Button size="xs" onClick={onAccept} />}>
               Accept
             </TooltipTrigger>

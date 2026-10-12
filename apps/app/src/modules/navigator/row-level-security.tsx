@@ -8,7 +8,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -72,16 +71,13 @@ export const useRowLevelSecurityItems = ({
   ]
 }
 
-export const RowLevelSecurityMark = ({ active }: { active: boolean }) => (
+export const RowLevelSecurityMark = () => (
   <Tooltip>
     <TooltipTrigger render={<span className="shrink-0" />}>
       <HugeiconsIcon
         icon={SecurityCheckIcon}
         strokeWidth={2}
-        className={cn(
-          'size-3!',
-          active ? 'text-primary-foreground/70!' : 'text-muted-foreground'
-        )}
+        className="text-muted-foreground size-3!"
       />
     </TooltipTrigger>
     <TooltipContent>Row level security enabled</TooltipContent>

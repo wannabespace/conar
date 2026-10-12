@@ -8,9 +8,9 @@ import {
   CommandList,
 } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useRef, useState } from 'react'
 
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import type { ValueTransformer } from '~/core/transformers/value-transformer'
 
 import type { GridCursor } from '../cursor'
@@ -96,7 +96,7 @@ export const CellSelect = ({
     cursor.change(transformer.fromConnection(next).toRaw())
   }
 
-  useHotkeys(
+  useShortcuts(
     [
       {
         callback: () => {
@@ -109,8 +109,8 @@ export const CellSelect = ({
           }
           cursor.fill()
         },
-        hotkey: 'Mod+Enter',
         options: { enabled: !multiple && !readOnly },
+        shortcut: 'applyEdit',
       },
     ],
     { ignoreInputs: false, target: commandRef }

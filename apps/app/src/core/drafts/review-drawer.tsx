@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { cardClass } from '@tamery/ui/components/card.utils'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Drawer,
   DrawerClose,
@@ -22,6 +21,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { PaneEmpty } from '~/components/pane-empty'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 /** `title` is not masked here; the caller masks its user values. */
 export const ChangeGroup = ({
@@ -117,10 +117,7 @@ export const StagedReviewDrawer = ({
         <DrawerClose render={<Button variant="outline">Close</Button>} />
         <Tooltip
           shortcut={
-            !busy &&
-            count > 0 && (
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
-            )
+            !busy && count > 0 && <ShortcutKbd shortcut="saveChanges" />
           }
         >
           <TooltipTrigger

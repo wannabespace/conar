@@ -1,6 +1,8 @@
 import type { IconSvgElement } from '@hugeicons/react'
 import type { CSSProperties, ReactElement, ReactNode } from 'react'
 
+import type { ShortcutId } from '~/core/keyboard/shortcuts'
+
 export interface AppMenuItem {
   type?: 'item'
   label: string
@@ -11,12 +13,10 @@ export interface AppMenuItem {
   checked?: boolean
   /** Native menus show its `sfSymbols` twin; unmapped icons render web-only. */
   icon?: IconSvgElement
-  /** Web only: right-aligned shortcut hint. */
-  shortcut?: ReactNode
+  /** Right-aligned hint on web, accelerator hint on native. */
+  shortcut?: ShortcutId
   /** Web only: raw right-aligned node. */
   trailing?: ReactNode
-  /** Native only: display-only accelerator hint, e.g. `'CmdOrCtrl+W'`. */
-  accelerator?: string
   /** Native only: label override (fold web-only trailing info into the text). */
   nativeLabel?: string
   /** Web only. */

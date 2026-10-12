@@ -70,15 +70,17 @@ export const RunnerEditor = ({
       )
     : undefined
 
-  useEditorActions(editorRef, {
-    ...actions,
-    acceptAi,
-    failing: failed !== undefined,
-    fixAi: () => failed && actions.fixWithAi(failed),
-    openStatementMenu: () => openMenuFromKeyboard(statementMenuRef.current),
-    rejectAi,
-    reviewing,
-  })
+  useEditorActions(
+    editorRef,
+    {
+      ...actions,
+      acceptAi,
+      fixAi: () => failed && actions.fixWithAi(failed),
+      openStatementMenu: () => openMenuFromKeyboard(statementMenuRef.current),
+      rejectAi,
+    },
+    { failing: failed !== undefined, reviewing }
+  )
   useStatementBand(editorRef, (anchor) =>
     setRunAnchor((current) =>
       sameSpot(current, anchor) &&

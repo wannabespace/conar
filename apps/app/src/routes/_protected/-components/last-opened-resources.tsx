@@ -29,10 +29,11 @@ const LastOpenedResource = ({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group hover:bg-foreground/5 flex h-8 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
+    <div className="group hover:bg-foreground/5 has-[[data-row-link]:focus-visible]:focus-ring has-[[data-row-link]:focus-visible]:bg-foreground/5 flex h-8 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
       <Link
-        className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5"
+        className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5 outline-hidden"
         preload={false}
+        data-row-link
         {...params}
       >
         <ConnectionIcon type={connection.type} className="size-4 shrink-0" />

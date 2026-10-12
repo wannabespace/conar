@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 
-import { removeTab, replaceTabId } from '~/core/tabs/actions'
+import { removeTabs, replaceTabId } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 
 import { navigatorStore } from './stores'
@@ -31,7 +31,7 @@ export const pinnedTable = {
   remove: (id: string, schema: string, table: string) => {
     const store = navigatorStore(id)
 
-    removeTab(id, tableTabId(schema, table))
+    removeTabs(id, [tableTabId(schema, table)])
 
     store.set(
       (state) =>

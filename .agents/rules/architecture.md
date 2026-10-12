@@ -48,6 +48,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `transformers/` | Per-type value display and parsing |
 | `codegen/` | Generating SQL and ORM/type code from columns |
 | `export/` | Copying and downloading rows as CSV, JSON or Markdown, shared by the table and runner |
+| `keyboard/` | Every shortcut the app answers to — id, keys, title, description — in `shortcuts.ts`, the hooks that bind them and `ShortcutKbd`. A shortcut is bound (`useShortcut`/`useShortcuts`) and hinted (`ShortcutKbd`, `AppMenuItem.shortcut`, Monaco's `editor-actions.ts`) by id, never by a literal key, so one entry decides the key everywhere it fires or shows. `desktopOnly` is the same single source: `useShortcuts` skips the binding and menus drop the hint outside the desktop app (`isShortcutAvailable`); a `Tooltip` hint, which must get nothing when the key cannot fire, gates itself. Per-direction arrows, Escape ladder steps and keys local to one widget stay literal |
 | `settings/` | The core Settings sections (one file per page), built from the kit's `SettingsGroup`/`SettingsRow` (`@tamery/ui/components/custom/settings-group`, shared with the web account area). `sections.ts` lists every page, module pages included, each carrying its `component`, rendered by the single `routes/_protected/settings/$section.tsx` route, which 404s on an unlisted slug |
 
 ## ArkType config ordering
@@ -106,7 +107,7 @@ What already owns a concern here — a dependency resolves only in a workspace t
 | Loading / error / pending flags around a call | `useQuery` / `useMutation` state |
 | An async function cached by its arguments | `memoize` (`memoza`) |
 | UI state shared across components or persisted locally | seitu `createStore` / `createWebStorageValue`, read with `useSubscription` |
-| A `keydown` listener or container `onKeyDown` | `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
+| A `keydown` listener or container `onKeyDown` | `useShortcut` / `useShortcuts` (`~/core/keyboard/use-shortcuts`) for a listed shortcut, else `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
 | An app-wide event (save, refresh pressed) | `globalHooks` (`~/lib/global-hooks`, hookable) |
 | A system notification | `notifications.notify` (`~/lib/notifications`) |
 | `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |

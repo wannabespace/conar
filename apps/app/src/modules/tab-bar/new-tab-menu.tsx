@@ -10,9 +10,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 import { schemaGroups } from '~/core/tabs/kinds'
@@ -32,6 +40,7 @@ export const NewTabMenu = ({
   tablesAndSchemas: TablesAndSchemas | undefined
 }) => {
   const router = useRouter()
+  const [open, setOpen] = useState(false)
   const schemas = tablesAndSchemas?.schemas ?? []
   const showSchema = schemas.length > 1
   const schemaItems = schemaGroups(connection.type).flatMap(
@@ -44,15 +53,23 @@ export const NewTabMenu = ({
       to: '/connection/$resourceId/$tabId',
     })
 
+  useShortcut('newTab', () => setOpen(true))
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost-muted" size="icon-xs" aria-label="New tab" />
-        }
-      >
-        <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-      </DropdownMenuTrigger>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <Tooltip shortcut={window.electron && <ShortcutKbd shortcut="newTab" />}>
+        <TooltipTrigger
+          aria-label="New tab"
+          render={
+            <DropdownMenuTrigger
+              render={<Button variant="ghost-muted" size="icon-xs" />}
+            />
+          }
+        >
+          <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">New tab</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent
         align="end"
         className="max-h-[70vh] min-w-48 overflow-auto"

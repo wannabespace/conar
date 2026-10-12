@@ -18,7 +18,7 @@ export const queryLoggerCommands = ({
           icon: HistoryIcon,
           keywords: ['logs', 'queries', 'history'],
           order: 30,
-          shortcut: 'J',
+          shortcut: 'queryLogger',
           value: 'Toggle query logger',
         },
       ]

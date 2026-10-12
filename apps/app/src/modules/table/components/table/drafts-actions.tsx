@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +11,7 @@ import {
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { draftsActions, useTableSessionStore } from '~/core/table/session'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { plural } from '~/utils/plural'
@@ -83,13 +83,7 @@ export const DraftsActions = ({
           </div>
         </TooltipContent>
       </Tooltip>
-      <Tooltip
-        shortcut={
-          !isSaving && (
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
-          )
-        }
-      >
+      <Tooltip shortcut={!isSaving && <ShortcutKbd shortcut="saveChanges" />}>
         <TooltipTrigger
           render={<Button size="sm" onClick={save} disabled={isSaving} />}
         >

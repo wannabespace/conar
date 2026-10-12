@@ -23,7 +23,7 @@ export const rowSelection = {
       rowKey: PrimaryKeys
     }
   ): TableSessionState => {
-    const { lastClickedIndex, selected } = state
+    const { lastClickedIndex } = state
     if (
       isShiftHeld &&
       lastClickedIndex !== null &&
@@ -39,20 +39,12 @@ export const rowSelection = {
         selectionState: { anchorIndex: lastClickedIndex, focusIndex: rowIndex },
       }
     }
-    const key = primaryKeysKey(rowKey)
-    if (selected.some((row) => primaryKeysKey(row) === key)) {
-      return {
-        ...state,
-        lastClickedIndex: rowIndex,
-        selected: selected.filter((row) => primaryKeysKey(row) !== key),
-        selectionState: { anchorIndex: null, focusIndex: null },
-      }
-    }
     return {
-      ...state,
+      ...rowSelection.toggle(state, [rowKey]),
       lastClickedIndex: rowIndex,
-      selected: [...selected, rowKey],
-      selectionState: at(rowIndex),
+      selectionState: rowSelection.has(state, rowKey)
+        ? { anchorIndex: null, focusIndex: null }
+        : at(rowIndex),
     }
   },
   extend: (
@@ -93,6 +85,26 @@ export const rowSelection = {
         Math.max(anchorIndex, focus)
       ),
       selectionState: { anchorIndex, focusIndex: focus },
+    }
+  },
+  has: (state: TableSessionState, rowKey: PrimaryKeys) => {
+    const key = primaryKeysKey(rowKey)
+    return state.selected.some((row) => primaryKeysKey(row) === key)
+  },
+  toggle: (
+    state: TableSessionState,
+    rowKeys: PrimaryKeys[]
+  ): TableSessionState => {
+    const selectedKeys = new Set(state.selected.map(primaryKeysKey))
+    const toggledKeys = new Set(rowKeys.map(primaryKeysKey))
+    return {
+      ...state,
+      selected: toggledKeys.isSubsetOf(selectedKeys)
+        ? state.selected.filter((row) => !toggledKeys.has(primaryKeysKey(row)))
+        : [
+            ...state.selected,
+            ...rowKeys.filter((row) => !selectedKeys.has(primaryKeysKey(row))),
+          ],
     }
   },
 }

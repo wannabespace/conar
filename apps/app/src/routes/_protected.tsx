@@ -1,10 +1,10 @@
 import { cn } from '@tamery/ui/lib/utils'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { PermixProvider } from 'permix/react'
 import { useEffect } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import {
   loadPermissions,
   permix,
@@ -26,7 +26,7 @@ const ProtectedLayout = () => {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
 
-  useHotkey('Mod+,', () => {
+  useShortcut('settings', () => {
     if (!router.matchRoute({ to: '/settings' }, { fuzzy: true })) {
       void router.navigate({ to: '/settings' })
     }

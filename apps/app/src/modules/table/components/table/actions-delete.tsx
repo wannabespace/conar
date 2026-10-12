@@ -15,6 +15,11 @@ import { cardClass } from '@tamery/ui/components/card.utils'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -22,6 +27,8 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'
 import { resourceRowsQueryInfiniteOptions } from '~/core/queries/rows/list'
 import { resourceTableTotalQueryKey } from '~/core/queries/rows/total'
@@ -103,6 +110,8 @@ export const ActionsDelete = ({
     },
   })
 
+  useShortcut('deleteRows', () => setOpen(true), { ignoreInputs: true })
+
   return (
     <>
       <AlertDialog open={open} onOpenChange={setOpen}>
@@ -154,13 +163,28 @@ export const ActionsDelete = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
-        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-        <span>
-          Delete (
-          <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} />)
-        </span>
-      </Button>
+      <Tooltip shortcut={<ShortcutKbd shortcut="deleteRows" />}>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setOpen(true)}
+            />
+          }
+        >
+          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+          <span>
+            Delete (
+            <NumberFlow
+              spinTiming={{ duration: 200 }}
+              value={selected.length}
+            />
+            )
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>Delete selected rows</TooltipContent>
+      </Tooltip>
     </>
   )
 }

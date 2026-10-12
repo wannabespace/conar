@@ -151,7 +151,7 @@ describe('generateRows', () => {
     }
   })
 
-  test('unique columns do not repeat, JSON is stringified, references are picked', () => {
+  test('unique columns do not repeat, JSON stays parsed, references are picked', () => {
     const rows = generateRows({
       columnGenerators: {
         meta: { generatorId: 'json.object', isNullable: false },
@@ -159,7 +159,7 @@ describe('generateRows', () => {
         slug: { generatorId: 'number.int', isNullable: false },
       },
       columns: [
-        column({ id: 'meta', typeLabel: 'json' }),
+        column({ id: 'meta', type: 'json', typeLabel: 'json' }),
         column({ id: 'owner', typeLabel: 'int' }),
         column({ id: 'slug', typeLabel: 'int', unique: 'slug_key' }),
       ],
@@ -168,7 +168,7 @@ describe('generateRows', () => {
       referenceData: { owner: [1, 2] },
     })
     expect(new Set(rows.map((r) => r.slug)).size).toBe(50)
-    expect(typeof rows[0]?.meta).toBe('string')
+    expect(typeof rows[0]?.meta).toBe('object')
     expect(rows.every((r) => r.owner === 1 || r.owner === 2)).toBe(true)
   })
 

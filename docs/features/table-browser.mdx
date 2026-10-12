@@ -8,9 +8,11 @@ The table browser is a two-panel view: a schema/table tree on the left, a data g
 
 ## Navigating
 
-Expand a schema in the tree, then click a table to open it. Everything you open — tables, queries, definition lists, visualizers — becomes a **tab** in the strip above the content, so you can switch between them without re-running queries. Close a tab with the × on its label, or press <kbd>⌘</kbd> <kbd>W</kbd>.
+Expand a schema in the tree, then click a table to open it. Everything you open — tables, queries, definition lists, visualizers — becomes a **tab** in the strip above the content, so you can switch between them without re-running queries. The **+** at the end of the strip (<kbd>⌘</kbd> <kbd>T</kbd> in the desktop app) opens a new query, a schema page or any table. Close a tab with the × on its label, or press <kbd>⌘</kbd> <kbd>W</kbd>.
 
 A single click opens a table as a preview tab (shown in italics), reused by the next table you click. Double-click the table in the sidebar to keep it open. Press <kbd>⌘</kbd> <kbd>B</kbd> to hide or show the sidebar.
+
+Everything works from the keyboard. Press <kbd>Esc</kbd> until you land in the sidebar's search field: each press first closes or clears what is open, then the next one returns to the sidebar, opening it if hidden. From the search field, <kbd>↑</kbd> / <kbd>↓</kbd> move through the list (starting on the open table) and <kbd>Enter</kbd> or <kbd>→</kbd> opens the table — or expands the schema — with the grid ready for the arrow keys. <kbd>←</kbd> collapses a schema or jumps from a table up to its schema. In the grid, the arrows move the cell cursor and stop at the edges; <kbd>⌘</kbd> + an arrow jumps to that edge and <kbd>⌘</kbd> <kbd>A</kbd> selects every cell. <kbd>Tab</kbd> moves between areas — the sidebar search, the tab bar, the filter field and toolbar, the grid — rather than through every button and row. <kbd>Esc</kbd> in the filter field clears it, then returns to the grid. Opening a connection from the dashboard (use <kbd>↑</kbd> / <kbd>↓</kbd> to pick one, <kbd>Enter</kbd> to open it) puts you straight in the sidebar's search. In the tab bar, <kbd>←</kbd> / <kbd>→</kbd> move between tabs and <kbd>Enter</kbd> opens one. <kbd>⌘</kbd> <kbd>.</kbd> opens the right-click menu of whatever has focus: a tab, the cell under the cursor, or the highlighted sidebar row.
 
 Right-click a table and choose **Open in New Window** to work on it side by side with the rest of your tabs. Connections on the dashboard have the same item on their right-click menu.
 
@@ -41,7 +43,7 @@ The view button next to **Sort** (or <kbd>⇧</kbd> <kbd>⌘</kbd> <kbd>E</kbd>)
 
 ## Moving around
 
-Click a cell to put the cursor on it, then move with the arrow keys. <kbd>Esc</kbd> clears the cursor. Without a cursor, hold <kbd>Shift</kbd> with <kbd>↑</kbd> / <kbd>↓</kbd> to select rows.
+Click a cell to put the cursor on it, then move with the arrow keys. <kbd>Esc</kbd> returns to the sidebar and leaves the cursor where it was for when you come back. <kbd>Shift</kbd> <kbd>Space</kbd> checks or unchecks the cursor's row (every row of a selected block) — the same as **Select Row** in the cell's right-click menu.
 
 Select a block of cells by dragging across them, <kbd>Shift</kbd>-clicking, or holding <kbd>Shift</kbd> with the arrow keys; <kbd>Esc</kbd> shrinks it back to the cursor. With a block selected:
 
@@ -60,7 +62,7 @@ Press <kbd>Space</kbd> on a JSON cell to see the value as a tree without editing
 
 Cells whose values changed since the last load flash briefly when the table refreshes.
 
-Drag a column header sideways to reorder columns. The order is saved per table and only changes Tamery's view, never the table itself; **Reset Column Order** in the header menu puts it back.
+Drag a header's right edge to resize its column; double-click the edge to reset the width. Drag a column header sideways to reorder columns. The order is saved per table and only changes Tamery's view, never the table itself; **Reset Column Order** in the header menu puts it back.
 
 The column header menu also has:
 
@@ -124,7 +126,7 @@ The trail of followed references sits at the top of the peek. Click an earlier s
 cell edits, since their rows may leave the view; <kbd>⌘</kbd> <kbd>Z</kbd>
 brings them back, and staged new rows stay.
 
-**Delete rows** — select rows via the checkboxes, click **Delete** in the bar at the bottom of the grid, and confirm; the dialog lists the rows that will go.
+**Delete rows** — select rows via the checkboxes (or <kbd>Shift</kbd> <kbd>Space</kbd>), click **Delete** in the bar at the bottom of the grid (or press <kbd>⌘</kbd> <kbd>⌫</kbd>), and confirm; the dialog lists the rows that will go.
 
 ## Data seeding
 

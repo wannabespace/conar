@@ -1,14 +1,14 @@
 import { AiChat01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useHotkey } from '@tanstack/react-hotkeys'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { useIsAnonymous } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
@@ -28,15 +28,13 @@ export const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   const isGuest = useIsAnonymous()
   const toggle = () => toggleChat(resourceId)
 
-  useHotkey('Mod+L', (e) => {
+  useShortcut('aiChat', (e) => {
     e.preventDefault()
     toggle()
   })
 
   return (
-    <Tooltip
-      shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="L" />}
-    >
+    <Tooltip shortcut={<ShortcutKbd shortcut="aiChat" />}>
       <TooltipTrigger
         render={
           <Button

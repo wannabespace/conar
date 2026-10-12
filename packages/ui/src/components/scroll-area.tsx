@@ -26,15 +26,20 @@ const ScrollBar = ({
 const ScrollArea = ({
   className,
   viewportClassName,
+  viewportProps,
   children,
   ...props
-}: ScrollAreaPrimitive.Root.Props & { viewportClassName?: string }) => (
+}: ScrollAreaPrimitive.Root.Props & {
+  viewportClassName?: string
+  viewportProps?: ScrollAreaPrimitive.Viewport.Props
+}) => (
   <ScrollAreaPrimitive.Root
     data-slot="scroll-area"
     className={cn('relative', className)}
     {...props}
   >
     <ScrollAreaPrimitive.Viewport
+      {...viewportProps}
       data-slot="scroll-area-viewport"
       className={cn(
         `focus-visible:focus-ring size-full rounded-[inherit] transition-[color,box-shadow] outline-none`,
