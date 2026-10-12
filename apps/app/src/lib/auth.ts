@@ -88,9 +88,24 @@ export const useIsAnonymous = () =>
     selector: (session) => !!session?.user.isAnonymous,
   })
 
+// Not the better-auth session atom: it keeps the user until the post-sign-out refetch lands.
+export const useHasAccount = () =>
+  useSubscription(sessionCache, {
+    selector: (session) => !!session && !session.user.isAnonymous,
+  })
+
 export const isSignedIn = async () => !!(await getSessionUser())
 
 export const fullSignOut = async () => {
+  const [{ cleanCollections }, { clearDb }, { subscriptionsCache }] =
+    await Promise.all([
+      import('~/core/collections'),
+      import('./sync'),
+      import('~/core/user/use-subscription'),
+    ])
+
+  // Before the session is revoked: a sync loop still running reconnects into a 401.
+  await cleanCollections()
   await authClient.signOut()
   bearerToken.clear()
   sessionCache.clear()
@@ -100,14 +115,7 @@ export const fullSignOut = async () => {
     history.push('/auth')
   }
 
-  const [{ cleanCollections }, { clearDb }, { subscriptionsCache }] =
-    await Promise.all([
-      import('~/core/collections'),
-      import('./sync'),
-      import('~/core/user/use-subscription'),
-    ])
-
   subscriptionsCache.clear()
   subscriptionQueryClient.clear()
-  await Promise.all([cleanCollections(), clearDb(), encryptionKey.reset()])
+  await Promise.all([clearDb(), encryptionKey.reset()])
 }

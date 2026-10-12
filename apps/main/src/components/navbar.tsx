@@ -9,15 +9,24 @@ import {
 } from '@tamery/ui/components/dropdown-menu'
 import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
+import { useMotionValueEvent, useScroll } from 'motion/react'
+import { useState } from 'react'
 
 import { useHomePath } from '~/hooks/use-home-path'
 import { authClient } from '~/lib/auth'
 
 import { Brand } from './brand'
-import { GithubStars } from './github-stars'
 import { ThemeButton } from './theme-button'
 
+const useScrolled = () => {
+  const { scrollY } = useScroll()
+  const [scrolled, setScrolled] = useState(false)
+  useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 0))
+  return scrolled
+}
+
 export const Navbar = () => {
+  const scrolled = useScrolled()
   const { data: session } = authClient.useSession()
   const home = useHomePath()
   const links: { label: string; link: LinkProps }[] = [
@@ -28,12 +37,15 @@ export const Navbar = () => {
   ]
 
   return (
-    <header className="sticky top-0 z-40 px-4 pt-3 sm:px-6">
+    <header
+      data-scrolled={scrolled || undefined}
+      className="data-scrolled:bg-body/80 data-scrolled:border-border sticky top-0 z-40 border-b border-transparent transition-colors data-scrolled:backdrop-blur-xl"
+    >
       <nav
         aria-label="Main"
-        className="bg-popover/70 ring-foreground/4 mx-auto flex h-12 max-w-6xl items-center gap-2 rounded-2xl pr-2 pl-4 shadow-sm ring backdrop-blur-xl"
+        className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6"
       >
-        <div className="flex flex-1 items-center">
+        <div className="flex">
           <Brand to={home} />
         </div>
         <div className="hidden items-center md:flex">
@@ -48,8 +60,7 @@ export const Navbar = () => {
             </Button>
           ))}
         </div>
-        <div className="flex flex-1 items-center justify-end gap-1">
-          <GithubStars className="hidden sm:inline-flex" />
+        <div className="col-start-3 flex items-center justify-end gap-1">
           <ThemeButton />
           <Button
             variant="outline"

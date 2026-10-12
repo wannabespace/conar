@@ -49,7 +49,7 @@ const AuthSidePanel = () => {
   }, [])
 
   return (
-    <div className="bg-body relative hidden flex-col overflow-hidden border-r p-10 text-white lg:flex">
+    <div className="bg-body traffic-lights:mt-0 relative m-2 hidden flex-col overflow-hidden rounded-2xl p-10 text-white lg:flex">
       {isShaderMounted && (
         <motion.div
           className="absolute inset-0"
@@ -95,7 +95,7 @@ const AuthPage = () => {
     }
   }
 
-  const { data, error, isPending } = useQuery(
+  const { data, error } = useQuery(
     orpc.account.challenge.listen.liveOptions({
       input: codeChallenge ? { codeChallenge } : skipToken,
       networkMode: 'online',
@@ -142,7 +142,9 @@ const AuthPage = () => {
 
   return (
     <>
-      {window.electron && <TitleBar className="-mb-10" />}
+      {window.electron && (
+        <TitleBar className="traffic-lights:mb-0 -mb-10.25" />
+      )}
       <div className="relative grid flex-1 overflow-hidden lg:grid-cols-2">
         <AuthSidePanel />
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
@@ -208,7 +210,7 @@ const AuthPage = () => {
                 size="lg"
                 onClick={() => signInWithChallenge()}
               >
-                {!!codeChallenge && isPending ? (
+                {!!codeChallenge && !data?.ready && !error ? (
                   <span className="animate-pulse">Waiting for sign in...</span>
                 ) : (
                   'Sign In'

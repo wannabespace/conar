@@ -17,8 +17,56 @@
 @source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant traffic-lights (&:where(.electron.mac:not(.window-fullscreen) *));
 
 @theme inline {
+  /* tw-animate-css animates `filter: blur(0)` on every enter/exit, and Chrome never runs a blur
+     on the compositor, so each one would stall with the main thread; blur-in/out-* are dropped, and a blur entrance is
+     animate-focus-in on its own element */
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(
+          var(--tw-enter-translate-x, 0),
+          var(--tw-enter-translate-y, 0),
+          0
+        )
+        scale3d(
+          var(--tw-enter-scale, 1),
+          var(--tw-enter-scale, 1),
+          var(--tw-enter-scale, 1)
+        )
+        rotate(var(--tw-enter-rotate, 0));
+    }
+  }
+
+  --animate-focus-in: focus-in
+    var(--tw-animation-duration, var(--tw-duration, 0.15s)) var(--tw-ease, ease)
+    var(--tw-animation-delay, 0s) var(--tw-animation-fill-mode, none);
+
+  @keyframes focus-in {
+    from {
+      filter: blur(12px);
+    }
+  }
+
+  @keyframes exit {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: translate3d(
+          var(--tw-exit-translate-x, 0),
+          var(--tw-exit-translate-y, 0),
+          0
+        )
+        scale3d(
+          var(--tw-exit-scale, 1),
+          var(--tw-exit-scale, 1),
+          var(--tw-exit-scale, 1)
+        )
+        rotate(var(--tw-exit-rotate, 0));
+    }
+  }
+
   --default-border-width: 0.5px;
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;

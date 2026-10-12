@@ -108,6 +108,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
   const tracker = createSyncTracker()
   const firstSync = Promise.withResolvers<undefined>()
   let writeSynced: ((items: SyncMessage<T>[]) => void) | null = null
+  let stopSync: (() => void) | null = null
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -220,13 +221,14 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       // on the collection, so the row would vanish while a later outbox write
       // is still pending.
       writeSynced = (items) => writeItems(items, { immediate: true })
-      markReady()
-      run()
-
-      return () => {
+      stopSync = () => {
         abortController.abort(`${config.id} sync aborted`)
         firstSync.resolve()
       }
+      markReady()
+      run()
+
+      return stopSync
     },
   }
 
@@ -266,6 +268,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         const stored = await serverMutation('insert')(mutation.modified)
         writeSynced?.([{ type: 'update', value: stored ?? mutation.modified }])
       },
+      stopSync: () => stopSync?.(),
       whenSynced: () => firstSync.promise,
     },
   }

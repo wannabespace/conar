@@ -103,10 +103,15 @@ export const cleanCollections = async () => {
     return
   }
 
-  const { offline } = current
+  const { collections, offline } = current
   current = null
   await offline.clearOutbox()
   offline.dispose()
+  for (const collection of Object.values(collections)) {
+    if ('stopSync' in collection.utils) {
+      collection.utils.stopSync()
+    }
+  }
 }
 
 const { useRouteContext } = getRouteApi('/_protected')

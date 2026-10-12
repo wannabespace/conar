@@ -1,5 +1,4 @@
-import type { HighlightOptions } from '@streamdown/code'
-import { code as highlighter } from '@streamdown/code'
+import type { CodeHighlighterPlugin, HighlightOptions } from '@streamdown/code'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
@@ -10,6 +9,48 @@ import { useRef, useSyncExternalStore } from 'react'
 interface Token {
   content: string
   htmlStyle?: CSSProperties
+}
+
+// Never import statically: Shiki is ~190 KB, and the root error page would put it on every page's critical path
+let highlighter: CodeHighlighterPlugin | undefined
+
+const runHighlighter = (
+  instance: CodeHighlighterPlugin,
+  code: string,
+  language: string,
+  onTokens: (tokens: Token[][]) => void
+) =>
+  instance.highlight(
+    {
+      code,
+      language: language as HighlightOptions['language'],
+      themes: instance.getThemes(),
+    },
+    ({ tokens }) => onTokens(tokens)
+  )?.tokens
+
+const highlightOnceLoaded = async (
+  code: string,
+  language: string,
+  onTokens: (tokens: Token[][]) => void
+) => {
+  const { code: instance } = await import('@streamdown/code')
+  highlighter = instance
+  const tokens = runHighlighter(highlighter, code, language, onTokens)
+  if (tokens) {
+    onTokens(tokens)
+  }
+}
+
+const highlight = (
+  code: string,
+  language: string,
+  onTokens: (tokens: Token[][]) => void
+) => {
+  if (highlighter) {
+    return runHighlighter(highlighter, code, language, onTokens)
+  }
+  void highlightOnceLoaded(code, language, onTokens)
 }
 
 const useTokens = (code: string, language: string) => {
@@ -25,23 +66,16 @@ const useTokens = (code: string, language: string) => {
 
       if (cache.current.key !== key) {
         cache.current = { key }
-        const ready = highlighter.highlight(
-          {
-            code,
-            language: language as HighlightOptions['language'],
-            themes: highlighter.getThemes(),
-          },
-          ({ tokens }) => {
-            if (cache.current.key === key) {
-              cache.current = { key, tokens }
-            }
-            if (subscribed) {
-              onChange()
-            }
+        const tokens = highlight(code, language, (highlighted) => {
+          if (cache.current.key === key) {
+            cache.current = { key, tokens: highlighted }
           }
-        )
-        if (ready) {
-          cache.current = { key, tokens: ready.tokens }
+          if (subscribed) {
+            onChange()
+          }
+        })
+        if (tokens) {
+          cache.current = { key, tokens }
         }
       }
 

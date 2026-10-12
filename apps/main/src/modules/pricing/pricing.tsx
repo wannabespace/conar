@@ -19,20 +19,10 @@ import { ContactSalesDialog } from './contact-sales-dialog'
 
 type Period = 'monthly' | 'yearly'
 
-const ENTERPRISE_FEATURES: PricingPlan['features'] = [
-  { description: 'Every feature of the Pro plan', name: 'Everything in Pro' },
-  {
-    description: 'One invoice and a price that fits your team',
-    name: 'Volume pricing',
-  },
-  {
-    description: 'A direct line to the people who build it',
-    name: 'Priority support',
-  },
-  {
-    description: 'Run Tamery on your own infrastructure (AGPL-3.0)',
-    name: 'Self-hosting help',
-  },
+const ENTERPRISE_FEATURES = [
+  'Volume pricing on one invoice',
+  'Priority support from the people who build it',
+  'Self-hosting help (AGPL-3.0)',
 ]
 
 const PlanCard = ({
@@ -40,45 +30,45 @@ const PlanCard = ({
   description,
   features,
   highlighted,
+  includes,
   name,
   price,
 }: {
   action: ReactNode
   description: string
-  features: PricingPlan['features']
+  features: string[]
   highlighted?: boolean
+  includes?: string
   name: string
   price: ReactNode
 }) => (
   <article
     className={cn(
-      'bg-background flex flex-col gap-6 rounded-2xl p-6 shadow-xs ring sm:p-8',
-      highlighted ? 'ring-primary' : 'ring-foreground/4'
+      'ring-foreground/4 flex flex-col rounded-2xl p-6 ring sm:p-8',
+      highlighted ? 'bg-popover shadow-md' : 'bg-background shadow-xs'
     )}
   >
-    <header className="flex flex-col gap-1">
-      <h3 className="text-lg font-medium">{name}</h3>
-      <p className="text-muted-foreground text-sm">{description}.</p>
-    </header>
-    <div className="flex h-10 items-baseline gap-1">{price}</div>
-    <ul className="flex flex-1 flex-col gap-4">
-      {features.map((feature) => (
-        <li key={feature.name} className="flex gap-3">
-          <HugeiconsIcon
-            icon={Tick02Icon}
-            strokeWidth={2}
-            className="text-primary mt-0.5 size-4 shrink-0"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{feature.name}</span>
-            <span className="text-muted-foreground text-sm">
-              {feature.description}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-    {action}
+    <h3 className="font-medium">{name}</h3>
+    <p className="text-muted-foreground mt-1 text-sm">{description}.</p>
+    <div className="mt-6 flex h-10 items-baseline gap-1">{price}</div>
+    <div className="mt-6 grid">{action}</div>
+    <div className="mt-8 flex flex-col gap-3 border-t pt-6 text-sm">
+      {includes && (
+        <p className="text-muted-foreground">Everything in {includes}, plus</p>
+      )}
+      <ul className="flex flex-col gap-3">
+        {features.map((feature) => (
+          <li key={feature} className="flex gap-2.5">
+            <HugeiconsIcon
+              icon={Tick02Icon}
+              strokeWidth={2}
+              className="text-primary mt-0.5 size-4 shrink-0"
+            />
+            {feature}
+          </li>
+        ))}
+      </ul>
+    </div>
   </article>
 )
 
@@ -86,7 +76,7 @@ const Price = ({ period, plan }: { period: Period; plan: PricingPlan }) => (
   <>
     <NumberFlow
       value={plan.price[period]}
-      className="text-4xl font-semibold tracking-tight"
+      className="text-4xl font-semibold tracking-tight [--number-flow-mask-height:0px]"
       format={{
         currency: 'USD',
         currencyDisplay: 'narrowSymbol',
@@ -146,14 +136,11 @@ export const Pricing = () => {
           name={PRO_PLAN.name}
           description={PRO_PLAN.description}
           features={PRO_PLAN.features}
+          includes={HOBBY_PLAN.name}
           price={<Price period={period} plan={PRO_PLAN} />}
           action={
             subscription ? (
-              <Button
-                size="lg"
-                variant="outline"
-                render={<Link to="/account" />}
-              >
+              <Button size="lg" render={<Link to="/account" />}>
                 Manage plan
               </Button>
             ) : (
@@ -175,8 +162,9 @@ export const Pricing = () => {
           name="Enterprise"
           description="Tamery for your whole team, on your terms"
           features={ENTERPRISE_FEATURES}
+          includes={PRO_PLAN.name}
           price={
-            <span className="text-4xl font-semibold tracking-tight">
+            <span className="text-4xl leading-none font-semibold tracking-tight">
               Custom
             </span>
           }

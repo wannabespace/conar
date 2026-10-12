@@ -29,6 +29,7 @@ import type { CSSProperties } from 'react'
 import { useEffect, useState } from 'react'
 
 import { useDiagram } from '../lib/context'
+import { fitViewOptions } from '../lib/layout'
 import type { Positions } from '../lib/positions'
 import { relationEdge, tableNode } from './elements'
 import type { RelationEdge } from './relation-edge'
@@ -61,7 +62,6 @@ const flowStyle = {
 
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5
-export const fitViewOptions = { maxZoom: 1, padding: 0.15 }
 
 // Zoom reaches the compact card labels as a CSS variable, so a wheel tick
 // re-renders no card.

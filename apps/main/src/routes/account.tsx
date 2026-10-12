@@ -1,6 +1,7 @@
 import { CrownIcon, Logout01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@tamery/ui/components/button'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
+import { Separator } from '@tamery/ui/components/separator'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   createFileRoute,
@@ -81,6 +82,7 @@ const AccountLayout = () => {
             <AiUsageLink />
             <SettingsLink />
             <SupportButton />
+            <Separator className="mx-2 my-1.5 hidden w-auto! md:block" />
             <SidebarMenuButton
               className="w-auto shrink-0 md:w-full"
               onClick={() => {
