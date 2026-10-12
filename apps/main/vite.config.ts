@@ -20,7 +20,6 @@ export default defineConfig({
         virtualRouteConfig: rootRoute('__root.tsx', [
           physical('', '.'),
           physical('', '../modules/ai-usage/routes'),
-          physical('', '../modules/api-keys/routes'),
           physical('', '../modules/billing/routes'),
           physical('', '../modules/deep-link/routes'),
           physical('', '../modules/legal/routes'),

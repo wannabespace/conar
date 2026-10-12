@@ -9,7 +9,6 @@
     "better-auth:generate": "cross-env NODE_ENV=development pnpx auth generate --output ../../packages/db/schema/auth.ts"
   },
   "dependencies": {
-    "@better-auth/api-key": "catalog:",
     "@better-auth/core": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",
     "@exalabs/ai-sdk": "catalog:",
