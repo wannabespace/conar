@@ -11,11 +11,14 @@ import {
   SidebarMenuItem,
 } from '@tamery/ui/components/sidebar'
 import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Link } from '~/components/link'
 import { openTab } from '~/core/tabs/actions'
 import { schemaGroups } from '~/core/tabs/kinds'
+
+import { useNavigatorSearch } from './keyboard'
+import { getNavigatorStore } from './stores'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -31,6 +34,24 @@ export const DefinitionsPanel = () => {
     }))
     .filter((group) => group.items.length > 0)
 
+  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
+    activeId: activeTabId,
+    nodes: filtered.flatMap((group) =>
+      group.items.map(({ tabId }) => ({ id: tabId }))
+    ),
+    onBack: () => getNavigatorStore(connectionResource.id).set('tables'),
+    onClear: () => setSearch(''),
+    search,
+  })
+
+  useEffect(() => {
+    if (highlightedId) {
+      listRef.current
+        ?.querySelector('[data-highlighted]')
+        ?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedId, listRef])
+
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
@@ -43,6 +64,7 @@ export const DefinitionsPanel = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
+          {...searchProps}
           start={
             <HugeiconsIcon
               icon={Search01Icon}
@@ -52,7 +74,11 @@ export const DefinitionsPanel = () => {
           }
         />
       </div>
-      <SidebarContent className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2">
+      <SidebarContent
+        ref={listRef}
+        tabIndex={-1}
+        className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2"
+      >
         {filtered.length === 0 && (
           <p className="text-muted-foreground px-2 py-6 text-center text-sm">
             Nothing found
@@ -65,11 +91,15 @@ export const DefinitionsPanel = () => {
               const isActive = activeTabId === tabId
 
               return (
-                <SidebarMenuItem key={tabId}>
+                <SidebarMenuItem
+                  key={tabId}
+                  data-highlighted={tabId === highlightedId || undefined}
+                >
                   <SidebarMenuButton
                     isActive={isActive}
                     render={
                       <Link
+                        tabIndex={-1}
                         to="/connection/$resourceId/$tabId"
                         params={{
                           resourceId: connectionResource.id,

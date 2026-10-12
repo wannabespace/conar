@@ -74,7 +74,7 @@ export const ResizeHandle = ({
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- interactive resize handle
       role="separator"
       aria-orientation="vertical"
-      tabIndex={0}
+      tabIndex={-1}
       data-resizing={isResizing || undefined}
       className={cn(
         'group/resize-handle cursor-col-resize select-none',

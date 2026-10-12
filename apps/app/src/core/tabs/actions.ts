@@ -27,20 +27,29 @@ export const setActiveTab = (id: string, tabId: string | null) => {
   )
 }
 
-export const removeTab = (id: string, tabId: string) => {
+export const removeTabs = (id: string, tabIds: string[]) => {
+  if (tabIds.length === 0) {
+    return
+  }
+
   getConnectionResourceStore(id).set((state) => {
-    const index = state.tabs.findIndex((tab) => tab.id === tabId)
-    const neighbour = state.tabs[index + 1] ?? state.tabs[index - 1]
+    const isKept = (tab: ConnectionTab) => !tabIds.includes(tab.id)
+    const index = state.tabs.findIndex((tab) => tab.id === state.activeTabId)
+    const neighbour =
+      state.tabs.slice(index + 1).find(isKept) ??
+      state.tabs.slice(0, index).findLast(isKept)
     return {
       ...state,
       activeTabId:
-        state.activeTabId === tabId
+        state.activeTabId && tabIds.includes(state.activeTabId)
           ? (neighbour?.id ?? null)
           : state.activeTabId,
-      tabs: state.tabs.filter((tab) => tab.id !== tabId),
+      tabs: state.tabs.filter(isKept),
     } satisfies typeof state
   })
-  resolveTab(tabId)?.kind.onClose?.(id, tabId)
+  for (const tabId of tabIds) {
+    resolveTab(tabId)?.kind.onClose?.(id, tabId)
+  }
 }
 
 const closeOtherTabsUnlessMultiple = (id: string, tabId: string) => {
@@ -48,11 +57,13 @@ const closeOtherTabsUnlessMultiple = (id: string, tabId: string) => {
     return
   }
 
-  for (const tab of getConnectionResourceStore(id).get().tabs) {
-    if (tab.id !== tabId) {
-      removeTab(id, tab.id)
-    }
-  }
+  removeTabs(
+    id,
+    getConnectionResourceStore(id)
+      .get()
+      .tabs.map((tab) => tab.id)
+      .filter((other) => other !== tabId)
+  )
 }
 
 export const ensureTab = (id: string, tabId: string) => {

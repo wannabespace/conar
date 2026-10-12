@@ -5,7 +5,6 @@ import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   DrawerClose,
   DrawerDescription,
@@ -22,13 +21,14 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { AnyFormApi } from '@tanstack/react-form'
-import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { QueryKey, UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 
@@ -74,16 +74,10 @@ export const Inspector = ({
 }) => {
   const saveEnabled = !(readOnly || mutation.isPending) && canSave
 
-  useHotkeys(
-    [
-      {
-        callback: () => form.handleSubmit(),
-        hotkey: 'Mod+Enter',
-        options: { enabled: saveEnabled },
-      },
-    ],
-    { preventDefault: true }
-  )
+  useShortcut('submit', () => form.handleSubmit(), {
+    enabled: saveEnabled,
+    preventDefault: true,
+  })
 
   const saveButton = (
     <Button
@@ -133,11 +127,7 @@ export const Inspector = ({
           {readOnly ? 'Close' : 'Cancel'}
         </DrawerClose>
         {!readOnly && (
-          <Tooltip
-            shortcut={
-              saveEnabled && <KbdCtrlEnter userAgent={navigator.userAgent} />
-            }
-          >
+          <Tooltip shortcut={saveEnabled && <ShortcutKbd shortcut="submit" />}>
             <TooltipTrigger render={saveButton} />
             <TooltipContent>
               {warning && (

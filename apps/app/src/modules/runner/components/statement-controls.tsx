@@ -10,12 +10,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { acceptGhostText, dismissGhostText } from '@tamery/monaco/sql-language'
 import { Button } from '@tamery/ui/components/button'
-import {
-  KbdCtrlEnter,
-  KbdCtrlLetter,
-} from '@tamery/ui/components/custom/shortcuts'
 import { Group } from '@tamery/ui/components/group'
-import { Kbd } from '@tamery/ui/components/kbd'
 import {
   Tooltip,
   TooltipContent,
@@ -28,6 +23,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
 import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useIsAnonymous } from '~/lib/auth'
 
 import type { RunnerActions } from '../lib/actions'
@@ -54,18 +50,16 @@ const statementMenuItems = (
       ]
     : []),
   {
-    accelerator: 'CmdOrCtrl+K',
     icon: SparklesIcon,
     label: 'Edit with AI',
     onSelect: () => actions.askAi(),
-    shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="K" />,
+    shortcut: 'editWithAi',
   },
   {
-    accelerator: 'CmdOrCtrl+S',
     icon: SaveIcon,
     label: 'Save statement',
     onSelect: () => actions.saveCurrent(),
-    shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />,
+    shortcut: 'saveStatement',
   },
 ]
 
@@ -92,7 +86,7 @@ const SuggestionControls = ({
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>
 }) => (
   <Group>
-    <Tooltip shortcut={<Kbd>Tab</Kbd>}>
+    <Tooltip shortcut={<ShortcutKbd shortcut="acceptSuggestion" />}>
       <TooltipTrigger
         render={
           <Button
@@ -112,7 +106,7 @@ const SuggestionControls = ({
       </TooltipTrigger>
       <TooltipContent>Accept suggestion</TooltipContent>
     </Tooltip>
-    <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+    <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
       <TooltipTrigger
         render={
           <Button
@@ -181,11 +175,7 @@ export const StatementControls = ({
         )}
         <Group>
           {failed && (
-            <Tooltip
-              shortcut={
-                <KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />
-              }
-            >
+            <Tooltip shortcut={<ShortcutKbd shortcut="fixWithAi" />}>
               <TooltipTrigger
                 render={
                   <Button
@@ -206,7 +196,7 @@ export const StatementControls = ({
               <TooltipContent>Fix with AI</TooltipContent>
             </Tooltip>
           )}
-          <Tooltip shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}>
+          <Tooltip shortcut={<ShortcutKbd shortcut="runStatement" />}>
             <TooltipTrigger
               render={
                 <Button
@@ -221,11 +211,7 @@ export const StatementControls = ({
             </TooltipTrigger>
             <TooltipContent>Run statement</TooltipContent>
           </Tooltip>
-          <Tooltip
-            shortcut={
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="." />
-            }
-          >
+          <Tooltip shortcut={<ShortcutKbd shortcut="contextMenu" />}>
             <AppMenuButton
               render={
                 <TooltipTrigger

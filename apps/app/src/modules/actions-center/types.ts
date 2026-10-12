@@ -1,5 +1,6 @@
 import type { IconSvgElement } from '@hugeicons/react'
 
+import type { ShortcutId } from '~/core/keyboard/shortcuts'
 import type { TabContext } from '~/core/tabs/types'
 
 export interface CommandEntry {
@@ -8,7 +9,7 @@ export interface CommandEntry {
   icon: IconSvgElement
   keywords: string[]
   order: number
-  shortcut?: string
+  shortcut?: ShortcutId
   value: string
 }
 

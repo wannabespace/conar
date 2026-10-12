@@ -1,5 +1,6 @@
 import {
   ArrowTurnBackwardIcon,
+  CheckmarkSquare02Icon,
   Copy02Icon,
   EraserIcon,
   FilterAddIcon,
@@ -16,6 +17,7 @@ import { posthog } from '~/lib/posthog'
 
 import type { ColumnActions } from '../../lib/column-menu'
 import { columnMenuItems } from '../../lib/column-menu'
+import { rowSelection } from '../../lib/row-selection'
 import type { useStagedEdits } from '../../lib/staged-edits'
 import type { TablePageStore } from '../../lib/store'
 import { cellHop } from '../references/hops'
@@ -57,6 +59,21 @@ export const tableCellMenu = ({
     isEditable && staged.canEdit(column, cell.rowIndex) && column.isNullable
 
   const rowItems: AppMenuNode[] = [
+    ...(isEditable && entry.kind === 'saved'
+      ? ([
+          {
+            icon: CheckmarkSquare02Icon,
+            label: rowSelection.has(sessionStore.get(), entry.keys)
+              ? 'Deselect Row'
+              : 'Select Row',
+            onSelect: () =>
+              sessionStore.set((state) =>
+                rowSelection.toggle(state, [entry.keys])
+              ),
+            shortcut: 'selectRows',
+          },
+        ] satisfies AppMenuNode[])
+      : []),
     ...(canInsert
       ? [
           {

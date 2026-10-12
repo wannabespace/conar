@@ -5,7 +5,6 @@ import {
 } from '@tamery/monaco/sql-language'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -22,6 +21,7 @@ import {
 
 import { OptionField } from '~/components/option-field'
 import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -163,7 +163,7 @@ export const CreateViewDialog = () => {
     <TableDialog
       noun="view"
       description="A saved query that reads like a table."
-      shortcut={<KbdCtrlEnter userAgent={navigator.userAgent} />}
+      shortcut={<ShortcutKbd shortcut="submit" />}
       request={request}
       schemas={schemas.map(({ name }) => name)}
       isTaken={(schema, name) =>

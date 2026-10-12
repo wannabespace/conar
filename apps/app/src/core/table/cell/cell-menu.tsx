@@ -10,7 +10,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { recordToMarkdownTable, toCSV } from '@tamery/shared/files'
 import { valueToText } from '@tamery/shared/value-text'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
@@ -57,25 +56,19 @@ export const cellMenu = ({
           ? [{ icon: BracesIcon, label: 'Show JSON', onSelect: cursor.preview }]
           : []),
         {
-          accelerator: 'CmdOrCtrl+C',
           icon: Copy01Icon,
           label: cells > 1 ? `Copy ${cells} Cells` : 'Copy Value',
           onSelect: cursor.copy,
-          shortcut: (
-            <KbdCtrlLetter userAgent={navigator.userAgent} letter="C" />
-          ),
+          shortcut: 'copy',
         },
         ...(editable && cursor.selection().length > 1
           ? [
               {
-                accelerator: 'CmdOrCtrl+D',
                 icon: ArrowDown02Icon,
                 label: 'Fill Down',
                 onSelect: cursor.fillDown,
-                shortcut: (
-                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="D" />
-                ),
-              },
+                shortcut: 'fillDown',
+              } satisfies AppMenuNode,
             ]
           : []),
         ...(extras.cell ?? []),

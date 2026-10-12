@@ -16,7 +16,7 @@ export const chatCommands = ({ current }: CommandContext): CommandEntry[] =>
           icon: AiChat01Icon,
           keywords: ['assistant', 'ai', 'panel'],
           order: 20,
-          shortcut: 'L',
+          shortcut: 'aiChat',
           value: 'Toggle AI chat',
         },
       ]

@@ -3,6 +3,7 @@ import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridHeaderProps } from '@tamery/table'
 import { isHeaderPress } from '@tamery/table'
+import { Button } from '@tamery/ui/components/button'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import { cn } from '@tamery/ui/lib/utils'
 import type { RefObject } from 'react'
@@ -131,9 +132,10 @@ export const TableHeaderCell = ({
         variant="muted"
         items={items}
         contentProps={{ align: 'end', className: 'min-w-52' }}
+        render={<Button variant="ghost" size="icon-xs" tabIndex={-1} />}
       />
       <ResizeHandle
-        aria-label="Resize column"
+        aria-label={`Resize ${column.id} column`}
         min={MIN_WIDTH}
         className={cn(
           'absolute inset-y-0 right-0 z-10 flex w-3 justify-end',

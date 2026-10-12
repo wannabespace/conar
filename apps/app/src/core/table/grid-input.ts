@@ -1,17 +1,23 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import type { MouseEvent, PointerEvent, RefObject } from 'react'
-import { useRef } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
+import { openContextMenuOn } from '~/components/app-context-menu'
+import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
 
-// Hotkeys take no wildcard; these are the keys that start an edit by typing over the cell.
-const TYPING_KEYS = [
-  ...[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].flatMap((key) => [key, `Shift+${key}`]),
-  ...'0123456789-.',
-] as Hotkey[]
+// Space is the peek shortcut, not a character to type over the cell.
+const isTypedCharacter = (event: KeyboardEvent) =>
+  event.key.length === 1 &&
+  event.key !== ' ' &&
+  !event.ctrlKey &&
+  !event.metaKey &&
+  !event.isComposing
+
+const TO_EDGE = Number.MAX_SAFE_INTEGER
 
 const positionOf = (event: MouseEvent): CellPosition | null => {
   const cell =
@@ -31,12 +37,16 @@ export const useGridHotkeys = ({
   canEdit,
   cursor,
   onExtendRows,
+  onToggleRows,
   scrollRef,
+  scrollToCursor,
 }: {
   canEdit: boolean
   cursor: GridCursor
   onExtendRows?: (direction: 'up' | 'down') => void
+  onToggleRows?: (rowIndexes: number[]) => void
   scrollRef: RefObject<HTMLDivElement | null>
+  scrollToCursor: () => void
 }) => {
   const hasCursor = useSubscription(cursor.store, {
     selector: (state) => state.cursor !== null,
@@ -44,7 +54,44 @@ export const useGridHotkeys = ({
   const isEditing = useSubscription(cursor.store, {
     selector: (state) => state.edit !== null,
   })
-  const navigating = hasCursor && !isEditing
+  const hasBlock = useSubscription(cursor.store, {
+    selector: (state) => state.anchor !== null,
+  })
+  const [gridFocused, setGridFocused] = useState(false)
+  const ownsKeys = gridFocused && !isEditing
+  const navigating = ownsKeys && hasCursor
+
+  // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
+  // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
+  const track = useEffectEvent(() => {
+    const focused = document.activeElement === scrollRef.current
+    setGridFocused(focused)
+    if (focused && !cursor.store.get().cursor) {
+      cursor.step(0, 0)
+    }
+  })
+  const typeOverCell = useEffectEvent((event: KeyboardEvent) => {
+    if (navigating && isTypedCharacter(event)) {
+      event.preventDefault()
+      cursor.edit(event.key)
+    }
+  })
+  useEffect(() => {
+    document.addEventListener('focusin', track)
+    document.addEventListener('focusout', track)
+    document.addEventListener('keydown', typeOverCell)
+    return () => {
+      document.removeEventListener('focusin', track)
+      document.removeEventListener('focusout', track)
+      document.removeEventListener('keydown', typeOverCell)
+    }
+  }, [])
+
+  // A far edge is virtualized away, so the cursor's own glide finds no cell to scroll to.
+  const jumpToEdge = (down: number, right: number, extend?: boolean) => {
+    cursor.step(down * TO_EDGE, right * TO_EDGE, extend)
+    scrollToCursor()
+  }
 
   useHotkeys(
     [
@@ -59,7 +106,17 @@ export const useGridHotkeys = ({
         {
           callback: () => cursor.step(down, right),
           hotkey,
-          options: { enabled: !isEditing },
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right),
+          hotkey: `Mod+${hotkey}` as const,
+          options: { enabled: ownsKeys },
+        },
+        {
+          callback: () => jumpToEdge(down, right, true),
+          hotkey: `Mod+Shift+${hotkey}` as const,
+          options: { enabled: ownsKeys },
         },
         {
           callback: () => {
@@ -70,49 +127,75 @@ export const useGridHotkeys = ({
             }
           },
           hotkey: `Shift+${hotkey}` as const,
-          options: { enabled: !isEditing },
+          options: { enabled: ownsKeys },
         },
       ]),
-      ...(['Enter', 'F2'] as const).map((hotkey) => ({
-        callback: () => cursor.edit(),
-        hotkey,
-        options: { enabled: navigating },
-      })),
       ...(['Backspace', 'Delete'] as const).map((hotkey) => ({
         callback: () => cursor.edit(''),
         hotkey,
         options: { enabled: navigating },
       })),
-      ...TYPING_KEYS.map((hotkey) => ({
-        callback: (event: KeyboardEvent) => cursor.edit(event.key),
-        hotkey,
+      {
+        callback: cursor.collapse,
+        hotkey: 'Escape',
+        options: { enabled: navigating && hasBlock },
+      },
+    ],
+    { target: scrollRef }
+  )
+  useShortcuts(
+    [
+      {
+        callback: () => cursor.edit(),
         options: { enabled: navigating },
-      })),
+        shortcut: 'editCell',
+      },
       {
         callback: cursor.copy,
-        hotkey: 'Mod+C',
         options: { enabled: navigating, ignoreInputs: true },
+        shortcut: 'copy',
       },
       {
         callback: async () =>
           cursor.paste(await navigator.clipboard.readText()),
-        hotkey: 'Mod+V',
         options: { enabled: navigating && canEdit, ignoreInputs: true },
+        shortcut: 'paste',
       },
       {
         callback: cursor.fillDown,
-        hotkey: 'Mod+D',
         options: { enabled: navigating && canEdit },
+        shortcut: 'fillDown',
       },
       {
         callback: cursor.preview,
-        hotkey: 'Space',
         options: { enabled: navigating },
+        shortcut: 'peek',
       },
       {
-        callback: cursor.dismiss,
-        hotkey: 'Escape',
+        callback: () =>
+          onToggleRows?.(
+            cursor.selection().flatMap((row) => row[0]?.rowIndex ?? [])
+          ),
+        options: { enabled: navigating && !!onToggleRows },
+        shortcut: 'selectRows',
+      },
+      {
+        callback: () => {
+          const cell = cursor.element()
+          if (cell) {
+            openContextMenuOn(cell)
+          }
+        },
         options: { enabled: navigating },
+        shortcut: 'contextMenu',
+      },
+      {
+        callback: () => {
+          cursor.step(TO_EDGE, TO_EDGE)
+          cursor.step(-TO_EDGE, -TO_EDGE, true)
+        },
+        options: { enabled: navigating },
+        shortcut: 'selectAll',
       },
     ],
     { target: scrollRef }

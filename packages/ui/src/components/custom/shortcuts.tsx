@@ -1,11 +1,18 @@
 import {
+  ArrowDown02Icon,
+  ArrowLeft02Icon,
+  ArrowRight02Icon,
   ArrowUp02Icon,
+  ArrowUpBigIcon,
   CommandIcon,
   CornerDownLeftIcon,
 } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
 import { cn } from '@tamery/ui/lib/utils'
+import type { Hotkey } from '@tanstack/react-hotkeys'
+import { parseHotkey } from '@tanstack/react-hotkeys'
 import type { ComponentProps } from 'react'
 
 import { Kbd } from '../kbd'
@@ -38,46 +45,65 @@ export const EnterIcon = ({ className }: { className?: string }) => (
   />
 )
 
-export const KbdCtrlEnter = ({
-  userAgent,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) => (
-  <Kbd {...props}>
-    <Ctrl userAgent={userAgent} />
-    <EnterIcon />
-  </Kbd>
-)
+const BackspaceIcon: IconSvgElement = [
+  [
+    'path',
+    {
+      d: 'M9 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H9L2.5 12L9 5Z',
+      key: '0',
+      stroke: 'currentColor',
+      strokeLinejoin: 'round',
+      strokeWidth: '1.5',
+    },
+  ],
+  [
+    'path',
+    {
+      d: 'M11.5 9.5L16.5 14.5M16.5 9.5L11.5 14.5',
+      key: '1',
+      stroke: 'currentColor',
+      strokeLinecap: 'round',
+      strokeWidth: '1.5',
+    },
+  ],
+]
 
-export const KbdCtrlLetter = ({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) => (
-  <Kbd {...props}>
-    <Ctrl userAgent={userAgent} />
-    <span>{letter}</span>
-  </Kbd>
-)
+const GLYPHS: Partial<Record<string, IconSvgElement>> = {
+  ArrowDown: ArrowDown02Icon,
+  ArrowLeft: ArrowLeft02Icon,
+  ArrowRight: ArrowRight02Icon,
+  ArrowUp: ArrowUp02Icon,
+  Backspace: BackspaceIcon,
+  Enter: CornerDownLeftIcon,
+  Meta: CommandIcon,
+  Shift: ArrowUpBigIcon,
+}
 
-export const KbdShiftCtrlLetter = ({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) => (
-  <Kbd {...props}>
-    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
-    <Ctrl userAgent={userAgent} />
-    <span>{letter}</span>
-  </Kbd>
-)
+const LABELS: Partial<Record<string, string>> = {
+  Control: 'Ctrl',
+  Escape: 'Esc',
+}
 
-export const KbdShiftCtrlEnter = ({
+export const KbdHotkey = ({
+  hotkey,
   userAgent,
   ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) => (
-  <Kbd {...props}>
-    <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-3" />
-    <Ctrl userAgent={userAgent} />
-    <EnterIcon />
-  </Kbd>
-)
+}: ComponentProps<typeof Kbd> & { hotkey: Hotkey; userAgent: string }) => {
+  const { key, modifiers } = parseHotkey(
+    hotkey,
+    getOS(userAgent).type === 'macos' ? 'mac' : 'windows'
+  )
+
+  return (
+    <Kbd {...props}>
+      {[...modifiers, key].map((part) => {
+        const glyph = GLYPHS[part]
+        return glyph ? (
+          <HugeiconsIcon key={part} icon={glyph} strokeWidth={2} />
+        ) : (
+          <span key={part}>{LABELS[part] ?? part}</span>
+        )
+      })}
+    </Kbd>
+  )
+}

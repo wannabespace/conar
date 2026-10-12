@@ -12,7 +12,6 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   createPopoverHandle,
   Popover,
@@ -39,6 +38,7 @@ import { useDeferredValue, useState } from 'react'
 import { PaneEmpty } from '~/components/pane-empty'
 import type { ExportDataProps } from '~/core/export/export-data'
 import { ExportData } from '~/core/export/export-data'
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { ResultSet } from '~/core/queries/connection/custom'
 import { useIsAnonymous } from '~/lib/auth'
 
@@ -82,9 +82,7 @@ const ResultError = ({
       title="The statement failed"
       description={result.error}
     >
-      <Tooltip
-        shortcut={<KbdCtrlLetter userAgent={navigator.userAgent} letter="I" />}
-      >
+      <Tooltip shortcut={<ShortcutKbd shortcut="fixWithAi" />}>
         <TooltipTrigger
           render={
             <Button

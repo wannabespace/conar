@@ -3,6 +3,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
+import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
@@ -181,15 +182,19 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   value !== null &&
   Object.getPrototypeOf(value) === Object.prototype
 
-// Every driver but pg binds a plain object as something other than JSON, and pg casts the string back
+// A JSON column's value stays parsed: the insert's `bindValue` stringifies it, and a string here is stored as a JSON string.
+// Any other column gets the text, since no driver binds a plain object as JSON.
 const finalizeValue = (
   value: unknown,
   column: Column,
-  config: DialectSeedConfig
+  dialect: ConnectionType
 ) => {
+  if (capabilitiesOf(dialect).columnTypes.json.test(column.type ?? '')) {
+    return value
+  }
   if (Array.isArray(value)) {
     return column.isArray
-      ? (config.transformArray?.(value, column) ?? value)
+      ? (DIALECT_CONFIGS[dialect].transformArray?.(value, column) ?? value)
       : JSON.stringify(value)
   }
   if (isPlainObject(value)) {
@@ -214,7 +219,6 @@ export const generateRows = ({
   dialect: ConnectionType
   referenceData?: Record<string, unknown[]>
 }) => {
-  const config = DIALECT_CONFIGS[dialect]
   const generators = getGenerators(dialect)
 
   const columnProducers = columns.flatMap((column) => {
@@ -245,7 +249,7 @@ export const generateRows = ({
           finalizeValue(
             nullable && faker.datatype.boolean(NULL_SHARE) ? null : next(),
             column,
-            config
+            dialect
           ),
       ] as const,
     ]

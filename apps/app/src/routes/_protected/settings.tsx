@@ -3,7 +3,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { title } from '@tamery/shared/title'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
-import { Kbd } from '@tamery/ui/components/kbd'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import {
   Tooltip,
@@ -22,6 +21,7 @@ import {
 } from '@tanstack/react-router'
 import { useRef } from 'react'
 
+import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { settingsSections } from '~/core/settings/sections'
 import {
   resourcePanelClassName,
@@ -71,7 +71,7 @@ const SettingsPage = () => {
   return (
     <div ref={pageRef} tabIndex={-1} className={settingsPageClassName}>
       <aside className={settingsSidebarClassName}>
-        <Tooltip shortcut={<Kbd>Esc</Kbd>}>
+        <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
           <TooltipTrigger
             render={<SidebarMenuButton {...pressNavProps(leave)} />}
           >
