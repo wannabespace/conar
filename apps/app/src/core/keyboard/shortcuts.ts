@@ -101,7 +101,8 @@ export const SHORTCUTS = {
     title: 'Move cursor',
   },
   navigatorCollapse: {
-    description: 'Collapse a schema, or jump from a table up to its schema.',
+    description:
+      'Collapse a schema, jump from a table up to its schema, or go back from Definitions to Tables.',
     hotkeys: ['ArrowLeft'],
     title: 'Collapse',
   },
@@ -113,7 +114,7 @@ export const SHORTCUTS = {
   },
   navigatorOpen: {
     description:
-      'Open the highlighted table with the grid ready for the arrows, or expand a schema.',
+      'Open the highlighted table with the grid ready for the arrows, or expand a schema. Right on an expanded schema steps into its tables.',
     hotkeys: ['Enter', 'ArrowRight'],
     title: 'Open',
   },

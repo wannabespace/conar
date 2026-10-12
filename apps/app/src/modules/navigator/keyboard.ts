@@ -1,3 +1,8 @@
+import type {
+  HotkeyCallback,
+  UseHotkeyDefinition,
+  UseHotkeyOptions,
+} from '@tanstack/react-hotkeys'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
@@ -9,16 +14,41 @@ import { navigatorOpenValue } from './stores'
 
 let mountedSearch: HTMLInputElement | null = null
 
+// flushSync: the search to focus only mounts once the update commits.
+const focusSearchAfter = (update: () => void) => {
+  flushSync(update)
+  mountedSearch?.focus()
+}
+
+const unlessComposing =
+  (handler: HotkeyCallback): HotkeyCallback =>
+  (event, context) => {
+    if (!event.isComposing) {
+      handler(event, context)
+    }
+  }
+
+const useHotkeysUnlessComposing = (
+  definitions: UseHotkeyDefinition[],
+  options: UseHotkeyOptions
+) =>
+  useHotkeys(
+    definitions.map((definition) => ({
+      ...definition,
+      callback: unlessComposing(definition.callback),
+    })),
+    options
+  )
+
 // Must stay on window: base-ui popups and scoped hotkeys stop a consumed Escape at the document, so only an unconsumed one arrives here.
 export const useEscapeToNavigator = (enabled: boolean) =>
   useHotkey(
     'Escape',
-    (event) => {
+    unlessComposing((event) => {
       if (!event.defaultPrevented) {
-        flushSync(() => navigatorOpenValue.set(true))
-        mountedSearch?.focus()
+        focusSearchAfter(() => navigatorOpenValue.set(true))
       }
-    },
+    }),
     { enabled, preventDefault: false, target: window }
   )
 
@@ -42,6 +72,7 @@ export const useNavigatorSearch = ({
   onClear,
 }: {
   activeId?: string
+  /** `open` marks an expanded row whose children follow it directly. */
   nodes: { id: string; open?: boolean; parent?: string }[]
   search: string
   onBack?: () => void
@@ -75,14 +106,16 @@ export const useNavigatorSearch = ({
       '[data-highlighted] :is(a, button)'
     )
 
+  const highlight = (id: string) => setMoved({ activeId, id, search })
+
   const move = (delta: number) => {
     const next = ids[Math.min(ids.length - 1, Math.max(0, index + delta))]
     if (next) {
-      setMoved({ activeId, id: next, search })
+      highlight(next)
     }
   }
 
-  useHotkeys(
+  useHotkeysUnlessComposing(
     [
       { callback: () => move(1), hotkey: 'ArrowDown' },
       { callback: () => move(-1), hotkey: 'ArrowUp' },
@@ -108,24 +141,16 @@ export const useNavigatorSearch = ({
           if (node?.open) {
             highlightedControl()?.click()
           } else if (node?.parent) {
-            setMoved({ activeId, id: node.parent, search })
+            highlight(node.parent)
           } else if (onBack) {
             // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
-            flushSync(onBack)
-            mountedSearch?.focus()
+            focusSearchAfter(onBack)
           }
         },
         hotkey: 'ArrowLeft',
         options: { preventDefault: false },
       },
-      {
-        callback: (event) => {
-          if (!event.isComposing) {
-            highlightedControl()?.click()
-          }
-        },
-        hotkey: 'Enter',
-      },
+      { callback: () => highlightedControl()?.click(), hotkey: 'Enter' },
       { callback: onClear, hotkey: 'Escape', options: { enabled: !!search } },
     ],
     { target: searchRef }
