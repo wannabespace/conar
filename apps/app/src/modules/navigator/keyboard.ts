@@ -73,7 +73,7 @@ export const useNavigatorSearch = ({
 }: {
   activeId?: string
   /** `open` marks an expanded row whose children follow it directly. */
-  nodes: { id: string; open?: boolean; parent?: string }[]
+  nodes: { id: string; open?: boolean }[]
   search: string
   onBack?: () => void
   onClear: () => void
@@ -138,10 +138,11 @@ export const useNavigatorSearch = ({
           if (!claimsCaretEdge(event, 'start')) {
             return
           }
+          const parent = nodes.slice(0, index).findLast(({ open }) => open)
           if (node?.open) {
             highlightedControl()?.click()
-          } else if (node?.parent) {
-            highlight(node.parent)
+          } else if (parent) {
+            highlight(parent.id)
           } else if (onBack) {
             // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
             focusSearchAfter(onBack)

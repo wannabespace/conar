@@ -21,7 +21,6 @@ export type TreeRow =
       schema: string
       table: TableInfo
       pinned: boolean
-      parent?: string
     }
   | { kind: 'empty'; id: string }
   | { kind: 'new-schema'; id: string }
@@ -55,7 +54,6 @@ export const buildTreeRows = ({
       continue
     }
 
-    const schemaId = showSchemaRows ? `schema:${schema.name}` : undefined
     const open =
       !showSchemaRows || !!search || openedSchemas.includes(schema.name)
 
@@ -88,7 +86,6 @@ export const buildTreeRows = ({
       rows.push({
         id: `table:${schema.name}:${table.name}`,
         kind: 'table',
-        parent: schemaId,
         pinned: true,
         schema: schema.name,
         table,
@@ -103,7 +100,6 @@ export const buildTreeRows = ({
       rows.push({
         id: `table:${schema.name}:${table.name}`,
         kind: 'table',
-        parent: schemaId,
         pinned: false,
         schema: schema.name,
         table,
