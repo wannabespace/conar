@@ -16,7 +16,6 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { DownloadButton } from '~/components/download-button'
 import type { DownloadPlatform } from '~/components/download-files'
 import { DOWNLOAD_PLATFORMS } from '~/components/download-files'
 import { getOSIsomorphic } from '~/utils/os'
@@ -113,7 +112,6 @@ const DownloadPage = () => {
           A native app for macOS, Windows and Linux. Sign in once and your
           connections follow you to every device.
         </p>
-        <DownloadButton className="mt-2" />
       </header>
       <div className="mt-16 grid items-start gap-4 md:grid-cols-3">
         {platforms.map((platform) => (

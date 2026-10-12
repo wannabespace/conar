@@ -1,15 +1,10 @@
 import { Button } from '@tamery/ui/components/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@tamery/ui/components/dropdown-menu'
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { Link } from '@tanstack/react-router'
 
 import { getOSIsomorphic } from '~/utils/os'
 
@@ -17,7 +12,7 @@ import { DOWNLOAD_PLATFORMS } from './download-files'
 
 const os = getOSIsomorphic()
 
-export const DownloadButton = ({ className }: { className?: string }) => {
+export const DownloadButton = () => {
   const platform = DOWNLOAD_PLATFORMS.find(
     (candidate) => candidate.os === os?.type
   )
@@ -26,14 +21,7 @@ export const DownloadButton = ({ className }: { className?: string }) => {
     return (
       <Tooltip>
         <TooltipTrigger
-          render={
-            <Button
-              size="lg"
-              className={className}
-              disabled
-              focusableWhenDisabled
-            />
-          }
+          render={<Button size="lg" disabled focusableWhenDisabled />}
         >
           Download
         </TooltipTrigger>
@@ -49,7 +37,6 @@ export const DownloadButton = ({ className }: { className?: string }) => {
     return (
       <Button
         size="lg"
-        className={className}
         render={
           <a
             href={firstFile.link}
@@ -65,28 +52,9 @@ export const DownloadButton = ({ className }: { className?: string }) => {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button size="lg" className={className} />}>
-        {platform.icon}
-        Download for {os.label}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        {platform.files.map((file) => (
-          <DropdownMenuItem
-            key={file.link}
-            render={
-              <a
-                href={file.link}
-                download
-                aria-label={`Download ${file.label}`}
-                className="text-foreground"
-              />
-            }
-          >
-            {file.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button size="lg" render={<Link to="/download" />}>
+      {platform.icon}
+      Download for {os.label}
+    </Button>
   )
 }
