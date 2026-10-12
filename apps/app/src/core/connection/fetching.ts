@@ -103,5 +103,7 @@ export const useFetchingConfig = (
     isLocalhost: connectionString?.isLocalhost,
     isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy,
+    sshSecretsMissing: !!connectionString?.missingSshSecrets?.length,
+    usesSsh: connectionString?.usesSsh,
   })
 }

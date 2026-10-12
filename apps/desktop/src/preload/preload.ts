@@ -26,6 +26,7 @@ export type ElectronPreload = Promisified<typeof electron> & {
       callback: (isFullscreen: boolean) => void
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
+    onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
   }
   mcp: {
@@ -126,6 +127,7 @@ contextBridge.exposeInMainWorld('electron', {
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),
     onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
+    onUrlOpened: (onMessage) => onEvent('url-opened', onMessage),
     openWindow: handleElectronError((route: string) =>
       ipcRenderer.invoke('app.openWindow', route)
     ),
@@ -135,6 +137,15 @@ contextBridge.exposeInMainWorld('electron', {
     setNativeTheme: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('app.setNativeTheme', arg)
     ),
+  },
+  connectionLinks: {
+    isDefault: handleElectronError(() =>
+      ipcRenderer.invoke('connectionLinks.isDefault')
+    ),
+    setDefault: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('connectionLinks.setDefault', arg)
+    ),
+    take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
   },
   encryption: {
     decrypt: handleElectronError((arg: unknown) =>

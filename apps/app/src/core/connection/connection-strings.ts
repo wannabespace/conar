@@ -1,4 +1,10 @@
-import { isLocalhostConnectionString } from '@tamery/connection/utils'
+import { connectionSecrets } from '@tamery/connection/secrets'
+import type { SshSecret } from '@tamery/connection/ssh/params'
+import { sshSecrets } from '@tamery/connection/ssh/params'
+import {
+  isLocalhostConnectionString,
+  isSshConnectionString,
+} from '@tamery/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -19,6 +25,8 @@ export interface ConnectionString {
   updatedAt: Date
   isPasswordPopulated: boolean
   isLocalhost: boolean
+  usesSsh?: boolean
+  missingSshSecrets?: SshSecret[]
   displayUrl: string
   defaultResourceName: string | null
 }
@@ -46,23 +54,21 @@ export type ConnectionStringsCollection = Collection<
   ConnectionStringsUtils & PersistedCollectionUtils
 >
 
-const preserveLocalPassword = async (
+const preserveLocalSecrets = async (
   collection: ConnectionStringsCollection,
   connectionId: string,
   connectionString: string
 ) => {
-  const url = new SafeURL(connectionString)
   const local = collection.get(connectionId)
 
-  if (url.password || !local?.isPasswordPopulated) {
+  if (!local?.isPasswordPopulated && !local?.usesSsh) {
     return connectionString
   }
 
-  url.password = new SafeURL(
+  return connectionSecrets.restore(
+    connectionString,
     await collection.utils.decrypt(connectionId)
-  ).password
-
-  return url.toString()
+  )
 }
 
 export const createConnectionStringsCollection =
@@ -131,7 +137,9 @@ export const createConnectionStringsCollection =
               encrypted,
               isLocalhost: isLocalhostConnectionString(data.connectionString),
               isPasswordPopulated: !!url.password,
+              missingSshSecrets: sshSecrets.missing(url.searchParams),
               updatedAt: data.updatedAt,
+              usesSsh: isSshConnectionString(data.connectionString),
             }
           },
           async resolve(connectionId: string) {
@@ -150,7 +158,7 @@ export const createConnectionStringsCollection =
               return collection.utils.decrypt(connectionId)
             }
 
-            return preserveLocalPassword(
+            return preserveLocalSecrets(
               collection,
               connectionId,
               result.connectionString

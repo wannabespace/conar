@@ -6,11 +6,12 @@ import { orpc, permissionsMiddleware } from '~/orpc'
 export const get = orpc
   .use(permissionsMiddleware)
   .handler(async ({ context }) => {
-    const [filters, mcp] = await Promise.all([
+    const [connection, filters, mcp] = await Promise.all([
+      usage.get(context, 'connection'),
       usage.get(context, 'filters'),
       usage.get(context, 'mcp'),
     ])
-    return { filters, mcp }
+    return { connection, filters, mcp }
   })
 
 export const record = orpc

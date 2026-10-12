@@ -1,4 +1,5 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
+import { tunneledConnectionString } from '@tamery/connection/ssh/tunnel'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
@@ -9,9 +10,21 @@ import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
+import { connectionLinks } from './deep-link'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
+import { confirmHostKey } from './ssh-host-key'
 import { autoUpdater } from './todesktop'
+
+const withTunnel = async <T extends { connectionString: string }>(
+  args: T
+): Promise<T> => ({
+  ...args,
+  connectionString: await tunneledConnectionString(
+    args.connectionString,
+    confirmHostKey
+  ),
+})
 
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>
@@ -26,12 +39,12 @@ const lazyQueryExecutor = (
     beginTransaction: async (args) => {
       const query = await loadQuery()
 
-      return query.beginTransaction(args)
+      return query.beginTransaction(await withTunnel(args))
     },
     cancel: async (args) => {
       const query = await loadQuery()
 
-      return query.cancel(args)
+      return query.cancel(await withTunnel(args))
     },
     commitTransaction: async (args) => {
       const query = await loadQuery()
@@ -41,7 +54,7 @@ const lazyQueryExecutor = (
     execute: async (args) => {
       const query = await loadQuery()
 
-      return query.execute(args)
+      return query.execute(await withTunnel(args))
     },
     executeTransaction: async (args) => {
       const query = await loadQuery()
@@ -66,6 +79,7 @@ export const electron = {
       nativeTheme.themeSource = theme
     },
   },
+  connectionLinks,
   encryption: {
     decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
     encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),

@@ -14,6 +14,7 @@ import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { subscriptionQueryClient } from '~/lib/query-client'
 import { ActionsCenter } from '~/modules/actions-center/actions-center'
+import { useConnectionLinks } from '~/modules/connection-links/use-connection-links'
 import { GlobalBanner } from '~/modules/global-banner/global-banner'
 import { McpHost } from '~/modules/mcp/mcp-host'
 import { SubscriptionModal } from '~/modules/subscription/subscription-modal'
@@ -25,6 +26,7 @@ const ProtectedLayout = () => {
   usePermissionsSync()
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
+  useConnectionLinks()
 
   useHotkey('Mod+,', () => {
     if (!router.matchRoute({ to: '/settings' }, { fuzzy: true })) {

@@ -1,3 +1,4 @@
+import { connectionSecrets } from '@tamery/connection/secrets'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -14,13 +15,10 @@ import type { ConnectionStringsCollection } from './connection-strings'
 const prepareConnectionStringToCloud = (
   connectionString: string,
   syncType: SyncType
-) => {
-  const url = new SafeURL(connectionString.trim())
-  if (syncType !== SyncType.Cloud) {
-    url.password = ''
-  }
-  return url.toString()
-}
+) =>
+  syncType === SyncType.Cloud
+    ? new SafeURL(connectionString.trim()).toString()
+    : connectionSecrets.strip(connectionString.trim())
 
 export interface Connection extends BaseTable {
   type: ConnectionType

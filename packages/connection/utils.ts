@@ -1,5 +1,7 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 
+import { sshTunnelOf } from './ssh/params'
+
 const LOCALHOST_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
 
 export const isLocalhostConnectionString = (
@@ -13,3 +15,6 @@ export const isLocalhostConnectionString = (
     LOCALHOST_IPV4.test(hostname)
   )
 }
+
+export const isSshConnectionString = (connectionString: string): boolean =>
+  sshTunnelOf(new SafeURL(connectionString).searchParams) !== null

@@ -78,6 +78,29 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
 - **Ask for browser notification permission from a gesture.** The web build asks on the first notification, which Safari ignores outside a user gesture and which reaches every other browser while the user is away. A Settings → Notifications switch (or the first chat send) could ask instead, and let the user turn notifications off.
 
+## SSH tunnels
+
+- **Honor more of `~/.ssh/config`.** `UserKnownHostsFile`, `StrictHostKeyChecking` and `ProxyJump` are ignored: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
+- **Close a tunnel the moment its connection goes.** An idle SSH session closes after a minute, but its local listener and settings stay in memory until the app quits, also after the connection is removed or the user signs out (the database pools behave the same).
+
+## Connection form
+
+- **Edit a connection with the same form.** There is no way to change a saved connection's host, credentials or SSH settings — the user removes and re-adds it. The create form's fields already round-trip a connection string (`toConnectionParts`/`toConnectionString`), so an Edit item in the connection menu can open it pre-filled.
+- **An SSL control per engine.** SSL today is typed into Options (`sslmode=require`, `encrypt=true`, `ssl=true`). A switch whose meaning comes from `capabilities.ts` would save users from learning each driver's parameter.
+- **Offer the clipboard on open.** The form only reads what is pasted; the desktop app could read the clipboard on open without a prompt and, when it holds something `guessConnection` recognises, offer to fill the form from it.
+- **SSH through `tamery proxy`.** The local proxy runs on the user's machine, like the desktop app, so it could open tunnels too and make SSH connections usable from the web app.
+
+- **Diagnose from the server's side too.** The failure rules read only the driver's message; a TCP probe of the port (open, closed, filtered) and a DNS check for IPv4/IPv6 records, run on the device before the driver, would tell "nothing listening" from "firewalled" from "IPv6-only" without guessing from the error text.
+- **Retest after an SSH fix.** Turning the tunnel on from the failure alert stops at focusing SSH Host; once the bastion host is filled in, the test could rerun on its own.
+
+- **Find connections already on this machine.** The desktop app can read what other tools and the system already know — DBeaver's `data-sources.json`, TablePlus, DataGrip, pgAdmin, `~/.pgpass`, `~/.my.cnf`, `pg_service.conf` — and running database containers (`docker ps` gives the published port, `docker inspect` the `POSTGRES_*`/`MYSQL_*` credentials). The page would open on "Found 4 databases on this Mac" with one-click import, before anyone has to paste.
+- **Test as you go, then pick the database.** A debounced background test once host and credentials are filled would turn the footer into a live status ("Connected · PostgreSQL 16.4 · 12 ms") and drop the separate Test step; once it connects, Database becomes a combobox of the server's real databases instead of a free-text guess.
+- **Mark production at creation.** A host or database containing `prod` (or a provider's production branch) could preselect a red color and a "Production" label, and offer read-only or ask-before-writing access there, so the safety decision happens before the first query instead of after the first mistake.
+- **Add every database in a pasted `.env`.** A `.env` often holds several (`DATABASE_URL`, `ANALYTICS_DATABASE_URL`, `SHADOW_DATABASE_URL`); the parser takes the first. Listing all of them with a checkbox each would add a project's databases in one paste, named from their variable.
+- **Open in Tamery links beyond the desktop.** The desktop app opens `postgres://`, `mysql://` and the other database schemes, but a browser can register only `web+` schemes, so the web app gets none. A `tamery://connect?url=…` link (and `tamery add <url>` in the CLI) would reach both.
+- **Fill the password from a matching link.** A database link that matches a saved connection opens it as is; when the saved string has no password and the link carries one, offering to store it would skip the password form.
+- **Secrets from a password manager.** Accept `op://vault/item/password` (1Password) and Keychain references in the password field, resolved at connect time, so a synced connection string never holds the secret itself.
+
 ## Developer experience
 
 - **Enforce the 300-line ceiling in lint.** `code-style.md` sets it, but `oxlint.config.ts` has no `max-lines`, and about 40 files are over it (`definitions/sections/constraints.tsx` is 660). Split those files, then turn `max-lines` on so the ceiling holds without a review.

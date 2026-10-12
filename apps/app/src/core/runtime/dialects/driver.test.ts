@@ -71,3 +71,16 @@ test('dialect caches reuse equal inputs with fresh log callbacks', async () => {
   await sql`SELECT 1`.execute(db)
   expect(log).toHaveBeenCalledTimes(1)
 })
+
+test('the web app never sends an SSH connection string to a proxy', () => {
+  execute.mockClear()
+  cloudExecute.mockClear()
+  expect(() =>
+    createDialectProvider(ConnectionType.Postgres, {
+      connectionString:
+        'postgres://user:password@db.internal/db?ssh_host=bastion&ssh_auth=key&ssh_key=secret',
+    }).execute({ query: 'SELECT 1', values: [] })
+  ).toThrow('SSH tunnels run in the Tamery desktop app')
+  expect(execute).not.toHaveBeenCalled()
+  expect(cloudExecute).not.toHaveBeenCalled()
+})

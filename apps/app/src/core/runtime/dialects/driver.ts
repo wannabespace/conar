@@ -1,5 +1,9 @@
 import { rowObjects } from '@tamery/connection/queries'
-import { isLocalhostConnectionString } from '@tamery/connection/utils'
+import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
+import {
+  isLocalhostConnectionString,
+  isSshConnectionString,
+} from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { PORTS } from '@tamery/shared/ports'
@@ -72,6 +76,7 @@ export const createDialectProvider = (
 
   const maxRows = options.resultSets?.maxRows
   const resolveTransport = () => {
+    const usesSsh = isSshConnectionString(options.connectionString)
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
@@ -87,6 +92,7 @@ export const createDialectProvider = (
           isLocalhostConnectionString(options.connectionString),
         isPasswordPopulated: connectionString?.isPasswordPopulated,
         proxy,
+        usesSsh,
       }
     )
 
@@ -100,6 +106,10 @@ export const createDialectProvider = (
     const electron = window.electron?.query[type]
     if (electron) {
       return { electron, kind: 'electron' as const }
+    }
+
+    if (usesSsh) {
+      throw new Error(SSH_DESKTOP_ONLY)
     }
 
     return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[type] }

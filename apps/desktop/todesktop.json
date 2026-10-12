@@ -14,7 +14,16 @@
   "bundleWorkspacePackages": {
     "enabled": true
   },
-  "appProtocolScheme": "tamery",
+  "appProtocolScheme": [
+    "tamery",
+    "clickhouse",
+    "mariadb",
+    "mssql",
+    "mysql",
+    "postgres",
+    "postgresql",
+    "sqlserver"
+  ],
   "mac": {
     "category": "public.app-category.developer-tools",
     "icon": "./resources/macos-icon-1024x1024.png"

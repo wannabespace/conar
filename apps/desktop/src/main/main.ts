@@ -198,13 +198,13 @@ export const createWindow = (route?: string) => {
 }
 
 app.on('ready', () => {
-  const win = createWindow()
+  createWindow()
 
   ipcMain.handle('app.openWindow', (_event, route: string) => {
     createWindow(route)
   })
 
-  setupProtocolHandler(win)
+  setupProtocolHandler(createWindow)
 
   void restoreMcpServer()
 

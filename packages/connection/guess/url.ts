@@ -1,0 +1,92 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { tryCatch } from '@tamery/shared/utils'
+
+import { toConnectionParts, typeOfScheme } from '../connection-parts'
+import { adoPairs, adoParts } from './ado'
+import { hostHintOf } from './hosts'
+import type { DatabaseGuess } from './types'
+
+const URL_PATTERN = /(?:jdbc:)?[a-z][\w+.-]*:\/\/[^\s"'`<>]+/giu
+const TRAILING_PUNCTUATION = /[.,;:)\]]+$/u
+const WEB_SCHEME = /^https?:/iu
+const SEMICOLON_URL =
+  /^(?:sqlserver|mssql):\/\/(?<address>[^;/?]*);(?<props>.*)$/iu
+const HTTPS_DEFAULT_PORT = '443'
+
+const decode = (value: string) =>
+  tryCatch(() => decodeURIComponent(value)).data ?? value
+
+const takeParam = (params: URLSearchParams, keys: string[]) => {
+  const value = keys.map((key) => params.get(key)).find(Boolean) ?? ''
+  for (const key of keys) {
+    params.delete(key)
+  }
+  return value
+}
+
+const guessOfUrl = (candidate: string): DatabaseGuess => {
+  const format = candidate.toLowerCase().startsWith('jdbc:') ? 'jdbc' : 'url'
+  const url = candidate.replace(/^jdbc:/iu, '')
+
+  const semicolonUrl = SEMICOLON_URL.exec(url)?.groups
+  if (semicolonUrl) {
+    const pairs = adoPairs(semicolonUrl.props ?? '')
+    if (semicolonUrl.address) {
+      pairs.set('server', semicolonUrl.address.replace(':', ','))
+    }
+    return { format, parts: { ...adoParts(pairs), type: ConnectionType.MSSQL } }
+  }
+
+  const { ssh, ...parts } = toConnectionParts(url)
+  const params = new URLSearchParams(parts.options)
+  const user = decode(parts.user) || takeParam(params, ['user', 'username'])
+  const password = decode(parts.password) || takeParam(params, ['password'])
+  const database =
+    parts.database || takeParam(params, ['database', 'databaseName', 'dbname'])
+  const isBareHttps = !parts.port && url.toLowerCase().startsWith('https:')
+
+  return {
+    format,
+    parts: {
+      ...parts,
+      database,
+      options: params.toString(),
+      password,
+      port: isBareHttps ? HTTPS_DEFAULT_PORT : parts.port,
+      ssh: ssh ?? undefined,
+      user,
+    },
+  }
+}
+
+const urlsIn = (text: string) =>
+  Array.from(text.matchAll(URL_PATTERN), ([match]) =>
+    match.replace(TRAILING_PUNCTUATION, '')
+  ).filter((url) => typeOfScheme(url.slice(0, url.indexOf('://'))))
+
+export const guessUrl = (text: string): DatabaseGuess | null => {
+  const url = urlsIn(text).find((candidate) => !WEB_SCHEME.test(candidate))
+  return url ? guessOfUrl(url) : null
+}
+
+const CLICKHOUSE_HTTP_PORTS = new Set(['8123', '8443'])
+const CLICKHOUSE_NAME = /clickhouse/iu
+
+/** Any page link is http(s) too, so one counts as ClickHouse only with evidence: its HTTP port, a ClickHouse Cloud host, or the word in its surroundings (`CLICKHOUSE_URL=`, a `clickhouse` key). Tried once nothing else matched, since any `APP_URL=https://…` would win otherwise. */
+export const guessWebUrl = (
+  text: string,
+  context = text
+): DatabaseGuess | null => {
+  const url = urlsIn(text).find((candidate) => {
+    if (!WEB_SCHEME.test(candidate)) {
+      return false
+    }
+    const { hostname, port } = tryCatch(() => new URL(candidate)).data ?? {}
+    return (
+      CLICKHOUSE_HTTP_PORTS.has(port ?? '') ||
+      hostHintOf(hostname ?? '')?.type === ConnectionType.ClickHouse ||
+      CLICKHOUSE_NAME.test(context)
+    )
+  })
+  return url ? guessOfUrl(url) : null
+}

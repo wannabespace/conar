@@ -1,10 +1,12 @@
 import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
-import { type } from '@orpc/server'
+import { ORPCError, type } from '@orpc/server'
 import type { QueryExecutor } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
+import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
+import { isSshConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
@@ -48,6 +50,18 @@ interface Resolvers<T extends AnyBuilder> {
   owner: (context: HandlerContext<T>) => string
 }
 
+const connectionStringOf = async <T extends AnyBuilder>(
+  resolve: Resolvers<T>,
+  input: ConnectionInput,
+  context: HandlerContext<T>
+) => {
+  const connectionString = await resolve.connectionString(input, context)
+  if (isSshConnectionString(connectionString)) {
+    throw new ORPCError('BAD_REQUEST', { message: SSH_DESKTOP_ONLY })
+  }
+  return connectionString
+}
+
 const createQueryDialect = <T extends AnyBuilder>(
   dialect: QueryExecutor,
   orpc: T,
@@ -59,7 +73,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.beginTransaction({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await connectionStringOf(resolve, input, context),
           ownerId: resolve.owner(context),
         })
       ),
@@ -68,7 +82,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.cancel({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await connectionStringOf(resolve, input, context),
         })
       ),
     commitTransaction: orpc
@@ -81,7 +95,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.execute({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await connectionStringOf(resolve, input, context),
         })
       ),
     executeTransaction: orpc

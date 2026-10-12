@@ -1,4 +1,8 @@
-export const FREE_WEEKLY_LIMITS = { filters: 20, mcp: 100 } as const
+export const FREE_WEEKLY_LIMITS = {
+  connection: 10,
+  filters: 20,
+  mcp: 100,
+} as const
 
 export type MeteredFeature = keyof typeof FREE_WEEKLY_LIMITS
 

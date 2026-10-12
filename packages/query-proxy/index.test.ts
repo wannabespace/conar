@@ -8,7 +8,7 @@ import { createQueryRouter } from '.'
 const builder = os.$context<{ userId: string }>()
 const orpc = builder.use(builder.middleware(({ next }) => next()))
 const router = createQueryRouter(orpc, {
-  connectionString: () => '',
+  connectionString: () => 'http://localhost:8123',
   owner: (context) => context.userId,
 })
 

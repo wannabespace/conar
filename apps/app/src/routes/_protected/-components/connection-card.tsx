@@ -1,3 +1,4 @@
+import { connectionSecrets } from '@tamery/connection/secrets'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
@@ -111,15 +112,12 @@ export const ConnectionCard = ({
       return
     }
 
-    const url = new SafeURL(
-      await connectionStringsCollection.utils.decrypt(connection.id)
-    )
-    url.password = ''
-
     const connectionStringRecord =
       await connectionStringsCollection.utils.prepare({
         connectionId: connection.id,
-        connectionString: url.toString(),
+        connectionString: connectionSecrets.strip(
+          await connectionStringsCollection.utils.decrypt(connection.id)
+        ),
         updatedAt: record.updatedAt,
       })
 
@@ -138,7 +136,7 @@ export const ConnectionCard = ({
   const items = buildConnectionMenuItems({
     canSend,
     connection,
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    connectionString,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
     onOpenInNewWindow:

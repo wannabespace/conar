@@ -1,5 +1,6 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { SSH_PARAMS } from '@tamery/connection/ssh/params'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -11,15 +12,29 @@ import {
   CardTitle,
 } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { PasswordInput } from '@tamery/ui/components/custom/password-input'
+import { FieldGroup } from '@tamery/ui/components/field'
+import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
+import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { testConnectionQuery } from '~/core/queries/connection/test'
+
+const CREDENTIAL_LABELS = {
+  password: 'Password',
+  'ssh.passphrase': 'Key passphrase',
+  'ssh.password': 'SSH password',
+  'ssh.privateKey': 'SSH private key',
+}
+
+const EMPTY_CREDENTIALS = {
+  password: '',
+  ssh: { passphrase: '', password: '', privateKey: '' },
+}
 
 export const PasswordForm = ({
   connection,
@@ -30,16 +45,33 @@ export const PasswordForm = ({
 }) => {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
-  const [password, setPassword] = useState('')
+  const { data: connectionString } = useLiveQuery({
+    query: (q) =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+  })
+  const needsPassword =
+    connection.isPasswordExists && !connectionString?.isPasswordPopulated
+  const missingSshSecrets = connectionString?.missingSshSecrets ?? []
+  const missingFields = [
+    ...(needsPassword ? (['password'] as const) : []),
+    ...missingSshSecrets.map((secret) => `ssh.${secret}` as const),
+  ]
 
-  const { mutate: savePassword, status } = useMutation({
+  const { mutate: saveCredentials, status } = useMutation({
     meta: { event: 'connection_password_saved' },
-    mutationFn: async (passwordValue: string) => {
-      const baseString = await connectionStringsCollection.utils.decrypt(
-        connection.id
+    mutationFn: async (credentials: typeof EMPTY_CREDENTIALS) => {
+      const url = new SafeURL(
+        await connectionStringsCollection.utils.decrypt(connection.id)
       )
-      const url = new SafeURL(baseString)
-      url.password = passwordValue
+      if (needsPassword) {
+        url.password = credentials.password
+      }
+      for (const secret of missingSshSecrets) {
+        url.searchParams.set(SSH_PARAMS[secret], credentials.ssh[secret])
+      }
       url.pathname = connectionResource.name || ''
 
       await testConnectionQuery.run({
@@ -59,8 +91,7 @@ export const PasswordForm = ({
       })
     },
     onSuccess: () => {
-      toast.success('Password successfully saved!')
-      setPassword('')
+      toast.success('Credentials saved')
     },
     onError: (error) => {
       toast.error("We couldn't connect to the connection", {
@@ -68,6 +99,18 @@ export const PasswordForm = ({
       })
     },
   })
+
+  const form = useAppForm({
+    defaultValues: EMPTY_CREDENTIALS,
+    onSubmit: ({ value }) => saveCredentials(value),
+  })
+  const incomplete = useStore(
+    form.store,
+    ({ values }) =>
+      (needsPassword && !values.password) ||
+      missingSshSecrets.some((secret) => !values.ssh[secret])
+  )
+  const pending = status === 'pending'
 
   return (
     <div className="flex h-screen min-h-[inherit] flex-col justify-center">
@@ -86,47 +129,60 @@ export const PasswordForm = ({
             Back
           </Button>
         </div>
-        <form
-          className="flex w-full items-center justify-center"
-          onSubmit={(e) => {
-            e.preventDefault()
-            savePassword(password)
-          }}
-        >
+        <Form form={form} className="flex w-full items-center justify-center">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>Password Required</CardTitle>
+              <CardTitle>Credentials Required</CardTitle>
               <CardDescription>
-                To use this connection, you need to enter the password.
+                This device has no saved credentials for this connection yet.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PasswordInput
-                placeholder="••••••••"
-                value={password}
-                disabled={status === 'pending'}
-                onChange={(e) => setPassword(e.target.value)}
-                autoCapitalize="none"
-                autoFocus
-                autoComplete="password"
-                spellCheck="false"
-              />
+              <FieldGroup size="sm">
+                {missingFields.map((name, index) => (
+                  <form.AppField key={name} name={name}>
+                    {(field) => (
+                      <field.Field>
+                        <field.Label>{CREDENTIAL_LABELS[name]}</field.Label>
+                        {name === 'ssh.privateKey' ? (
+                          <field.Textarea
+                            data-mask
+                            rows={3}
+                            disabled={pending}
+                            spellCheck={false}
+                            autoComplete="off"
+                            autoFocus={index === 0}
+                            placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                          />
+                        ) : (
+                          <field.PasswordInput
+                            data-mask
+                            disabled={pending}
+                            autoComplete="off"
+                            autoFocus={index === 0}
+                          />
+                        )}
+                      </field.Field>
+                    )}
+                  </form.AppField>
+                ))}
+              </FieldGroup>
             </CardContent>
             <CardFooter>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={status === 'pending' || password === ''}
+                disabled={pending || incomplete}
               >
-                <LoadingContent loading={status === 'pending'}>
+                <LoadingContent loading={pending}>
                   {status === 'error'
-                    ? 'Retry Saving Password'
-                    : 'Save Password'}
+                    ? 'Retry Saving Credentials'
+                    : 'Save Credentials'}
                 </LoadingContent>
               </Button>
             </CardFooter>
           </Card>
-        </form>
+        </Form>
       </div>
     </div>
   )

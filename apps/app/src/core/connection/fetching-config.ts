@@ -1,3 +1,4 @@
+import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { Connection } from '~/core/connection/sync'
@@ -24,6 +25,8 @@ interface FetchingOptions {
   isPasswordPopulated?: boolean
   isLocalhost?: boolean
   proxy?: { enabled: boolean; url: string | null }
+  sshSecretsMissing?: boolean
+  usesSsh?: boolean
 }
 
 const REASONS = {
@@ -69,7 +72,9 @@ const resolveFlags = (
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
     isLocalhost: options?.isLocalhost ?? false,
-    needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
+    needsPassword:
+      (connection.isPasswordExists && isPasswordPopulated === false) ||
+      !!options?.sshSecretsMissing,
     passwordUnresolved:
       connection.isPasswordExists && isPasswordPopulated === undefined,
     proxyPreferred: !isElectron || options?.proxy?.enabled === true,
@@ -98,6 +103,10 @@ export const fetchingConfig = (
     return blocked('local', REASONS.connectionStringNotStored)
   }
 
+  if (options?.usesSsh && !isElectron) {
+    return blocked('local', SSH_DESKTOP_ONLY)
+  }
+
   if (passwordUnresolved) {
     return blocked('resolving-password')
   }
@@ -109,6 +118,10 @@ export const fetchingConfig = (
         ? REASONS.passwordMissingInDesktop
         : REASONS.passwordMissingInWeb
     )
+  }
+
+  if (options?.usesSsh) {
+    return allowed('local')
   }
 
   if ((isLocalhost || hasPassword) && proxyReachable && proxyPreferred) {

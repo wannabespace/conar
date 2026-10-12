@@ -14,6 +14,7 @@ import {
   use,
   useEffect,
   useId,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react'
@@ -63,11 +64,12 @@ const FieldLegend = ({
 const FieldGroup = ({
   className,
   size,
+  variant,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof fieldGroupVariants>) => (
   <div
     data-slot="field-group"
-    className={cn(fieldGroupVariants({ size }), className)}
+    className={cn(fieldGroupVariants({ size, variant }), className)}
     {...props}
   />
 )
@@ -108,7 +110,7 @@ const FieldLabel = ({
     data-slot="field-label"
     className={cn(
       `group/field-label peer/field-label has-data-checked:bg-input/30 flex w-fit gap-2 leading-snug transition-colors group-data-[disabled=true]/field:opacity-50`,
-      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:px-2.5 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:py-1.5`,
+      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:has-[[data-slot=radio-group-item][data-checked]]:ring-primary has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:px-2.5 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:py-1.5`,
       className
     )}
     {...props}
@@ -229,9 +231,11 @@ const FieldError = ({
     errorPeek.get
   )
   const [hovered, setHovered] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    if (!content) {
+    // A label's CSS-hidden twin of an input's error must not peek: its tooltip anchors at the window corner.
+    if (!content || !triggerRef.current?.checkVisibility()) {
       return
     }
     errorPeek.claim(id)
@@ -259,6 +263,7 @@ const FieldError = ({
       <TooltipTrigger
         render={
           <button
+            ref={triggerRef}
             type="button"
             data-slot="field-error"
             onPointerEnter={() => engage(true)}

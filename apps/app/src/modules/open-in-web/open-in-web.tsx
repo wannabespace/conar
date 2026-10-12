@@ -42,7 +42,8 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
 
   if (
     connection?.syncType !== SyncType.Cloud ||
-    connectionString?.isLocalhost
+    connectionString?.isLocalhost ||
+    connectionString?.usesSsh
   ) {
     return null
   }

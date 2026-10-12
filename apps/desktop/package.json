@@ -24,6 +24,8 @@
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:",
+    "ssh-config": "catalog:",
+    "ssh2": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

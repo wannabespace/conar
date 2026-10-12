@@ -140,14 +140,24 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         commit()
       }
 
-      const catchUp = async () => {
-        const result = await Result.tryPromise({
-          catch: (error) => error,
-          try: async () => {
-            if (signal.aborted) {
-              return
+      const subscribe = async () => {
+        const attempt = new AbortController()
+        const attemptSignal = AbortSignal.any([signal, attempt.signal])
+        // Events wait for the snapshot and replay over it: a snapshot written
+        // after a newer event would overwrite it or resurrect a deleted row.
+        let buffered: SyncMessage<T>[] | null = []
+        const events = config.events({
+          signal: attemptSignal,
+          write: (item) => {
+            if (buffered) {
+              buffered.push(item)
+            } else {
+              writeItems([item])
             }
-
+          },
+        })
+        const catchUp = async () => {
+          try {
             await collection.toArrayWhenReady()
             // Server versions, not visible rows: an unsent insert would come
             // back as a delete racing the outbox, and a row with a pending
@@ -155,19 +165,21 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
             const rows = [...collection._state.syncedData.values()].map(
               (item) => ({ id: config.getKey(item), updatedAt: item.updatedAt })
             )
-            writeItems(await config.sync({ rows, signal }))
-          },
-        })
-
-        if (result.isErr() && !signal.aborted) {
-          if (isUnauthorizedError(result.error)) {
-            abortController.abort(`${config.id} sync unauthorized`)
-          } else if (navigator.onLine) {
-            posthog.captureException(result.error)
+            writeItems(await config.sync({ rows, signal: attemptSignal }))
+          } finally {
+            writeItems(buffered ?? [])
+            buffered = null
+            firstSync.resolve()
           }
         }
 
-        firstSync.resolve()
+        try {
+          // A failed catch-up fails the attempt, so it retries with backoff
+          // instead of leaving the collection stale behind a live subscription.
+          await Promise.all([catchUp(), events])
+        } finally {
+          attempt.abort()
+        }
       }
 
       const run = async () => {
@@ -187,11 +199,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
             catch: (error) => error,
-            try: () =>
-              Promise.all([
-                catchUp(),
-                config.events({ signal, write: (item) => writeItems([item]) }),
-              ]),
+            try: subscribe,
           })
 
           if (result.isOk()) {

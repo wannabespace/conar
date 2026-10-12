@@ -4,6 +4,7 @@ import type { Rules } from 'permix'
 export type Permissions = {
   ai: {
     chat: ['use']
+    connection: ['use', 'unlimited']
     filter: ['use', 'unlimited']
     sql: ['use']
   }
@@ -27,6 +28,7 @@ export const permissionsOf = ({
   return {
     ai: {
       chat: { use: pro },
+      connection: { unlimited: pro, use: member },
       filter: { unlimited: pro, use: member },
       sql: { use: pro },
     },

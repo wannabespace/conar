@@ -1,7 +1,7 @@
 ---
 title: 'Security'
 sidebarTitle: 'Security'
-description: 'How Tamery encrypts connection strings and how the sync modes handle your password.'
+description: 'How Tamery encrypts connection strings and how the sync modes handle your password and SSH secrets.'
 ---
 
 Every connection string is encrypted before it leaves your device. The sync type controls whether your password — or the connection string itself — is stored in the cloud at all.
@@ -14,14 +14,14 @@ All connection strings are encrypted with a **per-workspace secret key**, unique
 
 When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
 
-To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned. To keep the connection string off the server entirely, use **Cloud (without connection string)**.
+To keep the server from ever handling your plaintext password, use **No password** — then only metadata is stored and returned. To keep the connection string off the server entirely, use **Metadata only**.
 
 ## Sync modes
 
 Every mode syncs the connection across your devices.
 
 <Tabs>
-  <Tab title="Cloud (with password)">
+  <Tab title="Full">
     Stores the full connection string, including the password, encrypted with your workspace key.
 
     - Synced to every device you sign in on.
@@ -31,18 +31,18 @@ Every mode syncs the connection across your devices.
     Best for dev and staging.
 
   </Tab>
-  <Tab title="Cloud (without password)">
+  <Tab title="No password">
     Stores only metadata (host, port, database, username). The password is **never** uploaded.
 
     - You enter the password the first time you use the connection.
     - It's kept on that device only, encrypted with your workspace key.
-    - Clear it anytime via the connection menu (**⋯ → Clear password**).
+    - Clear it anytime via the connection menu (**⋯ → Clear password**), which clears the SSH secrets too.
     - A compromised account exposes no stored password.
 
     Best for production or strict-policy environments.
 
   </Tab>
-  <Tab title="Cloud (without connection string)">
+  <Tab title="Metadata only">
     Stores only the connection's name, label and color. The connection string is **never** uploaded.
 
     - It's kept on the device where you created the connection, encrypted with your workspace key.
@@ -54,16 +54,35 @@ Every mode syncs the connection across your devices.
   </Tab>
 </Tabs>
 
+## SSH tunnels
+
+A connection can reach its database through an SSH tunnel. The tunnel settings are part of the connection string, so they're encrypted and synced with it.
+
+- Tunnels run only in the desktop app. The web app, `tamery proxy` and the cloud proxy refuse SSH connections.
+- **No password** also keeps the SSH password, private key and key passphrase off the server. Tamery asks for them the first time you open the connection on another device.
+- Tamery checks the SSH server's host key against your `~/.ssh/known_hosts`. A server it hasn't seen asks you to trust its key fingerprint once and adds it there; a key that changed refuses to connect.
+- With a key file or your SSH agent, the private key itself is never saved: Tamery stores only the key's path (and its passphrase, if any) and reads the key on your device when you connect.
+- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile` and `IdentityAgent` apply.
+
+## AI help with a failed test
+
+The explanations and fixes Tamery shows when a test fails run on your device. **Ask AI** is the only part that sends anything, and only when you click it. It sends:
+
+- the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host) — never the host itself
+- the driver options, with any value that could hold a secret or certificate replaced
+- whether a user and password are set, whether an SSH tunnel is on, and whether you're in the desktop or web app
+- the error message, with your host, user, database, password, SSH host and any IP address replaced by placeholders
+
 ## Choosing a mode
 
-| Situation                      | Mode                              |
-| ------------------------------ | --------------------------------- |
-| Local / dev databases          | Cloud (with password)             |
-| Staging                        | Cloud (with password)             |
-| Production                     | Cloud (without password)          |
-| External secret-storage policy | Cloud (without password)          |
-| Shared machines                | Cloud (without password)          |
-| Address must stay on device    | Cloud (without connection string) |
+| Situation                      | Mode          |
+| ------------------------------ | ------------- |
+| Local / dev databases          | Full          |
+| Staging                        | Full          |
+| Production                     | No password   |
+| External secret-storage policy | No password   |
+| Shared machines                | No password   |
+| Address must stay on device    | Metadata only |
 
 You can mix modes per connection.
 
