@@ -39,7 +39,7 @@ const UsageLine = () => {
     <p
       className={cn(
         isPending ? 'invisible' : riseClassName,
-        'text-muted-foreground mt-6 flex items-center gap-1.5 text-sm delay-750'
+        'text-muted-foreground flex shrink-0 items-center gap-1.5 text-sm delay-750 lg:h-9'
       )}
     >
       {!!userCount && (
@@ -91,57 +91,56 @@ const TiltedShowcase = () => {
 
 export const Hero = () => (
   <section className="overflow-x-clip pt-16 sm:pt-24">
-    <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center sm:px-6">
-      <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-        {HEADLINE_WORDS.map((word, index) => (
-          <Fragment key={word}>
-            {index > 0 && ' '}
-            <span
-              // oxlint-disable-next-line shadcn/no-inline-styles -- each word's stagger is its index times a step, which no class can describe
-              style={{ animationDelay: `${index * WORD_STAGGER_MS}ms` }}
-              className={wordClassName}
-            >
-              <span className="animate-focus-in fill-mode-both duration-900 ease-[cubic-bezier(0.32,0.72,0,1)] [animation-delay:inherit] motion-reduce:animate-none">
-                {word}
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+          {HEADLINE_WORDS.map((word, index) => (
+            <Fragment key={word}>
+              {index > 0 && ' '}
+              <span
+                // oxlint-disable-next-line shadcn/no-inline-styles -- each word's stagger is its index times a step, which no class can describe
+                style={{ animationDelay: `${index * WORD_STAGGER_MS}ms` }}
+                className={wordClassName}
+              >
+                <span className="animate-focus-in fill-mode-both duration-900 ease-[cubic-bezier(0.32,0.72,0,1)] [animation-delay:inherit] motion-reduce:animate-none">
+                  {word}
+                </span>
               </span>
-            </span>
-          </Fragment>
-        ))}
-      </h1>
-      <p
-        className={cn(
-          riseClassName,
-          'text-muted-foreground mt-6 text-lg text-balance delay-550'
-        )}
-      >
-        <span className="sm:block">
-          Postgres, MySQL, SQL Server and ClickHouse in one fast client.
-        </span>{' '}
-        AI writes the SQL, and your agents query through MCP.
-      </p>
-      <div
-        className={cn(
-          riseClassName,
-          'mt-8 flex flex-wrap justify-center gap-2 delay-650'
-        )}
-      >
-        <DownloadButton />
-        <Button
-          variant="outline"
-          size="lg"
-          render={
-            <a
-              href={import.meta.env.VITE_PUBLIC_WEB_URL}
-              aria-label="Open Tamery in your browser"
-            />
-          }
+            </Fragment>
+          ))}
+        </h1>
+        <p
+          className={cn(
+            riseClassName,
+            'text-muted-foreground mt-6 text-lg text-balance delay-550'
+          )}
         >
-          Open in browser
-        </Button>
+          <span className="sm:block">
+            Postgres, MySQL, SQL Server and ClickHouse in one fast client.
+          </span>{' '}
+          AI writes the SQL, and your agents query through MCP.
+        </p>
+        <div
+          className={cn(riseClassName, 'mt-8 flex flex-wrap gap-2 delay-650')}
+        >
+          <DownloadButton />
+          <Button
+            variant="outline"
+            size="lg"
+            render={
+              <a
+                href={import.meta.env.VITE_PUBLIC_WEB_URL}
+                aria-label="Open Tamery in your browser"
+              />
+            }
+          >
+            Open in browser
+          </Button>
+        </div>
       </div>
       <UsageLine />
     </div>
-    <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both mx-auto mt-16 max-w-7xl px-4 delay-800 duration-1400 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:animate-none sm:mt-20 sm:px-6">
+    <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both mx-auto mt-16 max-w-7xl px-4 delay-800 duration-1400 motion-reduce:animate-none sm:mt-20 sm:px-6">
       <div className="bg-primary relative isolate h-120 overflow-hidden rounded-3xl px-4 pt-10 perspective-distant sm:h-144 sm:px-8 sm:pt-16 xl:px-16">
         <MeshBackground className="-z-10" />
         <TiltedShowcase />

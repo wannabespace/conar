@@ -37,13 +37,11 @@ export const Navbar = () => {
   ]
 
   return (
-    <header
-      data-scrolled={scrolled || undefined}
-      className="data-scrolled:bg-body/80 data-scrolled:border-border sticky top-0 z-40 border-b border-transparent transition-colors data-scrolled:backdrop-blur-xl"
-    >
+    <header className="sticky top-0 z-40 h-16">
       <nav
         aria-label="Main"
-        className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6"
+        data-scrolled={scrolled || undefined}
+        className="data-scrolled:bg-popover/70 data-scrolled:ring-foreground/4 mx-auto grid h-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 transition-[max-width,height,margin,padding,border-radius,background-color,box-shadow,backdrop-filter] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-scrolled:mt-2 data-scrolled:h-12 data-scrolled:max-w-[min(64rem,100%-1rem)] data-scrolled:rounded-2xl data-scrolled:pr-2 data-scrolled:pl-4 data-scrolled:shadow-lg data-scrolled:ring data-scrolled:backdrop-blur-xl motion-reduce:transition-none sm:px-6"
       >
         <div className="flex">
           <Brand to={home} />

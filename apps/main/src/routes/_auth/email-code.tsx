@@ -84,7 +84,7 @@ const EmailCodePage = () => {
         value={code}
         onChange={setCode}
         onComplete={verify}
-        disabled={isPending}
+        loading={isPending}
         autoFocus
       />
       <div className="flex gap-4">

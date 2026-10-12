@@ -42,7 +42,7 @@ export const Features = () => (
       </BentoCard>
       <BentoCard
         title="One shortcut away"
-        description="Press ⌘P to open a table, start a query or ask AI."
+        description="Press ⌘P to open a table, start a query or chat with AI."
       >
         <KeyboardIllustration />
       </BentoCard>

@@ -81,7 +81,7 @@ const TwoFactorPage = () => {
           value={code}
           onChange={setCode}
           onComplete={verify}
-          disabled={isPending}
+          loading={isPending}
           autoFocus
         />
       )}

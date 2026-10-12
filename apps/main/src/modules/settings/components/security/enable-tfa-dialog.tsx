@@ -117,7 +117,7 @@ export const EnableTfaDialog = ({
                 value={code}
                 onChange={setCode}
                 onComplete={verifyTotp}
-                disabled={isPending}
+                loading={isPending}
                 autoFocus
               />
             </div>

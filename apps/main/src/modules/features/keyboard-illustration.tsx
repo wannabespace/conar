@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 
 import { HOUSE_EASE } from '~/utils/motion'
 
-const ROWS = ['Open table', 'New query', 'Ask AI']
+const ROWS = ['Open table', 'New query', 'Toggle AI chat']
 
 const PALETTE_AT = 0.55
 
