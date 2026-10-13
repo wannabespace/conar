@@ -1,4 +1,4 @@
-import { SUPPORT_EMAIL } from '@tamery/shared/constants'
+import { CONTACT_EMAIL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 
 import { resend } from '~/lib/resend'
@@ -19,13 +19,13 @@ export const contact = orpc
 
     const { data, error } = await resend.batch.send([
       {
-        from: 'Tamery <tamery@tamery.app>',
+        from: `Tamery <${CONTACT_EMAIL}>`,
         html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
         subject: `Contact request from ${context.user.email}`,
-        to: SUPPORT_EMAIL,
+        to: CONTACT_EMAIL,
       },
       {
-        from: 'Tamery <tamery@tamery.app>',
+        from: `Tamery <${CONTACT_EMAIL}>`,
         html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
         subject: 'Your contact request has been received by Tamery',
         to: context.user.email,

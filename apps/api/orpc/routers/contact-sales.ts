@@ -1,6 +1,6 @@
 import { ratelimit } from '@orpc/ratelimit'
 import { RedisRateLimiter } from '@orpc/ratelimit/redis'
-import { SUPPORT_EMAIL } from '@tamery/shared/constants'
+import { CONTACT_EMAIL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 
 import { redis } from '~/lib/redis'
@@ -13,7 +13,7 @@ const limiter = new RedisRateLimiter(redis, {
   window: 60 * 60 * 1000,
 })
 
-// Public and unauthenticated: it only ever mails SUPPORT_EMAIL (never the submitted address, or it becomes a relay) and is capped per IP.
+// Public and unauthenticated: it only ever mails CONTACT_EMAIL (never the submitted address, or it becomes a relay) and is capped per IP.
 export const contactSales = orpc
   .use(optionalAuthMiddleware)
   .use(
@@ -36,11 +36,11 @@ export const contactSales = orpc
     }
 
     const { error } = await resend.emails.send({
-      from: 'Tamery <tamery@tamery.app>',
+      from: `Tamery <${CONTACT_EMAIL}>`,
       html: `<p>From: ${Bun.escapeHTML(input.email)}</p><p>${Bun.escapeHTML(input.message).replaceAll('\n', '<br>')}</p>`,
       replyTo: input.email,
       subject: `Enterprise request from ${input.email}`,
-      to: SUPPORT_EMAIL,
+      to: CONTACT_EMAIL,
     })
 
     if (error) {

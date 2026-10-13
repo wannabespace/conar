@@ -14,7 +14,7 @@ export const MIN_WINDOW_HEIGHT = 300
 export const GITHUB_REPO_OWNER = 'wannabespace' as const
 export const GITHUB_REPO_NAME = 'tamery' as const
 
-export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
+export const CONTACT_EMAIL = 'hello@tamery.app'
 
 export const BREW_INSTALL_COMMAND = 'brew install --cask tamery'
 
