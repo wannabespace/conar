@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 const CONVERSATIONS = [
   {
     answer:
@@ -55,58 +53,61 @@ LIMIT 3`,
   },
 ] as const
 
-export type Conversation = (typeof CONVERSATIONS)[number]
+type Conversation = (typeof CONVERSATIONS)[number]
 
-const TICK_MS = 40
-const SEND_PAUSE_TICKS = 10
-export const TICKS_PER_WORD = 2
-const SQL_DELAY_TICKS = 4
-const RESULT_DELAY_TICKS = 14
-const HOLD_TICKS = 125
+const TYPE_MS = 40
+const SEND_PAUSE_MS = 400
+const WORD_MS = 80
+const SQL_DELAY_MS = 160
+const RESULT_DELAY_MS = 400
+const HOLD_MS = 5000
 
-export const timeline = (conversation: Conversation) => {
-  const sentAt = conversation.question.length + SEND_PAUSE_TICKS
-  const answered =
-    sentAt + conversation.answer.split(' ').length * TICKS_PER_WORD
-  return {
-    end: answered + RESULT_DELAY_TICKS + HOLD_TICKS,
-    resultAt: answered + RESULT_DELAY_TICKS,
-    sentAt,
-    sqlAt: answered + SQL_DELAY_TICKS,
-  }
+const held = (conversation: Conversation) => ({
+  conversation,
+  ms: HOLD_MS,
+  result: true,
+  sent: true,
+  sql: true,
+  typed: conversation.question.length,
+  words: conversation.answer.split(' ').length,
+})
+
+export type Frame = ReturnType<typeof held>
+
+const lead = (conversation: Conversation): Frame[] => {
+  const done = held(conversation)
+  return [
+    ...Array.from({ length: done.typed + 1 }, (_, typed) => ({
+      ...done,
+      ms: typed < done.typed ? TYPE_MS : SEND_PAUSE_MS,
+      result: false,
+      sent: false,
+      sql: false,
+      typed,
+      words: 0,
+    })),
+    ...Array.from({ length: done.words + 1 }, (_, words) => ({
+      ...done,
+      ms: words < done.words ? WORD_MS : SQL_DELAY_MS,
+      result: false,
+      sql: false,
+      words,
+    })),
+    { ...done, ms: RESULT_DELAY_MS, result: false },
+  ]
 }
 
-export const usePlayback = (playing: boolean) => {
-  const [state, setState] = useState<{
-    conversation: Conversation
-    tick: number
-  }>(() => ({
-    conversation: CONVERSATIONS[0],
-    tick: timeline(CONVERSATIONS[0]).resultAt,
-  }))
+const [first, ...later] = CONVERSATIONS
 
-  useEffect(() => {
-    if (!playing) {
-      return
-    }
-    const interval = setInterval(
-      () =>
-        setState(({ conversation, tick }) =>
-          tick < timeline(conversation).end
-            ? { conversation, tick: tick + 1 }
-            : {
-                conversation:
-                  CONVERSATIONS[
-                    (CONVERSATIONS.indexOf(conversation) + 1) %
-                      CONVERSATIONS.length
-                  ] ?? CONVERSATIONS[0],
-                tick: 0,
-              }
-        ),
-      TICK_MS
-    )
-    return () => clearInterval(interval)
-  }, [playing])
+export const REST_FRAME = held(first)
 
-  return state
-}
+export const FRAMES = [
+  REST_FRAME,
+  ...later.flatMap((conversation) => [
+    ...lead(conversation),
+    held(conversation),
+  ]),
+  ...lead(first),
+]
+
+export const FRAME_MS = FRAMES.map((frame) => frame.ms)

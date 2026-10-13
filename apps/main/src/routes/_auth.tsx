@@ -1,4 +1,5 @@
 import { Button } from '@tamery/ui/components/button'
+import { AuthSidePanel } from '@tamery/ui/components/custom/auth-side-panel'
 import {
   createFileRoute,
   Link,
@@ -9,8 +10,6 @@ import { type } from 'arktype'
 
 import { Brand } from '~/components/brand'
 import { Consent } from '~/modules/legal/legal-links'
-
-import { AuthSidePanel } from './_auth/-components/auth-side-panel'
 
 const AuthLayout = () => {
   const match = useMatches({

@@ -11,23 +11,17 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from '@tamery/ui/components/input-group'
-import {
-  AnimatePresence,
-  motion,
-  useInView,
-  useReducedMotion,
-} from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useRef } from 'react'
 
+import { useLoop } from '../use-loop'
 import { Answer } from './answer'
-import { timeline, usePlayback } from './playback'
+import { FRAME_MS, FRAMES, REST_FRAME } from './playback'
 
 export const ChatPanel = () => {
   const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref)
-  const reduceMotion = useReducedMotion()
-  const { conversation, tick } = usePlayback(inView && !reduceMotion)
-  const { sentAt } = timeline(conversation)
+  const frame = FRAMES[useLoop(ref, FRAME_MS) ?? 0] ?? REST_FRAME
+  const { conversation } = frame
 
   return (
     <div ref={ref} className="flex h-full w-72 shrink-0 flex-col pl-1.5">
@@ -48,7 +42,7 @@ export const ChatPanel = () => {
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
             className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-3 py-3 text-sm"
           >
-            <Answer conversation={conversation} tick={tick} />
+            <Answer frame={frame} />
           </motion.div>
         </AnimatePresence>
         <div className="shrink-0 p-2">
@@ -56,7 +50,9 @@ export const ChatPanel = () => {
             <InputGroupTextarea
               readOnly
               rows={1}
-              value={tick < sentAt ? conversation.question.slice(0, tick) : ''}
+              value={
+                frame.sent ? '' : conversation.question.slice(0, frame.typed)
+              }
               placeholder="Ask about your database…"
               className="min-h-20 pb-9"
             />

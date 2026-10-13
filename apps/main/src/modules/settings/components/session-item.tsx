@@ -16,54 +16,46 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { authClient } from '~/lib/auth'
-import { handleError } from '~/utils/error'
+import { orpc } from '~/lib/orpc'
 
 import { formatDeviceLabel } from './device-label'
 
 export const SessionItem = ({
+  id,
   userAgent,
   ipAddress,
-  token,
-  currentToken,
+  current,
   refetchSessions,
 }: {
-  userAgent?: string | null
-  ipAddress?: string | null
-  token: string
-  currentToken?: string
+  id: string
+  userAgent: string | null
+  ipAddress: string | null
+  current: boolean
   refetchSessions: () => void
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const { mutate: revokeSession, isPending: revokingSession } = useMutation({
-    mutationFn: async (sessionToken: string) => {
-      const { error } = await authClient.revokeSession({ token: sessionToken })
-
-      if (error) {
-        throw error
-      }
-    },
-    onError: handleError,
-    onSuccess: () => {
-      refetchSessions()
-      setIsOpen(false)
-      toast.success('Session revoked')
-    },
-  })
+  const { mutate: revokeSession, isPending: revokingSession } = useMutation(
+    orpc.account.revokeSession.mutationOptions({
+      meta: { event: 'session_revoked' },
+      onSuccess: () => {
+        refetchSessions()
+        setIsOpen(false)
+        toast.success('Session revoked')
+      },
+    })
+  )
 
   return (
     <SettingsRow
       title={
         <span className="flex items-center gap-2">
           {userAgent ? formatDeviceLabel(userAgent) : 'Unknown device'}
-          {token === currentToken && (
-            <Badge variant="secondary">This device</Badge>
-          )}
+          {current && <Badge variant="secondary">This device</Badge>}
         </span>
       }
       description={ipAddress && <span data-mask>{ipAddress}</span>}
     >
-      {token !== currentToken && (
+      {!current && (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
           <AlertDialogTrigger render={<Button variant="outline" size="sm" />}>
             Revoke
@@ -82,7 +74,7 @@ export const SessionItem = ({
               <Button
                 variant="destructive"
                 disabled={revokingSession}
-                onClick={() => revokeSession(token)}
+                onClick={() => revokeSession({ id })}
               >
                 <LoadingContent loading={revokingSession}>
                   Revoke

@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 import { handleError } from '~/utils/error'
 
 export const DeleteAccountDialog = ({
@@ -31,6 +32,7 @@ export const DeleteAccountDialog = ({
   const [confirmation, setConfirmation] = useState('')
 
   const { mutate, isPending } = useMutation({
+    meta: { event: 'account_deleted' },
     mutationFn: async () => {
       const { error } = await authClient.deleteUser({
         callbackURL: '/sign-in',
@@ -43,6 +45,7 @@ export const DeleteAccountDialog = ({
     onError: handleError,
     onSuccess: () => {
       toast.success('Account deleted successfully')
+      void posthog.reset()
       router.navigate({ to: '/sign-in' })
     },
   })

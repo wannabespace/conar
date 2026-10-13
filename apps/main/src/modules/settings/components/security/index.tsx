@@ -4,6 +4,7 @@ import {
 } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
 import { useMutation } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { authClient } from '~/lib/auth'
@@ -15,9 +16,11 @@ import { EnableTfaDialog } from './enable-tfa-dialog'
 
 const NO_SETUP: TotpSetup = { backupCodes: [], totpURI: '' }
 
+const { useRouteContext } = getRouteApi('/account')
+
 export const SecuritySettings = () => {
-  const { data } = authClient.useSession()
-  const twoFactorEnabled = data?.user?.twoFactorEnabled ?? false
+  const { user } = useRouteContext()
+  const twoFactorEnabled = user.twoFactorEnabled ?? false
 
   const [enableOpen, setEnableOpen] = useState(false)
   const [disableOpen, setDisableOpen] = useState(false)
@@ -27,6 +30,7 @@ export const SecuritySettings = () => {
     isPending: isEnabling,
     data: setup = NO_SETUP,
   } = useMutation({
+    meta: { event: 'two_factor_setup_started' },
     mutationFn: async () => {
       const result = await authClient.twoFactor.enable({
         fetchOptions: { throw: true },

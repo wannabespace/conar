@@ -30,13 +30,16 @@ export const Navbar = () => {
     { label: 'FAQ', link: { hash: 'faq', to: home } },
     { label: 'Releases', link: { to: '/releases' } },
   ]
+  const account = session?.user
+    ? { label: 'Account', to: '/account' as const }
+    : { label: 'Sign in', to: '/sign-in' as const }
 
   return (
     <header className="sticky top-0 z-40 h-16">
       <nav
         aria-label="Main"
         data-scrolled={scrolled || undefined}
-        className="data-scrolled:bg-popover/70 data-scrolled:ring-foreground/4 mx-auto grid h-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 transition-[max-width,height,margin,padding,border-radius,background-color,box-shadow,backdrop-filter] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-scrolled:mt-2 data-scrolled:h-12 data-scrolled:max-w-[min(64rem,100%-1rem)] data-scrolled:rounded-2xl data-scrolled:pr-2 data-scrolled:pl-4 data-scrolled:shadow-lg data-scrolled:ring data-scrolled:backdrop-blur-xl motion-reduce:transition-none sm:px-6"
+        className="data-scrolled:bg-popover/70 data-scrolled:ring-foreground/4 ease-house mx-auto grid h-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 transition-[max-width,height,margin,padding,border-radius,background-color,box-shadow,backdrop-filter] duration-300 data-scrolled:mt-2 data-scrolled:h-12 data-scrolled:max-w-[min(64rem,100%-1rem)] data-scrolled:rounded-2xl data-scrolled:pr-2 data-scrolled:pl-4 data-scrolled:shadow-lg data-scrolled:ring data-scrolled:backdrop-blur-xl motion-reduce:transition-none sm:px-6"
       >
         <div className="flex">
           <Brand to={home} />
@@ -59,9 +62,9 @@ export const Navbar = () => {
             variant="outline"
             size="sm"
             className="hidden sm:inline-flex"
-            render={<Link to={session?.user ? '/account' : '/sign-in'} />}
+            render={<Link to={account.to} />}
           >
-            {session?.user ? 'Account' : 'Sign in'}
+            {account.label}
           </Button>
           <Button size="sm" render={<Link to="/download" />}>
             Download
@@ -85,10 +88,8 @@ export const Navbar = () => {
                   {label}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuItem
-                render={<Link to={session?.user ? '/account' : '/sign-in'} />}
-              >
-                {session?.user ? 'Account' : 'Sign in'}
+              <DropdownMenuItem render={<Link to={account.to} />}>
+                {account.label}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

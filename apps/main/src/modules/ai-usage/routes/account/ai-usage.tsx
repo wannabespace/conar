@@ -26,23 +26,14 @@ import {
 } from '@tamery/ui/components/table'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
-import { endOfMonth, format, parse, startOfMonth, subMonths } from 'date-fns'
+import { createFileRoute } from '@tanstack/react-router'
+import { format, parse } from 'date-fns'
 import { useState } from 'react'
 
 import { AccountPage } from '~/components/account-page'
 import { orpc } from '~/lib/orpc'
 
-const { useLoaderData } = getRouteApi('/account/ai-usage')
-
-const MONTHS_SHOWN = 12
-
-const defaultRange = (): DateRange => ({
-  from: startOfMonth(subMonths(new Date(), MONTHS_SHOWN - 1)),
-  to: endOfMonth(new Date()),
-})
-
-const usageQueryOptions = (range: DateRange | undefined) =>
+const usageQueryOptions = (range?: DateRange) =>
   orpc.account.aiUsage.queryOptions({
     input: { from: range?.from, to: range?.to },
   })
@@ -70,7 +61,7 @@ const formatRange = (range: DateRange | undefined) => {
 }
 
 const RouteComponent = () => {
-  const [range, setRange] = useState<DateRange | undefined>(useLoaderData())
+  const [range, setRange] = useState<DateRange>()
   const { data: usage = [] } = useQuery(usageQueryOptions(range))
 
   return (
@@ -156,13 +147,10 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute('/account/ai-usage')({
   component: RouteComponent,
-  // The default range comes from the loader so the client reuses the server's query instead of refetching it under its own time zone.
   loader: async ({ context }) => {
-    const range = defaultRange()
     await context.queryClient.query({
-      ...usageQueryOptions(range),
+      ...usageQueryOptions(),
       staleTime: 'static',
     })
-    return range
   },
 })

@@ -33,7 +33,7 @@ export const Pricing = () => {
     >
       <Reveal className="flex flex-col items-start gap-6">
         <SectionHeading id="pricing-heading" title="Start free.">
-          Upgrade for more AI.
+          Upgrade when you outgrow it.
         </SectionHeading>
         <Tabs value={period} onValueChange={setPeriod}>
           <TabsList aria-label="Billing period">

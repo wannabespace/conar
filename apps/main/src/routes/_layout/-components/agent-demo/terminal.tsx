@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import { HOUSE_EASE } from '~/utils/motion'
 
+import { WindowButtons } from '../window-buttons'
 import {
   APPROVAL_STEP,
   DONE_STEP,
@@ -45,9 +46,7 @@ const ToolCall = ({ name, sql }: { name: string; sql: string }) => (
 export const Terminal = ({ step }: { step: number }) => (
   <div className="bg-background ring-foreground/4 absolute top-0 left-0 flex w-full flex-col overflow-hidden rounded-xl shadow-xl ring sm:w-[62%]">
     <div className="relative flex h-9 shrink-0 items-center gap-2 border-b px-3">
-      <span className="bg-foreground/12 size-3 rounded-full" />
-      <span className="bg-foreground/12 size-3 rounded-full" />
-      <span className="bg-foreground/12 size-3 rounded-full" />
+      <WindowButtons muted />
       <span className="text-muted-foreground absolute inset-x-0 text-center text-xs">
         claude — storefront
       </span>

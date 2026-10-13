@@ -1,3 +1,5 @@
+import { FREE_WEEKLY_LIMITS } from '@tamery/shared/usage'
+
 export interface PricingPlan {
   name: string
   price: {
@@ -13,8 +15,8 @@ export const HOBBY_PLAN: PricingPlan = {
   features: [
     'Table browser, SQL editor and visualizer',
     'Unlimited synced connections',
-    '20 AI filters a week',
-    '100 MCP agent queries a week',
+    `${FREE_WEEKLY_LIMITS.filters} AI filters a week`,
+    `${FREE_WEEKLY_LIMITS.mcp} MCP agent queries a week`,
   ],
   name: 'Free',
   price: {

@@ -3,6 +3,8 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ReactNode } from 'react'
 
+import { pageCardClass } from '~/utils/card'
+
 export const PlanCard = ({
   action,
   description,
@@ -22,8 +24,9 @@ export const PlanCard = ({
 }) => (
   <article
     className={cn(
-      'ring-foreground/4 flex flex-col rounded-2xl p-6 ring sm:p-8',
-      highlighted ? 'bg-popover shadow-md' : 'bg-background shadow-xs'
+      pageCardClass,
+      'flex flex-col p-6 sm:p-8',
+      highlighted && 'bg-popover shadow-md'
     )}
   >
     <h3 className="font-medium">{name}</h3>

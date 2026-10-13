@@ -1,3 +1,4 @@
+import { silently } from '@tamery/shared/utils'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { authClient } from '~/lib/auth'
@@ -10,10 +11,12 @@ export const Route = createFileRoute('/_layout/')({
   loader: async ({ context }) => {
     const [{ data }] = await Promise.all([
       authClient.getSession(),
-      context.queryClient.query({
-        ...orpc.userCount.queryOptions(),
-        staleTime: 'static',
-      }),
+      silently(() =>
+        context.queryClient.query({
+          ...orpc.userCount.queryOptions(),
+          staleTime: 'static',
+        })
+      ),
     ])
 
     if (data?.user) {

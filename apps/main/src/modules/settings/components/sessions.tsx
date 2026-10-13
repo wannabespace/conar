@@ -26,15 +26,13 @@ import { SessionItem } from './session-item'
 
 export const SessionsSettings = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const { data } = authClient.useSession()
-  const currentToken = data?.session?.token
-
   const { data: sessions, refetch: refetchSessions } = useSuspenseQuery(
     orpc.account.sessions.queryOptions()
   )
 
   const { mutate: revokeOtherSessions, isPending: revokingOthers } =
     useMutation({
+      meta: { event: 'other_sessions_revoked' },
       mutationFn: async () => {
         const { error } = await authClient.revokeOtherSessions()
 
@@ -50,21 +48,16 @@ export const SessionsSettings = () => {
       },
     })
 
-  const otherSessions = sessions.filter((s) => s.token !== currentToken)
-
   return (
     <SettingsGroup title="Sessions">
       {sessions.map((session) => (
         <SessionItem
           key={session.id}
-          userAgent={session.userAgent}
-          ipAddress={session.ipAddress}
-          token={session.token}
-          currentToken={currentToken}
+          {...session}
           refetchSessions={refetchSessions}
         />
       ))}
-      {otherSessions.length > 0 && (
+      {sessions.some((session) => !session.current) && (
         <SettingsRow
           title="Sign out other devices"
           description="Every session except this one ends right away."

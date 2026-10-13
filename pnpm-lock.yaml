@@ -1026,6 +1026,9 @@ importers:
       nitro:
         specifier: 'catalog:'
         version: 3.0.260311-beta(@azure/identity@4.13.1(supports-color@7.2.0))(chokidar@5.0.0)(dotenv@17.4.2)(ioredis@5.11.1(supports-color@7.2.0))(jiti@2.7.0)(lru-cache@11.5.2)(mysql2@3.24.3(@types/node@26.1.1))(vite@8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+      posthog-js:
+        specifier: 'catalog:'
+        version: 1.425.1(@types/react@19.3.0)(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -3561,9 +3564,6 @@ packages:
 
   '@posthog/core@1.50.2':
     resolution: {integrity: sha512-El7y/ipZ45OFBRTN/+ixat9Nw21bW+pKKnX0G+rG4rWxBtDA47Ub/ZUnHvZNhAufNInQr4AYCUeWQsuJsTcoKg==}
-
-  '@posthog/types@1.407.1':
-    resolution: {integrity: sha512-WhbkXPC2rgylXqmxHqv70ffI3k+KxyR6s7DBIfr5NvIqHkxp6v0pk31D/jbz0DNVbzwkLjyll2pxr4FNbJiYzg==}
 
   '@posthog/types@1.408.0':
     resolution: {integrity: sha512-xMY8QrRKsTYu4A4Of7XF/xEt0HcnZOWwnICm3do7tGKA0lTlnnr4YW0AHQN1Uv2P3BDqf5GQoqh91MKE+dgdcA==}
@@ -12521,13 +12521,11 @@ snapshots:
   '@posthog/browser-common@0.7.1':
     dependencies:
       '@posthog/core': 1.50.2
-      '@posthog/types': 1.407.1
+      '@posthog/types': 1.408.0
 
   '@posthog/core@1.50.2':
     dependencies:
-      '@posthog/types': 1.407.1
-
-  '@posthog/types@1.407.1': {}
+      '@posthog/types': 1.408.0
 
   '@posthog/types@1.408.0': {}
 

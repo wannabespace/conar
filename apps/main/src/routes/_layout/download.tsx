@@ -1,17 +1,17 @@
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { AppLogoSquare } from '@tamery/ui/components/brand/app-logo-square'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 
 import { DOWNLOAD_PLATFORMS } from '~/components/download-files'
-import { getOSIsomorphic } from '~/utils/os'
 import { seo } from '~/utils/seo'
 
 import { PlatformCard } from './-components/platform-card'
 
-const os = getOSIsomorphic()
+const { useLoaderData } = getRouteApi('/_layout')
 
 const DownloadPage = () => {
+  const os = useLoaderData()
   const platforms = DOWNLOAD_PLATFORMS.toSorted(
     (a, b) => Number(b.os === os?.type) - Number(a.os === os?.type)
   )
@@ -30,7 +30,11 @@ const DownloadPage = () => {
       </header>
       <div className="mt-16 grid items-start gap-4 md:grid-cols-3">
         {platforms.map((platform) => (
-          <PlatformCard key={platform.os} platform={platform} />
+          <PlatformCard
+            key={platform.os}
+            platform={platform}
+            isCurrent={platform.os === os?.type}
+          />
         ))}
       </div>
       <p className="text-muted-foreground mt-10 text-sm">

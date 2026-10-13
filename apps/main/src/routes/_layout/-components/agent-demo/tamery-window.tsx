@@ -5,6 +5,7 @@ import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { AnimatePresence } from 'motion/react'
 
+import { WindowButtons } from '../window-buttons'
 import { ApprovalDialog } from './approval-dialog'
 import { OrdersGrid } from './orders-grid'
 import { APPROVAL_STEP, RUN_PRESS_STEP, UPDATED_STEP } from './script'
@@ -12,11 +13,7 @@ import { APPROVAL_STEP, RUN_PRESS_STEP, UPDATED_STEP } from './script'
 export const TameryWindow = ({ step }: { step: number }) => (
   <div className="bg-body ring-foreground/4 absolute top-68 right-0 left-6 flex flex-col overflow-hidden rounded-xl shadow-2xl ring sm:top-16 sm:left-auto sm:w-[58%]">
     <div className="bg-card flex h-9 shrink-0 items-center gap-3 border-b px-3 text-xs">
-      <div className="flex shrink-0 gap-2">
-        <span className="bg-destructive size-3 rounded-full" />
-        <span className="bg-warning size-3 rounded-full" />
-        <span className="bg-success size-3 rounded-full" />
-      </div>
+      <WindowButtons />
       <AppLogo className="text-primary size-4" />
       <span className="flex min-w-0 items-center gap-1.5">
         <ConnectionIcon type={ConnectionType.Postgres} className="size-3.5" />

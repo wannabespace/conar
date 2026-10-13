@@ -11,46 +11,34 @@ interface Token {
   htmlStyle?: CSSProperties
 }
 
-// Never import statically: Shiki is ~190 KB, and the root error page would put it on every page's critical path
 let highlighter: CodeHighlighterPlugin | undefined
-
-const runHighlighter = (
-  instance: CodeHighlighterPlugin,
-  code: string,
-  language: string,
-  onTokens: (tokens: Token[][]) => void
-) =>
-  instance.highlight(
-    {
-      code,
-      language: language as HighlightOptions['language'],
-      themes: instance.getThemes(),
-    },
-    ({ tokens }) => onTokens(tokens)
-  )?.tokens
-
-const highlightOnceLoaded = async (
-  code: string,
-  language: string,
-  onTokens: (tokens: Token[][]) => void
-) => {
-  const { code: instance } = await import('@streamdown/code')
-  highlighter = instance
-  const tokens = runHighlighter(highlighter, code, language, onTokens)
-  if (tokens) {
-    onTokens(tokens)
-  }
-}
 
 const highlight = (
   code: string,
   language: string,
   onTokens: (tokens: Token[][]) => void
-) => {
+): Token[][] | undefined => {
   if (highlighter) {
-    return runHighlighter(highlighter, code, language, onTokens)
+    return highlighter.highlight(
+      {
+        code,
+        language: language as HighlightOptions['language'],
+        themes: highlighter.getThemes(),
+      },
+      ({ tokens }) => onTokens(tokens)
+    )?.tokens
   }
-  void highlightOnceLoaded(code, language, onTokens)
+  // Never import statically or on the server: Shiki is ~190 KB on every page's critical path, and its wasm breaks the site's server bundle
+  if (!import.meta.env.SSR) {
+    void (async () => {
+      const { code: loaded } = await import('@streamdown/code')
+      highlighter = loaded
+      const tokens = highlight(code, language, onTokens)
+      if (tokens) {
+        onTokens(tokens)
+      }
+    })()
+  }
 }
 
 const useTokens = (code: string, language: string) => {

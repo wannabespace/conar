@@ -4,15 +4,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { Link } from '@tanstack/react-router'
+import { getRouteApi, Link } from '@tanstack/react-router'
 
-import { getOSIsomorphic } from '~/utils/os'
+import { posthog } from '~/lib/posthog'
 
 import { DOWNLOAD_PLATFORMS } from './download-files'
 
-const os = getOSIsomorphic()
+const { useLoaderData } = getRouteApi('/_layout')
 
 export const DownloadButton = () => {
+  const os = useLoaderData()
   const platform = DOWNLOAD_PLATFORMS.find(
     (candidate) => candidate.os === os?.type
   )
@@ -43,6 +44,12 @@ export const DownloadButton = () => {
             href={firstFile.link}
             download
             aria-label={`Download for ${os.label}`}
+            onClick={() =>
+              posthog.capture('app_downloaded', {
+                file: firstFile.label,
+                os: platform.os,
+              })
+            }
           />
         ) : (
           <Link to="/download" />

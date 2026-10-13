@@ -23,7 +23,7 @@ export const CompletionIllustration = () => (
           <span className="whitespace-pre">{rest}</span>
           {index === LINES.length - 1 && (
             <span className="relative">
-              <span className="bg-primary inline-block h-4 w-px translate-y-0.5 animate-pulse" />
+              <span className="bg-primary inline-block h-4 w-px translate-y-0.5 animate-pulse motion-reduce:animate-none" />
               <motion.div
                 variants={pop(0.4, -4)}
                 className="bg-popover ring-foreground/4 absolute top-8 left-0 w-44 origin-top-left overflow-hidden rounded-lg p-1 font-sans text-xs shadow-lg ring"

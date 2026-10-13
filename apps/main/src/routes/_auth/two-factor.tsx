@@ -18,6 +18,7 @@ const TwoFactorPage = () => {
   const [isBackupCode, setIsBackupCode] = useState(false)
 
   const { mutate: verify, isPending } = useMutation({
+    meta: { event: 'two_factor_verified' },
     mutationFn: async (value: string) => {
       const { error } = isBackupCode
         ? await authClient.twoFactor.verifyBackupCode({ code: value })

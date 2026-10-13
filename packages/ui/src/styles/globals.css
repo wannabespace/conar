@@ -20,9 +20,8 @@
 @custom-variant traffic-lights (&:where(.electron.mac:not(.window-fullscreen) *));
 
 @theme inline {
-  /* tw-animate-css animates `filter: blur(0)` on every enter/exit, and Chrome never runs a blur
-     on the compositor, so each one would stall with the main thread; blur-in/out-* are dropped, and a blur entrance is
-     animate-focus-in on its own element */
+  /* Drops tw-animate-css's `filter: blur(0)`: Chrome never composites a blur, so every enter/exit
+     would stall on the main thread. blur-in/out-* do nothing; use animate-focus-in on its own element */
   @keyframes enter {
     from {
       opacity: var(--tw-enter-opacity, 1);
@@ -67,6 +66,7 @@
     }
   }
 
+  --ease-house: cubic-bezier(0.32, 0.72, 0, 1);
   --default-border-width: 0.5px;
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;

@@ -3,10 +3,14 @@ import type { GridRow } from '@tamery/table'
 import { useQueries } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
+import type { ConnectionResource } from '~/core/connection/sync'
+import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
+import type { RowsQueryProps } from '~/core/queries/rows/list'
 import {
   resourceRowsQuery,
   resourceRowsQueryKey,
 } from '~/core/queries/rows/list'
+import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import type { Column } from '~/core/table/cell/utils'
 import {
@@ -14,6 +18,7 @@ import {
   useReferencedColumns,
 } from '~/core/table/referenced-columns'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
+import { queryClient } from '~/lib/query-client'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -71,6 +76,64 @@ export const labelColumnOf = (
   key: string
 ) => (stored === undefined ? defaultLabel(columns, key) : stored || undefined)
 
+const referenceLabelsQueryOptions = ({
+  connectionResource,
+  foreign,
+  id,
+  keys,
+  label,
+  referenced,
+}: {
+  connectionResource: ConnectionResource
+  foreign: Pick<NonNullable<Column['foreign']>, 'column' | 'schema' | 'table'>
+  id: string
+  keys: string[]
+  label: string
+  referenced: RowsQueryProps['columns']
+}) => ({
+  queryFn: async () => {
+    const found = await resourceRowsQuery({
+      columns: referenced,
+      limit: keys.length,
+      offset: 0,
+      query: {
+        filters: [{ column: foreign.column, ref: IN_FILTER, values: keys }],
+      },
+      schema: foreign.schema,
+      select: [foreign.column, label],
+      table: foreign.table,
+    }).run(await connectionResourceToQueryParams(connectionResource))
+    return [
+      id,
+      new Map(
+        found.flatMap((row) => {
+          const text = row[label]
+          return text === null || text === undefined || text === ''
+            ? []
+            : [
+                [
+                  String(row[foreign.column]),
+                  getDisplayValue(text, LABEL_CHARS),
+                ] as const,
+              ]
+        })
+      ),
+    ] as const
+  },
+  queryKey: [
+    ...resourceRowsQueryKey({
+      connectionResource,
+      schema: foreign.schema,
+      table: foreign.table,
+    }),
+    'labels',
+    id,
+    foreign.column,
+    label,
+    keys,
+  ],
+})
+
 export const useReferenceLabels = (
   columns: Column[],
   rows: GridRow[],
@@ -95,51 +158,87 @@ export const useReferenceLabels = (
     queries: labeled.map(({ foreign, id, label }) => {
       const keys = keysIn(rows, id)
       return {
-        enabled: keys.length > 0,
-        queryFn: async () => {
-          const found = await resourceRowsQuery({
-            columns: referenced.get(id),
-            limit: keys.length,
-            offset: 0,
-            query: {
-              filters: [
-                { column: foreign.column, ref: IN_FILTER, values: keys },
-              ],
-            },
-            schema: foreign.schema,
-            select: [foreign.column, label],
-            table: foreign.table,
-          }).run(await connectionResourceToQueryParams(connectionResource))
-          return [
-            id,
-            new Map(
-              found.flatMap((row) => {
-                const text = row[label]
-                return text === null || text === undefined || text === ''
-                  ? []
-                  : [
-                      [
-                        String(row[foreign.column]),
-                        getDisplayValue(text, LABEL_CHARS),
-                      ] as const,
-                    ]
-              })
-            ),
-          ] as const
-        },
-        queryKey: [
-          ...resourceRowsQueryKey({
-            connectionResource,
-            schema: foreign.schema,
-            table: foreign.table,
-          }),
-          'labels',
+        ...referenceLabelsQueryOptions({
+          connectionResource,
+          foreign,
           id,
-          foreign.column,
-          label,
           keys,
-        ],
+          label,
+          referenced: referenced.get(id),
+        }),
+        enabled: keys.length > 0,
       }
     }),
   })
+}
+
+export const prefetchReferenceLabels = async ({
+  connectionResource,
+  hidden,
+  rows,
+  schema,
+  stored,
+  table,
+}: {
+  connectionResource: ConnectionResource
+  hidden: string[]
+  rows: GridRow[]
+  schema: string
+  stored: Record<string, string>
+  table: string
+}) => {
+  const constraints = await queryClient.query(
+    resourceConstraintsQueryOptions({ connectionResource })
+  )
+  const foreignKeys = constraints.flatMap((constraint) => {
+    const { column, foreignColumn, foreignSchema, foreignTable } = constraint
+    return constraint.type === 'foreignKey' &&
+      constraint.schema === schema &&
+      constraint.table === table &&
+      column &&
+      !hidden.includes(column) &&
+      foreignColumn &&
+      foreignSchema &&
+      foreignTable
+      ? [
+          {
+            foreign: {
+              column: foreignColumn,
+              schema: foreignSchema,
+              table: foreignTable,
+            },
+            id: column,
+          },
+        ]
+      : []
+  })
+
+  await Promise.all(
+    foreignKeys.map(async ({ foreign, id }) => {
+      const keys = keysIn(rows, id)
+      if (keys.length === 0) {
+        return
+      }
+      const referenced = await queryClient.query(
+        resourceTableColumnsQueryOptions({
+          connectionResource,
+          schema: foreign.schema,
+          table: foreign.table,
+        })
+      )
+      const label = labelColumnOf(stored[id], referenced, foreign.column)
+      if (label) {
+        await queryClient.query(
+          referenceLabelsQueryOptions({
+            connectionResource,
+            foreign,
+            id,
+            keys,
+            label,
+            referenced,
+          })
+        )
+      }
+    })
+  )
 }

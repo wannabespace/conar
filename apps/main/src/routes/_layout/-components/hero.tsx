@@ -17,14 +17,14 @@ import { GetStartedButtons } from './get-started-buttons'
 import { Showcase } from './showcase/showcase'
 
 const riseClassName =
-  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-800 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:animate-none'
+  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-800 ease-house motion-reduce:animate-none'
 
 const WORD_STAGGER_MS = 80
 
 // Fade and rise on the outer span, blur on the inner: Chrome never composites a blur, so sharing
 // one element would freeze the whole word while hydration holds the main thread
 const wordClassName =
-  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both inline-block duration-900 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:animate-none'
+  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both inline-block duration-900 ease-house motion-reduce:animate-none'
 
 const HEADLINE_WORDS = 'The database client for you and your agents'.split(' ')
 
@@ -38,7 +38,7 @@ const UsageLine = () => {
     <p
       className={cn(
         isPending ? 'invisible' : riseClassName,
-        'text-muted-foreground flex shrink-0 items-center gap-1.5 text-sm delay-750 lg:h-9'
+        'text-muted-foreground flex shrink-0 items-center gap-1.5 text-sm delay-1100 lg:h-9'
       )}
     >
       {!!userCount && (
@@ -101,7 +101,7 @@ export const Hero = () => (
                 style={{ animationDelay: `${index * WORD_STAGGER_MS}ms` }}
                 className={wordClassName}
               >
-                <span className="animate-focus-in fill-mode-both duration-900 ease-[cubic-bezier(0.32,0.72,0,1)] [animation-delay:inherit] motion-reduce:animate-none">
+                <span className="animate-focus-in fill-mode-both ease-house duration-900 [animation-delay:inherit] motion-reduce:animate-none">
                   {word}
                 </span>
               </span>

@@ -107,9 +107,10 @@ export const cleanCollections = async () => {
   current = null
   await offline.clearOutbox()
   offline.dispose()
+  // Not collection.cleanup(): it wipes rows under still-mounted live queries.
   for (const collection of Object.values(collections)) {
-    if ('stopSync' in collection.utils) {
-      collection.utils.stopSync()
+    if ('abortSync' in collection.utils) {
+      collection.utils.abortSync()
     }
   }
 }

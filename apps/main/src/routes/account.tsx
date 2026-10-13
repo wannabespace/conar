@@ -2,7 +2,7 @@ import { CrownIcon, Logout01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@tamery/ui/components/button'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import { Separator } from '@tamery/ui/components/separator'
-import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
+import { cn } from '@tamery/ui/lib/utils'
 import {
   createFileRoute,
   getRouteApi,
@@ -10,13 +10,21 @@ import {
   Outlet,
   redirect,
   useRouter,
+  useRouterState,
 } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
 import { Brand } from '~/components/brand'
 import { GithubStars } from '~/components/github-stars'
-import { SidebarIcon, SidebarLink } from '~/components/sidebar-button'
+import { RoutePending } from '~/components/route-pending'
+import {
+  SidebarButton,
+  SidebarIcon,
+  SidebarLink,
+} from '~/components/sidebar-button'
 import { ThemeButton } from '~/components/theme-button'
-import { authClient } from '~/lib/auth'
+import { authClient, getCachedSession } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 import { AiUsageLink } from '~/modules/ai-usage/ai-usage-link'
 import { BillingLink } from '~/modules/billing/billing-link'
 import { SettingsLink } from '~/modules/settings/settings-link'
@@ -27,8 +35,19 @@ const { useRouteContext } = getRouteApi('/account')
 const AccountLayout = () => {
   const router = useRouter()
   const { user } = useRouteContext()
+  const isChangingPage = useRouterState({
+    select: (state) =>
+      state.status === 'pending' &&
+      state.location.pathname !== state.resolvedLocation?.pathname,
+  })
+
+  useEffect(() => {
+    void posthog.identify(user.id)
+  }, [user.id])
 
   const signOut = async () => {
+    void posthog.capture('signed_out')
+    void posthog.reset()
     await authClient.signOut()
     await router.invalidate()
   }
@@ -83,21 +102,30 @@ const AccountLayout = () => {
             <SettingsLink />
             <SupportButton />
             <Separator className="mx-2 my-1.5 hidden w-auto! md:block" />
-            <SidebarMenuButton
-              className="w-auto shrink-0 md:w-full"
+            <SidebarButton
               onClick={() => {
                 void signOut()
               }}
             >
               <SidebarIcon icon={Logout01Icon} />
               Sign out
-            </SidebarMenuButton>
+            </SidebarButton>
           </nav>
         </aside>
-        <main className="bg-background ring-foreground/4 min-w-0 flex-1 rounded-2xl ring">
-          <div className="mx-auto flex w-full max-w-2xl flex-col px-4 py-8 md:px-8 md:py-10">
+        <main className="bg-background ring-foreground/4 relative min-w-0 flex-1 rounded-2xl ring">
+          <div
+            className={cn(
+              'mx-auto flex w-full max-w-2xl flex-col px-4 py-8 transition-opacity md:px-8 md:py-10',
+              isChangingPage && 'opacity-0 delay-150'
+            )}
+          >
             <Outlet />
           </div>
+          {isChangingPage && (
+            <div className="animate-in fade-in fill-mode-both absolute inset-0 flex delay-150">
+              <RoutePending />
+            </div>
+          )}
         </main>
       </div>
     </div>
@@ -108,7 +136,7 @@ export const Route = createFileRoute('/account')({
   component: AccountLayout,
   head: () => ({ meta: [{ title: 'Account - Tamery' }] }),
   beforeLoad: async () => {
-    const { data } = await authClient.getSession()
+    const { data } = await getCachedSession()
 
     if (!data?.user) {
       throw redirect({ to: '/sign-in' })

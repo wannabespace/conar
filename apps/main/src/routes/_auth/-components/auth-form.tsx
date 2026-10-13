@@ -10,6 +10,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 
 import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 import { handleError } from '~/utils/error'
 
 import { sendSignInCode } from '../-lib/sign-in'
@@ -58,6 +59,7 @@ const SocialButton = ({
   const { mutate, isPending } = useMutation({
     mutationKey: ['social', provider.id],
     mutationFn: async () => {
+      void posthog.capture('social_sign_in_started', { provider: provider.id })
       const callbackUrl = new URL(location.origin + (redirectPath || href))
       const newUserCallbackUrl = new URL(callbackUrl)
 
@@ -106,6 +108,7 @@ export const AuthForm = () => {
   const router = useRouter()
 
   const { mutate: sendCode, isPending } = useMutation({
+    meta: { event: 'sign_in_code_sent' },
     mutationFn: sendSignInCode,
     onSuccess: (_, email) =>
       router.navigate({ to: '/email-code', search: { ...search, email } }),

@@ -12,8 +12,7 @@ import { motion } from 'motion/react'
 
 import { HOUSE_EASE } from '~/utils/motion'
 
-import type { Conversation } from './playback'
-import { TICKS_PER_WORD, timeline } from './playback'
+import type { Frame } from './playback'
 
 const rise = {
   animate: { opacity: 1, y: 0 },
@@ -22,62 +21,53 @@ const rise = {
 }
 
 export const Answer = ({
-  conversation,
-  tick,
+  frame: { conversation, result, sent, sql, words },
 }: {
-  conversation: Conversation
-  tick: number
-}) => {
-  const { resultAt, sentAt, sqlAt } = timeline(conversation)
-  const words = conversation.answer.split(' ')
-
-  return (
-    <>
-      {tick >= sentAt && (
-        <motion.div {...rise} className="flex flex-col">
-          <Bubble align="end" variant="muted">
-            <BubbleContent>{conversation.question}</BubbleContent>
-          </Bubble>
+  frame: Frame
+}) => (
+  <>
+    {sent && (
+      <motion.div {...rise} className="flex flex-col">
+        <Bubble align="end" variant="muted">
+          <BubbleContent>{conversation.question}</BubbleContent>
+        </Bubble>
+      </motion.div>
+    )}
+    <div className="flex flex-col gap-3">
+      <p className="text-pretty">
+        {conversation.answer.split(' ').slice(0, words).join(' ')}
+      </p>
+      {sql && (
+        <motion.div {...rise}>
+          <CodeBlock
+            code={conversation.sql}
+            language="sql"
+            size="xs"
+            variant="field"
+          />
         </motion.div>
       )}
-      <div className="flex flex-col gap-3">
-        <p className="text-pretty">
-          {words
-            .slice(0, Math.max(0, (tick - sentAt) / TICKS_PER_WORD))
-            .join(' ')}
-        </p>
-        {tick >= sqlAt && (
-          <motion.div {...rise}>
-            <CodeBlock
-              code={conversation.sql}
-              language="sql"
-              size="xs"
-              variant="field"
-            />
-          </motion.div>
-        )}
-        {tick >= resultAt && (
-          <motion.div {...rise}>
-            <Table size="sm">
-              <TableHeader>
-                <TableRow>
-                  {conversation.columns.map((column) => (
-                    <TableHead key={column}>{column}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {conversation.rows.map(([label, value]) => (
-                  <TableRow key={label}>
-                    <TableCell>{label}</TableCell>
-                    <TableCell variant="numeric">{value}</TableCell>
-                  </TableRow>
+      {result && (
+        <motion.div {...rise}>
+          <Table size="sm">
+            <TableHeader>
+              <TableRow>
+                {conversation.columns.map((column) => (
+                  <TableHead key={column}>{column}</TableHead>
                 ))}
-              </TableBody>
-            </Table>
-          </motion.div>
-        )}
-      </div>
-    </>
-  )
-}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {conversation.rows.map(([label, value]) => (
+                <TableRow key={label}>
+                  <TableCell>{label}</TableCell>
+                  <TableCell variant="numeric">{value}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </motion.div>
+      )}
+    </div>
+  </>
+)

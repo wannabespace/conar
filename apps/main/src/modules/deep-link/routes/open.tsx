@@ -1,5 +1,4 @@
 import { Button } from '@tamery/ui/components/button'
-import { Spinner } from '@tamery/ui/components/spinner'
 import { copy } from '@tamery/ui/lib/copy'
 import {
   createFileRoute,
@@ -11,10 +10,11 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 
 import { authClient } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { OpenStatus } from '../open-status'
 
-const { useSearch } = getRouteApi('/open')
+const { useLoaderData, useSearch } = getRouteApi('/open')
 
 const getOpenMessage = (clientType: 'web' | 'desktop' | 'cli' | undefined) => {
   if (clientType === 'cli') {
@@ -30,7 +30,7 @@ const getUrl = (token: string, codeChallenge: string, newUser?: boolean) =>
   `tamery://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 
 const OpenPageContent = () => {
-  const { data } = authClient.useSession()
+  const { token } = useLoaderData()
   const { type: clientType } = useSearch()
 
   useEffect(() => {
@@ -43,9 +43,9 @@ const OpenPageContent = () => {
     <OpenStatus title="Opening Tamery" description={getOpenMessage(clientType)}>
       <Button
         variant="outline"
-        render={data ? <Link to="/account" /> : <Link to="/sign-in" />}
+        render={token ? <Link to="/account" /> : <Link to="/sign-in" />}
       >
-        {data ? 'Go to account' : 'Sign in'}
+        {token ? 'Go to account' : 'Sign in'}
       </Button>
     </OpenStatus>
   )
@@ -53,31 +53,24 @@ const OpenPageContent = () => {
 
 const OpenPage = () => {
   const { 'code-challenge': codeChallenge, 'new-user': newUser } = useSearch()
-  const { data, isPending } = authClient.useSession()
+  const { token } = useLoaderData()
 
   const getUrlEvent = useEffectEvent(getUrl)
 
   useEffect(() => {
-    if (isPending || !data || !codeChallenge) {
+    if (!token || !codeChallenge) {
       return
     }
 
-    location.assign(getUrlEvent(data.session.token, codeChallenge, newUser))
-  }, [isPending, codeChallenge, data, newUser])
+    void posthog.capture('desktop_sign_in_handed_off', { newUser: !!newUser })
+    location.assign(getUrlEvent(token, codeChallenge, newUser))
+  }, [codeChallenge, token, newUser])
 
   if (!codeChallenge) {
     return <OpenPageContent />
   }
 
-  if (isPending) {
-    return (
-      <OpenStatus title="Signing you in" description="Checking your session.">
-        <Spinner className="text-muted-foreground" />
-      </OpenStatus>
-    )
-  }
-
-  if (!data) {
+  if (!token) {
     return (
       <OpenStatus
         title="Sign-in link expired"
@@ -97,12 +90,10 @@ const OpenPage = () => {
     >
       <Button
         variant="outline"
-        onClick={() =>
-          copy(
-            getUrl(data.session.token, codeChallenge, newUser),
-            'Sign-in link copied'
-          )
-        }
+        onClick={() => {
+          copy(getUrl(token, codeChallenge, newUser), 'Sign-in link copied')
+          void posthog.capture('sign_in_link_copied')
+        }}
       >
         Copy sign-in link
       </Button>
@@ -126,5 +117,7 @@ export const Route = createFileRoute('/open')({
     if (clientType === 'web' && data?.user) {
       throw redirect({ href: import.meta.env.VITE_PUBLIC_WEB_URL })
     }
+
+    return { token: data?.session.token }
   },
 })

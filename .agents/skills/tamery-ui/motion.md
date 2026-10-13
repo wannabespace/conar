@@ -13,7 +13,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 ## Recipes
 
 - `motion` library for interruptible animation, not CSS transitions (transitions snap under frame drops). Exception: pure colour/opacity hovers.
-- House curve `[0.32, 0.72, 0, 1]`, 150–300ms. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.
+- House curve `[0.32, 0.72, 0, 1]`, 150–300ms; in classes it is the `ease-house` theme token, never a hand-written `cubic-bezier`. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.
 - **A `transition-[…]` list must name every property the element's own state variants change.** A surface hovering both its ring and its fill but listing only `box-shadow` reads as two durations on one control. Rings and shadows are `box-shadow`; `transition-colors` never covers them. Siblings lighting up on the same pointer event share one duration.
 - **Ghost buttons hover instantly.** Toolbar and breadcrumb triggers sit in rows the pointer sweeps across; a fading fill trails behind the cursor. The ghost variant transitions `transform` only (press nudge).
 - **Anything keyed to the highlighted row of a keyboard list has no transition** — the highlight jumps a row per keystroke and a fade smears indicators down the list. Hover-only reveals inside one row may still fade.

@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { useMutation } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
@@ -21,13 +22,16 @@ export const DisableTfaDialog = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
+  const router = useRouter()
   const { mutate, isPending } = useMutation({
+    meta: { event: 'two_factor_disabled' },
     mutationFn: () =>
       authClient.twoFactor.disable({ fetchOptions: { throw: true } }),
     onError: handleError,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('2FA disabled')
       onOpenChange(false)
+      await router.invalidate()
     },
   })
 

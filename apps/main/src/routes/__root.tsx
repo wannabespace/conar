@@ -12,9 +12,11 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
+import { useEffect } from 'react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
+import { posthog } from '~/lib/posthog'
 import { seo, SITE_URL } from '~/utils/seo'
 
 import appCss from '@tamery/ui/globals.css?url'
@@ -62,25 +64,31 @@ const analyticsScripts = [
   },
 ]
 
-const RootComponent = () => (
-  <html lang="en" suppressHydrationWarning>
-    <head>
-      <HeadContent />
-    </head>
-    <body className="bg-body relative">
-      <MotionConfig reducedMotion="user">
-        <TooltipProvider>
-          <ThemeObserver />
-          <Outlet />
-        </TooltipProvider>
-      </MotionConfig>
-      <ReactQueryDevtools buttonPosition="bottom-left" />
-      <Toaster />
-      <TanStackRouterDevtools position="bottom-right" />
-      <Scripts />
-    </body>
-  </html>
-)
+const RootComponent = () => {
+  useEffect(() => {
+    void posthog.start()
+  }, [])
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body className="bg-body relative">
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider>
+            <ThemeObserver />
+            <Outlet />
+          </TooltipProvider>
+        </MotionConfig>
+        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <Toaster />
+        <TanStackRouterDevtools position="bottom-right" />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient

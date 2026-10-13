@@ -18,7 +18,7 @@ export const AuthSidePanel = () => {
   }, [])
 
   return (
-    <div className="bg-body relative m-2 hidden flex-col overflow-hidden rounded-2xl p-10 text-white lg:flex">
+    <div className="bg-body traffic-lights:mt-0 relative m-2 hidden flex-col overflow-hidden rounded-2xl p-10 text-white lg:flex">
       {isShaderMounted && (
         <motion.div
           className="absolute inset-0"

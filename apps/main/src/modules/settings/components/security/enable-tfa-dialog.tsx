@@ -9,6 +9,7 @@ import {
 } from '@tamery/ui/components/dialog'
 import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
 import { toast } from 'sonner'
@@ -63,10 +64,12 @@ export const EnableTfaDialog = ({
   onOpenChange: (open: boolean) => void
   setup: TotpSetup
 }) => {
+  const router = useRouter()
   const [code, setCode] = useState('')
   const [isVerified, setIsVerified] = useState(false)
 
   const { mutate: verifyTotp, isPending } = useMutation({
+    meta: { event: 'two_factor_enabled' },
     mutationFn: (codeValue: string) =>
       authClient.twoFactor.verifyTotp({
         code: codeValue,
@@ -77,9 +80,10 @@ export const EnableTfaDialog = ({
       handleError(e)
       setCode('')
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('2FA enabled')
       setIsVerified(true)
+      await router.invalidate()
     },
   })
 

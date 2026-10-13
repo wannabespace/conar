@@ -1,9 +1,14 @@
 import '@tamery/shared/arktype-config'
-import { keepPreviousData, QueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  MutationCache,
+  QueryClient,
+} from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
 import { RoutePending } from './components/route-pending'
+import { posthog } from './lib/posthog'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
 
@@ -20,6 +25,13 @@ export const getRouter = () => {
         retry: false,
       },
     },
+    mutationCache: new MutationCache({
+      onSettled: (_data, error, _variables, _context, mutation) => {
+        if (mutation.meta?.event) {
+          void posthog.capture(mutation.meta.event, { success: !error })
+        }
+      },
+    }),
   })
 
   const router = createRouter({
@@ -39,6 +51,12 @@ export const getRouter = () => {
   setupRouterSsrQueryIntegration({ queryClient, router })
 
   return router
+}
+
+declare module '@tanstack/react-query' {
+  interface Register {
+    mutationMeta: { event?: string }
+  }
 }
 
 declare module '@tanstack/react-router' {

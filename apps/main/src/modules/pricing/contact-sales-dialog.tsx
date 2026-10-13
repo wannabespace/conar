@@ -25,10 +25,10 @@ export const ContactSalesDialog = () => {
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const replyTo = email || session?.user.email || ''
 
   const { isPending, mutate } = useMutation(
     orpc.contactSales.mutationOptions({
+      meta: { event: 'contact_sales_sent' },
       onError: (error) => toast.error(error.message),
       onSuccess: () => {
         toast.success('Thanks! We will reply by email soon.')
@@ -39,7 +39,15 @@ export const ContactSalesDialog = () => {
   )
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (nextOpen && !email) {
+          setEmail(session?.user.email ?? '')
+        }
+      }}
+    >
       <DialogTrigger render={<Button size="lg" variant="outline" />}>
         Contact us
       </DialogTrigger>
@@ -54,7 +62,7 @@ export const ContactSalesDialog = () => {
           id="contact-sales"
           onSubmit={(event) => {
             event.preventDefault()
-            mutate({ email: replyTo, message })
+            mutate({ email, message })
           }}
         >
           <FieldGroup>
@@ -64,7 +72,7 @@ export const ContactSalesDialog = () => {
                 id="contact-sales-email"
                 type="email"
                 required
-                value={replyTo}
+                value={email}
                 placeholder="you@company.com"
                 onChange={(event) => setEmail(event.target.value)}
               />
@@ -85,11 +93,7 @@ export const ContactSalesDialog = () => {
           <DialogClose render={<Button variant="outline" />}>
             Cancel
           </DialogClose>
-          <Button
-            type="submit"
-            form="contact-sales"
-            disabled={isPending || !replyTo || !message}
-          >
+          <Button type="submit" form="contact-sales" disabled={isPending}>
             <LoadingContent loading={isPending}>Send</LoadingContent>
           </Button>
         </DialogFooter>

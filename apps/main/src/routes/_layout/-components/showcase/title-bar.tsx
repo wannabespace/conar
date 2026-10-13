@@ -11,6 +11,8 @@ import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import type { ReactNode } from 'react'
 
+import { WindowButtons } from '../window-buttons'
+
 const DEMO_USER = { email: 'demo@tamery.app' }
 
 const Crumb = () => (
@@ -34,11 +36,7 @@ const Switcher = ({ children }: { children: ReactNode }) => (
 
 export const TitleBar = () => (
   <div className="border-b-border bg-card flex h-10 shrink-0 items-center gap-1.5 border-b px-2">
-    <div className="flex shrink-0 gap-2 px-2">
-      <span className="bg-destructive size-3 rounded-full" />
-      <span className="bg-warning size-3 rounded-full" />
-      <span className="bg-success size-3 rounded-full" />
-    </div>
+    <WindowButtons className="px-2" />
     <span className="shrink-0 rounded-md p-1.5">
       <AppLogo className="text-primary size-4" />
     </span>

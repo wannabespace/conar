@@ -18,9 +18,8 @@ export const contactSales = orpc
   .use(optionalAuthMiddleware)
   .use(
     ratelimit({
-      key: ({ context }) =>
-        context.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-        'unknown',
+      // Railway's edge sets X-Real-IP to the client address on every request; any other client-IP header is only as trustworthy as the hop that wrote it
+      key: ({ context }) => context.headers.get('x-real-ip') ?? 'unknown',
       limiter,
     })
   )

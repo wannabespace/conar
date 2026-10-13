@@ -12,13 +12,12 @@ import {
   DialogTrigger,
 } from '@tamery/ui/components/dialog'
 import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { SidebarIcon } from '~/components/sidebar-button'
+import { SidebarButton, SidebarIcon } from '~/components/sidebar-button'
 import { orpc } from '~/lib/orpc'
 
 export const SupportButton = () => {
@@ -27,6 +26,7 @@ export const SupportButton = () => {
 
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
+      meta: { event: 'support_message_sent' },
       onError: (err) => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')
@@ -48,9 +48,7 @@ export const SupportButton = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<SidebarMenuButton className="w-auto shrink-0 md:w-full" />}
-      >
+      <DialogTrigger render={<SidebarButton />}>
         <SidebarIcon icon={Message01Icon} />
         Support
       </DialogTrigger>

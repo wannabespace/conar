@@ -8,9 +8,9 @@ import { authMiddleware, orpc } from '~/orpc'
 export const sessions = orpc.use(authMiddleware).handler(({ context }) =>
   db
     .select({
+      current: eq(sessionsTable.id, context.session.id).mapWith(Boolean),
       id: sessionsTable.id,
       ipAddress: sessionsTable.ipAddress,
-      token: sessionsTable.token,
       userAgent: sessionsTable.userAgent,
     })
     .from(sessionsTable)

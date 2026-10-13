@@ -10,11 +10,13 @@ import {
   TextIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
+
+import { OrderStatusBadge } from '../order-status-badge'
+import { ORDERS } from '../orders'
 
 const COLUMNS = [
   { icon: Key01Icon, id: 'id', width: 'w-20' },
@@ -24,36 +26,6 @@ const COLUMNS = [
   { icon: Tag01Icon, id: 'status', width: 'w-28' },
   { icon: Calendar03Icon, id: 'created_at', width: 'w-40' },
 ]
-
-const STATUS_DOTS: Record<string, string> = {
-  paid: 'bg-success',
-  pending: 'bg-warning',
-  refunded: 'bg-destructive',
-}
-
-const ROWS = [
-  ['58340', '1176', 'Priya Raman', '$608.94', 'paid', '2026-09-30 15:51'],
-  ['58307', '1179', 'Tomás Ferreira', '$608.65', 'paid', '2026-09-14 12:54'],
-  ['58309', '1157', 'Daniel Okafor', '$605.91', 'pending', '2026-09-15 08:58'],
-  ['58338', '1150', 'Anna Kowalska', '$602.30', 'refunded', '2026-09-29 18:44'],
-  ['58305', '1153', 'Mateo Álvarez', '$600.36', 'paid', '2026-09-13 16:49'],
-  ['58311', '1135', 'Kenji Mori', '$592.24', 'paid', '2026-09-16 04:59'],
-  ['58336', '1172', 'Hana Kobayashi', '$584.86', 'paid', '2026-09-28 20:36'],
-  [
-    '58303',
-    '1175',
-    'Oskar Lindqvist',
-    '$581.35',
-    'pending',
-    '2026-09-12 19:42',
-  ],
-  ['58313', '1161', 'Jonas Weber', '$568.14', 'paid', '2026-09-17 00:59'],
-  ['58334', '1146', 'Aiko Tanaka', '$557.27', 'pending', '2026-09-27 22:27'],
-  ['58301', '1149', 'Felix Braun', '$552.32', 'paid', '2026-09-11 21:34'],
-  ['58315', '1139', 'Lukas Schmidt', '$534.51', 'paid', '2026-09-18 04:57'],
-  ['58331', '1166', 'Sofia Rossi', '$521.08', 'paid', '2026-09-26 10:12'],
-  ['58328', '1144', 'Léa Martin', '$498.70', 'pending', '2026-09-24 23:04'],
-] as const
 
 const SELECTED_ROWS = new Set(['58309', '58305'])
 const EDITED_ROW = '58338'
@@ -99,7 +71,7 @@ export const Grid = () => (
         </div>
       ))}
     </div>
-    {ROWS.map(([id, user, customer, total, status, created]) => (
+    {ORDERS.map(({ created, customer, id, status, total, user }) => (
       <div key={id} className="flex h-8 border-b">
         <div className="flex w-10 shrink-0 items-center justify-center border-r">
           <Checkbox checked={SELECTED_ROWS.has(id)} />
@@ -124,12 +96,7 @@ export const Grid = () => (
             id === EDITED_ROW && 'bg-warning/15'
           )}
         >
-          <Badge variant="secondary">
-            <span
-              className={cn('size-1.5 rounded-full', STATUS_DOTS[status])}
-            />
-            {status}
-          </Badge>
+          <OrderStatusBadge status={status} />
         </div>
         <div className={cn(cellClassName, 'w-40 tabular-nums')}>{created}</div>
       </div>

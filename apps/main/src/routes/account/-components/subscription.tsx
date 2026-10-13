@@ -78,13 +78,10 @@ export const Subscription = () => {
     subscription?.trialEnd && subscription.trialEnd.getTime() > mountedAt
   )
 
-  if (subscription?.period === 'yearly' && !isYearly) {
-    setIsYearly(true)
-  }
-
+  const shownPeriod = subscription?.period ?? (isYearly ? 'yearly' : 'monthly')
   const proPrice = subscription
     ? subscription.price
-    : PRO_PLAN.price[isYearly ? 'yearly' : 'monthly']
+    : PRO_PLAN.price[shownPeriod]
 
   return (
     <>
@@ -107,7 +104,7 @@ export const Subscription = () => {
             <span className="flex items-baseline gap-2">
               {PRO_PLAN.name}
               <span className="text-muted-foreground text-xs font-normal">
-                {`${formatCurrency(proPrice)}${isYearly ? '/year' : '/month'}`}
+                {`${formatCurrency(proPrice)}${shownPeriod === 'yearly' ? '/year' : '/month'}`}
               </span>
             </span>
           }
