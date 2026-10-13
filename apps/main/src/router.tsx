@@ -8,6 +8,7 @@ import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
 import { RoutePending } from './components/route-pending'
+import { authClient, sessionQueryOptions } from './lib/auth'
 import { posthog } from './lib/posthog'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
@@ -49,6 +50,13 @@ export const getRouter = () => {
   })
 
   setupRouterSsrQueryIntegration({ queryClient, router })
+
+  // Client-only: the listener never unsubscribes, so registering it per server request would leak one each time.
+  if (typeof window !== 'undefined') {
+    authClient.$store.listen('$sessionSignal', () =>
+      queryClient.removeQueries({ queryKey: sessionQueryOptions.queryKey })
+    )
+  }
 
   return router
 }

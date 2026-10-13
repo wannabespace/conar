@@ -1,3 +1,4 @@
+import { queryOptions } from '@tanstack/react-query'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import {
@@ -19,8 +20,6 @@ const getAuthHeadersIsomorphic = createIsomorphicFn()
   })
   .client(() => ({}))
 
-let signedInSession: ReturnType<typeof authClient.getSession> | undefined
-
 export const authClient = createAuthClient({
   basePath: '/auth',
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
@@ -34,11 +33,6 @@ export const authClient = createAuthClient({
 
       return request
     },
-    onSuccess: ({ request }) => {
-      if (request.method !== 'GET') {
-        signedInSession = undefined
-      }
-    },
   },
   plugins: [
     organizationClient(),
@@ -48,20 +42,12 @@ export const authClient = createAuthClient({
   ],
 })
 
-const fetchSignedInSession = async () => {
-  const result = await authClient.getSession()
-
-  if (!result.data?.user) {
-    signedInSession = undefined
-  }
-
-  return result
-}
-
-// Client-only: on the server a module-level cache would hand one visitor's session to the next.
-export const getCachedSession = createIsomorphicFn()
-  .server(() => authClient.getSession())
-  .client(() => (signedInSession ??= fetchSignedInSession()))
+// The router drops this only on Better Auth's session signal: a session change made outside the auth client must remove it too.
+export const sessionQueryOptions = queryOptions({
+  queryFn: () => authClient.getSession(),
+  queryKey: ['session'],
+  staleTime: ({ state }) => (state.data?.data?.user ? 'static' : 0),
+})
 
 const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'
 
