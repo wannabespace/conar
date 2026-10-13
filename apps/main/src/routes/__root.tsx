@@ -9,6 +9,7 @@ import {
   HeadContent,
   Outlet,
   Scripts,
+  useRouteContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { MotionConfig } from 'motion/react'
@@ -16,6 +17,7 @@ import { useEffect } from 'react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
+import { authClient, sessionQueryOptions } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
 import { seo, SITE_URL } from '~/utils/seo'
 
@@ -65,9 +67,15 @@ const analyticsScripts = [
 ]
 
 const RootComponent = () => {
+  const { session } = useRouteContext({ from: '__root__' })
+
   useEffect(() => {
     void posthog.start()
   }, [])
+
+  useEffect(() => {
+    authClient.hydrateSession(session)
+  }, [session])
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -93,6 +101,11 @@ const RootComponent = () => {
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
+  beforeLoad: async ({ context }) => {
+    const { data } = await context.queryClient.fetchQuery(sessionQueryOptions)
+
+    return { session: data }
+  },
   head: () => {
     const { meta, links } = seo({
       title: `Tamery - ${SEO.title}`,

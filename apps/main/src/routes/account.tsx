@@ -23,7 +23,7 @@ import {
   SidebarLink,
 } from '~/components/sidebar-button'
 import { ThemeButton } from '~/components/theme-button'
-import { authClient, sessionQueryOptions } from '~/lib/auth'
+import { authClient } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
 import { AiUsageLink } from '~/modules/ai-usage/ai-usage-link'
 import { BillingLink } from '~/modules/billing/billing-link'
@@ -135,13 +135,11 @@ const AccountLayout = () => {
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
   head: () => ({ meta: [{ title: 'Account - Tamery' }] }),
-  beforeLoad: async ({ context }) => {
-    const { data } = await context.queryClient.fetchQuery(sessionQueryOptions)
-
-    if (!data?.user) {
+  beforeLoad: ({ context }) => {
+    if (!context.session) {
       throw redirect({ to: '/sign-in' })
     }
 
-    return data
+    return { user: context.session.user }
   },
 })
