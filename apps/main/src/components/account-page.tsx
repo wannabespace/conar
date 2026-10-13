@@ -2,6 +2,10 @@ import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ReactNode } from 'react'
 
+// Sync with smallItemInsetClassName: table text lines up with the header's.
+export const accountTableClassName =
+  '[&_tr>*:first-child]:pl-3.5 [&_tr>*:last-child]:pr-3.5'
+
 export const AccountPage = ({
   action,
   children,

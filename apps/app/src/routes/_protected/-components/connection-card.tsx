@@ -208,6 +208,7 @@ export const ConnectionCard = ({
             </span>
             <ConnectionCardStatus
               canSend={canSend}
+              connectionId={connection.id}
               error={error}
               isLoadingVisible={isLoadingVisible}
               reason={reason}

@@ -10,6 +10,7 @@ import { motion } from 'motion/react'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
+import { PageColumns } from './page-columns'
 import { TestStatus } from './test-status'
 
 export const FormFooter = ({
@@ -36,40 +37,42 @@ export const FormFooter = ({
       animate={{ y: 0 }}
       transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
     >
-      <div className="mx-auto flex h-14 w-full max-w-xl items-center gap-2 px-6">
-        <div className="min-w-0 flex-1">
-          <TestStatus reason={reason} status={testStatus} />
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!canTest || testStatus === 'pending'}
-          onClick={onTest}
-        >
-          Test
-        </Button>
-        <Tooltip shortcut={!saving && <ShortcutKbd shortcut="submit" />}>
-          <TooltipTrigger
-            render={
-              <Button
-                type="submit"
-                form={formId}
-                variant={failed ? 'warning' : 'default'}
-                disabled={saving || testStatus === 'pending'}
-              />
-            }
+      <PageColumns>
+        <div className="flex h-14 items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <TestStatus reason={reason} status={testStatus} />
+          </div>
+          <Button
+            type="button"
+            variant="ghost-tint-muted"
+            disabled={!canTest || testStatus === 'pending'}
+            onClick={onTest}
           >
-            <LoadingContent loading={saving}>
-              {failed ? 'Save anyway' : 'Save connection'}
-            </LoadingContent>
-          </TooltipTrigger>
-          <TooltipContent>
-            {failed
-              ? 'The test failed — the connection saves as it is.'
-              : 'Tests the connection, then saves it'}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+            Test
+          </Button>
+          <Tooltip shortcut={!saving && <ShortcutKbd shortcut="submit" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="submit"
+                  form={formId}
+                  variant={failed ? 'warning' : 'default'}
+                  disabled={saving || testStatus === 'pending'}
+                />
+              }
+            >
+              <LoadingContent loading={saving}>
+                {failed ? 'Save anyway' : 'Save connection'}
+              </LoadingContent>
+            </TooltipTrigger>
+            <TooltipContent>
+              {failed
+                ? 'The test failed. The connection saves as it is.'
+                : 'Tests the connection, then saves it'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </PageColumns>
     </motion.footer>
   )
 }

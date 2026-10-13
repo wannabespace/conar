@@ -16,7 +16,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'
-import { MCP_CLIENTS } from './clients'
+import { maskedToken, MCP_CLIENTS } from './clients'
 
 export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
@@ -78,7 +78,11 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
               />
             </div>
             <CodeBlock
-              code={code}
+              code={client.code({
+                ...server,
+                token: maskedToken(server.token),
+              })}
+              data-mask
               language={client.language}
               padding="item"
               size="xs"

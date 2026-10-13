@@ -11,14 +11,14 @@ Connections live in one place so you can switch between databases and devices.
 <Steps>
   <Step title="Paste what you have">
     Paste a connection URL, `.env`, JDBC URL, or `psql`/`ssh` command anywhere
-    on the page, or drop a `.env` or config file onto the window. Tamery reads
-    it on your device and fills in every field — nothing you paste is sent
-    anywhere.
+    on the page (or click the paste keys to paste from the clipboard), or drop a
+    `.env` or config file onto the window. Tamery reads it on your device and
+    fills in every field. Nothing you paste is sent anywhere.
   </Step>
   <Step title="Or fill it in yourself">
-    Pick the engine and type the host — or a whole connection string, which is
-    split into the fields when you leave **Host**. Turn on **SSH tunnel** to
-    reach a database behind a bastion host.
+    The form sits beside the paste prompt: pick the engine and type the host, or
+    a whole connection string, which is split into the fields when you leave
+    **Host**. Turn on **SSH tunnel** to reach a database behind a bastion host.
   </Step>
   <Step title="Name and save">
     Set a name (Tamery suggests one), a sync type (see below), and optionally a
@@ -27,9 +27,9 @@ Connections live in one place so you can switch between databases and devices.
   </Step>
 </Steps>
 
-In the desktop app, an AI agent connected over [MCP](/mcp/overview) can add a connection for you too — ask it, and it tests the connection before saving it.
+In the desktop app, an AI agent connected over [MCP](/mcp/overview) can add a connection for you too. It can find the database in your project's `.env` or config and tests the connection before saving it. Choose **Add via MCP** on the new-connection page: it starts the MCP server if it's off, shows how to add it to your client, and gives you a prompt to copy. The connection opens as soon as the agent adds it.
 
-The desktop app also opens database links — `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://`. A link to a server you've already saved (same engine, host, port and user) opens that connection on the link's database; any other link opens this form filled in, and nothing connects until you save. Tamery claims these links only when no other app handles them — turn on **Open database links in Tamery** in **Settings → Links** to make it the default anyway.
+The desktop app also opens database links — `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://`. A link to a server you've already saved (same engine, host, port and user) opens that connection on the link's database; any other link opens this form filled in, and nothing connects until you save. Tamery becomes the default app for these links on first launch — turn off **Open database links in Tamery** in **Settings → General** to hand them back.
 
 ### What you can paste
 

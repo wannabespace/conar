@@ -6,12 +6,14 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useSubscription } from 'seitu/react'
 
 import { analyticsStore } from '~/lib/posthog'
+import { ConnectionLinksRow } from '~/modules/connection-links/connection-links-settings'
 
-export const PrivacySettings = () => {
+export const GeneralSettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)
 
   return (
     <SettingsGroup>
+      {window.electron && <ConnectionLinksRow />}
       <SettingsRow
         htmlFor="analytics"
         title="Share usage analytics"

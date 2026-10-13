@@ -2,10 +2,12 @@ import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { toConnectionString } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnose'
-import type { GuessFix } from '@tamery/connection/guess'
+import type { ConnectionGuess, GuessFix } from '@tamery/connection/guess'
+import { guessConnection } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/title'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -27,7 +29,7 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
@@ -37,11 +39,16 @@ import { permix } from '~/core/user/permissions'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
+import { AgentPanel } from './-components/agent-panel'
 import { ColorField } from './-components/color-field'
-import { ConnectionHeader } from './-components/connection-header'
 import { DropOverlay } from './-components/drop-overlay'
 import { FormFooter } from './-components/form-footer'
 import { LabelField } from './-components/label-field'
+import { NameField } from './-components/name-field'
+import { PageColumns } from './-components/page-columns'
+import type { Miss } from './-components/paste-hero'
+import { isMac, PASTE_FORMATS, PasteHero } from './-components/paste-hero'
+import { PasteNotes } from './-components/paste-notes'
 import { Reveal, REVEAL_STAGGER } from './-components/reveal'
 import { ServerFields } from './-components/server-fields'
 import { SshFields } from './-components/ssh-fields'
@@ -49,12 +56,26 @@ import { SyncField } from './-components/sync-field'
 import type { FixSource } from './-components/test-alert'
 import { TestAlert } from './-components/test-alert'
 import type { ConnectionFormValues, FieldsOrigin } from './-lib/connection-form'
-import { missingOf, partsOf, useConnectionForm } from './-lib/connection-form'
+import {
+  isGuessed,
+  missingOf,
+  partsOf,
+  useConnectionForm,
+} from './-lib/connection-form'
 import { draftFetching } from './-lib/draft-fetching'
 import { useCreateConnection } from './-lib/use-create-connection'
+import type { PasteVia } from './-lib/use-paste-connection'
 import { usePasteConnection } from './-lib/use-paste-connection'
 
 const FORM_ID = 'create-connection'
+
+type Stage = 'agent' | 'form'
+
+const MISS_SHOWN_MS = 3000
+
+// Defers to the next tick so a field the same update reveals has mounted.
+const focusField = (id: string) =>
+  setTimeout(() => document.querySelector<HTMLElement>(`#${id}`)?.focus(), 0)
 
 const CreateConnectionPage = () => {
   const router = useRouter()
@@ -68,7 +89,9 @@ const CreateConnectionPage = () => {
     }
   }
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const [origin, setOrigin] = useState<FieldsOrigin>('form')
+  const [origin, setOrigin] = useState<FieldsOrigin>(null)
+  const [stage, setStage] = useState<Stage>('form')
+  const back = () => (stage === 'agent' ? setStage('form') : leave())
   const createConnection = useCreateConnection()
   const test = useMutation({
     meta: { event: 'connection_tested' },
@@ -91,6 +114,9 @@ const CreateConnectionPage = () => {
     })
 
   const { form, paste } = useConnectionForm({
+    onInvalid: (field) => {
+      focusField(CSS.escape(field))
+    },
     onFieldsChange: (next) => {
       setOrigin(next)
       test.reset()
@@ -112,16 +138,51 @@ const CreateConnectionPage = () => {
   })
 
   const [fixes, setFixes] = useState<GuessFix[]>([])
+  const fillFrom = (guess: ConnectionGuess, via: PasteVia) => {
+    paste(guess, via)
+    setStage('form')
+    setFixes(guess.fixes)
+    const [missing] = missingOf(form.state.values)
+    if (missing) {
+      focusField(missing)
+    }
+  }
+  const [miss, setMiss] = useState<Miss>({ count: 0, shown: false })
+  const hideMiss = useRef(0)
+  const showMiss = () => {
+    if (stage !== 'form') {
+      toast('No connection found', {
+        description: PASTE_FORMATS,
+      })
+      return
+    }
+    setMiss(({ count }) => ({ count: count + 1, shown: true }))
+    window.clearTimeout(hideMiss.current)
+    hideMiss.current = window.setTimeout(
+      () => setMiss((current) => ({ ...current, shown: false })),
+      MISS_SHOWN_MS
+    )
+  }
+  const readClipboard = async () => {
+    const { data: text } = await tryCatchAsync(() =>
+      navigator.clipboard.readText()
+    )
+    if (text === null) {
+      toast(
+        `Couldn't read the clipboard. Press ${isMac ? '⌘V' : 'Ctrl+V'} instead.`
+      )
+      return
+    }
+    const guess = guessConnection(text)
+    if (guess) {
+      fillFrom(guess, 'clipboard')
+    } else {
+      showMiss()
+    }
+  }
   const { dragging } = usePasteConnection({
-    onMiss: () => toast('No connection in that'),
-    onPaste: (guess, via) => {
-      paste(guess, via)
-      setFixes(guess.fixes)
-      const [missing] = missingOf(form.state.values)
-      if (missing) {
-        document.querySelector<HTMLElement>(`#${missing}`)?.focus()
-      }
-    },
+    onMiss: showMiss,
+    onPaste: fillFrom,
   })
 
   const values = useStore(form.store, (state) => state.values)
@@ -146,11 +207,7 @@ const CreateConnectionPage = () => {
     }
     if (patch.sshEnabled) {
       form.setFieldValue('sshEnabled', true)
-      // Waits for the SSH card to mount.
-      setTimeout(
-        () => document.querySelector<HTMLElement>('#ssh\\.host')?.focus(),
-        0
-      )
+      focusField(String.raw`ssh\.host`)
       return
     }
     const next = form.state.values
@@ -177,66 +234,89 @@ const CreateConnectionPage = () => {
         focused.blur()
         return
       }
-      leave()
+      back()
     },
     { ignoreInputs: false }
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="relative flex h-full min-h-0 flex-col">
       <DropOverlay shown={dragging} />
+      <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              variant="ghost-row"
+              size="icon-sm"
+              aria-label="Back"
+              className="absolute top-4 left-4 z-20"
+              onClick={back}
+            />
+          }
+        >
+          <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
+        </TooltipTrigger>
+        <TooltipContent side="right">Back</TooltipContent>
+      </Tooltip>
       <ScrollArea className="min-h-0 flex-1">
-        <Form form={form} id={FORM_ID} className="relative">
-          <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
-            <TooltipTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost-row"
-                  size="icon-sm"
-                  aria-label="Back"
-                  className="absolute top-4 left-4"
-                  onClick={leave}
-                />
-              }
+        <Form form={form} id={FORM_ID} className="flex min-h-full flex-col">
+          {stage === 'form' ? (
+            <motion.div
+              key="form"
+              className="py-16"
+              variants={REVEAL_STAGGER}
+              initial="initial"
+              animate="animate"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-            </TooltipTrigger>
-            <TooltipContent side="right">Back</TooltipContent>
-          </Tooltip>
-          <motion.div
-            className="mx-auto flex w-full max-w-xl flex-col gap-5 px-6 py-16"
-            variants={REVEAL_STAGGER}
-            initial="initial"
-            animate="animate"
-          >
-            <Reveal>
-              <ConnectionHeader
-                filled={origin !== 'form'}
-                fixes={fixes}
-                form={form}
-              />
-            </Reveal>
-            <Reveal>
-              <ServerFields form={form} />
-            </Reveal>
-            <Reveal>
-              <SshFields form={form} />
-            </Reveal>
-            <Reveal>
-              <FieldGroup variant="card">
-                <LabelField form={form} />
-                <ColorField form={form} />
-              </FieldGroup>
-              <SyncField form={form} />
-            </Reveal>
-          </motion.div>
+              <PageColumns
+                aside={
+                  <PasteHero
+                    miss={miss}
+                    onClipboard={readClipboard}
+                    onAgent={() => {
+                      posthog.capture('connection_agent_opened')
+                      setStage('agent')
+                    }}
+                  />
+                }
+              >
+                <Reveal>
+                  <ServerFields form={form} />
+                  {isGuessed(origin) && (
+                    <PasteNotes fixes={fixes} form={form} />
+                  )}
+                </Reveal>
+                <Reveal>
+                  <SshFields form={form} />
+                </Reveal>
+                <Reveal>
+                  <FieldGroup variant="card">
+                    <NameField form={form} />
+                    <LabelField form={form} />
+                    <ColorField form={form} />
+                    <SyncField form={form} />
+                  </FieldGroup>
+                </Reveal>
+              </PageColumns>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="agent"
+              className="mx-auto my-auto w-full max-w-xl px-6 py-16"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <AgentPanel />
+            </motion.div>
+          )}
         </Form>
       </ScrollArea>
       <AnimatePresence initial={false}>
         {test.error && (
           <MotionCollapse key="test-error">
-            <div className="mx-auto max-h-80 w-full max-w-xl overflow-y-auto px-6 pb-3">
+            <PageColumns className="max-h-80 overflow-y-auto pb-3">
               <TestAlert
                 key={test.error.message}
                 error={test.error}
@@ -246,18 +326,20 @@ const CreateConnectionPage = () => {
                   document.querySelector<HTMLElement>(`#${field}`)?.focus()
                 }
               />
-            </div>
+            </PageColumns>
           </MotionCollapse>
         )}
       </AnimatePresence>
-      <FormFooter
-        canTest={canSend}
-        formId={FORM_ID}
-        reason={reason}
-        saving={createConnection.isPending}
-        testStatus={test.status}
-        onTest={() => test.mutate({ connectionString, type: values.type })}
-      />
+      {stage === 'form' && (
+        <FormFooter
+          canTest={canSend}
+          formId={FORM_ID}
+          reason={reason}
+          saving={createConnection.isPending}
+          testStatus={test.status}
+          onTest={() => test.mutate({ connectionString, type: values.type })}
+        />
+      )}
     </div>
   )
 }

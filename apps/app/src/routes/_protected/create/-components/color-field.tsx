@@ -8,6 +8,8 @@ import type { CSSProperties } from 'react'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 
+const NO_COLOR = 'none'
+
 export const ColorField = ({ form }: { form: ConnectionForm }) => (
   <form.Subscribe selector={(state) => state.values.color}>
     {(color) => (
@@ -17,11 +19,15 @@ export const ColorField = ({ form }: { form: ConnectionForm }) => (
           <ToggleGroup
             id="color"
             aria-label="Color"
-            value={color ? [color] : []}
+            value={[color ?? NO_COLOR]}
             onValueChange={([next]) =>
-              form.setFieldValue('color', next ?? null)
+              next !== undefined &&
+              form.setFieldValue('color', next === NO_COLOR ? null : next)
             }
           >
+            <ToggleGroupItem value={NO_COLOR} aria-label="No color">
+              <span className="ring-foreground/25 size-full rounded-full ring-1 ring-inset" />
+            </ToggleGroupItem>
             {COLOR_OPTIONS.map((option) => (
               <ToggleGroupItem
                 key={option}

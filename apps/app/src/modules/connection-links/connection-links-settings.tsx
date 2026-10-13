@@ -1,7 +1,4 @@
-import {
-  SettingsGroup,
-  SettingsRow,
-} from '@tamery/ui/components/custom/settings-group'
+import { SettingsRow } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -10,7 +7,7 @@ import { queryClient } from '~/lib/query-client'
 
 const QUERY_KEY = ['connection-links', 'is-default']
 
-export const ConnectionLinksSettings = () => {
+export const ConnectionLinksRow = () => {
   const { data: isDefault } = useQuery({
     queryFn: async () =>
       (await window.electron?.connectionLinks.isDefault()) ?? false,
@@ -25,19 +22,17 @@ export const ConnectionLinksSettings = () => {
   })
 
   return (
-    <SettingsGroup>
-      <SettingsRow
-        htmlFor="connection-links-default"
-        title="Open database links in Tamery"
-        description="postgres://, mysql://, sqlserver:// and clickhouse:// links open the matching connection, or a new one filled in from the link."
-      >
-        <Switch
-          id="connection-links-default"
-          size="sm"
-          checked={!!isDefault}
-          onCheckedChange={(enabled) => setDefault(enabled)}
-        />
-      </SettingsRow>
-    </SettingsGroup>
+    <SettingsRow
+      htmlFor="connection-links-default"
+      title="Open database links in Tamery"
+      description="postgres://, mysql://, sqlserver:// and clickhouse:// links open the matching connection, or a new one filled in from the link."
+    >
+      <Switch
+        id="connection-links-default"
+        size="sm"
+        checked={!!isDefault}
+        onCheckedChange={(enabled) => setDefault(enabled)}
+      />
+    </SettingsRow>
   )
 }

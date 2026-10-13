@@ -33,7 +33,7 @@ interface McpClientSetup {
 export const MCP_CLIENTS: McpClientSetup[] = [
   {
     code: (server) =>
-      `claude mcp add --transport http --scope user ${SERVER_NAME} ${server.url} --header "Authorization: ${headersOf(server).Authorization}"`,
+      `claude mcp add -t http -s user ${SERVER_NAME} ${server.url} -H "Authorization: ${headersOf(server).Authorization}"`,
     id: 'claude_code',
     instruction: 'Run in a terminal',
     label: 'Claude Code',
@@ -111,3 +111,12 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     language: 'json',
   },
 ]
+
+const VISIBLE_TOKEN_CHARS = 4
+
+export const maskedToken = (token: string) =>
+  `••••••••${token.slice(-VISIBLE_TOKEN_CHARS)}`
+
+export const clientLabel = (name: string) =>
+  MCP_CLIENTS.find(({ id }) => name.replaceAll('-', '_').startsWith(id))
+    ?.label ?? name

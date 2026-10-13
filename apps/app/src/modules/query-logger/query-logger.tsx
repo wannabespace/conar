@@ -80,7 +80,7 @@ const LogRow = ({
     aria-label="Inspect query"
     data-active={isActive || undefined}
     onClick={onSelect}
-    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:focus-ring flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
+    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:bg-foreground/10 focus-visible:data-active:bg-foreground/15 flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
   >
     <StatusDot {...query} />
     <span className="min-w-0 flex-1 truncate font-mono text-xs">

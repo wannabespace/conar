@@ -28,7 +28,11 @@ export interface ConnectionFormValues {
   user: string
 }
 
-export type FieldsOrigin = GuessFormat | 'form'
+/** Where the fields came from: a recognised paste, or the fields themselves. */
+export type FieldsOrigin = GuessFormat | 'form' | null
+
+export const isGuessed = (origin: FieldsOrigin): origin is GuessFormat =>
+  origin !== null && origin !== 'form'
 
 const DEFAULT_VALUES: ConnectionFormValues = {
   color: null,
@@ -83,6 +87,12 @@ export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
   user: values.user,
 })
 
+const isPartField = (name: string) =>
+  name === 'type' ||
+  name === 'sshEnabled' ||
+  name.startsWith('ssh.') ||
+  SERVER_FIELDS.some((field) => field === name)
+
 const BARE_HOST = /^[\w.-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
@@ -126,9 +136,11 @@ const expandHost = (
 
 export const useConnectionForm = ({
   onFieldsChange,
+  onInvalid,
   onSubmit,
 }: {
   onFieldsChange: (origin: FieldsOrigin) => void
+  onInvalid: (field: string) => void
   onSubmit: (values: ConnectionFormValues) => void
 }) => {
   const form = useAppForm({
@@ -139,7 +151,20 @@ export const useConnectionForm = ({
           expandHost(form, onFieldsChange)
         }
       },
-      onChange: () => onFieldsChange('form'),
+      onChange: ({ fieldApi }) => {
+        if (isPartField(fieldApi.name)) {
+          onFieldsChange('form')
+        }
+      },
+    },
+    onSubmitInvalid: ({ formApi }) => {
+      const [field] =
+        Object.entries(formApi.state.fieldMeta).find(
+          ([, meta]) => meta?.errors.length
+        ) ?? []
+      if (field) {
+        onInvalid(field)
+      }
     },
     onSubmit: () => {
       expandHost(form, onFieldsChange)

@@ -27,19 +27,10 @@ const AUTH_LABELS: Record<SshAuth, string> = {
   password: 'Password',
 }
 
-const sshNote = (enabled: boolean, auth: SshAuth) => {
-  if (!window.electron) {
-    return 'Tunnels open in the Tamery desktop app — save it here, query it there.'
-  }
-  return enabled && auth === 'agent'
-    ? 'Signs in with your running ssh-agent and the matching Host in ~/.ssh/config.'
-    : null
-}
-
 export const SshFields = ({ form }: { form: ConnectionForm }) => {
   const enabled = useStore(form.store, (state) => state.values.sshEnabled)
   const auth = useStore(form.store, (state) => state.values.ssh.auth)
-  const note = sshNote(enabled, auth)
+  const showsAgentNote = enabled && auth === 'agent' && window.electron
 
   return (
     <>
@@ -139,7 +130,12 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
           )}
         </AnimatePresence>
       </FieldGroup>
-      {note && <Footnote>{note}</Footnote>}
+      {showsAgentNote && (
+        <Footnote>
+          Signs in with your running ssh-agent and the matching Host in
+          ~/.ssh/config.
+        </Footnote>
+      )}
     </>
   )
 }

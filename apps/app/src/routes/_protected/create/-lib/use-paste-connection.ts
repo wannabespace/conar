@@ -3,7 +3,7 @@ import { guessConnection } from '@tamery/connection/guess'
 import { useLocation } from '@tanstack/react-router'
 import { useEffect, useEffectEvent, useState } from 'react'
 
-export type PasteVia = 'drop' | 'link' | 'paste'
+export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'
 
 const MAX_DROP_BYTES = 256 * 1024
 

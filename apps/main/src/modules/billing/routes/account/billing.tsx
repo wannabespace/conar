@@ -24,7 +24,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 
-import { AccountPage } from '~/components/account-page'
+import { AccountPage, accountTableClassName } from '~/components/account-page'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 
@@ -56,7 +56,7 @@ const RouteComponent = () => {
         </Button>
       }
     >
-      <div className={cn(cardClass, 'overflow-x-auto')}>
+      <div className={cn(cardClass, accountTableClassName, 'overflow-x-auto')}>
         {invoices.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>

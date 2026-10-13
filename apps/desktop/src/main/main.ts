@@ -49,6 +49,20 @@ let mainWindow: BrowserWindow | null = null
 // Allowlist: any other scheme hands the renderer a way to launch arbitrary local apps. cursor: and vscode: carry the MCP install links.
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
 
+// Rejects when no app handles the protocol (Cursor not installed), and an unhandled rejection quits the app.
+const openExternal = async (win: BrowserWindow, url: string) => {
+  try {
+    await shell.openExternal(url)
+  } catch {
+    win.webContents.send('toast', {
+      description:
+        'No app on this computer opens it. Install the app, or copy the config instead.',
+      message: "Couldn't open the link",
+      type: 'error',
+    })
+  }
+}
+
 export const createWindow = (route?: string) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
@@ -109,7 +123,7 @@ export const createWindow = (route?: string) => {
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
-      shell.openExternal(url)
+      void openExternal(win, url)
     }
     return { action: 'deny' }
   })

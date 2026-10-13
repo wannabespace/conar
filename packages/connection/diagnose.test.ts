@@ -78,6 +78,18 @@ describe('diagnoseConnectionError', () => {
     ).toBe('user')
   })
 
+  it("asks for the password node-postgres won't send empty", () => {
+    expect(
+      diagnose(
+        'SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string',
+        { password: '' }
+      )
+    ).toMatchObject({
+      focus: 'password',
+      title: 'This server needs a password',
+    })
+  })
+
   it('returns nothing for an error it does not know', () => {
     expect(diagnose('something odd happened')).toBeNull()
   })

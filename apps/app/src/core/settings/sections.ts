@@ -1,19 +1,23 @@
 import {
   KeyboardIcon,
-  Link01Icon,
   McpServerIcon,
   PaintBoardIcon,
-  SecurityLockIcon,
+  Settings02Icon,
 } from '@hugeicons/core-free-icons'
 
-import { ConnectionLinksSettings } from '~/modules/connection-links/connection-links-settings'
 import { McpSettings } from '~/modules/mcp/mcp-settings'
 
 import { AppearanceSettings } from './appearance'
+import { GeneralSettings } from './general'
 import { KeyboardSettings } from './keyboard'
-import { PrivacySettings } from './privacy'
 
 export const settingsSections = [
+  {
+    component: GeneralSettings,
+    icon: Settings02Icon,
+    label: 'General',
+    slug: 'general',
+  },
   {
     component: AppearanceSettings,
     icon: PaintBoardIcon,
@@ -34,18 +38,6 @@ export const settingsSections = [
           label: 'MCP',
           slug: 'mcp',
         },
-        {
-          component: ConnectionLinksSettings,
-          icon: Link01Icon,
-          label: 'Links',
-          slug: 'links',
-        },
       ]
     : []),
-  {
-    component: PrivacySettings,
-    icon: SecurityLockIcon,
-    label: 'Privacy',
-    slug: 'privacy',
-  },
 ]

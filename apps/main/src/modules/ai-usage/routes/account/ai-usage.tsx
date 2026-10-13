@@ -30,7 +30,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { format, parse } from 'date-fns'
 import { useState } from 'react'
 
-import { AccountPage } from '~/components/account-page'
+import { AccountPage, accountTableClassName } from '~/components/account-page'
 import { orpc } from '~/lib/orpc'
 
 const usageQueryOptions = (range?: DateRange) =>
@@ -89,7 +89,7 @@ const RouteComponent = () => {
         </Popover>
       }
     >
-      <div className={cn(cardClass, 'overflow-x-auto')}>
+      <div className={cn(cardClass, accountTableClassName, 'overflow-x-auto')}>
         {usage.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>

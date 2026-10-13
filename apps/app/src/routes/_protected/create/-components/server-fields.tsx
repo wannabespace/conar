@@ -16,11 +16,10 @@ const DATABASE_PLACEHOLDERS: Record<ConnectionType, string> = {
   [ConnectionType.Postgres]: 'postgres',
 }
 
-const OPTIONS_PLACEHOLDERS: Record<ConnectionType, string> = {
-  [ConnectionType.ClickHouse]: 'Optional',
-  [ConnectionType.MSSQL]: 'encrypt=true',
-  [ConnectionType.MySQL]: 'ssl=true',
-  [ConnectionType.Postgres]: 'sslmode=require',
+const OPTIONS_PLACEHOLDERS: Partial<Record<ConnectionType, string>> = {
+  [ConnectionType.MSSQL]: 'e.g. encrypt=true',
+  [ConnectionType.MySQL]: 'e.g. ssl=true',
+  [ConnectionType.Postgres]: 'e.g. sslmode=require',
 }
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]'])
@@ -42,7 +41,6 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
               <field.Label>Host</field.Label>
               <field.Input
                 variant="inset"
-                autoFocus
                 data-mask
                 spellCheck={false}
                 autoComplete="off"
@@ -75,7 +73,6 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 data-mask
                 spellCheck={false}
                 autoComplete="off"
-                placeholder="Optional"
               />
             </field.Field>
           )}
@@ -88,7 +85,6 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 variant="inset"
                 data-mask
                 autoComplete="new-password"
-                placeholder="Optional"
               />
             </field.Field>
           )}

@@ -160,6 +160,9 @@ contextBridge.exposeInMainWorld('electron', {
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
     ),
+    forgetClient: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.forgetClient', arg)
+    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),

@@ -12,7 +12,7 @@ import type { ConnectionForm } from '../-lib/connection-form'
 
 const ENGINES = Object.values(ConnectionType)
 
-export const ENGINE_LABELS: Record<ConnectionType, string> = {
+const ENGINE_LABELS: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'ClickHouse',
   [ConnectionType.MSSQL]: 'SQL Server',
   [ConnectionType.MySQL]: 'MySQL',

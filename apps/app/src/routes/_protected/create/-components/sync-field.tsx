@@ -1,14 +1,11 @@
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from '@tamery/ui/components/field'
-import { RadioGroup, RadioGroupItem } from '@tamery/ui/components/radio-group'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 
@@ -18,7 +15,7 @@ const SYNC_OPTIONS: Record<SyncType, { description: string; label: string }> = {
     label: 'Full',
   },
   [SyncType.CloudWithoutPassword]: {
-    description: 'Passwords and keys stay on each device.',
+    description: 'Passwords and keys stay on this device.',
     label: 'No password',
   },
   [SyncType.CloudWithoutConnectionString]: {
@@ -27,34 +24,47 @@ const SYNC_OPTIONS: Record<SyncType, { description: string; label: string }> = {
   },
 }
 
+const SYNC_TYPES = Object.values(SyncType)
+
 export const SyncField = ({ form }: { form: ConnectionForm }) => (
-  <FieldSet>
-    <FieldLegend variant="label" className="ml-3">
-      Sync
-    </FieldLegend>
-    <form.AppField name="syncType">
-      {(field) => (
-        <RadioGroup
-          aria-label="Sync"
-          className="grid-cols-3"
+  <form.AppField name="syncType">
+    {(field) => (
+      <field.Field orientation="row">
+        <field.Label>Sync</field.Label>
+        <Select
+          items={SYNC_TYPES.map((syncType) => ({
+            label: SYNC_OPTIONS[syncType].label,
+            value: syncType,
+          }))}
           value={field.state.value}
-          onValueChange={field.handleChange}
+          onValueChange={(next) => next && field.handleChange(next)}
         >
-          {Object.values(SyncType).map((syncType) => (
-            <FieldLabel key={syncType} htmlFor={`sync-${syncType}`}>
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldTitle>{SYNC_OPTIONS[syncType].label}</FieldTitle>
-                  <FieldDescription size="sm">
+          <SelectTrigger id={field.name} variant="flat" className="flex-1">
+            <SelectValue>
+              {(syncType: SyncType) => (
+                <>
+                  {SYNC_OPTIONS[syncType].label}
+                  <span className="text-muted-foreground truncate">
                     {SYNC_OPTIONS[syncType].description}
-                  </FieldDescription>
-                </FieldContent>
-                <RadioGroupItem id={`sync-${syncType}`} value={syncType} />
-              </Field>
-            </FieldLabel>
-          ))}
-        </RadioGroup>
-      )}
-    </form.AppField>
-  </FieldSet>
+                  </span>
+                </>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {SYNC_TYPES.map((syncType) => (
+              <SelectItem key={syncType} value={syncType}>
+                <span className="flex flex-col">
+                  {SYNC_OPTIONS[syncType].label}
+                  <span className="text-muted-foreground text-xs">
+                    {SYNC_OPTIONS[syncType].description}
+                  </span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </field.Field>
+    )}
+  </form.AppField>
 )

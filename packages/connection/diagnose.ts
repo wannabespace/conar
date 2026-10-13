@@ -89,22 +89,32 @@ const tunnelFix = ({ desktop, parts }: Context): Diagnosis['fix'] =>
 
 const RULES: { match: RegExp; diagnose: (context: Context) => Diagnosis }[] = [
   {
-    diagnose: ({ parts }) =>
-      /\.pooler\.supabase\.com$/iu.test(parts.host) && !parts.user.includes('.')
+    diagnose: ({ parts }) => {
+      if (
+        /\.pooler\.supabase\.com$/iu.test(parts.host) &&
+        !parts.user.includes('.')
+      ) {
+        return {
+          focus: 'user',
+          hint: "Supabase's pooler needs the project in the user: postgres.<project-ref>, as in its Session pooler string.",
+          title: 'Wrong user for the Supabase pooler',
+        }
+      }
+      return parts.password
         ? {
-            focus: 'user',
-            hint: "Supabase's pooler needs the project in the user: postgres.<project-ref>, as in its Session pooler string.",
-            title: 'Wrong user for the Supabase pooler',
+            focus: 'password',
+            hint: 'Check the user and password, and that this user may connect from your address.',
+            title: 'Wrong user or password',
           }
         : {
             focus: 'password',
-            hint: parts.password
-              ? 'Check the user and password, and that this user may connect from your address.'
-              : 'The password is empty — enter it.',
-            title: 'Wrong user or password',
-          },
+            hint: 'The connection has no password, and the server only lets this user in with one.',
+            title: 'This server needs a password',
+          }
+    },
+    // `client password must be a` is node-postgres refusing SCRAM without a password, before the server sees one.
     match:
-      /password authentication failed|access denied for user|login failed for user|authentication failed|wrong password|invalid password|password is incorrect|no password supplied/iu,
+      /password authentication failed|access denied for user|login failed for user|authentication failed|wrong password|invalid password|password is incorrect|no password supplied|password required|client password must be a/iu,
   },
   {
     diagnose: ({ message }) => {

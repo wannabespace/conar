@@ -190,8 +190,14 @@ const clients = (): McpClient[] =>
 export const mcp = {
   clients,
   connectionAccess,
+  forgetClient: (name: string) => {
+    const { [name]: _forgotten, ...others } = store.get('clients')
+    store.set('clients', others)
+    return clients()
+  },
   regenerateToken: () => {
     store.set('token', newToken())
+    store.set('clients', {})
     closeSessions()
     return status()
   },

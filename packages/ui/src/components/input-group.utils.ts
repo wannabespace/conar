@@ -14,7 +14,6 @@ export const inputGroupVariants = cva(
         flat: `has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring bg-transparent first:rounded-t-xl last:rounded-b-xl`,
         floating: `${inputGroupSurface} shadow-md`,
         inset: `has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl bg-transparent`,
-        title: `has-[[data-slot=input-group-control]:focus-visible]:focus-ring hover:bg-foreground/5 hover:*:data-[slot=input-group-addon]:text-foreground mx-auto h-10 w-fit max-w-full rounded-xl bg-transparent has-[[data-slot=input-group-control]:focus-visible]:bg-transparent *:data-[slot=input-group-control]:field-sizing-content *:data-[slot=input-group-control]:h-10 *:data-[slot=input-group-control]:text-2xl *:data-[slot=input-group-control]:font-semibold *:data-[slot=input-group-control]:tracking-tight`,
       },
     },
   }

@@ -146,7 +146,7 @@ const CodeField = ({
     <div data-mask className="p-0.75">
       <Monaco
         ref={ref}
-        className="h-64 w-120"
+        className="h-64 w-120 rounded-lg"
         language={language}
         value={edit?.text ?? ''}
         onChange={(text) => cursor.change(text)}
