@@ -58,27 +58,29 @@ export const prefetchConnectionResourceTableCore = async ({
     exact: boolean
   }
 }) => {
-  await Promise.all([
-    queryClient.infiniteQuery(
-      resourceRowsQueryInfiniteOptions({
-        connectionResource,
-        query,
-        schema,
-        table,
-      })
-    ),
-    queryClient.query(
-      resourceTableTotalQueryOptions({
-        connectionResource,
-        query,
-        schema,
-        table,
-      })
-    ),
-    queryClient.query(
-      resourceTableColumnsQueryOptions({ connectionResource, schema, table })
-    ),
-  ]).catch(noop)
+  const [rows = []] =
+    (await Promise.all([
+      queryClient.infiniteQuery(
+        resourceRowsQueryInfiniteOptions({
+          connectionResource,
+          query,
+          schema,
+          table,
+        })
+      ),
+      queryClient.query(
+        resourceTableTotalQueryOptions({
+          connectionResource,
+          query,
+          schema,
+          table,
+        })
+      ),
+      queryClient.query(
+        resourceTableColumnsQueryOptions({ connectionResource, schema, table })
+      ),
+    ]).catch(noop)) ?? []
+  return rows
 }
 
 export const useFetchingConfig = (

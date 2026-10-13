@@ -2,6 +2,7 @@ import { FavouriteIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Alert,
+  AlertAction,
   AlertDescription,
   AlertTitle,
 } from '@tamery/ui/components/alert'
@@ -10,6 +11,9 @@ import { createFileRoute, getRouteApi, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import JSConfetti from 'js-confetti'
 import { useEffect, useState } from 'react'
+
+import { AccountPage } from '~/components/account-page'
+import { orpc } from '~/lib/orpc'
 
 import { Subscription } from './-components/subscription'
 
@@ -58,34 +62,29 @@ const RouteComponent = () => {
   }, [isSuccess, returnUrl, router])
 
   return (
-    <>
+    <AccountPage title="Subscription">
       {isSuccess && (
-        <Alert variant="success" className="mb-6">
-          <AlertTitle className="flex items-center">
-            <HugeiconsIcon
-              icon={FavouriteIcon}
-              strokeWidth={2}
-              className="mr-2 size-4"
-            />
-            Subscription upgraded successfully!
-          </AlertTitle>
+        <Alert variant="success">
+          <HugeiconsIcon icon={FavouriteIcon} strokeWidth={2} />
+          <AlertTitle>Welcome to Tamery Pro</AlertTitle>
           <AlertDescription>
-            Your subscription has been upgraded successfully.
+            Your subscription is active. Thank you for supporting Tamery.
           </AlertDescription>
           {!returnUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 w-fit"
-              render={<a href={DESKTOP_URL} aria-label="Open Tamery" />}
-            >
-              Open Tamery
-            </Button>
+            <AlertAction>
+              <Button
+                variant="outline"
+                size="xs"
+                render={<a href={DESKTOP_URL} aria-label="Open Tamery" />}
+              >
+                Open Tamery
+              </Button>
+            </AlertAction>
           )}
         </Alert>
       )}
       <Subscription />
-    </>
+    </AccountPage>
   )
 }
 
@@ -96,4 +95,10 @@ export const Route = createFileRoute('/account/')({
     'type?': '"web" | "desktop" | "cli"',
   }),
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.query({
+      ...orpc.account.subscription.list.queryOptions(),
+      staleTime: 'static',
+    })
+  },
 })

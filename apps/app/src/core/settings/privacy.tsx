@@ -1,9 +1,11 @@
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
 import { useSubscription } from 'seitu/react'
 
 import { analyticsStore } from '~/lib/posthog'
-
-import { SettingsGroup, SettingsRow } from './settings-group'
 
 export const PrivacySettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)

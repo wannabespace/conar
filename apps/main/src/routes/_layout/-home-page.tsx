@@ -1,18 +1,20 @@
 import { Features } from '~/modules/features/features'
 import { Pricing } from '~/modules/pricing/pricing'
-import { Testimonials } from '~/modules/testimonials/testimonials'
 
-import { Demo } from './-components/demo'
+import { Agents } from './-components/agents'
+import { Engines } from './-components/engines'
+import { Faq } from './-components/faq'
+import { GetStarted } from './-components/get-started'
 import { Hero } from './-components/hero'
 
 export const HomePage = () => (
-  <main className="px-4 sm:px-6 lg:px-10">
-    <div>
-      <Hero className="sticky top-(--navbar-height)" />
-      <Demo />
-    </div>
+  <main>
+    <Hero />
+    <Engines />
     <Features />
-    <Testimonials />
+    <Agents />
     <Pricing />
+    <Faq />
+    <GetStarted />
   </main>
 )

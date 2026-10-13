@@ -13,7 +13,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 ## Recipes
 
 - `motion` library for interruptible animation, not CSS transitions (transitions snap under frame drops). Exception: pure colour/opacity hovers.
-- House curve `[0.32, 0.72, 0, 1]`, 150–300ms. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.
+- House curve `[0.32, 0.72, 0, 1]`, 150–300ms; in classes it is the `ease-house` theme token, never a hand-written `cubic-bezier`. Collapse via width/transform; no whole-panel opacity fades. `AnimatePresence` for mount/exit of conditional chrome. No layout shifts on hover — reserve space, animate opacity/transform only.
 - **A `transition-[…]` list must name every property the element's own state variants change.** A surface hovering both its ring and its fill but listing only `box-shadow` reads as two durations on one control. Rings and shadows are `box-shadow`; `transition-colors` never covers them. Siblings lighting up on the same pointer event share one duration.
 - **Ghost buttons hover instantly.** Toolbar and breadcrumb triggers sit in rows the pointer sweeps across; a fading fill trails behind the cursor. The ghost variant transitions `transform` only (press nudge).
 - **Anything keyed to the highlighted row of a keyboard list has no transition** — the highlight jumps a row per keystroke and a fade smears indicators down the list. Hover-only reveals inside one row may still fade.
@@ -37,6 +37,7 @@ A new animation answers to these before it picks a curve. This is a windowed des
 - **Changed cells flash once.** A refetch that changes a value (matched by primary key under the same filters and order) keys a `bg-primary/20` overlay with `animate-out fade-out` over 1.5s; a second change re-keys it so it replays. Pure opacity, so a CSS animation is enough.
 - **Refetching values pulse; only first load gets a skeleton.** A displayed number whose query is refetching keeps its value and dims + `animate-pulse` — gate on `isFetching`, since `isLoading` is first-load-only and a refetch would show stale data with no cue.
 - **`MeshBackground` is a bare shader; pages own its entrance.** It compiles and starts a continuous render loop on mount, which competes with entrance animations — a page that animates in mounts it after its own entrance.
+- **Marketing reveals and reactions** (`apps/main`): sections rise in as they scroll into view through `Reveal`, a CSS scroll-driven `animate-in` (16px rise on the house curve, scrubbed by `animation-timeline: view()`, off under `motion-reduce`); `MotionConfig reducedMotion="user"` at the root turns motion's transforms off. A bento card keeps the scroll entrance on a wrapper and drives its illustration with animation controls: children declare `hidden`/`shown` variants, and the card snaps to `hidden` then plays `shown` once at 60% in view and again on hover or tap after a cooldown. A story only plays forward and never reverses when the pointer leaves — a hover-held `active` state snaps back on leave.
 
 ## Pane folds
 

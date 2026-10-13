@@ -1,3 +1,4 @@
+import { CONTACT_EMAIL } from '@tamery/shared/constants'
 import type { ComponentProps } from 'react'
 import type { CreateEmailOptions } from 'resend'
 import { Resend } from 'resend'
@@ -36,7 +37,7 @@ export const sendEmail = async <
 
   const Template = templates[template] as (props?: P) => React.ReactElement
   const options: CreateEmailOptions = {
-    from: `Tamery <${env.RESEND_FROM_EMAIL}>`,
+    from: `Tamery <${CONTACT_EMAIL}>`,
     react: Template(props),
     subject,
     to,

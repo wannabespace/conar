@@ -16,7 +16,7 @@ import { openNewWindow } from '~/utils/new-window'
 
 import type { DiagramActions } from './context'
 import type { diagramDrafts } from './drafts'
-import { NODE_WIDTH } from './layout'
+import { fitViewOptions, NODE_WIDTH } from './layout'
 import { visualizerLayout } from './positions'
 import type { Diagram, DiagramColumn, DiagramTable } from './schema'
 import { tableNodeId } from './schema'
@@ -92,10 +92,9 @@ export const useDiagramActions = ({
     editColumn: (table, column) => setColumnRequest({ column, table }),
     focusRelation: (relation) => {
       void flow.fitView({
+        ...fitViewOptions,
         duration: 300,
-        maxZoom: 1,
         nodes: [{ id: relation.source.table }, { id: relation.target.table }],
-        padding: 0.2,
       })
     },
     linkColumns: ({ column, foreignColumn, foreignTable, table }) => {

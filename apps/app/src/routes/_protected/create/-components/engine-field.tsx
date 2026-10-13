@@ -1,4 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Select,
   SelectContent,
@@ -6,8 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 

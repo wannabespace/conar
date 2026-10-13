@@ -3,11 +3,10 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { GuessFix } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import { FieldDescription } from '@tamery/ui/components/field'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { cn } from '@tamery/ui/lib/utils'
 import { useStore } from '@tanstack/react-form'
 import type { CSSProperties } from 'react'
-
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 import { missingOf } from '../-lib/connection-form'

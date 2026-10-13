@@ -3,10 +3,13 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import { useState } from 'react'
 import { Streamdown } from 'streamdown'
 import type { ExtraProps } from 'streamdown'
+
+import { responseVariants } from './response.utils'
 
 const COLLAPSED_LINES = 10
 
@@ -115,14 +118,14 @@ const Code = ({
 
 const components = { code: Code }
 
-const prose = `[&_p]:my-2 [&_:is(ul,ol)]:my-2 [&_:is(ul,ol)]:ml-4 [&_:is(ul,ol)]:list-outside [&_li]:my-1 [&_li]:py-0 [&_li_:is(ul,ol)]:mt-1 [&_li_:is(ul,ol)]:pl-0 [&_:is(h1,h2,h3,h4,h5,h6)]:mt-3 [&_:is(h1,h2,h3,h4,h5,h6)]:mb-1 [&_h1]:text-base [&_h1]:font-semibold [&_h2]:text-sm [&_h2]:font-semibold [&_:is(h3,h4,h5,h6)]:text-sm [&_:is(h3,h4,h5,h6)]:font-medium [&_a]:underline-offset-2 [&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&>:first-child]:mt-0 [&>:last-child]:mb-0`
-
 export const Response = ({
   className,
+  variant,
   ...props
-}: React.ComponentProps<typeof Streamdown>) => (
+}: React.ComponentProps<typeof Streamdown> &
+  VariantProps<typeof responseVariants>) => (
   <Streamdown
-    className={cn('min-w-0 text-sm/normal', prose, className)}
+    className={cn(responseVariants({ variant }), className)}
     components={components}
     controls={false}
     data-slot="response"

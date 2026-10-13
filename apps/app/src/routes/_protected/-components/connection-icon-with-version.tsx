@@ -1,3 +1,4 @@
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Tooltip,
   TooltipContent,
@@ -5,7 +6,6 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useQuery } from '@tanstack/react-query'
 
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { useFetchingConfig } from '~/core/connection/fetching'
 import type { Connection } from '~/core/connection/sync'
 import { connectionVersionQueryOptions } from '~/core/queries/connection/version'

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
-import { authClient } from '~/lib/auth'
+import { useHasAccount } from '~/lib/auth'
 import type { ORPCOutputs } from '~/lib/orpc'
 import { orpc } from '~/lib/orpc'
 import { subscriptionQueryClient } from '~/lib/query-client'
@@ -38,11 +38,11 @@ export const isActiveSubscription = ({ status }: { status: string | null }) =>
   )
 
 export const useSubscription = () => {
-  const { data } = authClient.useSession()
+  const hasAccount = useHasAccount()
   const { data: list, isLoading } = useQuery(
     {
       ...subscriptionsQueryOptions,
-      enabled: !!data && !data.user.isAnonymous,
+      enabled: hasAccount,
     },
     subscriptionQueryClient
   )

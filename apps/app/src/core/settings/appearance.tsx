@@ -1,4 +1,8 @@
 import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -9,8 +13,6 @@ import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
 
 import { posthog } from '~/lib/posthog'
-
-import { SettingsGroup, SettingsRow } from './settings-group'
 
 const THEMES: { label: string; value: Theme }[] = [
   { label: 'System', value: 'system' },

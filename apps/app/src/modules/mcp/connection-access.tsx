@@ -1,6 +1,11 @@
 import type { McpAccess } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -12,8 +17,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
-import { ConnectionIcon } from '~/core/connection/connection-icon'
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { queryClient } from '~/lib/query-client'
 
 const ACCESS: { label: string; value: McpAccess }[] = [

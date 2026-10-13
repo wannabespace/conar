@@ -1,3 +1,4 @@
+import { queryOptions } from '@tanstack/react-query'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import {
@@ -39,6 +40,13 @@ export const authClient = createAuthClient({
     emailOTPClient(),
     lastLoginMethodClient(),
   ],
+})
+
+// The router drops this only on Better Auth's session signal: a session change made outside the auth client must remove it too.
+export const sessionQueryOptions = queryOptions({
+  queryFn: () => authClient.getSession(),
+  queryKey: ['session'],
+  staleTime: ({ state }) => (state.data?.data?.user ? 'static' : 0),
 })
 
 const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'

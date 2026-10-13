@@ -2,10 +2,9 @@ import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { challenge } from '@tamery/shared/challenge'
 import { title } from '@tamery/shared/title'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
-import { MeshBackground } from '@tamery/ui/components/custom/mesh-background'
+import { AuthSidePanel } from '@tamery/ui/components/custom/auth-side-panel'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
@@ -34,44 +33,6 @@ const signInUrl = (type: 'web' | 'desktop') => {
   }
 }
 
-const SHADER_MOUNT_DELAY = 500
-
-const AuthSidePanel = () => {
-  const [isShaderMounted, setIsShaderMounted] = useState(false)
-
-  useEffect(() => {
-    const timeout = setTimeout(
-      () => setIsShaderMounted(true),
-      SHADER_MOUNT_DELAY
-    )
-
-    return () => clearTimeout(timeout)
-  }, [])
-
-  return (
-    <div className="bg-body relative hidden flex-col overflow-hidden border-r p-10 text-white lg:flex">
-      {isShaderMounted && (
-        <motion.div
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.2 }}
-        >
-          <MeshBackground />
-        </motion.div>
-      )}
-      <div className="relative z-20 mt-auto mb-4 flex items-center gap-2 text-lg font-medium">
-        <AppLogo className="size-6" />
-        Tamery
-      </div>
-      <blockquote className="relative z-20 leading-normal text-balance">
-        Write queries, explore data, and manage your databases with AI doing the
-        heavy lifting.
-      </blockquote>
-    </div>
-  )
-}
-
 const AuthPage = () => {
   const router = useRouter()
   const { data: session, refetch } = authClient.useSession()
@@ -95,7 +56,7 @@ const AuthPage = () => {
     }
   }
 
-  const { data, error, isPending } = useQuery(
+  const { data, error } = useQuery(
     orpc.account.challenge.listen.liveOptions({
       input: codeChallenge ? { codeChallenge } : skipToken,
       networkMode: 'online',
@@ -142,7 +103,9 @@ const AuthPage = () => {
 
   return (
     <>
-      {window.electron && <TitleBar className="-mb-10" />}
+      {window.electron && (
+        <TitleBar className="traffic-lights:mb-0 -mb-10.25" />
+      )}
       <div className="relative grid flex-1 overflow-hidden lg:grid-cols-2">
         <AuthSidePanel />
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
@@ -208,7 +171,7 @@ const AuthPage = () => {
                 size="lg"
                 onClick={() => signInWithChallenge()}
               >
-                {!!codeChallenge && isPending ? (
+                {!!codeChallenge && !data?.ready && !error ? (
                   <span className="animate-pulse">Waiting for sign in...</span>
                 ) : (
                   'Sign In'

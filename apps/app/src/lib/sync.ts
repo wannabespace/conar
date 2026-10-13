@@ -108,6 +108,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
   const tracker = createSyncTracker()
   const firstSync = Promise.withResolvers<undefined>()
   let writeSynced: ((items: SyncMessage<T>[]) => void) | null = null
+  let abortSync: (() => void) | null = null
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -228,13 +229,14 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       // on the collection, so the row would vanish while a later outbox write
       // is still pending.
       writeSynced = (items) => writeItems(items, { immediate: true })
-      markReady()
-      run()
-
-      return () => {
+      abortSync = () => {
         abortController.abort(`${config.id} sync aborted`)
         firstSync.resolve()
       }
+      markReady()
+      run()
+
+      return abortSync
     },
   }
 
@@ -254,6 +256,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     id: config.id,
     sync,
     utils: {
+      abortSync: () => abortSync?.(),
       awaitChange: tracker.awaitChange,
       // Sends one offline-outbox mutation, then writes it as synced so the row
       // holds still between the optimistic layer dropping and the server echo.
