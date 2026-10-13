@@ -2,8 +2,6 @@ import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 
-import { HOUSE_EASE } from '~/utils/motion'
-
 import { WindowButtons } from '../window-buttons'
 import {
   APPROVAL_STEP,
@@ -26,7 +24,7 @@ const Line = ({
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: HOUSE_EASE }}
+      transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
       className={className}
     >
       {children}

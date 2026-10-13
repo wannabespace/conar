@@ -2,8 +2,6 @@ import { Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { motion } from 'motion/react'
 
-import { HOUSE_EASE } from '~/utils/motion'
-
 const ARC = 'M 140 58 Q 184 -12 228 44'
 
 const TRAVEL_S = 0.8
@@ -50,7 +48,11 @@ export const SyncIllustration = () => (
             pathLength: 1,
             transition: {
               opacity: { delay: ARRIVE_AT, duration: 0.4 },
-              pathLength: { delay: 0.2, duration: TRAVEL_S, ease: HOUSE_EASE },
+              pathLength: {
+                delay: 0.2,
+                duration: TRAVEL_S,
+                ease: [0.32, 0.72, 0, 1],
+              },
             },
           },
         }}

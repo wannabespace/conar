@@ -8,17 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
+import type { MotionProps } from 'motion/react'
 import { motion } from 'motion/react'
-
-import { HOUSE_EASE } from '~/utils/motion'
 
 import type { Frame } from './playback'
 
 const rise = {
   animate: { opacity: 1, y: 0 },
   initial: { opacity: 0, y: 6 },
-  transition: { duration: 0.3, ease: HOUSE_EASE },
-}
+  transition: { duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+} satisfies MotionProps
 
 export const Answer = ({
   frame: { conversation, result, sent, sql, words },

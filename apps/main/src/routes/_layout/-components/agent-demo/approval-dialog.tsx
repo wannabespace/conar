@@ -2,8 +2,6 @@ import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { motion } from 'motion/react'
 
-import { HOUSE_EASE } from '~/utils/motion'
-
 import { UPDATE_SQL } from './script'
 
 export const ApprovalDialog = ({ pressed }: { pressed: boolean }) => (
@@ -17,7 +15,7 @@ export const ApprovalDialog = ({ pressed }: { pressed: boolean }) => (
       initial={{ scale: 0.95 }}
       animate={{ scale: 1 }}
       exit={{ scale: 0.95 }}
-      transition={{ duration: 0.2, ease: HOUSE_EASE }}
+      transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
       className="bg-card ring-foreground/4 flex w-full max-w-88 flex-col gap-3 rounded-2xl p-4 shadow-xl ring"
     >
       <div className="flex flex-col gap-1">
