@@ -24,6 +24,7 @@ import {
   defaultFilter,
 } from '@tamery/ui/components/command'
 import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { Kbd } from '@tamery/ui/components/kbd'
 import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -36,7 +37,6 @@ import { useSubscription } from 'seitu/react'
 
 import { tableTypeIcon } from '~/core/catalog/table-type'
 import { useCollections } from '~/core/collections'
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'

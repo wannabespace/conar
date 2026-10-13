@@ -1,4 +1,6 @@
 export { aiUsage } from './ai-usage'
 export { challenge } from './challenge'
 export { invoices } from './invoices'
+export { revokeSession } from './revoke-session'
+export { sessions } from './sessions'
 export { subscription } from './subscription'

@@ -8,6 +8,7 @@ minimumReleaseAgeExclude:
   - '@orpc/json-schema@2.0.0-beta.41'
   - '@orpc/openapi@2.0.0-beta.41'
   - '@orpc/publisher@2.0.0-beta.41'
+  - '@orpc/ratelimit@2.0.0-beta.41'
   - '@orpc/server@2.0.0-beta.41'
   - '@orpc/shared@2.0.0-beta.41'
   - '@orpc/tanstack-query@2.0.0-beta.41'
@@ -45,6 +46,7 @@ catalog:
   '@openrouter/ai-sdk-provider': ^3.1.0
   '@orpc/client': 2.0.0-beta.41
   '@orpc/publisher': 2.0.0-beta.41
+  '@orpc/ratelimit': 2.0.0-beta.41
   '@orpc/server': 2.0.0-beta.41
   '@orpc/tanstack-query': 2.0.0-beta.41
   '@playwright/test': ^1.62.1
@@ -129,7 +131,6 @@ catalog:
   react: ^19.3.0
   react-day-picker: ^9.12.0
   react-dom: ^19.3.0
-  react-markdown: ^10.1.0
   react-qr-code: ^2.2.0
   redis: ^6.2.1
   resend: ^6.25.0
@@ -160,6 +161,7 @@ catalog:
   ultracite: ^7.10.7
   sf-symbols-typescript: ^2.2.0
   '@shadcn/lint': ^0.2.0
+  '@tanstack/react-router-ssr-query': 1.167.1
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false

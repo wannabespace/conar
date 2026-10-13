@@ -6,19 +6,23 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@tamery/ui/components/card'
-import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@tamery/ui/components/collapsible'
+import { CodeBlock } from '@tamery/ui/components/custom/code-block'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
-import { TraversalError } from 'arktype'
 
 export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
@@ -27,76 +31,52 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
     <>
       <ThemeObserver />
       <Toaster />
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative z-20 w-full max-w-lg">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="bg-destructive/10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
-                <HugeiconsIcon
-                  icon={Alert02Icon}
-                  strokeWidth={2}
-                  className="text-destructive size-8"
-                />
-              </div>
-              <CardTitle>Something went wrong</CardTitle>
-              <CardDescription>
-                An error occurred while rendering this page
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!(error instanceof TraversalError) && !error.stack && (
-                <ScrollArea className="bg-muted text-muted-foreground h-50 rounded-md p-4 text-sm">
-                  {error.message}
-                </ScrollArea>
-              )}
-              {!(error instanceof TraversalError) && error.stack && (
-                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
-                  {error.stack}
-                </ScrollArea>
-              )}
-              {error instanceof TraversalError && (
-                <ScrollArea className="bg-muted text-muted-foreground h-75 rounded-md p-4 font-mono text-xs">
-                  {error.arkErrors.map((err, index) => (
-                    <div key={err.message} className="mb-4 last:mb-0">
-                      <div className="text-destructive font-semibold">
-                        Error {index + 1}:
-                      </div>
-                      <div className="mt-1 ml-2">
-                        <div>{err.message}</div>
-                      </div>
-                    </div>
-                  ))}
-                  {error.stack && (
-                    <div className="mt-4">
-                      <h3 className="mb-2 text-sm font-medium">Stack</h3>
-                      <div className="bg-muted text-muted-foreground rounded-md font-mono text-xs">
-                        {error.stack}
-                      </div>
-                    </div>
-                  )}
-                </ScrollArea>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.history.back()}
-              >
+      <main className="flex min-h-dvh items-center justify-center p-4">
+        <Empty className="w-full max-w-xl">
+          <EmptyHeader>
+            <EmptyMedia variant="destructive">
+              <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
+            </EmptyMedia>
+            <EmptyTitle>Something went wrong</EmptyTitle>
+            <EmptyDescription>
+              <code data-mask className="font-mono wrap-break-word select-text">
+                {error.message}
+              </code>
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => router.history.back()}>
                 <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
                 Go back
               </Button>
-              <Button
-                className="ml-2 flex-1"
-                onClick={() => window.location.reload()}
-              >
+              <Button onClick={() => window.location.reload()}>
                 <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />
-                Refresh
+                Reload
               </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
+            </div>
+            {error.stack && (
+              <Collapsible className="flex w-full flex-col items-center">
+                <CollapsibleTrigger
+                  render={<Button variant="ghost-muted" size="sm" />}
+                >
+                  Show details
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 w-full">
+                  <CodeBlock
+                    variant="field"
+                    size="xs"
+                    wrap
+                    language="text"
+                    code={error.stack}
+                    className="max-h-72 text-left"
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+          </EmptyContent>
+        </Empty>
+      </main>
     </>
   )
 }

@@ -32,12 +32,14 @@ const EmailCodePage = () => {
   const [isNewAccount, setIsNewAccount] = useState(false)
 
   const { mutate: resend, isPending: isResending } = useMutation({
+    meta: { event: 'sign_in_code_resent' },
     mutationFn: () => sendSignInCode(email),
     onSuccess: () => toast.success('We sent you a new code.'),
     onError: handleError,
   })
 
   const { mutate: verify, isPending } = useMutation({
+    meta: { event: 'sign_in_code_verified' },
     mutationFn: async (otp: string) => {
       const { data, error } = await authClient.signIn.emailOtp({ email, otp })
 
@@ -84,7 +86,7 @@ const EmailCodePage = () => {
         value={code}
         onChange={setCode}
         onComplete={verify}
-        disabled={isPending}
+        loading={isPending}
         autoFocus
       />
       <div className="flex gap-4">

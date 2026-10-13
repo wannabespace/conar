@@ -1,6 +1,7 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Tooltip,
   TooltipContent,
@@ -11,7 +12,6 @@ import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { useCollections } from '~/core/collections'
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'

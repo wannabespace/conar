@@ -1,6 +1,9 @@
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'

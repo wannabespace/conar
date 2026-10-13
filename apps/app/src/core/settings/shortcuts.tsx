@@ -1,6 +1,10 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRef, useState } from 'react'
 
@@ -10,7 +14,6 @@ import type { Shortcut } from '~/core/keyboard/shortcuts'
 import { isShortcutAvailable, SHORTCUTS } from '~/core/keyboard/shortcuts'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
-import { SettingsGroup, SettingsRow } from './settings-group'
 import { SHORTCUT_GROUPS } from './shortcut-groups'
 
 const KEY_ALIASES: Record<string, string[]> = {

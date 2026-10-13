@@ -1,102 +1,133 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { FlipWords } from '@tamery/ui/components/aceternity/flip-words'
-import { Button } from '@tamery/ui/components/button'
+import {
+  ArrowUpRight01Icon,
+  GithubIcon,
+  UserMultipleIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { MeshBackground } from '@tamery/ui/components/custom/mesh-background'
 import { cn } from '@tamery/ui/lib/utils'
-import { Link } from '@tanstack/react-router'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { useQuery } from '@tanstack/react-query'
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { Fragment } from 'react'
 
-import { DownloadButton } from '~/components/download-button'
-import { SEO } from '~/constants'
+import { orpc } from '~/lib/orpc'
 
-const words = {
-  [ConnectionType.Postgres]: 'Postgres',
-  [ConnectionType.MySQL]: 'MySQL',
-  [ConnectionType.MSSQL]: 'MSSQL',
-  [ConnectionType.ClickHouse]: 'ClickHouse',
-} satisfies Record<ConnectionType, string>
+import { GetStartedButtons } from './get-started-buttons'
+import { Showcase } from './showcase/showcase'
 
-export const Hero = ({ className }: { className?: string }) => {
-  const { scrollY } = useScroll()
-  const opacity = useTransform(scrollY, [0, 200, 500], [1, 1, 0])
+const riseClassName =
+  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both duration-800 ease-house motion-reduce:animate-none'
+
+const WORD_STAGGER_MS = 80
+
+// Fade and rise on the outer span, blur on the inner: Chrome never composites a blur, so sharing
+// one element would freeze the whole word while hydration holds the main thread
+const wordClassName =
+  'animate-in fade-in slide-in-from-bottom-3 fill-mode-both inline-block duration-900 ease-house motion-reduce:animate-none'
+
+const HEADLINE_WORDS = 'The database client for you and your agents'.split(' ')
+
+const TILT_DEGREES = 14
+const TILT_SCROLL_DISTANCE = 480
+
+const UsageLine = () => {
+  const { data: userCount, isPending } = useQuery(orpc.userCount.queryOptions())
 
   return (
-    <motion.section
-      style={{ opacity }}
+    <p
       className={cn(
-        `flex flex-col items-start justify-between gap-6 py-12 sm:gap-8 sm:py-16 md:py-20 lg:flex-row lg:items-center lg:gap-12 lg:py-24 xl:py-28`,
-        className
+        isPending ? 'invisible' : riseClassName,
+        'text-muted-foreground flex shrink-0 items-center gap-1.5 text-sm delay-1100 lg:h-9'
       )}
     >
-      <div className="w-full lg:w-auto lg:flex-1">
-        <h1
-          // oxlint-disable-next-line shadcn/no-arbitrary-values -- the hero headline scales with the viewport
-          className="text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance"
-        >
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5 }}
-          >
-            Manage
-          </motion.span>
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-          >
-            <FlipWords words={Object.values(words)} duration={2000} />
-          </motion.span>
-          <br />
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            quickly
-          </motion.span>{' '}
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
-            and
-          </motion.span>
-          &nbsp;
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            easily
-          </motion.span>
-        </h1>
-      </div>
-      <div className="flex w-full max-w-md flex-col items-start gap-4 sm:gap-6 lg:flex-1 lg:items-end">
-        <motion.h2
-          initial={{ opacity: 0, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, filter: 'blur(0px)' }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-          className="text-muted-foreground text-left text-base text-balance sm:text-lg lg:text-right lg:text-xl"
-        >
-          {SEO.description}
-        </motion.h2>
-        <motion.div
-          initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
-          animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex w-full flex-col gap-3 sm:flex-row sm:gap-4 lg:w-auto"
-        >
-          <DownloadButton className="w-full sm:w-auto" />
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full sm:w-auto"
-            render={<Link to="/download" />}
-          >
-            All platforms
-          </Button>
-        </motion.div>
-      </div>
-    </motion.section>
+      {!!userCount && (
+        <>
+          <span className="inline-flex items-center gap-1">
+            <HugeiconsIcon
+              icon={UserMultipleIcon}
+              strokeWidth={2}
+              className="size-3.5"
+            />
+            Used by {userCount.toLocaleString('en')}+ people
+          </span>
+          <span aria-hidden>·</span>
+        </>
+      )}
+      <a
+        href={SOCIAL_LINKS.GITHUB}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-foreground decoration-foreground/20 hover:decoration-foreground inline-flex items-center gap-1 underline underline-offset-4 transition-colors"
+      >
+        <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="size-3.5" />
+        Open source
+        <HugeiconsIcon
+          icon={ArrowUpRight01Icon}
+          strokeWidth={2}
+          className="size-3"
+        />
+      </a>
+    </p>
   )
 }
+
+const TiltedShowcase = () => {
+  const reduceMotion = useReducedMotion()
+  const { scrollY } = useScroll()
+  const rotateX = useTransform(
+    scrollY,
+    [0, TILT_SCROLL_DISTANCE],
+    [TILT_DEGREES, 0]
+  )
+
+  return (
+    <motion.div style={reduceMotion ? undefined : { rotateX }}>
+      <Showcase />
+    </motion.div>
+  )
+}
+
+export const Hero = () => (
+  <section className="overflow-x-clip pt-16 sm:pt-24">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+          {HEADLINE_WORDS.map((word, index) => (
+            <Fragment key={word}>
+              {index > 0 && ' '}
+              <span
+                // oxlint-disable-next-line shadcn/no-inline-styles -- each word's stagger is its index times a step, which no class can describe
+                style={{ animationDelay: `${index * WORD_STAGGER_MS}ms` }}
+                className={wordClassName}
+              >
+                <span className="animate-focus-in fill-mode-both ease-house duration-900 [animation-delay:inherit] motion-reduce:animate-none">
+                  {word}
+                </span>
+              </span>
+            </Fragment>
+          ))}
+        </h1>
+        <p
+          className={cn(
+            riseClassName,
+            'text-muted-foreground mt-6 text-lg text-balance delay-550'
+          )}
+        >
+          <span className="sm:block">
+            Postgres, MySQL, SQL Server and ClickHouse in one fast client.
+          </span>{' '}
+          AI writes the SQL, and your agents query through MCP.
+        </p>
+        <GetStartedButtons className={cn(riseClassName, 'mt-8 delay-650')} />
+      </div>
+      <UsageLine />
+    </div>
+    <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both mx-auto mt-16 max-w-7xl px-4 delay-800 duration-1400 motion-reduce:animate-none sm:mt-20 sm:px-6">
+      <div className="bg-primary relative isolate h-120 overflow-hidden rounded-3xl px-4 pt-10 perspective-distant sm:h-144 sm:px-8 sm:pt-16 xl:px-16">
+        <MeshBackground className="-z-10" />
+        <TiltedShowcase />
+      </div>
+    </div>
+  </section>
+)

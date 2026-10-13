@@ -103,10 +103,16 @@ export const cleanCollections = async () => {
     return
   }
 
-  const { offline } = current
+  const { collections, offline } = current
   current = null
   await offline.clearOutbox()
   offline.dispose()
+  // Not collection.cleanup(): it wipes rows under still-mounted live queries.
+  for (const collection of Object.values(collections)) {
+    if ('abortSync' in collection.utils) {
+      collection.utils.abortSync()
+    }
+  }
 }
 
 const { useRouteContext } = getRouteApi('/_protected')

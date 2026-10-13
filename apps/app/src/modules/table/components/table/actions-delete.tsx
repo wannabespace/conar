@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
+import { cardClass } from '@tamery/ui/components/card.utils'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -26,7 +27,6 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { cardClass } from '~/components/card'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { deleteRowsQuery } from '~/core/queries/rows/delete'

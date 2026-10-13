@@ -12,7 +12,7 @@ setupPortlessEnvs({
   VITE_PUBLIC_WEB_URL: 'app.local.tamery',
 })
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     tailwindcss(),
     tanstackStart({
@@ -37,4 +37,10 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-})
+  ssr: {
+    // Externals break the production SSR render: deps pnpm hides from this app (base-ui) get inlined while
+    // their CJS `require('react')` stays a runtime require, loading a second React that Nitro never bundles.
+    // Dev must keep them: the module runner cannot evaluate CJS React inline.
+    noExternal: command === 'build' ? true : [],
+  },
+}))

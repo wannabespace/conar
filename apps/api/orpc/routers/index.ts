@@ -13,11 +13,13 @@ import * as chatsMessagesParts from './chats-messages-parts'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
+import { contactSales } from './contact-sales'
 import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
 import * as usage from './usage'
+import { userCount } from './user-count'
 import * as webhooks from './webhooks'
 import * as workspaces from './workspaces'
 
@@ -31,11 +33,13 @@ export const router = {
   connections,
   connectionsResources,
   contact,
+  contactSales,
   internal,
   queries,
   releases,
   repo,
   usage,
+  userCount,
   webhooks,
   workspaces,
 }

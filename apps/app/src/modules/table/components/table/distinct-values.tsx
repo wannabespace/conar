@@ -180,7 +180,7 @@ const StatsBody = ({
           value={search}
           onValueChange={setSearch}
         />
-        <CommandList>
+        <CommandList className="scroll-fade">
           {!hidesList && (
             <CommandEmpty>
               {isPending ? (

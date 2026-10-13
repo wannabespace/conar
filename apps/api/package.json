@@ -15,6 +15,7 @@
     "@octokit/rest": "catalog:",
     "@openrouter/ai-sdk-provider": "catalog:",
     "@orpc/publisher": "catalog:",
+    "@orpc/ratelimit": "catalog:",
     "@orpc/server": "catalog:",
     "@react-email/components": "catalog:",
     "@tamery/ai": "workspace:*",

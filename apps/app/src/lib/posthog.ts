@@ -25,6 +25,7 @@ const init = async () => {
       maskTextSelector: '[data-mask]',
     },
   })
+  client.register({ app: 'app' })
   // Applied once after init too: the choice may have changed during the import, and PostHog persists an opt-out across reloads.
   const apply = (isEnabled: boolean) => {
     if (isEnabled) {

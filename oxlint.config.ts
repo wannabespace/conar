@@ -36,11 +36,8 @@ export default defineConfig({
       },
     },
     {
-      files: [
-        'apps/app/src/icons/**',
-        'packages/ui/src/components/{aceternity,brand}/**',
-      ],
-      // Logos and vendored effects keep their own artwork colors.
+      files: ['packages/ui/src/components/{brand,icons}/**'],
+      // Logos keep their own artwork colors.
       rules: { 'shadcn/no-raw-colors': 'off' },
     },
   ],

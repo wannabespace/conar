@@ -19,6 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
@@ -29,7 +30,6 @@ import { useSubscription } from 'seitu/react'
 import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
 import { useCollections } from '~/core/collections'
-import { ConnectionIcon } from '~/core/connection/connection-icon'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'

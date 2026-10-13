@@ -2,7 +2,19 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { seo } from '~/utils/seo'
 
+import termsOfServiceContent from '../../content/terms-of-service.md?raw'
+import { LegalDocument } from '../../legal-document'
+
+const TermsOfService = () => (
+  <LegalDocument
+    title="Terms of Service"
+    updatedAt="July 1, 2025"
+    content={termsOfServiceContent}
+  />
+)
+
 export const Route = createFileRoute('/_layout/terms-of-service')({
+  component: TermsOfService,
   head: () =>
     seo({
       title: 'Terms of Service - Tamery',

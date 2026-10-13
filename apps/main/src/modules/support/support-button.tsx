@@ -1,5 +1,4 @@
 import { Message01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -18,7 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { SidebarButton } from '~/components/sidebar-button'
+import { SidebarButton, SidebarIcon } from '~/components/sidebar-button'
 import { orpc } from '~/lib/orpc'
 
 export const SupportButton = () => {
@@ -27,6 +26,7 @@ export const SupportButton = () => {
 
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
+      meta: { event: 'support_message_sent' },
       onError: (err) => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')
@@ -49,35 +49,29 @@ export const SupportButton = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<SidebarButton />}>
-        <HugeiconsIcon
-          icon={Message01Icon}
-          strokeWidth={2}
-          className="size-4"
-        />
+        <SidebarIcon icon={Message01Icon} />
         Support
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Contact Support</DialogTitle>
+          <DialogTitle>Contact support</DialogTitle>
           <DialogDescription>
-            Have a question, suggestion, or need assistance? We&apos;re here to
-            listen!
+            Questions, ideas or something broken? Write to us and we will reply
+            by email.
           </DialogDescription>
         </DialogHeader>
-        <div>
-          <form id="support-form" onSubmit={handleSubmit} className="space-y-2">
-            <Field>
-              <FieldLabel htmlFor="support-message">Message</FieldLabel>
-              <Textarea
-                id="support-message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type any message you'd like to send us"
-                className="min-h-48"
-              />
-            </Field>
-          </form>
-        </div>
+        <form id="support-form" onSubmit={handleSubmit}>
+          <Field>
+            <FieldLabel htmlFor="support-message">Message</FieldLabel>
+            <Textarea
+              id="support-message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="How can we help?"
+              className="min-h-48"
+            />
+          </Field>
+        </form>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>
             Cancel

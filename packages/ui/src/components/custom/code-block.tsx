@@ -1,5 +1,4 @@
-import type { HighlightOptions } from '@streamdown/code'
-import { code as highlighter } from '@streamdown/code'
+import type { CodeHighlighterPlugin, HighlightOptions } from '@streamdown/code'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
@@ -12,9 +11,42 @@ interface Token {
   htmlStyle?: CSSProperties
 }
 
+let highlighter: CodeHighlighterPlugin | undefined
+
+const highlight = (
+  code: string,
+  language: string,
+  onTokens: (tokens: Token[][]) => void
+): Token[][] | undefined => {
+  if (highlighter) {
+    return highlighter.highlight(
+      {
+        code,
+        language: language as HighlightOptions['language'],
+        themes: highlighter.getThemes(),
+      },
+      ({ tokens }) => onTokens(tokens)
+    )?.tokens
+  }
+  // Never import statically or on the server: Shiki is ~190 KB on every page's critical path, and its wasm breaks the site's server bundle
+  if (!import.meta.env.SSR) {
+    void (async () => {
+      const { code: loaded } = await import('@streamdown/code')
+      highlighter = loaded
+      const tokens = highlight(code, language, onTokens)
+      if (tokens) {
+        onTokens(tokens)
+      }
+    })()
+  }
+}
+
 const useTokens = (code: string, language: string) => {
   const cache = useRef<{ key: string; tokens?: Token[][] }>({ key: '' })
   const key = `${language}\n${code}`
+
+  const getSnapshot = () =>
+    cache.current.key === key ? cache.current.tokens : undefined
 
   return useSyncExternalStore(
     (onChange) => {
@@ -22,23 +54,16 @@ const useTokens = (code: string, language: string) => {
 
       if (cache.current.key !== key) {
         cache.current = { key }
-        const ready = highlighter.highlight(
-          {
-            code,
-            language: language as HighlightOptions['language'],
-            themes: highlighter.getThemes(),
-          },
-          ({ tokens }) => {
-            if (cache.current.key === key) {
-              cache.current = { key, tokens }
-            }
-            if (subscribed) {
-              onChange()
-            }
+        const tokens = highlight(code, language, (highlighted) => {
+          if (cache.current.key === key) {
+            cache.current = { key, tokens: highlighted }
           }
-        )
-        if (ready) {
-          cache.current = { key, tokens: ready.tokens }
+          if (subscribed) {
+            onChange()
+          }
+        })
+        if (tokens) {
+          cache.current = { key, tokens }
         }
       }
 
@@ -46,7 +71,8 @@ const useTokens = (code: string, language: string) => {
         subscribed = false
       }
     },
-    () => (cache.current.key === key ? cache.current.tokens : undefined)
+    getSnapshot,
+    getSnapshot
   )
 }
 

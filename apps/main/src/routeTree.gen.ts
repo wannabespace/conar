@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as LayoutRouteImport } from './routes/_layout'
@@ -25,12 +23,10 @@ import { Route as LayoutPrivacyPolicyRouteImport } from './modules/legal/routes/
 import { Route as LayoutReleasesRouteImport } from './modules/releases/routes/_layout/releases'
 import { Route as LayoutTermsOfServiceRouteImport } from './modules/legal/routes/_layout/terms-of-service'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as AccountAiUsageRouteImport } from './modules/ai-usage/routes/account/ai-usage'
+import { Route as AccountBillingRouteImport } from './modules/billing/routes/account/billing'
 import { Route as DeepDotsignInRouteImport } from './modules/deep-link/routes/deep.sign-in'
-
-const AccountAiUsageDotlazyRouteImport = createFileRoute('/account/ai-usage')()
-const AccountBillingDotlazyRouteImport = createFileRoute('/account/billing')()
-const AccountSettingsIndexDotlazyRouteImport =
-  createFileRoute('/account/settings/')()
+import { Route as AccountSettingsIndexRouteImport } from './modules/settings/routes/account/settings/index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -84,11 +80,7 @@ const LayoutPrivacyPolicyRoute = LayoutPrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
   getParentRoute: () => LayoutRoute,
-} as any).lazy(() =>
-  import('./modules/legal/routes/_layout/privacy-policy.lazy').then(
-    (d) => d.Route,
-  ),
-)
+} as any)
 const LayoutReleasesRoute = LayoutReleasesRouteImport.update({
   id: '/releases',
   path: '/releases',
@@ -98,47 +90,32 @@ const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
   id: '/terms-of-service',
   path: '/terms-of-service',
   getParentRoute: () => LayoutRoute,
-} as any).lazy(() =>
-  import('./modules/legal/routes/_layout/terms-of-service.lazy').then(
-    (d) => d.Route,
-  ),
-)
+} as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AccountRoute,
 } as any)
-const AccountAiUsageDotlazyRoute = AccountAiUsageDotlazyRouteImport.update({
+const AccountAiUsageRoute = AccountAiUsageRouteImport.update({
   id: '/ai-usage',
   path: '/ai-usage',
   getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./modules/ai-usage/routes/account/ai-usage.lazy').then(
-    (d) => d.Route,
-  ),
-)
-const AccountBillingDotlazyRoute = AccountBillingDotlazyRouteImport.update({
+} as any)
+const AccountBillingRoute = AccountBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./modules/billing/routes/account/billing.lazy').then((d) => d.Route),
-)
+} as any)
 const DeepDotsignInRoute = DeepDotsignInRouteImport.update({
   id: '/deep/sign-in',
   path: '/deep/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountSettingsIndexDotlazyRoute =
-  AccountSettingsIndexDotlazyRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
-    getParentRoute: () => AccountRoute,
-  } as any).lazy(() =>
-    import('./modules/settings/routes/account/settings/index.lazy').then(
-      (d) => d.Route,
-    ),
-  )
+const AccountSettingsIndexRoute = AccountSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AccountRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -152,11 +129,11 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/ai-usage': typeof AccountAiUsageRoute
+  '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/billing': typeof AccountBillingDotlazyRoute
   '/account/': typeof AccountIndexRoute
-  '/account/settings/': typeof AccountSettingsIndexDotlazyRoute
+  '/account/settings/': typeof AccountSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
@@ -169,11 +146,11 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/releases': typeof LayoutReleasesRoute
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/ai-usage': typeof AccountAiUsageRoute
+  '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/billing': typeof AccountBillingDotlazyRoute
   '/account': typeof AccountIndexRoute
-  '/account/settings': typeof AccountSettingsIndexDotlazyRoute
+  '/account/settings': typeof AccountSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -189,12 +166,12 @@ export interface FileRoutesById {
   '/_layout/privacy-policy': typeof LayoutPrivacyPolicyRoute
   '/_layout/releases': typeof LayoutReleasesRoute
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
+  '/account/ai-usage': typeof AccountAiUsageRoute
+  '/account/billing': typeof AccountBillingRoute
   '/deep/sign-in': typeof DeepDotsignInRoute
-  '/account/ai-usage': typeof AccountAiUsageDotlazyRoute
-  '/account/billing': typeof AccountBillingDotlazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
-  '/account/settings/': typeof AccountSettingsIndexDotlazyRoute
+  '/account/settings/': typeof AccountSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -210,9 +187,9 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/releases'
     | '/terms-of-service'
-    | '/deep/sign-in'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/sign-in'
     | '/account/'
     | '/account/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -227,9 +204,9 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/releases'
     | '/terms-of-service'
-    | '/deep/sign-in'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/sign-in'
     | '/account'
     | '/account/settings'
   id:
@@ -246,9 +223,9 @@ export interface FileRouteTypes {
     | '/_layout/privacy-policy'
     | '/_layout/releases'
     | '/_layout/terms-of-service'
-    | '/deep/sign-in'
     | '/account/ai-usage'
     | '/account/billing'
+    | '/deep/sign-in'
     | '/_layout/'
     | '/account/'
     | '/account/settings/'
@@ -366,14 +343,14 @@ declare module '@tanstack/react-router' {
       id: '/account/ai-usage'
       path: '/ai-usage'
       fullPath: '/account/ai-usage'
-      preLoaderRoute: typeof AccountAiUsageDotlazyRouteImport
+      preLoaderRoute: typeof AccountAiUsageRouteImport
       parentRoute: typeof AccountRoute
     }
     '/account/billing': {
       id: '/account/billing'
       path: '/billing'
       fullPath: '/account/billing'
-      preLoaderRoute: typeof AccountBillingDotlazyRouteImport
+      preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof AccountRoute
     }
     '/deep/sign-in': {
@@ -387,7 +364,7 @@ declare module '@tanstack/react-router' {
       id: '/account/settings/'
       path: '/settings'
       fullPath: '/account/settings/'
-      preLoaderRoute: typeof AccountSettingsIndexDotlazyRouteImport
+      preLoaderRoute: typeof AccountSettingsIndexRouteImport
       parentRoute: typeof AccountRoute
     }
   }
@@ -429,17 +406,17 @@ const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface AccountRouteChildren {
-  AccountAiUsageDotlazyRoute: typeof AccountAiUsageDotlazyRoute
-  AccountBillingDotlazyRoute: typeof AccountBillingDotlazyRoute
+  AccountAiUsageRoute: typeof AccountAiUsageRoute
+  AccountBillingRoute: typeof AccountBillingRoute
   AccountIndexRoute: typeof AccountIndexRoute
-  AccountSettingsIndexDotlazyRoute: typeof AccountSettingsIndexDotlazyRoute
+  AccountSettingsIndexRoute: typeof AccountSettingsIndexRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
-  AccountAiUsageDotlazyRoute: AccountAiUsageDotlazyRoute,
-  AccountBillingDotlazyRoute: AccountBillingDotlazyRoute,
+  AccountAiUsageRoute: AccountAiUsageRoute,
+  AccountBillingRoute: AccountBillingRoute,
   AccountIndexRoute: AccountIndexRoute,
-  AccountSettingsIndexDotlazyRoute: AccountSettingsIndexDotlazyRoute,
+  AccountSettingsIndexRoute: AccountSettingsIndexRoute,
 }
 
 const AccountRouteWithChildren =

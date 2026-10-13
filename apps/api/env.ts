@@ -34,7 +34,6 @@ const envType = type({
   PROXY_SHARED_SECRET: 'string',
   REDIS_URL: 'string',
   RESEND_API_KEY: 'string',
-  RESEND_FROM_EMAIL: 'string',
   STRIPE_ANNUAL_PRICE_ID: 'string',
   STRIPE_MONTH_PRICE_ID: 'string',
   STRIPE_SECRET_KEY: 'string',

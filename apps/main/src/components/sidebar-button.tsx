@@ -1,25 +1,17 @@
 import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
-import { cn } from '@tamery/ui/lib/utils'
+import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import type { LinkProps } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import { Link, useMatchRoute, useRouterState } from '@tanstack/react-router'
+import type { ComponentProps, ReactNode } from 'react'
 
-export const SidebarButton = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof Button>) => (
-  <Button
-    variant="ghost"
-    className={cn(
-      // oxlint-disable-next-line shadcn/no-restyle -- the current page's row stays lit
-      `not-hover:aria-[current=page]:bg-accent/50 w-full justify-start`,
-      className
-    )}
-    {...props}
-  />
+export const SidebarIcon = ({ icon }: { icon: IconSvgElement }) => (
+  <HugeiconsIcon icon={icon} strokeWidth={2} className="text-primary/75" />
 )
+
+export const SidebarButton = (
+  props: ComponentProps<typeof SidebarMenuButton>
+) => <SidebarMenuButton {...props} className="w-auto shrink-0 md:w-full" />
 
 export const SidebarLink = ({
   children,
@@ -29,13 +21,17 @@ export const SidebarLink = ({
   children: ReactNode
   icon: IconSvgElement
   to: LinkProps['to']
-}) => (
-  <SidebarButton
-    render={
-      <Link to={to} activeOptions={{ exact: true, includeSearch: false }} />
-    }
-  >
-    <HugeiconsIcon icon={icon} strokeWidth={2} className="size-4" />
-    {children}
-  </SidebarButton>
-)
+}) => {
+  const matchRoute = useMatchRoute()
+  const isNavigating = useRouterState({
+    select: (state) => state.status === 'pending',
+  })
+  const isActive = !!matchRoute({ pending: isNavigating, to })
+
+  return (
+    <SidebarButton isActive={isActive} render={<Link to={to} />}>
+      <SidebarIcon icon={icon} />
+      {children}
+    </SidebarButton>
+  )
+}
