@@ -152,6 +152,40 @@ describe('diagnoseConnectionError', () => {
     })
   })
 
+  it.each([
+    [
+      "Access denied for user 'me'@'%' to database 'app'",
+      "This user can't open that database",
+    ],
+    [
+      'Cannot open database "app" requested by the login. The login failed. Login failed for user \'me\'.',
+      'Database "app" doesn\'t exist',
+    ],
+    ['role "me" does not exist', 'User "me" doesn\'t exist'],
+    [
+      "Host '203.0.113.7' is not allowed to connect to this MySQL server",
+      "This user can't connect from your address",
+    ],
+    ['Tenant or user not found', "Supabase can't find this project"],
+    [
+      'no pg_hba.conf entry for host "203.0.113.7", user "me", database "app", SSL encryption',
+      "The server doesn't accept connections from here",
+    ],
+    [
+      "Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.",
+      'This sign-in needs SSL',
+    ],
+    ['the database system is starting up', "The database isn't ready"],
+    ['Connection terminated unexpectedly', 'The server closed the connection'],
+    ['sorry, too many clients already', 'The server is out of connections'],
+    [
+      'Failed to connect to db.acme.io:1433 - Could not connect (sequence)',
+      'Connection refused',
+    ],
+  ])('names %p', (message, title) => {
+    expect(diagnose(message)?.title).toBe(title)
+  })
+
   it('returns nothing for an error it does not know', () => {
     expect(diagnose('something odd happened')).toBeNull()
   })

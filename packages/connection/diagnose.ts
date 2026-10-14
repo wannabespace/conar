@@ -96,6 +96,61 @@ const RULES: {
   diagnose: (context: DiagnosisContext) => Diagnosis
 }[] = [
   {
+    diagnose: () => ({
+      focus: 'user',
+      hint: 'The sign-in worked, but this user may not open that database. Grant it access, or pick another database or user.',
+      title: "This user can't open that database",
+    }),
+    match:
+      /access denied for user .+ to database|permission denied for database|does not have connect privilege/iu,
+  },
+  {
+    diagnose: ({ message }) => {
+      const database = /database (?<quote>["'])(?<name>.+?)\k<quote>/iu.exec(
+        message
+      )?.groups?.name
+      return {
+        fix: { label: 'Use the default database', patch: { database: '' } },
+        hint: 'Pick an existing database, or leave Database empty to use the default one.',
+        title: database
+          ? `Database "${database}" doesn't exist`
+          : "That database doesn't exist",
+      }
+    },
+    match:
+      /database "[^"]+" does not exist|unknown database|cannot open database|database '[^']+' does not exist|unknown_database/iu,
+  },
+  {
+    diagnose: ({ message }) => {
+      const user = /role "(?<name>[^"]+)" does not exist/iu.exec(message)
+        ?.groups?.name
+      return {
+        focus: 'user',
+        hint: 'Use a user that exists on this server. A fresh local Postgres usually has "postgres", or the name of the account that installed it.',
+        title: user
+          ? `User "${user}" doesn't exist`
+          : "That user doesn't exist",
+      }
+    },
+    match: /role "[^"]+" does not exist/iu,
+  },
+  {
+    diagnose: () => ({
+      focus: 'user',
+      hint: "MySQL only lets this user in from other addresses. Create it for '%' or for your address, or connect from an allowed host.",
+      title: "This user can't connect from your address",
+    }),
+    match: /host '[^']*' is not allowed to connect/iu,
+  },
+  {
+    diagnose: () => ({
+      focus: 'user',
+      hint: "Supabase's pooler doesn't know this project: check the project ref in the user (postgres.<project-ref>), and that the project isn't paused.",
+      title: "Supabase can't find this project",
+    }),
+    match: /tenant or user not found/iu,
+  },
+  {
     diagnose: ({ parts }) => {
       if (
         hostHintOf(parts.host)?.projectInUser?.test(parts.host) &&
@@ -124,22 +179,6 @@ const RULES: {
       /password authentication failed|access denied for user|login failed for user|authentication failed|wrong password|invalid password|password is incorrect|no password supplied|password required|client password must be a/iu,
   },
   {
-    diagnose: ({ message }) => {
-      const database = /database (?<quote>["'])(?<name>.+?)\k<quote>/iu.exec(
-        message
-      )?.groups?.name
-      return {
-        fix: { label: 'Use the default database', patch: { database: '' } },
-        hint: 'Pick an existing database, or leave Database empty to use the default one.',
-        title: database
-          ? `Database "${database}" doesn't exist`
-          : "That database doesn't exist",
-      }
-    },
-    match:
-      /database "[^"]+" does not exist|unknown database|cannot open database|database '[^']+' does not exist|unknown_database/iu,
-  },
-  {
     diagnose: ({ parts }) => ({
       fix: sslFix(parts, 'on', 'Turn on SSL'),
       hint: 'The server only accepts encrypted connections.',
@@ -147,6 +186,21 @@ const RULES: {
     }),
     match:
       /no pg_hba\.conf entry.*(?:no encryption|ssl off)|ssl connection is required|requires? (?:an )?ssl|insecure transport are prohibited|ssl required|sslmode value "require" invalid/iu,
+  },
+  {
+    diagnose: ({ parts }) => ({
+      fix: sslFix(parts, 'on', 'Turn on SSL'),
+      hint: 'This MySQL user signs in with caching_sha2_password, which needs an encrypted connection the first time.',
+      title: 'This sign-in needs SSL',
+    }),
+    match: /authentication requires secure connection/iu,
+  },
+  {
+    diagnose: () => ({
+      hint: "The server's pg_hba.conf has no rule for this address, user and database. Add one, or allow your IP in the provider's network settings.",
+      title: "The server doesn't accept connections from here",
+    }),
+    match: /no pg_hba\.conf entry/iu,
   },
   {
     diagnose: ({ parts }) => ({
@@ -236,7 +290,7 @@ const RULES: {
           }
     },
     match:
-      /econnrefused|connection refused|actively refused|expected http|parse error/iu,
+      /econnrefused|connection refused|actively refused|could not connect \(sequence\)|expected http|parse error/iu,
   },
   {
     diagnose: (context) => {
@@ -275,7 +329,23 @@ const RULES: {
       title: 'The server is out of connections',
     }),
     match:
-      /too many connections|remaining connection slots|too_many_connections|max_connections/iu,
+      /too many connections|too many clients|remaining connection slots|too_many_connections|max_connections|max client connections reached/iu,
+  },
+  {
+    diagnose: () => ({
+      hint: 'The database is starting, shutting down or recovering. Wait a moment and test again.',
+      title: "The database isn't ready",
+    }),
+    match:
+      /the database system is (?:starting up|shutting down|in recovery mode)|server is (?:in )?shutdown/iu,
+  },
+  {
+    diagnose: () => ({
+      hint: 'Often an SSL mismatch: try turning SSL on or off. Also check that this port belongs to this engine.',
+      title: 'The server closed the connection',
+    }),
+    match:
+      /econnreset|socket hang up|connection terminated unexpectedly|server closed the connection unexpectedly/iu,
   },
   {
     diagnose: () => ({
