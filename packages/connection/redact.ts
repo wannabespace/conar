@@ -20,7 +20,6 @@ const SETTING_KEYS = new Set([
   'sslrejectunauthorized',
   'trustservercertificate',
 ])
-/** Booleans, numbers, and the SSL and TLS modes the drivers take. */
 const NON_IDENTIFYING_VALUE =
   /^(?:true|false|yes|no|on|off|\d+(?:\.\d+)?|disable|allow|prefer|require|verify|verify-ca|verify-full|no-verify|strict|optional|mandatory|disabled|preferred|required|verify_ca|verify_identity|tlsv1(?:\.[0-3])?)$/iu
 

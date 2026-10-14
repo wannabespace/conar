@@ -19,7 +19,6 @@ export type Credential = 'password' | SecretParam
 export interface FetchingConfig {
   type: FetchingType
   canSend: boolean
-  /** What `waiting-for-password` asks for; empty for every other type. */
   missingCredentials: Credential[]
   reason: string | null
 }
@@ -32,7 +31,6 @@ interface FetchingOptions {
   isPasswordPopulated?: boolean
   isLocalNetwork?: boolean
   proxy?: { enabled: boolean; url: string | null }
-  /** The SSH and SSL secrets this device has not filled in since `CloudWithoutSecrets` stripped them. */
   missingSecrets: SecretParam[]
   usesSsh: boolean
 }
@@ -43,7 +41,7 @@ const PORT_SUFFIX = /:\d*$/u
 const isLocalNetworkConnection = ({ displayUrl }: ConnectionString) =>
   isLocalNetworkHost(displayUrl.replace(PORT_SUFFIX, ''))
 
-/** What this device's stored string says; `undefined` while the row loads leaves the password unresolved. */
+/** `undefined` while the row loads leaves the password unresolved. */
 export const fetchingOptionsOf = (
   connectionString: ConnectionString | null | undefined
 ) => ({

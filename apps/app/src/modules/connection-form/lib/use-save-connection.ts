@@ -55,7 +55,6 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
   })
   const inFlight = useRef<ReturnType<typeof tryCatchAsync>>(null)
 
-  /** A result only counts for the string it tested, so any edit leaves the draft untested. */
   const draftOf = (values: ConnectionFormValues) => {
     // Host holds whatever is typed until it blurs, so the string may not build yet.
     const built = tryCatch(() => toConnectionString(partsOf(values))).data ?? ''

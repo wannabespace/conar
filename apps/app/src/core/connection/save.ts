@@ -11,7 +11,6 @@ import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { queryClient } from '~/lib/query-client'
 
-/** Every cached result came from the old host or credentials; the query keys only carry the connection or resource id. */
 const dropConnectionQueries = (connectionId: string) => {
   const ids = new Set<unknown>([
     connectionId,

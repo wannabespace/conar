@@ -16,7 +16,6 @@ const NON_WORD = /[^A-Z\d]+/gu
 const isObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null
 
-/** `databaseName` is read as both `DATABASENAME` and `DATABASE_NAME`, `auth-model` as `AUTH_MODEL`. */
 const namesOf = (key: string) => [
   key.toUpperCase(),
   key

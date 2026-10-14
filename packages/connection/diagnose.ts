@@ -23,7 +23,6 @@ export interface ConnectionPatch {
 
 export interface Diagnosis {
   fix?: { label: string; patch: ConnectionPatch }
-  /** The field the user has to correct by hand. */
   focus?: 'password' | 'user'
   hint: string
   title: string

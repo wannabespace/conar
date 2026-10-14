@@ -108,7 +108,6 @@ const isServiceName = (host: string) =>
   !IPV4.test(host) &&
   !host.includes(':')
 
-/** Only reachable from the user's own machine or network (a VPN, a LAN, Docker), so never from the cloud proxy. */
 export const isLocalNetworkHost = (host: string) =>
   isLocalHost(host) || isPrivateHost(host) || isServiceName(host)
 

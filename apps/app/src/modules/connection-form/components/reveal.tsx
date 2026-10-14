@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 
-/** One block of the form rising into place; a child of a parent staggering its `initial` → `animate` variants. */
+/** Animates only as a child of a parent staggering its `initial` → `animate` variants. */
 export const Reveal = ({ children }: { children: ReactNode }) => (
   <motion.div
     className="flex flex-col gap-5"
