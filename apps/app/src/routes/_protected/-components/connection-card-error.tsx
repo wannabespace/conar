@@ -1,6 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { toConnectionParts } from '@tamery/connection/connection-parts'
+import { connectionParts } from '@tamery/connection/connection-parts'
 import { diagnoseConnectionError } from '@tamery/connection/diagnose'
 import {
   Tooltip,
@@ -24,7 +24,7 @@ export const ConnectionCardError = ({
       diagnoseConnectionError({
         desktop: !!window.electron,
         message: error.message,
-        parts: toConnectionParts(
+        parts: connectionParts.parse(
           await connectionStringsCollection.utils.decrypt(connectionId)
         ),
       }),

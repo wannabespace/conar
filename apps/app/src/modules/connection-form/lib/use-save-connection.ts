@@ -1,4 +1,4 @@
-import { toConnectionString } from '@tamery/connection/connection-parts'
+import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { SecretParam } from '@tamery/connection/secrets'
@@ -58,7 +58,7 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
     // Host holds whatever is typed until it blurs, so the string may not build yet.
     const connectionString =
       tryCatch(() =>
-        toConnectionString(
+        connectionParts.format(
           partsOf(values),
           mode.kind === 'edit' ? mode.missingSecrets : []
         )

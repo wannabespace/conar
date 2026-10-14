@@ -15,7 +15,7 @@ export interface Config {
 
 const IPV6_BRACKETS = /^\[(?<address>.*)\]$/u
 
-/** Every reader of a stored string goes through here: `toConnectionString` percent-encodes user, password and database, and SafeURL hands them back raw; the drivers and `connectionSecrets` match option keys lowercase, a paste says `sslPassword` or `TrustServerCertificate`. */
+/** Every reader of a stored string goes through here: `connectionParts.format` percent-encodes user, password and database, and SafeURL hands them back raw; the drivers and `connectionSecrets` match option keys lowercase, a paste says `sslPassword` or `TrustServerCertificate`. */
 export const readConnectionString = (connectionString: string) => {
   const url = new SafeURL(connectionString)
   return {

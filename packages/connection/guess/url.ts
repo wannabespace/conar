@@ -3,8 +3,8 @@ import { tryCatch } from '@tamery/shared/utils'
 
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
+  connectionParts,
   HTTPS_PORT,
-  toConnectionParts,
   typeOfScheme,
 } from '../connection-parts'
 import { hostHintOf } from '../hosts'
@@ -39,7 +39,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     return { format, parts: { ...adoParts(pairs), type: ConnectionType.MSSQL } }
   }
 
-  const parts = toConnectionParts(url)
+  const parts = connectionParts.parse(url)
   const params = new URLSearchParams(parts.options)
   const user = takeParam(params, ['user', 'username'])
   const password = takeParam(params, ['password'])

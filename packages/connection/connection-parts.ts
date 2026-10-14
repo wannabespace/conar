@@ -35,7 +35,7 @@ export const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
 }
 
 /** The port the driver dials: an `https://` ClickHouse string without one means 443, not the engine default. */
-export const portOf = ({
+const portOf = ({
   https,
   port,
   type,
@@ -88,7 +88,7 @@ export const mergeOptions = (options: string, changes: string) => {
   return merged.toString()
 }
 
-export const toConnectionString = (
+const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []
 ): string => {
@@ -120,9 +120,7 @@ export const toConnectionString = (
   return url.toString()
 }
 
-export const toConnectionParts = (
-  connectionString: string
-): ConnectionParts => {
+const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
   const ssh = sshTunnelOf(searchParams)
@@ -136,3 +134,5 @@ export const toConnectionParts = (
     type: typeOfScheme(scheme),
   }
 }
+
+export const connectionParts = { format, parse, port: portOf }

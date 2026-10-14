@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
-import { toConnectionParts, toConnectionString } from './connection-parts'
+import { connectionParts } from './connection-parts'
 import { parseConnectionString } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
 import { EMPTY_SSH_TUNNEL } from './ssh/params'
@@ -32,11 +32,11 @@ const VALUES = [
   'пароль 🔑',
 ]
 
-describe('toConnectionString', () => {
+describe('connectionParts', () => {
   it.each(VALUES)('hands %p to the driver as typed', (value) => {
     expect(
       parseConnectionString(
-        toConnectionString(
+        connectionParts.format(
           parts({ database: value, password: value, user: value })
         )
       )
@@ -50,15 +50,15 @@ describe('toConnectionString', () => {
       password: value,
       user: value,
     })
-    expect(toConnectionParts(toConnectionString(original))).toStrictEqual(
-      original
-    )
+    expect(
+      connectionParts.parse(connectionParts.format(original))
+    ).toStrictEqual(original)
   })
 
   it.each(['::1', 'fe80::1', '2001:db8::5'])(
     'brackets the IPv6 host %p',
     (host) => {
-      const connectionString = toConnectionString(parts({ host }))
+      const connectionString = connectionParts.format(parts({ host }))
       expect(connectionString).toContain(`[${host}]`)
       expect(parseConnectionString(connectionString).host).toBe(host)
     }
@@ -79,7 +79,7 @@ describe('toConnectionString', () => {
         port,
         type: ConnectionType.ClickHouse,
       })
-      expect(toConnectionString(clickhouse)).toBe(connectionString)
+      expect(connectionParts.format(clickhouse)).toBe(connectionString)
     }
   )
   it('keeps asking for an SSH secret an edit left empty, only while the tunnel uses it', () => {
@@ -90,7 +90,7 @@ describe('toConnectionString', () => {
     }
     const missingAfterEdit = (ssh: ConnectionParts['ssh']) =>
       connectionSecrets.missing(
-        new URL(toConnectionString(parts({ ssh }), ['ssh_password']))
+        new URL(connectionParts.format(parts({ ssh }), ['ssh_password']))
           .searchParams
       )
 

@@ -3,9 +3,9 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ConnectionParts } from './connection-parts'
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
+  connectionParts,
   DEFAULT_PORTS,
   mergeOptions,
-  portOf,
 } from './connection-parts'
 import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
 import { SSH_DESKTOP_ONLY, SSH_TUNNEL_ERROR } from './ssh/params'
@@ -254,7 +254,7 @@ const RULES: {
   },
   {
     diagnose: ({ parts }) => {
-      const port = portOf(parts)
+      const port = connectionParts.port(parts)
       const clickHousePort = CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
       if (parts.type === ConnectionType.ClickHouse && clickHousePort) {
         return {

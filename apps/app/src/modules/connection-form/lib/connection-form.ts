@@ -1,5 +1,5 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import { toConnectionParts } from '@tamery/connection/connection-parts'
+import { connectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnose'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
@@ -74,7 +74,7 @@ export const formValuesOf = (
   connection: Connection,
   connectionString: string
 ): ConnectionFormValues => {
-  const parts = toConnectionParts(connectionString)
+  const parts = connectionParts.parse(connectionString)
   return {
     ...DEFAULT_VALUES,
     ...pick(parts, [...SERVER_FIELDS, 'https']),

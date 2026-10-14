@@ -1,5 +1,5 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import { portOf, toConnectionParts } from '@tamery/connection/connection-parts'
+import { connectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import { useNavigate } from '@tanstack/react-router'
@@ -25,7 +25,7 @@ const serverOf = (parts: GuessedParts | ConnectionParts) =>
   [
     parts.type,
     parts.host?.toLowerCase(),
-    portOf(parts),
+    connectionParts.port(parts),
     parts.user,
     parts.ssh?.host,
   ].join('\n')
@@ -46,7 +46,7 @@ const findConnectionId = async (parts: GuessedParts) => {
   const servers = await Promise.all(
     candidates.map(async (connection) =>
       serverOf(
-        toConnectionParts(
+        connectionParts.parse(
           await connectionStringsCollection.utils.decrypt(connection.id)
         )
       )

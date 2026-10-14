@@ -4,7 +4,7 @@ import { promisify } from 'node:util'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import type { Client } from 'ssh2'
 
-import { portOf, toConnectionParts } from '../connection-parts'
+import { connectionParts } from '../connection-parts'
 import type { Forwarding } from './forwarding'
 import type { SshTunnel } from './params'
 import type { ConfirmHostKey } from './session'
@@ -95,7 +95,7 @@ export const tunnelForwarding = async (
   connectionString: string,
   confirmHostKey: ConfirmHostKey
 ): Promise<Forwarding | null> => {
-  const parts = toConnectionParts(connectionString)
+  const parts = connectionParts.parse(connectionString)
   const tunnel = parts.ssh
   if (!tunnel) {
     return null
@@ -103,7 +103,7 @@ export const tunnelForwarding = async (
   if (!parts.type) {
     throw new Error('Unsupported connection string scheme')
   }
-  const target = { host: parts.host, port: Number(portOf(parts)) }
+  const target = { host: parts.host, port: Number(connectionParts.port(parts)) }
   const key = JSON.stringify(tunnel)
   const session = () =>
     sessions.get(key) ?? openSession(key, tunnel, confirmHostKey)

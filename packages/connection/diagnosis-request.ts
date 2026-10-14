@@ -1,4 +1,4 @@
-import { portOf } from './connection-parts'
+import { connectionParts } from './connection-parts'
 import type { DiagnosisContext } from './diagnose'
 import type { HostKind } from './hosts'
 import { hostHintOf, hostKindOf } from './hosts'
@@ -17,7 +17,7 @@ export const diagnosisRequestOf = ({
   message,
   parts,
 }: Pick<DiagnosisContext, 'message' | 'parts'>) => {
-  const port = portOf(parts)
+  const port = connectionParts.port(parts)
   return {
     error: redactConnectionError(message, parts),
     hostKind: [
