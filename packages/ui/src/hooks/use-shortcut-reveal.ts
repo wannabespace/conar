@@ -1,9 +1,10 @@
-import { getOS } from '@tamery/shared/os'
 import { getKeyStateTracker, useKeyHold } from '@tanstack/react-hotkeys'
 import { type } from 'arktype'
 import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
+
+import { isMac } from '../lib/os'
 
 const REVEAL_DELAY_MS = 800
 
@@ -16,9 +17,7 @@ export const shortcutRevealStore = createWebStorageValue({
 
 export const useShortcutReveal = (trigger: HTMLElement | null) => {
   const isEnabled = useSubscription(shortcutRevealStore)
-  const isHeld = useKeyHold(
-    getOS(navigator.userAgent).type === 'macos' ? 'Meta' : 'Control'
-  )
+  const isHeld = useKeyHold(isMac ? 'Meta' : 'Control')
   const [heldLongEnough, setHeldLongEnough] = useState(false)
 
   useEffect(() => {

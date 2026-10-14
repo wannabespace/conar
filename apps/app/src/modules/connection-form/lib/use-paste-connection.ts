@@ -1,11 +1,11 @@
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import { tryCatchAsync } from '@tamery/shared/utils'
+import { isMac } from '@tamery/ui/lib/os'
 import { useLocation } from '@tanstack/react-router'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-import { isMac } from '~/lib/os'
 import { posthog } from '~/lib/posthog'
 
 export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'

@@ -1,7 +1,7 @@
+import { isMac } from '@tamery/ui/lib/os'
 import { cn } from '@tamery/ui/lib/utils'
 import { useEffect, useState } from 'react'
 
-import { isMac } from '~/lib/os'
 import { titleBarClassName } from '~/shell'
 
 const isElectron = !!window.electron

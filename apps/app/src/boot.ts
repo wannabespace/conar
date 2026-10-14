@@ -1,7 +1,7 @@
+import { isMac } from '@tamery/ui/lib/os'
 import { THEME_STORAGE_KEY } from '@tamery/ui/theme-constants'
 
 import { LAST_LOCATION_KEY, SHELL_LAYOUT_KEY } from './lib/constants'
-import { isMac } from './lib/os'
 
 const read = <T>(key: string): T | undefined => {
   try {

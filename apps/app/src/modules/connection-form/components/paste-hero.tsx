@@ -4,6 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { isMac } from '@tamery/ui/lib/os'
 import { useKeyHold } from '@tanstack/react-hotkeys'
 import {
   AnimatePresence,
@@ -12,8 +13,6 @@ import {
   useReducedMotion,
 } from 'motion/react'
 import { useEffect } from 'react'
-
-import { isMac } from '~/lib/os'
 
 import type { FormMode } from '../lib/form-mode'
 import type { PasteFlash } from '../lib/use-paste-connection'
