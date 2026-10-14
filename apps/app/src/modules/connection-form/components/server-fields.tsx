@@ -8,6 +8,7 @@ import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { EngineField } from './engine-field'
+import { HostRow, TextRow } from './field-rows'
 import { Footnote } from './footnote'
 
 const DATABASE_PLACEHOLDERS: Record<ConnectionType, string> = {
@@ -35,99 +36,41 @@ export const ServerFields = ({
     isLocalHost(state.values.host.trim())
   )
   const localProxyAvailable = useLocalProxyAvailable()
+  const row = { form, locked }
 
   return (
     <>
       <FieldGroup variant="card">
         <EngineField form={form} locked={locked} />
-        <form.AppField name="host">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Host</field.Label>
-              <field.Input
-                variant="inset"
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                placeholder="db.example.com or any connection string"
-                disabled={locked(field.name)}
-              />
-              <span className="text-muted-foreground">:</span>
-              <form.AppField name="port">
-                {(portField) => (
-                  <div className="w-20 shrink-0">
-                    <portField.Input
-                      variant="inset"
-                      aria-label="Port"
-                      data-mask
-                      inputMode="numeric"
-                      autoComplete="off"
-                      placeholder={String(DEFAULT_PORTS[type])}
-                      disabled={locked(portField.name)}
-                    />
-                  </div>
-                )}
-              </form.AppField>
-            </field.Field>
-          )}
-        </form.AppField>
-        <form.AppField name="user">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>User</field.Label>
-              <field.Input
-                variant="inset"
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                disabled={locked(field.name)}
-              />
-            </field.Field>
-          )}
-        </form.AppField>
-        <form.AppField name="password">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Password</field.Label>
-              <field.PasswordInput
-                variant="inset"
-                data-mask
-                autoComplete="new-password"
-                disabled={locked(field.name)}
-              />
-            </field.Field>
-          )}
-        </form.AppField>
-        <form.AppField name="database">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Database</field.Label>
-              <field.Input
-                variant="inset"
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                placeholder={DATABASE_PLACEHOLDERS[type]}
-                disabled={locked(field.name)}
-              />
-            </field.Field>
-          )}
-        </form.AppField>
-        <form.AppField name="options">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Options</field.Label>
-              <field.Input
-                variant="inset"
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                placeholder={OPTIONS_PLACEHOLDERS[type]}
-                disabled={locked(field.name)}
-              />
-            </field.Field>
-          )}
-        </form.AppField>
+        <HostRow
+          {...row}
+          label="Host"
+          name="host"
+          placeholder="db.example.com or any connection string"
+          portLabel="Port"
+          portName="port"
+          portPlaceholder={String(DEFAULT_PORTS[type])}
+        />
+        <TextRow {...row} label="User" name="user" />
+        <TextRow
+          {...row}
+          label="Password"
+          name="password"
+          secret
+          autoComplete="new-password"
+        />
+        <TextRow
+          {...row}
+          label="Database"
+          name="database"
+          placeholder={DATABASE_PLACEHOLDERS[type]}
+        />
+        <TextRow
+          {...row}
+          label="Options"
+          name="options"
+          placeholder={OPTIONS_PLACEHOLDERS[type]}
+        />
       </FieldGroup>
       {isLocal && !window.electron && localProxyAvailable && (
         <Footnote>

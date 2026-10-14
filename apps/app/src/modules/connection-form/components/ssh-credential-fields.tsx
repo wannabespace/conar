@@ -11,6 +11,7 @@ import {
 import { LoadFileButton } from '~/components/load-file-button'
 
 import type { ConnectionForm } from '../lib/connection-form'
+import { TextRow } from './field-rows'
 
 export const SshCredentialFields = ({
   auth,
@@ -21,71 +22,49 @@ export const SshCredentialFields = ({
   form: ConnectionForm
   locked: (field: string) => boolean
 }) => {
+  const row = { form, locked }
+
   if (auth === 'agent') {
     return null
   }
 
   if (auth === 'password') {
-    return (
-      <form.AppField name="ssh.password">
-        {(field) => (
-          <field.Field orientation="row">
-            <field.Label>Password</field.Label>
-            <field.PasswordInput
-              variant="inset"
-              data-mask
-              autoComplete="off"
-              disabled={locked(field.name)}
-            />
-          </field.Field>
-        )}
-      </form.AppField>
-    )
+    return <TextRow {...row} label="Password" name="ssh.password" secret />
   }
 
   return (
     <>
       {auth === 'keyPath' ? (
-        <form.AppField name="ssh.keyPath">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Key file</field.Label>
-              <field.Input
-                variant="inset"
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                placeholder="~/.ssh/id_ed25519"
-                disabled={locked(field.name)}
-              >
-                {window.electron && (
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <Button
-                          variant="ghost-row"
-                          size="icon-sm"
-                          aria-label="Choose key file"
-                          disabled={locked(field.name)}
-                          onClick={async () => {
-                            const keyPath =
-                              await window.electron?.ssh.pickKeyFile()
-                            if (keyPath) {
-                              field.handleChange(keyPath)
-                            }
-                          }}
-                        />
+        <TextRow
+          {...row}
+          label="Key file"
+          name="ssh.keyPath"
+          placeholder="~/.ssh/id_ed25519"
+        >
+          {window.electron && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost-row"
+                    size="icon-sm"
+                    aria-label="Choose key file"
+                    disabled={locked('ssh.keyPath')}
+                    onClick={async () => {
+                      const keyPath = await window.electron?.ssh.pickKeyFile()
+                      if (keyPath) {
+                        form.setFieldValue('ssh.keyPath', keyPath)
                       }
-                    >
-                      <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} />
-                    </TooltipTrigger>
-                    <TooltipContent>Choose key file</TooltipContent>
-                  </Tooltip>
-                )}
-              </field.Input>
-            </field.Field>
+                    }}
+                  />
+                }
+              >
+                <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} />
+              </TooltipTrigger>
+              <TooltipContent>Choose key file</TooltipContent>
+            </Tooltip>
           )}
-        </form.AppField>
+        </TextRow>
       ) : (
         <form.AppField name="ssh.privateKey">
           {(field) => (
@@ -110,20 +89,13 @@ export const SshCredentialFields = ({
           )}
         </form.AppField>
       )}
-      <form.AppField name="ssh.passphrase">
-        {(field) => (
-          <field.Field orientation="row">
-            <field.Label>Passphrase</field.Label>
-            <field.PasswordInput
-              variant="inset"
-              data-mask
-              autoComplete="off"
-              placeholder="Only if the key has one"
-              disabled={locked(field.name)}
-            />
-          </field.Field>
-        )}
-      </form.AppField>
+      <TextRow
+        {...row}
+        label="Passphrase"
+        name="ssh.passphrase"
+        secret
+        placeholder="Only if the key has one"
+      />
     </>
   )
 }

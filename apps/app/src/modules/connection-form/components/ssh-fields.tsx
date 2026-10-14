@@ -10,6 +10,7 @@ import { useSelector } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
+import { HostRow, TextRow } from './field-rows'
 import { Footnote } from './footnote'
 import { SshCredentialFields } from './ssh-credential-fields'
 
@@ -34,6 +35,7 @@ export const SshFields = ({
 }) => {
   const enabled = useSelector(form.store, (state) => state.values.sshEnabled)
   const auth = useSelector(form.store, (state) => state.values.ssh.auth)
+  const row = { form, locked }
 
   return (
     <>
@@ -56,52 +58,21 @@ export const SshFields = ({
         <AnimatePresence initial={false}>
           {enabled && (
             <MotionCollapse key="ssh">
-              <form.AppField name="ssh.host">
-                {(field) => (
-                  <field.Field orientation="row">
-                    <field.Label>Host</field.Label>
-                    <field.Input
-                      variant="inset"
-                      data-mask
-                      spellCheck={false}
-                      autoComplete="off"
-                      placeholder="bastion.example.com"
-                      disabled={locked(field.name)}
-                    />
-                    <span className="text-muted-foreground">:</span>
-                    <form.AppField name="ssh.port">
-                      {(portField) => (
-                        <div className="w-20 shrink-0">
-                          <portField.Input
-                            variant="inset"
-                            aria-label="SSH port"
-                            data-mask
-                            inputMode="numeric"
-                            autoComplete="off"
-                            placeholder={String(DEFAULT_SSH_PORT)}
-                            disabled={locked(portField.name)}
-                          />
-                        </div>
-                      )}
-                    </form.AppField>
-                  </field.Field>
-                )}
-              </form.AppField>
-              <form.AppField name="ssh.user">
-                {(field) => (
-                  <field.Field orientation="row">
-                    <field.Label>User</field.Label>
-                    <field.Input
-                      variant="inset"
-                      data-mask
-                      spellCheck={false}
-                      autoComplete="off"
-                      placeholder="From ~/.ssh/config"
-                      disabled={locked(field.name)}
-                    />
-                  </field.Field>
-                )}
-              </form.AppField>
+              <HostRow
+                {...row}
+                label="Host"
+                name="ssh.host"
+                placeholder="bastion.example.com"
+                portLabel="SSH port"
+                portName="ssh.port"
+                portPlaceholder={String(DEFAULT_SSH_PORT)}
+              />
+              <TextRow
+                {...row}
+                label="User"
+                name="ssh.user"
+                placeholder="From ~/.ssh/config"
+              />
               <form.AppField name="ssh.auth">
                 {(field) => (
                   <field.Field orientation="row">
