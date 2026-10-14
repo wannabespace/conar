@@ -15,7 +15,7 @@ export const create = orpc
   .input(
     connectionsInsertSchema
       .omit('userId', 'workspaceId')
-      .and(type({ id: 'string.uuid.v7', 'workspaceId?': 'string | null' }))
+      .merge(type({ id: 'string.uuid.v7', 'workspaceId?': 'string | null' }))
   )
   .errors({
     FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },

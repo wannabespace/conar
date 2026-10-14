@@ -1,7 +1,6 @@
 import { db } from '@tamery/db'
 import { connections, connectionsUpdateSchema } from '@tamery/db/schema'
 import { decrypt } from '@tamery/shared/crypto-node'
-import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
 import { encryptConnectionString } from '~/lib/connection-string'
@@ -12,19 +11,9 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type
-      .and(
-        connectionsUpdateSchema.omit(
-          'createdAt',
-          'updatedAt',
-          'userId',
-          'workspaceId',
-          'id',
-          'syncType'
-        ),
-        connectionsUpdateSchema.pick('id').required()
-      )
-      .onUndeclaredKey('delete')
+    connectionsUpdateSchema
+      .omit('createdAt', 'updatedAt', 'userId', 'workspaceId', 'id', 'syncType')
+      .merge(connectionsUpdateSchema.pick('id').required())
   )
   .errors({
     NOT_FOUND: { message: 'Connection not found' },
