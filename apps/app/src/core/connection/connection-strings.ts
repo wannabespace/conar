@@ -21,9 +21,8 @@ export interface ConnectionString {
   encrypted: string
   updatedAt: Date
   isPasswordPopulated: boolean
-  /** Missing on rows persisted before they existed. */
-  usesSsh?: boolean
-  missingSecrets?: SecretParam[]
+  usesSsh: boolean
+  missingSecrets: SecretParam[]
   displayUrl: string
   defaultResourceName: string | null
 }

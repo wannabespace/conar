@@ -62,7 +62,7 @@ const saveConnection = async (
     connectionString: stored
       ? connectionSecrets.keepMissing(
           connectionString.trim(),
-          stored.missingSecrets ?? []
+          stored.missingSecrets
         )
       : connectionString.trim(),
     updatedAt,
