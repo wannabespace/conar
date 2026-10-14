@@ -40,6 +40,32 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['.render.com'],
     type: ConnectionType.Postgres,
   },
+  {
+    label: 'Azure Database for PostgreSQL',
+    suffixes: ['.postgres.database.azure.com'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'CockroachDB Cloud',
+    port: '26257',
+    suffixes: ['.cockroachlabs.cloud'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'Crunchy Bridge',
+    suffixes: ['.db.postgresbridge.com'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'Timescale',
+    suffixes: ['.tsdb.cloud.timescale.com'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'Prisma Postgres',
+    suffixes: ['db.prisma.io'],
+    type: ConnectionType.Postgres,
+  },
   { label: 'Railway', suffixes: ['.railway.app', '.rlwy.net'] },
   { label: 'AWS RDS', suffixes: ['.rds.amazonaws.com'] },
   {
@@ -53,6 +79,16 @@ const HOST_HINTS: HostHint[] = [
     type: ConnectionType.MySQL,
   },
   {
+    label: 'Azure Database for MySQL',
+    suffixes: ['.mysql.database.azure.com'],
+    type: ConnectionType.MySQL,
+  },
+  {
+    label: 'SingleStore',
+    suffixes: ['.svc.singlestore.com'],
+    type: ConnectionType.MySQL,
+  },
+  {
     label: 'TiDB Cloud',
     suffixes: ['.tidbcloud.com'],
     type: ConnectionType.MySQL,
@@ -63,7 +99,19 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['.clickhouse.cloud'],
     type: ConnectionType.ClickHouse,
   },
+  {
+    label: 'Altinity.Cloud',
+    port: CLICKHOUSE_HTTPS_PORT,
+    suffixes: ['.altinity.cloud'],
+    type: ConnectionType.ClickHouse,
+  },
   { label: 'Aiven', suffixes: ['.aivencloud.com'] },
+  {
+    label: 'DigitalOcean',
+    port: '25060',
+    suffixes: ['.db.ondigitalocean.com'],
+  },
+  { label: 'Alibaba Cloud RDS', suffixes: ['.rds.aliyuncs.com'] },
 ]
 
 export const TYPE_OF_PORT: Record<string, ConnectionType> = {
