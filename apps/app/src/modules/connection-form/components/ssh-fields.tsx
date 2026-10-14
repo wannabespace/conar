@@ -6,7 +6,7 @@ import type { SshAuth } from '@tamery/connection/ssh/params'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
@@ -25,9 +25,15 @@ const AUTH_METHODS = SSH_AUTH_METHODS.map((method) => ({
   value: method,
 }))
 
-export const SshFields = ({ form }: { form: ConnectionForm }) => {
-  const enabled = useStore(form.store, (state) => state.values.sshEnabled)
-  const auth = useStore(form.store, (state) => state.values.ssh.auth)
+export const SshFields = ({
+  form,
+  locked,
+}: {
+  form: ConnectionForm
+  locked: (field: string) => boolean
+}) => {
+  const enabled = useSelector(form.store, (state) => state.values.sshEnabled)
+  const auth = useSelector(form.store, (state) => state.values.ssh.auth)
 
   return (
     <>
@@ -41,6 +47,7 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                 size="sm"
                 className="static ml-auto after:inset-0"
                 checked={field.state.value}
+                disabled={locked(field.name)}
                 onCheckedChange={field.handleChange}
               />
             </field.Field>
@@ -59,6 +66,7 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                       spellCheck={false}
                       autoComplete="off"
                       placeholder="bastion.example.com"
+                      disabled={locked(field.name)}
                     />
                     <span className="text-muted-foreground">:</span>
                     <form.AppField name="ssh.port">
@@ -71,6 +79,7 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                             inputMode="numeric"
                             autoComplete="off"
                             placeholder={String(DEFAULT_SSH_PORT)}
+                            disabled={locked(portField.name)}
                           />
                         </div>
                       )}
@@ -88,6 +97,7 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                       spellCheck={false}
                       autoComplete="off"
                       placeholder="From ~/.ssh/config"
+                      disabled={locked(field.name)}
                     />
                   </field.Field>
                 )}
@@ -98,13 +108,14 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                     <field.Label>Sign in</field.Label>
                     <field.Select
                       items={AUTH_METHODS}
+                      disabled={locked(field.name)}
                       variant="flat"
                       className="flex-1"
                     />
                   </field.Field>
                 )}
               </form.AppField>
-              <SshCredentialFields form={form} auth={auth} />
+              <SshCredentialFields form={form} auth={auth} locked={locked} />
             </MotionCollapse>
           )}
         </AnimatePresence>

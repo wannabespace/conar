@@ -37,7 +37,10 @@ import { useSubscription } from 'seitu/react'
 
 import { tableTypeIcon } from '~/core/catalog/table-type'
 import { useCollections } from '~/core/collections'
-import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
+import {
+  canQueryConnection,
+  prefetchConnectionResourceCore,
+} from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
@@ -243,7 +246,7 @@ export const ActionsCenter = () => {
   )
 
   const { data: tablesAndSchemas } = useQuery({
-    ...(current
+    ...(current && canQueryConnection(current.connection)
       ? resourceTablesAndSchemasQueryOptions({
           connectionResource: current.connectionResource,
         })

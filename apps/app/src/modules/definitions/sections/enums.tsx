@@ -10,7 +10,7 @@ import {
   fieldErrorMessage,
   useAppForm,
 } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
@@ -217,7 +217,7 @@ const EnumInspector = ({
     },
     validators: { onChange: enumSchema, onMount: enumSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item ? !can.edit : !can.create
   const { recreate, values } = enumPlan(item, draft.drafts)

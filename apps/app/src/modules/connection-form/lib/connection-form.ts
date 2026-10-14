@@ -74,17 +74,18 @@ const connectionFormSchema = type({
 
 export const formValuesOf = (
   connection: Connection,
-  connectionString: string
+  connectionString: string | null
 ): ConnectionFormValues => {
-  const parts = connectionParts.parse(connectionString)
+  const parts =
+    connectionString === null ? null : connectionParts.parse(connectionString)
   return {
     ...DEFAULT_VALUES,
-    ...pick(parts, [...SERVER_FIELDS, 'https']),
+    ...(parts && pick(parts, [...SERVER_FIELDS, 'https'])),
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    ssh: parts.ssh ?? EMPTY_SSH_TUNNEL,
-    sshEnabled: !!parts.ssh,
+    ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
+    sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
     type: connection.type,
   }

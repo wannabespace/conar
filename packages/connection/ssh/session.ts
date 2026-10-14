@@ -2,7 +2,7 @@ import { once } from 'node:events'
 import { readFile } from 'node:fs/promises'
 import { homedir, userInfo } from 'node:os'
 
-import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
+import { noop, silently, tryCatch, tryCatchAsync } from '@tamery/shared/utils'
 import type { Client, ConnectConfig } from 'ssh2'
 
 import type { HostKeyStatus } from './known-hosts'
@@ -81,6 +81,11 @@ const sshErrorMessage = (error: Error & { code?: string; level?: string }) => {
   }
   return `SSH connection failed: ${error.message}`
 }
+
+const unreadableKey = ({ passphrase }: SshTunnel) =>
+  passphrase
+    ? "The SSH key couldn't be decrypted. Check its passphrase."
+    : "The SSH key couldn't be read. If it has a passphrase, enter it."
 
 const trusting = new Map<string, Promise<boolean>>()
 
@@ -208,22 +213,33 @@ export const connectSsh = async (
     await once(client, 'close')
     throw new Error('the SSH host closed the connection')
   }
+  // `connect` throws synchronously for a key it cannot parse; arming the timer or the race before it leaves an unawaited rejection that crashes the desktop main process.
+  const { error: configError } = tryCatch(() =>
+    client.connect({
+      ...auth,
+      algorithms: { serverHostKey: listedAlgorithms },
+      host,
+      // Returns undefined on purpose: ssh2 takes any other return value, a promise included, as the verdict.
+      hostVerifier: (key: Buffer, verify: (valid: boolean) => void) => {
+        void verifyHostKey(key, verify)
+      },
+      keepaliveInterval: 10_000,
+      port,
+      // Replaced by `readyTimer`, which stops while the host-key prompt is open.
+      readyTimeout: 0,
+      username: tunnel.user || sshConfig('User') || userInfo().username,
+    })
+  )
+  if (configError) {
+    client.end()
+    throw tunnelError(
+      'privateKey' in auth
+        ? unreadableKey(tunnel)
+        : sshErrorMessage(configError)
+    )
+  }
   const ready = Promise.race([once(client, 'ready'), hungUp()])
   startReadyTimer()
-  client.connect({
-    ...auth,
-    algorithms: { serverHostKey: listedAlgorithms },
-    host,
-    // Returns undefined on purpose: ssh2 takes any other return value, a promise included, as the verdict.
-    hostVerifier: (key: Buffer, verify: (valid: boolean) => void) => {
-      void verifyHostKey(key, verify)
-    },
-    keepaliveInterval: 10_000,
-    port,
-    // Replaced by `readyTimer`, which stops while the host-key prompt is open.
-    readyTimeout: 0,
-    username: tunnel.user || sshConfig('User') || userInfo().username,
-  })
   const { error } = await tryCatchAsync(() => ready)
   clearTimeout(readyTimer)
   if (error) {

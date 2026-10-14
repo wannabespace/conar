@@ -2,7 +2,7 @@ import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
 import { isLocalHost } from '@tamery/connection/hosts'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 
@@ -23,9 +23,15 @@ const OPTIONS_PLACEHOLDERS: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.Postgres]: 'e.g. sslmode=require',
 }
 
-export const ServerFields = ({ form }: { form: ConnectionForm }) => {
-  const type = useStore(form.store, (state) => state.values.type)
-  const isLocal = useStore(form.store, (state) =>
+export const ServerFields = ({
+  form,
+  locked,
+}: {
+  form: ConnectionForm
+  locked: (field: string) => boolean
+}) => {
+  const type = useSelector(form.store, (state) => state.values.type)
+  const isLocal = useSelector(form.store, (state) =>
     isLocalHost(state.values.host.trim())
   )
   const localProxyAvailable = useLocalProxyAvailable()
@@ -33,7 +39,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
   return (
     <>
       <FieldGroup variant="card">
-        <EngineField form={form} />
+        <EngineField form={form} locked={locked} />
         <form.AppField name="host">
           {(field) => (
             <field.Field orientation="row">
@@ -44,6 +50,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 spellCheck={false}
                 autoComplete="off"
                 placeholder="db.example.com or any connection string"
+                disabled={locked(field.name)}
               />
               <span className="text-muted-foreground">:</span>
               <form.AppField name="port">
@@ -56,6 +63,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                       inputMode="numeric"
                       autoComplete="off"
                       placeholder={String(DEFAULT_PORTS[type])}
+                      disabled={locked(portField.name)}
                     />
                   </div>
                 )}
@@ -72,6 +80,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 data-mask
                 spellCheck={false}
                 autoComplete="off"
+                disabled={locked(field.name)}
               />
             </field.Field>
           )}
@@ -84,6 +93,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 variant="inset"
                 data-mask
                 autoComplete="new-password"
+                disabled={locked(field.name)}
               />
             </field.Field>
           )}
@@ -98,6 +108,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 spellCheck={false}
                 autoComplete="off"
                 placeholder={DATABASE_PLACEHOLDERS[type]}
+                disabled={locked(field.name)}
               />
             </field.Field>
           )}
@@ -112,6 +123,7 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
                 spellCheck={false}
                 autoComplete="off"
                 placeholder={OPTIONS_PLACEHOLDERS[type]}
+                disabled={locked(field.name)}
               />
             </field.Field>
           )}

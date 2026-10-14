@@ -1,21 +1,28 @@
+import { UnavailableIcon } from '@hugeicons/core-free-icons'
 import { title } from '@tamery/shared/title'
+import { Button } from '@tamery/ui/components/button'
 import {
   ResizableGroup,
   ResizableSeparator,
   ResizablePanel,
 } from '@tamery/ui/components/custom/resizable'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
+  useRouter,
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { PaneEmpty } from '~/components/pane-empty'
+import { useCollections } from '~/core/collections'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
+  needsLocalDetails,
 } from '~/core/connection/fetching'
 import {
   lastOpenedResourcesStorageValue,
@@ -34,7 +41,7 @@ import { queryLoggerPanel } from '~/modules/query-logger/panel'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
-import { PasswordForm } from './-components/password-form'
+import { UnlockForm } from './-components/unlock-form'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -90,6 +97,7 @@ const RegionPanel = ({
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
+  const router = useRouter()
 
   useShellLayout(connectionResource.id)
 
@@ -106,7 +114,16 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
-  const locked = fetching.type === 'waiting-for-password'
+  const { connectionStringsCollection } = useCollections()
+  const { data: connectionString } = useLiveQuery({
+    query: (q) =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+  })
+  const needsDetails = needsLocalDetails(connection, connectionString)
+  const locked = fetching.type === 'waiting-for-password' || needsDetails
 
   useShortcut(
     'toggleNavigator',
@@ -122,11 +139,26 @@ const ResourcePage = () => {
 
   if (locked) {
     return (
-      <PasswordForm
+      <UnlockForm
         connection={connection}
-        connectionResource={connectionResource}
-        missingCredentials={fetching.missingCredentials}
+        scope={needsDetails ? 'details' : 'credentials'}
       />
+    )
+  }
+
+  if (!fetching.canSend && fetching.reason) {
+    return (
+      <div className="flex h-screen min-h-[inherit] flex-col">
+        <PaneEmpty
+          icon={UnavailableIcon}
+          title="Can't open this connection here"
+          description={fetching.reason}
+        >
+          <Button variant="outline" onClick={() => router.history.back()}>
+            Back
+          </Button>
+        </PaneEmpty>
+      </div>
     )
   }
 

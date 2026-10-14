@@ -47,7 +47,7 @@ export const isInternalConnection = ({
 
 const REASONS = {
   connectionStringNotStored:
-    'This connection string was not synced to the cloud. Open this connection on the device where it was created.',
+    'Only the name and color of this connection sync. Add its server details on this device to use it here.',
   internalFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   passwordMissingInDesktop:

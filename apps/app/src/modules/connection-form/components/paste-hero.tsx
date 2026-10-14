@@ -28,6 +28,12 @@ const ROLL = {
   transition: { duration: 0.25, ease: [0.32, 0.72, 0, 1] },
 } as const
 
+const EDIT_SUBTITLES = {
+  all: 'Edit it or paste a new one.',
+  credentials: 'Fill in what’s missing here.',
+  details: 'Add its server details here.',
+}
+
 const FLASH_COPY = {
   hit: { subtitle: 'Review and save.', title: 'Got it.' },
   miss: { subtitle: 'Try another URL.', title: 'That’s not a connection.' },
@@ -48,6 +54,7 @@ export const PasteHero = ({
   const modifierHeld = useKeyHold(isMac ? 'Meta' : 'Control')
   const pasteHeld = useKeyHold('V') && modifierHeld
   const [shakeScope, shake] = useAnimate<HTMLDivElement>()
+  const pasteable = mode.kind === 'create' || mode.scope !== 'credentials'
 
   // Shakes in place rather than re-keying the block, which would remount the focused clipboard keys and drop focus out of the page.
   useEffect(() => {
@@ -83,39 +90,43 @@ export const PasteHero = ({
                 {flash.shown && FLASH_COPY[flash.result].subtitle}
                 {!flash.shown &&
                   (mode.kind === 'edit'
-                    ? 'Edit it or paste a new one.'
+                    ? EDIT_SUBTITLES[mode.scope]
                     : 'We’ll figure it out.')}
               </span>
             </motion.span>
           </AnimatePresence>
         </h1>
-        <div className="flex items-center gap-3">
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  type="button"
-                  aria-label="Paste from clipboard"
-                  className="focus-visible:focus-ring flex gap-1.5 rounded-xl outline-none"
-                  onClick={onClipboard}
-                />
-              }
-            >
-              <Keycap pressed={modifierHeld}>
-                <Ctrl userAgent={navigator.userAgent} />
-              </Keycap>
-              <Keycap pressed={pasteHeld}>V</Keycap>
-            </TooltipTrigger>
-            <TooltipContent>Paste from clipboard</TooltipContent>
-          </Tooltip>
-          <span className="text-muted-foreground text-sm">
-            or drop a file on the window
-          </span>
-        </div>
+        {pasteable && (
+          <div className="flex items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Paste from clipboard"
+                    className="focus-visible:focus-ring flex gap-1.5 rounded-xl outline-none"
+                    onClick={onClipboard}
+                  />
+                }
+              >
+                <Keycap pressed={modifierHeld}>
+                  <Ctrl userAgent={navigator.userAgent} />
+                </Keycap>
+                <Keycap pressed={pasteHeld}>V</Keycap>
+              </TooltipTrigger>
+              <TooltipContent>Paste from clipboard</TooltipContent>
+            </Tooltip>
+            <span className="text-muted-foreground text-sm">
+              or drop a file on the window
+            </span>
+          </div>
+        )}
       </div>
-      <p className="text-muted-foreground text-sm text-pretty">
-        {PASTE_FORMATS}
-      </p>
+      {pasteable && (
+        <p className="text-muted-foreground text-sm text-pretty">
+          {PASTE_FORMATS}
+        </p>
+      )}
       {window.electron && mode.kind === 'create' && (
         <AgentButton onClick={onAgent} />
       )}

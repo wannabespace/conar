@@ -9,7 +9,7 @@ import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
@@ -335,7 +335,7 @@ const ConstraintInspector = ({
     },
     validators: { onChange: constraintSchema, onMount: constraintSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
   const { data: tableColumns } = useQuery({
     ...resourceTableColumnIdsQueryOptions({
       connectionResource,

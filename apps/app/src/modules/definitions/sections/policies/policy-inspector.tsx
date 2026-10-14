@@ -1,7 +1,7 @@
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -93,7 +93,7 @@ export const PolicyInspector = ({
     validators: { onChange: policySchema, onMount: policySchema },
   })
   const draft = withAllowedExpressions(
-    useStore(form.store, (state) => state.values)
+    useSelector(form.store, (state) => state.values)
   )
 
   const readOnly = item ? !can.edit : !can.create

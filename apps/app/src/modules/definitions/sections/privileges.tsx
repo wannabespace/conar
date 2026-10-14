@@ -1,6 +1,6 @@
 import { matchesSearch } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
@@ -73,7 +73,7 @@ const PrivilegeInspector = ({
     },
     validators: { onChange: privilegeSchema, onMount: privilegeSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
   const readOnly = !!item || !can.create
 
   return (

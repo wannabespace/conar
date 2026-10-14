@@ -12,11 +12,13 @@ import { useFieldContext } from './context'
 export const FieldSelect = <Value extends string>({
   children,
   className,
+  disabled,
   items,
   renderValue,
   variant,
 }: Pick<ComponentProps<typeof SelectTrigger>, 'className' | 'variant'> & {
   children?: ReactNode
+  disabled?: boolean
   items: { label: string; value: Value }[]
   renderValue?: (value: Value) => ReactNode
 }) => {
@@ -25,6 +27,7 @@ export const FieldSelect = <Value extends string>({
   return (
     <Select
       items={items}
+      disabled={disabled}
       value={field.state.value}
       onValueChange={(next) => next !== null && field.handleChange(next)}
     >

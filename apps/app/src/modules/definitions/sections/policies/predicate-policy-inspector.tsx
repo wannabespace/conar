@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -103,7 +103,7 @@ export const PredicatePolicyInspector = ({
       onMount: predicatePolicySchema,
     },
   })
-  const draft = useStore(form.store, (store) => store.values)
+  const draft = useSelector(form.store, (store) => store.values)
 
   const readable = !!item?.predicates?.every(
     (predicate) => policyPredicate.parse(predicate.definition) !== null

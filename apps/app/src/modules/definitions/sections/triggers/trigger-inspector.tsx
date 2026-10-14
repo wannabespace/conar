@@ -2,7 +2,7 @@ import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import { sameShape } from '@tamery/shared/utils'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -106,7 +106,7 @@ export const TriggerInspector = ({
     },
     validators: { onChange: schema, onMount: schema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item
     ? !can.edit || !formEditable(item, options.body)

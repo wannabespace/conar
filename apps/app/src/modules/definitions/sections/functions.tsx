@@ -4,7 +4,7 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
@@ -245,7 +245,7 @@ const FunctionInspector = ({
     },
     validators: { onChange: functionSchema, onMount: functionSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item
     ? !can.edit || !formEditable(item, connectionType)

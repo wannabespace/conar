@@ -83,7 +83,8 @@ export const ConnectionCardMeta = ({
 }: {
   canSend: boolean
   connectionStore: ReturnType<typeof getConnectionStore>
-  displayUrl: string | undefined
+  /** `undefined` while this device's connection string loads; `null` when it never gets one. */
+  displayUrl: string | null | undefined
   isResourcesShown: boolean
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
@@ -95,7 +96,7 @@ export const ConnectionCardMeta = ({
           {displayUrl}
         </span>
       ) : (
-        <Skeleton className="h-3 w-40" />
+        displayUrl === undefined && <Skeleton className="h-3 w-40" />
       )}
     </div>
     {isResourcesShown ? (

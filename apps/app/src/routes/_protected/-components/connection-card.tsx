@@ -15,7 +15,10 @@ import { toast } from 'sonner'
 import { AppContextMenu, AppMenuButton } from '~/components/app-context-menu'
 import { useCollections } from '~/core/collections'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
-import { useFetchingConfig } from '~/core/connection/fetching'
+import {
+  needsLocalDetails,
+  useFetchingConfig,
+} from '~/core/connection/fetching'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { connectionResourcesQueryOptions } from '~/core/queries/connection/resources'
@@ -26,6 +29,26 @@ import { ConnectionCardMeta } from './connection-card-meta'
 import { ConnectionCardStatus } from './connection-card-status'
 import { ConnectionIconWithVersion } from './connection-icon-with-version'
 import { buildConnectionMenuItems } from './connection-menu-items'
+
+const ROW_LINK_CLASS =
+  'focus-visible:inset-ring-ring/50 absolute inset-0 cursor-default outline-hidden focus-visible:inset-ring-3'
+
+const CardRowLink = ({
+  connection,
+  resourceId,
+}: {
+  connection: Connection
+  resourceId: string | undefined
+}) =>
+  resourceId ? (
+    <ConnectionResourceLink
+      resourceId={resourceId}
+      className={ROW_LINK_CLASS}
+      aria-label={`Open ${connection.name}`}
+      preload={false}
+      data-row-link
+    />
+  ) : null
 
 export const ConnectionCard = ({
   connection,
@@ -90,8 +113,12 @@ export const ConnectionCard = ({
   const selectedResource = connectionResources.find(
     (r) => r.name === resolvedSelectedResourceName
   )
+  const needsDetails = needsLocalDetails(connection, connectionString)
   const canOpenResource =
-    canSend || (fetchType === 'waiting-for-password' && !!window.electron)
+    canSend ||
+    needsDetails ||
+    (fetchType === 'waiting-for-password' && !!window.electron)
+  const openResourceId = canOpenResource ? selectedResource?.id : undefined
 
   const handleCopy = async () => {
     const decryptedString = await connectionStringsCollection.utils.decrypt(
@@ -144,16 +171,15 @@ export const ConnectionCard = ({
         params: { connectionId: connection.id },
         to: '/edit/$connectionId',
       }),
-    onOpenInNewWindow:
-      selectedResource && canOpenResource
-        ? () =>
-            openNewWindow(
-              router.buildLocation({
-                params: { resourceId: selectedResource.id },
-                to: '/connection/$resourceId',
-              }).href
-            )
-        : null,
+    onOpenInNewWindow: openResourceId
+      ? () =>
+          openNewWindow(
+            router.buildLocation({
+              params: { resourceId: openResourceId },
+              to: '/connection/$resourceId',
+            }).href
+          )
+      : null,
     onRefresh: () => refresh.mutate(),
     onRemove,
   })
@@ -170,22 +196,13 @@ export const ConnectionCard = ({
           <div
             className={cn(
               'group has-[[data-row-link]:focus-visible]:bg-accent relative flex h-9 items-center gap-3 pr-2 pl-3 select-none',
-              selectedResource &&
-                canOpenResource &&
+              openResourceId &&
                 'hover:bg-accent has-[[data-row-link]:hover]:bg-accent'
             )}
           />
         }
       >
-        {selectedResource && canOpenResource && (
-          <ConnectionResourceLink
-            resourceId={selectedResource.id}
-            className="focus-visible:inset-ring-ring/50 absolute inset-0 cursor-default outline-hidden focus-visible:inset-ring-3"
-            aria-label={`Open ${connection.name}`}
-            preload={false}
-            data-row-link
-          />
-        )}
+        <CardRowLink connection={connection} resourceId={openResourceId} />
         {connection.color && (
           <span className="pointer-events-none absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-full bg-(--color)" />
         )}
@@ -216,7 +233,7 @@ export const ConnectionCard = ({
         <ConnectionCardMeta
           canSend={canSend}
           connectionStore={connectionStore}
-          displayUrl={connectionString?.displayUrl}
+          displayUrl={needsDetails ? null : connectionString?.displayUrl}
           isResourcesShown={isResourcesShown}
           resources={resources}
           selectedResourceName={selectedResourceName}

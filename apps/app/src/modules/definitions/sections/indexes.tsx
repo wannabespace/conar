@@ -9,7 +9,7 @@ import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
@@ -300,7 +300,7 @@ const IndexInspector = ({
     },
     validators: { onChange: indexSchema, onMount: indexSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
   const { data: columnNames } = useQuery({
     ...resourceTableColumnIdsQueryOptions({
       connectionResource,

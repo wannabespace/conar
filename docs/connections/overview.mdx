@@ -83,7 +83,7 @@ For anything else, **Ask AI** explains the error and suggests steps, sometimes w
 
 ## SSH tunnels
 
-Turn on **SSH tunnel** and enter the bastion host. Sign in with your ssh-agent (it honours `~/.ssh/config`), a key file on this device, a pasted private key, or a password. Tunnels open in the desktop app only. See [Security](/connections/security) for where SSH secrets are stored.
+Turn on **SSH tunnel** and enter the bastion host. Sign in with your ssh-agent (it honours `~/.ssh/config`), a key file on this device (type its path or pick it with the folder button), a pasted private key, or a password. Tunnels open in the desktop app only. See [Security](/connections/security) for where SSH secrets are stored.
 
 ## Sync types
 
@@ -103,7 +103,7 @@ Sync type controls whether Tamery stores your password or connection string. Eve
 
   </Tab>
   <Tab title="Metadata only">
-    Only the name, label and color are stored; the connection string never leaves the device where you created it. Other devices list the connection but can't open it.
+    Only the name, label and color are stored; the connection string never leaves the device where you created it. On another device, open the connection and enter or paste its server details there; they stay on that device.
 
     Good when a database's address must not be stored externally.
 

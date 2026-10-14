@@ -19,13 +19,20 @@ const engineLabel = (type: ConnectionType) => (
   </>
 )
 
-export const EngineField = ({ form }: { form: ConnectionForm }) => (
+export const EngineField = ({
+  form,
+  locked,
+}: {
+  form: ConnectionForm
+  locked: (field: string) => boolean
+}) => (
   <form.AppField name="type">
     {(field) => (
       <field.Field orientation="row">
         <field.Label>Engine</field.Label>
         <field.Select
           items={ENGINES}
+          disabled={locked(field.name)}
           variant="flat"
           className="flex-1"
           renderValue={engineLabel}

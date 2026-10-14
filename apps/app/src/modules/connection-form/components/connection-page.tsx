@@ -11,7 +11,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -24,7 +24,7 @@ import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
 import { useGoBack } from '../lib/use-go-back'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import type { FormMode, Persist } from '../lib/use-save-connection'
-import { useSaveConnection } from '../lib/use-save-connection'
+import { lockedFieldOf, useSaveConnection } from '../lib/use-save-connection'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
@@ -80,6 +80,8 @@ export const ConnectionPage = ({
       }
     }, 0)
   const { draftOf, runTest, save, testError } = useSaveConnection(mode, persist)
+  const locked = lockedFieldOf(mode)
+  const scope = mode.kind === 'edit' ? mode.scope : 'all'
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
@@ -100,6 +102,9 @@ export const ConnectionPage = ({
 
   const { dragging, flash, readClipboard } = usePasteConnection({
     onPaste: (guess, via) => {
+      if (scope === 'credentials') {
+        return
+      }
       paste(guess, via)
       setStage('form')
       const [missing] = missingOf(form.state.values)
@@ -107,11 +112,11 @@ export const ConnectionPage = ({
         focusField(missing)
       }
     },
-    pitchShown: stage === 'form',
+    pitchShown: stage === 'form' && scope !== 'credentials',
   })
 
-  const values = useStore(form.store, (state) => state.values)
-  const submitting = useStore(form.store, (state) => state.isSubmitting)
+  const values = useSelector(form.store, (state) => state.values)
+  const submitting = useSelector(form.store, (state) => state.isSubmitting)
   const { canSend, reason, testStatus } = draftOf(values)
 
   const applyFix = (fix: ConnectionPatch, source: FixSource) => {
@@ -164,7 +169,7 @@ export const ConnectionPage = ({
       tabIndex={-1}
       className="relative flex h-full min-h-0 flex-col outline-none"
     >
-      <DropOverlay shown={dragging} />
+      <DropOverlay shown={dragging && scope !== 'credentials'} />
       <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
         <TooltipTrigger
           render={
@@ -207,20 +212,22 @@ export const ConnectionPage = ({
                 }
               >
                 <Reveal>
-                  <ServerFields form={form} />
+                  <ServerFields form={form} locked={locked} />
                   {filled && <PasteNotes fixes={filled.fixes} form={form} />}
                 </Reveal>
                 <Reveal>
-                  <SshFields form={form} />
+                  <SshFields form={form} locked={locked} />
                 </Reveal>
-                <Reveal>
-                  <FieldGroup variant="card">
-                    <NameField form={form} />
-                    <LabelField form={form} />
-                    <ColorField form={form} />
-                    {mode.kind === 'create' && <SyncField form={form} />}
-                  </FieldGroup>
-                </Reveal>
+                {scope === 'all' && (
+                  <Reveal>
+                    <FieldGroup variant="card">
+                      <NameField form={form} />
+                      <LabelField form={form} />
+                      <ColorField form={form} />
+                      {mode.kind === 'create' && <SyncField form={form} />}
+                    </FieldGroup>
+                  </Reveal>
+                )}
                 {testStatus === 'error' && testError && (
                   <TestAlert
                     key={testError.message}

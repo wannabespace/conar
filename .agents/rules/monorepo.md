@@ -37,4 +37,6 @@ Its profile is **signed out**: anything behind auth needs the user's own Chrome 
 - It shares localStorage with the user's own tab on the same origin: pane sizes and preferences changed there change theirs. Restore them, close the MCP tab when done, and ask the user to reload.
 - A first-time chunk load can make Vite re-optimize deps mid-session and crash the page with `Cannot read properties of null (reading 'useMemoCache')`. That is a dev artifact: navigate to the same URL once and continue.
 
+**The desktop app** is driven through its own isolated Electron instances over CDP, never the user's: the `electron-drive` skill covers launching, signing in, native dialogs and window screenshots.
+
 **A sandboxed/embedded browser pane cannot load portless HTTPS hosts** — every subresource is cancelled with `net::ERR_BLOCKED_BY_CLIENT` by the pane's own request layer (not TLS, CSP or service workers). Bare `http://localhost:<port>` works there.

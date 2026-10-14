@@ -1,6 +1,6 @@
 import type { GuessFix } from '@tamery/connection/guess'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
@@ -21,7 +21,7 @@ export const PasteNotes = ({
   fixes: GuessFix[]
   form: ConnectionForm
 }) => {
-  const missing = useStore(form.store, ({ values }) => missingOf(values))
+  const missing = useSelector(form.store, ({ values }) => missingOf(values))
 
   const note = [
     ...(missing.length > 0 ? [`Add the ${missing.join(' and ')}.`] : []),

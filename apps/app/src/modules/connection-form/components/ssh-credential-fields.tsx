@@ -15,9 +15,11 @@ import type { ConnectionForm } from '../lib/connection-form'
 export const SshCredentialFields = ({
   auth,
   form,
+  locked,
 }: {
   auth: SshAuth
   form: ConnectionForm
+  locked: (field: string) => boolean
 }) => {
   if (auth === 'agent') {
     return null
@@ -29,7 +31,12 @@ export const SshCredentialFields = ({
         {(field) => (
           <field.Field orientation="row">
             <field.Label>Password</field.Label>
-            <field.PasswordInput variant="inset" data-mask autoComplete="off" />
+            <field.PasswordInput
+              variant="inset"
+              data-mask
+              autoComplete="off"
+              disabled={locked(field.name)}
+            />
           </field.Field>
         )}
       </form.AppField>
@@ -49,6 +56,7 @@ export const SshCredentialFields = ({
                 spellCheck={false}
                 autoComplete="off"
                 placeholder="~/.ssh/id_ed25519"
+                disabled={locked(field.name)}
               >
                 {window.electron && (
                   <Tooltip>
@@ -58,6 +66,7 @@ export const SshCredentialFields = ({
                           variant="ghost-row"
                           size="icon-sm"
                           aria-label="Choose key file"
+                          disabled={locked(field.name)}
                           onClick={async () => {
                             const keyPath =
                               await window.electron?.ssh.pickKeyFile()
@@ -90,8 +99,12 @@ export const SshCredentialFields = ({
                 autoComplete="off"
                 placeholder="Paste the key, or load it from a file"
                 className="max-h-24"
+                disabled={locked(field.name)}
               >
-                <LoadFileButton onLoad={field.handleChange} />
+                <LoadFileButton
+                  disabled={locked(field.name)}
+                  onLoad={field.handleChange}
+                />
               </field.Textarea>
             </field.Field>
           )}
@@ -106,6 +119,7 @@ export const SshCredentialFields = ({
               data-mask
               autoComplete="off"
               placeholder="Only if the key has one"
+              disabled={locked(field.name)}
             />
           </field.Field>
         )}
