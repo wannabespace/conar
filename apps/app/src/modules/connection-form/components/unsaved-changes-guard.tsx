@@ -1,5 +1,6 @@
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -33,9 +34,9 @@ export const UnsavedChangesGuard = ({ form }: { form: ConnectionForm }) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel variant="outline">Keep editing</AlertDialogCancel>
-          <AlertDialogCancel variant="destructive" onClick={() => proceed?.()}>
+          <AlertDialogAction variant="destructive" onClick={() => proceed?.()}>
             Discard
-          </AlertDialogCancel>
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

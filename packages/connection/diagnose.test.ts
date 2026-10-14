@@ -42,10 +42,10 @@ describe('diagnoseConnectionError', () => {
   })
 
   it.each([
-    [SSH_KEY_ERRORS.noFile, 'keyPath', 'ssh.keyPath'],
-    [SSH_KEY_ERRORS.needsPassphrase, 'key', 'ssh.passphrase'],
-    [SSH_KEY_ERRORS.notAKey, 'key', 'ssh.privateKey'],
-    [SSH_KEY_ERRORS.notAKey, 'keyPath', 'ssh.keyPath'],
+    [SSH_KEY_ERRORS.key.noFile, 'keyPath', 'ssh.keyPath'],
+    [SSH_KEY_ERRORS.passphrase.needed, 'key', 'ssh.passphrase'],
+    [SSH_KEY_ERRORS.key.notAKey, 'key', 'ssh.privateKey'],
+    [SSH_KEY_ERRORS.key.notAKey, 'keyPath', 'ssh.keyPath'],
   ] as const)('sends %s to the field at fault', (message, auth, field) => {
     expect(
       diagnose(`${SSH_TUNNEL_ERROR}${message}`, {

@@ -56,13 +56,13 @@ const authConfig = async (
   if (tunnel.auth === 'keyPath') {
     const keyPath = tunnel.keyPath || sshConfig('IdentityFile')
     if (!keyPath) {
-      throw tunnelError(SSH_KEY_ERRORS.noFile)
+      throw tunnelError(SSH_KEY_ERRORS.key.noFile)
     }
     const { data: privateKey } = await tryCatchAsync(() =>
       readFile(expandHome(keyPath))
     )
     if (!privateKey) {
-      throw tunnelError(SSH_KEY_ERRORS.fileMissing)
+      throw tunnelError(SSH_KEY_ERRORS.key.fileMissing)
     }
     return { passphrase: tunnel.passphrase || undefined, privateKey }
   }
@@ -97,11 +97,11 @@ const sshErrorMessage = (
 // ssh2 names the passphrase in both its "no passphrase given" and "bad passphrase?" parse errors, and in nothing else.
 const unreadableKey = ({ passphrase }: SshTunnel, error: Error) => {
   if (!/passphrase/iu.test(error.message)) {
-    return SSH_KEY_ERRORS.notAKey
+    return SSH_KEY_ERRORS.key.notAKey
   }
   return passphrase
-    ? SSH_KEY_ERRORS.wrongPassphrase
-    : SSH_KEY_ERRORS.needsPassphrase
+    ? SSH_KEY_ERRORS.passphrase.wrong
+    : SSH_KEY_ERRORS.passphrase.needed
 }
 
 const trusting = new Map<string, Promise<boolean>>()

@@ -29,14 +29,18 @@ export const DEFAULT_SSH_PORT = 22
 // Errors reach the renderer as bare messages over IPC, so this prefix is the only way `diagnose.ts` tells a tunnel failure from a driver's.
 export const SSH_TUNNEL_ERROR = 'SSH tunnel: '
 
-// The desktop session throws these and `diagnose.ts` matches them to send the user to the field at fault.
+// The desktop session throws these and `diagnose.ts` matches them to send the user to the key or passphrase field.
 export const SSH_KEY_ERRORS = {
-  fileMissing: "The SSH key file wasn't found. Check its path.",
-  needsPassphrase: 'The SSH key is encrypted. Enter its passphrase.',
-  noFile: 'Choose the SSH key file.',
-  notAKey:
-    "That isn't an SSH private key. A key runs from -----BEGIN to -----END.",
-  wrongPassphrase: "The SSH key couldn't be decrypted. Check its passphrase.",
+  key: {
+    fileMissing: "The SSH key file wasn't found. Check its path.",
+    noFile: 'Choose the SSH key file.',
+    notAKey:
+      "That isn't an SSH private key. A key runs from -----BEGIN to -----END.",
+  },
+  passphrase: {
+    needed: 'The SSH key is encrypted. Enter its passphrase.',
+    wrong: "The SSH key couldn't be decrypted. Check its passphrase.",
+  },
 }
 
 export const SSH_DESKTOP_ONLY =

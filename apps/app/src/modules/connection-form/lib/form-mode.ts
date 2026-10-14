@@ -3,6 +3,8 @@ import type { SecretParam } from '@tamery/connection/secrets'
 import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
+import type { SecretField } from './connection-form'
+
 export type FormMode =
   | { kind: 'create' }
   | {
@@ -15,7 +17,7 @@ export type FormMode =
       scope: 'all' | 'credentials' | 'details'
     }
 
-const SECRET_FIELDS: Record<SecretParam, string> = {
+const SECRET_FIELDS: Record<SecretParam, SecretField | 'options'> = {
   ssh_key: 'ssh.privateKey',
   ssh_passphrase: 'ssh.passphrase',
   ssh_password: 'ssh.password',
@@ -37,13 +39,13 @@ export const editModeOf = (
 })
 
 /** Under `credentials`, the fields holding what this device lacks; `null` leaves every field open. */
-const openFieldsOf = (mode: FormMode) =>
-  mode.kind === 'edit' && mode.scope === 'credentials'
-    ? [
-        ...(mode.passwordElsewhere ? ['password'] : []),
-        ...mode.missingSecrets.map((param) => SECRET_FIELDS[param]),
-      ]
-    : null
+const openFieldsOf = (mode: FormMode): (SecretField | 'options')[] | null => {
+  if (mode.kind !== 'edit' || mode.scope !== 'credentials') {
+    return null
+  }
+  const secrets = mode.missingSecrets.map((param) => SECRET_FIELDS[param])
+  return mode.passwordElsewhere ? ['password', ...secrets] : secrets
+}
 
 /** Field names the form may not change: under `credentials`, everything but what this device lacks. */
 export const lockedFieldOf = (mode: FormMode) => {
@@ -51,10 +53,12 @@ export const lockedFieldOf = (mode: FormMode) => {
   if (!open) {
     return () => false
   }
-  const openSet = new Set(open)
+  const openSet = new Set<string>(open)
   return (field: string) => !openSet.has(field)
 }
 
 /** The secrets a credentials unlock must fill before it saves; an SSL key passphrase hides in Options, which is never empty. */
 export const requiredSecretsOf = (mode: FormMode) =>
-  (openFieldsOf(mode) ?? []).filter((field) => field !== 'options')
+  (openFieldsOf(mode) ?? []).filter(
+    (field): field is SecretField => field !== 'options'
+  )

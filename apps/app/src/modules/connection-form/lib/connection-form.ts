@@ -61,6 +61,7 @@ const SERVER_FIELDS = [
 
 const port = type(/^\d{0,5}$/u).configure({ message: 'Use a port number' })
 
+// The secrets are declared for formSchemaOf's narrow: the global onUndeclaredKey: 'delete' strips any key a schema leaves out before it runs.
 const connectionFormSchema = type({
   host: type(/\S/u).configure({ message: 'Enter the host' }),
   password: 'string',
@@ -80,22 +81,36 @@ const connectionFormSchema = type({
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
 )
 
-const SECRET_MESSAGES: Record<string, string> = {
-  password: 'Enter the password',
-  'ssh.passphrase': 'Enter the key passphrase',
-  'ssh.password': 'Enter the SSH password',
-  'ssh.privateKey': 'Paste the SSH private key',
+type SecretValues = typeof connectionFormSchema.infer
+
+const SECRETS = {
+  password: {
+    message: 'Enter the password',
+    valueOf: (values: SecretValues) => values.password,
+  },
+  'ssh.passphrase': {
+    message: 'Enter the key passphrase',
+    valueOf: (values: SecretValues) => values.ssh.passphrase,
+  },
+  'ssh.password': {
+    message: 'Enter the SSH password',
+    valueOf: (values: SecretValues) => values.ssh.password,
+  },
+  'ssh.privateKey': {
+    message: 'Paste the SSH private key',
+    valueOf: (values: SecretValues) => values.ssh.privateKey,
+  },
 }
 
-const formSchemaOf = memoize((requiredSecrets: string[]) =>
+export type SecretField = keyof typeof SECRETS
+
+const formSchemaOf = memoize((requiredSecrets: SecretField[]) =>
   connectionFormSchema.narrow((values, ctx) => {
-    const empty = requiredSecrets.filter((field) => {
-      const sshKey = field.replace(/^ssh\./u, '') as keyof typeof values.ssh
-      const value = field === 'password' ? values.password : values.ssh[sshKey]
-      return !/\S/u.test(value)
-    })
+    const empty = requiredSecrets.filter(
+      (field) => !/\S/u.test(SECRETS[field].valueOf(values))
+    )
     for (const field of empty) {
-      ctx.reject({ message: SECRET_MESSAGES[field], path: field.split('.') })
+      ctx.reject({ message: SECRETS[field].message, path: field.split('.') })
     }
     return empty.length === 0
   })
@@ -178,7 +193,7 @@ export const useConnectionForm = ({
   defaultValues?: ConnectionFormValues
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
-  requiredSecrets: string[]
+  requiredSecrets: SecretField[]
 }) => {
   const schema = formSchemaOf(requiredSecrets)
   const [initialValues, setInitialValues] = useState(

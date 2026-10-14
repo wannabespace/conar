@@ -337,17 +337,11 @@ const sshKeyFieldOf = (
   hint: string,
   { ssh }: ConnectionParts
 ): Diagnosis['focus'] => {
-  if (hint === SSH_KEY_ERRORS.notAKey) {
-    return ssh?.auth === 'keyPath' ? 'ssh.keyPath' : 'ssh.privateKey'
-  }
-  if (hint === SSH_KEY_ERRORS.noFile || hint === SSH_KEY_ERRORS.fileMissing) {
-    return 'ssh.keyPath'
-  }
-  if (
-    hint === SSH_KEY_ERRORS.needsPassphrase ||
-    hint === SSH_KEY_ERRORS.wrongPassphrase
-  ) {
+  if (Object.values(SSH_KEY_ERRORS.passphrase).includes(hint)) {
     return 'ssh.passphrase'
+  }
+  if (Object.values(SSH_KEY_ERRORS.key).includes(hint)) {
+    return ssh?.auth === 'keyPath' ? 'ssh.keyPath' : 'ssh.privateKey'
   }
   return undefined
 }
