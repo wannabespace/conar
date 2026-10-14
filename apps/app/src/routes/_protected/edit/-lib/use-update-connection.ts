@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { updateConnection } from '~/core/connection/save'
-import { useGoBack } from '~/modules/connection-form/lib/use-go-back'
+import { useGoBack } from '~/hooks/use-go-back'
 import type { SavedConnection } from '~/modules/connection-form/lib/use-save-connection'
 
 export const useUpdateConnection = (connectionId: string) => {

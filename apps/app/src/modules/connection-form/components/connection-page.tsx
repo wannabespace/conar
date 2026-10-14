@@ -18,11 +18,11 @@ import { flushSync } from 'react-dom'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
+import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
 import type { ConnectionFormValues } from '../lib/connection-form'
 import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
-import { useGoBack } from '../lib/use-go-back'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import type { FormMode, Persist } from '../lib/use-save-connection'
 import { lockedFieldOf, useSaveConnection } from '../lib/use-save-connection'
