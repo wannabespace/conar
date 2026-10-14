@@ -53,7 +53,7 @@ export const TestAlert = ({
 }) => {
   const context = { desktop: !!window.electron, message: error.message, parts }
   const diagnosis = diagnoseConnectionError(context)
-  const { ask, available, exhausted, locked } = useAiHelp()
+  const { ask, available, locked } = useAiHelp()
   const answer = ask.data
   const aiFix = answer?.fix
   const { fix, focus } = diagnosis ?? {}
@@ -146,11 +146,7 @@ export const TestAlert = ({
                         className={locked ? 'opacity-50' : undefined}
                         disabled={ask.isPending}
                         onClick={() =>
-                          checkOrUpgrade(
-                            exhausted
-                              ? 'ai.connection.unlimited'
-                              : 'ai.connection.use'
-                          ) &&
+                          checkOrUpgrade('ai.connection.use') &&
                           ask.mutate(diagnosisRequestOf(context), {
                             onSuccess: onAnswer,
                           })

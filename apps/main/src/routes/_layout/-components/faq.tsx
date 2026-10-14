@@ -28,7 +28,7 @@ const QUESTIONS = [
     question: 'Can I connect to localhost and private databases?',
   },
   {
-    answer: `Every database feature, unlimited synced connections, ${FREE_WEEKLY_LIMITS.filters} AI filters, ${FREE_WEEKLY_LIMITS.connection} AI diagnoses of a failed connection and ${FREE_WEEKLY_LIMITS.mcp} MCP agent queries a week. Pro is $${PRO_PLAN.price.monthly} a month or $${PRO_PLAN.price.yearly} a year and starts with a 7-day free trial.`,
+    answer: `Every database feature, unlimited synced connections, AI diagnosis of a failed connection, ${FREE_WEEKLY_LIMITS.filters} AI filters and ${FREE_WEEKLY_LIMITS.mcp} MCP agent queries a week. Pro is $${PRO_PLAN.price.monthly} a month or $${PRO_PLAN.price.yearly} a year and starts with a 7-day free trial.`,
     question: 'What does the free plan include?',
   },
   {

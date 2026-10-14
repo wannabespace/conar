@@ -5,21 +5,14 @@ import {
 import { AiFeature } from '@tamery/ai/usage'
 
 import { aiUsage } from '~/lib/ai-usage'
-import { usage } from '~/lib/usage'
 import { orpc, permissionsMiddleware, permix } from '~/orpc'
 
 export const diagnoseConnection = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.connection.use'))
-  .use(
-    usage.limit(
-      'connection',
-      "You've used this week's free AI connection help. Subscribe to Pro for unlimited help."
-    )
-  )
   .input(connectionDiagnosisInput)
-  .handler(async ({ context, input, signal }) => {
-    const diagnosis = await diagnose({
+  .handler(({ context, input, signal }) =>
+    diagnose({
       input,
       signal,
       telemetry: aiUsage.telemetry({
@@ -27,6 +20,4 @@ export const diagnoseConnection = orpc
         userId: context.user.id,
       }),
     })
-    await usage.record(context, 'connection')
-    return diagnosis
-  })
+  )

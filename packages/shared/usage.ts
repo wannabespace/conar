@@ -1,5 +1,4 @@
 export const FREE_WEEKLY_LIMITS = {
-  connection: 10,
   filters: 20,
   mcp: 100,
 } as const
