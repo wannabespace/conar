@@ -22,7 +22,10 @@ import { createQueriesCollection } from '~/modules/runner/sync'
 import { isServerError } from '~/utils/error'
 
 const createCollections = () => {
-  const connectionStringsCollection = createConnectionStringsCollection()
+  const connectionsResourcesCollection = createConnectionsResourcesCollection()
+  const connectionStringsCollection = createConnectionStringsCollection(
+    connectionsResourcesCollection
+  )
 
   return {
     chatsCollection: createChatsCollection(),
@@ -32,7 +35,7 @@ const createCollections = () => {
     connectionsCollection: createConnectionsCollection(
       connectionStringsCollection
     ),
-    connectionsResourcesCollection: createConnectionsResourcesCollection(),
+    connectionsResourcesCollection,
     queriesCollection: createQueriesCollection(),
     workspacesCollection: createWorkspacesCollection(),
   }

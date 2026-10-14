@@ -5,34 +5,9 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
-import type { ConnectionStringInput } from '~/core/connection/connection-strings'
 import { ensureResource } from '~/core/connection/resources'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
-import { queryClient } from '~/lib/query-client'
-
-const dropConnectionQueries = (connectionId: string) => {
-  const ids = new Set<unknown>([
-    connectionId,
-    ...getCollections()
-      .connectionsResourcesCollection.toArray.filter(
-        (resource) => resource.connectionId === connectionId
-      )
-      .map(({ id }) => id),
-  ])
-  queryClient.removeQueries({
-    predicate: ({ queryKey: [, id] }) => ids.has(id),
-  })
-}
-
-export const writeConnectionString = async (data: ConnectionStringInput) => {
-  const saved =
-    await getCollections().connectionStringsCollection.utils.save(data)
-  if (saved.changed) {
-    dropConnectionQueries(data.connectionId)
-  }
-  return saved
-}
 
 interface ConnectionDetails {
   color?: string | null
@@ -56,7 +31,7 @@ const saveConnection = async (
     getCollections()
   const stored = connectionStringsCollection.get(connectionId)
   const updatedAt = new Date()
-  const { previous, record } = await writeConnectionString({
+  const { previous, record } = await connectionStringsCollection.utils.save({
     connectionId,
     connectionString: stored
       ? connectionSecrets.keepMissing(
@@ -89,7 +64,7 @@ const saveConnection = async (
     const { error } = await tryCatchAsync(() => tx.isPersisted.promise)
     if (error) {
       if (previous) {
-        await writeConnectionString(previous)
+        await connectionStringsCollection.utils.save(previous)
       } else {
         connectionStringsCollection.delete(connectionId)
       }

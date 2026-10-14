@@ -2,7 +2,6 @@ import { createEffect } from '@tanstack/react-db'
 import { useEffect } from 'react'
 
 import { useCollections } from '~/core/collections'
-import { writeConnectionString } from '~/core/connection/save'
 import type { Connection } from '~/core/connection/sync'
 import { useIsOnline } from '~/store'
 
@@ -28,7 +27,7 @@ export const useConnectionStringsSync = () => {
         return
       }
 
-      await writeConnectionString({
+      await connectionStringsCollection.utils.save({
         connectionId: value.id,
         connectionString,
         updatedAt: value.updatedAt,

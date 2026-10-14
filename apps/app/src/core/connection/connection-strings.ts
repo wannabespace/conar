@@ -12,7 +12,10 @@ import { fullSignOut } from '~/lib/auth'
 import { persistence } from '~/lib/database'
 import { encryptionKey } from '~/lib/encryption-key'
 import { orpc } from '~/lib/orpc'
+import { queryClient } from '~/lib/query-client'
 import { PERSISTED_SCHEMA_VERSION } from '~/lib/sync'
+
+import type { ConnectionResource } from './sync'
 
 export interface ConnectionString {
   connectionId: string
@@ -23,6 +26,21 @@ export interface ConnectionString {
   missingSecrets: SecretParam[]
   displayUrl: string
   defaultResourceName: string | null
+}
+
+const dropConnectionQueries = (
+  resources: Collection<ConnectionResource>,
+  connectionId: string
+) => {
+  const ids = new Set<unknown>([
+    connectionId,
+    ...resources.toArray
+      .filter((resource) => resource.connectionId === connectionId)
+      .map(({ id }) => id),
+  ])
+  queryClient.removeQueries({
+    predicate: ({ queryKey: [, id] }) => ids.has(id),
+  })
 }
 
 const encryptConnectionString = async (connectionString: string) =>
@@ -46,9 +64,7 @@ type ConnectionStringsUtils = {
     id: string
     isPasswordExists: boolean
   }) => Promise<string | null>
-  /** `changed` compares the plain strings: a rename re-resolves the same string under a new `updatedAt`. */
   save: (data: ConnectionStringInput) => Promise<{
-    changed: boolean
     previous: ConnectionStringInput | null
     record: ConnectionString
   }>
@@ -60,112 +76,116 @@ export type ConnectionStringsCollection = Collection<
   ConnectionStringsUtils & PersistedCollectionUtils
 >
 
-export const createConnectionStringsCollection =
-  (): ConnectionStringsCollection => {
-    const collection: ConnectionStringsCollection = createCollection(
-      persistedCollectionOptions<
-        ConnectionString,
-        string,
-        never,
-        ConnectionStringsUtils
-      >({
-        autoIndex: 'eager',
-        defaultIndexType: BasicIndex,
-        gcTime: 0,
-        getKey: (item) => item.connectionId,
-        id: 'connection-strings',
-        persistence,
-        schemaVersion: PERSISTED_SCHEMA_VERSION,
-        utils: {
-          async decrypt(connectionId: string) {
-            const record = collection.get(connectionId)
+export const createConnectionStringsCollection = (
+  resources: Collection<ConnectionResource>
+): ConnectionStringsCollection => {
+  const collection: ConnectionStringsCollection = createCollection(
+    persistedCollectionOptions<
+      ConnectionString,
+      string,
+      never,
+      ConnectionStringsUtils
+    >({
+      autoIndex: 'eager',
+      defaultIndexType: BasicIndex,
+      gcTime: 0,
+      getKey: (item) => item.connectionId,
+      id: 'connection-strings',
+      persistence,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
+      utils: {
+        async decrypt(connectionId: string) {
+          const record = collection.get(connectionId)
 
-            if (!record) {
-              const result = await orpc.connections.resolve.call({
-                id: connectionId,
-              })
-
-              if (result.status === 'modified') {
-                return result.connectionString
-              }
-
-              throw new Error(
-                `No connection string found for connection "${connectionId}"`
-              )
-            }
-
-            try {
-              return await decryptConnectionString(record.encrypted)
-            } catch (error) {
-              await fullSignOut()
-              toast.error(
-                'Your encryption key is invalid. Please, sign in again.',
-                {
-                  id: 'encryption-key-invalid',
-                }
-              )
-              throw error
-            }
-          },
-          async prepare(data) {
-            return {
-              ...describeConnectionString(data.connectionString),
-              connectionId: data.connectionId,
-              encrypted: await encryptConnectionString(data.connectionString),
-              updatedAt: data.updatedAt,
-            }
-          },
-          async resolve({ id: connectionId, isPasswordExists }) {
-            const local = collection.get(connectionId)
-
+          if (!record) {
             const result = await orpc.connections.resolve.call({
               id: connectionId,
-              updatedAt: local?.updatedAt,
             })
 
-            if (result.status === 'unchanged') {
-              return null
-            }
-
-            if (result.status === 'not-found') {
-              return collection.utils.decrypt(connectionId)
-            }
-
-            if (!collection.has(connectionId)) {
+            if (result.status === 'modified') {
               return result.connectionString
             }
 
-            return connectionSecrets.restore(result.connectionString, {
-              isPasswordExists,
-              local: await collection.utils.decrypt(connectionId),
-            })
-          },
-          async save(data) {
-            const stored = collection.get(data.connectionId)
-            const previous = stored && {
-              connectionId: stored.connectionId,
-              connectionString: await collection.utils.decrypt(
-                stored.connectionId
-              ),
-              updatedAt: stored.updatedAt,
-            }
-            const record = await collection.utils.prepare(data)
-            if (collection.has(data.connectionId)) {
-              collection.update(data.connectionId, (draft) => {
-                Object.assign(draft, record)
-              })
-            } else {
-              collection.insert(record)
-            }
-            return {
-              changed: previous?.connectionString !== data.connectionString,
-              previous: previous ?? null,
-              record,
-            }
-          },
-        },
-      })
-    )
+            throw new Error(
+              `No connection string found for connection "${connectionId}"`
+            )
+          }
 
-    return collection
-  }
+          try {
+            return await decryptConnectionString(record.encrypted)
+          } catch (error) {
+            await fullSignOut()
+            toast.error(
+              'Your encryption key is invalid. Please, sign in again.',
+              {
+                id: 'encryption-key-invalid',
+              }
+            )
+            throw error
+          }
+        },
+        async prepare(data) {
+          return {
+            ...describeConnectionString(data.connectionString),
+            connectionId: data.connectionId,
+            encrypted: await encryptConnectionString(data.connectionString),
+            updatedAt: data.updatedAt,
+          }
+        },
+        async resolve({ id: connectionId, isPasswordExists }) {
+          const local = collection.get(connectionId)
+
+          const result = await orpc.connections.resolve.call({
+            id: connectionId,
+            updatedAt: local?.updatedAt,
+          })
+
+          if (result.status === 'unchanged') {
+            return null
+          }
+
+          if (result.status === 'not-found') {
+            return collection.utils.decrypt(connectionId)
+          }
+
+          if (!collection.has(connectionId)) {
+            return result.connectionString
+          }
+
+          return connectionSecrets.restore(result.connectionString, {
+            isPasswordExists,
+            local: await collection.utils.decrypt(connectionId),
+          })
+        },
+        async save(data) {
+          const stored = collection.get(data.connectionId)
+          const previous = stored && {
+            connectionId: stored.connectionId,
+            connectionString: await collection.utils.decrypt(
+              stored.connectionId
+            ),
+            updatedAt: stored.updatedAt,
+          }
+          const record = await collection.utils.prepare(data)
+          if (collection.has(data.connectionId)) {
+            collection.update(data.connectionId, (draft) => {
+              Object.assign(draft, record)
+            })
+          } else {
+            collection.insert(record)
+          }
+          // Compares the plain strings: a rename re-resolves the same string under a new `updatedAt`.
+          if (previous?.connectionString !== data.connectionString) {
+            dropConnectionQueries(resources, data.connectionId)
+          }
+          return {
+            previous: previous ?? null,
+            record,
+          }
+        },
+      },
+    })
+  )
+
+  return collection
+}
