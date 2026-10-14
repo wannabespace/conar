@@ -11,7 +11,8 @@ export const AccountPage = ({
   children: ReactNode
   title: string
 }) => (
-  <div className="flex flex-col gap-8">
+  // Sync the table's outer columns with `smallItemInsetClassName`, so a table's text lines up with the header's.
+  <div className="flex flex-col gap-8 [&_:is(th,td):first-child]:pl-3.5 [&_:is(th,td):last-child]:pr-3.5">
     <header
       className={cn(
         smallItemInsetClassName,

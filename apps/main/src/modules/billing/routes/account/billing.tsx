@@ -70,7 +70,7 @@ const RouteComponent = () => {
             </EmptyHeader>
           </Empty>
         ) : (
-          <Table inset className="min-w-md table-fixed">
+          <Table className="min-w-md table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-2/5">Date</TableHead>

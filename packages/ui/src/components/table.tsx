@@ -3,19 +3,15 @@ import * as React from 'react'
 
 const Table = ({
   className,
-  inset,
   size = 'default',
   ...props
 }: React.ComponentProps<'table'> & {
-  /** Outer columns at `smallItemInsetClassName`, for a table filling a card under an inset header. */
-  inset?: boolean
   size?: 'default' | 'sm'
 }) => (
   <div data-slot="table-container" className="relative w-full overflow-x-auto">
     <table
       data-slot="table"
       data-size={size}
-      data-inset={inset || undefined}
       className={cn(
         'group/table w-full caption-bottom text-sm data-[size=sm]:text-xs',
         className
@@ -76,7 +72,7 @@ const TableHead = ({ className, ...props }: React.ComponentProps<'th'>) => (
   <th
     data-slot="table-head"
     className={cn(
-      `text-muted-foreground h-8 px-2 text-left align-middle text-sm font-medium whitespace-nowrap group-data-[size=sm]/table:h-7 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:text-xs first:group-data-inset/table:pl-3.5 first:group-data-[size=sm]/table:pl-4 last:group-data-inset/table:pr-3.5 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
+      `text-muted-foreground h-8 px-2 text-left align-middle text-sm font-medium whitespace-nowrap group-data-[size=sm]/table:h-7 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:text-xs first:group-data-[size=sm]/table:pl-4 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
       className
     )}
     {...props}
@@ -91,7 +87,7 @@ const TableCell = ({
   <td
     data-slot="table-cell"
     className={cn(
-      `p-2 align-middle whitespace-nowrap group-data-[size=sm]/table:h-8 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:py-0 first:group-data-inset/table:pl-3.5 first:group-data-[size=sm]/table:pl-4 last:group-data-inset/table:pr-3.5 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
+      `p-2 align-middle whitespace-nowrap group-data-[size=sm]/table:h-8 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:py-0 first:group-data-[size=sm]/table:pl-4 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
       variant === 'numeric' && 'text-right tabular-nums',
       className
     )}
