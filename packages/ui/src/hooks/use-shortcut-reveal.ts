@@ -1,3 +1,4 @@
+import { getOS } from '@tamery/shared/os'
 import { getKeyStateTracker, useKeyHold } from '@tanstack/react-hotkeys'
 import { type } from 'arktype'
 import { useEffect, useState } from 'react'
@@ -16,7 +17,7 @@ export const shortcutRevealStore = createWebStorageValue({
 export const useShortcutReveal = (trigger: HTMLElement | null) => {
   const isEnabled = useSubscription(shortcutRevealStore)
   const isHeld = useKeyHold(
-    navigator.userAgent.includes('Mac') ? 'Meta' : 'Control'
+    getOS(navigator.userAgent).type === 'macos' ? 'Meta' : 'Control'
   )
   const [heldLongEnough, setHeldLongEnough] = useState(false)
 
