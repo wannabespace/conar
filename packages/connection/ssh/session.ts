@@ -8,7 +8,7 @@ import type { Client, ConnectConfig } from 'ssh2'
 import type { HostKeyStatus } from './known-hosts'
 import { knownHosts } from './known-hosts'
 import type { SshTunnel } from './params'
-import { DEFAULT_SSH_PORT, SSH_TUNNEL_ERROR } from './params'
+import { DEFAULT_SSH_PORT, SSH_KEY_ERRORS, SSH_TUNNEL_ERROR } from './params'
 
 export type ConfirmHostKey = (prompt: {
   fingerprint: string
@@ -33,6 +33,7 @@ const expandHome = (path: string) => path.replace(/^~(?=$|\/)/u, homedir())
 const tunnelError = (message: string) =>
   new Error(`${SSH_TUNNEL_ERROR}${message}`)
 
+// ssh2 tries to decrypt with an empty passphrase rather than report the key as encrypted.
 const authConfig = async (
   tunnel: SshTunnel,
   sshConfig: (key: string) => string | undefined
@@ -47,17 +48,23 @@ const authConfig = async (
     if (!tunnel.privateKey) {
       throw tunnelError("The SSH private key isn't stored on this device")
     }
-    return { passphrase: tunnel.passphrase, privateKey: tunnel.privateKey }
+    return {
+      passphrase: tunnel.passphrase || undefined,
+      privateKey: tunnel.privateKey,
+    }
   }
   if (tunnel.auth === 'keyPath') {
-    const keyPath = tunnel.keyPath || sshConfig('IdentityFile') || ''
+    const keyPath = tunnel.keyPath || sshConfig('IdentityFile')
+    if (!keyPath) {
+      throw tunnelError(SSH_KEY_ERRORS.noFile)
+    }
     const { data: privateKey } = await tryCatchAsync(() =>
       readFile(expandHome(keyPath))
     )
     if (!privateKey) {
-      throw tunnelError("The SSH key file wasn't found. Check its path.")
+      throw tunnelError(SSH_KEY_ERRORS.fileMissing)
     }
-    return { passphrase: tunnel.passphrase, privateKey }
+    return { passphrase: tunnel.passphrase || undefined, privateKey }
   }
   const agent = sshConfig('IdentityAgent') ?? process.env.SSH_AUTH_SOCK
   if (!agent) {
@@ -66,9 +73,14 @@ const authConfig = async (
   return { agent: expandHome(agent) }
 }
 
-const sshErrorMessage = (error: Error & { code?: string; level?: string }) => {
+const sshErrorMessage = (
+  error: Error & { code?: string; level?: string },
+  auth: ConnectConfig
+) => {
   if (error.level === 'client-authentication') {
-    return 'SSH authentication failed. Check the SSH user and credentials.'
+    return 'agent' in auth
+      ? 'SSH authentication failed: the host accepted no key from your ssh-agent. Add yours with ssh-add, or pick another sign-in method.'
+      : 'SSH authentication failed. Check the SSH user and credentials.'
   }
   if (error.level === 'agent') {
     return AGENT_UNAVAILABLE
@@ -82,10 +94,15 @@ const sshErrorMessage = (error: Error & { code?: string; level?: string }) => {
   return `SSH connection failed: ${error.message}`
 }
 
-const unreadableKey = ({ passphrase }: SshTunnel) =>
-  passphrase
-    ? "The SSH key couldn't be decrypted. Check its passphrase."
-    : "The SSH key couldn't be read. If it has a passphrase, enter it."
+// ssh2 names the passphrase in both its "no passphrase given" and "bad passphrase?" parse errors, and in nothing else.
+const unreadableKey = ({ passphrase }: SshTunnel, error: Error) => {
+  if (!/passphrase/iu.test(error.message)) {
+    return SSH_KEY_ERRORS.notAKey
+  }
+  return passphrase
+    ? SSH_KEY_ERRORS.wrongPassphrase
+    : SSH_KEY_ERRORS.needsPassphrase
+}
 
 const trusting = new Map<string, Promise<boolean>>()
 
@@ -234,8 +251,8 @@ export const connectSsh = async (
     client.end()
     throw tunnelError(
       'privateKey' in auth
-        ? unreadableKey(tunnel)
-        : sshErrorMessage(configError)
+        ? unreadableKey(tunnel, configError)
+        : sshErrorMessage(configError, auth)
     )
   }
   const ready = Promise.race([once(client, 'ready'), hungUp()])
@@ -244,7 +261,7 @@ export const connectSsh = async (
   clearTimeout(readyTimer)
   if (error) {
     client.end()
-    throw tunnelError(refusal ?? sshErrorMessage(error))
+    throw tunnelError(refusal ?? sshErrorMessage(error, auth))
   }
   return client
 }

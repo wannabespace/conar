@@ -32,6 +32,9 @@ const scrollIntoView = (node: HTMLElement | null) =>
 
 const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
   password: 'Edit the password',
+  'ssh.keyPath': 'Edit the key file',
+  'ssh.passphrase': 'Edit the passphrase',
+  'ssh.privateKey': 'Edit the private key',
   user: 'Edit the user',
 }
 

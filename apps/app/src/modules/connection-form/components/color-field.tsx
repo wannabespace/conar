@@ -27,12 +27,12 @@ export const ColorField = ({ form }: { form: ConnectionForm }) => (
             <SwatchGroupItem value={NO_COLOR} aria-label="No color">
               <span className="ring-foreground/25 size-full rounded-full ring-1 ring-inset" />
             </SwatchGroupItem>
-            {COLOR_OPTIONS.map((option) => (
+            {COLOR_OPTIONS.map(({ label, value }) => (
               <SwatchGroupItem
-                key={option}
-                value={option}
-                aria-label={`Color ${option}`}
-                style={{ '--swatch': option } as CSSProperties}
+                key={value}
+                value={value}
+                aria-label={label}
+                style={{ '--swatch': value } as CSSProperties}
               >
                 <span className="size-full rounded-full bg-(--swatch)" />
               </SwatchGroupItem>

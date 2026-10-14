@@ -7,7 +7,11 @@ import {
   DEFAULT_PORTS,
 } from './connection-parts'
 import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
-import { SSH_DESKTOP_ONLY, SSH_TUNNEL_ERROR } from './ssh/params'
+import {
+  SSH_DESKTOP_ONLY,
+  SSH_KEY_ERRORS,
+  SSH_TUNNEL_ERROR,
+} from './ssh/params'
 import type { SslSetting } from './ssl/setting'
 import { sslOptionsOf } from './ssl/setting'
 
@@ -22,7 +26,12 @@ export interface ConnectionPatch {
 
 export interface Diagnosis {
   fix?: { label: string; patch: ConnectionPatch }
-  focus?: 'password' | 'user'
+  focus?:
+    | 'password'
+    | 'ssh.keyPath'
+    | 'ssh.passphrase'
+    | 'ssh.privateKey'
+    | 'user'
   hint: string
   title: string
 }
@@ -324,12 +333,34 @@ const RULES: {
   },
 ]
 
+const sshKeyFieldOf = (
+  hint: string,
+  { ssh }: ConnectionParts
+): Diagnosis['focus'] => {
+  if (hint === SSH_KEY_ERRORS.notAKey) {
+    return ssh?.auth === 'keyPath' ? 'ssh.keyPath' : 'ssh.privateKey'
+  }
+  if (hint === SSH_KEY_ERRORS.noFile || hint === SSH_KEY_ERRORS.fileMissing) {
+    return 'ssh.keyPath'
+  }
+  if (
+    hint === SSH_KEY_ERRORS.needsPassphrase ||
+    hint === SSH_KEY_ERRORS.wrongPassphrase
+  ) {
+    return 'ssh.passphrase'
+  }
+  return undefined
+}
+
 export const diagnoseConnectionError = (
   context: DiagnosisContext
 ): Diagnosis | null => {
   if (context.message.startsWith(SSH_TUNNEL_ERROR)) {
+    const hint = context.message.slice(SSH_TUNNEL_ERROR.length)
+    const focus = sshKeyFieldOf(hint, context.parts)
     return {
-      hint: context.message.slice(SSH_TUNNEL_ERROR.length),
+      ...(focus && { focus }),
+      hint,
       title: "Couldn't open the SSH tunnel",
     }
   }

@@ -19,7 +19,7 @@ test('a key ssh2 cannot parse fails as a tunnel error and arms no handshake time
         },
         () => Promise.resolve(false)
       )
-    ).rejects.toThrow("SSH tunnel: The SSH key couldn't be read")
+    ).rejects.toThrow("SSH tunnel: That isn't an SSH private key")
     jest.advanceTimersByTime(60_000)
     jest.useRealTimers()
     await Bun.sleep(10)

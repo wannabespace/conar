@@ -61,6 +61,7 @@ export const SshFields = ({
               <TextRow
                 {...row}
                 label="Host"
+                aria-label="SSH host"
                 name="ssh.host"
                 placeholder="bastion.example.com"
                 port={{
@@ -72,6 +73,7 @@ export const SshFields = ({
               <TextRow
                 {...row}
                 label="User"
+                aria-label="SSH user"
                 name="ssh.user"
                 placeholder="From ~/.ssh/config"
               />

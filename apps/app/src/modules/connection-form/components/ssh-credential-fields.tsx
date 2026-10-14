@@ -1,6 +1,11 @@
-import { FolderOpenIcon } from '@hugeicons/core-free-icons'
+import {
+  FolderOpenIcon,
+  ViewIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
 import type { SshAuth } from '@tamery/connection/ssh/params'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
+import { useState } from 'react'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { LoadFileButton } from './load-file-button'
@@ -16,13 +21,22 @@ export const SshCredentialFields = ({
   locked: (field: string) => boolean
 }) => {
   const row = { form, locked }
+  const [keyShown, setKeyShown] = useState(false)
 
   if (auth === 'agent') {
     return null
   }
 
   if (auth === 'password') {
-    return <TextRow {...row} label="Password" name="ssh.password" secret />
+    return (
+      <TextRow
+        {...row}
+        label="Password"
+        aria-label="SSH password"
+        name="ssh.password"
+        secret
+      />
+    )
   }
 
   return (
@@ -62,12 +76,19 @@ export const SshCredentialFields = ({
                 spellCheck={false}
                 autoComplete="off"
                 placeholder="Paste the key, or load it from a file"
-                className="max-h-24"
+                className={keyShown ? 'max-h-24' : 'text-masked max-h-24'}
                 disabled={locked(field.name)}
               >
                 <LoadFileButton
                   disabled={locked(field.name)}
                   onLoad={field.handleChange}
+                />
+                <IconButton
+                  variant="ghost-row"
+                  size="icon-sm"
+                  icon={keyShown ? ViewOffSlashIcon : ViewIcon}
+                  label={keyShown ? 'Hide key' : 'Show key'}
+                  onClick={() => setKeyShown((shown) => !shown)}
                 />
               </field.Textarea>
             </field.Field>

@@ -6,7 +6,7 @@ import type { ConnectionDetails } from '~/core/connection/save'
 import { useGoBack } from '~/hooks/use-go-back'
 
 export const useUpdateConnection = (connectionId: string) => {
-  const goBack = useGoBack()
+  const goBack = useGoBack({ ignoreBlocker: true })
 
   return useMutation({
     meta: { event: 'connection_updated' },

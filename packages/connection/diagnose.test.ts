@@ -5,7 +5,11 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ConnectionParts } from './connection-parts'
 import { diagnoseConnectionError } from './diagnose'
 import { diagnosisRequestOf } from './diagnosis-request'
-import { SSH_TUNNEL_ERROR } from './ssh/params'
+import {
+  EMPTY_SSH_TUNNEL,
+  SSH_KEY_ERRORS,
+  SSH_TUNNEL_ERROR,
+} from './ssh/params'
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: '',
@@ -35,6 +39,19 @@ describe('diagnoseConnectionError', () => {
       hint: message,
       title: "Couldn't open the SSH tunnel",
     })
+  })
+
+  it.each([
+    [SSH_KEY_ERRORS.noFile, 'keyPath', 'ssh.keyPath'],
+    [SSH_KEY_ERRORS.needsPassphrase, 'key', 'ssh.passphrase'],
+    [SSH_KEY_ERRORS.notAKey, 'key', 'ssh.privateKey'],
+    [SSH_KEY_ERRORS.notAKey, 'keyPath', 'ssh.keyPath'],
+  ] as const)('sends %s to the field at fault', (message, auth, field) => {
+    expect(
+      diagnose(`${SSH_TUNNEL_ERROR}${message}`, {
+        ssh: { ...EMPTY_SSH_TUNNEL, auth },
+      })?.focus
+    ).toBe(field)
   })
 
   it('reads a channel the bastion could not open as a database error', () => {

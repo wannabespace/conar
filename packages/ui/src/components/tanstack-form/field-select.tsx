@@ -33,6 +33,8 @@ export const FieldSelect = <Value extends string>({
     >
       <SelectTrigger
         id={field.name}
+        // The trigger is a div, which `<label for>` cannot name.
+        aria-labelledby={`${field.name}-label`}
         variant={variant}
         className={className}
         onBlur={field.handleBlur}

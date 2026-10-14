@@ -19,7 +19,7 @@ import { posthog } from '~/lib/posthog'
 import type { ConnectionFormValues } from '../lib/connection-form'
 import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
-import { lockedFieldOf } from '../lib/form-mode'
+import { lockedFieldOf, requiredSecretsOf } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import type { OnSave } from '../lib/use-test-then-save'
 import { useTestThenSave } from '../lib/use-test-then-save'
@@ -37,6 +37,7 @@ import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
+import { UnsavedChangesGuard } from './unsaved-changes-guard'
 
 const REVEAL: Variants = {
   animate: {
@@ -90,6 +91,7 @@ export const ConnectionPage = ({
       }))
     },
     onSubmit: () => save(form, filled?.origin),
+    requiredSecrets: requiredSecretsOf(mode),
   })
   // From the second attempt TanStack Form runs `onSubmit` even while one is in flight, so a press during a save is dropped here.
   const submit = () => {
@@ -170,6 +172,9 @@ export const ConnectionPage = ({
       className="relative flex h-full min-h-0 flex-col outline-none"
     >
       <DropOverlay shown={dragging} />
+      {scope === 'all' && mode.kind === 'edit' && (
+        <UnsavedChangesGuard form={form} />
+      )}
       <IconButton
         type="button"
         variant="ghost-row"

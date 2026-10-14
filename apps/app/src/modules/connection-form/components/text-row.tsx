@@ -17,7 +17,10 @@ export const TextRow = ({
   port,
   secret,
   ...input
-}: Pick<ComponentProps<'input'>, 'autoComplete' | 'placeholder'> & {
+}: Pick<
+  ComponentProps<'input'>,
+  'aria-label' | 'autoComplete' | 'placeholder'
+> & {
   /** The input's end slot; a `secret` row has none. */
   children?: ReactNode
   form: ConnectionForm

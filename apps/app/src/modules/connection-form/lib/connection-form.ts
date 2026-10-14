@@ -11,6 +11,7 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { type } from 'arktype'
+import { memoize } from 'memoza'
 import { useState } from 'react'
 
 import type { Connection } from '~/core/connection/sync'
@@ -62,14 +63,42 @@ const port = type(/^\d{0,5}$/u).configure({ message: 'Use a port number' })
 
 const connectionFormSchema = type({
   host: type(/\S/u).configure({ message: 'Enter the host' }),
+  password: 'string',
   port,
-  ssh: { host: 'string', port },
+  ssh: {
+    host: 'string',
+    passphrase: 'string',
+    password: 'string',
+    port,
+    privateKey: 'string',
+  },
   sshEnabled: 'boolean',
 }).narrow(
   (values, ctx) =>
     !values.sshEnabled ||
     /\S/u.test(values.ssh.host) ||
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
+)
+
+const SECRET_MESSAGES: Record<string, string> = {
+  password: 'Enter the password',
+  'ssh.passphrase': 'Enter the key passphrase',
+  'ssh.password': 'Enter the SSH password',
+  'ssh.privateKey': 'Paste the SSH private key',
+}
+
+const formSchemaOf = memoize((requiredSecrets: string[]) =>
+  connectionFormSchema.narrow((values, ctx) => {
+    const empty = requiredSecrets.filter((field) => {
+      const sshKey = field.replace(/^ssh\./u, '') as keyof typeof values.ssh
+      const value = field === 'password' ? values.password : values.ssh[sshKey]
+      return !/\S/u.test(value)
+    })
+    for (const field of empty) {
+      ctx.reject({ message: SECRET_MESSAGES[field], path: field.split('.') })
+    }
+    return empty.length === 0
+  })
 )
 
 export const formValuesOf = (
@@ -144,11 +173,14 @@ export const useConnectionForm = ({
   defaultValues,
   onFill,
   onSubmit,
+  requiredSecrets,
 }: {
   defaultValues?: ConnectionFormValues
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
+  requiredSecrets: string[]
 }) => {
+  const schema = formSchemaOf(requiredSecrets)
   const [initialValues, setInitialValues] = useState(
     () => defaultValues ?? { ...DEFAULT_VALUES, name: generateRandomName() }
   )
@@ -167,8 +199,8 @@ export const useConnectionForm = ({
       return onSubmit()
     },
     validators: {
-      onChange: connectionFormSchema,
-      onMount: connectionFormSchema,
+      onChange: schema,
+      onMount: schema,
     },
   })
 

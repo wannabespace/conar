@@ -36,14 +36,25 @@ export const editModeOf = (
   scope,
 })
 
+/** Under `credentials`, the fields holding what this device lacks; `null` leaves every field open. */
+const openFieldsOf = (mode: FormMode) =>
+  mode.kind === 'edit' && mode.scope === 'credentials'
+    ? [
+        ...(mode.passwordElsewhere ? ['password'] : []),
+        ...mode.missingSecrets.map((param) => SECRET_FIELDS[param]),
+      ]
+    : null
+
 /** Field names the form may not change: under `credentials`, everything but what this device lacks. */
 export const lockedFieldOf = (mode: FormMode) => {
-  if (mode.kind !== 'edit' || mode.scope !== 'credentials') {
+  const open = openFieldsOf(mode)
+  if (!open) {
     return () => false
   }
-  const open = new Set([
-    ...(mode.passwordElsewhere ? ['password'] : []),
-    ...mode.missingSecrets.map((param) => SECRET_FIELDS[param]),
-  ])
-  return (field: string) => !open.has(field)
+  const openSet = new Set(open)
+  return (field: string) => !openSet.has(field)
 }
+
+/** The secrets a credentials unlock must fill before it saves; an SSL key passphrase hides in Options, which is never empty. */
+export const requiredSecretsOf = (mode: FormMode) =>
+  (openFieldsOf(mode) ?? []).filter((field) => field !== 'options')
