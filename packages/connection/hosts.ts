@@ -66,6 +66,21 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['db.prisma.io'],
     type: ConnectionType.Postgres,
   },
+  {
+    label: 'Xata',
+    suffixes: ['.sql.xata.sh'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'Nile',
+    suffixes: ['db.thenile.dev'],
+    type: ConnectionType.Postgres,
+  },
+  {
+    label: 'Fly.io',
+    suffixes: ['.flympg.net'],
+    type: ConnectionType.Postgres,
+  },
   { label: 'Railway', suffixes: ['.railway.app', '.rlwy.net'] },
   { label: 'AWS RDS', suffixes: ['.rds.amazonaws.com'] },
   {
@@ -86,6 +101,11 @@ const HOST_HINTS: HostHint[] = [
   {
     label: 'SingleStore',
     suffixes: ['.svc.singlestore.com'],
+    type: ConnectionType.MySQL,
+  },
+  {
+    label: 'MariaDB SkySQL',
+    suffixes: ['.skysql.com'],
     type: ConnectionType.MySQL,
   },
   {
