@@ -20,6 +20,7 @@ export const PASTE_FORMATS =
   'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
+const CONNECTION_FIELD = 'host'
 const FLASH_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
@@ -85,23 +86,22 @@ export const usePasteConnection = ({
   const onPasteEvent = useEffectEvent((event: ClipboardEvent) => {
     const text = event.clipboardData?.getData('text') ?? ''
     const { target } = event
-    // Passwords and private keys can look like anything, so a paste into them is never parsed.
-    if (
-      !text ||
+    const field =
+      target instanceof HTMLInputElement ||
       target instanceof HTMLTextAreaElement ||
-      (target instanceof HTMLInputElement && target.type === 'password')
-    ) {
+      (target instanceof HTMLElement && target.isContentEditable)
+        ? target
+        : null
+    // Only Host reads a pasted connection; any other field keeps the text, so a string can be trimmed down to the part it needs (a password, a database).
+    if (!text || (field && field.id !== CONNECTION_FIELD)) {
       return
     }
-    if (
-      !(target instanceof HTMLInputElement) &&
-      !(target instanceof HTMLElement && target.isContentEditable)
-    ) {
+    if (!field) {
       event.preventDefault()
       read(text, 'paste')
       return
     }
-    // Inside a field only a whole connection parses, so a bare host or a name still pastes as text.
+    // In Host only a whole connection parses, so a bare host still pastes as text.
     const guess = guessConnection(text)
     if (
       guess &&
