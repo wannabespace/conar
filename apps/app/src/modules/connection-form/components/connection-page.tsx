@@ -14,6 +14,7 @@ import {
 import { useSelector } from '@tanstack/react-form'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
@@ -41,12 +42,9 @@ import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
 
-// Defers to the next tick so a field the same update reveals has mounted.
+// Field ids hold dots (`ssh.host`), which a bare `#id` selector reads as a class.
 const focusField = (id: string) =>
-  setTimeout(
-    () => document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus(),
-    0
-  )
+  document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus()
 
 export const ConnectionPage = ({
   defaultValues,
@@ -72,13 +70,8 @@ export const ConnectionPage = ({
       goBack()
     }
   }
-  // A focused control that unmounts (a fix button, Ask AI) drops focus to body, where the page's keys no longer reach.
-  const keepFocusInPage = () =>
-    setTimeout(() => {
-      if (document.activeElement === document.body) {
-        pageRef.current?.focus()
-      }
-    }, 0)
+  // A button that disappears once pressed (a fix, Ask AI) hands focus to the page first: on body the page's keys no longer reach.
+  const focusPage = () => pageRef.current?.focus()
   const { draftOf, runTest, save, testError } = useSaveConnection(mode, persist)
   const locked = lockedFieldOf(mode)
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
@@ -106,7 +99,10 @@ export const ConnectionPage = ({
         return
       }
       paste(guess, via)
-      setStage('form')
+      // The agent panel holds no fields: render the form before focusing one.
+      if (stage === 'agent') {
+        flushSync(() => setStage('form'))
+      }
       const [missing] = missingOf(form.state.values)
       if (missing) {
         focusField(missing)
@@ -127,12 +123,13 @@ export const ConnectionPage = ({
         .join(','),
       source,
     })
-    patch(fix)
     if (fix.sshEnabled) {
+      flushSync(() => patch(fix))
       focusField('ssh.host')
       return
     }
-    keepFocusInPage()
+    patch(fix)
+    focusPage()
     void runTest(form.state.values)
   }
 
@@ -233,7 +230,7 @@ export const ConnectionPage = ({
                     key={testError.message}
                     error={testError}
                     parts={partsOf(values)}
-                    onAnswer={keepFocusInPage}
+                    onAsk={focusPage}
                     onFix={applyFix}
                     onFocus={(field) => {
                       posthog.capture('connection_fix_focused', { field })

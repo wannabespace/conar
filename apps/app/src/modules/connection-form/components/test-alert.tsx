@@ -39,14 +39,14 @@ const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
 
 export const TestAlert = ({
   error,
-  onAnswer,
+  onAsk,
   onFix,
   onFocus,
   parts,
 }: {
   error: Error
-  /** Ask AI unmounts once its answer lands, so focus has to go somewhere. */
-  onAnswer: () => void
+  /** Ask AI disables itself and then unmounts, so focus has to go somewhere. */
+  onAsk: () => void
   onFix: (patch: ConnectionPatch, source: FixSource) => void
   onFocus: (field: NonNullable<Diagnosis['focus']>) => void
   parts: ConnectionParts
@@ -149,11 +149,10 @@ export const TestAlert = ({
                         variant="ghost"
                         size="xs"
                         disabled={ask.isPending}
-                        onClick={() =>
-                          ask.mutate(diagnosisRequestOf(context), {
-                            onSuccess: onAnswer,
-                          })
-                        }
+                        onClick={() => {
+                          onAsk()
+                          ask.mutate(diagnosisRequestOf(context))
+                        }}
                       >
                         <LoadingContent loading={ask.isPending}>
                           <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />
