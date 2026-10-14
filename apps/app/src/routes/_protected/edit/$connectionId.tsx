@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { needsLocalDetails } from '~/core/connection/fetching'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
-import { editModeOf } from '~/modules/connection-form/lib/use-save-connection'
+import { editModeOf } from '~/modules/connection-form/lib/form-mode'
 
 import { useUpdateConnection } from './-lib/use-update-connection'
 

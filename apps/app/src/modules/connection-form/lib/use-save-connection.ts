@@ -1,71 +1,23 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
-import type { SecretParam } from '@tamery/connection/secrets'
-import { connectionSecrets } from '@tamery/connection/secrets'
+import { describeConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { tryCatch, tryCatchAsync } from '@tamery/shared/utils'
 import type { MutationStatus } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
-import type { ConnectionString } from '~/core/connection/connection-strings'
 import { fetchingConfig } from '~/core/connection/fetching-config'
 import type { updateConnection } from '~/core/connection/save'
-import type { Connection } from '~/core/connection/sync'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { generateRandomName } from '~/utils/faker'
 
 import type { ConnectionForm, ConnectionFormValues } from './connection-form'
 import { partsOf } from './connection-form'
-
-export type FormMode =
-  | { kind: 'create' }
-  | {
-      kind: 'edit'
-      name: string
-      /** The saved connection has a password this device never held, so an empty field still needs one. */
-      passwordElsewhere: boolean
-      missingSecrets: SecretParam[]
-      /** `credentials` opens only what this device lacks, `details` the server details a metadata-only connection never syncs; neither touches the synced row. */
-      scope: 'all' | 'credentials' | 'details'
-    }
-
-const SECRET_FIELDS: Record<SecretParam, string> = {
-  ssh_key: 'ssh.privateKey',
-  ssh_passphrase: 'ssh.passphrase',
-  ssh_password: 'ssh.password',
-  sslpassphrase: 'options',
-  sslpassword: 'options',
-}
-
-export const editModeOf = (
-  connection: Pick<Connection, 'isPasswordExists' | 'name'>,
-  stored: ConnectionString | undefined,
-  scope: Extract<FormMode, { kind: 'edit' }>['scope']
-): FormMode => ({
-  kind: 'edit',
-  missingSecrets: stored?.missingSecrets ?? [],
-  name: connection.name,
-  passwordElsewhere:
-    connection.isPasswordExists && !stored?.isPasswordPopulated,
-  scope,
-})
-
-/** Field names the form may not change: under `credentials`, everything but what this device lacks. */
-export const lockedFieldOf = (mode: FormMode) => {
-  if (mode.kind !== 'edit' || mode.scope !== 'credentials') {
-    return () => false
-  }
-  const open = new Set([
-    ...(mode.passwordElsewhere ? ['password'] : []),
-    ...mode.missingSecrets.map((param) => SECRET_FIELDS[param]),
-  ])
-  return (field: string) => !open.has(field)
-}
+import type { FormMode } from './form-mode'
 
 export type SavedConnection = Parameters<typeof updateConnection>[1]
 
@@ -99,23 +51,22 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
           mode.kind === 'edit' ? mode.missingSecrets : []
         )
       ).data ?? ''
-    const saved = mode.kind === 'edit' && connectionString ? mode : null
-    const hasPassword = !!connectionString && !!values.password
+    const described = tryCatch(() =>
+      describeConnectionString(connectionString)
+    ).data
+    const editing = described && mode.kind === 'edit' ? mode : null
     const { canSend, reason } = fetchingConfig(
       {
-        isPasswordExists: hasPassword || !!saved?.passwordElsewhere,
+        isPasswordExists:
+          !!described?.isPasswordPopulated || !!editing?.passwordElsewhere,
         syncType: values.syncType,
       },
       {
         connectionString: {
-          displayUrl:
-            tryCatch(() => new SafeURL(connectionString).host).data ?? '',
-          isPasswordPopulated: hasPassword,
-          missingSecrets: saved
-            ? connectionSecrets.missing(
-                new SafeURL(connectionString).searchParams
-              )
-            : [],
+          displayUrl: described?.displayUrl ?? '',
+          isPasswordPopulated: !!described?.isPasswordPopulated,
+          missingSecrets: (editing && described?.missingSecrets) || [],
+          // The form's own switch, not the string: a tunnel with no host yet must still stop the test.
           usesSsh: values.sshEnabled,
         },
         isLocalProxyAvailable,
@@ -168,14 +119,11 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
     }
     const { values } = form.state
     const { connectionString } = draft
-    if (!connectionString) {
-      toast.error("Couldn't save the connection", {
-        description: "The host isn't a valid address.",
-      })
-      return
-    }
-    const { error } = await tryCatchAsync(() =>
-      persist(
+    const { error } = await tryCatchAsync(() => {
+      if (!connectionString) {
+        throw new Error("The host isn't a valid address.")
+      }
+      return persist(
         {
           color: values.color,
           connectionString,
@@ -189,7 +137,7 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
           syncType: values.syncType,
         }
       )
-    )
+    })
     if (error) {
       toast.error("Couldn't save the connection", {
         description: error.message,

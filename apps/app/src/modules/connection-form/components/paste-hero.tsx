@@ -15,9 +15,9 @@ import { useEffect } from 'react'
 
 import { isMac } from '~/lib/os'
 
+import type { FormMode } from '../lib/form-mode'
 import type { PasteFlash } from '../lib/use-paste-connection'
 import { PASTE_FORMATS } from '../lib/use-paste-connection'
-import type { FormMode } from '../lib/use-save-connection'
 import { AgentButton } from './agent-button'
 import { Keycap } from './keycap'
 

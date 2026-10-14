@@ -5,7 +5,7 @@ import { useCollections } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
-import { editModeOf } from '~/modules/connection-form/lib/use-save-connection'
+import { editModeOf } from '~/modules/connection-form/lib/form-mode'
 
 export const UnlockForm = ({
   connection,
