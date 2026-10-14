@@ -150,3 +150,12 @@ export const handleAggregateError = <T extends AnyFunction>(fn: T): T =>
       throw error
     }
   }) as T
+
+/** A raw `%` (`100%`) reads as typed instead of throwing. */
+export const decodeURIComponentOrRaw = (component: string) =>
+  tryCatch(() => decodeURIComponent(component)).data ?? component
+
+export const lowercaseKeys = (searchParams: URLSearchParams) =>
+  new URLSearchParams(
+    Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
+  )

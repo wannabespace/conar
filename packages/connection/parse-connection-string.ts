@@ -1,8 +1,5 @@
-import {
-  decodeURIComponentOrRaw,
-  lowercaseKeys,
-  SafeURL,
-} from '@tamery/shared/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { decodeURIComponentOrRaw, lowercaseKeys } from '@tamery/shared/utils'
 
 export interface Config {
   user?: string

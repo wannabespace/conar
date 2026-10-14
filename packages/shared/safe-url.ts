@@ -1,5 +1,3 @@
-import { tryCatch } from './utils'
-
 const authRegex =
   /^(?<protocol>[^:]+):\/\/(?<user>[^:]*)(?::(?<password>.*))?$/u
 /** A `?key=` after `[credentials@]host[:port][/path]` opens the query, so an `@` past it (Azure's `?user=admin@server`) separates no credentials, unless an address with a path follows that `@`: then the `?` sat in a raw password (`u:123/x?k=v@host/db`). */
@@ -148,12 +146,3 @@ export class SafeURL implements URL {
     return this.href
   }
 }
-
-/** A raw `%` (`100%`) reads as typed instead of throwing. */
-export const decodeURIComponentOrRaw = (component: string) =>
-  tryCatch(() => decodeURIComponent(component)).data ?? component
-
-export const lowercaseKeys = (searchParams: URLSearchParams) =>
-  new URLSearchParams(
-    Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
-  )

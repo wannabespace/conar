@@ -1,4 +1,5 @@
-import { lowercaseKeys, SafeURL } from '@tamery/shared/safe-url'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { lowercaseKeys } from '@tamery/shared/utils'
 
 import { SSH_PARAMS } from './ssh/params'
 
