@@ -19,7 +19,7 @@ const EditConnectionPage = () => {
     <ConnectionPage
       defaultValues={defaultValues}
       mode={mode}
-      persist={(saved) => mutateAsync(saved)}
+      onSave={(saved) => mutateAsync(saved)}
     />
   )
 }

@@ -48,7 +48,7 @@ export const UnlockForm = ({
         connectionStringsCollection.get(connection.id),
         scope
       )}
-      persist={(saved) => mutateAsync(saved)}
+      onSave={(saved) => mutateAsync(saved)}
     />
   )
 }

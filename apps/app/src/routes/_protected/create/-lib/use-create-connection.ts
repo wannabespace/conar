@@ -7,9 +7,9 @@ import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { createConnection } from '~/core/connection/save'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { posthog } from '~/lib/posthog'
-import type { Persist } from '~/modules/connection-form/lib/use-save-connection'
+import type { OnSave } from '~/modules/connection-form/lib/use-test-then-save'
 
-export const useCreateConnection = (): Persist => {
+export const useCreateConnection = (): OnSave => {
   const collections = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const router = useRouter()

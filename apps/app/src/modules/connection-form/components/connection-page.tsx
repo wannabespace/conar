@@ -26,8 +26,8 @@ import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
 import { lockedFieldOf } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
-import type { Persist } from '../lib/use-save-connection'
-import { useSaveConnection } from '../lib/use-save-connection'
+import type { OnSave } from '../lib/use-test-then-save'
+import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
@@ -51,11 +51,11 @@ const focusField = (id: string) =>
 export const ConnectionPage = ({
   defaultValues,
   mode,
-  persist,
+  onSave,
 }: {
   defaultValues?: ConnectionFormValues
   mode: FormMode
-  persist: Persist
+  onSave: OnSave
 }) => {
   const goBack = useGoBack()
   const [filled, setFilled] = useState<{
@@ -74,7 +74,7 @@ export const ConnectionPage = ({
   }
   // A button that disappears once pressed (a fix, Ask AI) hands focus to the page first: on body the page's keys no longer reach.
   const focusPage = () => pageRef.current?.focus()
-  const { draftOf, runTest, save, testError } = useSaveConnection(mode, persist)
+  const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
   const locked = lockedFieldOf(mode)
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
 

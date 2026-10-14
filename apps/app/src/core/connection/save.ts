@@ -8,7 +8,7 @@ import { ensureResource } from '~/core/connection/resources'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 
-interface ConnectionDetails {
+export interface ConnectionDetails {
   color?: string | null
   connectionString: string
   label?: string | null
