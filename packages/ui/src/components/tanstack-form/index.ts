@@ -47,19 +47,6 @@ const revealErrors = (form: AnyFormApi) => {
 export const useAppForm: typeof useKitForm = (options) =>
   useKitForm({
     ...options,
-    listeners: {
-      ...options.listeners,
-      // Leaving a field nobody edited is not a fault until the first submit, which blurs every field. Unblurring is the only way to defer the mark: a field re-renders on its own meta, never on the form's `submissionAttempts`.
-      onBlur: (props) => {
-        options.listeners?.onBlur?.(props)
-        if (
-          !props.fieldApi.state.meta.isDirty &&
-          props.formApi.state.submissionAttempts === 0
-        ) {
-          props.fieldApi.setMeta((meta) => ({ ...meta, isBlurred: false }))
-        }
-      },
-    },
     onSubmitInvalid: (props) => {
       revealErrors(props.formApi)
       options.onSubmitInvalid?.(props)
