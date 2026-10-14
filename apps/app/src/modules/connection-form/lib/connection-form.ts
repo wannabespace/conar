@@ -11,9 +11,11 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { type } from 'arktype'
+import { useState } from 'react'
 
 import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
+import { generateRandomName } from '~/utils/faker'
 
 import type { PasteVia } from './use-paste-connection'
 
@@ -138,7 +140,7 @@ const expandHost = (
 }
 
 export const useConnectionForm = ({
-  defaultValues = DEFAULT_VALUES,
+  defaultValues,
   onFill,
   onSubmit,
 }: {
@@ -146,8 +148,12 @@ export const useConnectionForm = ({
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
 }) => {
+  const [initialValues, setInitialValues] = useState(
+    () => defaultValues ?? { ...DEFAULT_VALUES, name: generateRandomName() }
+  )
+  void setInitialValues
   const form = useAppForm({
-    defaultValues,
+    defaultValues: initialValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
         if (fieldApi.name === 'host') {

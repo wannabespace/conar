@@ -1,6 +1,5 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
-import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
@@ -144,10 +143,7 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
           color: values.color,
           connectionString,
           label: values.label.trim() || null,
-          name:
-            values.name.trim() ||
-            suggestConnectionName(values) ||
-            generateRandomName(),
+          name: values.name.trim() || generateRandomName(),
           type: values.type,
         },
         {
