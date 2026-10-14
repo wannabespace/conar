@@ -16,7 +16,7 @@ export const PaneEmpty = ({
   title,
 }: {
   children?: ReactNode
-  description: string
+  description: ReactNode
   icon: IconSvgElement
   title: string
 }) => (

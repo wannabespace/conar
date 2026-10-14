@@ -2,11 +2,9 @@ import { Alert02Icon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnose'
-import {
-  diagnoseConnectionError,
-  sslOptionsOf,
-} from '@tamery/connection/diagnose'
+import { diagnoseConnectionError } from '@tamery/connection/diagnose'
 import { diagnosisRequestOf } from '@tamery/connection/diagnosis-request'
+import { sslOptionsOf } from '@tamery/connection/ssl/setting'
 import {
   Alert,
   AlertDescription,

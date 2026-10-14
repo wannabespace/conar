@@ -6,30 +6,28 @@ import {
   ResizableSeparator,
   ResizablePanel,
 } from '@tamery/ui/components/custom/resizable'
-import { eq, useLiveQuery } from '@tanstack/react-db'
 import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
-  useRouter,
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { PaneEmpty } from '~/components/pane-empty'
-import { useCollections } from '~/core/collections'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
-  needsLocalDetails,
 } from '~/core/connection/fetching'
+import { FetchingReason } from '~/core/connection/fetching-reason'
 import {
   lastOpenedResourcesStorageValue,
   MAX_REMEMBERED_RESOURCES,
 } from '~/core/connection/last-opened-resources'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { workspaceSelection } from '~/core/workspace/utils'
+import { useGoBack } from '~/hooks/use-go-back'
 import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
 import { chatPanel } from '~/modules/chat/panel'
@@ -97,7 +95,7 @@ const RegionPanel = ({
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
-  const router = useRouter()
+  const goBack = useGoBack()
 
   useShellLayout(connectionResource.id)
 
@@ -114,15 +112,7 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
-  const { connectionStringsCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection.id))
-        .findOne(),
-  })
-  const needsDetails = needsLocalDetails(connection, connectionString)
+  const needsDetails = fetching.type === 'waiting-for-details'
   const locked = fetching.type === 'waiting-for-password' || needsDetails
 
   useShortcut(
@@ -152,9 +142,9 @@ const ResourcePage = () => {
         <PaneEmpty
           icon={UnavailableIcon}
           title="Can't open this connection here"
-          description={fetching.reason}
+          description={<FetchingReason reason={fetching.reason} />}
         >
-          <Button variant="outline" onClick={() => router.history.back()}>
+          <Button variant="outline" onClick={goBack}>
             Back
           </Button>
         </PaneEmpty>

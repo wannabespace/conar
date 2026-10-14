@@ -76,10 +76,11 @@ describe('guessConnection — ADO.NET', () => {
     expect(guess?.parts).toStrictEqual(parts)
   })
 
-  it('leaves the engine open without SQL Server keys', () => {
+  it('reads Npgsql as no particular engine, not SQL Server', () => {
     expect(
-      guessConnection('Host=pg.mycorp.com;Database=app;Username=u;Password=p')
-        ?.parts.type
+      guessConnection(
+        'Host=db.acme.io;Username=me;Trust Server Certificate=true'
+      )?.parts.type
     ).toBeUndefined()
   })
 })

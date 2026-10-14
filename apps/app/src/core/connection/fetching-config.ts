@@ -1,5 +1,4 @@
 import { isInternalHost } from '@tamery/connection/hosts'
-import type { SecretParam } from '@tamery/connection/secrets'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
@@ -12,27 +11,26 @@ type FetchingType =
   | 'local'
   | 'proxy'
   | 'resolving-password'
+  | 'waiting-for-details'
   | 'waiting-for-password'
-
-export type Credential = 'password' | SecretParam
 
 export interface FetchingConfig {
   type: FetchingType
   canSend: boolean
-  missingCredentials: Credential[]
   reason: string | null
 }
 
 type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
-type FetchingConnectionString = Pick<
-  ConnectionString,
-  'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
->
-
 interface FetchingOptions {
   /** `undefined` while the row loads leaves the password unresolved. */
-  connectionString: FetchingConnectionString | null | undefined
+  connectionString:
+    | Pick<
+        ConnectionString,
+        'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
+      >
+    | null
+    | undefined
   isLocalProxyAvailable?: boolean
   proxy?: { enabled: boolean; url: string | null }
 }
@@ -62,7 +60,6 @@ const REASONS = {
 
 const allowed = (type: FetchingType): FetchingConfig => ({
   canSend: true,
-  missingCredentials: [],
   reason: null,
   type,
 })
@@ -72,7 +69,6 @@ const blocked = (
   reason: string | null = null
 ): FetchingConfig => ({
   canSend: false,
-  missingCredentials: [],
   reason,
   type,
 })
@@ -123,7 +119,7 @@ export const fetchingConfig = (
   } = resolveFlags(connection, options)
 
   if (connectionStringMissing) {
-    return blocked('local', REASONS.connectionStringNotStored)
+    return blocked('waiting-for-details', REASONS.connectionStringNotStored)
   }
 
   if (usesSsh && !isElectron) {
@@ -134,18 +130,17 @@ export const fetchingConfig = (
     return blocked('resolving-password')
   }
 
-  const missingCredentials: Credential[] = [
-    ...(needsPassword ? (['password'] as const) : []),
-    ...missingSecrets,
-  ]
-  if (missingCredentials.length > 0) {
-    let reason = REASONS.secretsMissing
-    if (needsPassword) {
-      reason = isElectron
+  if (needsPassword) {
+    return blocked(
+      'waiting-for-password',
+      isElectron
         ? REASONS.passwordMissingInDesktop
         : REASONS.passwordMissingInWeb
-    }
-    return { ...blocked('waiting-for-password', reason), missingCredentials }
+    )
+  }
+
+  if (missingSecrets.length > 0) {
+    return blocked('waiting-for-password', REASONS.secretsMissing)
   }
 
   if (usesSsh) {

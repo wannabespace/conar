@@ -83,22 +83,17 @@ export const connectionLinks = {
   },
 }
 
-const claimUnownedSchemes = () => {
-  if (store.get('declined')) {
-    return
-  }
-  for (const scheme of CONNECTION_LINK_SCHEMES) {
-    if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
-      app.setAsDefaultProtocolClient(scheme, handlerPath, handlerArgs)
-    }
-  }
-}
-
 export const setupProtocolHandler = (openWindow: () => BrowserWindow) => {
   createWindow = openWindow
 
   app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, handlerPath, handlerArgs)
-  claimUnownedSchemes()
+  if (!store.get('declined')) {
+    for (const scheme of CONNECTION_LINK_SCHEMES) {
+      if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
+        app.setAsDefaultProtocolClient(scheme, handlerPath, handlerArgs)
+      }
+    }
+  }
 
   const gotTheLock = app.requestSingleInstanceLock()
 

@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useSelector } from '@tanstack/react-form'
+import type { Variants } from 'motion/react'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
@@ -37,12 +38,20 @@ import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
 import { PasteNotes } from './paste-notes'
-import { Reveal } from './reveal'
 import { ServerFields } from './server-fields'
 import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
+
+const REVEAL: Variants = {
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.25, ease: [0.32, 0.72, 0, 1] },
+    y: 0,
+  },
+  initial: { opacity: 0, y: 8 },
+}
 
 // Field ids hold dots (`ssh.host`), which a bare `#id` selector reads as a class.
 const focusField = (id: string) =>
@@ -96,10 +105,8 @@ export const ConnectionPage = ({
   }
 
   const { dragging, flash, readClipboard } = usePasteConnection({
+    enabled: scope !== 'credentials',
     onPaste: (guess, via) => {
-      if (scope === 'credentials') {
-        return
-      }
       paste(guess, via)
       // The agent panel holds no fields: render the form before focusing one.
       if (stage === 'agent') {
@@ -110,7 +117,7 @@ export const ConnectionPage = ({
         focusField(missing)
       }
     },
-    pitchShown: stage === 'form' && scope !== 'credentials',
+    pitchShown: stage === 'form',
   })
 
   const values = useSelector(form.store, (state) => state.values)
@@ -168,7 +175,7 @@ export const ConnectionPage = ({
       tabIndex={-1}
       className="relative flex h-full min-h-0 flex-col outline-none"
     >
-      <DropOverlay shown={dragging && scope !== 'credentials'} />
+      <DropOverlay shown={dragging} />
       <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
         <TooltipTrigger
           render={
@@ -210,22 +217,22 @@ export const ConnectionPage = ({
                   />
                 }
               >
-                <Reveal>
+                <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                   <ServerFields form={form} locked={locked} />
                   {filled && <PasteNotes fixes={filled.fixes} form={form} />}
-                </Reveal>
-                <Reveal>
+                </motion.div>
+                <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                   <SshFields form={form} locked={locked} />
-                </Reveal>
+                </motion.div>
                 {scope === 'all' && (
-                  <Reveal>
+                  <motion.div variants={REVEAL}>
                     <FieldGroup variant="card">
                       <NameField form={form} />
                       <LabelField form={form} />
                       <ColorField form={form} />
                       {mode.kind === 'create' && <SyncField form={form} />}
                     </FieldGroup>
-                  </Reveal>
+                  </motion.div>
                 )}
                 {testStatus === 'error' && testError && (
                   <TestAlert

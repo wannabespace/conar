@@ -1,4 +1,3 @@
-import { os } from '@orpc/server'
 import type { MeteredFeature } from '@tamery/shared/usage'
 import { FREE_WEEKLY_LIMITS, usageResetsAt } from '@tamery/shared/usage'
 
@@ -32,17 +31,6 @@ export const usage = {
           feature,
           Number(await redis.get(keyOf(user.id, feature, usageResetsAt())))
         ),
-  limitMiddleware: (feature: MeteredFeature, message: string) =>
-    os
-      .$context<UsageContext>()
-      .errors({ FORBIDDEN: { message } })
-      .middleware(async ({ context, errors, next }) => {
-        const quota = await usage.get(context, feature)
-        if (quota && quota.used >= quota.max) {
-          throw errors.FORBIDDEN()
-        }
-        return next()
-      }),
   record: async (
     { permissions, user }: UsageContext,
     feature: MeteredFeature

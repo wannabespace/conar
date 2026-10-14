@@ -1,10 +1,10 @@
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { title } from '@tamery/shared/title'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-import { needsLocalDetails } from '~/core/connection/fetching'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
 import { editModeOf } from '~/modules/connection-form/lib/form-mode'
@@ -36,7 +36,10 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     const { data: connectionString } = await tryCatchAsync(() =>
       collections.connectionStringsCollection.utils.decrypt(connection.id)
     )
-    if (connectionString === null && !needsLocalDetails(connection, null)) {
+    if (
+      connectionString === null &&
+      connection.syncType !== SyncType.CloudWithoutConnectionString
+    ) {
       toast.error(`Couldn't edit ${connection.name}`, {
         description: 'Its server details aren’t on this device.',
       })

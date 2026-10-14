@@ -10,9 +10,9 @@ import { useSelector } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
-import { HostRow, TextRow } from './field-rows'
 import { Footnote } from './footnote'
 import { SshCredentialFields } from './ssh-credential-fields'
+import { TextRow } from './text-row'
 
 const AUTH_LABELS: Record<SshAuth, string> = {
   agent: 'ssh-agent',
@@ -58,14 +58,16 @@ export const SshFields = ({
         <AnimatePresence initial={false}>
           {enabled && (
             <MotionCollapse key="ssh">
-              <HostRow
+              <TextRow
                 {...row}
                 label="Host"
                 name="ssh.host"
                 placeholder="bastion.example.com"
-                portLabel="SSH port"
-                portName="ssh.port"
-                portPlaceholder={String(DEFAULT_SSH_PORT)}
+                port={{
+                  label: 'SSH port',
+                  name: 'ssh.port',
+                  placeholder: String(DEFAULT_SSH_PORT),
+                }}
               />
               <TextRow
                 {...row}

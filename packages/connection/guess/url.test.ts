@@ -110,7 +110,6 @@ describe('guessConnection — URLs', () => {
   it.each([
     ['its HTTP port', 'http://localhost:8123'],
     ['a ClickHouse Cloud host', 'https://abc.eu-west-1.aws.clickhouse.cloud'],
-    ['a ClickHouse variable', 'CLICKHOUSE_URL=https://ch.acme.io'],
   ])('reads a web URL as ClickHouse by %s', (_, text) => {
     expect(guessConnection(text)?.parts.type).toBe(ConnectionType.ClickHouse)
   })

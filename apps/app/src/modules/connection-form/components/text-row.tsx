@@ -8,29 +8,23 @@ import type {
 
 type FieldName = DeepKeys<ConnectionFormValues>
 
-interface RowProps extends Pick<
-  ComponentProps<'input'>,
-  'autoComplete' | 'placeholder'
-> {
-  form: ConnectionForm
-  label: string
-  locked: (field: string) => boolean
-  name: FieldName
-}
-
 export const TextRow = ({
-  after,
   children,
   form,
   label,
   locked,
   name,
+  port,
   secret,
   ...input
-}: RowProps & {
-  after?: ReactNode
+}: Pick<ComponentProps<'input'>, 'autoComplete' | 'placeholder'> & {
   /** The input's end slot; a `secret` row has none. */
   children?: ReactNode
+  form: ConnectionForm
+  label: string
+  locked: (field: string) => boolean
+  name: FieldName
+  port?: { label: string; name: FieldName; placeholder: string }
   secret?: boolean
 }) => (
   <form.AppField name={name}>
@@ -57,43 +51,27 @@ export const TextRow = ({
             {children}
           </field.Input>
         )}
-        {after}
+        {port && (
+          <>
+            <span className="text-muted-foreground">:</span>
+            <form.AppField name={port.name}>
+              {(portField) => (
+                <div className="w-20 shrink-0">
+                  <portField.Input
+                    variant="inset"
+                    aria-label={port.label}
+                    data-mask
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder={port.placeholder}
+                    disabled={locked(port.name)}
+                  />
+                </div>
+              )}
+            </form.AppField>
+          </>
+        )}
       </field.Field>
     )}
   </form.AppField>
-)
-
-export const HostRow = ({
-  portLabel,
-  portName,
-  portPlaceholder,
-  ...row
-}: RowProps & {
-  portLabel: string
-  portName: FieldName
-  portPlaceholder: string
-}) => (
-  <TextRow
-    {...row}
-    after={
-      <>
-        <span className="text-muted-foreground">:</span>
-        <row.form.AppField name={portName}>
-          {(field) => (
-            <div className="w-20 shrink-0">
-              <field.Input
-                variant="inset"
-                aria-label={portLabel}
-                data-mask
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder={portPlaceholder}
-                disabled={row.locked(portName)}
-              />
-            </div>
-          )}
-        </row.form.AppField>
-      </>
-    }
-  />
 )

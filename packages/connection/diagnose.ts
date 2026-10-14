@@ -5,12 +5,11 @@ import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
   DEFAULT_PORTS,
-  mergeOptions,
 } from './connection-parts'
 import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
 import { SSH_DESKTOP_ONLY, SSH_TUNNEL_ERROR } from './ssh/params'
-import { TLS_PARAMS as MYSQL_TLS_PARAMS } from './ssl/mysql'
-import { TLS_PARAMS as PG_TLS_PARAMS } from './ssl/pg'
+import type { SslSetting } from './ssl/setting'
+import { sslOptionsOf } from './ssl/setting'
 
 export interface ConnectionPatch {
   database?: string
@@ -32,46 +31,6 @@ export interface DiagnosisContext {
   desktop: boolean
   message: string
   parts: ConnectionParts
-}
-
-export type SslSetting = 'off' | 'on' | 'unverified'
-
-// Sync with the options `ssl/<engine>.ts` parses.
-const SSL_OPTIONS: Partial<
-  Record<ConnectionType, Partial<Record<SslSetting, string>>>
-> = {
-  [ConnectionType.MSSQL]: {
-    off: 'encrypt=false',
-    on: 'encrypt=true',
-    unverified: 'trustservercertificate=true',
-  },
-  [ConnectionType.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
-  [ConnectionType.Postgres]: {
-    off: 'sslmode=disable',
-    on: 'sslmode=require',
-    unverified: 'sslmode=no-verify',
-  },
-}
-
-// The drivers refuse SSL off beside any of these.
-const TLS_PARAMS: Partial<Record<ConnectionType, string[]>> = {
-  [ConnectionType.MySQL]: MYSQL_TLS_PARAMS,
-  [ConnectionType.Postgres]: PG_TLS_PARAMS,
-}
-
-export const sslOptionsOf = (
-  { options, type }: Pick<ConnectionParts, 'options' | 'type'>,
-  setting: SslSetting
-) => {
-  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
-  if (!type || !option) {
-    return
-  }
-  const dropped = setting === 'off' ? (TLS_PARAMS[type] ?? []) : []
-  const kept = [...new URLSearchParams(options)].filter(
-    ([key]) => !dropped.includes(key.toLowerCase())
-  )
-  return mergeOptions(new URLSearchParams(kept).toString(), option)
 }
 
 const sslFix = (

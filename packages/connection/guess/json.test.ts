@@ -94,7 +94,7 @@ describe('guessConnection — JSON', () => {
       guessConnection(`module.exports = {
   client: 'pg',
   // primary
-  connection: { host: 'db.acme.io', port: 5432, user: 'me', password: process.env.DB_PASSWORD, database: 'app' },
+  connection: { host: process.env.DB_HOST || 'db.acme.io', port: 5432, user: 'me', password: process.env.DB_PASSWORD, database: 'app' },
 };`)?.parts
     ).toStrictEqual({
       database: 'app',

@@ -93,19 +93,13 @@ export const guessAdo = (text: string): DatabaseGuess | null => {
   if (!parts.host) {
     return null
   }
-  const driverType = TYPE_OF_ODBC_DRIVER.find(([driver]) =>
-    driver.test(pairs.get('driver') ?? '')
-  )?.[1]
-  if (driverType) {
-    return { format: 'ado', parts: { ...parts, type: driverType } }
-  }
   const has = (keys: string[]) => keys.some((key) => pairs.has(key))
-  if (has(MYSQL_KEYS)) {
-    return { format: 'ado', parts: { ...parts, type: ConnectionType.MySQL } }
-  }
-  // SQL Server has no `Host` key, and Npgsql shares `Trust Server Certificate`.
-  if (has(MSSQL_KEYS) && !pairs.has('host')) {
-    return { format: 'ado', parts: { ...parts, type: ConnectionType.MSSQL } }
-  }
-  return { format: 'ado', parts }
+  const type =
+    TYPE_OF_ODBC_DRIVER.find(([driver]) =>
+      driver.test(pairs.get('driver') ?? '')
+    )?.[1] ??
+    (has(MYSQL_KEYS) ? ConnectionType.MySQL : undefined) ??
+    // SQL Server has no `Host` key, and Npgsql shares `Trust Server Certificate`.
+    (has(MSSQL_KEYS) && !pairs.has('host') ? ConnectionType.MSSQL : undefined)
+  return { format: 'ado', parts: { ...parts, type } }
 }

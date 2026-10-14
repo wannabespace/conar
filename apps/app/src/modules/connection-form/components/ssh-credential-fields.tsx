@@ -8,10 +8,9 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
-import { LoadFileButton } from '~/components/load-file-button'
-
 import type { ConnectionForm } from '../lib/connection-form'
-import { TextRow } from './field-rows'
+import { LoadFileButton } from './load-file-button'
+import { TextRow } from './text-row'
 
 export const SshCredentialFields = ({
   auth,

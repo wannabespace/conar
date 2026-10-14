@@ -1,4 +1,3 @@
-import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { noop } from '@tamery/shared/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -15,17 +14,8 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { queryClient } from '~/lib/query-client'
 
-import type { ConnectionString } from './connection-strings'
 import { fetchingConfig } from './fetching-config'
 import { getConnectionStore } from './stores'
-
-/** Metadata-only sync never brings the server details to another device, so the user enters them there. */
-export const needsLocalDetails = (
-  connection: Pick<Connection, 'syncType'>,
-  connectionString: ConnectionString | null | undefined
-) =>
-  connection.syncType === SyncType.CloudWithoutConnectionString &&
-  !connectionString
 
 /** A query sent while the connection is blocked fails, and its cached error outlives the unlock. */
 export const canQueryConnection = (connection: Connection) =>

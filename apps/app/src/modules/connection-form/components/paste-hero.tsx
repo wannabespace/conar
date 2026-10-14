@@ -54,6 +54,18 @@ export const PasteHero = ({
   const pasteHeld = useKeyHold('V') && modifierHeld
   const [shakeScope, shake] = useAnimate<HTMLDivElement>()
   const pasteable = mode.kind === 'create' || mode.scope !== 'credentials'
+  const idle =
+    mode.kind === 'edit'
+      ? {
+          subtitle: EDIT_SUBTITLES[mode.scope],
+          title: (
+            <span data-mask className="block truncate">
+              {mode.name}
+            </span>
+          ),
+        }
+      : { subtitle: 'We’ll figure it out.', title: 'Paste anything.' }
+  const { subtitle, title } = flash.shown ? FLASH_COPY[flash.result] : idle
 
   // Shakes in place rather than re-keying the block, which would remount the focused clipboard keys and drop focus out of the page.
   useEffect(() => {
@@ -76,22 +88,8 @@ export const PasteHero = ({
               className="block"
               {...ROLL}
             >
-              {flash.shown && FLASH_COPY[flash.result].title}
-              {!flash.shown &&
-                (mode.kind === 'edit' ? (
-                  <span data-mask className="block truncate">
-                    {mode.name}
-                  </span>
-                ) : (
-                  'Paste anything.'
-                ))}
-              <span className="text-muted-foreground block">
-                {flash.shown && FLASH_COPY[flash.result].subtitle}
-                {!flash.shown &&
-                  (mode.kind === 'edit'
-                    ? EDIT_SUBTITLES[mode.scope]
-                    : 'We’ll figure it out.')}
-              </span>
+              {title}
+              <span className="text-muted-foreground block">{subtitle}</span>
             </motion.span>
           </AnimatePresence>
         </h1>

@@ -141,22 +141,18 @@ export const variablesOfLines = (lines: string[]) => {
   return variables
 }
 
-/** A Compose service reached from the host machine: the port it publishes for the engine's own. */
-const publishedPortOf = (text: string, parts: GuessedParts) => {
-  const target = parts.type && String(DEFAULT_PORTS[parts.type])
-  return parts.port || !target
-    ? undefined
-    : text
-        .matchAll(PUBLISHED_PORT)
-        .find((mapping) => mapping.groups?.target === target)?.groups?.published
-}
-
 export const guessEnv = (text: string): DatabaseGuess | null => {
   const parts = partsOfVariables(variablesOfLines(text.split('\n')))
   if (!parts) {
     return null
   }
-  const published = publishedPortOf(text, parts)
+  const composeTarget = parts.type && String(DEFAULT_PORTS[parts.type])
+  const published =
+    !parts.port &&
+    composeTarget &&
+    text
+      .matchAll(PUBLISHED_PORT)
+      .find(({ groups }) => groups?.target === composeTarget)?.groups?.published
   return {
     format: 'env',
     parts: published ? { host: 'localhost', ...parts, port: published } : parts,

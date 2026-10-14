@@ -8,8 +8,8 @@ import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { EngineField } from './engine-field'
-import { HostRow, TextRow } from './field-rows'
 import { Footnote } from './footnote'
+import { TextRow } from './text-row'
 
 const DATABASE_PLACEHOLDERS: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'default',
@@ -42,14 +42,16 @@ export const ServerFields = ({
     <>
       <FieldGroup variant="card">
         <EngineField form={form} locked={locked} />
-        <HostRow
+        <TextRow
           {...row}
           label="Host"
           name="host"
           placeholder="db.example.com or any connection string"
-          portLabel="Port"
-          portName="port"
-          portPlaceholder={String(DEFAULT_PORTS[type])}
+          port={{
+            label: 'Port',
+            name: 'port',
+            placeholder: String(DEFAULT_PORTS[type]),
+          }}
         />
         <TextRow {...row} label="User" name="user" />
         <TextRow

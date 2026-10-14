@@ -9,22 +9,28 @@ import { orpc, permissionsMiddleware, permix } from '~/orpc'
 export const filters = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.filter.use'))
-  .use(
-    usage.limitMiddleware(
-      'filters',
-      'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.'
-    )
-  )
   .input(
     type({
       context: 'string',
       prompt: 'string',
     })
   )
-  .handler(async ({ input, signal, context }) => {
+  .errors({
+    FORBIDDEN: {
+      message:
+        'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
+    },
+  })
+  .handler(async ({ input, signal, context, errors }) => {
     context.addLogData({
       filterInput: input.prompt,
     })
+
+    const quota = await usage.get(context, 'filters')
+
+    if (quota && quota.used >= quota.max) {
+      throw errors.FORBIDDEN()
+    }
 
     const result = await generateFilters({
       context: input.context,

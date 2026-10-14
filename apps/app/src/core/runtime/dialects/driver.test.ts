@@ -7,20 +7,9 @@ import { clearMemoizeCache, getCacheStore } from 'memoza'
 
 const execute = mock(() => Promise.resolve({ duration: 0, result: [] }))
 const cloudExecute = mock(() => Promise.resolve({ duration: 0, result: [] }))
-const strings = new Map([
-  [
-    'connection',
-    {
-      displayUrl: 'localhost:5432',
-      isPasswordPopulated: true,
-      missingSecrets: [],
-    },
-  ],
-])
 
 mock.module('~/core/collections', () => ({
   getCollections: () => ({
-    connectionStringsCollection: strings,
     connectionsCollection: new Map([
       ['connection', { isPasswordExists: true, syncType: SyncType.Cloud }],
     ]),

@@ -52,17 +52,23 @@ const variablesOfObject = (
   return variables
 }
 
-const urlPartsOf = (object: JsonObject, parentKey: string) =>
-  Object.entries(object)
-    .filter((entry): entry is [string, string] => typeof entry[1] === 'string')
-    .map(
-      ([key, value]) =>
-        guessUrl(value) ?? guessWebUrl(value, `${parentKey} ${key} ${value}`)
-    )
-    .find(Boolean)?.parts
-
 /** The first object holding a host wins, read with its ancestors' keys (Knex puts `client` beside the `connection` object); without one, the first object naming anything. */
-const findParts = (root: unknown): GuessedParts | null => {
+export const guessJson = (text: string): DatabaseGuess | null => {
+  const literal = text
+    .trim()
+    .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
+  if (!/^[{[]/u.test(literal)) {
+    return null
+  }
+  // Parse, never evaluate: the text is whatever the user pasted.
+  const object = tryCatch(() =>
+    JSON5.parse(
+      literal
+        .replace(/;\s*$/u, '')
+        .replaceAll(/process\.env\.\w+\s*(?:\|\||\?\?)\s*/gu, '')
+        .replaceAll(/process\.env\.\w+/gu, 'null')
+    )
+  ).data
   let fallback: GuessedParts | null = null
   const visit = (
     value: unknown,
@@ -84,7 +90,15 @@ const findParts = (root: unknown): GuessedParts | null => {
     const variables = variablesOfObject(value, parentKey, inherited)
     const parts = mergeParts(
       partsOfVariables(variables) ?? {},
-      urlPartsOf(value, parentKey) ?? {}
+      Object.entries(value)
+        .filter(
+          (entry): entry is [string, string] => typeof entry[1] === 'string'
+        )
+        .map(
+          ([key, url]) =>
+            guessUrl(url) ?? guessWebUrl(url, `${parentKey} ${key} ${url}`)
+        )
+        .find(Boolean)?.parts ?? {}
     )
     if (parts.host) {
       return parts
@@ -99,24 +113,6 @@ const findParts = (root: unknown): GuessedParts | null => {
         .find(Boolean) ?? null
     )
   }
-  return visit(root, '', {}, 0) ?? fallback
-}
-
-export const guessJson = (text: string): DatabaseGuess | null => {
-  const trimmed = text.trim()
-  if (!/^(?:[{[]|module\.exports|export\s+default)/u.test(trimmed)) {
-    return null
-  }
-  // Parse, never evaluate: the text is whatever the user pasted.
-  const object = tryCatch(() =>
-    JSON5.parse(
-      trimmed
-        .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
-        .replace(/;\s*$/u, '')
-        .replaceAll(/process\.env\.\w+\s*(?:\|\||\?\?)\s*/gu, '')
-        .replaceAll(/process\.env\.\w+/gu, 'null')
-    )
-  ).data
-  const parts = findParts(object)
+  const parts = visit(object, '', {}, 0) ?? fallback
   return parts && { format: 'json', parts }
 }

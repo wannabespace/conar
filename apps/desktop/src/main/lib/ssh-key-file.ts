@@ -4,11 +4,6 @@ import path from 'node:path'
 import type { OpenDialogOptions } from 'electron'
 import { BrowserWindow, dialog } from 'electron'
 
-const homeRelative = (filePath: string) =>
-  filePath.startsWith(`${homedir()}/`)
-    ? `~${filePath.slice(homedir().length)}`
-    : filePath
-
 export const pickSshKeyFile = async () => {
   const options: OpenDialogOptions = {
     buttonLabel: 'Choose',
@@ -20,5 +15,10 @@ export const pickSshKeyFile = async () => {
     ? await dialog.showOpenDialog(window, options)
     : await dialog.showOpenDialog(options)
   const [filePath] = filePaths
-  return canceled || !filePath ? null : homeRelative(filePath)
+  if (canceled || !filePath) {
+    return null
+  }
+  return filePath.startsWith(`${homedir()}/`)
+    ? `~${filePath.slice(homedir().length)}`
+    : filePath
 }

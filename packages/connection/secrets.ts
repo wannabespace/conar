@@ -46,7 +46,7 @@ export const connectionSecrets = {
     const url = urlOf(connectionString)
     return (
       !!url.password ||
-      SECRET_PARAMS.some((param) => !!url.searchParams.get(param))
+      SECRET_PARAMS.some((param) => url.searchParams.get(param))
     )
   },
   strip: (connectionString: string) => {

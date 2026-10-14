@@ -15,6 +15,7 @@ describe('guessConnection — unrecognised input', () => {
     ['{ "a": 1 }'],
     ['{ "broken": '],
     ['postgres://me@db.acme.io:99999/app'],
+    ['v1.2.3'],
   ])('returns null for %p', (text) => {
     expect(guessConnection(text)).toBeNull()
   })
@@ -29,15 +30,6 @@ describe('guessConnection — snippets from configs and tools', () => {
     [
       'DATABASE_URL=postgres://me@db.acme.io:5432/app\nDB_PASSWORD=pw',
       { host: 'db.acme.io', password: 'pw', user: 'me' },
-    ],
-    [
-      "module.exports = { client: 'pg', connection: { host: process.env.DB_HOST || 'db.acme.io', user: 'me', password: process.env.DB_PASSWORD, database: 'app' } }",
-      {
-        database: 'app',
-        host: 'db.acme.io',
-        type: ConnectionType.Postgres,
-        user: 'me',
-      },
     ],
     [
       'host = db.acme.io port = 5433 dbname = app user = me',
@@ -107,17 +99,5 @@ describe('guessConnection — snippets from configs and tools', () => {
     ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
-  })
-
-  it('reads Npgsql as no particular engine, not SQL Server', () => {
-    expect(
-      guessConnection(
-        'Host=db.acme.io;Username=me;Trust Server Certificate=true'
-      )?.parts.type
-    ).toBeUndefined()
-  })
-
-  it('reads a version number as nothing, not a host', () => {
-    expect(guessConnection('v1.2.3')).toBeNull()
   })
 })

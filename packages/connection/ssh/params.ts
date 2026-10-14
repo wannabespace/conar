@@ -72,7 +72,7 @@ export const deleteSshParams = (searchParams: URLSearchParams) => {
   }
 }
 
-export const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
+const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
   agent: [],
   key: ['privateKey', 'passphrase'],
   keyPath: ['keyPath', 'passphrase'],
@@ -83,7 +83,7 @@ export const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
 export const setSshParams = (
   searchParams: URLSearchParams,
   tunnel: SshTunnel,
-  missing: readonly string[] = []
+  missing: readonly string[]
 ) => {
   for (const key of [
     'host',

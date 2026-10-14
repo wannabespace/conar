@@ -21,6 +21,7 @@ const FLAG_OF_OPTION: Record<string, string> = {
 const OPTION = /^(?<key>\w+)[=\s]+(?<value>.*)$/su
 const PORT = /^\d+$/u
 const ENV_ASSIGNMENT = /^\w+=/u
+const SHELL_SAFE = /^[\w@%+=:,./-]+$/u
 const DESTINATION =
   /^(?:ssh:\/\/)?(?:(?<user>[^@]*)@)?(?<host>[^:@]+)(?::(?<port>\d+))?$/u
 
@@ -120,9 +121,19 @@ export const guessSsh = (
     }
     command = found[commandAt] ?? null
     rest.push(
+      ...(command?.assignments ?? []),
+      // A bare re-join would split a quoted argument (`psql "host=… port=…"`) again.
       ...commands
-        .toSpliced(commandAt, 1, command?.assignments ?? [])
-        .map((words) => words.join(' '))
+        .toSpliced(commandAt, 1)
+        .map((words) =>
+          words
+            .map((word) =>
+              SHELL_SAFE.test(word)
+                ? word
+                : `'${word.replaceAll("'", `'\\''`)}'`
+            )
+            .join(' ')
+        )
     )
   }
   const tunnel = command?.tunnel ?? (privateKey ? EMPTY_SSH_TUNNEL : null)

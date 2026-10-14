@@ -20,13 +20,14 @@ export const PASTE_FORMATS =
   'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
-const CONNECTION_FIELD = 'host'
 const FLASH_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
+  enabled,
   onPaste,
   pitchShown,
 }: {
+  enabled: boolean
   onPaste: (guess: ConnectionGuess, via: PasteVia) => void
   pitchShown: boolean
 }) => {
@@ -56,6 +57,9 @@ export const usePasteConnection = ({
   }
 
   const read = (text: string, via: PasteVia) => {
+    if (!enabled) {
+      return
+    }
     const guess = guessConnection(text)
     if (guess) {
       hit(guess, via)
@@ -93,7 +97,7 @@ export const usePasteConnection = ({
         ? target
         : null
     // Only Host reads a pasted connection; any other field keeps the text, so a string can be trimmed down to the part it needs (a password, a database).
-    if (!text || (field && field.id !== CONNECTION_FIELD)) {
+    if (!text || (field && field.id !== 'host')) {
       return
     }
     if (!field) {
@@ -151,5 +155,5 @@ export const usePasteConnection = ({
     return () => controller.abort()
   }, [])
 
-  return { dragging, flash, readClipboard }
+  return { dragging: enabled && dragging, flash, readClipboard }
 }

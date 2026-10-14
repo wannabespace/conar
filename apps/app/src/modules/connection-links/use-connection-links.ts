@@ -18,9 +18,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-type GuessedParts = ConnectionGuess['parts']
-
-const serverOf = (parts: GuessedParts | ConnectionParts) =>
+const serverOf = (parts: ConnectionGuess['parts'] | ConnectionParts) =>
   parts.type &&
   [
     parts.type,
@@ -29,44 +27,6 @@ const serverOf = (parts: GuessedParts | ConnectionParts) =>
     parts.user,
     parts.ssh?.host,
   ].join('\n')
-
-const findConnectionId = async (parts: GuessedParts) => {
-  const {
-    connectionsCollection,
-    connectionStringsCollection,
-    workspacesCollection,
-  } = getCollections()
-  const workspace = workspaceSelection.current(workspacesCollection.toArray)
-  const candidates = connectionsCollection.toArray.filter(
-    (connection) =>
-      connection.workspaceId === workspace?.id &&
-      connection.type === parts.type &&
-      connectionStringsCollection.has(connection.id)
-  )
-  const servers = await Promise.all(
-    candidates.map(async (connection) =>
-      serverOf(
-        connectionParts.parse(
-          await connectionStringsCollection.utils.decrypt(connection.id)
-        )
-      )
-    )
-  )
-  return candidates[servers.indexOf(serverOf(parts))]?.id ?? null
-}
-
-/** Never inserts: the link comes from any page the browser opens, so it may only reach a database the user already saved. */
-const savedResourceIdOf = (
-  connectionId: string,
-  database: string | undefined
-) => {
-  const name =
-    database ||
-    getCollections().connectionStringsCollection.get(connectionId)
-      ?.defaultResourceName ||
-    null
-  return findResource(connectionId, name)?.id ?? null
-}
 
 export const useConnectionLinks = () => {
   const navigate = useNavigate()
@@ -78,9 +38,38 @@ export const useConnectionLinks = () => {
         return
       }
       const parts = guessConnection(link)?.parts ?? {}
-      const connectionId = await findConnectionId(parts)
+      const {
+        connectionsCollection,
+        connectionStringsCollection,
+        workspacesCollection,
+      } = getCollections()
+      const workspace = workspaceSelection.current(workspacesCollection.toArray)
+      const candidates = connectionsCollection.toArray.filter(
+        (connection) =>
+          connection.workspaceId === workspace?.id &&
+          connection.type === parts.type &&
+          connectionStringsCollection.has(connection.id)
+      )
+      const servers = await Promise.all(
+        candidates.map(async (connection) =>
+          serverOf(
+            connectionParts.parse(
+              await connectionStringsCollection.utils.decrypt(connection.id)
+            )
+          )
+        )
+      )
+      const connectionId = candidates[servers.indexOf(serverOf(parts))]?.id
+      // Never inserts: the link comes from any page the browser opens, so it may only reach a database the user already saved.
       const resourceId =
-        connectionId && savedResourceIdOf(connectionId, parts.database)
+        connectionId &&
+        findResource(
+          connectionId,
+          parts.database ||
+            connectionStringsCollection.get(connectionId)
+              ?.defaultResourceName ||
+            null
+        )?.id
       posthog.capture('connection_link_opened', { matched: !!resourceId })
       if (resourceId) {
         await navigate({
@@ -89,7 +78,7 @@ export const useConnectionLinks = () => {
         })
       } else if (
         checkOrUpgrade('connection.create', {
-          count: getCollections().connectionsCollection.size,
+          count: connectionsCollection.size,
         })
       ) {
         await navigate({ state: { connectionLink: link }, to: '/create' })

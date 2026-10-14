@@ -28,28 +28,13 @@ export interface ConnectionString {
   defaultResourceName: string | null
 }
 
-const dropConnectionQueries = (
-  resources: Collection<ConnectionResource>,
-  connectionId: string
-) => {
-  const ids = new Set<unknown>([
-    connectionId,
-    ...resources.toArray
-      .filter((resource) => resource.connectionId === connectionId)
-      .map(({ id }) => id),
-  ])
-  queryClient.removeQueries({
-    predicate: ({ queryKey: [, id] }) => ids.has(id),
-  })
-}
-
 const encryptConnectionString = async (connectionString: string) =>
   encryptWithKey(await encryptionKey.get(), connectionString)
 
 const decryptConnectionString = async (encryptedConnectionString: string) =>
   decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 
-export type ConnectionStringInput = Pick<
+type ConnectionStringInput = Pick<
   ConnectionString,
   'connectionId' | 'updatedAt'
 > & {
@@ -59,7 +44,6 @@ export type ConnectionStringInput = Pick<
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  prepare: (data: ConnectionStringInput) => Promise<ConnectionString>
   resolve: (connection: {
     id: string
     isPasswordExists: boolean
@@ -124,14 +108,6 @@ export const createConnectionStringsCollection = (
             throw error
           }
         },
-        async prepare(data) {
-          return {
-            ...describeConnectionString(data.connectionString),
-            connectionId: data.connectionId,
-            encrypted: await encryptConnectionString(data.connectionString),
-            updatedAt: data.updatedAt,
-          }
-        },
         async resolve({ id: connectionId, isPasswordExists }) {
           const local = collection.get(connectionId)
 
@@ -159,14 +135,21 @@ export const createConnectionStringsCollection = (
         },
         async save(data) {
           const stored = collection.get(data.connectionId)
-          const previous = stored && {
-            connectionId: stored.connectionId,
-            connectionString: await collection.utils.decrypt(
-              stored.connectionId
-            ),
-            updatedAt: stored.updatedAt,
+          const previous = stored
+            ? {
+                connectionId: stored.connectionId,
+                connectionString: await collection.utils.decrypt(
+                  stored.connectionId
+                ),
+                updatedAt: stored.updatedAt,
+              }
+            : null
+          const record = {
+            ...describeConnectionString(data.connectionString),
+            connectionId: data.connectionId,
+            encrypted: await encryptConnectionString(data.connectionString),
+            updatedAt: data.updatedAt,
           }
-          const record = await collection.utils.prepare(data)
           if (collection.has(data.connectionId)) {
             collection.update(data.connectionId, (draft) => {
               Object.assign(draft, record)
@@ -176,12 +159,19 @@ export const createConnectionStringsCollection = (
           }
           // Compares the plain strings: a rename re-resolves the same string under a new `updatedAt`.
           if (previous?.connectionString !== data.connectionString) {
-            dropConnectionQueries(resources, data.connectionId)
+            const ids = new Set<unknown>([
+              data.connectionId,
+              ...resources.toArray
+                .filter(
+                  ({ connectionId }) => connectionId === data.connectionId
+                )
+                .map(({ id }) => id),
+            ])
+            queryClient.removeQueries({
+              predicate: ({ queryKey: [, id] }) => ids.has(id),
+            })
           }
-          return {
-            previous: previous ?? null,
-            record,
-          }
+          return { previous, record }
         },
       },
     })

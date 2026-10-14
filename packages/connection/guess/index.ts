@@ -32,7 +32,6 @@ const DETECTORS = [
 ]
 const LINE_CONTINUATION = /\\\r?\n/gu
 
-/** A URL often leaves the credentials to lines beside it (Spring's `username`, a `.env`'s `DB_PASSWORD`). */
 const credentialsBeside = (
   database: DatabaseGuess | null | undefined,
   text: string

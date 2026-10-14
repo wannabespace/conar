@@ -75,21 +75,6 @@ export const typeOfScheme = (scheme: string): ConnectionType | null =>
       .replace(/[+:].*$/u, '')
   ] ?? null
 
-/** Sets each option in `changes` over `options`, replacing the key in any case: a paste may say `TrustServerCertificate`, the drivers read lowercase. */
-export const mergeOptions = (options: string, changes: string) => {
-  const updates = new URLSearchParams(changes)
-  const replaced = new Set(updates.keys().map((key) => key.toLowerCase()))
-  const merged = new URLSearchParams(
-    [...new URLSearchParams(options)].filter(
-      ([key]) => !replaced.has(key.toLowerCase())
-    )
-  )
-  for (const [key, value] of updates) {
-    merged.append(key, value)
-  }
-  return merged.toString()
-}
-
 const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []

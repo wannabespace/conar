@@ -1,5 +1,4 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { tryCatch } from '@tamery/shared/utils'
 
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
@@ -71,7 +70,6 @@ export const guessUrl = (text: string): DatabaseGuess | null => {
 const GO_DSN =
   /(?<user>[^\s:@/"'=]*)(?::(?<password>[^\s@"']*))?@tcp\((?<host>[^\s():]+)(?::(?<port>\d+))?\)\/(?<database>[^\s?"']*)/u
 
-/** go-sql-driver's DSN, MySQL's usual form in Go. */
 export const guessGoDsn = (text: string): DatabaseGuess | null => {
   const groups = GO_DSN.exec(text)?.groups
   return groups
@@ -91,8 +89,7 @@ export const guessWebUrl = (
     if (!WEB_SCHEME.test(candidate)) {
       return false
     }
-    const { hostname, pathname, port } =
-      tryCatch(() => new URL(candidate)).data ?? {}
+    const { hostname, pathname, port } = URL.parse(candidate) ?? {}
     return (
       !MULTI_SEGMENT_PATH.test(pathname ?? '') &&
       (Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
