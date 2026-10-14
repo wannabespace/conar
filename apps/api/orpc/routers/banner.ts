@@ -44,5 +44,11 @@ export const banner = orpc
       })
     }
 
+    items.push({
+      dismissible: true,
+      text: 'Conar is now Tamery! New name, even better app - thanks for being part of the journey!',
+      type: 'info',
+    })
+
     return items
   })
