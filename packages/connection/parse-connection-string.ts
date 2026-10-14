@@ -41,10 +41,7 @@ export const parseConnectionString = (connectionString: string): Config => {
     port: port ? Number(port) : undefined,
     /** Keys lowercased: the SSL parsers read lowercase, a paste says `TrustServerCertificate` or `sslMode`. */
     searchParams: new URLSearchParams(
-      searchParams
-        .entries()
-        .map(([key, value]) => [key.toLowerCase(), value])
-        .toArray()
+      Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
     ),
     user: user || undefined,
   }

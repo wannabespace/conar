@@ -15,6 +15,7 @@ import { TestStatus } from './test-status'
 
 export const FormFooter = ({
   canTest,
+  editing,
   onSave,
   onTest,
   reason,
@@ -22,6 +23,7 @@ export const FormFooter = ({
   testStatus,
 }: {
   canTest: boolean
+  editing: boolean
   /** Not a submit button: with none in the form, Enter in a field never saves. */
   onSave: () => void
   onTest: () => void
@@ -65,7 +67,8 @@ export const FormFooter = ({
               }
             >
               <LoadingContent loading={submitting && !testing}>
-                {failed ? 'Save anyway' : 'Save connection'}
+                {failed && 'Save anyway'}
+                {!failed && (editing ? 'Save changes' : 'Save connection')}
               </LoadingContent>
             </TooltipTrigger>
             <TooltipContent>

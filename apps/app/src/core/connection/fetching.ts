@@ -14,6 +14,7 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { queryClient } from '~/lib/query-client'
 
+import { isLocalNetwork } from './connection-strings'
 import { fetchingConfig } from './fetching-config'
 import { getConnectionStore } from './stores'
 
@@ -101,11 +102,11 @@ export const useFetchingConfig = (
 
   return fetchingConfig(connection, {
     hasLocalConnectionString: !!connectionString,
+    isLocalNetwork: connectionString && isLocalNetwork(connectionString),
     isLocalProxyAvailable: localProxyAvailable,
-    isLocalhost: connectionString?.isLocalhost,
     isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy,
-    secretsMissing: !!connectionString?.missingSecrets.length,
+    secretsMissing: !!connectionString?.missingSecrets?.length,
     usesSsh: !!connectionString?.usesSsh,
   })
 }

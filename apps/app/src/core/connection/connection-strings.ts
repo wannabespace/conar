@@ -1,8 +1,8 @@
-import { isLocalHost } from '@tamery/connection/hosts'
 import { parseConnectionString } from '@tamery/connection/parse-connection-string'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { sshTunnelOf } from '@tamery/connection/ssh/params'
+import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -22,12 +22,16 @@ export interface ConnectionString {
   encrypted: string
   updatedAt: Date
   isPasswordPopulated: boolean
-  isLocalhost: boolean
   usesSsh: boolean
-  missingSecrets: SecretParam[]
+  /** Missing on rows persisted before it existed. */
+  missingSecrets?: SecretParam[]
   displayUrl: string
   defaultResourceName: string | null
 }
+
+/** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
+export const isLocalNetwork = ({ displayUrl }: ConnectionString) =>
+  isLocalNetworkConnectionString(`tcp://${displayUrl}`)
 
 const encryptConnectionString = async (connectionString: string) =>
   encryptWithKey(await encryptionKey.get(), connectionString)
@@ -124,14 +128,14 @@ export const createConnectionStringsCollection =
             const encrypted = await encryptConnectionString(
               data.connectionString
             )
-            const { database, host, password, searchParams } =
-              parseConnectionString(data.connectionString)
+            const { database, password, searchParams } = parseConnectionString(
+              data.connectionString
+            )
             return {
               connectionId: data.connectionId,
               defaultResourceName: database ?? null,
               displayUrl: new SafeURL(data.connectionString).host,
               encrypted,
-              isLocalhost: isLocalHost(host),
               isPasswordPopulated: !!password,
               missingSecrets: connectionSecrets.missing(searchParams),
               updatedAt: data.updatedAt,

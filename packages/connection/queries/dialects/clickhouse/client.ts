@@ -17,9 +17,8 @@ const clickhouse = createRequire(import.meta.url)(
 
 export const getClient = memoize(async (connectionString: string) => {
   const url = new SafeURL(connectionString.replace(/^clickhouse/u, 'http'))
-  const tunnel = sshForwarding.of(connectionString)
+  const tunnel = await sshForwarding.of(connectionString)
   deleteSshParams(url.searchParams)
-  await tunnel?.connect()
 
   return clickhouse.createClient({
     clickhouse_settings: { date_time_output_format: 'iso' },

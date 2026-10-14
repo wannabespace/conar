@@ -163,12 +163,9 @@ const guessCommand = (tokens: string[]): DatabaseGuess | null => {
   }
 }
 
-export const guessCli = (text: string): DatabaseGuess | null => {
-  for (const line of text.split('\n')) {
-    const guess = guessCommand(shellTokens(line))
-    if (guess) {
-      return guess
-    }
-  }
-  return null
-}
+export const guessCli = (text: string): DatabaseGuess | null =>
+  text
+    .split('\n')
+    .values()
+    .map((line) => guessCommand(shellTokens(line)))
+    .find(Boolean) ?? null

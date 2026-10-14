@@ -11,11 +11,12 @@ import { generateRandomName } from '~/utils/faker'
 
 import type { ConnectionFormValues } from './connection-form'
 import { draftFetching } from './draft-fetching'
-import { useCreateConnection } from './use-create-connection'
+import type { SavedConnection } from './use-create-connection'
 
-export const useSaveConnection = () => {
+export const useSaveConnection = (
+  persist: (connection: SavedConnection) => Promise<unknown>
+) => {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const createConnection = useCreateConnection()
   const test = useMutation({
     meta: { event: 'connection_tested' },
     mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
@@ -56,7 +57,7 @@ export const useSaveConnection = () => {
       return
     }
     await silently(() =>
-      createConnection.mutateAsync({
+      persist({
         color: current.color,
         connectionString,
         label: current.label.trim() || null,

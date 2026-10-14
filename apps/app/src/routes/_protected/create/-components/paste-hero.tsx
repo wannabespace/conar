@@ -1,6 +1,5 @@
-import { CommandIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
+import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
   TooltipContent,
@@ -55,10 +54,13 @@ const Keycap = ({
 )
 
 export const PasteHero = ({
+  editing,
   miss,
   onAgent,
   onClipboard,
 }: {
+  /** The name of the connection being edited; absent on a new one. */
+  editing?: string
   miss: Miss
   onAgent: () => void
   onClipboard: () => void
@@ -89,9 +91,21 @@ export const PasteHero = ({
               className="block"
               {...ROLL}
             >
-              {miss.shown ? 'That’s not a connection.' : 'Paste anything.'}
+              {miss.shown && 'That’s not a connection.'}
+              {!miss.shown &&
+                (editing ? (
+                  <span data-mask className="block truncate">
+                    {editing}
+                  </span>
+                ) : (
+                  'Paste anything.'
+                ))}
               <span className="text-muted-foreground block">
-                {miss.shown ? 'Try another URL.' : 'We’ll figure it out.'}
+                {miss.shown && 'Try another URL.'}
+                {!miss.shown &&
+                  (editing
+                    ? 'Edit it or paste a new one.'
+                    : 'We’ll figure it out.')}
               </span>
             </motion.span>
           </AnimatePresence>
@@ -109,11 +123,7 @@ export const PasteHero = ({
               }
             >
               <Keycap pressed={modifierHeld}>
-                {isMac ? (
-                  <HugeiconsIcon icon={CommandIcon} strokeWidth={2} />
-                ) : (
-                  'Ctrl'
-                )}
+                <Ctrl userAgent={navigator.userAgent} />
               </Keycap>
               <Keycap pressed={pasteHeld}>V</Keycap>
             </TooltipTrigger>
@@ -127,7 +137,7 @@ export const PasteHero = ({
       <p className="text-muted-foreground text-sm text-pretty">
         {PASTE_FORMATS}
       </p>
-      {window.electron && <AgentButton onClick={onAgent} />}
+      {window.electron && !editing && <AgentButton onClick={onAgent} />}
     </div>
   )
 }

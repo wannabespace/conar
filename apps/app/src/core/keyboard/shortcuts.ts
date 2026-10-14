@@ -191,7 +191,7 @@ export const SHORTCUTS = {
   },
   search: {
     description:
-      'Focus the search field of the page: the table filter, the diagram search or these settings.',
+      'Focus the search field of the page: the connections list, the table filter, the diagram search or these settings.',
     hotkeys: ['Mod+F'],
     title: 'Search',
   },

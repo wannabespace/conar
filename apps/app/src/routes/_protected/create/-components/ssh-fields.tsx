@@ -28,7 +28,6 @@ const AUTH_METHODS = SSH_AUTH_METHODS.map((method) => ({
 export const SshFields = ({ form }: { form: ConnectionForm }) => {
   const enabled = useStore(form.store, (state) => state.values.sshEnabled)
   const auth = useStore(form.store, (state) => state.values.ssh.auth)
-  const showsAgentNote = enabled && auth === 'agent' && window.electron
 
   return (
     <>
@@ -110,7 +109,7 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
           )}
         </AnimatePresence>
       </FieldGroup>
-      {showsAgentNote && (
+      {enabled && auth === 'agent' && window.electron && (
         <Footnote>
           Signs in with your running ssh-agent and the matching Host in
           ~/.ssh/config.

@@ -14,8 +14,7 @@ const mssql = createRequire(import.meta.url)('mssql') as typeof mssqlModule
 export const getPool = memoize(async (connectionString: string) => {
   const { database, host, password, port, searchParams, user } =
     parseConnectionString(connectionString)
-  const tunnel = sshForwarding.of(connectionString)
-  await tunnel?.connect()
+  const tunnel = await sshForwarding.of(connectionString)
   const pool = new mssql.ConnectionPool({
     database,
     options: {

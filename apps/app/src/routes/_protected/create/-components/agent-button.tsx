@@ -11,7 +11,7 @@ export const AgentButton = ({ onClick }: { onClick: () => void }) => {
   return (
     <Button
       type="button"
-      variant="ghost-tint-muted"
+      variant="link-muted"
       size="sm"
       className="self-start"
       onClick={() => {
@@ -21,11 +21,7 @@ export const AgentButton = ({ onClick }: { onClick: () => void }) => {
         onClick()
       }}
     >
-      <HugeiconsIcon
-        icon={McpServerIcon}
-        strokeWidth={2}
-        data-icon="inline-start"
-      />
+      <HugeiconsIcon icon={McpServerIcon} strokeWidth={2} />
       Add via MCP
     </Button>
   )

@@ -88,7 +88,7 @@ const RETRY_MAX_DELAY = 30_000
 interface ServerMutations<T> {
   delete?: (key: string) => Promise<unknown>
   insert?: (value: T) => Promise<T | undefined> | Promise<void>
-  update?: (key: string, changes: Partial<T>) => Promise<unknown>
+  update?: (key: string, changes: Partial<T>, row: T) => Promise<unknown>
 }
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
@@ -268,7 +268,11 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
 
         if (mutation.type === 'update') {
-          await serverMutation('update')(mutation.key, mutation.changes)
+          await serverMutation('update')(
+            mutation.key,
+            mutation.changes,
+            mutation.modified
+          )
           writeSynced?.([{ type: 'update', value: mutation.modified }])
           return
         }

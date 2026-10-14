@@ -1,4 +1,5 @@
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
+import { isLocalHost } from '@tamery/connection/hosts'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { useStore } from '@tanstack/react-form'
@@ -22,12 +23,10 @@ const OPTIONS_PLACEHOLDERS: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.Postgres]: 'e.g. sslmode=require',
 }
 
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]'])
-
 export const ServerFields = ({ form }: { form: ConnectionForm }) => {
   const type = useStore(form.store, (state) => state.values.type)
-  const isLocalHost = useStore(form.store, (state) =>
-    LOCAL_HOSTS.has(state.values.host.trim().toLowerCase())
+  const isLocal = useStore(form.store, (state) =>
+    isLocalHost(state.values.host.trim())
   )
   const localProxyAvailable = useLocalProxyAvailable()
 
@@ -118,16 +117,9 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
           )}
         </form.AppField>
       </FieldGroup>
-      {isLocalHost && !window.electron && (
+      {isLocal && !window.electron && localProxyAvailable && (
         <Footnote>
-          {localProxyAvailable ? (
-            'Local databases are reached through your tamery proxy.'
-          ) : (
-            <>
-              Run <code className="font-mono">tamery proxy</code> to reach local
-              databases from the web.
-            </>
-          )}
+          Local databases are reached through your tamery proxy.
         </Footnote>
       )}
     </>

@@ -31,7 +31,7 @@ export const buttonVariants = cva(
         'ghost-tint': `hover:bg-foreground/10 hover:text-foreground aria-expanded:bg-foreground/10 aria-expanded:text-foreground transition-transform`,
         'ghost-tint-muted': `text-muted-foreground hover:bg-foreground/10 hover:text-foreground aria-expanded:bg-foreground/10 aria-expanded:text-foreground transition-transform`,
         link: `text-primary px-0 underline-offset-4 hover:underline`,
-        'link-muted': `text-muted-foreground hover:text-foreground px-0 underline-offset-4 hover:underline`,
+        'link-muted': `text-muted-foreground px-0 underline-offset-4 hover:underline`,
         outline: `text-foreground ${outline}`,
         'outline-muted': `text-muted-foreground hover:text-foreground ${outline}`,
         secondary: `bg-secondary text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]`,

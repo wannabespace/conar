@@ -60,7 +60,8 @@ You can paste several at once: an `ssh -L` command and a `psql` command on the n
   **Save connection** tests the connection first. If the test fails, the button
   changes to **Save anyway**, so you can still save a database you can't reach
   right now. In the web app, the test goes through the local proxy for localhost
-  connections. Queries use the database selected in the Navigator.
+  and private network connections (a VPN, a LAN or Docker). Queries use the
+  database selected in the Navigator.
 </Note>
 
 ### When the test fails
@@ -114,12 +115,15 @@ Sync type controls whether Tamery stores your password or connection string. Eve
 - **Labels** — tag connections (e.g. `production`, `staging`) to group and filter them.
 - **Colors** — color-code environments.
 - **Pinning** — pin frequently used connections to the top.
+- **Search**: with more than ten connections, a search field (⌘F) filters the list by name, label or database type.
 
-Change a connection's name, label, color, or sync type anytime from its settings.
+## Edit a connection
+
+Choose **Edit** from a connection's **⋯** menu (or right-click it) on the connections list. The same form opens filled in, so you can change the server, credentials, SSH tunnel, name, label or color, or paste a new connection string over it. **Save changes** tests it first, just like adding one. The sync type can't be changed: to sync a connection differently, add it again as a new one.
 
 ## Working offline
 
-Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create and remove connections, save and rename queries, and — in the desktop app — query any database you can still reach.
+Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create, edit and remove connections, save and rename queries, and — in the desktop app — query any database you can still reach.
 
 Changes you make offline are saved on your device right away and sent to your account, in order, the next time Tamery is online. They survive restarting the app. If the server rejects a change — for example, because you removed the connection on another device — Tamery undoes it locally and shows the reason. In the web app, only the first Tamery tab you opened keeps offline changes; make them there.
 

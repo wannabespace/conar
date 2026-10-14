@@ -20,7 +20,7 @@ describe('guessConnection — provider fixes', () => {
     const guess = guessConnection(
       'postgresql://postgres:[YOUR-PASSWORD]@db.abcd.supabase.co:5432/postgres'
     )
-    expect(guess?.fixes).toStrictEqual(['password-placeholder'])
+    expect(guess?.fixes).toStrictEqual([])
     expect(guess?.parts.password).toBeUndefined()
   })
 

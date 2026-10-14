@@ -1,33 +1,33 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
+import { toConnectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnose'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import { isLocalHost } from '@tamery/connection/hosts'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
+import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { type } from 'arktype'
 
+import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 
 import type { PasteVia } from './use-paste-connection'
 
-export interface ConnectionFormValues {
+export interface ConnectionFormValues extends Omit<
+  ConnectionParts,
+  'ssh' | 'type'
+> {
   color: string | null
-  database: string
-  host: string
-  https: boolean | null
   label: string
   name: string
-  options: string
-  password: string
-  port: string
   ssh: SshTunnel
   sshEnabled: boolean
   syncType: SyncType
   type: ConnectionType
-  user: string
 }
 
 const DEFAULT_VALUES: ConnectionFormValues = {
@@ -73,30 +73,39 @@ const connectionFormSchema = type({
 /** Not `dontUpdateMeta`: only a meta update clears the field's `onMount` error, which would otherwise mark a filled field as empty. */
 const QUIET = { dontRunListeners: true }
 
-export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
-  database: values.database,
-  host: values.host,
-  https: values.https,
-  options: values.options,
-  password: values.password,
-  port: values.port,
-  ssh: values.sshEnabled ? values.ssh : null,
-  type: values.type,
-  user: values.user,
-})
+export const formValuesOf = (
+  connection: Connection,
+  connectionString: string | null
+): ConnectionFormValues => {
+  const parts = connectionString ? toConnectionParts(connectionString) : null
+  return {
+    ...DEFAULT_VALUES,
+    ...(parts && pick(parts, [...SERVER_FIELDS, 'https'])),
+    color: connection.color,
+    label: connection.label ?? '',
+    name: connection.name,
+    ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
+    sshEnabled: !!parts?.ssh,
+    syncType: connection.syncType,
+    type: connection.type,
+  }
+}
 
-const isPartField = (name: string) =>
-  name === 'type' ||
-  name === 'sshEnabled' ||
-  name.startsWith('ssh.') ||
-  SERVER_FIELDS.some((field) => field === name)
+export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
+  ...pick(values, [...SERVER_FIELDS, 'https', 'type']),
+  ssh: values.sshEnabled ? values.ssh : null,
+})
 
 const BARE_HOST = /^[\w.-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
-/** The fields a paste usually leaves out (DBeaver copies a URL without credentials), in form order. */
+/** The fields a paste usually leaves out (DBeaver copies a URL without credentials), in form order. A local server often runs without a password (trust auth), so its empty one isn't missing. */
 export const missingOf = (values: ConnectionFormValues) =>
-  NEEDED_FIELDS.filter((field) => !values[field].trim())
+  NEEDED_FIELDS.filter(
+    (field) =>
+      !values[field].trim() &&
+      !(field === 'password' && isLocalHost(values.host.trim()))
+  )
 
 /** A paste fills what it names and keeps the rest, so credentials typed around a partial paste survive; one naming another server than the filled host replaces every server field instead. */
 const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
@@ -133,31 +142,37 @@ const expandHost = (
 
 /** Fill and patch writes skip the listeners, so `onPartsChange` reports the user's own edits; a caller resetting state on any parts change does it in `onFill` and after `patch` too. */
 export const useConnectionForm = ({
+  defaultValues = DEFAULT_VALUES,
   onFill,
   onPartsChange,
   onSubmit,
 }: {
+  defaultValues?: ConnectionFormValues
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onPartsChange: () => void
-  onSubmit: (values: ConnectionFormValues) => Promise<void>
+  onSubmit: () => Promise<void>
 }) => {
   const form = useAppForm({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
         if (fieldApi.name === 'host') {
           expandHost(form, onFill)
         }
       },
-      onChange: ({ fieldApi }) => {
-        if (isPartField(fieldApi.name)) {
+      onChange: ({ fieldApi: { name } }) => {
+        if (
+          name === 'type' ||
+          name.startsWith('ssh') ||
+          SERVER_FIELDS.some((field) => field === name)
+        ) {
           onPartsChange()
         }
       },
     },
     onSubmit: () => {
       expandHost(form, onFill)
-      return onSubmit(form.state.values)
+      return onSubmit()
     },
     validators: {
       onChange: connectionFormSchema,

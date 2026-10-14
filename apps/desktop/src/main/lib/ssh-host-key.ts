@@ -18,7 +18,7 @@ export const confirmHostKey: ConfirmHostKey = async ({
     message: `Trust the SSH host ${host}?`,
     type: 'warning',
   }
-  const window = BrowserWindow.getAllWindows().find((item) => item.isFocused())
+  const window = BrowserWindow.getFocusedWindow()
   const { response } = window
     ? await dialog.showMessageBox(window, options)
     : await dialog.showMessageBox(options)

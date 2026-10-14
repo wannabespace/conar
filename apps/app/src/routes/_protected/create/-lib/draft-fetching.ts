@@ -1,6 +1,5 @@
 import { toConnectionString } from '@tamery/connection/connection-parts'
-import { isLocalhostConnectionString } from '@tamery/connection/utils'
-import { SafeURL } from '@tamery/shared/safe-url'
+import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import { tryCatch } from '@tamery/shared/utils'
 
 import { fetchingConfig } from '~/core/connection/fetching-config'
@@ -15,16 +14,15 @@ export const draftFetching = (
 ) => {
   const connectionString =
     tryCatch(() => toConnectionString(partsOf(values))).data ?? ''
-  const hasPassword = !!tryCatch(() => new SafeURL(connectionString)).data
-    ?.password
+  const hasPassword = !!connectionString && !!values.password
   const { canSend, reason } = fetchingConfig(
     { isPasswordExists: hasPassword, syncType: values.syncType },
     {
       hasLocalConnectionString: true,
       isLocalProxyAvailable,
-      isLocalhost:
-        tryCatch(() => isLocalhostConnectionString(connectionString)).data ===
-        true,
+      isLocalNetwork:
+        tryCatch(() => isLocalNetworkConnectionString(connectionString))
+          .data === true,
       isPasswordPopulated: hasPassword,
       secretsMissing: false,
       usesSsh: values.sshEnabled,

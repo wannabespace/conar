@@ -4,13 +4,6 @@ export const defaultSSLConfig: PoolOptions['ssl'] = {
   rejectUnauthorized: false,
 }
 
-/** The option a one-click SSL fix sets. */
-export const sslSettings = {
-  off: ['sslmode', 'disable'],
-  on: ['sslmode', 'require'],
-  unverified: ['sslmode', 'no-verify'],
-} as const
-
 const SSL_MODES_WITHOUT_VERIFY = new Set(['prefer', 'no-verify'])
 
 const buildCertificateSslConfig = (

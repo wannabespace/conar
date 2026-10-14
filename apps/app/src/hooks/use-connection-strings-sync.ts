@@ -17,39 +17,44 @@ export const useConnectionStringsSync = () => {
     const abortController = new AbortController()
     const { connectionsCollection, connectionStringsCollection } = collections
 
-    const effect = createEffect<Connection>({
-      onEnter: async ({ value }) => {
+    const resolve = async ({ value }: { value: Connection }) => {
+      if (abortController.signal.aborted) {
+        return
+      }
+
+      const connectionString = await connectionStringsCollection.utils.resolve(
+        value.id
+      )
+
+      if (abortController.signal.aborted) {
+        return
+      }
+
+      if (connectionString) {
+        const record = await connectionStringsCollection.utils.prepare({
+          connectionId: value.id,
+          connectionString,
+          updatedAt: value.updatedAt,
+        })
+
         if (abortController.signal.aborted) {
           return
         }
 
-        const connectionString =
-          await connectionStringsCollection.utils.resolve(value.id)
-
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        if (connectionString) {
-          const record = await connectionStringsCollection.utils.prepare({
-            connectionId: value.id,
-            connectionString,
-            updatedAt: value.updatedAt,
+        if (connectionStringsCollection.has(value.id)) {
+          connectionStringsCollection.update(value.id, (draft) => {
+            Object.assign(draft, record)
           })
-
-          if (abortController.signal.aborted) {
-            return
-          }
-
-          if (connectionStringsCollection.has(value.id)) {
-            connectionStringsCollection.update(value.id, (draft) => {
-              Object.assign(draft, record)
-            })
-          } else {
-            connectionStringsCollection.insert(record)
-          }
+        } else {
+          connectionStringsCollection.insert(record)
         }
-      },
+      }
+    }
+
+    // On update too: an edit on another device (host, credentials, sync type) reaches this one without a restart.
+    const effect = createEffect<Connection>({
+      onEnter: resolve,
+      onUpdate: resolve,
       query: (q) => q.from({ connections: connectionsCollection }),
       skipInitial: false,
     })

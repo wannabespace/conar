@@ -23,11 +23,9 @@ export type GuessedParts = Partial<Omit<ConnectionParts, 'ssh'>> & {
   ssh?: SshTunnel
 }
 
-export interface ConnectionGuess {
+export interface ConnectionGuess extends DatabaseGuess {
   /** Changes made to a string that would connect but break a database client; the form tells the user about each. */
   fixes: GuessFix[]
-  format: GuessFormat
-  parts: GuessedParts
 }
 
 /** Parts may hold empty strings; `guessConnection` drops them. */

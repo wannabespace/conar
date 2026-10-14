@@ -186,7 +186,7 @@
   --surface-alpha: 0.55;
 }
 
-/* Retune both values together: the composite must stay below level 2 (`--card`, L 0.244) at the brightest dark vibrancy, ~L 0.3 over a light wallpaper — 0.7 × 0.185 + 0.3 × 0.3 ≈ 0.22. */
+/* Retune both values together: the composite must stay below level 2 (`--card`, L 0.244) at the brightest dark vibrancy, ~L 0.3 over a light wallpaper: 0.7 × 0.185 + 0.3 × 0.3 ≈ 0.22. */
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
   --body: oklch(0.185 0.0042 259.64 / var(--surface-alpha));
   --surface-alpha: 0.7;

@@ -15,6 +15,7 @@ import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ProtectedSettingsRouteImport } from './routes/_protected/settings'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
 import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
+import { Route as ProtectedEditConnectionIdRouteImport } from './routes/_protected/edit/$connectionId'
 import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
 import { Route as ProtectedSettingsSectionRouteImport } from './routes/_protected/settings/$section'
 import { Route as ProtectedConnectionResourceIdIndexRouteImport } from './routes/_protected/connection/$resourceId/index'
@@ -50,6 +51,12 @@ const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedEditConnectionIdRoute =
+  ProtectedEditConnectionIdRouteImport.update({
+    id: '/edit/$connectionId',
+    path: '/edit/$connectionId',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedSettingsIndexRoute = ProtectedSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/settings': typeof ProtectedSettingsRouteWithChildren
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
+  '/edit/$connectionId': typeof ProtectedEditConnectionIdRoute
   '/settings/$section': typeof ProtectedSettingsSectionRoute
   '/create/': typeof ProtectedCreateIndexRoute
   '/settings/': typeof ProtectedSettingsIndexRoute
@@ -88,6 +96,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/': typeof ProtectedIndexRoute
+  '/edit/$connectionId': typeof ProtectedEditConnectionIdRoute
   '/settings/$section': typeof ProtectedSettingsSectionRoute
   '/create': typeof ProtectedCreateIndexRoute
   '/settings': typeof ProtectedSettingsIndexRoute
@@ -101,6 +110,7 @@ export interface FileRoutesById {
   '/_protected/settings': typeof ProtectedSettingsRouteWithChildren
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
+  '/_protected/edit/$connectionId': typeof ProtectedEditConnectionIdRoute
   '/_protected/settings/$section': typeof ProtectedSettingsSectionRoute
   '/_protected/create/': typeof ProtectedCreateIndexRoute
   '/_protected/settings/': typeof ProtectedSettingsIndexRoute
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/settings'
     | '/connection/$resourceId'
+    | '/edit/$connectionId'
     | '/settings/$section'
     | '/create/'
     | '/settings/'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/'
+    | '/edit/$connectionId'
     | '/settings/$section'
     | '/create'
     | '/settings'
@@ -135,6 +147,7 @@ export interface FileRouteTypes {
     | '/_protected/settings'
     | '/_protected/'
     | '/_protected/connection/$resourceId'
+    | '/_protected/edit/$connectionId'
     | '/_protected/settings/$section'
     | '/_protected/create/'
     | '/_protected/settings/'
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/create/'
       preLoaderRoute: typeof ProtectedCreateIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/edit/$connectionId': {
+      id: '/_protected/edit/$connectionId'
+      path: '/edit/$connectionId'
+      fullPath: '/edit/$connectionId'
+      preLoaderRoute: typeof ProtectedEditConnectionIdRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/settings/': {
@@ -257,6 +277,7 @@ interface ProtectedRouteChildren {
   ProtectedSettingsRoute: typeof ProtectedSettingsRouteWithChildren
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedConnectionResourceIdRoute: typeof ProtectedConnectionResourceIdRouteWithChildren
+  ProtectedEditConnectionIdRoute: typeof ProtectedEditConnectionIdRoute
   ProtectedCreateIndexRoute: typeof ProtectedCreateIndexRoute
 }
 
@@ -265,6 +286,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedConnectionResourceIdRoute:
     ProtectedConnectionResourceIdRouteWithChildren,
+  ProtectedEditConnectionIdRoute: ProtectedEditConnectionIdRoute,
   ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 

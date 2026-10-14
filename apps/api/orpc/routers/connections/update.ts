@@ -12,16 +12,19 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type.and(
-      connectionsUpdateSchema.omit(
-        'createdAt',
-        'updatedAt',
-        'userId',
-        'workspaceId',
-        'id'
-      ),
-      connectionsUpdateSchema.pick('id').required()
-    )
+    type
+      .and(
+        connectionsUpdateSchema.omit(
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'workspaceId',
+          'id',
+          'syncType'
+        ),
+        connectionsUpdateSchema.pick('id').required()
+      )
+      .onUndeclaredKey('delete')
   )
   .errors({
     NOT_FOUND: { message: 'Connection not found' },
@@ -55,7 +58,7 @@ export const update = orpc
         connectionString: encryptConnectionString({
           connectionString,
           secret,
-          syncType: changes.syncType ?? found.syncType,
+          syncType: found.syncType,
         }),
       })
       .where(

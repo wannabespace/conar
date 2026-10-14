@@ -14,9 +14,6 @@ import {
   isServiceName,
   TYPE_OF_PORT,
 } from './hosts'
-import { sslSettings as mssqlSslSettings } from './ssl/mssql'
-import { sslSettings as mysqlSslSettings } from './ssl/mysql'
-import { sslSettings as pgSslSettings } from './ssl/pg'
 
 export interface ConnectionPatch {
   database?: string
@@ -41,27 +38,32 @@ export interface DiagnosisContext {
   parts: ConnectionParts
 }
 
-type SslSetting = 'off' | 'on' | 'unverified'
-
-const SSL_SETTINGS: Partial<
-  Record<ConnectionType, Partial<Record<SslSetting, readonly [string, string]>>>
+// Sync with the options `ssl/<engine>.ts` parses.
+const SSL_OPTIONS: Partial<
+  Record<ConnectionType, Partial<Record<'off' | 'on' | 'unverified', string>>>
 > = {
-  [ConnectionType.MSSQL]: mssqlSslSettings,
-  [ConnectionType.MySQL]: mysqlSslSettings,
-  [ConnectionType.Postgres]: pgSslSettings,
+  [ConnectionType.MSSQL]: {
+    off: 'encrypt=false',
+    on: 'encrypt=true',
+    unverified: 'trustservercertificate=true',
+  },
+  [ConnectionType.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
+  [ConnectionType.Postgres]: {
+    off: 'sslmode=disable',
+    on: 'sslmode=require',
+    unverified: 'sslmode=no-verify',
+  },
 }
 
 const sslFix = (
   { options, type }: ConnectionParts,
-  setting: SslSetting,
+  setting: 'off' | 'on' | 'unverified',
   label: string
 ): Diagnosis['fix'] => {
-  const option = type ? SSL_SETTINGS[type]?.[setting] : undefined
-  if (!option) {
-    return undefined
-  }
-  const [key, value] = option
-  return { label, patch: { options: mergeOptions(options, `${key}=${value}`) } }
+  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
+  return option
+    ? { label, patch: { options: mergeOptions(options, option) } }
+    : undefined
 }
 
 const tunnelFix = ({ desktop, parts }: DiagnosisContext): Diagnosis['fix'] =>
@@ -269,6 +271,18 @@ const RULES: {
 /** Explains a failed connection test from the driver's message, with a one-click fix where the cause is unambiguous. */
 export const diagnoseConnectionError = (
   context: DiagnosisContext
-): Diagnosis | null =>
-  RULES.find(({ match }) => match.test(context.message))?.diagnose(context) ??
-  null
+): Diagnosis | null => {
+  const { host, password } = context.parts
+  const diagnosis =
+    RULES.find(({ match }) => match.test(context.message))?.diagnose(context) ??
+    null
+  // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
+  if (!diagnosis || diagnosis.focus || password || isLocalHost(host)) {
+    return diagnosis
+  }
+  return {
+    ...diagnosis,
+    focus: 'password',
+    hint: `${diagnosis.hint} The password is empty too.`,
+  }
+}

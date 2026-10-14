@@ -13,7 +13,7 @@ import {
 import { PORTS } from '@tamery/shared/constants'
 import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { omit, tryCatchAsync } from '@tamery/shared/utils'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
@@ -191,8 +191,7 @@ export const mcp = {
   clients,
   connectionAccess,
   forgetClient: (name: string) => {
-    const { [name]: _forgotten, ...others } = store.get('clients')
-    store.set('clients', others)
+    store.set('clients', omit(store.get('clients'), [name]))
     return clients()
   },
   regenerateToken: () => {

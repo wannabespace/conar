@@ -24,6 +24,25 @@ describe('connectionSecrets', () => {
     ).toBe(LOCAL)
   })
 
+  it('keeps asking for an SSH secret an edit left empty, only while the tunnel uses it', () => {
+    const edited =
+      'postgres://app@db.internal:5432/app?ssh_host=bastion&ssh_auth=password'
+    const missing = ['ssh_password' as const]
+    const switchedToAgent =
+      'postgres://app@db.internal:5432/app?ssh_host=bastion&ssh_auth=agent'
+    const tunnelOff = 'postgres://app@db.internal:5432/app'
+
+    expect(
+      connectionSecrets.missing(
+        new URL(connectionSecrets.keepMissing(edited, missing)).searchParams
+      )
+    ).toEqual(['ssh_password'])
+    expect(connectionSecrets.keepMissing(switchedToAgent, missing)).toBe(
+      switchedToAgent
+    )
+    expect(connectionSecrets.keepMissing(tunnelOff, missing)).toBe(tunnelOff)
+  })
+
   it('never restores a secret the synced string dropped', () => {
     const switchedToAgent =
       'postgres://app@db.internal:5432/app?ssh_host=bastion&ssh_auth=agent'

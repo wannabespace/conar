@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 
 import { queryClient } from '~/lib/query-client'
 
-import { mcpStatusQuery } from './use-mcp-server'
+import { mcpClientsQuery, mcpStatusQuery } from './use-mcp-server'
 
 export const RegenerateToken = () => {
   const [open, setOpen] = useState(false)
@@ -32,6 +32,7 @@ export const RegenerateToken = () => {
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => {
       queryClient.setQueryData(mcpStatusQuery.queryKey, next)
+      void queryClient.invalidateQueries(mcpClientsQuery)
       setOpen(false)
     },
   })

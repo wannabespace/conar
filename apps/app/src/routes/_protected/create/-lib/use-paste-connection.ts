@@ -29,7 +29,12 @@ export const usePasteConnection = ({
     select: (location) => location.state.connectionLink,
   })
 
-  const showMiss = (via: PasteVia) => {
+  const read = (text: string, via: PasteVia) => {
+    const guess = guessConnection(text)
+    if (guess) {
+      onPaste(guess, via)
+      return
+    }
     posthog.capture('connection_paste_missed', { via })
     if (!pitchShown) {
       toast('No connection found', { description: PASTE_FORMATS })
@@ -41,15 +46,6 @@ export const usePasteConnection = ({
       () => setMiss((current) => ({ ...current, shown: false })),
       MISS_SHOWN_MS
     )
-  }
-
-  const read = (text: string, via: PasteVia) => {
-    const guess = guessConnection(text)
-    if (guess) {
-      onPaste(guess, via)
-    } else {
-      showMiss(via)
-    }
   }
   const onRead = useEffectEvent(read)
 

@@ -19,64 +19,10 @@ import { useEffect, useState } from 'react'
 
 import { useCollections } from '~/core/collections'
 import { posthog } from '~/lib/posthog'
-import type { McpEndpoint } from '~/modules/mcp/clients'
 import { clientLabel, maskedToken, MCP_CLIENTS } from '~/modules/mcp/clients'
 import { mcpClientsQuery, useMcpServer } from '~/modules/mcp/use-mcp-server'
 
 const PROMPT = 'Add the database this project uses to Tamery.'
-
-type McpClient = (typeof MCP_CLIENTS)[number]
-
-const useOpenAddedConnection = () => {
-  const { connectionsResourcesCollection } = useCollections()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const openedAt = Date.now()
-    const subscription = connectionsResourcesCollection.subscribeChanges(
-      (changes) => {
-        // Rows streaming in from sync are inserts too: only one created after opening is the agent's.
-        const added = changes.find(
-          (change) =>
-            change.type === 'insert' &&
-            new Date(change.value.createdAt).getTime() >= openedAt
-        )
-        if (added) {
-          void navigate({
-            params: { resourceId: added.value.id },
-            to: '/connection/$resourceId',
-          })
-        }
-      }
-    )
-    return () => subscription.unsubscribe()
-  }, [connectionsResourcesCollection, navigate])
-}
-
-const AgentPicker = ({
-  client,
-  onPick,
-}: {
-  client: McpClient
-  onPick: (id: string) => void
-}) => (
-  <Select
-    items={MCP_CLIENTS.map(({ id, label }) => ({ label, value: id }))}
-    value={client.id}
-    onValueChange={(next) => next && onPick(next)}
-  >
-    <SelectTrigger size="sm" variant="ghost-row" aria-label="Agent">
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent size="sm">
-      {MCP_CLIENTS.map(({ id, label }) => (
-        <SelectItem key={id} value={id}>
-          {label}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-)
 
 const TerminalLine = ({
   children,
@@ -116,55 +62,6 @@ const TerminalLine = ({
   </div>
 )
 
-const ConnectLine = ({
-  client,
-  server,
-}: {
-  client: McpClient
-  server: McpEndpoint
-}) => {
-  const installLink = client.installLink?.(server)
-  const isCommand = client.language === 'bash'
-
-  return (
-    <TerminalLine
-      glyph={isCommand ? '$' : undefined}
-      code={client.code(server)}
-      display={client.code({ ...server, token: maskedToken(server.token) })}
-      language={client.language}
-      onCopy={() => posthog.capture('mcp_config_copied', { client: client.id })}
-    >
-      {!isCommand && (
-        <div className="text-muted-foreground flex min-h-6 items-center gap-2 font-mono text-xs">
-          <span className="min-w-0 flex-1 truncate">
-            # {client.instruction} {client.file}
-          </span>
-          {installLink && (
-            <Button
-              type="button"
-              size="xs"
-              variant="outline"
-              onClick={() => {
-                posthog.capture('mcp_client_install_opened', {
-                  client: client.id,
-                })
-                window.open(installLink, '_blank')
-              }}
-            >
-              Install
-              <HugeiconsIcon
-                icon={ArrowUpRight01Icon}
-                strokeWidth={2}
-                data-icon="inline-end"
-              />
-            </Button>
-          )}
-        </div>
-      )}
-    </TerminalLine>
-  )
-}
-
 export const AgentPanel = () => {
   const { status } = useMcpServer()
   const running = status?.state === 'running'
@@ -178,7 +75,31 @@ export const AgentPanel = () => {
   )
   const client =
     MCP_CLIENTS.find(({ id }) => id === picked) ?? lastUsed ?? MCP_CLIENTS[0]
-  useOpenAddedConnection()
+  const isCommand = client?.language === 'bash'
+  const installLink = running ? client?.installLink?.(status) : undefined
+  const { connectionsResourcesCollection } = useCollections()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const openedAt = Date.now()
+    const subscription = connectionsResourcesCollection.subscribeChanges(
+      (changes) => {
+        // Rows streaming in from sync are inserts too: only one created after opening is the agent's.
+        const added = changes.find(
+          (change) =>
+            change.type === 'insert' &&
+            new Date(change.value.createdAt).getTime() >= openedAt
+        )
+        if (added) {
+          void navigate({
+            params: { resourceId: added.value.id },
+            to: '/connection/$resourceId',
+          })
+        }
+      }
+    )
+    return () => subscription.unsubscribe()
+  }, [connectionsResourcesCollection, navigate])
 
   return (
     <div className="flex flex-col gap-8">
@@ -203,9 +124,63 @@ export const AgentPanel = () => {
               <span className="bg-foreground/10 size-2.5 rounded-full" />
               <span className="bg-foreground/10 size-2.5 rounded-full" />
             </div>
-            <AgentPicker client={client} onPick={setPicked} />
+            <Select
+              items={MCP_CLIENTS.map(({ id, label }) => ({ label, value: id }))}
+              value={client.id}
+              onValueChange={(next) => next && setPicked(next)}
+            >
+              <SelectTrigger size="sm" variant="ghost-row" aria-label="Agent">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent size="sm">
+                {MCP_CLIENTS.map(({ id, label }) => (
+                  <SelectItem key={id} value={id}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <ConnectLine client={client} server={status} />
+          <TerminalLine
+            glyph={isCommand ? '$' : undefined}
+            code={client.code(status)}
+            display={client.code({
+              ...status,
+              token: maskedToken(status.token),
+            })}
+            language={client.language}
+            onCopy={() =>
+              posthog.capture('mcp_config_copied', { client: client.id })
+            }
+          >
+            {!isCommand && (
+              <div className="text-muted-foreground flex min-h-6 items-center gap-2 font-mono text-xs">
+                <span className="min-w-0 flex-1 truncate">
+                  # {client.instruction} {client.file}
+                </span>
+                {installLink && (
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant="outline"
+                    onClick={() => {
+                      posthog.capture('mcp_client_install_opened', {
+                        client: client.id,
+                      })
+                      window.open(installLink, '_blank')
+                    }}
+                  >
+                    Install
+                    <HugeiconsIcon
+                      icon={ArrowUpRight01Icon}
+                      strokeWidth={2}
+                      data-icon="inline-end"
+                    />
+                  </Button>
+                )}
+              </div>
+            )}
+          </TerminalLine>
           <TerminalLine
             glyph="›"
             code={PROMPT}

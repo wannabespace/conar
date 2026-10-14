@@ -12,7 +12,7 @@ import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
 import { guessSsh, throughForwards } from './ssh'
-import type { ConnectionGuess, GuessFormat } from './types'
+import type { ConnectionGuess } from './types'
 import { guessUrl, guessWebUrl } from './url'
 
 export type { GuessFix } from './fixes'
@@ -28,10 +28,6 @@ const DETECTORS = [
   guessWebUrl,
   guessHost,
 ]
-/** The engine a format means when neither the text, the port nor the host names one. */
-const TYPE_OF_FORMAT: Partial<Record<GuessFormat, ConnectionType>> = {
-  ado: ConnectionType.MSSQL,
-}
 const LINE_CONTINUATION = /\\\r?\n/gu
 
 /** Never throws: it reads anything the user pastes or drops. */
@@ -57,7 +53,7 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       parts.type ??
       TYPE_OF_PORT[port] ??
       hint?.type ??
-      (database && TYPE_OF_FORMAT[database.format])
+      (database?.format === 'ado' ? ConnectionType.MSSQL : undefined)
     return {
       ...fixParts(
         mergeParts(

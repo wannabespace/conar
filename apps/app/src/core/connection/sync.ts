@@ -77,6 +77,10 @@ export const createConnectionsCollection = (
             orpc.connections.create.call(
               await prepareConnectionToCloud(connectionStrings, value)
             ),
+          update: async (_id, _changes, row) =>
+            orpc.connections.update.call(
+              await prepareConnectionToCloud(connectionStrings, row)
+            ),
         },
         sync: ({ rows, signal }) =>
           orpc.connections.sync.call(rows, { signal }),

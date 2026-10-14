@@ -2,6 +2,7 @@ import {
   AppWindowIcon,
   Copy01Icon,
   Delete02Icon,
+  PencilEdit01Icon,
   Refresh01Icon,
   SquareUnlock01Icon,
 } from '@hugeicons/core-free-icons'
@@ -17,6 +18,7 @@ export const buildConnectionMenuItems = ({
   connectionString,
   onClearPassword,
   onCopy,
+  onEdit,
   onOpenInNewWindow,
   onRefresh,
   onRemove,
@@ -26,6 +28,7 @@ export const buildConnectionMenuItems = ({
   connectionString: ConnectionString | undefined
   onClearPassword: () => void
   onCopy: () => void
+  onEdit: () => void
   onOpenInNewWindow: (() => void) | null
   onRefresh: () => void
   onRemove: VoidFunction
@@ -37,6 +40,11 @@ export const buildConnectionMenuItems = ({
     onSelect: () => onOpenInNewWindow?.(),
   },
   { type: 'separator' },
+  {
+    label: 'Edit',
+    icon: PencilEdit01Icon,
+    onSelect: onEdit,
+  },
   {
     label: 'Refresh',
     icon: Refresh01Icon,

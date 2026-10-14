@@ -13,6 +13,11 @@ import {
 } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 
@@ -45,12 +50,8 @@ export const TestAlert = ({
   onFocus: (field: NonNullable<Diagnosis['focus']>) => void
   parts: ConnectionParts
 }) => {
-  const desktop = !!window.electron
-  const diagnosis = diagnoseConnectionError({
-    desktop,
-    message: error.message,
-    parts,
-  })
+  const context = { desktop: !!window.electron, message: error.message, parts }
+  const diagnosis = diagnoseConnectionError(context)
   const { ask, available, exhausted, locked } = useAiHelp()
   const answer = ask.data
   const aiFix = answer?.fix
@@ -133,35 +134,40 @@ export const TestAlert = ({
                 </Button>
               )}
               {available && !answer && (
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className={locked ? 'opacity-50' : undefined}
-                  disabled={ask.isPending}
-                  onClick={() =>
-                    checkOrUpgrade(
-                      exhausted
-                        ? 'ai.connection.unlimited'
-                        : 'ai.connection.use'
-                    ) &&
-                    ask.mutate(
-                      {
-                        ...diagnosisRequestOf({
-                          desktop,
-                          message: error.message,
-                          parts,
-                        }),
-                        type: parts.type ?? ConnectionType.Postgres,
-                      },
-                      { onSuccess: onAnswer }
-                    )
-                  }
-                >
-                  <LoadingContent loading={ask.isPending}>
-                    <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />
-                    Ask AI
-                  </LoadingContent>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className={locked ? 'opacity-50' : undefined}
+                        disabled={ask.isPending}
+                        onClick={() =>
+                          checkOrUpgrade(
+                            exhausted
+                              ? 'ai.connection.unlimited'
+                              : 'ai.connection.use'
+                          ) &&
+                          ask.mutate(
+                            {
+                              ...diagnosisRequestOf(context),
+                              type: parts.type ?? ConnectionType.Postgres,
+                            },
+                            { onSuccess: onAnswer }
+                          )
+                        }
+                      >
+                        <LoadingContent loading={ask.isPending}>
+                          <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />
+                          Ask AI
+                        </LoadingContent>
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>
+                    Your password, host and user are never sent, only the error
+                  </TooltipContent>
+                </Tooltip>
               )}
               {diagnosis && (
                 <Button

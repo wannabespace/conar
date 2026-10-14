@@ -32,6 +32,18 @@ describe('diagnoseConnectionError', () => {
     })
   })
 
+  it('asks for the empty password a remote server will want next', () => {
+    expect(
+      diagnose('connect EHOSTUNREACH 2a05::1:5432', { password: '' })?.focus
+    ).toBe('password')
+    expect(
+      diagnose('connect ECONNREFUSED 127.0.0.1:5432', {
+        host: 'localhost',
+        password: '',
+      })?.focus
+    ).toBeUndefined()
+  })
+
   it('offers a tunnel for a private host that times out', () => {
     expect(
       diagnose('connect ETIMEDOUT 10.0.3.4:5432', { host: '10.0.3.4' })?.fix

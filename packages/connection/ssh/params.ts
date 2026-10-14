@@ -69,7 +69,7 @@ export const deleteSshParams = (searchParams: URLSearchParams) => {
   }
 }
 
-const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
+export const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
   agent: [],
   key: ['privateKey', 'passphrase'],
   keyPath: ['keyPath', 'passphrase'],

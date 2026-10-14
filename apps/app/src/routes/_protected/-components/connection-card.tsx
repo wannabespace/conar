@@ -2,13 +2,13 @@ import { connectionSecrets } from '@tamery/connection/secrets'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
+import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import type { MotionStyle } from 'motion/react'
-import { motion } from 'motion/react'
+import type { CSSProperties } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -30,9 +30,11 @@ import { buildConnectionMenuItems } from './connection-menu-items'
 export const ConnectionCard = ({
   connection,
   onRemove,
+  search,
 }: {
   connection: Connection
   onRemove: VoidFunction
+  search: string
 }) => {
   const router = useRouter()
   const { connectionStringsCollection, connectionsResourcesCollection } =
@@ -139,6 +141,12 @@ export const ConnectionCard = ({
     connectionString,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
+    onEdit: () => {
+      router.navigate({
+        params: { connectionId: connection.id },
+        to: '/edit/$connectionId',
+      })
+    },
     onOpenInNewWindow:
       selectedResource && canOpenResource
         ? () =>
@@ -154,14 +162,11 @@ export const ConnectionCard = ({
   })
 
   return (
-    <motion.div
-      layout="position"
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+    <div
       style={
-        (connection.color ? { '--color': connection.color } : {}) as MotionStyle
+        (connection.color
+          ? { '--color': connection.color }
+          : {}) as CSSProperties
       }
       className="relative flex flex-col border-b last:border-b-0"
     >
@@ -204,7 +209,7 @@ export const ConnectionCard = ({
               title={connection.name}
               className="truncate text-sm leading-none"
             >
-              {connection.name}
+              <HighlightText text={connection.name} match={search} />
             </span>
             <ConnectionCardStatus
               canSend={canSend}
@@ -231,6 +236,6 @@ export const ConnectionCard = ({
           className="relative z-10"
         />
       </AppContextMenu>
-    </motion.div>
+    </div>
   )
 }

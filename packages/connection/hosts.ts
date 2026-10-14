@@ -84,11 +84,12 @@ export const TYPE_OF_PORT: Record<string, ConnectionType> = {
 
 const LOCAL_HOSTS = new Set(['localhost', '::1', '[::1]'])
 const LOOPBACK_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
-const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u
+export const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u
 const PRIVATE_IPV4 =
   /^(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/u
+const PRIVATE_IPV6 = /^\[?f[cd][\da-f]{2}:/iu
 const PRIVATE_NAME =
-  /\.(?:internal|local|lan|svc|cluster\.local|corp|intranet)$/iu
+  /\.(?:internal|local|lan|svc|cluster\.local|corp|intranet|home\.arpa|ts\.net)$/iu
 
 export const hostHintOf = (host: string): HostHint | undefined => {
   const lowerHost = host.toLowerCase()
@@ -104,7 +105,7 @@ export const isIpv6OnlyHost = (host: string) =>
   !!hostHintOf(host)?.ipv6Only?.test(host)
 
 export const isPrivateHost = (host: string) =>
-  PRIVATE_IPV4.test(host) || PRIVATE_NAME.test(host)
+  PRIVATE_IPV4.test(host) || PRIVATE_IPV6.test(host) || PRIVATE_NAME.test(host)
 
 /** `db` or `postgres` with no dot: a Docker Compose service, which only resolves inside the compose network. */
 export const isServiceName = (host: string) =>
@@ -112,3 +113,7 @@ export const isServiceName = (host: string) =>
   !isLocalHost(host) &&
   !IPV4.test(host) &&
   !host.includes(':')
+
+/** Only reachable from the user's own machine or network (a VPN, a LAN, Docker), so never from the cloud proxy. */
+export const isLocalNetworkHost = (host: string) =>
+  isLocalHost(host) || isPrivateHost(host) || isServiceName(host)

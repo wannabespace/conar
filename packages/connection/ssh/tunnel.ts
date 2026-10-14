@@ -13,13 +13,8 @@ import type { ConfirmHostKey } from './session'
 import { connectSsh } from './session'
 import { tunnelSocket } from './socket'
 
-interface Target {
-  host: string
-  port: number
-}
-
 interface Session {
-  channel: (target: Target) => Promise<Duplex>
+  channel: (target: { host: string; port: number }) => Promise<Duplex>
   client: Promise<Client>
   connect: () => Promise<void>
 }
@@ -100,10 +95,10 @@ const openSession = (
 }
 
 /** The string's database through its SSH tunnel, or null for a string without one. The string keeps the database's real host, so TLS verifies against it. */
-export const tunnelForwarding = (
+export const tunnelForwarding = async (
   connectionString: string,
   confirmHostKey: ConfirmHostKey
-): Forwarding | null => {
+): Promise<Forwarding | null> => {
   const { host, port, scheme, searchParams } =
     readConnectionString(connectionString)
   const tunnel = sshTunnelOf(searchParams)
@@ -123,8 +118,6 @@ export const tunnelForwarding = (
   const key = JSON.stringify(tunnel)
   const session = () =>
     sessions.get(key) ?? openSession(key, tunnel, confirmHostKey)
-  return {
-    connect: () => session().connect(),
-    socket: () => tunnelSocket(session().channel(target)),
-  }
+  await session().connect()
+  return { socket: () => tunnelSocket(session().channel(target)) }
 }

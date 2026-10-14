@@ -1,6 +1,7 @@
 import type { McpTarget } from '@tamery/shared/mcp'
 
 import { getCollections } from '~/core/collections'
+import { isLocalNetwork } from '~/core/connection/connection-strings'
 import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
@@ -44,10 +45,10 @@ export const resolveTarget = ({
   const connectionString = connectionStringsCollection.get(connectionId)
   const { canSend, reason } = fetchingConfig(connection, {
     hasLocalConnectionString: !!connectionString,
-    isLocalhost: connectionString?.isLocalhost,
+    isLocalNetwork: connectionString && isLocalNetwork(connectionString),
     isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy: getConnectionStore(connectionId).get().proxy,
-    secretsMissing: !!connectionString?.missingSecrets.length,
+    secretsMissing: !!connectionString?.missingSecrets?.length,
     usesSsh: !!connectionString?.usesSsh,
   })
   if (!canSend) {

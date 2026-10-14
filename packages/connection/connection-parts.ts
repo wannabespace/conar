@@ -78,10 +78,9 @@ export const mergeOptions = (options: string, changes: string) => {
   const updates = new URLSearchParams(changes)
   const replaced = new Set(updates.keys().map((key) => key.toLowerCase()))
   const merged = new URLSearchParams(
-    new URLSearchParams(options)
-      .entries()
-      .filter(([key]) => !replaced.has(key.toLowerCase()))
-      .toArray()
+    [...new URLSearchParams(options)].filter(
+      ([key]) => !replaced.has(key.toLowerCase())
+    )
   )
   for (const [key, value] of updates) {
     merged.append(key, value)

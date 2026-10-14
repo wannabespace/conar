@@ -34,26 +34,18 @@ export const FieldTextarea = ({
   return (
     <InputGroup variant={variant}>
       <InputGroupTextarea
-        onDragOver={
-          takesFile
-            ? (event) => {
-                if (event.dataTransfer.types.includes('Files')) {
-                  event.preventDefault()
-                }
-              }
-            : undefined
-        }
-        onDrop={
-          takesFile
-            ? (event) => {
-                const [file] = event.dataTransfer.files
-                if (file) {
-                  event.preventDefault()
-                  void load(file)
-                }
-              }
-            : undefined
-        }
+        onDragOver={(event) => {
+          if (takesFile && event.dataTransfer.types.includes('Files')) {
+            event.preventDefault()
+          }
+        }}
+        onDrop={(event) => {
+          const [file] = event.dataTransfer.files
+          if (takesFile && file) {
+            event.preventDefault()
+            void load(file)
+          }
+        }}
         disabled={disabled}
         {...props}
         {...formInputProps(field)}

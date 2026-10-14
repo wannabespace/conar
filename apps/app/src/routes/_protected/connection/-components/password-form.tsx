@@ -26,23 +26,21 @@ import { testConnectionQuery } from '~/core/queries/connection/test'
 
 const CREDENTIAL_LABELS = {
   password: 'Password',
-  'secrets.ssh_key': 'SSH private key',
-  'secrets.ssh_passphrase': 'SSH key passphrase',
-  'secrets.ssh_password': 'SSH password',
-  'secrets.sslpassphrase': 'SSL key passphrase',
-  'secrets.sslpassword': 'SSL key passphrase',
-} satisfies Record<'password' | `secrets.${SecretParam}`, string>
+  ssh_key: 'SSH private key',
+  ssh_passphrase: 'SSH key passphrase',
+  ssh_password: 'SSH password',
+  sslpassphrase: 'SSL key passphrase',
+  sslpassword: 'SSL key passphrase',
+} satisfies Record<'password' | SecretParam, string>
 
 const EMPTY_CREDENTIALS = {
   password: '',
-  secrets: {
-    ssh_key: '',
-    ssh_passphrase: '',
-    ssh_password: '',
-    sslpassphrase: '',
-    sslpassword: '',
-  } satisfies Record<SecretParam, string>,
-}
+  ssh_key: '',
+  ssh_passphrase: '',
+  ssh_password: '',
+  sslpassphrase: '',
+  sslpassword: '',
+} satisfies Record<'password' | SecretParam, string>
 
 export const PasswordForm = ({
   connection,
@@ -65,7 +63,7 @@ export const PasswordForm = ({
   const missingSecrets = connectionString?.missingSecrets ?? []
   const missingFields = [
     ...(needsPassword ? (['password'] as const) : []),
-    ...missingSecrets.map((param) => `secrets.${param}` as const),
+    ...missingSecrets,
   ]
 
   const { mutate: saveCredentials, status } = useMutation({
@@ -78,7 +76,7 @@ export const PasswordForm = ({
         url.password = encodeURIComponent(credentials.password)
       }
       for (const param of missingSecrets) {
-        url.searchParams.set(param, credentials.secrets[param])
+        url.searchParams.set(param, credentials[param])
       }
       url.pathname = encodeURIComponent(connectionResource.name || '')
 
@@ -112,11 +110,8 @@ export const PasswordForm = ({
     defaultValues: EMPTY_CREDENTIALS,
     onSubmit: ({ value }) => saveCredentials(value),
   })
-  const incomplete = useStore(
-    form.store,
-    ({ values }) =>
-      (needsPassword && !values.password) ||
-      missingSecrets.some((param) => !values.secrets[param])
+  const incomplete = useStore(form.store, ({ values }) =>
+    missingFields.some((name) => !values[name])
   )
   const pending = status === 'pending'
 
@@ -152,7 +147,7 @@ export const PasswordForm = ({
                     {(field) => (
                       <field.Field>
                         <field.Label>{CREDENTIAL_LABELS[name]}</field.Label>
-                        {name === 'secrets.ssh_key' ? (
+                        {name === 'ssh_key' ? (
                           <field.Textarea
                             data-mask
                             rows={3}

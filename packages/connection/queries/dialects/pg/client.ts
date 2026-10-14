@@ -49,8 +49,7 @@ const connect = (options: PoolConfig) =>
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
-  const tunnel = sshForwarding.of(connectionString)
-  await tunnel?.connect()
+  const tunnel = await sshForwarding.of(connectionString)
   const conf: PoolConfig = {
     ...config,
     ...(tunnel && { stream: tunnel.socket }),

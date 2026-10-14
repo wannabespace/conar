@@ -99,8 +99,7 @@ export const partsOfVariables = (
     }
     const type =
       group.type ??
-      TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix])
-        .filter((value): value is string => !!value)
+      TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix] ?? '')
         .map((name) => TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name))
         .find(Boolean)
     if (
@@ -116,8 +115,7 @@ export const partsOfVariables = (
     parts = mergeParts(parts, fills ? named : {}, { type })
   }
 
-  const { type: _type, ...fields } = parts
-  return Object.keys(fields).length > 0 ? parts : null
+  return Object.keys(parts).some((key) => key !== 'type') ? parts : null
 }
 
 /** `KEY=value` lines of a `.env`, a YAML map or a command's environment prefix; keys come back uppercased. */

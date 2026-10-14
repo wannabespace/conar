@@ -11,7 +11,6 @@ const strings = new Map([
   [
     'connection',
     {
-      isLocalhost: true,
       isPasswordPopulated: true,
       missingSecrets: [],
     },

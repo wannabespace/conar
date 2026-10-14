@@ -23,7 +23,7 @@ interface FetchingOptions {
   hasLocalConnectionString?: boolean
   isLocalProxyAvailable?: boolean
   isPasswordPopulated?: boolean
-  isLocalhost?: boolean
+  isLocalNetwork?: boolean
   proxy?: { enabled: boolean; url: string | null }
   /** An SSH or SSL secret this device has not filled in since `CloudWithoutPassword` stripped it. */
   secretsMissing: boolean
@@ -33,7 +33,7 @@ interface FetchingOptions {
 const REASONS = {
   connectionStringNotStored:
     'This connection string was not synced to the cloud. Open this connection on the device where it was created.',
-  localhostFromWeb:
+  localNetworkFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   passwordMissingInDesktop:
     'Filled password is required to query this connection.',
@@ -74,7 +74,7 @@ const resolveFlags = (
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
-    isLocalhost: options.isLocalhost ?? false,
+    isLocalNetwork: options.isLocalNetwork ?? false,
     needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
     passwordUnresolved:
       connection.isPasswordExists && isPasswordPopulated === undefined,
@@ -93,7 +93,7 @@ export const fetchingConfig = (
     connectionStringMissing,
     hasPassword,
     isElectron,
-    isLocalhost,
+    isLocalNetwork,
     needsPassword,
     passwordUnresolved,
     proxyPreferred,
@@ -129,7 +129,7 @@ export const fetchingConfig = (
     return allowed('local')
   }
 
-  if ((isLocalhost || hasPassword) && proxyReachable && proxyPreferred) {
+  if ((isLocalNetwork || hasPassword) && proxyReachable && proxyPreferred) {
     return allowed('proxy')
   }
 
@@ -137,8 +137,8 @@ export const fetchingConfig = (
     return allowed('local')
   }
 
-  if (isLocalhost) {
-    return blocked('proxy', REASONS.localhostFromWeb)
+  if (isLocalNetwork) {
+    return blocked('proxy', REASONS.localNetworkFromWeb)
   }
 
   if (connection.syncType !== SyncType.Cloud) {

@@ -1,11 +1,11 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 
-import { isLocalHost } from './hosts'
+import { isLocalNetworkHost } from './hosts'
 import { sshTunnelOf } from './ssh/params'
 
-export const isLocalhostConnectionString = (
+export const isLocalNetworkConnectionString = (
   connectionString: string
-): boolean => isLocalHost(new SafeURL(connectionString).hostname)
+): boolean => isLocalNetworkHost(new SafeURL(connectionString).hostname)
 
 export const isSshConnectionString = (connectionString: string): boolean =>
   sshTunnelOf(new SafeURL(connectionString).searchParams) !== null

@@ -10,21 +10,22 @@ import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { posthog } from '~/lib/posthog'
 
+export type SavedConnection = Omit<
+  Parameters<typeof createConnection>[0],
+  'workspaceId'
+> & {
+  /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
+  open: boolean
+  origin: GuessFormat | undefined
+}
+
 export const useCreateConnection = () => {
   const collections = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const router = useRouter()
 
   return useMutation({
-    mutationFn: async ({
-      open,
-      origin,
-      ...data
-    }: Omit<Parameters<typeof createConnection>[0], 'workspaceId'> & {
-      /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
-      open: boolean
-      origin: GuessFormat | undefined
-    }) => {
+    mutationFn: async ({ open, origin, ...data }: SavedConnection) => {
       if (!activeWorkspace) {
         throw new Error('Workspace is still loading. Please try again.')
       }
