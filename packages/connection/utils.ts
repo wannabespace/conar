@@ -1,9 +1,23 @@
-import { isInternalHost } from './hosts'
-import { readConnectionString } from './parse-connection-string'
-import { sshTunnelOf } from './ssh/params'
+import { SafeURL } from '@tamery/shared/safe-url'
 
-export const isInternalConnectionString = (connectionString: string): boolean =>
-  isInternalHost(readConnectionString(connectionString).host)
+import {
+  parseConnectionString,
+  readConnectionString,
+} from './parse-connection-string'
+import { connectionSecrets } from './secrets'
+import { sshTunnelOf } from './ssh/params'
 
 export const isSshConnectionString = (connectionString: string): boolean =>
   sshTunnelOf(readConnectionString(connectionString).searchParams) !== null
+
+export const describeConnectionString = (connectionString: string) => {
+  const { database, password, searchParams } =
+    parseConnectionString(connectionString)
+  return {
+    defaultResourceName: database ?? null,
+    displayUrl: new SafeURL(connectionString).host,
+    isPasswordPopulated: !!password,
+    missingSecrets: connectionSecrets.missing(searchParams),
+    usesSsh: sshTunnelOf(searchParams) !== null,
+  }
+}

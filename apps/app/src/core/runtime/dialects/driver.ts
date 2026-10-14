@@ -1,9 +1,6 @@
 import { rowObjects } from '@tamery/connection/queries'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
-import {
-  isInternalConnectionString,
-  isSshConnectionString,
-} from '@tamery/connection/utils'
+import { describeConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { PORTS } from '@tamery/shared/ports'
@@ -17,10 +14,7 @@ import type {
 } from 'kysely'
 
 import { getCollections } from '~/core/collections'
-import {
-  fetchingConfig,
-  fetchingOptionsOf,
-} from '~/core/connection/fetching-config'
+import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
 
@@ -64,11 +58,8 @@ export const createDialectProvider = (
   type: ConnectionType,
   options: DialectOptions
 ) => {
-  const {
-    connectionsCollection,
-    connectionsResourcesCollection,
-    connectionStringsCollection,
-  } = getCollections()
+  const { connectionsCollection, connectionsResourcesCollection } =
+    getCollections()
   const resource = options.resourceId
     ? connectionsResourcesCollection.get(options.resourceId)
     : null
@@ -79,23 +70,15 @@ export const createDialectProvider = (
 
   const maxRows = options.resultSets?.maxRows
   const resolveTransport = () => {
-    const usesSsh = isSshConnectionString(options.connectionString)
+    const connectionString = describeConnectionString(options.connectionString)
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
-    const { hasLocalConnectionString, isPasswordPopulated, missingSecrets } =
-      fetchingOptionsOf(
-        connectionId ? connectionStringsCollection.get(connectionId) : null
-      )
     const config = fetchingConfig(
       connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
       {
-        hasLocalConnectionString,
-        isInternal: isInternalConnectionString(options.connectionString),
-        isPasswordPopulated,
-        missingSecrets,
+        connectionString,
         proxy,
-        usesSsh,
       }
     )
 
@@ -111,7 +94,7 @@ export const createDialectProvider = (
       return { electron, kind: 'electron' as const }
     }
 
-    if (usesSsh) {
+    if (connectionString.usesSsh) {
       throw new Error(SSH_DESKTOP_ONLY)
     }
 

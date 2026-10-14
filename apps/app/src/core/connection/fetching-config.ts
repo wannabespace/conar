@@ -25,32 +25,25 @@ export interface FetchingConfig {
 
 type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
+type FetchingConnectionString = Pick<
+  ConnectionString,
+  'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
+>
+
 interface FetchingOptions {
-  hasLocalConnectionString?: boolean
+  /** `undefined` while the row loads leaves the password unresolved. */
+  connectionString: FetchingConnectionString | null | undefined
   isLocalProxyAvailable?: boolean
-  isPasswordPopulated?: boolean
-  isInternal?: boolean
   proxy?: { enabled: boolean; url: string | null }
-  missingSecrets: SecretParam[]
-  usesSsh: boolean
 }
 
 const PORT_SUFFIX = /:\d*$/u
 
 /** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
-const isInternalConnection = ({ displayUrl }: ConnectionString) =>
+export const isInternalConnection = ({
+  displayUrl,
+}: Pick<ConnectionString, 'displayUrl'>) =>
   isInternalHost(displayUrl.replace(PORT_SUFFIX, ''))
-
-/** `undefined` while the row loads leaves the password unresolved. */
-export const fetchingOptionsOf = (
-  connectionString: ConnectionString | null | undefined
-) => ({
-  hasLocalConnectionString: !!connectionString,
-  isInternal: !!connectionString && isInternalConnection(connectionString),
-  isPasswordPopulated: connectionString?.isPasswordPopulated,
-  missingSecrets: connectionString?.missingSecrets ?? [],
-  usesSsh: !!connectionString?.usesSsh,
-})
 
 const REASONS = {
   connectionStringNotStored:
@@ -89,16 +82,18 @@ const resolveFlags = (
   options: FetchingOptions
 ) => {
   const isElectron = !!window.electron
-  const { isPasswordPopulated } = options
+  const { connectionString } = options
+  const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   return {
     connectionStringMissing:
       connection.syncType === SyncType.CloudWithoutConnectionString &&
-      !options.hasLocalConnectionString,
+      !connectionString,
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
-    isInternal: options.isInternal ?? false,
+    isInternal: !!connectionString && isInternalConnection(connectionString),
+    missingSecrets: connectionString?.missingSecrets ?? [],
     needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
     passwordUnresolved:
       connection.isPasswordExists && isPasswordPopulated === undefined,
@@ -106,6 +101,7 @@ const resolveFlags = (
     proxyReachable:
       (options.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
       !!options.proxy?.url,
+    usesSsh: !!connectionString?.usesSsh,
   }
 }
 
@@ -118,17 +114,19 @@ export const fetchingConfig = (
     hasPassword,
     isElectron,
     isInternal,
+    missingSecrets,
     needsPassword,
     passwordUnresolved,
     proxyPreferred,
     proxyReachable,
+    usesSsh,
   } = resolveFlags(connection, options)
 
   if (connectionStringMissing) {
     return blocked('local', REASONS.connectionStringNotStored)
   }
 
-  if (options.usesSsh && !isElectron) {
+  if (usesSsh && !isElectron) {
     return blocked('local', SSH_DESKTOP_ONLY)
   }
 
@@ -138,7 +136,7 @@ export const fetchingConfig = (
 
   const missingCredentials: Credential[] = [
     ...(needsPassword ? (['password'] as const) : []),
-    ...options.missingSecrets,
+    ...missingSecrets,
   ]
   if (missingCredentials.length > 0) {
     let reason = REASONS.secretsMissing
@@ -150,7 +148,7 @@ export const fetchingConfig = (
     return { ...blocked('waiting-for-password', reason), missingCredentials }
   }
 
-  if (options.usesSsh) {
+  if (usesSsh) {
     return allowed('local')
   }
 

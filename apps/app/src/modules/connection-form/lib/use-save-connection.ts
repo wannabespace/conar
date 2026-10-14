@@ -3,7 +3,6 @@ import type { GuessFormat } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
-import { isInternalConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -69,18 +68,18 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
         syncType: values.syncType,
       },
       {
-        hasLocalConnectionString: true,
-        isInternal:
-          tryCatch(() => isInternalConnectionString(connectionString)).data ===
-          true,
+        connectionString: {
+          displayUrl:
+            tryCatch(() => new SafeURL(connectionString).host).data ?? '',
+          isPasswordPopulated: hasPassword,
+          missingSecrets: saved
+            ? connectionSecrets.missing(
+                new SafeURL(connectionString).searchParams
+              )
+            : [],
+          usesSsh: values.sshEnabled,
+        },
         isLocalProxyAvailable,
-        isPasswordPopulated: hasPassword,
-        missingSecrets: saved
-          ? connectionSecrets.missing(
-              new SafeURL(connectionString).searchParams
-            )
-          : [],
-        usesSsh: values.sshEnabled,
       }
     )
     const tested =

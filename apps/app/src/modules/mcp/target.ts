@@ -1,10 +1,7 @@
 import type { McpTarget } from '@tamery/shared/mcp'
 
 import { getCollections } from '~/core/collections'
-import {
-  fetchingConfig,
-  fetchingOptionsOf,
-} from '~/core/connection/fetching-config'
+import { fetchingConfig } from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { queryClient } from '~/lib/query-client'
@@ -46,7 +43,7 @@ export const resolveTarget = ({
 
   const connectionString = connectionStringsCollection.get(connectionId)
   const { canSend, reason } = fetchingConfig(connection, {
-    ...fetchingOptionsOf(connectionString),
+    connectionString,
     proxy: getConnectionStore(connectionId).get().proxy,
   })
   if (!canSend) {

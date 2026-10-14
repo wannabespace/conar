@@ -1,9 +1,7 @@
-import { parseConnectionString } from '@tamery/connection/parse-connection-string'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
-import { sshTunnelOf } from '@tamery/connection/ssh/params'
+import { describeConnectionString } from '@tamery/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import type { PersistedCollectionUtils } from '@tanstack/db-sqlite-persistence-core'
 import type { Collection } from '@tanstack/react-db'
@@ -110,21 +108,11 @@ export const createConnectionStringsCollection =
             }
           },
           async prepare(data) {
-            const encrypted = await encryptConnectionString(
-              data.connectionString
-            )
-            const { database, password, searchParams } = parseConnectionString(
-              data.connectionString
-            )
             return {
+              ...describeConnectionString(data.connectionString),
               connectionId: data.connectionId,
-              defaultResourceName: database ?? null,
-              displayUrl: new SafeURL(data.connectionString).host,
-              encrypted,
-              isPasswordPopulated: !!password,
-              missingSecrets: connectionSecrets.missing(searchParams),
+              encrypted: await encryptConnectionString(data.connectionString),
               updatedAt: data.updatedAt,
-              usesSsh: sshTunnelOf(searchParams) !== null,
             }
           },
           async resolve({ id: connectionId, isPasswordExists }) {
