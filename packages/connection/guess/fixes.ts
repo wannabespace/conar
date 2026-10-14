@@ -1,11 +1,11 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+
+import { DEFAULT_PORTS } from '../connection-parts'
+import { hostHintOf } from '../hosts'
 import type { GuessedParts } from './types'
 
 export type GuessFix = 'neon-direct' | 'password-placeholder' | 'session-pooler'
 
-const TRANSACTION_POOLER_PORT = '6543'
-const SESSION_PORT = '5432'
-const SUPABASE_HOST = /\.supabase\.(?:co|com)$/iu
-const NEON_POOLER = /-pooler(?=\.[^.]+.*\.neon\.tech$)/iu
 const PASSWORD_PLACEHOLDER =
   /^(?:\[[^\]]*\]|<[^>]*>|\{[^}]*\}|\*+|your[-_ ]?password)$/iu
 /** Prisma reads these itself; a database driver would pass them on to the server. */
@@ -17,20 +17,23 @@ interface Fix {
   fix: GuessFix
 }
 
-/** Strings providers hand out that connect but break a database client: a transaction pooler drops session state (open transactions, `SET`, prepared statements) between queries. */
+const directHostOf = (host: string) =>
+  hostHintOf(host)?.directHostOf?.(host) ?? host
+
+/** Strings providers hand out that connect but break a database client. */
 const FIXES: Fix[] = [
   {
     applies: ({ host = '', port }) =>
-      SUPABASE_HOST.test(host) && port === TRANSACTION_POOLER_PORT,
-    apply: (parts) => ({ ...parts, port: SESSION_PORT }),
+      !!port && hostHintOf(host)?.transactionPoolerPort === port,
+    apply: (parts) => ({
+      ...parts,
+      port: String(DEFAULT_PORTS[ConnectionType.Postgres]),
+    }),
     fix: 'session-pooler',
   },
   {
-    applies: ({ host = '' }) => NEON_POOLER.test(host),
-    apply: (parts) => ({
-      ...parts,
-      host: parts.host?.replace(NEON_POOLER, ''),
-    }),
+    applies: ({ host = '' }) => directHostOf(host) !== host,
+    apply: (parts) => ({ ...parts, host: directHostOf(parts.host ?? '') }),
     fix: 'neon-direct',
   },
   {
@@ -56,8 +59,3 @@ export const fixParts = ({ options, ...found }: GuessedParts) => {
   }
   return { fixes, parts }
 }
-
-const SUPABASE_DIRECT_HOST = /^db\.[^.]+\.supabase\.co$/iu
-
-/** Supabase's direct host resolves to IPv6 only, so it fails on IPv4 networks. */
-export const isIpv6OnlyHost = (host: string) => SUPABASE_DIRECT_HOST.test(host)

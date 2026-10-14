@@ -14,7 +14,7 @@ All connection strings are encrypted with a **per-workspace secret key**, unique
 
 When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
 
-To keep the server from ever handling your plaintext password, use **No password** — then only metadata is stored and returned. To keep the connection string off the server entirely, use **Metadata only**.
+To keep the server from ever handling your plaintext password, use **No password**: then only metadata is stored and returned. To keep the connection string off the server entirely, use **Metadata only**.
 
 ## Sync modes
 
@@ -58,20 +58,21 @@ Every mode syncs the connection across your devices.
 
 A connection can reach its database through an SSH tunnel. The tunnel settings are part of the connection string, so they're encrypted and synced with it.
 
-- Tunnels run only in the desktop app. The web app, `tamery proxy` and the cloud proxy refuse SSH connections.
-- **No password** also keeps the SSH password, private key and key passphrase off the server. Tamery asks for them the first time you open the connection on another device.
-- Tamery checks the SSH server's host key against your `~/.ssh/known_hosts`. A server it hasn't seen asks you to trust its key fingerprint once and adds it there; a key that changed refuses to connect.
+- Tunnels run only in the desktop app. The web app, `tamery proxy`, `tamery query` and the cloud proxy refuse SSH connections.
+- **No password** also keeps the SSH password, private key and key passphrase, and the SSL client key passphrase, off the server. Tamery asks for them the first time you open the connection on another device.
+- Tamery checks the SSH server's host key against your `~/.ssh/known_hosts`. A server that isn't listed there asks once whether to trust its key fingerprint (**Cancel** is the default) and is added when you trust it. A server listed under a different key, or under a different key type, is refused like a changed key, with steps to update `~/.ssh/known_hosts`.
+- The database driver talks to the database through the SSH connection itself, so a tunnel opens no local port on your device.
 - With a key file or your SSH agent, the private key itself is never saved: Tamery stores only the key's path (and its passphrase, if any) and reads the key on your device when you connect.
-- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile` and `IdentityAgent` apply.
+- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile`, `IdentityAgent`, `HostKeyAlias` and `HashKnownHosts` apply.
 
 ## AI help with a failed test
 
 The explanations and fixes Tamery shows when a test fails run on your device. **Ask AI** is the only part that sends anything, and only when you click it. It sends:
 
-- the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host) — never the host itself
-- the driver options, with any value that could hold a secret or certificate replaced
+- the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host), never the host itself
+- the driver options, keeping only values that can't identify you (like `sslmode=require`) and replacing the rest
 - whether a user and password are set, whether an SSH tunnel is on, and whether you're in the desktop or web app
-- the error message, with your host, user, database, password, SSH host and any IP address replaced by placeholders
+- the error message, with every host (the SSH host too), user, database, password and IP address (IPv4 and IPv6) replaced by placeholders
 
 ## Choosing a mode
 

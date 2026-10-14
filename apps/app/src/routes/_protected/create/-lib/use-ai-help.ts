@@ -19,9 +19,11 @@ export const useAiHelp = () => {
       onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
     })
   )
-  const available =
-    isOnline &&
-    check('ai.connection.use') &&
-    (!usage?.connection || usage.connection.used < usage.connection.max)
-  return { ask, available }
+  const quota = usage?.connection
+  return {
+    ask,
+    available: isOnline,
+    exhausted: !!quota && quota.used >= quota.max,
+    locked: !check('ai.connection.use'),
+  }
 }

@@ -47,6 +47,8 @@ export const resolveTarget = ({
     isLocalhost: connectionString?.isLocalhost,
     isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy: getConnectionStore(connectionId).get().proxy,
+    secretsMissing: !!connectionString?.missingSecrets.length,
+    usesSsh: !!connectionString?.usesSsh,
   })
   if (!canSend) {
     throw new Error(reason ?? `Open "${connection.name}" in Tamery first.`)

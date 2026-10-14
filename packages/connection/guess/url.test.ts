@@ -53,10 +53,21 @@ describe('guessConnection — URLs', () => {
       {
         database: 'logs',
         host: 'ch.acme.io',
+        https: true,
         password: 'pw',
         port: '8443',
         type: ConnectionType.ClickHouse,
         user: 'default',
+      },
+    ],
+    [
+      'postgres://me:100%@db.acme.io/my%3Fdb',
+      {
+        database: 'my?db',
+        host: 'db.acme.io',
+        password: '100%',
+        type: ConnectionType.Postgres,
+        user: 'me',
       },
     ],
     [
@@ -105,7 +116,20 @@ describe('guessConnection — URLs', () => {
       guessConnection('CLICKHOUSE_URL=https://ch.acme.io')?.parts
     ).toStrictEqual({
       host: 'ch.acme.io',
+      https: true,
       port: '443',
+      type: ConnectionType.ClickHouse,
+    })
+  })
+
+  it('keeps https on ClickHouse on a custom port', () => {
+    expect(
+      guessConnection('CLICKHOUSE_URL=https://ch.acme.io:9443/logs')?.parts
+    ).toStrictEqual({
+      database: 'logs',
+      host: 'ch.acme.io',
+      https: true,
+      port: '9443',
       type: ConnectionType.ClickHouse,
     })
   })
@@ -157,6 +181,30 @@ describe('guessConnection — JDBC', () => {
         port: '3306',
         type: ConnectionType.MySQL,
         user: 'root',
+      },
+    ],
+    [
+      'jdbc:postgresql://srv.postgres.database.azure.com:5432/db?user=admin@srv&password=pw&sslmode=require',
+      {
+        database: 'db',
+        host: 'srv.postgres.database.azure.com',
+        options: 'sslmode=require',
+        password: 'pw',
+        port: '5432',
+        type: ConnectionType.Postgres,
+        user: 'admin@srv',
+      },
+    ],
+    [
+      'jdbc:mysql://srv.mysql.database.azure.com:3306/db?user=admin@srv&password=pw&useSSL=true',
+      {
+        database: 'db',
+        host: 'srv.mysql.database.azure.com',
+        options: 'useSSL=true',
+        password: 'pw',
+        port: '3306',
+        type: ConnectionType.MySQL,
+        user: 'admin@srv',
       },
     ],
     [

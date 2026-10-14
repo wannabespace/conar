@@ -12,6 +12,8 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useCollections } from '~/core/collections'
 
+import { ConnectionCardReason } from './connection-card-reason'
+
 const ErrorStatus = ({
   connectionId,
   error,
@@ -92,8 +94,8 @@ export const ConnectionCardStatus = ({
             />
           }
         />
-        <TooltipContent className="pointer-events-auto max-w-xs">
-          {reason}
+        <TooltipContent className="pointer-events-auto block max-w-xs">
+          <ConnectionCardReason reason={reason} />
         </TooltipContent>
       </Tooltip>
     )

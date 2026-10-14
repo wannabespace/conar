@@ -26,6 +26,7 @@ export const draftFetching = (
         tryCatch(() => isLocalhostConnectionString(connectionString)).data ===
         true,
       isPasswordPopulated: hasPassword,
+      secretsMissing: false,
       usesSsh: values.sshEnabled,
     }
   )

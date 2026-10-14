@@ -1,11 +1,5 @@
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+import { SelectItem } from '@tamery/ui/components/select'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 
@@ -24,46 +18,40 @@ const SYNC_OPTIONS: Record<SyncType, { description: string; label: string }> = {
   },
 }
 
-const SYNC_TYPES = Object.values(SyncType)
+const SYNC_TYPES = Object.values(SyncType).map((syncType) => ({
+  label: SYNC_OPTIONS[syncType].label,
+  value: syncType,
+}))
 
 export const SyncField = ({ form }: { form: ConnectionForm }) => (
   <form.AppField name="syncType">
     {(field) => (
       <field.Field orientation="row">
         <field.Label>Sync</field.Label>
-        <Select
-          items={SYNC_TYPES.map((syncType) => ({
-            label: SYNC_OPTIONS[syncType].label,
-            value: syncType,
-          }))}
-          value={field.state.value}
-          onValueChange={(next) => next && field.handleChange(next)}
+        <field.Select
+          items={SYNC_TYPES}
+          variant="flat"
+          className="flex-1"
+          renderValue={(syncType) => (
+            <>
+              {SYNC_OPTIONS[syncType].label}
+              <span className="text-muted-foreground truncate">
+                {SYNC_OPTIONS[syncType].description}
+              </span>
+            </>
+          )}
         >
-          <SelectTrigger id={field.name} variant="flat" className="flex-1">
-            <SelectValue>
-              {(syncType: SyncType) => (
-                <>
-                  {SYNC_OPTIONS[syncType].label}
-                  <span className="text-muted-foreground truncate">
-                    {SYNC_OPTIONS[syncType].description}
-                  </span>
-                </>
-              )}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {SYNC_TYPES.map((syncType) => (
-              <SelectItem key={syncType} value={syncType}>
-                <span className="flex flex-col">
-                  {SYNC_OPTIONS[syncType].label}
-                  <span className="text-muted-foreground text-xs">
-                    {SYNC_OPTIONS[syncType].description}
-                  </span>
+          {SYNC_TYPES.map(({ label, value }) => (
+            <SelectItem key={value} value={value}>
+              <span className="flex flex-col">
+                {label}
+                <span className="text-muted-foreground text-xs">
+                  {SYNC_OPTIONS[value].description}
                 </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              </span>
+            </SelectItem>
+          ))}
+        </field.Select>
       </field.Field>
     )}
   </form.AppField>

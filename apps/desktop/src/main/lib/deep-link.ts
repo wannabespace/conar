@@ -1,7 +1,6 @@
 import path from 'node:path'
 
 import { app, BrowserWindow } from 'electron'
-import Store from 'electron-store'
 
 const DEEPLINK_PROTOCOL = 'tamery'
 // Sync with `appProtocolScheme` in todesktop.json: macOS routes only the schemes the bundle declares.
@@ -24,11 +23,6 @@ const handlerPath =
   process.defaultApp && argvPath ? process.execPath : undefined
 const handlerArgs =
   process.defaultApp && argvPath ? [path.resolve(argvPath)] : undefined
-
-const store = new Store<{ claimed: boolean }>({
-  defaults: { claimed: false },
-  name: 'connection-links',
-})
 
 let createWindow: (() => BrowserWindow) | null = null
 let pendingConnectionLink =
@@ -91,10 +85,6 @@ export const setupProtocolHandler = (openWindow: () => BrowserWindow) => {
   createWindow = openWindow
 
   app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, handlerPath, handlerArgs)
-
-  if (app.isPackaged && !store.get('claimed')) {
-    store.set('claimed', connectionLinks.setDefault(true))
-  }
 
   const gotTheLock = app.requestSingleInstanceLock()
 

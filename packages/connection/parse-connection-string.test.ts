@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
 import { parseConnectionString } from './parse-connection-string'
+import { parseSSLConfig } from './ssl/mssql'
 
 describe('parseConnectionString', () => {
   it('should parse basic connection string', () => {
@@ -82,6 +83,17 @@ describe('parseConnectionString', () => {
       port: 5432,
       searchParams: new URLSearchParams([['options', '-c search_path=auth']]),
       user: 'user',
+    })
+  })
+
+  it('reads option keys and SQL Server flags in any case', () => {
+    const { searchParams } = parseConnectionString(
+      'sqlserver://u:p@host:1433/db?TrustServerCertificate=False&Encrypt=TRUE'
+    )
+
+    expect(parseSSLConfig(searchParams)).toEqual({
+      encrypt: true,
+      trustServerCertificate: false,
     })
   })
 })

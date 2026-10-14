@@ -120,9 +120,14 @@ export const ServerFields = ({ form }: { form: ConnectionForm }) => {
       </FieldGroup>
       {isLocalHost && !window.electron && (
         <Footnote>
-          {localProxyAvailable
-            ? 'Local databases are reached through your tamery proxy.'
-            : 'Run `tamery proxy` to reach local databases from the web.'}
+          {localProxyAvailable ? (
+            'Local databases are reached through your tamery proxy.'
+          ) : (
+            <>
+              Run <code className="font-mono">tamery proxy</code> to reach local
+              databases from the web.
+            </>
+          )}
         </Footnote>
       )}
     </>

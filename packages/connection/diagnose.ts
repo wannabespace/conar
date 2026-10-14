@@ -1,9 +1,22 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
-import { DEFAULT_PORTS } from './connection-parts'
-import { isIpv6OnlyHost } from './guess/fixes'
-import { hostHintOf, isLocalHost, TYPE_OF_PORT } from './guess/hosts'
+import {
+  CLICKHOUSE_HTTP_PORT_OF_NATIVE,
+  DEFAULT_PORTS,
+  mergeOptions,
+} from './connection-parts'
+import {
+  hostHintOf,
+  isIpv6OnlyHost,
+  isLocalHost,
+  isPrivateHost,
+  isServiceName,
+  TYPE_OF_PORT,
+} from './hosts'
+import { sslSettings as mssqlSslSettings } from './ssl/mssql'
+import { sslSettings as mysqlSslSettings } from './ssl/mysql'
+import { sslSettings as pgSslSettings } from './ssl/pg'
 
 export interface ConnectionPatch {
   database?: string
@@ -22,7 +35,7 @@ export interface Diagnosis {
   title: string
 }
 
-interface Context {
+export interface DiagnosisContext {
   desktop: boolean
   message: string
   parts: ConnectionParts
@@ -30,68 +43,40 @@ interface Context {
 
 type SslSetting = 'off' | 'on' | 'unverified'
 
-/** Driver options that set SSL, per engine; sync with `ssl/*.ts`. */
-const SSL_OPTIONS: Partial<
-  Record<ConnectionType, Partial<Record<SslSetting, [string, string]>>>
+const SSL_SETTINGS: Partial<
+  Record<ConnectionType, Partial<Record<SslSetting, readonly [string, string]>>>
 > = {
-  [ConnectionType.MSSQL]: {
-    off: ['encrypt', 'false'],
-    on: ['encrypt', 'true'],
-    unverified: ['trustServerCertificate', 'true'],
-  },
-  [ConnectionType.MySQL]: { off: ['ssl', 'false'], on: ['ssl', 'true'] },
-  [ConnectionType.Postgres]: {
-    off: ['sslmode', 'disable'],
-    on: ['sslmode', 'require'],
-    unverified: ['sslmode', 'no-verify'],
-  },
+  [ConnectionType.MSSQL]: mssqlSslSettings,
+  [ConnectionType.MySQL]: mysqlSslSettings,
+  [ConnectionType.Postgres]: pgSslSettings,
 }
-
-const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
-  9000: '8123',
-  9440: '8443',
-}
-const PRIVATE_IPV4 =
-  /^(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/u
-const PRIVATE_NAME =
-  /\.(?:internal|local|lan|svc|cluster\.local|corp|intranet)$/iu
-const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u
-const ANY_IPV4 = /\b\d{1,3}(?:\.\d{1,3}){3}\b/gu
 
 const sslFix = (
   { options, type }: ConnectionParts,
   setting: SslSetting,
   label: string
 ): Diagnosis['fix'] => {
-  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
+  const option = type ? SSL_SETTINGS[type]?.[setting] : undefined
   if (!option) {
     return undefined
   }
-  const params = new URLSearchParams(options)
-  params.set(...option)
-  return { label, patch: { options: params.toString() } }
+  const [key, value] = option
+  return { label, patch: { options: mergeOptions(options, `${key}=${value}`) } }
 }
 
-const isPrivateHost = (host: string) =>
-  PRIVATE_IPV4.test(host) || PRIVATE_NAME.test(host)
-
-/** `db` or `postgres` with no dot: a Docker Compose service, which only resolves inside the compose network. */
-const isServiceName = (host: string) =>
-  !host.includes('.') &&
-  !isLocalHost(host) &&
-  !IPV4.test(host) &&
-  !host.includes(':')
-
-const tunnelFix = ({ desktop, parts }: Context): Diagnosis['fix'] =>
+const tunnelFix = ({ desktop, parts }: DiagnosisContext): Diagnosis['fix'] =>
   desktop && !parts.ssh
     ? { label: 'Set up an SSH tunnel', patch: { sshEnabled: true } }
     : undefined
 
-const RULES: { match: RegExp; diagnose: (context: Context) => Diagnosis }[] = [
+const RULES: {
+  match: RegExp
+  diagnose: (context: DiagnosisContext) => Diagnosis
+}[] = [
   {
     diagnose: ({ parts }) => {
       if (
-        /\.pooler\.supabase\.com$/iu.test(parts.host) &&
+        hostHintOf(parts.host)?.projectInUser?.test(parts.host) &&
         !parts.user.includes('.')
       ) {
         return {
@@ -185,7 +170,7 @@ const RULES: { match: RegExp; diagnose: (context: Context) => Diagnosis }[] = [
         }
       }
       return {
-        hint: `No DNS record for "${host}" — check the spelling.`,
+        hint: `No DNS record for "${host}". Check the spelling.`,
         title: 'Host not found',
       }
     },
@@ -216,7 +201,7 @@ const RULES: { match: RegExp; diagnose: (context: Context) => Diagnosis }[] = [
       ) {
         return {
           fix: { label: 'Switch the engine', patch: { type: portType } },
-          hint: `${port} is the usual port for another engine — check the engine and the port.`,
+          hint: `${port} is the usual port for another engine. Check the engine and the port.`,
           title: 'Wrong engine for this port?',
         }
       }
@@ -282,69 +267,8 @@ const RULES: { match: RegExp; diagnose: (context: Context) => Diagnosis }[] = [
 ]
 
 /** Explains a failed connection test from the driver's message, with a one-click fix where the cause is unambiguous. */
-export const diagnoseConnectionError = (context: Context): Diagnosis | null =>
+export const diagnoseConnectionError = (
+  context: DiagnosisContext
+): Diagnosis | null =>
   RULES.find(({ match }) => match.test(context.message))?.diagnose(context) ??
   null
-
-/** Strips the values that identify the user's server, and any IP address (Postgres names the client's own), from an error before it leaves the device. */
-export const redactConnectionError = (
-  message: string,
-  parts: ConnectionParts
-) => {
-  const secrets: [string | undefined, string][] = [
-    [parts.password, '<password>'],
-    [parts.ssh?.host, '<ssh-host>'],
-    [parts.host, '<host>'],
-    [parts.user, '<user>'],
-    [parts.ssh?.user, '<ssh-user>'],
-    [parts.database, '<database>'],
-  ]
-  let redacted = message
-  for (const [value, placeholder] of secrets
-    .filter(
-      (entry): entry is [string, string] => !!entry[0] && entry[0].length > 1
-    )
-    .toSorted(([a], [b]) => b.length - a.length)) {
-    redacted = redacted.replaceAll(value, placeholder)
-  }
-  return redacted.replaceAll(ANY_IPV4, '<ip>')
-}
-
-const hostKindOf = (host: string) => {
-  if (isLocalHost(host)) {
-    return 'localhost'
-  }
-  if (isServiceName(host)) {
-    return 'single-label name (Docker service?)'
-  }
-  if (isPrivateHost(host)) {
-    return 'private network'
-  }
-  const provider = hostHintOf(host)?.label
-  return provider
-    ? `${provider}${isIpv6OnlyHost(host) ? ' direct host (IPv6-only)' : ''}`
-    : 'public host'
-}
-
-const SECRET_OPTION = /pass|key|cert|secret|token|credential/iu
-const MAX_OPTION_VALUE = 40
-
-/** What an AI request about a failed connection may carry: no address, user, database or secret. */
-export const diagnosisRequestOf = ({ desktop, message, parts }: Context) => ({
-  // Sync with `error: 'string <= 4000'` in packages/ai/features/diagnose-connection.ts: a longer error fails the request.
-  error: redactConnectionError(message, parts).slice(0, 4000),
-  hostKind: hostKindOf(parts.host),
-  options: new URLSearchParams(
-    [...new URLSearchParams(parts.options)].map(([key, value]) => [
-      key,
-      SECRET_OPTION.test(key) || value.length > MAX_OPTION_VALUE
-        ? '<redacted>'
-        : value,
-    ])
-  ).toString(),
-  passwordSet: !!parts.password,
-  port: parts.port || (parts.type ? String(DEFAULT_PORTS[parts.type]) : ''),
-  runtime: desktop ? ('desktop' as const) : ('web' as const),
-  sshEnabled: !!parts.ssh,
-  userSet: !!parts.user,
-})

@@ -6,9 +6,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@tamery/ui/components/combobox'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useStore } from '@tanstack/react-form'
 
 import { useCollections } from '~/core/collections'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
@@ -26,7 +24,6 @@ export const LabelField = ({ form }: { form: ConnectionForm }) => {
           eq(row.workspaceId, activeWorkspace?.id ?? '')
         ),
   })
-  const label = useStore(form.store, (state) => state.values.label)
   const labels = [
     ...new Set([
       ...LABEL_OPTIONS,
@@ -37,31 +34,35 @@ export const LabelField = ({ form }: { form: ConnectionForm }) => {
   ].toSorted()
 
   return (
-    <Field orientation="row">
-      <FieldLabel htmlFor="label">Label</FieldLabel>
-      <Autocomplete
-        items={labels}
-        value={label}
-        onValueChange={(next) => form.setFieldValue('label', next)}
-      >
-        <ComboboxInput
-          id="label"
-          variant="inset"
-          className="flex-1"
-          data-mask
-          autoComplete="off"
-          placeholder="None"
-        />
-        <ComboboxContent>
-          <ComboboxList>
-            {(item: string) => (
-              <ComboboxItem key={item} value={item} data-mask>
-                {item}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
-      </Autocomplete>
-    </Field>
+    <form.AppField name="label">
+      {(field) => (
+        <field.Field orientation="row">
+          <field.Label>Label</field.Label>
+          <Autocomplete
+            items={labels}
+            value={field.state.value}
+            onValueChange={(next) => field.handleChange(next)}
+          >
+            <ComboboxInput
+              id={field.name}
+              variant="inset"
+              className="flex-1"
+              data-mask
+              autoComplete="off"
+              placeholder="None"
+            />
+            <ComboboxContent>
+              <ComboboxList>
+                {(item: string) => (
+                  <ComboboxItem key={item} value={item} data-mask>
+                    {item}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Autocomplete>
+        </field.Field>
+      )}
+    </form.AppField>
   )
 }

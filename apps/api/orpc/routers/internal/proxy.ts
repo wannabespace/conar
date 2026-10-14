@@ -86,7 +86,7 @@ export const proxy = {
             workspaceId: connection.connection.workspaceId,
           })
         )
-        url.pathname = connection.name || ''
+        url.pathname = encodeURIComponent(connection.name || '')
         return url.toString()
       }
 

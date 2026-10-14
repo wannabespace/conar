@@ -40,35 +40,6 @@ export const SSH_PARAMS = {
   user: 'ssh_user',
 } as const satisfies Record<keyof SshTunnel, string>
 
-/** Set only on the desktop's tunneled string: the database's own host, which its TLS certificate names instead of the tunnel's `127.0.0.1`. */
-export const SSH_TLS_HOST_PARAM = 'ssh_tls_host'
-
-const SSH_SECRETS = ['password', 'privateKey', 'passphrase'] as const
-
-export type SshSecret = (typeof SSH_SECRETS)[number]
-
-/** `CloudWithoutPassword` empties each secret instead of dropping it, so another device knows which ones to ask for. */
-export const sshSecrets = {
-  missing: (searchParams: URLSearchParams): SshSecret[] =>
-    SSH_SECRETS.filter((secret) => searchParams.get(SSH_PARAMS[secret]) === ''),
-  /** Fills only what `strip` emptied: a secret the synced string no longer carries stays gone. */
-  restore: (searchParams: URLSearchParams, local: URLSearchParams) => {
-    for (const secret of sshSecrets.missing(searchParams)) {
-      const value = local.get(SSH_PARAMS[secret])
-      if (value) {
-        searchParams.set(SSH_PARAMS[secret], value)
-      }
-    }
-  },
-  strip: (searchParams: URLSearchParams) => {
-    for (const secret of SSH_SECRETS) {
-      if (searchParams.has(SSH_PARAMS[secret])) {
-        searchParams.set(SSH_PARAMS[secret], '')
-      }
-    }
-  },
-}
-
 export const sshTunnelOf = (
   searchParams: URLSearchParams
 ): SshTunnel | null => {

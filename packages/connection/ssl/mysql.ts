@@ -4,6 +4,12 @@ export const defaultSSLConfig: SslOptions = {
   rejectUnauthorized: false,
 }
 
+/** The option a one-click SSL fix sets. */
+export const sslSettings = {
+  off: ['ssl', 'false'],
+  on: ['ssl', 'true'],
+} as const
+
 const applyCertParams = (
   sslConfig: SslOptions,
   params: {

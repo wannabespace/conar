@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
+import type { ServerHostKeyAlgorithm } from 'ssh2'
+
 import type { HostKeyStatus } from './known-hosts'
 import { knownHosts } from './known-hosts'
 
@@ -9,6 +11,7 @@ const OTHER_KEY =
   'AAAAC3NzaC1lZDI1NTE5AAAAIINvYImuUJD0pYs1LbT2zG+TZ9TozGMtt7sepVkItZPM'
 // `ssh-keygen -H` of `bastion.example.com ssh-ed25519 <KEY>`
 const HASHED_LINE = `|1|Fwo54sDnpLmOfgRmRM5QESILxsE=|Cq0kDhB0/5f1yQWlJZakVEY3OpA= ssh-ed25519 ${KEY}`
+const ECDSA_KEY = 'AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTY='
 
 const key = Buffer.from(KEY, 'base64')
 
@@ -29,6 +32,11 @@ describe('knownHosts.check', () => {
       'changed',
     ],
     [
+      'a key of another type only',
+      `bastion.example.com ecdsa-sha2-nistp256 ${ECDSA_KEY}`,
+      'changed',
+    ],
+    [
       'a changed line before the matching one',
       `bastion.example.com ssh-ed25519 ${OTHER_KEY}\nbastion.example.com ssh-ed25519 ${KEY}`,
       'known',
@@ -42,18 +50,71 @@ describe('knownHosts.check', () => {
   ])('reads %s', (_, contents, status) => {
     expect(knownHosts.check(contents, 'bastion.example.com', key)).toBe(status)
   })
+})
 
-  it('names a non-default port the way OpenSSH writes it', () => {
-    const name = knownHosts.nameOf('bastion.example.com', 2222)
-    expect(
-      knownHosts.check(
-        `[bastion.example.com]:2222 ssh-ed25519 ${KEY}`,
-        name,
-        key
-      )
-    ).toBe('known')
-    expect(
-      knownHosts.check(`bastion.example.com ssh-ed25519 ${KEY}`, name, key)
-    ).toBe('unknown')
+describe('knownHosts.nameOf', () => {
+  it.each<
+    [string, Parameters<typeof knownHosts.nameOf>[0], string, HostKeyStatus]
+  >([
+    [
+      'a non-default port in brackets',
+      { host: 'bastion.example.com', port: 2222 },
+      `[bastion.example.com]:2222 ssh-ed25519 ${KEY}`,
+      'known',
+    ],
+    [
+      'no default-port entry for another port',
+      { host: 'bastion.example.com', port: 2222 },
+      `bastion.example.com ssh-ed25519 ${KEY}`,
+      'unknown',
+    ],
+    [
+      'a mixed-case host against a hashed entry',
+      { host: 'Bastion.Example.COM', port: 22 },
+      HASHED_LINE,
+      'known',
+    ],
+    [
+      'a HostKeyAlias without its port',
+      { alias: 'prod-bastion', host: 'bastion.example.com', port: 2222 },
+      `prod-bastion ssh-ed25519 ${KEY}`,
+      'known',
+    ],
+  ])('matches %s', (_, host, contents, status) => {
+    expect(knownHosts.check(contents, knownHosts.nameOf(host), key)).toBe(
+      status
+    )
   })
+})
+
+describe('knownHosts.listedAlgorithms', () => {
+  it.each<[string, string, ServerHostKeyAlgorithm | undefined]>([
+    ['an unlisted host', `db.example.com ssh-ed25519 ${KEY}`, undefined],
+    [
+      'a host listed under ecdsa',
+      `bastion.example.com ecdsa-sha2-nistp256 ${ECDSA_KEY}`,
+      'ecdsa-sha2-nistp256',
+    ],
+    [
+      'a host listed under rsa',
+      'bastion.example.com ssh-rsa AAAA',
+      'rsa-sha2-512',
+    ],
+  ])('puts the listed type first for %s', (_, contents, first) => {
+    expect(
+      knownHosts.listedAlgorithms(contents, 'bastion.example.com')[0]
+    ).toBe(first)
+  })
+})
+
+describe('knownHosts.lineOf', () => {
+  it.each([false, true])(
+    'writes a line it reads back (hashed: %p)',
+    (hashed) => {
+      const line = knownHosts.lineOf('bastion.example.com', key, { hashed })
+      expect(line.startsWith('|1|')).toBe(hashed)
+      expect(knownHosts.check(line, 'bastion.example.com', key)).toBe('known')
+      expect(knownHosts.check(line, 'db.example.com', key)).toBe('unknown')
+    }
+  )
 })

@@ -92,6 +92,7 @@ export const createDialectProvider = (
           isLocalhostConnectionString(options.connectionString),
         isPasswordPopulated: connectionString?.isPasswordPopulated,
         proxy,
+        secretsMissing: !!connectionString?.missingSecrets.length,
         usesSsh,
       }
     )

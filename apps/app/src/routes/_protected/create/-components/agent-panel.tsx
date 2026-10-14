@@ -166,7 +166,7 @@ const ConnectLine = ({
 }
 
 export const AgentPanel = () => {
-  const { setEnabled, status } = useMcpServer()
+  const { status } = useMcpServer()
   const running = status?.state === 'running'
   const { data: clients = [] } = useQuery({
     ...mcpClientsQuery,
@@ -179,12 +179,6 @@ export const AgentPanel = () => {
   const client =
     MCP_CLIENTS.find(({ id }) => id === picked) ?? lastUsed ?? MCP_CLIENTS[0]
   useOpenAddedConnection()
-
-  useEffect(() => {
-    if (status?.state === 'off') {
-      setEnabled(true)
-    }
-  }, [status?.state, setEnabled])
 
   return (
     <div className="flex flex-col gap-8">

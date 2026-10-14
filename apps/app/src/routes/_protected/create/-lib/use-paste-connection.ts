@@ -1,32 +1,70 @@
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { useLocation } from '@tanstack/react-router'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { toast } from 'sonner'
+
+import { posthog } from '~/lib/posthog'
+
+import type { Miss } from '../-components/paste-hero'
+import { isMac, PASTE_FORMATS } from '../-components/paste-hero'
 
 export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'
 
 const MAX_DROP_BYTES = 256 * 1024
+const MISS_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
-  onMiss,
   onPaste,
+  pitchShown,
 }: {
-  onMiss: () => void
   onPaste: (guess: ConnectionGuess, via: PasteVia) => void
+  pitchShown: boolean
 }) => {
   const [dragging, setDragging] = useState(false)
+  const [miss, setMiss] = useState<Miss>({ count: 0, shown: false })
+  const hideMiss = useRef(0)
   const connectionLink = useLocation({
     select: (location) => location.state.connectionLink,
   })
 
-  const onRead = useEffectEvent((text: string, via: PasteVia) => {
+  const showMiss = (via: PasteVia) => {
+    posthog.capture('connection_paste_missed', { via })
+    if (!pitchShown) {
+      toast('No connection found', { description: PASTE_FORMATS })
+      return
+    }
+    setMiss(({ count }) => ({ count: count + 1, shown: true }))
+    window.clearTimeout(hideMiss.current)
+    hideMiss.current = window.setTimeout(
+      () => setMiss((current) => ({ ...current, shown: false })),
+      MISS_SHOWN_MS
+    )
+  }
+
+  const read = (text: string, via: PasteVia) => {
     const guess = guessConnection(text)
     if (guess) {
       onPaste(guess, via)
     } else {
-      onMiss()
+      showMiss(via)
     }
-  })
+  }
+  const onRead = useEffectEvent(read)
+
+  const readClipboard = async () => {
+    const { data: text } = await tryCatchAsync(() =>
+      navigator.clipboard.readText()
+    )
+    if (text === null) {
+      toast(
+        `Couldn't read the clipboard. Press ${isMac ? '⌘V' : 'Ctrl+V'} instead.`
+      )
+      return
+    }
+    read(text, 'clipboard')
+  }
 
   const onPasteEvent = useEffectEvent((event: ClipboardEvent) => {
     const text = event.clipboardData?.getData('text') ?? ''
@@ -61,6 +99,7 @@ export const usePasteConnection = ({
 
   useEffect(() => {
     if (connectionLink) {
+      // oxlint-disable-next-line react/set-state-in-effect -- the link arrives in navigation state, so this effect is where it is read; a miss shows like a paste's.
       onRead(connectionLink, 'link')
     }
   }, [connectionLink])
@@ -68,8 +107,9 @@ export const usePasteConnection = ({
   useEffect(() => {
     const onDragOver = (event: DragEvent) => {
       if (event.dataTransfer?.types.includes('Files')) {
+        // A field that takes the file (the private key) prevents the event first, so the overlay steps aside for it.
+        setDragging(!event.defaultPrevented)
         event.preventDefault()
-        setDragging(true)
       }
     }
     const onDragLeave = (event: DragEvent) => {
@@ -80,7 +120,7 @@ export const usePasteConnection = ({
     const onDrop = async (event: DragEvent) => {
       const file = event.dataTransfer?.files[0]
       setDragging(false)
-      if (!file) {
+      if (!file || event.defaultPrevented) {
         return
       }
       event.preventDefault()
@@ -96,5 +136,5 @@ export const usePasteConnection = ({
     return () => controller.abort()
   }, [])
 
-  return { dragging }
+  return { dragging, miss, readClipboard }
 }

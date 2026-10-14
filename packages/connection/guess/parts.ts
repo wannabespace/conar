@@ -1,24 +1,22 @@
-import { pick } from '@tamery/shared/utils'
-
 import type { GuessedParts } from './types'
 
-const FIELDS = [
-  'database',
-  'host',
-  'options',
-  'password',
-  'port',
-  'ssh',
-  'type',
-  'user',
-] as const
-
 /** Earlier parts win field by field; empty values are dropped. */
-export const mergeParts = (...list: GuessedParts[]): GuessedParts => {
-  const merged: GuessedParts = {}
-  for (const parts of list.toReversed()) {
-    const filled = FIELDS.filter((field) => parts[field])
-    Object.assign(merged, pick(parts, filled))
-  }
-  return merged
-}
+export const mergeParts = (...list: GuessedParts[]): GuessedParts =>
+  Object.assign(
+    {},
+    ...list
+      .toReversed()
+      .map((parts) =>
+        Object.fromEntries(
+          Object.entries(parts).filter(
+            ([, value]) => value !== undefined && value !== null && value !== ''
+          )
+        )
+      )
+  )
+
+/** The first non-empty value among `keys`, in order. */
+export const firstValueOf = (
+  keys: string[],
+  valueOf: (key: string) => string | null | undefined
+) => keys.map(valueOf).find(Boolean) ?? ''

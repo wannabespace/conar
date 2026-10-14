@@ -1,10 +1,8 @@
+import { isLocalHost } from '@tamery/connection/hosts'
+import { parseConnectionString } from '@tamery/connection/parse-connection-string'
+import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
-import type { SshSecret } from '@tamery/connection/ssh/params'
-import { sshSecrets } from '@tamery/connection/ssh/params'
-import {
-  isLocalhostConnectionString,
-  isSshConnectionString,
-} from '@tamery/connection/utils'
+import { sshTunnelOf } from '@tamery/connection/ssh/params'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -25,8 +23,8 @@ export interface ConnectionString {
   updatedAt: Date
   isPasswordPopulated: boolean
   isLocalhost: boolean
-  usesSsh?: boolean
-  missingSshSecrets?: SshSecret[]
+  usesSsh: boolean
+  missingSecrets: SecretParam[]
   displayUrl: string
   defaultResourceName: string | null
 }
@@ -61,7 +59,7 @@ const preserveLocalSecrets = async (
 ) => {
   const local = collection.get(connectionId)
 
-  if (!local?.isPasswordPopulated && !local?.usesSsh) {
+  if (!local) {
     return connectionString
   }
 
@@ -126,20 +124,18 @@ export const createConnectionStringsCollection =
             const encrypted = await encryptConnectionString(
               data.connectionString
             )
-            const url = new SafeURL(data.connectionString)
+            const { database, host, password, searchParams } =
+              parseConnectionString(data.connectionString)
             return {
               connectionId: data.connectionId,
-              defaultResourceName:
-                url.pathname && url.pathname !== '/'
-                  ? url.pathname.slice(1)
-                  : null,
-              displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
+              defaultResourceName: database ?? null,
+              displayUrl: new SafeURL(data.connectionString).host,
               encrypted,
-              isLocalhost: isLocalhostConnectionString(data.connectionString),
-              isPasswordPopulated: !!url.password,
-              missingSshSecrets: sshSecrets.missing(url.searchParams),
+              isLocalhost: isLocalHost(host),
+              isPasswordPopulated: !!password,
+              missingSecrets: connectionSecrets.missing(searchParams),
               updatedAt: data.updatedAt,
-              usesSsh: isSshConnectionString(data.connectionString),
+              usesSsh: sshTunnelOf(searchParams) !== null,
             }
           },
           async resolve(connectionId: string) {

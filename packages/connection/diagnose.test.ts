@@ -3,15 +3,13 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
-import {
-  diagnoseConnectionError,
-  diagnosisRequestOf,
-  redactConnectionError,
-} from './diagnose'
+import { diagnoseConnectionError } from './diagnose'
+import { diagnosisRequestOf } from './diagnosis-request'
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: '',
   host: 'db.acme.io',
+  https: null,
   options: '',
   password: 'pw',
   port: '',
@@ -52,6 +50,15 @@ describe('diagnoseConnectionError', () => {
         }
       )?.fix?.patch
     ).toStrictEqual({ options: 'application_name=tamery&sslmode=require' })
+  })
+
+  it('skips the SQL Server certificate check under the key the driver reads', () => {
+    expect(
+      diagnose('self-signed certificate in certificate chain', {
+        options: 'encrypt=true&TrustServerCertificate=false',
+        type: ConnectionType.MSSQL,
+      })?.fix?.patch
+    ).toStrictEqual({ options: 'encrypt=true&trustservercertificate=true' })
   })
 
   it('switches the engine when the port belongs to another one', () => {
@@ -95,26 +102,14 @@ describe('diagnoseConnectionError', () => {
   })
 })
 
-describe('redactConnectionError', () => {
-  it('replaces every identifying value, longest first', () => {
-    expect(
-      redactConnectionError(
-        'password authentication failed for user "me" at db.acme.io/app',
-        parts({ database: 'app' })
-      )
-    ).toBe(
-      'password authentication failed for user "<user>" at <host>/<database>'
-    )
-  })
-})
+const request = (message: string, overrides: Partial<ConnectionParts> = {}) =>
+  diagnosisRequestOf({ desktop: false, message, parts: parts(overrides) })
 
 describe('diagnosisRequestOf', () => {
   it('carries no address, user or secret option value', () => {
     expect(
-      diagnosisRequestOf({
-        desktop: false,
-        message: 'password authentication failed for user "me"',
-        parts: parts({ options: 'sslmode=require&sslpassword=hunter2' }),
+      request('password authentication failed for user "me"', {
+        options: 'sslmode=require&sslpassword=hunter2',
       })
     ).toStrictEqual({
       error: 'password authentication failed for user "<user>"',
@@ -126,5 +121,41 @@ describe('diagnosisRequestOf', () => {
       sshEnabled: false,
       userSet: true,
     })
+  })
+
+  it.each([
+    [
+      'password authentication failed for user "me" at db.acme.io/app',
+      'password authentication failed for user "<user>" at <host>/<database>',
+    ],
+    [
+      'no pg_hba.conf entry for host "2a02:810d:4b3f:e300::1f", user "me"',
+      'no pg_hba.conf entry for host "<ip>", user "<user>"',
+    ],
+    [
+      "Access denied for user 'root'@'2001:db8::5' (using password: YES)",
+      "Access denied for user 'root'@'<ip>' (using password: YES)",
+    ],
+    [
+      'connect ECONNREFUSED [fe80::1%en0]:5432, then 10.0.0.7:5432',
+      'connect ECONNREFUSED [<ip>]:5432, then <ip>:5432',
+    ],
+    [
+      'connect ETIMEDOUT ::ffff:192.0.2.1:5432',
+      'connect ETIMEDOUT ::ffff:<ip>:5432',
+    ],
+  ])('redacts %s', (message, error) => {
+    expect(request(message, { database: 'app' }).error).toBe(error)
+  })
+
+  it('keeps only option values that name nothing', () => {
+    expect(
+      request('timeout', {
+        options:
+          'sslmode=verify-full&connect_timeout=10&ssl=true&sslservername=prod.internal&application_name=billing',
+      }).options
+    ).toBe(
+      'sslmode=verify-full&connect_timeout=10&ssl=true&sslservername=%3Credacted%3E&application_name=%3Credacted%3E'
+    )
   })
 })

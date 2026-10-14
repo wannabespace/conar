@@ -1,5 +1,6 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import type { ConnectionGuess, GuessFormat } from '@tamery/connection/guess'
+import type { ConnectionPatch } from '@tamery/connection/diagnose'
+import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
@@ -16,6 +17,7 @@ export interface ConnectionFormValues {
   color: string | null
   database: string
   host: string
+  https: boolean | null
   label: string
   name: string
   options: string
@@ -28,16 +30,11 @@ export interface ConnectionFormValues {
   user: string
 }
 
-/** Where the fields came from: a recognised paste, or the fields themselves. */
-export type FieldsOrigin = GuessFormat | 'form' | null
-
-export const isGuessed = (origin: FieldsOrigin): origin is GuessFormat =>
-  origin !== null && origin !== 'form'
-
 const DEFAULT_VALUES: ConnectionFormValues = {
   color: null,
   database: '',
   host: '',
+  https: null,
   label: '',
   name: '',
   options: '',
@@ -79,6 +76,7 @@ const QUIET = { dontRunListeners: true }
 export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
   database: values.database,
   host: values.host,
+  https: values.https,
   options: values.options,
   password: values.password,
   port: values.port,
@@ -101,11 +99,7 @@ export const missingOf = (values: ConnectionFormValues) =>
   NEEDED_FIELDS.filter((field) => !values[field].trim())
 
 /** A paste fills what it names and keeps the rest, so credentials typed around a partial paste survive; one naming another server than the filled host replaces every server field instead. */
-const fill = (
-  form: ConnectionForm,
-  { format, parts }: ConnectionGuess,
-  onFieldsChange: (origin: FieldsOrigin) => void
-) => {
+const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   const { host } = form.state.values
   const newServer = !!parts.host && BARE_HOST.test(host) && parts.host !== host
   for (const field of SERVER_FIELDS) {
@@ -116,59 +110,54 @@ const fill = (
   if (parts.type) {
     form.setFieldValue('type', parts.type, QUIET)
   }
+  if (parts.https !== undefined || newServer) {
+    form.setFieldValue('https', parts.https ?? null, QUIET)
+  }
   if (parts.ssh || newServer) {
     form.setFieldValue('ssh', parts.ssh ?? EMPTY_SSH_TUNNEL, QUIET)
     form.setFieldValue('sshEnabled', !!parts.ssh, QUIET)
   }
-  onFieldsChange(format)
 }
 
 const expandHost = (
   form: ConnectionForm,
-  onFieldsChange: (origin: FieldsOrigin) => void
+  onFill: (guess: ConnectionGuess, pasted: boolean) => void
 ) => {
   const { host } = form.state.values
   const guess = guessConnection(host)
   if (guess && (guess.format !== 'host' || guess.parts.host !== host)) {
-    fill(form, guess, onFieldsChange)
+    fill(form, guess)
+    onFill(guess, false)
   }
 }
 
+/** Fill and patch writes skip the listeners, so `onPartsChange` reports the user's own edits; a caller resetting state on any parts change does it in `onFill` and after `patch` too. */
 export const useConnectionForm = ({
-  onFieldsChange,
-  onInvalid,
+  onFill,
+  onPartsChange,
   onSubmit,
 }: {
-  onFieldsChange: (origin: FieldsOrigin) => void
-  onInvalid: (field: string) => void
-  onSubmit: (values: ConnectionFormValues) => void
+  onFill: (guess: ConnectionGuess, pasted: boolean) => void
+  onPartsChange: () => void
+  onSubmit: (values: ConnectionFormValues) => Promise<void>
 }) => {
   const form = useAppForm({
     defaultValues: DEFAULT_VALUES,
     listeners: {
       onBlur: ({ fieldApi }) => {
         if (fieldApi.name === 'host') {
-          expandHost(form, onFieldsChange)
+          expandHost(form, onFill)
         }
       },
       onChange: ({ fieldApi }) => {
         if (isPartField(fieldApi.name)) {
-          onFieldsChange('form')
+          onPartsChange()
         }
       },
     },
-    onSubmitInvalid: ({ formApi }) => {
-      const [field] =
-        Object.entries(formApi.state.fieldMeta).find(
-          ([, meta]) => meta?.errors.length
-        ) ?? []
-      if (field) {
-        onInvalid(field)
-      }
-    },
     onSubmit: () => {
-      expandHost(form, onFieldsChange)
-      onSubmit(form.state.values)
+      expandHost(form, onFill)
+      return onSubmit(form.state.values)
     },
     validators: {
       onChange: connectionFormSchema,
@@ -180,7 +169,22 @@ export const useConnectionForm = ({
     form,
     paste: (guess: ConnectionGuess, via: PasteVia) => {
       posthog.capture('connection_pasted', { format: guess.format, via })
-      fill(form, guess, onFieldsChange)
+      fill(form, guess)
+      onFill(guess, true)
+    },
+    patch: (patch: ConnectionPatch) => {
+      for (const field of ['database', 'host', 'options', 'port'] as const) {
+        const value = patch[field]
+        if (value !== undefined) {
+          form.setFieldValue(field, value, QUIET)
+        }
+      }
+      if (patch.type) {
+        form.setFieldValue('type', patch.type, QUIET)
+      }
+      if (patch.sshEnabled) {
+        form.setFieldValue('sshEnabled', true, QUIET)
+      }
     },
   }
 }

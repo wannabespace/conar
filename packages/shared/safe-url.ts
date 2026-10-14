@@ -1,5 +1,8 @@
 const authRegex =
   /^(?<protocol>[^:]+):\/\/(?<user>[^:]*)(?::(?<password>.*))?$/u
+/** A `?key=` after `[credentials@]host[:port][/path]` opens the query, so an `@` past it (Azure's `?user=admin@server`) separates no credentials; a raw `?` inside a password is not followed by such an address. */
+const QUERY_AFTER_HOST =
+  /^[^:]+:\/\/(?:.*@)?(?:\[[^\]]*\]|[^:/?#@[\]]*)(?::\d*)?(?:\/[^?#]*)?\?[\w.-]+=/u
 
 export class SafeURL implements URL {
   #url!: URL
@@ -15,7 +18,8 @@ export class SafeURL implements URL {
     }
 
     let normalizedUrl = url
-    const atIndex = url.lastIndexOf('@')
+    const queryAt = QUERY_AFTER_HOST.exec(url)?.[0].lastIndexOf('?')
+    const atIndex = url.lastIndexOf('@', queryAt)
 
     let username = ''
     let password = ''

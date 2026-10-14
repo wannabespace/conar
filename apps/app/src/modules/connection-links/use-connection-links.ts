@@ -10,6 +10,7 @@ import { useEffect } from 'react'
 import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { posthog } from '~/lib/posthog'
 
@@ -101,12 +102,18 @@ export const useConnectionLinks = () => {
       const parts = guessConnection(link)?.parts ?? {}
       const connectionId = await findConnectionId(parts)
       posthog.capture('connection_link_opened', { matched: !!connectionId })
-      await (connectionId
-        ? navigate({
-            params: { resourceId: resourceIdOf(connectionId, parts.database) },
-            to: '/connection/$resourceId',
-          })
-        : navigate({ state: { connectionLink: link }, to: '/create' }))
+      if (connectionId) {
+        await navigate({
+          params: { resourceId: resourceIdOf(connectionId, parts.database) },
+          to: '/connection/$resourceId',
+        })
+      } else if (
+        checkOrUpgrade('connection.create', {
+          count: getCollections().connectionsCollection.size,
+        })
+      ) {
+        await navigate({ state: { connectionLink: link }, to: '/create' })
+      }
     }
     void takeLink()
     return window.electron?.app.onUrlOpened(takeLink)

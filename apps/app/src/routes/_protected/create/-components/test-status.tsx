@@ -1,6 +1,8 @@
 import { Spinner } from '@tamery/ui/components/spinner'
 import type { MutationStatus } from '@tanstack/react-query'
 
+import { ConnectionCardReason } from '../../-components/connection-card-reason'
+
 export const TestStatus = ({
   reason,
   status,
@@ -25,6 +27,8 @@ export const TestStatus = ({
     )
   }
   return reason ? (
-    <p className="text-muted-foreground truncate text-xs">{reason}</p>
+    <p className="text-muted-foreground text-xs text-pretty">
+      <ConnectionCardReason reason={reason} />
+    </p>
   ) : null
 }

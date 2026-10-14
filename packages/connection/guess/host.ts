@@ -1,4 +1,4 @@
-import { isLocalHost } from './hosts'
+import { isLocalHost } from '../hosts'
 import type { DatabaseGuess } from './types'
 
 const BARE_HOST =

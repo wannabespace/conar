@@ -16,6 +16,7 @@ export const HOBBY_PLAN: PricingPlan = {
     'Table browser, SQL editor and visualizer',
     'Unlimited synced connections',
     `${FREE_WEEKLY_LIMITS.filters} AI filters a week`,
+    `${FREE_WEEKLY_LIMITS.connection} AI connection diagnoses a week`,
     `${FREE_WEEKLY_LIMITS.mcp} MCP agent queries a week`,
   ],
   name: 'Free',
@@ -29,7 +30,7 @@ export const PRO_PLAN: PricingPlan = {
   description: 'The full AI assistant, without limits',
   features: [
     'Schema-aware AI assistant',
-    'Unlimited AI filters and MCP queries',
+    'Unlimited AI filters, connection diagnoses and MCP queries',
     'Included AI credits',
     'Extra workspaces',
   ],

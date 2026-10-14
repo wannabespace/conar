@@ -5,13 +5,6 @@ import {
 import type { SshAuth } from '@tamery/connection/ssh/params'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldGroup } from '@tamery/ui/components/field'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
 import { Switch } from '@tamery/ui/components/switch'
 import { useStore } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
@@ -26,6 +19,11 @@ const AUTH_LABELS: Record<SshAuth, string> = {
   keyPath: 'Key file',
   password: 'Password',
 }
+
+const AUTH_METHODS = SSH_AUTH_METHODS.map((method) => ({
+  label: AUTH_LABELS[method],
+  value: method,
+}))
 
 export const SshFields = ({ form }: { form: ConnectionForm }) => {
   const enabled = useStore(form.store, (state) => state.values.sshEnabled)
@@ -99,29 +97,11 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
                 {(field) => (
                   <field.Field orientation="row">
                     <field.Label>Sign in</field.Label>
-                    <Select
-                      items={SSH_AUTH_METHODS.map((method) => ({
-                        label: AUTH_LABELS[method],
-                        value: method,
-                      }))}
-                      value={field.state.value}
-                      onValueChange={(next) => next && field.handleChange(next)}
-                    >
-                      <SelectTrigger
-                        id={field.name}
-                        variant="flat"
-                        className="flex-1"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SSH_AUTH_METHODS.map((method) => (
-                          <SelectItem key={method} value={method}>
-                            {AUTH_LABELS[method]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <field.Select
+                      items={AUTH_METHODS}
+                      variant="flat"
+                      className="flex-1"
+                    />
                   </field.Field>
                 )}
               </form.AppField>

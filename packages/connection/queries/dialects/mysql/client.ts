@@ -1,5 +1,4 @@
 import { createRequire } from 'node:module'
-import net from 'node:net'
 
 import { Result } from 'better-result'
 import { memoize } from 'memoza'
@@ -8,7 +7,7 @@ import type * as mysql2Promise from 'mysql2/promise'
 
 import { parseConnectionString } from '../../..'
 import { readSSLFiles } from '../../../read-ssl-files'
-import { SSH_TLS_HOST_PARAM } from '../../../ssh/params'
+import { sshForwarding } from '../../../ssh/forwarding'
 import { defaultSSLConfig, parseSSLConfig } from '../../../ssl/mysql'
 
 export const mysql2 = createRequire(import.meta.url)(
@@ -28,14 +27,11 @@ const connect = (conf: PoolOptions) =>
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
-  const tlsHost = searchParams.get(SSH_TLS_HOST_PARAM)
+  const tunnel = sshForwarding.of(connectionString)
+  await tunnel?.connect()
   const conf: PoolOptions = {
     ...config,
-    // mysql2 names the TLS server only after `host`, so a tunnel keeps the real host and dials its local end through `stream`.
-    ...(tlsHost && {
-      host: tlsHost,
-      stream: () => net.connect(Number(config.port), config.host),
-    }),
+    ...(tunnel && { stream: tunnel.socket }),
     connectionLimit: 1,
     dateStrings: true,
     supportBigNumbers: true,

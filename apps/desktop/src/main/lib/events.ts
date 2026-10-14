@@ -1,5 +1,6 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
-import { tunneledConnectionString } from '@tamery/connection/ssh/tunnel'
+import { sshForwarding } from '@tamery/connection/ssh/forwarding'
+import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
@@ -16,16 +17,6 @@ import { notifyUnfocused } from './notify'
 import { confirmHostKey } from './ssh-host-key'
 import { autoUpdater } from './todesktop'
 
-const withTunnel = async <T extends { connectionString: string }>(
-  args: T
-): Promise<T> => ({
-  ...args,
-  connectionString: await tunneledConnectionString(
-    args.connectionString,
-    confirmHostKey
-  ),
-})
-
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>
 ): QueryExecutor => {
@@ -39,12 +30,12 @@ const lazyQueryExecutor = (
     beginTransaction: async (args) => {
       const query = await loadQuery()
 
-      return query.beginTransaction(await withTunnel(args))
+      return query.beginTransaction(args)
     },
     cancel: async (args) => {
       const query = await loadQuery()
 
-      return query.cancel(await withTunnel(args))
+      return query.cancel(args)
     },
     commitTransaction: async (args) => {
       const query = await loadQuery()
@@ -54,7 +45,7 @@ const lazyQueryExecutor = (
     execute: async (args) => {
       const query = await loadQuery()
 
-      return query.execute(await withTunnel(args))
+      return query.execute(args)
     },
     executeTransaction: async (args) => {
       const query = await loadQuery()
@@ -126,6 +117,9 @@ const registerHandlers = (prefix: string, value: unknown) => {
 }
 
 export const initElectronEvents = () => {
+  sshForwarding.use((connectionString) =>
+    tunnelForwarding(connectionString, confirmHostKey)
+  )
   for (const [key, value] of Object.entries(electron)) {
     registerHandlers(key, value)
   }

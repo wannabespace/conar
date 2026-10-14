@@ -101,7 +101,7 @@ export const ConnectionCard = ({
       selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ||
       selectedResourceName === null
         ? ''
-        : selectedResourceName
+        : encodeURIComponent(selectedResourceName)
 
     copy(connectionStringToCopy.toString(), 'Connection string copied')
   }

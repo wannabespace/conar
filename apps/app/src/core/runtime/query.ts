@@ -46,7 +46,7 @@ export const connectionResourceToQueryParams = async (
   const connectionString = new SafeURL(
     await connectionStringsCollection.utils.decrypt(connection.id)
   )
-  connectionString.pathname = connectionResource.name || ''
+  connectionString.pathname = encodeURIComponent(connectionResource.name || '')
 
   return {
     connectionString: connectionString.toString(),

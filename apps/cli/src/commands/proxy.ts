@@ -74,7 +74,7 @@ export const proxyCommand = command({
         }
 
         const url = new SafeURL(conn.connectionString)
-        url.pathname = resource.name || ''
+        url.pathname = encodeURIComponent(resource.name || '')
         return url.toString()
       }
 

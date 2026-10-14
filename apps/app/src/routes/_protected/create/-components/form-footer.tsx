@@ -15,20 +15,22 @@ import { TestStatus } from './test-status'
 
 export const FormFooter = ({
   canTest,
-  formId,
+  onSave,
   onTest,
   reason,
-  saving,
+  submitting,
   testStatus,
 }: {
   canTest: boolean
-  formId: string
+  /** Not a submit button: with none in the form, Enter in a field never saves. */
+  onSave: () => void
   onTest: () => void
   reason: string | null
-  saving: boolean
+  submitting: boolean
   testStatus: MutationStatus
 }) => {
   const failed = testStatus === 'error'
+  const testing = testStatus === 'pending'
 
   return (
     <motion.footer
@@ -38,30 +40,31 @@ export const FormFooter = ({
       transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
     >
       <PageColumns>
-        <div className="flex h-14 items-center gap-2">
+        <div className="flex min-h-14 items-center gap-2 py-2">
           <div className="min-w-0 flex-1">
             <TestStatus reason={reason} status={testStatus} />
           </div>
           <Button
             type="button"
             variant="ghost-tint-muted"
-            disabled={!canTest || testStatus === 'pending'}
+            disabled={!canTest || testing || submitting}
+            focusableWhenDisabled
             onClick={onTest}
           >
             Test
           </Button>
-          <Tooltip shortcut={!saving && <ShortcutKbd shortcut="submit" />}>
+          <Tooltip shortcut={!submitting && <ShortcutKbd shortcut="submit" />}>
             <TooltipTrigger
               render={
                 <Button
-                  type="submit"
-                  form={formId}
                   variant={failed ? 'warning' : 'default'}
-                  disabled={saving || testStatus === 'pending'}
+                  disabled={submitting}
+                  focusableWhenDisabled
+                  onClick={onSave}
                 />
               }
             >
-              <LoadingContent loading={saving}>
+              <LoadingContent loading={submitting && !testing}>
                 {failed ? 'Save anyway' : 'Save connection'}
               </LoadingContent>
             </TooltipTrigger>

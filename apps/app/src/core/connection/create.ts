@@ -1,6 +1,6 @@
+import { readConnectionString } from '@tamery/connection/parse-connection-string'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
@@ -16,9 +16,9 @@ export const createConnection = async (data: {
   workspaceId: string
 }) => {
   const id = v7()
-  const url = new SafeURL(data.connectionString.trim())
-
-  const resource = url.pathname.slice(1) || null
+  const connectionString = data.connectionString.trim()
+  const { database, password } = readConnectionString(connectionString)
+  const resource = database || null
   const resourceId = v7()
   const updatedAt = new Date()
   const createdAt = new Date()
@@ -31,7 +31,7 @@ export const createConnection = async (data: {
   connectionStringsCollection.insert(
     await connectionStringsCollection.utils.prepare({
       connectionId: id,
-      connectionString: url.toString(),
+      connectionString,
       updatedAt,
     })
   )
@@ -40,7 +40,7 @@ export const createConnection = async (data: {
       color: data.color || null,
       createdAt,
       id,
-      isPasswordExists: !!url.password,
+      isPasswordExists: !!password,
       label: data.label || null,
       name: data.name,
       syncType: data.syncType,

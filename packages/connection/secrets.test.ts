@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
 import { connectionSecrets } from './secrets'
-import { sshSecrets } from './ssh/params'
 
 const LOCAL =
-  'postgres://app:db-pass@db.internal:5432/app?ssh_host=bastion&ssh_auth=password&ssh_password=ssh-pass'
+  'postgres://app:db-pass@db.internal:5432/app?sslkey=%2Fkeys%2Fclient.key&sslpassword=key-pass&ssh_host=bastion&ssh_auth=password&ssh_password=ssh-pass'
 
 describe('connectionSecrets', () => {
   it('keeps every secret off the synced string but marks which ones it had', () => {
@@ -12,7 +11,11 @@ describe('connectionSecrets', () => {
 
     expect(synced.password).toBe('')
     expect(synced.searchParams.get('ssh_password')).toBe('')
-    expect(sshSecrets.missing(synced.searchParams)).toEqual(['password'])
+    expect(synced.searchParams.get('sslpassword')).toBe('')
+    expect(connectionSecrets.missing(synced.searchParams)).toEqual([
+      'ssh_password',
+      'sslpassword',
+    ])
   })
 
   it('restores the stripped secrets from the local copy', () => {

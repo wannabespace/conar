@@ -43,7 +43,7 @@ const namesOf = (key: string) => [
 ]
 
 /** A parent's key is a prefix too, so `{ "mysql": { "host": … } }` reads as `MYSQL_HOST`. */
-const variablesOf = (
+const variablesOfObject = (
   object: JsonObject,
   parentKey: string,
   inherited: Record<string, string>
@@ -96,7 +96,7 @@ const findParts = (root: unknown): GuessedParts | null => {
       : Object.entries(value)
     const variables = Array.isArray(value)
       ? inherited
-      : variablesOf(value, parentKey, inherited)
+      : variablesOfObject(value, parentKey, inherited)
     if (!Array.isArray(value)) {
       const parts = mergeParts(
         partsOfVariables(variables) ?? {},

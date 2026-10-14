@@ -1,27 +1,26 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { objectEntries } from '@tamery/shared/utils'
 
 import { typeOfScheme } from '../connection-parts'
-import type { DatabaseGuess, GuessedParts } from './types'
-
-type Field = 'database' | 'host' | 'password' | 'port' | 'user'
+import { firstValueOf, mergeParts } from './parts'
+import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
   /** Only these fields are read under the prefix: `MYSQL_ROOT_HOST` is an allow-list, not a host. */
-  fields?: Field[]
+  fields?: ServerField[]
   prefix: string
   type?: ConnectionType
   /** Implied user when the group supplies the password and nothing else named one. */
   user?: string
 }
 
-const SUFFIXES_OF_FIELD: Record<Field, string[]> = {
+const SUFFIXES_OF_FIELD: Record<ServerField, string[]> = {
   database: ['DATABASE', 'DBNAME', 'DB', 'NAME'],
   host: ['HOST', 'HOSTNAME', 'SERVER'],
   password: ['PASSWORD', 'PASS', 'PWD'],
   port: ['PORT'],
   user: ['USER', 'USERNAME'],
 }
-const FIELDS = ['database', 'host', 'password', 'port', 'user'] as const
 const TYPE_SUFFIXES = [
   'CONNECTION',
   'PROVIDER',
@@ -82,22 +81,22 @@ export const partsOfVariables = (
   variables: Record<string, string>
 ): GuessedParts | null => {
   const valueOf = (keys: string[]) =>
-    keys
-      .map((key) => variables[key])
-      .find((value) => value && !UNPACKED_TEMPLATE.test(value)) ?? ''
-  const parts: GuessedParts = {}
+    firstValueOf(keys, (key) =>
+      UNPACKED_TEMPLATE.test(variables[key] ?? '') ? '' : variables[key]
+    )
+  let parts: GuessedParts = {}
 
   for (const group of GROUPS) {
-    const found = Object.fromEntries(
-      (group.fields ?? FIELDS).map((field) => [
-        field,
-        valueOf(
-          SUFFIXES_OF_FIELD[field]
+    const found: GuessedParts = {}
+    for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
+      if (!group.fields || group.fields.includes(field)) {
+        found[field] = valueOf(
+          suffixes
             .filter((suffix) => group.prefix || suffix !== BARE_NAME)
             .map((suffix) => group.prefix + suffix)
-        ),
-      ])
-    )
+        )
+      }
+    }
     const type =
       group.type ??
       TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix])
@@ -110,23 +109,21 @@ export const partsOfVariables = (
     ) {
       continue
     }
-    if (!group.user) {
-      for (const field of FIELDS) {
-        parts[field] ||= found[field]
-      }
-    } else if (!parts.user && !parts.password) {
-      parts.user = group.user
-      parts.password = found.password
-    }
-    parts.type ??= type
+    const named = group.user
+      ? { password: found.password, user: group.user }
+      : found
+    const fills = !group.user || (!parts.user && !parts.password)
+    parts = mergeParts(parts, fills ? named : {}, { type })
   }
 
-  return FIELDS.some((field) => parts[field]) ? parts : null
+  const { type: _type, ...fields } = parts
+  return Object.keys(fields).length > 0 ? parts : null
 }
 
-export const guessEnv = (text: string): DatabaseGuess | null => {
+/** `KEY=value` lines of a `.env`, a YAML map or a command's environment prefix; keys come back uppercased. */
+export const variablesOfLines = (lines: string[]) => {
   const variables: Record<string, string> = {}
-  for (const line of text.split('\n')) {
+  for (const line of lines) {
     const { key, value = '' } = LINE.exec(line)?.groups ?? {}
     if (key) {
       variables[key.toUpperCase()] ??=
@@ -134,6 +131,10 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
         value.replace(UNQUOTED_TAIL, '').trim()
     }
   }
-  const parts = partsOfVariables(variables)
+  return variables
+}
+
+export const guessEnv = (text: string): DatabaseGuess | null => {
+  const parts = partsOfVariables(variablesOfLines(text.split('\n')))
   return parts && { format: 'env', parts }
 }

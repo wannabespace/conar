@@ -1,6 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { TYPE_OF_PORT } from './hosts'
+import { firstValueOf } from './parts'
 import type { DatabaseGuess } from './types'
 
 const PAIR =
@@ -18,7 +18,8 @@ const SERVER_KEYS = [
   'host',
   'servername',
 ]
-const MYSQL_KEYS = ['allowpublickeyretrieval', 'allowuservariables', 'sslmode']
+/** MySqlConnector's own keys; `SSL Mode` is Npgsql's too. */
+const MYSQL_KEYS = ['allowpublickeyretrieval', 'allowuservariables']
 const ENCRYPT_OFF = new Set(['false', 'no', 'optional'])
 const TRUST_ON = new Set(['true', 'yes'])
 
@@ -46,7 +47,7 @@ export const mssqlAddress = (server: string) => {
 
 export const adoParts = (pairs: Map<string, string>) => {
   const valueOf = (keys: string[]) =>
-    keys.map((key) => pairs.get(key)).find(Boolean) ?? ''
+    firstValueOf(keys, (key) => pairs.get(key))
   const address = mssqlAddress(valueOf(SERVER_KEYS))
   const encrypt = pairs.get('encrypt')?.toLowerCase()
   const trust = pairs.get('trustservercertificate')?.toLowerCase()
@@ -79,11 +80,6 @@ export const guessAdo = (text: string): DatabaseGuess | null => {
   const isMySql = MYSQL_KEYS.some((key) => pairs.has(key))
   return {
     format: 'ado',
-    parts: {
-      ...parts,
-      type:
-        TYPE_OF_PORT[parts.port] ??
-        (isMySql ? ConnectionType.MySQL : ConnectionType.MSSQL),
-    },
+    parts: isMySql ? { ...parts, type: ConnectionType.MySQL } : parts,
   }
 }

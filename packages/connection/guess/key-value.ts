@@ -1,13 +1,10 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { shellTokens } from './tokens'
-import type { DatabaseGuess, GuessedParts } from './types'
+import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 const PAIR = /^(?<key>[a-z_]+)=(?<value>.*)$/su
-const FIELD_OF_KEY: Record<
-  string,
-  'database' | 'host' | 'password' | 'port' | 'user'
-> = {
+const FIELD_OF_KEY: Record<string, ServerField> = {
   dbname: 'database',
   host: 'host',
   hostaddr: 'host',

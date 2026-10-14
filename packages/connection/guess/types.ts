@@ -13,6 +13,12 @@ export type GuessFormat =
   | 'ssh'
   | 'host'
 
+/** The plain-text fields a paste names one by one. */
+export type ServerField = Exclude<
+  keyof ConnectionParts,
+  'https' | 'options' | 'ssh' | 'type'
+>
+
 export type GuessedParts = Partial<Omit<ConnectionParts, 'ssh'>> & {
   ssh?: SshTunnel
 }

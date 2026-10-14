@@ -1,15 +1,13 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { toConnectionString } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnose'
-import type { ConnectionGuess, GuessFix } from '@tamery/connection/guess'
-import { guessConnection } from '@tamery/connection/guess'
-import { suggestConnectionName } from '@tamery/connection/guess/name'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionGuess,
+  GuessFix,
+  GuessFormat,
+} from '@tamery/connection/guess'
 import { title } from '@tamery/shared/title'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
-import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { Form } from '@tamery/ui/components/tanstack-form'
@@ -19,8 +17,6 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useStore } from '@tanstack/react-form'
-import { useHotkey } from '@tanstack/react-hotkeys'
-import { useMutation } from '@tanstack/react-query'
 import {
   createFileRoute,
   redirect,
@@ -28,16 +24,14 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
-import { useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
-import { testConnectionQuery } from '~/core/queries/connection/test'
+import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { permix } from '~/core/user/permissions'
 import { posthog } from '~/lib/posthog'
-import { generateRandomName } from '~/utils/faker'
 
 import { AgentPanel } from './-components/agent-panel'
 import { ColorField } from './-components/color-field'
@@ -46,8 +40,7 @@ import { FormFooter } from './-components/form-footer'
 import { LabelField } from './-components/label-field'
 import { NameField } from './-components/name-field'
 import { PageColumns } from './-components/page-columns'
-import type { Miss } from './-components/paste-hero'
-import { isMac, PASTE_FORMATS, PasteHero } from './-components/paste-hero'
+import { PasteHero } from './-components/paste-hero'
 import { PasteNotes } from './-components/paste-notes'
 import { Reveal, REVEAL_STAGGER } from './-components/reveal'
 import { ServerFields } from './-components/server-fields'
@@ -55,27 +48,20 @@ import { SshFields } from './-components/ssh-fields'
 import { SyncField } from './-components/sync-field'
 import type { FixSource } from './-components/test-alert'
 import { TestAlert } from './-components/test-alert'
-import type { ConnectionFormValues, FieldsOrigin } from './-lib/connection-form'
-import {
-  isGuessed,
-  missingOf,
-  partsOf,
-  useConnectionForm,
-} from './-lib/connection-form'
+import { missingOf, partsOf, useConnectionForm } from './-lib/connection-form'
 import { draftFetching } from './-lib/draft-fetching'
-import { useCreateConnection } from './-lib/use-create-connection'
 import type { PasteVia } from './-lib/use-paste-connection'
 import { usePasteConnection } from './-lib/use-paste-connection'
-
-const FORM_ID = 'create-connection'
+import { useSaveConnection } from './-lib/use-save-connection'
 
 type Stage = 'agent' | 'form'
 
-const MISS_SHOWN_MS = 3000
-
 // Defers to the next tick so a field the same update reveals has mounted.
 const focusField = (id: string) =>
-  setTimeout(() => document.querySelector<HTMLElement>(`#${id}`)?.focus(), 0)
+  setTimeout(
+    () => document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus(),
+    0
+  )
 
 const CreateConnectionPage = () => {
   const router = useRouter()
@@ -89,158 +75,116 @@ const CreateConnectionPage = () => {
     }
   }
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const [origin, setOrigin] = useState<FieldsOrigin>(null)
+  const [filled, setFilled] = useState<{
+    fixes: GuessFix[]
+    origin?: GuessFormat
+  }>()
   const [stage, setStage] = useState<Stage>('form')
+  const pageRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const back = () => (stage === 'agent' ? setStage('form') : leave())
-  const createConnection = useCreateConnection()
-  const test = useMutation({
-    meta: { event: 'connection_tested' },
-    mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
-      testConnectionQuery.run(params),
-  })
+  // A focused control that unmounts (a fix button, Ask AI) drops focus to body, where the page's keys no longer reach.
+  const keepFocusInPage = () =>
+    setTimeout(() => {
+      if (document.activeElement === document.body) {
+        pageRef.current?.focus()
+      }
+    }, 0)
+  const { save, test } = useSaveConnection()
 
-  const save = (values: ConnectionFormValues) =>
-    createConnection.mutate({
-      color: values.color,
-      connectionString: toConnectionString(partsOf(values)),
-      label: values.label.trim() || null,
-      name:
-        values.name.trim() ||
-        suggestConnectionName(values) ||
-        generateRandomName(),
-      origin,
-      syncType: values.syncType,
-      type: values.type,
-    })
-
-  const { form, paste } = useConnectionForm({
-    onInvalid: (field) => {
-      focusField(CSS.escape(field))
-    },
-    onFieldsChange: (next) => {
-      setOrigin(next)
+  const { form, paste, patch } = useConnectionForm({
+    onFill: ({ fixes, format }, pasted) => {
+      setFilled((current) => ({
+        fixes,
+        origin: pasted ? format : current?.origin,
+      }))
       test.reset()
     },
-    onSubmit: (values) => {
-      if (test.isPending) {
-        return
-      }
-      const draft = draftFetching(values, isLocalProxyAvailable)
-      if (!draft.canSend || test.status !== 'idle') {
-        save(values)
-        return
-      }
-      test.mutate(
-        { connectionString: draft.connectionString, type: values.type },
-        { onSuccess: () => save(values) }
-      )
-    },
+    onPartsChange: () => test.reset(),
+    onSubmit: () => save(() => form.state.values, filled?.origin),
   })
+  // From the second attempt TanStack Form runs `onSubmit` even while one is in flight, so a press during a save is dropped here.
+  const submit = () => {
+    if (!form.state.isSubmitting) {
+      formRef.current?.requestSubmit()
+    }
+  }
 
-  const [fixes, setFixes] = useState<GuessFix[]>([])
   const fillFrom = (guess: ConnectionGuess, via: PasteVia) => {
     paste(guess, via)
     setStage('form')
-    setFixes(guess.fixes)
     const [missing] = missingOf(form.state.values)
     if (missing) {
       focusField(missing)
     }
   }
-  const [miss, setMiss] = useState<Miss>({ count: 0, shown: false })
-  const hideMiss = useRef(0)
-  const showMiss = () => {
-    if (stage !== 'form') {
-      toast('No connection found', {
-        description: PASTE_FORMATS,
-      })
-      return
-    }
-    setMiss(({ count }) => ({ count: count + 1, shown: true }))
-    window.clearTimeout(hideMiss.current)
-    hideMiss.current = window.setTimeout(
-      () => setMiss((current) => ({ ...current, shown: false })),
-      MISS_SHOWN_MS
-    )
-  }
-  const readClipboard = async () => {
-    const { data: text } = await tryCatchAsync(() =>
-      navigator.clipboard.readText()
-    )
-    if (text === null) {
-      toast(
-        `Couldn't read the clipboard. Press ${isMac ? '⌘V' : 'Ctrl+V'} instead.`
-      )
-      return
-    }
-    const guess = guessConnection(text)
-    if (guess) {
-      fillFrom(guess, 'clipboard')
-    } else {
-      showMiss()
-    }
-  }
-  const { dragging } = usePasteConnection({
-    onMiss: showMiss,
+  const { dragging, miss, readClipboard } = usePasteConnection({
     onPaste: fillFrom,
+    pitchShown: stage === 'form',
   })
 
   const values = useStore(form.store, (state) => state.values)
+  const submitting = useStore(form.store, (state) => state.isSubmitting)
   const { canSend, connectionString, reason } = draftFetching(
     values,
     isLocalProxyAvailable
   )
 
-  const applyFix = (patch: ConnectionPatch, source: FixSource) => {
+  const applyFix = (fix: ConnectionPatch, source: FixSource) => {
     posthog.capture('connection_fix_applied', {
-      fields: Object.keys(patch).toSorted().join(','),
+      fields: Object.entries(fix)
+        .flatMap(([field, value]) => (value === undefined ? [] : [field]))
+        .toSorted()
+        .join(','),
       source,
     })
-    for (const field of ['database', 'host', 'options', 'port'] as const) {
-      const value = patch[field]
-      if (value !== undefined) {
-        form.setFieldValue(field, value)
-      }
-    }
-    if (patch.type) {
-      form.setFieldValue('type', patch.type)
-    }
-    if (patch.sshEnabled) {
-      form.setFieldValue('sshEnabled', true)
-      focusField(String.raw`ssh\.host`)
+    patch(fix)
+    test.reset()
+    if (fix.sshEnabled) {
+      focusField('ssh.host')
       return
     }
+    keepFocusInPage()
     const next = form.state.values
     const draft = draftFetching(next, isLocalProxyAvailable)
-    test.reset()
     if (draft.canSend) {
       test.mutate({ connectionString: draft.connectionString, type: next.type })
     }
   }
 
-  useHotkey(
-    'Mod+Enter',
-    (event) => {
-      event.preventDefault()
-      void form.handleSubmit()
-    },
-    { ignoreInputs: false }
-  )
-  useHotkey(
-    'Escape',
+  useEffect(() => {
+    pageRef.current?.focus()
+  }, [])
+
+  // Bound on the page, which sits inside React's root: the listener runs before a focused control's own keydown (the SSH switch toggles on Enter) and stops it.
+  useShortcut('submit', submit, {
+    enabled: stage === 'form',
+    requireReset: true,
+    target: pageRef,
+  })
+  // Scoped to the page so Escape in a portalled popup closes only the popup; an open autocomplete closes itself first, so the event passes through.
+  useShortcut(
+    'stepBack',
     () => {
       const focused = document.activeElement
-      if (focused instanceof HTMLElement && focused !== document.body) {
-        focused.blur()
+      if (focused?.getAttribute('aria-expanded') === 'true') {
         return
       }
-      back()
+      if (focused === pageRef.current) {
+        back()
+      } else {
+        pageRef.current?.focus()
+      }
     },
-    { ignoreInputs: false }
+    { preventDefault: false, stopPropagation: false, target: pageRef }
   )
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col">
+    <div
+      ref={pageRef}
+      tabIndex={-1}
+      className="relative flex h-full min-h-0 flex-col outline-none"
+    >
       <DropOverlay shown={dragging} />
       <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
         <TooltipTrigger
@@ -260,7 +204,7 @@ const CreateConnectionPage = () => {
         <TooltipContent side="right">Back</TooltipContent>
       </Tooltip>
       <ScrollArea className="min-h-0 flex-1">
-        <Form form={form} id={FORM_ID} className="flex min-h-full flex-col">
+        <Form ref={formRef} form={form} className="flex min-h-full flex-col">
           {stage === 'form' ? (
             <motion.div
               key="form"
@@ -277,15 +221,14 @@ const CreateConnectionPage = () => {
                     onAgent={() => {
                       posthog.capture('connection_agent_opened')
                       setStage('agent')
+                      pageRef.current?.focus()
                     }}
                   />
                 }
               >
                 <Reveal>
                   <ServerFields form={form} />
-                  {isGuessed(origin) && (
-                    <PasteNotes fixes={fixes} form={form} />
-                  )}
+                  {filled && <PasteNotes fixes={filled.fixes} form={form} />}
                 </Reveal>
                 <Reveal>
                   <SshFields form={form} />
@@ -298,6 +241,19 @@ const CreateConnectionPage = () => {
                     <SyncField form={form} />
                   </FieldGroup>
                 </Reveal>
+                {test.error && (
+                  <TestAlert
+                    key={test.error.message}
+                    error={test.error}
+                    parts={partsOf(values)}
+                    onAnswer={keepFocusInPage}
+                    onFix={applyFix}
+                    onFocus={(field) => {
+                      posthog.capture('connection_fix_focused', { field })
+                      focusField(field)
+                    }}
+                  />
+                )}
               </PageColumns>
             </motion.div>
           ) : (
@@ -313,30 +269,13 @@ const CreateConnectionPage = () => {
           )}
         </Form>
       </ScrollArea>
-      <AnimatePresence initial={false}>
-        {test.error && (
-          <MotionCollapse key="test-error">
-            <PageColumns className="max-h-80 overflow-y-auto pb-3">
-              <TestAlert
-                key={test.error.message}
-                error={test.error}
-                parts={partsOf(values)}
-                onFix={applyFix}
-                onFocus={(field) =>
-                  document.querySelector<HTMLElement>(`#${field}`)?.focus()
-                }
-              />
-            </PageColumns>
-          </MotionCollapse>
-        )}
-      </AnimatePresence>
       {stage === 'form' && (
         <FormFooter
           canTest={canSend}
-          formId={FORM_ID}
           reason={reason}
-          saving={createConnection.isPending}
+          submitting={submitting}
           testStatus={test.status}
+          onSave={submit}
           onTest={() => test.mutate({ connectionString, type: values.type })}
         />
       )}

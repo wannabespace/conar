@@ -110,7 +110,7 @@ const FieldLabel = ({
     data-slot="field-label"
     className={cn(
       `group/field-label peer/field-label has-data-checked:bg-input/30 flex w-fit gap-2 leading-snug transition-colors group-data-[disabled=true]/field:opacity-50`,
-      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:has-[[data-slot=radio-group-item][data-checked]]:ring-primary has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:px-2.5 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:py-1.5`,
+      `has-[>[data-slot=field]]:bg-input has-[>[data-slot=field]]:ring-foreground/4 hover:has-[>[data-slot=field]]:ring-foreground/12 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-xl has-[>[data-slot=field]]:border-transparent has-[>[data-slot=field]]:shadow-xs has-[>[data-slot=field]]:ring has-[>[data-slot=field]]:transition-shadow has-[>[data-slot=field]]:has-[:disabled]:opacity-50 *:data-[slot=field]:p-3 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:px-2.5 *:data-[slot=field]:not-has-[>[data-slot=field-content]]:py-1.5`,
       className
     )}
     {...props}

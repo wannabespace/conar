@@ -1,6 +1,6 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { SSH_PARAMS } from '@tamery/connection/ssh/params'
+import type { SecretParam } from '@tamery/connection/secrets'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -26,14 +26,22 @@ import { testConnectionQuery } from '~/core/queries/connection/test'
 
 const CREDENTIAL_LABELS = {
   password: 'Password',
-  'ssh.passphrase': 'Key passphrase',
-  'ssh.password': 'SSH password',
-  'ssh.privateKey': 'SSH private key',
-}
+  'secrets.ssh_key': 'SSH private key',
+  'secrets.ssh_passphrase': 'SSH key passphrase',
+  'secrets.ssh_password': 'SSH password',
+  'secrets.sslpassphrase': 'SSL key passphrase',
+  'secrets.sslpassword': 'SSL key passphrase',
+} satisfies Record<'password' | `secrets.${SecretParam}`, string>
 
 const EMPTY_CREDENTIALS = {
   password: '',
-  ssh: { passphrase: '', password: '', privateKey: '' },
+  secrets: {
+    ssh_key: '',
+    ssh_passphrase: '',
+    ssh_password: '',
+    sslpassphrase: '',
+    sslpassword: '',
+  } satisfies Record<SecretParam, string>,
 }
 
 export const PasswordForm = ({
@@ -54,10 +62,10 @@ export const PasswordForm = ({
   })
   const needsPassword =
     connection.isPasswordExists && !connectionString?.isPasswordPopulated
-  const missingSshSecrets = connectionString?.missingSshSecrets ?? []
+  const missingSecrets = connectionString?.missingSecrets ?? []
   const missingFields = [
     ...(needsPassword ? (['password'] as const) : []),
-    ...missingSshSecrets.map((secret) => `ssh.${secret}` as const),
+    ...missingSecrets.map((param) => `secrets.${param}` as const),
   ]
 
   const { mutate: saveCredentials, status } = useMutation({
@@ -67,12 +75,12 @@ export const PasswordForm = ({
         await connectionStringsCollection.utils.decrypt(connection.id)
       )
       if (needsPassword) {
-        url.password = credentials.password
+        url.password = encodeURIComponent(credentials.password)
       }
-      for (const secret of missingSshSecrets) {
-        url.searchParams.set(SSH_PARAMS[secret], credentials.ssh[secret])
+      for (const param of missingSecrets) {
+        url.searchParams.set(param, credentials.secrets[param])
       }
-      url.pathname = connectionResource.name || ''
+      url.pathname = encodeURIComponent(connectionResource.name || '')
 
       await testConnectionQuery.run({
         type: connection.type,
@@ -108,7 +116,7 @@ export const PasswordForm = ({
     form.store,
     ({ values }) =>
       (needsPassword && !values.password) ||
-      missingSshSecrets.some((secret) => !values.ssh[secret])
+      missingSecrets.some((param) => !values.secrets[param])
   )
   const pending = status === 'pending'
 
@@ -144,7 +152,7 @@ export const PasswordForm = ({
                     {(field) => (
                       <field.Field>
                         <field.Label>{CREDENTIAL_LABELS[name]}</field.Label>
-                        {name === 'ssh.privateKey' ? (
+                        {name === 'secrets.ssh_key' ? (
                           <field.Textarea
                             data-mask
                             rows={3}
@@ -153,6 +161,7 @@ export const PasswordForm = ({
                             autoComplete="off"
                             autoFocus={index === 0}
                             placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                            fileLabel="Load from file"
                           />
                         ) : (
                           <field.PasswordInput

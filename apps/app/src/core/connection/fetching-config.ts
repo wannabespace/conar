@@ -25,8 +25,9 @@ interface FetchingOptions {
   isPasswordPopulated?: boolean
   isLocalhost?: boolean
   proxy?: { enabled: boolean; url: string | null }
-  sshSecretsMissing?: boolean
-  usesSsh?: boolean
+  /** An SSH or SSL secret this device has not filled in since `CloudWithoutPassword` stripped it. */
+  secretsMissing: boolean
+  usesSsh: boolean
 }
 
 const REASONS = {
@@ -40,6 +41,8 @@ const REASONS = {
     'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
   passwordNotStored:
     'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+  secretsMissing:
+    'Enter the SSH or SSL credentials this device has not saved yet to query this connection.',
 }
 
 const allowed = (type: FetchingType): FetchingConfig => ({
@@ -59,34 +62,32 @@ const blocked = (
 
 const resolveFlags = (
   connection: FetchingConnection,
-  options?: FetchingOptions
+  options: FetchingOptions
 ) => {
   const isElectron = !!window.electron
-  const { isPasswordPopulated } = options ?? {}
+  const { isPasswordPopulated } = options
 
   return {
     connectionStringMissing:
       connection.syncType === SyncType.CloudWithoutConnectionString &&
-      !options?.hasLocalConnectionString,
+      !options.hasLocalConnectionString,
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
-    isLocalhost: options?.isLocalhost ?? false,
-    needsPassword:
-      (connection.isPasswordExists && isPasswordPopulated === false) ||
-      !!options?.sshSecretsMissing,
+    isLocalhost: options.isLocalhost ?? false,
+    needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
     passwordUnresolved:
       connection.isPasswordExists && isPasswordPopulated === undefined,
-    proxyPreferred: !isElectron || options?.proxy?.enabled === true,
+    proxyPreferred: !isElectron || options.proxy?.enabled === true,
     proxyReachable:
-      (options?.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
-      !!options?.proxy?.url,
+      (options.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
+      !!options.proxy?.url,
   }
 }
 
 export const fetchingConfig = (
   connection: FetchingConnection,
-  options?: FetchingOptions
+  options: FetchingOptions
 ): FetchingConfig => {
   const {
     connectionStringMissing,
@@ -103,7 +104,7 @@ export const fetchingConfig = (
     return blocked('local', REASONS.connectionStringNotStored)
   }
 
-  if (options?.usesSsh && !isElectron) {
+  if (options.usesSsh && !isElectron) {
     return blocked('local', SSH_DESKTOP_ONLY)
   }
 
@@ -120,7 +121,11 @@ export const fetchingConfig = (
     )
   }
 
-  if (options?.usesSsh) {
+  if (options.secretsMissing) {
+    return blocked('waiting-for-password', REASONS.secretsMissing)
+  }
+
+  if (options.usesSsh) {
     return allowed('local')
   }
 

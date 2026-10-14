@@ -1,6 +1,6 @@
+import { isLocalHost } from '../hosts'
 import type { SshTunnel } from '../ssh/params'
 import { EMPTY_SSH_TUNNEL } from '../ssh/params'
-import { isLocalHost } from './hosts'
 import { shellTokens } from './tokens'
 import type { GuessedParts } from './types'
 

@@ -50,6 +50,26 @@ describe('guessConnection — ADO.NET', () => {
         user: 'u',
       },
     ],
+    [
+      'Host=ep-x.us-east-2.aws.neon.tech;Database=neondb;Username=u;Password=p;SSL Mode=VerifyFull',
+      {
+        database: 'neondb',
+        host: 'ep-x.us-east-2.aws.neon.tech',
+        password: 'p',
+        type: ConnectionType.Postgres,
+        user: 'u',
+      },
+    ],
+    [
+      'Server=x.supabase.co;Database=d;User Id=u;Password=p',
+      {
+        database: 'd',
+        host: 'x.supabase.co',
+        password: 'p',
+        type: ConnectionType.Postgres,
+        user: 'u',
+      },
+    ],
   ])('reads %s', (text, parts) => {
     const guess = guessConnection(text)
     expect(guess?.format).toBe('ado')

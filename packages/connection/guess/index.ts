@@ -1,17 +1,18 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { tryCatch } from '@tamery/shared/utils'
 
+import { CLICKHOUSE_HTTP_PORT_OF_NATIVE } from '../connection-parts'
+import { hostHintOf, TYPE_OF_PORT } from '../hosts'
 import { guessAdo } from './ado'
 import { guessCli } from './cli'
 import { guessEnv } from './env'
 import { fixParts } from './fixes'
 import { guessHost } from './host'
-import { hostHintOf, TYPE_OF_PORT } from './hosts'
 import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
 import { guessSsh, throughForwards } from './ssh'
-import type { ConnectionGuess } from './types'
+import type { ConnectionGuess, GuessFormat } from './types'
 import { guessUrl, guessWebUrl } from './url'
 
 export type { GuessFix } from './fixes'
@@ -27,9 +28,9 @@ const DETECTORS = [
   guessWebUrl,
   guessHost,
 ]
-const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
-  9000: '8123',
-  9440: '8443',
+/** The engine a format means when neither the text, the port nor the host names one. */
+const TYPE_OF_FORMAT: Partial<Record<GuessFormat, ConnectionType>> = {
+  ado: ConnectionType.MSSQL,
 }
 const LINE_CONTINUATION = /\\\r?\n/gu
 
@@ -51,8 +52,12 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       forwards
     )
     const hint = hostHintOf(parts.host ?? '')
-    const type = parts.type ?? hint?.type ?? TYPE_OF_PORT[parts.port ?? '']
     const port = parts.port || hint?.port || ''
+    const type =
+      parts.type ??
+      TYPE_OF_PORT[port] ??
+      hint?.type ??
+      (database && TYPE_OF_FORMAT[database.format])
     return {
       ...fixParts(
         mergeParts(

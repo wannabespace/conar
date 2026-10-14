@@ -1,4 +1,4 @@
-import { hostHintOf, isLocalHost } from './hosts'
+import { hostHintOf, isLocalHost } from '../hosts'
 
 const GENERIC_LABELS = new Set(['db', 'www'])
 const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u

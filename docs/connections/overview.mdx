@@ -29,7 +29,7 @@ Connections live in one place so you can switch between databases and devices.
 
 In the desktop app, an AI agent connected over [MCP](/mcp/overview) can add a connection for you too. It can find the database in your project's `.env` or config and tests the connection before saving it. Choose **Add via MCP** on the new-connection page: it starts the MCP server if it's off, shows how to add it to your client, and gives you a prompt to copy. The connection opens as soon as the agent adds it.
 
-The desktop app also opens database links — `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://`. A link to a server you've already saved (same engine, host, port and user) opens that connection on the link's database; any other link opens this form filled in, and nothing connects until you save. Tamery becomes the default app for these links on first launch — turn off **Open database links in Tamery** in **Settings → General** to hand them back.
+The desktop app can also open database links: `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://`. Turn on **Open database links in Tamery** in **Settings → General** to make Tamery the default app for them. A link to a server you've already saved (same engine, host, port and user) opens that connection on the link's database; any other link opens this form filled in, and nothing connects until you save.
 
 ### What you can paste
 
@@ -42,7 +42,7 @@ The desktop app also opens database links — `postgres://`, `postgresql://`, `m
 | Environment variables | `.env` lines like `DATABASE_URL=…` or `PGHOST`/`PGUSER`/…, a docker-compose `environment:` block, a Rails `database.yml` |
 | JSON or a JS config | `{ "host": "…", "user": "…" }`, an AWS Secrets Manager RDS secret, a DBeaver `data-sources.json`, VS Code SQLTools settings, a Knex/TypeORM/Sequelize config or `module.exports = { … }`, `docker inspect` output |
 | A CLI command | `psql -h … -U …`, `mysql -h … -u … -p…`, `sqlcmd -S …`, `clickhouse-client --host …` |
-| An SSH command | `ssh -L 5433:db.internal:5432 ubuntu@bastion` — fills the SSH tunnel too |
+| An SSH command | `ssh -L 5433:db.internal:5432 ubuntu@bastion`, which fills the SSH tunnel too |
 
 Partial pastes work too: a paste fills only what it contains and keeps what you've already typed, so you can paste a JDBC URL copied from DBeaver (which leaves out the user and password) and type the credentials around it. Tamery puts the cursor in the first missing field. Pasting a different server replaces the fields instead.
 
@@ -54,7 +54,7 @@ Tamery also fixes strings that connect but break a database client, and says wha
 
 If a test fails on Supabase's direct host (`db.<project>.supabase.co`), Tamery points out that it's IPv6-only and suggests the Session pooler string.
 
-You can paste several at once — an `ssh -L` command and a `psql` command on the next line become one connection through the tunnel.
+You can paste several at once: an `ssh -L` command and a `psql` command on the next line become one connection through the tunnel.
 
 <Note>
   **Save connection** tests the connection first. If the test fails, the button
@@ -69,7 +69,7 @@ Tamery explains common failures in plain words and, when the cause is clear, off
 
 | Error | What Tamery suggests |
 | --- | --- |
-| Host not found for a name like `postgres` or `db` | It's a Docker Compose service — **Use localhost** |
+| Host not found for a name like `postgres` or `db` | It's a Docker Compose service: **Use localhost** |
 | Host not found or timeout for a private address (`10.x`, `*.internal`) | **Set up an SSH tunnel** (desktop app) |
 | Connection refused on another engine's port | **Switch the engine**, or for ClickHouse's native port 9000, **Use port 8123** |
 | The server requires SSL, or doesn't support it | **Turn on SSL** / **Turn off SSL** with the engine's own option |
@@ -82,7 +82,7 @@ For anything else, **Ask AI** explains the error and suggests steps, sometimes w
 
 ## SSH tunnels
 
-Turn on **Connect through SSH** and enter the bastion host. Sign in with your ssh-agent (it honours `~/.ssh/config`), a key file on this device, a pasted private key, or a password. Tunnels open in the desktop app only — see [Security](/connections/security) for where SSH secrets are stored.
+Turn on **SSH tunnel** and enter the bastion host. Sign in with your ssh-agent (it honours `~/.ssh/config`), a key file on this device, a pasted private key, or a password. Tunnels open in the desktop app only. See [Security](/connections/security) for where SSH secrets are stored.
 
 ## Sync types
 

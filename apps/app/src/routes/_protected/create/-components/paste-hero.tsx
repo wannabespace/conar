@@ -1,15 +1,22 @@
-import { CommandIcon, McpServerIcon } from '@hugeicons/core-free-icons'
+import { CommandIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
-import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useKeyHold } from '@tanstack/react-hotkeys'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import {
+  AnimatePresence,
+  motion,
+  useAnimate,
+  useReducedMotion,
+} from 'motion/react'
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
+
+import { AgentButton } from './agent-button'
 
 const EASE = [0.32, 0.72, 0, 1] as const
 
@@ -59,17 +66,22 @@ export const PasteHero = ({
   const reduceMotion = useReducedMotion()
   const modifierHeld = useKeyHold(isMac ? 'Meta' : 'Control')
   const pasteHeld = useKeyHold('V') && modifierHeld
+  const [shakeScope, shake] = useAnimate<HTMLDivElement>()
+
+  // Shakes in place rather than re-keying the block, which would remount the focused clipboard keys and drop focus out of the page.
+  useEffect(() => {
+    if (miss.count && !reduceMotion) {
+      void shake(
+        shakeScope.current,
+        { x: [0, -6, 6, -3, 0] },
+        { duration: 0.3 }
+      )
+    }
+  }, [miss.count, reduceMotion, shake, shakeScope])
 
   return (
     <div className="flex flex-col gap-7 lg:sticky lg:top-16 lg:col-span-2 lg:self-start">
-      <motion.div
-        key={miss.count}
-        className="flex flex-col gap-7"
-        animate={
-          miss.count && !reduceMotion ? { x: [0, -6, 6, -3, 0] } : undefined
-        }
-        transition={{ duration: 0.3 }}
-      >
+      <div ref={shakeScope} className="flex flex-col gap-7">
         <h1 className="relative h-18 overflow-hidden text-3xl font-semibold tracking-tight">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
@@ -111,26 +123,11 @@ export const PasteHero = ({
             or drop a file on the window
           </span>
         </div>
-      </motion.div>
+      </div>
       <p className="text-muted-foreground text-sm text-pretty">
         {PASTE_FORMATS}
       </p>
-      {window.electron && (
-        <Button
-          type="button"
-          variant="ghost-tint-muted"
-          size="sm"
-          className="self-start"
-          onClick={onAgent}
-        >
-          <HugeiconsIcon
-            icon={McpServerIcon}
-            strokeWidth={2}
-            data-icon="inline-start"
-          />
-          Add via MCP
-        </Button>
-      )}
+      {window.electron && <AgentButton onClick={onAgent} />}
     </div>
   )
 }

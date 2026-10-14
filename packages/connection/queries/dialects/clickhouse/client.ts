@@ -1,27 +1,39 @@
+// oxlint-disable-next-line unicorn/prefer-node-protocol -- ClickHouse types `http_agent` with `http`, which this program's two @types/node copies (ssh2's and bun's) keep apart from `node:http`
+import http from 'http'
 import https from 'node:https'
 import { createRequire } from 'node:module'
+import tls from 'node:tls'
 
 import type * as ClickHouse from '@clickhouse/client'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { memoize } from 'memoza'
 
-import { SSH_TLS_HOST_PARAM } from '../../../ssh/params'
+import { sshForwarding } from '../../../ssh/forwarding'
+import { deleteSshParams } from '../../../ssh/params'
 
 const clickhouse = createRequire(import.meta.url)(
   '@clickhouse/client'
 ) as typeof ClickHouse
 
-export const getClient = memoize((connectionString: string) => {
+export const getClient = memoize(async (connectionString: string) => {
   const url = new SafeURL(connectionString.replace(/^clickhouse/u, 'http'))
-  const tlsHost = url.searchParams.get(SSH_TLS_HOST_PARAM)
-  url.searchParams.delete(SSH_TLS_HOST_PARAM)
+  const tunnel = sshForwarding.of(connectionString)
+  deleteSshParams(url.searchParams)
+  await tunnel?.connect()
 
   return clickhouse.createClient({
     clickhouse_settings: { date_time_output_format: 'iso' },
-    ...(tlsHost &&
-      url.protocol === 'https:' && {
-        http_agent: new https.Agent({ keepAlive: true, servername: tlsHost }),
-      }),
+    ...(tunnel && {
+      http_agent:
+        url.protocol === 'https:'
+          ? Object.assign(new https.Agent({ keepAlive: true }), {
+              createConnection: (options: tls.ConnectionOptions) =>
+                tls.connect({ ...options, socket: tunnel.socket() }),
+            })
+          : Object.assign(new http.Agent({ keepAlive: true }), {
+              createConnection: () => tunnel.socket(),
+            }),
+    }),
     request_timeout: 0,
     url: url.toString(),
   })

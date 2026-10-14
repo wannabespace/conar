@@ -1,13 +1,4 @@
-import { FolderOpenIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { SshAuth } from '@tamery/connection/ssh/params'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
-import { useRef } from 'react'
 
 import type { ConnectionForm } from '../-lib/connection-form'
 
@@ -18,8 +9,6 @@ export const SshCredentialFields = ({
   auth: SshAuth
   form: ConnectionForm
 }) => {
-  const fileRef = useRef<HTMLInputElement>(null)
-
   if (auth === 'agent') {
     return null
   }
@@ -67,33 +56,7 @@ export const SshCredentialFields = ({
                 autoComplete="off"
                 placeholder="Paste the key, or load it from a file"
                 className="max-h-24"
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="ghost-muted"
-                      size="icon-sm"
-                      aria-label="Load from file"
-                      onClick={() => fileRef.current?.click()}
-                    />
-                  }
-                >
-                  <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} />
-                </TooltipTrigger>
-                <TooltipContent>Load from file</TooltipContent>
-              </Tooltip>
-              <input
-                ref={fileRef}
-                type="file"
-                hidden
-                onChange={async (event) => {
-                  const file = event.target.files?.[0]
-                  if (file) {
-                    field.handleChange(await file.text())
-                  }
-                }}
+                fileLabel="Load from file"
               />
             </field.Field>
           )}

@@ -57,7 +57,8 @@ export const runQuery = ({
 
   const cancel = async () => {
     try {
-      await client.command({
+      const ready = await client
+      await ready.command({
         query: 'KILL QUERY WHERE query_id = {id:String}',
         query_params: { id: clickhouseQueryId },
       })
@@ -67,9 +68,10 @@ export const runQuery = ({
   }
 
   return cancellable({ cancel, connectionString, queryId }, async () => {
+    const ready = await client
     const command = FIRST_WORD.exec(sql)?.groups?.command?.toUpperCase() ?? ''
     if (!ROW_RETURNING_COMMANDS.has(command)) {
-      await client.command({
+      await ready.command({
         abort_signal: controller.signal,
         // 2, not 1: 1 also forbids the output settings every query passes.
         ...(readOnly && { clickhouse_settings: { readonly: '2' } }),
@@ -84,7 +86,7 @@ export const runQuery = ({
       }
     }
 
-    const response = await client.query({
+    const response = await ready.query({
       abort_signal: controller.signal,
       clickhouse_settings: {
         output_format_json_quote_64bit_integers: 1,

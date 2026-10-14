@@ -7,7 +7,7 @@ import type * as PgModule from 'pg'
 
 import { parseConnectionString } from '../../..'
 import { readSSLFiles } from '../../../read-ssl-files'
-import { SSH_TLS_HOST_PARAM } from '../../../ssh/params'
+import { sshForwarding } from '../../../ssh/forwarding'
 import { defaultSSLConfig, parseSSLConfig } from '../../../ssl/pg'
 
 export const pg = createRequire(import.meta.url)('pg') as typeof PgModule
@@ -49,26 +49,21 @@ const connect = (options: PoolConfig) =>
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
-  const tlsHost = searchParams.get(SSH_TLS_HOST_PARAM)
-  const withTlsHost = (options: PoolConfig['ssl']) =>
-    tlsHost && options
-      ? { servername: tlsHost, ...(options === true ? {} : options) }
-      : options
+  const tunnel = sshForwarding.of(connectionString)
+  await tunnel?.connect()
   const conf: PoolConfig = {
     ...config,
+    ...(tunnel && { stream: tunnel.socket }),
     connectionTimeoutMillis: 30_000,
     max: 1,
-    ssl: withTlsHost(typeof ssl === 'object' ? readSSLFiles(ssl) : ssl),
+    ssl: typeof ssl === 'object' ? readSSLFiles(ssl) : ssl,
   }
 
   const direct = await connect(conf)
   const result = ssl
     ? direct
     : await direct.tryRecoverAsync(async (error) => {
-        const fallback = await connect({
-          ...conf,
-          ssl: withTlsHost(defaultSSLConfig),
-        })
+        const fallback = await connect({ ...conf, ssl: defaultSSLConfig })
         return fallback.mapError(() => error)
       })
 

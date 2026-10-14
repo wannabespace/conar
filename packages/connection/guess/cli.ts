@@ -1,21 +1,21 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { mssqlAddress } from './ado'
-import { partsOfVariables } from './env'
+import { partsOfVariables, variablesOfLines } from './env'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
 import { shellTokens } from './tokens'
-import type { DatabaseGuess } from './types'
+import type { DatabaseGuess, ServerField } from './types'
 import { guessUrl } from './url'
 
-type Field = 'database' | 'host' | 'password' | 'port' | 'server' | 'user'
+type Field = ServerField | 'server'
 
 interface Client {
   /** Flags that prompt when bare, so their value must be glued on: `-pSECRET`, `--password=SECRET`. */
   gluedOnly?: string[]
   /** Every flag that takes a value; `null` drops the value instead of reading it as a positional. */
   options: Record<string, Field | null>
-  positionals: Field[]
+  positionals: ServerField[]
   type: ConnectionType
 }
 
@@ -102,22 +102,10 @@ const CLIENTS: Record<string, Client> = {
   sqlcmd: SQLCMD,
 }
 
-const ENV_ASSIGNMENT = /^(?<key>[A-Z_][A-Z0-9_]*)=(?<value>.*)$/su
 const FLAG = /^(?<flag>--[^=]+|-[^-])=?(?<glued>.*)$/su
 const CONNINFO = /:\/\/|=/u
 
 const basename = (token = '') => token.split('/').at(-1) ?? ''
-
-const variablesOf = (assignments: string[]) => {
-  const variables: Record<string, string> = {}
-  for (const assignment of assignments) {
-    const { key, value = '' } = ENV_ASSIGNMENT.exec(assignment)?.groups ?? {}
-    if (key) {
-      variables[key] = value
-    }
-  }
-  return variables
-}
 
 const readArgs = (client: Client, args: string[]) => {
   const found: Partial<Record<Field, string>> = {}
@@ -150,7 +138,10 @@ const guessCommand = (tokens: string[]): DatabaseGuess | null => {
     return null
   }
 
-  const { found, positionals } = readArgs(client, tokens.slice(start + 1))
+  const {
+    found: { server = '', ...found },
+    positionals,
+  } = readArgs(client, tokens.slice(start + 1))
   const conninfo = positionals.find((positional) => CONNINFO.test(positional))
   const conninfoGuess = conninfo
     ? (guessUrl(conninfo) ?? guessKeyValue(conninfo))
@@ -164,9 +155,9 @@ const guessCommand = (tokens: string[]): DatabaseGuess | null => {
     format: 'cli',
     parts: mergeParts(
       found,
-      mssqlAddress(found.server ?? ''),
+      mssqlAddress(server),
       conninfoGuess?.parts ?? {},
-      partsOfVariables(variablesOf(tokens.slice(0, start))) ?? {},
+      partsOfVariables(variablesOfLines(tokens.slice(0, start))) ?? {},
       { type: client.type }
     ),
   }
