@@ -1,4 +1,12 @@
+import { FolderOpenIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { SshAuth } from '@tamery/connection/ssh/params'
+import { Button } from '@tamery/ui/components/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 
 import type { ConnectionForm } from '../lib/connection-form'
 
@@ -39,7 +47,31 @@ export const SshCredentialFields = ({
                 spellCheck={false}
                 autoComplete="off"
                 placeholder="~/.ssh/id_ed25519"
-              />
+              >
+                {window.electron && (
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          variant="ghost-row"
+                          size="icon-sm"
+                          aria-label="Choose key file"
+                          onClick={async () => {
+                            const keyPath =
+                              await window.electron?.ssh.pickKeyFile()
+                            if (keyPath) {
+                              field.handleChange(keyPath)
+                            }
+                          }}
+                        />
+                      }
+                    >
+                      <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} />
+                    </TooltipTrigger>
+                    <TooltipContent>Choose key file</TooltipContent>
+                  </Tooltip>
+                )}
+              </field.Input>
             </field.Field>
           )}
         </form.AppField>

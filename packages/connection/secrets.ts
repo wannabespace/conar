@@ -3,7 +3,7 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { lowercaseKeys } from './parse-connection-string'
 import { AUTH_PARAMS, SSH_PARAMS, sshTunnelOf } from './ssh/params'
 
-/** The query params `CloudWithoutPassword` keeps off the server beside the database password; sync with what `ssl/*.ts` and `ssh/` read. */
+/** The query params `CloudWithoutSecrets` keeps off the server beside the database password; sync with what `ssl/*.ts` and `ssh/` read. */
 const SECRET_PARAMS = [
   SSH_PARAMS.password,
   SSH_PARAMS.privateKey,

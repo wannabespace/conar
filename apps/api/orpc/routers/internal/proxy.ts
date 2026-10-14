@@ -74,7 +74,7 @@ export const proxy = {
 
         if (
           !connection.connection.connectionString ||
-          (connection.connection.syncType === SyncType.CloudWithoutPassword &&
+          (connection.connection.syncType === SyncType.CloudWithoutSecrets &&
             connection.connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()
@@ -110,7 +110,7 @@ export const proxy = {
 
         if (
           !connection.connectionString ||
-          (connection.syncType === SyncType.CloudWithoutPassword &&
+          (connection.syncType === SyncType.CloudWithoutSecrets &&
             connection.isPasswordExists)
         ) {
           throw errors.FORBIDDEN()

@@ -32,7 +32,7 @@ interface FetchingOptions {
   isPasswordPopulated?: boolean
   isLocalNetwork?: boolean
   proxy?: { enabled: boolean; url: string | null }
-  /** The SSH and SSL secrets this device has not filled in since `CloudWithoutPassword` stripped them. */
+  /** The SSH and SSL secrets this device has not filled in since `CloudWithoutSecrets` stripped them. */
   missingSecrets: SecretParam[]
   usesSsh: boolean
 }

@@ -196,6 +196,11 @@ contextBridge.exposeInMainWorld('electron', {
     mysql: dialectQueryBridge('mysql'),
     postgres: dialectQueryBridge('postgres'),
   },
+  ssh: {
+    pickKeyFile: handleElectronError(() =>
+      ipcRenderer.invoke('ssh.pickKeyFile')
+    ),
+  },
   versions: {
     app: () => ipcRenderer.invoke('versions.app'),
     chrome: () => process.versions.chrome,

@@ -15,6 +15,7 @@ import { connectionLinks } from './deep-link'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
 import { confirmHostKey } from './ssh-host-key'
+import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
 
 const lazyQueryExecutor = (
@@ -99,6 +100,9 @@ export const electron = {
       () => import('@tamery/connection/queries/dialects/pg')
     ),
   } satisfies Record<ConnectionType, QueryExecutor>,
+  ssh: {
+    pickKeyFile: pickSshKeyFile,
+  },
   versions: {
     app: () => app.getVersion(),
   },

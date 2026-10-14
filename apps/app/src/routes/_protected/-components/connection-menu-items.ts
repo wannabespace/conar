@@ -53,7 +53,7 @@ export const buildConnectionMenuItems = ({
     icon: Copy01Icon,
     onSelect: onCopy,
   },
-  ...(connection.syncType === SyncType.CloudWithoutPassword
+  ...(connection.syncType === SyncType.CloudWithoutSecrets
     ? ([
         {
           label: 'Clear saved credentials',

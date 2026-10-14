@@ -8,7 +8,7 @@ const SYNC_OPTIONS: Record<SyncType, { description: string; label: string }> = {
     description: 'Everything syncs, encrypted.',
     label: 'Full',
   },
-  [SyncType.CloudWithoutPassword]: {
+  [SyncType.CloudWithoutSecrets]: {
     description: 'Passwords and keys stay on this device.',
     label: 'No password',
   },

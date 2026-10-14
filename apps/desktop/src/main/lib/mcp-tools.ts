@@ -98,7 +98,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
           .enum(SyncType)
           .default(SyncType.Cloud)
           .describe(
-            'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_password" without the password, "cloud_without_connection_string" not at all'
+            'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_secrets" without the password and other secrets, "cloud_without_connection_string" not at all'
           ),
         type: z.enum(ConnectionType),
       },
