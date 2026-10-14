@@ -83,16 +83,19 @@ export const createDialectProvider = (
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
-    const connectionString = connectionId
-      ? connectionStringsCollection.get(connectionId)
-      : null
+    const { hasLocalConnectionString, isPasswordPopulated, missingSecrets } =
+      fetchingOptionsOf(
+        connectionId ? connectionStringsCollection.get(connectionId) : null
+      )
     const config = fetchingConfig(
       connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
       {
-        ...fetchingOptionsOf(connectionString),
+        hasLocalConnectionString,
         isLocalNetwork: isLocalNetworkConnectionString(
           options.connectionString
         ),
+        isPasswordPopulated,
+        missingSecrets,
         proxy,
         usesSsh,
       }

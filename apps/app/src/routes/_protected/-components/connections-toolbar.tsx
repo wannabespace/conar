@@ -13,39 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { type } from 'arktype'
 import { useSubscription } from 'seitu/react'
-import { createWebStorageValue } from 'seitu/web'
 
 import { Link } from '~/components/link'
+import { checkOrUpgrade } from '~/core/user/permissions'
 import { plural } from '~/utils/plural'
 
-const sortOptions = [
-  { value: 'date-desc', label: 'Date (newest first)' },
-  { value: 'date-asc', label: 'Date (oldest first)' },
-  { value: 'name-asc', label: 'Name (A–Z)' },
-  { value: 'name-desc', label: 'Name (Z–A)' },
-] as const
-
-export const sortValue = createWebStorageValue({
-  type: 'localStorage',
-  key: 'connections-list-sort',
-  schema: type('string' as type.cast<(typeof sortOptions)[number]['value']>),
-  defaultValue: 'date-desc',
-})
-
-const groupOptions = [
-  { value: 'label', label: 'Group by label' },
-  { value: 'type', label: 'Group by type' },
-  { value: 'none', label: 'No grouping' },
-] as const
-
-export const groupValue = createWebStorageValue({
-  type: 'localStorage',
-  key: 'connections-list-group',
-  schema: type('string' as type.cast<(typeof groupOptions)[number]['value']>),
-  defaultValue: 'label',
-})
+import {
+  groupOptions,
+  groupValue,
+  sortOptions,
+  sortValue,
+} from './connections-view'
 
 export const ConnectionsToolbar = ({ count }: { count: number }) => {
   const sort = useSubscription(sortValue)
@@ -110,7 +89,16 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
           variant="outline"
           size="sm"
           className="text-foreground"
-          render={<Link to="/create" />}
+          render={
+            <Link
+              to="/create"
+              onClick={(event) => {
+                if (!checkOrUpgrade('connection.create', { count })) {
+                  event.preventDefault()
+                }
+              }}
+            />
+          }
         >
           <HugeiconsIcon
             icon={PlusSignIcon}

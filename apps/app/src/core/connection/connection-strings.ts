@@ -34,18 +34,27 @@ const encryptConnectionString = async (connectionString: string) =>
 const decryptConnectionString = async (encryptedConnectionString: string) =>
   decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 
+export type ConnectionStringInput = Pick<
+  ConnectionString,
+  'connectionId' | 'updatedAt'
+> & {
+  connectionString: string
+}
+
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  prepare: (
-    data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & {
-      connectionString: string
-    }
-  ) => Promise<ConnectionString>
+  prepare: (data: ConnectionStringInput) => Promise<ConnectionString>
   resolve: (connection: {
     id: string
     isPasswordExists: boolean
   }) => Promise<string | null>
+  /** `changed` compares the plain strings: a rename re-resolves the same string under a new `updatedAt`. */
+  save: (data: ConnectionStringInput) => Promise<{
+    changed: boolean
+    previous: ConnectionStringInput | null
+    record: ConnectionString
+  }>
 }
 
 export type ConnectionStringsCollection = Collection<
@@ -101,11 +110,7 @@ export const createConnectionStringsCollection =
               throw error
             }
           },
-          async prepare(data: {
-            connectionId: string
-            connectionString: string
-            updatedAt: Date
-          }) {
+          async prepare(data) {
             const encrypted = await encryptConnectionString(
               data.connectionString
             )
@@ -147,6 +152,29 @@ export const createConnectionStringsCollection =
               isPasswordExists,
               local: await collection.utils.decrypt(connectionId),
             })
+          },
+          async save(data) {
+            const stored = collection.get(data.connectionId)
+            const previous = stored && {
+              connectionId: stored.connectionId,
+              connectionString: await collection.utils.decrypt(
+                stored.connectionId
+              ),
+              updatedAt: stored.updatedAt,
+            }
+            const record = await collection.utils.prepare(data)
+            if (collection.has(data.connectionId)) {
+              collection.update(data.connectionId, (draft) => {
+                Object.assign(draft, record)
+              })
+            } else {
+              collection.insert(record)
+            }
+            return {
+              changed: previous?.connectionString !== data.connectionString,
+              previous: previous ?? null,
+              record,
+            }
           },
         },
       })

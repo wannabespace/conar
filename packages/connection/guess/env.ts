@@ -38,7 +38,6 @@ const TYPE_OF_DRIVER: Record<string, ConnectionType> = {
   trilogy: ConnectionType.MySQL,
 }
 const UNPACKED_TEMPLATE = /\$\{|<%/u
-/** `DB_NAME` names a database; a bare `name` (package.json, a connection's label) does not. */
 const BARE_NAME = 'NAME'
 
 const GROUPS: VariableGroup[] = [

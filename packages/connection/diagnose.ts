@@ -7,14 +7,10 @@ import {
   mergeOptions,
   portOf,
 } from './connection-parts'
-import {
-  hostHintOf,
-  isIpv6OnlyHost,
-  isLocalHost,
-  isPrivateHost,
-  isServiceName,
-  TYPE_OF_PORT,
-} from './hosts'
+import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
+import { SSH_DESKTOP_ONLY, SSH_TUNNEL_ERROR } from './ssh/params'
+import { TLS_PARAMS as MYSQL_TLS_PARAMS } from './ssl/mysql'
+import { TLS_PARAMS as PG_TLS_PARAMS } from './ssl/pg'
 
 export interface ConnectionPatch {
   database?: string
@@ -58,12 +54,25 @@ const SSL_OPTIONS: Partial<
   },
 }
 
+// The drivers refuse SSL off beside any of these.
+const TLS_PARAMS: Partial<Record<ConnectionType, string[]>> = {
+  [ConnectionType.MySQL]: MYSQL_TLS_PARAMS,
+  [ConnectionType.Postgres]: PG_TLS_PARAMS,
+}
+
 export const sslOptionsOf = (
   { options, type }: Pick<ConnectionParts, 'options' | 'type'>,
   setting: SslSetting
 ) => {
   const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
-  return option ? mergeOptions(options, option) : undefined
+  if (!type || !option) {
+    return
+  }
+  const dropped = setting === 'off' ? (TLS_PARAMS[type] ?? []) : []
+  const kept = [...new URLSearchParams(options)].filter(
+    ([key]) => !dropped.includes(key.toLowerCase())
+  )
+  return mergeOptions(new URLSearchParams(kept).toString(), option)
 }
 
 const sslFix = (
@@ -74,6 +83,9 @@ const sslFix = (
   const options = sslOptionsOf(parts, setting)
   return options ? { label, patch: { options } } : undefined
 }
+
+const SUPABASE_IPV6_ONLY_HINT =
+  "Supabase's direct host is IPv6-only. On an IPv4 network, paste the Session pooler string from Supabase → Connect."
 
 const tunnelFix = ({ desktop, parts }: DiagnosisContext): Diagnosis['fix'] =>
   desktop && !parts.ssh
@@ -158,20 +170,21 @@ const RULES: {
   {
     diagnose: (context) => {
       const { host } = context.parts
-      if (isIpv6OnlyHost(host)) {
+      const kind = hostKindOf(host)
+      if (kind === 'ipv6-only') {
         return {
-          hint: "Supabase's direct host is IPv6-only. On an IPv4 network, paste the Session pooler string from Supabase → Connect.",
+          hint: SUPABASE_IPV6_ONLY_HINT,
           title: "This network can't reach Supabase's direct host",
         }
       }
-      if (isServiceName(host)) {
+      if (kind === 'service') {
         return {
           fix: { label: 'Use localhost', patch: { host: 'localhost' } },
           hint: `"${host}" looks like a Docker Compose service, which only resolves inside Docker. From this machine, connect to the port Docker publishes on localhost.`,
           title: `"${host}" isn't reachable from here`,
         }
       }
-      if (isPrivateHost(host)) {
+      if (kind === 'private') {
         return {
           fix: tunnelFix(context),
           hint: 'It only resolves inside a private network: connect through a bastion host, or over your VPN.',
@@ -230,7 +243,7 @@ const RULES: {
     diagnose: (context) => {
       const { host } = context.parts
       const provider = hostHintOf(host)?.label
-      if (isPrivateHost(host)) {
+      if (hostKindOf(host) === 'private') {
         return {
           fix: tunnelFix(context),
           hint: 'That address is on a private network: connect through a bastion host, or over your VPN.',
@@ -249,9 +262,10 @@ const RULES: {
   {
     diagnose: (context) => ({
       fix: tunnelFix(context),
-      hint: isIpv6OnlyHost(context.parts.host)
-        ? "Supabase's direct host is IPv6-only. On an IPv4 network, paste the Session pooler string from Supabase → Connect."
-        : 'No network route to that address: it may be IPv6-only, or need your VPN.',
+      hint:
+        hostKindOf(context.parts.host) === 'ipv6-only'
+          ? SUPABASE_IPV6_ONLY_HINT
+          : 'No network route to that address: it may be IPv6-only, or need your VPN.',
       title: "This network can't reach the server",
     }),
     match: /enetunreach|ehostunreach|no route to host/iu,
@@ -274,14 +288,17 @@ const RULES: {
   },
 ]
 
-/** Every error `ssh/session.ts` throws names SSH; no driver's does. */
-const SSH_ERROR = /\bSSH\b/u
-
 export const diagnoseConnectionError = (
   context: DiagnosisContext
 ): Diagnosis | null => {
-  if (SSH_ERROR.test(context.message)) {
-    return { hint: context.message, title: "Couldn't open the SSH tunnel" }
+  if (context.message.startsWith(SSH_TUNNEL_ERROR)) {
+    return {
+      hint: context.message.slice(SSH_TUNNEL_ERROR.length),
+      title: "Couldn't open the SSH tunnel",
+    }
+  }
+  if (context.message === SSH_DESKTOP_ONLY) {
+    return { hint: SSH_DESKTOP_ONLY, title: "Couldn't open the SSH tunnel" }
   }
   const { host, password } = context.parts
   const diagnosis =

@@ -1,16 +1,21 @@
 import { parse } from 'shell-quote'
 
-/** Words of one shell command, cut at the first control operator or comment. */
-export const shellTokens = (command: string): string[] => {
-  const tokens: string[] = []
-  for (const entry of parse(command, (name) => `$${name}`)) {
+/** Words of each shell command on a line, split at control operators and cut at a comment. */
+export const shellCommands = (line: string): string[][] => {
+  const commands: string[][] = [[]]
+  for (const entry of parse(line, (name) => `$${name}`)) {
     if (typeof entry === 'string') {
-      tokens.push(entry)
+      commands.at(-1)?.push(entry)
     } else if ('pattern' in entry) {
-      tokens.push(entry.pattern)
-    } else {
+      commands.at(-1)?.push(entry.pattern)
+    } else if ('comment' in entry) {
       break
+    } else {
+      commands.push([])
     }
   }
-  return tokens
+  return commands
 }
+
+export const shellTokens = (command: string): string[] =>
+  shellCommands(command)[0] ?? []

@@ -1,76 +1,100 @@
 import type { GuessFormat } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
+import type { SecretParam } from '@tamery/connection/secrets'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import type { MutationStatus } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
+import { useRef } from 'react'
 import { toast } from 'sonner'
 
-import type { createConnection } from '~/core/connection/create'
+import type { updateConnection } from '~/core/connection/save'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { generateRandomName } from '~/utils/faker'
 
-import type { ConnectionFormValues } from './connection-form'
+import type { ConnectionForm, ConnectionFormValues } from './connection-form'
 import { draftFetching } from './draft-fetching'
 
-/** Each route persists what it uses: an edit keeps the sync type and never opens or reports an origin. */
-export type SavedConnection = Omit<
-  Parameters<typeof createConnection>[0],
-  'workspaceId'
-> & {
+export type FormMode =
+  | { kind: 'create' }
+  | {
+      kind: 'edit'
+      name: string
+      /** The saved connection has a password this device never held, so an empty field still needs one. */
+      passwordElsewhere: boolean
+      missingSecrets: SecretParam[]
+    }
+
+export type SavedConnection = Parameters<typeof updateConnection>[1]
+
+export interface NewConnection {
   /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
   open: boolean
   origin: GuessFormat | undefined
+  syncType: SyncType
 }
 
-export const useSaveConnection = (
-  persist: (connection: SavedConnection) => Promise<unknown>
-) => {
+export type Persist = (
+  connection: SavedConnection,
+  created: NewConnection
+) => Promise<unknown>
+
+export const useSaveConnection = (mode: FormMode, persist: Persist) => {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const test = useMutation({
     meta: { event: 'connection_tested' },
     mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
       testConnectionQuery.run(params),
   })
+  const inFlight = useRef<ReturnType<typeof tryCatchAsync>>(null)
+
   /** A result only counts for the string it tested, so any edit leaves the draft untested. */
-  const testStatusOf = (
-    connectionString: string,
-    type: ConnectionType
-  ): MutationStatus =>
-    test.variables?.connectionString === connectionString &&
-    test.variables.type === type
-      ? test.status
-      : 'idle'
+  const draftOf = (values: ConnectionFormValues) => {
+    const draft = draftFetching(values, isLocalProxyAvailable, mode)
+    const tested =
+      test.variables?.connectionString === draft.connectionString &&
+      test.variables.type === values.type
+    const testStatus: MutationStatus = tested ? test.status : 'idle'
+    return { ...draft, testStatus }
+  }
+
+  const runTest = (values: ConnectionFormValues) => {
+    const { canSend, connectionString } = draftOf(values)
+    if (!canSend) {
+      return null
+    }
+    inFlight.current = tryCatchAsync(() =>
+      test.mutateAsync({ connectionString, type: values.type })
+    )
+    return inFlight.current
+  }
 
   const save = async (
-    read: () => ConnectionFormValues,
+    form: ConnectionForm,
     origin: GuessFormat | undefined
   ): Promise<void> => {
-    const values = read()
-    const draft = draftFetching(values, isLocalProxyAvailable)
-    const status = testStatusOf(draft.connectionString, values.type)
-    const failed = status === 'error'
-    if (draft.canSend && !failed && status !== 'success') {
-      const { error } = await tryCatchAsync(() =>
-        test.mutateAsync({
-          connectionString: draft.connectionString,
-          type: values.type,
-        })
-      )
-      if (error) {
+    const draft = draftOf(form.state.values)
+    if (
+      draft.canSend &&
+      (draft.testStatus === 'idle' || draft.testStatus === 'pending')
+    ) {
+      const result = await (draft.testStatus === 'pending'
+        ? inFlight.current
+        : runTest(form.state.values))
+      if (result?.error) {
         return
       }
       // An edit during the test leaves what the form holds now untested.
       if (
-        draftFetching(read(), isLocalProxyAvailable).connectionString !==
-        draft.connectionString
+        draftOf(form.state.values).connectionString !== draft.connectionString
       ) {
-        return save(read, origin)
+        return save(form, origin)
       }
     }
-    const current = read()
-    const { connectionString } = draftFetching(current, isLocalProxyAvailable)
+    const { values } = form.state
+    const { connectionString } = draftOf(values)
     if (!connectionString) {
       toast.error("Couldn't save the connection", {
         description: "The host isn't a valid address.",
@@ -78,19 +102,23 @@ export const useSaveConnection = (
       return
     }
     const { error } = await tryCatchAsync(() =>
-      persist({
-        color: current.color,
-        connectionString,
-        label: current.label.trim() || null,
-        name:
-          current.name.trim() ||
-          suggestConnectionName(current) ||
-          generateRandomName(),
-        open: draft.canSend && !failed,
-        origin,
-        syncType: current.syncType,
-        type: current.type,
-      })
+      persist(
+        {
+          color: values.color,
+          connectionString,
+          label: values.label.trim() || null,
+          name:
+            values.name.trim() ||
+            suggestConnectionName(values) ||
+            generateRandomName(),
+          type: values.type,
+        },
+        {
+          open: draft.canSend && draft.testStatus !== 'error',
+          origin,
+          syncType: values.syncType,
+        }
+      )
     )
     if (error) {
       toast.error("Couldn't save the connection", {
@@ -99,5 +127,5 @@ export const useSaveConnection = (
     }
   }
 
-  return { save, test, testStatusOf }
+  return { draftOf, runTest, save, testError: test.error }
 }

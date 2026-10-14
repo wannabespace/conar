@@ -5,12 +5,19 @@ import { useLocation } from '@tanstack/react-router'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { isMac } from '~/lib/os'
 import { posthog } from '~/lib/posthog'
 
-import type { PasteFlash } from '../components/paste-hero'
-import { isMac, PASTE_FORMATS } from '../components/paste-hero'
-
 export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'
+
+export interface PasteFlash {
+  count: number
+  result: 'hit' | 'miss'
+  shown: boolean
+}
+
+export const PASTE_FORMATS =
+  'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
 const FLASH_SHOWN_MS = 3000

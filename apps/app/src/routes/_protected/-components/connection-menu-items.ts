@@ -9,13 +9,11 @@ import {
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
 export const buildConnectionMenuItems = ({
   canSend,
   connection,
-  connectionString,
   onClearPassword,
   onCopy,
   onEdit,
@@ -25,7 +23,6 @@ export const buildConnectionMenuItems = ({
 }: {
   canSend: boolean
   connection: Connection
-  connectionString: ConnectionString | undefined
   onClearPassword: () => void
   onCopy: () => void
   onEdit: () => void
@@ -62,9 +59,6 @@ export const buildConnectionMenuItems = ({
           label: 'Clear saved credentials',
           icon: SquareUnlock01Icon,
           className: 'whitespace-nowrap',
-          disabled:
-            !connectionString?.isPasswordPopulated &&
-            !connectionString?.usesSsh,
           onSelect: onClearPassword,
         },
       ] satisfies AppMenuNode[])

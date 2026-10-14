@@ -24,7 +24,7 @@ export const ConnectionLinksRow = () => {
     <SettingsRow
       htmlFor="connection-links-default"
       title="Open database links in Tamery"
-      description="postgres://, mysql://, sqlserver:// and clickhouse:// links open the matching connection, or a new one filled in from the link."
+      description="PostgreSQL, MySQL, MariaDB, SQL Server and ClickHouse links open the matching connection, or a new one filled in from the link."
     >
       <Switch
         id="connection-links-default"

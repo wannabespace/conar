@@ -7,8 +7,8 @@ import { ConnectionPage } from '~/modules/connection-form/components/connection-
 import { useCreateConnection } from './-lib/use-create-connection'
 
 const CreateConnectionPage = () => {
-  const { mutateAsync } = useCreateConnection()
-  return <ConnectionPage persist={mutateAsync} />
+  const persist = useCreateConnection()
+  return <ConnectionPage mode={{ kind: 'create' }} persist={persist} />
 }
 
 export const Route = createFileRoute('/_protected/create/')({

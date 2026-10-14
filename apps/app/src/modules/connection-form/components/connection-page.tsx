@@ -12,20 +12,18 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useStore } from '@tanstack/react-form'
-import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
-import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { posthog } from '~/lib/posthog'
 
 import type { ConnectionFormValues } from '../lib/connection-form'
 import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
-import { draftFetching } from '../lib/draft-fetching'
+import { useGoBack } from '../lib/use-go-back'
 import { usePasteConnection } from '../lib/use-paste-connection'
-import type { SavedConnection } from '../lib/use-save-connection'
+import type { FormMode, Persist } from '../lib/use-save-connection'
 import { useSaveConnection } from '../lib/use-save-connection'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
@@ -52,17 +50,14 @@ const focusField = (id: string) =>
 
 export const ConnectionPage = ({
   defaultValues,
-  editingName,
+  mode,
   persist,
 }: {
   defaultValues?: ConnectionFormValues
-  editingName?: string
-  persist: (connection: SavedConnection) => Promise<unknown>
+  mode: FormMode
+  persist: Persist
 }) => {
-  const router = useRouter()
-  const navigate = useNavigate()
-  const canGoBack = useCanGoBack()
-  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const goBack = useGoBack()
   const [filled, setFilled] = useState<{
     fixes: GuessFix[]
     origin?: GuessFormat
@@ -73,10 +68,8 @@ export const ConnectionPage = ({
   const back = () => {
     if (stage === 'agent') {
       setStage('form')
-    } else if (canGoBack) {
-      router.history.back()
     } else {
-      void navigate({ to: '/' })
+      goBack()
     }
   }
   // A focused control that unmounts (a fix button, Ask AI) drops focus to body, where the page's keys no longer reach.
@@ -86,7 +79,7 @@ export const ConnectionPage = ({
         pageRef.current?.focus()
       }
     }, 0)
-  const { save, test, testStatusOf } = useSaveConnection(persist)
+  const { draftOf, runTest, save, testError } = useSaveConnection(mode, persist)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
@@ -96,7 +89,7 @@ export const ConnectionPage = ({
         origin: pasted ? format : current?.origin,
       }))
     },
-    onSubmit: () => save(() => form.state.values, filled?.origin),
+    onSubmit: () => save(form, filled?.origin),
   })
   // From the second attempt TanStack Form runs `onSubmit` even while one is in flight, so a press during a save is dropped here.
   const submit = () => {
@@ -119,11 +112,7 @@ export const ConnectionPage = ({
 
   const values = useStore(form.store, (state) => state.values)
   const submitting = useStore(form.store, (state) => state.isSubmitting)
-  const { canSend, connectionString, reason } = draftFetching(
-    values,
-    isLocalProxyAvailable
-  )
-  const testStatus = testStatusOf(connectionString, values.type)
+  const { canSend, reason, testStatus } = draftOf(values)
 
   const applyFix = (fix: ConnectionPatch, source: FixSource) => {
     posthog.capture('connection_fix_applied', {
@@ -139,11 +128,7 @@ export const ConnectionPage = ({
       return
     }
     keepFocusInPage()
-    const next = form.state.values
-    const draft = draftFetching(next, isLocalProxyAvailable)
-    if (draft.canSend) {
-      test.mutate({ connectionString: draft.connectionString, type: next.type })
-    }
+    void runTest(form.state.values)
   }
 
   useEffect(() => {
@@ -210,8 +195,8 @@ export const ConnectionPage = ({
               <PageColumns
                 aside={
                   <PasteHero
-                    editingName={editingName}
                     flash={flash}
+                    mode={mode}
                     onClipboard={readClipboard}
                     onAgent={() => {
                       posthog.capture('connection_agent_opened')
@@ -233,13 +218,13 @@ export const ConnectionPage = ({
                     <NameField form={form} />
                     <LabelField form={form} />
                     <ColorField form={form} />
-                    {!editingName && <SyncField form={form} />}
+                    {mode.kind === 'create' && <SyncField form={form} />}
                   </FieldGroup>
                 </Reveal>
-                {testStatus === 'error' && test.error && (
+                {testStatus === 'error' && testError && (
                   <TestAlert
-                    key={test.error.message}
-                    error={test.error}
+                    key={testError.message}
+                    error={testError}
                     parts={partsOf(values)}
                     onAnswer={keepFocusInPage}
                     onFix={applyFix}
@@ -267,12 +252,12 @@ export const ConnectionPage = ({
       {stage === 'form' && (
         <FormFooter
           canTest={canSend}
-          editing={!!editingName}
+          editing={mode.kind === 'edit'}
           reason={reason}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}
-          onTest={() => test.mutate({ connectionString, type: values.type })}
+          onTest={() => runTest(values)}
         />
       )}
     </div>

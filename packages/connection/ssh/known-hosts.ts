@@ -23,7 +23,19 @@ const SERVER_HOST_KEY_ALGORITHMS: ServerHostKeyAlgorithm[] = [
   'ssh-rsa',
 ]
 
-const knownHostsPath = () => path.join(homedir(), '.ssh', 'known_hosts')
+const userKnownHostsPath = () => path.join(homedir(), '.ssh', 'known_hosts')
+// OpenSSH's default UserKnownHostsFile and GlobalKnownHostsFile: a key listed in any of them makes another key a mismatch.
+const knownHostsPaths = () => [
+  userKnownHostsPath(),
+  `${userKnownHostsPath()}2`,
+  '/etc/ssh/ssh_known_hosts',
+  '/etc/ssh/ssh_known_hosts2',
+]
+
+const readOrEmpty = async (file: string) => {
+  const { data } = await tryCatchAsync(() => readFile(file, 'utf-8'))
+  return data ?? ''
+}
 
 const hashOf = (salt: Buffer, name: string) =>
   createHmac('sha1', salt).update(name).digest('base64')
@@ -130,20 +142,18 @@ export const knownHosts = {
     return port === DEFAULT_SSH_PORT ? name : `[${name}]:${port}`
   },
   read: async () => {
-    const { data } = await tryCatchAsync(() =>
-      readFile(knownHostsPath(), 'utf-8')
-    )
-    return data ?? ''
+    const files = await Promise.all(knownHostsPaths().map(readOrEmpty))
+    return files.join('\n')
   },
   trust: async (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
-    const contents = await knownHosts.read()
+    const contents = await readOrEmpty(userKnownHostsPath())
     const separator = contents && !contents.endsWith('\n') ? '\n' : ''
-    await mkdir(path.dirname(knownHostsPath()), {
+    await mkdir(path.dirname(userKnownHostsPath()), {
       mode: 0o700,
       recursive: true,
     })
     await appendFile(
-      knownHostsPath(),
+      userKnownHostsPath(),
       `${separator}${knownHosts.lineOf(name, key, { hashed })}\n`,
       { mode: 0o600 }
     )

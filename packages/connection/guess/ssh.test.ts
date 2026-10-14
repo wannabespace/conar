@@ -85,6 +85,48 @@ describe('guessConnection — SSH', () => {
     })
   })
 
+  it('reads a command chained after the ssh command', () => {
+    expect(
+      guessConnection(
+        'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io && psql postgres://app:pw@localhost:5433/shop'
+      )?.parts
+    ).toStrictEqual({
+      database: 'shop',
+      host: 'db.internal',
+      password: 'pw',
+      port: '5432',
+      ssh: tunnel({ host: 'bastion.acme.io', user: 'deploy' }),
+      type: ConnectionType.Postgres,
+      user: 'app',
+    })
+  })
+
+  it('reads a variable set before the ssh command', () => {
+    expect(
+      guessConnection(
+        'DATABASE_URL=postgres://app:pw@db.internal/shop ssh deploy@bastion.acme.io'
+      )?.parts
+    ).toMatchObject({
+      database: 'shop',
+      host: 'db.internal',
+      ssh: tunnel({ host: 'bastion.acme.io', user: 'deploy' }),
+    })
+  })
+
+  it('ignores ssh mentioned in prose', () => {
+    expect(
+      guessConnection(
+        'First ssh into the bastion, then connect to postgres://app:pw@db.internal/shop'
+      )?.parts
+    ).toStrictEqual({
+      database: 'shop',
+      host: 'db.internal',
+      password: 'pw',
+      type: ConnectionType.Postgres,
+      user: 'app',
+    })
+  })
+
   it('keeps a database host that is not the local end of a forward', () => {
     expect(
       guessConnection(

@@ -75,4 +75,11 @@ describe('guessConnection — ADO.NET', () => {
     expect(guess?.format).toBe('ado')
     expect(guess?.parts).toStrictEqual(parts)
   })
+
+  it('leaves the engine open without SQL Server keys', () => {
+    expect(
+      guessConnection('Host=pg.mycorp.com;Database=app;Username=u;Password=p')
+        ?.parts.type
+    ).toBeUndefined()
+  })
 })

@@ -96,6 +96,10 @@ describe('guessConnection — URLs', () => {
     ['a page link', 'https://keyboard-support.app.local.tamery.app/settings'],
     ['a docs link', 'https://github.com/acme/app#readme'],
     [
+      'a ClickHouse docs link',
+      'https://clickhouse.com/docs/en/interfaces/http',
+    ],
+    [
       'a homepage in a config',
       '{ "name": "app", "homepage": "https://acme.io" }',
     ],

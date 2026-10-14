@@ -1,6 +1,6 @@
+import { isLocalNetworkHost } from '@tamery/connection/hosts'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
-import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { ConnectionString } from '~/core/connection/connection-strings'
@@ -37,9 +37,11 @@ interface FetchingOptions {
   usesSsh: boolean
 }
 
+const PORT_SUFFIX = /:\d*$/u
+
 /** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
-export const isLocalNetworkConnection = ({ displayUrl }: ConnectionString) =>
-  isLocalNetworkConnectionString(`tcp://${displayUrl}`)
+const isLocalNetworkConnection = ({ displayUrl }: ConnectionString) =>
+  isLocalNetworkHost(displayUrl.replace(PORT_SUFFIX, ''))
 
 /** What this device's stored string says; `undefined` while the row loads leaves the password unresolved. */
 export const fetchingOptionsOf = (

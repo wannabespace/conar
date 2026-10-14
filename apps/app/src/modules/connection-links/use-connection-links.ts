@@ -4,9 +4,8 @@ import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { v7 } from 'uuid'
 
-import { getCollections, mutateOffline } from '~/core/collections'
+import { getCollections } from '~/core/collections'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { posthog } from '~/lib/posthog'
@@ -55,30 +54,22 @@ const findConnectionId = async (parts: GuessedParts) => {
   return candidates[servers.indexOf(serverOf(parts))]?.id ?? null
 }
 
-const resourceIdOf = (connectionId: string, database: string | undefined) => {
+/** Never inserts: the link comes from any page the browser opens, so it may only reach a database the user already saved. */
+const savedResourceIdOf = (
+  connectionId: string,
+  database: string | undefined
+) => {
   const { connectionsResourcesCollection, connectionStringsCollection } =
     getCollections()
   const name =
     database ||
     connectionStringsCollection.get(connectionId)?.defaultResourceName ||
     null
-  const resource = connectionsResourcesCollection.toArray.find(
-    (r) => r.connectionId === connectionId && r.name === name
+  return (
+    connectionsResourcesCollection.toArray.find(
+      (r) => r.connectionId === connectionId && r.name === name
+    )?.id ?? null
   )
-  if (resource) {
-    return resource.id
-  }
-  const id = v7()
-  mutateOffline(() => {
-    connectionsResourcesCollection.insert({
-      connectionId,
-      createdAt: new Date(),
-      id,
-      name,
-      updatedAt: new Date(),
-    })
-  })
-  return id
 }
 
 export const useConnectionLinks = () => {
@@ -92,10 +83,12 @@ export const useConnectionLinks = () => {
       }
       const parts = guessConnection(link)?.parts ?? {}
       const connectionId = await findConnectionId(parts)
-      posthog.capture('connection_link_opened', { matched: !!connectionId })
-      if (connectionId) {
+      const resourceId =
+        connectionId && savedResourceIdOf(connectionId, parts.database)
+      posthog.capture('connection_link_opened', { matched: !!resourceId })
+      if (resourceId) {
         await navigate({
-          params: { resourceId: resourceIdOf(connectionId, parts.database) },
+          params: { resourceId },
           to: '/connection/$resourceId',
         })
       } else if (

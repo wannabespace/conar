@@ -74,14 +74,10 @@ export const PasswordForm = ({
         resourceId: connectionResource.id,
       })
 
-      const record = await connectionStringsCollection.utils.prepare({
+      await connectionStringsCollection.utils.save({
         connectionId: connection.id,
         connectionString: url.toString(),
         updatedAt: connection.updatedAt,
-      })
-
-      connectionStringsCollection.update(connection.id, (draft) => {
-        Object.assign(draft, record)
       })
     },
     onSuccess: () => {

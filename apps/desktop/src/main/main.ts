@@ -5,6 +5,7 @@ import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -51,9 +52,8 @@ const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
 
 // Rejects when no app handles the protocol (Cursor not installed), and an unhandled rejection quits the app.
 const openExternal = async (win: BrowserWindow, url: string) => {
-  try {
-    await shell.openExternal(url)
-  } catch {
+  const { error } = await tryCatchAsync(() => shell.openExternal(url))
+  if (error) {
     win.webContents.send('toast', {
       description:
         'No app on this computer opens it. Install the app, or copy the config instead.',

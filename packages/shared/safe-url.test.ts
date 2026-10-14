@@ -203,6 +203,10 @@ describe('new SafeURL', () => {
       'postgresql://u:pa?ss@host/db',
       { hostname: 'host', password: 'pa?ss', username: 'u' },
     ],
+    [
+      'postgres://u:123/x?k=v@host/db',
+      { hostname: 'host', password: '123/x?k=v', username: 'u' },
+    ],
   ])('splits the credentials of %s before its query', (conn, expected) => {
     const parsed = new SafeURL(conn)
 

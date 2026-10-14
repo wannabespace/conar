@@ -9,6 +9,13 @@ const SERVER = /^(?:\w+:)?(?<host>[^,\\]*)(?:\\[^,]*)?(?:,(?<port>\d+))?/u
 
 /** MySqlConnector's own keys; `SSL Mode` is Npgsql's too. */
 const MYSQL_KEYS = ['allowpublickeyretrieval', 'allowuservariables']
+const MSSQL_KEYS = [
+  'datasource',
+  'encrypt',
+  'initialcatalog',
+  'integratedsecurity',
+  'trustservercertificate',
+]
 const ENCRYPT_OFF = new Set(['false', 'no', 'optional'])
 const TRUST_ON = new Set(['true', 'yes'])
 
@@ -76,9 +83,12 @@ export const guessAdo = (text: string): DatabaseGuess | null => {
   if (!parts.host) {
     return null
   }
-  const isMySql = MYSQL_KEYS.some((key) => pairs.has(key))
-  return {
-    format: 'ado',
-    parts: isMySql ? { ...parts, type: ConnectionType.MySQL } : parts,
+  const has = (keys: string[]) => keys.some((key) => pairs.has(key))
+  if (has(MYSQL_KEYS)) {
+    return { format: 'ado', parts: { ...parts, type: ConnectionType.MySQL } }
   }
+  if (has(MSSQL_KEYS)) {
+    return { format: 'ado', parts: { ...parts, type: ConnectionType.MSSQL } }
+  }
+  return { format: 'ado', parts }
 }

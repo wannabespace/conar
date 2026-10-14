@@ -1,7 +1,7 @@
 import { isLocalHost } from '../hosts'
 import type { SshTunnel } from '../ssh/params'
 import { EMPTY_SSH_TUNNEL } from '../ssh/params'
-import { shellTokens } from './tokens'
+import { shellCommands } from './tokens'
 import type { GuessedParts } from './types'
 
 interface Forward {
@@ -20,6 +20,7 @@ const FLAG_OF_OPTION: Record<string, string> = {
 }
 const OPTION = /^(?<key>\w+)[=\s]+(?<value>.*)$/su
 const PORT = /^\d+$/u
+const ENV_ASSIGNMENT = /^\w+=/u
 const DESTINATION =
   /^(?:ssh:\/\/)?(?:(?<user>[^@]*)@)?(?<host>[^:@]+)(?::(?<port>\d+))?$/u
 
@@ -53,15 +54,15 @@ const applyFlag = (
   }
 }
 
-const sshCommandOf = (tokens: string[]) => {
-  const start = tokens.findIndex((token) => token.split('/').at(-1) === 'ssh')
-  if (start === -1) {
+const sshCommandOf = (words: string[]) => {
+  const start = words.findIndex((word) => !ENV_ASSIGNMENT.test(word))
+  if (words[start]?.split('/').at(-1) !== 'ssh') {
     return null
   }
   const tunnel = { ...EMPTY_SSH_TUNNEL }
   const forwards: Forward[] = []
   let destination = ''
-  const args = tokens.slice(start + 1)
+  const args = words.slice(start + 1)
   while (args.length > 0) {
     const arg = args.shift() ?? ''
     if (!arg.startsWith('-')) {
@@ -92,6 +93,7 @@ const sshCommandOf = (tokens: string[]) => {
     return null
   }
   return {
+    assignments: words.slice(0, start),
     forwards,
     tunnel: {
       ...tunnel,
@@ -106,15 +108,28 @@ export const guessSsh = (
   text: string
 ): { forwards: Forward[]; rest: string; tunnel: SshTunnel | null } => {
   const privateKey = PRIVATE_KEY.exec(text)?.[0] ?? ''
-  const lines = text.replace(PRIVATE_KEY, '').split('\n')
-  const commands = lines.map((line) => sshCommandOf(shellTokens(line)))
-  const commandAt = commands.findIndex(Boolean)
-  const command = commands[commandAt]
+  let command: ReturnType<typeof sshCommandOf> = null
+  const rest: string[] = []
+  for (const line of text.replace(PRIVATE_KEY, '').split('\n')) {
+    const commands: string[][] = command ? [] : shellCommands(line)
+    const found = commands.map(sshCommandOf)
+    const commandAt = found.findIndex(Boolean)
+    if (commandAt === -1) {
+      rest.push(line)
+      continue
+    }
+    command = found[commandAt] ?? null
+    rest.push(
+      ...commands
+        .toSpliced(commandAt, 1, command?.assignments ?? [])
+        .map((words) => words.join(' '))
+    )
+  }
   const tunnel = command?.tunnel ?? (privateKey ? EMPTY_SSH_TUNNEL : null)
 
   return {
     forwards: command?.forwards ?? [],
-    rest: lines.filter((_, index) => index !== commandAt).join('\n'),
+    rest: rest.join('\n'),
     tunnel:
       tunnel && privateKey ? { ...tunnel, auth: 'key', privateKey } : tunnel,
   }

@@ -44,12 +44,8 @@ const ComboboxTrigger = ({
   VariantProps<typeof selectTriggerVariants>) => (
   <ComboboxPrimitive.Trigger
     data-slot="combobox-trigger"
-    data-size={variant ? 'default' : undefined}
-    className={cn(
-      "[&_svg:not([class*='size-'])]:size-4",
-      variant && selectTriggerVariants({ variant }),
-      className
-    )}
+    data-size="default"
+    className={cn(selectTriggerVariants({ className, variant }))}
     {...props}
   >
     {children}

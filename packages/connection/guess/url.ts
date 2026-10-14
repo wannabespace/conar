@@ -69,8 +69,9 @@ export const guessUrl = (text: string): DatabaseGuess | null => {
 }
 
 const CLICKHOUSE_NAME = /clickhouse/iu
+const MULTI_SEGMENT_PATH = /^\/[^/]+\/./u
 
-/** Any page link is http(s) too, so one counts as ClickHouse only with evidence: its HTTP port, a ClickHouse Cloud host, or the word in its surroundings (`CLICKHOUSE_URL=`, a `clickhouse` key). Tried once nothing else matched, since any `APP_URL=https://…` would win otherwise. */
+/** Any page link is http(s) too, so it needs ClickHouse evidence; keep it after the other detectors or any `APP_URL=https://…` wins. */
 export const guessWebUrl = (
   text: string,
   context = text
@@ -79,11 +80,13 @@ export const guessWebUrl = (
     if (!WEB_SCHEME.test(candidate)) {
       return false
     }
-    const { hostname, port } = tryCatch(() => new URL(candidate)).data ?? {}
+    const { hostname, pathname, port } =
+      tryCatch(() => new URL(candidate)).data ?? {}
     return (
-      Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
-      hostHintOf(hostname ?? '')?.type === ConnectionType.ClickHouse ||
-      CLICKHOUSE_NAME.test(context)
+      !MULTI_SEGMENT_PATH.test(pathname ?? '') &&
+      (Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
+        hostHintOf(hostname ?? '')?.type === ConnectionType.ClickHouse ||
+        CLICKHOUSE_NAME.test(context.replace(candidate, '')))
     )
   })
   return url ? guessOfUrl(url) : null

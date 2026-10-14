@@ -26,6 +26,9 @@ export const EMPTY_SSH_TUNNEL: SshTunnel = {
 
 export const DEFAULT_SSH_PORT = 22
 
+// Errors reach the renderer as bare messages over IPC, so this prefix is the only way `diagnose.ts` tells a tunnel failure from a driver's.
+export const SSH_TUNNEL_ERROR = 'SSH tunnel: '
+
 export const SSH_DESKTOP_ONLY =
   'SSH tunnels run in the Tamery desktop app. Open this connection there.'
 

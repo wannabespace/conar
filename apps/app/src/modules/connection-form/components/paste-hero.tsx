@@ -1,4 +1,3 @@
-import { getOS } from '@tamery/shared/os'
 import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
 import {
   Tooltip,
@@ -14,6 +13,11 @@ import {
 } from 'motion/react'
 import { useEffect } from 'react'
 
+import { isMac } from '~/lib/os'
+
+import type { PasteFlash } from '../lib/use-paste-connection'
+import { PASTE_FORMATS } from '../lib/use-paste-connection'
+import type { FormMode } from '../lib/use-save-connection'
 import { AgentButton } from './agent-button'
 import { Keycap } from './keycap'
 
@@ -24,30 +28,19 @@ const ROLL = {
   transition: { duration: 0.25, ease: [0.32, 0.72, 0, 1] },
 } as const
 
-export interface PasteFlash {
-  count: number
-  result: 'hit' | 'miss'
-  shown: boolean
-}
-
 const FLASH_COPY = {
   hit: { subtitle: 'Review and save.', title: 'Got it.' },
   miss: { subtitle: 'Try another URL.', title: 'That’s not a connection.' },
 }
 
-export const isMac = getOS(navigator.userAgent).type === 'macos'
-
-export const PASTE_FORMATS =
-  'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
-
 export const PasteHero = ({
-  editingName,
   flash,
+  mode,
   onAgent,
   onClipboard,
 }: {
-  editingName?: string
   flash: PasteFlash
+  mode: FormMode
   onAgent: () => void
   onClipboard: () => void
 }) => {
@@ -79,9 +72,9 @@ export const PasteHero = ({
             >
               {flash.shown && FLASH_COPY[flash.result].title}
               {!flash.shown &&
-                (editingName ? (
+                (mode.kind === 'edit' ? (
                   <span data-mask className="block truncate">
-                    {editingName}
+                    {mode.name}
                   </span>
                 ) : (
                   'Paste anything.'
@@ -89,7 +82,7 @@ export const PasteHero = ({
               <span className="text-muted-foreground block">
                 {flash.shown && FLASH_COPY[flash.result].subtitle}
                 {!flash.shown &&
-                  (editingName
+                  (mode.kind === 'edit'
                     ? 'Edit it or paste a new one.'
                     : 'We’ll figure it out.')}
               </span>
@@ -123,7 +116,9 @@ export const PasteHero = ({
       <p className="text-muted-foreground text-sm text-pretty">
         {PASTE_FORMATS}
       </p>
-      {window.electron && !editingName && <AgentButton onClick={onAgent} />}
+      {window.electron && mode.kind === 'create' && (
+        <AgentButton onClick={onAgent} />
+      )}
     </div>
   )
 }

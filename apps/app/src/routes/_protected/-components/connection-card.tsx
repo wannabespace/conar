@@ -120,15 +120,10 @@ export const ConnectionCard = ({
       return
     }
 
-    const connectionStringRecord =
-      await connectionStringsCollection.utils.prepare({
-        connectionId: connection.id,
-        connectionString: connectionSecrets.strip(saved),
-        updatedAt: record.updatedAt,
-      })
-
-    connectionStringsCollection.update(connection.id, (draft) => {
-      Object.assign(draft, connectionStringRecord)
+    await connectionStringsCollection.utils.save({
+      connectionId: connection.id,
+      connectionString: connectionSecrets.strip(saved),
+      updatedAt: record.updatedAt,
     })
 
     posthog.capture('connection_password_cleared')
@@ -142,7 +137,6 @@ export const ConnectionCard = ({
   const items = buildConnectionMenuItems({
     canSend,
     connection,
-    connectionString,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
     onEdit: () =>

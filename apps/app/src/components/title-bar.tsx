@@ -1,12 +1,9 @@
-import { getOS } from '@tamery/shared/os'
 import { cn } from '@tamery/ui/lib/utils'
 import { useEffect, useState } from 'react'
 
+import { isMac } from '~/lib/os'
 import { titleBarClassName } from '~/shell'
 
-const os = getOS(navigator.userAgent)
-
-const isMac = os.type === 'macos'
 const isElectron = !!window.electron
 
 const useIsFullscreen = () => {

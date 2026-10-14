@@ -29,7 +29,6 @@ export const DEFAULT_PORTS: Record<ConnectionType, number> = {
 export const HTTPS_PORT = '443'
 export const CLICKHOUSE_HTTPS_PORT = '8443'
 
-/** ClickHouse's native-protocol ports, which users often paste, mapped to the HTTP interface Tamery talks to. */
 export const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
   9000: String(DEFAULT_PORTS[ConnectionType.ClickHouse]),
   9440: CLICKHOUSE_HTTPS_PORT,
@@ -66,7 +65,6 @@ const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
 
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
-/** Reads `postgresql+psycopg2` and `jdbc:mysql` as their engine's scheme too. */
 export const typeOfScheme = (scheme: string): ConnectionType | null =>
   TYPE_OF_SCHEME[
     scheme

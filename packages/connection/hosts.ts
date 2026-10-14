@@ -7,16 +7,13 @@ import {
 } from './connection-parts'
 
 interface HostHint {
-  /** The direct host behind a pooled one, for a pooler that breaks a database client. */
   directHostOf?: (host: string) => string
-  /** Hosts that resolve to IPv6 only, so they fail on IPv4 networks. */
   ipv6Only?: RegExp
   label: string
   port?: string
-  /** Pooler hosts that need the project in the user. */
   projectInUser?: RegExp
   suffixes: string[]
-  /** A transaction pooler drops session state (open transactions, `SET`, prepared statements) between queries; the engine's default port is its session pooler. */
+  /** The engine's default port is this provider's session pooler. */
   transactionPoolerPort?: string
   type?: ConnectionType
 }
@@ -102,13 +99,9 @@ export const hostHintOf = (host: string): HostHint | undefined => {
 export const isLocalHost = (host: string) =>
   LOCAL_HOSTS.has(host.toLowerCase()) || LOOPBACK_IPV4.test(host)
 
-export const isIpv6OnlyHost = (host: string) =>
-  !!hostHintOf(host)?.ipv6Only?.test(host)
-
 export const isPrivateHost = (host: string) =>
   PRIVATE_IPV4.test(host) || PRIVATE_IPV6.test(host) || PRIVATE_NAME.test(host)
 
-/** `db` or `postgres` with no dot: a Docker Compose service, which only resolves inside the compose network. */
 export const isServiceName = (host: string) =>
   !host.includes('.') &&
   !isLocalHost(host) &&
@@ -118,3 +111,18 @@ export const isServiceName = (host: string) =>
 /** Only reachable from the user's own machine or network (a VPN, a LAN, Docker), so never from the cloud proxy. */
 export const isLocalNetworkHost = (host: string) =>
   isLocalHost(host) || isPrivateHost(host) || isServiceName(host)
+
+export type HostKind = 'ipv6-only' | 'local' | 'private' | 'public' | 'service'
+
+export const hostKindOf = (host: string): HostKind => {
+  if (isLocalHost(host)) {
+    return 'local'
+  }
+  if (isServiceName(host)) {
+    return 'service'
+  }
+  if (isPrivateHost(host)) {
+    return 'private'
+  }
+  return hostHintOf(host)?.ipv6Only?.test(host) ? 'ipv6-only' : 'public'
+}

@@ -30,11 +30,8 @@ import { useActiveWorkspace } from '~/core/workspace/hooks'
 
 import { ConnectionCard } from './connection-card'
 import { Empty } from './connections-empty'
-import {
-  ConnectionsToolbar,
-  groupValue,
-  sortValue,
-} from './connections-toolbar'
+import { ConnectionsToolbar } from './connections-toolbar'
+import { groupValue, sortValue } from './connections-view'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 

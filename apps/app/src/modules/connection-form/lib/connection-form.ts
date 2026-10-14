@@ -72,17 +72,17 @@ const connectionFormSchema = type({
 
 export const formValuesOf = (
   connection: Connection,
-  connectionString: string | null
+  connectionString: string
 ): ConnectionFormValues => {
-  const parts = connectionString ? toConnectionParts(connectionString) : null
+  const parts = toConnectionParts(connectionString)
   return {
     ...DEFAULT_VALUES,
-    ...(parts && pick(parts, [...SERVER_FIELDS, 'https'])),
+    ...pick(parts, [...SERVER_FIELDS, 'https']),
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
-    sshEnabled: !!parts?.ssh,
+    ssh: parts.ssh ?? EMPTY_SSH_TUNNEL,
+    sshEnabled: !!parts.ssh,
     syncType: connection.syncType,
     type: connection.type,
   }
@@ -93,7 +93,7 @@ export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
   ssh: values.sshEnabled ? values.ssh : null,
 })
 
-const BARE_HOST = /^[\w.-]+$/u
+const BARE_HOST = /^[\w.:%[\]-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
 /** A local server often runs without a password (trust auth), so its empty one isn't missing. */

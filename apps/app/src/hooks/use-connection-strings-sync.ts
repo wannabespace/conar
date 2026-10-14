@@ -2,8 +2,8 @@ import { createEffect } from '@tanstack/react-db'
 import { useEffect } from 'react'
 
 import { useCollections } from '~/core/collections'
+import { writeConnectionString } from '~/core/connection/save'
 import type { Connection } from '~/core/connection/sync'
-import { dropConnectionQueries } from '~/core/connection/update'
 import { useIsOnline } from '~/store'
 
 export const useConnectionStringsSync = () => {
@@ -28,24 +28,11 @@ export const useConnectionStringsSync = () => {
         return
       }
 
-      const record = await connectionStringsCollection.utils.prepare({
+      await writeConnectionString({
         connectionId: value.id,
         connectionString,
         updatedAt: value.updatedAt,
       })
-
-      if (signal.aborted) {
-        return
-      }
-
-      if (connectionStringsCollection.has(value.id)) {
-        connectionStringsCollection.update(value.id, (draft) => {
-          Object.assign(draft, record)
-        })
-      } else {
-        connectionStringsCollection.insert(record)
-      }
-      dropConnectionQueries(value.id)
     }
 
     // On update too: an edit on another device (host, credentials, sync type) reaches this one without a restart.

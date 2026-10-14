@@ -68,6 +68,14 @@ describe('guessConnection — bare hosts', () => {
     ).toBe(ConnectionType.MySQL)
   })
 
+  it.each([
+    'redis://u:p@cache.acme.io:6379',
+    'mongodb://db.acme.io:27017/app',
+    'README.md',
+  ])('ignores %s', (text) => {
+    expect(guessConnection(text)).toBeNull()
+  })
+
   it('lets an explicit scheme beat the host hint and port', () => {
     expect(
       guessConnection('mysql://u@abc.supabase.co:5432/app')?.parts.type

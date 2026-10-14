@@ -11,7 +11,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useLocation, useParams } from '@tanstack/react-router'
 
 import { useCollections } from '~/core/collections'
-import { isLocalNetworkConnection } from '~/core/connection/fetching-config'
+import { fetchingOptionsOf } from '~/core/connection/fetching-config'
 
 const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
   const {
@@ -41,11 +41,9 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
         .findOne(),
   })
 
-  if (
-    connection?.syncType !== SyncType.Cloud ||
-    (connectionString && isLocalNetworkConnection(connectionString)) ||
-    connectionString?.usesSsh
-  ) {
+  const { isLocalNetwork, usesSsh } = fetchingOptionsOf(connectionString)
+
+  if (connection?.syncType !== SyncType.Cloud || isLocalNetwork || usesSsh) {
     return null
   }
 

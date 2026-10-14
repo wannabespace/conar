@@ -49,24 +49,13 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
     )
     const hint = hostHintOf(parts.host ?? '')
     const port = parts.port || hint?.port || ''
-    const type =
-      parts.type ??
-      TYPE_OF_PORT[port] ??
-      hint?.type ??
-      (database?.format === 'ado' ? ConnectionType.MSSQL : undefined)
+    const type = parts.type ?? TYPE_OF_PORT[port] ?? hint?.type
+    const httpPort =
+      type === ConnectionType.ClickHouse
+        ? CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
+        : undefined
     return {
-      ...fixParts(
-        mergeParts(
-          {
-            port:
-              type === ConnectionType.ClickHouse
-                ? CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
-                : undefined,
-            type,
-          },
-          { ...parts, port }
-        )
-      ),
+      ...fixParts(mergeParts({ ...parts, port: httpPort ?? port, type })),
       format: database?.format ?? 'ssh',
     }
   }).data

@@ -1,28 +1,15 @@
 import { portOf } from './connection-parts'
 import type { DiagnosisContext } from './diagnose'
-import {
-  hostHintOf,
-  isIpv6OnlyHost,
-  isLocalHost,
-  isPrivateHost,
-  isServiceName,
-} from './hosts'
+import type { HostKind } from './hosts'
+import { hostHintOf, hostKindOf } from './hosts'
 import { redactConnectionError, redactOptions } from './redact'
 
-const hostKindOf = (host: string) => {
-  if (isLocalHost(host)) {
-    return 'localhost'
-  }
-  if (isServiceName(host)) {
-    return 'single-label name (Docker service?)'
-  }
-  if (isPrivateHost(host)) {
-    return 'private network'
-  }
-  const provider = hostHintOf(host)?.label
-  return provider
-    ? `${provider}${isIpv6OnlyHost(host) ? ' direct host (IPv6-only)' : ''}`
-    : 'public host'
+const HOST_KIND_LABELS: Record<HostKind, string> = {
+  'ipv6-only': 'direct host (IPv6-only)',
+  local: 'localhost',
+  private: 'private network',
+  public: 'public host',
+  service: 'single-label name (Docker service?)',
 }
 
 /** What an AI request about a failed connection may carry: no address, user, database or secret. */
@@ -34,7 +21,12 @@ export const diagnosisRequestOf = ({
   const port = portOf(parts)
   return {
     error: redactConnectionError(message, parts),
-    hostKind: hostKindOf(parts.host),
+    hostKind: [
+      hostHintOf(parts.host)?.label,
+      HOST_KIND_LABELS[hostKindOf(parts.host)],
+    ]
+      .filter(Boolean)
+      .join(' '),
     options: redactOptions(parts.options),
     passwordSet: !!parts.password,
     port: /^\d{1,5}$/u.test(port) ? port : '',

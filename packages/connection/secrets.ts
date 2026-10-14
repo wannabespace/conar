@@ -38,7 +38,6 @@ export const connectionSecrets = {
   },
   missing: (searchParams: URLSearchParams): SecretParam[] =>
     SECRET_PARAMS.filter((param) => searchParams.get(param) === ''),
-  /** Fills only what `strip` emptied: a secret the synced string no longer carries stays gone. */
   /** `isPasswordExists` is the synced connection's flag: an empty synced password is only a stripped one while it is set, otherwise another device removed it. */
   restore: (
     connectionString: string,

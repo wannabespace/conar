@@ -105,6 +105,14 @@ describe('guessConnection — JSON', () => {
     })
   })
 
+  it('reads an apostrophe inside a double-quoted string', () => {
+    expect(
+      guessConnection(
+        `{ name: "Bob's db", host: 'db.acme.io', user: 'me', password: "it's" }`
+      )?.parts
+    ).toMatchObject({ host: 'db.acme.io', password: "it's", user: 'me' })
+  })
+
   it('reads KEY=value items of an env array (docker inspect)', () => {
     expect(
       guessConnection(

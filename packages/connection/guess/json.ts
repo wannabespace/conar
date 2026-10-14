@@ -1,4 +1,5 @@
-import { tryParseJson } from '@tamery/shared/utils'
+import { tryCatch } from '@tamery/shared/utils'
+import JSON5 from 'json5'
 
 import { partsOfVariables } from './env'
 import { mergeParts } from './parts'
@@ -11,23 +12,6 @@ const MAX_DEPTH = 8
 const ENV_ITEM = /^(?<key>[A-Za-z_]\w*)=(?<value>.*)$/su
 const CAMEL_HUMP = /(?<lower>[a-z\d])(?<upper>[A-Z])/gu
 const NON_WORD = /[^A-Z\d]+/gu
-
-/** A JavaScript object literal (`module.exports = { host: 'x' }`) becomes JSON by rewriting, never by evaluating it. */
-const toJson = (text: string) =>
-  text
-    .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
-    .replace(/;\s*$/u, '')
-    .replaceAll(/^\s*\/\/.*$/gmu, '')
-    .replaceAll(
-      /(?<quote>['`])(?<inner>(?:\\.|(?!\k<quote>)[^\\])*)\k<quote>/gu,
-      (_match, _quote, inner: string) => JSON.stringify(inner)
-    )
-    .replaceAll(/:\s*process\.env\.\w+/gu, ': null')
-    .replaceAll(
-      /(?<before>[{,]\s*)(?<key>[A-Za-z_$][\w$]*)\s*:/gu,
-      '$<before>"$<key>":'
-    )
-    .replaceAll(/,(?<close>\s*[}\]])/gu, '$<close>')
 
 const isObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null
@@ -124,8 +108,15 @@ export const guessJson = (text: string): DatabaseGuess | null => {
   if (!/^(?:[{[]|module\.exports|export\s+default)/u.test(trimmed)) {
     return null
   }
-  const parts = findParts(
-    tryParseJson(trimmed) ?? tryParseJson(toJson(trimmed))
-  )
+  // Parse, never evaluate: the text is whatever the user pasted.
+  const object = tryCatch(() =>
+    JSON5.parse(
+      trimmed
+        .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
+        .replace(/;\s*$/u, '')
+        .replaceAll(/:\s*process\.env\.\w+/gu, ': null')
+    )
+  ).data
+  const parts = findParts(object)
   return parts && { format: 'json', parts }
 }

@@ -8,7 +8,7 @@ import type { Client, ConnectConfig } from 'ssh2'
 import type { HostKeyStatus } from './known-hosts'
 import { knownHosts } from './known-hosts'
 import type { SshTunnel } from './params'
-import { DEFAULT_SSH_PORT } from './params'
+import { DEFAULT_SSH_PORT, SSH_TUNNEL_ERROR } from './params'
 
 export type ConfirmHostKey = (prompt: {
   fingerprint: string
@@ -23,12 +23,15 @@ const AGENT_UNAVAILABLE =
 // Worded without the host and user: ~/.ssh/config resolves them, and these messages reach the AI diagnosis, which redacts only what the form holds.
 const HOST_KEY_REFUSALS: Record<Exclude<HostKeyStatus, 'known'>, string> = {
   changed:
-    "The SSH host presented a key that doesn't match ~/.ssh/known_hosts, so someone may be impersonating it. If its key changed on purpose, remove the old entry from ~/.ssh/known_hosts and connect again.",
-  revoked: "The SSH host's key is revoked in ~/.ssh/known_hosts",
+    "The SSH host presented a key that doesn't match known_hosts, so someone may be impersonating it. If its key changed on purpose, remove the old entry from ~/.ssh/known_hosts (or /etc/ssh/ssh_known_hosts) and connect again.",
+  revoked: "The SSH host's key is revoked in known_hosts",
   unknown: "The SSH host's key wasn't trusted",
 }
 
 const expandHome = (path: string) => path.replace(/^~(?=$|\/)/u, homedir())
+
+const tunnelError = (message: string) =>
+  new Error(`${SSH_TUNNEL_ERROR}${message}`)
 
 const authConfig = async (
   tunnel: SshTunnel,
@@ -36,13 +39,13 @@ const authConfig = async (
 ): Promise<ConnectConfig> => {
   if (tunnel.auth === 'password') {
     if (!tunnel.password) {
-      throw new Error("The SSH password isn't stored on this device")
+      throw tunnelError("The SSH password isn't stored on this device")
     }
     return { password: tunnel.password }
   }
   if (tunnel.auth === 'key') {
     if (!tunnel.privateKey) {
-      throw new Error("The SSH private key isn't stored on this device")
+      throw tunnelError("The SSH private key isn't stored on this device")
     }
     return { passphrase: tunnel.passphrase, privateKey: tunnel.privateKey }
   }
@@ -52,13 +55,13 @@ const authConfig = async (
       readFile(expandHome(keyPath))
     )
     if (!privateKey) {
-      throw new Error("The SSH key file wasn't found. Check its path.")
+      throw tunnelError("The SSH key file wasn't found. Check its path.")
     }
     return { passphrase: tunnel.passphrase, privateKey }
   }
   const agent = sshConfig('IdentityAgent') ?? process.env.SSH_AUTH_SOCK
   if (!agent) {
-    throw new Error(AGENT_UNAVAILABLE)
+    throw tunnelError(AGENT_UNAVAILABLE)
   }
   return { agent: expandHome(agent) }
 }
@@ -173,7 +176,9 @@ export const connectSsh = async (
         hashed: sshConfig('HashKnownHosts') === 'yes',
         isLive: () => !closed,
       })
-      startReadyTimer()
+      if (!closed) {
+        startReadyTimer()
+      }
       if (trusted) {
         return true
       }
@@ -194,7 +199,12 @@ export const connectSsh = async (
     }
   }
 
-  const ready = once(client, 'ready')
+  // ssh2 emits only `close`, never `error`, when the host hangs up after its banner (sshd's LoginGraceTime while the host-key prompt is open).
+  const hungUp = async () => {
+    await once(client, 'close')
+    throw new Error('the SSH host closed the connection')
+  }
+  const ready = Promise.race([once(client, 'ready'), hungUp()])
   startReadyTimer()
   client.connect({
     ...auth,
@@ -214,7 +224,7 @@ export const connectSsh = async (
   clearTimeout(readyTimer)
   if (error) {
     client.end()
-    throw new Error(refusal ?? sshErrorMessage(error))
+    throw tunnelError(refusal ?? sshErrorMessage(error))
   }
   return client
 }

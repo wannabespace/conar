@@ -9,6 +9,7 @@
   "dependencies": {
     "@tamery/shared": "workspace:*",
     "better-result": "catalog:",
+    "json5": "catalog:",
     "memoza": "catalog:",
     "shell-quote": "catalog:"
   },

@@ -7,7 +7,20 @@ const ANY_IPV6 = new RegExp(
   `(?<![\\w:])(?:(?:${HEX_GROUP}:){7}${HEX_GROUP}|(?:${HEX_GROUP}(?::${HEX_GROUP})*)?::(?:${HEX_GROUP}(?::${HEX_GROUP})*)?)(?:%[\\w.]+)?(?![\\w:])`,
   'giu'
 )
-/** Values that name no server, user or secret: booleans, numbers, and the SSL and TLS modes the drivers take. */
+/** The only options whose value may reach the AI: any other key's value can be a secret or a name, however harmless it looks (`sslpassword=123456`). */
+const SETTING_KEYS = new Set([
+  'connect_timeout',
+  'connecttimeout',
+  'encrypt',
+  'pgbouncer',
+  'ssl',
+  'sslmaxversion',
+  'sslminversion',
+  'sslmode',
+  'sslrejectunauthorized',
+  'trustservercertificate',
+])
+/** Booleans, numbers, and the SSL and TLS modes the drivers take. */
 const NON_IDENTIFYING_VALUE =
   /^(?:true|false|yes|no|on|off|\d+(?:\.\d+)?|disable|allow|prefer|require|verify|verify-ca|verify-full|no-verify|strict|optional|mandatory|disabled|preferred|required|verify_ca|verify_identity|tlsv1(?:\.[0-3])?)$/iu
 
@@ -35,11 +48,12 @@ export const redactConnectionError = (
   return redacted.replaceAll(ANY_IPV4, '<ip>').replaceAll(ANY_IPV6, '<ip>')
 }
 
-/** Keeps each option's key, and its value only when it names nothing. */
 export const redactOptions = (options: string) =>
   new URLSearchParams(
     [...new URLSearchParams(options)].map(([key, value]) => [
       key,
-      NON_IDENTIFYING_VALUE.test(value) ? value : '<redacted>',
+      SETTING_KEYS.has(key.toLowerCase()) && NON_IDENTIFYING_VALUE.test(value)
+        ? value
+        : '<redacted>',
     ])
   ).toString()

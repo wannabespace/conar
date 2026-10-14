@@ -1,9 +1,10 @@
 import { FolderOpenIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ComponentProps } from 'react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import { Button } from '../button'
+import { FieldError as FieldErrorPrimitive } from '../field'
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from '../input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip'
 import type { FormInputProps } from './context'
@@ -25,22 +26,17 @@ export const FieldTextarea = ({
   const field = useFieldContext<string>()
   const takesFile = !!fileLabel && !disabled
   const fileRef = useRef<HTMLInputElement>(null)
+  const [fileTooBig, setFileTooBig] = useState(false)
+  const inputProps = formInputProps(field)
   const load = async (file: File | undefined) => {
     if (!file) {
       return
     }
-    if (file.size > MAX_FILE_BYTES) {
-      field.setMeta((meta) => ({
-        ...meta,
-        errorMap: {
-          ...meta.errorMap,
-          onChange: `Pick a file under ${MAX_FILE_BYTES / 1024} KB`,
-        },
-        isBlurred: true,
-      }))
-      return
+    const tooBig = file.size > MAX_FILE_BYTES
+    setFileTooBig(tooBig)
+    if (!tooBig) {
+      field.handleChange(await file.text())
     }
-    field.handleChange(await file.text())
   }
 
   return (
@@ -60,7 +56,11 @@ export const FieldTextarea = ({
         }}
         disabled={disabled}
         {...props}
-        {...formInputProps(field)}
+        {...inputProps}
+        onChange={(event) => {
+          setFileTooBig(false)
+          inputProps.onChange(event)
+        }}
       />
       <InputGroupAddon align="inline-end">
         {fileLabel && (
@@ -93,7 +93,13 @@ export const FieldTextarea = ({
             />
           </>
         )}
-        <FieldError />
+        {fileTooBig ? (
+          <FieldErrorPrimitive>
+            Pick a file under {MAX_FILE_BYTES / 1024} KB
+          </FieldErrorPrimitive>
+        ) : (
+          <FieldError />
+        )}
       </InputGroupAddon>
     </InputGroup>
   )

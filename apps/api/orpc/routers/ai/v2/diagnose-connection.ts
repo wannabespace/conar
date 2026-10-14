@@ -11,19 +11,14 @@ import { orpc, permissionsMiddleware, permix } from '~/orpc'
 export const diagnoseConnection = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.connection.use'))
+  .use(
+    usage.limit(
+      'connection',
+      "You've used this week's free AI connection help. Subscribe to Pro for unlimited help."
+    )
+  )
   .input(connectionDiagnosisInput)
-  .errors({
-    FORBIDDEN: {
-      message:
-        "You've used this week's free AI connection help. Subscribe to Pro for unlimited help.",
-    },
-  })
-  .handler(async ({ context, errors, input, signal }) => {
-    const quota = await usage.get(context, 'connection')
-    if (quota && quota.used >= quota.max) {
-      throw errors.FORBIDDEN()
-    }
-
+  .handler(async ({ context, input, signal }) => {
     const diagnosis = await diagnose({
       input,
       signal,

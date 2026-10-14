@@ -5,6 +5,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ConnectionParts } from './connection-parts'
 import { diagnoseConnectionError } from './diagnose'
 import { diagnosisRequestOf } from './diagnosis-request'
+import { SSH_TUNNEL_ERROR } from './ssh/params'
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: '',
@@ -28,10 +29,18 @@ describe('diagnoseConnectionError', () => {
     "Can't reach the SSH host: ENOTFOUND",
     'Timed out reaching the SSH host',
   ])('blames the tunnel, not the database, for %s', (message) => {
-    expect(diagnose(message, { password: '' })).toStrictEqual({
+    expect(
+      diagnose(`${SSH_TUNNEL_ERROR}${message}`, { password: '' })
+    ).toStrictEqual({
       hint: message,
       title: "Couldn't open the SSH tunnel",
     })
+  })
+
+  it('reads a channel the bastion could not open as a database error', () => {
+    expect(
+      diagnose('(SSH) Channel open failure: Connection refused')?.title
+    ).toBe('Connection refused')
   })
 
   it('points a Docker service name at localhost', () => {
@@ -74,6 +83,29 @@ describe('diagnoseConnectionError', () => {
       )?.fix?.patch
     ).toStrictEqual({ options: 'application_name=tamery&sslmode=require' })
   })
+
+  it.each([
+    [
+      ConnectionType.Postgres,
+      'sslmode=require&SSLRootCert=/ca.pem&sslkey=/k.pem&connect_timeout=5',
+      'connect_timeout=5&sslmode=disable',
+    ],
+    [
+      ConnectionType.MySQL,
+      'ssl=true&sslca=/ca.pem&sslrejectunauthorized=true',
+      'ssl=false',
+    ],
+  ])(
+    'turns off SSL on %s without the TLS options the driver refuses beside it',
+    (type, options, fixed) => {
+      expect(
+        diagnose('The server does not support SSL connections', {
+          options,
+          type,
+        })?.fix?.patch
+      ).toStrictEqual({ options: fixed })
+    }
+  )
 
   it('skips the SQL Server certificate check under the key the driver reads', () => {
     expect(
@@ -180,6 +212,25 @@ describe('diagnosisRequestOf', () => {
       }).options
     ).toBe(
       'sslmode=verify-full&connect_timeout=10&ssl=true&sslservername=%3Credacted%3E&application_name=%3Credacted%3E'
+    )
+  })
+
+  it.each([
+    ['db.abcd.supabase.co', 'Supabase direct host (IPv6-only)'],
+    ['ep-x.eu-central-1.aws.neon.tech', 'Neon public host'],
+    ['postgres', 'single-label name (Docker service?)'],
+    ['10.0.0.7', 'private network'],
+  ])('names the kind of %s without the address', (host, hostKind) => {
+    expect(request('timeout', { host }).hostKind).toBe(hostKind)
+  })
+
+  it('redacts a secret option whatever its value looks like', () => {
+    expect(
+      request('timeout', {
+        options: 'SSLPassword=123456&ssh_passphrase=true&sslMode=require',
+      }).options
+    ).toBe(
+      'SSLPassword=%3Credacted%3E&ssh_passphrase=%3Credacted%3E&sslMode=require'
     )
   })
 })
