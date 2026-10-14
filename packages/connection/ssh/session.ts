@@ -126,9 +126,13 @@ export const connectSsh = async (
   const { data: userConfig } = await tryCatchAsync(() =>
     readFile(expandHome('~/.ssh/config'), 'utf-8')
   )
-  const computed = parse(userConfig ?? '').compute(tunnel.host)
+  // OpenSSH keywords are case-insensitive, and `Match exec` runs through spawnSync, which would freeze the desktop main process.
+  const computed = parse(userConfig ?? '').compute(tunnel.host, {
+    ignoreCase: true,
+    matchExec: false,
+  })
   const sshConfig = (key: string): string | undefined =>
-    [computed[key]].flat()[0]
+    [computed[key.toLowerCase()]].flat()[0]
   const host = sshConfig('HostName') ?? tunnel.host
   const port = Number(tunnel.port || sshConfig('Port') || DEFAULT_SSH_PORT)
   const hostKeyName = knownHosts.nameOf({
@@ -173,7 +177,7 @@ export const connectSsh = async (
       clearTimeout(readyTimer)
       const trusted = await trustOnce(hostKeyName, key, {
         confirm: confirmHostKey,
-        hashed: sshConfig('HashKnownHosts') === 'yes',
+        hashed: sshConfig('HashKnownHosts')?.toLowerCase() === 'yes',
         isLive: () => !closed,
       })
       if (!closed) {
