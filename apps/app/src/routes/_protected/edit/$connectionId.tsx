@@ -1,5 +1,6 @@
 import { title } from '@tamery/shared/title'
 import { tryCatchAsync } from '@tamery/shared/utils'
+import { Spinner } from '@tamery/ui/components/spinner'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
@@ -52,6 +53,13 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     }
   },
   component: EditConnectionPage,
+  // The loader asks the server for a string this device hasn't synced yet.
+  pendingComponent: () => (
+    <div className="text-muted-foreground flex h-full items-center justify-center">
+      <Spinner />
+    </div>
+  ),
+  pendingMs: 150,
   head: () => ({
     meta: [{ title: title('Edit connection') }],
   }),
