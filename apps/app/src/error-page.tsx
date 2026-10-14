@@ -15,17 +15,8 @@ import { useEffect, useState } from 'react'
 import { EventsProvider } from '~/components/events-provider'
 import { posthog } from '~/lib/posthog'
 
-const CONNECTION_ERRORS = [
-  'ERR_TIMED_OUT',
-  'ETIMEDOUT',
-  'ENOTFOUND',
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'Password authentication',
-  'No pg_hba.conf entry for host',
-  'Could not connect to database',
-  'Password authentication failed for user',
-]
+const CONNECTION_ERRORS =
+  /err_timed_out|etimedout|enotfound|econnreset|econnrefused|password authentication|client password must be a|no pg_hba\.conf entry for host|could not connect to database/iu
 
 const getStack = (error: ErrorComponentProps['error']) => {
   if (!error.stack) {
@@ -46,17 +37,13 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
 
+  const isConnectionError = CONNECTION_ERRORS.test(error.message)
+
   useEffect(() => {
-    if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {
-      return
+    if (!isConnectionError) {
+      posthog.captureException(error)
     }
-
-    posthog.captureException(error)
-  }, [error])
-
-  const isConnectionError = CONNECTION_ERRORS.some((e) =>
-    error.message.includes(e)
-  )
+  }, [error, isConnectionError])
   const isValidationError = error instanceof TraversalError
   const stack = getStack(error)
   const cause =

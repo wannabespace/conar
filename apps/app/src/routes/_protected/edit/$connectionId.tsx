@@ -56,6 +56,8 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     }
   },
   component: EditConnectionPage,
+  // The form reads its values once, so a cached match would reopen it on the values before the last save.
+  gcTime: 0,
   // The loader asks the server for a string this device hasn't synced yet.
   pendingComponent: () => (
     <div className="text-muted-foreground flex h-full items-center justify-center">

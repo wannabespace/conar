@@ -1,7 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections'
+import { mutateOffline, useCollections } from '~/core/collections'
+import { ensureResource } from '~/core/connection/resources'
+import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
@@ -9,12 +12,15 @@ import { editModeOf } from '~/modules/connection-form/lib/form-mode'
 
 export const UnlockForm = ({
   connection,
+  resourceName,
   scope,
 }: {
   connection: Connection
+  resourceName: string | null
   scope: 'credentials' | 'details'
 }) => {
   const { connectionStringsCollection } = useCollections()
+  const router = useRouter()
   const { data: connectionString } = useQuery({
     // The decrypted string holds this device's other secrets, so it leaves the cache with the form.
     gcTime: 0,
@@ -27,12 +33,27 @@ export const UnlockForm = ({
   const { mutateAsync } = useMutation({
     meta: { event: 'connection_password_saved' },
     mutationFn: async (saved: { connectionString: string }) => {
-      await connectionStringsCollection.utils.save({
+      const { record } = await connectionStringsCollection.utils.save({
         connectionId: connection.id,
         connectionString: saved.connectionString,
         updatedAt: connection.updatedAt,
       })
       toast.success(scope === 'details' ? 'Details saved' : 'Credentials saved')
+      const database = record.defaultResourceName
+      if (scope === 'details' && database && database !== resourceName) {
+        let resourceId = ''
+        mutateOffline(() => {
+          resourceId = ensureResource(connection.id, database)
+        })
+        getConnectionStore(connection.id).set((state) => ({
+          ...state,
+          lastOpenedResourceName: database,
+        }))
+        await router.navigate({
+          params: { resourceId },
+          to: '/connection/$resourceId',
+        })
+      }
     },
   })
 

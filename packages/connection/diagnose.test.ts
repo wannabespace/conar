@@ -126,9 +126,24 @@ describe('diagnoseConnectionError', () => {
   })
 
   it("names the missing database and falls back to the server's default", () => {
-    const diagnosis = diagnose('database "shop" does not exist')
+    const diagnosis = diagnose('database "shop" does not exist', {
+      database: 'shop',
+    })
     expect(diagnosis?.title).toBe('Database "shop" doesn\'t exist')
-    expect(diagnosis?.fix?.patch).toStrictEqual({ database: '' })
+    expect(diagnosis?.fix?.patch).toStrictEqual({ database: 'postgres' })
+    expect(
+      diagnose("Unknown database 'shop'", {
+        database: 'shop',
+        type: ConnectionType.MySQL,
+      })?.fix?.patch
+    ).toStrictEqual({ database: '' })
+  })
+
+  it('offers no default database when the default is the one missing', () => {
+    expect(
+      diagnose('database "postgres" does not exist', { database: 'postgres' })
+        ?.fix
+    ).toBeUndefined()
   })
 
   it('asks for the project ref in a Supabase pooler user', () => {

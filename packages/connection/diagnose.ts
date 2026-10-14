@@ -64,13 +64,21 @@ const RULES: {
       /access denied for user .+ to database|permission denied for database|does not have connect privilege/iu,
   },
   {
-    diagnose: ({ message }) => {
+    diagnose: ({ message, parts }) => {
       const database = /database (?<quote>["'])(?<name>.+?)\k<quote>/iu.exec(
         message
       )?.groups?.name
+      // Postgres reads an empty database as the user's name, which rarely exists either.
+      const fallback = parts.type === ConnectionType.Postgres ? 'postgres' : ''
       return {
-        fix: { label: 'Use the default database', patch: { database: '' } },
-        hint: 'Pick an existing database, or leave Database empty to use the default one.',
+        fix:
+          parts.database === fallback
+            ? undefined
+            : {
+                label: 'Use the default database',
+                patch: { database: fallback },
+              },
+        hint: 'Pick an existing database, or use the default one.',
         title: database
           ? `Database "${database}" doesn't exist`
           : "That database doesn't exist",

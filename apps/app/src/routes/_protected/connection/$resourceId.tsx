@@ -131,6 +131,7 @@ const ResourcePage = () => {
     return (
       <UnlockForm
         connection={connection}
+        resourceName={connectionResource.name}
         scope={needsDetails ? 'details' : 'credentials'}
       />
     )
