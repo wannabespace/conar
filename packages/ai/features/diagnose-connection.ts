@@ -6,21 +6,6 @@ import { type } from 'arktype'
 import { models } from '../models/list'
 import { section } from './prompt'
 
-const truncated = (length: number) =>
-  type('string').pipe((value) => value.slice(0, length))
-
-export const connectionDiagnosisInput = type({
-  error: truncated(4000),
-  hostKind: 'string <= 100',
-  options: truncated(2000),
-  passwordSet: 'boolean',
-  port: 'string <= 10',
-  runtime: "'desktop' | 'web'",
-  sshEnabled: 'boolean',
-  type: type.valueOf(ConnectionType).or('null'),
-  userSet: 'boolean',
-})
-
 const diagnosisOutput = type({
   explanation: 'string',
   /** Every key is required and nullable: an optional key has no JSON Schema form once `exactOptionalPropertyTypes` is off (`@tamery/shared/arktype-config`). */
@@ -50,19 +35,19 @@ const INSTRUCTIONS = [
 ].join('\n')
 
 export const diagnoseConnection = async (data: {
-  input: typeof connectionDiagnosisInput.infer
+  error: string
+  settings: Record<string, unknown>
   signal?: AbortSignal
   telemetry?: TelemetryOptions
 }) => {
-  const { error, ...settings } = data.input
   const { output } = await generateText({
     abortSignal: data.signal,
     instructions: INSTRUCTIONS,
     model: models.structured,
     output: Output.object({ schema: diagnosisOutput }),
     prompt: [
-      section('SETTINGS', JSON.stringify(settings, null, 2)),
-      section('ERROR', error),
+      section('SETTINGS', JSON.stringify(data.settings, null, 2)),
+      section('ERROR', data.error),
     ].join('\n'),
     telemetry: data.telemetry,
   })
