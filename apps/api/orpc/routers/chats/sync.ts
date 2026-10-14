@@ -83,8 +83,6 @@ export const sync = orpc
       result.push({
         key: item,
         type: 'delete',
-        // @ts-expect-error TODO: remove this in future, currently saved for backward compatibility
-        value: item,
       })
     }
 

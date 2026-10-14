@@ -23,8 +23,8 @@ import { orpc } from '~/lib/orpc'
 import { posthog } from '~/lib/posthog'
 
 const signInUrl = (type: 'web' | 'desktop') => {
-  const verifier = challenge.noble.generateVerifier()
-  const codeChallenge = challenge.noble.generateCode(verifier)
+  const verifier = challenge.generateVerifier()
+  const codeChallenge = challenge.generateCode(verifier)
 
   return {
     verifier,
@@ -98,7 +98,7 @@ const AuthPage = () => {
       return
     }
 
-    exchange({ codeChallenge, verifier, type: 'noble' })
+    exchange({ codeChallenge, verifier })
   }, [data, exchange, codeChallenge, verifier])
 
   return (

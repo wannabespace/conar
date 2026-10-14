@@ -27,14 +27,9 @@ Setup and the command list live in `README.md` and the root `package.json`. Not 
 
 ## Opening the running app in a browser
 
-Two CLIs share one command vocabulary (`open`, `snapshot`, `click`, `fill`, `eval`, `console`), so the driving commands are the same either way — neither is an MCP server or a project dependency:
+**`agent-browser`** (install in `README.md`, not an MCP server or a project dependency) opens its own Chrome window and trusts the portless CA, so portless HTTPS hosts load. Dev app: `https://app.local.tamery.app`.
 
-- **`agent-browser`** (install in `README.md`) — its own Chrome window. Trusts the portless CA, so portless HTTPS hosts load.
-- **`terminal-browser`** (`brew install --cask terminal-browser`) — renders in a terminal pane (`terminal-browser open --split right`), driven with `terminal-browser action -- <agent-browser command>`. The user watches it live in their terminal and can take the pointer themselves.
-
-**Which one is the user's call, not a default** — when the session runs in a terminal they are watching, say which you intend to use and let them redirect you; when there is no answer to be had, `agent-browser` is the safe pick. Dev app: `https://app.local.tamery.app`.
-
-Either profile is **signed out**: anything behind auth needs the user's own Chrome (`mcp__claude-in-chrome__*`), since entering credentials is not an agent's to do. That is also the fallback when a binary is missing or the task needs their real profile. Playwright for scripted multi-step runs.
+Its profile is **signed out**: anything behind auth needs the user's own Chrome (`mcp__claude-in-chrome__*`), since entering credentials is not an agent's to do. That is also the fallback when a binary is missing or the task needs their real profile. Playwright for scripted multi-step runs.
 
 **The user's Chrome traps** — each one looks like an app bug and is not:
 

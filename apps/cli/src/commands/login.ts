@@ -29,8 +29,8 @@ export const loginCommand = command({
       clearToken()
     }
 
-    const verifier = challenge.noble.generateVerifier()
-    const codeChallenge = challenge.noble.generateCode(verifier)
+    const verifier = challenge.generateVerifier()
+    const codeChallenge = challenge.generateCode(verifier)
     const url = `${MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=cli`
 
     const controller = new AbortController()

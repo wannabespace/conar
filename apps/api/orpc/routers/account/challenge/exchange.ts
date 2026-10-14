@@ -88,7 +88,6 @@ export const exchange = orpc
   .input(
     type({
       codeChallenge: 'string',
-      type: '"crypto" | "noble" = "crypto"',
       verifier: 'string',
     })
   )
@@ -105,11 +104,7 @@ export const exchange = orpc
     },
   })
   .handler(async ({ errors, input, context: { headers } }) => {
-    const generatedCodeChallenge = await challenge[input.type].generateCode(
-      input.verifier
-    )
-
-    if (generatedCodeChallenge !== input.codeChallenge) {
+    if (challenge.generateCode(input.verifier) !== input.codeChallenge) {
       throw errors.NOT_ACCEPTABLE()
     }
 

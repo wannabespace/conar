@@ -44,29 +44,5 @@ export const banner = orpc
       })
     }
 
-    if (
-      context.isDesktop &&
-      context.parsedAppVersion?.minor === 25 &&
-      context.os === 'linux'
-    ) {
-      items.push({
-        dismissible: true,
-        text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from tamery.app/download',
-        type: 'warning',
-      })
-    }
-
-    if (
-      context.parsedAppVersion?.minor &&
-      context.parsedAppVersion.minor >= 28 &&
-      context.parsedAppVersion.minor < 33
-    ) {
-      items.push({
-        dismissible: true,
-        text: 'Conar is now Tamery! New name, even better app - thanks for being part of the journey!',
-        type: 'info',
-      })
-    }
-
     return items
   })
