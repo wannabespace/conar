@@ -71,9 +71,10 @@ const HOST_HINTS: HostHint[] = [
 
 export const TYPE_OF_PORT: Record<string, ConnectionType> = {
   ...Object.fromEntries(
-    Object.entries(CLICKHOUSE_HTTP_PORT_OF_NATIVE)
-      .flat()
-      .map((port) => [port, ConnectionType.ClickHouse])
+    [
+      ...Object.keys(CLICKHOUSE_HTTP_PORT_OF_NATIVE),
+      ...Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE),
+    ].map((port) => [port, ConnectionType.ClickHouse])
   ),
   ...Object.fromEntries(
     Object.values(ConnectionType).map((type) => [DEFAULT_PORTS[type], type])

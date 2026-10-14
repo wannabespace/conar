@@ -35,6 +35,21 @@ export const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
   9440: CLICKHOUSE_HTTPS_PORT,
 }
 
+/** The port the driver dials: an `https://` ClickHouse string without one means 443, not the engine default. */
+export const portOf = ({
+  https,
+  port,
+  type,
+}: Partial<Pick<ConnectionParts, 'https' | 'port' | 'type'>>) => {
+  if (port) {
+    return port
+  }
+  if (https && type === ConnectionType.ClickHouse) {
+    return HTTPS_PORT
+  }
+  return type ? String(DEFAULT_PORTS[type]) : ''
+}
+
 const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
   clickhouse: ConnectionType.ClickHouse,
   http: ConnectionType.ClickHouse,
@@ -60,19 +75,6 @@ export const typeOfScheme = (scheme: string): ConnectionType | null =>
       .replace(/[+:].*$/u, '')
   ] ?? null
 
-const schemeOf = (
-  type: ConnectionType,
-  https: boolean | null,
-  port: string
-) => {
-  if (type === ConnectionType.ClickHouse) {
-    return (https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT))
-      ? 'https'
-      : 'http'
-  }
-  return type === ConnectionType.MSSQL ? 'sqlserver' : type
-}
-
 /** Sets each option in `changes` over `options`, replacing the key in any case: a paste may say `TrustServerCertificate`, the drivers read lowercase. */
 export const mergeOptions = (options: string, changes: string) => {
   const updates = new URLSearchParams(changes)
@@ -93,13 +95,20 @@ export const toConnectionString = (parts: ConnectionParts): string => {
     return ''
   }
 
-  const port = parts.port || String(DEFAULT_PORTS[parts.type])
+  const port = portOf(parts)
+  let scheme: string =
+    parts.type === ConnectionType.MSSQL ? 'sqlserver' : parts.type
+  if (parts.type === ConnectionType.ClickHouse) {
+    const https =
+      parts.https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT)
+    scheme = https ? 'https' : 'http'
+  }
   const host =
     parts.host.includes(':') && !parts.host.startsWith('[')
       ? `[${parts.host}]`
       : parts.host
   const url = new SafeURL(
-    `${schemeOf(parts.type, parts.https, port)}://${host}:${port}/${encodeURIComponent(parts.database)}`
+    `${scheme}://${host}:${port}/${encodeURIComponent(parts.database)}`
   )
   url.username = encodeURIComponent(parts.user)
   url.password = encodeURIComponent(parts.password)

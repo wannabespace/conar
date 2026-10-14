@@ -2,8 +2,6 @@ import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
-import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
 import {
   Select,
   SelectContent,
@@ -14,7 +12,6 @@ import {
 import { Spinner } from '@tamery/ui/components/spinner'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 
 import { useCollections } from '~/core/collections'
@@ -22,45 +19,7 @@ import { posthog } from '~/lib/posthog'
 import { clientLabel, maskedToken, MCP_CLIENTS } from '~/modules/mcp/clients'
 import { mcpClientsQuery, useMcpServer } from '~/modules/mcp/use-mcp-server'
 
-const PROMPT = 'Add the database this project uses to Tamery.'
-
-const TerminalLine = ({
-  children,
-  code,
-  display = code,
-  glyph,
-  language,
-  onCopy,
-}: {
-  children?: ReactNode
-  code: string
-  display?: string
-  glyph?: string
-  language: string
-  onCopy: () => void
-}) => (
-  <div className="flex flex-col gap-1 py-2.5 pr-2 pl-3.5">
-    {children}
-    <div className="flex items-center gap-1">
-      {glyph && (
-        <span
-          aria-hidden
-          className="text-success self-start font-mono text-xs/5"
-        >
-          {glyph}
-        </span>
-      )}
-      <CodeBlock
-        code={display}
-        language={language}
-        size="xs"
-        wrap
-        className="min-w-0 flex-1"
-      />
-      <CopyIconButton label="Copy" text={code} onClick={onCopy} />
-    </div>
-  </div>
-)
+import { TerminalLine } from './terminal-line'
 
 export const AgentPanel = () => {
   const { status } = useMcpServer()
@@ -183,7 +142,7 @@ export const AgentPanel = () => {
           </TerminalLine>
           <TerminalLine
             glyph="›"
-            code={PROMPT}
+            code="Add the database this project uses to Tamery."
             language="text"
             onCopy={() => posthog.capture('connection_agent_prompt_copied')}
           />

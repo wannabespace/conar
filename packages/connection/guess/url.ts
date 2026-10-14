@@ -9,17 +9,17 @@ import {
 } from '../connection-parts'
 import { hostHintOf } from '../hosts'
 import { adoPairs, adoParts } from './ado'
-import { firstValueOf } from './parts'
 import type { DatabaseGuess } from './types'
 
 const URL_PATTERN = /(?:jdbc:)?[a-z][\w+.-]*:\/\/[^\s"'`<>]+/giu
-const TRAILING_PUNCTUATION = /[.,;:)\]]+$/u
+/** Keeps the `]` that closes an IPv6 host (`postgres://[::1]`). */
+const TRAILING_PUNCTUATION = /(?<!\[[\da-f:.%]*)[.,;:)\]]+$/iu
 const WEB_SCHEME = /^https?:/iu
 const SEMICOLON_URL =
   /^(?:sqlserver|mssql):\/\/(?<address>[^;/?]*);(?<props>.*)$/iu
 
 const takeParam = (params: URLSearchParams, keys: string[]) => {
-  const value = firstValueOf(keys, (key) => params.get(key))
+  const value = keys.map((key) => params.get(key)).find(Boolean) ?? ''
   for (const key of keys) {
     params.delete(key)
   }
@@ -39,23 +39,21 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     return { format, parts: { ...adoParts(pairs), type: ConnectionType.MSSQL } }
   }
 
-  const { ssh, ...parts } = toConnectionParts(url)
+  const parts = toConnectionParts(url)
   const params = new URLSearchParams(parts.options)
-  const user = parts.user || takeParam(params, ['user', 'username'])
-  const password = parts.password || takeParam(params, ['password'])
-  const database =
-    parts.database || takeParam(params, ['database', 'databaseName', 'dbname'])
+  const user = takeParam(params, ['user', 'username'])
+  const password = takeParam(params, ['password'])
+  const database = takeParam(params, ['database', 'databasename', 'dbname'])
 
   return {
     format,
     parts: {
       ...parts,
-      database,
+      database: parts.database || database,
       options: params.toString(),
-      password,
+      password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
-      ssh: ssh ?? undefined,
-      user,
+      user: parts.user || user,
     },
   }
 }

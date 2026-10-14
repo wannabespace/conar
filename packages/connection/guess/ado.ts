@@ -1,6 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { firstValueOf } from './parts'
 import type { DatabaseGuess } from './types'
 
 const PAIR =
@@ -8,16 +7,6 @@ const PAIR =
 const QUOTE_CLOSERS: Record<string, string> = { '"': '"', "'": "'", '{': '}' }
 const SERVER = /^(?:\w+:)?(?<host>[^,\\]*)(?:\\[^,]*)?(?:,(?<port>\d+))?/u
 
-const DATABASE_KEYS = ['initialcatalog', 'database', 'databasename']
-const SERVER_KEYS = [
-  'server',
-  'datasource',
-  'address',
-  'addr',
-  'networkaddress',
-  'host',
-  'servername',
-]
 /** MySqlConnector's own keys; `SSL Mode` is Npgsql's too. */
 const MYSQL_KEYS = ['allowpublickeyretrieval', 'allowuservariables']
 const ENCRYPT_OFF = new Set(['false', 'no', 'optional'])
@@ -47,8 +36,18 @@ export const mssqlAddress = (server: string) => {
 
 export const adoParts = (pairs: Map<string, string>) => {
   const valueOf = (keys: string[]) =>
-    firstValueOf(keys, (key) => pairs.get(key))
-  const address = mssqlAddress(valueOf(SERVER_KEYS))
+    keys.map((key) => pairs.get(key)).find(Boolean) ?? ''
+  const address = mssqlAddress(
+    valueOf([
+      'server',
+      'datasource',
+      'address',
+      'addr',
+      'networkaddress',
+      'host',
+      'servername',
+    ])
+  )
   const encrypt = pairs.get('encrypt')?.toLowerCase()
   const trust = pairs.get('trustservercertificate')?.toLowerCase()
   const options = new URLSearchParams()
@@ -59,7 +58,7 @@ export const adoParts = (pairs: Map<string, string>) => {
     options.set('trustservercertificate', String(TRUST_ON.has(trust)))
   }
   return {
-    database: valueOf(DATABASE_KEYS),
+    database: valueOf(['initialcatalog', 'database', 'databasename']),
     host: address.host,
     options: options.toString(),
     password: valueOf(['password', 'pwd']),

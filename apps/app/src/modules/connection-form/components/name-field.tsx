@@ -12,7 +12,7 @@ import { useStore } from '@tanstack/react-form'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 
 export const NameField = ({ form }: { form: ConnectionForm }) => {
   const suggestion = useStore(form.store, ({ values }) =>

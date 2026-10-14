@@ -4,11 +4,9 @@ import { promisify } from 'node:util'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import type { Client } from 'ssh2'
 
-import { DEFAULT_PORTS, HTTPS_PORT, typeOfScheme } from '../connection-parts'
-import { readConnectionString } from '../parse-connection-string'
+import { portOf, toConnectionParts } from '../connection-parts'
 import type { Forwarding } from './forwarding'
 import type { SshTunnel } from './params'
-import { sshTunnelOf } from './params'
 import type { ConfirmHostKey } from './session'
 import { connectSsh } from './session'
 import { tunnelSocket } from './socket'
@@ -20,11 +18,9 @@ interface Session {
 }
 
 const IDLE_TIMEOUT = 60_000
-const FORWARD_SOURCE = { host: '127.0.0.1', port: 0 }
 
 const sessions = new Map<string, Session>()
 
-/** One SSH client per tunnel, shared by its channels and closed once none is open for `IDLE_TIMEOUT`. */
 const openSession = (
   key: string,
   tunnel: SshTunnel,
@@ -71,8 +67,8 @@ const openSession = (
       try {
         const connected = await client
         const channel = await promisify(connected.forwardOut.bind(connected))(
-          FORWARD_SOURCE.host,
-          FORWARD_SOURCE.port,
+          '127.0.0.1',
+          0,
           target.host,
           target.port
         )
@@ -94,27 +90,20 @@ const openSession = (
   return session
 }
 
-/** The string's database through its SSH tunnel, or null for a string without one. The string keeps the database's real host, so TLS verifies against it. */
+/** The string keeps the database's real host, so TLS verifies against it. */
 export const tunnelForwarding = async (
   connectionString: string,
   confirmHostKey: ConfirmHostKey
 ): Promise<Forwarding | null> => {
-  const { host, port, scheme, searchParams } =
-    readConnectionString(connectionString)
-  const tunnel = sshTunnelOf(searchParams)
+  const parts = toConnectionParts(connectionString)
+  const tunnel = parts.ssh
   if (!tunnel) {
     return null
   }
-  const type = typeOfScheme(scheme)
-  if (!type) {
-    throw new Error(`Unsupported connection string scheme: ${scheme}`)
+  if (!parts.type) {
+    throw new Error('Unsupported connection string scheme')
   }
-  const target = {
-    host,
-    port:
-      Number(port) ||
-      (scheme === 'https' ? Number(HTTPS_PORT) : DEFAULT_PORTS[type]),
-  }
+  const target = { host: parts.host, port: Number(portOf(parts)) }
   const key = JSON.stringify(tunnel)
   const session = () =>
     sessions.get(key) ?? openSession(key, tunnel, confirmHostKey)

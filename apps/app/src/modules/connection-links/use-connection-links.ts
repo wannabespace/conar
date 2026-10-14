@@ -1,8 +1,5 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import {
-  DEFAULT_PORTS,
-  toConnectionParts,
-} from '@tamery/connection/connection-parts'
+import { portOf, toConnectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import { useNavigate } from '@tanstack/react-router'
@@ -23,20 +20,14 @@ declare module '@tanstack/react-router' {
 
 type GuessedParts = ConnectionGuess['parts']
 
-const serverOf = ({
-  host,
-  port,
-  ssh,
-  type,
-  user,
-}: GuessedParts | ConnectionParts) =>
-  type &&
+const serverOf = (parts: GuessedParts | ConnectionParts) =>
+  parts.type &&
   [
-    type,
-    host?.toLowerCase(),
-    port || DEFAULT_PORTS[type],
-    user,
-    ssh?.host,
+    parts.type,
+    parts.host?.toLowerCase(),
+    portOf(parts),
+    parts.user,
+    parts.ssh?.host,
   ].join('\n')
 
 const findConnectionId = async (parts: GuessedParts) => {

@@ -14,8 +14,7 @@ import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { queryClient } from '~/lib/query-client'
 
-import { isLocalNetwork } from './connection-strings'
-import { fetchingConfig } from './fetching-config'
+import { fetchingConfig, fetchingOptionsOf } from './fetching-config'
 import { getConnectionStore } from './stores'
 
 export const prefetchConnectionResourceCore = async (
@@ -101,12 +100,8 @@ export const useFetchingConfig = (
   })
 
   return fetchingConfig(connection, {
-    hasLocalConnectionString: !!connectionString,
-    isLocalNetwork: connectionString && isLocalNetwork(connectionString),
+    ...fetchingOptionsOf(connectionString),
     isLocalProxyAvailable: localProxyAvailable,
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy,
-    secretsMissing: !!connectionString?.missingSecrets?.length,
-    usesSsh: !!connectionString?.usesSsh,
   })
 }

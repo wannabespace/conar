@@ -1,11 +1,12 @@
 import { Alert02Icon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import { mergeOptions } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnose'
-import { diagnoseConnectionError } from '@tamery/connection/diagnose'
+import {
+  diagnoseConnectionError,
+  sslOptionsOf,
+} from '@tamery/connection/diagnose'
 import { diagnosisRequestOf } from '@tamery/connection/diagnosis-request'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -23,7 +24,7 @@ import { useState } from 'react'
 
 import { checkOrUpgrade } from '~/core/user/permissions'
 
-import { useAiHelp } from '../-lib/use-ai-help'
+import { useAiHelp } from '../lib/use-ai-help'
 
 export type FixSource = 'ai' | 'rule'
 
@@ -118,10 +119,12 @@ export const TestAlert = ({
                     onFix(
                       {
                         database: aiFix.database ?? undefined,
-                        options:
-                          aiFix.options === null
-                            ? undefined
-                            : mergeOptions(parts.options, aiFix.options),
+                        options: aiFix.ssl
+                          ? sslOptionsOf(
+                              { ...parts, type: aiFix.type ?? parts.type },
+                              aiFix.ssl
+                            )
+                          : undefined,
                         port: aiFix.port ?? undefined,
                         sshEnabled: aiFix.sshEnabled ?? undefined,
                         type: aiFix.type ?? undefined,
@@ -148,13 +151,9 @@ export const TestAlert = ({
                               ? 'ai.connection.unlimited'
                               : 'ai.connection.use'
                           ) &&
-                          ask.mutate(
-                            {
-                              ...diagnosisRequestOf(context),
-                              type: parts.type ?? ConnectionType.Postgres,
-                            },
-                            { onSuccess: onAnswer }
-                          )
+                          ask.mutate(diagnosisRequestOf(context), {
+                            onSuccess: onAnswer,
+                          })
                         }
                       >
                         <LoadingContent loading={ask.isPending}>

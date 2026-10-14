@@ -1,6 +1,5 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { SecretParam } from '@tamery/connection/secrets'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -14,13 +13,13 @@ import {
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
-import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
+import type { Credential } from '~/core/connection/fetching-config'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 
@@ -31,7 +30,7 @@ const CREDENTIAL_LABELS = {
   ssh_password: 'SSH password',
   sslpassphrase: 'SSL key passphrase',
   sslpassword: 'SSL key passphrase',
-} satisfies Record<'password' | SecretParam, string>
+} satisfies Record<Credential, string>
 
 const EMPTY_CREDENTIALS = {
   password: '',
@@ -40,31 +39,19 @@ const EMPTY_CREDENTIALS = {
   ssh_password: '',
   sslpassphrase: '',
   sslpassword: '',
-} satisfies Record<'password' | SecretParam, string>
+} satisfies Record<Credential, string>
 
 export const PasswordForm = ({
   connection,
   connectionResource,
+  missingCredentials,
 }: {
   connection: Connection
   connectionResource: ConnectionResource
+  missingCredentials: Credential[]
 }) => {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
-  const { data: connectionString } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection.id))
-        .findOne(),
-  })
-  const needsPassword =
-    connection.isPasswordExists && !connectionString?.isPasswordPopulated
-  const missingSecrets = connectionString?.missingSecrets ?? []
-  const missingFields = [
-    ...(needsPassword ? (['password'] as const) : []),
-    ...missingSecrets,
-  ]
 
   const { mutate: saveCredentials, status } = useMutation({
     meta: { event: 'connection_password_saved' },
@@ -72,11 +59,12 @@ export const PasswordForm = ({
       const url = new SafeURL(
         await connectionStringsCollection.utils.decrypt(connection.id)
       )
-      if (needsPassword) {
-        url.password = encodeURIComponent(credentials.password)
-      }
-      for (const param of missingSecrets) {
-        url.searchParams.set(param, credentials[param])
+      for (const credential of missingCredentials) {
+        if (credential === 'password') {
+          url.password = encodeURIComponent(credentials.password)
+        } else {
+          url.searchParams.set(credential, credentials[credential])
+        }
       }
       url.pathname = encodeURIComponent(connectionResource.name || '')
 
@@ -111,7 +99,7 @@ export const PasswordForm = ({
     onSubmit: ({ value }) => saveCredentials(value),
   })
   const incomplete = useStore(form.store, ({ values }) =>
-    missingFields.some((name) => !values[name])
+    missingCredentials.some((name) => !values[name])
   )
   const pending = status === 'pending'
 
@@ -142,7 +130,7 @@ export const PasswordForm = ({
             </CardHeader>
             <CardContent>
               <FieldGroup size="sm">
-                {missingFields.map((name, index) => (
+                {missingCredentials.map((name, index) => (
                   <form.AppField key={name} name={name}>
                     {(field) => (
                       <field.Field>

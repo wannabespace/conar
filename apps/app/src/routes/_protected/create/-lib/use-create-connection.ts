@@ -1,4 +1,3 @@
-import type { GuessFormat } from '@tamery/connection/guess'
 import { isSshConnectionString } from '@tamery/connection/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
@@ -9,15 +8,7 @@ import { createConnection } from '~/core/connection/create'
 import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { posthog } from '~/lib/posthog'
-
-export type SavedConnection = Omit<
-  Parameters<typeof createConnection>[0],
-  'workspaceId'
-> & {
-  /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
-  open: boolean
-  origin: GuessFormat | undefined
-}
+import type { SavedConnection } from '~/modules/connection-form/lib/use-save-connection'
 
 export const useCreateConnection = () => {
   const collections = useCollections()
@@ -60,11 +51,6 @@ export const useCreateConnection = () => {
         type: data.type,
       })
       toast.success('Connection created')
-    },
-    onError: (error) => {
-      toast.error("Couldn't save the connection", {
-        description: error.message,
-      })
     },
   })
 }

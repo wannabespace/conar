@@ -1,30 +1,21 @@
-import {
-  Layers01Icon,
-  PlusSignIcon,
-  Search01Icon,
-  SortByDown01Icon,
-  SortByUp01Icon,
-} from '@hugeicons/core-free-icons'
+import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { connectionLabels } from '@tamery/shared/enums/connection-type'
-import { Button } from '@tamery/ui/components/button'
+import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkeys } from '@tanstack/react-hotkeys'
-import { type } from 'arktype'
+import { useNavigate } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createWebStorageValue } from 'seitu/web'
 
 import { Link } from '~/components/link'
 import { PaneEmpty } from '~/components/pane-empty'
@@ -32,41 +23,20 @@ import { useCollections } from '~/core/collections'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
 import type { Connection } from '~/core/connection/sync'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
+import { isShortcutAvailable } from '~/core/keyboard/shortcuts'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 
 import { ConnectionCard } from './connection-card'
 import { Empty } from './connections-empty'
+import {
+  ConnectionsToolbar,
+  groupValue,
+  sortValue,
+} from './connections-toolbar'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
-
-const sortOptions = [
-  { value: 'date-desc', label: 'Date (newest first)' },
-  { value: 'date-asc', label: 'Date (oldest first)' },
-  { value: 'name-asc', label: 'Name (A–Z)' },
-  { value: 'name-desc', label: 'Name (Z–A)' },
-] as const
-
-const sortValue = createWebStorageValue({
-  type: 'localStorage',
-  key: 'connections-list-sort',
-  schema: type('string' as type.cast<(typeof sortOptions)[number]['value']>),
-  defaultValue: 'date-desc',
-})
-
-const groupOptions = [
-  { value: 'label', label: 'Group by label' },
-  { value: 'type', label: 'Group by type' },
-  { value: 'none', label: 'No grouping' },
-] as const
-
-const groupValue = createWebStorageValue({
-  type: 'localStorage',
-  key: 'connections-list-group',
-  schema: type('string' as type.cast<(typeof groupOptions)[number]['value']>),
-  defaultValue: 'label',
-})
 
 const SEARCH_THRESHOLD = 10
 
@@ -121,6 +91,12 @@ export const ConnectionsList = () => {
   const canCreate = usePermissions().check('connection.create', {
     count: data.length,
   })
+  const navigate = useNavigate()
+  useShortcut('newConnection', () => {
+    if (checkOrUpgrade('connection.create', { count: data.length })) {
+      void navigate({ to: '/create' })
+    }
+  })
 
   const removeDialogRef =
     useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
@@ -130,15 +106,14 @@ export const ConnectionsList = () => {
   const listRef = useRef<HTMLDivElement>(null)
   const showSearch = data.length > SEARCH_THRESHOLD
   const query = showSearch ? search.trim().toLowerCase() : ''
-  const matches = query
-    ? data.filter((connection) =>
-        [
-          connection.name,
-          connection.label,
-          connectionLabels[connection.type],
-        ].some((text) => text?.toLowerCase().includes(query))
-      )
-    : data
+  const matches = data.filter((connection) =>
+    matchesSearch(
+      query,
+      connection.name,
+      connection.label,
+      connectionLabels[connection.type]
+    )
+  )
 
   const groupTitle = (connection: Connection): string | null => {
     if (grouping === 'label') {
@@ -197,77 +172,7 @@ export const ConnectionsList = () => {
       {showLastOpened && <LastOpenedResources />}
       {data.length > 1 && (
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-2xs text-muted-foreground px-2 font-semibold tracking-wider uppercase">
-              {data.length} connection{data.length === 1 ? '' : 's'}
-            </span>
-            <div className="flex items-center gap-2">
-              <Select
-                value={grouping}
-                onValueChange={(value) => {
-                  if (value) {
-                    groupValue.set(value)
-                  }
-                }}
-              >
-                <SelectTrigger size="sm" className="shrink-0">
-                  <HugeiconsIcon icon={Layers01Icon} strokeWidth={2} />
-                  <SelectValue>
-                    {groupOptions.find((option) => option.value === grouping)
-                      ?.label ?? grouping}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent size="sm">
-                  {groupOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={sort}
-                onValueChange={(value) => {
-                  if (value) {
-                    sortValue.set(value)
-                  }
-                }}
-              >
-                <SelectTrigger size="sm" className="shrink-0">
-                  <HugeiconsIcon
-                    icon={
-                      sort.includes('asc') ? SortByUp01Icon : SortByDown01Icon
-                    }
-                    strokeWidth={2}
-                  />
-                  <SelectValue>
-                    {sortOptions.find((option) => option.value === sort)
-                      ?.label ?? sort}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent size="sm">
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-foreground"
-                render={<Link to="/create" />}
-              >
-                <HugeiconsIcon
-                  icon={PlusSignIcon}
-                  strokeWidth={2}
-                  className="text-muted-foreground size-4"
-                />
-                New
-              </Button>
-            </div>
-          </div>
+          <ConnectionsToolbar count={data.length} />
           {showSearch && (
             <SearchInput
               ref={searchRef}
@@ -316,25 +221,39 @@ export const ConnectionsList = () => {
               description="Search by name, label or database type."
             />
           )}
-          <Link
-            to="/create"
-            disabled={!canCreate}
-            data-row-link
-            onClick={() =>
-              checkOrUpgrade('connection.create', { count: data.length })
+          <Tooltip
+            shortcut={
+              canCreate &&
+              isShortcutAvailable('newConnection') && (
+                <ShortcutKbd shortcut="newConnection" />
+              )
             }
-            className={cn(
-              'text-muted-foreground hover:bg-card hover:text-foreground focus-visible:focus-ring flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm outline-hidden transition-colors duration-150',
-              !canCreate && 'opacity-50'
-            )}
           >
-            <HugeiconsIcon
-              icon={PlusSignIcon}
-              strokeWidth={2}
-              className="size-4"
-            />
-            New connection
-          </Link>
+            <TooltipTrigger
+              render={
+                <Link
+                  to="/create"
+                  disabled={!canCreate}
+                  data-row-link
+                  onClick={() =>
+                    checkOrUpgrade('connection.create', { count: data.length })
+                  }
+                  className={cn(
+                    'text-muted-foreground hover:bg-card hover:text-foreground focus-visible:focus-ring flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm outline-hidden transition-colors duration-150',
+                    !canCreate && 'opacity-50'
+                  )}
+                />
+              }
+            >
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                strokeWidth={2}
+                className="size-4"
+              />
+              New connection
+            </TooltipTrigger>
+            <TooltipContent>New connection</TooltipContent>
+          </Tooltip>
         </div>
       ) : (
         <Empty />

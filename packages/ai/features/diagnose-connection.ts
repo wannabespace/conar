@@ -6,15 +6,18 @@ import { type } from 'arktype'
 import { models } from '../models/list'
 import { section } from './prompt'
 
+const truncated = (length: number) =>
+  type('string').pipe((value) => value.slice(0, length))
+
 export const connectionDiagnosisInput = type({
-  error: 'string <= 4000',
+  error: truncated(4000),
   hostKind: 'string <= 100',
-  options: 'string <= 2000',
+  options: truncated(2000),
   passwordSet: 'boolean',
   port: 'string <= 10',
   runtime: "'desktop' | 'web'",
   sshEnabled: 'boolean',
-  type: type.valueOf(ConnectionType),
+  type: type.valueOf(ConnectionType).or('null'),
   userSet: 'boolean',
 })
 
@@ -24,9 +27,9 @@ const diagnosisOutput = type({
   fix: type({
     database: 'string | null',
     label: 'string',
-    options: 'string | null',
     port: 'string | null',
     sshEnabled: 'boolean | null',
+    ssl: "'off' | 'on' | 'unverified' | null",
     type: type.valueOf(ConnectionType).or('null'),
   }).or('null'),
   steps: 'string[]',
@@ -34,14 +37,15 @@ const diagnosisOutput = type({
 
 /** Applying a fix that carries `<redacted>` or `<database>` would overwrite the user's real value with it. */
 const PLACEHOLDER = /[<>]/u
+const PORT = /^\d{1,5}$/u
 
 const INSTRUCTIONS = [
   "You help someone whose database client couldn't connect to their database.",
-  'You get the engine, the settings with identifying values replaced by placeholders (<host>, <user>, <database>, <password>, <ssh-host>, <ssh-user>, <ip>, <redacted>), where the client runs, and the driver error.',
+  'You get the engine (null when the client could not tell), the settings with identifying values replaced by placeholders (<host>, <user>, <database>, <password>, <ssh-host>, <ssh-user>, <ip>, <redacted>), where the client runs, and the driver error.',
   'The desktop app connects directly and can open SSH tunnels; the web app connects through a proxy and cannot tunnel.',
   'Explain the most likely cause in one or two plain sentences, naming the provider or tool when the settings show one.',
   'Then give at most three short, concrete steps the person can take, most likely first.',
-  'Propose a fix only when you are confident it resolves the error. A fix may change only: port, options (only the driver options to add or change, as a query string, e.g. sslmode=require for PostgreSQL, ssl=true for MySQL, encrypt=true or trustservercertificate=true for SQL Server; the client merges them into the existing ones), the engine type, database (empty for the default), or turning on an SSH tunnel (desktop only). Its label is a short imperative button text, e.g. "Use port 5432"; every field it does not change is null. Otherwise fix is null.',
+  'Propose a fix only when you are confident it resolves the error. A fix may change only: port, ssl (on to require TLS, off to turn it off, unverified to keep TLS but skip certificate checks; PostgreSQL, MySQL and SQL Server only, not ClickHouse), the engine type, database (empty for the default), or turning on an SSH tunnel (desktop only). Its label is a short imperative button text, e.g. "Use port 5432"; every field it does not change is null. Otherwise fix is null.',
   'Never ask for or repeat a password, never invent hostnames, and never put a placeholder or <redacted> in a fix.',
 ].join('\n')
 
@@ -62,8 +66,10 @@ export const diagnoseConnection = async (data: {
     ].join('\n'),
     telemetry: data.telemetry,
   })
-  const echoesPlaceholder = [output.fix?.options, output.fix?.database].some(
-    (value) => value && PLACEHOLDER.test(value)
-  )
-  return echoesPlaceholder ? { ...output, fix: null } : output
+  const { fix } = output
+  const unsafe =
+    !!fix &&
+    ((!!fix.database && PLACEHOLDER.test(fix.database)) ||
+      (!!fix.port && !PORT.test(fix.port)))
+  return unsafe ? { ...output, fix: null } : output
 }

@@ -2,7 +2,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { typeOfScheme } from '../connection-parts'
-import { firstValueOf, mergeParts } from './parts'
+import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
@@ -81,9 +81,9 @@ export const partsOfVariables = (
   variables: Record<string, string>
 ): GuessedParts | null => {
   const valueOf = (keys: string[]) =>
-    firstValueOf(keys, (key) =>
-      UNPACKED_TEMPLATE.test(variables[key] ?? '') ? '' : variables[key]
-    )
+    keys
+      .map((key) => variables[key])
+      .find((value) => value && !UNPACKED_TEMPLATE.test(value)) ?? ''
   let parts: GuessedParts = {}
 
   for (const group of GROUPS) {
@@ -108,11 +108,10 @@ export const partsOfVariables = (
     ) {
       continue
     }
-    const named = group.user
-      ? { password: found.password, user: group.user }
-      : found
-    const fills = !group.user || (!parts.user && !parts.password)
-    parts = mergeParts(parts, fills ? named : {}, { type })
+    if (!group.user || (!parts.user && !parts.password)) {
+      parts = mergeParts(parts, { user: group.user, ...found })
+    }
+    parts = mergeParts(parts, { type })
   }
 
   return Object.keys(parts).some((key) => key !== 'type') ? parts : null

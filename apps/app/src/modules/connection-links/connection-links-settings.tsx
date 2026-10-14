@@ -9,14 +9,13 @@ const QUERY_KEY = ['connection-links', 'is-default']
 
 export const ConnectionLinksRow = () => {
   const { data: isDefault } = useQuery({
-    queryFn: async () =>
-      (await window.electron?.connectionLinks.isDefault()) ?? false,
+    queryFn: () => window.electron?.connectionLinks.isDefault(),
     queryKey: QUERY_KEY,
   })
   const { mutate: setDefault } = useMutation({
     meta: { event: 'connection_links_default_toggled' },
     mutationFn: async (enabled: boolean) =>
-      (await window.electron?.connectionLinks.setDefault(enabled)) ?? false,
+      await window.electron?.connectionLinks.setDefault(enabled),
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => queryClient.setQueryData(QUERY_KEY, next),
   })

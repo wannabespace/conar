@@ -26,9 +26,21 @@ export const FieldTextarea = ({
   const takesFile = !!fileLabel && !disabled
   const fileRef = useRef<HTMLInputElement>(null)
   const load = async (file: File | undefined) => {
-    if (file && file.size <= MAX_FILE_BYTES) {
-      field.handleChange(await file.text())
+    if (!file) {
+      return
     }
+    if (file.size > MAX_FILE_BYTES) {
+      field.setMeta((meta) => ({
+        ...meta,
+        errorMap: {
+          ...meta.errorMap,
+          onChange: `Pick a file under ${MAX_FILE_BYTES / 1024} KB`,
+        },
+        isBlurred: true,
+      }))
+      return
+    }
+    field.handleChange(await file.text())
   }
 
   return (

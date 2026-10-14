@@ -1,7 +1,7 @@
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SelectItem } from '@tamery/ui/components/select'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 
 const SYNC_OPTIONS: Record<SyncType, { description: string; label: string }> = {
   [SyncType.Cloud]: {

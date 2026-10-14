@@ -22,7 +22,10 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
+import { selectTriggerVariants } from './select.utils'
 
 const Combobox = ComboboxPrimitive.Root
 
@@ -35,11 +38,18 @@ const ComboboxValue = ({ ...props }: ComboboxPrimitive.Value.Props) => (
 const ComboboxTrigger = ({
   className,
   children,
+  variant,
   ...props
-}: ComboboxPrimitive.Trigger.Props) => (
+}: ComboboxPrimitive.Trigger.Props &
+  VariantProps<typeof selectTriggerVariants>) => (
   <ComboboxPrimitive.Trigger
     data-slot="combobox-trigger"
-    className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+    data-size={variant ? 'default' : undefined}
+    className={cn(
+      "[&_svg:not([class*='size-'])]:size-4",
+      variant && selectTriggerVariants({ variant }),
+      className
+    )}
     {...props}
   >
     {children}

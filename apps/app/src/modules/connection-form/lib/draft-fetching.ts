@@ -19,12 +19,12 @@ export const draftFetching = (
     { isPasswordExists: hasPassword, syncType: values.syncType },
     {
       hasLocalConnectionString: true,
-      isLocalProxyAvailable,
       isLocalNetwork:
         tryCatch(() => isLocalNetworkConnectionString(connectionString))
           .data === true,
+      isLocalProxyAvailable,
       isPasswordPopulated: hasPassword,
-      secretsMissing: false,
+      missingSecrets: [],
       usesSsh: values.sshEnabled,
     }
   )

@@ -2,8 +2,8 @@ import { title } from '@tamery/shared/title'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { permix } from '~/core/user/permissions'
+import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 
-import { ConnectionPage } from './-components/connection-page'
 import { useCreateConnection } from './-lib/use-create-connection'
 
 const CreateConnectionPage = () => {

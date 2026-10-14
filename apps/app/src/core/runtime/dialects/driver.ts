@@ -17,7 +17,10 @@ import type {
 } from 'kysely'
 
 import { getCollections } from '~/core/collections'
-import { fetchingConfig } from '~/core/connection/fetching-config'
+import {
+  fetchingConfig,
+  fetchingOptionsOf,
+} from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
 
@@ -86,13 +89,11 @@ export const createDialectProvider = (
     const config = fetchingConfig(
       connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
       {
-        hasLocalConnectionString: !!connectionString,
+        ...fetchingOptionsOf(connectionString),
         isLocalNetwork: isLocalNetworkConnectionString(
           options.connectionString
         ),
-        isPasswordPopulated: connectionString?.isPasswordPopulated,
         proxy,
-        secretsMissing: !!connectionString?.missingSecrets?.length,
         usesSsh,
       }
     )

@@ -16,6 +16,12 @@ const IPV6_BRACKETS = /^\[(?<address>.*)\]$/u
 const decoded = (component: string) =>
   tryCatch(() => decodeURIComponent(component)).data ?? component
 
+/** Every reader of option keys goes through here: the drivers and `connectionSecrets` match lowercase, a paste says `sslPassword` or `TrustServerCertificate`. */
+export const lowercaseKeys = (searchParams: URLSearchParams) =>
+  new URLSearchParams(
+    Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
+  )
+
 /** Every reader of a stored string goes through here: `toConnectionString` percent-encodes user, password and database, and SafeURL hands them back raw. */
 export const readConnectionString = (connectionString: string) => {
   const url = new SafeURL(connectionString)
@@ -25,7 +31,7 @@ export const readConnectionString = (connectionString: string) => {
     password: decoded(url.password),
     port: url.port,
     scheme: url.protocol.slice(0, -1),
-    searchParams: url.searchParams,
+    searchParams: lowercaseKeys(url.searchParams),
     user: decoded(url.username),
   }
 }
@@ -39,10 +45,7 @@ export const parseConnectionString = (connectionString: string): Config => {
     host,
     password: password || undefined,
     port: port ? Number(port) : undefined,
-    /** Keys lowercased: the SSL parsers read lowercase, a paste says `TrustServerCertificate` or `sslMode`. */
-    searchParams: new URLSearchParams(
-      Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
-    ),
+    searchParams,
     user: user || undefined,
   }
 }

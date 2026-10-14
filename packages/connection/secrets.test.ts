@@ -18,9 +18,25 @@ describe('connectionSecrets', () => {
     ])
   })
 
+  it('strips a secret pasted in any case', () => {
+    const synced = new URL(
+      connectionSecrets.strip(
+        'postgres://app@db.internal/app?sslPassword=key-pass&SSH_PASSWORD=ssh-pass'
+      )
+    )
+
+    expect(connectionSecrets.missing(synced.searchParams)).toEqual([
+      'ssh_password',
+      'sslpassword',
+    ])
+  })
+
   it('restores the stripped secrets from the local copy', () => {
     expect(
-      connectionSecrets.restore(connectionSecrets.strip(LOCAL), LOCAL)
+      connectionSecrets.restore(connectionSecrets.strip(LOCAL), {
+        isPasswordExists: true,
+        local: LOCAL,
+      })
     ).toBe(LOCAL)
   })
 
@@ -43,10 +59,26 @@ describe('connectionSecrets', () => {
     expect(connectionSecrets.keepMissing(tunnelOff, missing)).toBe(tunnelOff)
   })
 
+  it('never restores a password another device removed', () => {
+    const restored = new URL(
+      connectionSecrets.restore(connectionSecrets.strip(LOCAL), {
+        isPasswordExists: false,
+        local: LOCAL,
+      })
+    )
+
+    expect(restored.password).toBe('')
+  })
+
   it('never restores a secret the synced string dropped', () => {
     const switchedToAgent =
       'postgres://app@db.internal:5432/app?ssh_host=bastion&ssh_auth=agent'
-    const restored = new URL(connectionSecrets.restore(switchedToAgent, LOCAL))
+    const restored = new URL(
+      connectionSecrets.restore(switchedToAgent, {
+        isPasswordExists: true,
+        local: LOCAL,
+      })
+    )
 
     expect(restored.searchParams.has('ssh_password')).toBe(false)
   })

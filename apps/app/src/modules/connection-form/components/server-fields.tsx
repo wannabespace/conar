@@ -6,7 +6,7 @@ import { useStore } from '@tanstack/react-form'
 
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 import { EngineField } from './engine-field'
 import { Footnote } from './footnote'
 

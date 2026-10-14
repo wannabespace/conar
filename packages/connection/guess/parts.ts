@@ -14,9 +14,3 @@ export const mergeParts = (...list: GuessedParts[]): GuessedParts =>
         )
       )
   )
-
-/** The first non-empty value among `keys`, in order. */
-export const firstValueOf = (
-  keys: string[],
-  valueOf: (key: string) => string | null | undefined
-) => keys.map(valueOf).find(Boolean) ?? ''

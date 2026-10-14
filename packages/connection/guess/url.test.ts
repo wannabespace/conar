@@ -149,6 +149,21 @@ describe('guessConnection — URLs', () => {
     })
   })
 
+  it.each([['postgres://[::1]'], ['(postgres://[::1])']])(
+    'keeps the bracket closing an IPv6 host in %s',
+    (text) => {
+      expect(guessConnection(text)?.parts.host).toBe('::1')
+    }
+  )
+
+  it('keeps a query password out of the options when the URL has one too', () => {
+    expect(
+      guessConnection(
+        'postgres://me:pw@db.acme.io/app?password=pw&sslmode=require'
+      )?.parts.options
+    ).toBe('sslmode=require')
+  })
+
   it('keeps the ssh tunnel stored in a Tamery connection string', () => {
     expect(
       guessConnection(
@@ -200,7 +215,7 @@ describe('guessConnection — JDBC', () => {
       {
         database: 'db',
         host: 'srv.mysql.database.azure.com',
-        options: 'useSSL=true',
+        options: 'usessl=true',
         password: 'pw',
         port: '3306',
         type: ConnectionType.MySQL,

@@ -2,17 +2,12 @@ import path from 'node:path'
 
 import { app, BrowserWindow } from 'electron'
 
+import todesktop from '../../../todesktop.json'
+
 const DEEPLINK_PROTOCOL = 'tamery'
-// Sync with `appProtocolScheme` in todesktop.json: macOS routes only the schemes the bundle declares.
-const CONNECTION_LINK_SCHEMES = [
-  'clickhouse',
-  'mariadb',
-  'mssql',
-  'mysql',
-  'postgres',
-  'postgresql',
-  'sqlserver',
-]
+const CONNECTION_LINK_SCHEMES = todesktop.appProtocolScheme.filter(
+  (scheme) => scheme !== DEEPLINK_PROTOCOL
+)
 const CONNECTION_LINK = new RegExp(
   `^(?:${CONNECTION_LINK_SCHEMES.join('|')})://`,
   'iu'
@@ -31,7 +26,7 @@ let pendingConnectionLink =
 export const focusMainWindow = () => {
   const mainWindow = BrowserWindow.getAllWindows()[0] ?? createWindow?.()
   if (!mainWindow) {
-    return null
+    return
   }
 
   if (mainWindow.isMinimized()) {

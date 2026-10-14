@@ -5,7 +5,7 @@ import {
 } from '@tamery/ui/components/toggle-group'
 import type { CSSProperties } from 'react'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 
 const NO_COLOR = 'none'
 

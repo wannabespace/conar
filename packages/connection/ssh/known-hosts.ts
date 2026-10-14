@@ -70,7 +70,6 @@ const keyTypeOf = (key: Buffer) =>
 const keyTypeOfAlgorithm = (algorithm: ServerHostKeyAlgorithm) =>
   algorithm.startsWith('rsa-sha2-') ? 'ssh-rsa' : algorithm
 
-/** The user's own `~/.ssh/known_hosts`, read and written the way OpenSSH does, so a host trusted in a terminal is trusted here too. */
 export const knownHosts = {
   /** Any listed key for the host other than this one refuses it, whatever its type: the algorithm order makes a server that still has the listed type present it. */
   check: (contents: string, name: string, key: Buffer): HostKeyStatus => {
@@ -93,7 +92,6 @@ export const knownHosts = {
     fingerprint: `SHA256:${createHash('sha256').update(key).digest('base64').replace(/=+$/u, '')}`,
     keyType: keyTypeOf(key),
   }),
-  /** The line `trust` appends, hashed the way `HashKnownHosts yes` writes it. */
   lineOf: (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
     const salt = randomBytes(HASH_SALT_BYTES)
     const hosts = hashed

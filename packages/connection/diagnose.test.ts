@@ -23,6 +23,17 @@ const diagnose = (message: string, overrides: Partial<ConnectionParts> = {}) =>
   diagnoseConnectionError({ desktop: true, message, parts: parts(overrides) })
 
 describe('diagnoseConnectionError', () => {
+  it.each([
+    'SSH authentication failed. Check the SSH user and credentials.',
+    "Can't reach the SSH host: ENOTFOUND",
+    'Timed out reaching the SSH host',
+  ])('blames the tunnel, not the database, for %s', (message) => {
+    expect(diagnose(message, { password: '' })).toStrictEqual({
+      hint: message,
+      title: "Couldn't open the SSH tunnel",
+    })
+  })
+
   it('points a Docker service name at localhost', () => {
     expect(
       diagnose('getaddrinfo ENOTFOUND postgres', { host: 'postgres' })?.fix
@@ -131,6 +142,7 @@ describe('diagnosisRequestOf', () => {
       port: '5432',
       runtime: 'web',
       sshEnabled: false,
+      type: ConnectionType.Postgres,
       userSet: true,
     })
   })

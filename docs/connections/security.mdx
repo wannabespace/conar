@@ -36,7 +36,7 @@ Every mode syncs the connection across your devices.
 
     - You enter the password the first time you use the connection.
     - It's kept on that device only, encrypted with your workspace key.
-    - Clear it anytime via the connection menu (**⋯ → Clear password**), which clears the SSH and SSL key secrets too.
+    - Clear it anytime via the connection menu (**⋯ → Clear saved credentials**), which clears the SSH and SSL key secrets too.
     - A compromised account exposes no stored password.
 
     Best for production or strict-policy environments.
@@ -72,7 +72,7 @@ The explanations and fixes Tamery shows when a test fails run on your device. **
 - the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host), never the host itself
 - the driver options, keeping only values that can't identify you (like `sslmode=require`) and replacing the rest
 - whether a user and password are set, whether an SSH tunnel is on, and whether you're in the desktop or web app
-- the error message, with every host (the SSH host too), user, database, password and IP address (IPv4 and IPv6) replaced by placeholders
+- the error message, with your host (the SSH host too), user, database, password and any IP address (IPv4 and IPv6) replaced by placeholders
 
 ## Choosing a mode
 

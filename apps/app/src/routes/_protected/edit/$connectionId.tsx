@@ -2,8 +2,9 @@ import { title } from '@tamery/shared/title'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 
-import { ConnectionPage } from '../create/-components/connection-page'
-import { formValuesOf } from '../create/-lib/connection-form'
+import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
+import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
+
 import { useUpdateConnection } from './-lib/use-update-connection'
 
 const { useLoaderData } = getRouteApi('/_protected/edit/$connectionId')
@@ -14,7 +15,7 @@ const EditConnectionPage = () => {
   return (
     <ConnectionPage
       defaultValues={defaultValues}
-      editing={connection.name}
+      editingName={connection.name}
       persist={mutateAsync}
     />
   )

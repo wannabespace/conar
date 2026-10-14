@@ -114,12 +114,16 @@ export const ConnectionCard = ({
       return
     }
 
+    const saved = await connectionStringsCollection.utils.decrypt(connection.id)
+    if (!connectionSecrets.stored(saved)) {
+      toast.info('No credentials are saved on this device')
+      return
+    }
+
     const connectionStringRecord =
       await connectionStringsCollection.utils.prepare({
         connectionId: connection.id,
-        connectionString: connectionSecrets.strip(
-          await connectionStringsCollection.utils.decrypt(connection.id)
-        ),
+        connectionString: connectionSecrets.strip(saved),
         updatedAt: record.updatedAt,
       })
 
@@ -128,7 +132,7 @@ export const ConnectionCard = ({
     })
 
     posthog.capture('connection_password_cleared')
-    toast.success('Password cleared from this device')
+    toast.success('Credentials cleared from this device')
   }
 
   const isResourcesShown = resources.length > 1
@@ -141,12 +145,11 @@ export const ConnectionCard = ({
     connectionString,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
-    onEdit: () => {
+    onEdit: () =>
       router.navigate({
         params: { connectionId: connection.id },
         to: '/edit/$connectionId',
-      })
-    },
+      }),
     onOpenInNewWindow:
       selectedResource && canOpenResource
         ? () =>
@@ -163,11 +166,7 @@ export const ConnectionCard = ({
 
   return (
     <div
-      style={
-        (connection.color
-          ? { '--color': connection.color }
-          : {}) as CSSProperties
-      }
+      style={{ '--color': connection.color } as CSSProperties}
       className="relative flex flex-col border-b last:border-b-0"
     >
       <AppContextMenu

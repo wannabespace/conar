@@ -1,4 +1,4 @@
-import { DEFAULT_PORTS } from './connection-parts'
+import { portOf } from './connection-parts'
 import type { DiagnosisContext } from './diagnose'
 import {
   hostHintOf,
@@ -8,11 +8,6 @@ import {
   isServiceName,
 } from './hosts'
 import { redactConnectionError, redactOptions } from './redact'
-
-/** Sync with `error: 'string <= 4000'` and `options: 'string <= 2000'` in packages/ai/features/diagnose-connection.ts: a longer value fails the request. */
-const MAX_ERROR_LENGTH = 4000
-const MAX_OPTIONS_LENGTH = 2000
-const PORT = /^\d{1,5}$/u
 
 const hostKindOf = (host: string) => {
   if (isLocalHost(host)) {
@@ -36,16 +31,16 @@ export const diagnosisRequestOf = ({
   message,
   parts,
 }: DiagnosisContext) => {
-  const port =
-    parts.port || (parts.type ? String(DEFAULT_PORTS[parts.type]) : '')
+  const port = portOf(parts)
   return {
-    error: redactConnectionError(message, parts).slice(0, MAX_ERROR_LENGTH),
+    error: redactConnectionError(message, parts),
     hostKind: hostKindOf(parts.host),
-    options: redactOptions(parts.options).slice(0, MAX_OPTIONS_LENGTH),
+    options: redactOptions(parts.options),
     passwordSet: !!parts.password,
-    port: PORT.test(port) ? port : '',
+    port: /^\d{1,5}$/u.test(port) ? port : '',
     runtime: desktop ? ('desktop' as const) : ('web' as const),
     sshEnabled: !!parts.ssh,
+    type: parts.type,
     userSet: !!parts.user,
   }
 }

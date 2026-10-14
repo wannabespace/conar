@@ -5,14 +5,14 @@ import {
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { SelectItem } from '@tamery/ui/components/select'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 
 const ENGINES = Object.values(ConnectionType).map((type) => ({
   label: connectionLabels[type],
   value: type,
 }))
 
-const EngineLabel = ({ type }: { type: ConnectionType }) => (
+const engineLabel = (type: ConnectionType) => (
   <>
     <ConnectionIcon type={type} />
     {connectionLabels[type]}
@@ -28,11 +28,11 @@ export const EngineField = ({ form }: { form: ConnectionForm }) => (
           items={ENGINES}
           variant="flat"
           className="flex-1"
-          renderValue={(type) => <EngineLabel type={type} />}
+          renderValue={engineLabel}
         >
           {ENGINES.map(({ value }) => (
             <SelectItem key={value} value={value}>
-              <EngineLabel type={value} />
+              {engineLabel(value)}
             </SelectItem>
           ))}
         </field.Select>

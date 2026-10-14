@@ -59,7 +59,7 @@ export const buildConnectionMenuItems = ({
   ...(connection.syncType === SyncType.CloudWithoutPassword
     ? ([
         {
-          label: 'Clear password',
+          label: 'Clear saved credentials',
           icon: SquareUnlock01Icon,
           className: 'whitespace-nowrap',
           disabled:

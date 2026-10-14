@@ -79,7 +79,7 @@ Tamery explains common failures in plain words and, when the cause is clear, off
 | Wrong user or password, including Supabase's `postgres.<project-ref>` pooler user | Points you to the field to fix |
 | Timeout on a cloud provider | Allow your IP address in the provider's network settings |
 
-For anything else, **Ask AI** explains the error and suggests steps, sometimes with a fix to apply. See [Security](/connections/security#ai-help-with-a-failed-test) for what it sends.
+For anything else, **Ask AI** explains the error and suggests steps, sometimes with a fix to apply. An AI fix only changes the port, the SSL setting, the engine or the database, or turns on an SSH tunnel; it never changes the host or credentials. See [Security](/connections/security#ai-help-with-a-failed-test) for what it sends.
 
 ## SSH tunnels
 
@@ -123,7 +123,7 @@ Choose **Edit** from a connection's **⋯** menu (or right-click it) on the conn
 
 ## Working offline
 
-Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create, edit and remove connections, save and rename queries, and — in the desktop app — query any database you can still reach.
+Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create, edit and remove connections, save and rename queries, and, in the desktop app, query any database you can still reach.
 
 Changes you make offline are saved on your device right away and sent to your account, in order, the next time Tamery is online. They survive restarting the app. If the server rejects a change — for example, because you removed the connection on another device — Tamery undoes it locally and shows the reason. In the web app, only the first Tamery tab you opened keeps offline changes; make them there.
 

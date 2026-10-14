@@ -44,7 +44,7 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
     }
 
     const parts = throughForwards(
-      mergeParts(tunnel ? { ssh: tunnel } : {}, database?.parts ?? {}),
+      mergeParts({ ssh: tunnel }, database?.parts ?? {}),
       forwards
     )
     const hint = hostHintOf(parts.host ?? '')

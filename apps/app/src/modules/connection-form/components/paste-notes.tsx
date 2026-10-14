@@ -3,8 +3,8 @@ import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { useStore } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
-import type { ConnectionForm } from '../-lib/connection-form'
-import { missingOf } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
+import { missingOf } from '../lib/connection-form'
 import { Footnote } from './footnote'
 
 const FIX_NOTES: Record<GuessFix, string> = {

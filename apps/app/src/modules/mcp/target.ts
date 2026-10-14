@@ -1,8 +1,10 @@
 import type { McpTarget } from '@tamery/shared/mcp'
 
 import { getCollections } from '~/core/collections'
-import { isLocalNetwork } from '~/core/connection/connection-strings'
-import { fetchingConfig } from '~/core/connection/fetching-config'
+import {
+  fetchingConfig,
+  fetchingOptionsOf,
+} from '~/core/connection/fetching-config'
 import { getConnectionStore } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { queryClient } from '~/lib/query-client'
@@ -44,12 +46,8 @@ export const resolveTarget = ({
 
   const connectionString = connectionStringsCollection.get(connectionId)
   const { canSend, reason } = fetchingConfig(connection, {
-    hasLocalConnectionString: !!connectionString,
-    isLocalNetwork: connectionString && isLocalNetwork(connectionString),
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    ...fetchingOptionsOf(connectionString),
     proxy: getConnectionStore(connectionId).get().proxy,
-    secretsMissing: !!connectionString?.missingSecrets?.length,
-    usesSsh: !!connectionString?.usesSsh,
   })
   if (!canSend) {
     throw new Error(reason ?? `Open "${connection.name}" in Tamery first.`)

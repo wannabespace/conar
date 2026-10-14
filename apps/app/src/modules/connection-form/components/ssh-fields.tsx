@@ -9,7 +9,7 @@ import { Switch } from '@tamery/ui/components/switch'
 import { useStore } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 import { Footnote } from './footnote'
 import { SshCredentialFields } from './ssh-credential-fields'
 
@@ -34,12 +34,12 @@ export const SshFields = ({ form }: { form: ConnectionForm }) => {
       <FieldGroup variant="card">
         <form.AppField name="sshEnabled">
           {(field) => (
-            <field.Field orientation="row">
+            <field.Field orientation="row" className="relative">
               <field.Label>SSH tunnel</field.Label>
               <Switch
                 id={field.name}
                 size="sm"
-                className="ml-auto"
+                className="static ml-auto after:inset-0"
                 checked={field.state.value}
                 onCheckedChange={field.handleChange}
               />

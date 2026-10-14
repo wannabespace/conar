@@ -1,6 +1,9 @@
+import type { SecretParam } from '@tamery/connection/secrets'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
+import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
+import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 import { isLocalProxyAvailable } from '~/core/runtime/proxy'
 
@@ -11,9 +14,13 @@ type FetchingType =
   | 'resolving-password'
   | 'waiting-for-password'
 
+export type Credential = 'password' | SecretParam
+
 export interface FetchingConfig {
   type: FetchingType
   canSend: boolean
+  /** What `waiting-for-password` asks for; empty for every other type. */
+  missingCredentials: Credential[]
   reason: string | null
 }
 
@@ -25,10 +32,26 @@ interface FetchingOptions {
   isPasswordPopulated?: boolean
   isLocalNetwork?: boolean
   proxy?: { enabled: boolean; url: string | null }
-  /** An SSH or SSL secret this device has not filled in since `CloudWithoutPassword` stripped it. */
-  secretsMissing: boolean
+  /** The SSH and SSL secrets this device has not filled in since `CloudWithoutPassword` stripped them. */
+  missingSecrets: SecretParam[]
   usesSsh: boolean
 }
+
+/** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
+export const isLocalNetworkConnection = ({ displayUrl }: ConnectionString) =>
+  isLocalNetworkConnectionString(`tcp://${displayUrl}`)
+
+/** What this device's stored string says; `undefined` while the row loads leaves the password unresolved. */
+export const fetchingOptionsOf = (
+  connectionString: ConnectionString | null | undefined
+) => ({
+  hasLocalConnectionString: !!connectionString,
+  isLocalNetwork:
+    !!connectionString && isLocalNetworkConnection(connectionString),
+  isPasswordPopulated: connectionString?.isPasswordPopulated,
+  missingSecrets: connectionString?.missingSecrets ?? [],
+  usesSsh: !!connectionString?.usesSsh,
+})
 
 const REASONS = {
   connectionStringNotStored:
@@ -47,6 +70,7 @@ const REASONS = {
 
 const allowed = (type: FetchingType): FetchingConfig => ({
   canSend: true,
+  missingCredentials: [],
   reason: null,
   type,
 })
@@ -56,6 +80,7 @@ const blocked = (
   reason: string | null = null
 ): FetchingConfig => ({
   canSend: false,
+  missingCredentials: [],
   reason,
   type,
 })
@@ -112,17 +137,18 @@ export const fetchingConfig = (
     return blocked('resolving-password')
   }
 
-  if (needsPassword) {
-    return blocked(
-      'waiting-for-password',
-      isElectron
+  const missingCredentials: Credential[] = [
+    ...(needsPassword ? (['password'] as const) : []),
+    ...options.missingSecrets,
+  ]
+  if (missingCredentials.length > 0) {
+    let reason = REASONS.secretsMissing
+    if (needsPassword) {
+      reason = isElectron
         ? REASONS.passwordMissingInDesktop
         : REASONS.passwordMissingInWeb
-    )
-  }
-
-  if (options.secretsMissing) {
-    return blocked('waiting-for-password', REASONS.secretsMissing)
+    }
+    return { ...blocked('waiting-for-password', reason), missingCredentials }
   }
 
   if (options.usesSsh) {

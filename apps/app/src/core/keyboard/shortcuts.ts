@@ -118,6 +118,12 @@ export const SHORTCUTS = {
     hotkeys: ['Enter', 'ArrowRight'],
     title: 'Open',
   },
+  newConnection: {
+    description: 'Open the new connection page from the connections list.',
+    desktopOnly: true,
+    hotkeys: ['Mod+N'],
+    title: 'New connection',
+  },
   newTab: {
     description: 'Open a new query, a schema page or any table.',
     desktopOnly: true,

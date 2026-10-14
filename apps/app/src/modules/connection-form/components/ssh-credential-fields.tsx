@@ -1,6 +1,6 @@
 import type { SshAuth } from '@tamery/connection/ssh/params'
 
-import type { ConnectionForm } from '../-lib/connection-form'
+import type { ConnectionForm } from '../lib/connection-form'
 
 export const SshCredentialFields = ({
   auth,

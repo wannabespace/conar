@@ -7,8 +7,9 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { FetchingReason } from '~/core/connection/fetching-reason'
+
 import { ConnectionCardError } from './connection-card-error'
-import { ConnectionCardReason } from './connection-card-reason'
 
 export const ConnectionCardStatus = ({
   canSend,
@@ -39,7 +40,7 @@ export const ConnectionCardStatus = ({
           }
         />
         <TooltipContent className="pointer-events-auto block max-w-xs">
-          <ConnectionCardReason reason={reason} />
+          <FetchingReason reason={reason} />
         </TooltipContent>
       </Tooltip>
     )

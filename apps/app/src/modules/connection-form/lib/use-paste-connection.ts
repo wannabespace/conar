@@ -7,13 +7,13 @@ import { toast } from 'sonner'
 
 import { posthog } from '~/lib/posthog'
 
-import type { Miss } from '../-components/paste-hero'
-import { isMac, PASTE_FORMATS } from '../-components/paste-hero'
+import type { PasteFlash } from '../components/paste-hero'
+import { isMac, PASTE_FORMATS } from '../components/paste-hero'
 
 export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'
 
 const MAX_DROP_BYTES = 256 * 1024
-const MISS_SHOWN_MS = 3000
+const FLASH_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
   onPaste,
@@ -23,16 +23,34 @@ export const usePasteConnection = ({
   pitchShown: boolean
 }) => {
   const [dragging, setDragging] = useState(false)
-  const [miss, setMiss] = useState<Miss>({ count: 0, shown: false })
-  const hideMiss = useRef(0)
+  const [flash, setFlash] = useState<PasteFlash>({
+    count: 0,
+    result: 'hit',
+    shown: false,
+  })
+  const hideFlash = useRef(0)
   const connectionLink = useLocation({
     select: (location) => location.state.connectionLink,
   })
 
+  const showFlash = (result: PasteFlash['result']) => {
+    setFlash(({ count }) => ({ count: count + 1, result, shown: true }))
+    window.clearTimeout(hideFlash.current)
+    hideFlash.current = window.setTimeout(
+      () => setFlash((current) => ({ ...current, shown: false })),
+      FLASH_SHOWN_MS
+    )
+  }
+
+  const hit = (guess: ConnectionGuess, via: PasteVia) => {
+    onPaste(guess, via)
+    showFlash('hit')
+  }
+
   const read = (text: string, via: PasteVia) => {
     const guess = guessConnection(text)
     if (guess) {
-      onPaste(guess, via)
+      hit(guess, via)
       return
     }
     posthog.capture('connection_paste_missed', { via })
@@ -40,12 +58,7 @@ export const usePasteConnection = ({
       toast('No connection found', { description: PASTE_FORMATS })
       return
     }
-    setMiss(({ count }) => ({ count: count + 1, shown: true }))
-    window.clearTimeout(hideMiss.current)
-    hideMiss.current = window.setTimeout(
-      () => setMiss((current) => ({ ...current, shown: false })),
-      MISS_SHOWN_MS
-    )
+    showFlash('miss')
   }
   const onRead = useEffectEvent(read)
 
@@ -78,7 +91,7 @@ export const usePasteConnection = ({
       !(target instanceof HTMLElement && target.isContentEditable)
     ) {
       event.preventDefault()
-      onRead(text, 'paste')
+      read(text, 'paste')
       return
     }
     // Inside a field only a whole connection parses, so a bare host or a name still pastes as text.
@@ -89,13 +102,13 @@ export const usePasteConnection = ({
       (guess.parts.host || guess.parts.ssh)
     ) {
       event.preventDefault()
-      onPaste(guess, 'paste')
+      hit(guess, 'paste')
     }
   })
 
   useEffect(() => {
     if (connectionLink) {
-      // oxlint-disable-next-line react/set-state-in-effect -- the link arrives in navigation state, so this effect is where it is read; a miss shows like a paste's.
+      // oxlint-disable-next-line react/set-state-in-effect -- the link arrives in navigation state, so this effect is where it is read; its result shows like a paste's.
       onRead(connectionLink, 'link')
     }
   }, [connectionLink])
@@ -132,5 +145,5 @@ export const usePasteConnection = ({
     return () => controller.abort()
   }, [])
 
-  return { dragging, miss, readClipboard }
+  return { dragging, flash, readClipboard }
 }

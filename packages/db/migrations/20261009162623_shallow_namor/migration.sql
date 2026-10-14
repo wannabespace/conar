@@ -1,1 +1,0 @@
-ALTER TYPE "ai_feature" ADD VALUE 'diagnose_connection' BEFORE 'filters';

@@ -12,23 +12,27 @@ import {
   useAnimate,
   useReducedMotion,
 } from 'motion/react'
-import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
 import { AgentButton } from './agent-button'
-
-const EASE = [0.32, 0.72, 0, 1] as const
+import { Keycap } from './keycap'
 
 const ROLL = {
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: '-100%' },
   initial: { opacity: 0, y: '100%' },
-  transition: { duration: 0.25, ease: EASE },
+  transition: { duration: 0.25, ease: [0.32, 0.72, 0, 1] },
+} as const
+
+export interface PasteFlash {
+  count: number
+  result: 'hit' | 'miss'
+  shown: boolean
 }
 
-export interface Miss {
-  count: number
-  shown: boolean
+const FLASH_COPY = {
+  hit: { subtitle: 'Review and save.', title: 'Got it.' },
+  miss: { subtitle: 'Try another URL.', title: 'That’s not a connection.' },
 }
 
 export const isMac = getOS(navigator.userAgent).type === 'macos'
@@ -36,32 +40,14 @@ export const isMac = getOS(navigator.userAgent).type === 'macos'
 export const PASTE_FORMATS =
   'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
 
-const Keycap = ({
-  children,
-  pressed,
-}: {
-  children: ReactNode
-  pressed: boolean
-}) => (
-  <motion.span
-    data-pressed={pressed || undefined}
-    className="bg-input ring-foreground/4 flex h-9 min-w-9 items-center justify-center rounded-lg px-2.5 text-base font-medium shadow-md ring transition-shadow duration-100 data-pressed:shadow-xs [&_svg]:size-4"
-    animate={pressed ? { scale: 0.95, y: 2 } : { scale: 1, y: 0 }}
-    transition={{ duration: 0.1, ease: EASE }}
-  >
-    {children}
-  </motion.span>
-)
-
 export const PasteHero = ({
-  editing,
-  miss,
+  editingName,
+  flash,
   onAgent,
   onClipboard,
 }: {
-  /** The name of the connection being edited; absent on a new one. */
-  editing?: string
-  miss: Miss
+  editingName?: string
+  flash: PasteFlash
   onAgent: () => void
   onClipboard: () => void
 }) => {
@@ -72,14 +58,14 @@ export const PasteHero = ({
 
   // Shakes in place rather than re-keying the block, which would remount the focused clipboard keys and drop focus out of the page.
   useEffect(() => {
-    if (miss.count && !reduceMotion) {
+    if (flash.count && flash.result === 'miss' && !reduceMotion) {
       void shake(
         shakeScope.current,
         { x: [0, -6, 6, -3, 0] },
         { duration: 0.3 }
       )
     }
-  }, [miss.count, reduceMotion, shake, shakeScope])
+  }, [flash.count, flash.result, reduceMotion, shake, shakeScope])
 
   return (
     <div className="flex flex-col gap-7 lg:sticky lg:top-16 lg:col-span-2 lg:self-start">
@@ -87,23 +73,23 @@ export const PasteHero = ({
         <h1 className="relative h-18 overflow-hidden text-3xl font-semibold tracking-tight">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
-              key={miss.shown ? 'miss' : 'prompt'}
+              key={flash.shown ? flash.result : 'prompt'}
               className="block"
               {...ROLL}
             >
-              {miss.shown && 'That’s not a connection.'}
-              {!miss.shown &&
-                (editing ? (
+              {flash.shown && FLASH_COPY[flash.result].title}
+              {!flash.shown &&
+                (editingName ? (
                   <span data-mask className="block truncate">
-                    {editing}
+                    {editingName}
                   </span>
                 ) : (
                   'Paste anything.'
                 ))}
               <span className="text-muted-foreground block">
-                {miss.shown && 'Try another URL.'}
-                {!miss.shown &&
-                  (editing
+                {flash.shown && FLASH_COPY[flash.result].subtitle}
+                {!flash.shown &&
+                  (editingName
                     ? 'Edit it or paste a new one.'
                     : 'We’ll figure it out.')}
               </span>
@@ -137,7 +123,7 @@ export const PasteHero = ({
       <p className="text-muted-foreground text-sm text-pretty">
         {PASTE_FORMATS}
       </p>
-      {window.electron && !editing && <AgentButton onClick={onAgent} />}
+      {window.electron && !editingName && <AgentButton onClick={onAgent} />}
     </div>
   )
 }

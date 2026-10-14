@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 
 import { useCollections } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
+import { dropConnectionQueries } from '~/core/connection/update'
 import { useIsOnline } from '~/store'
 
 export const useConnectionStringsSync = () => {
@@ -14,41 +15,37 @@ export const useConnectionStringsSync = () => {
       return
     }
 
-    const abortController = new AbortController()
     const { connectionsCollection, connectionStringsCollection } = collections
 
-    const resolve = async ({ value }: { value: Connection }) => {
-      if (abortController.signal.aborted) {
+    const resolve = async (
+      { value }: { value: Connection },
+      { signal }: { signal: AbortSignal }
+    ) => {
+      const connectionString =
+        await connectionStringsCollection.utils.resolve(value)
+
+      if (signal.aborted || !connectionString) {
         return
       }
 
-      const connectionString = await connectionStringsCollection.utils.resolve(
-        value.id
-      )
+      const record = await connectionStringsCollection.utils.prepare({
+        connectionId: value.id,
+        connectionString,
+        updatedAt: value.updatedAt,
+      })
 
-      if (abortController.signal.aborted) {
+      if (signal.aborted) {
         return
       }
 
-      if (connectionString) {
-        const record = await connectionStringsCollection.utils.prepare({
-          connectionId: value.id,
-          connectionString,
-          updatedAt: value.updatedAt,
+      if (connectionStringsCollection.has(value.id)) {
+        connectionStringsCollection.update(value.id, (draft) => {
+          Object.assign(draft, record)
         })
-
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        if (connectionStringsCollection.has(value.id)) {
-          connectionStringsCollection.update(value.id, (draft) => {
-            Object.assign(draft, record)
-          })
-        } else {
-          connectionStringsCollection.insert(record)
-        }
+      } else {
+        connectionStringsCollection.insert(record)
       }
+      dropConnectionQueries(value.id)
     }
 
     // On update too: an edit on another device (host, credentials, sync type) reaches this one without a restart.
@@ -60,7 +57,6 @@ export const useConnectionStringsSync = () => {
     })
 
     return () => {
-      abortController.abort()
       effect.dispose()
     }
   }, [collections, isOnline])

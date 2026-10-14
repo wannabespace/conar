@@ -21,12 +21,12 @@ import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { posthog } from '~/lib/posthog'
 
-import type { ConnectionFormValues } from '../-lib/connection-form'
-import { missingOf, partsOf, useConnectionForm } from '../-lib/connection-form'
-import { draftFetching } from '../-lib/draft-fetching'
-import type { SavedConnection } from '../-lib/use-create-connection'
-import { usePasteConnection } from '../-lib/use-paste-connection'
-import { useSaveConnection } from '../-lib/use-save-connection'
+import type { ConnectionFormValues } from '../lib/connection-form'
+import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
+import { draftFetching } from '../lib/draft-fetching'
+import { usePasteConnection } from '../lib/use-paste-connection'
+import type { SavedConnection } from '../lib/use-save-connection'
+import { useSaveConnection } from '../lib/use-save-connection'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
@@ -52,12 +52,11 @@ const focusField = (id: string) =>
 
 export const ConnectionPage = ({
   defaultValues,
-  editing,
+  editingName,
   persist,
 }: {
   defaultValues?: ConnectionFormValues
-  /** The name of the connection being edited; absent on a new one. */
-  editing?: string
+  editingName?: string
   persist: (connection: SavedConnection) => Promise<unknown>
 }) => {
   const router = useRouter()
@@ -87,7 +86,7 @@ export const ConnectionPage = ({
         pageRef.current?.focus()
       }
     }, 0)
-  const { save, test } = useSaveConnection(persist)
+  const { save, test, testStatusOf } = useSaveConnection(persist)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
@@ -96,9 +95,7 @@ export const ConnectionPage = ({
         fixes,
         origin: pasted ? format : current?.origin,
       }))
-      test.reset()
     },
-    onPartsChange: () => test.reset(),
     onSubmit: () => save(() => form.state.values, filled?.origin),
   })
   // From the second attempt TanStack Form runs `onSubmit` even while one is in flight, so a press during a save is dropped here.
@@ -108,7 +105,7 @@ export const ConnectionPage = ({
     }
   }
 
-  const { dragging, miss, readClipboard } = usePasteConnection({
+  const { dragging, flash, readClipboard } = usePasteConnection({
     onPaste: (guess, via) => {
       paste(guess, via)
       setStage('form')
@@ -126,6 +123,7 @@ export const ConnectionPage = ({
     values,
     isLocalProxyAvailable
   )
+  const testStatus = testStatusOf(connectionString, values.type)
 
   const applyFix = (fix: ConnectionPatch, source: FixSource) => {
     posthog.capture('connection_fix_applied', {
@@ -136,7 +134,6 @@ export const ConnectionPage = ({
       source,
     })
     patch(fix)
-    test.reset()
     if (fix.sshEnabled) {
       focusField('ssh.host')
       return
@@ -213,8 +210,8 @@ export const ConnectionPage = ({
               <PageColumns
                 aside={
                   <PasteHero
-                    editing={editing}
-                    miss={miss}
+                    editingName={editingName}
+                    flash={flash}
                     onClipboard={readClipboard}
                     onAgent={() => {
                       posthog.capture('connection_agent_opened')
@@ -236,10 +233,10 @@ export const ConnectionPage = ({
                     <NameField form={form} />
                     <LabelField form={form} />
                     <ColorField form={form} />
-                    {!editing && <SyncField form={form} />}
+                    {!editingName && <SyncField form={form} />}
                   </FieldGroup>
                 </Reveal>
-                {test.error && (
+                {testStatus === 'error' && test.error && (
                   <TestAlert
                     key={test.error.message}
                     error={test.error}
@@ -270,10 +267,10 @@ export const ConnectionPage = ({
       {stage === 'form' && (
         <FormFooter
           canTest={canSend}
-          editing={!!editing}
+          editing={!!editingName}
           reason={reason}
           submitting={submitting}
-          testStatus={test.status}
+          testStatus={testStatus}
           onSave={submit}
           onTest={() => test.mutate({ connectionString, type: values.type })}
         />

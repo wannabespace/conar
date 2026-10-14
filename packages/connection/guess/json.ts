@@ -15,7 +15,6 @@ const NON_WORD = /[^A-Z\d]+/gu
 /** A JavaScript object literal (`module.exports = { host: 'x' }`) becomes JSON by rewriting, never by evaluating it. */
 const toJson = (text: string) =>
   text
-    .trim()
     .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
     .replace(/;\s*$/u, '')
     .replaceAll(/^\s*\/\/.*$/gmu, '')
@@ -91,31 +90,31 @@ const findParts = (root: unknown): GuessedParts | null => {
     if (!isObject(value) || depth > MAX_DEPTH) {
       return null
     }
-    const entries = Array.isArray(value)
-      ? value.map((item) => [parentKey, item] as const)
-      : Object.entries(value)
-    const variables = Array.isArray(value)
-      ? inherited
-      : variablesOfObject(value, parentKey, inherited)
-    if (!Array.isArray(value)) {
-      const parts = mergeParts(
-        partsOfVariables(variables) ?? {},
-        urlPartsOf(value, parentKey) ?? {}
+    if (Array.isArray(value)) {
+      return (
+        value
+          .values()
+          .map((item) => visit(item, parentKey, inherited, depth + 1))
+          .find(Boolean) ?? null
       )
-      if (parts.host) {
-        return parts
-      }
-      if (!fallback && Object.keys(parts).length > 0) {
-        fallback = parts
-      }
     }
-    for (const [key, child] of entries) {
-      const found = visit(child, key, variables, depth + 1)
-      if (found) {
-        return found
-      }
+    const variables = variablesOfObject(value, parentKey, inherited)
+    const parts = mergeParts(
+      partsOfVariables(variables) ?? {},
+      urlPartsOf(value, parentKey) ?? {}
+    )
+    if (parts.host) {
+      return parts
     }
-    return null
+    if (!fallback && Object.keys(parts).length > 0) {
+      fallback = parts
+    }
+    return (
+      Object.entries(value)
+        .values()
+        .map(([key, child]) => visit(child, key, variables, depth + 1))
+        .find(Boolean) ?? null
+    )
   }
   return visit(root, '', {}, 0) ?? fallback
 }

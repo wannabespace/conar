@@ -2,7 +2,6 @@ import { parseConnectionString } from '@tamery/connection/parse-connection-strin
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { sshTunnelOf } from '@tamery/connection/ssh/params'
-import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -22,16 +21,12 @@ export interface ConnectionString {
   encrypted: string
   updatedAt: Date
   isPasswordPopulated: boolean
-  usesSsh: boolean
-  /** Missing on rows persisted before it existed. */
+  /** Missing on rows persisted before they existed. */
+  usesSsh?: boolean
   missingSecrets?: SecretParam[]
   displayUrl: string
   defaultResourceName: string | null
 }
-
-/** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
-export const isLocalNetwork = ({ displayUrl }: ConnectionString) =>
-  isLocalNetworkConnectionString(`tcp://${displayUrl}`)
 
 const encryptConnectionString = async (connectionString: string) =>
   encryptWithKey(await encryptionKey.get(), connectionString)
@@ -47,7 +42,10 @@ type ConnectionStringsUtils = {
       connectionString: string
     }
   ) => Promise<ConnectionString>
-  resolve: (connectionId: string) => Promise<string | null>
+  resolve: (connection: {
+    id: string
+    isPasswordExists: boolean
+  }) => Promise<string | null>
 }
 
 export type ConnectionStringsCollection = Collection<
@@ -55,23 +53,6 @@ export type ConnectionStringsCollection = Collection<
   string,
   ConnectionStringsUtils & PersistedCollectionUtils
 >
-
-const preserveLocalSecrets = async (
-  collection: ConnectionStringsCollection,
-  connectionId: string,
-  connectionString: string
-) => {
-  const local = collection.get(connectionId)
-
-  if (!local) {
-    return connectionString
-  }
-
-  return connectionSecrets.restore(
-    connectionString,
-    await collection.utils.decrypt(connectionId)
-  )
-}
 
 export const createConnectionStringsCollection =
   (): ConnectionStringsCollection => {
@@ -142,7 +123,7 @@ export const createConnectionStringsCollection =
               usesSsh: sshTunnelOf(searchParams) !== null,
             }
           },
-          async resolve(connectionId: string) {
+          async resolve({ id: connectionId, isPasswordExists }) {
             const local = collection.get(connectionId)
 
             const result = await orpc.connections.resolve.call({
@@ -158,11 +139,14 @@ export const createConnectionStringsCollection =
               return collection.utils.decrypt(connectionId)
             }
 
-            return preserveLocalSecrets(
-              collection,
-              connectionId,
-              result.connectionString
-            )
+            if (!collection.has(connectionId)) {
+              return result.connectionString
+            }
+
+            return connectionSecrets.restore(result.connectionString, {
+              isPasswordExists,
+              local: await collection.utils.decrypt(connectionId),
+            })
           },
         },
       })

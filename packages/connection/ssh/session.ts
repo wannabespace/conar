@@ -2,7 +2,7 @@ import { once } from 'node:events'
 import { readFile } from 'node:fs/promises'
 import { homedir, userInfo } from 'node:os'
 
-import { noop, tryCatchAsync } from '@tamery/shared/utils'
+import { noop, silently, tryCatchAsync } from '@tamery/shared/utils'
 import type { Client, ConnectConfig } from 'ssh2'
 
 import type { HostKeyStatus } from './known-hosts'
@@ -16,7 +16,6 @@ export type ConfirmHostKey = (prompt: {
   keyType: string
 }) => Promise<boolean>
 
-const KEEPALIVE_INTERVAL = 10_000
 const READY_TIMEOUT = 20_000
 const AGENT_UNAVAILABLE =
   'SSH agent not available. Start ssh-agent or pick another method.'
@@ -30,15 +29,6 @@ const HOST_KEY_REFUSALS: Record<Exclude<HostKeyStatus, 'known'>, string> = {
 }
 
 const expandHome = (path: string) => path.replace(/^~(?=$|\/)/u, homedir())
-
-const userSshConfig = async (host: string) => {
-  const { parse } = await import('ssh-config')
-  const { data } = await tryCatchAsync(() =>
-    readFile(expandHome('~/.ssh/config'), 'utf-8')
-  )
-  const computed = parse(data ?? '').compute(host)
-  return (key: string): string | undefined => [computed[key]].flat()[0]
-}
 
 const authConfig = async (
   tunnel: SshTunnel,
@@ -113,7 +103,8 @@ const trustOnce = (
         ...knownHosts.describe(key),
       })
       if (confirmed && isLive()) {
-        await knownHosts.trust(name, key, { hashed })
+        // A read-only known_hosts (a home-manager symlink) only costs the next prompt, like OpenSSH: the user approved this connection.
+        await silently(() => knownHosts.trust(name, key, { hashed }))
       }
       return confirmed
     } finally {
@@ -124,12 +115,17 @@ const trustOnce = (
   return trusted
 }
 
-/** A fresh SSH client for the tunnel, reading ~/.ssh/config, the key file and known_hosts anew. */
 export const connectSsh = async (
   tunnel: SshTunnel,
   confirmHostKey: ConfirmHostKey
 ): Promise<Client> => {
-  const sshConfig = await userSshConfig(tunnel.host)
+  const { parse } = await import('ssh-config')
+  const { data: userConfig } = await tryCatchAsync(() =>
+    readFile(expandHome('~/.ssh/config'), 'utf-8')
+  )
+  const computed = parse(userConfig ?? '').compute(tunnel.host)
+  const sshConfig = (key: string): string | undefined =>
+    [computed[key]].flat()[0]
   const host = sshConfig('HostName') ?? tunnel.host
   const port = Number(tunnel.port || sshConfig('Port') || DEFAULT_SSH_PORT)
   const hostKeyName = knownHosts.nameOf({
@@ -208,7 +204,7 @@ export const connectSsh = async (
     hostVerifier: (key: Buffer, verify: (valid: boolean) => void) => {
       void verifyHostKey(key, verify)
     },
-    keepaliveInterval: KEEPALIVE_INTERVAL,
+    keepaliveInterval: 10_000,
     port,
     // Replaced by `readyTimer`, which stops while the host-key prompt is open.
     readyTimeout: 0,

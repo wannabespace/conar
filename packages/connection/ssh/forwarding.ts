@@ -14,7 +14,6 @@ let forwardingOf = (connectionString: string): Promise<Forwarding | null> => {
 }
 
 /**
- * How the dialect clients reach a database behind the string's SSH tunnel; null for a string without one.
  * Resolves once the SSH session is open, an unknown host key's prompt included, so a driver's connect timeout never runs while the prompt is up.
  * Only the desktop main process plugs tunnels in, so the CLI and proxies, which bundle the dialects, never load ssh2.
  */

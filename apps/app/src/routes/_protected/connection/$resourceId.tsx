@@ -125,6 +125,7 @@ const ResourcePage = () => {
       <PasswordForm
         connection={connection}
         connectionResource={connectionResource}
+        missingCredentials={fetching.missingCredentials}
       />
     )
   }

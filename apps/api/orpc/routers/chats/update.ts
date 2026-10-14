@@ -11,10 +11,12 @@ export const update = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.chat.use'))
   .input(
-    type.and(
-      chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId'),
-      chatsUpdateSchema.pick('id').required()
-    )
+    type
+      .and(
+        chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId'),
+        chatsUpdateSchema.pick('id').required()
+      )
+      .onUndeclaredKey('delete')
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input

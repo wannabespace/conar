@@ -1,17 +1,28 @@
 import type { GuessFormat } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { silently, tryCatchAsync } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
+import type { MutationStatus } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import type { createConnection } from '~/core/connection/create'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { generateRandomName } from '~/utils/faker'
 
 import type { ConnectionFormValues } from './connection-form'
 import { draftFetching } from './draft-fetching'
-import type { SavedConnection } from './use-create-connection'
+
+/** Each route persists what it uses: an edit keeps the sync type and never opens or reports an origin. */
+export type SavedConnection = Omit<
+  Parameters<typeof createConnection>[0],
+  'workspaceId'
+> & {
+  /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
+  open: boolean
+  origin: GuessFormat | undefined
+}
 
 export const useSaveConnection = (
   persist: (connection: SavedConnection) => Promise<unknown>
@@ -22,6 +33,15 @@ export const useSaveConnection = (
     mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
       testConnectionQuery.run(params),
   })
+  /** A result only counts for the string it tested, so any edit leaves the draft untested. */
+  const testStatusOf = (
+    connectionString: string,
+    type: ConnectionType
+  ): MutationStatus =>
+    test.variables?.connectionString === connectionString &&
+    test.variables.type === type
+      ? test.status
+      : 'idle'
 
   const save = async (
     read: () => ConnectionFormValues,
@@ -29,8 +49,9 @@ export const useSaveConnection = (
   ): Promise<void> => {
     const values = read()
     const draft = draftFetching(values, isLocalProxyAvailable)
-    const failed = test.status === 'error'
-    if (draft.canSend && !failed && test.status !== 'success') {
+    const status = testStatusOf(draft.connectionString, values.type)
+    const failed = status === 'error'
+    if (draft.canSend && !failed && status !== 'success') {
       const { error } = await tryCatchAsync(() =>
         test.mutateAsync({
           connectionString: draft.connectionString,
@@ -40,7 +61,7 @@ export const useSaveConnection = (
       if (error) {
         return
       }
-      // An edit during the test resets it but not this promise: test what the form holds now.
+      // An edit during the test leaves what the form holds now untested.
       if (
         draftFetching(read(), isLocalProxyAvailable).connectionString !==
         draft.connectionString
@@ -56,7 +77,7 @@ export const useSaveConnection = (
       })
       return
     }
-    await silently(() =>
+    const { error } = await tryCatchAsync(() =>
       persist({
         color: current.color,
         connectionString,
@@ -71,7 +92,12 @@ export const useSaveConnection = (
         type: current.type,
       })
     )
+    if (error) {
+      toast.error("Couldn't save the connection", {
+        description: error.message,
+      })
+    }
   }
 
-  return { save, test }
+  return { save, test, testStatusOf }
 }

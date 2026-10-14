@@ -5,6 +5,7 @@ import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   DEFAULT_PORTS,
   mergeOptions,
+  portOf,
 } from './connection-parts'
 import {
   hostHintOf,
@@ -38,9 +39,11 @@ export interface DiagnosisContext {
   parts: ConnectionParts
 }
 
+export type SslSetting = 'off' | 'on' | 'unverified'
+
 // Sync with the options `ssl/<engine>.ts` parses.
 const SSL_OPTIONS: Partial<
-  Record<ConnectionType, Partial<Record<'off' | 'on' | 'unverified', string>>>
+  Record<ConnectionType, Partial<Record<SslSetting, string>>>
 > = {
   [ConnectionType.MSSQL]: {
     off: 'encrypt=false',
@@ -55,15 +58,21 @@ const SSL_OPTIONS: Partial<
   },
 }
 
+export const sslOptionsOf = (
+  { options, type }: Pick<ConnectionParts, 'options' | 'type'>,
+  setting: SslSetting
+) => {
+  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
+  return option ? mergeOptions(options, option) : undefined
+}
+
 const sslFix = (
-  { options, type }: ConnectionParts,
-  setting: 'off' | 'on' | 'unverified',
+  parts: ConnectionParts,
+  setting: SslSetting,
   label: string
 ): Diagnosis['fix'] => {
-  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
-  return option
-    ? { label, patch: { options: mergeOptions(options, option) } }
-    : undefined
+  const options = sslOptionsOf(parts, setting)
+  return options ? { label, patch: { options } } : undefined
 }
 
 const tunnelFix = ({ desktop, parts }: DiagnosisContext): Diagnosis['fix'] =>
@@ -105,11 +114,9 @@ const RULES: {
   },
   {
     diagnose: ({ message }) => {
-      const name =
-        /database "(?<name>[^"]+)"|database '(?<quoted>[^']+)'/iu.exec(
-          message
-        )?.groups
-      const database = name?.name ?? name?.quoted
+      const database = /database (?<quote>["'])(?<name>.+?)\k<quote>/iu.exec(
+        message
+      )?.groups?.name
       return {
         fix: { label: 'Use the default database', patch: { database: '' } },
         hint: 'Pick an existing database, or leave Database empty to use the default one.',
@@ -181,8 +188,7 @@ const RULES: {
   },
   {
     diagnose: ({ parts }) => {
-      const port =
-        parts.port || (parts.type ? String(DEFAULT_PORTS[parts.type]) : '')
+      const port = portOf(parts)
       const clickHousePort = CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
       if (parts.type === ConnectionType.ClickHouse && clickHousePort) {
         return {
@@ -268,10 +274,15 @@ const RULES: {
   },
 ]
 
-/** Explains a failed connection test from the driver's message, with a one-click fix where the cause is unambiguous. */
+/** Every error `ssh/session.ts` throws names SSH; no driver's does. */
+const SSH_ERROR = /\bSSH\b/u
+
 export const diagnoseConnectionError = (
   context: DiagnosisContext
 ): Diagnosis | null => {
+  if (SSH_ERROR.test(context.message)) {
+    return { hint: context.message, title: "Couldn't open the SSH tunnel" }
+  }
   const { host, password } = context.parts
   const diagnosis =
     RULES.find(({ match }) => match.test(context.message))?.diagnose(context) ??

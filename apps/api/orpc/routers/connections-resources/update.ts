@@ -13,15 +13,17 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type.and(
-      connectionsResourcesUpdateSchema.omit(
-        'createdAt',
-        'updatedAt',
-        'id',
-        'connectionId'
-      ),
-      connectionsResourcesUpdateSchema.pick('id').required()
-    )
+    type
+      .and(
+        connectionsResourcesUpdateSchema.omit(
+          'createdAt',
+          'updatedAt',
+          'id',
+          'connectionId'
+        ),
+        connectionsResourcesUpdateSchema.pick('id').required()
+      )
+      .onUndeclaredKey('delete')
   )
   .errors({
     NOT_FOUND: { message: 'Connection resource not found' },

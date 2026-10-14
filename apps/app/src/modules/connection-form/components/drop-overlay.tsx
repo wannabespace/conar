@@ -13,7 +13,7 @@ export const DropOverlay = ({ shown }: { shown: boolean }) => (
         transition={{ duration: 0.15 }}
       >
         <motion.div
-          className="border-primary/50 bg-primary/5 text-primary flex size-full max-w-xl flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed"
+          className="border-primary/50 bg-primary/5 text-primary flex h-64 w-full max-w-sm flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed"
           initial={{ scale: 0.97 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0.97 }}
