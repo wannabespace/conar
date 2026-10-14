@@ -1,6 +1,5 @@
-import { SafeURL } from '@tamery/shared/safe-url'
+import { lowercaseKeys, SafeURL } from '@tamery/shared/safe-url'
 
-import { lowercaseKeys } from './parse-connection-string'
 import { SSH_PARAMS } from './ssh/params'
 
 /** The query params `CloudWithoutSecrets` keeps off the server beside the database password; sync with what `ssl/*.ts` and `ssh/` read. */
