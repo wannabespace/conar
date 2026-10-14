@@ -19,12 +19,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { useMutation } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 
-import { checkOrUpgrade } from '~/core/user/permissions'
-
-import { useAiHelp } from '../lib/use-ai-help'
+import { orpc } from '~/lib/orpc'
+import { useIsOnline } from '~/store'
 
 export type FixSource = 'ai' | 'rule'
 
@@ -53,7 +53,12 @@ export const TestAlert = ({
 }) => {
   const context = { desktop: !!window.electron, message: error.message, parts }
   const diagnosis = diagnoseConnectionError(context)
-  const { ask, available, locked } = useAiHelp()
+  const isOnline = useIsOnline()
+  const ask = useMutation(
+    orpc.ai.diagnoseConnection.mutationOptions({
+      meta: { event: 'connection_diagnosed' },
+    })
+  )
   const answer = ask.data
   const aiFix = answer?.fix
   const { fix, focus } = diagnosis ?? {}
@@ -136,17 +141,15 @@ export const TestAlert = ({
                   {aiFix.label}
                 </Button>
               )}
-              {available && !answer && (
+              {isOnline && !answer && (
                 <Tooltip>
                   <TooltipTrigger
                     render={
                       <Button
                         variant="ghost"
                         size="xs"
-                        className={locked ? 'opacity-50' : undefined}
                         disabled={ask.isPending}
                         onClick={() =>
-                          checkOrUpgrade('ai.connection.use') &&
                           ask.mutate(diagnosisRequestOf(context), {
                             onSuccess: onAnswer,
                           })

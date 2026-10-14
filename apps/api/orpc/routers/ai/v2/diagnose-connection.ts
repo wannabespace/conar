@@ -5,11 +5,10 @@ import {
 import { AiFeature } from '@tamery/ai/usage'
 
 import { aiUsage } from '~/lib/ai-usage'
-import { orpc, permissionsMiddleware, permix } from '~/orpc'
+import { authMiddleware, orpc } from '~/orpc'
 
 export const diagnoseConnection = orpc
-  .use(permissionsMiddleware)
-  .use(permix.checkMiddleware('ai.connection.use'))
+  .use(authMiddleware)
   .input(connectionDiagnosisInput)
   .handler(({ context, input, signal }) =>
     diagnose({

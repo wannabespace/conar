@@ -32,7 +32,7 @@ export const usage = {
           feature,
           Number(await redis.get(keyOf(user.id, feature, usageResetsAt())))
         ),
-  limit: (feature: MeteredFeature, message: string) =>
+  limitMiddleware: (feature: MeteredFeature, message: string) =>
     os
       .$context<UsageContext>()
       .errors({ FORBIDDEN: { message } })
