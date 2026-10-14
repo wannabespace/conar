@@ -1,4 +1,4 @@
-import { isLocalNetworkHost } from '@tamery/connection/hosts'
+import { isInternalHost } from '@tamery/connection/hosts'
 import type { SecretParam } from '@tamery/connection/secrets'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -29,7 +29,7 @@ interface FetchingOptions {
   hasLocalConnectionString?: boolean
   isLocalProxyAvailable?: boolean
   isPasswordPopulated?: boolean
-  isLocalNetwork?: boolean
+  isInternal?: boolean
   proxy?: { enabled: boolean; url: string | null }
   missingSecrets: SecretParam[]
   usesSsh: boolean
@@ -38,16 +38,15 @@ interface FetchingOptions {
 const PORT_SUFFIX = /:\d*$/u
 
 /** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
-const isLocalNetworkConnection = ({ displayUrl }: ConnectionString) =>
-  isLocalNetworkHost(displayUrl.replace(PORT_SUFFIX, ''))
+const isInternalConnection = ({ displayUrl }: ConnectionString) =>
+  isInternalHost(displayUrl.replace(PORT_SUFFIX, ''))
 
 /** `undefined` while the row loads leaves the password unresolved. */
 export const fetchingOptionsOf = (
   connectionString: ConnectionString | null | undefined
 ) => ({
   hasLocalConnectionString: !!connectionString,
-  isLocalNetwork:
-    !!connectionString && isLocalNetworkConnection(connectionString),
+  isInternal: !!connectionString && isInternalConnection(connectionString),
   isPasswordPopulated: connectionString?.isPasswordPopulated,
   missingSecrets: connectionString?.missingSecrets ?? [],
   usesSsh: !!connectionString?.usesSsh,
@@ -56,7 +55,7 @@ export const fetchingOptionsOf = (
 const REASONS = {
   connectionStringNotStored:
     'This connection string was not synced to the cloud. Open this connection on the device where it was created.',
-  localNetworkFromWeb:
+  internalFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   passwordMissingInDesktop:
     'Filled password is required to query this connection.',
@@ -99,7 +98,7 @@ const resolveFlags = (
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,
-    isLocalNetwork: options.isLocalNetwork ?? false,
+    isInternal: options.isInternal ?? false,
     needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
     passwordUnresolved:
       connection.isPasswordExists && isPasswordPopulated === undefined,
@@ -118,7 +117,7 @@ export const fetchingConfig = (
     connectionStringMissing,
     hasPassword,
     isElectron,
-    isLocalNetwork,
+    isInternal,
     needsPassword,
     passwordUnresolved,
     proxyPreferred,
@@ -155,7 +154,7 @@ export const fetchingConfig = (
     return allowed('local')
   }
 
-  if ((isLocalNetwork || hasPassword) && proxyReachable && proxyPreferred) {
+  if ((isInternal || hasPassword) && proxyReachable && proxyPreferred) {
     return allowed('proxy')
   }
 
@@ -163,8 +162,8 @@ export const fetchingConfig = (
     return allowed('local')
   }
 
-  if (isLocalNetwork) {
-    return blocked('proxy', REASONS.localNetworkFromWeb)
+  if (isInternal) {
+    return blocked('proxy', REASONS.internalFromWeb)
   }
 
   if (connection.syncType !== SyncType.Cloud) {

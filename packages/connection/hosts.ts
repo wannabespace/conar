@@ -108,7 +108,7 @@ const isServiceName = (host: string) =>
   !IPV4.test(host) &&
   !host.includes(':')
 
-export const isLocalNetworkHost = (host: string) =>
+export const isInternalHost = (host: string) =>
   isLocalHost(host) || isPrivateHost(host) || isServiceName(host)
 
 export type HostKind = 'ipv6-only' | 'local' | 'private' | 'public' | 'service'

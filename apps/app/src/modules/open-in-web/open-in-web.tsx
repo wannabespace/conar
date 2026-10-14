@@ -41,9 +41,9 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
         .findOne(),
   })
 
-  const { isLocalNetwork, usesSsh } = fetchingOptionsOf(connectionString)
+  const { isInternal, usesSsh } = fetchingOptionsOf(connectionString)
 
-  if (connection?.syncType !== SyncType.Cloud || isLocalNetwork || usesSsh) {
+  if (connection?.syncType !== SyncType.Cloud || isInternal || usesSsh) {
     return null
   }
 

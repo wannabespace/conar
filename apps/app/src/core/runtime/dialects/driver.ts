@@ -1,7 +1,7 @@
 import { rowObjects } from '@tamery/connection/queries'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import {
-  isLocalNetworkConnectionString,
+  isInternalConnectionString,
   isSshConnectionString,
 } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
@@ -91,9 +91,7 @@ export const createDialectProvider = (
       connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
       {
         hasLocalConnectionString,
-        isLocalNetwork: isLocalNetworkConnectionString(
-          options.connectionString
-        ),
+        isInternal: isInternalConnectionString(options.connectionString),
         isPasswordPopulated,
         missingSecrets,
         proxy,
