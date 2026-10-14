@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import { app, BrowserWindow } from 'electron'
+import Store from 'electron-store'
 
 import todesktop from '../../../todesktop.json'
 
@@ -18,6 +19,11 @@ const handlerPath =
   process.defaultApp && argvPath ? process.execPath : undefined
 const handlerArgs =
   process.defaultApp && argvPath ? [path.resolve(argvPath)] : undefined
+
+const store = new Store<{ declined: boolean }>({
+  defaults: { declined: false },
+  name: 'connection-links',
+})
 
 let createWindow: (() => BrowserWindow) | null = null
 let pendingConnectionLink =
@@ -60,6 +66,7 @@ export const connectionLinks = {
       app.isDefaultProtocolClient(scheme, handlerPath, handlerArgs)
     ),
   setDefault: (enabled: boolean) => {
+    store.set('declined', !enabled)
     for (const scheme of CONNECTION_LINK_SCHEMES) {
       if (enabled) {
         app.setAsDefaultProtocolClient(scheme, handlerPath, handlerArgs)
@@ -76,10 +83,22 @@ export const connectionLinks = {
   },
 }
 
+const claimUnownedSchemes = () => {
+  if (store.get('declined')) {
+    return
+  }
+  for (const scheme of CONNECTION_LINK_SCHEMES) {
+    if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
+      app.setAsDefaultProtocolClient(scheme, handlerPath, handlerArgs)
+    }
+  }
+}
+
 export const setupProtocolHandler = (openWindow: () => BrowserWindow) => {
   createWindow = openWindow
 
   app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, handlerPath, handlerArgs)
+  claimUnownedSchemes()
 
   const gotTheLock = app.requestSingleInstanceLock()
 
