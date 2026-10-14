@@ -158,7 +158,7 @@ describe('diagnoseConnectionError', () => {
 })
 
 const request = (message: string, overrides: Partial<ConnectionParts> = {}) =>
-  diagnosisRequestOf({ desktop: false, message, parts: parts(overrides) })
+  diagnosisRequestOf({ message, parts: parts(overrides) })
 
 describe('diagnosisRequestOf', () => {
   it('carries no address, user or secret option value', () => {
@@ -172,7 +172,6 @@ describe('diagnosisRequestOf', () => {
       options: 'sslmode=require&sslpassword=%3Credacted%3E',
       passwordSet: true,
       port: '5432',
-      runtime: 'web',
       sshEnabled: false,
       type: ConnectionType.Postgres,
       userSet: true,

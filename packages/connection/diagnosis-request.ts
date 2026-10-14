@@ -14,10 +14,9 @@ const HOST_KIND_LABELS: Record<HostKind, string> = {
 
 /** What an AI request about a failed connection may carry: no address, user, database or secret. */
 export const diagnosisRequestOf = ({
-  desktop,
   message,
   parts,
-}: DiagnosisContext) => {
+}: Pick<DiagnosisContext, 'message' | 'parts'>) => {
   const port = portOf(parts)
   return {
     error: redactConnectionError(message, parts),
@@ -30,7 +29,6 @@ export const diagnosisRequestOf = ({
     options: redactOptions(parts.options),
     passwordSet: !!parts.password,
     port: /^\d{1,5}$/u.test(port) ? port : '',
-    runtime: desktop ? ('desktop' as const) : ('web' as const),
     sshEnabled: !!parts.ssh,
     type: parts.type,
     userSet: !!parts.user,

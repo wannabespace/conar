@@ -18,7 +18,6 @@ export const diagnoseConnection = orpc
       options: truncated(2000),
       passwordSet: 'boolean',
       port: 'string <= 10',
-      runtime: "'desktop' | 'web'",
       sshEnabled: 'boolean',
       type: type.valueOf(ConnectionType).or('null'),
       userSet: 'boolean',
@@ -27,7 +26,7 @@ export const diagnoseConnection = orpc
   .handler(({ context, input: { error, ...settings }, signal }) =>
     diagnose({
       error,
-      settings,
+      settings: { ...settings, runtime: context.isDesktop ? 'desktop' : 'web' },
       signal,
       telemetry: aiUsage.telemetry({
         feature: AiFeature.DiagnoseConnection,
