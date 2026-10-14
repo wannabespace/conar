@@ -68,6 +68,17 @@ export const guessUrl = (text: string): DatabaseGuess | null => {
   return url ? guessOfUrl(url) : null
 }
 
+const GO_DSN =
+  /(?<user>[^\s:@/"'=]*)(?::(?<password>[^\s@"']*))?@tcp\((?<host>[^\s():]+)(?::(?<port>\d+))?\)\/(?<database>[^\s?"']*)/u
+
+/** go-sql-driver's DSN, MySQL's usual form in Go. */
+export const guessGoDsn = (text: string): DatabaseGuess | null => {
+  const groups = GO_DSN.exec(text)?.groups
+  return groups
+    ? { format: 'url', parts: { ...groups, type: ConnectionType.MySQL } }
+    : null
+}
+
 const CLICKHOUSE_NAME = /clickhouse/iu
 const MULTI_SEGMENT_PATH = /^\/[^/]+\/./u
 

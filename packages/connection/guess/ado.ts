@@ -16,6 +16,11 @@ const MSSQL_KEYS = [
   'integratedsecurity',
   'trustservercertificate',
 ]
+const TYPE_OF_ODBC_DRIVER: [RegExp, ConnectionType][] = [
+  [/sql server/iu, ConnectionType.MSSQL],
+  [/postgres/iu, ConnectionType.Postgres],
+  [/mysql|mariadb/iu, ConnectionType.MySQL],
+]
 const ENCRYPT_OFF = new Set(['false', 'no', 'optional'])
 const TRUST_ON = new Set(['true', 'yes'])
 
@@ -36,9 +41,14 @@ export const adoPairs = (text: string): Map<string, string> =>
     )
   )
 
+const LOCAL_SERVERS = new Set(['.', '(local)'])
+
 export const mssqlAddress = (server: string) => {
   const { host = '', port = '' } = SERVER.exec(server)?.groups ?? {}
-  return { host, port }
+  return {
+    host: LOCAL_SERVERS.has(host.toLowerCase()) ? 'localhost' : host,
+    port,
+  }
 }
 
 export const adoParts = (pairs: Map<string, string>) => {
@@ -83,11 +93,18 @@ export const guessAdo = (text: string): DatabaseGuess | null => {
   if (!parts.host) {
     return null
   }
+  const driverType = TYPE_OF_ODBC_DRIVER.find(([driver]) =>
+    driver.test(pairs.get('driver') ?? '')
+  )?.[1]
+  if (driverType) {
+    return { format: 'ado', parts: { ...parts, type: driverType } }
+  }
   const has = (keys: string[]) => keys.some((key) => pairs.has(key))
   if (has(MYSQL_KEYS)) {
     return { format: 'ado', parts: { ...parts, type: ConnectionType.MySQL } }
   }
-  if (has(MSSQL_KEYS)) {
+  // SQL Server has no `Host` key, and Npgsql shares `Trust Server Certificate`.
+  if (has(MSSQL_KEYS) && !pairs.has('host')) {
     return { format: 'ado', parts: { ...parts, type: ConnectionType.MSSQL } }
   }
   return { format: 'ado', parts }

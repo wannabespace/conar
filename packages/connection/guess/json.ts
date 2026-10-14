@@ -113,7 +113,8 @@ export const guessJson = (text: string): DatabaseGuess | null => {
       trimmed
         .replace(/^(?:module\.exports\s*=|export\s+default)\s*/u, '')
         .replace(/;\s*$/u, '')
-        .replaceAll(/:\s*process\.env\.\w+/gu, ': null')
+        .replaceAll(/process\.env\.\w+\s*(?:\|\||\?\?)\s*/gu, '')
+        .replaceAll(/process\.env\.\w+/gu, 'null')
     )
   ).data
   const parts = findParts(object)

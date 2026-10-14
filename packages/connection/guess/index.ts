@@ -7,13 +7,13 @@ import { guessAdo } from './ado'
 import { guessCli } from './cli'
 import { guessEnv } from './env'
 import { fixParts } from './fixes'
-import { guessHost } from './host'
+import { guessHost, guessPgpass } from './host'
 import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
 import { guessSsh, throughForwards } from './ssh'
-import type { ConnectionGuess } from './types'
-import { guessUrl, guessWebUrl } from './url'
+import type { ConnectionGuess, DatabaseGuess } from './types'
+import { guessGoDsn, guessUrl, guessWebUrl } from './url'
 
 export type { GuessFix } from './fixes'
 export type { ConnectionGuess, GuessFormat } from './types'
@@ -22,13 +22,27 @@ const DETECTORS = [
   guessCli,
   guessJson,
   guessUrl,
+  guessGoDsn,
   guessAdo,
   guessKeyValue,
   guessEnv,
   guessWebUrl,
+  guessPgpass,
   guessHost,
 ]
 const LINE_CONTINUATION = /\\\r?\n/gu
+
+/** A URL often leaves the credentials to lines beside it (Spring's `username`, a `.env`'s `DB_PASSWORD`). */
+const credentialsBeside = (
+  database: DatabaseGuess | null | undefined,
+  text: string
+) => {
+  if (database?.format !== 'url' && database?.format !== 'jdbc') {
+    return {}
+  }
+  const { password, user } = guessEnv(text)?.parts ?? {}
+  return { password, user }
+}
 
 /** Never throws: it reads anything the user pastes or drops. */
 export const guessConnection = (text: string): ConnectionGuess | null =>
@@ -44,7 +58,11 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
     }
 
     const parts = throughForwards(
-      mergeParts({ ssh: tunnel }, database?.parts ?? {}),
+      mergeParts(
+        { ssh: tunnel },
+        database?.parts ?? {},
+        credentialsBeside(database, rest)
+      ),
       forwards
     )
     const hint = hostHintOf(parts.host ?? '')

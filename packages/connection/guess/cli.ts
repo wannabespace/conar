@@ -97,7 +97,12 @@ const CLIENTS: Record<string, Client> = {
   clickhouse: CLICKHOUSE,
   'clickhouse-client': CLICKHOUSE,
   mariadb: MYSQL,
+  'mariadb-dump': MYSQL,
+  mycli: MYSQL,
   mysql: MYSQL,
+  mysqldump: MYSQL,
+  pg_dump: PSQL,
+  pgcli: PSQL,
   psql: PSQL,
   sqlcmd: SQLCMD,
 }

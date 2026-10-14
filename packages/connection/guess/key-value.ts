@@ -16,7 +16,8 @@ const FIELD_OF_KEY: Record<string, ServerField> = {
 export const guessKeyValue = (text: string): DatabaseGuess | null => {
   const parts: GuessedParts = { type: ConnectionType.Postgres }
   const options = new URLSearchParams()
-  for (const token of shellCommands(text)[0] ?? []) {
+  for (const token of shellCommands(text.replaceAll(/\s*=\s*/gu, '='))[0] ??
+    []) {
     const { key, value = '' } = PAIR.exec(token)?.groups ?? {}
     if (!key) {
       return null

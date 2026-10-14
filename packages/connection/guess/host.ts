@@ -1,4 +1,6 @@
-import { isLocalHost } from '../hosts'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+
+import { IPV4, isLocalHost } from '../hosts'
 import type { DatabaseGuess } from './types'
 
 const BARE_HOST =
@@ -18,9 +20,25 @@ export const guessHost = (text: string): DatabaseGuess | null => {
   const looksLikeHost =
     port ||
     user ||
-    (host.includes('.') && !FILE_NAME.test(host)) ||
+    (host.includes('.') &&
+      !FILE_NAME.test(host) &&
+      (IPV4.test(host) || /[a-z]/iu.test(host.split('.').at(-1) ?? ''))) ||
     isLocalHost(host)
   return looksLikeHost
     ? { format: 'host', parts: { database, host, password, port, user } }
     : null
+}
+
+const PGPASS =
+  /^(?<host>[^:\s]+):(?<port>\d+|\*):(?<database>[^:\s]+):(?<user>[^:\s]+):(?<password>\S+)$/u
+
+export const guessPgpass = (text: string): DatabaseGuess | null => {
+  const groups = PGPASS.exec(text.trim())?.groups
+  if (!groups) {
+    return null
+  }
+  const parts = Object.fromEntries(
+    Object.entries(groups).filter(([, value]) => value !== '*')
+  )
+  return { format: 'host', parts: { ...parts, type: ConnectionType.Postgres } }
 }

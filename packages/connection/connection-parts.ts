@@ -50,7 +50,9 @@ const portOf = ({
 }
 
 const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
+  ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
+  cockroachdb: ConnectionType.Postgres,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
   mariadb: ConnectionType.MySQL,

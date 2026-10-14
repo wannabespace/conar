@@ -1,7 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { typeOfScheme } from '../connection-parts'
+import { DEFAULT_PORTS, typeOfScheme } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -16,7 +16,7 @@ interface VariableGroup {
 
 const SUFFIXES_OF_FIELD: Record<ServerField, string[]> = {
   database: ['DATABASE', 'DBNAME', 'DB', 'NAME'],
-  host: ['HOST', 'HOSTNAME', 'SERVER'],
+  host: ['HOST', 'HOSTNAME', 'SERVER', 'ENDPOINT', 'ADDRESS'],
   password: ['PASSWORD', 'PASS', 'PWD'],
   port: ['PORT'],
   user: ['USER', 'USERNAME'],
@@ -37,7 +37,10 @@ const TYPE_OF_DRIVER: Record<string, ConnectionType> = {
   tedious: ConnectionType.MSSQL,
   trilogy: ConnectionType.MySQL,
 }
-const UNPACKED_TEMPLATE = /\$\{|<%/u
+const HOST_AND_PORT = /^(?<host>[^:\s]+):(?<port>\d+)$/u
+const PUBLISHED_PORT =
+  /^\s*-\s*["']?(?:[\d.]+:)?(?<published>\d+):(?<target>\d+)(?:\/tcp)?["']?\s*$/gmu
+const UNPACKED_TEMPLATE = /\$\{|<%|process\.env/u
 const BARE_NAME = 'NAME'
 
 const GROUPS: VariableGroup[] = [
@@ -65,13 +68,15 @@ const GROUPS: VariableGroup[] = [
     type: ConnectionType.MSSQL,
     user: 'sa',
   },
+  { prefix: 'SPRING.DATASOURCE.' },
+  { prefix: 'QUARKUS.DATASOURCE.' },
   { prefix: 'DB_' },
   { prefix: 'DATABASE_' },
   { prefix: '' },
 ]
 
 const LINE =
-  /^\s*(?:-\s+)?(?:export\s+)?(?<key>[\w.-]+)\s*(?:=|:(?=\s|$))\s*(?<value>.*)$/u
+  /^\s*(?:-\s+)?(?:export\s+)?["']?(?<key>[\w.-]+)["']?\s*(?:=|:(?=\s|$))\s*(?<value>.*)$/u
 const QUOTED = /^(?<quote>["'`])(?<inner>.*)\k<quote>/u
 const UNQUOTED_TAIL = /\s+#.*$|,$/u
 
@@ -86,21 +91,27 @@ export const partsOfVariables = (
   let parts: GuessedParts = {}
 
   for (const group of GROUPS) {
+    const type =
+      group.type ??
+      TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix] ?? '')
+        .map((name) => name.split('.').at(-1) ?? '')
+        .map((name) => TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name))
+        .find(Boolean)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
       if (!group.fields || group.fields.includes(field)) {
         found[field] = valueOf(
           suffixes
-            .filter((suffix) => group.prefix || suffix !== BARE_NAME)
+            .filter((suffix) => group.prefix || type || suffix !== BARE_NAME)
             .map((suffix) => group.prefix + suffix)
         )
       }
     }
-    const type =
-      group.type ??
-      TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix] ?? '')
-        .map((name) => TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name))
-        .find(Boolean)
+    const address = HOST_AND_PORT.exec(found.host ?? '')?.groups
+    if (address) {
+      found.host = address.host
+      found.port ||= address.port
+    }
     if (
       !Object.values(found).some(Boolean) ||
       (!group.prefix && !type && !found.database && !found.password)
@@ -130,7 +141,24 @@ export const variablesOfLines = (lines: string[]) => {
   return variables
 }
 
+/** A Compose service reached from the host machine: the port it publishes for the engine's own. */
+const publishedPortOf = (text: string, parts: GuessedParts) => {
+  const target = parts.type && String(DEFAULT_PORTS[parts.type])
+  return parts.port || !target
+    ? undefined
+    : text
+        .matchAll(PUBLISHED_PORT)
+        .find((mapping) => mapping.groups?.target === target)?.groups?.published
+}
+
 export const guessEnv = (text: string): DatabaseGuess | null => {
   const parts = partsOfVariables(variablesOfLines(text.split('\n')))
-  return parts && { format: 'env', parts }
+  if (!parts) {
+    return null
+  }
+  const published = publishedPortOf(text, parts)
+  return {
+    format: 'env',
+    parts: published ? { host: 'localhost', ...parts, port: published } : parts,
+  }
 }
