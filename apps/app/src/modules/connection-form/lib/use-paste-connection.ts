@@ -123,8 +123,7 @@ export const usePasteConnection = ({
   useEffect(() => {
     const onDragOver = (event: DragEvent) => {
       if (event.dataTransfer?.types.includes('Files')) {
-        // A field that takes the file (the private key) prevents the event first, so the overlay steps aside for it.
-        setDragging(!event.defaultPrevented)
+        setDragging(true)
         event.preventDefault()
       }
     }
@@ -136,7 +135,7 @@ export const usePasteConnection = ({
     const onDrop = async (event: DragEvent) => {
       const file = event.dataTransfer?.files[0]
       setDragging(false)
-      if (!file || event.defaultPrevented) {
+      if (!file) {
         return
       }
       event.preventDefault()

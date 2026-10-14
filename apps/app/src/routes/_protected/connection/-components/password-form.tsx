@@ -18,6 +18,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
+import { LoadFileButton } from '~/components/load-file-button'
 import { useCollections } from '~/core/collections'
 import type { Credential } from '~/core/connection/fetching-config'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
@@ -140,8 +141,12 @@ export const PasswordForm = ({
                             autoComplete="off"
                             autoFocus={index === 0}
                             placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-                            fileLabel="Load from file"
-                          />
+                          >
+                            <LoadFileButton
+                              disabled={pending}
+                              onLoad={field.handleChange}
+                            />
+                          </field.Textarea>
                         ) : (
                           <field.PasswordInput
                             data-mask

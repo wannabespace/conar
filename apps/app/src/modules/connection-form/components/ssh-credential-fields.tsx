@@ -8,6 +8,8 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { LoadFileButton } from '~/components/load-file-button'
+
 import type { ConnectionForm } from '../lib/connection-form'
 
 export const SshCredentialFields = ({
@@ -88,8 +90,9 @@ export const SshCredentialFields = ({
                 autoComplete="off"
                 placeholder="Paste the key, or load it from a file"
                 className="max-h-24"
-                fileLabel="Load from file"
-              />
+              >
+                <LoadFileButton onLoad={field.handleChange} />
+              </field.Textarea>
             </field.Field>
           )}
         </form.AppField>
