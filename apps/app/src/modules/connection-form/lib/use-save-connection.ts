@@ -56,11 +56,14 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
 
   const draftOf = (values: ConnectionFormValues) => {
     // Host holds whatever is typed until it blurs, so the string may not build yet.
-    const built = tryCatch(() => toConnectionString(partsOf(values))).data ?? ''
-    const saved = mode.kind === 'edit' && built ? mode : null
-    const connectionString = saved
-      ? connectionSecrets.keepMissing(built, saved.missingSecrets)
-      : built
+    const connectionString =
+      tryCatch(() =>
+        toConnectionString(
+          partsOf(values),
+          mode.kind === 'edit' ? mode.missingSecrets : []
+        )
+      ).data ?? ''
+    const saved = mode.kind === 'edit' && connectionString ? mode : null
     const hasPassword = !!connectionString && !!values.password
     const { canSend, reason } = fetchingConfig(
       {

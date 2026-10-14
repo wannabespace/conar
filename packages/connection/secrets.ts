@@ -1,7 +1,7 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 
 import { lowercaseKeys } from './parse-connection-string'
-import { AUTH_PARAMS, SSH_PARAMS, sshTunnelOf } from './ssh/params'
+import { SSH_PARAMS } from './ssh/params'
 
 /** The query params `CloudWithoutSecrets` keeps off the server beside the database password; sync with what `ssl/*.ts` and `ssh/` read. */
 const SECRET_PARAMS = [
@@ -22,20 +22,6 @@ const urlOf = (connectionString: string) => {
 
 /** `strip` empties a secret rather than dropping it, so another device knows which ones to ask for. */
 export const connectionSecrets = {
-  /** Puts back the markers an edit form drops (it never writes an empty SSH secret), so the device that lacked a secret still asks for it and the others keep theirs; only for secrets the tunnel still signs in with. */
-  keepMissing: (connectionString: string, missing: SecretParam[]) => {
-    const url = urlOf(connectionString)
-    const tunnel = sshTunnelOf(url.searchParams)
-    const used = new Set<string>(
-      tunnel ? AUTH_PARAMS[tunnel.auth].map((key) => SSH_PARAMS[key]) : []
-    )
-    for (const param of missing) {
-      if (used.has(param) && !url.searchParams.get(param)) {
-        url.searchParams.set(param, '')
-      }
-    }
-    return url.toString()
-  },
   missing: (searchParams: URLSearchParams): SecretParam[] =>
     SECRET_PARAMS.filter((param) => searchParams.get(param) === ''),
   /** `isPasswordExists` is the synced connection's flag: an empty synced password is only a stripped one while it is set, otherwise another device removed it. */

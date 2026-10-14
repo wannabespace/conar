@@ -1,4 +1,3 @@
-import { connectionSecrets } from '@tamery/connection/secrets'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { tryCatchAsync } from '@tamery/shared/utils'
@@ -33,12 +32,7 @@ const saveConnection = async (
   const updatedAt = new Date()
   const { previous, record } = await connectionStringsCollection.utils.save({
     connectionId,
-    connectionString: stored
-      ? connectionSecrets.keepMissing(
-          connectionString.trim(),
-          stored.missingSecrets
-        )
-      : connectionString.trim(),
+    connectionString: connectionString.trim(),
     updatedAt,
   })
   // An empty password on a device that never had it means "not known here", not "none": clearing the flag would stop every device asking for it.

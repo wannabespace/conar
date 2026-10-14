@@ -5,6 +5,8 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ConnectionParts } from './connection-parts'
 import { toConnectionParts, toConnectionString } from './connection-parts'
 import { parseConnectionString } from './parse-connection-string'
+import { connectionSecrets } from './secrets'
+import { EMPTY_SSH_TUNNEL } from './ssh/params'
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: 'app',
@@ -80,4 +82,20 @@ describe('toConnectionString', () => {
       expect(toConnectionString(clickhouse)).toBe(connectionString)
     }
   )
+  it('keeps asking for an SSH secret an edit left empty, only while the tunnel uses it', () => {
+    const tunnel = {
+      ...EMPTY_SSH_TUNNEL,
+      auth: 'password' as const,
+      host: 'bastion',
+    }
+    const missingAfterEdit = (ssh: ConnectionParts['ssh']) =>
+      connectionSecrets.missing(
+        new URL(toConnectionString(parts({ ssh }), ['ssh_password']))
+          .searchParams
+      )
+
+    expect(missingAfterEdit(tunnel)).toEqual(['ssh_password'])
+    expect(missingAfterEdit({ ...tunnel, auth: 'agent' })).toEqual([])
+    expect(missingAfterEdit(null)).toEqual([])
+  })
 })

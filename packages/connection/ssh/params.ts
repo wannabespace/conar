@@ -79,9 +79,11 @@ export const AUTH_PARAMS: Record<SshAuth, (keyof SshTunnel)[]> = {
   password: ['password'],
 }
 
+/** `missing` lists the secrets this device lacks: an empty field writes their empty marker back, so the device keeps asking and the others keep theirs (`connectionSecrets`). */
 export const setSshParams = (
   searchParams: URLSearchParams,
-  tunnel: SshTunnel
+  tunnel: SshTunnel,
+  missing: readonly string[] = []
 ) => {
   for (const key of [
     'host',
@@ -90,8 +92,11 @@ export const setSshParams = (
     'user',
     ...AUTH_PARAMS[tunnel.auth],
   ] as const) {
+    const param = SSH_PARAMS[key]
     if (tunnel[key]) {
-      searchParams.set(SSH_PARAMS[key], tunnel[key])
+      searchParams.set(param, tunnel[key])
+    } else if (missing.includes(param)) {
+      searchParams.set(param, '')
     }
   }
 }

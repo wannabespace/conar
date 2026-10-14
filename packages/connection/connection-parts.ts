@@ -88,7 +88,10 @@ export const mergeOptions = (options: string, changes: string) => {
   return merged.toString()
 }
 
-export const toConnectionString = (parts: ConnectionParts): string => {
+export const toConnectionString = (
+  parts: ConnectionParts,
+  missingSecrets: readonly string[] = []
+): string => {
   if (!parts.type || !parts.host) {
     return ''
   }
@@ -112,7 +115,7 @@ export const toConnectionString = (parts: ConnectionParts): string => {
   url.password = encodeURIComponent(parts.password)
   url.search = parts.options
   if (parts.ssh?.host) {
-    setSshParams(url.searchParams, parts.ssh)
+    setSshParams(url.searchParams, parts.ssh, missingSecrets)
   }
   return url.toString()
 }
