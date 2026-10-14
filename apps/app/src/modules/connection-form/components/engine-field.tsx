@@ -34,7 +34,6 @@ export const EngineField = ({
           items={ENGINES}
           disabled={locked(field.name)}
           variant="flat"
-          className="flex-1"
           renderValue={engineLabel}
         >
           {ENGINES.map(({ value }) => (

@@ -1,11 +1,5 @@
 import { FolderOpenIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
@@ -22,22 +16,14 @@ export const LoadFileButton = ({
 
   return (
     <>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost-row"
-              size="icon-sm"
-              aria-label="Load from file"
-              disabled={disabled}
-              onClick={() => fileRef.current?.click()}
-            />
-          }
-        >
-          <HugeiconsIcon icon={FolderOpenIcon} strokeWidth={2} />
-        </TooltipTrigger>
-        <TooltipContent>Load from file</TooltipContent>
-      </Tooltip>
+      <IconButton
+        variant="ghost-row"
+        size="icon-sm"
+        icon={FolderOpenIcon}
+        label="Load from file"
+        disabled={disabled}
+        onClick={() => fileRef.current?.click()}
+      />
       <input
         ref={fileRef}
         type="file"

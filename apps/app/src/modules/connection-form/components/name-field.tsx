@@ -1,11 +1,5 @@
 import { DiceFaces03Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
@@ -23,25 +17,17 @@ export const NameField = ({ form }: { form: ConnectionForm }) => (
           autoComplete="off"
           placeholder="Connection name"
         >
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost-row"
-                  size="icon-sm"
-                  aria-label="Random name"
-                  onClick={() => {
-                    posthog.capture('connection_name_generated')
-                    field.handleChange(generateRandomName())
-                  }}
-                />
-              }
-            >
-              <HugeiconsIcon icon={DiceFaces03Icon} strokeWidth={2} />
-            </TooltipTrigger>
-            <TooltipContent>Random name</TooltipContent>
-          </Tooltip>
+          <IconButton
+            type="button"
+            variant="ghost-row"
+            size="icon-sm"
+            icon={DiceFaces03Icon}
+            label="Random name"
+            onClick={() => {
+              posthog.capture('connection_name_generated')
+              field.handleChange(generateRandomName())
+            }}
+          />
         </field.Input>
       </field.Field>
     )}

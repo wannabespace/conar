@@ -31,7 +31,6 @@ export const SyncField = ({ form }: { form: ConnectionForm }) => (
         <field.Select
           items={SYNC_TYPES}
           variant="flat"
-          className="flex-1"
           renderValue={(syncType) => (
             <>
               {SYNC_OPTIONS[syncType].label}

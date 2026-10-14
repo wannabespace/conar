@@ -1,3 +1,4 @@
+import { connectionSecrets } from '@tamery/connection/secrets'
 import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -20,6 +21,13 @@ const proxySecretMiddleware = orpc
     return next()
   })
 
+const CONNECTION_COLUMNS = {
+  connectionString: true,
+  isPasswordExists: true,
+  syncType: true,
+  workspaceId: true,
+} as const
+
 export const proxy = {
   resolveConnectionString: orpc
     .use(proxySecretMiddleware)
@@ -38,7 +46,7 @@ export const proxy = {
       },
       FORBIDDEN: {
         message:
-          'This connection is not allowed to be used because its password or connection string is not stored in the cloud.',
+          'This connection is not allowed to be used because its secrets or connection string are not stored in the cloud.',
       },
       NOT_FOUND: { message: 'Connection not found' },
     })
@@ -46,82 +54,56 @@ export const proxy = {
       if (input.connectionString) {
         return input.connectionString
       }
+      if (!input.resourceId && !input.connectionId) {
+        throw errors.BAD_REQUEST()
+      }
 
-      if (input.resourceId) {
-        const connection = await db.query.connectionsResources.findFirst({
-          columns: { name: true },
-          where: {
-            id: { eq: input.resourceId },
-          },
-          with: {
-            connection: {
-              columns: {
-                connectionString: true,
-                isPasswordExists: true,
-                syncType: true,
-                workspaceId: true,
-              },
-              where: {
-                userId: { eq: context.user.id },
+      const resource = input.resourceId
+        ? await db.query.connectionsResources.findFirst({
+            columns: { name: true },
+            where: { id: { eq: input.resourceId } },
+            with: {
+              connection: {
+                columns: CONNECTION_COLUMNS,
+                where: { userId: { eq: context.user.id } },
               },
             },
-          },
-        })
-
-        if (!connection || !connection.connection) {
-          throw errors.NOT_FOUND()
-        }
-
-        if (
-          !connection.connection.connectionString ||
-          (connection.connection.syncType === SyncType.CloudWithoutSecrets &&
-            connection.connection.isPasswordExists)
-        ) {
-          throw errors.FORBIDDEN()
-        }
-
-        const url = new SafeURL(
-          await context.decryptConnectionString({
-            encryptedText: connection.connection.connectionString,
-            workspaceId: connection.connection.workspaceId,
           })
-        )
-        url.pathname = encodeURIComponent(connection.name || '')
-        return url.toString()
+        : undefined
+      const connection = input.resourceId
+        ? resource?.connection
+        : await db.query.connections.findFirst({
+            columns: CONNECTION_COLUMNS,
+            where: {
+              id: { eq: input.connectionId },
+              userId: { eq: context.user.id },
+            },
+          })
+
+      if (!connection) {
+        throw errors.NOT_FOUND()
+      }
+      if (!connection.connectionString) {
+        throw errors.FORBIDDEN()
       }
 
-      if (input.connectionId) {
-        const connection = await db.query.connections.findFirst({
-          columns: {
-            connectionString: true,
-            isPasswordExists: true,
-            syncType: true,
-            workspaceId: true,
-          },
-          where: {
-            id: { eq: input.connectionId },
-            userId: { eq: context.user.id },
-          },
-        })
-
-        if (!connection) {
-          throw errors.NOT_FOUND()
-        }
-
-        if (
-          !connection.connectionString ||
-          (connection.syncType === SyncType.CloudWithoutSecrets &&
-            connection.isPasswordExists)
-        ) {
-          throw errors.FORBIDDEN()
-        }
-
-        return context.decryptConnectionString({
-          encryptedText: connection.connectionString,
-          workspaceId: connection.workspaceId,
-        })
+      const connectionString = await context.decryptConnectionString({
+        encryptedText: connection.connectionString,
+        workspaceId: connection.workspaceId,
+      })
+      const url = new SafeURL(connectionString)
+      if (
+        connection.syncType === SyncType.CloudWithoutSecrets &&
+        (connection.isPasswordExists ||
+          connectionSecrets.missing(url.searchParams).length > 0)
+      ) {
+        throw errors.FORBIDDEN()
       }
 
-      throw errors.BAD_REQUEST()
+      if (!resource) {
+        return connectionString
+      }
+      url.pathname = encodeURIComponent(resource.name || '')
+      return url.toString()
     }),
 }

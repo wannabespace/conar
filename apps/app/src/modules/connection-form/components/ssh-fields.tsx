@@ -83,7 +83,6 @@ export const SshFields = ({
                       items={AUTH_METHODS}
                       disabled={locked(field.name)}
                       variant="flat"
-                      className="flex-1"
                     />
                   </field.Field>
                 )}

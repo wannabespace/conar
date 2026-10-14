@@ -1,16 +1,10 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionPatch } from '@tamery/connection/diagnose'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
-import { Button } from '@tamery/ui/components/button'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { Form } from '@tamery/ui/components/tanstack-form'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { useSelector } from '@tanstack/react-form'
 import type { Variants } from 'motion/react'
 import { motion } from 'motion/react'
@@ -176,23 +170,17 @@ export const ConnectionPage = ({
       className="relative flex h-full min-h-0 flex-col outline-none"
     >
       <DropOverlay shown={dragging} />
-      <Tooltip shortcut={<ShortcutKbd shortcut="stepBack" />}>
-        <TooltipTrigger
-          render={
-            <Button
-              type="button"
-              variant="ghost-row"
-              size="icon-sm"
-              aria-label="Back"
-              className="absolute top-4 left-4 z-20"
-              onClick={back}
-            />
-          }
-        >
-          <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-        </TooltipTrigger>
-        <TooltipContent side="right">Back</TooltipContent>
-      </Tooltip>
+      <IconButton
+        type="button"
+        variant="ghost-row"
+        size="icon-sm"
+        icon={ArrowLeft01Icon}
+        label="Back"
+        shortcut={<ShortcutKbd shortcut="stepBack" />}
+        side="right"
+        className="absolute top-4 left-4 z-20"
+        onClick={back}
+      />
       <ScrollArea className="min-h-0 flex-1">
         <Form ref={formRef} form={form} className="flex min-h-full flex-col">
           {stage === 'form' ? (
