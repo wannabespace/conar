@@ -1,21 +1,26 @@
+import { toConnectionString } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { suggestConnectionName } from '@tamery/connection/guess/name'
 import type { SecretParam } from '@tamery/connection/secrets'
+import { connectionSecrets } from '@tamery/connection/secrets'
+import { isLocalNetworkConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { SafeURL } from '@tamery/shared/safe-url'
+import { tryCatch, tryCatchAsync } from '@tamery/shared/utils'
 import type { MutationStatus } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
+import { fetchingConfig } from '~/core/connection/fetching-config'
 import type { updateConnection } from '~/core/connection/save'
 import { testConnectionQuery } from '~/core/queries/connection/test'
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { generateRandomName } from '~/utils/faker'
 
 import type { ConnectionForm, ConnectionFormValues } from './connection-form'
-import { draftFetching } from './draft-fetching'
+import { partsOf } from './connection-form'
 
 export type FormMode =
   | { kind: 'create' }
@@ -29,7 +34,7 @@ export type FormMode =
 
 export type SavedConnection = Parameters<typeof updateConnection>[1]
 
-export interface NewConnection {
+interface NewConnection {
   /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
   open: boolean
   origin: GuessFormat | undefined
@@ -52,12 +57,43 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
 
   /** A result only counts for the string it tested, so any edit leaves the draft untested. */
   const draftOf = (values: ConnectionFormValues) => {
-    const draft = draftFetching(values, isLocalProxyAvailable, mode)
+    // Host holds whatever is typed until it blurs, so the string may not build yet.
+    const built = tryCatch(() => toConnectionString(partsOf(values))).data ?? ''
+    const saved = mode.kind === 'edit' && built ? mode : null
+    const connectionString = saved
+      ? connectionSecrets.keepMissing(built, saved.missingSecrets)
+      : built
+    const hasPassword = !!connectionString && !!values.password
+    const { canSend, reason } = fetchingConfig(
+      {
+        isPasswordExists: hasPassword || !!saved?.passwordElsewhere,
+        syncType: values.syncType,
+      },
+      {
+        hasLocalConnectionString: true,
+        isLocalNetwork:
+          tryCatch(() => isLocalNetworkConnectionString(connectionString))
+            .data === true,
+        isLocalProxyAvailable,
+        isPasswordPopulated: hasPassword,
+        missingSecrets: saved
+          ? connectionSecrets.missing(
+              new SafeURL(connectionString).searchParams
+            )
+          : [],
+        usesSsh: values.sshEnabled,
+      }
+    )
     const tested =
-      test.variables?.connectionString === draft.connectionString &&
+      test.variables?.connectionString === connectionString &&
       test.variables.type === values.type
     const testStatus: MutationStatus = tested ? test.status : 'idle'
-    return { ...draft, testStatus }
+    return {
+      canSend: canSend && !!connectionString,
+      connectionString,
+      reason,
+      testStatus,
+    }
   }
 
   const runTest = (values: ConnectionFormValues) => {
@@ -94,7 +130,7 @@ export const useSaveConnection = (mode: FormMode, persist: Persist) => {
       }
     }
     const { values } = form.state
-    const { connectionString } = draftOf(values)
+    const { connectionString } = draft
     if (!connectionString) {
       toast.error("Couldn't save the connection", {
         description: "The host isn't a valid address.",

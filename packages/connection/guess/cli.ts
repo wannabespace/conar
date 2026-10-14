@@ -4,7 +4,7 @@ import { mssqlAddress } from './ado'
 import { partsOfVariables, variablesOfLines } from './env'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
-import { shellTokens } from './tokens'
+import { shellCommands } from './tokens'
 import type { DatabaseGuess, ServerField } from './types'
 import { guessUrl } from './url'
 
@@ -167,5 +167,5 @@ export const guessCli = (text: string): DatabaseGuess | null =>
   text
     .split('\n')
     .values()
-    .map((line) => guessCommand(shellTokens(line)))
+    .map((line) => guessCommand(shellCommands(line)[0] ?? []))
     .find(Boolean) ?? null

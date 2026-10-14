@@ -92,14 +92,12 @@ const ComboboxInput = ({
   disabled = false,
   showTrigger = true,
   showClear = false,
-  variant,
   ...props
-}: ComboboxPrimitive.Input.Props &
-  Pick<React.ComponentProps<typeof InputGroup>, 'variant'> & {
-    showTrigger?: boolean
-    showClear?: boolean
-  }) => (
-  <InputGroup variant={variant} className={cn('w-auto', className)}>
+}: ComboboxPrimitive.Input.Props & {
+  showTrigger?: boolean
+  showClear?: boolean
+}) => (
+  <InputGroup className={cn('w-auto', className)}>
     <ComboboxPrimitive.Input
       render={<InputGroupInput disabled={disabled} />}
       {...props}

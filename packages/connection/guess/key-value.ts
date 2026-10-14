@@ -1,6 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { shellTokens } from './tokens'
+import { shellCommands } from './tokens'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 const PAIR = /^(?<key>[a-z_]+)=(?<value>.*)$/su
@@ -16,7 +16,7 @@ const FIELD_OF_KEY: Record<string, ServerField> = {
 export const guessKeyValue = (text: string): DatabaseGuess | null => {
   const parts: GuessedParts = { type: ConnectionType.Postgres }
   const options = new URLSearchParams()
-  for (const token of shellTokens(text)) {
+  for (const token of shellCommands(text)[0] ?? []) {
     const { key, value = '' } = PAIR.exec(token)?.groups ?? {}
     if (!key) {
       return null

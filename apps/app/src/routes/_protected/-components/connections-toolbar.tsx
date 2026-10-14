@@ -37,6 +37,7 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
       </span>
       <div className="flex items-center gap-2">
         <Select
+          items={groupOptions}
           value={grouping}
           onValueChange={(value) => {
             if (value) {
@@ -46,10 +47,7 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
         >
           <SelectTrigger size="sm" className="shrink-0">
             <HugeiconsIcon icon={Layers01Icon} strokeWidth={2} />
-            <SelectValue>
-              {groupOptions.find((option) => option.value === grouping)
-                ?.label ?? grouping}
-            </SelectValue>
+            <SelectValue />
           </SelectTrigger>
           <SelectContent size="sm">
             {groupOptions.map((option) => (
@@ -60,6 +58,7 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
           </SelectContent>
         </Select>
         <Select
+          items={sortOptions}
           value={sort}
           onValueChange={(value) => {
             if (value) {
@@ -72,10 +71,7 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
               icon={sort.includes('asc') ? SortByUp01Icon : SortByDown01Icon}
               strokeWidth={2}
             />
-            <SelectValue>
-              {sortOptions.find((option) => option.value === sort)?.label ??
-                sort}
-            </SelectValue>
+            <SelectValue />
           </SelectTrigger>
           <SelectContent size="sm">
             {sortOptions.map((option) => (

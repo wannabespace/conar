@@ -3,7 +3,7 @@ import * as React from 'react'
 
 const Table = ({
   className,
-  inset = false,
+  inset,
   size = 'default',
   ...props
 }: React.ComponentProps<'table'> & {

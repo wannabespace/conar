@@ -99,10 +99,10 @@ export const hostHintOf = (host: string): HostHint | undefined => {
 export const isLocalHost = (host: string) =>
   LOCAL_HOSTS.has(host.toLowerCase()) || LOOPBACK_IPV4.test(host)
 
-export const isPrivateHost = (host: string) =>
+const isPrivateHost = (host: string) =>
   PRIVATE_IPV4.test(host) || PRIVATE_IPV6.test(host) || PRIVATE_NAME.test(host)
 
-export const isServiceName = (host: string) =>
+const isServiceName = (host: string) =>
   !host.includes('.') &&
   !isLocalHost(host) &&
   !IPV4.test(host) &&

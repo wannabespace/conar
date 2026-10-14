@@ -16,6 +16,3 @@ export const shellCommands = (line: string): string[][] => {
   }
   return commands
 }
-
-export const shellTokens = (command: string): string[] =>
-  shellCommands(command)[0] ?? []

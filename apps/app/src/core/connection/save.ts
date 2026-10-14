@@ -8,10 +8,11 @@ import { getCollections, mutateOffline } from '~/core/collections'
 import type { ConnectionStringInput } from '~/core/connection/connection-strings'
 import { ensureResource } from '~/core/connection/resources'
 import { getConnectionStore } from '~/core/connection/stores'
+import type { Connection } from '~/core/connection/sync'
 import { queryClient } from '~/lib/query-client'
 
 /** Every cached result came from the old host or credentials; the query keys only carry the connection or resource id. */
-export const dropConnectionQueries = (connectionId: string) => {
+const dropConnectionQueries = (connectionId: string) => {
   const ids = new Set<unknown>([
     connectionId,
     ...getCollections()
@@ -45,14 +46,12 @@ interface ConnectionDetails {
 const saveConnection = async (
   connectionId: string,
   { connectionString, ...details }: ConnectionDetails,
-  writeRow: (row: {
-    color: string | null
-    isPasswordExists: boolean
-    label: string | null
-    name: string
-    type: ConnectionType
-    updatedAt: Date
-  }) => void
+  writeRow: (
+    row: Pick<
+      Connection,
+      'color' | 'isPasswordExists' | 'label' | 'name' | 'type' | 'updatedAt'
+    >
+  ) => void
 ) => {
   const { connectionsCollection, connectionStringsCollection } =
     getCollections()

@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import { getCollections } from '~/core/collections'
+import { findResource } from '~/core/connection/resources'
 import { checkOrUpgrade } from '~/core/user/permissions'
 import { workspaceSelection } from '~/core/workspace/utils'
 import { posthog } from '~/lib/posthog'
@@ -59,17 +60,12 @@ const savedResourceIdOf = (
   connectionId: string,
   database: string | undefined
 ) => {
-  const { connectionsResourcesCollection, connectionStringsCollection } =
-    getCollections()
   const name =
     database ||
-    connectionStringsCollection.get(connectionId)?.defaultResourceName ||
+    getCollections().connectionStringsCollection.get(connectionId)
+      ?.defaultResourceName ||
     null
-  return (
-    connectionsResourcesCollection.toArray.find(
-      (r) => r.connectionId === connectionId && r.name === name
-    )?.id ?? null
-  )
+  return findResource(connectionId, name)?.id ?? null
 }
 
 export const useConnectionLinks = () => {
