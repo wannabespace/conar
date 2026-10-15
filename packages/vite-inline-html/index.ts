@@ -30,7 +30,7 @@ const bundleScript = async (root: string, entry: string) => {
 
 export const inlineHtml = ({ scripts }: InlineHtmlOptions): Plugin => {
   let bundles = new Map<string, Promise<string>>()
-  let root = ''
+  let root: string
 
   return {
     configResolved({ root: resolved }) {

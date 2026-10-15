@@ -62,7 +62,7 @@ const sshCommandOf = (words: string[]) => {
   }
   const tunnel = { ...EMPTY_SSH_TUNNEL }
   const forwards: Forward[] = []
-  let destination = ''
+  let destination: string | null = null
   const args = words.slice(start + 1)
   while (args.length > 0) {
     const arg = args.shift() ?? ''
@@ -89,7 +89,7 @@ const sshCommandOf = (words: string[]) => {
     host = '',
     port = '',
     user = '',
-  } = DESTINATION.exec(destination)?.groups ?? {}
+  } = (destination && DESTINATION.exec(destination)?.groups) || {}
   if (!host && forwards.length === 0) {
     return null
   }

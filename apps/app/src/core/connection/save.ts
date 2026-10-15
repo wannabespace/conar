@@ -7,7 +7,7 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
-import { ensureResource } from '~/core/connection/resources'
+import { findResource, insertResource } from '~/core/connection/resources'
 import { rememberOpenedResource } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 
@@ -42,10 +42,13 @@ export const saveConnectionString = async (
       !!connectionsCollection.get(connectionId)?.isPasswordExists)
   const resource = record.defaultResourceName || null
 
-  let resourceId = ''
+  const existingResource = findResource(connectionId, resource)
+  const resourceId = existingResource?.id ?? v7()
   const tx = mutateOffline(() => {
     writeRow?.(isPasswordExists)
-    resourceId = ensureResource(connectionId, resource)
+    if (!existingResource) {
+      insertResource(connectionId, resourceId, resource)
+    }
   })
   const settle = async () => {
     const { error } = await tryCatchAsync(() => tx.isPersisted.promise)

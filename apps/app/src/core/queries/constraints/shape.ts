@@ -172,7 +172,7 @@ const tableElementsOf = (ddl: string) => {
   const elements: string[] = []
   let start = ddl.indexOf('(') + 1
   let depth = 0
-  let quote = ''
+  let quote: string | null = null
 
   for (let index = start; index < ddl.length; index += 1) {
     const char = ddl[index]
@@ -181,7 +181,7 @@ const tableElementsOf = (ddl: string) => {
       if (char === '\\') {
         index += 1
       } else if (char === quote) {
-        quote = ''
+        quote = null
       }
     } else if (char && QUOTES.has(char)) {
       quote = char

@@ -103,7 +103,7 @@ export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
   ].join('\n')
 }
 
-const buildColumnOptions = (c: TypedColumn, typeFunc: string): string => {
+const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
   if (
     c.maxLength &&
     c.maxLength !== -1 &&
@@ -120,7 +120,7 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string): string => {
   if (['decimal', 'numeric'].includes(typeFunc) && c.precision) {
     return `{ precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
   }
-  return ''
+  return null
 }
 
 const buildGeneratedChain = (
@@ -147,7 +147,7 @@ const buildGeneratedChain = (
 const buildColumnChain = (
   c: TypedColumn,
   typeFunc: string,
-  options: string,
+  options: string | null,
   { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>,
   selfReferenceType: string | null,
   foreignKeyImports: Set<string>,
@@ -258,7 +258,7 @@ export const generateSchemaDrizzle = ({
         typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
       }
 
-      let options = ''
+      let options: string | null = null
       if (enumFunc && c.enumName && c.availableValues?.length) {
         const values = `[${c.availableValues.map(toStringLiteral).join(', ')}]`
         dialectImports.add(enumFunc)
