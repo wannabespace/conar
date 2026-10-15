@@ -2,7 +2,10 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
-import type { Database as MysqlDatabase } from '~/core/runtime/dialects/mysql/schema'
+import type {
+  MariadbTables,
+  Database as MysqlDatabase,
+} from '~/core/runtime/dialects/mysql/schema'
 
 import type { ColumnsFilter } from '../shape'
 
@@ -109,10 +112,11 @@ export const mysqlColumns = async (
     .orderBy('ORDINAL_POSITION')
     .execute()
 
-  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MySQL's CHECK_CONSTRAINTS has no TABLE_NAME, and neither MySQL 5.7 nor MariaDB before 10.2.22/10.3.10 has the table, so a failed read means no checks.
+  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MariaDB before 10.2.22/10.3.10 has no CHECK_CONSTRAINTS, so a failed read means no checks.
   const { data: checks } = await tryCatchAsync(async () =>
     query.some((column) => column.mariadb && column.type === 'longtext')
       ? await db
+          .$extendTables<MariadbTables>()
           .selectFrom('information_schema.CHECK_CONSTRAINTS')
           .select([
             'CONSTRAINT_SCHEMA as schema',

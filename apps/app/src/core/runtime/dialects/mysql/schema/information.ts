@@ -113,8 +113,6 @@ interface CheckConstraints {
   CONSTRAINT_SCHEMA: string
   CONSTRAINT_NAME: string
   CHECK_CLAUSE: string
-  // MariaDB only.
-  TABLE_NAME: string
 }
 
 interface KeyColumnUsage {
