@@ -50,8 +50,12 @@ Partial pastes work too: a paste fills only what it contains and keeps what you'
 
 Tamery also fixes strings that connect but break a database client, and says what it changed:
 
-- **Supabase transaction pooler** (port `6543`) becomes the session pooler on `5432`, which keeps transactions and session settings between queries. Prisma-only parameters like `pgbouncer=true` are dropped.
+- **Supabase transaction pooler** (port `6543`) becomes the session pooler on `5432`, which keeps transactions and session settings between queries.
+- **Azure Database for PostgreSQL's PgBouncer** (port `6432`) becomes the direct server on `5432`, for the same reason.
 - **Neon's `-pooler` endpoint** becomes the direct endpoint, for the same reason.
+- **Prisma-only parameters** like `pgbouncer=true` and `connection_limit` are dropped.
+- **ClickHouse's native port** (`9000` or `9440`) becomes the HTTP port (`8123` or `8443`), since Tamery connects over HTTP.
+- **A localhost port forwarded with `ssh -L`** becomes the forwarded server, reached through the SSH tunnel.
 - **A password placeholder** like `[YOUR-PASSWORD]` is cleared, and the cursor waits in **Password**.
 
 If a test fails on Supabase's direct host (`db.<project>.supabase.co`), Tamery points out that it's IPv6-only and suggests the Session pooler string.

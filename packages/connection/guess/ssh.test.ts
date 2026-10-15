@@ -65,7 +65,7 @@ describe('guessConnection — SSH', () => {
     ],
   ])('merges %s', (_, text, format) => {
     expect(guessConnection(text)).toStrictEqual({
-      fixes: [],
+      fixes: ['ssh-forward'],
       format,
       parts: {
         database: 'shop',

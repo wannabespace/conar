@@ -7,7 +7,7 @@ describe('guessConnection — provider fixes', () => {
     const guess = guessConnection(
       'DATABASE_URL="postgresql://postgres.abcd:pw@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"'
     )
-    expect(guess?.fixes).toStrictEqual(['session-pooler'])
+    expect(guess?.fixes).toStrictEqual(['prisma-options', 'pooler-port'])
     expect(guess?.parts).toMatchObject({
       host: 'aws-0-eu-central-1.pooler.supabase.com',
       port: '5432',
@@ -32,6 +32,20 @@ describe('guessConnection — provider fixes', () => {
     expect(guess?.parts.host).toBe(
       'ep-cool-name-123456.eu-central-1.aws.neon.tech'
     )
+  })
+
+  it("skips Azure's PgBouncer port", () => {
+    const guess = guessConnection(
+      'postgresql://app:pw@acme.postgres.database.azure.com:6432/shop'
+    )
+    expect(guess?.fixes).toStrictEqual(['pooler-port'])
+    expect(guess?.parts.port).toBe('5432')
+  })
+
+  it("moves ClickHouse's native port to HTTP", () => {
+    const guess = guessConnection('clickhouse://default@ch.acme.io:9000/logs')
+    expect(guess?.fixes).toStrictEqual(['clickhouse-http'])
+    expect(guess?.parts.port).toBe('8123')
   })
 
   it('leaves a session-mode string alone', () => {

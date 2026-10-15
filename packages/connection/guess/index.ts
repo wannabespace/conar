@@ -12,7 +12,7 @@ import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
 import { guessSsh, throughForwards } from './ssh'
-import type { ConnectionGuess, DatabaseGuess } from './types'
+import type { ConnectionGuess, DatabaseGuess, GuessFix } from './types'
 import { guessGoDsn, guessUrl, guessWebUrl } from './url'
 
 export type { ConnectionGuess, GuessFix, GuessFormat } from './types'
@@ -55,14 +55,12 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       return null
     }
 
-    const parts = throughForwards(
-      mergeParts(
-        { ssh: tunnel },
-        database?.parts ?? {},
-        credentialsBeside(database, rest)
-      ),
-      forwards
+    const pasted = mergeParts(
+      { ssh: tunnel },
+      database?.parts ?? {},
+      credentialsBeside(database, rest)
     )
+    const parts = throughForwards(pasted, forwards)
     const hint = hostHintOf(parts.host ?? '')
     const port = parts.port || hint?.port || ''
     const engine = parts.engine ?? TYPE_OF_PORT[port] ?? hint?.type
@@ -70,8 +68,16 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       engine === ConnectionType.ClickHouse
         ? CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
         : undefined
+    const { fixes, parts: fixed } = fixParts(
+      mergeParts({ ...parts, engine, port: httpPort ?? port })
+    )
+    const routingFixes: GuessFix[] = [
+      ...(pasted.host && parts !== pasted ? (['ssh-forward'] as const) : []),
+      ...(httpPort ? (['clickhouse-http'] as const) : []),
+    ]
     return {
-      ...fixParts(mergeParts({ ...parts, engine, port: httpPort ?? port })),
+      fixes: [...routingFixes, ...fixes],
       format: database?.format ?? 'ssh',
+      parts: fixed,
     }
   }).data

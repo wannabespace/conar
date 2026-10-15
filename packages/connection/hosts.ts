@@ -13,12 +13,13 @@ interface HostHint {
   port?: string
   projectInUser?: RegExp
   suffixes: string[]
-  /** The engine's default port is this provider's session pooler. */
+  /** The engine's default port skips this provider's transaction pooler. */
   transactionPoolerPort?: string
   type?: ConnectionType
 }
 
 const SUPABASE_TRANSACTION_POOLER_PORT = '6543'
+const PGBOUNCER_PORT = '6432'
 
 const HOST_HINTS: HostHint[] = [
   {
@@ -43,6 +44,7 @@ const HOST_HINTS: HostHint[] = [
   {
     label: 'Azure Database for PostgreSQL',
     suffixes: ['.postgres.database.azure.com'],
+    transactionPoolerPort: PGBOUNCER_PORT,
     type: ConnectionType.Postgres,
   },
   {
@@ -146,6 +148,7 @@ export const TYPE_OF_PORT: Record<string, ConnectionType> = {
   ),
   5433: ConnectionType.Postgres,
   [SUPABASE_TRANSACTION_POOLER_PORT]: ConnectionType.Postgres,
+  [PGBOUNCER_PORT]: ConnectionType.Postgres,
 }
 
 const LOCAL_HOSTS = new Set(['localhost', '::1', '[::1]'])

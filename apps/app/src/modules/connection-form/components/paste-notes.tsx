@@ -8,10 +8,15 @@ import { missingOf } from '../lib/connection-form'
 import { Footnote } from './footnote'
 
 const FIX_NOTES: Record<GuessFix, string> = {
+  'clickhouse-http':
+    "Using ClickHouse's HTTP port, since Tamery connects over HTTP, not the native protocol.",
   'neon-direct':
     'Using the direct endpoint, since the pooler drops transactions between queries.',
-  'session-pooler':
-    'Port 6543 → 5432: session mode keeps transactions between queries.',
+  'pooler-port':
+    'Using port 5432, since the transaction pooler drops transactions between queries.',
+  'prisma-options':
+    'Dropped the Prisma-only options, which the database would reject.',
+  'ssh-forward': 'Connecting to the forwarded server through the SSH tunnel.',
 }
 
 export const PasteNotes = ({

@@ -13,7 +13,12 @@ export type GuessFormat =
   | 'ssh'
   | 'host'
 
-export type GuessFix = 'neon-direct' | 'session-pooler'
+export type GuessFix =
+  | 'clickhouse-http'
+  | 'neon-direct'
+  | 'pooler-port'
+  | 'prisma-options'
+  | 'ssh-forward'
 
 export type ServerField = Exclude<
   keyof ConnectionParts,

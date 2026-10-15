@@ -11,17 +11,18 @@ const PRISMA_PARAMS = ['pgbouncer', 'connection_limit', 'pool_timeout']
 
 export const fixParts = ({ options, ...found }: GuessedParts) => {
   const params = new URLSearchParams(options)
-  for (const param of PRISMA_PARAMS) {
+  const prismaParams = PRISMA_PARAMS.filter((param) => params.has(param))
+  for (const param of prismaParams) {
     params.delete(param)
   }
   const parts: GuessedParts =
     params.size > 0 ? { ...found, options: params.toString() } : found
-  const fixes: GuessFix[] = []
+  const fixes: GuessFix[] = prismaParams.length > 0 ? ['prisma-options'] : []
   const host = parts.host ?? ''
   const hint = hostHintOf(host)
   if (parts.port && hint?.transactionPoolerPort === parts.port) {
     parts.port = String(DEFAULT_PORTS[ConnectionType.Postgres])
-    fixes.push('session-pooler')
+    fixes.push('pooler-port')
   }
   const directHost = hint?.directHostOf?.(host) ?? host
   if (directHost !== host) {
