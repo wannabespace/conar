@@ -1,10 +1,11 @@
-import { omit, tryCatchAsync } from '@tamery/shared/utils'
+import { omit } from '@tamery/shared/utils'
 
 import { dataGripDatabases } from './datagrip'
 import { dbeaverDatabases } from './dbeaver'
 import { dockerDatabases } from './docker'
 import { pgpassDatabases, pgServiceDatabases } from './libpq'
 import type { LocalDatabase, Unlocked } from './local-database'
+import { findEach } from './local-database'
 import { myCnfDatabases } from './my-cnf'
 import { pgAdminDatabases } from './pgadmin'
 import { tablePlusDatabases } from './tableplus'
@@ -21,30 +22,36 @@ const SOURCES = [
 ]
 
 // Keyed by what `find` returned, so the renderer can only unlock a password a found database points at, never name an arbitrary Keychain item.
-let unlockOf = new Map<string, LocalDatabase['unlock']>()
+let found = new Map<string, LocalDatabase>()
 
 export const localDatabases = {
-  /** A missing or unreadable source finds nothing; it never fails the rest. */
+  /** The first source to find a database names it; a later one's password still unlocks it. */
   find: async () => {
-    const sources = await Promise.all(
-      SOURCES.map((source) => tryCatchAsync(() => Promise.try(source)))
-    )
-    const found = sources
-      .flatMap(({ data }) => data ?? [])
-      .filter(({ connectionString }) => connectionString)
-    const unique = found.filter(
-      ({ connectionString }, index) =>
-        found.findIndex(
-          (other) => other.connectionString === connectionString
-        ) === index
-    )
-    unlockOf = new Map(
-      unique.map(({ connectionString, unlock }) => [connectionString, unlock])
-    )
-    return unique.map((database) => omit(database, ['unlock']))
+    const unique = new Map<string, LocalDatabase>()
+    for (const database of await findEach(SOURCES, (source) => source())) {
+      const first = unique.get(database.connectionString)
+      unique.set(
+        database.connectionString,
+        first
+          ? {
+              ...first,
+              unlock: async () => {
+                const unlocked = await first.unlock()
+                if (unlocked.password) {
+                  return unlocked
+                }
+                const next = await database.unlock()
+                return next.password ? next : unlocked
+              },
+            }
+          : database
+      )
+    }
+    found = unique
+    return [...unique.values()].map((database) => omit(database, ['unlock']))
   },
   unlock: async (connectionString: string): Promise<Unlocked> =>
-    (await unlockOf.get(connectionString)?.()) ?? {
+    (await found.get(connectionString)?.unlock()) ?? {
       password: '',
       withheld: false,
     },

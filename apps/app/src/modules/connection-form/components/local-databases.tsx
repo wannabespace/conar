@@ -1,13 +1,12 @@
-import { connectionParts } from '@tamery/connection/connection-parts'
-import { engines } from '@tamery/shared/enums/connection-type'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { isMac } from '@tamery/ui/lib/os'
+import { useSelector } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
-import { posthog } from '~/lib/posthog'
 import { plural } from '~/utils/plural'
 
 import type { ConnectionForm } from '../lib/connection-form'
@@ -17,42 +16,52 @@ export type LocalDatabase = Awaited<
   ReturnType<NonNullable<typeof window.electron>['localDatabases']['find']>
 >[number]
 
-/** Fills the form at once, and the password when the source hands it out, which can wait on a Keychain prompt. */
+/** Fills the form at once, and the password when the source hands it out, which can wait on a Keychain prompt. `passwordWithheldBy` names the app whose Keychain password the user denied, while the form still holds its server. */
 export const usePickLocalDatabase = ({
   form,
-  onWithheld,
   read,
 }: {
   form: ConnectionForm
-  onWithheld: (source: string) => void
   read: (text: string, via: PasteVia) => void
 }) => {
   const unlocking = useRef<string>(null)
-  return async ({ connectionString, flavor, name, source }: LocalDatabase) => {
-    posthog.capture('local_database_picked', { source })
+  const [withheld, setWithheld] = useState<{ host: string; source: string }>()
+  const host = useSelector(form.store, ({ values }) => values.host)
+
+  const pick = async ({
+    connectionString,
+    engine,
+    name,
+    source,
+  }: LocalDatabase) => {
+    setWithheld(undefined)
     // Replaces the form rather than merging like a paste: another pick on the same host would keep the previous password, database and options.
     form.reset()
     read(connectionString, 'found')
     form.setFieldValue('name', name)
-    if (flavor) {
-      form.setFieldValue('engine', flavor)
-    }
+    form.setFieldValue('engine', engine)
     if (unlocking.current === connectionString) {
       return
     }
     unlocking.current = connectionString
-    const unlocked =
-      await window.electron?.localDatabases.unlock(connectionString)
-    if (!unlocked || unlocking.current !== connectionString) {
+    const { data: unlocked } = await tryCatchAsync(
+      async () => await window.electron?.localDatabases.unlock(connectionString)
+    )
+    if (unlocking.current !== connectionString) {
       return
     }
     unlocking.current = null
-    if (unlocked.password) {
+    if (unlocked?.password) {
       form.setFieldValue('password', unlocked.password)
     }
-    if (unlocked.withheld) {
-      onWithheld(source)
+    if (unlocked?.withheld) {
+      setWithheld({ host: form.state.values.host, source })
     }
+  }
+
+  return {
+    passwordWithheldBy: withheld?.host === host ? withheld.source : undefined,
+    pick,
   }
 }
 
@@ -65,7 +74,6 @@ export const LocalDatabases = ({
   const { data: databases = [] } = useQuery({
     queryFn: async () => (await window.electron?.localDatabases.find()) ?? [],
     queryKey: ['localDatabases'],
-    staleTime: 0,
   })
 
   if (databases.length === 0) {
@@ -83,32 +91,24 @@ export const LocalDatabases = ({
         Found {plural(databases.length, 'database')} on{' '}
         {isMac ? 'this Mac' : 'this computer'}
       </span>
-      {databases.map((database) => {
-        const { type } = connectionParts.parse(database.connectionString)
-        return (
-          <Button
-            key={database.connectionString}
-            type="button"
-            variant="ghost-tint"
-            size="sm"
-            className="justify-start"
-            onClick={() => onPick(database)}
-          >
-            {type && (
-              <ConnectionIcon
-                engine={engines.of({ flavor: database.flavor, type })}
-                className="mr-1"
-              />
-            )}
-            <span data-mask className="truncate">
-              {database.name}
-            </span>
-            <span className="text-muted-foreground ml-auto pl-4 text-xs">
-              {database.source}
-            </span>
-          </Button>
-        )
-      })}
+      {databases.map((database) => (
+        <Button
+          key={database.connectionString}
+          type="button"
+          variant="ghost-tint"
+          size="sm"
+          className="justify-start"
+          onClick={() => onPick(database)}
+        >
+          <ConnectionIcon engine={database.engine} className="mr-1" />
+          <span data-mask className="truncate">
+            {database.name}
+          </span>
+          <span className="text-muted-foreground ml-auto pl-4 text-xs">
+            {database.source}
+          </span>
+        </Button>
+      ))}
     </motion.div>
   )
 }

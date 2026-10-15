@@ -13,15 +13,12 @@ import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { getBy } from '@tanstack/react-form'
 import { type } from 'arktype'
-import { memoize } from 'memoza'
 import { useState } from 'react'
 
 import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
-import type { Secret } from './form-mode'
-import { SECRETS } from './form-mode'
 import type { PasteVia } from './use-paste-connection'
 
 export interface ConnectionFormValues extends Omit<
@@ -65,18 +62,10 @@ const SERVER_FIELDS = [
 
 const port = type(/^\d{0,5}$/u).configure({ message: 'Use a port number' })
 
-// The secrets are declared for formSchemaOf's narrow: the global onUndeclaredKey: 'delete' strips any key a schema leaves out before it runs.
 const connectionFormSchema = type({
   host: type(/\S/u).configure({ message: 'Enter the host' }),
-  password: 'string',
   port,
-  ssh: {
-    host: 'string',
-    passphrase: 'string',
-    password: 'string',
-    port,
-    privateKey: 'string',
-  },
+  ssh: { host: 'string', port },
   sshEnabled: 'boolean',
 }).narrow(
   (values, ctx) =>
@@ -85,20 +74,12 @@ const connectionFormSchema = type({
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
 )
 
-const formSchemaOf = memoize((requiredSecrets: Secret[]) =>
-  connectionFormSchema.narrow((values, ctx) => {
-    const empty = requiredSecrets.flatMap((secret) => {
-      const { field, message } = SECRETS[secret]
-      return message && !/\S/u.test(getBy(values, field))
-        ? [{ field, message }]
-        : []
-    })
-    for (const { field, message } of empty) {
-      ctx.reject({ message, path: field.split('.') })
-    }
-    return empty.length === 0
-  })
-)
+const SECRET_MESSAGES = {
+  password: 'Enter the password',
+  'ssh.passphrase': 'Enter the key passphrase',
+  'ssh.password': 'Enter the SSH password',
+  'ssh.privateKey': 'Paste the SSH private key',
+}
 
 export const formValuesOf = (
   connection: Connection,
@@ -148,7 +129,7 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   if (parts.type) {
     form.setFieldValue(
       'engine',
-      engines.of({ flavor: parts.flavor ?? null, type: parts.type })
+      engines.of({ flavor: parts.flavor, type: parts.type })
     )
   }
   if (parts.https !== undefined || newServer) {
@@ -174,16 +155,16 @@ const expandHost = (
 
 export const useConnectionForm = ({
   defaultValues,
+  missingFields,
   onFill,
   onSubmit,
-  requiredSecrets,
 }: {
   defaultValues?: ConnectionFormValues
+  /** Fields that must not be left empty: the secrets this device lacks. */
+  missingFields: string[]
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
-  requiredSecrets: Secret[]
 }) => {
-  const schema = formSchemaOf(requiredSecrets)
   const [initialValues, setInitialValues] = useState(
     () => defaultValues ?? { ...DEFAULT_VALUES, name: generateRandomName() }
   )
@@ -202,8 +183,16 @@ export const useConnectionForm = ({
       return onSubmit()
     },
     validators: {
-      onChange: schema,
-      onMount: schema,
+      onChange: connectionFormSchema,
+      onMount: connectionFormSchema,
+      onSubmit: ({ value }) => ({
+        fields: Object.fromEntries(
+          Object.entries(SECRET_MESSAGES).filter(
+            ([field]) =>
+              missingFields.includes(field) && !/\S/u.test(getBy(value, field))
+          )
+        ),
+      }),
     },
   })
 

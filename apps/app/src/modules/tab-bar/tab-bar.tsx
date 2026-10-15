@@ -6,15 +6,9 @@ import {
   CancelSquareIcon,
   SidebarLeftIcon,
 } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Separator } from '@tamery/ui/components/separator'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -132,21 +126,15 @@ export const TabBar = ({ className }: { className?: string }) => {
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
     >
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
-        <Tooltip shortcut={<ShortcutKbd shortcut="toggleNavigator" />}>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost-muted"
-                size="icon-xs"
-                aria-label="Toggle sidebar"
-                onClick={toggleNavigator}
-              />
-            }
-          >
-            <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
-        </Tooltip>
+        <IconButton
+          variant="ghost-muted"
+          size="icon-xs"
+          icon={SidebarLeftIcon}
+          label="Toggle sidebar"
+          side="bottom"
+          shortcut={<ShortcutKbd shortcut="toggleNavigator" />}
+          onClick={toggleNavigator}
+        />
         <Separator orientation="vertical" className="mx-0.5 h-4!" />
         <HistoryNav />
         <TabRefresh tabId={activeTabId} />

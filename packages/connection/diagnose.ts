@@ -352,37 +352,43 @@ const sshKeyFieldOf = (
   return undefined
 }
 
+const SSH_TUNNEL_TITLE = "Couldn't open the SSH tunnel"
+
+const diagnoserOf = (
+  message: string
+): ((context: DiagnosisContext) => Diagnosis) | undefined => {
+  if (message.startsWith(SSH_TUNNEL_ERROR)) {
+    return ({ parts }) => {
+      const hint = message.slice(SSH_TUNNEL_ERROR.length)
+      const focus = sshKeyFieldOf(hint, parts)
+      return { ...(focus && { focus }), hint, title: SSH_TUNNEL_TITLE }
+    }
+  }
+  if (message === SSH_DESKTOP_ONLY) {
+    return () => ({ hint: SSH_DESKTOP_ONLY, title: SSH_TUNNEL_TITLE })
+  }
+  const rule = RULES.find(({ match }) => match.test(message))
+  return (
+    rule &&
+    ((context) => {
+      const diagnosis = rule.diagnose(context)
+      const { host, password } = context.parts
+      // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
+      if (diagnosis.focus || password || isLocalHost(host)) {
+        return diagnosis
+      }
+      return {
+        ...diagnosis,
+        focus: 'password',
+        hint: `${diagnosis.hint} The password is empty too.`,
+      }
+    })
+  )
+}
+
 export const isConnectionFailure = (message: string) =>
-  message.startsWith(SSH_TUNNEL_ERROR) ||
-  message === SSH_DESKTOP_ONLY ||
-  RULES.some(({ match }) => match.test(message))
+  diagnoserOf(message) !== undefined
 
 export const diagnoseConnectionError = (
   context: DiagnosisContext
-): Diagnosis | null => {
-  if (context.message.startsWith(SSH_TUNNEL_ERROR)) {
-    const hint = context.message.slice(SSH_TUNNEL_ERROR.length)
-    const focus = sshKeyFieldOf(hint, context.parts)
-    return {
-      ...(focus && { focus }),
-      hint,
-      title: "Couldn't open the SSH tunnel",
-    }
-  }
-  if (context.message === SSH_DESKTOP_ONLY) {
-    return { hint: SSH_DESKTOP_ONLY, title: "Couldn't open the SSH tunnel" }
-  }
-  const { host, password } = context.parts
-  const diagnosis =
-    RULES.find(({ match }) => match.test(context.message))?.diagnose(context) ??
-    null
-  // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
-  if (!diagnosis || diagnosis.focus || password || isLocalHost(host)) {
-    return diagnosis
-  }
-  return {
-    ...diagnosis,
-    focus: 'password',
-    hint: `${diagnosis.hint} The password is empty too.`,
-  }
-}
+): Diagnosis | null => diagnoserOf(context.message)?.(context) ?? null

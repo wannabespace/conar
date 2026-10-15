@@ -13,30 +13,16 @@ import { Switch } from '@tamery/ui/components/switch'
 import { isMac } from '@tamery/ui/lib/os'
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
-import { type } from 'arktype'
 import { useSubscription } from 'seitu/react'
-import { createWebStorageValue } from 'seitu/web'
 
-import { TRANSPARENT_BACKGROUND_KEY } from '~/lib/constants'
 import { posthog } from '~/lib/posthog'
+import { transparentBackgroundValue } from '~/lib/transparent-background'
 
 const THEMES: { label: string; value: Theme }[] = [
   { label: 'System', value: 'system' },
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
 ]
-
-const transparentBackgroundValue = createWebStorageValue({
-  defaultValue: true,
-  key: TRANSPARENT_BACKGROUND_KEY,
-  schema: type('boolean'),
-  type: 'localStorage',
-})
-
-// Module scope, not the settings page: every window loads this through the actions center, and the storage event carries a toggle to the others.
-transparentBackgroundValue.subscribe((isTransparent) =>
-  document.documentElement.classList.toggle('opaque', !isTransparent)
-)
 
 const hasVibrancy = !!window.electron && isMac
 

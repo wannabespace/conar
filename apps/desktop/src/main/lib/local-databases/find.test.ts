@@ -53,6 +53,11 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
       Names: ['/maria'],
       Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_306 }],
     },
+    {
+      Id: 'exited',
+      Names: ['/gone'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 5432, PublicPort: 15_432 }],
+    },
   ],
 }
 
@@ -74,6 +79,16 @@ beforeAll(async () => {
           name: 'Local app',
           provider: 'postgresql',
         },
+        'pg-2': {
+          configuration: {
+            database: 'other',
+            host: 'localhost',
+            port: 5434,
+            user: 'me',
+          },
+          name: 'No saved password',
+          provider: 'postgresql',
+        },
       },
     })
   )
@@ -91,6 +106,8 @@ beforeAll(async () => {
     'DataGripProjects/p/.idea/dataSources.local.xml',
     '<project version="4"><component name="dataSourceStorageLocal"><data-source name="Warehouse" uuid="u-1"><user-name>reader</user-name></data-source></component></project>'
   )
+  await write('DataGripProjects/broken/.idea/dataSources.xml', '<project/>')
+  await write('.pgpass', 'localhost:5434:other:me:from-pgpass\n')
   await write(
     '.my.cnf',
     '[client]\nuser=root\npassword=pw\nhost=db.local\n[mysql]\nuser=dev\n'
@@ -129,7 +146,7 @@ const findIn = async (source: string, name: string) => {
   return (
     database && {
       ...connectionParts.parse(database.connectionString),
-      flavor: database.flavor,
+      engine: database.engine,
     }
   )
 }
@@ -143,7 +160,7 @@ describe('localDatabases', () => {
     }
   })
 
-  it('hands out a found password only through unlock', async () => {
+  it('hands out a found password only through unlock, from a later source when the first saved none', async () => {
     const found = await localDatabases.find()
     const passwords = await Promise.all(
       found
@@ -156,6 +173,7 @@ describe('localDatabases', () => {
     expect(passwords).toEqual(
       expect.arrayContaining([
         ['DBeaver Local app', 's3cret'],
+        ['DBeaver No saved password', 'from-pgpass'],
         ['.my.cnf db.local', 'pw'],
         ['Docker maria', 'a=b'],
       ])
@@ -176,7 +194,7 @@ describe('localDatabases', () => {
       { database: 'app', host: 'localhost', port: '5433', user: 'admin' },
     ],
     [
-      'DataGrip: user from the .local.xml beside the data source',
+      'DataGrip: user from the .local.xml beside the data source, a broken file skipped',
       'DataGrip',
       'Warehouse',
       { database: 'shop', port: '3307', user: 'reader' },
@@ -188,15 +206,14 @@ describe('localDatabases', () => {
       { host: 'db.local', user: 'dev' },
     ],
     [
-      'Docker: MariaDB credentials and flavor from the container env',
+      'Docker: MariaDB credentials and flavor from the container env, an exited container skipped',
       'Docker',
       'maria',
       {
         database: 'shop',
-        flavor: 'mariadb',
+        engine: 'mariadb',
         host: 'localhost',
         port: '13306',
-        type: 'mysql',
         user: 'root',
       },
     ],
@@ -209,9 +226,8 @@ describe('localDatabases', () => {
     async () => {
       expect(await findIn('TablePlus', 'Maria')).toMatchObject({
         database: 'shop',
-        flavor: 'mariadb',
+        engine: 'mariadb',
         port: '3308',
-        type: 'mysql',
       })
     }
   )

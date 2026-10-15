@@ -38,18 +38,13 @@ const unwrap = async (wrapped: string) => {
   return importKey(new Uint8Array(Buffer.from(data.result, 'base64')))
 }
 
-const deviceKey = async () => {
+const deviceKey = () => {
   const wrapped = store.get('wrappedKey')
   if (!wrapped) {
     throw new Error(KEYCHAIN_LOCKED_ERROR)
   }
   key ??= unwrap(wrapped)
-  try {
-    return await key
-  } catch (error) {
-    key = null
-    throw error
-  }
+  return key
 }
 
 const create = async () => {
@@ -81,8 +76,9 @@ export const deviceEncryption = {
   decrypt: async (encrypted: string) =>
     decryptWithKey(await deviceKey(), encrypted),
   encrypt: async (text: string) => encryptWithKey(await deviceKey(), text),
-  hasKey: () => store.has('wrappedKey'),
-  reset: () => {
+  reset: async () => {
+    // A creation still in flight would write its key after the delete and hand the next account this one's key.
+    await creation
     key = null
     creation = null
     store.delete('wrappedKey')

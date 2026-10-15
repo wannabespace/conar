@@ -2,7 +2,6 @@ import { connectionSecrets } from '@tamery/connection/secrets'
 import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
-import { lowercaseKeys } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
 import { env } from '~/env'
@@ -33,11 +32,7 @@ export const proxy = {
   resolveConnectionString: orpc
     .use(proxySecretMiddleware)
     .use(authMiddleware)
-    .input(
-      type({ connectionString: 'string' })
-        .or({ resourceId: 'string' })
-        .or({ connectionId: 'string' })
-    )
+    .input(type({ resourceId: 'string' }).or({ connectionId: 'string' }))
     .errors({
       FORBIDDEN: {
         message:
@@ -46,33 +41,33 @@ export const proxy = {
       NOT_FOUND: { message: 'Connection not found' },
     })
     .handler(async ({ context, errors, input }) => {
-      if ('connectionString' in input) {
-        return input.connectionString
-      }
-
-      const resource =
+      const { connection, database } =
         'resourceId' in input
-          ? await db.query.connectionsResources.findFirst({
-              columns: { name: true },
-              where: { id: { eq: input.resourceId } },
-              with: {
-                connection: {
-                  columns: CONNECTION_COLUMNS,
-                  where: { userId: { eq: context.user.id } },
+          ? await db.query.connectionsResources
+              .findFirst({
+                columns: { name: true },
+                where: { id: { eq: input.resourceId } },
+                with: {
+                  connection: {
+                    columns: CONNECTION_COLUMNS,
+                    where: { userId: { eq: context.user.id } },
+                  },
                 },
-              },
-            })
-          : undefined
-      const connection =
-        'resourceId' in input
-          ? resource?.connection
-          : await db.query.connections.findFirst({
-              columns: CONNECTION_COLUMNS,
-              where: {
-                id: { eq: input.connectionId },
-                userId: { eq: context.user.id },
-              },
-            })
+              })
+              .then((resource) => ({
+                connection: resource?.connection,
+                database: resource?.name ?? '',
+              }))
+          : {
+              connection: await db.query.connections.findFirst({
+                columns: CONNECTION_COLUMNS,
+                where: {
+                  id: { eq: input.connectionId },
+                  userId: { eq: context.user.id },
+                },
+              }),
+              database: undefined,
+            }
 
       if (!connection) {
         throw errors.NOT_FOUND()
@@ -93,15 +88,15 @@ export const proxy = {
       const url = new SafeURL(connectionString)
       if (
         withoutSecrets &&
-        connectionSecrets.missing(lowercaseKeys(url.searchParams)).length > 0
+        connectionSecrets.missing(url.searchParams).length > 0
       ) {
         throw errors.FORBIDDEN()
       }
 
-      if (!resource) {
+      if (database === undefined) {
         return connectionString
       }
-      url.pathname = encodeURIComponent(resource.name || '')
+      url.pathname = encodeURIComponent(database)
       return url.toString()
     }),
 }

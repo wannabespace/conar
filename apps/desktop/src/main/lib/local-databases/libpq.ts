@@ -32,7 +32,7 @@ export const pgpassDatabases = async () => {
     .filter((line) => !line.startsWith('#'))
     .flatMap((line) => {
       const guess = guessPgpass(line)
-      return guess ? [localDatabase('.pgpass', '', guess.parts)] : []
+      return guess ? localDatabase('.pgpass', '', guess.parts) : []
     })
 }
 
@@ -43,7 +43,7 @@ export const pgServiceDatabases = async () => {
       'utf-8'
     )
   )
-  return validEntries(serviceSchema, Object.entries(services)).map(
+  return validEntries(serviceSchema, Object.entries(services)).flatMap(
     ([name, { dbname, host = 'localhost', password, port, user }]) =>
       localDatabase('pg_service.conf', name, {
         database: dbname,

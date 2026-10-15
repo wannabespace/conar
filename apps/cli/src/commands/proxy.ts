@@ -5,6 +5,7 @@ import { serve } from '@hono/node-server'
 import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
+import type { ConnectionInput } from '@tamery/query-proxy'
 import { createQueryRouter } from '@tamery/query-proxy'
 import { querySerializer } from '@tamery/query-proxy/serializer'
 import { PORTS } from '@tamery/shared/constants'
@@ -49,16 +50,12 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    const resolveConnectionString = (input: {
-      connectionString?: string
-      resourceId?: string
-      connectionId?: string
-    }): string => {
-      if (input.connectionString) {
+    const resolveConnectionString = (input: ConnectionInput): string => {
+      if ('connectionString' in input) {
         return input.connectionString
       }
 
-      if (input.resourceId) {
+      if ('resourceId' in input) {
         const resource = resources.find((r) => r.id === input.resourceId)
         if (!resource) {
           throw new ORPCError('NOT_FOUND', {
@@ -78,20 +75,13 @@ export const proxyCommand = command({
         return url.toString()
       }
 
-      if (input.connectionId) {
-        const conn = connections.find((c) => c.id === input.connectionId)
-        if (!conn) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.`,
-          })
-        }
-        return conn.connectionString
+      const conn = connections.find((c) => c.id === input.connectionId)
+      if (!conn) {
+        throw new ORPCError('NOT_FOUND', {
+          message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.`,
+        })
       }
-
-      throw new ORPCError('BAD_REQUEST', {
-        message:
-          'One of connectionString, resourceId, or connectionId is required.',
-      })
+      return conn.connectionString
     }
 
     const verifyBrowserSession = async (headers: Headers): Promise<void> => {

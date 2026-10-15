@@ -34,7 +34,7 @@ export const engines = {
     flavor,
     type,
   }: {
-    flavor: ConnectionFlavor | null
+    flavor?: ConnectionFlavor | null
     type: ConnectionType
   }): Engine => (flavor && TYPE_OF_FLAVOR[flavor] === type ? flavor : type),
   type: (engine: Engine) =>

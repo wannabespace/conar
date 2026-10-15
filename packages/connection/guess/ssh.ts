@@ -115,14 +115,15 @@ export const guessSsh = (
     const commands: string[][] = command ? [] : shellCommands(line)
     const found = commands.map(sshCommandOf)
     const commandAt = found.findIndex(Boolean)
-    if (commandAt === -1) {
+    const match = found[commandAt]
+    if (!match) {
       rest.push(line)
       continue
     }
-    command = found[commandAt] ?? null
+    command = match
     rest.push(
-      ...(command?.assignments ?? []),
-      // A bare re-join would split a quoted argument (`psql "host=… port=…"`) again.
+      ...match.assignments,
+      // A bare re-join would split a quoted argument (`psql "host=… port=…"`) again; shell-quote's `quote` escapes `:@?=`, which the URL and env readers then miss.
       ...commands
         .toSpliced(commandAt, 1)
         .map((words) =>

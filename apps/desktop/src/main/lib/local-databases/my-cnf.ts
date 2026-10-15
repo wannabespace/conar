@@ -28,7 +28,9 @@ export const myCnfDatabases = async () => {
     ...client,
     ...mysql,
   })
-  return [
-    localDatabase('.my.cnf', '', { ...rest, host, type: ConnectionType.MySQL }),
-  ]
+  return localDatabase('.my.cnf', '', {
+    ...rest,
+    host,
+    type: ConnectionType.MySQL,
+  })
 }

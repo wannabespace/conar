@@ -2,9 +2,8 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-import { mutateOffline, useCollections } from '~/core/collections'
-import { ensureResource } from '~/core/connection/resources'
-import { rememberOpenedResource } from '~/core/connection/stores'
+import { useCollections } from '~/core/collections'
+import { saveConnectionString } from '~/core/connection/save'
 import type { Connection } from '~/core/connection/sync'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
@@ -12,11 +11,11 @@ import { editModeOf } from '~/modules/connection-form/lib/form-mode'
 
 export const UnlockForm = ({
   connection,
-  resourceName,
+  resourceId,
   scope,
 }: {
   connection: Connection
-  resourceName: string | null
+  resourceId: string
   scope: 'credentials' | 'details'
 }) => {
   const { connectionStringsCollection } = useCollections()
@@ -33,21 +32,20 @@ export const UnlockForm = ({
   const { mutateAsync } = useMutation({
     meta: { event: `connection_${scope}_saved` },
     mutationFn: async (saved: { connectionString: string }) => {
-      const { record } = await connectionStringsCollection.utils.save({
-        connectionId: connection.id,
-        connectionString: saved.connectionString,
-        updatedAt: connection.updatedAt,
-      })
+      // The string keeps the row's `updatedAt`: an unlock never touches the synced row.
+      const opened = await saveConnectionString(
+        connection.id,
+        saved.connectionString,
+        connection.updatedAt
+      )
       toast.success(scope === 'details' ? 'Details saved' : 'Credentials saved')
-      const database = record.defaultResourceName
-      if (scope === 'details' && database && database !== resourceName) {
-        let resourceId = ''
-        mutateOffline(() => {
-          resourceId = ensureResource(connection.id, database)
-        })
-        rememberOpenedResource(connection.id, database)
+      if (
+        scope === 'details' &&
+        opened.resource &&
+        opened.resourceId !== resourceId
+      ) {
         await router.navigate({
-          params: { resourceId },
+          params: { resourceId: opened.resourceId },
           to: '/connection/$resourceId',
         })
       }

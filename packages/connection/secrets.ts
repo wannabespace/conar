@@ -22,8 +22,10 @@ const urlOf = (connectionString: string) => {
 
 /** `strip` empties a secret rather than dropping it, so another device knows which ones to ask for. */
 export const connectionSecrets = {
-  missing: (searchParams: URLSearchParams): SecretParam[] =>
-    SECRET_PARAMS.filter((param) => searchParams.get(param) === ''),
+  missing: (searchParams: URLSearchParams): SecretParam[] => {
+    const params = lowercaseKeys(searchParams)
+    return SECRET_PARAMS.filter((param) => params.get(param) === '')
+  },
   /** `isPasswordExists` is the synced connection's flag: an empty synced password is only a stripped one while it is set, otherwise another device removed it. */
   restore: (
     connectionString: string,

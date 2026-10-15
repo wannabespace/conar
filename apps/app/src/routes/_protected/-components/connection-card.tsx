@@ -217,10 +217,11 @@ export const ConnectionCard = ({
         <ConnectionCardMeta
           canSend={canSend}
           connectionId={connection.id}
+          databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
           loading={!connectionString && !needsDetails}
           resources={resources}
-          selectedResourceName={needsDetails ? null : selectedResourceName}
+          selectedResourceName={selectedResourceName}
         />
         <AppMenuButton
           variant="muted"

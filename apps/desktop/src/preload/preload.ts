@@ -158,9 +158,6 @@ contextBridge.exposeInMainWorld('electron', {
     encrypt: handleElectronError((text: string) =>
       ipcRenderer.invoke('deviceEncryption.encrypt', text)
     ),
-    hasKey: handleElectronError(() =>
-      ipcRenderer.invoke('deviceEncryption.hasKey')
-    ),
     reset: handleElectronError(() =>
       ipcRenderer.invoke('deviceEncryption.reset')
     ),

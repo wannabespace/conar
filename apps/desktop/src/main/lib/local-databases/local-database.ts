@@ -1,7 +1,10 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessedParts } from '@tamery/connection/guess/types'
-import type { ConnectionFlavor } from '@tamery/shared/enums/connection-type'
+import type { Engine } from '@tamery/shared/enums/connection-type'
+import { engines } from '@tamery/shared/enums/connection-type'
+import type { MaybePromise } from '@tamery/shared/utils'
+import { tryCatchAsync } from '@tamery/shared/utils'
 import type { ArkErrors } from 'arktype'
 import { type } from 'arktype'
 
@@ -12,7 +15,7 @@ export interface Unlocked {
 
 export interface LocalDatabase {
   connectionString: string
-  flavor: ConnectionFlavor | null
+  engine: Engine
   name: string
   /** Where it was found, shown to the user: `Docker`, `DBeaver`, `.pgpass`. */
   source: string
@@ -34,26 +37,44 @@ const NO_PARTS: ConnectionParts = {
 const NOTHING_SAVED = () =>
   Promise.resolve<Unlocked>({ password: '', withheld: false })
 
-/** The connection string never carries the password: only `unlock` hands it out. An empty string (no host or engine) is dropped by `find`. */
+/** The connection string never carries the password: only `unlock` hands it out. */
 export const localDatabase = (
   source: string,
   name: string,
-  { flavor = null, password, ...parts }: GuessedParts,
+  { flavor, password, ...parts }: GuessedParts,
   unlock = NOTHING_SAVED
-): LocalDatabase => ({
-  connectionString: connectionParts.format({
+): LocalDatabase[] => {
+  const connectionString = connectionParts.format({
     ...NO_PARTS,
     ...Object.fromEntries(
       Object.entries(parts).filter(([, value]) => value !== undefined)
     ),
-  }),
-  flavor,
-  name: name || parts.database || parts.host || '',
-  source,
-  unlock: password
-    ? () => Promise.resolve({ password, withheld: false })
-    : unlock,
-})
+  })
+  return connectionString && parts.type
+    ? [
+        {
+          connectionString,
+          engine: engines.of({ flavor, type: parts.type }),
+          name: name || parts.database || parts.host || '',
+          source,
+          unlock: password
+            ? () => Promise.resolve({ password, withheld: false })
+            : unlock,
+        },
+      ]
+    : []
+}
+
+/** One missing or unreadable item finds nothing; it never hides the rest. */
+export const findEach = async <T>(
+  items: readonly T[],
+  find: (item: T) => MaybePromise<LocalDatabase[]>
+) => {
+  const found = await Promise.all(
+    items.map((item) => tryCatchAsync(() => Promise.try(find, item)))
+  )
+  return found.flatMap(({ data }) => data ?? [])
+}
 
 /** One odd entry must not hide the rest of its source. */
 export const validEntries = <T>(

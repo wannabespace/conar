@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
-import { diagnoseConnectionError, isConnectionFailure } from './diagnose'
+import { diagnoseConnectionError } from './diagnose'
 import { diagnosisRequestOf } from './diagnosis-request'
 import {
   EMPTY_SSH_TUNNEL,
@@ -306,22 +306,5 @@ describe('diagnosisRequestOf', () => {
     ).toBe(
       'SSLPassword=%3Credacted%3E&ssh_passphrase=%3Credacted%3E&sslMode=require'
     )
-  })
-})
-
-describe('isConnectionFailure', () => {
-  it.each([
-    "Access denied for user 'me'@'10.0.0.7' (using password: YES)",
-    "Login failed for user 'me'.",
-    `${SSH_TUNNEL_ERROR}${SSH_KEY_ERRORS.passphrase.wrong}`,
-    'net::ERR_TIMED_OUT',
-  ])('reads %s as the database failing, not the app', (message) => {
-    expect(isConnectionFailure(message)).toBe(true)
-  })
-
-  it('leaves an app error to the error page', () => {
-    expect(
-      isConnectionFailure("Cannot read properties of undefined (reading 'id')")
-    ).toBe(false)
   })
 })

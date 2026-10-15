@@ -19,54 +19,42 @@ const db = createIndexedDb({
 
 const storage = db.stores['encryption-key']
 
-// The device keeps the key it started with: strings encrypted under one key never decrypt under the other.
-const keychainEncryption = memoize(async () => {
-  const keychain = window.electron?.deviceEncryption ?? null
-  if (!keychain || (await keychain.hasKey())) {
-    return keychain
-  }
-  await db.ready
-  if (storage.get().encryptionKey) {
-    return null
-  }
-  return (await keychain.createKey()) ? keychain : null
+const withKey = (key: CryptoKey) => ({
+  decrypt: (encrypted: string) => decryptWithKey(key, encrypted),
+  encrypt: (text: string) => encryptWithKey(key, text),
 })
 
-const indexedDbKey = memoize(async (): Promise<CryptoKey> => {
+// The device keeps the key it started with: strings encrypted under one key never decrypt under the other. Only a device without an IndexedDB key asks for the keychain one, so the two never both exist.
+const backend = memoize(async () => {
   await db.ready
-
-  const stored = storage.get().encryptionKey
-
-  if (stored) {
-    return stored
+  const { encryptionKey } = storage.get()
+  if (encryptionKey) {
+    return withKey(encryptionKey)
   }
-
+  const keychain = window.electron?.deviceEncryption
+  if (keychain && (await keychain.createKey())) {
+    return keychain
+  }
   const key = await crypto.subtle.generateKey(
     { length: 256, name: 'AES-GCM' },
     false,
     ['encrypt', 'decrypt']
   )
   await storage.set({ encryptionKey: key })
-
-  return key
+  return withKey(key)
 })
 
 export const deviceEncryption = {
   decrypt: async (encrypted: string) => {
-    const keychain = await keychainEncryption()
-    return keychain
-      ? keychain.decrypt(encrypted)
-      : decryptWithKey(await indexedDbKey(), encrypted)
+    const { decrypt } = await backend()
+    return decrypt(encrypted)
   },
   encrypt: async (text: string) => {
-    const keychain = await keychainEncryption()
-    return keychain
-      ? keychain.encrypt(text)
-      : encryptWithKey(await indexedDbKey(), text)
+    const { encrypt } = await backend()
+    return encrypt(text)
   },
   reset: async () => {
-    clearMemoizeCache(indexedDbKey)
-    clearMemoizeCache(keychainEncryption)
+    clearMemoizeCache(backend)
     await Promise.all([
       storage.set({ encryptionKey: null }),
       window.electron?.deviceEncryption.reset(),

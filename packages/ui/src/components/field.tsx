@@ -269,7 +269,7 @@ const FieldError = ({
             onPointerEnter={() => engage(true)}
             onPointerLeave={() => engage(false)}
             className={cn(
-              `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none`,
+              `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none [--button-size:--spacing(4)]`,
               className
             )}
             {...props}

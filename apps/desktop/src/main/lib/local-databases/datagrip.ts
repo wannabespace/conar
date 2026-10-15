@@ -9,7 +9,7 @@ import { app } from 'electron'
 import { XMLParser } from 'fast-xml-parser'
 
 import { keychainPassword } from './keychain'
-import { localDatabase, validEntries } from './local-database'
+import { findEach, localDatabase, validEntries } from './local-database'
 
 const DATA_SOURCE_FILES = [
   path.join(app.getPath('appData'), 'JetBrains/*/options/dataSources.xml'),
@@ -57,7 +57,7 @@ const databasesIn = async (file: string) => {
       dataSource['user-name'],
     ])
   )
-  return dataSources.map((dataSource) => {
+  return dataSources.flatMap((dataSource) => {
     const parts = guessConnection(dataSource['jdbc-url'] ?? '')?.parts ?? {}
     const { uuid } = dataSource
     return localDatabase(
@@ -73,8 +73,5 @@ const databasesIn = async (file: string) => {
   })
 }
 
-export const dataGripDatabases = async () => {
-  const files = await Array.fromAsync(glob(DATA_SOURCE_FILES))
-  const found = await Promise.all(files.map(databasesIn))
-  return found.flat()
-}
+export const dataGripDatabases = async () =>
+  findEach(await Array.fromAsync(glob(DATA_SOURCE_FILES)), databasesIn)

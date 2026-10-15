@@ -76,6 +76,7 @@ const ConnectionResourcesSelect = ({
 export const ConnectionCardMeta = ({
   canSend,
   connectionId,
+  databaseKnown,
   displayUrl,
   loading,
   resources,
@@ -83,6 +84,8 @@ export const ConnectionCardMeta = ({
 }: {
   canSend: boolean
   connectionId: string
+  /** Off until this device has the server details: the selected database is then only the first one the list stored. */
+  databaseKnown: boolean
   displayUrl: string | undefined
   loading: boolean
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
@@ -98,22 +101,23 @@ export const ConnectionCardMeta = ({
         loading && <Skeleton className="h-3 w-40" />
       )}
     </div>
-    {selectedResourceName !== null && resources.length > 1 ? (
-      <ConnectionResourcesSelect
-        resources={resources}
-        selectedResourceName={selectedResourceName}
-        onSelectedResourceNameChange={(value) =>
-          rememberOpenedResource(connectionId, value)
-        }
-        disabled={!canSend}
-      />
-    ) : (
-      selectedResourceName !== null && (
-        <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-          <span className="text-muted-foreground/50">/ </span>
-          {resourceLabel(selectedResourceName)}
-        </span>
-      )
-    )}
+    {databaseKnown &&
+      (resources.length > 1 ? (
+        <ConnectionResourcesSelect
+          resources={resources}
+          selectedResourceName={selectedResourceName}
+          onSelectedResourceNameChange={(value) =>
+            rememberOpenedResource(connectionId, value)
+          }
+          disabled={!canSend}
+        />
+      ) : (
+        selectedResourceName !== null && (
+          <span data-mask className="max-w-32 shrink-0 truncate text-xs">
+            <span className="text-muted-foreground/50">/ </span>
+            {resourceLabel(selectedResourceName)}
+          </span>
+        )
+      ))}
   </div>
 )

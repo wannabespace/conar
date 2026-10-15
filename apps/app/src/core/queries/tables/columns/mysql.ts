@@ -1,3 +1,4 @@
+import { tryCatchAsync } from '@tamery/shared/utils'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -108,29 +109,31 @@ export const mysqlColumns = async (
     .orderBy('ORDINAL_POSITION')
     .execute()
 
-  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MySQL's CHECK_CONSTRAINTS has no TABLE_NAME, and 5.7 has no such table.
-  const checks = query.some(
-    (column) => column.mariadb && column.type === 'longtext'
+  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MySQL's CHECK_CONSTRAINTS has no TABLE_NAME, and neither MySQL 5.7 nor MariaDB before 10.2.22/10.3.10 has the table, so a failed read means no checks.
+  const { data: checks } = await tryCatchAsync(async () =>
+    query.some((column) => column.mariadb && column.type === 'longtext')
+      ? await db
+          .selectFrom('information_schema.CHECK_CONSTRAINTS')
+          .select([
+            'CONSTRAINT_SCHEMA as schema',
+            'TABLE_NAME as table',
+            'CHECK_CLAUSE as clause',
+          ])
+          .where('CHECK_CLAUSE', 'like', 'json_valid(%')
+          .$call((qb) =>
+            filter
+              ? qb
+                  .where('CONSTRAINT_SCHEMA', '=', filter.schema)
+                  .where('TABLE_NAME', '=', filter.table)
+              : qb.where('CONSTRAINT_SCHEMA', 'not in', SYSTEM_SCHEMAS)
+          )
+          .execute()
+      : []
   )
-    ? await db
-        .selectFrom('information_schema.CHECK_CONSTRAINTS')
-        .select([
-          'CONSTRAINT_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'CHECK_CLAUSE as clause',
-        ])
-        .where('CHECK_CLAUSE', 'like', 'json_valid(%')
-        .$call((qb) =>
-          filter
-            ? qb
-                .where('CONSTRAINT_SCHEMA', '=', filter.schema)
-                .where('TABLE_NAME', '=', filter.table)
-            : qb.where('CONSTRAINT_SCHEMA', 'not in', SYSTEM_SCHEMAS)
-        )
-        .execute()
-    : []
   const jsonColumns = new Set(
-    checks.map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
+    (checks ?? []).map(
+      ({ clause, schema, table }) => `${schema}.${table}.${clause}`
+    )
   )
 
   return query.map(({ mariadb: _mariadb, ...column }) => ({

@@ -20,7 +20,7 @@ export type ServerField = Exclude<
 >
 
 export type GuessedParts = Partial<ConnectionParts> & {
-  flavor?: ConnectionFlavor | null
+  flavor?: ConnectionFlavor
 }
 
 export interface ConnectionGuess extends DatabaseGuess {

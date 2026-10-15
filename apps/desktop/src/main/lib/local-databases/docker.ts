@@ -10,10 +10,10 @@ import {
   ConnectionFlavor,
   ConnectionType,
 } from '@tamery/shared/enums/connection-type'
-import { objectEntries, tryCatchAsync } from '@tamery/shared/utils'
+import { objectEntries } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
-import { localDatabase } from './local-database'
+import { findEach, localDatabase } from './local-database'
 
 const SOCKETS = [
   process.env.DOCKER_HOST?.match(/^unix:\/\/(?<path>.+)$/u)?.groups?.path,
@@ -71,7 +71,7 @@ const CREDENTIALS_OF: Record<ConnectionType, (env: Env) => Credentials> = {
       database: env.MYSQL_DATABASE ?? env.MARIADB_DATABASE ?? '',
       flavor: Object.keys(env).some((name) => name.startsWith('MARIADB_'))
         ? ConnectionFlavor.MariaDB
-        : null,
+        : undefined,
       password:
         (user
           ? (env.MYSQL_PASSWORD ?? env.MARIADB_PASSWORD)
@@ -102,49 +102,39 @@ const databasesOn = async (socketPath: string) => {
   const containers = containersSchema.assert(
     await dockerGet(socketPath, '/containers/json')
   )
-  const found = await Promise.all(
-    containers.map(async ({ Id, Names, Ports }) => {
-      const published = Ports.flatMap(
-        ({ IP = '', PrivatePort, PublicPort }) => {
-          const connectionType = TYPE_OF_CONTAINER_PORT[PrivatePort]
-          return connectionType && PublicPort
-            ? [
-                {
-                  host: ANY_ADDRESS.has(IP) ? 'localhost' : IP,
-                  port: String(PublicPort),
-                  type: connectionType,
-                },
-              ]
-            : []
-        }
-      )
-      if (published.length === 0) {
-        return []
-      }
-      const { Config } = inspectSchema.assert(
-        await dockerGet(socketPath, `/containers/${Id}/json`)
-      )
-      const env: Env = Object.fromEntries(
-        Config.Env.map((variable) => {
-          const equals = variable.indexOf('=')
-          return [variable.slice(0, equals), variable.slice(equals + 1)]
-        })
-      )
-      const name = Names[0]?.replace(/^\//u, '') ?? ''
-      return published.map((server) =>
-        localDatabase('Docker', name, {
-          ...CREDENTIALS_OF[server.type](env),
-          ...server,
-        })
-      )
+  return findEach(containers, async ({ Id, Names, Ports }) => {
+    const published = Ports.flatMap(({ IP = '', PrivatePort, PublicPort }) => {
+      const connectionType = TYPE_OF_CONTAINER_PORT[PrivatePort]
+      return connectionType && PublicPort
+        ? [
+            {
+              host: ANY_ADDRESS.has(IP) ? 'localhost' : IP,
+              port: String(PublicPort),
+              type: connectionType,
+            },
+          ]
+        : []
     })
-  )
-  return found.flat()
+    if (published.length === 0) {
+      return []
+    }
+    const { Config } = inspectSchema.assert(
+      await dockerGet(socketPath, `/containers/${Id}/json`)
+    )
+    const env: Env = Object.fromEntries(
+      Config.Env.map((variable) => {
+        const equals = variable.indexOf('=')
+        return [variable.slice(0, equals), variable.slice(equals + 1)]
+      })
+    )
+    const name = Names[0]?.replace(/^\//u, '') ?? ''
+    return published.flatMap((server) =>
+      localDatabase('Docker', name, {
+        ...CREDENTIALS_OF[server.type](env),
+        ...server,
+      })
+    )
+  })
 }
 
-export const dockerDatabases = async () => {
-  const sockets = await Promise.all(
-    SOCKETS.map((socket) => tryCatchAsync(() => databasesOn(socket)))
-  )
-  return sockets.flatMap(({ data }) => data ?? [])
-}
+export const dockerDatabases = () => findEach(SOCKETS, databasesOn)

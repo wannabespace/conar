@@ -16,12 +16,7 @@ type Params<
   P extends Parameters<T>[0] = Parameters<T>[0],
 > = Prettify<
   P extends { connectionString: string }
-    ? // oxlint-disable-next-line style/indent-binary-ops
-      Omit<P, 'connectionString'> & {
-        connectionString?: string
-        connectionId?: string
-        resourceId?: string
-      } & ConnectionInput
+    ? Omit<P, 'connectionString'> & ConnectionInput
     : P
 >
 
@@ -29,6 +24,16 @@ export type ConnectionInput =
   | { connectionString: string }
   | { connectionId: string }
   | { resourceId: string }
+
+const connectionKeyOf = (input: ConnectionInput): ConnectionInput => {
+  if ('connectionString' in input) {
+    return { connectionString: input.connectionString }
+  }
+  if ('connectionId' in input) {
+    return { connectionId: input.connectionId }
+  }
+  return { resourceId: input.resourceId }
+}
 
 type HandlerContext<T extends AnyBuilder> = Parameters<
   Parameters<T['handler']>[0]
@@ -54,7 +59,10 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.beginTransaction({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await resolve.connectionString(
+            connectionKeyOf(input),
+            context
+          ),
           ownerId: resolve.owner(context),
         })
       ),
@@ -63,7 +71,10 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.cancel({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await resolve.connectionString(
+            connectionKeyOf(input),
+            context
+          ),
         })
       ),
     commitTransaction: orpc
@@ -76,7 +87,10 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.execute({
           ...input,
-          connectionString: await resolve.connectionString(input, context),
+          connectionString: await resolve.connectionString(
+            connectionKeyOf(input),
+            context
+          ),
         })
       ),
     executeTransaction: orpc

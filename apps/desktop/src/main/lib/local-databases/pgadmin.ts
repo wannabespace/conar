@@ -29,7 +29,7 @@ export const pgAdminDatabases = () => {
         )
         .all()
     )
-    return servers.map((server) =>
+    return servers.flatMap((server) =>
       localDatabase('pgAdmin', server.name, {
         database: server.maintenance_db ?? undefined,
         host: server.host ?? undefined,

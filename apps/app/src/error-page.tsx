@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
 import { restartToUnlock } from '~/core/connection/keychain'
+import { fullSignOut } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
 
 const getStack = (error: ErrorComponentProps['error']) => {
@@ -55,7 +56,8 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
 
   let description = 'An unexpected error occurred while showing this page.'
   if (isLocked) {
-    description = 'Saved connections stay locked until Tamery restarts.'
+    description =
+      'Restart Tamery to unlock saved connections, or sign out to reset this device.'
   } else if (isConnectionError) {
     description =
       'Check your database connection settings and network, then try again.'
@@ -117,7 +119,18 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
               Home
             </Button>
             {isLocked ? (
-              <Button onClick={restartToUnlock}>Restart Tamery</Button>
+              <>
+                <Button
+                  variant="ghost-muted"
+                  onClick={() => {
+                    posthog.capture('signed_out_to_unlock')
+                    void fullSignOut()
+                  }}
+                >
+                  Sign out
+                </Button>
+                <Button onClick={restartToUnlock}>Restart Tamery</Button>
+              </>
             ) : (
               <Button onClick={() => window.location.reload()}>Refresh</Button>
             )}

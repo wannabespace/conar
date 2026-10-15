@@ -101,6 +101,19 @@ describe('guessConnection — SSH', () => {
     })
   })
 
+  it('reads a URL chained after the ssh command', () => {
+    expect(
+      guessConnection(
+        'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io; postgres://app:pw@localhost:5433/shop'
+      )?.parts
+    ).toMatchObject({
+      database: 'shop',
+      host: 'db.internal',
+      password: 'pw',
+      user: 'app',
+    })
+  })
+
   it('reads variables set before the ssh command', () => {
     expect(
       guessConnection(

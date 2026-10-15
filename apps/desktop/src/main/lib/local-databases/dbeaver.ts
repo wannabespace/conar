@@ -8,7 +8,7 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { app } from 'electron'
 
-import { localDatabase, validEntries } from './local-database'
+import { findEach, localDatabase, validEntries } from './local-database'
 
 const DATA_SOURCES = 'workspace6/General/.dbeaver/data-sources.json'
 const CREDENTIALS = 'workspace6/General/.dbeaver/credentials-config.json'
@@ -74,7 +74,7 @@ const databasesIn = async (dataDir: string) => {
   const { data: credentials } = await tryCatchAsync(() =>
     credentialsIn(dataDir)
   )
-  return validEntries(connectionSchema, Object.entries(connections)).map(
+  return validEntries(connectionSchema, Object.entries(connections)).flatMap(
     ([id, { configuration, name, provider }]) => {
       const saved = credentials?.[id]?.['#connection']
       return localDatabase('DBeaver', name, {
@@ -89,9 +89,4 @@ const databasesIn = async (dataDir: string) => {
   )
 }
 
-export const dbeaverDatabases = async () => {
-  const dirs = await Promise.all(
-    DATA_DIRS.map((dataDir) => tryCatchAsync(() => databasesIn(dataDir)))
-  )
-  return dirs.flatMap(({ data }) => data ?? [])
-}
+export const dbeaverDatabases = () => findEach(DATA_DIRS, databasesIn)

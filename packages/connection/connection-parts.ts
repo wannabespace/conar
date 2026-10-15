@@ -83,8 +83,8 @@ const schemeName = (scheme: string) =>
 export const typeOfScheme = (scheme: string): ConnectionType | null =>
   TYPE_OF_SCHEME[schemeName(scheme)] ?? null
 
-export const flavorOfScheme = (scheme: string): ConnectionFlavor | null =>
-  FLAVOR_OF_SCHEME[schemeName(scheme)] ?? null
+export const flavorOfScheme = (scheme: string): ConnectionFlavor | undefined =>
+  FLAVOR_OF_SCHEME[schemeName(scheme)]
 
 const format = (
   parts: ConnectionParts,

@@ -93,7 +93,7 @@ export const mcpSource: McpSource = {
     await testConnectionQuery.run({ connectionString, type })
     const { id } = await createConnection({
       connectionString,
-      flavor: flavorOfScheme(connectionString),
+      flavor: flavorOfScheme(connectionString) ?? null,
       name,
       syncType,
       type,

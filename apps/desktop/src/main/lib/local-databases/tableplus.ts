@@ -8,11 +8,10 @@ import {
   ConnectionFlavor,
   ConnectionType,
 } from '@tamery/shared/enums/connection-type'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
 import { keychainPassword } from './keychain'
-import { localDatabase, validEntries } from './local-database'
+import { findEach, localDatabase, validEntries } from './local-database'
 
 const CONNECTION_FILES = [
   'com.tinyapp.TablePlus',
@@ -61,14 +60,14 @@ const databasesIn = async (file: string) => {
   return validEntries(
     connectionSchema,
     type('unknown[]').assert(JSON.parse(stdout))
-  ).map((connection) => {
+  ).flatMap((connection) => {
     const driver = connection.Driver.toLowerCase()
     return localDatabase(
       'TablePlus',
       connection.ConnectionName,
       {
         database: connection.DatabaseName,
-        flavor: driver === 'mariadb' ? ConnectionFlavor.MariaDB : null,
+        flavor: driver === 'mariadb' ? ConnectionFlavor.MariaDB : undefined,
         host: connection.DatabaseHost,
         port: connection.DatabasePort,
         ssh: connection.isOverSSH
@@ -91,12 +90,9 @@ const databasesIn = async (file: string) => {
   })
 }
 
-export const tablePlusDatabases = async () => {
+export const tablePlusDatabases = () => {
   if (process.platform !== 'darwin') {
     return []
   }
-  const files = await Promise.all(
-    CONNECTION_FILES.map((file) => tryCatchAsync(() => databasesIn(file)))
-  )
-  return files.flatMap(({ data }) => data ?? [])
+  return findEach(CONNECTION_FILES, databasesIn)
 }

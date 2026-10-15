@@ -11,7 +11,6 @@ import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { UnsavedChangesGuard } from '~/components/unsaved-changes-guard'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useGoBack } from '~/hooks/use-go-back'
@@ -20,7 +19,7 @@ import { posthog } from '~/lib/posthog'
 import type { ConnectionFormValues } from '../lib/connection-form'
 import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
-import { lockedFieldOf, requiredSecretsOf } from '../lib/form-mode'
+import { missingFieldsOf } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import type { OnSave } from '../lib/use-test-then-save'
 import { useTestThenSave } from '../lib/use-test-then-save'
@@ -39,6 +38,7 @@ import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
+import { UnsavedChangesGuard } from './unsaved-changes-guard'
 
 const REVEAL: Variants = {
   animate: {
@@ -69,8 +69,6 @@ export const ConnectionPage = ({
   const [filled, setFilled] = useState<{
     fixes: GuessFix[]
     origin?: GuessFormat
-    /** The app whose Keychain password the user denied. */
-    passwordWithheldBy?: string
   }>()
   const [stage, setStage] = useState<'agent' | 'form'>('form')
   const pageRef = useRef<HTMLDivElement>(null)
@@ -85,20 +83,21 @@ export const ConnectionPage = ({
   // A button that disappears once pressed (a fix, Ask AI) hands focus to the page first: on body the page's keys no longer reach.
   const focusPage = () => pageRef.current?.focus()
   const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
-  const locked = lockedFieldOf(mode)
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
+  const missingFields = missingFieldsOf(mode)
+  const locked = (field: string) =>
+    scope === 'credentials' && !missingFields.includes(field)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
+    missingFields,
     onFill: ({ fixes, format }, pasted) => {
       setFilled((current) => ({
         fixes,
         origin: pasted ? format : current?.origin,
-        passwordWithheldBy: pasted ? undefined : current?.passwordWithheldBy,
       }))
     },
     onSubmit: () => save(form, filled?.origin),
-    requiredSecrets: requiredSecretsOf(mode),
   })
   // Through the form element, not `form.handleSubmit()`: the kit Form's submit handler then focuses the first invalid field.
   const submit = () => formRef.current?.requestSubmit()
@@ -128,14 +127,8 @@ export const ConnectionPage = ({
     pitchShown: stage === 'form',
   })
 
-  const pickLocalDatabase = usePickLocalDatabase({
+  const { passwordWithheldBy, pick: pickLocalDatabase } = usePickLocalDatabase({
     form,
-    onWithheld: (source) =>
-      setFilled((current) => ({
-        fixes: current?.fixes ?? [],
-        origin: current?.origin,
-        passwordWithheldBy: source,
-      })),
     read,
   })
 
@@ -237,7 +230,7 @@ export const ConnectionPage = ({
                     <PasteNotes
                       fixes={filled.fixes}
                       form={form}
-                      passwordWithheldBy={filled.passwordWithheldBy}
+                      passwordWithheldBy={passwordWithheldBy}
                     />
                   )}
                 </motion.div>

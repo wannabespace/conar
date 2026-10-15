@@ -15,22 +15,12 @@ export type FormMode =
       scope: 'all' | 'credentials' | 'details'
     }
 
-export type Secret = SecretParam | 'password'
-
-/** The SSL secrets sit in Options, which is never empty, so they carry no message and never block a save. */
-export const SECRETS: Record<
-  Secret,
-  { field: string; message: string | null }
-> = {
-  password: { field: 'password', message: 'Enter the password' },
-  ssh_key: { field: 'ssh.privateKey', message: 'Paste the SSH private key' },
-  ssh_passphrase: {
-    field: 'ssh.passphrase',
-    message: 'Enter the key passphrase',
-  },
-  ssh_password: { field: 'ssh.password', message: 'Enter the SSH password' },
-  sslpassphrase: { field: 'options', message: null },
-  sslpassword: { field: 'options', message: null },
+const SECRET_FIELDS: Record<SecretParam, string> = {
+  ssh_key: 'ssh.privateKey',
+  ssh_passphrase: 'ssh.passphrase',
+  ssh_password: 'ssh.password',
+  sslpassphrase: 'options',
+  sslpassword: 'options',
 }
 
 export const editModeOf = (
@@ -46,25 +36,11 @@ export const editModeOf = (
   scope,
 })
 
-/** Under `credentials`, the secrets this device lacks; `null` leaves every field open. */
-const missingSecretsOf = (mode: FormMode): Secret[] | null => {
+/** Under `credentials`, the fields holding what this device lacks: the only ones the form may change. */
+export const missingFieldsOf = (mode: FormMode) => {
   if (mode.kind !== 'edit' || mode.scope !== 'credentials') {
-    return null
+    return []
   }
-  return mode.passwordElsewhere
-    ? ['password', ...mode.missingSecrets]
-    : mode.missingSecrets
+  const fields = mode.missingSecrets.map((secret) => SECRET_FIELDS[secret])
+  return mode.passwordElsewhere ? ['password', ...fields] : fields
 }
-
-/** Field names the form may not change: under `credentials`, everything but what this device lacks. */
-export const lockedFieldOf = (mode: FormMode) => {
-  const missing = missingSecretsOf(mode)
-  if (!missing) {
-    return () => false
-  }
-  const open = new Set(missing.map((secret) => SECRETS[secret].field))
-  return (field: string) => !open.has(field)
-}
-
-export const requiredSecretsOf = (mode: FormMode) =>
-  missingSecretsOf(mode) ?? []
