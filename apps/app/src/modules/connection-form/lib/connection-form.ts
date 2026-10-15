@@ -11,6 +11,7 @@ import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
+import { getBy } from '@tanstack/react-form'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { useState } from 'react'
@@ -19,11 +20,13 @@ import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
+import type { Secret } from './form-mode'
+import { SECRETS } from './form-mode'
 import type { PasteVia } from './use-paste-connection'
 
 export interface ConnectionFormValues extends Omit<
   ConnectionParts,
-  'flavor' | 'ssh' | 'type'
+  'ssh' | 'type'
 > {
   color: string | null
   engine: Engine
@@ -82,36 +85,16 @@ const connectionFormSchema = type({
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
 )
 
-type SecretValues = typeof connectionFormSchema.infer
-
-const SECRETS = {
-  password: {
-    message: 'Enter the password',
-    valueOf: (values: SecretValues) => values.password,
-  },
-  'ssh.passphrase': {
-    message: 'Enter the key passphrase',
-    valueOf: (values: SecretValues) => values.ssh.passphrase,
-  },
-  'ssh.password': {
-    message: 'Enter the SSH password',
-    valueOf: (values: SecretValues) => values.ssh.password,
-  },
-  'ssh.privateKey': {
-    message: 'Paste the SSH private key',
-    valueOf: (values: SecretValues) => values.ssh.privateKey,
-  },
-}
-
-export type SecretField = keyof typeof SECRETS
-
-const formSchemaOf = memoize((requiredSecrets: SecretField[]) =>
+const formSchemaOf = memoize((requiredSecrets: Secret[]) =>
   connectionFormSchema.narrow((values, ctx) => {
-    const empty = requiredSecrets.filter(
-      (field) => !/\S/u.test(SECRETS[field].valueOf(values))
-    )
-    for (const field of empty) {
-      ctx.reject({ message: SECRETS[field].message, path: field.split('.') })
+    const empty = requiredSecrets.flatMap((secret) => {
+      const { field, message } = SECRETS[secret]
+      return message && !/\S/u.test(getBy(values, field))
+        ? [{ field, message }]
+        : []
+    })
+    for (const { field, message } of empty) {
+      ctx.reject({ message, path: field.split('.') })
     }
     return empty.length === 0
   })
@@ -138,7 +121,6 @@ export const formValuesOf = (
 
 export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
   ...pick(values, [...SERVER_FIELDS, 'https']),
-  flavor: engines.flavor(values.engine),
   ssh: values.sshEnabled ? values.ssh : null,
   type: engines.type(values.engine),
 })
@@ -199,7 +181,7 @@ export const useConnectionForm = ({
   defaultValues?: ConnectionFormValues
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
-  requiredSecrets: SecretField[]
+  requiredSecrets: Secret[]
 }) => {
   const schema = formSchemaOf(requiredSecrets)
   const [initialValues, setInitialValues] = useState(

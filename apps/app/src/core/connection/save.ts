@@ -8,7 +8,7 @@ import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
 import { ensureResource } from '~/core/connection/resources'
-import { getConnectionStore } from '~/core/connection/stores'
+import { rememberOpenedResource } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 
 export interface ConnectionDetails {
@@ -74,10 +74,7 @@ const saveConnection = async (
         connectionStringsCollection.delete(connectionId)
       }
     } else if (resource && resource !== stored?.defaultResourceName) {
-      getConnectionStore(connectionId).set((state) => ({
-        ...state,
-        lastOpenedResourceName: resource,
-      }))
+      rememberOpenedResource(connectionId, resource)
     }
   }
   void settle()

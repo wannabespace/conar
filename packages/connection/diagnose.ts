@@ -292,7 +292,7 @@ const RULES: {
         title: "The server didn't answer",
       }
     },
-    match: /etimedout|timed? ?out|esockettimedout/iu,
+    match: /etimedout|timed? ?out|esockettimedout|err_timed_out/iu,
   },
   {
     diagnose: (context) => ({
@@ -351,6 +351,11 @@ const sshKeyFieldOf = (
   }
   return undefined
 }
+
+export const isConnectionFailure = (message: string) =>
+  message.startsWith(SSH_TUNNEL_ERROR) ||
+  message === SSH_DESKTOP_ONLY ||
+  RULES.some(({ match }) => match.test(message))
 
 export const diagnoseConnectionError = (
   context: DiagnosisContext

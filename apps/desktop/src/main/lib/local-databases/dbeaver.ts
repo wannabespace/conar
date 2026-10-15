@@ -8,7 +8,7 @@ import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { app } from 'electron'
 
-import { localDatabase } from './local-database'
+import { localDatabase, validEntries } from './local-database'
 
 const DATA_SOURCES = 'workspace6/General/.dbeaver/data-sources.json'
 const CREDENTIALS = 'workspace6/General/.dbeaver/credentials-config.json'
@@ -30,20 +30,21 @@ const TYPE_OF_PROVIDER: Partial<Record<string, ConnectionType>> = {
   sqlserver: ConnectionType.MSSQL,
 }
 
-const dataSourcesSchema = type({
-  connections: {
-    '[string]': {
-      configuration: {
-        'database?': 'string',
-        'host?': 'string',
-        'port?': 'string | number',
-        'user?': 'string',
-      },
-      name: 'string',
-      provider: 'string',
+const dataSourcesSchema = type({ connections: 'Record<string, unknown>' })
+
+const connectionSchema = type([
+  'string',
+  {
+    configuration: {
+      'database?': 'string',
+      'host?': 'string',
+      'port?': 'string | number',
+      'user?': 'string',
     },
+    name: 'string',
+    provider: 'string',
   },
-})
+])
 
 const credentialsSchema = type({
   '[string]': { '#connection?': { 'password?': 'string', 'user?': 'string' } },
@@ -73,7 +74,7 @@ const databasesIn = async (dataDir: string) => {
   const { data: credentials } = await tryCatchAsync(() =>
     credentialsIn(dataDir)
   )
-  return Object.entries(connections).map(
+  return validEntries(connectionSchema, Object.entries(connections)).map(
     ([id, { configuration, name, provider }]) => {
       const saved = credentials?.[id]?.['#connection']
       return localDatabase('DBeaver', name, {

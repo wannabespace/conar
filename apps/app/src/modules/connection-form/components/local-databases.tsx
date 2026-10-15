@@ -5,12 +5,56 @@ import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { isMac } from '@tamery/ui/lib/os'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
+import { useRef } from 'react'
 
+import { posthog } from '~/lib/posthog'
 import { plural } from '~/utils/plural'
+
+import type { ConnectionForm } from '../lib/connection-form'
+import type { PasteVia } from '../lib/use-paste-connection'
 
 export type LocalDatabase = Awaited<
   ReturnType<NonNullable<typeof window.electron>['localDatabases']['find']>
 >[number]
+
+/** Fills the form at once, and the password when the source hands it out, which can wait on a Keychain prompt. */
+export const usePickLocalDatabase = ({
+  form,
+  onWithheld,
+  read,
+}: {
+  form: ConnectionForm
+  onWithheld: (source: string) => void
+  read: (text: string, via: PasteVia) => void
+}) => {
+  const unlocking = useRef<string>(null)
+  return async ({ connectionString, flavor, name, source }: LocalDatabase) => {
+    posthog.capture('local_database_picked', { source })
+    // Replaces the form rather than merging like a paste: another pick on the same host would keep the previous password, database and options.
+    form.reset()
+    read(connectionString, 'found')
+    form.setFieldValue('name', name)
+    if (flavor) {
+      form.setFieldValue('engine', flavor)
+    }
+    if (unlocking.current === connectionString) {
+      return
+    }
+    unlocking.current = connectionString
+    const unlocked =
+      await window.electron?.localDatabases.unlock(connectionString)
+    if (!unlocked || unlocking.current !== connectionString) {
+      return
+    }
+    unlocking.current = null
+    if (unlocked.password) {
+      form.setFieldValue('password', unlocked.password)
+    }
+    if (unlocked.withheld) {
+      onWithheld(source)
+    }
+  }
+}
 
 /** Desktop only: the web has no way to look around the machine. */
 export const LocalDatabases = ({
@@ -40,9 +84,7 @@ export const LocalDatabases = ({
         {isMac ? 'this Mac' : 'this computer'}
       </span>
       {databases.map((database) => {
-        const { flavor, type } = connectionParts.parse(
-          database.connectionString
-        )
+        const { type } = connectionParts.parse(database.connectionString)
         return (
           <Button
             key={database.connectionString}
@@ -54,7 +96,7 @@ export const LocalDatabases = ({
           >
             {type && (
               <ConnectionIcon
-                engine={engines.of({ flavor, type })}
+                engine={engines.of({ flavor: database.flavor, type })}
                 className="mr-1"
               />
             )}

@@ -16,14 +16,12 @@ const TYPE_OF_FLAVOR: Record<ConnectionFlavor, ConnectionType> = {
   [ConnectionFlavor.MariaDB]: ConnectionType.MySQL,
 }
 
-/** A flavor sits right after the type it speaks through. */
-const ALL: Engine[] = [
-  ConnectionType.Postgres,
-  ConnectionType.MySQL,
-  ConnectionFlavor.MariaDB,
-  ConnectionType.MSSQL,
-  ConnectionType.ClickHouse,
-]
+const ALL: Engine[] = Object.values(ConnectionType).flatMap((type) => [
+  type,
+  ...Object.values(ConnectionFlavor).filter(
+    (flavor) => TYPE_OF_FLAVOR[flavor] === type
+  ),
+])
 
 const isFlavor = (engine: Engine): engine is ConnectionFlavor =>
   Object.hasOwn(TYPE_OF_FLAVOR, engine)

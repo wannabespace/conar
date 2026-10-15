@@ -29,7 +29,7 @@ import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
-import type { LocalDatabase } from './local-databases'
+import { usePickLocalDatabase } from './local-databases'
 import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
@@ -128,21 +128,16 @@ export const ConnectionPage = ({
     pitchShown: stage === 'form',
   })
 
-  const fillFromLocalDatabase = async ({
-    connectionString,
-    name,
-    source,
-  }: LocalDatabase) => {
-    const unlocked =
-      await window.electron?.localDatabases.unlock(connectionString)
-    read(unlocked?.connectionString ?? connectionString, 'found')
-    form.setFieldValue('name', name)
-    if (unlocked?.withheld) {
-      setFilled(
-        (current) => current && { ...current, passwordWithheldBy: source }
-      )
-    }
-  }
+  const pickLocalDatabase = usePickLocalDatabase({
+    form,
+    onWithheld: (source) =>
+      setFilled((current) => ({
+        fixes: current?.fixes ?? [],
+        origin: current?.origin,
+        passwordWithheldBy: source,
+      })),
+    read,
+  })
 
   const values = useSelector(form.store, (state) => state.values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
@@ -227,7 +222,7 @@ export const ConnectionPage = ({
                     flash={flash}
                     mode={mode}
                     onClipboard={readClipboard}
-                    onLocalDatabase={fillFromLocalDatabase}
+                    onLocalDatabase={pickLocalDatabase}
                     onAgent={() => {
                       posthog.capture('connection_agent_opened')
                       setStage('agent')
@@ -278,9 +273,9 @@ export const ConnectionPage = ({
             <motion.div
               key="agent"
               className="mx-auto my-auto w-full max-w-xl px-6 py-16"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              variants={REVEAL}
+              initial="initial"
+              animate="animate"
             >
               <AgentPanel />
             </motion.div>

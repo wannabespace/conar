@@ -3,14 +3,8 @@ import {
   ArrowUpRight01Icon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { silently } from '@tamery/shared/utils'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { getRouteApi } from '@tanstack/react-router'
 
 import { matchingRowsQueryOptions } from '~/core/queries/rows/list'
@@ -39,41 +33,28 @@ const ReferenceTrigger = ({
   const { connectionResource } = useRouteContext()
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="ghost-faint"
-            size="icon-2xs"
-            tabIndex={-1}
-            aria-label={label}
-            onClick={({ currentTarget }) =>
-              onPeek(
-                currentTarget.closest('[role="gridcell"]') ?? currentTarget,
-                hop
-              )
-            }
-            onDoubleClick={(event) => event.stopPropagation()}
-            onPointerEnter={() => {
-              if (hop.kind === 'rows') {
-                void silently(() =>
-                  queryClient.infiniteQuery(
-                    matchingRowsQueryOptions({ connectionResource, ...hop })
-                  )
-                )
-              }
-            }}
-          />
+    <IconButton
+      variant="ghost-muted"
+      size="icon-2xs"
+      icon={icon}
+      label={label}
+      side="bottom"
+      tabIndex={-1}
+      className="[&_svg:not([class*='size-'])]:size-3"
+      onClick={({ currentTarget }) =>
+        onPeek(currentTarget.closest('[role="gridcell"]') ?? currentTarget, hop)
+      }
+      onDoubleClick={(event) => event.stopPropagation()}
+      onPointerEnter={() => {
+        if (hop.kind === 'rows') {
+          void silently(() =>
+            queryClient.infiniteQuery(
+              matchingRowsQueryOptions({ connectionResource, ...hop })
+            )
+          )
         }
-      >
-        <HugeiconsIcon
-          icon={icon}
-          strokeWidth={2}
-          className="text-muted-foreground size-3"
-        />
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{label}</TooltipContent>
-    </Tooltip>
+      }}
+    />
   )
 }
 

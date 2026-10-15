@@ -7,17 +7,13 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridRow } from '@tamery/table'
 import { Button } from '@tamery/ui/components/button'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import {
   Table,
   TableBody,
   TableCell,
   TableRow,
 } from '@tamery/ui/components/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi } from '@tanstack/react-router'
 
@@ -154,30 +150,17 @@ export const RecordView = ({
                       <Display column={column} value={value} />
                     </span>
                     {foreign && isPresent(value) && (
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Button
-                              variant="ghost-faint"
-                              size="icon-2xs"
-                              aria-label={`Open the ${foreign.table} row`}
-                              className="-my-1"
-                              onClick={() =>
-                                onFollow(followReference(foreign, value))
-                              }
-                            />
-                          }
-                        >
-                          <HugeiconsIcon
-                            icon={ArrowUpRight01Icon}
-                            strokeWidth={2}
-                            className="text-muted-foreground"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          Open the {foreign.table} row
-                        </TooltipContent>
-                      </Tooltip>
+                      <IconButton
+                        variant="ghost-muted"
+                        size="icon-2xs"
+                        icon={ArrowUpRight01Icon}
+                        label={`Open the ${foreign.table} row`}
+                        side="bottom"
+                        className="-my-1"
+                        onClick={() =>
+                          onFollow(followReference(foreign, value))
+                        }
+                      />
                     )}
                   </span>
                 </TableCell>

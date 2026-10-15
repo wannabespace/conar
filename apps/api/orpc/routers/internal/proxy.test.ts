@@ -5,29 +5,30 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { Context } from '../../context'
 
-const stored: { connectionString: string; syncType: SyncType } = {
+const stored = {
   connectionString: '',
+  isPasswordExists: false,
   syncType: SyncType.Cloud,
 }
 beforeEach(() => {
   stored.connectionString = 'postgres://user:p@ss@host/default?sslmode=require'
+  stored.isPasswordExists = false
   stored.syncType = SyncType.Cloud
 })
 
+const connection = () => ({
+  connectionString: 'encrypted',
+  isPasswordExists: stored.isPasswordExists,
+  syncType: stored.syncType,
+  workspaceId: 'workspace',
+})
 mock.module('@tamery/db', () => ({
   db: {
     query: {
+      connections: { findFirst: () => Promise.resolve(connection()) },
       connectionsResources: {
         findFirst: () =>
-          Promise.resolve({
-            connection: {
-              connectionString: 'encrypted',
-              isPasswordExists: false,
-              syncType: stored.syncType,
-              workspaceId: 'workspace',
-            },
-            name: 'other database',
-          }),
+          Promise.resolve({ connection: connection(), name: 'other database' }),
       },
     },
   },
@@ -47,30 +48,43 @@ mock.module('~/orpc', () => ({
 }))
 const { proxy } = await import('./proxy')
 
-const resolve = () =>
-  call(
-    proxy.resolveConnectionString,
-    { resourceId: 'resource' },
-    {
-      context: {
-        addLogData: mock(),
-        clientId: undefined,
-        headers: new Headers({ 'x-proxy-token': 'secret' }),
-        isAppOutdated: false,
-        isDesktop: false,
-        os: null,
-        parsedAppVersion: null,
-        request: new Request('https://api.test/rpc'),
-        setHeader: mock(),
-        userAgent: null,
-      },
-    }
-  )
+const BY_RESOURCE = { resourceId: 'resource' }
+
+const resolve = (
+  input: { resourceId: string } | { connectionId: string } = BY_RESOURCE
+) =>
+  call(proxy.resolveConnectionString, input, {
+    context: {
+      addLogData: mock(),
+      clientId: undefined,
+      headers: new Headers({ 'x-proxy-token': 'secret' }),
+      isAppOutdated: false,
+      isDesktop: false,
+      os: null,
+      parsedAppVersion: null,
+      request: new Request('https://api.test/rpc'),
+      setHeader: mock(),
+      userAgent: null,
+    },
+  })
 
 test('resource resolution selects the resource database and preserves credentials and SSL', async () => {
   expect(await resolve()).toBe(
     'postgres://user:p@ss@host/other%20database?sslmode=require'
   )
+})
+
+test('connection resolution returns the stored string unchanged', async () => {
+  expect(await resolve({ connectionId: 'connection' })).toBe(
+    stored.connectionString
+  )
+})
+
+test('refuses a connection synced without secrets whose password was stripped', async () => {
+  stored.syncType = SyncType.CloudWithoutSecrets
+  stored.isPasswordExists = true
+
+  await expect(resolve()).rejects.toThrow('secrets or connection string')
 })
 
 test('refuses a connection synced without secrets whose SSL passphrase was stripped', async () => {

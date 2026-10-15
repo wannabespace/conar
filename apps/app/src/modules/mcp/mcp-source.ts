@@ -1,4 +1,4 @@
-import { connectionParts } from '@tamery/connection/connection-parts'
+import { flavorOfScheme } from '@tamery/connection/connection-parts'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
@@ -93,7 +93,7 @@ export const mcpSource: McpSource = {
     await testConnectionQuery.run({ connectionString, type })
     const { id } = await createConnection({
       connectionString,
-      flavor: connectionParts.parse(connectionString).flavor,
+      flavor: flavorOfScheme(connectionString),
       name,
       syncType,
       type,

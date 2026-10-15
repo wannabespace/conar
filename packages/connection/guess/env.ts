@@ -102,17 +102,18 @@ const UNQUOTED_TAIL = /\s+#.*$|,$/u
 const typeOfDriver = (name: string) =>
   TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name)
 
-/** The engine a `DB_CONNECTION=mariadb` style variable names. */
 const engineNamedIn = (
   variables: Record<string, string>,
   prefix: string
 ): Pick<GuessedParts, 'flavor' | 'type'> => {
-  const driver = TYPE_SUFFIXES.map((suffix) => variables[prefix + suffix] ?? '')
-    .map((name) => name.split('.').at(-1) ?? '')
-    .find(typeOfDriver)
-  return driver
-    ? { flavor: flavorOfScheme(driver), type: typeOfDriver(driver) }
-    : {}
+  for (const suffix of TYPE_SUFFIXES) {
+    const driver = variables[prefix + suffix]?.split('.').at(-1) ?? ''
+    const type = typeOfDriver(driver)
+    if (type) {
+      return { flavor: flavorOfScheme(driver), type }
+    }
+  }
+  return {}
 }
 
 /** Keys must be uppercase. */
@@ -126,9 +127,9 @@ export const partsOfVariables = (
   let parts: GuessedParts = {}
 
   for (const group of GROUPS) {
-    const named = engineNamedIn(variables, group.prefix)
-    const type = group.type ?? named.type
-    const flavor = group.flavor ?? named.flavor
+    const { flavor, type } = group.type
+      ? group
+      : engineNamedIn(variables, group.prefix)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
       if (!group.fields || group.fields.includes(field)) {

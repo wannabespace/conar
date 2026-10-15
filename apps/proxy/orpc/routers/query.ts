@@ -1,3 +1,4 @@
+import type { ConnectionInput } from '@tamery/query-proxy'
 import { createQueryRouter } from '@tamery/query-proxy'
 import { memoize } from 'memoza'
 
@@ -9,14 +10,10 @@ export const resolveQueryConnectionString = memoize(
     input,
     headers,
   }: {
-    input: {
-      connectionString?: string
-      resourceId?: string
-      connectionId?: string
-    }
+    input: ConnectionInput
     headers: Headers
   }): string | Promise<string> => {
-    if (input.connectionString) {
+    if ('connectionString' in input) {
       return input.connectionString
     }
 

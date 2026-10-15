@@ -7,15 +7,20 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import ini from 'ini'
 
-import { localDatabase } from './local-database'
+import { localDatabase, validEntries } from './local-database'
 
-const serviceSchema = type({
-  'dbname?': 'string',
-  'host?': 'string',
-  'password?': 'string',
-  'port?': 'string',
-  'user?': 'string',
-})
+const serviceSchema = type([
+  'string',
+  {
+    // A dotted section name nests as an object, which a service never is.
+    '[string]': 'string',
+    'dbname?': 'string',
+    'host?': 'string',
+    'password?': 'string',
+    'port?': 'string',
+    'user?': 'string',
+  },
+])
 
 export const pgpassDatabases = async () => {
   const pgpass = await readFile(
@@ -38,17 +43,15 @@ export const pgServiceDatabases = async () => {
       'utf-8'
     )
   )
-  return Object.entries(services).map(([name, service]) => {
-    const {
-      dbname,
-      host = 'localhost',
-      ...rest
-    } = serviceSchema.assert(service)
-    return localDatabase('pg_service.conf', name, {
-      ...rest,
-      database: dbname,
-      host,
-      type: ConnectionType.Postgres,
-    })
-  })
+  return validEntries(serviceSchema, Object.entries(services)).map(
+    ([name, { dbname, host = 'localhost', password, port, user }]) =>
+      localDatabase('pg_service.conf', name, {
+        database: dbname,
+        host,
+        password,
+        port,
+        type: ConnectionType.Postgres,
+        user,
+      })
+  )
 }

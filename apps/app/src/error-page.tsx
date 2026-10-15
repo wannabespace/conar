@@ -1,5 +1,7 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { isConnectionFailure } from '@tamery/connection/diagnose'
+import { isKeychainLocked } from '@tamery/shared/keychain'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -13,7 +15,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
-import { isConnectionFailure } from '~/core/connection/connection-failure'
+import { restartToUnlock } from '~/core/connection/keychain'
 import { posthog } from '~/lib/posthog'
 
 const getStack = (error: ErrorComponentProps['error']) => {
@@ -35,13 +37,14 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
 
-  const isConnectionError = isConnectionFailure(error)
+  const isConnectionError = isConnectionFailure(error.message)
+  const isLocked = isKeychainLocked(error)
 
   useEffect(() => {
-    if (!isConnectionError) {
+    if (!(isConnectionError || isLocked)) {
       posthog.captureException(error)
     }
-  }, [error, isConnectionError])
+  }, [error, isConnectionError, isLocked])
   const isValidationError = error instanceof TraversalError
   const stack = getStack(error)
   const cause =
@@ -51,7 +54,9 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const arkErrors = isValidationError ? error.arkErrors : null
 
   let description = 'An unexpected error occurred while showing this page.'
-  if (isConnectionError) {
+  if (isLocked) {
+    description = 'Saved connections stay locked until Tamery restarts.'
+  } else if (isConnectionError) {
     description =
       'Check your database connection settings and network, then try again.'
   } else if (isValidationError) {
@@ -111,7 +116,11 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
             >
               Home
             </Button>
-            <Button onClick={() => window.location.reload()}>Refresh</Button>
+            {isLocked ? (
+              <Button onClick={restartToUnlock}>Restart Tamery</Button>
+            ) : (
+              <Button onClick={() => window.location.reload()}>Refresh</Button>
+            )}
           </div>
 
           <div className="text-muted-foreground/70 mt-5 flex items-center gap-1 text-xs">

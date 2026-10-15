@@ -33,11 +33,12 @@ const expandHome = (path: string) => path.replace(/^~(?=$|\/)/u, homedir())
 const tunnelError = (message: string) =>
   new Error(`${SSH_TUNNEL_ERROR}${message}`)
 
-// ssh2 tries to decrypt with an empty passphrase rather than report the key as encrypted.
 const authConfig = async (
   tunnel: SshTunnel,
   sshConfig: (key: string) => string | undefined
 ): Promise<ConnectConfig> => {
+  // ssh2 tries to decrypt with an empty passphrase rather than report the key as encrypted.
+  const passphrase = tunnel.passphrase || undefined
   if (tunnel.auth === 'password') {
     if (!tunnel.password) {
       throw tunnelError("The SSH password isn't stored on this device")
@@ -48,10 +49,7 @@ const authConfig = async (
     if (!tunnel.privateKey) {
       throw tunnelError("The SSH private key isn't stored on this device")
     }
-    return {
-      passphrase: tunnel.passphrase || undefined,
-      privateKey: tunnel.privateKey,
-    }
+    return { passphrase, privateKey: tunnel.privateKey }
   }
   if (tunnel.auth === 'keyPath') {
     const keyPath = tunnel.keyPath || sshConfig('IdentityFile')
@@ -64,7 +62,7 @@ const authConfig = async (
     if (!privateKey) {
       throw tunnelError(SSH_KEY_ERRORS.key.fileMissing)
     }
-    return { passphrase: tunnel.passphrase || undefined, privateKey }
+    return { passphrase, privateKey }
   }
   const agent = sshConfig('IdentityAgent') ?? process.env.SSH_AUTH_SOCK
   if (!agent) {

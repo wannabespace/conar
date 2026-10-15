@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 
 import { mutateOffline, useCollections } from '~/core/collections'
 import { ensureResource } from '~/core/connection/resources'
-import { getConnectionStore } from '~/core/connection/stores'
+import { rememberOpenedResource } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
@@ -31,7 +31,7 @@ export const UnlockForm = ({
     queryKey: ['connection', connection.id, 'unlock', scope],
   })
   const { mutateAsync } = useMutation({
-    meta: { event: 'connection_password_saved' },
+    meta: { event: `connection_${scope}_saved` },
     mutationFn: async (saved: { connectionString: string }) => {
       const { record } = await connectionStringsCollection.utils.save({
         connectionId: connection.id,
@@ -45,10 +45,7 @@ export const UnlockForm = ({
         mutateOffline(() => {
           resourceId = ensureResource(connection.id, database)
         })
-        getConnectionStore(connection.id).set((state) => ({
-          ...state,
-          lastOpenedResourceName: database,
-        }))
+        rememberOpenedResource(connection.id, database)
         await router.navigate({
           params: { resourceId },
           to: '/connection/$resourceId',

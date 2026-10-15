@@ -10,6 +10,8 @@ import {
 } from '@tamery/ui/components/alert-dialog'
 import { useBlocker } from '@tanstack/react-router'
 
+import { posthog } from '~/lib/posthog'
+
 export const UnsavedChangesGuard = ({
   isDirty,
 }: {
@@ -36,7 +38,13 @@ export const UnsavedChangesGuard = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel variant="outline">Keep editing</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={() => proceed?.()}>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => {
+              posthog.capture('unsaved_changes_discarded')
+              proceed?.()
+            }}
+          >
             Discard
           </AlertDialogAction>
         </AlertDialogFooter>

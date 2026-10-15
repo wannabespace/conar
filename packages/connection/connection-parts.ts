@@ -10,8 +10,6 @@ import { deleteSshParams, setSshParams, sshTunnelOf } from './ssh/params'
 
 export interface ConnectionParts {
   database: string
-  /** Read from the scheme; `format` never writes it, so a saved connection's flavor lives on its row. */
-  flavor: ConnectionFlavor | null
   host: string
   /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
   https: boolean | null
@@ -128,7 +126,6 @@ const parse = (connectionString: string): ConnectionParts => {
 
   return {
     ...parts,
-    flavor: flavorOfScheme(scheme),
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,

@@ -1,13 +1,7 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { engines } from '@tamery/shared/enums/connection-type'
-import { Button } from '@tamery/ui/components/button'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
@@ -50,21 +44,14 @@ const LastOpenedResource = ({
         </span>
       </Link>
       <span className="text-muted-foreground flex shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 has-focus-visible:opacity-100">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost-faint"
-                size="icon-xs"
-                aria-label="Remove from recents"
-                onClick={onClose}
-              />
-            }
-          >
-            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-          </TooltipTrigger>
-          <TooltipContent side="top">Remove from recents</TooltipContent>
-        </Tooltip>
+        <IconButton
+          variant="ghost-faint"
+          size="icon-xs"
+          icon={Cancel01Icon}
+          label="Remove from recents"
+          side="top"
+          onClick={onClose}
+        />
       </span>
     </div>
   )

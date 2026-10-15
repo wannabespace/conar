@@ -134,7 +134,6 @@ export const ConnectionCard = ({
     toast.success('Credentials cleared from this device')
   }
 
-  const isResourcesShown = resources.length > 1
   const isLoadingVisible =
     (isFetching && connectionResourcesNames.length === 0) || refresh.isPending
 
@@ -217,13 +216,11 @@ export const ConnectionCard = ({
         </div>
         <ConnectionCardMeta
           canSend={canSend}
-          connectionStore={connectionStore}
-          databaseKnown={!needsDetails}
-          displayUrl={connectionString?.displayUrl ?? null}
-          isResourcesShown={isResourcesShown}
+          connectionId={connection.id}
+          displayUrl={connectionString?.displayUrl}
           loading={!connectionString && !needsDetails}
           resources={resources}
-          selectedResourceName={selectedResourceName}
+          selectedResourceName={needsDetails ? null : selectedResourceName}
         />
         <AppMenuButton
           variant="muted"

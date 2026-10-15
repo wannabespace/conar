@@ -8,8 +8,8 @@ import { type } from 'arktype'
 import { app } from 'electron'
 import { XMLParser } from 'fast-xml-parser'
 
-import { keychain } from './keychain'
-import { localDatabase } from './local-database'
+import { keychainPassword } from './keychain'
+import { localDatabase, validEntries } from './local-database'
 
 const DATA_SOURCE_FILES = [
   path.join(app.getPath('appData'), 'JetBrains/*/options/dataSources.xml'),
@@ -27,23 +27,24 @@ const parser = new XMLParser({
   parseTagValue: false,
 })
 
-const dataSourcesSchema = type({
-  project: {
-    component: type({
-      'data-source?': type({
-        'jdbc-url?': 'string',
-        name: 'string',
-        'user-name?': 'string',
-        'uuid?': 'string',
-      }).array(),
-    }).array(),
-  },
+const fileSchema = type({
+  project: { component: type({ 'data-source?': 'unknown[]' }).array() },
+})
+
+const dataSourceSchema = type({
+  'jdbc-url?': 'string',
+  name: 'string',
+  'user-name?': 'string',
+  'uuid?': 'string',
 })
 
 const dataSourcesIn = async (file: string) =>
-  dataSourcesSchema
-    .assert(parser.parse(await readFile(file, 'utf-8')))
-    .project.component.flatMap((component) => component['data-source'] ?? [])
+  validEntries(
+    dataSourceSchema,
+    fileSchema
+      .assert(parser.parse(await readFile(file, 'utf-8')))
+      .project.component.flatMap((component) => component['data-source'] ?? [])
+  )
 
 const databasesIn = async (file: string) => {
   const [dataSources, local] = await Promise.all([
@@ -58,17 +59,17 @@ const databasesIn = async (file: string) => {
   )
   return dataSources.map((dataSource) => {
     const parts = guessConnection(dataSource['jdbc-url'] ?? '')?.parts ?? {}
-    const database = localDatabase('DataGrip', dataSource.name, {
-      ...parts,
-      user: parts.user || userOf.get(dataSource.uuid),
-    })
-    if (dataSource.uuid) {
-      // JetBrains' own service name, em dash included: any other character finds nothing.
-      keychain.remember(database.connectionString, {
-        service: `IntelliJ Platform DB — ${dataSource.uuid}`,
-      })
-    }
-    return database
+    const { uuid } = dataSource
+    return localDatabase(
+      'DataGrip',
+      dataSource.name,
+      { ...parts, user: parts.user || userOf.get(uuid) },
+      uuid
+        ? () =>
+            // JetBrains' own service name, em dash included: any other character finds nothing.
+            keychainPassword({ service: `IntelliJ Platform DB — ${uuid}` })
+        : undefined
+    )
   })
 }
 

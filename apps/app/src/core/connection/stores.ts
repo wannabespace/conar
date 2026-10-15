@@ -35,6 +35,15 @@ export const getConnectionStore = memoize((id: string) =>
   })
 )
 
+export const rememberOpenedResource = (
+  connectionId: string,
+  name: string | null
+) =>
+  getConnectionStore(connectionId).set((state) => ({
+    ...state,
+    lastOpenedResourceName: name,
+  }))
+
 export const connectionResourceType = type({
   activeTabId: 'string | null',
   showSystem: 'boolean',

@@ -4,9 +4,12 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { text } from 'node:stream/consumers'
 
-import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { GuessedParts } from '@tamery/connection/guess/types'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 import { objectEntries, tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
@@ -46,7 +49,10 @@ const containersSchema = type({
 const inspectSchema = type({ Config: { Env: 'string[]' } })
 
 type Env = Partial<Record<string, string>>
-type Credentials = Pick<ConnectionParts, 'database' | 'password' | 'user'>
+type Credentials = Pick<
+  GuessedParts,
+  'database' | 'flavor' | 'password' | 'user'
+>
 
 const CREDENTIALS_OF: Record<ConnectionType, (env: Env) => Credentials> = {
   [ConnectionType.ClickHouse]: (env) => ({
@@ -63,6 +69,9 @@ const CREDENTIALS_OF: Record<ConnectionType, (env: Env) => Credentials> = {
     const user = env.MYSQL_USER ?? env.MARIADB_USER
     return {
       database: env.MYSQL_DATABASE ?? env.MARIADB_DATABASE ?? '',
+      flavor: Object.keys(env).some((name) => name.startsWith('MARIADB_'))
+        ? ConnectionFlavor.MariaDB
+        : null,
       password:
         (user
           ? (env.MYSQL_PASSWORD ?? env.MARIADB_PASSWORD)
@@ -116,7 +125,10 @@ const databasesOn = async (socketPath: string) => {
         await dockerGet(socketPath, `/containers/${Id}/json`)
       )
       const env: Env = Object.fromEntries(
-        Config.Env.map((variable) => variable.split(/[=](?<value>.*)/su))
+        Config.Env.map((variable) => {
+          const equals = variable.indexOf('=')
+          return [variable.slice(0, equals), variable.slice(equals + 1)]
+        })
       )
       const name = Names[0]?.replace(/^\//u, '') ?? ''
       return published.map((server) =>

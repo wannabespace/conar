@@ -5,6 +5,13 @@ import type { Database as MysqlDatabase } from '~/core/runtime/dialects/mysql/sc
 
 import type { ColumnsFilter } from '../shape'
 
+const SYSTEM_SCHEMAS = [
+  'mysql',
+  'information_schema',
+  'performance_schema',
+  'sys',
+]
+
 export const mysqlColumns = async (
   db: Kysely<MysqlDatabase>,
   filter: ColumnsFilter
@@ -94,12 +101,7 @@ export const mysqlColumns = async (
               eb('TABLE_NAME', '=', filter.table),
             ])
           )
-        : qb.where('TABLE_SCHEMA', 'not in', [
-            'mysql',
-            'information_schema',
-            'performance_schema',
-            'sys',
-          ])
+        : qb.where('TABLE_SCHEMA', 'not in', SYSTEM_SCHEMAS)
     )
     .orderBy('TABLE_SCHEMA')
     .orderBy('TABLE_NAME')
@@ -107,7 +109,7 @@ export const mysqlColumns = async (
     .execute()
 
   // MariaDB's JSON is a LONGTEXT under a json_valid() check. MySQL's CHECK_CONSTRAINTS has no TABLE_NAME, and 5.7 has no such table.
-  const jsonChecks = query.some(
+  const checks = query.some(
     (column) => column.mariadb && column.type === 'longtext'
   )
     ? await db
@@ -118,16 +120,23 @@ export const mysqlColumns = async (
           'CHECK_CLAUSE as clause',
         ])
         .where('CHECK_CLAUSE', 'like', 'json_valid(%')
+        .$call((qb) =>
+          filter
+            ? qb
+                .where('CONSTRAINT_SCHEMA', '=', filter.schema)
+                .where('TABLE_NAME', '=', filter.table)
+            : qb.where('CONSTRAINT_SCHEMA', 'not in', SYSTEM_SCHEMAS)
+        )
         .execute()
     : []
+  const jsonColumns = new Set(
+    checks.map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
+  )
 
-  return query.map((column) => ({
+  return query.map(({ mariadb: _mariadb, ...column }) => ({
     ...column,
-    ...(jsonChecks.some(
-      (check) =>
-        check.schema === column.schema &&
-        check.table === column.table &&
-        check.clause === `json_valid(\`${column.id}\`)`
+    ...(jsonColumns.has(
+      `${column.schema}.${column.table}.json_valid(\`${column.id}\`)`
     ) && { declaredType: 'json', type: 'json' }),
     enumName:
       column.type === 'set' || column.type === 'enum' ? column.id : undefined,

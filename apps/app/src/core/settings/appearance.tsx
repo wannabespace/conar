@@ -26,18 +26,23 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: 'Dark', value: 'dark' },
 ]
 
-const transparentBackgroundStore = createWebStorageValue({
+const transparentBackgroundValue = createWebStorageValue({
   defaultValue: true,
   key: TRANSPARENT_BACKGROUND_KEY,
   schema: type('boolean'),
   type: 'localStorage',
 })
 
+// Module scope, not the settings page: every window loads this through the actions center, and the storage event carries a toggle to the others.
+transparentBackgroundValue.subscribe((isTransparent) =>
+  document.documentElement.classList.toggle('opaque', !isTransparent)
+)
+
 const hasVibrancy = !!window.electron && isMac
 
 export const AppearanceSettings = () => {
   const theme = useTheme()
-  const isTransparent = useSubscription(transparentBackgroundStore)
+  const isTransparent = useSubscription(transparentBackgroundValue)
 
   return (
     <SettingsGroup>
@@ -78,8 +83,7 @@ export const AppearanceSettings = () => {
             size="sm"
             checked={isTransparent}
             onCheckedChange={(enabled) => {
-              transparentBackgroundStore.set(enabled)
-              document.documentElement.classList.toggle('opaque', !enabled)
+              transparentBackgroundValue.set(enabled)
               posthog.capture('transparent_background_changed', { enabled })
             }}
           />

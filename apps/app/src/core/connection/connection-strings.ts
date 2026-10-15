@@ -1,10 +1,7 @@
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { describeConnectionString } from '@tamery/connection/utils'
-import {
-  isKeychainLocked,
-  KEYCHAIN_LOCKED_ERROR,
-} from '@tamery/shared/keychain'
+import { isKeychainLocked } from '@tamery/shared/keychain'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import type { PersistedCollectionUtils } from '@tanstack/db-sqlite-persistence-core'
 import type { Collection } from '@tanstack/react-db'
@@ -95,23 +92,13 @@ export const createConnectionStringsCollection = (
           try {
             return await deviceEncryption.decrypt(record.encrypted)
           } catch (error) {
-            if (isKeychainLocked(error)) {
-              toast.error(KEYCHAIN_LOCKED_ERROR, {
-                action: {
-                  label: 'Restart',
-                  onClick: () => window.electron?.app.relaunch(),
-                },
-                id: 'keychain-locked',
-              })
-              throw error
+            if (!isKeychainLocked(error)) {
+              await fullSignOut()
+              toast.error(
+                'Your encryption key is invalid. Please, sign in again.',
+                { id: 'encryption-key-invalid' }
+              )
             }
-            await fullSignOut()
-            toast.error(
-              'Your encryption key is invalid. Please, sign in again.',
-              {
-                id: 'encryption-key-invalid',
-              }
-            )
             throw error
           }
         },

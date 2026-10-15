@@ -1,3 +1,5 @@
+import type { ConnectionFlavor } from '@tamery/shared/enums/connection-type'
+
 import type { ConnectionParts } from '../connection-parts'
 import type { GuessFix } from './fixes'
 
@@ -14,10 +16,12 @@ export type GuessFormat =
 
 export type ServerField = Exclude<
   keyof ConnectionParts,
-  'flavor' | 'https' | 'options' | 'ssh' | 'type'
+  'https' | 'options' | 'ssh' | 'type'
 >
 
-export type GuessedParts = Partial<ConnectionParts>
+export type GuessedParts = Partial<ConnectionParts> & {
+  flavor?: ConnectionFlavor | null
+}
 
 export interface ConnectionGuess extends DatabaseGuess {
   /** Changes made to a string that would connect but break a database client; the form tells the user about each. */

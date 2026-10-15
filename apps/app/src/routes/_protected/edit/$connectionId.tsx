@@ -1,4 +1,5 @@
 import { SyncType } from '@tamery/shared/enums/sync-type'
+import { isKeychainLocked } from '@tamery/shared/keychain'
 import { title } from '@tamery/shared/title'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { Spinner } from '@tamery/ui/components/spinner'
@@ -33,9 +34,12 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     if (!connection) {
       throw redirect({ to: '/' })
     }
-    const { data: connectionString } = await tryCatchAsync(() =>
+    const { data: connectionString, error } = await tryCatchAsync(() =>
       collections.connectionStringsCollection.utils.decrypt(connection.id)
     )
+    if (isKeychainLocked(error)) {
+      throw error
+    }
     if (
       connectionString === null &&
       connection.syncType !== SyncType.CloudWithoutConnectionString

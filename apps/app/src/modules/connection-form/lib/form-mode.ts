@@ -3,8 +3,6 @@ import type { SecretParam } from '@tamery/connection/secrets'
 import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
-import type { SecretField } from './connection-form'
-
 export type FormMode =
   | { kind: 'create' }
   | {
@@ -17,12 +15,22 @@ export type FormMode =
       scope: 'all' | 'credentials' | 'details'
     }
 
-const SECRET_FIELDS: Record<SecretParam, SecretField | 'options'> = {
-  ssh_key: 'ssh.privateKey',
-  ssh_passphrase: 'ssh.passphrase',
-  ssh_password: 'ssh.password',
-  sslpassphrase: 'options',
-  sslpassword: 'options',
+export type Secret = SecretParam | 'password'
+
+/** The SSL secrets sit in Options, which is never empty, so they carry no message and never block a save. */
+export const SECRETS: Record<
+  Secret,
+  { field: string; message: string | null }
+> = {
+  password: { field: 'password', message: 'Enter the password' },
+  ssh_key: { field: 'ssh.privateKey', message: 'Paste the SSH private key' },
+  ssh_passphrase: {
+    field: 'ssh.passphrase',
+    message: 'Enter the key passphrase',
+  },
+  ssh_password: { field: 'ssh.password', message: 'Enter the SSH password' },
+  sslpassphrase: { field: 'options', message: null },
+  sslpassword: { field: 'options', message: null },
 }
 
 export const editModeOf = (
@@ -38,27 +46,25 @@ export const editModeOf = (
   scope,
 })
 
-/** Under `credentials`, the fields holding what this device lacks; `null` leaves every field open. */
-const openFieldsOf = (mode: FormMode): (SecretField | 'options')[] | null => {
+/** Under `credentials`, the secrets this device lacks; `null` leaves every field open. */
+const missingSecretsOf = (mode: FormMode): Secret[] | null => {
   if (mode.kind !== 'edit' || mode.scope !== 'credentials') {
     return null
   }
-  const secrets = mode.missingSecrets.map((param) => SECRET_FIELDS[param])
-  return mode.passwordElsewhere ? ['password', ...secrets] : secrets
+  return mode.passwordElsewhere
+    ? ['password', ...mode.missingSecrets]
+    : mode.missingSecrets
 }
 
 /** Field names the form may not change: under `credentials`, everything but what this device lacks. */
 export const lockedFieldOf = (mode: FormMode) => {
-  const open = openFieldsOf(mode)
-  if (!open) {
+  const missing = missingSecretsOf(mode)
+  if (!missing) {
     return () => false
   }
-  const openSet = new Set<string>(open)
-  return (field: string) => !openSet.has(field)
+  const open = new Set(missing.map((secret) => SECRETS[secret].field))
+  return (field: string) => !open.has(field)
 }
 
-/** The secrets a credentials unlock must fill before it saves; an SSL key passphrase hides in Options, which is never empty. */
 export const requiredSecretsOf = (mode: FormMode) =>
-  (openFieldsOf(mode) ?? []).filter(
-    (field): field is SecretField => field !== 'options'
-  )
+  missingSecretsOf(mode) ?? []

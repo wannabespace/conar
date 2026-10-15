@@ -3,6 +3,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
+  flavorOfScheme,
   HTTPS_PORT,
   typeOfScheme,
 } from '../connection-parts'
@@ -49,6 +50,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     parts: {
       ...parts,
       database: parts.database || database,
+      flavor: flavorOfScheme(url),
       options: params.toString(),
       password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,

@@ -21,19 +21,14 @@ type Params<
         connectionString?: string
         connectionId?: string
         resourceId?: string
-      } & (
-          | { resourceId: string }
-          | { connectionString: string }
-          | { connectionId: string }
-        )
+      } & ConnectionInput
     : P
 >
 
-interface ConnectionInput {
-  connectionString?: string
-  connectionId?: string
-  resourceId?: string
-}
+export type ConnectionInput =
+  | { connectionString: string }
+  | { connectionId: string }
+  | { resourceId: string }
 
 type HandlerContext<T extends AnyBuilder> = Parameters<
   Parameters<T['handler']>[0]
