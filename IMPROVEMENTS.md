@@ -70,6 +70,14 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
 
+- **More flavors.** A database speaking another engine's protocol joins as a `ConnectionFlavor` when only its name and a few gates differ, and as its own `ConnectionType` when its SQL differs throughout (`dialects.md`). Candidates by fit:
+  - Name only: Percona Server and Dolt (MySQL), Azure SQL Database (SQL Server).
+  - Name plus capability gates: CockroachDB (partial `pg_catalog`, no extensions, domains or table inheritance, limited `ALTER COLUMN TYPE`), YugabyteDB (reuses Postgres's query layer, near identical), Aurora DSQL (no foreign keys, triggers or extensions), TiDB (no triggers, procedures or events).
+  - Own dialect over a borrowed protocol: Redshift, Greenplum, Materialize, RisingWave, QuestDB, CrateDB, SingleStore, StarRocks, Doris, Babelfish, Fabric Warehouse.
+  - Not flavors: Neon, Supabase, RDS, Aurora, AlloyDB, PlanetScale and ClickHouse Cloud are hosts (`hosts.ts`); TimescaleDB, Citus and pgvector are Postgres extensions.
+
+  The first flavor that lacks something its type offers needs the capability gates (`capabilitiesOf` and friends, about 120 calls) to take the connection's engine instead of its type. Check each candidate's limits on a live server first: they shift between releases.
+
 ## Settings
 
 - **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
