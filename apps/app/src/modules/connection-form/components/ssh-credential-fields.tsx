@@ -5,6 +5,11 @@ import {
 } from '@hugeicons/core-free-icons'
 import type { SshAuth } from '@tamery/connection/ssh/params'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@tamery/ui/components/input-group'
 import { useState } from 'react'
 
 import type { ConnectionForm } from '../lib/connection-form'
@@ -22,6 +27,7 @@ export const SshCredentialFields = ({
 }) => {
   const row = { form, locked }
   const [keyShown, setKeyShown] = useState(false)
+  const [editingKey, setEditingKey] = useState(false)
 
   if (auth === 'agent') {
     return null
@@ -66,19 +72,9 @@ export const SshCredentialFields = ({
         </TextRow>
       ) : (
         <form.AppField name="ssh.privateKey">
-          {(field) => (
-            <field.Field orientation="row">
-              <field.Label>Private key</field.Label>
-              <field.Textarea
-                variant="inset"
-                rows={1}
-                data-mask
-                spellCheck={false}
-                autoComplete="off"
-                placeholder="Paste the key, or load it from a file"
-                className={keyShown ? 'max-h-24' : 'text-masked max-h-24'}
-                disabled={locked(field.name)}
-              >
+          {(field) => {
+            const keyButtons = (
+              <>
                 <LoadFileButton
                   disabled={locked(field.name)}
                   onLoad={field.handleChange}
@@ -90,9 +86,53 @@ export const SshCredentialFields = ({
                   label={keyShown ? 'Hide key' : 'Show key'}
                   onClick={() => setKeyShown((shown) => !shown)}
                 />
-              </field.Textarea>
-            </field.Field>
-          )}
+              </>
+            )
+            return (
+              <field.Field
+                orientation="row"
+                onFocus={(event) =>
+                  setEditingKey(event.target.tagName === 'TEXTAREA')
+                }
+                onBlur={() => setEditingKey(false)}
+              >
+                <field.Label>Private key</field.Label>
+                {field.state.value && !keyShown && !editingKey ? (
+                  // A password input drops line breaks, so it only shows the key's first line and a paste replaces the whole key.
+                  <InputGroup variant="inset">
+                    <InputGroupInput
+                      id={field.name}
+                      type="password"
+                      readOnly
+                      data-mask
+                      value={field.state.value.split('\n')[0]}
+                      disabled={locked(field.name)}
+                      onPaste={(event) => {
+                        event.preventDefault()
+                        field.handleChange(event.clipboardData.getData('text'))
+                      }}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      {keyButtons}
+                    </InputGroupAddon>
+                  </InputGroup>
+                ) : (
+                  <field.Textarea
+                    variant="inset"
+                    rows={1}
+                    data-mask
+                    spellCheck={false}
+                    autoComplete="off"
+                    placeholder="Paste the key, or load it from a file"
+                    className="max-h-24"
+                    disabled={locked(field.name)}
+                  >
+                    {keyButtons}
+                  </field.Textarea>
+                )}
+              </field.Field>
+            )
+          }}
         </form.AppField>
       )}
       <TextRow

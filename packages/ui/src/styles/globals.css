@@ -403,14 +403,6 @@
   }
 }
 
-/* A textarea has no type="password"; this masks a multi-line secret the same way. */
-@utility text-masked {
-  -webkit-text-security: disc;
-  /* Wrapped remainders of masked lines read as stray dots. */
-  white-space: pre;
-  overflow-x: hidden;
-}
-
 @utility end-fade {
   mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
 }
