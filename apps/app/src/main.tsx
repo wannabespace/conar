@@ -4,7 +4,6 @@ import { createRouter, Navigate, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import { toastUnhandledKeychainLocks } from './core/connection/keychain'
 import { history, lastLocationStorageValue } from './lib/last-location'
 import { transparentBackgroundValue } from './lib/transparent-background'
 import { routeTree } from './routeTree.gen'
@@ -37,7 +36,6 @@ if (window.electron) {
       event.preventDefault()
     }
   })
-  toastUnhandledKeychainLocks()
 }
 
 export const router = createRouter({

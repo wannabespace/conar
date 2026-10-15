@@ -1,7 +1,14 @@
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
+import {
+  isKeychainLocked,
+  KEYCHAIN_LOCKED_ERROR,
+} from '@tamery/shared/keychain'
 import { type } from 'arktype'
 import { clearMemoizeCache, memoize } from 'memoza'
 import { createIndexedDb, createIndexedDbStorage } from 'seitu/web'
+import { toast } from 'sonner'
+
+import { posthog } from './posthog'
 
 const db = createIndexedDb({
   name: 'secure-storage',
@@ -44,15 +51,31 @@ const backend = memoize(async () => {
   return withKey(key)
 })
 
+export const restartToUnlock = () => {
+  posthog.capture('app_restarted_to_unlock')
+  window.electron?.app.relaunch()
+}
+
+const withBackend = async <T>(
+  run: (keys: ReturnType<typeof withKey>) => Promise<T>
+) => {
+  try {
+    return await run(await backend())
+  } catch (error) {
+    if (isKeychainLocked(error)) {
+      toast.error(KEYCHAIN_LOCKED_ERROR, {
+        action: { label: 'Restart', onClick: restartToUnlock },
+        id: 'keychain-locked',
+      })
+    }
+    throw error
+  }
+}
+
 export const deviceEncryption = {
-  decrypt: async (encrypted: string) => {
-    const { decrypt } = await backend()
-    return decrypt(encrypted)
-  },
-  encrypt: async (text: string) => {
-    const { encrypt } = await backend()
-    return encrypt(text)
-  },
+  decrypt: (encrypted: string) =>
+    withBackend(({ decrypt }) => decrypt(encrypted)),
+  encrypt: (text: string) => withBackend(({ encrypt }) => encrypt(text)),
   reset: async () => {
     clearMemoizeCache(backend)
     await Promise.all([

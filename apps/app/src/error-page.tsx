@@ -15,8 +15,8 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
-import { restartToUnlock } from '~/core/connection/keychain'
 import { fullSignOut } from '~/lib/auth'
+import { restartToUnlock } from '~/lib/device-encryption'
 import { posthog } from '~/lib/posthog'
 
 const getStack = (error: ErrorComponentProps['error']) => {
