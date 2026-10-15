@@ -26,29 +26,31 @@ const db = createIndexedDb({
 
 const storage = db.stores['encryption-key']
 
-const withKey = (key: CryptoKey) => ({
+const cipher = (key: CryptoKey) => ({
   decrypt: (encrypted: string) => decryptWithKey(key, encrypted),
   encrypt: (text: string) => encryptWithKey(key, text),
 })
 
 // IndexedDB key first: a device never switches keys, since strings encrypted under one never decrypt under the other.
-const backend = memoize(async () => {
+const deviceCipher = memoize(async () => {
   await db.ready
-  const { encryptionKey } = storage.get()
-  if (encryptionKey) {
-    return withKey(encryptionKey)
+  const saved = storage.get().encryptionKey
+  if (saved) {
+    return cipher(saved)
   }
+
   const keychain = window.electron?.deviceEncryption
   if (keychain && (await keychain.createKey())) {
     return keychain
   }
-  const key = await crypto.subtle.generateKey(
+
+  const generated = await crypto.subtle.generateKey(
     { length: 256, name: 'AES-GCM' },
     false,
     ['encrypt', 'decrypt']
   )
-  await storage.set({ encryptionKey: key })
-  return withKey(key)
+  await storage.set({ encryptionKey: generated })
+  return cipher(generated)
 })
 
 export const restartToUnlock = () => {
@@ -56,11 +58,9 @@ export const restartToUnlock = () => {
   window.electron?.app.relaunch()
 }
 
-const withBackend = async <T>(
-  run: (keys: ReturnType<typeof withKey>) => Promise<T>
-) => {
+const toastIfLocked = async <T>(operation: Promise<T>) => {
   try {
-    return await run(await backend())
+    return await operation
   } catch (error) {
     if (isKeychainLocked(error)) {
       toast.error(KEYCHAIN_LOCKED_ERROR, {
@@ -73,11 +73,16 @@ const withBackend = async <T>(
 }
 
 export const deviceEncryption = {
-  decrypt: (encrypted: string) =>
-    withBackend(({ decrypt }) => decrypt(encrypted)),
-  encrypt: (text: string) => withBackend(({ encrypt }) => encrypt(text)),
+  decrypt: async (encrypted: string) => {
+    const { decrypt } = await deviceCipher()
+    return toastIfLocked(decrypt(encrypted))
+  },
+  encrypt: async (text: string) => {
+    const { encrypt } = await deviceCipher()
+    return toastIfLocked(encrypt(text))
+  },
   reset: async () => {
-    clearMemoizeCache(backend)
+    clearMemoizeCache(deviceCipher)
     await Promise.all([
       storage.set({ encryptionKey: null }),
       window.electron?.deviceEncryption.reset(),
