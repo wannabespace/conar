@@ -19,51 +19,53 @@ export const Footer = () => {
   const home = useHomePath()
 
   return (
-    <footer className="mx-auto w-full max-w-6xl px-4 pt-20 pb-10 sm:px-6">
-      <div className="grid grid-cols-2 gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
-        <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
-          <Brand to={home} />
-          <p className="text-muted-foreground max-w-xs text-sm text-pretty">
-            The AI database client for Postgres, MySQL, MariaDB, SQL Server and
-            ClickHouse.
-          </p>
+    <footer className="bg-muted sticky bottom-0 -mt-8">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-32 pb-10 sm:px-6">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
+            <Brand to={home} />
+            <p className="text-muted-foreground max-w-xs text-sm text-pretty">
+              The AI database client for Postgres, MySQL, MariaDB, SQL Server
+              and ClickHouse.
+            </p>
+          </div>
+          <FooterColumn title="Product">
+            <Link to="/download" className={linkClassName}>
+              Download
+            </Link>
+            <Link to={home} hash="pricing" className={linkClassName}>
+              Pricing
+            </Link>
+            <Link to="/releases" className={linkClassName}>
+              Releases
+            </Link>
+          </FooterColumn>
+          <FooterColumn title="Community">
+            {COMMUNITY_LINKS.map(({ href, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClassName}
+              >
+                {label}
+              </a>
+            ))}
+          </FooterColumn>
+          <FooterColumn title="Legal">
+            <Link to="/terms-of-service" className={linkClassName}>
+              Terms of Service
+            </Link>
+            <Link to="/privacy-policy" className={linkClassName}>
+              Privacy Policy
+            </Link>
+          </FooterColumn>
         </div>
-        <FooterColumn title="Product">
-          <Link to="/download" className={linkClassName}>
-            Download
-          </Link>
-          <Link to={home} hash="pricing" className={linkClassName}>
-            Pricing
-          </Link>
-          <Link to="/releases" className={linkClassName}>
-            Releases
-          </Link>
-        </FooterColumn>
-        <FooterColumn title="Community">
-          {COMMUNITY_LINKS.map(({ href, label }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linkClassName}
-            >
-              {label}
-            </a>
-          ))}
-        </FooterColumn>
-        <FooterColumn title="Legal">
-          <Link to="/terms-of-service" className={linkClassName}>
-            Terms of Service
-          </Link>
-          <Link to="/privacy-policy" className={linkClassName}>
-            Privacy Policy
-          </Link>
-        </FooterColumn>
+        <p className="text-muted-foreground mt-16 text-xs">
+          © {new Date().getFullYear()} Tamery
+        </p>
       </div>
-      <p className="text-muted-foreground mt-16 text-xs">
-        © {new Date().getFullYear()} Tamery
-      </p>
     </footer>
   )
 }
