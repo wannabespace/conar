@@ -1,9 +1,11 @@
+import { FolderOpenIcon } from '@hugeicons/core-free-icons'
 import {
   DEFAULT_SSH_PORT,
   SSH_AUTH_METHODS,
 } from '@tamery/connection/ssh/params'
 import type { SshAuth } from '@tamery/connection/ssh/params'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useSelector } from '@tanstack/react-form'
@@ -11,7 +13,7 @@ import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { Footnote } from './footnote'
-import { SshCredentialFields } from './ssh-credential-fields'
+import { PrivateKeyField } from './private-key-field'
 import { TextRow } from './text-row'
 
 const AUTH_LABELS: Record<SshAuth, string> = {
@@ -89,7 +91,54 @@ export const SshFields = ({
                   </field.Field>
                 )}
               </form.AppField>
-              <SshCredentialFields form={form} auth={auth} locked={locked} />
+              {auth === 'password' && (
+                <TextRow
+                  {...row}
+                  label="Password"
+                  aria-label="SSH password"
+                  name="ssh.password"
+                  secret
+                />
+              )}
+              {auth === 'keyPath' && (
+                <TextRow
+                  {...row}
+                  label="Key file"
+                  name="ssh.keyPath"
+                  placeholder="~/.ssh/id_ed25519"
+                >
+                  {window.electron && (
+                    <IconButton
+                      variant="ghost-faint"
+                      size="icon-sm"
+                      icon={FolderOpenIcon}
+                      label="Choose key file"
+                      disabled={locked('ssh.keyPath')}
+                      onClick={async () => {
+                        const keyPath = await window.electron?.ssh.pickKeyFile()
+                        if (keyPath) {
+                          form.setFieldValue('ssh.keyPath', keyPath)
+                        }
+                      }}
+                    />
+                  )}
+                </TextRow>
+              )}
+              {auth === 'key' && (
+                <PrivateKeyField
+                  form={form}
+                  locked={locked('ssh.privateKey')}
+                />
+              )}
+              {(auth === 'key' || auth === 'keyPath') && (
+                <TextRow
+                  {...row}
+                  label="Passphrase"
+                  name="ssh.passphrase"
+                  secret
+                  placeholder="Only if the key has one"
+                />
+              )}
             </MotionCollapse>
           )}
         </AnimatePresence>

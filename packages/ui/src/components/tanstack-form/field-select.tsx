@@ -11,12 +11,11 @@ import { useFieldContext } from './context'
 
 export const FieldSelect = <Value extends string>({
   children,
-  className,
   disabled,
   items,
   renderValue,
   variant,
-}: Pick<ComponentProps<typeof SelectTrigger>, 'className' | 'variant'> & {
+}: Pick<ComponentProps<typeof SelectTrigger>, 'variant'> & {
   children?: ReactNode
   disabled?: boolean
   items: { label: string; value: Value }[]
@@ -36,7 +35,6 @@ export const FieldSelect = <Value extends string>({
         // The trigger is a div, which `<label for>` cannot name.
         aria-labelledby={`${field.name}-label`}
         variant={variant}
-        className={className}
         onBlur={field.handleBlur}
       >
         <SelectValue>{renderValue}</SelectValue>

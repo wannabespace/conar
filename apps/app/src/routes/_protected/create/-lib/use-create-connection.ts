@@ -2,15 +2,12 @@ import { isSshConnectionString } from '@tamery/connection/utils'
 import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/core/collections'
-import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
 import { createConnection } from '~/core/connection/save'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { posthog } from '~/lib/posthog'
 import type { OnSave } from '~/modules/connection-form/lib/use-test-then-save'
 
 export const useCreateConnection = (): OnSave => {
-  const collections = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const router = useRouter()
 
@@ -25,20 +22,12 @@ export const useCreateConnection = (): OnSave => {
       workspaceId: activeWorkspace.id,
     })
 
-    if (open) {
-      const createdResource =
-        collections.connectionsResourcesCollection.get(resourceId)
-      if (!createdResource) {
-        throw new Error('Connection resource not found after create')
-      }
-      prefetchConnectionResourceCore(createdResource)
-      await router.navigate({
-        params: { resourceId },
-        to: '/connection/$resourceId',
-      })
-    } else {
-      await router.navigate({ to: '/' })
-    }
+    await (open
+      ? router.navigate({
+          params: { resourceId },
+          to: '/connection/$resourceId',
+        })
+      : router.navigate({ to: '/' }))
     posthog.capture('connection_created', {
       origin: origin ?? 'form',
       ssh: isSshConnectionString(connection.connectionString),

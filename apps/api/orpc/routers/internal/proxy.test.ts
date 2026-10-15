@@ -60,7 +60,6 @@ const resolve = (
       headers: new Headers({ 'x-proxy-token': 'secret' }),
       isAppOutdated: false,
       isDesktop: false,
-      os: null,
       parsedAppVersion: null,
       request: new Request('https://api.test/rpc'),
       setHeader: mock(),

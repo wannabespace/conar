@@ -11,11 +11,11 @@ export const pickSshKeyFile = async () => {
     properties: ['openFile', 'showHiddenFiles'],
   }
   const window = BrowserWindow.getFocusedWindow()
-  const { canceled, filePaths } = window
+  const { filePaths } = window
     ? await dialog.showOpenDialog(window, options)
     : await dialog.showOpenDialog(options)
   const [filePath] = filePaths
-  if (canceled || !filePath) {
+  if (!filePath) {
     return null
   }
   return filePath.startsWith(`${homedir()}/`)

@@ -107,12 +107,18 @@ const ComboboxInput = ({
         <InputGroupButton
           size="icon-xs"
           variant="ghost"
-          render={<ComboboxTrigger />}
+          render={<ComboboxPrimitive.Trigger />}
           nativeButton
           data-slot="input-group-button"
           className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
           disabled={disabled}
-        />
+        >
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground pointer-events-none size-4"
+          />
+        </InputGroupButton>
       )}
       {showClear && <ComboboxClear disabled={disabled} />}
     </InputGroupAddon>

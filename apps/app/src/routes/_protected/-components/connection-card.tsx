@@ -1,6 +1,6 @@
 import { connectionSecrets } from '@tamery/connection/secrets'
+import { resourceConnectionString } from '@tamery/connection/utils'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { copy } from '@tamery/ui/lib/copy'
@@ -97,20 +97,14 @@ export const ConnectionCard = ({
     (fetchType === 'waiting-for-password' && !!window.electron)
   const openResourceId = canOpenResource ? selectedResource?.id : undefined
 
-  const handleCopy = async () => {
-    const decryptedString = await connectionStringsCollection.utils.decrypt(
-      connection.id
+  const handleCopy = async () =>
+    copy(
+      resourceConnectionString(
+        await connectionStringsCollection.utils.decrypt(connection.id),
+        resolvedSelectedResourceName
+      ),
+      'Connection string copied'
     )
-
-    const connectionStringToCopy = new SafeURL(decryptedString)
-    connectionStringToCopy.pathname =
-      selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ||
-      selectedResourceName === null
-        ? ''
-        : encodeURIComponent(selectedResourceName)
-
-    copy(connectionStringToCopy.toString(), 'Connection string copied')
-  }
 
   const handleClearPassword = async () => {
     const record = connectionStringsCollection.get(connection.id)
@@ -219,7 +213,6 @@ export const ConnectionCard = ({
           connectionId={connection.id}
           databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
-          loading={!connectionString && !needsDetails}
           resources={resources}
           selectedResourceName={selectedResourceName}
         />

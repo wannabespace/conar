@@ -37,7 +37,6 @@ interface FetchingOptions {
 
 const PORT_SUFFIX = /:\d*$/u
 
-/** Derived on read: rows persist across releases, so a stored flag would keep the rules of the release that wrote it. */
 export const isInternalConnection = ({
   displayUrl,
 }: Pick<ConnectionString, 'displayUrl'>) =>

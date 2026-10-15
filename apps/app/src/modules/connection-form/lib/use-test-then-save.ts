@@ -5,7 +5,6 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { engines } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { tryCatch, tryCatchAsync } from '@tamery/shared/utils'
-import type { MutationStatus } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { toast } from 'sonner'
@@ -20,16 +19,14 @@ import type { ConnectionForm, ConnectionFormValues } from './connection-form'
 import { partsOf } from './connection-form'
 import type { FormMode } from './form-mode'
 
-interface CreateOptions {
-  /** Off for a connection that failed its test or cannot be sent from here: opening one shows only its error, so the save lands on the dashboard. */
-  open: boolean
-  origin: GuessFormat | undefined
-  syncType: SyncType
-}
-
 export type OnSave = (
   connection: ConnectionDetails,
-  created: CreateOptions
+  created: {
+    /** Off for a connection that failed its test or cannot be sent from here: opening one shows only its error, so the save lands on the dashboard. */
+    open: boolean
+    origin: GuessFormat | undefined
+    syncType: SyncType
+  }
 ) => Promise<unknown>
 
 export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
@@ -74,12 +71,11 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     const tested =
       test.variables?.connectionString === connectionString &&
       test.variables.type === engines.type(values.engine)
-    const testStatus: MutationStatus = tested ? test.status : 'idle'
     return {
       canSend: canSend && !!connectionString,
       connectionString,
       reason,
-      testStatus,
+      testStatus: tested ? test.status : 'idle',
     }
   }
 

@@ -1,10 +1,12 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { IPV4, isLocalHost } from '../hosts'
+import { isLocalHost } from '../hosts'
 import type { DatabaseGuess } from './types'
 
 const BARE_HOST =
   /^(?:(?<user>[^@\s:/]+)(?::(?<password>[^@\s/]*))?@)?(?<host>[\w-]+(?:\.[\w-]+)*)(?::(?<port>\d+))?(?:\/(?<database>[\w.-]+))?$/u
+
+const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u
 
 const FILE_NAME =
   /\.(?:conf|csv|env|ini|js|json|key|log|md|pem|pub|py|sql|toml|ts|txt|ya?ml)$/iu

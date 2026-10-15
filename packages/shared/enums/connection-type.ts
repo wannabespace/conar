@@ -16,18 +16,16 @@ const TYPE_OF_FLAVOR: Record<ConnectionFlavor, ConnectionType> = {
   [ConnectionFlavor.MariaDB]: ConnectionType.MySQL,
 }
 
-const ALL: Engine[] = Object.values(ConnectionType).flatMap((type) => [
-  type,
-  ...Object.values(ConnectionFlavor).filter(
-    (flavor) => TYPE_OF_FLAVOR[flavor] === type
-  ),
-])
-
 const isFlavor = (engine: Engine): engine is ConnectionFlavor =>
   Object.hasOwn(TYPE_OF_FLAVOR, engine)
 
 export const engines = {
-  all: ALL,
+  all: Object.values(ConnectionType).flatMap((type) => [
+    type,
+    ...Object.values(ConnectionFlavor).filter(
+      (flavor) => TYPE_OF_FLAVOR[flavor] === type
+    ),
+  ]),
   flavor: (engine: Engine) => (isFlavor(engine) ? engine : null),
   of: ({
     flavor,

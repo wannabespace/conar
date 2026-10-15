@@ -44,7 +44,7 @@ export const rememberOpenedResource = (
     lastOpenedResourceName: name,
   }))
 
-export const connectionResourceType = type({
+const connectionResourceType = type({
   activeTabId: 'string | null',
   showSystem: 'boolean',
   tabs: connectionTabType.array(),

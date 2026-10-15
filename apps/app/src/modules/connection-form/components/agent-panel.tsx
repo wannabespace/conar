@@ -119,7 +119,6 @@ export const AgentPanel = () => {
                 </span>
                 {installLink && (
                   <Button
-                    type="button"
                     size="xs"
                     variant="outline"
                     onClick={() => {

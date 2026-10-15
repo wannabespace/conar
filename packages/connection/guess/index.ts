@@ -15,8 +15,7 @@ import { guessSsh, throughForwards } from './ssh'
 import type { ConnectionGuess, DatabaseGuess } from './types'
 import { guessGoDsn, guessUrl, guessWebUrl } from './url'
 
-export type { GuessFix } from './fixes'
-export type { ConnectionGuess, GuessFormat } from './types'
+export type { ConnectionGuess, GuessFix, GuessFormat } from './types'
 
 const DETECTORS = [
   guessCli,

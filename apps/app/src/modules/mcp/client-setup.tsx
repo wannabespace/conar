@@ -31,7 +31,6 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
         </TabsList>
       </div>
       {MCP_CLIENTS.map((client) => {
-        const code = client.code(server)
         const installLink = client.installLink?.(server)
 
         return (
@@ -71,7 +70,7 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
               )}
               <CopyIconButton
                 label="Copy"
-                text={code}
+                text={client.code(server)}
                 onClick={() =>
                   posthog.capture('mcp_config_copied', { client: client.id })
                 }

@@ -84,7 +84,6 @@ export const ConnectionsToolbar = ({ count }: { count: number }) => {
         <Button
           variant="outline"
           size="sm"
-          className="text-foreground"
           render={
             <Link
               to="/create"

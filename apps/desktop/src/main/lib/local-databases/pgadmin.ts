@@ -19,28 +19,24 @@ const serverSchema = type({
 export const pgAdmin: Finder = {
   read: (file) => {
     // readOnly also stops SQLite creating the file when pgAdmin was never installed.
-    const database = new DatabaseSync(file, { readOnly: true })
-    try {
-      return validEntries(
-        serverSchema,
-        database
-          .prepare(
-            'SELECT name, host, port, maintenance_db, username FROM server'
-          )
-          .all()
-      ).map((server) => ({
-        name: server.name,
-        parts: {
-          database: server.maintenance_db ?? undefined,
-          engine: ConnectionType.Postgres,
-          host: server.host ?? undefined,
-          port: server.port?.toString(),
-          user: server.username ?? undefined,
-        },
-      }))
-    } finally {
-      database.close()
-    }
+    using database = new DatabaseSync(file, { readOnly: true })
+    return validEntries(
+      serverSchema,
+      database
+        .prepare(
+          'SELECT name, host, port, maintenance_db, username FROM server'
+        )
+        .all()
+    ).map((server) => ({
+      name: server.name,
+      parts: {
+        database: server.maintenance_db ?? undefined,
+        engine: ConnectionType.Postgres,
+        host: server.host ?? undefined,
+        port: server.port?.toString(),
+        user: server.username ?? undefined,
+      },
+    }))
   },
   source: 'pgAdmin',
   targets: () => [path.join(homedir(), '.pgadmin/pgadmin4.db')],

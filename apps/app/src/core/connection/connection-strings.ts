@@ -1,4 +1,3 @@
-import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { isKeychainLocked } from '@tamery/shared/keychain'
@@ -15,17 +14,12 @@ import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { PERSISTED_SCHEMA_VERSION } from '~/lib/sync'
 
-import type { ConnectionResource } from './sync'
+import type { Connection, ConnectionResource } from './sync'
 
-export interface ConnectionString {
+export type ConnectionString = ReturnType<typeof describeConnectionString> & {
   connectionId: string
   encrypted: string
   updatedAt: Date
-  isPasswordPopulated: boolean
-  usesSsh: boolean
-  missingSecrets: SecretParam[]
-  displayUrl: string
-  defaultResourceName: string | null
 }
 
 type ConnectionStringInput = Pick<
@@ -38,10 +32,9 @@ type ConnectionStringInput = Pick<
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  resolve: (connection: {
-    id: string
-    isPasswordExists: boolean
-  }) => Promise<string | null>
+  resolve: (
+    connection: Pick<Connection, 'id' | 'isPasswordExists'>
+  ) => Promise<string | null>
   save: (data: ConnectionStringInput) => Promise<{
     previous: ConnectionStringInput | null
     record: ConnectionString

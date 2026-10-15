@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { SshTunnel } from '../ssh/params'
+import { EMPTY_SSH_TUNNEL } from '../ssh/params'
 import { guessConnection } from './index'
 import type { GuessFormat } from './index'
 
@@ -10,14 +11,7 @@ const PRIVATE_KEY =
   '-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAA+/==\n-----END OPENSSH PRIVATE KEY-----'
 
 const tunnel = (overrides: Partial<SshTunnel>): SshTunnel => ({
-  auth: 'agent',
-  host: '',
-  keyPath: '',
-  passphrase: '',
-  password: '',
-  port: '',
-  privateKey: '',
-  user: '',
+  ...EMPTY_SSH_TUNNEL,
   ...overrides,
 })
 
@@ -85,31 +79,23 @@ describe('guessConnection — SSH', () => {
     })
   })
 
-  it('reads a command chained after the ssh command', () => {
-    expect(
-      guessConnection(
-        'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io && psql "host=localhost port=5433 user=app password=pw dbname=shop"'
-      )?.parts
-    ).toStrictEqual({
+  it.each([
+    [
+      'a command',
+      'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io && psql "host=localhost port=5433 user=app password=pw dbname=shop"',
+    ],
+    [
+      'a URL',
+      'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io; postgres://app:pw@localhost:5433/shop',
+    ],
+  ])('reads %s chained after the ssh command', (_, text) => {
+    expect(guessConnection(text)?.parts).toStrictEqual({
       database: 'shop',
       engine: ConnectionType.Postgres,
       host: 'db.internal',
       password: 'pw',
       port: '5432',
       ssh: tunnel({ host: 'bastion.acme.io', user: 'deploy' }),
-      user: 'app',
-    })
-  })
-
-  it('reads a URL chained after the ssh command', () => {
-    expect(
-      guessConnection(
-        'ssh -fN -L 5433:db.internal:5432 deploy@bastion.acme.io; postgres://app:pw@localhost:5433/shop'
-      )?.parts
-    ).toMatchObject({
-      database: 'shop',
-      host: 'db.internal',
-      password: 'pw',
       user: 'app',
     })
   })

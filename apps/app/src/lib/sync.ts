@@ -15,19 +15,15 @@ export interface BaseTable {
   updatedAt: Date
 }
 
-export interface SyncTracker {
+interface SyncTracker {
   markSynced: (key: string, updatedAt: Date) => void
   awaitChange: (key: string, updatedAt: Date, timeout?: number) => Promise<void>
-}
-
-export type SyncUtils = Pick<SyncTracker, 'awaitChange'> & {
-  whenSynced: () => Promise<void>
 }
 
 const versionKey = (key: string, updatedAt: Date) =>
   `${key}:${updatedAt.getTime()}`
 
-export const createSyncTracker = (): SyncTracker => {
+const createSyncTracker = (): SyncTracker => {
   const synced = new Set<string>()
   const listeners = new Set<() => void>()
 
@@ -77,7 +73,7 @@ export type SyncMessage<T> =
   | { type: 'update'; value: T }
   | { type: 'delete'; key: string }
 
-export type SyncEventsFn<T> = (params: {
+type SyncEventsFn<T> = (params: {
   signal: AbortSignal
   write: (message: SyncMessage<T>) => void
 }) => void | Promise<void>

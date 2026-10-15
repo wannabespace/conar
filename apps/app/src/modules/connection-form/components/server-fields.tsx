@@ -1,15 +1,33 @@
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
 import { isLocalHost } from '@tamery/connection/hosts'
-import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
+import type { Engine } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionType,
+  engineLabels,
+  engines,
+} from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
+import { SelectItem } from '@tamery/ui/components/select'
 import { useSelector } from '@tanstack/react-form'
 
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 
 import type { ConnectionForm } from '../lib/connection-form'
-import { EngineField } from './engine-field'
 import { Footnote } from './footnote'
 import { TextRow } from './text-row'
+
+const ENGINES = engines.all.map((engine) => ({
+  label: engineLabels[engine],
+  value: engine,
+}))
+
+const engineLabel = (engine: Engine) => (
+  <>
+    <ConnectionIcon engine={engine} />
+    {engineLabels[engine]}
+  </>
+)
 
 const USER_PLACEHOLDERS: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'default',
@@ -50,7 +68,25 @@ export const ServerFields = ({
   return (
     <>
       <FieldGroup variant="card">
-        <EngineField form={form} locked={locked} />
+        <form.AppField name="engine">
+          {(field) => (
+            <field.Field orientation="row">
+              <field.Label>Engine</field.Label>
+              <field.Select
+                items={ENGINES}
+                disabled={locked(field.name)}
+                variant="flat"
+                renderValue={engineLabel}
+              >
+                {ENGINES.map(({ value }) => (
+                  <SelectItem key={value} value={value}>
+                    {engineLabel(value)}
+                  </SelectItem>
+                ))}
+              </field.Select>
+            </field.Field>
+          )}
+        </form.AppField>
         <TextRow
           {...row}
           label="Host"

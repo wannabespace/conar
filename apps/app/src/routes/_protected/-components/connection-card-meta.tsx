@@ -78,7 +78,6 @@ export const ConnectionCardMeta = ({
   connectionId,
   databaseKnown,
   displayUrl,
-  loading,
   resources,
   selectedResourceName,
 }: {
@@ -87,7 +86,6 @@ export const ConnectionCardMeta = ({
   /** Off until this device has the server details: the selected database is then only the first one the list stored. */
   databaseKnown: boolean
   displayUrl: string | undefined
-  loading: boolean
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
 }) => (
@@ -98,7 +96,8 @@ export const ConnectionCardMeta = ({
           {displayUrl}
         </span>
       ) : (
-        loading && <Skeleton className="h-3 w-40" />
+        displayUrl === undefined &&
+        databaseKnown && <Skeleton className="h-3 w-40" />
       )}
     </div>
     {databaseKnown &&

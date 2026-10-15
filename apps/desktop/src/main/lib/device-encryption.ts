@@ -1,6 +1,6 @@
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { KEYCHAIN_LOCKED_ERROR } from '@tamery/shared/keychain'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { silently, tryCatchAsync } from '@tamery/shared/utils'
 import { safeStorage } from 'electron'
 import Store from 'electron-store'
 
@@ -10,12 +10,6 @@ const store = new Store<{ wrappedKey?: string }>({ name: 'encryption-key' })
 
 let key: Promise<CryptoKey> | null = null
 let creation: Promise<boolean> | null = null
-
-// Linux falls back to `basic_text` without a keyring, which only obfuscates: the renderer's own key is no worse.
-const isUsable = async () =>
-  (await safeStorage.isAsyncEncryptionAvailable()) &&
-  (process.platform !== 'linux' ||
-    safeStorage.getSelectedStorageBackend() !== 'basic_text')
 
 const importKey = (raw: Uint8Array<ArrayBuffer>) =>
   crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt'])
@@ -30,7 +24,7 @@ const unwrap = async (wrapped: string) => {
   }
   if (data.shouldReEncrypt) {
     // The key already unwrapped: a failed re-wrap must not fail the decrypt, which the renderer reads as a wrong key and signs out.
-    await tryCatchAsync(async () => {
+    await silently(async () => {
       const rewrapped = await safeStorage.encryptStringAsync(data.result)
       store.set('wrappedKey', rewrapped.toString('base64'))
     })
@@ -51,7 +45,12 @@ const create = async () => {
   if (store.has('wrappedKey')) {
     return true
   }
-  if (!(await isUsable())) {
+  // Linux falls back to `basic_text` without a keyring, which only obfuscates: the renderer's own key is no worse.
+  if (
+    !(await safeStorage.isAsyncEncryptionAvailable()) ||
+    (process.platform === 'linux' &&
+      safeStorage.getSelectedStorageBackend() === 'basic_text')
+  ) {
     return false
   }
   const created = crypto.getRandomValues(new Uint8Array(KEY_BYTES))

@@ -18,7 +18,6 @@ export const NameField = ({ form }: { form: ConnectionForm }) => (
           placeholder="Connection name"
         >
           <IconButton
-            type="button"
             variant="ghost-faint"
             size="icon-sm"
             icon={DiceFaces03Icon}

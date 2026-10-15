@@ -183,7 +183,6 @@ export const ConnectionPage = ({
         <UnsavedChangesGuard isDirty={() => !form.state.isDefaultValue} />
       )}
       <IconButton
-        type="button"
         variant="ghost-faint"
         size="icon-sm"
         icon={ArrowLeft01Icon}

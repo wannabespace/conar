@@ -1,5 +1,6 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { Spinner } from '@tamery/ui/components/spinner'
 import {
   Tooltip,
   TooltipContent,
@@ -8,10 +9,10 @@ import {
 import type { MutationStatus } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 
+import { FetchingReason } from '~/core/connection/fetching-reason'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 
 import { PageColumns } from './page-columns'
-import { TestStatus } from './test-status'
 
 export const FormFooter = ({
   canTest,
@@ -44,10 +45,25 @@ export const FormFooter = ({
       <PageColumns>
         <div className="flex min-h-14 items-center gap-2 py-2">
           <div className="min-w-0 flex-1">
-            <TestStatus reason={reason} status={testStatus} />
+            {testing && (
+              <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                <Spinner />
+                Testing…
+              </span>
+            )}
+            {testStatus === 'success' && (
+              <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                <span className="bg-success size-1.5 rounded-full" />
+                Connected
+              </span>
+            )}
+            {(failed || testStatus === 'idle') && reason && (
+              <p className="text-muted-foreground text-xs text-pretty">
+                <FetchingReason reason={reason} />
+              </p>
+            )}
           </div>
           <Button
-            type="button"
             variant="ghost-tint-muted"
             disabled={!canTest || testing || submitting}
             focusableWhenDisabled

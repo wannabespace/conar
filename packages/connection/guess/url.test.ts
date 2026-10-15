@@ -117,26 +117,17 @@ describe('guessConnection — URLs', () => {
     expect(guessConnection(text)?.parts.engine).toBe(ConnectionType.ClickHouse)
   })
 
-  it('keeps https on ClickHouse when the URL names no port', () => {
-    expect(
-      guessConnection('CLICKHOUSE_URL=https://ch.acme.io')?.parts
-    ).toStrictEqual({
+  it.each([
+    ['CLICKHOUSE_URL=https://ch.acme.io', { host: 'ch.acme.io', port: '443' }],
+    [
+      'CLICKHOUSE_URL=https://ch.acme.io:9443/logs',
+      { database: 'logs', host: 'ch.acme.io', port: '9443' },
+    ],
+  ])('keeps https on ClickHouse in %s', (text, parts) => {
+    expect(guessConnection(text)?.parts).toStrictEqual({
+      ...parts,
       engine: ConnectionType.ClickHouse,
-      host: 'ch.acme.io',
       https: true,
-      port: '443',
-    })
-  })
-
-  it('keeps https on ClickHouse on a custom port', () => {
-    expect(
-      guessConnection('CLICKHOUSE_URL=https://ch.acme.io:9443/logs')?.parts
-    ).toStrictEqual({
-      database: 'logs',
-      engine: ConnectionType.ClickHouse,
-      host: 'ch.acme.io',
-      https: true,
-      port: '9443',
     })
   })
 

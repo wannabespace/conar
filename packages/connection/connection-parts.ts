@@ -72,14 +72,13 @@ const ENGINE_OF_SCHEME: Record<string, Engine> = {
 
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
-const schemeName = (scheme: string) =>
-  scheme
-    .toLowerCase()
-    .replace(/^jdbc:/u, '')
-    .replace(/[+:].*$/u, '')
-
 export const engineOfScheme = (scheme: string): Engine | undefined =>
-  ENGINE_OF_SCHEME[schemeName(scheme)]
+  ENGINE_OF_SCHEME[
+    scheme
+      .toLowerCase()
+      .replace(/^jdbc:/u, '')
+      .replace(/[+:].*$/u, '')
+  ]
 
 const ENGINE_OF_DRIVER: Record<string, Engine> = {
   'microsoft sql server': ConnectionType.MSSQL,

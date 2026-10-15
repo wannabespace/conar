@@ -1,7 +1,6 @@
 import type { Engine } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from '../connection-parts'
-import type { GuessFix } from './fixes'
 
 export type GuessFormat =
   | 'url'
@@ -13,6 +12,8 @@ export type GuessFormat =
   | 'cli'
   | 'ssh'
   | 'host'
+
+export type GuessFix = 'neon-direct' | 'session-pooler'
 
 export type ServerField = Exclude<
   keyof ConnectionParts,

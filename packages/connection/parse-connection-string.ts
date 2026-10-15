@@ -10,14 +10,12 @@ export interface Config {
   searchParams: URLSearchParams
 }
 
-const IPV6_BRACKETS = /^\[(?<address>.*)\]$/u
-
 /** Every reader of a stored string goes through here: `connectionParts.format` percent-encodes user, password and database, and SafeURL hands them back raw; the drivers and `connectionSecrets` match option keys lowercase, a paste says `sslPassword` or `TrustServerCertificate`. */
 export const readConnectionString = (connectionString: string) => {
   const url = new SafeURL(connectionString)
   return {
     database: decodeURIComponentOrRaw(url.pathname.slice(1)),
-    host: url.hostname.replace(IPV6_BRACKETS, '$<address>'),
+    host: url.hostname.replace(/^\[(?<address>.*)\]$/u, '$<address>'),
     password: decodeURIComponentOrRaw(url.password),
     port: url.port,
     scheme: url.protocol.slice(0, -1),

@@ -65,7 +65,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
 const urlsIn = (text: string) =>
   Array.from(text.matchAll(URL_PATTERN), ([match]) =>
     match.replace(TRAILING_PUNCTUATION, '')
-  ).filter((url) => engineOfScheme(url.slice(0, url.indexOf('://'))))
+  ).filter((url) => engineOfScheme(url))
 
 export const guessUrl = (text: string): DatabaseGuess | null => {
   const url = urlsIn(text).find((candidate) => !WEB_SCHEME.test(candidate))

@@ -2,9 +2,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { DEFAULT_PORTS } from '../connection-parts'
 import { hostHintOf } from '../hosts'
-import type { GuessedParts } from './types'
-
-export type GuessFix = 'neon-direct' | 'session-pooler'
+import type { GuessFix, GuessedParts } from './types'
 
 const PASSWORD_PLACEHOLDER =
   /^(?:\[[^\]]*\]|<[^>]*>|\{[^}]*\}|\*+|your[-_ ]?password)$/iu

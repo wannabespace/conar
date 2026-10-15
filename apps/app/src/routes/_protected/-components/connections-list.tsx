@@ -104,7 +104,7 @@ export const ConnectionsList = () => {
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const showSearch = data.length > SEARCH_THRESHOLD
-  const query = showSearch ? search.trim().toLowerCase() : ''
+  const query = showSearch ? search.trim() : ''
   const matches = data.filter((connection) =>
     matchesSearch(
       query,

@@ -44,31 +44,27 @@ const credentialsSchema = type({
   '[string]': { '#connection?': { 'password?': 'string', 'user?': 'string' } },
 })
 
-const credentialsIn = async (dataDir: string) => {
-  const file = await readFile(path.join(dataDir, CREDENTIALS))
-  const decipher = createDecipheriv(
-    'aes-128-cbc',
-    CREDENTIALS_KEY,
-    file.subarray(0, IV_BYTES)
-  )
-  return credentialsSchema.assert(
-    JSON.parse(
-      Buffer.concat([
-        decipher.update(file.subarray(IV_BYTES)),
-        decipher.final(),
-      ]).toString('utf-8')
-    )
-  )
-}
-
 export const dbeaver: Finder = {
   read: async (dataDir) => {
     const { connections } = dataSourcesSchema.assert(
       JSON.parse(await readFile(path.join(dataDir, DATA_SOURCES), 'utf-8'))
     )
-    const { data: credentials } = await tryCatchAsync(() =>
-      credentialsIn(dataDir)
-    )
+    const { data: credentials } = await tryCatchAsync(async () => {
+      const file = await readFile(path.join(dataDir, CREDENTIALS))
+      const decipher = createDecipheriv(
+        'aes-128-cbc',
+        CREDENTIALS_KEY,
+        file.subarray(0, IV_BYTES)
+      )
+      return credentialsSchema.assert(
+        JSON.parse(
+          Buffer.concat([
+            decipher.update(file.subarray(IV_BYTES)),
+            decipher.final(),
+          ]).toString('utf-8')
+        )
+      )
+    })
     return validEntries(connectionSchema, Object.entries(connections)).map(
       ([id, { configuration, name, provider }]) => {
         const saved = credentials?.[id]?.['#connection']

@@ -3,25 +3,9 @@ import { UAParser } from 'ua-parser-js'
 
 import type { AppVariables } from '../variables'
 
-const resolveOs = (
-  osName: string | undefined
-): 'linux' | 'macos' | 'windows' | null => {
-  if (osName === 'Linux') {
-    return 'linux'
-  }
-  if (osName === 'macOS') {
-    return 'macos'
-  }
-  if (osName === 'Windows') {
-    return 'windows'
-  }
-  return null
-}
-
 export const createContext = (c: HonoContext<{ Variables: AppVariables }>) => {
   const ua = c.req.raw.headers.get('User-Agent')
   const userAgent = ua ? new UAParser(ua) : null
-  const os = resolveOs(userAgent?.getOS().name)
 
   const parsedAppVersion = c.get('parsedAppVersion')
   const isAppOutdated = c.get('isAppOutdated')
@@ -34,7 +18,6 @@ export const createContext = (c: HonoContext<{ Variables: AppVariables }>) => {
     headers: c.req.raw.headers,
     isAppOutdated,
     isDesktop: c.req.header('x-desktop') === 'true',
-    os,
     parsedAppVersion,
     request: c.req.raw,
     setHeader: (key: string, value: string) => {

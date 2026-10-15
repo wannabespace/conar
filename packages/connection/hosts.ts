@@ -150,7 +150,6 @@ export const TYPE_OF_PORT: Record<string, ConnectionType> = {
 
 const LOCAL_HOSTS = new Set(['localhost', '::1', '[::1]'])
 const LOOPBACK_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
-export const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/u
 const PRIVATE_IPV4 =
   /^(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/u
 const PRIVATE_IPV6 = /^\[?f[cd][\da-f]{2}:/iu
@@ -171,10 +170,7 @@ const isPrivateHost = (host: string) =>
   PRIVATE_IPV4.test(host) || PRIVATE_IPV6.test(host) || PRIVATE_NAME.test(host)
 
 const isServiceName = (host: string) =>
-  !host.includes('.') &&
-  !isLocalHost(host) &&
-  !IPV4.test(host) &&
-  !host.includes(':')
+  !host.includes('.') && !host.includes(':')
 
 export const isInternalHost = (host: string) =>
   isLocalHost(host) || isPrivateHost(host) || isServiceName(host)

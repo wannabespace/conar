@@ -136,7 +136,7 @@ export const mysqlColumns = async (
     )
   )
 
-  return query.map(({ mariadb: _mariadb, ...column }) => ({
+  return query.map((column) => ({
     ...column,
     ...(jsonColumns.has(
       `${column.schema}.${column.table}.json_valid(\`${column.id}\`)`

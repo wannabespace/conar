@@ -72,16 +72,7 @@ const saveConnection = (
   connectionId: string,
   { connectionString, ...details }: ConnectionDetails,
   writeRow: (
-    row: Pick<
-      Connection,
-      | 'color'
-      | 'flavor'
-      | 'isPasswordExists'
-      | 'label'
-      | 'name'
-      | 'type'
-      | 'updatedAt'
-    >
+    row: Omit<Connection, 'createdAt' | 'id' | 'syncType' | 'workspaceId'>
   ) => void
 ) => {
   const updatedAt = new Date()

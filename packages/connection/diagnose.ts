@@ -26,13 +26,7 @@ export interface ConnectionPatch {
 
 export interface Diagnosis {
   fix?: { label: string; patch: ConnectionPatch }
-  focus?:
-    | 'password'
-    | 'ssh.keyPath'
-    | 'ssh.passphrase'
-    | 'ssh.password'
-    | 'ssh.privateKey'
-    | 'user'
+  focus?: 'password' | 'user' | (typeof SSH_FIELD_AT_FAULT)[string]
   hint: string
   title: string
 }

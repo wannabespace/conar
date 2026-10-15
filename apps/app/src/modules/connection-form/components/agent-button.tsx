@@ -10,7 +10,6 @@ export const AgentButton = ({ onClick }: { onClick: () => void }) => {
 
   return (
     <Button
-      type="button"
       variant="link-muted"
       size="sm"
       className="self-start"

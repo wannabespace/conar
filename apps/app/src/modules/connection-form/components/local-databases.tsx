@@ -36,7 +36,6 @@ export const LocalDatabases = ({
       {databases.map((database) => (
         <Button
           key={database.connectionString}
-          type="button"
           variant="ghost-tint"
           size="sm"
           className="justify-start"
