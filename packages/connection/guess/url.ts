@@ -1,3 +1,4 @@
+import type { Engine } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { omit } from '@tamery/shared/utils'
 
@@ -11,7 +12,7 @@ import { hostHintOf } from '../hosts'
 import { adoPairs, adoParts } from './ado'
 import type { DatabaseGuess } from './types'
 
-const URL_PATTERN = /(?:jdbc:)?[a-z][\w+.-]*:\/\/[^\s"'`<>]+/giu
+const URL_PATTERN = /(?:jdbc:)?(?<scheme>[a-z][\w+.-]*):\/\/[^\s"'`<>]+/giu
 /** Keeps the `]` that closes an IPv6 host (`postgres://[::1]`). */
 const TRAILING_PUNCTUATION = /(?<!\[[\da-f:.%]*)[.,;:)\]]+$/iu
 const WEB_SCHEME = /^https?:/iu
@@ -26,7 +27,12 @@ const takeParam = (params: URLSearchParams, keys: string[]) => {
   return value
 }
 
-const guessOfUrl = (candidate: string): DatabaseGuess => {
+interface FoundUrl {
+  engine: Engine
+  url: string
+}
+
+const guessOfUrl = ({ engine, url: candidate }: FoundUrl): DatabaseGuess => {
   const format = candidate.toLowerCase().startsWith('jdbc:') ? 'jdbc' : 'url'
   const url = candidate.replace(/^jdbc:/iu, '')
 
@@ -53,7 +59,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     parts: {
       ...parts,
       database: parts.database || database,
-      engine: engineOf(url),
+      engine,
       options: params.toString(),
       password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
@@ -62,14 +68,17 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
   }
 }
 
-const urlsIn = (text: string) =>
-  Array.from(text.matchAll(URL_PATTERN), ([match]) =>
-    match.replace(TRAILING_PUNCTUATION, '')
-  ).filter((url) => engineOf(url))
+const urlsIn = (text: string): FoundUrl[] =>
+  [...text.matchAll(URL_PATTERN)].flatMap(({ 0: match, groups }) => {
+    const engine = engineOf(groups?.scheme ?? '')
+    return engine
+      ? [{ engine, url: match.replace(TRAILING_PUNCTUATION, '') }]
+      : []
+  })
 
 export const guessUrl = (text: string): DatabaseGuess | null => {
-  const url = urlsIn(text).find((candidate) => !WEB_SCHEME.test(candidate))
-  return url ? guessOfUrl(url) : null
+  const found = urlsIn(text).find(({ url }) => !WEB_SCHEME.test(url))
+  return found ? guessOfUrl(found) : null
 }
 
 const GO_DSN =
@@ -90,17 +99,17 @@ export const guessWebUrl = (
   text: string,
   context = text
 ): DatabaseGuess | null => {
-  const url = urlsIn(text).find((candidate) => {
-    if (!WEB_SCHEME.test(candidate)) {
+  const found = urlsIn(text).find(({ url }) => {
+    if (!WEB_SCHEME.test(url)) {
       return false
     }
-    const { hostname, pathname, port } = URL.parse(candidate) ?? {}
+    const { hostname, pathname, port } = URL.parse(url) ?? {}
     return (
       !MULTI_SEGMENT_PATH.test(pathname ?? '') &&
       (Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
         hostHintOf(hostname ?? '')?.type === ConnectionType.ClickHouse ||
-        CLICKHOUSE_NAME.test(context.replace(candidate, '')))
+        CLICKHOUSE_NAME.test(context.replace(url, '')))
     )
   })
-  return url ? guessOfUrl(url) : null
+  return found ? guessOfUrl(found) : null
 }

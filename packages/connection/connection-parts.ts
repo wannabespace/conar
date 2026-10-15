@@ -74,14 +74,9 @@ const ENGINE_OF_NAME: Record<string, Engine> = {
   trilogy: ConnectionType.MySQL,
 }
 
-const leadingScheme = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/^jdbc:/u, '')
-    .replace(/[+:].*$/u, '')
-
-export const engineOf = (text: string): Engine | undefined =>
-  ENGINE_OF_NAME[leadingScheme(text)]
+/** A URL scheme or a tool's driver name, never a whole URL; a `+driver` suffix (`postgresql+asyncpg`) is dropped. */
+export const engineOf = (name: string): Engine | undefined =>
+  ENGINE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')]
 
 const format = (
   parts: ConnectionParts,
