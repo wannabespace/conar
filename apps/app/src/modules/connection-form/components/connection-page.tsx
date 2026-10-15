@@ -93,12 +93,8 @@ export const ConnectionPage = ({
     onSubmit: () => save(form, filled?.origin),
     requiredSecrets: requiredSecretsOf(mode),
   })
-  // From the second attempt TanStack Form runs `onSubmit` even while one is in flight, so a press during a save is dropped here.
-  const submit = () => {
-    if (!form.state.isSubmitting) {
-      formRef.current?.requestSubmit()
-    }
-  }
+  // Through the form element, not `form.handleSubmit()`: the kit Form's submit handler then focuses the first invalid field.
+  const submit = () => formRef.current?.requestSubmit()
 
   const { dragging, flash, readClipboard } = usePasteConnection({
     enabled: scope !== 'credentials',
@@ -143,8 +139,9 @@ export const ConnectionPage = ({
   }, [])
 
   // Bound on the page, which sits inside React's root: the listener runs before a focused control's own keydown (the SSH switch toggles on Enter) and stops it.
+  // TanStack Form runs `onSubmit` again while one is in flight, so ⌘↩ is off during a save, like the disabled Save button.
   useShortcut('submit', submit, {
-    enabled: stage === 'form',
+    enabled: stage === 'form' && !submitting,
     requireReset: true,
     target: pageRef,
   })
