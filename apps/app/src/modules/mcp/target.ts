@@ -41,7 +41,7 @@ export const resolveTarget = ({
     )
   }
 
-  const connectionString = connectionStringsCollection.get(connectionId)
+  const connectionString = connectionStringsCollection.get(connectionId) ?? null
   const { canSend, reason } = fetchingConfig(connection, {
     connectionString,
     proxy: getConnectionStore(connectionId).get().proxy,

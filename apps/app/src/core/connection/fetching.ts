@@ -20,9 +20,8 @@ import { getConnectionStore } from './stores'
 /** A query sent while the connection is blocked fails, and its cached error outlives the unlock. */
 export const canQueryConnection = (connection: Connection) =>
   fetchingConfig(connection, {
-    connectionString: getCollections().connectionStringsCollection.get(
-      connection.id
-    ),
+    connectionString:
+      getCollections().connectionStringsCollection.get(connection.id) ?? null,
     proxy: getConnectionStore(connection.id).get().proxy,
   }).canSend
 
@@ -103,7 +102,7 @@ export const useFetchingConfig = (
   })
 
   return fetchingConfig(connection, {
-    connectionString,
+    connectionString: connectionString ?? null,
     isLocalProxyAvailable: localProxyAvailable,
     proxy,
   })

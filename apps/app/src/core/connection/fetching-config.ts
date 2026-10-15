@@ -23,14 +23,11 @@ export interface FetchingConfig {
 type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
 interface FetchingOptions {
-  /** `undefined` while the row loads leaves the password unresolved. */
-  connectionString:
-    | Pick<
-        ConnectionString,
-        'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
-      >
-    | null
-    | undefined
+  /** `null` while the row loads leaves the password unresolved. */
+  connectionString: Pick<
+    ConnectionString,
+    'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
+  > | null
   isLocalProxyAvailable?: boolean
   proxy?: { enabled: boolean; url: string | null }
 }
