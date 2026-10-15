@@ -1,4 +1,4 @@
-import type { ConnectionType } from './enums/connection-type'
+import type { ConnectionType, Engine } from './enums/connection-type'
 import type { SyncType } from './enums/sync-type'
 
 export const MCP_MAX_ROWS = 200
@@ -28,9 +28,9 @@ export interface McpSource {
   createConnection: (
     args: {
       connectionString: string
+      engine: Engine
       name: string
       syncType: SyncType
-      type: ConnectionType
     },
     onAbort: OnAbort
   ) => Promise<McpConnection>

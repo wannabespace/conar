@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { McpAccess, McpRequest, McpTarget } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS, MCP_MAX_ROWS } from '@tamery/shared/mcp'
@@ -93,6 +96,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
           .describe(
             'URL with credentials, e.g. postgres://user:pass@host:5432/db'
           ),
+        engine: z.enum({ ...ConnectionType, ...ConnectionFlavor }),
         name: z.string().min(2),
         syncType: z
           .enum(SyncType)
@@ -100,7 +104,6 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
           .describe(
             'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_secrets" without the password and other secrets, "cloud_without_connection_string" not at all'
           ),
-        type: z.enum(ConnectionType),
       },
     },
     async (args, { signal }) => {
