@@ -12,26 +12,34 @@ const store = new Store<{ wrappedKey?: string }>({ name: 'encryption-key' })
 let key: Promise<CryptoKey> | null = null
 let creation: Promise<boolean> | null = null
 
-const importKey = (raw: Uint8Array<ArrayBuffer>) =>
-  crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt'])
+const importKey = (encoded: string) =>
+  crypto.subtle.importKey(
+    'raw',
+    new Uint8Array(Buffer.from(encoded, 'base64')),
+    'AES-GCM',
+    false,
+    ['encrypt', 'decrypt']
+  )
+
+const saveKey = async (encoded: string) => {
+  const wrapped = await safeStorage.encryptStringAsync(encoded)
+  store.set('wrappedKey', wrapped.toString('base64'))
+}
 
 // A denied prompt must read as locked, never as a wrong key, which the renderer resets.
-const unwrap = async (wrapped: string) => {
+const unwrapKey = async (wrapped: string) => {
   const decrypted = await Result.tryPromise(() =>
     safeStorage.decryptStringAsync(Buffer.from(wrapped, 'base64'))
   )
   if (decrypted.isErr() || !decrypted.value.result) {
     throw new Error(KEYCHAIN_LOCKED_ERROR)
   }
-  const data = decrypted.value
-  if (data.shouldReEncrypt) {
+  const { result: encoded, shouldReEncrypt } = decrypted.value
+  if (shouldReEncrypt) {
     // The key already unwrapped: a failed re-wrap must not fail the decrypt, which the renderer reads as a wrong key and signs out.
-    await silently(async () => {
-      const rewrapped = await safeStorage.encryptStringAsync(data.result)
-      store.set('wrappedKey', rewrapped.toString('base64'))
-    })
+    await silently(() => saveKey(encoded))
   }
-  return importKey(new Uint8Array(Buffer.from(data.result, 'base64')))
+  return importKey(encoded)
 }
 
 const deviceKey = () => {
@@ -39,7 +47,7 @@ const deviceKey = () => {
   if (!wrapped) {
     throw new Error(KEYCHAIN_LOCKED_ERROR)
   }
-  key ??= unwrap(wrapped)
+  key ??= unwrapKey(wrapped)
   return key
 }
 
@@ -47,22 +55,23 @@ const create = async () => {
   if (store.has('wrappedKey')) {
     return true
   }
-  if (
-    !(await safeStorage.isAsyncEncryptionAvailable()) ||
-    (process.platform === 'linux' &&
-      safeStorage.getSelectedStorageBackend() === 'basic_text')
-  ) {
+
+  const available = await safeStorage.isAsyncEncryptionAvailable()
+  const plainText =
+    process.platform === 'linux' &&
+    safeStorage.getSelectedStorageBackend() === 'basic_text'
+  if (!available || plainText) {
     return false
   }
-  const created = crypto.getRandomValues(new Uint8Array(KEY_BYTES))
-  const wrapped = await Result.tryPromise(() =>
-    safeStorage.encryptStringAsync(Buffer.from(created).toString('base64'))
-  )
-  if (wrapped.isErr()) {
+
+  const encoded = Buffer.from(
+    crypto.getRandomValues(new Uint8Array(KEY_BYTES))
+  ).toString('base64')
+  const saved = await Result.tryPromise(() => saveKey(encoded))
+  if (saved.isErr()) {
     return false
   }
-  store.set('wrappedKey', wrapped.value.toString('base64'))
-  key = importKey(created)
+  key = importKey(encoded)
   return true
 }
 
