@@ -4,14 +4,9 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useCollections } from '~/core/collections'
 
-export const useDiagnosis = (
-  connectionId: string,
-  error: Error,
-  enabled: boolean
-) => {
+export const useDiagnosis = (connectionId: string, error: Error) => {
   const { connectionStringsCollection } = useCollections()
   return useQuery({
-    enabled,
     queryFn: async () =>
       diagnoseConnectionError({
         desktop: !!window.electron,

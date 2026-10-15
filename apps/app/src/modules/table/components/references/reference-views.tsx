@@ -151,7 +151,7 @@ export const RecordView = ({
                     </span>
                     {foreign && isPresent(value) && (
                       <IconButton
-                        variant="ghost-muted"
+                        variant="ghost-faint-muted"
                         size="icon-2xs"
                         icon={ArrowUpRight01Icon}
                         label={`Open the ${foreign.table} row`}

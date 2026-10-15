@@ -5,11 +5,11 @@ import { serve } from '@hono/node-server'
 import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
+import { resourceConnectionString } from '@tamery/connection/utils'
 import type { ConnectionInput } from '@tamery/query-proxy'
 import { createQueryRouter } from '@tamery/query-proxy'
 import { querySerializer } from '@tamery/query-proxy/serializer'
 import { PORTS } from '@tamery/shared/constants'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -70,9 +70,7 @@ export const proxyCommand = command({
           })
         }
 
-        const url = new SafeURL(conn.connectionString)
-        url.pathname = encodeURIComponent(resource.name || '')
-        return url.toString()
+        return resourceConnectionString(conn.connectionString, resource.name)
       }
 
       const conn = connections.find((c) => c.id === input.connectionId)

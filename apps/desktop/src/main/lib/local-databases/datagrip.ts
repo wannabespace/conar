@@ -9,7 +9,8 @@ import { app } from 'electron'
 import { XMLParser } from 'fast-xml-parser'
 
 import { keychainPassword } from './keychain'
-import { findEach, localDatabase, validEntries } from './local-database'
+import type { Finder } from './local-database'
+import { validEntries } from './local-database'
 
 const DATA_SOURCE_FILES = [
   path.join(app.getPath('appData'), 'JetBrains/*/options/dataSources.xml'),
@@ -46,32 +47,31 @@ const dataSourcesIn = async (file: string) =>
       .project.component.flatMap((component) => component['data-source'] ?? [])
   )
 
-const databasesIn = async (file: string) => {
-  const [dataSources, local] = await Promise.all([
-    dataSourcesIn(file),
-    tryCatchAsync(() => dataSourcesIn(file.replace(/\.xml$/u, '.local.xml'))),
-  ])
-  const userOf = new Map(
-    (local.data ?? []).map((dataSource) => [
-      dataSource.uuid,
-      dataSource['user-name'],
+export const dataGrip: Finder = {
+  files: () => Array.fromAsync(glob(DATA_SOURCE_FILES)),
+  read: async (file) => {
+    const [dataSources, local] = await Promise.all([
+      dataSourcesIn(file),
+      tryCatchAsync(() => dataSourcesIn(file.replace(/\.xml$/u, '.local.xml'))),
     ])
-  )
-  return dataSources.flatMap((dataSource) => {
-    const parts = guessConnection(dataSource['jdbc-url'] ?? '')?.parts ?? {}
-    const { uuid } = dataSource
-    return localDatabase(
-      'DataGrip',
-      dataSource.name,
-      { ...parts, user: parts.user || userOf.get(uuid) },
-      uuid
-        ? () =>
-            // JetBrains' own service name, em dash included: any other character finds nothing.
-            keychainPassword({ service: `IntelliJ Platform DB — ${uuid}` })
-        : undefined
+    const userOf = new Map(
+      (local.data ?? []).map((dataSource) => [
+        dataSource.uuid,
+        dataSource['user-name'],
+      ])
     )
-  })
+    return dataSources.map(({ 'jdbc-url': url = '', name, uuid }) => {
+      const parts = guessConnection(url)?.parts ?? {}
+      return {
+        name,
+        parts: { ...parts, user: parts.user || (uuid && userOf.get(uuid)) },
+        unlock: uuid
+          ? () =>
+              // JetBrains' own service name, em dash included: any other character finds nothing.
+              keychainPassword({ service: `IntelliJ Platform DB — ${uuid}` })
+          : undefined,
+      }
+    })
+  },
+  source: 'DataGrip',
 }
-
-export const dataGripDatabases = async () =>
-  findEach(await Array.fromAsync(glob(DATA_SOURCE_FILES)), databasesIn)

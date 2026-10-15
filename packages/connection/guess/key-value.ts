@@ -14,7 +14,7 @@ const FIELD_OF_KEY: Record<string, ServerField> = {
 }
 
 export const guessKeyValue = (text: string): DatabaseGuess | null => {
-  const parts: GuessedParts = { type: ConnectionType.Postgres }
+  const parts: GuessedParts = { engine: ConnectionType.Postgres }
   const options = new URLSearchParams()
   for (const token of shellCommands(text.replaceAll(/\s*=\s*/gu, '='))[0] ??
     []) {

@@ -66,7 +66,6 @@ const create = async () => {
   return true
 }
 
-/** Encrypts local connection strings with a device key that never leaves this process. */
 export const deviceEncryption = {
   /** Shared by every window: two windows creating at once would each mint a key and orphan the other's strings. */
   createKey: () => {

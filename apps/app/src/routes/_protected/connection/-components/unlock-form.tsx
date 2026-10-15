@@ -1,23 +1,17 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/core/collections'
 import { saveConnectionString } from '~/core/connection/save'
-import type { Connection } from '~/core/connection/sync'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
 import { editModeOf } from '~/modules/connection-form/lib/form-mode'
 
-export const UnlockForm = ({
-  connection,
-  resourceId,
-  scope,
-}: {
-  connection: Connection
-  resourceId: string
-  scope: 'credentials' | 'details'
-}) => {
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+export const UnlockForm = ({ scope }: { scope: 'credentials' | 'details' }) => {
+  const { connection, connectionResource } = useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const { data: connectionString } = useQuery({
@@ -42,7 +36,7 @@ export const UnlockForm = ({
       if (
         scope === 'details' &&
         opened.resource &&
-        opened.resourceId !== resourceId
+        opened.resourceId !== connectionResource.id
       ) {
         await router.navigate({
           params: { resourceId: opened.resourceId },

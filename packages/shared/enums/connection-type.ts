@@ -29,14 +29,13 @@ const isFlavor = (engine: Engine): engine is ConnectionFlavor =>
 export const engines = {
   all: ALL,
   flavor: (engine: Engine) => (isFlavor(engine) ? engine : null),
-  /** A flavor that doesn't speak through `type` (a paste mixing two engines) is dropped. */
   of: ({
     flavor,
     type,
   }: {
-    flavor?: ConnectionFlavor | null
+    flavor: ConnectionFlavor | null
     type: ConnectionType
-  }): Engine => (flavor && TYPE_OF_FLAVOR[flavor] === type ? flavor : type),
+  }): Engine => flavor ?? type,
   type: (engine: Engine) =>
     isFlavor(engine) ? TYPE_OF_FLAVOR[engine] : engine,
 }

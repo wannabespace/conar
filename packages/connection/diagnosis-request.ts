@@ -13,7 +13,6 @@ const HOST_KIND_LABELS: Record<HostKind, string> = {
 
 const HEX_GROUP = '[\\da-f]{1,4}'
 const ANY_IPV4 = /\b\d{1,3}(?:\.\d{1,3}){3}\b/gu
-/** Full or `::`-compressed, with an optional zone id (`fe80::1%en0`); brackets stay outside the match. */
 const ANY_IPV6 = new RegExp(
   `(?<![\\w:])(?:(?:${HEX_GROUP}:){7}${HEX_GROUP}|(?:${HEX_GROUP}(?::${HEX_GROUP})*)?::(?:${HEX_GROUP}(?::${HEX_GROUP})*)?)(?:%[\\w.]+)?(?![\\w:])`,
   'giu'

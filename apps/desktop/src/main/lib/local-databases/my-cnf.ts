@@ -6,7 +6,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import ini from 'ini'
 
-import { localDatabase } from './local-database'
+import type { Finder } from './local-database'
 
 const clientSchema = type({
   'database?': 'string',
@@ -16,21 +16,21 @@ const clientSchema = type({
   'user?': 'string',
 })
 
-export const myCnfDatabases = async () => {
-  const { client, mysql } = ini.parse(
-    await readFile(path.join(homedir(), '.my.cnf'), 'utf-8')
-  )
-  if (!client && !mysql) {
-    return []
-  }
-  // The mysql client reads [client] first and lets [mysql] override it.
-  const { host = 'localhost', ...rest } = clientSchema.assert({
-    ...client,
-    ...mysql,
-  })
-  return localDatabase('.my.cnf', '', {
-    ...rest,
-    host,
-    type: ConnectionType.MySQL,
-  })
+export const myCnf: Finder = {
+  files: [path.join(homedir(), '.my.cnf')],
+  read: async (file) => {
+    const { client, mysql } = ini.parse(await readFile(file, 'utf-8'))
+    if (!client && !mysql) {
+      return []
+    }
+    // The mysql client reads [client] first and lets [mysql] override it.
+    const { host = 'localhost', ...rest } = clientSchema.assert({
+      ...client,
+      ...mysql,
+    })
+    return [
+      { name: '', parts: { ...rest, engine: ConnectionType.MySQL, host } },
+    ]
+  },
+  source: '.my.cnf',
 }

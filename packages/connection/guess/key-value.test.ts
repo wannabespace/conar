@@ -15,11 +15,11 @@ describe('guessConnection — libpq key=value', () => {
       format: 'key-value',
       parts: {
         database: 'app',
+        engine: ConnectionType.Postgres,
         host: 'localhost',
         options: 'sslmode=require',
         password: 'a b$c',
         port: '5432',
-        type: ConnectionType.Postgres,
         user: 'me',
       },
     })

@@ -6,10 +6,10 @@ import { guessConnection } from './index'
 
 const PARTS = {
   database: 'app',
+  engine: ConnectionType.Postgres,
   host: 'db.acme.io',
   password: 'pw',
   port: '5432',
-  type: ConnectionType.Postgres,
   user: 'me',
 }
 
@@ -47,10 +47,10 @@ describe('guessConnection — JSON', () => {
 }`)?.parts
     ).toStrictEqual({
       database: 'shop',
+      engine: ConnectionType.MySQL,
       host: 'db.acme.io',
       password: 'pw',
       port: '3306',
-      type: ConnectionType.MySQL,
       user: 'me',
     })
   })
@@ -83,9 +83,9 @@ describe('guessConnection — JSON', () => {
       )?.parts
     ).toStrictEqual({
       database: 'app',
+      engine: ConnectionType.Postgres,
       host: 'db.acme.io',
       port: '5432',
-      type: ConnectionType.Postgres,
     })
   })
 
@@ -98,9 +98,9 @@ describe('guessConnection — JSON', () => {
 };`)?.parts
     ).toStrictEqual({
       database: 'app',
+      engine: ConnectionType.Postgres,
       host: 'db.acme.io',
       port: '5432',
-      type: ConnectionType.Postgres,
       user: 'me',
     })
   })
@@ -120,8 +120,8 @@ describe('guessConnection — JSON', () => {
       )?.parts
     ).toStrictEqual({
       database: 'app',
+      engine: ConnectionType.Postgres,
       password: 'pw',
-      type: ConnectionType.Postgres,
       user: 'me',
     })
   })

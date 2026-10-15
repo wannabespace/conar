@@ -21,3 +21,12 @@ export const describeConnectionString = (connectionString: string) => {
     usesSsh: sshTunnelOf(searchParams) !== null,
   }
 }
+
+export const resourceConnectionString = (
+  connectionString: string,
+  resourceName: string | null
+) => {
+  const url = new SafeURL(connectionString)
+  url.pathname = encodeURIComponent(resourceName ?? '')
+  return url.toString()
+}

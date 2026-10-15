@@ -1,3 +1,4 @@
+import '@tamery/shared/arktype-config'
 import { afterAll, beforeAll, describe, expect, it, mock } from 'bun:test'
 import { createCipheriv, randomBytes } from 'node:crypto'
 import { once } from 'node:events'
@@ -206,7 +207,7 @@ describe('localDatabases', () => {
       { host: 'db.local', user: 'dev' },
     ],
     [
-      'Docker: MariaDB credentials and flavor from the container env, an exited container skipped',
+      'Docker: MariaDB credentials and flavor from the container env, a container whose inspect fails skipped',
       'Docker',
       'maria',
       {

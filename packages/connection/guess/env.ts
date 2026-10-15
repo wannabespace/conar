@@ -1,23 +1,20 @@
+import type { Engine } from '@tamery/shared/enums/connection-type'
 import {
   ConnectionFlavor,
   ConnectionType,
+  engines,
 } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import {
-  DEFAULT_PORTS,
-  flavorOfScheme,
-  typeOfScheme,
-} from '../connection-parts'
+import { DEFAULT_PORTS, engineOfScheme } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
+  engine?: Engine
   /** Only these fields are read under the prefix: `MYSQL_ROOT_HOST` is an allow-list, not a host. */
   fields?: ServerField[]
-  flavor?: ConnectionFlavor
   prefix: string
-  type?: ConnectionType
   /** Implied user when the group supplies the password and nothing else named one. */
   user?: string
 }
@@ -39,7 +36,7 @@ const TYPE_SUFFIXES = [
   'CLIENT',
   'ADAPTER',
 ]
-const TYPE_OF_DRIVER: Record<string, ConnectionType> = {
+const ENGINE_OF_DRIVER: Record<string, Engine> = {
   pgsql: ConnectionType.Postgres,
   sqlsrv: ConnectionType.MSSQL,
   tedious: ConnectionType.MSSQL,
@@ -52,39 +49,34 @@ const UNPACKED_TEMPLATE = /\$\{|<%|process\.env/u
 const BARE_NAME = 'NAME'
 
 const GROUPS: VariableGroup[] = [
-  { prefix: 'PG', type: ConnectionType.Postgres },
-  { prefix: 'POSTGRES_', type: ConnectionType.Postgres },
-  { prefix: 'MYSQL_', type: ConnectionType.MySQL },
+  { engine: ConnectionType.Postgres, prefix: 'PG' },
+  { engine: ConnectionType.Postgres, prefix: 'POSTGRES_' },
+  { engine: ConnectionType.MySQL, prefix: 'MYSQL_' },
+  { engine: ConnectionFlavor.MariaDB, prefix: 'MARIADB_' },
   {
-    flavor: ConnectionFlavor.MariaDB,
-    prefix: 'MARIADB_',
-    type: ConnectionType.MySQL,
-  },
-  {
+    engine: ConnectionType.MySQL,
     fields: ['password'],
     prefix: 'MYSQL_ROOT_',
-    type: ConnectionType.MySQL,
     user: 'root',
   },
   {
+    engine: ConnectionFlavor.MariaDB,
     fields: ['password'],
-    flavor: ConnectionFlavor.MariaDB,
     prefix: 'MARIADB_ROOT_',
-    type: ConnectionType.MySQL,
     user: 'root',
   },
-  { prefix: 'CLICKHOUSE_', type: ConnectionType.ClickHouse },
-  { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
+  { engine: ConnectionType.ClickHouse, prefix: 'CLICKHOUSE_' },
+  { engine: ConnectionType.MSSQL, prefix: 'MSSQL_' },
   {
+    engine: ConnectionType.MSSQL,
     fields: ['password'],
     prefix: 'MSSQL_SA_',
-    type: ConnectionType.MSSQL,
     user: 'sa',
   },
   {
+    engine: ConnectionType.MSSQL,
     fields: ['password'],
     prefix: 'SA_',
-    type: ConnectionType.MSSQL,
     user: 'sa',
   },
   { prefix: 'SPRING.DATASOURCE.' },
@@ -99,23 +91,6 @@ const LINE =
 const QUOTED = /^(?<quote>["'`])(?<inner>.*)\k<quote>/u
 const UNQUOTED_TAIL = /\s+#.*$|,$/u
 
-const typeOfDriver = (name: string) =>
-  TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name)
-
-const engineNamedIn = (
-  variables: Record<string, string>,
-  prefix: string
-): Pick<GuessedParts, 'flavor' | 'type'> => {
-  for (const suffix of TYPE_SUFFIXES) {
-    const driver = variables[prefix + suffix]?.split('.').at(-1) ?? ''
-    const type = typeOfDriver(driver)
-    if (type) {
-      return { flavor: flavorOfScheme(driver), type }
-    }
-  }
-  return {}
-}
-
 /** Keys must be uppercase. */
 export const partsOfVariables = (
   variables: Record<string, string>
@@ -125,17 +100,26 @@ export const partsOfVariables = (
       .map((key) => variables[key])
       .find((value) => value && !UNPACKED_TEMPLATE.test(value)) ?? ''
   let parts: GuessedParts = {}
+  let engine: GuessedParts['engine']
 
   for (const group of GROUPS) {
-    const { flavor, type } = group.type
-      ? group
-      : engineNamedIn(variables, group.prefix)
+    const named =
+      group.engine ??
+      TYPE_SUFFIXES.values()
+        .map((suffix) => {
+          const driver =
+            variables[group.prefix + suffix]?.split('.').at(-1) ?? ''
+          return (
+            ENGINE_OF_DRIVER[driver.toLowerCase()] ?? engineOfScheme(driver)
+          )
+        })
+        .find(Boolean)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
       if (!group.fields || group.fields.includes(field)) {
         found[field] = valueOf(
           suffixes
-            .filter((suffix) => group.prefix || type || suffix !== BARE_NAME)
+            .filter((suffix) => group.prefix || named || suffix !== BARE_NAME)
             .map((suffix) => group.prefix + suffix)
         )
       }
@@ -147,19 +131,17 @@ export const partsOfVariables = (
     }
     if (
       !Object.values(found).some(Boolean) ||
-      (!group.prefix && !type && !found.database && !found.password)
+      (!group.prefix && !named && !found.database && !found.password)
     ) {
       continue
     }
     if (!group.user || (!parts.user && !parts.password)) {
       parts = mergeParts(parts, { user: group.user, ...found })
     }
-    parts = mergeParts(parts, { flavor, type })
+    engine ??= named
   }
 
-  return Object.keys(parts).some((key) => key !== 'flavor' && key !== 'type')
-    ? parts
-    : null
+  return Object.keys(parts).length > 0 ? mergeParts(parts, { engine }) : null
 }
 
 /** `KEY=value` lines of a `.env`, a YAML map or a command's environment prefix; keys come back uppercased. */
@@ -181,7 +163,8 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
   if (!parts) {
     return null
   }
-  const composeTarget = parts.type && String(DEFAULT_PORTS[parts.type])
+  const composeTarget =
+    parts.engine && String(DEFAULT_PORTS[engines.type(parts.engine)])
   const published =
     !parts.port &&
     composeTarget &&

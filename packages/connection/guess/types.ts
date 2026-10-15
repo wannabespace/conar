@@ -1,4 +1,4 @@
-import type { ConnectionFlavor } from '@tamery/shared/enums/connection-type'
+import type { Engine } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from '../connection-parts'
 import type { GuessFix } from './fixes'
@@ -19,8 +19,8 @@ export type ServerField = Exclude<
   'https' | 'options' | 'ssh' | 'type'
 >
 
-export type GuessedParts = Partial<ConnectionParts> & {
-  flavor?: ConnectionFlavor
+export type GuessedParts = Partial<Omit<ConnectionParts, 'type'>> & {
+  engine?: Engine | null
 }
 
 export interface ConnectionGuess extends DatabaseGuess {

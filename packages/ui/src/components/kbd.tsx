@@ -6,11 +6,12 @@ import { kbdVariants } from './kbd.utils'
 const Kbd = ({
   className,
   size,
+  variant,
   ...props
 }: React.ComponentProps<'kbd'> & VariantProps<typeof kbdVariants>) => (
   <kbd
     data-slot="kbd"
-    className={cn(kbdVariants({ size }), className)}
+    className={cn(kbdVariants({ size, variant }), className)}
     {...props}
   />
 )

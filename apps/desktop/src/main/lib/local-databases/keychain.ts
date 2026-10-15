@@ -1,14 +1,13 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
-
+import { AsyncEntry, findCredentialsAsync } from '@napi-rs/keyring'
 import { tryCatchAsync } from '@tamery/shared/utils'
 
 import type { Unlocked } from './local-database'
+import { NOTHING_UNLOCKED } from './local-database'
 
-// `security`'s exit code for errSecItemNotFound: the app never saved a password, so nothing was withheld.
-const ITEM_NOT_FOUND = 44
+// keyring-core's message for an OSStatus it has no name for, which is how a denied or dismissed prompt arrives; a missing item resolves empty instead.
+const DENIED = /^Platform failure/u
 
-/** Shows the user one Keychain prompt. `withheld` means a saved password exists but the user denied it. */
+/** Shows the user one Keychain prompt. `withheld` means a saved password exists but the user denied it. Without `account`, a denied item is skipped, so it is never `withheld`. */
 export const keychainPassword = async ({
   account,
   service,
@@ -17,19 +16,17 @@ export const keychainPassword = async ({
   service: string
 }): Promise<Unlocked> => {
   if (process.platform !== 'darwin') {
-    return { password: '', withheld: false }
+    return NOTHING_UNLOCKED
   }
-  const { data, error } = await tryCatchAsync(() =>
-    promisify(execFile)('/usr/bin/security', [
-      'find-generic-password',
-      '-s',
-      service,
-      ...(account ? ['-a', account] : []),
-      '-w',
-    ])
-  )
+  const { data, error } = await tryCatchAsync(async () => {
+    if (account !== undefined) {
+      return new AsyncEntry(service, account).getPassword()
+    }
+    const [credential] = await findCredentialsAsync(service)
+    return credential?.password
+  })
   return {
-    password: data?.stdout.replace(/\n$/u, '') ?? '',
-    withheld: !!error && !('code' in error && error.code === ITEM_NOT_FOUND),
+    password: data ?? '',
+    withheld: DENIED.test(error?.message ?? ''),
   }
 }

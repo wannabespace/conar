@@ -20,6 +20,7 @@
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@modelcontextprotocol/sdk": "catalog:",
+    "@napi-rs/keyring": "catalog:",
     "@todesktop/runtime": "catalog:",
     "arktype": "catalog:",
     "electron-store": "catalog:",

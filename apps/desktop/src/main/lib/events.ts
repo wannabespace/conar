@@ -5,7 +5,6 @@ import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
-import { decrypt, encrypt } from '@tamery/shared/crypto-node'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
@@ -13,7 +12,6 @@ import { app, ipcMain, nativeTheme } from 'electron'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
-import { localDatabases } from './local-databases/find'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
 import { confirmHostKey } from './ssh-host-key'
@@ -79,11 +77,18 @@ export const electron = {
   },
   connectionLinks,
   deviceEncryption,
-  encryption: {
-    decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
-    encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
+  localDatabases: {
+    find: async () => {
+      const { localDatabases } = await import('./local-databases/find')
+
+      return localDatabases.find()
+    },
+    unlock: async (connectionString: string) => {
+      const { localDatabases } = await import('./local-databases/find')
+
+      return localDatabases.unlock(connectionString)
+    },
   },
-  localDatabases,
   mcp,
   menu: {
     popup: ((arg: MenuPopupRequest, event?: IpcMainInvokeEvent) =>

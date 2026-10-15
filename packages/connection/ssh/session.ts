@@ -8,7 +8,7 @@ import type { Client, ConnectConfig } from 'ssh2'
 import type { HostKeyStatus } from './known-hosts'
 import { knownHosts } from './known-hosts'
 import type { SshTunnel } from './params'
-import { DEFAULT_SSH_PORT, SSH_KEY_ERRORS, SSH_TUNNEL_ERROR } from './params'
+import { DEFAULT_SSH_PORT, SSH_AUTH_ERRORS, SSH_TUNNEL_ERROR } from './params'
 
 export type ConfirmHostKey = (prompt: {
   fingerprint: string
@@ -41,26 +41,26 @@ const authConfig = async (
   const passphrase = tunnel.passphrase || undefined
   if (tunnel.auth === 'password') {
     if (!tunnel.password) {
-      throw tunnelError("The SSH password isn't stored on this device")
+      throw tunnelError(SSH_AUTH_ERRORS.passwordMissing)
     }
     return { password: tunnel.password }
   }
   if (tunnel.auth === 'key') {
     if (!tunnel.privateKey) {
-      throw tunnelError("The SSH private key isn't stored on this device")
+      throw tunnelError(SSH_AUTH_ERRORS.privateKeyMissing)
     }
     return { passphrase, privateKey: tunnel.privateKey }
   }
   if (tunnel.auth === 'keyPath') {
     const keyPath = tunnel.keyPath || sshConfig('IdentityFile')
     if (!keyPath) {
-      throw tunnelError(SSH_KEY_ERRORS.key.noFile)
+      throw tunnelError(SSH_AUTH_ERRORS.noKeyFile)
     }
     const { data: privateKey } = await tryCatchAsync(() =>
       readFile(expandHome(keyPath))
     )
     if (!privateKey) {
-      throw tunnelError(SSH_KEY_ERRORS.key.fileMissing)
+      throw tunnelError(SSH_AUTH_ERRORS.keyFileMissing)
     }
     return { passphrase, privateKey }
   }
@@ -93,13 +93,15 @@ const sshErrorMessage = (
 }
 
 // ssh2 names the passphrase in both its "no passphrase given" and "bad passphrase?" parse errors, and in nothing else.
-const unreadableKey = ({ passphrase }: SshTunnel, error: Error) => {
+const unreadableKey = ({ auth, passphrase }: SshTunnel, error: Error) => {
   if (!/passphrase/iu.test(error.message)) {
-    return SSH_KEY_ERRORS.key.notAKey
+    return auth === 'keyPath'
+      ? SSH_AUTH_ERRORS.keyFileNotAKey
+      : SSH_AUTH_ERRORS.notAKey
   }
   return passphrase
-    ? SSH_KEY_ERRORS.passphrase.wrong
-    : SSH_KEY_ERRORS.passphrase.needed
+    ? SSH_AUTH_ERRORS.passphraseWrong
+    : SSH_AUTH_ERRORS.passphraseNeeded
 }
 
 const trusting = new Map<string, Promise<boolean>>()

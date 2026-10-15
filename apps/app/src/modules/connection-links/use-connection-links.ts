@@ -1,7 +1,7 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
-import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import { engines } from '@tamery/shared/enums/connection-type'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
@@ -18,7 +18,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const serverOf = (parts: ConnectionGuess['parts'] | ConnectionParts) =>
+const serverOf = (parts: Partial<ConnectionParts>) =>
   parts.type &&
   [
     parts.type,
@@ -37,7 +37,8 @@ export const useConnectionLinks = () => {
       if (!link) {
         return
       }
-      const parts = guessConnection(link)?.parts ?? {}
+      const { engine, ...guessed } = guessConnection(link)?.parts ?? {}
+      const parts = { ...guessed, type: engine && engines.type(engine) }
       const {
         connectionsCollection,
         connectionStringsCollection,

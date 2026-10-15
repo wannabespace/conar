@@ -34,7 +34,7 @@ export const DefinitionsPanel = () => {
     }))
     .filter((group) => group.items.length > 0)
 
-  const { highlightedControlId, highlightedId, searchProps } =
+  const { highlightedControlId, highlightedId, listId, searchProps } =
     useNavigatorSearch({
       activeId: activeTabId,
       nodes: filtered.flatMap((group) =>
@@ -76,6 +76,7 @@ export const DefinitionsPanel = () => {
         />
       </div>
       <SidebarContent
+        id={listId}
         tabIndex={-1}
         className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2"
       >

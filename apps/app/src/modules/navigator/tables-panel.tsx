@@ -96,7 +96,7 @@ export const TablesPanel = ({
       tableTabId(row.schema, row.table.name) === activeTabId
   )?.id
 
-  const { highlightedControlId, highlightedId, searchProps } =
+  const { highlightedControlId, highlightedId, listId, searchProps } =
     useNavigatorSearch({
       activeId,
       nodes: rows.filter(
@@ -158,6 +158,7 @@ export const TablesPanel = ({
         highlightedControlId={highlightedControlId}
         highlightedId={highlightedId}
         isPending={isPending}
+        listId={listId}
         rows={rows}
         search={search}
         onCreateTable={onCreateTable}

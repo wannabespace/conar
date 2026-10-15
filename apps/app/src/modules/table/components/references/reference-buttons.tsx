@@ -34,13 +34,12 @@ const ReferenceTrigger = ({
 
   return (
     <IconButton
-      variant="ghost-muted"
+      variant="ghost-faint-muted"
       size="icon-2xs"
       icon={icon}
       label={label}
       side="bottom"
       tabIndex={-1}
-      className="[&_svg:not([class*='size-'])]:size-3"
       onClick={({ currentTarget }) =>
         onPeek(currentTarget.closest('[role="gridcell"]') ?? currentTarget, hop)
       }

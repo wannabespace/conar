@@ -5,9 +5,8 @@ import { DatabaseSync } from 'node:sqlite'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
-import { localDatabase, validEntries } from './local-database'
-
-const SETTINGS_DATABASE = path.join(homedir(), '.pgadmin/pgadmin4.db')
+import type { Finder } from './local-database'
+import { validEntries } from './local-database'
 
 const serverSchema = type({
   host: 'string | null',
@@ -17,28 +16,32 @@ const serverSchema = type({
   username: 'string | null',
 })
 
-export const pgAdminDatabases = () => {
-  // readOnly also stops SQLite creating the file when pgAdmin was never installed.
-  const database = new DatabaseSync(SETTINGS_DATABASE, { readOnly: true })
-  try {
-    const servers = validEntries(
-      serverSchema,
-      database
-        .prepare(
-          'SELECT name, host, port, maintenance_db, username FROM server'
-        )
-        .all()
-    )
-    return servers.flatMap((server) =>
-      localDatabase('pgAdmin', server.name, {
-        database: server.maintenance_db ?? undefined,
-        host: server.host ?? undefined,
-        port: server.port?.toString(),
-        type: ConnectionType.Postgres,
-        user: server.username ?? undefined,
-      })
-    )
-  } finally {
-    database.close()
-  }
+export const pgAdmin: Finder = {
+  files: [path.join(homedir(), '.pgadmin/pgadmin4.db')],
+  read: (file) => {
+    // readOnly also stops SQLite creating the file when pgAdmin was never installed.
+    const database = new DatabaseSync(file, { readOnly: true })
+    try {
+      return validEntries(
+        serverSchema,
+        database
+          .prepare(
+            'SELECT name, host, port, maintenance_db, username FROM server'
+          )
+          .all()
+      ).map((server) => ({
+        name: server.name,
+        parts: {
+          database: server.maintenance_db ?? undefined,
+          engine: ConnectionType.Postgres,
+          host: server.host ?? undefined,
+          port: server.port?.toString(),
+          user: server.username ?? undefined,
+        },
+      }))
+    } finally {
+      database.close()
+    }
+  },
+  source: 'pgAdmin',
 }

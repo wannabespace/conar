@@ -1,4 +1,5 @@
 import { connectionSecrets } from '@tamery/connection/secrets'
+import { resourceConnectionString } from '@tamery/connection/utils'
 import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -28,6 +29,30 @@ const CONNECTION_COLUMNS = {
   workspaceId: true,
 } as const
 
+const findConnection = async (
+  input: { resourceId: string } | { connectionId: string },
+  userId: string
+) => {
+  if ('resourceId' in input) {
+    const resource = await db.query.connectionsResources.findFirst({
+      columns: { name: true },
+      where: { id: { eq: input.resourceId } },
+      with: {
+        connection: {
+          columns: CONNECTION_COLUMNS,
+          where: { userId: { eq: userId } },
+        },
+      },
+    })
+    return { connection: resource?.connection, resource }
+  }
+  const connection = await db.query.connections.findFirst({
+    columns: CONNECTION_COLUMNS,
+    where: { id: { eq: input.connectionId }, userId: { eq: userId } },
+  })
+  return { connection, resource: undefined }
+}
+
 export const proxy = {
   resolveConnectionString: orpc
     .use(proxySecretMiddleware)
@@ -41,43 +66,14 @@ export const proxy = {
       NOT_FOUND: { message: 'Connection not found' },
     })
     .handler(async ({ context, errors, input }) => {
-      const { connection, database } =
-        'resourceId' in input
-          ? await db.query.connectionsResources
-              .findFirst({
-                columns: { name: true },
-                where: { id: { eq: input.resourceId } },
-                with: {
-                  connection: {
-                    columns: CONNECTION_COLUMNS,
-                    where: { userId: { eq: context.user.id } },
-                  },
-                },
-              })
-              .then((resource) => ({
-                connection: resource?.connection,
-                database: resource?.name ?? '',
-              }))
-          : {
-              connection: await db.query.connections.findFirst({
-                columns: CONNECTION_COLUMNS,
-                where: {
-                  id: { eq: input.connectionId },
-                  userId: { eq: context.user.id },
-                },
-              }),
-              database: undefined,
-            }
-
+      const { connection, resource } = await findConnection(
+        input,
+        context.user.id
+      )
       if (!connection) {
         throw errors.NOT_FOUND()
       }
-      const withoutSecrets =
-        connection.syncType === SyncType.CloudWithoutSecrets
-      if (
-        !connection.connectionString ||
-        (withoutSecrets && connection.isPasswordExists)
-      ) {
+      if (!connection.connectionString) {
         throw errors.FORBIDDEN()
       }
 
@@ -85,18 +81,17 @@ export const proxy = {
         encryptedText: connection.connectionString,
         workspaceId: connection.workspaceId,
       })
-      const url = new SafeURL(connectionString)
       if (
-        withoutSecrets &&
-        connectionSecrets.missing(url.searchParams).length > 0
+        connection.syncType === SyncType.CloudWithoutSecrets &&
+        (connection.isPasswordExists ||
+          connectionSecrets.missing(new SafeURL(connectionString).searchParams)
+            .length > 0)
       ) {
         throw errors.FORBIDDEN()
       }
 
-      if (database === undefined) {
-        return connectionString
-      }
-      url.pathname = encodeURIComponent(database)
-      return url.toString()
+      return resource
+        ? resourceConnectionString(connectionString, resource.name)
+        : connectionString
     }),
 }

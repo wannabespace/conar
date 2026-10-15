@@ -66,13 +66,13 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
     )
     const hint = hostHintOf(parts.host ?? '')
     const port = parts.port || hint?.port || ''
-    const type = parts.type ?? TYPE_OF_PORT[port] ?? hint?.type
+    const engine = parts.engine ?? TYPE_OF_PORT[port] ?? hint?.type
     const httpPort =
-      type === ConnectionType.ClickHouse
+      engine === ConnectionType.ClickHouse
         ? CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
         : undefined
     return {
-      ...fixParts(mergeParts({ ...parts, port: httpPort ?? port, type })),
+      ...fixParts(mergeParts({ ...parts, engine, port: httpPort ?? port })),
       format: database?.format ?? 'ssh',
     }
   }).data

@@ -11,7 +11,6 @@ import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { getBy } from '@tanstack/react-form'
 import { type } from 'arktype'
 import { useState } from 'react'
 
@@ -74,13 +73,6 @@ const connectionFormSchema = type({
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
 )
 
-const SECRET_MESSAGES = {
-  password: 'Enter the password',
-  'ssh.passphrase': 'Enter the key passphrase',
-  'ssh.password': 'Enter the SSH password',
-  'ssh.privateKey': 'Paste the SSH private key',
-}
-
 export const formValuesOf = (
   connection: Connection,
   connectionString: string | null
@@ -126,11 +118,8 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
       form.setFieldValue(field, parts[field] ?? '')
     }
   }
-  if (parts.type) {
-    form.setFieldValue(
-      'engine',
-      engines.of({ flavor: parts.flavor, type: parts.type })
-    )
+  if (parts.engine) {
+    form.setFieldValue('engine', parts.engine)
   }
   if (parts.https !== undefined || newServer) {
     form.setFieldValue('https', parts.https ?? null)
@@ -155,15 +144,15 @@ const expandHost = (
 
 export const useConnectionForm = ({
   defaultValues,
-  missingFields,
   onFill,
   onSubmit,
+  unfilledSecrets,
 }: {
   defaultValues?: ConnectionFormValues
-  /** Fields that must not be left empty: the secrets this device lacks. */
-  missingFields: string[]
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
+  /** Field to error message for each secret this device lacks and the form still leaves empty. */
+  unfilledSecrets: (values: ConnectionFormValues) => Record<string, string>
 }) => {
   const [initialValues, setInitialValues] = useState(
     () => defaultValues ?? { ...DEFAULT_VALUES, name: generateRandomName() }
@@ -185,14 +174,7 @@ export const useConnectionForm = ({
     validators: {
       onChange: connectionFormSchema,
       onMount: connectionFormSchema,
-      onSubmit: ({ value }) => ({
-        fields: Object.fromEntries(
-          Object.entries(SECRET_MESSAGES).filter(
-            ([field]) =>
-              missingFields.includes(field) && !/\S/u.test(getBy(value, field))
-          )
-        ),
-      }),
+      onSubmit: ({ value }) => ({ fields: unfilledSecrets(value) }),
     },
   })
 

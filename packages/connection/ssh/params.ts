@@ -29,18 +29,30 @@ export const DEFAULT_SSH_PORT = 22
 // Errors reach the renderer as bare messages over IPC, so this prefix is the only way `diagnose.ts` tells a tunnel failure from a driver's.
 export const SSH_TUNNEL_ERROR = 'SSH tunnel: '
 
-// The desktop session throws these and `diagnose.ts` matches them to send the user to the key or passphrase field.
-export const SSH_KEY_ERRORS = {
-  key: {
-    fileMissing: "The SSH key file wasn't found. Check its path.",
-    noFile: 'Choose the SSH key file.',
-    notAKey:
-      "That isn't an SSH private key. A key runs from -----BEGIN to -----END.",
-  },
-  passphrase: {
-    needed: 'The SSH key is encrypted. Enter its passphrase.',
-    wrong: "The SSH key couldn't be decrypted. Check its passphrase.",
-  },
+export const SSH_AUTH_ERRORS = {
+  keyFileMissing: "The SSH key file wasn't found. Check its path.",
+  keyFileNotAKey: "That file isn't an SSH private key.",
+  noKeyFile: 'Choose the SSH key file.',
+  notAKey:
+    "That isn't an SSH private key. A key runs from -----BEGIN to -----END.",
+  passphraseNeeded: 'The SSH key is encrypted. Enter its passphrase.',
+  passphraseWrong: "The SSH key couldn't be decrypted. Check its passphrase.",
+  passwordMissing: "The SSH password isn't stored on this device",
+  privateKeyMissing: "The SSH private key isn't stored on this device",
+}
+
+export const SSH_FIELD_AT_FAULT: Record<
+  string,
+  'ssh.keyPath' | 'ssh.passphrase' | 'ssh.password' | 'ssh.privateKey'
+> = {
+  [SSH_AUTH_ERRORS.keyFileMissing]: 'ssh.keyPath',
+  [SSH_AUTH_ERRORS.keyFileNotAKey]: 'ssh.keyPath',
+  [SSH_AUTH_ERRORS.noKeyFile]: 'ssh.keyPath',
+  [SSH_AUTH_ERRORS.notAKey]: 'ssh.privateKey',
+  [SSH_AUTH_ERRORS.passphraseNeeded]: 'ssh.passphrase',
+  [SSH_AUTH_ERRORS.passphraseWrong]: 'ssh.passphrase',
+  [SSH_AUTH_ERRORS.passwordMissing]: 'ssh.password',
+  [SSH_AUTH_ERRORS.privateKeyMissing]: 'ssh.privateKey',
 }
 
 export const SSH_DESKTOP_ONLY =

@@ -123,13 +123,7 @@ const ResourcePage = () => {
   useEscapeToNavigator(!locked)
 
   if (locked) {
-    return (
-      <UnlockForm
-        connection={connection}
-        resourceId={connectionResource.id}
-        scope={needsDetails ? 'details' : 'credentials'}
-      />
-    )
+    return <UnlockForm scope={needsDetails ? 'details' : 'credentials'} />
   }
 
   if (!fetching.canSend && fetching.reason) {

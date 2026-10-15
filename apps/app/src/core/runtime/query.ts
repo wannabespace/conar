@@ -1,6 +1,6 @@
+import { resourceConnectionString } from '@tamery/connection/utils'
 import { isConnectionError } from '@tamery/shared/connections'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
@@ -43,13 +43,11 @@ export const connectionResourceToQueryParams = async (
     )
   }
 
-  const connectionString = new SafeURL(
-    await connectionStringsCollection.utils.decrypt(connection.id)
-  )
-  connectionString.pathname = encodeURIComponent(connectionResource.name || '')
-
   return {
-    connectionString: connectionString.toString(),
+    connectionString: resourceConnectionString(
+      await connectionStringsCollection.utils.decrypt(connection.id),
+      connectionResource.name
+    ),
     log: ({ promise, query, values }) =>
       logQuery({ promise, query, resourceId: connectionResource.id, values }),
     resourceId: connectionResource.id,

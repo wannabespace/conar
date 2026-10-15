@@ -1,0 +1,63 @@
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { Button } from '@tamery/ui/components/button'
+import { useQueryErrorResetBoundary } from '@tanstack/react-query'
+import type { ErrorComponentProps } from '@tanstack/react-router'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
+
+import { PaneEmpty } from '~/components/pane-empty'
+import { useDiagnosis } from '~/core/connection/diagnosis'
+import { useGoBack } from '~/hooks/use-go-back'
+import { posthog } from '~/lib/posthog'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+export const ConnectionFailure = ({ error, reset }: ErrorComponentProps) => {
+  const { connection } = useRouteContext()
+  const queryErrors = useQueryErrorResetBoundary()
+  const goBack = useGoBack()
+  const navigate = useNavigate()
+  const diagnosis = useDiagnosis(connection.id, error)
+
+  return (
+    <div className="flex h-screen min-h-[inherit] flex-col">
+      <PaneEmpty
+        variant="destructive"
+        icon={Alert02Icon}
+        title={diagnosis?.title ?? "Couldn't connect"}
+        description={
+          <span data-mask className="font-mono wrap-break-word select-text">
+            {error.message}
+          </span>
+        }
+      >
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={goBack}>
+            Back
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              posthog.capture('connection_retried')
+              // A failed query stays failed for an error boundary until its reset boundary lets it retry on mount.
+              queryErrors.reset()
+              reset()
+            }}
+          >
+            Try again
+          </Button>
+          <Button
+            onClick={() => {
+              posthog.capture('connection_edit_opened')
+              void navigate({
+                params: { connectionId: connection.id },
+                to: '/edit/$connectionId',
+              })
+            }}
+          >
+            Edit connection
+          </Button>
+        </div>
+      </PaneEmpty>
+    </div>
+  )
+}

@@ -30,7 +30,7 @@ export const inputGroupAddonVariants = cva(
         'block-end': `order-last w-full justify-start px-2.5 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2`,
         'block-start': `order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2`,
         'inline-end': `order-last pr-2.5 has-[>button:last-child]:pr-0 [&>button:last-child]:mr-[calc((var(--input-group-h)-var(--button-size))/2-var(--input-group-border,0px))]`,
-        'inline-start': `order-first pl-2.5 has-[>[data-slot=button]]:ml-[-0.3rem]`,
+        'inline-start': `order-first pl-2.5 has-[>button:first-child]:pl-0 [&>button:first-child]:ml-[calc((var(--input-group-h)-var(--button-size))/2-var(--input-group-border,0px))]`,
       },
     },
   }
@@ -44,11 +44,11 @@ export const inputGroupButtonVariants = cva(
     },
     variants: {
       size: {
-        'icon-round': `size-6 rounded-full p-0 [--button-size:--spacing(6)] has-[>svg]:p-0 [&_svg:not([class*='size-'])]:size-3.5`,
-        'icon-sm': `size-8 p-0 has-[>svg]:p-0`,
-        'icon-xs': `size-6 rounded-md p-0 [--button-size:--spacing(6)] has-[>svg]:p-0 [&_svg:not([class*='size-'])]:size-3.5`,
+        'icon-round': `size-(--button-size) rounded-full p-0 [--button-size:--spacing(6)] has-[>svg]:p-0 [&_svg:not([class*='size-'])]:size-3.5`,
+        'icon-sm': `size-(--button-size) p-0 [--button-size:--spacing(8)] has-[>svg]:p-0`,
+        'icon-xs': `size-(--button-size) rounded-md p-0 [--button-size:--spacing(6)] has-[>svg]:p-0 [&_svg:not([class*='size-'])]:size-3.5`,
         sm: '',
-        xs: `h-6 gap-1 rounded-md px-1.5 [--button-size:--spacing(6)] [&>svg:not([class*='size-'])]:size-3.5`,
+        xs: `h-(--button-size) gap-1 rounded-md px-1.5 [--button-size:--spacing(6)] [&>svg:not([class*='size-'])]:size-3.5`,
       },
     },
   }

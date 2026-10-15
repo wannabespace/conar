@@ -8,29 +8,29 @@ describe('guessConnection — bare hosts', () => {
   it.each([
     [
       'db.acme.io:5432',
-      { host: 'db.acme.io', port: '5432', type: ConnectionType.Postgres },
+      { engine: ConnectionType.Postgres, host: 'db.acme.io', port: '5432' },
     ],
     [
       'db.acme.io:6543/app',
       {
         database: 'app',
+        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         port: '6543',
-        type: ConnectionType.Postgres,
       },
     ],
     [
       'localhost:3306',
-      { host: 'localhost', port: '3306', type: ConnectionType.MySQL },
+      { engine: ConnectionType.MySQL, host: 'localhost', port: '3306' },
     ],
     [
       'me:pw@ch.local:9000/logs',
       {
         database: 'logs',
+        engine: ConnectionType.ClickHouse,
         host: 'ch.local',
         password: 'pw',
         port: '8123',
-        type: ConnectionType.ClickHouse,
         user: 'me',
       },
     ],
@@ -48,23 +48,23 @@ describe('guessConnection — bare hosts', () => {
     ['acme.database.windows.net', ConnectionType.MSSQL],
     ['aws.connect.psdb.cloud', ConnectionType.MySQL],
     ['gateway01.eu-central-1.prod.aws.tidbcloud.com', ConnectionType.MySQL],
-  ])('types %s from its provider', (host, type) => {
-    expect(guessConnection(host)?.parts.type).toBe(type)
+  ])('types %s from its provider', (host, engine) => {
+    expect(guessConnection(host)?.parts.engine).toBe(engine)
   })
 
   it('gives ClickHouse Cloud its https port', () => {
     expect(
       guessConnection('abc.eu-west-1.aws.clickhouse.cloud')?.parts
     ).toMatchObject({
+      engine: ConnectionType.ClickHouse,
       port: '8443',
-      type: ConnectionType.ClickHouse,
     })
   })
 
   it('types a provider that hosts several engines by port', () => {
     expect(
       guessConnection('mydb.abc123.us-east-1.rds.amazonaws.com:3306')?.parts
-        .type
+        .engine
     ).toBe(ConnectionType.MySQL)
   })
 
@@ -78,7 +78,7 @@ describe('guessConnection — bare hosts', () => {
 
   it('lets an explicit scheme beat the host hint and port', () => {
     expect(
-      guessConnection('mysql://u@abc.supabase.co:5432/app')?.parts.type
+      guessConnection('mysql://u@abc.supabase.co:5432/app')?.parts.engine
     ).toBe(ConnectionType.MySQL)
   })
 })

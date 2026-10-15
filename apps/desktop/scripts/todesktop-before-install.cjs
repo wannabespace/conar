@@ -21,11 +21,17 @@ module.exports = async function toDesktopBeforeInstall({
   // can't follow the symlinks to find transitive deps (e.g. electron-store's
   // `conf`), throwing ERR_MODULE_NOT_FOUND at runtime. A flat tree resolves
   // every dependency by plain directory lookup, which asar handles correctly.
+  //
+  // supportedArchitectures: native prebuilds (@napi-rs/keyring) install per CPU,
+  // so a Mac build for the other arch, or universal, would ship without its binary.
   await writeFile(
     path.join(appDir, 'pnpm-workspace.yaml'),
     `packages:
   - .
 nodeLinker: hoisted
+supportedArchitectures:
+  os: [current]
+  cpu: [x64, arm64]
 allowBuilds:
   electron: true
 `

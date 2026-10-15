@@ -40,5 +40,8 @@ export const guessPgpass = (text: string): DatabaseGuess | null => {
   const parts = Object.fromEntries(
     Object.entries(groups).filter(([, value]) => value !== '*')
   )
-  return { format: 'host', parts: { ...parts, type: ConnectionType.Postgres } }
+  return {
+    format: 'host',
+    parts: { ...parts, engine: ConnectionType.Postgres },
+  }
 }

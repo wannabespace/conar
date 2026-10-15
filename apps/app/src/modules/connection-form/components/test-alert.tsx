@@ -34,6 +34,7 @@ const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
   password: 'Edit the password',
   'ssh.keyPath': 'Edit the key file',
   'ssh.passphrase': 'Edit the passphrase',
+  'ssh.password': 'Edit the SSH password',
   'ssh.privateKey': 'Replace the private key',
   user: 'Edit the user',
 }

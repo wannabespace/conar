@@ -13,10 +13,10 @@ describe('guessConnection — URLs', () => {
       'postgresql+asyncpg://me:p%40ss@db.acme.io:5432/app',
       {
         database: 'app',
+        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         password: 'p@ss',
         port: '5432',
-        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -24,10 +24,10 @@ describe('guessConnection — URLs', () => {
       'mysql2://root:secret@localhost:3306/shop',
       {
         database: 'shop',
+        engine: ConnectionType.MySQL,
         host: 'localhost',
         password: 'secret',
         port: '3306',
-        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -35,9 +35,8 @@ describe('guessConnection — URLs', () => {
       'mariadb://root@maria.local/shop',
       {
         database: 'shop',
-        flavor: ConnectionFlavor.MariaDB,
+        engine: ConnectionFlavor.MariaDB,
         host: 'maria.local',
-        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -45,10 +44,10 @@ describe('guessConnection — URLs', () => {
       'sqlserver://sa:pass@mssql.local:1433/master',
       {
         database: 'master',
+        engine: ConnectionType.MSSQL,
         host: 'mssql.local',
         password: 'pass',
         port: '1433',
-        type: ConnectionType.MSSQL,
         user: 'sa',
       },
     ],
@@ -56,11 +55,11 @@ describe('guessConnection — URLs', () => {
       'https://default:pw@ch.acme.io:8443/logs',
       {
         database: 'logs',
+        engine: ConnectionType.ClickHouse,
         host: 'ch.acme.io',
         https: true,
         password: 'pw',
         port: '8443',
-        type: ConnectionType.ClickHouse,
         user: 'default',
       },
     ],
@@ -68,9 +67,9 @@ describe('guessConnection — URLs', () => {
       'postgres://me:100%@db.acme.io/my%3Fdb',
       {
         database: 'my?db',
+        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         password: '100%',
-        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -78,9 +77,9 @@ describe('guessConnection — URLs', () => {
       'postgres://me@db.acme.io/app?schema=public&sslmode=require',
       {
         database: 'app',
+        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         options: 'schema=public&sslmode=require',
-        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -115,17 +114,17 @@ describe('guessConnection — URLs', () => {
     ['its HTTP port', 'http://localhost:8123'],
     ['a ClickHouse Cloud host', 'https://abc.eu-west-1.aws.clickhouse.cloud'],
   ])('reads a web URL as ClickHouse by %s', (_, text) => {
-    expect(guessConnection(text)?.parts.type).toBe(ConnectionType.ClickHouse)
+    expect(guessConnection(text)?.parts.engine).toBe(ConnectionType.ClickHouse)
   })
 
   it('keeps https on ClickHouse when the URL names no port', () => {
     expect(
       guessConnection('CLICKHOUSE_URL=https://ch.acme.io')?.parts
     ).toStrictEqual({
+      engine: ConnectionType.ClickHouse,
       host: 'ch.acme.io',
       https: true,
       port: '443',
-      type: ConnectionType.ClickHouse,
     })
   })
 
@@ -134,10 +133,10 @@ describe('guessConnection — URLs', () => {
       guessConnection('CLICKHOUSE_URL=https://ch.acme.io:9443/logs')?.parts
     ).toStrictEqual({
       database: 'logs',
+      engine: ConnectionType.ClickHouse,
       host: 'ch.acme.io',
       https: true,
       port: '9443',
-      type: ConnectionType.ClickHouse,
     })
   })
 
@@ -149,9 +148,9 @@ describe('guessConnection — URLs', () => {
   ])('extracts the URL from %s', (text) => {
     expect(guessConnection(text)?.parts).toStrictEqual({
       database: 'app',
+      engine: ConnectionType.Postgres,
       host: 'db.acme.io',
       password: 'pw',
-      type: ConnectionType.Postgres,
       user: 'me',
     })
   })
@@ -186,11 +185,11 @@ describe('guessConnection — JDBC', () => {
       'jdbc:postgresql://db.acme.io:5432/app?user=me&password=pw&ssl=true',
       {
         database: 'app',
+        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         options: 'ssl=true',
         password: 'pw',
         port: '5432',
-        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -198,10 +197,10 @@ describe('guessConnection — JDBC', () => {
       'jdbc:mysql://db.acme.io:3306/shop?user=root&password=pw',
       {
         database: 'shop',
+        engine: ConnectionType.MySQL,
         host: 'db.acme.io',
         password: 'pw',
         port: '3306',
-        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -209,11 +208,11 @@ describe('guessConnection — JDBC', () => {
       'jdbc:postgresql://srv.postgres.database.azure.com:5432/db?user=admin@srv&password=pw&sslmode=require',
       {
         database: 'db',
+        engine: ConnectionType.Postgres,
         host: 'srv.postgres.database.azure.com',
         options: 'sslmode=require',
         password: 'pw',
         port: '5432',
-        type: ConnectionType.Postgres,
         user: 'admin@srv',
       },
     ],
@@ -221,11 +220,11 @@ describe('guessConnection — JDBC', () => {
       'jdbc:mysql://srv.mysql.database.azure.com:3306/db?user=admin@srv&password=pw&useSSL=true',
       {
         database: 'db',
+        engine: ConnectionType.MySQL,
         host: 'srv.mysql.database.azure.com',
         options: 'usessl=true',
         password: 'pw',
         port: '3306',
-        type: ConnectionType.MySQL,
         user: 'admin@srv',
       },
     ],
@@ -233,20 +232,20 @@ describe('guessConnection — JDBC', () => {
       'jdbc:clickhouse://ch.acme.io:8123/logs',
       {
         database: 'logs',
+        engine: ConnectionType.ClickHouse,
         host: 'ch.acme.io',
         port: '8123',
-        type: ConnectionType.ClickHouse,
       },
     ],
     [
       'jdbc:sqlserver://mssql.acme.io:1433;databaseName=db;user=sa;password={p;w};encrypt=true;trustServerCertificate=false;loginTimeout=30',
       {
         database: 'db',
+        engine: ConnectionType.MSSQL,
         host: 'mssql.acme.io',
         options: 'encrypt=true&trustservercertificate=false',
         password: 'p;w',
         port: '1433',
-        type: ConnectionType.MSSQL,
         user: 'sa',
       },
     ],

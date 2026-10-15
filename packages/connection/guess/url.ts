@@ -1,11 +1,11 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { omit } from '@tamery/shared/utils'
 
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
-  flavorOfScheme,
+  engineOfScheme,
   HTTPS_PORT,
-  typeOfScheme,
 } from '../connection-parts'
 import { hostHintOf } from '../hosts'
 import { adoPairs, adoParts } from './ado'
@@ -36,10 +36,13 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     if (semicolonUrl.address) {
       pairs.set('server', semicolonUrl.address.replace(':', ','))
     }
-    return { format, parts: { ...adoParts(pairs), type: ConnectionType.MSSQL } }
+    return {
+      format,
+      parts: { ...adoParts(pairs), engine: ConnectionType.MSSQL },
+    }
   }
 
-  const parts = connectionParts.parse(url)
+  const parts = omit(connectionParts.parse(url), ['type'])
   const params = new URLSearchParams(parts.options)
   const user = takeParam(params, ['user', 'username'])
   const password = takeParam(params, ['password'])
@@ -50,7 +53,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     parts: {
       ...parts,
       database: parts.database || database,
-      flavor: flavorOfScheme(url),
+      engine: engineOfScheme(url),
       options: params.toString(),
       password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
@@ -62,7 +65,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
 const urlsIn = (text: string) =>
   Array.from(text.matchAll(URL_PATTERN), ([match]) =>
     match.replace(TRAILING_PUNCTUATION, '')
-  ).filter((url) => typeOfScheme(url.slice(0, url.indexOf('://'))))
+  ).filter((url) => engineOfScheme(url.slice(0, url.indexOf('://'))))
 
 export const guessUrl = (text: string): DatabaseGuess | null => {
   const url = urlsIn(text).find((candidate) => !WEB_SCHEME.test(candidate))
@@ -75,7 +78,7 @@ const GO_DSN =
 export const guessGoDsn = (text: string): DatabaseGuess | null => {
   const groups = GO_DSN.exec(text)?.groups
   return groups
-    ? { format: 'url', parts: { ...groups, type: ConnectionType.MySQL } }
+    ? { format: 'url', parts: { ...groups, engine: ConnectionType.MySQL } }
     : null
 }
 

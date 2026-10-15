@@ -10,11 +10,11 @@ describe('guessConnection — ADO.NET', () => {
       'Server=tcp:acme.database.windows.net,1433;Initial Catalog=db;User ID=u;Password=p;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;',
       {
         database: 'db',
+        engine: ConnectionType.MSSQL,
         host: 'acme.database.windows.net',
         options: 'encrypt=true&trustservercertificate=false',
         password: 'p',
         port: '1433',
-        type: ConnectionType.MSSQL,
         user: 'u',
       },
     ],
@@ -22,10 +22,10 @@ describe('guessConnection — ADO.NET', () => {
       'Data Source=mssql.local\\SQLEXPRESS;Database=app;UID=sa;PWD="p;w";Encrypt=Optional;TrustServerCertificate=yes',
       {
         database: 'app',
+        engine: ConnectionType.MSSQL,
         host: 'mssql.local',
         options: 'encrypt=false&trustservercertificate=true',
         password: 'p;w',
-        type: ConnectionType.MSSQL,
         user: 'sa',
       },
     ],
@@ -33,10 +33,10 @@ describe('guessConnection — ADO.NET', () => {
       'Server=mysql.local;Port=3306;Database=shop;Uid=root;Pwd=pw;',
       {
         database: 'shop',
+        engine: ConnectionType.MySQL,
         host: 'mysql.local',
         password: 'pw',
         port: '3306',
-        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -44,9 +44,9 @@ describe('guessConnection — ADO.NET', () => {
       'Server=aws.connect.psdb.cloud;Database=shop;Uid=u;Pwd=p;SslMode=VerifyFull',
       {
         database: 'shop',
+        engine: ConnectionType.MySQL,
         host: 'aws.connect.psdb.cloud',
         password: 'p',
-        type: ConnectionType.MySQL,
         user: 'u',
       },
     ],
@@ -54,9 +54,9 @@ describe('guessConnection — ADO.NET', () => {
       'Host=ep-x.us-east-2.aws.neon.tech;Database=neondb;Username=u;Password=p;SSL Mode=VerifyFull',
       {
         database: 'neondb',
+        engine: ConnectionType.Postgres,
         host: 'ep-x.us-east-2.aws.neon.tech',
         password: 'p',
-        type: ConnectionType.Postgres,
         user: 'u',
       },
     ],
@@ -64,9 +64,9 @@ describe('guessConnection — ADO.NET', () => {
       'Server=x.supabase.co;Database=d;User Id=u;Password=p',
       {
         database: 'd',
+        engine: ConnectionType.Postgres,
         host: 'x.supabase.co',
         password: 'p',
-        type: ConnectionType.Postgres,
         user: 'u',
       },
     ],
@@ -80,7 +80,7 @@ describe('guessConnection — ADO.NET', () => {
     expect(
       guessConnection(
         'Host=db.acme.io;Username=me;Trust Server Certificate=true'
-      )?.parts.type
+      )?.parts.engine
     ).toBeUndefined()
   })
 })

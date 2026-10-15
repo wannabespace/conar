@@ -1,6 +1,7 @@
-import { flavorOfScheme } from '@tamery/connection/connection-parts'
+import { engineOfScheme } from '@tamery/connection/connection-parts'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { engines } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { tryCatchAsync } from '@tamery/shared/utils'
@@ -91,9 +92,11 @@ export const mcpSource: McpSource = {
       throw new Error('Tamery is still loading. Try again in a moment.')
     }
     await testConnectionQuery.run({ connectionString, type })
+    const engine = engineOfScheme(connectionString)
     const { id } = await createConnection({
       connectionString,
-      flavor: flavorOfScheme(connectionString) ?? null,
+      flavor:
+        engine && engines.type(engine) === type ? engines.flavor(engine) : null,
       name,
       syncType,
       type,

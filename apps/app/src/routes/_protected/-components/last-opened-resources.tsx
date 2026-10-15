@@ -7,7 +7,10 @@ import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { useCollections } from '~/core/collections'
-import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import {
+  lastOpenedResourcesStorageValue,
+  SHOWN_LAST_OPENED_RESOURCES,
+} from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
@@ -100,7 +103,7 @@ export const LastOpenedResources = () => {
         lastOpenedResources.indexOf(a.connectionResource.id) -
         lastOpenedResources.indexOf(b.connectionResource.id)
     )
-    .slice(0, 5)
+    .slice(0, SHOWN_LAST_OPENED_RESOURCES)
 
   if (toShow.length === 0) {
     return null

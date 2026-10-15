@@ -3,12 +3,13 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { engineOfScheme } from '@tamery/connection/connection-parts'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { app } from 'electron'
 
-import { findEach, localDatabase, validEntries } from './local-database'
+import type { Finder } from './local-database'
+import { validEntries } from './local-database'
 
 const DATA_SOURCES = 'workspace6/General/.dbeaver/data-sources.json'
 const CREDENTIALS = 'workspace6/General/.dbeaver/credentials-config.json'
@@ -22,13 +23,6 @@ const DATA_DIRS = [
   path.join(homedir(), '.local/share/DBeaverData'),
   path.join(app.getPath('appData'), 'DBeaverData'),
 ]
-
-const TYPE_OF_PROVIDER: Partial<Record<string, ConnectionType>> = {
-  clickhouse: ConnectionType.ClickHouse,
-  mysql: ConnectionType.MySQL,
-  postgresql: ConnectionType.Postgres,
-  sqlserver: ConnectionType.MSSQL,
-}
 
 const dataSourcesSchema = type({ connections: 'Record<string, unknown>' })
 
@@ -67,26 +61,31 @@ const credentialsIn = async (dataDir: string) => {
   )
 }
 
-const databasesIn = async (dataDir: string) => {
-  const { connections } = dataSourcesSchema.assert(
-    JSON.parse(await readFile(path.join(dataDir, DATA_SOURCES), 'utf-8'))
-  )
-  const { data: credentials } = await tryCatchAsync(() =>
-    credentialsIn(dataDir)
-  )
-  return validEntries(connectionSchema, Object.entries(connections)).flatMap(
-    ([id, { configuration, name, provider }]) => {
-      const saved = credentials?.[id]?.['#connection']
-      return localDatabase('DBeaver', name, {
-        database: configuration.database,
-        host: configuration.host,
-        password: saved?.password,
-        port: String(configuration.port ?? ''),
-        type: TYPE_OF_PROVIDER[provider] ?? null,
-        user: saved?.user ?? configuration.user,
-      })
-    }
-  )
+export const dbeaver: Finder = {
+  files: DATA_DIRS,
+  read: async (dataDir) => {
+    const { connections } = dataSourcesSchema.assert(
+      JSON.parse(await readFile(path.join(dataDir, DATA_SOURCES), 'utf-8'))
+    )
+    const { data: credentials } = await tryCatchAsync(() =>
+      credentialsIn(dataDir)
+    )
+    return validEntries(connectionSchema, Object.entries(connections)).map(
+      ([id, { configuration, name, provider }]) => {
+        const saved = credentials?.[id]?.['#connection']
+        return {
+          name,
+          parts: {
+            database: configuration.database,
+            engine: engineOfScheme(provider),
+            host: configuration.host,
+            password: saved?.password,
+            port: String(configuration.port ?? ''),
+            user: saved?.user ?? configuration.user,
+          },
+        }
+      }
+    )
+  },
+  source: 'DBeaver',
 }
-
-export const dbeaverDatabases = () => findEach(DATA_DIRS, databasesIn)

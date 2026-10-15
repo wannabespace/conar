@@ -1,38 +1,24 @@
-import {
-  FolderAddIcon,
-  LayoutTable02Icon,
-  PlusSignIcon,
-} from '@hugeicons/core-free-icons'
+import { LayoutTable02Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
-import { Separator } from '@tamery/ui/components/separator'
 import {
   SidebarContent,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
 } from '@tamery/ui/components/sidebar'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
-
-import { createSchemaDialogRef } from './create-schema-dialog'
-import { createViewDialogRef } from './create-view-dialog'
 import { DropSchemaDialog } from './drop-schema-dialog'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameSchemaDialog } from './rename-schema-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
-import { SchemaRow } from './schema-row'
-import { TableRow } from './table-row'
 import type { TreeRow } from './tree-row'
-
-const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+import { TreeRowContent } from './tree-row-content'
 
 const ROW_HEIGHTS = {
   empty: 30,
@@ -48,6 +34,7 @@ export const TablesList = ({
   highlightedControlId,
   highlightedId,
   isPending,
+  listId,
   onCreateTable,
   onToggleSchema,
   rows,
@@ -58,19 +45,16 @@ export const TablesList = ({
   highlightedControlId: string
   highlightedId?: string
   isPending: boolean
+  listId: string
   onCreateTable: (schema?: string) => void
   onToggleSchema: (name: string) => void
   rows: TreeRow[]
   search?: string
 }) => {
-  const { connection } = useRouteContext()
-  const dropSchemaDialogRef =
-    useRef<ComponentRef<typeof DropSchemaDialog>>(null)
-  const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
-  const renameSchemaDialogRef =
-    useRef<ComponentRef<typeof RenameSchemaDialog>>(null)
-  const renameTableDialogRef =
-    useRef<ComponentRef<typeof RenameTableDialog>>(null)
+  const dropSchema = useRef<ComponentRef<typeof DropSchemaDialog>>(null)
+  const dropTable = useRef<ComponentRef<typeof DropTableDialog>>(null)
+  const renameSchema = useRef<ComponentRef<typeof RenameSchemaDialog>>(null)
+  const renameTable = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const { virtualItems, totalSize, scrollToIndex, range } = useVirtualizer({
@@ -116,7 +100,10 @@ export const TablesList = ({
 
   if (isPending) {
     return (
-      <SidebarContent className={cn('overflow-hidden pl-2', className)}>
+      <SidebarContent
+        id={listId}
+        className={cn('overflow-hidden pl-2', className)}
+      >
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
             <SidebarMenuItem key={index}>
@@ -131,6 +118,7 @@ export const TablesList = ({
   if (rows.length === 0) {
     return (
       <SidebarContent
+        id={listId}
         className={cn(
           'items-center justify-center py-8 text-center',
           className
@@ -159,92 +147,20 @@ export const TablesList = ({
     )
   }
 
-  const rowContentOf = (row: TreeRow, highlighted: boolean) => {
-    const controlId = highlighted ? highlightedControlId : undefined
-
-    if (row.kind === 'schema') {
-      return (
-        <div className="h-full pt-0.5 pb-1">
-          <SchemaRow
-            controlId={controlId}
-            row={row}
-            onCreateTable={() => onCreateTable(row.name)}
-            onCreateView={() => createViewDialogRef.current?.create(row.name)}
-            onDrop={() => dropSchemaDialogRef.current?.drop(row.name)}
-            onRename={
-              capabilitiesOf(connection.type).renameSchema
-                ? () => renameSchemaDialogRef.current?.rename(row.name)
-                : undefined
-            }
-            onToggle={() => onToggleSchema(row.name)}
-          />
-        </div>
-      )
-    }
-
-    if (row.kind === 'empty') {
-      return (
-        <p className="text-muted-foreground flex h-full items-center pb-0.5 pl-2 text-xs">
-          No tables
-        </p>
-      )
-    }
-
-    if (row.kind === 'new-schema') {
-      return (
-        <div className="pt-4">
-          <SidebarMenuButton
-            id={controlId}
-            variant="muted"
-            tabIndex={-1}
-            onClick={() => createSchemaDialogRef.current?.create()}
-          >
-            <HugeiconsIcon icon={FolderAddIcon} strokeWidth={2} />
-            <span>New schema</span>
-          </SidebarMenuButton>
-        </div>
-      )
-    }
-
-    if (row.kind === 'separator') {
-      return (
-        <div className="flex h-full items-center">
-          <Separator className="mx-2 w-full" />
-        </div>
-      )
-    }
-
-    return (
-      <div className="pb-0.5">
-        <TableRow
-          controlId={controlId}
-          row={row}
-          search={search}
-          onRename={
-            row.table.type === 'table' ||
-            capabilitiesOf(connection.type).renameViews
-              ? () =>
-                  renameTableDialogRef.current?.rename(
-                    row.schema,
-                    row.table.name,
-                    row.table.type
-                  )
-              : undefined
-          }
-          onDrop={() =>
-            dropTableDialogRef.current?.drop(
-              row.schema,
-              row.table.name,
-              row.table.type
-            )
-          }
-        />
-      </div>
-    )
-  }
+  const rowContent = (row: TreeRow, highlighted: boolean) => (
+    <TreeRowContent
+      controlId={highlighted ? highlightedControlId : undefined}
+      dialogs={{ dropSchema, dropTable, renameSchema, renameTable }}
+      row={row}
+      search={search}
+      onCreateTable={onCreateTable}
+      onToggleSchema={onToggleSchema}
+    />
+  )
 
   return (
     <div
+      id={listId}
       className={cn('relative flex flex-col', className)}
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
@@ -257,10 +173,10 @@ export const TablesList = ({
             '[--scroll-fade-mask:linear-gradient(to_bottom,transparent_var(--sticky-height),#000_calc(var(--sticky-height)+var(--scroll-fade-t)),#000_calc(100%-var(--scroll-fade-b)),transparent_100%)]!'
         )}
       >
-        <DropSchemaDialog ref={dropSchemaDialogRef} />
-        <DropTableDialog ref={dropTableDialogRef} />
-        <RenameSchemaDialog ref={renameSchemaDialogRef} />
-        <RenameTableDialog ref={renameTableDialogRef} />
+        <DropSchemaDialog ref={dropSchema} />
+        <DropTableDialog ref={dropTable} />
+        <RenameSchemaDialog ref={renameSchema} />
+        <RenameTableDialog ref={renameTable} />
         <SidebarMenu
           data-mask
           className="relative h-(--total-size) w-full gap-0"
@@ -290,7 +206,7 @@ export const TablesList = ({
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
               >
-                {rowContentOf(row, highlighted)}
+                {rowContent(row, highlighted)}
               </motion.li>
             )
           })}
@@ -308,7 +224,7 @@ export const TablesList = ({
             className="h-(--sticky-height)"
             data-highlighted={stickyRow.id === highlightedId || undefined}
           >
-            {rowContentOf(stickyRow, stickyRow.id === highlightedId)}
+            {rowContent(stickyRow, stickyRow.id === highlightedId)}
           </SidebarMenuItem>
         </SidebarMenu>
       )}

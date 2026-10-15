@@ -9,7 +9,7 @@ import {
 import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
 import {
   SSH_DESKTOP_ONLY,
-  SSH_KEY_ERRORS,
+  SSH_FIELD_AT_FAULT,
   SSH_TUNNEL_ERROR,
 } from './ssh/params'
 import type { SslSetting } from './ssl/setting'
@@ -30,6 +30,7 @@ export interface Diagnosis {
     | 'password'
     | 'ssh.keyPath'
     | 'ssh.passphrase'
+    | 'ssh.password'
     | 'ssh.privateKey'
     | 'user'
   hint: string
@@ -59,10 +60,27 @@ const tunnelFix = ({ desktop, parts }: DiagnosisContext): Diagnosis['fix'] =>
     ? { label: 'Set up an SSH tunnel', patch: { sshEnabled: true } }
     : undefined
 
+const SSH_TUNNEL_TITLE = "Couldn't open the SSH tunnel"
+
 const RULES: {
   match: RegExp
   diagnose: (context: DiagnosisContext) => Diagnosis
+  tunnel?: true
 }[] = [
+  {
+    diagnose: ({ message }) => {
+      const hint = message.slice(SSH_TUNNEL_ERROR.length)
+      const focus = SSH_FIELD_AT_FAULT[hint]
+      return { ...(focus && { focus }), hint, title: SSH_TUNNEL_TITLE }
+    },
+    match: new RegExp(`^${RegExp.escape(SSH_TUNNEL_ERROR)}`, 'u'),
+    tunnel: true,
+  },
+  {
+    diagnose: () => ({ hint: SSH_DESKTOP_ONLY, title: SSH_TUNNEL_TITLE }),
+    match: new RegExp(`^${RegExp.escape(SSH_DESKTOP_ONLY)}$`, 'u'),
+    tunnel: true,
+  },
   {
     diagnose: () => ({
       focus: 'user',
@@ -339,56 +357,25 @@ const RULES: {
   },
 ]
 
-const sshKeyFieldOf = (
-  hint: string,
-  { ssh }: ConnectionParts
-): Diagnosis['focus'] => {
-  if (Object.values(SSH_KEY_ERRORS.passphrase).includes(hint)) {
-    return 'ssh.passphrase'
-  }
-  if (Object.values(SSH_KEY_ERRORS.key).includes(hint)) {
-    return ssh?.auth === 'keyPath' ? 'ssh.keyPath' : 'ssh.privateKey'
-  }
-  return undefined
-}
-
-const SSH_TUNNEL_TITLE = "Couldn't open the SSH tunnel"
-
-const diagnoserOf = (
-  message: string
-): ((context: DiagnosisContext) => Diagnosis) | undefined => {
-  if (message.startsWith(SSH_TUNNEL_ERROR)) {
-    return ({ parts }) => {
-      const hint = message.slice(SSH_TUNNEL_ERROR.length)
-      const focus = sshKeyFieldOf(hint, parts)
-      return { ...(focus && { focus }), hint, title: SSH_TUNNEL_TITLE }
-    }
-  }
-  if (message === SSH_DESKTOP_ONLY) {
-    return () => ({ hint: SSH_DESKTOP_ONLY, title: SSH_TUNNEL_TITLE })
-  }
-  const rule = RULES.find(({ match }) => match.test(message))
-  return (
-    rule &&
-    ((context) => {
-      const diagnosis = rule.diagnose(context)
-      const { host, password } = context.parts
-      // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
-      if (diagnosis.focus || password || isLocalHost(host)) {
-        return diagnosis
-      }
-      return {
-        ...diagnosis,
-        focus: 'password',
-        hint: `${diagnosis.hint} The password is empty too.`,
-      }
-    })
-  )
-}
-
 export const isConnectionFailure = (message: string) =>
-  diagnoserOf(message) !== undefined
+  RULES.some(({ match }) => match.test(message))
 
 export const diagnoseConnectionError = (
   context: DiagnosisContext
-): Diagnosis | null => diagnoserOf(context.message)?.(context) ?? null
+): Diagnosis | null => {
+  const rule = RULES.find(({ match }) => match.test(context.message))
+  if (!rule) {
+    return null
+  }
+  const diagnosis = rule.diagnose(context)
+  const { host, password } = context.parts
+  // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
+  if (rule.tunnel || diagnosis.focus || password || isLocalHost(host)) {
+    return diagnosis
+  }
+  return {
+    ...diagnosis,
+    focus: 'password',
+    hint: `${diagnosis.hint} The password is empty too.`,
+  }
+}

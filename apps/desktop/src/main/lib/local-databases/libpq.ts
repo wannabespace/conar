@@ -7,7 +7,8 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import ini from 'ini'
 
-import { localDatabase, validEntries } from './local-database'
+import type { Finder } from './local-database'
+import { validEntries } from './local-database'
 
 const serviceSchema = type([
   'string',
@@ -22,36 +23,39 @@ const serviceSchema = type([
   },
 ])
 
-export const pgpassDatabases = async () => {
-  const pgpass = await readFile(
-    process.env.PGPASSFILE ?? path.join(homedir(), '.pgpass'),
-    'utf-8'
-  )
-  return pgpass
-    .split('\n')
-    .filter((line) => !line.startsWith('#'))
-    .flatMap((line) => {
-      const guess = guessPgpass(line)
-      return guess ? localDatabase('.pgpass', '', guess.parts) : []
-    })
+export const pgpass: Finder = {
+  files: [process.env.PGPASSFILE ?? path.join(homedir(), '.pgpass')],
+  read: async (file) => {
+    const pgpassFile = await readFile(file, 'utf-8')
+    return pgpassFile
+      .split('\n')
+      .filter((line) => !line.startsWith('#'))
+      .flatMap((line) => {
+        const guess = guessPgpass(line)
+        return guess ? [{ name: '', parts: guess.parts }] : []
+      })
+  },
+  source: '.pgpass',
 }
 
-export const pgServiceDatabases = async () => {
-  const services = ini.parse(
-    await readFile(
-      process.env.PGSERVICEFILE ?? path.join(homedir(), '.pg_service.conf'),
-      'utf-8'
-    )
-  )
-  return validEntries(serviceSchema, Object.entries(services)).flatMap(
-    ([name, { dbname, host = 'localhost', password, port, user }]) =>
-      localDatabase('pg_service.conf', name, {
+export const pgService: Finder = {
+  files: [
+    process.env.PGSERVICEFILE ?? path.join(homedir(), '.pg_service.conf'),
+  ],
+  read: async (file) =>
+    validEntries(
+      serviceSchema,
+      Object.entries(ini.parse(await readFile(file, 'utf-8')))
+    ).map(([name, { dbname, host = 'localhost', password, port, user }]) => ({
+      name,
+      parts: {
         database: dbname,
+        engine: ConnectionType.Postgres,
         host,
         password,
         port,
-        type: ConnectionType.Postgres,
         user,
-      })
-  )
+      },
+    })),
+  source: 'pg_service.conf',
 }

@@ -129,19 +129,22 @@ export const createConnectionStringsCollection = (
         },
         async save(data) {
           const stored = collection.get(data.connectionId)
-          const previous = stored
-            ? {
-                connectionId: stored.connectionId,
-                connectionString: await collection.utils.decrypt(
-                  stored.connectionId
-                ),
-                updatedAt: stored.updatedAt,
-              }
-            : null
+          const [previous, encrypted] = await Promise.all([
+            stored
+              ? collection.utils
+                  .decrypt(stored.connectionId)
+                  .then((connectionString) => ({
+                    connectionId: stored.connectionId,
+                    connectionString,
+                    updatedAt: stored.updatedAt,
+                  }))
+              : null,
+            deviceEncryption.encrypt(data.connectionString),
+          ])
           const record = {
             ...describeConnectionString(data.connectionString),
             connectionId: data.connectionId,
-            encrypted: await deviceEncryption.encrypt(data.connectionString),
+            encrypted,
             updatedAt: data.updatedAt,
           }
           if (collection.has(data.connectionId)) {

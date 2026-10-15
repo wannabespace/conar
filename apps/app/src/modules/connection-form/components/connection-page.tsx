@@ -19,8 +19,9 @@ import { posthog } from '~/lib/posthog'
 import type { ConnectionFormValues } from '../lib/connection-form'
 import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
-import { missingFieldsOf } from '../lib/form-mode'
+import { formPolicyOf } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
+import { usePickLocalDatabase } from '../lib/use-pick-local-database'
 import type { OnSave } from '../lib/use-test-then-save'
 import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
@@ -28,7 +29,6 @@ import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
-import { usePickLocalDatabase } from './local-databases'
 import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
@@ -48,9 +48,6 @@ const REVEAL: Variants = {
   },
   initial: { opacity: 0, y: 8 },
 }
-
-// The kit's Select keeps an aria-hidden input that forwards focus to its trigger.
-const FIRST_TEXT_FIELD = 'input:enabled:not([aria-hidden])'
 
 // Field ids hold dots (`ssh.host`), which a bare `#id` selector reads as a class.
 const focusField = (id: string) =>
@@ -83,14 +80,10 @@ export const ConnectionPage = ({
   // A button that disappears once pressed (a fix, Ask AI) hands focus to the page first: on body the page's keys no longer reach.
   const focusPage = () => pageRef.current?.focus()
   const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
-  const scope = mode.kind === 'edit' ? mode.scope : 'all'
-  const missingFields = missingFieldsOf(mode)
-  const locked = (field: string) =>
-    scope === 'credentials' && !missingFields.includes(field)
+  const policy = formPolicyOf(mode)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
-    missingFields,
     onFill: ({ fixes, format }, pasted) => {
       setFilled((current) => ({
         fixes,
@@ -98,21 +91,22 @@ export const ConnectionPage = ({
       }))
     },
     onSubmit: () => save(form, filled?.origin),
+    unfilledSecrets: policy.unfilledSecrets,
   })
   // Through the form element, not `form.handleSubmit()`: the kit Form's submit handler then focuses the first invalid field.
   const submit = () => formRef.current?.requestSubmit()
 
   // Declared before usePasteConnection: a connection link's paste then focuses its first missing field after this.
   useEffect(() => {
-    if (mode.kind === 'create') {
-      pageRef.current?.focus()
+    if (policy.firstField) {
+      focusField(policy.firstField)
     } else {
-      formRef.current?.querySelector<HTMLElement>(FIRST_TEXT_FIELD)?.focus()
+      pageRef.current?.focus()
     }
-  }, [mode.kind])
+  }, [policy.firstField])
 
   const { dragging, flash, read, readClipboard } = usePasteConnection({
-    enabled: scope !== 'credentials',
+    enabled: policy.pasteable,
     onPaste: (guess, via) => {
       paste(guess, via)
       // The agent panel holds no fields: render the form before focusing one.
@@ -185,7 +179,7 @@ export const ConnectionPage = ({
       className="relative flex h-full min-h-0 flex-col outline-none"
     >
       <DropOverlay shown={dragging} />
-      {scope === 'all' && mode.kind === 'edit' && (
+      {policy.guardsUnsaved && (
         <UnsavedChangesGuard isDirty={() => !form.state.isDefaultValue} />
       )}
       <IconButton
@@ -214,6 +208,7 @@ export const ConnectionPage = ({
                   <PasteHero
                     flash={flash}
                     mode={mode}
+                    pasteable={policy.pasteable}
                     onClipboard={readClipboard}
                     onLocalDatabase={pickLocalDatabase}
                     onAgent={() => {
@@ -225,7 +220,7 @@ export const ConnectionPage = ({
                 }
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <ServerFields form={form} locked={locked} />
+                  <ServerFields form={form} locked={policy.locked} />
                   {filled && (
                     <PasteNotes
                       fixes={filled.fixes}
@@ -235,9 +230,9 @@ export const ConnectionPage = ({
                   )}
                 </motion.div>
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <SshFields form={form} locked={locked} />
+                  <SshFields form={form} locked={policy.locked} />
                 </motion.div>
-                {scope === 'all' && (
+                {policy.showsMeta && (
                   <motion.div variants={REVEAL}>
                     <FieldGroup variant="card">
                       <NameField form={form} />
@@ -279,7 +274,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={reason}
+          reason={values.host.trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

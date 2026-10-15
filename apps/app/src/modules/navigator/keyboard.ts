@@ -77,6 +77,7 @@ export const useNavigatorSearch = ({
 }) => {
   const searchRef = useRef<HTMLInputElement>(null)
   const highlightedControlId = useId()
+  const listId = useId()
   const [focused, setFocused] = useState(false)
   const [moved, setMoved] = useState<{
     activeId?: string
@@ -156,8 +157,11 @@ export const useNavigatorSearch = ({
   return {
     highlightedControlId,
     highlightedId,
+    listId,
     searchProps: {
       'aria-activedescendant': highlightedId && highlightedControlId,
+      'aria-controls': listId,
+      'aria-expanded': true,
       onBlur: () => setFocused(false),
       onFocus: () => setFocused(true),
       ref: (input: HTMLInputElement) => {
@@ -173,6 +177,7 @@ export const useNavigatorSearch = ({
           }
         }
       },
+      role: 'combobox',
     },
   }
 }

@@ -1,3 +1,4 @@
+import type { Engine } from '@tamery/shared/enums/connection-type'
 import {
   ConnectionFlavor,
   ConnectionType,
@@ -14,16 +15,16 @@ import { guessUrl } from './url'
 type Field = ServerField | 'server'
 
 interface Client {
-  flavor?: ConnectionFlavor
+  engine: Engine
   /** Flags that prompt when bare, so their value must be glued on: `-pSECRET`, `--password=SECRET`. */
   gluedOnly?: string[]
   /** Every flag that takes a value; `null` drops the value instead of reading it as a positional. */
   options: Record<string, Field | null>
   positionals: ServerField[]
-  type: ConnectionType
 }
 
 const PSQL: Client = {
+  engine: ConnectionType.Postgres,
   options: {
     '--command': null,
     '--dbname': 'database',
@@ -40,10 +41,10 @@ const PSQL: Client = {
     '-v': null,
   },
   positionals: ['database', 'user'],
-  type: ConnectionType.Postgres,
 }
 
 const MYSQL: Client = {
+  engine: ConnectionType.MySQL,
   gluedOnly: ['-p', '--password'],
   options: {
     '--database': 'database',
@@ -62,12 +63,12 @@ const MYSQL: Client = {
     '-u': 'user',
   },
   positionals: ['database'],
-  type: ConnectionType.MySQL,
 }
 
-const MARIADB: Client = { ...MYSQL, flavor: ConnectionFlavor.MariaDB }
+const MARIADB: Client = { ...MYSQL, engine: ConnectionFlavor.MariaDB }
 
 const SQLCMD: Client = {
+  engine: ConnectionType.MSSQL,
   options: {
     '-P': 'password',
     '-Q': null,
@@ -79,10 +80,10 @@ const SQLCMD: Client = {
     '-q': null,
   },
   positionals: [],
-  type: ConnectionType.MSSQL,
 }
 
 const CLICKHOUSE: Client = {
+  engine: ConnectionType.ClickHouse,
   options: {
     '--database': 'database',
     '--host': 'host',
@@ -96,7 +97,6 @@ const CLICKHOUSE: Client = {
     '-u': 'user',
   },
   positionals: [],
-  type: ConnectionType.ClickHouse,
 }
 
 const CLIENTS: Record<string, Client> = {
@@ -169,7 +169,7 @@ const guessCommand = (tokens: string[]): DatabaseGuess | null => {
       mssqlAddress(server),
       conninfoGuess?.parts ?? {},
       partsOfVariables(variablesOfLines(tokens.slice(0, start))) ?? {},
-      { flavor: client.flavor, type: client.type }
+      { engine: client.engine }
     ),
   }
 }

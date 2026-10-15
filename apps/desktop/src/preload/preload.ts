@@ -162,14 +162,6 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('deviceEncryption.reset')
     ),
   },
-  encryption: {
-    decrypt: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('encryption.decrypt', arg)
-    ),
-    encrypt: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('encryption.encrypt', arg)
-    ),
-  },
   localDatabases: {
     find: handleElectronError(() => ipcRenderer.invoke('localDatabases.find')),
     unlock: handleElectronError((connectionString: string) =>

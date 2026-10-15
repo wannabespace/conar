@@ -7,7 +7,7 @@ import { diagnoseConnectionError } from './diagnose'
 import { diagnosisRequestOf } from './diagnosis-request'
 import {
   EMPTY_SSH_TUNNEL,
-  SSH_KEY_ERRORS,
+  SSH_AUTH_ERRORS,
   SSH_TUNNEL_ERROR,
 } from './ssh/params'
 
@@ -42,16 +42,13 @@ describe('diagnoseConnectionError', () => {
   })
 
   it.each([
-    [SSH_KEY_ERRORS.key.noFile, 'keyPath', 'ssh.keyPath'],
-    [SSH_KEY_ERRORS.passphrase.needed, 'key', 'ssh.passphrase'],
-    [SSH_KEY_ERRORS.key.notAKey, 'key', 'ssh.privateKey'],
-    [SSH_KEY_ERRORS.key.notAKey, 'keyPath', 'ssh.keyPath'],
-  ] as const)('sends %s to the field at fault', (message, auth, field) => {
-    expect(
-      diagnose(`${SSH_TUNNEL_ERROR}${message}`, {
-        ssh: { ...EMPTY_SSH_TUNNEL, auth },
-      })?.focus
-    ).toBe(field)
+    [SSH_AUTH_ERRORS.noKeyFile, 'ssh.keyPath'],
+    [SSH_AUTH_ERRORS.passphraseNeeded, 'ssh.passphrase'],
+    [SSH_AUTH_ERRORS.notAKey, 'ssh.privateKey'],
+    [SSH_AUTH_ERRORS.keyFileNotAKey, 'ssh.keyPath'],
+    [SSH_AUTH_ERRORS.passwordMissing, 'ssh.password'],
+  ] as const)('sends %s to the field at fault', (message, field) => {
+    expect(diagnose(`${SSH_TUNNEL_ERROR}${message}`)?.focus).toBe(field)
   })
 
   it('blames the SSH host when it cannot look up the database host', () => {

@@ -1,6 +1,8 @@
+import type { Engine } from '@tamery/shared/enums/connection-type'
 import {
   ConnectionFlavor,
   ConnectionType,
+  engines,
 } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
@@ -52,13 +54,13 @@ const portOf = ({
   return type ? String(DEFAULT_PORTS[type]) : ''
 }
 
-const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
+const ENGINE_OF_SCHEME: Record<string, Engine> = {
   ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
-  mariadb: ConnectionType.MySQL,
+  mariadb: ConnectionFlavor.MariaDB,
   mssql: ConnectionType.MSSQL,
   mysql: ConnectionType.MySQL,
   mysql2: ConnectionType.MySQL,
@@ -66,10 +68,6 @@ const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
   postgres: ConnectionType.Postgres,
   postgresql: ConnectionType.Postgres,
   sqlserver: ConnectionType.MSSQL,
-}
-
-const FLAVOR_OF_SCHEME: Record<string, ConnectionFlavor> = {
-  mariadb: ConnectionFlavor.MariaDB,
 }
 
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
@@ -80,11 +78,8 @@ const schemeName = (scheme: string) =>
     .replace(/^jdbc:/u, '')
     .replace(/[+:].*$/u, '')
 
-export const typeOfScheme = (scheme: string): ConnectionType | null =>
-  TYPE_OF_SCHEME[schemeName(scheme)] ?? null
-
-export const flavorOfScheme = (scheme: string): ConnectionFlavor | undefined =>
-  FLAVOR_OF_SCHEME[schemeName(scheme)]
+export const engineOfScheme = (scheme: string): Engine | null =>
+  ENGINE_OF_SCHEME[schemeName(scheme)] ?? null
 
 const format = (
   parts: ConnectionParts,
@@ -123,13 +118,14 @@ const parse = (connectionString: string): ConnectionParts => {
     readConnectionString(connectionString)
   const ssh = sshTunnelOf(searchParams)
   deleteSshParams(searchParams)
+  const engine = engineOfScheme(scheme)
 
   return {
     ...parts,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,
-    type: typeOfScheme(scheme),
+    type: engine && engines.type(engine),
   }
 }
 

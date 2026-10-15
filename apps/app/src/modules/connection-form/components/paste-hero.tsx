@@ -46,18 +46,19 @@ export const PasteHero = ({
   onAgent,
   onClipboard,
   onLocalDatabase,
+  pasteable,
 }: {
   flash: PasteFlash
   mode: FormMode
   onAgent: () => void
   onClipboard: () => void
   onLocalDatabase: (database: LocalDatabase) => void
+  pasteable: boolean
 }) => {
   const reduceMotion = useReducedMotion()
   const modifierHeld = useKeyHold(isMac ? 'Meta' : 'Control')
   const pasteHeld = useKeyHold('V') && modifierHeld
   const [shakeScope, shake] = useAnimate<HTMLDivElement>()
-  const pasteable = mode.kind === 'create' || mode.scope !== 'credentials'
   const idle =
     mode.kind === 'edit'
       ? {

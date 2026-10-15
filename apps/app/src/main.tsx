@@ -41,7 +41,6 @@ if (window.electron) {
       event.preventDefault()
     }
   })
-  // The only message a locked keychain gets in actions that decrypt without a catch (copy, clear password, connection links).
   window.addEventListener('unhandledrejection', (event) => {
     if (isKeychainLocked(event.reason)) {
       event.preventDefault()
