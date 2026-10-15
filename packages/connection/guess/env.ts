@@ -134,7 +134,7 @@ export const partsOfVariables = (
   return Object.keys(parts).length > 0 ? mergeParts(parts, { engine }) : null
 }
 
-/** `KEY=value` lines of a `.env`, a YAML map or a command's environment prefix; keys come back uppercased. */
+/** Keys come back uppercased. */
 export const variablesOfLines = (lines: string[]) => {
   const variables: Record<string, string> = {}
   for (const line of lines) {

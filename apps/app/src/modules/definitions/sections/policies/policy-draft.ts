@@ -41,8 +41,6 @@ const parseRoles = (value: string) =>
 const asCommand = (value: string | undefined): PolicyCommand =>
   POLICY_COMMANDS.find((command) => command === value) ?? 'ALL'
 
-// PostgreSQL takes USING for rows that exist and WITH CHECK for rows a write
-// would produce, so INSERT has no USING and SELECT and DELETE no WITH CHECK.
 export const expressionsFor = (command: PolicyCommand) => ({
   check: command !== 'SELECT' && command !== 'DELETE',
   using: command !== 'INSERT',
@@ -89,7 +87,6 @@ export const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
   }
 }
 
-// ALTER POLICY has no form that removes an expression the policy already has.
 export const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
   (item.using !== null && draft.using.trim() === '') ||
   (item.check !== null && draft.check.trim() === '')

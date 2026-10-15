@@ -1,5 +1,5 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { tryCatch } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 
 import { CLICKHOUSE_HTTP_PORT_OF_NATIVE } from '../connection-parts'
 import { hostHintOf, TYPE_OF_PORT } from '../hosts'
@@ -42,9 +42,8 @@ const credentialsBeside = (
   return { password, user }
 }
 
-/** Never throws: it reads anything the user pastes or drops. */
 export const guessConnection = (text: string): ConnectionGuess | null =>
-  tryCatch(() => {
+  Result.try(() => {
     const { forwards, rest, tunnel } = guessSsh(
       text.replaceAll(LINE_CONTINUATION, ' ')
     )
@@ -80,4 +79,4 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       format: database?.format ?? 'ssh',
       parts: fixed,
     }
-  }).data
+  }).unwrapOr(null)

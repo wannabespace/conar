@@ -92,7 +92,6 @@ export const getColumnUiType = (
     return 'boolean'
   }
 
-  // Postgres `daterange` holds bounds like `[2026-01-01,2026-02-01)`, not a date.
   if (column.type.toLowerCase().includes('range')) {
     return 'raw'
   }

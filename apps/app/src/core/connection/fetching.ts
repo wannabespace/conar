@@ -17,7 +17,6 @@ import { queryClient } from '~/lib/query-client'
 import { fetchingConfig } from './fetching-config'
 import { getConnectionStore } from './stores'
 
-/** A query sent while the connection is blocked fails, and its cached error outlives the unlock. */
 export const canQueryConnection = (connection: Connection) =>
   fetchingConfig(connection, {
     connectionString:

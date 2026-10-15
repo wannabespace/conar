@@ -54,7 +54,7 @@ const SettingsPage = () => {
 
   const leave = useGoBack()
 
-  // Scoped to the page, not the document: Escape inside a portalled popup (a Select, an MCP approval) must close only that popup. The page's tabIndex keeps a click on empty space inside the scope.
+  // Scoped to the page so Escape in a portalled popup closes only the popup; the page's tabIndex keeps clicks on empty space in scope.
   useHotkey('Escape', leave, { target: pageRef })
   useHotkey('ArrowDown', () => stepSection(1), { target: navRef })
   useHotkey('ArrowUp', () => stepSection(-1), { target: navRef })

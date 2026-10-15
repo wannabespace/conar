@@ -94,7 +94,6 @@ const fimCompleteSql = async (data: CompleteSqlInput) => {
   )
   const inputTokens = usage.promptTokens ?? 0
   const outputTokens = usage.completionTokens ?? 0
-  // Recording writes to the database; the keystroke's answer must not wait on it.
   void data.onUsage(FIM_MODEL, {
     inputTokenDetails: {
       cacheReadTokens: 0,

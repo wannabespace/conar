@@ -1,5 +1,5 @@
-import { tryCatch } from '@tamery/shared/utils'
 import { hexToBytes } from '@tamery/shared/value-text'
+import { Result } from 'better-result'
 
 import { getValueForEditor } from '~/core/connection/utils'
 
@@ -98,17 +98,17 @@ export const createUuidTransformer = (): ValueTransformer<unknown> => ({
 })
 
 export const createJsonTransformer = (): ValueTransformer<unknown> => ({
-  // Drivers parse json, so a string scalar arrives bare and must get its quotes back, or the write is invalid json.
+  // Drivers parse json, so a string scalar arrives bare and must get its quotes back.
   ...createRawTransformer((value) =>
     value === null || value === undefined ? '' : JSON.stringify(value, null, 2)
   ),
   toConnection: {
     fromRaw: (raw) => {
-      const { data, error } = tryCatch(() => JSON.parse(raw))
-      if (error) {
+      const parsed = Result.try(() => JSON.parse(raw))
+      if (parsed.isErr()) {
         throw new Error('Invalid JSON')
       }
-      return data
+      return parsed.value
     },
     fromUI: (value) => value,
   },

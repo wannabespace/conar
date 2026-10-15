@@ -1,4 +1,4 @@
-import { tryCatch } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import JSON5 from 'json5'
 
 import { partsOfVariables } from './env'
@@ -24,7 +24,6 @@ const namesOf = (key: string) => [
     .replaceAll(NON_WORD, '_'),
 ]
 
-/** A parent's key is a prefix too, so `{ "mysql": { "host": … } }` reads as `MYSQL_HOST`. */
 const variablesOfObject = (
   object: JsonObject,
   parentKey: string,
@@ -52,7 +51,6 @@ const variablesOfObject = (
   return variables
 }
 
-/** The first object holding a host wins, read with its ancestors' keys (Knex puts `client` beside the `connection` object); without one, the first object naming anything. */
 export const guessJson = (text: string): DatabaseGuess | null => {
   const literal = text
     .trim()
@@ -60,15 +58,14 @@ export const guessJson = (text: string): DatabaseGuess | null => {
   if (!/^[{[]/u.test(literal)) {
     return null
   }
-  // Parse, never evaluate: the text is whatever the user pasted.
-  const object = tryCatch(() =>
+  const object = Result.try(() =>
     JSON5.parse(
       literal
         .replace(/;\s*$/u, '')
         .replaceAll(/process\.env\.\w+\s*(?:\|\||\?\?)\s*/gu, '')
         .replaceAll(/process\.env\.\w+/gu, 'null')
     )
-  ).data
+  ).unwrapOr(null)
   let fallback: GuessedParts | null = null
   const visit = (
     value: unknown,

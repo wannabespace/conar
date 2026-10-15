@@ -81,8 +81,6 @@ const resourceTriggersQuery = createQuery({
               .else(0)
               .end()
               .as('enabled'),
-          // Replication, schema binding and EXECUTE AS live in the header the
-          // form rewrites, and the body is what follows it.
           (eb) =>
             eb
               .case()
@@ -128,8 +126,6 @@ const resourceTriggersQuery = createQuery({
           't.ACTION_TIMING as timing',
           't.ACTION_ORIENTATION as orientation',
           't.ACTION_STATEMENT as body',
-          // A drop-and-create puts the trigger back last among its event's
-          // triggers, so one that another already follows cannot keep its place.
           (eb) =>
             eb
               .exists(

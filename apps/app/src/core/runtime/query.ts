@@ -181,8 +181,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
         retry: {
           backoff: 'constant',
           delayMs: RECONNECTION_DELAY,
-          // A write is not idempotent — a lost response may still have
-          // committed — so only queries reading a result reconnect and retry.
+          // A write whose response was lost may still have committed: never retry one.
           shouldRetry: (error) =>
             Boolean(options.type) && isConnectionError(error),
           times: MAX_RECONNECTION_ATTEMPTS,

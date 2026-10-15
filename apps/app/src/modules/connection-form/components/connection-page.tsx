@@ -49,7 +49,6 @@ const REVEAL: Variants = {
   initial: { opacity: 0, y: 8 },
 }
 
-// Field ids hold dots (`ssh.host`), which a bare `#id` selector reads as a class.
 const focusField = (id: string) =>
   document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus()
 
@@ -77,7 +76,6 @@ export const ConnectionPage = ({
       goBack()
     }
   }
-  // A button that disappears once pressed (a fix, Explain with AI) hands focus to the page first: on body the page's keys no longer reach.
   const focusPage = () => pageRef.current?.focus()
   const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
   const policy = formPolicyOf(mode)
@@ -109,7 +107,6 @@ export const ConnectionPage = ({
     enabled: policy.pasteable,
     onPaste: (guess, via) => {
       paste(guess, via)
-      // The agent panel holds no fields: render the form before focusing one.
       if (stage === 'agent') {
         flushSync(() => setStage('form'))
       }
@@ -148,14 +145,11 @@ export const ConnectionPage = ({
     void runTest(form.state.values)
   }
 
-  // Bound on the page, which sits inside React's root: the listener runs before a focused control's own keydown (the SSH switch toggles on Enter) and stops it.
-  // TanStack Form runs `onSubmit` again while one is in flight, so ⌘↩ is off during a save, like the disabled Save button.
   useShortcut('submit', submit, {
     enabled: stage === 'form' && !submitting,
     requireReset: true,
     target: pageRef,
   })
-  // Scoped to the page so Escape in a portalled popup closes only the popup; an open autocomplete closes itself first, so the event passes through.
   useShortcut(
     'stepBack',
     () => {

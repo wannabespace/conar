@@ -1,6 +1,5 @@
 import type { GuessedParts } from './types'
 
-/** Earlier parts win field by field; empty values are dropped. */
 export const mergeParts = (...list: GuessedParts[]): GuessedParts =>
   Object.fromEntries(
     list

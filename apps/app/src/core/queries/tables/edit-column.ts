@@ -93,8 +93,6 @@ const mysqlMoveRenamedValues = async (
   )
 }
 
-// ClickHouse accepts an enum MODIFY that drops a value rows still hold, then
-// fails the rewrite in the background and those rows stop reading.
 const clickhouseRefuseHeldValues = async (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,

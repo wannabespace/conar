@@ -17,7 +17,6 @@ export type ContainsText = (
 export const textContains: Record<ConnectionType, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
-  // Default collations compare case-insensitively, so LIKE already ignores case.
   mssql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
@@ -57,7 +56,7 @@ const clickhouseDateTime = (columnType: string, value: unknown) => {
     : value
 }
 
-/** How a value is written to, or matched against, a column of `columnType`; `undefined` is the column's DEFAULT. */
+/** `undefined` binds the column's DEFAULT. */
 export const bindValue: Record<ConnectionType, BindValue> = {
   clickhouse: (columnType, value) => {
     if (value === undefined) {
@@ -109,7 +108,7 @@ export const clickhouseFilterValues =
       value
     )
 
-// MSSQL caps a statement at 2100 bound parameters; the others comfortably take 500 rows per statement
+// MSSQL caps a statement at 2100 bound parameters.
 const MSSQL_PARAMETER_LIMIT = 2000
 const MAX_ROWS_PER_STATEMENT = 500
 

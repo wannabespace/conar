@@ -92,8 +92,6 @@ export const draftOf = (
   }
 }
 
-// A trigger carrying a WHEN clause, a column list, function arguments, an
-// order or a constraint cannot be rebuilt from these fields.
 export const formEditable = (item: TriggerItem, body: boolean) =>
   !item.custom && (!body || !!item.body)
 

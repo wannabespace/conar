@@ -22,8 +22,7 @@ export interface FunctionShape {
   args: string
   behavior: string
   body: string
-  // Options the form does not show — STRICT, PARALLEL, COST, SET … — read back
-  // from the catalog and re-emitted, or an edit silently drops them.
+  // Options the form does not show (STRICT, PARALLEL, COST, SET …); an edit drops them unless re-emitted.
   extras: string
   kind: RoutineKind
   language: string
@@ -52,8 +51,6 @@ export const functionBodyTemplateOf = ({
     return ''
   }
 
-  // An inline table-valued function is one RETURN of a SELECT; T-SQL rejects a
-  // BEGIN block around it.
   if (
     connectionType === ConnectionType.MSSQL &&
     kind === 'function' &&
@@ -72,10 +69,7 @@ export const functionBodyTemplateOf = ({
     : 'BEGIN\n\nEND'
 }
 
-// Dropping loses the routine's grants and owner, and fails while a view or
-// another routine depends on it. Postgres only replaces in place while the
-// whole signature stays put; SQL Server's CREATE OR ALTER also rewrites the
-// arguments and the return type.
+// SQL Server's CREATE OR ALTER also rewrites the arguments and the return type.
 export const replacesRoutine = (
   saved: {
     args: string | null
@@ -100,8 +94,6 @@ export interface RoutineTarget {
   schema: string
 }
 
-// Postgres ends the body at the first repeat of the opening tag, so the tag
-// has to be one the body does not already contain.
 const dollarQuoted = (body: string) => {
   let tag = '$tamery$'
 
@@ -162,7 +154,6 @@ export const dropRoutineStatements = ({
   return {
     mssql: drop,
     mysql: drop,
-    // Postgres overloads by signature, so the drop names the arguments too.
     postgres: sql`${drop}(${sql.raw(identity ?? '')})`,
   }
 }

@@ -57,7 +57,6 @@ export const estimateQuery = (text: string, connectionType: ConnectionType) => {
           return null
         }
         const at = (column: string) => set.columns.indexOf(column)
-        // A plan row counts its table's rows per row of the tables joined before it, so only a target alone in its join gives a total.
         const [target, ...joined] = set.rows.filter(
           (row) => row[at('id')] === set.rows[0]?.[at('id')]
         )

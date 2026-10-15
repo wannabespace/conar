@@ -20,7 +20,6 @@ const ESTIMATE_BUDGET_MS = 3000
 
 const store = createStore<{ pending: Approval[] }>({ pending: [] })
 
-/** Resolves once the user approves the statement; rejects when they decline or the agent stops waiting. Nothing the agent sent runs before that. */
 const request = async ({
   connection,
   params,
@@ -37,7 +36,6 @@ const request = async ({
   signal.throwIfAborted()
   const id = crypto.randomUUID()
   const decided = new AbortController()
-  // A lock (a migration's, say) can stall EXPLAIN, and it holds the pool's only connection while the dialog is open.
   const estimating = AbortSignal.any([
     signal,
     decided.signal,

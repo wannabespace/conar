@@ -1,5 +1,5 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { useSelector } from '@tanstack/react-form'
+import { Result } from 'better-result'
 import { useRef, useState } from 'react'
 
 import type { ConnectionForm } from './connection-form'
@@ -9,7 +9,6 @@ export type LocalDatabase = Awaited<
   ReturnType<NonNullable<typeof window.electron>['localDatabases']['find']>
 >[number]
 
-/** Fills the form at once, and the password when the source hands it out, which can wait on a Keychain prompt. `passwordWithheldBy` names the app whose Keychain password the user denied, while the form still holds its server. */
 export const usePickLocalDatabase = ({
   form,
   read,
@@ -37,9 +36,10 @@ export const usePickLocalDatabase = ({
       return
     }
     unlocking.current = connectionString
-    const { data: unlocked } = await tryCatchAsync(
+    const unlock = await Result.tryPromise(
       async () => await window.electron?.localDatabases.unlock(connectionString)
     )
+    const unlocked = unlock.unwrapOr(null)
     if (unlocking.current !== connectionString) {
       return
     }

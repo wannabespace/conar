@@ -41,7 +41,6 @@ export const PrivateKeyField = ({
             onFocus={(event) =>
               event.target.tagName === 'TEXTAREA' && setEditingKey(true)
             }
-            // Focus moving to the key's own buttons keeps the textarea: swapping to the masked input on mousedown remounts them and drops the click.
             onBlur={(event) =>
               !event.currentTarget.contains(event.relatedTarget) &&
               setEditingKey(false)
@@ -49,7 +48,6 @@ export const PrivateKeyField = ({
           >
             <field.Label>Private key</field.Label>
             {field.state.value && !keyShown && !editingKey ? (
-              // A password input drops line breaks, so it only shows the key's first line and a paste replaces the whole key.
               <InputGroup variant="inset">
                 <InputGroupInput
                   id={field.name}

@@ -1,8 +1,8 @@
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { isMac } from '@tamery/ui/lib/os'
 import { useLocation } from '@tanstack/react-router'
+import { Result } from 'better-result'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -75,16 +75,16 @@ export const usePasteConnection = ({
   const onRead = useEffectEvent(read)
 
   const readClipboard = async () => {
-    const { data: text } = await tryCatchAsync(() =>
+    const clipboard = await Result.tryPromise(() =>
       navigator.clipboard.readText()
     )
-    if (text === null) {
+    if (clipboard.isErr()) {
       toast(
         `Couldn't read the clipboard. Press ${isMac ? '⌘V' : 'Ctrl+V'} instead.`
       )
       return
     }
-    read(text, 'clipboard')
+    read(clipboard.value, 'clipboard')
   }
 
   const onPasteEvent = useEffectEvent((event: ClipboardEvent) => {
@@ -96,7 +96,6 @@ export const usePasteConnection = ({
       (target instanceof HTMLElement && target.isContentEditable)
         ? target
         : null
-    // Only Host reads a pasted connection; any other field keeps the text, so a string can be trimmed down to the part it needs (a password, a database).
     if (!text || (field && field.id !== 'host')) {
       return
     }
@@ -105,7 +104,6 @@ export const usePasteConnection = ({
       read(text, 'paste')
       return
     }
-    // In Host only a whole connection parses, so a bare host still pastes as text.
     const guess = guessConnection(text)
     if (
       guess &&

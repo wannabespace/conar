@@ -24,7 +24,7 @@ const withKey = (key: CryptoKey) => ({
   encrypt: (text: string) => encryptWithKey(key, text),
 })
 
-// The device keeps the key it started with: strings encrypted under one key never decrypt under the other. Only a device without an IndexedDB key asks for the keychain one, so the two never both exist.
+// IndexedDB key first: a device never switches keys, since strings encrypted under one never decrypt under the other.
 const backend = memoize(async () => {
   await db.ready
   const { encryptionKey } = storage.get()

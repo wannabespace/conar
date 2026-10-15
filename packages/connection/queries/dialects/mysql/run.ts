@@ -53,7 +53,6 @@ export const runOn = async (
   }
 
   const start = performance.now()
-  // `CALL` answers with one row set per SELECT inside the procedure, then a status header; each starts with `fields`.
   const sets: Omit<ResultSet, 'truncated'>[] = []
   await cancellable({ cancel, connectionString, queryId }, () => {
     // mysql2 types the promise wrapper's inner connection as another promise one; at runtime it is the core connection, whose `query` streams events.

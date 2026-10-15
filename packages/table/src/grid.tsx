@@ -52,7 +52,7 @@ export const Grid = ({
     overscan: COLUMN_OVERSCAN,
     paddingEnd: GUTTER_WIDTH,
     paddingStart: GUTTER_WIDTH,
-    // Reads `columns`, not a precomputed count: closing over one makes the compiler drop this options object's memo, and a new extractor every render hands every memoized row a new `virtualColumns`.
+    // Reads `columns`, not a precomputed count: closing over one makes the compiler drop this options object's memo.
     rangeExtractor: (range: Range) =>
       [
         ...new Set([

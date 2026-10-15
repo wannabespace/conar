@@ -147,7 +147,6 @@ export const guessSsh = (
   }
 }
 
-/** Tamery opens the tunnel itself, so a database on a forward's local port is the forward's remote target. */
 export const throughForwards = (
   parts: GuessedParts,
   forwards: Forward[]

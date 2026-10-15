@@ -21,8 +21,7 @@ const riseClassName =
 
 const WORD_STAGGER_MS = 80
 
-// Fade and rise on the outer span, blur on the inner: Chrome never composites a blur, so sharing
-// one element would freeze the whole word while hydration holds the main thread
+// Blur stays on the inner span: Chrome never composites a blur, so on one element it freezes the word during hydration.
 const wordClassName =
   'animate-in fade-in slide-in-from-bottom-3 fill-mode-both inline-block duration-900 ease-house motion-reduce:animate-none'
 

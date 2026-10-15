@@ -1,5 +1,5 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
+import { Result } from 'better-result'
 import { toast } from 'sonner'
 
 import { refreshAfterRun } from '~/core/connection/refresh-after-run'
@@ -132,7 +132,6 @@ export const runStatements = async ({
   runs.set(key, controller)
   watchTab(tab)
   const { signal } = controller
-  // A newer run on the tab owns its results; this one finishes quietly.
   const current = () => runs.get(key) === controller
   const run: RunnerRun = { id: crypto.randomUUID(), results: [], running: true }
   const slots = statements.map((statement) => [
@@ -147,15 +146,16 @@ export const runStatements = async ({
   publish()
 
   const [first] = statements
-  const { data: params, error } = await tryCatchAsync(async () => ({
+  const paramsResult = await Result.tryPromise(async () => ({
     ...(await connectionResourceToQueryParams(connectionResource)),
     resultSets: { maxRows: MAX_RESULT_ROWS },
   }))
-  if (error && first) {
+  if (paramsResult.isErr() && first) {
     slots.splice(0, slots.length, [
-      resultOf(first, { error: messageOf(error) }),
+      resultOf(first, { error: messageOf(paramsResult.error.cause) }),
     ])
   }
+  const params = paramsResult.unwrapOr(null)
   const ran: Parameters<typeof runHistory.add>[1] = []
   let failedAt: number | undefined
   if (params) {

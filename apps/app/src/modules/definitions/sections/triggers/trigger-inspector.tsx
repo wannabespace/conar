@@ -95,7 +95,6 @@ export const TriggerInspector = ({
   const form = useAppForm({
     defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
     onSubmit: ({ value }) => {
-      // The picker narrows the orientation, and a hidden one still has to be legal.
       const allowed = triggerOrientationsFor(value, options.orientations)
 
       mutation.mutate(
@@ -299,8 +298,6 @@ export const TriggerInspector = ({
                   )
                   .map((fn) => fn.name)}
                 placeholder="Choose a function"
-                // The picker only offers this schema, so a pick moves the
-                // function off the schema the opened trigger named.
                 onChanged={() =>
                   resetFields(form, { functionSchema: draft.schema })
                 }

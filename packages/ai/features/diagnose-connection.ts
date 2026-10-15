@@ -20,7 +20,6 @@ const diagnosisOutput = type({
   steps: 'string[]',
 })
 
-/** Applying a fix that carries `<redacted>` or `<database>` would overwrite the user's real value with it. */
 const PLACEHOLDER = /[<>]/u
 const PORT = /^\d{1,5}$/u
 

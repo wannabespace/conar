@@ -11,7 +11,6 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-// SQL Server gives every fixed database role (db_owner, db_datareader, …) a schema of its own, numbered from here up.
 const MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID = 16_384
 
 const CLICKHOUSE_MATERIALIZED_VIEW_STORAGE = '.inner%'
@@ -20,7 +19,6 @@ const tableTypes = ['base table', 'view', 'materialized view'] as const
 
 export type RelationKind = 'table' | 'view'
 
-// Every dialect with schemas reads from its schema catalog, so an empty schema is one row whose table is null.
 export const tablesAndSchemasType = type({
   comment: 'string | null',
   'row_level_security?': 'boolean | null',

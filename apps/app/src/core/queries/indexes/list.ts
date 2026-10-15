@@ -98,7 +98,6 @@ const clickhousePrimaryKeys = async (db: Kysely<ClickhouseDatabase>) => {
   return rows.map((row) => ({
     ...row,
     is_primary: true,
-    // A ClickHouse sorting key orders rows; it enforces nothing.
     is_unique: false,
     name: 'primary_key',
   }))

@@ -4,8 +4,8 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 
 import { engineOf } from '@tamery/connection/connection-parts'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
+import { Result } from 'better-result'
 import { app } from 'electron'
 
 import type { Finder } from './local-database'
@@ -49,7 +49,7 @@ export const dbeaver: Finder = {
     const { connections } = dataSourcesSchema.assert(
       JSON.parse(await readFile(path.join(dataDir, DATA_SOURCES), 'utf-8'))
     )
-    const { data: credentials } = await tryCatchAsync(async () => {
+    const credentials = await Result.tryPromise(async () => {
       const file = await readFile(path.join(dataDir, CREDENTIALS))
       const decipher = createDecipheriv(
         'aes-128-cbc',
@@ -67,7 +67,7 @@ export const dbeaver: Finder = {
     })
     return validEntries(connectionSchema, Object.entries(connections)).map(
       ([id, { configuration, name, provider }]) => {
-        const saved = credentials?.[id]?.['#connection']
+        const saved = credentials.unwrapOr(null)?.[id]?.['#connection']
         return {
           name,
           parts: {

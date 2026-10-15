@@ -51,7 +51,6 @@ export const getRouter = () => {
 
   setupRouterSsrQueryIntegration({ queryClient, router })
 
-  // Client-only: the listener never unsubscribes, so registering it per server request would leak one each time.
   if (typeof window !== 'undefined') {
     authClient.$store.listen('$sessionSignal', () =>
       queryClient.removeQueries({ queryKey: sessionQueryOptions.queryKey })

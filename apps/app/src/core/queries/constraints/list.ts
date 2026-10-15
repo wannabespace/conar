@@ -67,7 +67,6 @@ export const constraintsType = type({
 export const resourceConstraintsQuery = createQuery({
   query: {
     clickhouse: async (db) => {
-      // ClickHouse has no constraints beyond the primary key
       const query = await db
         .selectFrom('system.columns')
         .select(['database as schema', 'table', 'name as column'])

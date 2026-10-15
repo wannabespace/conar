@@ -98,7 +98,6 @@ export const gridClipboard = (
         `${rest.length + 1} cells copied`
       )
     },
-    /** One value over the cursor cell types into its editor, so a misfit shows there; anything else is written at once. */
     paste: (text: string) => {
       const block = text === copiedCell ? [[text]] : tsvParseRows(text)
       const at = store.get().cursor

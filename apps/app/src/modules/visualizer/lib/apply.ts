@@ -100,7 +100,6 @@ export const useApplyDrafts = ({
       toast.success(`Applied ${plural(applied.length, 'change')}`)
     },
   })
-  // A drop runs only from the review, which is its confirmation.
   const request = () => {
     if (drafts.some(isDrop) && !reviewOpen) {
       setReviewOpen(true)

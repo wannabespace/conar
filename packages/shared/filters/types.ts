@@ -21,7 +21,6 @@ export interface Filter {
   hasValue?: boolean
 }
 
-/** A hop through a foreign key: the filter's `column` keeps rows whose key is among `table`'s rows matching on `target`. */
 export interface FilterVia {
   key: string
   schema: string

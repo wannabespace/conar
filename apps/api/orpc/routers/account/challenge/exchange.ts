@@ -30,7 +30,6 @@ const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
       .from(connections)
       .where(eq(connections.userId, anonymousUserId)),
   ])
-  // Connection strings are encrypted with their workspace's secret, so moving one re-encrypts it.
   const reencrypted = await Promise.all(
     guestConnections.flatMap(({ connectionString, id, workspaceId: from }) =>
       connectionString

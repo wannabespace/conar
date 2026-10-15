@@ -52,8 +52,6 @@ const draftLabel = (draft: DiagramDraft) => {
   }
 }
 
-// SQL Server's sp_rename takes names as bound values, which the preview
-// has to show; a statement without any keeps its raw text untouched.
 const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
   const { parameters, sql } = draftStatement(type, coldDialects[type](), draft)
   return formatSql(

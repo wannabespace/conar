@@ -17,16 +17,13 @@ export interface DiagramColumn {
   // Original name: the handle id and the key every draft on it carries.
   id: string
   name: string
-  // Full declared type, what an edit starts from and a statement restates.
   type: string
   label: string
   nullable: boolean
   primaryKey: boolean
   unique: boolean
   foreign: boolean
-  // Computed or generated: altering it would drop the expression.
   generated: boolean
-  // Definition before any draft: what an alter compares with and restates.
   original: ColumnDefinition
   state?: DraftState
 }

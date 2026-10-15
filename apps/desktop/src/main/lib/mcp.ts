@@ -13,7 +13,8 @@ import {
 import { PORTS } from '@tamery/shared/constants'
 import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
-import { omit, tryCatchAsync } from '@tamery/shared/utils'
+import { omit, toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import Store from 'electron-store'
 
 import { createMcpServer } from './mcp-tools'
@@ -77,13 +78,14 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
     res.writeHead(401).end()
     return
   }
-  const { data: body, error: parseError } = await tryCatchAsync(() =>
+  const parsed = await Result.tryPromise(() =>
     req.method === 'POST' ? json(req) : Promise.resolve()
   )
-  if (parseError) {
+  if (parsed.isErr()) {
     jsonRpcError(res, 400, 'Parse error: Invalid JSON')
     return
   }
+  const body = parsed.value
   const sessionId = req.headers['mcp-session-id']
   const now = Date.now()
   let session: Session | undefined
@@ -138,11 +140,11 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
       })
     }
   })
-  const { error } = await tryCatchAsync(() =>
+  const handled = await Result.tryPromise(() =>
     transport.handleRequest(req, res, body)
   )
-  if (error) {
-    console.error('[MCP]', error)
+  if (handled.isErr()) {
+    console.error('[MCP]', handled.error.cause)
     res.destroy()
   }
 }
@@ -153,9 +155,9 @@ const start = async () => {
   }
   const listening = createServer(handle).listen(PORTS.MCP, '127.0.0.1')
   server = listening
-  const { error } = await tryCatchAsync(() => once(listening, 'listening'))
-  if (error) {
-    server = error
+  const opened = await Result.tryPromise(() => once(listening, 'listening'))
+  if (opened.isErr()) {
+    server = toError(opened.error.cause)
   }
 }
 

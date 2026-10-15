@@ -101,7 +101,6 @@ export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
 const BARE_HOST = /^[\w.:%[\]-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
-/** A local server often runs without a password (trust auth), so its empty one isn't missing. */
 export const missingOf = (values: ConnectionFormValues) =>
   NEEDED_FIELDS.filter(
     (field) =>
@@ -109,7 +108,6 @@ export const missingOf = (values: ConnectionFormValues) =>
       !(field === 'password' && isLocalHost(values.host.trim()))
   )
 
-/** Credentials typed around a partial paste must survive it; only a paste naming another server clears every server field. */
 const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   const { host } = form.state.values
   const newServer = !!parts.host && BARE_HOST.test(host) && parts.host !== host
@@ -151,7 +149,6 @@ export const useConnectionForm = ({
   defaultValues?: ConnectionFormValues
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
   onSubmit: () => Promise<void>
-  /** Field to error message for each secret this device lacks and the form still leaves empty. */
   unfilledSecrets: (values: ConnectionFormValues) => Record<string, string>
 }) => {
   const [initialValues, setInitialValues] = useState(

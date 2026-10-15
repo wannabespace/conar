@@ -28,8 +28,7 @@ export const useSyncSelectionWithRows = (
   }, [store, rows, primaryColumns])
 }
 
-// Editors hand back text (`"700"`, pretty-printed JSON), so compare in the
-// editor's form; null, '' and DEFAULT (`undefined`) share that form and must stay distinct.
+// null, '' and DEFAULT (`undefined`) share one editor text and must stay distinct.
 export const isSameValue = (
   a: unknown,
   b: unknown,

@@ -27,7 +27,6 @@ export const SQL_COMPLETION_OPTIONS = {
   // `other` defaults to 'offWhenInlineCompletions': the list would wait on the AI ghost-text request.
   quickSuggestions: { comments: 'off', other: 'on', strings: 'on' },
   quickSuggestionsDelay: 0,
-  // `preview` stays off: the row's own preview draws as ghost text and would read as an AI suggestion.
   suggest: {
     preview: false,
     selectionMode: 'whenQuickSuggestion',
@@ -84,8 +83,6 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       let loading: Promise<unknown> | undefined
       if (source) {
         catalog = source.catalog()
-        // Never wait on the network: answer from the cache, load what is missing, and ask
-        // again once it lands or on the next keystroke.
         const [first, second] = context.qualifier
         const refs: TableRef[] = [...context.scope.tables]
         if (first !== undefined) {
@@ -98,8 +95,6 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
         loading = source.load(refs)
       }
       const items = completionItems(context, catalog, dialect)
-      // In a value slot (`col = `, `IN (`) the gap opens the list only for the values the column
-      // takes; a bare list of columns there reads as the value to type.
       if (
         openedByGap &&
         context.expects === 'column' &&

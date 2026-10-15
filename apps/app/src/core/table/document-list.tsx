@@ -92,7 +92,6 @@ const DocumentBase = ({
   )
 }
 
-// Memoized so a range change renders only the documents it mounts, not every visible one.
 const Document = memo(DocumentBase)
 
 export const DocumentList = ({

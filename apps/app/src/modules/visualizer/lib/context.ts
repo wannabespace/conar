@@ -56,9 +56,6 @@ export interface DiagramActions {
   toggleNullable: (table: DiagramTable, column: DiagramColumn) => void
 }
 
-// Hover changes on every pointer move, so it lives in a store each card and
-// edge reads through its own selector instead of in React context, which would
-// re-render every card on the canvas per move.
 interface DiagramView {
   hoveredRelationIds: string[]
   hoveredTableId: string | null
@@ -73,8 +70,6 @@ export const diagramViewStore = memoize((_resourceId: string) =>
 
 type DiagramViewStore = ReturnType<typeof diagramViewStore>
 
-// Below this zoom column text is unreadable, so cards drop their rows and
-// scale the table name up instead.
 export const COMPACT_ZOOM = 0.5
 
 export interface DiagramContextValue {

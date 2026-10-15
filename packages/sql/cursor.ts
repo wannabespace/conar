@@ -91,7 +91,6 @@ export const literalAt = (tokens: Token[], offset: number) =>
         (token.kind === 'comment' && !token.text.startsWith('/*')))
   )
 
-/** `a.b.` just before the word, outermost first, and where the tokens before it end. */
 export const qualifierBefore = (before: Token[]) => {
   const qualifier: string[] = []
   let cursor = before.length - 1
@@ -106,7 +105,6 @@ export const qualifierBefore = (before: Token[]) => {
   return { cursor, qualifier }
 }
 
-/** Where a value typed inside `'…'` goes: between the quotes. */
 export const stringContentRange = (literal: Token | undefined) =>
   literal?.kind === 'string' && literal.text.startsWith("'")
     ? {

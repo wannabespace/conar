@@ -43,7 +43,6 @@ export const AgentPanel = () => {
     const openedAt = Date.now()
     const subscription = connectionsResourcesCollection.subscribeChanges(
       (changes) => {
-        // Rows streaming in from sync are inserts too: only one created after opening is the agent's.
         const added = changes.find(
           (change) =>
             change.type === 'insert' &&

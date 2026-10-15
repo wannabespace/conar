@@ -12,7 +12,7 @@ import type { DialectOptions } from '~/core/runtime/dialects/driver'
 import { createKyselyDriver } from '~/core/runtime/dialects/driver'
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
-  // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary; a NULL literal converts to any type.
+  // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary.
   protected override appendValue(value: unknown) {
     if (value === null) {
       this.append('null')
@@ -21,7 +21,6 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
     }
   }
 
-  // SQL Server has no LIMIT: a bare limit becomes TOP, and OFFSET … FETCH needs an ORDER BY.
   protected override visitSelectQuery(node: SelectQueryNode) {
     if (node.offset) {
       super.visitSelectQuery({ ...node, limit: undefined })

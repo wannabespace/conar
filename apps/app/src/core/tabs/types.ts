@@ -15,7 +15,6 @@ export type ConnectionTab = typeof connectionTabType.infer
 
 // Methods, not properties: method parameters are bivariant, so a kind or view
 // typed with its own params still fits `TabKind[]` / `TabView`.
-// Annotate a view as `TabView<Params>` before listing it.
 /* oxlint-disable typescript/method-signature-style */
 export interface TabKind<Params = unknown> {
   available?(params: Params, connectionType: ConnectionType): boolean

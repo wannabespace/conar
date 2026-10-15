@@ -86,11 +86,9 @@ export interface DataGridCell {
 export interface GridCursor {
   apply: (value: unknown) => void
   cancel: () => void
-  /** Space opens the value as a JSON tree instead of the reference peek. */
   canPeek: (cell: DataGridCell) => boolean
   change: (text: string | null) => void
   closePeek: () => void
-  /** Shrinks the range back to the cursor cell. */
   collapse: () => void
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
@@ -111,7 +109,6 @@ export interface GridCursor {
   place: (position: CellPosition, extend?: boolean) => void
   preview: () => void
   selection: () => DataGridCell[][]
-  /** Writes a value picked in the editor and closes it. */
   set: (value: unknown) => void
   step: (down: number, right: number, extend?: boolean) => void
   store: CursorStore

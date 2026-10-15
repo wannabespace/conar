@@ -13,7 +13,6 @@ const firstMatch = <T extends string>(
   fallback: T,
   rules: [pattern: RegExp, result: T][]
 ) => {
-  // Postgres reports an array column as `json[]`; capability patterns are anchored on the element type.
   const elementType = type.replace(/\[\]$/u, '')
   return rules.find(([pattern]) => pattern.test(elementType))?.[1] ?? fallback
 }

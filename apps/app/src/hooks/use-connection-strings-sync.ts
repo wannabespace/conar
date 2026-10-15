@@ -34,7 +34,6 @@ export const useConnectionStringsSync = () => {
       })
     }
 
-    // On update too: an edit on another device (host, credentials, sync type) reaches this one without a restart.
     const effect = createEffect<Connection>({
       onEnter: resolve,
       onUpdate: resolve,

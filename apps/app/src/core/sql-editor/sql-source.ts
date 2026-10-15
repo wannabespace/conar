@@ -82,7 +82,6 @@ const sqlSourceFor = (
   const uncachedColumns = (refs: TableRef[]) => {
     const current = catalog()
     return refs.flatMap((ref) => {
-      // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
       const found = findTableWithSchema(current, ref.name, ref.schema)
       return found?.table.columns === null
         ? [

@@ -162,7 +162,6 @@ export const BodyField = ({
           ...(disabled ? readOnlyEditorOptions : FIELD_EDITOR_OPTIONS),
           ariaLabel: label,
         }}
-        // Monaco swallows its own keys, so the editor carries the save shortcut.
         onSubmit={disabled ? undefined : () => form.handleSubmit()}
         onChange={field.handleChange}
       />

@@ -1,7 +1,8 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
-import { noop, sleep, tryCatchAsync } from '@tamery/shared/utils'
+import { noop, sleep } from '@tamery/shared/utils'
 import type { DialectSpec, Statement } from '@tamery/sql'
 import { splitStatements, statementAt, tokenize } from '@tamery/sql'
+import { Result } from 'better-result'
 import type { CancellationToken, editor, Position } from 'monaco-editor'
 import { KeyCode, languages, Range } from 'monaco-editor'
 
@@ -20,7 +21,6 @@ const ghostTextSuppressed = new WeakSet<editor.ITextModel>()
 
 const askedWithList = new WeakMap<editor.ITextModel, number>()
 
-/** Cleared before each request so Tab never accepts an offer the request dropped. */
 const offeredGhostText = new WeakMap<
   editor.ITextModel,
   { text: string; versionId: number }
@@ -54,7 +54,6 @@ const ghostItem = (
 
 const drawnDecorations = new WeakMap<editor.ITextModel, string[]>()
 
-/** Monaco hides unrelated ghost text behind a selected list row; injected text cannot cross lines. */
 const drawnGhostText = {
   clear: (model: editor.ITextModel) => {
     const decorations = drawnDecorations.get(model)
@@ -151,7 +150,6 @@ const neighbourhood = (
   }
 }
 
-/** Monaco's classes for drawn ghost text; `-preview` is the variant drawn while the suggestion list is open. */
 const GHOST_TEXT_SELECTOR =
   '.ghost-text-decoration, .ghost-text-decoration-preview, .ghost-text'
 
@@ -203,8 +201,6 @@ export const attachGhostTextEscape = (
 ) => {
   const keyListener = codeEditor.onKeyDown((event) => {
     const model = codeEditor.getModel()
-    // Escape over a shown suggestion means "stop suggesting" — Monaco would otherwise ask again the
-    // moment the list closes. With only the list open, Escape closes the list and the request goes on.
     if (
       event.keyCode === KeyCode.Escape &&
       model &&
@@ -212,7 +208,6 @@ export const attachGhostTextEscape = (
     ) {
       ghostTextSuppressed.add(model)
     }
-    // With the list open, Monaco's Tab accepts its row before the adjacent AI text.
     if (
       event.keyCode === KeyCode.Tab &&
       model &&
@@ -243,7 +238,6 @@ export const attachGhostTextEscape = (
   }
 }
 
-// A reply that is a sentence ("There's nothing to add.") explained instead of completing.
 // `?` stays out: it is Postgres's jsonb key-exists operator.
 const PROSE = /[.!:…]\s|[.!:…]$/u
 
@@ -275,7 +269,7 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const statement = statementAt(statements, offset, text)
       const window = neighbourhood(statements, statement, text.length)
       const { state } = tokenize(text.slice(0, offset), dialect)
-      // Codestral reads an auto-closed `''` as a finished value and writes past it. A `$$` body is code.
+      // A `$$` body is code, not a string value.
       if (state.kind === 'string' && !state.close.startsWith('$')) {
         return { items: [] }
       }
@@ -289,8 +283,7 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const explicit =
         context.triggerKind === languages.InlineCompletionTriggerKind.Explicit
       const before = text.slice(window.start, offset)
-      // An explicit ask treats the word before the caret as finished (see `needsLeadingSpace`); without the
-      // space Codestral reads `from accounts` as a whole statement and only closes it with `;`.
+      // Sync with `needsLeadingSpace`'s explicit branch, which expects this space.
       const prefix = (
         explicit && /\w$/u.test(before) ? `${before} ` : before
       ).slice(-AI_SQL_LIMITS.sql)
@@ -306,10 +299,10 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       const cancellation = token.onCancellationRequested(() =>
         controller.abort()
       )
-      // A keystroke cancels the request mid-flight; that is not an error to surface.
-      const { data: reply } = await tryCatchAsync(() =>
+      const completion = await Result.tryPromise(() =>
         source.complete({ context: schema, prefix, suffix }, controller.signal)
       )
+      const reply = completion.unwrapOr(null)
       cancellation.dispose()
       if (
         !reply ||
@@ -325,7 +318,6 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
       // Judged after the cut: what follows the statement (echoed schema comments) is never shown.
       const suggestion = withinStatement(
         text.slice(0, offset),
-        // On a blank line Codestral opens with the blank line it leaves between statements.
         blankLine ? reply.replace(LEADING_BLANK_LINES, '') : reply,
         dialect
       )

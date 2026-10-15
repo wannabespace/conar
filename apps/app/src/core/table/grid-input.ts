@@ -9,7 +9,6 @@ import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
 
-// Space is the peek shortcut, not a character to type over the cell.
 const isTypedCharacter = (event: KeyboardEvent) =>
   event.key.length === 1 &&
   event.key !== ' ' &&
@@ -61,7 +60,6 @@ export const useGridHotkeys = ({
   const ownsKeys = gridFocused && !isEditing
   const navigating = ownsKeys && hasCursor
 
-  // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
   // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
   const track = useEffectEvent(() => {
     const focused = document.activeElement === scrollRef.current
@@ -205,7 +203,6 @@ export const useGridHotkeys = ({
 export const useGridPointer = (cursor: GridCursor) => {
   const dragging = useRef(false)
   return {
-    // The press places the cursor, so a click only has the checkbox toggle left to do.
     onClick: (event: MouseEvent) => {
       if (positionOf(event) && isCheckbox(event)) {
         cursor.edit()

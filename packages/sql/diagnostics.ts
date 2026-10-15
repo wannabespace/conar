@@ -168,7 +168,6 @@ const unknownStatementDiagnostics = (statement: Statement): Diagnostic[] => {
   ]
 }
 
-// Row pseudo-tables: ON CONFLICT (`excluded`), OUTPUT (`inserted`/`deleted`), triggers (`new`/`old`).
 const PSEUDO_TABLES = new Set(['excluded', 'inserted', 'deleted', 'new', 'old'])
 // Only these read qualifiers against a FROM list; DDL qualifies by schema.
 const QUERY_VERBS = ['SELECT', 'WITH', 'UPDATE', 'DELETE', 'INSERT']
@@ -448,7 +447,6 @@ const CLAUSES = [
   'RETURNING',
 ]
 
-// Only conditions: `SET col = NULL` and a parameter's `= NULL` default are assignments.
 const nullComparisonDiagnostics = ({ tokens }: Statement): Diagnostic[] =>
   tokens.flatMap((token, index): Diagnostic[] => {
     const next = tokens[index + 1]

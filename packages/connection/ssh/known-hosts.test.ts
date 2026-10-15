@@ -9,7 +9,6 @@ const KEY =
   'AAAAC3NzaC1lZDI1NTE5AAAAIA5ZQGz/jkvzkrmq7wh10u7paft8xgs+DXjosBeu7fNZ'
 const OTHER_KEY =
   'AAAAC3NzaC1lZDI1NTE5AAAAIINvYImuUJD0pYs1LbT2zG+TZ9TozGMtt7sepVkItZPM'
-// `ssh-keygen -H` of `bastion.example.com ssh-ed25519 <KEY>`
 const HASHED_LINE = `|1|Fwo54sDnpLmOfgRmRM5QESILxsE=|Cq0kDhB0/5f1yQWlJZakVEY3OpA= ssh-ed25519 ${KEY}`
 const ECDSA_KEY = 'AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTY='
 

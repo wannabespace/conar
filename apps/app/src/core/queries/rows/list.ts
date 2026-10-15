@@ -159,7 +159,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(
   }
 )
 
-/** Rows of `table` whose `column` holds `value`: the reference peek and the reference picker share this cache entry. */
+/** The reference peek and the reference picker share this cache entry. */
 export const matchingRowsQueryOptions = ({
   column,
   connectionResource,

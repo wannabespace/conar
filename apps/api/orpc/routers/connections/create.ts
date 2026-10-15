@@ -31,8 +31,7 @@ export const create = orpc
         : await ensureDefaultWorkspace(context.user.id)
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
-    // Excludes its own id: an outbox replay of a create whose response was
-    // lost would otherwise count its own row and fail with FORBIDDEN.
+    // Excludes its own id, or an outbox replay of a lost response counts its own row and fails.
     const count = await db.$count(
       connections,
       and(eq(connections.userId, context.user.id), ne(connections.id, input.id))

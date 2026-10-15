@@ -16,8 +16,6 @@ export interface NewColumn {
   type: string
 }
 
-// What the catalog says about a column before an alter; engines that restate
-// the whole column (MySQL, SQL Server) repeat the parts the alter leaves alone.
 export interface ColumnDefinition {
   attributes: string
   collation: string | null
@@ -50,8 +48,7 @@ const LOW_CARDINALITY = 'LowCardinality('
 
 const clickhouseNeverNullableRegex = /^(?:Array|Map|Tuple)\(/u
 
-// ClickHouse spells nullability as a type wrapper, never as a NULL keyword,
-// and it has to sit inside LowCardinality. Array, Map and Tuple reject it.
+// ClickHouse needs Nullable() inside LowCardinality(), never around it.
 export const clickhouseColumnType = ({
   nullable,
   type: columnType,
@@ -172,8 +169,6 @@ export const addColumnStatement = (
     .compile()
 }
 
-// SQL Server refuses to drop or retype a column a DEFAULT constraint depends on
-// (Msg 5074), and only the catalog knows that constraint's name.
 export const mssqlDefaultConstraint = ({
   column,
   schema,

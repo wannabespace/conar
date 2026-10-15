@@ -3,7 +3,7 @@ import { appendFile, mkdir, readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import type { ServerHostKeyAlgorithm } from 'ssh2'
 
 import { DEFAULT_SSH_PORT } from './params'
@@ -24,7 +24,6 @@ const SERVER_HOST_KEY_ALGORITHMS: ServerHostKeyAlgorithm[] = [
 ]
 
 const userKnownHostsPath = () => path.join(homedir(), '.ssh', 'known_hosts')
-// OpenSSH's default UserKnownHostsFile and GlobalKnownHostsFile: a key listed in any of them makes another key a mismatch.
 const knownHostsPaths = () => [
   userKnownHostsPath(),
   `${userKnownHostsPath()}2`,
@@ -33,8 +32,8 @@ const knownHostsPaths = () => [
 ]
 
 const readOrEmpty = async (file: string) => {
-  const { data } = await tryCatchAsync(() => readFile(file, 'utf-8'))
-  return data ?? ''
+  const contents = await Result.tryPromise(() => readFile(file, 'utf-8'))
+  return contents.unwrapOr('')
 }
 
 const hashOf = (salt: Buffer, name: string) =>
@@ -111,7 +110,6 @@ export const knownHosts = {
       : name
     return `${hosts} ${keyTypeOf(key)} ${key.toString('base64')}`
   },
-  /** Host key algorithms with the types listed for the host first, as OpenSSH orders them; empty when the host isn't listed. */
   listedAlgorithms: (contents: string, name: string) => {
     const listed = new Set(
       entriesFor(contents, name)
@@ -147,7 +145,6 @@ export const knownHosts = {
   },
   trust: async (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
     const contents = await readOrEmpty(userKnownHostsPath())
-    // Another window or device of this user may have trusted it while this prompt was open.
     if (knownHosts.check(contents, name, key) === 'known') {
       return
     }

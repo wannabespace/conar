@@ -71,11 +71,11 @@ export const useGridCursor = ({
       if (!isEditable(cell.column, cell.rowIndex)) {
         continue
       }
-      const { data, error } = parseCellText(connectionType, cell.column, text)
-      if (error) {
+      const parsed = parseCellText(connectionType, cell.column, text)
+      if (parsed.isErr()) {
         rejected += 1
       } else {
-        onEdit?.(cell, data)
+        onEdit?.(cell, parsed.value)
       }
     }
     if (rejected > 0) {
@@ -107,19 +107,15 @@ export const useGridCursor = ({
         return true
       }
       if (isEditable(cell.column, cell.rowIndex)) {
-        const { data, error } = parseCellText(
-          connectionType,
-          cell.column,
-          edit.text
-        )
-        if (error) {
+        const parsed = parseCellText(connectionType, cell.column, edit.text)
+        if (parsed.isErr()) {
           store.set((state) => ({
             ...state,
-            edit: { ...edit, error: error.message },
+            edit: { ...edit, error: parsed.error.message },
           }))
           return false
         }
-        onEdit?.(cell, data)
+        onEdit?.(cell, parsed.value)
       }
       store.set((state) => ({ ...state, edit: null }))
       return true

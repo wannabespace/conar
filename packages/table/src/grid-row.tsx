@@ -8,7 +8,6 @@ import type { GridColumn } from './columns'
 import { columnStyle, pinnedCount } from './columns'
 import type { ColumnDragHandle, useColumnDrag } from './use-column-drag'
 
-// The first child is the gutter spacer and the last the trailing column, so rules sit between columns only.
 const COLUMN_RULES = '*:not-first:not-last:border-r'
 const GRID_ROW_CLASS = `group/row hover:bg-accent relative flex h-(--grid-row-height) w-full border-b contain-layout contain-style ${COLUMN_RULES}`
 
@@ -18,7 +17,6 @@ export interface GridHeaderProps {
   column: GridColumn
   dragHandle: ColumnDragHandle
   isDragging: boolean
-  /** Moves the column edge live during a resize drag, before the size commits. */
   setWidth: (width: number) => void
   style: CSSProperties
 }
@@ -57,7 +55,6 @@ const renderColumns = (
         return (
           column && (
             <Fragment key={column.id}>
-              {/* Pinned columns stay rendered while the rest virtualize, so the columns scrolled out between the last pinned one and the next rendered one need this spacer. */}
               {position > 0 && position === pinned && (
                 <div
                   aria-hidden
@@ -78,7 +75,6 @@ const renderColumns = (
   )
 }
 
-// Rendered through memo components so a column-range change re-renders only the cells and headers it mounts, not every visible one.
 const CellBase = ({
   columns,
   index,

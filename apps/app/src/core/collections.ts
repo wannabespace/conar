@@ -62,7 +62,6 @@ const init = () => {
         push: async ({ transaction }) => {
           for (const mutation of transaction.mutations) {
             const { push } = mutation.collection.utils
-            // Local-only collections (connection strings) have no `push`.
             if (!push) {
               throw new NonRetriableError(
                 `${mutation.collection.id} cannot be written offline`
@@ -95,7 +94,6 @@ export const mutateOffline = (mutate: () => void) => {
     mutationFnName: 'push',
   })
   const transaction = tx.mutate(mutate)
-  // A rollback rejects both promises; the oRPC link has already toasted it.
   silently(() => tx.commit())
   silently(() => transaction.isPersisted.promise)
   return transaction

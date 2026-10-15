@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { tryCatch } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
@@ -74,14 +75,17 @@ export const parseCellText = (
   column: Column,
   text: string | null
 ) =>
-  tryCatch(() => {
-    if (text !== null) {
-      return createTransformer(connectionType, column).toConnection.fromRaw(
-        text
-      )
-    }
-    if (column.isNullable === false) {
-      throw new Error(`${column.id} cannot be null`)
-    }
-    return null
+  Result.try({
+    catch: toError,
+    try: () => {
+      if (text !== null) {
+        return createTransformer(connectionType, column).toConnection.fromRaw(
+          text
+        )
+      }
+      if (column.isNullable === false) {
+        throw new Error(`${column.id} cannot be null`)
+      }
+      return null
+    },
   })

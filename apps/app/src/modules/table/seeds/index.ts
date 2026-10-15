@@ -54,7 +54,6 @@ export const getGeneratorGroups = memoize(
     }))
 )
 
-// ClickHouse gives every column a zero-value default.
 const canSkipColumn = (column: Column, dialect: ConnectionType) =>
   dialect === ConnectionType.ClickHouse ||
   !!column.isNullable ||
@@ -182,8 +181,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   value !== null &&
   Object.getPrototypeOf(value) === Object.prototype
 
-// A JSON column's value stays parsed: the insert's `bindValue` stringifies it, and a string here is stored as a JSON string.
-// Any other column gets the text, since no driver binds a plain object as JSON.
+// Only a JSON column keeps its parsed value: `bindValue` stringifies it, and no driver binds a plain object otherwise.
 const finalizeValue = (
   value: unknown,
   column: Column,

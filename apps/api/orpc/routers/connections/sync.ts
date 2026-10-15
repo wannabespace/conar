@@ -63,7 +63,6 @@ export const sync = orpc
             ),
       },
     })
-    // An undecryptable string comes back as missing, so the app asks for it instead of failing the whole sync.
     const decryptItem = async (item: (typeof updatedItems)[number]) => {
       if (!item.connectionString) {
         return item

@@ -3,8 +3,8 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 
 import { guessConnection } from '@tamery/connection/guess'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
+import { Result } from 'better-result'
 import { app } from 'electron'
 import { XMLParser } from 'fast-xml-parser'
 
@@ -51,13 +51,14 @@ export const dataGrip: Finder = {
   read: async (file) => {
     const [dataSources, local] = await Promise.all([
       dataSourcesIn(file),
-      tryCatchAsync(() => dataSourcesIn(file.replace(/\.xml$/u, '.local.xml'))),
+      Result.tryPromise(() =>
+        dataSourcesIn(file.replace(/\.xml$/u, '.local.xml'))
+      ),
     ])
     const userOf = new Map(
-      (local.data ?? []).map((dataSource) => [
-        dataSource.uuid,
-        dataSource['user-name'],
-      ])
+      local
+        .unwrapOr([])
+        .map((dataSource) => [dataSource.uuid, dataSource['user-name']])
     )
     return dataSources.map(({ 'jdbc-url': url = '', name, uuid }) => {
       const parts = guessConnection(url)?.parts ?? {}

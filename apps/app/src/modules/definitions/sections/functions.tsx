@@ -163,9 +163,6 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   securityDefiner: draft.securityDefiner,
 })
 
-// A catalog row the form cannot rebuild — a CLR or table-valued routine, a
-// language we do not write, or a header option only the definition text
-// carries — loses on save whatever these fields cannot express.
 const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
   const { languages } = capabilitiesOf(connectionType).functions
 
@@ -251,8 +248,6 @@ const FunctionInspector = ({
     ? !can.edit || !formEditable(item, connectionType)
     : !can.create
   const execution = hasExecutionOptions(options)
-  // A starter body only belongs to the shape it was written for, so switching
-  // kind, language or return type swaps it — unless the user has typed their own.
   const retemplate = (next: FunctionDraft) => {
     const template = functionBodyTemplateOf({ connectionType, ...next })
 

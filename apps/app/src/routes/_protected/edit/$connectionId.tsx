@@ -1,9 +1,9 @@
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { isKeychainLocked } from '@tamery/shared/keychain'
 import { title } from '@tamery/shared/title'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
+import { Result } from 'better-result'
 import { toast } from 'sonner'
 
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
@@ -34,12 +34,13 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     if (!connection) {
       throw redirect({ to: '/' })
     }
-    const { data: connectionString, error } = await tryCatchAsync(() =>
+    const decrypted = await Result.tryPromise(() =>
       collections.connectionStringsCollection.utils.decrypt(connection.id)
     )
-    if (isKeychainLocked(error)) {
-      throw error
+    if (decrypted.isErr() && isKeychainLocked(decrypted.error.cause)) {
+      throw decrypted.error.cause
     }
+    const connectionString = decrypted.unwrapOr(null)
     if (
       connectionString === null &&
       connection.syncType !== SyncType.CloudWithoutConnectionString
@@ -62,7 +63,6 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
   component: EditConnectionPage,
   // The form reads its values once, so a cached match would reopen it on the values before the last save.
   gcTime: 0,
-  // The loader asks the server for a string this device hasn't synced yet.
   pendingComponent: () => (
     <div className="text-muted-foreground flex h-full items-center justify-center">
       <Spinner />

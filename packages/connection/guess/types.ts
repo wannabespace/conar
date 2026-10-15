@@ -30,11 +30,9 @@ export type GuessedParts = Partial<Omit<ConnectionParts, 'type'>> & {
 }
 
 export interface ConnectionGuess extends DatabaseGuess {
-  /** Changes made to a string that would connect but break a database client; the form tells the user about each. */
   fixes: GuessFix[]
 }
 
-/** Parts may hold empty strings and nulls; `guessConnection` drops them. */
 export interface DatabaseGuess {
   format: GuessFormat
   parts: GuessedParts

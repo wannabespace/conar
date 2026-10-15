@@ -27,7 +27,6 @@ export interface PrivilegeTarget {
 
 const ACCOUNT = /^'?(?<user>[^'@]*)'?(?:@'?(?<host>[^']*)'?)?$/u
 
-// Takes the catalog's 'user'@'host' as well as a typed user@host or bare user.
 export const accountOf = (grantee: string) => {
   const { host, user = grantee } = ACCOUNT.exec(grantee.trim())?.groups ?? {}
 

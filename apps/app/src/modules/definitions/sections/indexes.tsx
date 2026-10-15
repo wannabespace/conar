@@ -81,8 +81,6 @@ const kindLabels: Record<IndexKind, string> = {
   unique: 'Unique',
 }
 
-// A name may hold the separator of any string key, so the key is the tuple.
-
 const kindOf = (item: IndexItem): IndexKind => {
   if (item.isPrimary) {
     return 'primary'
@@ -181,8 +179,6 @@ const saveIndex = ({
   )
 }
 
-// A constraint owns its index's columns, and an engine that cannot rename a
-// constraint cannot touch its index at all.
 const locksOf = ({
   can,
   item,

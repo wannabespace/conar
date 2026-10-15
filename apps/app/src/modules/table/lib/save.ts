@@ -1,3 +1,4 @@
+import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -39,7 +40,7 @@ class SaveError extends Error {
     | { kind: 'new'; id: string }
 
   constructor(cause: unknown, target: SaveError['target']) {
-    super(cause instanceof Error ? cause.message : String(cause), { cause })
+    super(toError(cause).message, { cause })
     this.target = target
   }
 }

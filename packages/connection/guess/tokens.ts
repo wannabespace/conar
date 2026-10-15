@@ -1,6 +1,5 @@
 import { parse } from 'shell-quote'
 
-/** Words of each shell command on a line, split at control operators and cut at a comment. */
 export const shellCommands = (line: string): string[][] => {
   const commands: string[][] = [[]]
   for (const entry of parse(line, (name) => `$${name}`)) {

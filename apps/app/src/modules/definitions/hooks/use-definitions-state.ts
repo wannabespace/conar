@@ -34,8 +34,6 @@ export const useDefinitionsState = ({
   const linkedSchema = tabRoute.useSearch({ select: (search) => search.schema })
   const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
-  // A link names the schema its row lives in, so it outranks the pick a
-  // mounted tab already made — until the page consumes it.
   const selectedSchema =
     [
       linkedSchema,

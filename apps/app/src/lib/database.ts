@@ -13,11 +13,8 @@ const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
 const OPEN_DATABASE_RETRIES = 2
 const OPEN_DATABASE_RETRY_DELAY = 500
 
-// OPFSCoopSyncVFS init deletes `.ahp-*` temp dirs whose Web Lock is free, i.e.
-// those left by a crashed or reloaded tab. The lock drops before the browser
-// reclaims that tab's sync access handles, so `removeEntry` can still throw
-// NoModificationAllowedError (INTERNAL -> OPFSWorkerRequestError) on a dir it
-// was right to delete. The handles are released within a beat: retry.
+// OPFSCoopSyncVFS init can throw NoModificationAllowedError on a reloaded or
+// crashed tab's `.ahp-*` dir until the browser frees its handles a beat later.
 const databaseResult = await Result.tryPromise(
   () => openBrowserWASQLiteOPFSDatabase({ databaseName: DATABASE_NAME }),
   {

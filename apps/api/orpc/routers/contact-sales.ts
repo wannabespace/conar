@@ -13,12 +13,12 @@ const limiter = new RedisRateLimiter(redis, {
   window: 60 * 60 * 1000,
 })
 
-// Public and unauthenticated: it only ever mails CONTACT_EMAIL (never the submitted address, or it becomes a relay) and is capped per IP.
+// Unauthenticated: only ever mail CONTACT_EMAIL, never the submitted address, or it becomes a relay.
 export const contactSales = orpc
   .use(optionalAuthMiddleware)
   .use(
     ratelimit({
-      // Railway's edge sets X-Real-IP to the client address on every request; any other client-IP header is only as trustworthy as the hop that wrote it
+      // Only X-Real-IP is set by Railway's edge; any other client-IP header can be spoofed.
       key: ({ context }) => context.headers.get('x-real-ip') ?? 'unknown',
       limiter,
     })

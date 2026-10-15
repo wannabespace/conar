@@ -2,7 +2,8 @@ import { replaceErrorPrefix } from '@tamery/connection/queries'
 import type { McpReply, McpRequest, McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { electron } from '../main/lib/events'
@@ -86,7 +87,7 @@ ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
     args: McpRequest['args'],
     onAbort: (listener: () => void) => void
   ) => unknown
-  const { data, error } = await tryCatchAsync(() =>
+  const result = await Result.tryPromise(() =>
     Promise.resolve(
       method(request.args, (listener) => {
         port.addEventListener('message', listener)
@@ -94,7 +95,12 @@ ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
       })
     )
   )
-  reply(error ? { error: error.message } : { result: data })
+  reply(
+    result.match<McpReply>({
+      err: ({ cause }) => ({ error: toError(cause).message }),
+      ok: (value) => ({ result: value }),
+    })
+  )
 })
 
 const dialectQueryBridge = (dialect: string) => ({

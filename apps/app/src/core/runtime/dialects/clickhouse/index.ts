@@ -57,7 +57,6 @@ export const prepareQuery = (compiledQuery: CompiledQuery) => {
     compiledSqlParameterRegex,
     'alter table $<table> update'
   )
-  // A mutation runs in the background by default, so the refresh right after a save would read the old row.
   return mutation === compiledSql
     ? compiledSql
     : `${mutation} settings mutations_sync = 1`

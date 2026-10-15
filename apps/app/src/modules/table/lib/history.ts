@@ -18,7 +18,6 @@ const stagedOf = ({ drafts, newRows }: TableSessionState): Staged => ({
 const queryOf = ({ filters, orderBy }: typeof tablePageType.infer) =>
   JSON.stringify([filters, orderBy])
 
-/** Undo/redo over the staged changes; a filter or sort change drops the drafts as an undoable step, staged rows stay. */
 export const stagedHistory = memoize(
   (key: { id: string; schema: string; table: string }) => {
     const store = tableSessionStore(key)

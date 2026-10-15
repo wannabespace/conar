@@ -102,7 +102,7 @@ const nameSuffix: Record<ConstraintKind, string> = {
 
 const DEFAULT_ACTION: ReferentialAction = 'NO ACTION'
 
-// Keyed like an index, so a constraint-owned index links straight to its row.
+// Sync with definitionKey.index: a constraint-owned index links straight to its row.
 const constraintKey = (item: Pick<ConstraintItem, 'name' | 'table'>) =>
   JSON.stringify([item.table, item.name])
 

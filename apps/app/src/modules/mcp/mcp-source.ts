@@ -4,8 +4,8 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { engines } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { dialects, readsOnly, splitStatements } from '@tamery/sql'
+import { Result } from 'better-result'
 
 import { getCollections } from '~/core/collections'
 import { refreshAfterRun } from '~/core/connection/refresh-after-run'
@@ -55,13 +55,13 @@ const runForAgent = async (
   run: Promise<ResultSet[]>,
   event: { access: McpAccess; connection_type: ConnectionType }
 ) => {
-  const { data, error } = await tryCatchAsync(() => run)
-  posthog.capture('mcp_query_run', { ...event, success: !error })
-  if (error) {
-    throw error
+  const result = await Result.tryPromise(() => run)
+  posthog.capture('mcp_query_run', { ...event, success: result.isOk() })
+  if (result.isErr()) {
+    throw result.error.cause
   }
   void recordQuery()
-  return data
+  return result.value
 }
 
 const toMcpConnection = ({

@@ -19,7 +19,6 @@ test('bytes written before the channel opens reach it, and its replies come back
   expect(String(reply)).toBe('pong')
 })
 
-/** Closes the way an ssh2 direct-tcpip channel does: `destroy` only ends it, and 'close' waits for the unread reply to drain. */
 const sshLikeChannel = () => {
   const channel = new PassThrough({ emitClose: false })
   channel.write('unread reply')

@@ -57,7 +57,6 @@ export const DataGrid = ({
   sizeOf,
   trailing,
 }: {
-  /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
   bar?: GridBarItem[]
   canEdit?: (column: Column, rowIndex: number) => boolean
   columns: Column[]
@@ -66,7 +65,6 @@ export const DataGrid = ({
   /** The grid takes focus when `focusGridWhenReady` names this key, now or once it mounts. */
   focusKey?: string
   footer?: ReactNode
-  /** The value the cell shows and the editor starts from, e.g. a pending draft. */
   getValue?: (cell: DataGridCell) => unknown
   isFetching?: boolean
   layout?: DataGridLayout
@@ -77,18 +75,14 @@ export const DataGrid = ({
   ) => CellMenuExtra
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onEndReached?: () => void
-  /** Shift+↑/↓ while no cell has the cursor. */
   onExtendRows?: (direction: 'up' | 'down') => void
-  /** Shift+Space: the rows the cursor or its block covers. */
   onToggleRows?: (rowIndexes: number[]) => void
-  /** Space on the cursor cell, like Quick Look; `anchor` is the cell element. */
   onPreview?: (cell: DataGridCell, anchor: Element) => void
   onReorder?: (ids: string[]) => void
   /** Columns stuck to the left edge; they must lead `columns`. */
   pinned?: string[]
   renderCell?: (cell: DataGridCell, props?: CellGeometry) => ReactNode
   renderHeader?: (column: Column, props: GridHeaderProps) => ReactNode
-  /** A column's name beside each value in the documents layout. */
   renderLabel?: (column: Column) => ReactNode
   /** A row's identity across inserts and refetches; without it the cursor stays on its index. */
   rowKey?: (rowIndex: number) => string

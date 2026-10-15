@@ -1,4 +1,4 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -112,8 +112,8 @@ export const mysqlColumns = async (
     .orderBy('ORDINAL_POSITION')
     .execute()
 
-  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MariaDB before 10.2.22/10.3.10 has no CHECK_CONSTRAINTS, so a failed read means no checks.
-  const { data: checks } = await tryCatchAsync(async () =>
+  // MariaDB's JSON is a LONGTEXT under a json_valid() check, and before 10.2.22/10.3.10 CHECK_CONSTRAINTS does not exist.
+  const checks = await Result.tryPromise(async () =>
     query.some((column) => column.mariadb && column.type === 'longtext')
       ? await db
           .$extendTables<MariadbTables>()
@@ -135,9 +135,9 @@ export const mysqlColumns = async (
       : []
   )
   const jsonColumns = new Set(
-    (checks ?? []).map(
-      ({ clause, schema, table }) => `${schema}.${table}.${clause}`
-    )
+    checks
+      .unwrapOr([])
+      .map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
   )
 
   return query.map((column) => ({

@@ -1,6 +1,7 @@
 import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
 import { KEYCHAIN_LOCKED_ERROR } from '@tamery/shared/keychain'
-import { silently, tryCatchAsync } from '@tamery/shared/utils'
+import { silently } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { safeStorage } from 'electron'
 import Store from 'electron-store'
 
@@ -14,14 +15,15 @@ let creation: Promise<boolean> | null = null
 const importKey = (raw: Uint8Array<ArrayBuffer>) =>
   crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt'])
 
-// Electron fetches the keychain once per run, so a denied prompt fails every call until restart: it must read as locked, never as a wrong key, which the renderer resets.
+// A denied prompt must read as locked, never as a wrong key, which the renderer resets.
 const unwrap = async (wrapped: string) => {
-  const { data } = await tryCatchAsync(() =>
+  const decrypted = await Result.tryPromise(() =>
     safeStorage.decryptStringAsync(Buffer.from(wrapped, 'base64'))
   )
-  if (!data?.result) {
+  if (decrypted.isErr() || !decrypted.value.result) {
     throw new Error(KEYCHAIN_LOCKED_ERROR)
   }
+  const data = decrypted.value
   if (data.shouldReEncrypt) {
     // The key already unwrapped: a failed re-wrap must not fail the decrypt, which the renderer reads as a wrong key and signs out.
     await silently(async () => {
@@ -45,7 +47,6 @@ const create = async () => {
   if (store.has('wrappedKey')) {
     return true
   }
-  // Linux falls back to `basic_text` without a keyring, which only obfuscates: the renderer's own key is no worse.
   if (
     !(await safeStorage.isAsyncEncryptionAvailable()) ||
     (process.platform === 'linux' &&
@@ -54,19 +55,18 @@ const create = async () => {
     return false
   }
   const created = crypto.getRandomValues(new Uint8Array(KEY_BYTES))
-  const { data: wrapped } = await tryCatchAsync(() =>
+  const wrapped = await Result.tryPromise(() =>
     safeStorage.encryptStringAsync(Buffer.from(created).toString('base64'))
   )
-  if (!wrapped) {
+  if (wrapped.isErr()) {
     return false
   }
-  store.set('wrappedKey', wrapped.toString('base64'))
+  store.set('wrappedKey', wrapped.value.toString('base64'))
   key = importKey(created)
   return true
 }
 
 export const deviceEncryption = {
-  /** Shared by every window: two windows creating at once would each mint a key and orphan the other's strings. */
   createKey: () => {
     creation ??= create()
     return creation

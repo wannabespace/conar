@@ -1,7 +1,7 @@
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
 import { permissionsOf } from '@tamery/shared/permissions'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
 import { useEffect } from 'react'
@@ -50,7 +50,7 @@ export const loadPermissions = async () => {
   const user = await getSessionUser()
   const subscriptions = user?.isAnonymous
     ? null
-    : await tryCatchAsync(() =>
+    : await Result.tryPromise(() =>
         subscriptionQueryClient.query({
           ...subscriptionsQueryOptions,
           staleTime: 'static',
@@ -59,7 +59,8 @@ export const loadPermissions = async () => {
 
   permix.setup(
     permissionsOf({
-      subscription: subscriptions?.data?.find(isActiveSubscription) ?? null,
+      subscription:
+        subscriptions?.unwrapOr(null)?.find(isActiveSubscription) ?? null,
       user: user ?? {},
     })
   )

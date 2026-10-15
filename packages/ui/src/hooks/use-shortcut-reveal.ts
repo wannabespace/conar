@@ -24,7 +24,7 @@ export const useShortcutReveal = (trigger: HTMLElement | null) => {
     if (!isHeld || !trigger) {
       return
     }
-    // The trigger is hit-tested once, as the reveal starts, so a hint never paints over a menu or dialog covering it. A shortcut pressed mid-hold therefore ends the reveal: the dialog or menu it opens would sit under hints nothing re-checks.
+    // The trigger is hit-tested only once, so a shortcut pressed mid-hold must end the reveal: what it opens would sit under the hints.
     const timeout = setTimeout(() => {
       const { left, top, width, height } = trigger.getBoundingClientRect()
       setHeldLongEnough(

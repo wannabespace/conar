@@ -23,6 +23,7 @@
     "@napi-rs/keyring": "catalog:",
     "@todesktop/runtime": "catalog:",
     "arktype": "catalog:",
+    "better-result": "catalog:",
     "electron-store": "catalog:",
     "fast-xml-parser": "catalog:",
     "ini": "catalog:",

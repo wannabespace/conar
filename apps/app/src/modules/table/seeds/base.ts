@@ -36,7 +36,6 @@ const randomInt = (column: Column) =>
     max: ONE_BYTE_INT_MAX[columnTypeName(column)] ?? DEFAULT_MAX,
   })
 
-// ClickHouse does not report numeric precision, so Decimal(10, 2) is parsed off the label
 const decimalParamsRegex = /\((?<precision>\d+)\s*,\s*(?<scale>\d+)\)/u
 
 const randomFloat = (column: Column) => {

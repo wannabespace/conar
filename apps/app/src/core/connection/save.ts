@@ -3,7 +3,7 @@ import type {
   ConnectionType,
 } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { v7 } from 'uuid'
 
 import { getCollections, mutateOffline } from '~/core/collections'
@@ -20,7 +20,7 @@ export interface ConnectionDetails {
   type: ConnectionType
 }
 
-/** Saves this device's string and the resource it opens on; `writeRow` adds the synced row to the same transaction. */
+/** `writeRow` runs inside the same transaction. */
 export const saveConnectionString = async (
   connectionId: string,
   connectionString: string,
@@ -51,8 +51,8 @@ export const saveConnectionString = async (
     }
   })
   const settle = async () => {
-    const { error } = await tryCatchAsync(() => tx.isPersisted.promise)
-    if (error) {
+    const persisted = await Result.tryPromise(() => tx.isPersisted.promise)
+    if (persisted.isErr()) {
       if (previous) {
         await connectionStringsCollection.utils.save(previous)
       } else {

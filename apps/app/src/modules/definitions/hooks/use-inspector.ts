@@ -68,8 +68,6 @@ export const useInspector = <T>({
     return () => clearTimeout(timeout)
   }, [linked, loading])
 
-  // A toggle inside the drawer refetches the list, so the live row outranks
-  // the snapshot the drawer opened on.
   const snapshot = inspected.item
   const liveItem =
     snapshot &&

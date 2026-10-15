@@ -48,7 +48,6 @@ export const columnMenuItems = ({
 }: ColumnActions & {
   anchor: Element | null
   column: Column
-  /** Referenced columns that can label a foreign key, and the one shown. */
   labels?: { columns: string[]; current?: string }
   store: TablePageStore
 }): AppMenuNode[] => {

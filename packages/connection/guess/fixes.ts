@@ -6,7 +6,6 @@ import type { GuessFix, GuessedParts } from './types'
 
 const PASSWORD_PLACEHOLDER =
   /^(?:\[[^\]]*\]|<[^>]*>|\{[^}]*\}|\*+|your[-_ ]?password)$/iu
-/** Prisma reads these itself; a database driver would pass them on to the server. */
 const PRISMA_PARAMS = ['pgbouncer', 'connection_limit', 'pool_timeout']
 
 export const fixParts = ({ options, ...found }: GuessedParts) => {

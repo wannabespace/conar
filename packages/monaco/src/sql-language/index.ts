@@ -30,8 +30,7 @@ const registerSqlLanguage = (connectionType: ConnectionType) => {
 }
 
 declare global {
-  // Monaco is a singleton the whole page shares; the providers registered by an earlier evaluation of
-  // this module (a hot reload) must go, or every suggestion shows once per evaluation.
+  // Monaco is page-wide: a hot reload must dispose the earlier evaluation's providers, or every suggestion repeats.
   var tamerySqlLanguage: IDisposable[] | undefined
 }
 

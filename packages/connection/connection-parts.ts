@@ -39,7 +39,6 @@ export const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
   9440: CLICKHOUSE_HTTPS_PORT,
 }
 
-/** The port the driver dials: an `https://` ClickHouse string without one means 443, not the engine default. */
 const portOf = ({
   https,
   port,
@@ -81,7 +80,6 @@ const leadingScheme = (text: string) =>
     .replace(/^jdbc:/u, '')
     .replace(/[+:].*$/u, '')
 
-/** Takes a whole connection string, a bare scheme, or a driver, provider or image name. */
 export const engineOf = (text: string): Engine | undefined =>
   ENGINE_OF_NAME[leadingScheme(text)]
 

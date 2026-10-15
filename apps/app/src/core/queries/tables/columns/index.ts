@@ -19,7 +19,6 @@ export const columnType = type({
   'attributes?': 'string',
   'collation?': 'string | null',
   comment: 'string | null',
-  // Full type as a DDL statement spells it, length and precision included.
   'declaredType?': 'string | null',
   default: 'string | null',
   'editable?': 'boolean | 1 | 0',

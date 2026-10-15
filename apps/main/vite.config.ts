@@ -38,9 +38,7 @@ export default defineConfig(({ command }) => ({
     tsconfigPaths: true,
   },
   ssr: {
-    // Externals break the production SSR render: deps pnpm hides from this app (base-ui) get inlined while
-    // their CJS `require('react')` stays a runtime require, loading a second React that Nitro never bundles.
-    // Dev must keep them: the module runner cannot evaluate CJS React inline.
+    // Build externals load a second React through base-ui's CJS require; dev's module runner cannot inline CJS React.
     noExternal: command === 'build' ? true : [],
   },
 }))

@@ -2,7 +2,8 @@ import { once } from 'node:events'
 import { readFile } from 'node:fs/promises'
 import { homedir, userInfo } from 'node:os'
 
-import { noop, silently, tryCatch, tryCatchAsync } from '@tamery/shared/utils'
+import { noop, silently, toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import type { Client, ConnectConfig } from 'ssh2'
 
 import type { HostKeyStatus } from './known-hosts'
@@ -56,13 +57,13 @@ const authConfig = async (
     if (!keyPath) {
       throw tunnelError(SSH_AUTH_ERRORS.noKeyFile)
     }
-    const { data: privateKey } = await tryCatchAsync(() =>
+    const privateKey = await Result.tryPromise(() =>
       readFile(expandHome(keyPath))
     )
-    if (!privateKey) {
+    if (privateKey.isErr()) {
       throw tunnelError(SSH_AUTH_ERRORS.keyFileMissing)
     }
-    return { passphrase, privateKey }
+    return { passphrase, privateKey: privateKey.value }
   }
   const agent = sshConfig('IdentityAgent') ?? process.env.SSH_AUTH_SOCK
   if (!agent) {
@@ -106,7 +107,6 @@ const unreadableKey = ({ auth, passphrase }: SshTunnel, error: Error) => {
 
 const trusting = new Map<string, Promise<boolean>>()
 
-/** One prompt and one known_hosts line per host key, however many sessions reach the host at once. */
 const trustOnce = (
   name: string,
   key: Buffer,
@@ -145,11 +145,11 @@ export const connectSsh = async (
   confirmHostKey: ConfirmHostKey
 ): Promise<Client> => {
   const { parse } = await import('ssh-config')
-  const { data: userConfig } = await tryCatchAsync(() =>
+  const userConfig = await Result.tryPromise(() =>
     readFile(expandHome('~/.ssh/config'), 'utf-8')
   )
   // OpenSSH keywords are case-insensitive, and `Match exec` runs through spawnSync, which would freeze the desktop main process.
-  const computed = parse(userConfig ?? '').compute(tunnel.host, {
+  const computed = parse(userConfig.unwrapOr('')).compute(tunnel.host, {
     ignoreCase: true,
     matchExec: false,
   })
@@ -187,7 +187,6 @@ export const connectSsh = async (
   }
 
   const isTrusted = async (key: Buffer) => {
-    // ssh2 verifies again on every rekey: the same key passes without a second prompt, and another one fails like OpenSSH's "host key changed during rekey".
     if (verifiedKey) {
       return verifiedKey.equals(key)
     }
@@ -216,12 +215,13 @@ export const connectSsh = async (
     key: Buffer,
     verify: (valid: boolean) => void
   ) => {
-    const { data: trusted } = await tryCatchAsync(() => isTrusted(key))
+    const checked = await Result.tryPromise(() => isTrusted(key))
+    const trusted = checked.unwrapOr(false)
     if (trusted) {
       verifiedKey = key
     }
     if (!closed) {
-      verify(!!trusted)
+      verify(trusted)
     }
   }
 
@@ -231,7 +231,7 @@ export const connectSsh = async (
     throw new Error('the SSH host closed the connection')
   }
   // `connect` throws synchronously for a key it cannot parse; arming the timer or the race before it leaves an unawaited rejection that crashes the desktop main process.
-  const { error: configError } = tryCatch(() =>
+  const connecting = Result.try(() =>
     client.connect({
       ...auth,
       algorithms: { serverHostKey: listedAlgorithms },
@@ -247,7 +247,8 @@ export const connectSsh = async (
       username: tunnel.user || sshConfig('User') || userInfo().username,
     })
   )
-  if (configError) {
+  if (connecting.isErr()) {
+    const configError = toError(connecting.error.cause)
     client.end()
     throw tunnelError(
       'privateKey' in auth
@@ -257,11 +258,13 @@ export const connectSsh = async (
   }
   const ready = Promise.race([once(client, 'ready'), hungUp()])
   startReadyTimer()
-  const { error } = await tryCatchAsync(() => ready)
+  const readied = await Result.tryPromise(() => ready)
   clearTimeout(readyTimer)
-  if (error) {
+  if (readied.isErr()) {
     client.end()
-    throw tunnelError(refusal ?? sshErrorMessage(error, auth))
+    throw tunnelError(
+      refusal ?? sshErrorMessage(toError(readied.error.cause), auth)
+    )
   }
   return client
 }

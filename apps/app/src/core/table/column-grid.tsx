@@ -13,7 +13,6 @@ import type { CellGeometry } from './cell/cell'
 import type { Column } from './cell/utils'
 import type { DataGridCell } from './cursor'
 
-/** A column outside the data (row selection, trailing actions) that never moves. */
 export interface ExtraColumn {
   id: string
   renderCell: (props: {

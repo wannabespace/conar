@@ -136,7 +136,6 @@ export const ActionsCopy = ({
   const [formatType, setFormatType] = useState<GeneratorFormat>('sql')
 
   const active = enabledFilters(filters)
-  // The ORM generators have no subquery for a filter through a foreign key, so only SQL can state it.
   const throughKeys = kind === 'query' && active.some((filter) => filter.via)
   const formats = FORMATS[kind].filter((f) => {
     const compatible = GENERATOR_COMPATIBILITY[f.type]

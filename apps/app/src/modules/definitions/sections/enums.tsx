@@ -60,7 +60,6 @@ const enumPlan = (item: EnumItem | null, drafts: EditableListItem[]) => {
     additions: rows
       .filter((row) => original[row.index] === undefined)
       .map((row) => row.value),
-    // RENAME VALUE cannot land on a label that still exists, so a swap replaces.
     recreate:
       Object.values(renames).some((value) => original.includes(value)) ||
       !original.every((_, index) => rows[index]?.index === index),

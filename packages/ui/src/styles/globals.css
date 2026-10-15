@@ -20,8 +20,7 @@
 @custom-variant traffic-lights (&:where(.electron.mac:not(.window-fullscreen) *));
 
 @theme inline {
-  /* Drops tw-animate-css's `filter: blur(0)`: Chrome never composites a blur, so every enter/exit
-     would stall on the main thread. blur-in/out-* do nothing; use animate-focus-in on its own element */
+  /* Drops tw-animate-css's `filter: blur(0)`, which stalls every enter/exit on Chrome's main thread; blur-in/out-* do nothing. */
   @keyframes enter {
     from {
       opacity: var(--tw-enter-opacity, 1);
@@ -188,7 +187,7 @@
   --surface-alpha: 0.55;
 }
 
-/* Retune both values together: the composite must stay below level 2 (`--card`, L 0.244) at the brightest dark vibrancy, ~L 0.3 over a light wallpaper: 0.7 × 0.185 + 0.3 × 0.3 ≈ 0.22. */
+/* Retune both values together: the composite must stay below level 2 (`--card`, L 0.244) at the brightest dark vibrancy. */
 .electron.mac.dark:not(.window-fullscreen, .opaque):not(
     :has([data-slot$='-overlay'])
   ) {
@@ -349,7 +348,7 @@
   container-type: inline-size;
 }
 
-/* The grid and document list rewrite these while scrolling; an inherited custom property restyles every cell below it on each write, so each must stay non-inherited and be set on the element that reads it. */
+/* Keep non-inherited and set on the element that reads it: these change while scrolling, and an inherited one restyles every cell below on each write. */
 @property --grid-top {
   syntax: '<length>';
   inherits: false;
@@ -368,11 +367,7 @@
   initial-value: 0px;
 }
 
-/* A view transition paints its named groups above the whole document, so an
-   open overlay must be a group too or the tab's snapshot covers it. Name the
-   portal's children, never the portal: it has no box and naming it hides them.
-   A portal nested in another (a tooltip in a drawer) is such a child too, and
-   naming it traps its z-index under the outer overlay. */
+/* Name the portal's children, never the portal: it has no box and naming it hides them. Naming a nested portal traps its z-index under the outer overlay. */
 [data-base-ui-portal] > :not([data-base-ui-portal]) {
   view-transition-name: match-element;
   view-transition-class: overlay;

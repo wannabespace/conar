@@ -21,7 +21,7 @@ export const TextRow = ({
   ComponentProps<'input'>,
   'aria-label' | 'autoComplete' | 'placeholder'
 > & {
-  /** The input's end slot; a `secret` row has none. */
+  /** Ignored on a `secret` row. */
   children?: ReactNode
   form: ConnectionForm
   label: string

@@ -63,12 +63,10 @@ const statementMenuItems = (
   },
 ]
 
-// Monaco keeps focus after running an action, so the popup is focused explicitly or arrows move the caret.
 export const openMenuFromKeyboard = (trigger: HTMLButtonElement | null) => {
   if (!trigger) {
     return
   }
-  // The trigger names its popup only once the menu has rendered open.
   const observer = new MutationObserver(() => {
     const id = trigger.getAttribute('aria-controls')
     if (id) {

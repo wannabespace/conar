@@ -6,7 +6,7 @@ import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -17,7 +17,6 @@ import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
 import { autoUpdater } from './lib/todesktop'
 
-// Fuses can't turn off Chromium's debugging switches, and either one lets another process drive a window that decrypts every connection string.
 const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
 if (
   app.isPackaged &&
@@ -57,13 +56,11 @@ const NEW_WINDOW_OFFSET = 28
 
 let mainWindow: BrowserWindow | null = null
 
-// Allowlist: any other scheme hands the renderer a way to launch arbitrary local apps. cursor: and vscode: carry the MCP install links.
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
 
-// Rejects when no app handles the protocol (Cursor not installed), and an unhandled rejection quits the app.
 const openExternal = async (win: BrowserWindow, url: string) => {
-  const { error } = await tryCatchAsync(() => shell.openExternal(url))
-  if (error) {
+  const opened = await Result.tryPromise(() => shell.openExternal(url))
+  if (opened.isErr()) {
     win.webContents.send('toast', {
       description:
         'No app on this computer opens it. Install the app, or copy the config instead.',

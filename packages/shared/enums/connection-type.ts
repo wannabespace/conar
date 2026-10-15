@@ -5,7 +5,7 @@ export enum ConnectionType {
   ClickHouse = 'clickhouse',
 }
 
-/** Names and badges a connection and may narrow its capabilities; every query runs on the `ConnectionType` it speaks through, so never build SQL from it. */
+/** Never build SQL from a flavor: every query runs on the `ConnectionType` it speaks through. */
 export enum ConnectionFlavor {
   MariaDB = 'mariadb',
 }

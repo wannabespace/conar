@@ -1,7 +1,7 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { anonymousClient, organizationClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
+import { Result } from 'better-result'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -76,9 +76,9 @@ export const getSessionUser = async () => {
     return user
   }
 
-  const { data } = await tryCatchAsync(authClient.getSession)
+  const session = await Result.tryPromise(() => authClient.getSession())
 
-  return data?.data?.user
+  return session.unwrapOr(null)?.data?.user
 }
 
 export const isAnonymous = () => !!sessionCache.get()?.user.isAnonymous

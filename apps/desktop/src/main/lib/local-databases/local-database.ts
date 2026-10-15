@@ -1,9 +1,9 @@
 import type { GuessedParts } from '@tamery/connection/guess/types'
 import type { Engine } from '@tamery/shared/enums/connection-type'
 import type { MaybePromise } from '@tamery/shared/utils'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import type { ArkErrors } from 'arktype'
 import { type } from 'arktype'
+import { Result } from 'better-result'
 
 export interface Unlocked {
   password: string
@@ -32,18 +32,16 @@ export interface Finder {
   targets: () => MaybePromise<readonly string[]>
 }
 
-/** One missing or unreadable item finds nothing; it never hides the rest. */
 export const findEach = async <T, R>(
   items: readonly T[],
   find: (item: T) => MaybePromise<R[]>
 ) => {
   const found = await Promise.all(
-    items.map((item) => tryCatchAsync(() => Promise.try(find, item)))
+    items.map((item) => Result.tryPromise(() => Promise.try(find, item)))
   )
-  return found.flatMap(({ data }) => data ?? [])
+  return found.flatMap((result) => result.unwrapOr([]))
 }
 
-/** One odd entry must not hide the rest of its source. */
 export const validEntries = <T>(
   schema: (entry: unknown) => T | ArkErrors,
   entries: unknown[]

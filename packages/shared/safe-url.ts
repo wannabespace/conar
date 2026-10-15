@@ -1,6 +1,5 @@
 const authRegex =
   /^(?<protocol>[^:]+):\/\/(?<user>[^:]*)(?::(?<password>.*))?$/u
-/** A `?key=` after `[credentials@]host[:port][/path]` opens the query, so an `@` past it (Azure's `?user=admin@server`) separates no credentials, unless an address with a path follows that `@`: then the `?` sat in a raw password (`u:123/x?k=v@host/db`). */
 const QUERY_AFTER_HOST =
   /^[^:]+:\/\/(?:.*@)?(?:\[[^\]]*\]|[^:/?#@[\]]*)(?::\d*)?(?:\/[^?#]*)?\?[\w.-]+=(?!.*@[\w.-]+(?::\d+)?\/)/u
 

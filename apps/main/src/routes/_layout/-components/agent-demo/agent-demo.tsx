@@ -12,7 +12,6 @@ export const AgentDemo = () => {
   const step = useLoop(ref, STEP_MS) ?? APPROVAL_STEP
 
   return (
-    // A mask clips to its own box, so it reaches past the windows' shadows; the layout root clips the overflow
     <div className="-mx-20 mask-b-from-85% px-20 sm:mask-b-from-80%">
       <div
         ref={ref}

@@ -37,14 +37,11 @@ export interface InspectorWarning {
   description: ReactNode
 }
 
-// The footer sits outside the scrolling form, so its save button points back
-// at it by id.
 const FORM_ID = 'definition-inspector'
 
 export type SectionInspectorProps<T> = DefinitionsState & {
   item: T | null
   onOpenChange: (open: boolean) => void
-  // Set by a `?create=` link: which starter the new-item form opens on.
   preset?: string
   queryKey: QueryKey
 }

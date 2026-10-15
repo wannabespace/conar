@@ -11,7 +11,6 @@ import { navigatorOpenValue } from './stores'
 
 let mountedSearch: HTMLInputElement | null = null
 
-// flushSync: the search to focus only mounts once the update commits.
 const focusSearchAfter = (update: () => void) => {
   flushSync(update)
   mountedSearch?.focus()
@@ -98,7 +97,7 @@ export const useNavigatorSearch = ({
   const index = nodes.findIndex((candidate) => candidate.id === highlighted)
   const node = nodes[index]
 
-  // Rows put `highlightedControlId` on the highlighted row's link or button. A virtualized list must keep that row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
+  // A virtualized list must keep the highlighted row rendered, or Enter and ⌘. find nothing.
   const highlightedControl = () =>
     document.querySelector<HTMLElement>(`#${CSS.escape(highlightedControlId)}`)
 
@@ -140,7 +139,6 @@ export const useNavigatorSearch = ({
           } else if (parent) {
             highlight(parent.id)
           } else if (onBack) {
-            // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
             focusSearchAfter(onBack)
           }
         },
@@ -167,7 +165,6 @@ export const useNavigatorSearch = ({
       ref: (input: HTMLInputElement) => {
         searchRef.current = input
         mountedSearch = input
-        // Only idle focus: a Schema page's autoFocus search mounting in the same commit must keep it.
         if (document.activeElement === document.body) {
           input.focus({ preventScroll: true })
         }

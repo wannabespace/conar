@@ -3,7 +3,6 @@ import type { Hotkey } from '@tanstack/react-hotkeys'
 export interface Shortcut {
   description: string
   desktopOnly?: boolean
-  /** Every way to press it, each bound and shown. */
   hotkeys: Hotkey[]
   title: string
 }

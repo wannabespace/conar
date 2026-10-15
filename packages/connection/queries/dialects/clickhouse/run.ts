@@ -51,7 +51,6 @@ export const runQuery = ({
 } & RunOptions) => {
   const client = getClient(connectionString)
   const controller = new AbortController()
-  // ClickHouse keeps running a query whose HTTP request was dropped, so a cancel kills it by id.
   const clickhouseQueryId = randomUUID()
   const start = performance.now()
 

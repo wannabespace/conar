@@ -193,7 +193,6 @@ export const CellField = ({
     popup
       ? [
           { callback: cursor.cancel, hotkey: 'Escape' },
-          // Code fields keep Tab for indenting.
           {
             callback: () => cursor.leave(0, 1),
             hotkey: 'Tab',
@@ -275,7 +274,6 @@ export const CellField = ({
         onContextMenu={(event) => event.stopPropagation()}
       >
         {field()}
-        {/* A reference's text is a search, and its list already says when nothing matches. */}
         {edit?.error && !reference && (
           <p role="alert" className="text-destructive text-2xs px-2 pb-2">
             {edit.error}

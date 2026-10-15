@@ -71,7 +71,6 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
   const { actions, can, diagram, search, view } = useDiagram()
   const [hovered, setHovered] = useState(false)
   const updateNodeInternals = useUpdateNodeInternals()
-  // Handles mounted on hover are unknown to the flow until it re-measures.
   useEffect(() => {
     if (hovered) {
       updateNodeInternals(id)
@@ -107,7 +106,6 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
   const connectable =
     can.foreignKeys && table.kind === 'table' && table.state !== 'dropped'
   const dimmed = !!search && !tableMatches(table, search)
-  // One context menu per card: rows only record which column was hit.
   const menuColumn = useRef<DiagramColumn | null>(null)
 
   return (
@@ -252,8 +250,6 @@ export const TableNodeView = ({ data, id, selected }: NodeProps<TableNode>) => {
         </div>
         {compact && (
           <div
-            // Third bound keeps a long name inside the card: ~0.55em per glyph
-            // over a 15rem inner width.
             style={
               {
                 '--label-size': `min(4rem, calc(0.875rem / var(--diagram-zoom)), calc(27rem / ${table.name.length}))`,

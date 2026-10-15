@@ -7,7 +7,7 @@ import type { Column } from './cell/utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-// Casting anything else to text can fail (SQL Server `image`, spatial types) and nobody searches or reads it as words.
+// Casting anything else to text can fail (SQL Server `image`, spatial types).
 const TEXT_TYPE = /char|text|uuid|string|enum|name/iu
 
 export const labelCandidates = <T extends { id: string; type: string }>(

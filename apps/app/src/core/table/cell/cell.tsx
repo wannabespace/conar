@@ -122,7 +122,6 @@ const overlayClass = (
     (state === 'range' || state === 'range-cursor') && 'bg-primary/10'
   )
 
-/** Where the grid layout places a cell; the documents layout has none, so a value there is never truncated. */
 export interface CellGeometry {
   isDragging?: boolean
   pinned?: boolean
@@ -150,7 +149,6 @@ export const TableCell = ({
   draft?: Pick<Draft, 'error' | 'isCommitting'>
   /** Set when a refetch changed the value; a new number replays the flash. */
   flash?: number
-  /** A readable stand-in for the value, e.g. the referenced row's name; the value stays beside it. */
   label?: string
   rowIndex: number
   value: unknown

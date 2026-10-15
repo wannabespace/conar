@@ -16,7 +16,6 @@ import { stagedHistory } from './history'
 import { tablePageStore } from './store'
 
 mock.module('~/lib/posthog', () => ({ posthog: { capture: () => {} } }))
-// Bun has no localStorage, so the persisted page store would ignore every write.
 mock.module('./store', () => ({
   tablePageStore: memoize((_key: object) =>
     createStore({ filters: [], orderBy: {} })

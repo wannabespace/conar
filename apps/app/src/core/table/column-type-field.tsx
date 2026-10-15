@@ -44,7 +44,6 @@ const useColumnTypes = () => {
     bareIdentifierRegex.test(name)
       ? name
       : quoteIdentifier(name, connection.type)
-  // MySQL and ClickHouse enums are inline column types (they carry metadata), not named types.
   const namedEnums = enums
     .filter((enumType) => !enumType.metadata)
     .map((enumType) =>

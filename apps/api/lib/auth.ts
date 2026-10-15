@@ -199,7 +199,6 @@ export const auth = betterAuth({
               context.path === '/sign-in/email-otp' || isOAuthCallback(context),
           })),
           {
-            // An OAuth callback must redirect, so the challenge's JSON becomes /two-factor; `location` is still the callback's target.
             handler: createAuthMiddleware((ctx) => {
               if (isAPIError(ctx.context.returned)) {
                 return Promise.resolve()

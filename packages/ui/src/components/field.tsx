@@ -186,8 +186,6 @@ const fieldErrorContent = (
 
 const ERROR_PEEK_MS = 3000
 
-// Tooltips share one provider, so only one can be open: without a single
-// owner, errors marked in the same commit all peek and the last one wins.
 const errorPeek = {
   claim: (id: string) => {
     if (!errorPeek.owner) {

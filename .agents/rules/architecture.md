@@ -117,7 +117,8 @@ What already owns a concern here — a dependency resolves only in a workspace t
 | A `keydown` listener or container `onKeyDown` | `useShortcut` / `useShortcuts` (`~/core/keyboard/use-shortcuts`) for a listed shortcut, else `useHotkey` / `useHotkeys` (`@tanstack/react-hotkeys`) |
 | An app-wide event (save, refresh pressed) | `globalHooks` (`~/lib/global-hooks`, hookable) |
 | A system notification | `notifications.notify` (`~/lib/notifications`) |
-| `try`/`catch` returning a fallback, or an empty `catch` | `tryCatch` / `tryCatchAsync` / `silently` (`@tamery/shared/utils`) |
+| `try`/`catch` returning a fallback or branching on failure | `Result.try` / `Result.tryPromise` (`better-result`) |
+| An empty `catch` | `silently` (`@tamery/shared/utils`) |
 | A runtime check followed by `as` | An ArkType schema |
 | `pick`, `omit`, typed `Object.entries`, list equality, case-insensitive search, push-if-absent | `@tamery/shared/utils` (`pick`, `omit`, `objectEntries`, `sameList`, `matchesSearch`, `pushUnique`) |
 | `n === 1 ? '' : 's'` | `plural` (`~/utils/plural`) |

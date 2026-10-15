@@ -72,7 +72,6 @@ export const PasteHero = ({
       : { subtitle: 'We’ll figure it out.', title: 'Paste anything.' }
   const { subtitle, title } = flash.shown ? FLASH_COPY[flash.result] : idle
 
-  // Shakes in place rather than re-keying the block, which would remount the focused clipboard keys and drop focus out of the page.
   useEffect(() => {
     if (flash.count && flash.result === 'miss' && !reduceMotion) {
       void shake(

@@ -3,7 +3,7 @@ import { lowercaseKeys } from '@tamery/shared/utils'
 
 import { SSH_PARAMS } from './ssh/params'
 
-/** The query params `CloudWithoutSecrets` keeps off the server beside the database password; sync with what `ssl/*.ts` and `ssh/` read. */
+/** Sync with the secret params `ssl/*.ts` and `ssh/` read. */
 const SECRET_PARAMS = [
   SSH_PARAMS.password,
   SSH_PARAMS.privateKey,

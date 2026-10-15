@@ -63,8 +63,6 @@ const flowStyle = {
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 2.5
 
-// Zoom reaches the compact card labels as a CSS variable, so a wheel tick
-// re-renders no card.
 const ZoomVariable = () => {
   const zoom = useStore((state) => state.transform[2])
   const domNode = useStore((state) => state.domNode)
@@ -106,8 +104,6 @@ export const Canvas = ({
 }) => {
   const { actions, can, diagram, selectedId } = useDiagram()
   const flow = useReactFlow()
-  // React Flow reports measured sizes through dimension changes; nodes rebuilt
-  // without them stay unmeasured and vanish from the minimap.
   const [measured, setMeasured] = useState<
     Record<string, { height: number; width: number }>
   >({})

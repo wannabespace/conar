@@ -5,9 +5,8 @@ import { GUTTER_WIDTH } from './constants'
 export interface GridColumn {
   id: string
   size: number
-  /** Holds its slot while other columns are dragged around it. */
   fixed?: boolean
-  /** Sticks to the left edge and, like `fixed`, holds its slot; pinned columns must lead the list. */
+  /** Pinned columns must lead the list. */
   pinned?: boolean
 }
 

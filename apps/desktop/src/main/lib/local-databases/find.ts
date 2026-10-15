@@ -75,7 +75,6 @@ const databasesOf = async ({ read, source, targets }: Finder) =>
 let found = new Map<string, LocalDatabase>()
 
 export const localDatabases = {
-  /** The first source to find a database names it; a later one's password still unlocks it. */
   find: async () => {
     const unique = new Map<string, LocalDatabase>()
     for (const database of await findEach(FINDERS, databasesOf)) {

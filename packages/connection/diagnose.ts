@@ -363,7 +363,6 @@ export const diagnoseConnectionError = (
   }
   const diagnosis = rule.diagnose(context)
   const { host, password } = context.parts
-  // Only a local server runs without a password (trust auth), so anywhere else an empty one fails next whatever this error is.
   if (rule.tunnel || diagnosis.focus || password || isLocalHost(host)) {
     return diagnosis
   }

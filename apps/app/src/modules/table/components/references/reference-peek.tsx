@@ -186,7 +186,6 @@ const Trail = ({
   )
 }
 
-/** One peek per table; it anchors to a cell that virtualization can unmount, so it closes once the grid moves. */
 export const useReferencePeek = (
   scrollRef: RefObject<HTMLDivElement | null>
 ) => {
@@ -254,7 +253,6 @@ export const ReferencePeek = ({
           return
         }
         const pressed = details.event.target
-        // The cell's peek buttons toggle the popover; closing on their press would let the click reopen it.
         if (
           details.reason === 'outside-press' &&
           pressed instanceof Element &&

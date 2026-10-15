@@ -63,9 +63,8 @@ const createSyncTracker = (): SyncTracker => {
   }
 }
 
-// The coordinator keeps one adapter per schema version but a single leader-side
-// slot, so collections declaring different versions reset each other's tables on
-// every boot. Every persisted collection passes this; bump it to wipe local data.
+// Every persisted collection must pass this one version, or they reset each
+// other's tables on every boot. Bumping it wipes local data.
 export const PERSISTED_SCHEMA_VERSION = 2
 
 export type SyncMessage<T> =
@@ -140,8 +139,6 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       const subscribe = async () => {
         const attempt = new AbortController()
         const attemptSignal = AbortSignal.any([signal, attempt.signal])
-        // Events wait for the snapshot and replay over it: a snapshot written
-        // after a newer event would overwrite it or resurrect a deleted row.
         let buffered: SyncMessage<T>[] | null = []
         const events = config.events({
           signal: attemptSignal,
@@ -171,8 +168,6 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
 
         try {
-          // A failed catch-up fails the attempt, so it retries with backoff
-          // instead of leaving the collection stale behind a live subscription.
           await Promise.all([catchUp(), events])
         } finally {
           attempt.abort()
@@ -236,7 +231,6 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     },
   }
 
-  // Non-retriable: the outbox is FIFO, so a retried write blocks every later one.
   const serverMutation = <K extends keyof ServerMutations<T>>(type: K) => {
     const send = config.mutations?.[type]
     if (!send) {
@@ -254,8 +248,6 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     utils: {
       abortSync: () => abortSync?.(),
       awaitChange: tracker.awaitChange,
-      // Sends one offline-outbox mutation, then writes it as synced so the row
-      // holds still between the optimistic layer dropping and the server echo.
       push: async (mutation: PendingMutation<T>) => {
         if (mutation.type === 'delete') {
           await serverMutation('delete')(mutation.key)

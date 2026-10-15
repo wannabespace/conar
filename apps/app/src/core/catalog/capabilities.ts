@@ -163,11 +163,9 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       xml: null,
     },
     constraintKinds: CONSTRAINT_KINDS,
-    // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
     defaultSchema: null,
     explain: true,
-    // MySQL names every primary key PRIMARY, whatever the ADD says.
     fixedConstraintNames: { primaryKey: 'PRIMARY' },
     functions: {
       argumentPlaceholder: 'id INT, label VARCHAR(50)',
@@ -219,7 +217,6 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       bytes: null,
       enum: null,
       id: 'serial',
-      // Geometric types have no btree or hash operator class to sort or group by.
       incomparable:
         /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
       json: /^jsonb?$/iu,

@@ -23,7 +23,6 @@ const SSL_OPTIONS: Partial<
   },
 }
 
-// The drivers refuse SSL off beside any of these.
 const TLS_PARAMS: Partial<Record<ConnectionType, string[]>> = {
   [ConnectionType.MySQL]: MYSQL_TLS_PARAMS,
   [ConnectionType.Postgres]: PG_TLS_PARAMS,
@@ -38,7 +37,6 @@ export const sslOptionsOf = (
     return
   }
   const update = new URLSearchParams(option)
-  // Keys compare lowercase: a paste may say `TrustServerCertificate`, the drivers read lowercase.
   const dropped = new Set([
     ...update.keys(),
     ...(setting === 'off' ? (TLS_PARAMS[type] ?? []) : []),

@@ -29,7 +29,6 @@ export type ColumnDragHandle = ReturnType<typeof useColumnDrag>['handlers'] & {
 
 const holdsSlot = (column: GridColumn) => column.fixed || column.pinned
 
-/** False for presses on the header's own controls and on its portalled menus, which React bubbles through the header. */
 export const isHeaderPress = (event: MouseEvent<HTMLElement>) => {
   const target = event.target instanceof Element ? event.target : null
   return (

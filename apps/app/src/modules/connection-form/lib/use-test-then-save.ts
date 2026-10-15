@@ -4,8 +4,9 @@ import { describeConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { engines } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { tryCatch, tryCatchAsync } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
+import { Result } from 'better-result'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 
@@ -22,7 +23,6 @@ import type { FormMode } from './form-mode'
 export type OnSave = (
   connection: ConnectionDetails,
   created: {
-    /** Off for a connection that failed its test or cannot be sent from here: opening one shows only its error, so the save lands on the dashboard. */
     open: boolean
     origin: GuessFormat | undefined
     syncType: SyncType
@@ -36,20 +36,18 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
       testConnectionQuery.run(params),
   })
-  const inFlight = useRef<ReturnType<typeof tryCatchAsync>>(null)
+  const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)
 
   const draftOf = (values: ConnectionFormValues) => {
-    // Host holds whatever is typed until it blurs, so the string may not build yet.
-    const connectionString =
-      tryCatch(() =>
-        connectionParts.format(
-          partsOf(values),
-          mode.kind === 'edit' ? mode.missingSecrets : []
-        )
-      ).data ?? ''
-    const described = tryCatch(() =>
+    const connectionString = Result.try(() =>
+      connectionParts.format(
+        partsOf(values),
+        mode.kind === 'edit' ? mode.missingSecrets : []
+      )
+    ).unwrapOr('')
+    const described = Result.try(() =>
       describeConnectionString(connectionString)
-    ).data
+    ).unwrapOr(null)
     const editing = described && mode.kind === 'edit' ? mode : null
     const { canSend, reason } = fetchingConfig(
       {
@@ -62,7 +60,6 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
           displayUrl: described?.displayUrl ?? '',
           isPasswordPopulated: !!described?.isPasswordPopulated,
           missingSecrets: (editing && described?.missingSecrets) || [],
-          // The form's own switch, not the string: a tunnel with no host yet must still stop the test.
           usesSsh: values.sshEnabled,
         },
         isLocalProxyAvailable,
@@ -84,7 +81,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     if (!canSend) {
       return null
     }
-    inFlight.current = tryCatchAsync(() =>
+    inFlight.current = Result.tryPromise(() =>
       test.mutateAsync({
         connectionString,
         type: engines.type(values.engine),
@@ -105,10 +102,9 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
       const result = await (draft.testStatus === 'pending'
         ? inFlight.current
         : runTest(form.state.values))
-      if (result?.error) {
+      if (result?.isErr()) {
         return
       }
-      // An edit during the test leaves what the form holds now untested.
       if (
         draftOf(form.state.values).connectionString !== draft.connectionString
       ) {
@@ -117,7 +113,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     }
     const { values } = form.state
     const { connectionString } = draft
-    const { error } = await tryCatchAsync(() => {
+    const saved = await Result.tryPromise(() => {
       if (!connectionString) {
         throw new Error("The host isn't a valid address.")
       }
@@ -137,9 +133,9 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
         }
       )
     })
-    if (error) {
+    if (saved.isErr()) {
       toast.error("Couldn't save the connection", {
-        description: error.message,
+        description: toError(saved.error.cause).message,
       })
     }
   }

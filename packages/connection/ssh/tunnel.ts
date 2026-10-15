@@ -1,7 +1,7 @@
 import type { Duplex } from 'node:stream'
 import { promisify } from 'node:util'
 
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import type { Client } from 'ssh2'
 
 import { connectionParts } from '../connection-parts'
@@ -42,15 +42,15 @@ const openSession = (
       idleTimer = setTimeout(async () => {
         // Forgotten before the client ends, so a channel asked for meanwhile opens a new session instead of this closing one.
         forget()
-        const { data: connected } = await tryCatchAsync(() => client)
-        connected?.end()
+        const connected = await Result.tryPromise(() => client)
+        connected.unwrapOr(null)?.end()
       }, IDLE_TIMEOUT)
     }
   }
   const forgetOnClose = async () => {
-    const { data: connected } = await tryCatchAsync(() => client)
-    if (connected) {
-      connected.once('close', forget)
+    const connected = await Result.tryPromise(() => client)
+    if (connected.isOk()) {
+      connected.value.once('close', forget)
     } else {
       forget()
     }

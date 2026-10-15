@@ -17,7 +17,7 @@ const ANY_IPV6 = new RegExp(
   `(?<![\\w:])(?:(?:${HEX_GROUP}:){7}${HEX_GROUP}|(?:${HEX_GROUP}(?::${HEX_GROUP})*)?::(?:${HEX_GROUP}(?::${HEX_GROUP})*)?)(?:%[\\w.]+)?(?![\\w:])`,
   'giu'
 )
-/** The only options whose value may reach the AI: any other key's value can be a secret or a name, however harmless it looks (`sslpassword=123456`). */
+/** Any other key's value can be a secret or a name, however harmless it looks (`sslpassword=123456`). */
 const SETTING_KEYS = new Set([
   'connect_timeout',
   'connecttimeout',
@@ -33,7 +33,6 @@ const SETTING_KEYS = new Set([
 const NON_IDENTIFYING_VALUE =
   /^(?:true|false|yes|no|on|off|\d+(?:\.\d+)?|disable|allow|prefer|require|verify|verify-ca|verify-full|no-verify|strict|optional|mandatory|disabled|preferred|required|verify_ca|verify_identity|tlsv1(?:\.[0-3])?)$/iu
 
-/** What an AI request about a failed connection may carry: no address, user, database or secret. */
 export const diagnosisRequestOf = ({
   message,
   parts,

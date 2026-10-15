@@ -103,8 +103,6 @@ export const dropConstraint = (
   { name, schema, table }: ConstraintTarget
 ) => db.withSchema(schema).schema.alterTable(table).dropConstraint(name)
 
-// MySQL swaps a key in one ALTER, which no builder spells, so it keeps the
-// clause as SQL text.
 export const constraintClause = ({
   columns,
   expression,
@@ -134,7 +132,6 @@ export const constraintClause = ({
   return sql`${constraint} REFERENCES ${sql.id(foreignSchema, foreignTable)} (${identifiers(foreignColumns)}) ON DELETE ${sql.raw(onDelete)} ON UPDATE ${sql.raw(onUpdate)}`
 }
 
-// MySQL has no DROP CONSTRAINT for keys; each kind drops through its own clause.
 export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
   ({
     check: sql`CONSTRAINT ${sql.id(name)}`,
@@ -205,7 +202,6 @@ const tableElementsOf = (ddl: string) => {
 const clickhouseConstraintRegex =
   /^CONSTRAINT\s+(?<name>`(?:[^`\\]|\\.)*`|\S+)\s+(?<kind>CHECK|ASSUME)\s+(?<expression>[\s\S]+)$/u
 
-// ClickHouse keeps no catalog of constraints; they live only in the DDL text.
 export const clickhouseConstraintsOf = (ddl: string) =>
   tableElementsOf(ddl).flatMap((element) => {
     const groups = clickhouseConstraintRegex.exec(element)?.groups

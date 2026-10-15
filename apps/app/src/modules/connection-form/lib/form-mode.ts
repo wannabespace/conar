@@ -12,10 +12,8 @@ export type FormMode =
   | {
       kind: 'edit'
       name: string
-      /** The saved connection has a password this device never held, so an empty field still needs one. */
       passwordElsewhere: boolean
       missingSecrets: SecretParam[]
-      /** `credentials` opens only what this device lacks, `details` the server details a metadata-only connection never syncs; neither touches the synced row. */
       scope: 'all' | 'credentials' | 'details'
     }
 

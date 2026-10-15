@@ -7,7 +7,7 @@ const PAIR =
 const QUOTE_CLOSERS: Record<string, string> = { '"': '"', "'": "'", '{': '}' }
 const SERVER = /^(?:\w+:)?(?<host>[^,\\]*)(?:\\[^,]*)?(?:,(?<port>\d+))?/u
 
-/** MySqlConnector's own keys; `SSL Mode` is Npgsql's too. */
+/** Not `SSL Mode`: Npgsql uses it too. */
 const MYSQL_KEYS = ['allowpublickeyretrieval', 'allowuservariables']
 const MSSQL_KEYS = [
   'datasource',
