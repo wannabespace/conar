@@ -24,7 +24,6 @@ const serviceSchema = type([
 ])
 
 export const pgpass: Finder = {
-  files: [process.env.PGPASSFILE ?? path.join(homedir(), '.pgpass')],
   read: async (file) => {
     const pgpassFile = await readFile(file, 'utf-8')
     return pgpassFile
@@ -36,12 +35,10 @@ export const pgpass: Finder = {
       })
   },
   source: '.pgpass',
+  targets: () => [process.env.PGPASSFILE ?? path.join(homedir(), '.pgpass')],
 }
 
 export const pgService: Finder = {
-  files: [
-    process.env.PGSERVICEFILE ?? path.join(homedir(), '.pg_service.conf'),
-  ],
   read: async (file) =>
     validEntries(
       serviceSchema,
@@ -58,4 +55,7 @@ export const pgService: Finder = {
       },
     })),
   source: 'pg_service.conf',
+  targets: () => [
+    process.env.PGSERVICEFILE ?? path.join(homedir(), '.pg_service.conf'),
+  ],
 }

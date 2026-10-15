@@ -18,6 +18,9 @@ import { confirmHostKey } from './ssh-host-key'
 import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
 
+// Stays lazy so the native keyring addon and the finders' parsers don't load at startup.
+const loadLocalDatabases = () => import('./local-databases/find')
+
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>
 ): QueryExecutor => {
@@ -79,12 +82,12 @@ export const electron = {
   deviceEncryption,
   localDatabases: {
     find: async () => {
-      const { localDatabases } = await import('./local-databases/find')
+      const { localDatabases } = await loadLocalDatabases()
 
       return localDatabases.find()
     },
     unlock: async (connectionString: string) => {
-      const { localDatabases } = await import('./local-databases/find')
+      const { localDatabases } = await loadLocalDatabases()
 
       return localDatabases.unlock(connectionString)
     },

@@ -48,14 +48,34 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
       ],
     },
   },
+  '/containers/c2/json': {
+    Config: { Env: ['MYSQL_ROOT_PASSWORD=pw'] },
+  },
+  '/containers/c3/json': {
+    Config: { Env: ['POSTGRES_USER=me', 'POSTGRES_PASSWORD=pw'] },
+  },
   '/containers/json': [
     {
       Id: 'c1',
+      Image: 'acme/db:1',
       Names: ['/maria'],
       Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_306 }],
     },
     {
+      Id: 'c2',
+      Image: 'ghcr.io/acme/mariadb:11',
+      Names: ['/maria-image'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_307 }],
+    },
+    {
+      Id: 'c3',
+      Image: 'postgres:16',
+      Names: ['/mysql-port'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_308 }],
+    },
+    {
       Id: 'exited',
+      Image: 'postgres:16',
       Names: ['/gone'],
       Ports: [{ IP: '0.0.0.0', PrivatePort: 5432, PublicPort: 15_432 }],
     },
@@ -217,6 +237,18 @@ describe('localDatabases', () => {
         port: '13306',
         user: 'root',
       },
+    ],
+    [
+      "Docker: the image's MariaDB flavor over the env's MySQL",
+      'Docker',
+      'maria-image',
+      { engine: 'mariadb', port: '13307', user: 'root' },
+    ],
+    [
+      "Docker: the published port's engine over the env's and the image's",
+      'Docker',
+      'mysql-port',
+      { engine: 'mysql', port: '13308' },
     ],
   ])('%s', async (_case, source, name, parts) => {
     expect(await findIn(source, name)).toMatchObject(parts)

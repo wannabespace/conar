@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { engineOfScheme } from '@tamery/connection/connection-parts'
+import { engineOfDriver } from '@tamery/connection/connection-parts'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { app } from 'electron'
@@ -62,7 +62,6 @@ const credentialsIn = async (dataDir: string) => {
 }
 
 export const dbeaver: Finder = {
-  files: DATA_DIRS,
   read: async (dataDir) => {
     const { connections } = dataSourcesSchema.assert(
       JSON.parse(await readFile(path.join(dataDir, DATA_SOURCES), 'utf-8'))
@@ -77,7 +76,7 @@ export const dbeaver: Finder = {
           name,
           parts: {
             database: configuration.database,
-            engine: engineOfScheme(provider),
+            engine: engineOfDriver(provider),
             host: configuration.host,
             password: saved?.password,
             port: String(configuration.port ?? ''),
@@ -88,4 +87,5 @@ export const dbeaver: Finder = {
     )
   },
   source: 'DBeaver',
+  targets: () => DATA_DIRS,
 }

@@ -29,30 +29,6 @@ const CONNECTION_COLUMNS = {
   workspaceId: true,
 } as const
 
-const findConnection = async (
-  input: { resourceId: string } | { connectionId: string },
-  userId: string
-) => {
-  if ('resourceId' in input) {
-    const resource = await db.query.connectionsResources.findFirst({
-      columns: { name: true },
-      where: { id: { eq: input.resourceId } },
-      with: {
-        connection: {
-          columns: CONNECTION_COLUMNS,
-          where: { userId: { eq: userId } },
-        },
-      },
-    })
-    return { connection: resource?.connection, resource }
-  }
-  const connection = await db.query.connections.findFirst({
-    columns: CONNECTION_COLUMNS,
-    where: { id: { eq: input.connectionId }, userId: { eq: userId } },
-  })
-  return { connection, resource: undefined }
-}
-
 export const proxy = {
   resolveConnectionString: orpc
     .use(proxySecretMiddleware)
@@ -66,14 +42,33 @@ export const proxy = {
       NOT_FOUND: { message: 'Connection not found' },
     })
     .handler(async ({ context, errors, input }) => {
-      const { connection, resource } = await findConnection(
-        input,
-        context.user.id
-      )
+      const owned = { userId: { eq: context.user.id } }
+      const resource =
+        'resourceId' in input
+          ? await db.query.connectionsResources.findFirst({
+              columns: { name: true },
+              where: { id: { eq: input.resourceId } },
+              with: {
+                connection: { columns: CONNECTION_COLUMNS, where: owned },
+              },
+            })
+          : undefined
+      const connection =
+        'resourceId' in input
+          ? resource?.connection
+          : await db.query.connections.findFirst({
+              columns: CONNECTION_COLUMNS,
+              where: { id: { eq: input.connectionId }, ...owned },
+            })
       if (!connection) {
         throw errors.NOT_FOUND()
       }
-      if (!connection.connectionString) {
+      const withoutSecrets =
+        connection.syncType === SyncType.CloudWithoutSecrets
+      if (
+        !connection.connectionString ||
+        (withoutSecrets && connection.isPasswordExists)
+      ) {
         throw errors.FORBIDDEN()
       }
 
@@ -82,10 +77,9 @@ export const proxy = {
         workspaceId: connection.workspaceId,
       })
       if (
-        connection.syncType === SyncType.CloudWithoutSecrets &&
-        (connection.isPasswordExists ||
-          connectionSecrets.missing(new SafeURL(connectionString).searchParams)
-            .length > 0)
+        withoutSecrets &&
+        connectionSecrets.missing(new SafeURL(connectionString).searchParams)
+          .length > 0
       ) {
         throw errors.FORBIDDEN()
       }

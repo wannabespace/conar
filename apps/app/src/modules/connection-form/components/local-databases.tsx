@@ -6,9 +6,7 @@ import { motion } from 'motion/react'
 
 import { plural } from '~/utils/plural'
 
-export type LocalDatabase = Awaited<
-  ReturnType<NonNullable<typeof window.electron>['localDatabases']['find']>
->[number]
+import type { LocalDatabase } from '../lib/use-pick-local-database'
 
 export const LocalDatabases = ({
   onPick,

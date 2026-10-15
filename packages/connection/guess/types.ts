@@ -20,7 +20,7 @@ export type ServerField = Exclude<
 >
 
 export type GuessedParts = Partial<Omit<ConnectionParts, 'type'>> & {
-  engine?: Engine | null
+  engine?: Engine
 }
 
 export interface ConnectionGuess extends DatabaseGuess {

@@ -78,8 +78,20 @@ const schemeName = (scheme: string) =>
     .replace(/^jdbc:/u, '')
     .replace(/[+:].*$/u, '')
 
-export const engineOfScheme = (scheme: string): Engine | null =>
-  ENGINE_OF_SCHEME[schemeName(scheme)] ?? null
+export const engineOfScheme = (scheme: string): Engine | undefined =>
+  ENGINE_OF_SCHEME[schemeName(scheme)]
+
+const ENGINE_OF_DRIVER: Record<string, Engine> = {
+  'microsoft sql server': ConnectionType.MSSQL,
+  pgsql: ConnectionType.Postgres,
+  sqlsrv: ConnectionType.MSSQL,
+  tedious: ConnectionType.MSSQL,
+  trilogy: ConnectionType.MySQL,
+}
+
+/** A driver, provider or image name; also any scheme name. */
+export const engineOfDriver = (name: string): Engine | undefined =>
+  ENGINE_OF_DRIVER[name.toLowerCase()] ?? engineOfScheme(name)
 
 const format = (
   parts: ConnectionParts,
@@ -125,7 +137,7 @@ const parse = (connectionString: string): ConnectionParts => {
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,
-    type: engine && engines.type(engine),
+    type: engine ? engines.type(engine) : null,
   }
 }
 

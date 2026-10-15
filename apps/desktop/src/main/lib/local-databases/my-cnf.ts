@@ -17,7 +17,6 @@ const clientSchema = type({
 })
 
 export const myCnf: Finder = {
-  files: [path.join(homedir(), '.my.cnf')],
   read: async (file) => {
     const { client, mysql } = ini.parse(await readFile(file, 'utf-8'))
     if (!client && !mysql) {
@@ -33,4 +32,5 @@ export const myCnf: Finder = {
     ]
   },
   source: '.my.cnf',
+  targets: () => [path.join(homedir(), '.my.cnf')],
 }

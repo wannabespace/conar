@@ -43,11 +43,6 @@ export const isInternalConnection = ({
 }: Pick<ConnectionString, 'displayUrl'>) =>
   isInternalHost(displayUrl.replace(PORT_SUFFIX, ''))
 
-export const awaitsServerDetails = (
-  { syncType }: Pick<Connection, 'syncType'>,
-  connectionString: object | string | null | undefined
-) => syncType === SyncType.CloudWithoutConnectionString && !connectionString
-
 const REASONS = {
   connectionStringNotStored:
     'Only the name and color of this connection sync. Add its server details on this device to use it here.',
@@ -87,7 +82,9 @@ const resolveFlags = (
   const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   return {
-    connectionStringMissing: awaitsServerDetails(connection, connectionString),
+    connectionStringMissing:
+      connection.syncType === SyncType.CloudWithoutConnectionString &&
+      !connectionString,
     hasPassword:
       connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
     isElectron,

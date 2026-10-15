@@ -6,7 +6,7 @@ import {
 } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, engineOfScheme } from '../connection-parts'
+import { DEFAULT_PORTS, engineOfDriver } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -36,12 +36,6 @@ const TYPE_SUFFIXES = [
   'CLIENT',
   'ADAPTER',
 ]
-const ENGINE_OF_DRIVER: Record<string, Engine> = {
-  pgsql: ConnectionType.Postgres,
-  sqlsrv: ConnectionType.MSSQL,
-  tedious: ConnectionType.MSSQL,
-  trilogy: ConnectionType.MySQL,
-}
 const HOST_AND_PORT = /^(?<host>[^:\s]+):(?<port>\d+)$/u
 const PUBLISHED_PORT =
   /^\s*-\s*["']?(?:[\d.]+:)?(?<published>\d+):(?<target>\d+)(?:\/tcp)?["']?\s*$/gmu
@@ -106,13 +100,11 @@ export const partsOfVariables = (
     const named =
       group.engine ??
       TYPE_SUFFIXES.values()
-        .map((suffix) => {
-          const driver =
+        .map((suffix) =>
+          engineOfDriver(
             variables[group.prefix + suffix]?.split('.').at(-1) ?? ''
-          return (
-            ENGINE_OF_DRIVER[driver.toLowerCase()] ?? engineOfScheme(driver)
           )
-        })
+        )
         .find(Boolean)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {

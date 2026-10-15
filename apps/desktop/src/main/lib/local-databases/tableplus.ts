@@ -3,9 +3,8 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
-import { engineOfScheme } from '@tamery/connection/connection-parts'
+import { engineOfDriver } from '@tamery/connection/connection-parts'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { keychainPassword } from './keychain'
@@ -24,8 +23,6 @@ const CONNECTION_FILES = [
   )
 )
 
-const MSSQL_DRIVER = 'microsoft sql server'
-
 const connectionSchema = type({
   ConnectionName: 'string',
   DatabaseHost: 'string',
@@ -41,7 +38,6 @@ const connectionSchema = type({
 })
 
 export const tablePlus: Finder = {
-  files: CONNECTION_FILES,
   read: async (file) => {
     const { stdout } = await promisify(execFile)('/usr/bin/plutil', [
       '-convert',
@@ -57,10 +53,7 @@ export const tablePlus: Finder = {
       name: connection.ConnectionName,
       parts: {
         database: connection.DatabaseName,
-        engine:
-          connection.Driver.toLowerCase() === MSSQL_DRIVER
-            ? ConnectionType.MSSQL
-            : engineOfScheme(connection.Driver),
+        engine: engineOfDriver(connection.Driver),
         host: connection.DatabaseHost,
         port: connection.DatabasePort,
         ssh: connection.isOverSSH
@@ -81,4 +74,5 @@ export const tablePlus: Finder = {
     }))
   },
   source: 'TablePlus',
+  targets: () => (process.platform === 'darwin' ? CONNECTION_FILES : []),
 }

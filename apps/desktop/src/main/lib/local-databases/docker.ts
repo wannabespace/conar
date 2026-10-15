@@ -4,10 +4,13 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { text } from 'node:stream/consumers'
 
-import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
+import {
+  DEFAULT_PORTS,
+  engineOfDriver,
+} from '@tamery/connection/connection-parts'
 import { partsOfVariables } from '@tamery/connection/guess/env'
 import { mergeParts } from '@tamery/connection/guess/parts'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
@@ -49,6 +52,7 @@ const IMAGE_USERS: Record<ConnectionType, string> = {
 
 const containersSchema = type({
   Id: 'string',
+  Image: 'string',
   Names: 'string[]',
   Ports: type({
     'IP?': 'string',
@@ -69,12 +73,11 @@ const dockerGet = async (socketPath: string, urlPath: string) => {
 }
 
 export const docker: Finder = {
-  files: SOCKETS,
   read: async (socketPath) => {
     const containers = containersSchema.assert(
       await dockerGet(socketPath, '/containers/json')
     )
-    return findEach(containers, async ({ Id, Names, Ports }) => {
+    return findEach(containers, async ({ Id, Image, Names, Ports }) => {
       const published = Ports.flatMap(
         ({ IP = '', PrivatePort, PublicPort }) => {
           const connectionType = TYPE_OF_CONTAINER_PORT[PrivatePort]
@@ -106,9 +109,21 @@ export const docker: Finder = {
           )
         ) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
+      const named = [
+        engineOfDriver(
+          Image.replace(/[:@][^/]*$/u, '')
+            .split('/')
+            .at(-1) ?? ''
+        ),
+        env.engine,
+      ]
       return published.map(({ connectionType, ...server }) => {
-        const parts = mergeParts(server, env, {
-          engine: connectionType,
+        const engine =
+          named.find(
+            (candidate) =>
+              candidate && engines.type(candidate) === connectionType
+          ) ?? connectionType
+        const parts = mergeParts({ ...server, engine }, env, {
           user: IMAGE_USERS[connectionType],
         })
         return {
@@ -122,4 +137,5 @@ export const docker: Finder = {
     })
   },
   source: 'Docker',
+  targets: () => SOCKETS,
 }

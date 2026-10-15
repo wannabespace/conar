@@ -65,14 +65,11 @@ const localDatabase = (
     : []
 }
 
-const databasesOf = async ({ files, read, source }: Finder) =>
-  findEach(
-    typeof files === 'function' ? await files() : files,
-    async (file) => {
-      const entries = await read(file)
-      return entries.flatMap((entry) => localDatabase(source, entry))
-    }
-  )
+const databasesOf = async ({ read, source, targets }: Finder) =>
+  findEach(await targets(), async (target) => {
+    const entries = await read(target)
+    return entries.flatMap((entry) => localDatabase(source, entry))
+  })
 
 // Keyed by what `find` returned, so the renderer can only unlock a password a found database points at, never name an arbitrary Keychain item.
 let found = new Map<string, LocalDatabase>()

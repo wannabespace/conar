@@ -17,7 +17,6 @@ const serverSchema = type({
 })
 
 export const pgAdmin: Finder = {
-  files: [path.join(homedir(), '.pgadmin/pgadmin4.db')],
   read: (file) => {
     // readOnly also stops SQLite creating the file when pgAdmin was never installed.
     const database = new DatabaseSync(file, { readOnly: true })
@@ -44,4 +43,5 @@ export const pgAdmin: Finder = {
     }
   },
   source: 'pgAdmin',
+  targets: () => [path.join(homedir(), '.pgadmin/pgadmin4.db')],
 }

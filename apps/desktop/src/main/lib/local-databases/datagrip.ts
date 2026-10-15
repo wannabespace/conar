@@ -48,7 +48,6 @@ const dataSourcesIn = async (file: string) =>
   )
 
 export const dataGrip: Finder = {
-  files: () => Array.fromAsync(glob(DATA_SOURCE_FILES)),
   read: async (file) => {
     const [dataSources, local] = await Promise.all([
       dataSourcesIn(file),
@@ -74,4 +73,5 @@ export const dataGrip: Finder = {
     })
   },
   source: 'DataGrip',
+  targets: () => Array.fromAsync(glob(DATA_SOURCE_FILES)),
 }

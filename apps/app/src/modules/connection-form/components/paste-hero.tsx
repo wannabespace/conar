@@ -17,9 +17,9 @@ import { useEffect } from 'react'
 import type { FormMode } from '../lib/form-mode'
 import type { PasteFlash } from '../lib/use-paste-connection'
 import { PASTE_FORMATS } from '../lib/use-paste-connection'
+import type { LocalDatabase } from '../lib/use-pick-local-database'
 import { AgentButton } from './agent-button'
 import { Keycap } from './keycap'
-import type { LocalDatabase } from './local-databases'
 import { LocalDatabases } from './local-databases'
 
 const ROLL = {

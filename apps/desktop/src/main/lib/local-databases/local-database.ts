@@ -27,10 +27,9 @@ export interface FoundEntry {
 }
 
 export interface Finder {
-  /** Config files, or Docker's sockets: each is read on its own. */
-  files: readonly string[] | (() => Promise<string[]>)
-  read: (file: string) => MaybePromise<FoundEntry[]>
+  read: (target: string) => MaybePromise<FoundEntry[]>
   source: string
+  targets: () => MaybePromise<readonly string[]>
 }
 
 /** One missing or unreadable item finds nothing; it never hides the rest. */
