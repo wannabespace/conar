@@ -15,14 +15,6 @@ import { PERSISTED_SCHEMA_VERSION, syncCollectionOptions } from '~/lib/sync'
 
 import type { ConnectionStringsCollection } from './connection-strings'
 
-const prepareConnectionStringToCloud = (
-  connectionString: string,
-  syncType: SyncType
-) =>
-  syncType === SyncType.Cloud
-    ? new SafeURL(connectionString.trim()).toString()
-    : connectionSecrets.strip(connectionString.trim())
-
 export interface Connection extends BaseTable {
   type: ConnectionType
   flavor: ConnectionFlavor | null
@@ -34,25 +26,31 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
+const prepareConnectionStringToCloud = async (
+  connectionStrings: ConnectionStringsCollection,
+  { id, syncType }: Connection
+) => {
+  if (syncType === SyncType.CloudWithoutConnectionString) {
+    return null
+  }
+
+  const connectionString = await connectionStrings.utils.decrypt(id)
+
+  return syncType === SyncType.Cloud
+    ? new SafeURL(connectionString.trim()).toString()
+    : connectionSecrets.strip(connectionString.trim())
+}
+
 const prepareConnectionToCloud = async (
   connectionStrings: ConnectionStringsCollection,
   connection: Connection
-) => {
-  if (connection.syncType === SyncType.CloudWithoutConnectionString) {
-    return { ...connection, connectionString: null }
-  }
-
-  const connectionString = await connectionStrings.utils.decrypt(connection.id)
-
-  return {
-    ...connection,
-    connectionString: prepareConnectionStringToCloud(
-      connectionString,
-      connection.syncType
-    ),
-    isPasswordExists: connection.isPasswordExists,
-  }
-}
+) => ({
+  ...connection,
+  connectionString: await prepareConnectionStringToCloud(
+    connectionStrings,
+    connection
+  ),
+})
 
 export interface ConnectionResource extends BaseTable {
   connectionId: string
