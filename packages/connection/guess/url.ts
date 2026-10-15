@@ -4,7 +4,7 @@ import { omit } from '@tamery/shared/utils'
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
-  engineOfScheme,
+  engineOf,
   HTTPS_PORT,
 } from '../connection-parts'
 import { hostHintOf } from '../hosts'
@@ -53,7 +53,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
     parts: {
       ...parts,
       database: parts.database || database,
-      engine: engineOfScheme(url),
+      engine: engineOf(url),
       options: params.toString(),
       password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
@@ -65,7 +65,7 @@ const guessOfUrl = (candidate: string): DatabaseGuess => {
 const urlsIn = (text: string) =>
   Array.from(text.matchAll(URL_PATTERN), ([match]) =>
     match.replace(TRAILING_PUNCTUATION, '')
-  ).filter((url) => engineOfScheme(url))
+  ).filter((url) => engineOf(url))
 
 export const guessUrl = (text: string): DatabaseGuess | null => {
   const url = urlsIn(text).find((candidate) => !WEB_SCHEME.test(candidate))

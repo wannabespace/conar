@@ -1,4 +1,4 @@
-import { engineOfScheme } from '@tamery/connection/connection-parts'
+import { engineOf } from '@tamery/connection/connection-parts'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { engines } from '@tamery/shared/enums/connection-type'
@@ -92,7 +92,7 @@ export const mcpSource: McpSource = {
       throw new Error('Tamery is still loading. Try again in a moment.')
     }
     await testConnectionQuery.run({ connectionString, type })
-    const engine = engineOfScheme(connectionString)
+    const engine = engineOf(connectionString)
     const { id } = await createConnection({
       connectionString,
       flavor:

@@ -4,10 +4,7 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { text } from 'node:stream/consumers'
 
-import {
-  DEFAULT_PORTS,
-  engineOfDriver,
-} from '@tamery/connection/connection-parts'
+import { DEFAULT_PORTS, engineOf } from '@tamery/connection/connection-parts'
 import { partsOfVariables } from '@tamery/connection/guess/env'
 import { mergeParts } from '@tamery/connection/guess/parts'
 import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
@@ -110,7 +107,7 @@ export const docker: Finder = {
         ) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
       const named = [
-        engineOfDriver(
+        engineOf(
           Image.replace(/[:@][^/]*$/u, '')
             .split('/')
             .at(-1) ?? ''

@@ -6,7 +6,7 @@ import {
 } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, engineOfDriver } from '../connection-parts'
+import { DEFAULT_PORTS, engineOf } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -101,9 +101,7 @@ export const partsOfVariables = (
       group.engine ??
       TYPE_SUFFIXES.values()
         .map((suffix) =>
-          engineOfDriver(
-            variables[group.prefix + suffix]?.split('.').at(-1) ?? ''
-          )
+          engineOf(variables[group.prefix + suffix]?.split('.').at(-1) ?? '')
         )
         .find(Boolean)
     const found: GuessedParts = {}

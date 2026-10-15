@@ -54,43 +54,36 @@ const portOf = ({
   return type ? String(DEFAULT_PORTS[type]) : ''
 }
 
-const ENGINE_OF_SCHEME: Record<string, Engine> = {
+const ENGINE_OF_NAME: Record<string, Engine> = {
   ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
   mariadb: ConnectionFlavor.MariaDB,
+  'microsoft sql server': ConnectionType.MSSQL,
   mssql: ConnectionType.MSSQL,
   mysql: ConnectionType.MySQL,
   mysql2: ConnectionType.MySQL,
   pg: ConnectionType.Postgres,
+  pgsql: ConnectionType.Postgres,
   postgres: ConnectionType.Postgres,
   postgresql: ConnectionType.Postgres,
   sqlserver: ConnectionType.MSSQL,
-}
-
-const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
-
-export const engineOfScheme = (scheme: string): Engine | undefined =>
-  ENGINE_OF_SCHEME[
-    scheme
-      .toLowerCase()
-      .replace(/^jdbc:/u, '')
-      .replace(/[+:].*$/u, '')
-  ]
-
-const ENGINE_OF_DRIVER: Record<string, Engine> = {
-  'microsoft sql server': ConnectionType.MSSQL,
-  pgsql: ConnectionType.Postgres,
   sqlsrv: ConnectionType.MSSQL,
   tedious: ConnectionType.MSSQL,
   trilogy: ConnectionType.MySQL,
 }
 
-/** A driver, provider or image name; also any scheme name. */
-export const engineOfDriver = (name: string): Engine | undefined =>
-  ENGINE_OF_DRIVER[name.toLowerCase()] ?? engineOfScheme(name)
+const leadingScheme = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/^jdbc:/u, '')
+    .replace(/[+:].*$/u, '')
+
+/** Takes a whole connection string, a bare scheme, or a driver, provider or image name. */
+export const engineOf = (text: string): Engine | undefined =>
+  ENGINE_OF_NAME[leadingScheme(text)]
 
 const format = (
   parts: ConnectionParts,
@@ -124,12 +117,14 @@ const format = (
   return url.toString()
 }
 
+const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
+
 const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
   const ssh = sshTunnelOf(searchParams)
   deleteSshParams(searchParams)
-  const engine = engineOfScheme(scheme)
+  const engine = engineOf(scheme)
 
   return {
     ...parts,

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { engineOfDriver } from '@tamery/connection/connection-parts'
+import { engineOf } from '@tamery/connection/connection-parts'
 import { tryCatchAsync } from '@tamery/shared/utils'
 import { type } from 'arktype'
 import { app } from 'electron'
@@ -72,7 +72,7 @@ export const dbeaver: Finder = {
           name,
           parts: {
             database: configuration.database,
-            engine: engineOfDriver(provider),
+            engine: engineOf(provider),
             host: configuration.host,
             password: saved?.password,
             port: String(configuration.port ?? ''),
