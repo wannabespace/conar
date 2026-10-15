@@ -1,5 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@tamery/ui/components/button'
+import { useQueryErrorResetBoundary } from '@tanstack/react-query'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
 
@@ -9,8 +10,9 @@ import { useGoBack } from '~/hooks/use-go-back'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export const ConnectionError = ({ error }: ErrorComponentProps) => {
+export const ConnectionError = ({ error, reset }: ErrorComponentProps) => {
   const { connection } = useRouteContext()
+  const queryErrors = useQueryErrorResetBoundary()
   const goBack = useGoBack()
   const navigate = useNavigate()
 
@@ -34,6 +36,16 @@ export const ConnectionError = ({ error }: ErrorComponentProps) => {
         <div className="flex gap-2">
           <Button variant="outline" onClick={goBack}>
             Back
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              // A failed query stays failed for an error boundary until its reset boundary lets it retry on mount.
+              queryErrors.reset()
+              reset()
+            }}
+          >
+            Try again
           </Button>
           <Button
             onClick={() =>

@@ -58,7 +58,7 @@ Useful patterns: read each device's local copy of a record next to what the serv
 
 `scripts/dialog.sh <name> "<button>" [shot.png]` waits for a native dialog on the named instance, optionally captures it, and clicks the button. Under the hood:
 
-- A message box is a window whose `role description` is `dialogue` on the instance's process (find the pid by its user-data-dir). Its `static text` values hold the message, so read them before answering (compare a host-key fingerprint, for one).
+- A message box is a window whose `role description` is `dialogue` on the instance's process (find the pid by its user-data-dir), or, depending on how macOS presents it, `sheet 1` of the app window. Its `static text` values hold the message, so read them before answering (compare a host-key fingerprint, for one).
 - An open or save panel shows as a sheet. Bring the instance frontmost, then `keystroke "g" using {command down, shift down}`, type the path, and press Return twice. This briefly takes focus from the user.
 - `scripts/winshot.swift` lists a process's on-screen windows (id, layer, size, title) from CoreGraphics; `screencapture -x -o -l <id> out.png` captures one window. Native popups sit on a non-zero layer.
 

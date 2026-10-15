@@ -406,6 +406,9 @@
 /* A textarea has no type="password"; this masks a multi-line secret the same way. */
 @utility text-masked {
   -webkit-text-security: disc;
+  /* Wrapped remainders of masked lines read as stray dots. */
+  white-space: pre;
+  overflow-x: hidden;
 }
 
 @utility end-fade {

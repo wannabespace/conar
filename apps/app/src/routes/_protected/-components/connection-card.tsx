@@ -218,6 +218,7 @@ export const ConnectionCard = ({
         <ConnectionCardMeta
           canSend={canSend}
           connectionStore={connectionStore}
+          databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl ?? null}
           isResourcesShown={isResourcesShown}
           loading={!connectionString && !needsDetails}

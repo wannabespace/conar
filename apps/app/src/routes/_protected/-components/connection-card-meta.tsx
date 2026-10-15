@@ -76,6 +76,7 @@ const ConnectionResourcesSelect = ({
 export const ConnectionCardMeta = ({
   canSend,
   connectionStore,
+  databaseKnown,
   displayUrl,
   isResourcesShown,
   loading,
@@ -84,6 +85,8 @@ export const ConnectionCardMeta = ({
 }: {
   canSend: boolean
   connectionStore: ReturnType<typeof getConnectionStore>
+  /** Off until this device has the server details: the selected database is then only the first one the list stored. */
+  databaseKnown: boolean
   displayUrl: string | null
   isResourcesShown: boolean
   loading: boolean
@@ -100,28 +103,29 @@ export const ConnectionCardMeta = ({
         loading && <Skeleton className="h-3 w-40" />
       )}
     </div>
-    {isResourcesShown ? (
-      <ConnectionResourcesSelect
-        resources={resources}
-        selectedResourceName={selectedResourceName}
-        onSelectedResourceNameChange={(value) =>
-          connectionStore.set(
-            (state) =>
-              ({
-                ...state,
-                lastOpenedResourceName: value,
-              }) satisfies typeof state
-          )
-        }
-        disabled={!canSend}
-      />
-    ) : (
-      selectedResourceName !== null && (
-        <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-          <span className="text-muted-foreground/50">/ </span>
-          {resourceLabel(selectedResourceName)}
-        </span>
-      )
-    )}
+    {databaseKnown &&
+      (isResourcesShown ? (
+        <ConnectionResourcesSelect
+          resources={resources}
+          selectedResourceName={selectedResourceName}
+          onSelectedResourceNameChange={(value) =>
+            connectionStore.set(
+              (state) =>
+                ({
+                  ...state,
+                  lastOpenedResourceName: value,
+                }) satisfies typeof state
+            )
+          }
+          disabled={!canSend}
+        />
+      ) : (
+        selectedResourceName !== null && (
+          <span data-mask className="max-w-32 shrink-0 truncate text-xs">
+            <span className="text-muted-foreground/50">/ </span>
+            {resourceLabel(selectedResourceName)}
+          </span>
+        )
+      ))}
   </div>
 )

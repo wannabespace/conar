@@ -77,7 +77,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     return {
       canSend: canSend && !!connectionString,
       connectionString,
-      reason,
+      reason: values.host.trim() ? reason : null,
       testStatus,
     }
   }

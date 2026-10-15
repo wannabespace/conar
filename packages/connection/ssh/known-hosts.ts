@@ -147,6 +147,10 @@ export const knownHosts = {
   },
   trust: async (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
     const contents = await readOrEmpty(userKnownHostsPath())
+    // Another window or device of this user may have trusted it while this prompt was open.
+    if (knownHosts.check(contents, name, key) === 'known') {
+      return
+    }
     const separator = contents && !contents.endsWith('\n') ? '\n' : ''
     await mkdir(path.dirname(userKnownHostsPath()), {
       mode: 0o700,
