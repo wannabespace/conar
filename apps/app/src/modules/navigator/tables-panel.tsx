@@ -96,14 +96,15 @@ export const TablesPanel = ({
       tableTabId(row.schema, row.table.name) === activeTabId
   )?.id
 
-  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
-    activeId,
-    nodes: rows.filter(
-      (row) => row.kind !== 'empty' && row.kind !== 'separator'
-    ),
-    onClear: () => setSearch(''),
-    search,
-  })
+  const { highlightedControlId, highlightedId, searchProps } =
+    useNavigatorSearch({
+      activeId,
+      nodes: rows.filter(
+        (row) => row.kind !== 'empty' && row.kind !== 'separator'
+      ),
+      onClear: () => setSearch(''),
+      search,
+    })
 
   return (
     <>
@@ -152,9 +153,9 @@ export const TablesPanel = ({
         </Tooltip>
       </div>
       <TablesList
-        ref={listRef}
         className="min-h-0 flex-1"
         activeId={activeId}
+        highlightedControlId={highlightedControlId}
         highlightedId={highlightedId}
         isPending={isPending}
         rows={rows}

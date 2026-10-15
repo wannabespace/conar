@@ -1,21 +1,19 @@
-import {
-  connectionLabels,
-  ConnectionType,
-} from '@tamery/shared/enums/connection-type'
+import type { Engine } from '@tamery/shared/enums/connection-type'
+import { engineLabels, engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { SelectItem } from '@tamery/ui/components/select'
 
 import type { ConnectionForm } from '../lib/connection-form'
 
-const ENGINES = Object.values(ConnectionType).map((type) => ({
-  label: connectionLabels[type],
-  value: type,
+const ENGINES = engines.all.map((engine) => ({
+  label: engineLabels[engine],
+  value: engine,
 }))
 
-const engineLabel = (type: ConnectionType) => (
+const engineLabel = (engine: Engine) => (
   <>
-    <ConnectionIcon type={type} />
-    {connectionLabels[type]}
+    <ConnectionIcon engine={engine} />
+    {engineLabels[engine]}
   </>
 )
 
@@ -26,7 +24,7 @@ export const EngineField = ({
   form: ConnectionForm
   locked: (field: string) => boolean
 }) => (
-  <form.AppField name="type">
+  <form.AppField name="engine">
     {(field) => (
       <field.Field orientation="row">
         <field.Label>Engine</field.Label>

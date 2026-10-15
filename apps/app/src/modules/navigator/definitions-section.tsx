@@ -34,23 +34,24 @@ export const DefinitionsPanel = () => {
     }))
     .filter((group) => group.items.length > 0)
 
-  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
-    activeId: activeTabId,
-    nodes: filtered.flatMap((group) =>
-      group.items.map(({ tabId }) => ({ id: tabId }))
-    ),
-    onBack: () => getNavigatorStore(connectionResource.id).set('tables'),
-    onClear: () => setSearch(''),
-    search,
-  })
+  const { highlightedControlId, highlightedId, searchProps } =
+    useNavigatorSearch({
+      activeId: activeTabId,
+      nodes: filtered.flatMap((group) =>
+        group.items.map(({ tabId }) => ({ id: tabId }))
+      ),
+      onBack: () => getNavigatorStore(connectionResource.id).set('tables'),
+      onClear: () => setSearch(''),
+      search,
+    })
 
   useEffect(() => {
     if (highlightedId) {
-      listRef.current
-        ?.querySelector('[data-highlighted]')
+      document
+        .querySelector(`#${CSS.escape(highlightedControlId)}`)
         ?.scrollIntoView({ block: 'nearest' })
     }
-  }, [highlightedId, listRef])
+  }, [highlightedControlId, highlightedId])
 
   return (
     <>
@@ -75,7 +76,6 @@ export const DefinitionsPanel = () => {
         />
       </div>
       <SidebarContent
-        ref={listRef}
         tabIndex={-1}
         className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2"
       >
@@ -99,6 +99,11 @@ export const DefinitionsPanel = () => {
                     isActive={isActive}
                     render={
                       <Link
+                        id={
+                          tabId === highlightedId
+                            ? highlightedControlId
+                            : undefined
+                        }
                         tabIndex={-1}
                         to="/connection/$resourceId/$tabId"
                         params={{

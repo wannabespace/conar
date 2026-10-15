@@ -32,6 +32,7 @@ const useActiveTable = () => {
 }
 
 export const SchemaRow = ({
+  controlId,
   row,
   onCreateTable,
   onCreateView,
@@ -39,6 +40,7 @@ export const SchemaRow = ({
   onRename,
   onToggle,
 }: {
+  controlId?: string
   row: Extract<TreeRow, { kind: 'schema' }>
   onCreateTable: () => void
   onCreateView: () => void
@@ -76,6 +78,7 @@ export const SchemaRow = ({
       <SidebarGroupLabel
         render={
           <button
+            id={controlId}
             type="button"
             tabIndex={-1}
             aria-label={`Toggle ${row.name} schema`}

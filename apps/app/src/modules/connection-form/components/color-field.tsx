@@ -1,3 +1,5 @@
+import { UnavailableIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { COLOR_OPTIONS } from '@tamery/shared/constants'
 import {
   SwatchGroup,
@@ -25,7 +27,10 @@ export const ColorField = ({ form }: { form: ConnectionForm }) => (
             }
           >
             <SwatchGroupItem value={NO_COLOR} aria-label="No color">
-              <span className="ring-foreground/25 size-full rounded-full ring-1 ring-inset" />
+              <HugeiconsIcon
+                icon={UnavailableIcon}
+                className="text-muted-foreground size-6 shrink-0"
+              />
             </SwatchGroupItem>
             {COLOR_OPTIONS.map(({ label, value }) => (
               <SwatchGroupItem

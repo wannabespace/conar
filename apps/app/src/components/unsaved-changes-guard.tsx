@@ -10,13 +10,15 @@ import {
 } from '@tamery/ui/components/alert-dialog'
 import { useBlocker } from '@tanstack/react-router'
 
-import type { ConnectionForm } from '../lib/connection-form'
-
-export const UnsavedChangesGuard = ({ form }: { form: ConnectionForm }) => {
+export const UnsavedChangesGuard = ({
+  isDirty,
+}: {
+  isDirty: () => boolean
+}) => {
   const { proceed, reset, status } = useBlocker({
     // In Electron a beforeunload veto cancels closing the window with no prompt.
     enableBeforeUnload: false,
-    shouldBlockFn: () => !form.state.isDefaultValue,
+    shouldBlockFn: isDirty,
     withResolver: true,
   })
 
@@ -29,7 +31,7 @@ export const UnsavedChangesGuard = ({ form }: { form: ConnectionForm }) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Discard changes?</AlertDialogTitle>
           <AlertDialogDescription>
-            Your edits to this connection aren’t saved.
+            Your edits aren’t saved.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

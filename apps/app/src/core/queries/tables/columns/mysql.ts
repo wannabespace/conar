@@ -14,6 +14,7 @@ export const mysqlColumns = async (
     .select((eb) => {
       const extraHas = (flag: string) => eb('EXTRA', 'like', `%${flag}%`)
       const isAutoIncrement = extraHas('auto_increment')
+      const isMariadb = eb(eb.fn('version'), 'like', '%MariaDB%')
       // MariaDB reports COLUMN_DEFAULT as SQL (quoted literals, NULL for no
       // default); MySQL reports the bare value, and marks expressions only
       // from 8.0.13 on.
@@ -21,7 +22,7 @@ export const mysqlColumns = async (
         .case()
         .when(
           eb.or([
-            eb(eb.fn('version'), 'like', '%MariaDB%'),
+            isMariadb,
             eb('DATA_TYPE', '=', 'bit'),
             eb.and([
               eb('DATA_TYPE', 'in', ['datetime', 'timestamp']),
@@ -82,6 +83,7 @@ export const mysqlColumns = async (
           ])
           .as('isGenerated'),
         eb('IS_NULLABLE', '=', 'YES').as('nullable'),
+        isMariadb.as('mariadb'),
       ]
     })
     .$call((qb) =>
@@ -104,8 +106,29 @@ export const mysqlColumns = async (
     .orderBy('ORDINAL_POSITION')
     .execute()
 
+  // MariaDB's JSON is a LONGTEXT under a json_valid() check. MySQL's CHECK_CONSTRAINTS has no TABLE_NAME, and 5.7 has no such table.
+  const jsonChecks = query.some(
+    (column) => column.mariadb && column.type === 'longtext'
+  )
+    ? await db
+        .selectFrom('information_schema.CHECK_CONSTRAINTS')
+        .select([
+          'CONSTRAINT_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'CHECK_CLAUSE as clause',
+        ])
+        .where('CHECK_CLAUSE', 'like', 'json_valid(%')
+        .execute()
+    : []
+
   return query.map((column) => ({
     ...column,
+    ...(jsonChecks.some(
+      (check) =>
+        check.schema === column.schema &&
+        check.table === column.table &&
+        check.clause === `json_valid(\`${column.id}\`)`
+    ) && { declaredType: 'json', type: 'json' }),
     enumName:
       column.type === 'set' || column.type === 'enum' ? column.id : undefined,
     isArray: column.type === 'set',

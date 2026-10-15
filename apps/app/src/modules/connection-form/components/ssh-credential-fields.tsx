@@ -56,7 +56,7 @@ export const SshCredentialFields = ({
         >
           {window.electron && (
             <IconButton
-              variant="ghost-row"
+              variant="ghost-faint"
               size="icon-sm"
               icon={FolderOpenIcon}
               label="Choose key file"
@@ -80,7 +80,7 @@ export const SshCredentialFields = ({
                   onLoad={field.handleChange}
                 />
                 <IconButton
-                  variant="ghost-row"
+                  variant="ghost-faint"
                   size="icon-sm"
                   icon={keyShown ? ViewOffSlashIcon : ViewIcon}
                   label={keyShown ? 'Hide key' : 'Show key'}

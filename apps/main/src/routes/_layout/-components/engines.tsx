@@ -1,7 +1,4 @@
-import {
-  ConnectionType,
-  connectionLabels,
-} from '@tamery/shared/enums/connection-type'
+import { engineLabels, engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 
 import { Reveal } from '~/components/reveal'
@@ -11,14 +8,14 @@ export const Engines = () => (
     aria-label="Supported databases"
     className="mx-auto max-w-6xl px-4 pt-12 pb-8 sm:px-6"
   >
-    <Reveal className="text-muted-foreground grid grid-cols-2 gap-6 md:grid-cols-4">
-      {Object.values(ConnectionType).map((type) => (
+    <Reveal className="text-muted-foreground flex flex-wrap justify-center gap-x-12 gap-y-6">
+      {engines.all.map((engine) => (
         <span
-          key={type}
+          key={engine}
           className="flex items-center justify-center gap-2.5 text-base font-medium"
         >
-          <ConnectionIcon type={type} className="size-6" />
-          {connectionLabels[type]}
+          <ConnectionIcon engine={engine} className="size-6" />
+          {engineLabels[engine]}
         </span>
       ))}
     </Reveal>

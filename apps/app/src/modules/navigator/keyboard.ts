@@ -4,11 +4,8 @@ import type {
   UseHotkeyOptions,
 } from '@tanstack/react-hotkeys'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-
-import { openContextMenuOn } from '~/components/app-context-menu'
-import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { navigatorOpenValue } from './stores'
 
@@ -79,7 +76,7 @@ export const useNavigatorSearch = ({
   onClear: () => void
 }) => {
   const searchRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
+  const highlightedControlId = useId()
   const [focused, setFocused] = useState(false)
   const [moved, setMoved] = useState<{
     activeId?: string
@@ -100,11 +97,9 @@ export const useNavigatorSearch = ({
   const index = nodes.findIndex((candidate) => candidate.id === highlighted)
   const node = nodes[index]
 
-  // A virtualized list must keep the highlighted row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
+  // Rows put `highlightedControlId` on the highlighted row's link or button. A virtualized list must keep that row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
   const highlightedControl = () =>
-    listRef.current?.querySelector<HTMLElement>(
-      '[data-highlighted] :is(a, button)'
-    )
+    document.querySelector<HTMLElement>(`#${CSS.escape(highlightedControlId)}`)
 
   const highlight = (id: string) => setMoved({ activeId, id, search })
 
@@ -156,21 +151,13 @@ export const useNavigatorSearch = ({
     ],
     { target: searchRef }
   )
-  useShortcut(
-    'contextMenu',
-    () => {
-      const control = highlightedControl()
-      if (control) {
-        openContextMenuOn(control)
-      }
-    },
-    { target: searchRef }
-  )
+  const highlightedId = focused ? highlighted : undefined
 
   return {
-    highlightedId: focused ? highlighted : undefined,
-    listRef,
+    highlightedControlId,
+    highlightedId,
     searchProps: {
+      'aria-activedescendant': highlightedId && highlightedControlId,
       onBlur: () => setFocused(false),
       onFocus: () => setFocused(true),
       ref: (input: HTMLInputElement) => {

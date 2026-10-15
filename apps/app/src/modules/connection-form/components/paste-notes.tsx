@@ -17,14 +17,22 @@ const FIX_NOTES: Record<GuessFix, string> = {
 export const PasteNotes = ({
   fixes,
   form,
+  passwordWithheldBy,
 }: {
   fixes: GuessFix[]
   form: ConnectionForm
+  passwordWithheldBy?: string
 }) => {
   const missing = useSelector(form.store, ({ values }) => missingOf(values))
+  const withheld =
+    passwordWithheldBy && missing.includes('password')
+      ? ` (${passwordWithheldBy} keeps it in the Keychain)`
+      : ''
 
   const note = [
-    ...(missing.length > 0 ? [`Add the ${missing.join(' and ')}.`] : []),
+    ...(missing.length > 0
+      ? [`Add the ${missing.join(' and ')}${withheld}.`]
+      : []),
     ...fixes.map((fix) => FIX_NOTES[fix]),
   ].join(' ')
 

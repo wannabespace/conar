@@ -44,11 +44,13 @@ import type { TreeRow } from './tree-row'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const TableRow = ({
+  controlId,
   row,
   search,
   onRename,
   onDrop,
 }: {
+  controlId?: string
   row: Extract<TreeRow, { kind: 'table' }>
   search?: string
   onRename?: () => void
@@ -129,6 +131,7 @@ export const TableRow = ({
         className={cn(row.pinned && 'pr-12')}
         render={
           <Link
+            id={controlId}
             tabIndex={-1}
             to="/connection/$resourceId/$tabId"
             params={{

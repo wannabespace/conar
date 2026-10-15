@@ -158,7 +158,7 @@ export const RecordView = ({
                         <TooltipTrigger
                           render={
                             <Button
-                              variant="ghost-row"
+                              variant="ghost-faint"
                               size="icon-2xs"
                               aria-label={`Open the ${foreign.table} row`}
                               className="-my-1"

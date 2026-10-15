@@ -33,7 +33,7 @@ import { panelSize, useShellLayout } from '~/lib/panels'
 import { chatPanel } from '~/modules/chat/panel'
 import { useEscapeToNavigator } from '~/modules/navigator/keyboard'
 import { navigatorPanel } from '~/modules/navigator/panel'
-import { navigatorOpenValue } from '~/modules/navigator/stores'
+import { toggleNavigator } from '~/modules/navigator/stores'
 import { toggleLogger } from '~/modules/query-logger/logger-open'
 import { queryLoggerPanel } from '~/modules/query-logger/panel'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
@@ -116,13 +116,7 @@ const ResourcePage = () => {
   const needsDetails = fetching.type === 'waiting-for-details'
   const locked = fetching.type === 'waiting-for-password' || needsDetails
 
-  useShortcut(
-    'toggleNavigator',
-    () => navigatorOpenValue.set((open) => !open),
-    {
-      enabled: !locked,
-    }
-  )
+  useShortcut('toggleNavigator', toggleNavigator, { enabled: !locked })
   useShortcut('queryLogger', () => toggleLogger(connectionResource.id), {
     enabled: !locked,
   })

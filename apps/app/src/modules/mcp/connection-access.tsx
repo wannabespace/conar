@@ -1,3 +1,4 @@
+import { engines } from '@tamery/shared/enums/connection-type'
 import type { McpAccess } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import {
@@ -62,7 +63,10 @@ export const ConnectionAccess = () => {
             key={connection.id}
             title={
               <>
-                <ConnectionIcon type={connection.type} className="size-4" />
+                <ConnectionIcon
+                  engine={engines.of(connection)}
+                  className="size-4"
+                />
                 <span data-mask>{connection.name}</span>
               </>
             }

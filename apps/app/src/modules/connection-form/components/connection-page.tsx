@@ -11,6 +11,7 @@ import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
+import { UnsavedChangesGuard } from '~/components/unsaved-changes-guard'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useGoBack } from '~/hooks/use-go-back'
@@ -28,6 +29,7 @@ import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
+import type { LocalDatabase } from './local-databases'
 import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
@@ -37,7 +39,6 @@ import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
-import { UnsavedChangesGuard } from './unsaved-changes-guard'
 
 const REVEAL: Variants = {
   animate: {
@@ -47,6 +48,9 @@ const REVEAL: Variants = {
   },
   initial: { opacity: 0, y: 8 },
 }
+
+// The kit's Select keeps an aria-hidden input that forwards focus to its trigger.
+const FIRST_TEXT_FIELD = 'input:enabled:not([aria-hidden])'
 
 // Field ids hold dots (`ssh.host`), which a bare `#id` selector reads as a class.
 const focusField = (id: string) =>
@@ -65,6 +69,8 @@ export const ConnectionPage = ({
   const [filled, setFilled] = useState<{
     fixes: GuessFix[]
     origin?: GuessFormat
+    /** The app whose Keychain password the user denied. */
+    passwordWithheldBy?: string
   }>()
   const [stage, setStage] = useState<'agent' | 'form'>('form')
   const pageRef = useRef<HTMLDivElement>(null)
@@ -88,6 +94,7 @@ export const ConnectionPage = ({
       setFilled((current) => ({
         fixes,
         origin: pasted ? format : current?.origin,
+        passwordWithheldBy: pasted ? undefined : current?.passwordWithheldBy,
       }))
     },
     onSubmit: () => save(form, filled?.origin),
@@ -96,7 +103,16 @@ export const ConnectionPage = ({
   // Through the form element, not `form.handleSubmit()`: the kit Form's submit handler then focuses the first invalid field.
   const submit = () => formRef.current?.requestSubmit()
 
-  const { dragging, flash, readClipboard } = usePasteConnection({
+  // Declared before usePasteConnection: a connection link's paste then focuses its first missing field after this.
+  useEffect(() => {
+    if (mode.kind === 'create') {
+      pageRef.current?.focus()
+    } else {
+      formRef.current?.querySelector<HTMLElement>(FIRST_TEXT_FIELD)?.focus()
+    }
+  }, [mode.kind])
+
+  const { dragging, flash, read, readClipboard } = usePasteConnection({
     enabled: scope !== 'credentials',
     onPaste: (guess, via) => {
       paste(guess, via)
@@ -111,6 +127,22 @@ export const ConnectionPage = ({
     },
     pitchShown: stage === 'form',
   })
+
+  const fillFromLocalDatabase = async ({
+    connectionString,
+    name,
+    source,
+  }: LocalDatabase) => {
+    const unlocked =
+      await window.electron?.localDatabases.unlock(connectionString)
+    read(unlocked?.connectionString ?? connectionString, 'found')
+    form.setFieldValue('name', name)
+    if (unlocked?.withheld) {
+      setFilled(
+        (current) => current && { ...current, passwordWithheldBy: source }
+      )
+    }
+  }
 
   const values = useSelector(form.store, (state) => state.values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
@@ -133,10 +165,6 @@ export const ConnectionPage = ({
     focusPage()
     void runTest(form.state.values)
   }
-
-  useEffect(() => {
-    pageRef.current?.focus()
-  }, [])
 
   // Bound on the page, which sits inside React's root: the listener runs before a focused control's own keydown (the SSH switch toggles on Enter) and stops it.
   // TanStack Form runs `onSubmit` again while one is in flight, so ⌘↩ is off during a save, like the disabled Save button.
@@ -170,11 +198,11 @@ export const ConnectionPage = ({
     >
       <DropOverlay shown={dragging} />
       {scope === 'all' && mode.kind === 'edit' && (
-        <UnsavedChangesGuard form={form} />
+        <UnsavedChangesGuard isDirty={() => !form.state.isDefaultValue} />
       )}
       <IconButton
         type="button"
-        variant="ghost-row"
+        variant="ghost-faint"
         size="icon-sm"
         icon={ArrowLeft01Icon}
         label="Back"
@@ -199,6 +227,7 @@ export const ConnectionPage = ({
                     flash={flash}
                     mode={mode}
                     onClipboard={readClipboard}
+                    onLocalDatabase={fillFromLocalDatabase}
                     onAgent={() => {
                       posthog.capture('connection_agent_opened')
                       setStage('agent')
@@ -209,7 +238,13 @@ export const ConnectionPage = ({
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                   <ServerFields form={form} locked={locked} />
-                  {filled && <PasteNotes fixes={filled.fixes} form={form} />}
+                  {filled && (
+                    <PasteNotes
+                      fixes={filled.fixes}
+                      form={form}
+                      passwordWithheldBy={filled.passwordWithheldBy}
+                    />
+                  )}
                 </motion.div>
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                   <SshFields form={form} locked={locked} />

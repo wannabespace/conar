@@ -12,6 +12,9 @@ import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
+import { deviceEncryption } from './device-encryption'
+import { findLocalDatabases } from './local-databases/find'
+import { keychain } from './local-databases/keychain'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
 import { confirmHostKey } from './ssh-host-key'
@@ -67,14 +70,23 @@ export const electron = {
     quitAndInstall: () => {
       autoUpdater?.restartAndInstall()
     },
+    relaunch: () => {
+      app.relaunch()
+      app.exit(0)
+    },
     setNativeTheme: (theme: 'light' | 'dark' | 'system') => {
       nativeTheme.themeSource = theme
     },
   },
   connectionLinks,
+  deviceEncryption,
   encryption: {
     decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
     encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
+  },
+  localDatabases: {
+    find: findLocalDatabases,
+    unlock: keychain.unlock,
   },
   mcp,
   menu: {

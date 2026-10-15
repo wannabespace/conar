@@ -138,7 +138,7 @@ export const DefinitionsTable = <T,>({
                 <AppMenuButton
                   variant="muted"
                   items={() => menuOf(item)}
-                  render={<Button variant="ghost-row" size="icon-xs" />}
+                  render={<Button variant="ghost-faint" size="icon-xs" />}
                   className="-my-0.5"
                 />
               </TableCell>

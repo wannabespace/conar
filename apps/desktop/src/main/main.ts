@@ -1,3 +1,4 @@
+import '@tamery/shared/arktype-config'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -15,6 +16,15 @@ import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
 import { autoUpdater } from './lib/todesktop'
+
+// Fuses can't turn off Chromium's debugging switches, and either one lets another process drive a window that decrypts every connection string.
+const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
+if (
+  app.isPackaged &&
+  DEBUGGING_SWITCHES.some((name) => app.commandLine.hasSwitch(name))
+) {
+  app.exit(1)
+}
 
 initElectronEvents()
 

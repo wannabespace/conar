@@ -43,7 +43,7 @@ const ReferenceTrigger = ({
       <TooltipTrigger
         render={
           <Button
-            variant="ghost-row"
+            variant="ghost-faint"
             size="icon-2xs"
             tabIndex={-1}
             aria-label={label}

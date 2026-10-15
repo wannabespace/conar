@@ -1,9 +1,9 @@
 import { cva } from 'class-variance-authority'
 
-const inputGroupSurface = `bg-input ring-foreground/4 hover:ring-foreground/12 has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl border border-transparent shadow-xs ring focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 data-[size=sm]:rounded-lg data-[size=xs]:rounded-md`
+const inputGroupSurface = `bg-input ring-foreground/4 hover:ring-foreground/12 has-[[data-slot=input-group-control]:focus-visible]:focus-ring has-[[data-slot][aria-invalid=true]]:invalid-ring rounded-xl border border-transparent shadow-xs [--input-group-border:var(--default-border-width)] ring focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 data-[size=sm]:rounded-lg data-[size=xs]:rounded-md`
 
 export const inputGroupVariants = cva(
-  `group/input-group relative flex h-8 w-full min-w-0 items-center transition-shadow duration-200 outline-none has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto data-[size=sm]:h-7 data-[size=xs]:h-6 data-[size=sm]:*:data-[slot=input-group-control]:h-7 data-[size=sm]:*:data-[slot=input-group-control]:text-sm data-[size=xs]:*:data-[slot=input-group-control]:h-6 data-[size=xs]:*:data-[slot=input-group-control]:text-xs has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5`,
+  `group/input-group relative flex h-(--input-group-h) w-full min-w-0 items-center transition-shadow duration-200 outline-none [--input-group-h:--spacing(8)] has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto data-[size=sm]:[--input-group-h:--spacing(7)] data-[size=xs]:[--input-group-h:--spacing(6)] data-[size=sm]:*:data-[slot=input-group-control]:h-7 data-[size=sm]:*:data-[slot=input-group-control]:text-sm data-[size=xs]:*:data-[slot=input-group-control]:h-6 data-[size=xs]:*:data-[slot=input-group-control]:text-xs has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5`,
   {
     defaultVariants: {
       variant: 'default',
@@ -29,7 +29,7 @@ export const inputGroupAddonVariants = cva(
       align: {
         'block-end': `order-last w-full justify-start px-2.5 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2`,
         'block-start': `order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2`,
-        'inline-end': `order-last pr-2.5 has-[>[data-slot=button]]:mr-[-0.3rem]`,
+        'inline-end': `order-last pr-2.5 [--input-group-button:--spacing(6)] has-[>[data-size=icon-sm]:last-child]:[--input-group-button:--spacing(7)] has-[>button:last-child]:pr-[calc((var(--input-group-h)-var(--input-group-button))/2-var(--input-group-border,0px))]`,
         'inline-start': `order-first pl-2.5 has-[>[data-slot=button]]:ml-[-0.3rem]`,
       },
     },

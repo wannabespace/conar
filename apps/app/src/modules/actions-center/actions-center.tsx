@@ -13,6 +13,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
+import { engines } from '@tamery/shared/enums/connection-type'
 import {
   Command,
   CommandDialog,
@@ -126,7 +127,10 @@ const ConnectionItem = ({
         router.navigate(params)
       })}
     >
-      <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+      <ConnectionIcon
+        engine={engines.of(connection)}
+        className="size-4 shrink-0"
+      />
       <span data-mask className="min-w-0 flex-1 truncate">
         {connection.name}
         <span className="text-muted-foreground">

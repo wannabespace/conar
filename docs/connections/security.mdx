@@ -10,6 +10,8 @@ Every connection string is encrypted before it leaves your device. The sync type
 
 All connection strings are encrypted with a **per-workspace secret key**, unique to the workspace the connection belongs to. Without that key, stored strings are unreadable. Encryption is automatic — nothing to configure.
 
+On your device, connection strings are encrypted with a separate **device key** that never leaves it. In the desktop app that key is protected by your system's keychain (the macOS Keychain, Windows DPAPI, or the Linux secret service), and it never leaves Tamery's own process, so another app can't read it without asking. Where no keychain is available, and in the web app, the key stays in the app's own storage, where the app can use it but never read it out. Signing out deletes the key.
+
 ## Encryption in transit
 
 When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
@@ -35,7 +37,7 @@ Every mode syncs the connection across your devices.
     Stores only metadata (host, port, database, username). The password is **never** uploaded.
 
     - You enter the password the first time you use the connection.
-    - It's kept on that device only, encrypted with your workspace key.
+    - It's kept on that device only, encrypted with your device key.
     - Clear it anytime via the connection menu (**⋯ → Clear saved credentials**), which clears the SSH and SSL key secrets too.
     - A compromised account exposes no stored password.
 
@@ -45,7 +47,7 @@ Every mode syncs the connection across your devices.
   <Tab title="Metadata only">
     Stores only the connection's name, label and color. The connection string is **never** uploaded.
 
-    - It's kept on the device where you created the connection, encrypted with your workspace key.
+    - It's kept on the device where you created the connection, encrypted with your device key.
     - Other devices list the connection but can't open it.
     - The CLI and cloud proxy can't use it.
 

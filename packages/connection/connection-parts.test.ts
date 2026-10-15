@@ -10,6 +10,7 @@ import { EMPTY_SSH_TUNNEL } from './ssh/params'
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: 'app',
+  flavor: null,
   host: 'db.acme.io',
   https: null,
   options: '',

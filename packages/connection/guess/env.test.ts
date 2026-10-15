@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 
 import { guessConnection } from './index'
 
@@ -27,6 +30,28 @@ describe('guessConnection — env files', () => {
         password: 'secret',
         port: '5432',
         type: ConnectionType.Postgres,
+        user: 'root',
+      },
+    ],
+    [
+      'a Laravel .env on MariaDB',
+      'DB_CONNECTION=mariadb\nDB_HOST=127.0.0.1\nDB_DATABASE=laravel\nDB_USERNAME=root',
+      {
+        database: 'laravel',
+        flavor: ConnectionFlavor.MariaDB,
+        host: '127.0.0.1',
+        type: ConnectionType.MySQL,
+        user: 'root',
+      },
+    ],
+    [
+      'a MariaDB container environment',
+      'MARIADB_ROOT_PASSWORD=rootpw\nMARIADB_DATABASE=shop',
+      {
+        database: 'shop',
+        flavor: ConnectionFlavor.MariaDB,
+        password: 'rootpw',
+        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],

@@ -1,7 +1,10 @@
 import type { SecretParam } from '@tamery/connection/secrets'
 import { connectionSecrets } from '@tamery/connection/secrets'
 import { describeConnectionString } from '@tamery/connection/utils'
-import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
+import {
+  isKeychainLocked,
+  KEYCHAIN_LOCKED_ERROR,
+} from '@tamery/shared/keychain'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import type { PersistedCollectionUtils } from '@tanstack/db-sqlite-persistence-core'
 import type { Collection } from '@tanstack/react-db'
@@ -10,7 +13,7 @@ import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
 import { persistence } from '~/lib/database'
-import { encryptionKey } from '~/lib/encryption-key'
+import { deviceEncryption } from '~/lib/device-encryption'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { PERSISTED_SCHEMA_VERSION } from '~/lib/sync'
@@ -27,12 +30,6 @@ export interface ConnectionString {
   displayUrl: string
   defaultResourceName: string | null
 }
-
-const encryptConnectionString = async (connectionString: string) =>
-  encryptWithKey(await encryptionKey.get(), connectionString)
-
-const decryptConnectionString = async (encryptedConnectionString: string) =>
-  decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 
 type ConnectionStringInput = Pick<
   ConnectionString,
@@ -96,8 +93,18 @@ export const createConnectionStringsCollection = (
           }
 
           try {
-            return await decryptConnectionString(record.encrypted)
+            return await deviceEncryption.decrypt(record.encrypted)
           } catch (error) {
+            if (isKeychainLocked(error)) {
+              toast.error(KEYCHAIN_LOCKED_ERROR, {
+                action: {
+                  label: 'Restart',
+                  onClick: () => window.electron?.app.relaunch(),
+                },
+                id: 'keychain-locked',
+              })
+              throw error
+            }
             await fullSignOut()
             toast.error(
               'Your encryption key is invalid. Please, sign in again.',
@@ -147,7 +154,7 @@ export const createConnectionStringsCollection = (
           const record = {
             ...describeConnectionString(data.connectionString),
             connectionId: data.connectionId,
-            encrypted: await encryptConnectionString(data.connectionString),
+            encrypted: await deviceEncryption.encrypt(data.connectionString),
             updatedAt: data.updatedAt,
           }
           if (collection.has(data.connectionId)) {

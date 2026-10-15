@@ -134,6 +134,7 @@ contextBridge.exposeInMainWorld('electron', {
     quitAndInstall: handleElectronError(() =>
       ipcRenderer.invoke('app.quitAndInstall')
     ),
+    relaunch: handleElectronError(() => ipcRenderer.invoke('app.relaunch')),
     setNativeTheme: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('app.setNativeTheme', arg)
     ),
@@ -147,12 +148,35 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
   },
+  deviceEncryption: {
+    createKey: handleElectronError(() =>
+      ipcRenderer.invoke('deviceEncryption.createKey')
+    ),
+    decrypt: handleElectronError((encrypted: string) =>
+      ipcRenderer.invoke('deviceEncryption.decrypt', encrypted)
+    ),
+    encrypt: handleElectronError((text: string) =>
+      ipcRenderer.invoke('deviceEncryption.encrypt', text)
+    ),
+    hasKey: handleElectronError(() =>
+      ipcRenderer.invoke('deviceEncryption.hasKey')
+    ),
+    reset: handleElectronError(() =>
+      ipcRenderer.invoke('deviceEncryption.reset')
+    ),
+  },
   encryption: {
     decrypt: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('encryption.decrypt', arg)
     ),
     encrypt: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('encryption.encrypt', arg)
+    ),
+  },
+  localDatabases: {
+    find: handleElectronError(() => ipcRenderer.invoke('localDatabases.find')),
+    unlock: handleElectronError((connectionString: string) =>
+      ipcRenderer.invoke('localDatabases.unlock', connectionString)
     ),
   },
   mcp: {

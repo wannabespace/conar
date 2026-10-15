@@ -67,6 +67,22 @@ Check your provider's docs for the exact parameters they require.
   </Tab>
 </Tabs>
 
+## MariaDB
+
+Pick **MariaDB** under **Engine**, or paste a `mariadb://` string, a `mariadb` command or a `MARIADB_*` environment (including Laravel's `DB_CONNECTION=mariadb`) and Tamery picks it for you. The connection shows the MariaDB name and icon and runs on the MySQL driver, so everything above applies:
+
+```bash
+mariadb://username:password@hostname:3306/database
+```
+
+Where MariaDB differs from MySQL:
+
+- **JSON columns** are `LONGTEXT` with a `json_valid()` check in MariaDB. Tamery still reads them as JSON, so you edit their cells as JSON.
+- **System-versioned tables** list in the Navigator with your other tables and show their current rows. Query their history with `FOR SYSTEM_TIME` in a **Query** tab.
+- **`UUID` cells** tell you when what you typed isn't a UUID, before it reaches the database.
+- **Data seeding** fills `INET4` and `INET6` columns with IP addresses.
+- **Sequences** don't list in the Navigator. Read and advance them with `NEXTVAL()` and `SHOW CREATE SEQUENCE` in a **Query** tab.
+
 <Note>
   MySQL `SET` columns show as **Enums** in the Schema list. Display only — your
   data and schema are unaffected.

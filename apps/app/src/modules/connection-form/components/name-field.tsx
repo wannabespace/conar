@@ -19,7 +19,7 @@ export const NameField = ({ form }: { form: ConnectionForm }) => (
         >
           <IconButton
             type="button"
-            variant="ghost-row"
+            variant="ghost-faint"
             size="icon-sm"
             icon={DiceFaces03Icon}
             label="Random name"

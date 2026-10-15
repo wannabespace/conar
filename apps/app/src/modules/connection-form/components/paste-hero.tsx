@@ -19,6 +19,8 @@ import type { PasteFlash } from '../lib/use-paste-connection'
 import { PASTE_FORMATS } from '../lib/use-paste-connection'
 import { AgentButton } from './agent-button'
 import { Keycap } from './keycap'
+import type { LocalDatabase } from './local-databases'
+import { LocalDatabases } from './local-databases'
 
 const ROLL = {
   animate: { opacity: 1, y: 0 },
@@ -43,11 +45,13 @@ export const PasteHero = ({
   mode,
   onAgent,
   onClipboard,
+  onLocalDatabase,
 }: {
   flash: PasteFlash
   mode: FormMode
   onAgent: () => void
   onClipboard: () => void
+  onLocalDatabase: (database: LocalDatabase) => void
 }) => {
   const reduceMotion = useReducedMotion()
   const modifierHeld = useKeyHold(isMac ? 'Meta' : 'Control')
@@ -125,7 +129,10 @@ export const PasteHero = ({
         </p>
       )}
       {window.electron && mode.kind === 'create' && (
-        <AgentButton onClick={onAgent} />
+        <>
+          <AgentButton onClick={onAgent} />
+          <LocalDatabases onPick={onLocalDatabase} />
+        </>
       )}
     </div>
   )

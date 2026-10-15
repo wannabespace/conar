@@ -14,7 +14,7 @@ export type GuessFormat =
 
 export type ServerField = Exclude<
   keyof ConnectionParts,
-  'https' | 'options' | 'ssh' | 'type'
+  'flavor' | 'https' | 'options' | 'ssh' | 'type'
 >
 
 export type GuessedParts = Partial<ConnectionParts>

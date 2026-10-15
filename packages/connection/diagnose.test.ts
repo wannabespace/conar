@@ -13,6 +13,7 @@ import {
 
 const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   database: '',
+  flavor: null,
   host: 'db.acme.io',
   https: null,
   options: '',

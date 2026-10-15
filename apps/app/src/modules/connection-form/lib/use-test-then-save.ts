@@ -2,6 +2,7 @@ import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { describeConnectionString } from '@tamery/connection/utils'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { engines } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { tryCatch, tryCatchAsync } from '@tamery/shared/utils'
 import type { MutationStatus } from '@tanstack/react-query'
@@ -72,7 +73,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     )
     const tested =
       test.variables?.connectionString === connectionString &&
-      test.variables.type === values.type
+      test.variables.type === engines.type(values.engine)
     const testStatus: MutationStatus = tested ? test.status : 'idle'
     return {
       canSend: canSend && !!connectionString,
@@ -88,7 +89,10 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
       return null
     }
     inFlight.current = tryCatchAsync(() =>
-      test.mutateAsync({ connectionString, type: values.type })
+      test.mutateAsync({
+        connectionString,
+        type: engines.type(values.engine),
+      })
     )
     return inFlight.current
   }
@@ -125,9 +129,10 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
         {
           color: values.color,
           connectionString,
+          flavor: engines.flavor(values.engine),
           label: values.label.trim() || null,
           name: values.name.trim() || generateRandomName(),
-          type: values.type,
+          type: engines.type(values.engine),
         },
         {
           open: draft.canSend && draft.testStatus !== 'error',

@@ -8,8 +8,8 @@ export const selectTriggerVariants = cva(
     },
     variants: {
       variant: {
-        flat: 'hover:bg-accent data-popup-open:bg-accent px-2.5',
-        'ghost-row': 'hover:bg-foreground/5 data-popup-open:bg-foreground/5',
+        flat: 'hover:bg-accent data-popup-open:bg-accent pr-[calc(--spacing(2)-var(--default-border-width))] pl-2.5',
+        'ghost-faint': 'hover:bg-foreground/5 data-popup-open:bg-foreground/5',
         outline:
           'bg-input ring-foreground/4 hover:ring-foreground/12 data-popup-open:ring-foreground/12 hover:bg-accent data-popup-open:bg-accent shadow-xs ring',
       },

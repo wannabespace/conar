@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 
 import { guessConnection } from './index'
 
@@ -47,6 +50,7 @@ describe('guessConnection — CLI commands', () => {
       'mariadb --host=db.acme.io --user=root --password -D shop',
       {
         database: 'shop',
+        flavor: ConnectionFlavor.MariaDB,
         host: 'db.acme.io',
         type: ConnectionType.MySQL,
         user: 'root',

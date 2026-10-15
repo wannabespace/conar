@@ -1,4 +1,7 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
 import { readConnectionString } from './parse-connection-string'
@@ -7,6 +10,8 @@ import { deleteSshParams, setSshParams, sshTunnelOf } from './ssh/params'
 
 export interface ConnectionParts {
   database: string
+  /** Read from the scheme; `format` never writes it, so a saved connection's flavor lives on its row. */
+  flavor: ConnectionFlavor | null
   host: string
   /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
   https: boolean | null
@@ -65,15 +70,23 @@ const TYPE_OF_SCHEME: Record<string, ConnectionType> = {
   sqlserver: ConnectionType.MSSQL,
 }
 
+const FLAVOR_OF_SCHEME: Record<string, ConnectionFlavor> = {
+  mariadb: ConnectionFlavor.MariaDB,
+}
+
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
+const schemeName = (scheme: string) =>
+  scheme
+    .toLowerCase()
+    .replace(/^jdbc:/u, '')
+    .replace(/[+:].*$/u, '')
+
 export const typeOfScheme = (scheme: string): ConnectionType | null =>
-  TYPE_OF_SCHEME[
-    scheme
-      .toLowerCase()
-      .replace(/^jdbc:/u, '')
-      .replace(/[+:].*$/u, '')
-  ] ?? null
+  TYPE_OF_SCHEME[schemeName(scheme)] ?? null
+
+export const flavorOfScheme = (scheme: string): ConnectionFlavor | null =>
+  FLAVOR_OF_SCHEME[schemeName(scheme)] ?? null
 
 const format = (
   parts: ConnectionParts,
@@ -115,6 +128,7 @@ const parse = (connectionString: string): ConnectionParts => {
 
   return {
     ...parts,
+    flavor: flavorOfScheme(scheme),
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,

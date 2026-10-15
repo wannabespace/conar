@@ -51,7 +51,7 @@ const ConnectionResourcesSelect = ({
     <SelectTrigger
       data-mask
       size="xs"
-      variant="ghost-row"
+      variant="ghost-faint"
       className="pointer-events-auto"
     >
       <SelectValue>

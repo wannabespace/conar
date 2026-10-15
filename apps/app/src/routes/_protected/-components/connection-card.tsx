@@ -229,7 +229,7 @@ export const ConnectionCard = ({
           variant="muted"
           items={items}
           contentProps={{ className: 'min-w-44' }}
-          render={<Button variant="ghost-row" size="icon-xs" />}
+          render={<Button variant="ghost-faint" size="icon-xs" />}
           className="relative z-10"
         />
       </AppContextMenu>

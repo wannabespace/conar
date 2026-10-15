@@ -17,7 +17,7 @@ import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import type { CSSProperties, ComponentRef, Ref } from 'react'
+import type { CSSProperties, ComponentRef } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -45,21 +45,21 @@ const ROW_HEIGHTS = {
 export const TablesList = ({
   activeId,
   className,
+  highlightedControlId,
   highlightedId,
   isPending,
   onCreateTable,
   onToggleSchema,
-  ref,
   rows,
   search,
 }: {
   activeId?: string
   className?: string
+  highlightedControlId: string
   highlightedId?: string
   isPending: boolean
   onCreateTable: (schema?: string) => void
   onToggleSchema: (name: string) => void
-  ref: Ref<HTMLDivElement>
   rows: TreeRow[]
   search?: string
 }) => {
@@ -159,11 +159,14 @@ export const TablesList = ({
     )
   }
 
-  const rowContentOf = (row: TreeRow) => {
+  const rowContentOf = (row: TreeRow, highlighted: boolean) => {
+    const controlId = highlighted ? highlightedControlId : undefined
+
     if (row.kind === 'schema') {
       return (
         <div className="h-full pt-0.5 pb-1">
           <SchemaRow
+            controlId={controlId}
             row={row}
             onCreateTable={() => onCreateTable(row.name)}
             onCreateView={() => createViewDialogRef.current?.create(row.name)}
@@ -191,6 +194,7 @@ export const TablesList = ({
       return (
         <div className="pt-4">
           <SidebarMenuButton
+            id={controlId}
             variant="muted"
             tabIndex={-1}
             onClick={() => createSchemaDialogRef.current?.create()}
@@ -213,6 +217,7 @@ export const TablesList = ({
     return (
       <div className="pb-0.5">
         <TableRow
+          controlId={controlId}
           row={row}
           search={search}
           onRename={
@@ -240,7 +245,6 @@ export const TablesList = ({
 
   return (
     <div
-      ref={ref}
       className={cn('relative flex flex-col', className)}
       style={{ '--sticky-height': `${ROW_HEIGHTS.schema}px` } as CSSProperties}
     >
@@ -267,6 +271,7 @@ export const TablesList = ({
             if (!row) {
               return null
             }
+            const highlighted = row !== stickyRow && row.id === highlightedId
 
             return (
               <motion.li
@@ -280,14 +285,12 @@ export const TablesList = ({
                 }
                 className="group/menu-item absolute inset-x-0 top-0 h-(--row-height)"
                 inert={row === stickyRow}
-                data-highlighted={
-                  (row !== stickyRow && row.id === highlightedId) || undefined
-                }
+                data-highlighted={highlighted || undefined}
                 style={
                   { '--row-height': `${virtualRow.size}px` } as CSSProperties
                 }
               >
-                {rowContentOf(row)}
+                {rowContentOf(row, highlighted)}
               </motion.li>
             )
           })}
@@ -305,7 +308,7 @@ export const TablesList = ({
             className="h-(--sticky-height)"
             data-highlighted={stickyRow.id === highlightedId || undefined}
           >
-            {rowContentOf(stickyRow)}
+            {rowContentOf(stickyRow, stickyRow.id === highlightedId)}
           </SidebarMenuItem>
         </SidebarMenu>
       )}

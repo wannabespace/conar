@@ -1,5 +1,6 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { engines } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
@@ -29,14 +30,17 @@ const LastOpenedResource = ({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group hover:bg-foreground/5 has-[[data-row-link]:focus-visible]:bg-foreground/10 flex h-8 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
+    <div className="group hover:bg-foreground/5 has-[[data-row-link]:focus-visible]:bg-foreground/10 flex h-7 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
       <Link
         className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5 outline-hidden"
         preload={false}
         data-row-link
         {...params}
       >
-        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+        <ConnectionIcon
+          engine={engines.of(connection)}
+          className="size-4 shrink-0"
+        />
         <span data-mask className="truncate">
           {connection.name}
           <span className="text-muted-foreground">
@@ -50,7 +54,7 @@ const LastOpenedResource = ({
           <TooltipTrigger
             render={
               <Button
-                variant="ghost-row"
+                variant="ghost-faint"
                 size="icon-xs"
                 aria-label="Remove from recents"
                 onClick={onClose}
@@ -109,7 +113,7 @@ export const LastOpenedResources = () => {
         lastOpenedResources.indexOf(a.connectionResource.id) -
         lastOpenedResources.indexOf(b.connectionResource.id)
     )
-    .slice(0, 3)
+    .slice(0, 5)
 
   if (toShow.length === 0) {
     return null

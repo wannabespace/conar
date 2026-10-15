@@ -17,7 +17,7 @@ export const LoadFileButton = ({
   return (
     <>
       <IconButton
-        variant="ghost-row"
+        variant="ghost-faint"
         size="icon-sm"
         icon={FolderOpenIcon}
         label="Load from file"

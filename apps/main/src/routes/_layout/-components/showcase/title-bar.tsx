@@ -49,7 +49,7 @@ export const TitleBar = () => (
     </Switcher>
     <Crumb />
     <Switcher>
-      <ConnectionIcon type={ConnectionType.Postgres} className="size-4" />
+      <ConnectionIcon engine={ConnectionType.Postgres} className="size-4" />
       storefront
     </Switcher>
     <Crumb />

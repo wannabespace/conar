@@ -117,7 +117,12 @@ export const resourceTablesAndSchemasQuery = memoize(
             .leftJoin('information_schema.TABLES as t', (join) =>
               join
                 .onRef('t.TABLE_SCHEMA', '=', 's.SCHEMA_NAME')
-                .on('t.TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+                // MariaDB types a system-versioned table SYSTEM VERSIONED, not BASE TABLE.
+                .on('t.TABLE_TYPE', 'in', [
+                  'BASE TABLE',
+                  'SYSTEM VERSIONED',
+                  'VIEW',
+                ])
             )
             .select([
               's.SCHEMA_NAME as schema',
@@ -126,7 +131,7 @@ export const resourceTablesAndSchemasQuery = memoize(
               (eb) =>
                 eb
                   .case()
-                  .when('t.TABLE_TYPE', '=', 'BASE TABLE')
+                  .when('t.TABLE_TYPE', '!=', 'VIEW')
                   .then(
                     eb.fn<string | null>('nullif', [
                       't.TABLE_COMMENT',
@@ -136,7 +141,13 @@ export const resourceTablesAndSchemasQuery = memoize(
                   .end()
                   .as('comment'),
               (eb) =>
-                eb.fn.coalesce('t.TABLE_TYPE', eb.val('BASE TABLE')).as('type'),
+                eb
+                  .case()
+                  .when('t.TABLE_TYPE', '=', 'VIEW')
+                  .then('VIEW')
+                  .else('BASE TABLE')
+                  .end()
+                  .as('type'),
             ])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
             .execute(),

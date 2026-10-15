@@ -12,6 +12,8 @@ export const mysqlSeedConfig = {
     geomcollection: 'mysql.geometrycollection',
     geometry: 'mysql.point',
     geometrycollection: 'mysql.geometrycollection',
+    inet4: 'internet.ip',
+    inet6: 'internet.ipv6',
     linestring: 'mysql.linestring',
     longblob: 'mysql.binary',
     mediumblob: 'mysql.binary',

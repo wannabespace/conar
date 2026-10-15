@@ -6,7 +6,7 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
-import { encryptionKey } from './encryption-key'
+import { deviceEncryption } from './device-encryption'
 import {
   history,
   isAuthLocation,
@@ -117,5 +117,5 @@ export const fullSignOut = async () => {
 
   subscriptionsCache.clear()
   subscriptionQueryClient.clear()
-  await Promise.all([clearDb(), encryptionKey.reset()])
+  await Promise.all([clearDb(), deviceEncryption.reset()])
 }

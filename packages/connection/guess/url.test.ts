@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 
 import { guessConnection } from './index'
 
@@ -32,6 +35,7 @@ describe('guessConnection — URLs', () => {
       'mariadb://root@maria.local/shop',
       {
         database: 'shop',
+        flavor: ConnectionFlavor.MariaDB,
         host: 'maria.local',
         type: ConnectionType.MySQL,
         user: 'root',

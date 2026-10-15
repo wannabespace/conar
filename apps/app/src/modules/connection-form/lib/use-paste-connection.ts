@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 
 import { posthog } from '~/lib/posthog'
 
-export type PasteVia = 'clipboard' | 'drop' | 'link' | 'paste'
+export type PasteVia = 'clipboard' | 'drop' | 'found' | 'link' | 'paste'
 
 export interface PasteFlash {
   count: number
@@ -155,5 +155,5 @@ export const usePasteConnection = ({
     return () => controller.abort()
   }, [])
 
-  return { dragging: enabled && dragging, flash, readClipboard }
+  return { dragging: enabled && dragging, flash, read, readClipboard }
 }

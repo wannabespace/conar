@@ -14,7 +14,7 @@ import { PRO_PLAN } from '~/utils/pricing'
 const QUESTIONS = [
   {
     answer:
-      'PostgreSQL, MySQL, Microsoft SQL Server and ClickHouse, in the desktop app, the web app and the CLI.',
+      'PostgreSQL, MySQL, MariaDB, Microsoft SQL Server and ClickHouse, in the desktop app, the web app and the CLI.',
     question: 'Which databases does Tamery support?',
   },
   {

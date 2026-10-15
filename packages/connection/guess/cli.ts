@@ -1,4 +1,7 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 
 import { mssqlAddress } from './ado'
 import { partsOfVariables, variablesOfLines } from './env'
@@ -11,6 +14,7 @@ import { guessUrl } from './url'
 type Field = ServerField | 'server'
 
 interface Client {
+  flavor?: ConnectionFlavor
   /** Flags that prompt when bare, so their value must be glued on: `-pSECRET`, `--password=SECRET`. */
   gluedOnly?: string[]
   /** Every flag that takes a value; `null` drops the value instead of reading it as a positional. */
@@ -61,6 +65,8 @@ const MYSQL: Client = {
   type: ConnectionType.MySQL,
 }
 
+const MARIADB: Client = { ...MYSQL, flavor: ConnectionFlavor.MariaDB }
+
 const SQLCMD: Client = {
   options: {
     '-P': 'password',
@@ -96,8 +102,8 @@ const CLICKHOUSE: Client = {
 const CLIENTS: Record<string, Client> = {
   clickhouse: CLICKHOUSE,
   'clickhouse-client': CLICKHOUSE,
-  mariadb: MYSQL,
-  'mariadb-dump': MYSQL,
+  mariadb: MARIADB,
+  'mariadb-dump': MARIADB,
   mycli: MYSQL,
   mysql: MYSQL,
   mysqldump: MYSQL,
@@ -163,7 +169,7 @@ const guessCommand = (tokens: string[]): DatabaseGuess | null => {
       mssqlAddress(server),
       conninfoGuess?.parts ?? {},
       partsOfVariables(variablesOfLines(tokens.slice(0, start))) ?? {},
-      { type: client.type }
+      { flavor: client.flavor, type: client.type }
     ),
   }
 }

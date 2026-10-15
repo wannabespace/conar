@@ -31,7 +31,7 @@ import { removeTabs, updateTabs } from '~/core/tabs/actions'
 import { parseTableTabId, tableTabId } from '~/core/tabs/ids'
 import { resolveTab, tabLabels } from '~/core/tabs/kinds'
 import { ChatToggle } from '~/modules/chat/chat-toggle'
-import { navigatorOpenValue } from '~/modules/navigator/stores'
+import { toggleNavigator } from '~/modules/navigator/stores'
 
 import { HistoryNav } from './history-nav'
 import { NewTabMenu } from './new-tab-menu'
@@ -139,7 +139,7 @@ export const TabBar = ({ className }: { className?: string }) => {
                 variant="ghost-muted"
                 size="icon-xs"
                 aria-label="Toggle sidebar"
-                onClick={() => navigatorOpenValue.set((open) => !open)}
+                onClick={toggleNavigator}
               />
             }
           >

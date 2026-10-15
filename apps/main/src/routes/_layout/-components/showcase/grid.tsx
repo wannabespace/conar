@@ -79,7 +79,7 @@ export const Grid = () => (
         <div className={cn(cellClassName, 'w-20 tabular-nums')}>{id}</div>
         <div className={cn(cellClassName, 'w-28 tabular-nums')}>
           {user}
-          <Button variant="ghost-row" size="icon-2xs" className="ml-auto">
+          <Button variant="ghost-faint" size="icon-2xs" className="ml-auto">
             <HugeiconsIcon
               icon={ArrowUpRight01Icon}
               strokeWidth={2}

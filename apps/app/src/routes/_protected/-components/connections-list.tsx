@@ -1,6 +1,6 @@
 import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { connectionLabels } from '@tamery/shared/enums/connection-type'
+import { engineLabels, engines } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
@@ -71,7 +71,9 @@ export const ConnectionsList = () => {
           }
         )
       } else if (grouping === 'type') {
-        query = query.orderBy(({ c }) => c.type)
+        query = query
+          .orderBy(({ c }) => c.type)
+          .orderBy(({ c }) => c.flavor, { nulls: 'first' })
       }
 
       const [sortField, sortDirection] = sort.split('-') as [
@@ -108,7 +110,7 @@ export const ConnectionsList = () => {
       query,
       connection.name,
       connection.label,
-      connectionLabels[connection.type]
+      engineLabels[engines.of(connection)]
     )
   )
 
@@ -117,7 +119,7 @@ export const ConnectionsList = () => {
       return connection.label || null
     }
     if (grouping === 'type') {
-      return connectionLabels[connection.type]
+      return engineLabels[engines.of(connection)]
     }
     return null
   }
@@ -197,7 +199,7 @@ export const ConnectionsList = () => {
                   )}
                 </h3>
               )}
-              <div className="bg-card ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
+              <div className="bg-popover ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring">
                 {group.connections.map((connection) => (
                   <ConnectionCard
                     key={connection.id}
@@ -236,7 +238,7 @@ export const ConnectionsList = () => {
                     checkOrUpgrade('connection.create', { count: data.length })
                   }
                   className={cn(
-                    'text-muted-foreground hover:bg-card hover:text-foreground focus-visible:focus-ring flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm outline-hidden transition-colors duration-150',
+                    'text-muted-foreground hover:bg-popover hover:text-foreground focus-visible:focus-ring flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm outline-hidden transition-colors duration-150',
                     !canCreate && 'opacity-50'
                   )}
                 />

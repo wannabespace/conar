@@ -158,7 +158,8 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       incomparable: null,
       json: JSON_COLUMN_TYPE,
       options: COLUMN_TYPES[ConnectionType.MySQL],
-      uuid: null,
+      // MariaDB's native UUID; MySQL has none.
+      uuid: /^uuid$/iu,
       xml: null,
     },
     constraintKinds: CONSTRAINT_KINDS,

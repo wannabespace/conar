@@ -14,7 +14,7 @@ import type {
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createTableDialogRef } from './create-table-dialog'
 import { createViewDialogRef } from './create-view-dialog'
-import { navigatorOpenValue } from './stores'
+import { toggleNavigator } from './stores'
 
 export const navigatorCommands = ({
   current,
@@ -50,7 +50,7 @@ export const navigatorCommands = ({
             ]
           : []),
         {
-          action: () => navigatorOpenValue.set((open) => !open),
+          action: toggleNavigator,
           group: 'View',
           icon: SidebarLeftIcon,
           keywords: ['navigator', 'panel', 'hide', 'show'],

@@ -24,7 +24,7 @@ export const Footer = () => {
         <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
           <Brand to={home} />
           <p className="text-muted-foreground max-w-xs text-sm text-pretty">
-            The AI database client for Postgres, MySQL, SQL Server and
+            The AI database client for Postgres, MySQL, MariaDB, SQL Server and
             ClickHouse.
           </p>
         </div>

@@ -1,13 +1,21 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionFlavor,
+  ConnectionType,
+} from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, typeOfScheme } from '../connection-parts'
+import {
+  DEFAULT_PORTS,
+  flavorOfScheme,
+  typeOfScheme,
+} from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
   /** Only these fields are read under the prefix: `MYSQL_ROOT_HOST` is an allow-list, not a host. */
   fields?: ServerField[]
+  flavor?: ConnectionFlavor
   prefix: string
   type?: ConnectionType
   /** Implied user when the group supplies the password and nothing else named one. */
@@ -47,10 +55,21 @@ const GROUPS: VariableGroup[] = [
   { prefix: 'PG', type: ConnectionType.Postgres },
   { prefix: 'POSTGRES_', type: ConnectionType.Postgres },
   { prefix: 'MYSQL_', type: ConnectionType.MySQL },
-  { prefix: 'MARIADB_', type: ConnectionType.MySQL },
+  {
+    flavor: ConnectionFlavor.MariaDB,
+    prefix: 'MARIADB_',
+    type: ConnectionType.MySQL,
+  },
   {
     fields: ['password'],
     prefix: 'MYSQL_ROOT_',
+    type: ConnectionType.MySQL,
+    user: 'root',
+  },
+  {
+    fields: ['password'],
+    flavor: ConnectionFlavor.MariaDB,
+    prefix: 'MARIADB_ROOT_',
     type: ConnectionType.MySQL,
     user: 'root',
   },
@@ -80,6 +99,22 @@ const LINE =
 const QUOTED = /^(?<quote>["'`])(?<inner>.*)\k<quote>/u
 const UNQUOTED_TAIL = /\s+#.*$|,$/u
 
+const typeOfDriver = (name: string) =>
+  TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name)
+
+/** The engine a `DB_CONNECTION=mariadb` style variable names. */
+const engineNamedIn = (
+  variables: Record<string, string>,
+  prefix: string
+): Pick<GuessedParts, 'flavor' | 'type'> => {
+  const driver = TYPE_SUFFIXES.map((suffix) => variables[prefix + suffix] ?? '')
+    .map((name) => name.split('.').at(-1) ?? '')
+    .find(typeOfDriver)
+  return driver
+    ? { flavor: flavorOfScheme(driver), type: typeOfDriver(driver) }
+    : {}
+}
+
 /** Keys must be uppercase. */
 export const partsOfVariables = (
   variables: Record<string, string>
@@ -91,12 +126,9 @@ export const partsOfVariables = (
   let parts: GuessedParts = {}
 
   for (const group of GROUPS) {
-    const type =
-      group.type ??
-      TYPE_SUFFIXES.map((suffix) => variables[group.prefix + suffix] ?? '')
-        .map((name) => name.split('.').at(-1) ?? '')
-        .map((name) => TYPE_OF_DRIVER[name.toLowerCase()] ?? typeOfScheme(name))
-        .find(Boolean)
+    const named = engineNamedIn(variables, group.prefix)
+    const type = group.type ?? named.type
+    const flavor = group.flavor ?? named.flavor
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
       if (!group.fields || group.fields.includes(field)) {
@@ -121,10 +153,12 @@ export const partsOfVariables = (
     if (!group.user || (!parts.user && !parts.password)) {
       parts = mergeParts(parts, { user: group.user, ...found })
     }
-    parts = mergeParts(parts, { type })
+    parts = mergeParts(parts, { flavor, type })
   }
 
-  return Object.keys(parts).some((key) => key !== 'type') ? parts : null
+  return Object.keys(parts).some((key) => key !== 'flavor' && key !== 'type')
+    ? parts
+    : null
 }
 
 /** `KEY=value` lines of a `.env`, a YAML map or a command's environment prefix; keys come back uppercased. */

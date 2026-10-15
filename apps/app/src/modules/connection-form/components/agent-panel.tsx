@@ -88,7 +88,7 @@ export const AgentPanel = () => {
               value={client.id}
               onValueChange={(next) => next && setPicked(next)}
             >
-              <SelectTrigger size="sm" variant="ghost-row" aria-label="Agent">
+              <SelectTrigger size="sm" variant="ghost-faint" aria-label="Agent">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent size="sm">

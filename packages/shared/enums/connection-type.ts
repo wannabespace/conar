@@ -5,9 +5,48 @@ export enum ConnectionType {
   ClickHouse = 'clickhouse',
 }
 
-export const connectionLabels: Record<ConnectionType, string> = {
-  [ConnectionType.Postgres]: 'PostgreSQL',
-  [ConnectionType.MySQL]: 'MySQL',
-  [ConnectionType.MSSQL]: 'Microsoft SQL Server',
+/** Only names and badges a connection: every query runs on the `ConnectionType` it speaks through, so never gate SQL on it. */
+export enum ConnectionFlavor {
+  MariaDB = 'mariadb',
+}
+
+export type Engine = ConnectionType | ConnectionFlavor
+
+const TYPE_OF_FLAVOR: Record<ConnectionFlavor, ConnectionType> = {
+  [ConnectionFlavor.MariaDB]: ConnectionType.MySQL,
+}
+
+/** A flavor sits right after the type it speaks through. */
+const ALL: Engine[] = [
+  ConnectionType.Postgres,
+  ConnectionType.MySQL,
+  ConnectionFlavor.MariaDB,
+  ConnectionType.MSSQL,
+  ConnectionType.ClickHouse,
+]
+
+const isFlavor = (engine: Engine): engine is ConnectionFlavor =>
+  Object.hasOwn(TYPE_OF_FLAVOR, engine)
+
+export const engines = {
+  all: ALL,
+  flavor: (engine: Engine) => (isFlavor(engine) ? engine : null),
+  /** A flavor that doesn't speak through `type` (a paste mixing two engines) is dropped. */
+  of: ({
+    flavor,
+    type,
+  }: {
+    flavor: ConnectionFlavor | null
+    type: ConnectionType
+  }): Engine => (flavor && TYPE_OF_FLAVOR[flavor] === type ? flavor : type),
+  type: (engine: Engine) =>
+    isFlavor(engine) ? TYPE_OF_FLAVOR[engine] : engine,
+}
+
+export const engineLabels: Record<Engine, string> = {
+  [ConnectionFlavor.MariaDB]: 'MariaDB',
   [ConnectionType.ClickHouse]: 'ClickHouse',
+  [ConnectionType.MSSQL]: 'Microsoft SQL Server',
+  [ConnectionType.MySQL]: 'MySQL',
+  [ConnectionType.Postgres]: 'PostgreSQL',
 }

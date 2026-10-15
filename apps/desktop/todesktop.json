@@ -10,6 +10,13 @@
   "pnpmVersion": "11.25.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": ["dist-electron/**"],
+  "fuses": {
+    "runAsNode": false,
+    "enableNodeOptionsEnvironmentVariable": false,
+    "enableNodeCliInspectArguments": false,
+    "enableEmbeddedAsarIntegrityValidation": true,
+    "onlyLoadAppFromAsar": true
+  },
   "uploadSizeLimit": 80,
   "bundleWorkspacePackages": {
     "enabled": true

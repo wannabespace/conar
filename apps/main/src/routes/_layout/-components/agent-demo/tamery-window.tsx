@@ -16,7 +16,7 @@ export const TameryWindow = ({ step }: { step: number }) => (
       <WindowButtons />
       <AppLogo className="text-primary size-4" />
       <span className="flex min-w-0 items-center gap-1.5">
-        <ConnectionIcon type={ConnectionType.Postgres} className="size-3.5" />
+        <ConnectionIcon engine={ConnectionType.Postgres} className="size-3.5" />
         storefront
         <HugeiconsIcon
           icon={ArrowRight01Icon}
