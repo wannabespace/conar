@@ -13,10 +13,8 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
+import { isConnectionFailure } from '~/core/connection/connection-failure'
 import { posthog } from '~/lib/posthog'
-
-const CONNECTION_ERRORS =
-  /err_timed_out|etimedout|enotfound|econnreset|econnrefused|password authentication|client password must be a|no pg_hba\.conf entry for host|could not connect to database/iu
 
 const getStack = (error: ErrorComponentProps['error']) => {
   if (!error.stack) {
@@ -37,7 +35,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
 
-  const isConnectionError = CONNECTION_ERRORS.test(error.message)
+  const isConnectionError = isConnectionFailure(error)
 
   useEffect(() => {
     if (!isConnectionError) {

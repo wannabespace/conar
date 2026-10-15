@@ -54,6 +54,15 @@ describe('diagnoseConnectionError', () => {
     ).toBe(field)
   })
 
+  it('blames the SSH host when it cannot look up the database host', () => {
+    expect(
+      diagnose('(SSH) Channel open failure: Name does not resolve', {
+        host: 'db.railway.internal',
+        ssh: EMPTY_SSH_TUNNEL,
+      })?.title
+    ).toBe('The SSH host can\'t find "db.railway.internal"')
+  })
+
   it('reads a channel the bastion could not open as a database error', () => {
     expect(
       diagnose('(SSH) Channel open failure: Connection refused')?.title

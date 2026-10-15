@@ -198,7 +198,13 @@ const RULES: {
   },
   {
     diagnose: (context) => {
-      const { host } = context.parts
+      const { host, ssh } = context.parts
+      if (ssh) {
+        return {
+          hint: `The SSH host looked up "${host}" and found nothing. Use the name or address the SSH host knows the database by.`,
+          title: `The SSH host can't find "${host}"`,
+        }
+      }
       const kind = hostKindOf(host)
       if (kind === 'ipv6-only') {
         return {
@@ -226,7 +232,7 @@ const RULES: {
       }
     },
     match:
-      /enotfound|eai_again|getaddrinfo|could not translate host name|name or service not known|nodename nor servname/iu,
+      /enotfound|eai_again|getaddrinfo|could not translate host name|name or service not known|name does not resolve|nodename nor servname/iu,
   },
   {
     diagnose: ({ parts }) => {

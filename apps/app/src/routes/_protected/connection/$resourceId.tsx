@@ -39,6 +39,7 @@ import { queryLoggerPanel } from '~/modules/query-logger/panel'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
+import { ConnectionError } from './-components/connection-error'
 import { UnlockForm } from './-components/unlock-form'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -177,6 +178,7 @@ const ResourcePage = () => {
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
+  errorComponent: ConnectionError,
   beforeLoad: async ({ context, params }) => {
     const {
       connectionsCollection,

@@ -14,15 +14,17 @@ export const PaneEmpty = ({
   description,
   icon: Icon,
   title,
+  variant = 'muted',
 }: {
   children?: ReactNode
   description: ReactNode
   icon: IconSvgElement
   title: string
+  variant?: 'destructive' | 'muted'
 }) => (
   <Empty size="sm" className="min-h-0 flex-1 overflow-y-auto">
     <EmptyHeader>
-      <EmptyMedia variant="muted">
+      <EmptyMedia variant={variant}>
         <HugeiconsIcon icon={Icon} strokeWidth={2} />
       </EmptyMedia>
       <EmptyTitle>{title}</EmptyTitle>

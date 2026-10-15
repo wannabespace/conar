@@ -20,7 +20,7 @@ import { partsOf } from './connection-form'
 import type { FormMode } from './form-mode'
 
 interface CreateOptions {
-  /** Off for a connection that failed its test or cannot be sent from here: opening one fails into the error page, so the save lands on the dashboard. */
+  /** Off for a connection that failed its test or cannot be sent from here: opening one shows only its error, so the save lands on the dashboard. */
   open: boolean
   origin: GuessFormat | undefined
   syncType: SyncType
