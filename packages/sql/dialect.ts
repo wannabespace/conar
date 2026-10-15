@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 const COMMON_KEYWORDS = [
   'ADD',
@@ -172,8 +172,8 @@ const spec = (
   types: new Set([...COMMON_TYPES, ...(overrides.types ?? [])]),
 })
 
-export const dialects: Record<ConnectionType, DialectSpec> = {
-  [ConnectionType.ClickHouse]: spec({
+export const dialects: Record<SqlDialect, DialectSpec> = {
+  [SqlDialect.ClickHouse]: spec({
     backslashEscapes: true,
     functions: [
       'ARRAYJOIN',
@@ -229,7 +229,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'UUID',
     ],
   }),
-  [ConnectionType.MSSQL]: spec({
+  [SqlDialect.MSSQL]: spec({
     atVariables: true,
     functions: [
       'CEILING',
@@ -280,7 +280,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'UNIQUEIDENTIFIER',
     ],
   }),
-  [ConnectionType.MySQL]: spec({
+  [SqlDialect.MySQL]: spec({
     atVariables: true,
     backslashEscapes: true,
     functions: [
@@ -316,7 +316,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
     ],
     types: ['DATETIME', 'ENUM', 'LONGTEXT', 'MEDIUMINT', 'TINYINT'],
   }),
-  [ConnectionType.Postgres]: spec({
+  [SqlDialect.Postgres]: spec({
     dollarQuotes: true,
     foldsNames: true,
     functions: [

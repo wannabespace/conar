@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -47,28 +47,28 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
         deleteInBatches(
           db,
           bindValue.clickhouse,
-          rowsPerStatement(ConnectionType.ClickHouse, keyWidth),
+          rowsPerStatement(SqlDialect.ClickHouse, keyWidth),
           params
         ),
       mssql: (db) =>
         deleteInBatches(
           db,
           bindValue.mssql,
-          rowsPerStatement(ConnectionType.MSSQL, keyWidth),
+          rowsPerStatement(SqlDialect.MSSQL, keyWidth),
           params
         ),
       mysql: (db) =>
         deleteInBatches(
           db,
           bindValue.mysql,
-          rowsPerStatement(ConnectionType.MySQL, keyWidth),
+          rowsPerStatement(SqlDialect.MySQL, keyWidth),
           params
         ),
       postgres: (db) =>
         deleteInBatches(
           db,
           bindValue.postgres,
-          rowsPerStatement(ConnectionType.Postgres, keyWidth),
+          rowsPerStatement(SqlDialect.Postgres, keyWidth),
           params
         ),
     },

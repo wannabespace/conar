@@ -1,14 +1,14 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { DialectSpec, TokenizerState } from '@tamery/sql'
 import { INITIAL_STATE, tokenize } from '@tamery/sql'
 import { languages } from 'monaco-editor'
 
 export const sqlLanguageIds = {
-  [ConnectionType.ClickHouse]: 'sql-clickhouse',
-  [ConnectionType.MSSQL]: 'sql-mssql',
-  [ConnectionType.MySQL]: 'sql-mysql',
-  [ConnectionType.Postgres]: 'sql-postgres',
-} satisfies Record<ConnectionType, string>
+  [SqlDialect.ClickHouse]: 'sql-clickhouse',
+  [SqlDialect.MSSQL]: 'sql-mssql',
+  [SqlDialect.MySQL]: 'sql-mysql',
+  [SqlDialect.Postgres]: 'sql-postgres',
+} satisfies Record<SqlDialect, string>
 
 type TokenKind = ReturnType<typeof tokenize>['tokens'][number]['kind']
 

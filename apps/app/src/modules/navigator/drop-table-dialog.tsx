@@ -1,5 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -149,7 +150,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {capabilitiesOf(connection.type).cascade && (
+          {capabilitiesOf(dialectOf(connection.type)).cascade && (
             <OptionField
               htmlFor="drop-table-cascade"
               title="Cascade"

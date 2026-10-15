@@ -41,7 +41,7 @@ export const LocalDatabases = ({
           className="justify-start"
           onClick={() => onPick(database)}
         >
-          <ConnectionIcon engine={database.engine} className="mr-1" />
+          <ConnectionIcon type={database.type} className="mr-1" />
           <span data-mask className="truncate">
             {database.name}
           </span>

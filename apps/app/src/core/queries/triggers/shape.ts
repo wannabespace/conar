@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
@@ -26,7 +26,7 @@ export interface TriggerShape {
   timing: TriggerTiming
 }
 
-export const triggerBodyTemplates: Partial<Record<ConnectionType, string>> = {
+export const triggerBodyTemplates: Partial<Record<SqlDialect, string>> = {
   mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
   mysql: 'BEGIN\n\nEND',
 }

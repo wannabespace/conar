@@ -9,6 +9,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { Statement } from '@tamery/sql'
 import {
   destructiveKeywords,
@@ -156,15 +157,10 @@ export const Runner = () => {
   })
   const { data: lastRun } = useQuery(runnerResultsOptions(tab))
   const running = lastRun?.running ?? false
-  const statements = runnerStatements({
-    ...tab,
-    connectionType: connection.type,
-  })
-  const dialect = dialects[connection.type]
-  const aiEdit = useAiEdit({
-    connectionType: connection.type,
-    editorRef,
-  })
+  const dialect = dialectOf(connection.type)
+  const statements = runnerStatements({ ...tab, dialect })
+  const spec = dialects[dialect]
+  const aiEdit = useAiEdit({ dialect, editorRef })
 
   const current = (): {
     statements: RunnerStatement[]
@@ -181,10 +177,9 @@ export const Runner = () => {
       const offset = model.getOffsetAt(selection.getStartPosition())
       return {
         range: selection,
-        statements: splitStatements(
-          model.getValueInRange(selection),
-          dialect
-        ).map((statement) => toRunnerStatement(statement, offset)),
+        statements: splitStatements(model.getValueInRange(selection), spec).map(
+          (statement) => toRunnerStatement(statement, offset)
+        ),
       }
     }
     const statement = statementAt(
@@ -225,7 +220,7 @@ export const Runner = () => {
       })
     const keywords = destructiveKeywords(
       pending.map((statement) => statement.text).join(';\n'),
-      dialect
+      spec
     )
     if (keywords.length > 0) {
       alertDialogRef.current?.confirm(keywords, start)
@@ -248,7 +243,7 @@ export const Runner = () => {
       run(
         current().statements.flatMap((statement) =>
           (
-            unwrapTransaction(statement.source, dialect)?.statements ?? [
+            unwrapTransaction(statement.source, spec)?.statements ?? [
               statement.source,
             ]
           ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
@@ -273,7 +268,7 @@ export const Runner = () => {
     },
     focus: () => editorRef.current?.focus(),
     format: () => {
-      setQuery(store, formatSql(store.get().query, connection.type))
+      setQuery(store, formatSql(store.get().query, dialect))
       setFormatted(true)
     },
     renameSaved: (query) =>

@@ -1,8 +1,5 @@
 import { connectionSecrets } from '@tamery/connection/secrets'
-import type {
-  ConnectionFlavor,
-  ConnectionType,
-} from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -17,7 +14,6 @@ import type { ConnectionStringsCollection } from './connection-strings'
 
 export interface Connection extends BaseTable {
   type: ConnectionType
-  flavor: ConnectionFlavor | null
   workspaceId: string
   name: string
   label: string | null

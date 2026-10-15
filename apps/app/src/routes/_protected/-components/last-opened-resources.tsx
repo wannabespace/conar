@@ -1,5 +1,4 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { engines } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -34,10 +33,7 @@ const LastOpenedResource = ({
         data-row-link
         {...params}
       >
-        <ConnectionIcon
-          engine={engines.of(connection)}
-          className="size-4 shrink-0"
-        />
+        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
         <span data-mask className="truncate">
           {connection.name}
           <span className="text-muted-foreground">

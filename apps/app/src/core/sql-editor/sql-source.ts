@@ -5,7 +5,7 @@ import {
   bindSqlModel,
   EMPTY_CATALOG,
 } from '@tamery/monaco/sql-language'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
@@ -23,7 +23,7 @@ import { appStore } from '~/store'
 
 const sqlCatalogOf = (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ): SqlCatalog => {
   const tables = queryClient.getQueryData(
     resourceTablesAndSchemasQueryOptions({ connectionResource }).queryKey
@@ -35,14 +35,14 @@ const sqlCatalogOf = (
     return EMPTY_CATALOG
   }
   return {
-    defaultSchema: defaultSchemaOf(connectionType, connectionResource.name),
+    defaultSchema: defaultSchemaOf(dialect, connectionResource.name),
     enums: (enums ?? []).map(({ metadata, name, values }) => ({
       column: metadata?.column,
       name,
       table: metadata?.table,
       values,
     })),
-    exactNames: dialects[connectionType].foldsNames,
+    exactNames: dialects[dialect].foldsNames,
     schemas: tables.schemas.map((schema) => ({
       name: schema.name,
       tables: schema.tables.map((table) => ({
@@ -72,9 +72,9 @@ const sqlCatalogOf = (
 
 const sqlSourceFor = (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ): SqlSource => {
-  const catalog = () => sqlCatalogOf(connectionResource, connectionType)
+  const catalog = () => sqlCatalogOf(connectionResource, dialect)
   const tablesOptions = resourceTablesAndSchemasQueryOptions({
     connectionResource,
   })
@@ -109,7 +109,7 @@ const sqlSourceFor = (
     catalog,
     complete: (input, signal) =>
       orpc.ai.completeSQL.call(
-        { ...input, type: connectionType },
+        { ...input, type: dialect },
         { context: { silent: true }, signal }
       ),
     ghostTextEnabled: () =>
@@ -132,16 +132,16 @@ const sqlSourceFor = (
           listener()
         }
       }),
-    type: connectionType,
+    type: dialect,
   }
 }
 
 export const attachSqlSource = (
   codeEditor: editor.IStandaloneCodeEditor,
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ) => {
-  const source = sqlSourceFor(connectionResource, connectionType)
+  const source = sqlSourceFor(connectionResource, dialect)
   const model = codeEditor.getModel()
   if (model) {
     bindSqlModel(model, source)

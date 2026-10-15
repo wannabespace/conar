@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
@@ -70,12 +70,12 @@ export const triggerSchemas = {
 export const draftOf = (
   item: TriggerItem | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ): TriggerDraft => {
-  const { orientations, timings } = capabilitiesOf(connectionType).triggers
+  const { orientations, timings } = capabilitiesOf(dialect).triggers
 
   return {
-    body: item?.body || triggerBodyTemplates[connectionType] || '',
+    body: item?.body || triggerBodyTemplates[dialect] || '',
     events: item
       ? TRIGGER_EVENTS.filter((event) => item.event.includes(event))
       : ['INSERT'],

@@ -27,7 +27,6 @@ export {
   chatsUpdateSchema,
 } from './chats'
 export {
-  connectionFlavor,
   connectionType,
   connections,
   connectionsInsertSchema,

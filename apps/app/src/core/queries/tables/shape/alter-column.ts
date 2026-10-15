@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { AlterColumnBuilder } from 'kysely'
 import { sql } from 'kysely'
 
@@ -28,7 +28,7 @@ export const mysqlColumnDefinition = (
   sql`${restatedType(target)}${comment ? sql` COMMENT ${sql.lit(comment)}` : sql``}`
 
 export const alterColumnStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   target: AlterColumnTarget
 ) => {
@@ -36,7 +36,7 @@ export const alterColumnStatement = (
   const retyped = columnType !== original.type
   const alter = db.withSchema(schema).schema.alterTable(table)
 
-  if (dialectType === ConnectionType.ClickHouse) {
+  if (dialectType === SqlDialect.ClickHouse) {
     return alter
       .modifyColumn(
         column,
@@ -45,7 +45,7 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  if (dialectType === ConnectionType.Postgres) {
+  if (dialectType === SqlDialect.Postgres) {
     const nullability = (builder: AlterColumnBuilder) =>
       nullable ? builder.dropNotNull() : builder.setNotNull()
 
@@ -62,7 +62,7 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialectType === SqlDialect.MSSQL) {
     const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${restatedType(target)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
     if (!retyped) {
       return statement.compile(db)

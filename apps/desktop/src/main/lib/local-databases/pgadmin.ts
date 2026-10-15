@@ -31,9 +31,9 @@ export const pgAdmin: Finder = {
       name: server.name,
       parts: {
         database: server.maintenance_db ?? undefined,
-        engine: ConnectionType.Postgres,
         host: server.host ?? undefined,
         port: server.port?.toString(),
+        type: ConnectionType.Postgres,
         user: server.username ?? undefined,
       },
     }))

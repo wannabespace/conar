@@ -1,6 +1,5 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
 import { mergeParts } from '@tamery/connection/guess/parts'
-import { engines } from '@tamery/shared/enums/connection-type'
 import { omit } from '@tamery/shared/utils'
 
 import { dataGrip } from './datagrip'
@@ -45,18 +44,18 @@ const localDatabase = (
   source: string,
   { name, parts, unlock = () => Promise.resolve(NOTHING_UNLOCKED) }: FoundEntry
 ): LocalDatabase[] => {
-  const { engine, password, ...server } = { ...NO_PARTS, ...mergeParts(parts) }
-  return engine && server.host
+  const { password, type, ...server } = { ...NO_PARTS, ...mergeParts(parts) }
+  return type && server.host
     ? [
         {
           connectionString: connectionParts.format({
             ...server,
             password: '',
-            type: engines.type(engine),
+            type,
           }),
-          engine,
           name: name || server.database || server.host,
           source,
+          type,
           unlock: password
             ? () => Promise.resolve({ password, withheld: false })
             : unlock,

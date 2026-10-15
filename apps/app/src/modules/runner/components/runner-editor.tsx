@@ -3,6 +3,7 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -112,19 +113,21 @@ export const RunnerEditor = ({
     }
   }, [sidePanelOpened, editorRef])
 
+  const dialect = dialectOf(connection.type)
+
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, connection.type)
+      ? attachSqlSource(codeEditor, connectionResource, dialect)
       : undefined
-  }, [editorRef, connectionResource, connection.type])
+  }, [editorRef, connectionResource, dialect])
 
   return (
     <div className="relative size-full">
       <Monaco
         data-mask
         ref={editorRef}
-        language={sqlLanguageIds[connection.type]}
+        language={sqlLanguageIds[dialect]}
         value={query}
         onChange={(next) => setQuery(store, next)}
         className="size-full"

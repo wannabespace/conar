@@ -1,5 +1,6 @@
 import { CrownIcon, SproutIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
@@ -66,7 +67,7 @@ export const SeedPanel = ({
 }) => {
   const { columns } = useTableColumnsContext()
   const { connection, connectionResource } = useRouteContext()
-  const dialect = connection.type
+  const dialect = dialectOf(connection.type)
   const generators = getGenerators(dialect)
   const groups = getGeneratorGroups(dialect)
   const store = useTablePageStore()

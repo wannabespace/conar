@@ -1,11 +1,10 @@
-import type { Engine } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { omit } from '@tamery/shared/utils'
 
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
-  engineOf,
+  connectionTypeOf,
   HTTPS_PORT,
 } from '../connection-parts'
 import { hostHintOf } from '../hosts'
@@ -28,11 +27,11 @@ const takeParam = (params: URLSearchParams, keys: string[]) => {
 }
 
 interface FoundUrl {
-  engine: Engine
+  type: ConnectionType
   url: string
 }
 
-const guessOfUrl = ({ engine, url: candidate }: FoundUrl): DatabaseGuess => {
+const guessOfUrl = ({ type, url: candidate }: FoundUrl): DatabaseGuess => {
   const format = candidate.toLowerCase().startsWith('jdbc:') ? 'jdbc' : 'url'
   const url = candidate.replace(/^jdbc:/iu, '')
 
@@ -44,7 +43,7 @@ const guessOfUrl = ({ engine, url: candidate }: FoundUrl): DatabaseGuess => {
     }
     return {
       format,
-      parts: { ...adoParts(pairs), engine: ConnectionType.MSSQL },
+      parts: { ...adoParts(pairs), type: ConnectionType.MSSQL },
     }
   }
 
@@ -59,10 +58,10 @@ const guessOfUrl = ({ engine, url: candidate }: FoundUrl): DatabaseGuess => {
     parts: {
       ...parts,
       database: parts.database || database,
-      engine,
       options: params.toString(),
       password: parts.password || password,
       port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
+      type,
       user: parts.user || user,
     },
   }
@@ -70,10 +69,8 @@ const guessOfUrl = ({ engine, url: candidate }: FoundUrl): DatabaseGuess => {
 
 const urlsIn = (text: string): FoundUrl[] =>
   [...text.matchAll(URL_PATTERN)].flatMap(({ 0: match, groups }) => {
-    const engine = engineOf(groups?.scheme ?? '')
-    return engine
-      ? [{ engine, url: match.replace(TRAILING_PUNCTUATION, '') }]
-      : []
+    const type = connectionTypeOf(groups?.scheme ?? '')
+    return type ? [{ type, url: match.replace(TRAILING_PUNCTUATION, '') }] : []
   })
 
 export const guessUrl = (text: string): DatabaseGuess | null => {
@@ -87,7 +84,7 @@ const GO_DSN =
 export const guessGoDsn = (text: string): DatabaseGuess | null => {
   const groups = GO_DSN.exec(text)?.groups
   return groups
-    ? { format: 'url', parts: { ...groups, engine: ConnectionType.MySQL } }
+    ? { format: 'url', parts: { ...groups, type: ConnectionType.MySQL } }
     : null
 }
 

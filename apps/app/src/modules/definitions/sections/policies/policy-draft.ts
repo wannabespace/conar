@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -59,12 +59,12 @@ export const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
 export const draftOf = (
   item: PolicyItem | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ): PolicyDraft => ({
   check: item?.check ?? '',
   command: item
     ? asCommand(item.command)
-    : (capabilitiesOf(connectionType).policies.commands[0] ?? 'ALL'),
+    : (capabilitiesOf(dialect).policies.commands[0] ?? 'ALL'),
   kind: item?.type ?? 'PERMISSIVE',
   name: item?.name ?? '',
   roles: item?.roles.join(', ') ?? '',
@@ -94,9 +94,9 @@ export const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
 export const replaces = (
   item: PolicyItem,
   draft: PolicyDraft,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ) =>
-  !capabilitiesOf(connectionType).policies.alterInPlace &&
+  !capabilitiesOf(dialect).policies.alterInPlace &&
   (draft.command !== asCommand(item.command) ||
     draft.kind !== item.type ||
     clearsExpression(item, draft))
@@ -107,12 +107,12 @@ export const policySchema = type({
 })
 
 export const savePolicy = async ({
-  connectionType,
+  dialect,
   draft,
   item,
   run,
 }: {
-  connectionType: ConnectionType
+  dialect: SqlDialect
   draft: PolicyDraft
   item: PolicyItem | null
   run: RunQuery
@@ -135,7 +135,7 @@ export const savePolicy = async ({
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  if (replaces(item, draft, connectionType)) {
+  if (replaces(item, draft, dialect)) {
     await run(recreatePolicyQuery({ ...target, shape }))
     return
   }

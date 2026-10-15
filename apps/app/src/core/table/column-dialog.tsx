@@ -1,4 +1,5 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -48,11 +49,8 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
-const lockedFields = (
-  connectionType: ConnectionType,
-  column: EditableColumn | null
-) => {
-  const { renameColumns, retypeKeyColumns } = capabilitiesOf(connectionType)
+const lockedFields = (dialect: SqlDialect, column: EditableColumn | null) => {
+  const { renameColumns, retypeKeyColumns } = capabilitiesOf(dialect)
   const stored = column !== null && column.state !== 'added'
   return {
     name: stored && !renameColumns,
@@ -76,7 +74,10 @@ const ColumnForm = ({
   const { column, table } = request
   const { connection } = useRouteContext()
   const [name, setName] = useState(column?.name ?? '')
-  const columnType = useColumnType(connection.type, column?.type ?? '')
+  const columnType = useColumnType(
+    dialectOf(connection.type),
+    column?.type ?? ''
+  )
   const {
     array,
     arrayType,
@@ -91,7 +92,7 @@ const ColumnForm = ({
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
   const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
-  const locked = lockedFields(connection.type, column)
+  const locked = lockedFields(dialectOf(connection.type), column)
   const next = normalized(column, {
     comment,
     name,

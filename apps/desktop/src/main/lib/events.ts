@@ -5,7 +5,7 @@ import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
@@ -115,7 +115,7 @@ export const electron = {
     postgres: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/pg')
     ),
-  } satisfies Record<ConnectionType, QueryExecutor>,
+  } satisfies Record<SqlDialect, QueryExecutor>,
   ssh: {
     pickKeyFile: pickSshKeyFile,
   },

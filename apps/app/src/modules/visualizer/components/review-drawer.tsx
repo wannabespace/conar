@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -52,7 +52,7 @@ const draftLabel = (draft: DiagramDraft) => {
   }
 }
 
-const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
+const previewSql = (type: SqlDialect, draft: DiagramDraft) => {
   const { parameters, sql } = draftStatement(type, coldDialects[type](), draft)
   return formatSql(
     parameters.length > 0 ? inlineParameters(sql, parameters, type) : sql,
@@ -62,7 +62,7 @@ const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
 
 export const ReviewDrawer = ({
   applying,
-  connectionType,
+  dialect,
   ddlRollback,
   drafts,
   error,
@@ -74,7 +74,7 @@ export const ReviewDrawer = ({
   open,
 }: {
   applying: boolean
-  connectionType: ConnectionType
+  dialect: SqlDialect
   ddlRollback: boolean
   drafts: DiagramDraft[]
   error: Error | null
@@ -148,7 +148,7 @@ export const ReviewDrawer = ({
                   />
                 </div>
                 <CodeBlock
-                  code={previewSql(connectionType, draft)}
+                  code={previewSql(dialect, draft)}
                   language="sql"
                   size="xs"
                   wrap

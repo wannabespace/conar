@@ -1,7 +1,7 @@
 import { updateSql } from '@tamery/ai/features'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -25,13 +25,13 @@ export const updateSQL = orpc
         .atMostLength(AI_SQL_LIMITS.images),
       prompt: `string <= ${AI_SQL_LIMITS.prompt}`,
       sql: `string <= ${AI_SQL_LIMITS.sql}`,
-      type: type.valueOf(ConnectionType),
+      type: type.valueOf(SqlDialect),
     })
   )
   .handler(({ context, input, signal }) =>
     updateSql({
-      connectionType: input.type,
       context: input.context,
+      dialect: input.type,
       editor: input.editor,
       images: input.images,
       prompt: input.prompt,

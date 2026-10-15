@@ -1,6 +1,6 @@
 import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { engineLabels, engines } from '@tamery/shared/enums/connection-type'
+import { connectionTypeLabels } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
@@ -71,9 +71,7 @@ export const ConnectionsList = () => {
           }
         )
       } else if (grouping === 'type') {
-        query = query
-          .orderBy(({ c }) => c.type)
-          .orderBy(({ c }) => c.flavor, { nulls: 'first' })
+        query = query.orderBy(({ c }) => c.type)
       }
 
       const [sortField, sortDirection] = sort.split('-') as [
@@ -110,7 +108,7 @@ export const ConnectionsList = () => {
       query,
       connection.name,
       connection.label,
-      engineLabels[engines.of(connection)]
+      connectionTypeLabels[connection.type]
     )
   )
 
@@ -119,7 +117,7 @@ export const ConnectionsList = () => {
       return connection.label || null
     }
     if (grouping === 'type') {
-      return engineLabels[engines.of(connection)]
+      return connectionTypeLabels[connection.type]
     }
     return null
   }

@@ -1,4 +1,5 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { FILTERS_GROUPED } from '@tamery/shared/filters'
 import { useHotkeys } from '@tanstack/react-hotkeys'
@@ -21,12 +22,11 @@ export type Stage =
   | { step: 'operator'; target: FilterTarget }
   | { step: 'value'; target: FilterTarget; ref: Filter }
 
-export const offeredFilters = (connectionType: ConnectionType) =>
+export const offeredFilters = (dialect: SqlDialect) =>
   FILTERS_GROUPED.map((group) => ({
     ...group,
     filters: group.filters.filter(
-      (filter) =>
-        filter.operator !== 'ilike' || capabilitiesOf(connectionType).ilike
+      (filter) => filter.operator !== 'ilike' || capabilitiesOf(dialect).ilike
     ),
   }))
 
@@ -35,13 +35,13 @@ export const operatorMatches = (filter: Filter, text: string) =>
   filter.symbol.toLowerCase().includes(text)
 
 const highlightForStage = (
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   stage: Stage,
   value: string
 ) => {
   const trimmed = value.trim().toLowerCase()
   if (stage.step === 'operator') {
-    const first = offeredFilters(connectionType)
+    const first = offeredFilters(dialect)
       .flatMap((group) => group.filters)
       .find((filter) => operatorMatches(filter, trimmed))
     return first ? `operator:${first.operator}` : ''
@@ -75,7 +75,7 @@ export const useFilterComposer = ({
 
   const setQuery = (value: string) => {
     setPrompt(value)
-    setHighlighted(highlightForStage(connection.type, stage, value))
+    setHighlighted(highlightForStage(dialectOf(connection.type), stage, value))
     onQueryChange()
   }
 

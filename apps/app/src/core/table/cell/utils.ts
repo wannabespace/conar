@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
@@ -123,10 +123,7 @@ export const isNumericColumn = (column: Column) =>
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)
 
-export const canWriteDefault = (
-  connectionType: ConnectionType,
-  column: Column
-) =>
-  capabilitiesOf(connectionType).setDefault &&
+export const canWriteDefault = (dialect: SqlDialect, column: Column) =>
+  capabilitiesOf(dialect).setDefault &&
   column.defaultValue !== null &&
   column.defaultValue !== undefined

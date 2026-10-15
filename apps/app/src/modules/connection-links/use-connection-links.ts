@@ -1,7 +1,6 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
 import { guessConnection } from '@tamery/connection/guess'
-import { engines } from '@tamery/shared/enums/connection-type'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
@@ -37,8 +36,7 @@ export const useConnectionLinks = () => {
       if (!link) {
         return
       }
-      const { engine, ...guessed } = guessConnection(link)?.parts ?? {}
-      const parts = { ...guessed, type: engine && engines.type(engine) }
+      const parts = guessConnection(link)?.parts ?? {}
       const {
         connectionsCollection,
         connectionStringsCollection,

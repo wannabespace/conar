@@ -1,5 +1,5 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties, ReactNode } from 'react'
@@ -132,7 +132,7 @@ export interface CellGeometry {
 export const TableCell = ({
   children,
   column,
-  connectionType,
+  dialect,
   draft,
   flash,
   isDragging,
@@ -145,7 +145,7 @@ export const TableCell = ({
 }: CellGeometry & {
   children?: ReactNode
   column: Column
-  connectionType: ConnectionType
+  dialect: SqlDialect
   draft?: Pick<Draft, 'error' | 'isCommitting'>
   /** Set when a refetch changed the value; a new number replays the flash. */
   flash?: number
@@ -159,7 +159,7 @@ export const TableCell = ({
   })
   const { layout } = cursor
   const ref = useRef<HTMLDivElement>(null)
-  const transformer = createTransformer(connectionType, column)
+  const transformer = createTransformer(dialect, column)
 
   return (
     <div

@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -27,6 +28,7 @@ export const useDefinitionsState = ({
   section: DefinitionsSection
 }) => {
   const { connection, connectionResource } = resourceRoute.useRouteContext()
+  const dialect = dialectOf(connection.type)
   const { data, isPending: structurePending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -38,7 +40,7 @@ export const useDefinitionsState = ({
     [
       linkedSchema,
       pickedSchema,
-      defaultSchemaOf(connection.type, connectionResource.name),
+      defaultSchemaOf(dialect, connectionResource.name),
     ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
   const relationNamesOf = (schema: string, kind: RelationKind) =>
     data?.schemas
@@ -51,7 +53,7 @@ export const useDefinitionsState = ({
     query.run(await connectionResourceToQueryParams(connectionResource))
 
   return {
-    can: sectionCapabilitiesOf(section, connection.type),
+    can: sectionCapabilitiesOf(section, dialect),
     connection,
     connectionResource,
     relationNamesOf,
@@ -63,7 +65,7 @@ export const useDefinitionsState = ({
     setSearch,
     setSelectedSchema: setPickedSchema,
     structurePending,
-    type: connection.type,
+    type: dialect,
   }
 }
 

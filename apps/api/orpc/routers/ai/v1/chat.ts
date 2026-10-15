@@ -1,7 +1,7 @@
 import { webSearch } from '@exalabs/ai-sdk'
 import { openrouter } from '@openrouter/ai-sdk-provider'
 import { ORPCError, streamToAsyncIteratorObject } from '@orpc/server'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { FILTER_OPERATORS } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import type { InferUITools, ToolSet, UIDataTypes, UIMessage } from 'ai'
@@ -110,10 +110,10 @@ type LegacyUIMessage = UIMessage<
   InferUITools<typeof tools>
 >
 
-const chatSystemPrompt = (data: { connectionType: string; context: string }) =>
+const chatSystemPrompt = (data: { dialect: string; context: string }) =>
   [
     '<role>',
-    `You are Tamery AI, an expert ${data.connectionType} database assistant embedded in a production database editor. You help users write, understand, debug, and optimize SQL queries. You are concise, precise, and security-conscious.`,
+    `You are Tamery AI, an expert ${data.dialect} database assistant embedded in a production database editor. You help users write, understand, debug, and optimize SQL queries. You are concise, precise, and security-conscious.`,
     '</role>',
     '',
     '<rules>',
@@ -127,7 +127,7 @@ const chatSystemPrompt = (data: { connectionType: string; context: string }) =>
     '- If the user asks to modify specific lines in their current query, generate only the changed part — not the entire query.',
     '',
     'SQL generation:',
-    `- Write valid, production-ready SQL for the ${data.connectionType} dialect only.`,
+    `- Write valid, production-ready SQL for the ${data.dialect} dialect only.`,
     '- Reference only schemas, tables, columns, and enums provided in the context below — never hallucinate names.',
     '- Always quote identifiers (table and column names) to prevent case-sensitivity errors.',
     '- Use 2-space indentation and consistent formatting.',
@@ -157,7 +157,7 @@ const chatSystemPrompt = (data: { connectionType: string; context: string }) =>
     '</tool_strategy>',
     '',
     '<context>',
-    `Database dialect: ${data.connectionType}`,
+    `Database dialect: ${data.dialect}`,
     `Current date and time: ${new Date().toISOString()}`,
     '',
     data.context,
@@ -195,7 +195,7 @@ export const chat = orpc
       createdAt: 'Date',
       id: 'string.uuid.v7',
       messages: 'object[]' as type.cast<LegacyUIMessage[]>,
-      type: type.valueOf(ConnectionType),
+      type: type.valueOf(SqlDialect),
       updatedAt: 'Date',
     })
   )
@@ -212,7 +212,7 @@ export const chat = orpc
 
     context.addLogData({
       chatId: input.id,
-      connectionType: input.type,
+      dialect: input.type,
       inputMessages: input.messages.map((message) => ({
         id: message.id,
         partsCount: message.parts.length,
@@ -227,8 +227,8 @@ export const chat = orpc
       messages: [
         {
           content: chatSystemPrompt({
-            connectionType: input.type,
             context: input.context,
+            dialect: input.type,
           }),
           role: 'system',
         },

@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'bun:test'
 
-import {
-  ConnectionFlavor,
-  ConnectionType,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { guessConnection } from './index'
 
 const PSQL_PARTS = {
   database: 'app',
-  engine: ConnectionType.Postgres,
   host: 'db.acme.io',
   port: '5433',
+  type: ConnectionType.Postgres,
   user: 'me',
 }
 
@@ -39,10 +36,10 @@ describe('guessConnection — CLI commands', () => {
       "mysql -h db.acme.io -P 3307 -u root -p'se cret' shop",
       {
         database: 'shop',
-        engine: ConnectionType.MySQL,
         host: 'db.acme.io',
         password: 'se cret',
         port: '3307',
+        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -50,27 +47,27 @@ describe('guessConnection — CLI commands', () => {
       'mariadb --host=db.acme.io --user=root --password -D shop',
       {
         database: 'shop',
-        engine: ConnectionFlavor.MariaDB,
         host: 'db.acme.io',
+        type: ConnectionType.MariaDB,
         user: 'root',
       },
     ],
     [
       'PGPASSWORD=x mariadb -h h',
-      { engine: ConnectionType.Postgres, host: 'h', password: 'x' },
+      { host: 'h', password: 'x', type: ConnectionType.Postgres },
     ],
     [
       'mysql -u root -p shop',
-      { database: 'shop', engine: ConnectionType.MySQL, user: 'root' },
+      { database: 'shop', type: ConnectionType.MySQL, user: 'root' },
     ],
     [
       'sqlcmd -S tcp:mssql.acme.io,1433 -U sa -P pw -d master',
       {
         database: 'master',
-        engine: ConnectionType.MSSQL,
         host: 'mssql.acme.io',
         password: 'pw',
         port: '1433',
+        type: ConnectionType.MSSQL,
         user: 'sa',
       },
     ],
@@ -78,20 +75,20 @@ describe('guessConnection — CLI commands', () => {
       'clickhouse-client --host ch.acme.io --port 9000 --user default --password pw --database logs',
       {
         database: 'logs',
-        engine: ConnectionType.ClickHouse,
         host: 'ch.acme.io',
         password: 'pw',
         port: '8123',
+        type: ConnectionType.ClickHouse,
         user: 'default',
       },
     ],
     [
       "clickhouse client --host abc.eu-west-1.aws.clickhouse.cloud --secure --password 'pw'",
       {
-        engine: ConnectionType.ClickHouse,
         host: 'abc.eu-west-1.aws.clickhouse.cloud',
         password: 'pw',
         port: '8443',
+        type: ConnectionType.ClickHouse,
       },
     ],
   ])('reads %s', (text, parts) => {

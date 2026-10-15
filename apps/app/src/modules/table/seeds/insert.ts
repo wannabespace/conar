@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionResource } from '~/core/connection/sync'
 import { distinctQuery } from '~/core/queries/rows/distinct'
@@ -27,7 +27,7 @@ export const insertSeedRows = async ({
   columns: Column[]
   connectionResource: ConnectionResource
   count: number
-  dialect: ConnectionType
+  dialect: SqlDialect
   schema: string
   table: string
 }) => {

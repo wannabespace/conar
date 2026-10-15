@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '~/core/runtime/query'
 
@@ -14,15 +14,13 @@ export const createTableQuery = (target: {
     query: {
       clickhouse: (db) =>
         db.executeQuery(
-          createTableStatement(ConnectionType.ClickHouse, db, target)
+          createTableStatement(SqlDialect.ClickHouse, db, target)
         ),
       mssql: (db) =>
-        db.executeQuery(createTableStatement(ConnectionType.MSSQL, db, target)),
+        db.executeQuery(createTableStatement(SqlDialect.MSSQL, db, target)),
       mysql: (db) =>
-        db.executeQuery(createTableStatement(ConnectionType.MySQL, db, target)),
+        db.executeQuery(createTableStatement(SqlDialect.MySQL, db, target)),
       postgres: (db) =>
-        db.executeQuery(
-          createTableStatement(ConnectionType.Postgres, db, target)
-        ),
+        db.executeQuery(createTableStatement(SqlDialect.Postgres, db, target)),
     },
   })

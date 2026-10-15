@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "255138f0-5e9b-4c43-9c94-0e64b2687f88",
+  "id": "864acbe3-5e25-48f0-a625-f862adb3dc26",
   "prevIds": [
     "668afd05-bd16-4ab2-953c-4c862c0417ea"
   ],
@@ -22,16 +22,9 @@
     },
     {
       "values": [
-        "mariadb"
-      ],
-      "name": "connection_flavor",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
         "postgres",
         "mysql",
+        "mariadb",
         "mssql",
         "clickhouse"
       ],
@@ -787,19 +780,6 @@
       "generated": null,
       "identity": null,
       "name": "connection_string",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "connections"
-    },
-    {
-      "type": "connection_flavor",
-      "typeSchema": "public",
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "flavor",
       "entityType": "columns",
       "schema": "public",
       "table": "connections"

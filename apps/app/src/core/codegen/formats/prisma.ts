@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, FilterOperator } from '@tamery/shared/filters'
 import { camelCase, pascalCase } from 'change-case'
 
@@ -173,7 +173,7 @@ const SIZED_STRING_TYPES: Record<string, string> = {
   varchar: 'VarChar',
 }
 
-const NATIVE_TYPES: Record<ConnectionType, Record<string, string>> = {
+const NATIVE_TYPES: Record<SqlDialect, Record<string, string>> = {
   clickhouse: {},
   mssql: { date: '@db.Date' },
   mysql: { date: '@db.Date' },
@@ -296,7 +296,7 @@ export const generateSchemaPrisma = ({
     const fieldName = camelCase(c.id)
     usedNames.add(fieldName)
 
-    const isList = c.isArray && dialect === ConnectionType.Postgres
+    const isList = c.isArray && dialect === SqlDialect.Postgres
     scalarFields.push({
       attributes: buildFieldAttributes(c, fieldType, fieldName !== c.id, {
         columns,

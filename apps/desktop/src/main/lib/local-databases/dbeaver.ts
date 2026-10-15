@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { engineOf } from '@tamery/connection/connection-parts'
+import { connectionTypeOf } from '@tamery/connection/connection-parts'
 import { type } from 'arktype'
 import { Result } from 'better-result'
 import { app } from 'electron'
@@ -72,10 +72,10 @@ export const dbeaver: Finder = {
           name,
           parts: {
             database: configuration.database,
-            engine: engineOf(provider),
             host: configuration.host,
             password: saved?.password,
             port: String(configuration.port ?? ''),
+            type: connectionTypeOf(provider),
             user: saved?.user ?? configuration.user,
           },
         }

@@ -6,6 +6,7 @@ import {
   DeletePutBackIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -117,7 +118,7 @@ export const ActionsOrder = () => {
   const activeCount = orderEntries.length
   const availableColumns = columns.filter(
     (column) =>
-      isSortable(connection.type, column) &&
+      isSortable(dialectOf(connection.type), column) &&
       !orderEntries.some(([id]) => id === column.id)
   )
   let label = 'Sort order'

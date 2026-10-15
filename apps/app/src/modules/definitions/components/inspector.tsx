@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -139,15 +139,15 @@ export const Inspector = ({
 }
 
 export const replaceWarning = ({
-  connectionType,
+  dialect,
   name,
   noun,
 }: {
-  connectionType: ConnectionType
+  dialect: SqlDialect
   name: string
   noun: string
 }): InspectorWarning | undefined =>
-  capabilitiesOf(connectionType).ddlRollback
+  capabilitiesOf(dialect).ddlRollback
     ? undefined
     : {
         action: `Replace ${noun}`,

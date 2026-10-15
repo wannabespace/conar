@@ -22,16 +22,16 @@ export const usePickLocalDatabase = ({
 
   const pick = async ({
     connectionString,
-    engine,
     name,
     source,
+    type,
   }: LocalDatabase) => {
     setWithheld(undefined)
     // Replaces the form rather than merging like a paste: another pick on the same host would keep the previous password, database and options.
     form.reset()
     read(connectionString, 'found')
     form.setFieldValue('name', name)
-    form.setFieldValue('engine', engine)
+    form.setFieldValue('type', type)
     if (unlocking.current === connectionString) {
       return
     }

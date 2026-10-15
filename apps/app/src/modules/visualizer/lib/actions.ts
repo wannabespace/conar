@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
@@ -184,7 +185,7 @@ export const useDiagramActions = ({
           name: 'id',
           nullable: false,
           primaryKey: true,
-          type: capabilitiesOf(connection.type).columnTypes.id,
+          type: capabilitiesOf(dialectOf(connection.type)).columnTypes.id,
         },
       ])
       const id = tableNodeId(targetSchema, name)

@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { EditableListItem } from '@tamery/ui/components/custom/editable-list'
 import { useState } from 'react'
 
@@ -25,12 +25,9 @@ const arrayTypes = {
   },
 }
 
-export const useColumnType = (
-  connectionType: ConnectionType,
-  declared: string
-) => {
+export const useColumnType = (dialect: SqlDialect, declared: string) => {
   const { array: arrayType, enum: inlineEnum } =
-    capabilitiesOf(connectionType).columnTypes
+    capabilitiesOf(dialect).columnTypes
   const initial = arrayTypes.split(arrayType, declared)
   const initialValues = inlineEnum?.parse(initial.element)
   const [element, setElement] = useState(

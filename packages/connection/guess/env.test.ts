@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import {
-  ConnectionFlavor,
-  ConnectionType,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { guessConnection } from './index'
 
@@ -14,10 +11,10 @@ describe('guessConnection — env files', () => {
       'export PGHOST=db.acme.io\nexport PGPORT=5432\nexport PGUSER=me\nexport PGPASSWORD="p w"\nexport PGDATABASE=app',
       {
         database: 'app',
-        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
         password: 'p w',
         port: '5432',
+        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -26,10 +23,10 @@ describe('guessConnection — env files', () => {
       'APP_URL=http://localhost\nDB_CONNECTION=pgsql\nDB_HOST=127.0.0.1\nDB_PORT=5432\nDB_DATABASE=laravel\nDB_USERNAME=root\nDB_PASSWORD=secret # local only',
       {
         database: 'laravel',
-        engine: ConnectionType.Postgres,
         host: '127.0.0.1',
         password: 'secret',
         port: '5432',
+        type: ConnectionType.Postgres,
         user: 'root',
       },
     ],
@@ -38,8 +35,8 @@ describe('guessConnection — env files', () => {
       'DB_CONNECTION=mariadb\nDB_HOST=127.0.0.1\nDB_DATABASE=laravel\nDB_USERNAME=root',
       {
         database: 'laravel',
-        engine: ConnectionFlavor.MariaDB,
         host: '127.0.0.1',
+        type: ConnectionType.MariaDB,
         user: 'root',
       },
     ],
@@ -48,23 +45,23 @@ describe('guessConnection — env files', () => {
       'MARIADB_ROOT_PASSWORD=rootpw\nMARIADB_DATABASE=shop',
       {
         database: 'shop',
-        engine: ConnectionFlavor.MariaDB,
         password: 'rootpw',
+        type: ConnectionType.MariaDB,
         user: 'root',
       },
     ],
     [
       'generic DB_* variables typed by DB_TYPE',
       'DB_TYPE=sqlsrv\nDB_HOST=mssql.local\nDB_NAME=app',
-      { database: 'app', engine: ConnectionType.MSSQL, host: 'mssql.local' },
+      { database: 'app', host: 'mssql.local', type: ConnectionType.MSSQL },
     ],
     [
       'a docker-compose environment list, root password implying root',
       'environment:\n  - MYSQL_ROOT_PASSWORD=rootpw\n  - MYSQL_ROOT_HOST=%\n  - MYSQL_DATABASE=shop',
       {
         database: 'shop',
-        engine: ConnectionType.MySQL,
         password: 'rootpw',
+        type: ConnectionType.MySQL,
         user: 'root',
       },
     ],
@@ -73,8 +70,8 @@ describe('guessConnection — env files', () => {
       'environment:\n  POSTGRES_USER: me\n  POSTGRES_PASSWORD: pw\n  POSTGRES_DB: app',
       {
         database: 'app',
-        engine: ConnectionType.Postgres,
         password: 'pw',
+        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
@@ -83,24 +80,24 @@ describe('guessConnection — env files', () => {
       'CLICKHOUSE_HOST=ch.local\nCLICKHOUSE_USER=default\nCLICKHOUSE_PASSWORD=pw\nCLICKHOUSE_DB=logs',
       {
         database: 'logs',
-        engine: ConnectionType.ClickHouse,
         host: 'ch.local',
         password: 'pw',
+        type: ConnectionType.ClickHouse,
         user: 'default',
       },
     ],
     [
       'the SQL Server image password',
       'ACCEPT_EULA=Y\nMSSQL_SA_PASSWORD=Str0ng!',
-      { engine: ConnectionType.MSSQL, password: 'Str0ng!', user: 'sa' },
+      { password: 'Str0ng!', type: ConnectionType.MSSQL, user: 'sa' },
     ],
     [
       'a Rails database.yml, skipping ERB',
       'development:\n  adapter: mysql2\n  host: localhost\n  username: rails\n  password: <%= ENV["DB_PASSWORD"] %>\n  database: app_dev\ntest:\n  database: app_test',
       {
         database: 'app_dev',
-        engine: ConnectionType.MySQL,
         host: 'localhost',
+        type: ConnectionType.MySQL,
         user: 'rails',
       },
     ],

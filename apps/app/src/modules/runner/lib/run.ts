@@ -187,17 +187,17 @@ export const runStatements = async ({
   run.running = false
   publish()
   runHistory.add(connectionResource.id, ran)
-  const connectionType = params?.type
+  const dialect = params?.type
   posthog.capture('query_run', {
     failed: failedAt !== undefined,
     statements: statements.length,
     stopped: signal.aborted,
-    type: connectionType,
+    type: dialect,
   })
-  if (connectionType) {
+  if (dialect) {
     refreshAfterRun(
       connectionResource,
-      connectionType,
+      dialect,
       statements.map((statement) => statement.text).join(';\n')
     )
   }

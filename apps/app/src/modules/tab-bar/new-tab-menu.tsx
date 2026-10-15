@@ -1,5 +1,6 @@
 import { LayoutTable02Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -43,7 +44,7 @@ export const NewTabMenu = ({
   const [open, setOpen] = useState(false)
   const schemas = tablesAndSchemas?.schemas ?? []
   const showSchema = schemas.length > 1
-  const schemaItems = schemaGroups(connection.type).flatMap(
+  const schemaItems = schemaGroups(dialectOf(connection.type)).flatMap(
     (group) => group.items
   )
 

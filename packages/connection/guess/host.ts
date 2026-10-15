@@ -44,6 +44,6 @@ export const guessPgpass = (text: string): DatabaseGuess | null => {
   )
   return {
     format: 'host',
-    parts: { ...parts, engine: ConnectionType.Postgres },
+    parts: { ...parts, type: ConnectionType.Postgres },
   }
 }

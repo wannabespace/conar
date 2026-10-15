@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import {
   destructiveKeywords,
@@ -10,9 +10,9 @@ import {
 } from './destructive'
 import { dialects } from './dialect'
 
-const mysql = dialects[ConnectionType.MySQL]
-const pg = dialects[ConnectionType.Postgres]
-const clickhouse = dialects[ConnectionType.ClickHouse]
+const mysql = dialects[SqlDialect.MySQL]
+const pg = dialects[SqlDialect.Postgres]
+const clickhouse = dialects[SqlDialect.ClickHouse]
 
 describe('destructiveKeywords', () => {
   it('flags statements that change or remove existing data', () => {
@@ -22,7 +22,7 @@ describe('destructiveKeywords', () => {
     expect(
       destructiveKeywords(
         'MERGE INTO t USING s ON t.id = s.id',
-        dialects[ConnectionType.MSSQL]
+        dialects[SqlDialect.MSSQL]
       )
     ).toEqual(['MERGE'])
     expect(
@@ -37,7 +37,7 @@ describe('destructiveKeywords', () => {
     expect(
       destructiveKeywords(
         "EXEC('DROP TABLE users')",
-        dialects[ConnectionType.MSSQL]
+        dialects[SqlDialect.MSSQL]
       )
     ).toEqual(['EXEC'])
     expect(
@@ -76,7 +76,7 @@ describe('destructiveKeywords', () => {
     expect(
       destructiveKeywords(
         'SET NOCOUNT ON DELETE FROM users',
-        dialects[ConnectionType.MSSQL]
+        dialects[SqlDialect.MSSQL]
       )
     ).toEqual(['DELETE'])
     expect(
@@ -147,10 +147,7 @@ describe('destructiveKeywords', () => {
       )
     ).toBe(true)
     expect(
-      writesData(
-        "EXEC('INSERT INTO t VALUES (1)')",
-        dialects[ConnectionType.MSSQL]
-      )
+      writesData("EXEC('INSERT INTO t VALUES (1)')", dialects[SqlDialect.MSSQL])
     ).toBe(true)
     expect(writesData('SELECT * FROM t FOR UPDATE', pg)).toBe(false)
     expect(writesData("SELECT 'DELETE' FROM t", mysql)).toBe(false)
@@ -160,7 +157,7 @@ describe('destructiveKeywords', () => {
 })
 
 describe('readsOnly', () => {
-  const mssql = dialects[ConnectionType.MSSQL]
+  const mssql = dialects[SqlDialect.MSSQL]
 
   it('accepts one reading statement', () => {
     expect(readsOnly('select * from users where id = 1;', pg)).toBe(true)

@@ -27,9 +27,7 @@ export const myCnf: Finder = {
       ...client,
       ...mysql,
     })
-    return [
-      { name: '', parts: { ...rest, engine: ConnectionType.MySQL, host } },
-    ]
+    return [{ name: '', parts: { ...rest, host, type: ConnectionType.MySQL } }]
   },
   source: '.my.cnf',
   targets: () => [path.join(homedir(), '.my.cnf')],

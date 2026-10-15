@@ -64,12 +64,12 @@ export const PolicyInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  type: dialect,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
     meta: { event: 'policy_saved' },
     mutationFn: (draft: PolicyDraft) =>
-      savePolicy({ connectionType, draft, item, run }),
+      savePolicy({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
@@ -86,7 +86,7 @@ export const PolicyInspector = ({
     subject: `row level security on "${item?.table}"`,
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: draftOf(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
@@ -98,12 +98,12 @@ export const PolicyInspector = ({
 
   const readOnly = item ? !can.edit : !can.create
   const { policies: options, rowLevelSecurity: rlsTables } =
-    capabilitiesOf(connectionType)
+    capabilitiesOf(dialect)
   const expressions = expressionsFor(draft.command)
   const checks = options.commands.some(
     (command) => expressionsFor(command).check
   )
-  const replacing = !!item && replaces(item, draft, connectionType)
+  const replacing = !!item && replaces(item, draft, dialect)
   const changed =
     !item ||
     replacing ||

@@ -1,6 +1,7 @@
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { isConnectionError } from '@tamery/shared/connections'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
@@ -26,7 +27,7 @@ export const connectionToQueryParams = async (
     connectionString: await connectionStringsCollection.utils.decrypt(
       connection.id
     ),
-    type: connection.type,
+    type: dialectOf(connection.type),
   }
 }
 
@@ -51,13 +52,13 @@ export const connectionResourceToQueryParams = async (
     log: ({ promise, query, values }) =>
       logQuery({ promise, query, resourceId: connectionResource.id, values }),
     resourceId: connectionResource.id,
-    type: connection.type,
+    type: dialectOf(connection.type),
   }
 }
 
 export interface QueryParams {
   connectionString: string
-  type: ConnectionType
+  type: SqlDialect
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
@@ -72,7 +73,7 @@ export interface QueryParams {
   }) => void
 }
 
-const dialectOf = (queryParams: QueryParams) =>
+const databaseOf = (queryParams: QueryParams) =>
   dialects[queryParams.type]({
     connectionId: queryParams.connectionId,
     connectionString: queryParams.connectionString,
@@ -83,7 +84,7 @@ const dialectOf = (queryParams: QueryParams) =>
   })
 
 export const transaction = (queryParams: QueryParams) =>
-  dialectOf(queryParams).transaction()
+  databaseOf(queryParams).transaction()
 
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
@@ -102,7 +103,7 @@ export const reconnectingPromises = createStore<
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
-    [D in ConnectionType]: (
+    [D in SqlDialect]: (
       dialect: ReturnType<(typeof dialects)[D]>
     ) => Promise<T extends Type ? T['inferIn'] : unknown>
   }
@@ -112,7 +113,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
     // oxlint-disable-next-line ts/no-explicit-any
     tx?: Transaction<any>
   ): Promise<T extends Type ? T['inferOut'] : unknown> => {
-    const instance = tx ?? dialectOf(queryParams)
+    const instance = tx ?? databaseOf(queryParams)
     const queryFn = options.query[queryParams.type]
 
     const connectionStringToShow = getConnectionStringToShow(

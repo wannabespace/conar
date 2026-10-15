@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { destructiveKeywords, dialects } from '@tamery/sql'
 import {
   AlertDialog,
@@ -84,8 +85,10 @@ export const ApprovalDialog = () => {
             <AlertDialogCancel ref={declineRef}>Decline</AlertDialogCancel>
             <AlertDialogAction
               variant={
-                destructiveKeywords(item.sql, dialects[item.connection.type])
-                  .length > 0
+                destructiveKeywords(
+                  item.sql,
+                  dialects[dialectOf(item.connection.type)]
+                ).length > 0
                   ? 'destructive'
                   : 'warning'
               }

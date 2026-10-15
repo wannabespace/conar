@@ -9,6 +9,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { acceptGhostText, dismissGhostText } from '@tamery/monaco/sql-language'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Group } from '@tamery/ui/components/group'
 import {
@@ -225,7 +226,7 @@ export const StatementControls = ({
               items={() =>
                 statementMenuItems(
                   actions,
-                  capabilitiesOf(connection.type).explain
+                  capabilitiesOf(dialectOf(connection.type)).explain
                 )
               }
             />

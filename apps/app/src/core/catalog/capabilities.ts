@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import {
   CONSTRAINT_KINDS,
@@ -36,8 +36,8 @@ import type { DefinitionsSection } from './sections'
 
 export type { ArrayType, SectionCapabilities } from './capability-presets'
 
-const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
-  [ConnectionType.ClickHouse]: {
+const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
+  [SqlDialect.ClickHouse]: {
     cascade: false,
     columnTypes: {
       array: { close: ')', open: 'Array(' },
@@ -47,7 +47,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       incomparable:
         /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
       json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
-      options: COLUMN_TYPES[ConnectionType.ClickHouse],
+      options: COLUMN_TYPES[SqlDialect.ClickHouse],
       uuid: /\bUUID\b/u,
       xml: null,
     },
@@ -87,7 +87,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     systemSchemas: [],
     triggers: noTriggers,
   },
-  [ConnectionType.MSSQL]: {
+  [SqlDialect.MSSQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -96,7 +96,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       id: 'int identity',
       incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[ConnectionType.MSSQL],
+      options: COLUMN_TYPES[SqlDialect.MSSQL],
       uuid: /^uniqueidentifier$/iu,
       xml: /^xml$/iu,
     },
@@ -148,7 +148,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       toggle: true,
     },
   },
-  [ConnectionType.MySQL]: {
+  [SqlDialect.MySQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -157,7 +157,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       id: 'int auto_increment',
       incomparable: null,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[ConnectionType.MySQL],
+      options: COLUMN_TYPES[SqlDialect.MySQL],
       // MariaDB's native UUID; MySQL has none.
       uuid: /^uuid$/iu,
       xml: null,
@@ -210,7 +210,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       toggle: false,
     },
   },
-  [ConnectionType.Postgres]: {
+  [SqlDialect.Postgres]: {
     cascade: true,
     columnTypes: {
       array: { close: '[]', open: '' },
@@ -220,7 +220,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       incomparable:
         /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
       json: /^jsonb?$/iu,
-      options: COLUMN_TYPES[ConnectionType.Postgres],
+      options: COLUMN_TYPES[SqlDialect.Postgres],
       uuid: /^uuid$/iu,
       xml: /^xml$/iu,
     },
@@ -276,23 +276,21 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
 }
 
-export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
+export const capabilitiesOf = (type: SqlDialect) => capabilities[type]
 
-export const defaultSchemaOf = (
-  type: ConnectionType,
-  database: string | null
-) => capabilities[type].defaultSchema ?? database
+export const defaultSchemaOf = (type: SqlDialect, database: string | null) =>
+  capabilities[type].defaultSchema ?? database
 
 export const sectionAvailable = (
   section: DefinitionsSection,
-  type: ConnectionType
+  type: SqlDialect
 ) => capabilities[type].sections[section] !== false
 
 export const sectionCapabilitiesOf = (
   section: DefinitionsSection,
-  type: ConnectionType
+  type: SqlDialect
 ): SectionCapabilities => capabilities[type].sections[section] || readOnly
 
-export const foreignKeysCreatable = (type: ConnectionType) =>
+export const foreignKeysCreatable = (type: SqlDialect) =>
   capabilities[type].constraintKinds.includes('foreignKey') &&
   !!sectionCapabilitiesOf('constraints', type).create

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import type { SqlCatalog } from './catalog'
 import { completionItems } from './completion'
 import { completionContext } from './completion-context'
 import { dialects } from './dialect'
 
-const pg = dialects[ConnectionType.Postgres]
+const pg = dialects[SqlDialect.Postgres]
 const catalog: SqlCatalog = {
   defaultSchema: 'public',
   enums: [{ name: 'status', values: ['active', 'banned'] }],
@@ -215,7 +215,7 @@ describe('completion', () => {
   })
 
   it('offers only the vocabulary the dialect speaks', () => {
-    const mssql = dialects[ConnectionType.MSSQL]
+    const mssql = dialects[SqlDialect.MSSQL]
     const labels = (sql: string) =>
       completionItems(
         completionContext(sql, sql.length, mssql),

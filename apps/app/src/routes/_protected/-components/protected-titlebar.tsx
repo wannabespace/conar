@@ -7,7 +7,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
-import { engines } from '@tamery/shared/enums/connection-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -83,10 +82,7 @@ const ConnectionSubMenu = ({
           navigate(lastResourceLink)
         }}
       >
-        <ConnectionIcon
-          engine={engines.of(connection)}
-          className="size-4 shrink-0"
-        />
+        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
         <span data-mask className="truncate">
           {connection.name}
         </span>
@@ -168,10 +164,7 @@ const ConnectionsDropdown = ({
       >
         {current ? (
           <>
-            <ConnectionIcon
-              engine={engines.of(current)}
-              className="size-4 shrink-0"
-            />
+            <ConnectionIcon type={current.type} className="size-4 shrink-0" />
             <span data-mask className="truncate">
               {current.name}
             </span>

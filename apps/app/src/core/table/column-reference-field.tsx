@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import {
   Combobox,
   ComboboxContent,
@@ -27,7 +28,8 @@ export const ReferenceField = ({
   value: ReferenceTarget | null
 }) => {
   const { connection } = useRouteContext()
-  const referable = foreignKeysCreatable(connection.type) && !column?.foreign
+  const referable =
+    foreignKeysCreatable(dialectOf(connection.type)) && !column?.foreign
   const [opened, setOpened] = useState(false)
   const { loading, targets } = useReferenceTargets(referable && opened)
   const labels = [...targets.keys()].toSorted()

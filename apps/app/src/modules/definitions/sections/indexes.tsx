@@ -4,7 +4,7 @@ import {
   LeftToRightListDashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
@@ -112,14 +112,13 @@ const finalNameOf = (draft: IndexDraft) =>
 const draftOf = (
   item: GroupedIndex | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ): IndexDraft => ({
   columns: item?.columns ?? [],
   granularity: String(item?.granularity ?? 1),
   name: item?.name ?? '',
   schema: item?.schema ?? pageSchema,
-  skipType:
-    item?.type ?? capabilitiesOf(connectionType).indexes.skipTypes[0] ?? '',
+  skipType: item?.type ?? capabilitiesOf(dialect).indexes.skipTypes[0] ?? '',
   table: item?.table ?? '',
   unique: item ? item.kind !== 'regular' : false,
 })
@@ -127,30 +126,30 @@ const draftOf = (
 const reshapes = (
   draft: IndexDraft,
   item: GroupedIndex | null,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ) => {
   if (!item) {
     return false
   }
-  const opened = draftOf(item, item.schema, connectionType)
+  const opened = draftOf(item, item.schema, dialect)
 
   return (
     !sameList(draft.columns, opened.columns) ||
     draft.unique !== opened.unique ||
     draft.skipType !== opened.skipType ||
     draft.granularity !== opened.granularity ||
-    (!capabilitiesOf(connectionType).indexes.rename &&
+    (!capabilitiesOf(dialect).indexes.rename &&
       finalNameOf(draft) !== item.name)
   )
 }
 
 const saveIndex = ({
-  connectionType,
+  dialect,
   draft,
   item,
   run,
 }: {
-  connectionType: ConnectionType
+  dialect: SqlDialect
   draft: IndexDraft
   item: GroupedIndex | null
   run: RunQuery
@@ -173,7 +172,7 @@ const saveIndex = ({
   const target = { name: item.name, schema: item.schema, table: item.table }
 
   return run(
-    reshapes(draft, item, connectionType)
+    reshapes(draft, item, dialect)
       ? recreateIndexQuery({ ...shape, ...target, newName: name })
       : renameIndexQuery({ ...target, newName: name })
   )
@@ -182,14 +181,14 @@ const saveIndex = ({
 const locksOf = ({
   can,
   item,
-  type: connectionType,
+  type: dialect,
 }: {
   can: SectionCapabilities
   item: GroupedIndex | null
-  type: ConnectionType
+  type: SqlDialect
 }) => {
   const owned = !!item?.constraintOwned
-  const { indexes, renameConstraints } = capabilitiesOf(connectionType)
+  const { indexes, renameConstraints } = capabilitiesOf(dialect)
   const readOnly = item
     ? !can.edit ||
       (owned && !renameConstraints) ||
@@ -277,12 +276,11 @@ const IndexInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  type: dialect,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
     meta: { event: 'index_saved' },
-    mutationFn: (draft: IndexDraft) =>
-      saveIndex({ connectionType, draft, item, run }),
+    mutationFn: (draft: IndexDraft) => saveIndex({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(`Index "${finalNameOf(draft)}" saved`)
@@ -290,7 +288,7 @@ const IndexInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: draftOf(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -306,9 +304,9 @@ const IndexInspector = ({
     enabled: draft.table !== '',
   })
 
-  const locked = locksOf({ can, item, type: connectionType })
-  const reshaped = reshapes(draft, item, connectionType)
-  const { skipTypes } = capabilitiesOf(connectionType).indexes
+  const locked = locksOf({ can, item, type: dialect })
+  const reshaped = reshapes(draft, item, dialect)
+  const { skipTypes } = capabilitiesOf(dialect).indexes
 
   return (
     <Inspector

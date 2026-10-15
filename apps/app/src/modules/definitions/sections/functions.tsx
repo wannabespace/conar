@@ -1,6 +1,6 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { sqlLanguageIds } from '@tamery/monaco/sql-language'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -95,10 +95,10 @@ const TRIGGER_FUNCTION_BODY = 'BEGIN\n  RETURN NEW;\nEND;'
 
 const newDraft = (
   pageSchema: string,
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   preset?: string
 ): FunctionDraft => {
-  const { behaviors, languages } = capabilitiesOf(connectionType).functions
+  const { behaviors, languages } = capabilitiesOf(dialect).functions
   const language = languages[0] ?? ''
   const trigger = preset === 'trigger'
 
@@ -108,7 +108,7 @@ const newDraft = (
     body: trigger
       ? TRIGGER_FUNCTION_BODY
       : functionBodyTemplateOf({
-          connectionType,
+          dialect,
           kind: 'function',
           language,
           returnType: '',
@@ -127,10 +127,10 @@ const newDraft = (
 const draftOf = (
   item: FunctionItem | null,
   pageSchema: string,
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   preset?: string
 ): FunctionDraft => {
-  const fallback = newDraft(pageSchema, connectionType, preset)
+  const fallback = newDraft(pageSchema, dialect, preset)
 
   return item
     ? {
@@ -163,8 +163,8 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   securityDefiner: draft.securityDefiner,
 })
 
-const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
-  const { languages } = capabilitiesOf(connectionType).functions
+const formEditable = (item: FunctionItem, dialect: SqlDialect) => {
+  const { languages } = capabilitiesOf(dialect).functions
 
   return (
     !item.custom &&
@@ -197,9 +197,9 @@ const FunctionInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  type: dialect,
 }: SectionInspectorProps<FunctionItem>) => {
-  const options = capabilitiesOf(connectionType).functions
+  const options = capabilitiesOf(dialect).functions
   const mutation = useMutation({
     meta: { event: 'function_saved' },
     mutationFn: (draft: FunctionDraft) =>
@@ -217,7 +217,7 @@ const FunctionInspector = ({
                   returnType: item.return_type,
                 },
                 shapeOf(draft),
-                connectionType
+                dialect
               ),
               schema: item.schema,
               shape: shapeOf(draft),
@@ -236,7 +236,7 @@ const FunctionInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType, preset),
+    defaultValues: draftOf(item, selectedSchema ?? '', dialect, preset),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -245,21 +245,18 @@ const FunctionInspector = ({
   const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item
-    ? !can.edit || !formEditable(item, connectionType)
+    ? !can.edit || !formEditable(item, dialect)
     : !can.create
   const execution = hasExecutionOptions(options)
   const retemplate = (next: FunctionDraft) => {
-    const template = functionBodyTemplateOf({ connectionType, ...next })
+    const template = functionBodyTemplateOf({ dialect, ...next })
 
-    if (
-      !item &&
-      draft.body === functionBodyTemplateOf({ connectionType, ...draft })
-    ) {
+    if (!item && draft.body === functionBodyTemplateOf({ dialect, ...draft })) {
       resetFields(form, { body: template })
     }
   }
   const returns = draft.kind === 'function'
-  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
+  const saved = item && shapeOf(draftOf(item, draft.schema, dialect))
   const changed = !saved || !sameShape(shapeOf(draft), saved)
 
   return (
@@ -273,7 +270,7 @@ const FunctionInspector = ({
       readOnly={readOnly}
       warning={
         item
-          ? replaceWarning({ connectionType, name: item.name, noun: item.type })
+          ? replaceWarning({ dialect, name: item.name, noun: item.type })
           : undefined
       }
     >
@@ -398,7 +395,7 @@ const FunctionInspector = ({
             <BodyField
               label="Body"
               disabled={readOnly}
-              language={sqlLanguageIds[connectionType]}
+              language={sqlLanguageIds[dialect]}
             />
           )}
         </form.AppField>

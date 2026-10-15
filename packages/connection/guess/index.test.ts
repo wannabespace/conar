@@ -39,18 +39,18 @@ describe('guessConnection — snippets from configs and tools', () => {
       "DATABASES = {\n  'default': {\n    'ENGINE': 'django.db.backends.postgresql',\n    'NAME': 'app',\n    'USER': 'me',\n    'PASSWORD': 'pw',\n    'HOST': 'db.acme.io',\n  }\n}",
       {
         database: 'app',
-        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
+        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
     [
       'services:\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: pw\n    ports:\n      - "5433:5432"',
       {
-        engine: ConnectionType.Postgres,
         host: 'localhost',
         password: 'pw',
         port: '5433',
+        type: ConnectionType.Postgres,
       },
     ],
     [
@@ -61,40 +61,37 @@ describe('guessConnection — snippets from configs and tools', () => {
       'DSN=me:pw@tcp(db.acme.io:3306)/app?parseTime=true',
       {
         database: 'app',
-        engine: ConnectionType.MySQL,
         host: 'db.acme.io',
         password: 'pw',
+        type: ConnectionType.MySQL,
       },
     ],
     [
       'db.acme.io:5432:app:me:pw',
       {
         database: 'app',
-        engine: ConnectionType.Postgres,
         host: 'db.acme.io',
+        type: ConnectionType.Postgres,
         user: 'me',
       },
     ],
     [
       'Driver={ODBC Driver 18 for SQL Server};Server=tcp:db.acme.io,1433;Database=app;Uid=me;Pwd=pw;',
       {
-        engine: ConnectionType.MSSQL,
         host: 'db.acme.io',
         port: '1433',
+        type: ConnectionType.MSSQL,
         user: 'me',
       },
     ],
     [
       'Server=.;Database=app;User Id=sa;Password=pw;TrustServerCertificate=True',
-      { engine: ConnectionType.MSSQL, host: 'localhost' },
+      { host: 'localhost', type: ConnectionType.MSSQL },
     ],
-    [
-      'jdbc:ch://ch.acme.io:8123/default',
-      { engine: ConnectionType.ClickHouse },
-    ],
+    ['jdbc:ch://ch.acme.io:8123/default', { type: ConnectionType.ClickHouse }],
     [
       'cockroachdb://root@crdb.acme.io:26257/defaultdb',
-      { engine: ConnectionType.Postgres },
+      { type: ConnectionType.Postgres },
     ],
     [
       'pg_dump -h db.acme.io -U me -p 5433 app > dump.sql',

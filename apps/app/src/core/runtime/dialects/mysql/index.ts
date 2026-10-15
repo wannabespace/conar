@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { Dialect } from 'kysely'
 import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 
@@ -8,7 +8,7 @@ import { createKyselyDriver } from '~/core/runtime/dialects/driver'
 export const mysqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MysqlAdapter(),
-    createDriver: () => createKyselyDriver(ConnectionType.MySQL, options),
+    createDriver: () => createKyselyDriver(SqlDialect.MySQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

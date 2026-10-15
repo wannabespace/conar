@@ -7,6 +7,7 @@ import {
   TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -170,7 +171,7 @@ const ResultBody = ({
     <RunnerResultsTable
       columns={columns}
       rows={rows}
-      connectionType={connection.type}
+      dialect={dialectOf(connection.type)}
     />
   )
 }

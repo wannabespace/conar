@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
@@ -33,26 +33,26 @@ export interface FunctionShape {
 }
 
 export const functionBodyTemplateOf = ({
-  connectionType,
+  dialect,
   kind,
   language,
   returnType,
 }: {
-  connectionType: ConnectionType
+  dialect: SqlDialect
   kind: RoutineKind
   language: string
   returnType: string
 }) => {
-  if (connectionType === ConnectionType.Postgres) {
+  if (dialect === SqlDialect.Postgres) {
     return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
   }
 
-  if (connectionType === ConnectionType.ClickHouse) {
+  if (dialect === SqlDialect.ClickHouse) {
     return ''
   }
 
   if (
-    connectionType === ConnectionType.MSSQL &&
+    dialect === SqlDialect.MSSQL &&
     kind === 'function' &&
     /^table$/iu.test(returnType.trim())
   ) {
@@ -64,7 +64,7 @@ export const functionBodyTemplateOf = ({
   }
 
   // T-SQL rejects a block holding no statement; MySQL takes one.
-  return connectionType === ConnectionType.MSSQL
+  return dialect === SqlDialect.MSSQL
     ? 'BEGIN\n  SET NOCOUNT ON;\nEND'
     : 'BEGIN\n\nEND'
 }
@@ -78,11 +78,11 @@ export const replacesRoutine = (
     returnType: string | null
   },
   shape: FunctionShape,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ) =>
   saved.name !== shape.name ||
   saved.kind !== shape.kind ||
-  (connectionType !== ConnectionType.MSSQL &&
+  (dialect !== SqlDialect.MSSQL &&
     ((saved.args ?? '') !== shape.args ||
       (saved.returnType ?? '') !== shape.returnType))
 

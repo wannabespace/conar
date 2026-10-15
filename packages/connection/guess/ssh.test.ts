@@ -25,7 +25,6 @@ describe('guessConnection — SSH', () => {
       fixes: [],
       format: 'ssh',
       parts: {
-        engine: ConnectionType.Postgres,
         host: 'db.internal',
         port: '5432',
         ssh: tunnel({
@@ -35,6 +34,7 @@ describe('guessConnection — SSH', () => {
           port: '2222',
           user: 'ubuntu',
         }),
+        type: ConnectionType.Postgres,
       },
     })
   })
@@ -69,11 +69,11 @@ describe('guessConnection — SSH', () => {
       format,
       parts: {
         database: 'shop',
-        engine: ConnectionType.Postgres,
         host: 'db.internal',
         password: 'pw',
         port: '5432',
         ssh: tunnel({ host: 'bastion.acme.io', user: 'ubuntu' }),
+        type: ConnectionType.Postgres,
         user: 'app',
       },
     })
@@ -91,11 +91,11 @@ describe('guessConnection — SSH', () => {
   ])('reads %s chained after the ssh command', (_, text) => {
     expect(guessConnection(text)?.parts).toStrictEqual({
       database: 'shop',
-      engine: ConnectionType.Postgres,
       host: 'db.internal',
       password: 'pw',
       port: '5432',
       ssh: tunnel({ host: 'bastion.acme.io', user: 'deploy' }),
+      type: ConnectionType.Postgres,
       user: 'app',
     })
   })
@@ -120,9 +120,9 @@ describe('guessConnection — SSH', () => {
       )?.parts
     ).toStrictEqual({
       database: 'shop',
-      engine: ConnectionType.Postgres,
       host: 'db.internal',
       password: 'pw',
+      type: ConnectionType.Postgres,
       user: 'app',
     })
   })

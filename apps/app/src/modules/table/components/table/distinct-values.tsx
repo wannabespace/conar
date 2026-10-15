@@ -1,6 +1,7 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
@@ -49,11 +50,8 @@ export interface DistinctValuesTarget {
   column: Column
 }
 
-export const hasDistinctValues = (
-  connectionType: ConnectionType,
-  column: Column
-) => {
-  const { bytes, incomparable } = capabilitiesOf(connectionType).columnTypes
+export const hasDistinctValues = (dialect: SqlDialect, column: Column) => {
+  const { bytes, incomparable } = capabilitiesOf(dialect).columnTypes
   const type = column.type ?? ''
   return !column.isArray && !bytes?.test(type) && !incomparable?.test(type)
 }
@@ -99,7 +97,7 @@ const StatsBody = ({
   const { connection, connectionResource } = useRouteContext()
   const [search, setSearch] = useState('')
   const term = useDeferredValue(search)
-  const transformer = createTransformer(connection.type, column)
+  const transformer = createTransformer(dialectOf(connection.type), column)
   const display = (value: unknown) => transformer.toDisplay(value, VALUE_CHARS)
   const key = resourceRowsQueryKey({ connectionResource, schema, table })
   const ranged = isNumericColumn(column) || RANGED_UI_TYPES.has(column.uiType)

@@ -4,6 +4,7 @@ import {
   SidebarLeftIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 
 import { capabilitiesOf } from '~/core/catalog/capabilities'
 import type {
@@ -37,7 +38,7 @@ export const navigatorCommands = ({
           order: 15,
           value: 'New view…',
         },
-        ...(capabilitiesOf(current.connection.type).schemas
+        ...(capabilitiesOf(dialectOf(current.connection.type)).schemas
           ? [
               {
                 action: () => createSchemaDialogRef.current?.create(),

@@ -7,8 +7,8 @@ export const EDITOR_CONTEXT =
 export const MATCH_USER_STYLE =
   "Match the user's formatting exactly: keyword and identifier casing, spacing around operators and commas, quoting, indentation and line breaks."
 
-export const sqlOutputRules = (connectionType: string) => [
-  `The database type is "${connectionType}".`,
+export const sqlOutputRules = (dialect: string) => [
+  `The database type is "${dialect}".`,
   MATCH_USER_STYLE,
   'Return only SQL, nothing else: no explanations, greetings, markdown, or ``` fences.',
   'The output is pasted directly into a SQL editor.',

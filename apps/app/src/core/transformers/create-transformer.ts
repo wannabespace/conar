@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 
@@ -21,12 +21,12 @@ import { createTimeTransformer } from './time.ts'
 import type { ValueTransformer } from './value-transformer'
 
 export const createTransformer = (
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   column: Column
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytes, json, uuid } = capabilitiesOf(connectionType).columnTypes
+  const { bytes, json, uuid } = capabilitiesOf(dialect).columnTypes
   if (json.test(type)) {
     return createJsonTransformer()
   }
@@ -36,7 +36,7 @@ export const createTransformer = (
 
   switch (column.uiType) {
     case 'list': {
-      return createListTransformer(connectionType, column)
+      return createListTransformer(dialect, column)
     }
 
     case 'boolean': {
@@ -71,7 +71,7 @@ export const createTransformer = (
 }
 
 export const parseCellText = (
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   column: Column,
   text: string | null
 ) =>
@@ -79,9 +79,7 @@ export const parseCellText = (
     catch: toError,
     try: () => {
       if (text !== null) {
-        return createTransformer(connectionType, column).toConnection.fromRaw(
-          text
-        )
+        return createTransformer(dialect, column).toConnection.fromRaw(text)
       }
       if (column.isNullable === false) {
         throw new Error(`${column.id} cannot be null`)

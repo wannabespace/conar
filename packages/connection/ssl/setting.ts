@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { dialectOf, SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from '../connection-parts'
 import { TLS_PARAMS as MYSQL_TLS_PARAMS } from './mysql'
@@ -8,38 +8,39 @@ export type SslSetting = 'off' | 'on' | 'unverified'
 
 // Sync with the options `ssl/<engine>.ts` parses.
 const SSL_OPTIONS: Partial<
-  Record<ConnectionType, Partial<Record<SslSetting, string>>>
+  Record<SqlDialect, Partial<Record<SslSetting, string>>>
 > = {
-  [ConnectionType.MSSQL]: {
+  [SqlDialect.MSSQL]: {
     off: 'encrypt=false',
     on: 'encrypt=true',
     unverified: 'trustservercertificate=true',
   },
-  [ConnectionType.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
-  [ConnectionType.Postgres]: {
+  [SqlDialect.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
+  [SqlDialect.Postgres]: {
     off: 'sslmode=disable',
     on: 'sslmode=require',
     unverified: 'sslmode=no-verify',
   },
 }
 
-const TLS_PARAMS: Partial<Record<ConnectionType, string[]>> = {
-  [ConnectionType.MySQL]: MYSQL_TLS_PARAMS,
-  [ConnectionType.Postgres]: PG_TLS_PARAMS,
+const TLS_PARAMS: Partial<Record<SqlDialect, string[]>> = {
+  [SqlDialect.MySQL]: MYSQL_TLS_PARAMS,
+  [SqlDialect.Postgres]: PG_TLS_PARAMS,
 }
 
 export const sslOptionsOf = (
   { options, type }: Pick<ConnectionParts, 'options' | 'type'>,
   setting: SslSetting
 ) => {
-  const option = type ? SSL_OPTIONS[type]?.[setting] : undefined
-  if (!type || !option) {
+  const dialect = type && dialectOf(type)
+  const option = dialect ? SSL_OPTIONS[dialect]?.[setting] : undefined
+  if (!dialect || !option) {
     return
   }
   const update = new URLSearchParams(option)
   const dropped = new Set([
     ...update.keys(),
-    ...(setting === 'off' ? (TLS_PARAMS[type] ?? []) : []),
+    ...(setting === 'off' ? (TLS_PARAMS[dialect] ?? []) : []),
   ])
   const merged = new URLSearchParams(
     [...new URLSearchParams(options)].filter(

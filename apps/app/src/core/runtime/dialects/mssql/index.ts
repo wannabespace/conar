@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { Dialect, OffsetNode, SelectQueryNode } from 'kysely'
 import {
   MssqlQueryCompiler as DefaultMssqlQueryCompiler,
@@ -53,7 +53,7 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 export const mssqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MssqlAdapter(),
-    createDriver: () => createKyselyDriver(ConnectionType.MSSQL, options),
+    createDriver: () => createKyselyDriver(SqlDialect.MSSQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

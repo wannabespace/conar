@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '~/core/runtime/query'
 
@@ -10,15 +10,13 @@ export const alterColumnQuery = (target: AlterColumnTarget) =>
     query: {
       clickhouse: (db) =>
         db.executeQuery(
-          alterColumnStatement(ConnectionType.ClickHouse, db, target)
+          alterColumnStatement(SqlDialect.ClickHouse, db, target)
         ),
       mssql: (db) =>
-        db.executeQuery(alterColumnStatement(ConnectionType.MSSQL, db, target)),
+        db.executeQuery(alterColumnStatement(SqlDialect.MSSQL, db, target)),
       mysql: (db) =>
-        db.executeQuery(alterColumnStatement(ConnectionType.MySQL, db, target)),
+        db.executeQuery(alterColumnStatement(SqlDialect.MySQL, db, target)),
       postgres: (db) =>
-        db.executeQuery(
-          alterColumnStatement(ConnectionType.Postgres, db, target)
-        ),
+        db.executeQuery(alterColumnStatement(SqlDialect.Postgres, db, target)),
     },
   })

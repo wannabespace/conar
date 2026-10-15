@@ -1,7 +1,7 @@
 import { completeSql } from '@tamery/ai/features'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -15,14 +15,14 @@ export const completeSQL = orpc
       context: `string <= ${AI_SQL_LIMITS.context}`,
       prefix: `string <= ${AI_SQL_LIMITS.sql}`,
       suffix: `string <= ${AI_SQL_LIMITS.sql}`,
-      type: type.valueOf(ConnectionType),
+      type: type.valueOf(SqlDialect),
     })
   )
   .handler(({ context, input, signal }) => {
     const scope = { feature: AiFeature.CompleteSql, userId: context.user.id }
     return completeSql({
-      connectionType: input.type,
       context: input.context,
+      dialect: input.type,
       onUsage: (modelId, usage) => aiUsage.record(scope, modelId, usage),
       prefix: input.prefix,
       signal,

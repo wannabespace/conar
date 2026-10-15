@@ -6,7 +6,8 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
@@ -109,10 +110,10 @@ interface DetailTab {
   value: string
 }
 
-const buildTabs = (query: QueryLog, connectionType: ConnectionType) =>
+const buildTabs = (query: QueryLog, dialect: SqlDialect) =>
   [
     {
-      code: formatSql(query.query, connectionType),
+      code: formatSql(query.query, dialect),
       label: 'Query',
       language: 'sql',
       value: 'query',
@@ -261,7 +262,9 @@ export const QueryLogger = ({
   }
 
   const tabs =
-    selected && connection ? buildTabs(selected, connection.type) : []
+    selected && connection
+      ? buildTabs(selected, dialectOf(connection.type))
+      : []
   const activeTab = tabs.find((item) => item.value === tab.value) ?? tabs.at(0)
 
   const clearQueries = () => {

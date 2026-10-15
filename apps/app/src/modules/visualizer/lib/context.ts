@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
@@ -17,19 +17,19 @@ import type {
   DiagramTable,
 } from './schema'
 
-export const gatesOf = (connectionType: ConnectionType) => {
-  const capabilities = capabilitiesOf(connectionType)
-  const constraints = sectionCapabilitiesOf('constraints', connectionType)
+export const gatesOf = (dialect: SqlDialect) => {
+  const capabilities = capabilitiesOf(dialect)
+  const constraints = sectionCapabilitiesOf('constraints', dialect)
 
   return {
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,
-    foreignKeys: foreignKeysCreatable(connectionType),
-    indexes: sectionAvailable('indexes', connectionType),
-    policies: sectionAvailable('policies', connectionType),
+    foreignKeys: foreignKeysCreatable(dialect),
+    indexes: sectionAvailable('indexes', dialect),
+    policies: sectionAvailable('policies', dialect),
     schemas: capabilities.schemas,
-    triggers: sectionAvailable('triggers', connectionType),
+    triggers: sectionAvailable('triggers', dialect),
   }
 }
 

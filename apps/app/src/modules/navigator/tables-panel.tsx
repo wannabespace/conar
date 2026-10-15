@@ -1,5 +1,6 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
@@ -75,7 +76,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: capabilitiesOf(connection.type).schemas,
+    showSchemaRows: capabilitiesOf(dialectOf(connection.type)).schemas,
   })
 
   const toggleSchema = (name: string) => {

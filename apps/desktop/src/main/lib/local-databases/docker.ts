@@ -4,11 +4,17 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { text } from 'node:stream/consumers'
 
-import { DEFAULT_PORTS, engineOf } from '@tamery/connection/connection-parts'
+import {
+  connectionTypeOf,
+  TYPE_OF_DEFAULT_PORT,
+} from '@tamery/connection/connection-parts'
 import { partsOfVariables } from '@tamery/connection/guess/env'
 import { mergeParts } from '@tamery/connection/guess/parts'
-import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
-import { objectEntries } from '@tamery/shared/utils'
+import {
+  ConnectionType,
+  dialectOf,
+  SqlDialect,
+} from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import type { Finder } from './local-database'
@@ -32,19 +38,11 @@ const SOCKETS = (
 const ANSWER_TIMEOUT_MS = 2000
 const ANY_ADDRESS = new Set(['', '0.0.0.0', '::'])
 
-const TYPE_OF_CONTAINER_PORT: Record<number, ConnectionType> =
-  Object.fromEntries(
-    objectEntries(DEFAULT_PORTS).map(([connectionType, port]) => [
-      port,
-      connectionType,
-    ])
-  )
-
-const IMAGE_USERS: Record<ConnectionType, string> = {
-  [ConnectionType.ClickHouse]: 'default',
-  [ConnectionType.MSSQL]: 'sa',
-  [ConnectionType.MySQL]: 'root',
-  [ConnectionType.Postgres]: 'postgres',
+const IMAGE_USERS: Record<SqlDialect, string> = {
+  [SqlDialect.ClickHouse]: 'default',
+  [SqlDialect.MSSQL]: 'sa',
+  [SqlDialect.MySQL]: 'root',
+  [SqlDialect.Postgres]: 'postgres',
 }
 
 const containersSchema = type({
@@ -77,7 +75,7 @@ export const docker: Finder = {
     return findEach(containers, async ({ Id, Image, Names, Ports }) => {
       const published = Ports.flatMap(
         ({ IP = '', PrivatePort, PublicPort }) => {
-          const connectionType = TYPE_OF_CONTAINER_PORT[PrivatePort]
+          const connectionType = TYPE_OF_DEFAULT_PORT[PrivatePort]
           return connectionType && PublicPort
             ? [
                 {
@@ -107,22 +105,26 @@ export const docker: Finder = {
         ) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
       const named = [
-        engineOf(
+        connectionTypeOf(
           Image.replace(/[:@][^/]*$/u, '')
             .split('/')
             .at(-1) ?? ''
         ),
-        env.engine,
+        env.type,
       ]
       return published.map(({ connectionType, ...server }) => {
-        const engine =
-          named.find(
-            (candidate) =>
-              candidate && engines.type(candidate) === connectionType
-          ) ?? connectionType
-        const parts = mergeParts({ ...server, engine }, env, {
-          user: IMAGE_USERS[connectionType],
-        })
+        const dialect = dialectOf(connectionType)
+        const parts = mergeParts(
+          {
+            ...server,
+            type:
+              named.find(
+                (candidate) => candidate && dialectOf(candidate) === dialect
+              ) ?? connectionType,
+          },
+          env,
+          { user: IMAGE_USERS[dialect] }
+        )
         return {
           name,
           parts:

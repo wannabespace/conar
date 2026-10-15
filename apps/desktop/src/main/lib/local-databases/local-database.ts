@@ -1,5 +1,5 @@
 import type { GuessedParts } from '@tamery/connection/guess/types'
-import type { Engine } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { MaybePromise } from '@tamery/shared/utils'
 import type { ArkErrors } from 'arktype'
 import { type } from 'arktype'
@@ -14,9 +14,9 @@ export const NOTHING_UNLOCKED: Unlocked = { password: '', withheld: false }
 
 export interface LocalDatabase {
   connectionString: string
-  engine: Engine
   name: string
   source: string
+  type: ConnectionType
   unlock: () => Promise<Unlocked>
 }
 

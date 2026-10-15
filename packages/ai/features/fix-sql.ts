@@ -4,24 +4,21 @@ import { generateText } from 'ai'
 import { models } from '../models/list'
 import { EDITOR_CONTEXT, section, sqlOutputRules } from './prompt'
 
-const fixSqlInstructions = (data: {
-  connectionType: string
-  context: string
-}) =>
+const fixSqlInstructions = (data: { dialect: string; context: string }) =>
   [
     'You are an expert at fixing SQL queries based on an error message.',
     'Fix the query so it is valid and correct.',
     'If the query is already valid and correct, return it unchanged.',
     'Use only tables and columns from the schema; never invent a name it does not list.',
     EDITOR_CONTEXT,
-    ...sqlOutputRules(data.connectionType),
+    ...sqlOutputRules(data.dialect),
     '',
     'Database schema:',
     data.context,
   ].join('\n')
 
 export const fixSql = async (data: {
-  connectionType: string
+  dialect: string
   context: string
   editor: string
   error: string

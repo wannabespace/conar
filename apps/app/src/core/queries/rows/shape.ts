@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { FilterValueBinding } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
@@ -14,7 +14,7 @@ export type ContainsText = (
   pattern: string
 ) => Expression<SqlBool>
 
-export const textContains: Record<ConnectionType, ContainsText> = {
+export const textContains: Record<SqlDialect, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
   mssql: (eb, column, pattern) =>
@@ -29,8 +29,8 @@ export type ColumnTypes = { id: string; type?: string }[]
 
 export type BindValue = (columnType: string, value: unknown) => unknown
 
-const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
-  const { json } = capabilitiesOf(connectionType).columnTypes
+const bindJsonAsText = (dialect: SqlDialect): BindValue => {
+  const { json } = capabilitiesOf(dialect).columnTypes
 
   return (columnType, value) => {
     if (value === undefined) {
@@ -43,7 +43,7 @@ const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
   }
 }
 
-const clickhouseJsonColumnType = capabilitiesOf(ConnectionType.ClickHouse)
+const clickhouseJsonColumnType = capabilitiesOf(SqlDialect.ClickHouse)
   .columnTypes.json
 const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
 
@@ -57,7 +57,7 @@ const clickhouseDateTime = (columnType: string, value: unknown) => {
 }
 
 /** `undefined` binds the column's DEFAULT. */
-export const bindValue: Record<ConnectionType, BindValue> = {
+export const bindValue: Record<SqlDialect, BindValue> = {
   clickhouse: (columnType, value) => {
     if (value === undefined) {
       return sql`default`
@@ -71,9 +71,9 @@ export const bindValue: Record<ConnectionType, BindValue> = {
     }
     return clickhouseDateTime(columnType, value)
   },
-  mssql: bindJsonAsText(ConnectionType.MSSQL),
-  mysql: bindJsonAsText(ConnectionType.MySQL),
-  postgres: bindJsonAsText(ConnectionType.Postgres),
+  mssql: bindJsonAsText(SqlDialect.MSSQL),
+  mysql: bindJsonAsText(SqlDialect.MySQL),
+  postgres: bindJsonAsText(SqlDialect.Postgres),
 }
 
 export const bindRow = (
@@ -112,11 +112,8 @@ export const clickhouseFilterValues =
 const MSSQL_PARAMETER_LIMIT = 2000
 const MAX_ROWS_PER_STATEMENT = 500
 
-export const rowsPerStatement = (
-  dialect: ConnectionType,
-  valuesPerRow: number
-) =>
-  dialect === ConnectionType.MSSQL
+export const rowsPerStatement = (dialect: SqlDialect, valuesPerRow: number) =>
+  dialect === SqlDialect.MSSQL
     ? Math.max(
         1,
         Math.min(

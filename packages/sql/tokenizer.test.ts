@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import { dialects } from './dialect'
 import { tokenize } from './tokenizer'
 
-const pg = dialects[ConnectionType.Postgres]
-const mysql = dialects[ConnectionType.MySQL]
+const pg = dialects[SqlDialect.Postgres]
+const mysql = dialects[SqlDialect.MySQL]
 const kinds = (sql: string, dialect = pg) =>
   tokenize(sql, dialect).tokens.map((token) => `${token.kind}:${token.text}`)
 const names = (sql: string, dialect = pg) =>
@@ -15,7 +15,7 @@ const names = (sql: string, dialect = pg) =>
 describe('tokenize', () => {
   it('resolves identifier names the way the engine does', () => {
     expect(names('"a""b" Foo')).toEqual(['a"b', 'foo'])
-    expect(names('[a]]b] Foo', dialects[ConnectionType.MSSQL])).toEqual([
+    expect(names('[a]]b] Foo', dialects[SqlDialect.MSSQL])).toEqual([
       'a]b',
       'Foo',
     ])
@@ -56,7 +56,7 @@ describe('tokenize', () => {
       'punctuation:,',
       'comment:# c',
     ])
-    expect(kinds('[dbo].[Users]', dialects[ConnectionType.MSSQL])).toEqual([
+    expect(kinds('[dbo].[Users]', dialects[SqlDialect.MSSQL])).toEqual([
       'identifier:[dbo]',
       'punctuation:.',
       'identifier:[Users]',

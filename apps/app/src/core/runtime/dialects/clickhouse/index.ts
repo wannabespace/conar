@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
@@ -74,14 +74,10 @@ export const clickhouseDialect = (options: DialectOptions) =>
   ({
     createAdapter: clickhouseAdapter,
     createDriver: () =>
-      createKyselyDriver(
-        ConnectionType.ClickHouse,
-        options,
-        (compiledQuery) => ({
-          query: prepareQuery(compiledQuery),
-          values: [],
-        })
-      ),
+      createKyselyDriver(SqlDialect.ClickHouse, options, (compiledQuery) => ({
+        query: prepareQuery(compiledQuery),
+        values: [],
+      })),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },

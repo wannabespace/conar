@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 
 import { createQuery } from '~/core/runtime/query'
@@ -23,19 +23,15 @@ export const renameColumnQuery = memoize(
       query: {
         clickhouse: (db) =>
           db.executeQuery(
-            renameColumnStatement(ConnectionType.ClickHouse, db, target)
+            renameColumnStatement(SqlDialect.ClickHouse, db, target)
           ),
         mssql: (db) =>
-          db.executeQuery(
-            renameColumnStatement(ConnectionType.MSSQL, db, target)
-          ),
+          db.executeQuery(renameColumnStatement(SqlDialect.MSSQL, db, target)),
         mysql: (db) =>
-          db.executeQuery(
-            renameColumnStatement(ConnectionType.MySQL, db, target)
-          ),
+          db.executeQuery(renameColumnStatement(SqlDialect.MySQL, db, target)),
         postgres: (db) =>
           db.executeQuery(
-            renameColumnStatement(ConnectionType.Postgres, db, target)
+            renameColumnStatement(SqlDialect.Postgres, db, target)
           ),
       },
     })

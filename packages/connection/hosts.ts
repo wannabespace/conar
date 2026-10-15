@@ -3,7 +3,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   CLICKHOUSE_HTTPS_PORT,
-  DEFAULT_PORTS,
+  TYPE_OF_DEFAULT_PORT,
 } from './connection-parts'
 
 interface HostHint {
@@ -13,7 +13,7 @@ interface HostHint {
   port?: string
   projectInUser?: RegExp
   suffixes: string[]
-  /** The engine's default port skips this provider's transaction pooler. */
+  /** The type's default port skips this provider's transaction pooler. */
   transactionPoolerPort?: string
   type?: ConnectionType
 }
@@ -143,9 +143,7 @@ export const TYPE_OF_PORT: Record<string, ConnectionType> = {
       ...Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE),
     ].map((port) => [port, ConnectionType.ClickHouse])
   ),
-  ...Object.fromEntries(
-    Object.values(ConnectionType).map((type) => [DEFAULT_PORTS[type], type])
-  ),
+  ...TYPE_OF_DEFAULT_PORT,
   5433: ConnectionType.Postgres,
   [SUPABASE_TRANSACTION_POOLER_PORT]: ConnectionType.Postgres,
   [PGBOUNCER_PORT]: ConnectionType.Postgres,

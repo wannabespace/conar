@@ -1,10 +1,10 @@
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
 import { isLocalHost } from '@tamery/connection/hosts'
-import type { Engine } from '@tamery/shared/enums/connection-type'
 import {
   ConnectionType,
-  engineLabels,
-  engines,
+  connectionTypeLabels,
+  dialectOf,
+  SqlDialect,
 } from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
@@ -17,36 +17,36 @@ import type { ConnectionForm } from '../lib/connection-form'
 import { Footnote } from './footnote'
 import { TextRow } from './text-row'
 
-const ENGINES = engines.all.map((engine) => ({
-  label: engineLabels[engine],
-  value: engine,
+const TYPES = Object.values(ConnectionType).map((type) => ({
+  label: connectionTypeLabels[type],
+  value: type,
 }))
 
-const engineLabel = (engine: Engine) => (
+const typeLabel = (type: ConnectionType) => (
   <>
-    <ConnectionIcon engine={engine} />
-    {engineLabels[engine]}
+    <ConnectionIcon type={type} />
+    {connectionTypeLabels[type]}
   </>
 )
 
-const USER_PLACEHOLDERS: Record<ConnectionType, string> = {
-  [ConnectionType.ClickHouse]: 'default',
-  [ConnectionType.MSSQL]: 'e.g. sa',
-  [ConnectionType.MySQL]: 'e.g. root',
-  [ConnectionType.Postgres]: 'e.g. postgres',
+const USER_PLACEHOLDERS: Record<SqlDialect, string> = {
+  [SqlDialect.ClickHouse]: 'default',
+  [SqlDialect.MSSQL]: 'e.g. sa',
+  [SqlDialect.MySQL]: 'e.g. root',
+  [SqlDialect.Postgres]: 'e.g. postgres',
 }
 
-const DATABASE_PLACEHOLDERS: Record<ConnectionType, string> = {
-  [ConnectionType.ClickHouse]: 'default',
-  [ConnectionType.MSSQL]: 'master',
-  [ConnectionType.MySQL]: 'Optional',
-  [ConnectionType.Postgres]: 'postgres',
+const DATABASE_PLACEHOLDERS: Record<SqlDialect, string> = {
+  [SqlDialect.ClickHouse]: 'default',
+  [SqlDialect.MSSQL]: 'master',
+  [SqlDialect.MySQL]: 'Optional',
+  [SqlDialect.Postgres]: 'postgres',
 }
 
-const OPTIONS_PLACEHOLDERS: Partial<Record<ConnectionType, string>> = {
-  [ConnectionType.MSSQL]: 'e.g. encrypt=true',
-  [ConnectionType.MySQL]: 'e.g. ssl=true',
-  [ConnectionType.Postgres]: 'e.g. sslmode=require',
+const OPTIONS_PLACEHOLDERS: Partial<Record<SqlDialect, string>> = {
+  [SqlDialect.MSSQL]: 'e.g. encrypt=true',
+  [SqlDialect.MySQL]: 'e.g. ssl=true',
+  [SqlDialect.Postgres]: 'e.g. sslmode=require',
 }
 
 export const ServerFields = ({
@@ -56,9 +56,8 @@ export const ServerFields = ({
   form: ConnectionForm
   locked: (field: string) => boolean
 }) => {
-  const type = useSelector(form.store, (state) =>
-    engines.type(state.values.engine)
-  )
+  const type = useSelector(form.store, (state) => state.values.type)
+  const dialect = dialectOf(type)
   const isLocal = useSelector(form.store, (state) =>
     isLocalHost(state.values.host.trim())
   )
@@ -68,19 +67,19 @@ export const ServerFields = ({
   return (
     <>
       <FieldGroup variant="card">
-        <form.AppField name="engine">
+        <form.AppField name="type">
           {(field) => (
             <field.Field orientation="row">
               <field.Label>Engine</field.Label>
               <field.Select
-                items={ENGINES}
+                items={TYPES}
                 disabled={locked(field.name)}
                 variant="flat"
-                renderValue={engineLabel}
+                renderValue={typeLabel}
               >
-                {ENGINES.map(({ value }) => (
+                {TYPES.map(({ value }) => (
                   <SelectItem key={value} value={value}>
-                    {engineLabel(value)}
+                    {typeLabel(value)}
                   </SelectItem>
                 ))}
               </field.Select>
@@ -102,7 +101,7 @@ export const ServerFields = ({
           {...row}
           label="User"
           name="user"
-          placeholder={USER_PLACEHOLDERS[type]}
+          placeholder={USER_PLACEHOLDERS[dialect]}
         />
         <TextRow
           {...row}
@@ -116,13 +115,13 @@ export const ServerFields = ({
           {...row}
           label="Database"
           name="database"
-          placeholder={DATABASE_PLACEHOLDERS[type]}
+          placeholder={DATABASE_PLACEHOLDERS[dialect]}
         />
         <TextRow
           {...row}
           label="Options"
           name="options"
-          placeholder={OPTIONS_PLACEHOLDERS[type]}
+          placeholder={OPTIONS_PLACEHOLDERS[dialect]}
         />
       </FieldGroup>
       {isLocal && !window.electron && localProxyAvailable && (

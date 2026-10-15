@@ -1,4 +1,5 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
@@ -53,6 +54,7 @@ export const Table = ({
   table: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
+  const dialect = dialectOf(connection.type)
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -126,7 +128,7 @@ export const Table = ({
   const canInsert = isEditable && !!isBaseTable
   const staged = useStagedEdits({
     columns,
-    connectionType: connection.type,
+    dialect,
     rows,
     visible,
   })
@@ -144,7 +146,7 @@ export const Table = ({
   }, [activeFilters, orderBy])
 
   const { actionsOf, dialogs } = useColumnActions({
-    connectionType: connection.type,
+    dialect,
     editable: !!isBaseTable,
     schema,
     table,
@@ -180,7 +182,7 @@ export const Table = ({
           table,
         })}
         canEdit={staged.canEdit}
-        connectionType={connection.type}
+        dialect={dialect}
         focusKey={tableTabId(schema, table)}
         getValue={staged.valueOf}
         onEdit={isEditable && !saving ? staged.edit : undefined}
@@ -221,7 +223,7 @@ export const Table = ({
           <TableBodyCell
             cell={cell}
             geometry={geometry}
-            connectionType={connection.type}
+            dialect={dialect}
             labels={labels.get(cell.column.id)}
             entry={staged.rowAt(cell.rowIndex)}
             onPeek={openPeek}

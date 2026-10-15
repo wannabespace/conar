@@ -1,46 +1,32 @@
 export enum ConnectionType {
   Postgres = 'postgres',
   MySQL = 'mysql',
+  MariaDB = 'mariadb',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
 }
 
-/** Never build SQL from a flavor: every query runs on the `ConnectionType` it speaks through. */
-export enum ConnectionFlavor {
-  MariaDB = 'mariadb',
+/** Never build SQL from a `ConnectionType`: every query runs on the dialect it speaks through. */
+export enum SqlDialect {
+  Postgres = 'postgres',
+  MySQL = 'mysql',
+  MSSQL = 'mssql',
+  ClickHouse = 'clickhouse',
 }
 
-export type Engine = ConnectionType | ConnectionFlavor
-
-const TYPE_OF_FLAVOR: Record<ConnectionFlavor, ConnectionType> = {
-  [ConnectionFlavor.MariaDB]: ConnectionType.MySQL,
+const DIALECT_OF_TYPE: Record<ConnectionType, SqlDialect> = {
+  [ConnectionType.ClickHouse]: SqlDialect.ClickHouse,
+  [ConnectionType.MariaDB]: SqlDialect.MySQL,
+  [ConnectionType.MSSQL]: SqlDialect.MSSQL,
+  [ConnectionType.MySQL]: SqlDialect.MySQL,
+  [ConnectionType.Postgres]: SqlDialect.Postgres,
 }
 
-const isFlavor = (engine: Engine): engine is ConnectionFlavor =>
-  Object.hasOwn(TYPE_OF_FLAVOR, engine)
+export const dialectOf = (type: ConnectionType) => DIALECT_OF_TYPE[type]
 
-export const engines = {
-  all: Object.values(ConnectionType).flatMap((type) => [
-    type,
-    ...Object.values(ConnectionFlavor).filter(
-      (flavor) => TYPE_OF_FLAVOR[flavor] === type
-    ),
-  ]),
-  flavor: (engine: Engine) => (isFlavor(engine) ? engine : null),
-  of: ({
-    flavor,
-    type,
-  }: {
-    flavor: ConnectionFlavor | null
-    type: ConnectionType
-  }): Engine => flavor ?? type,
-  type: (engine: Engine) =>
-    isFlavor(engine) ? TYPE_OF_FLAVOR[engine] : engine,
-}
-
-export const engineLabels: Record<Engine, string> = {
-  [ConnectionFlavor.MariaDB]: 'MariaDB',
+export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'ClickHouse',
+  [ConnectionType.MariaDB]: 'MariaDB',
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.Postgres]: 'PostgreSQL',

@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { dialects, invalidatesCatalog, writesData } from '@tamery/sql'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -7,10 +7,10 @@ import { queryClient } from '~/lib/query-client'
 
 export const refreshAfterRun = (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   text: string
 ) => {
-  if (invalidatesCatalog(text, dialects[connectionType])) {
+  if (invalidatesCatalog(text, dialects[dialect])) {
     void queryClient.invalidateQueries({
       queryKey: ['connection-resource', connectionResource.id],
     })
@@ -18,7 +18,7 @@ export const refreshAfterRun = (
       queryKey: resourceColumnsQueryKey({ connectionResource }),
       type: 'inactive',
     })
-  } else if (writesData(text, dialects[connectionType])) {
+  } else if (writesData(text, dialects[dialect])) {
     // Sync with resourceRowsQueryKey and resourceTableTotalQueryKey: every row-data key starts with this prefix.
     void queryClient.invalidateQueries({
       queryKey: ['connection-resource', connectionResource.id, 'schema'],

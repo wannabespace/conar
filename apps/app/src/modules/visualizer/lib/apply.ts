@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -58,7 +59,7 @@ export const useApplyDrafts = ({
   setReviewOpen: (open: boolean) => void
 }) => {
   const { connection, connectionResource } = useRouteContext()
-  const { ddlRollback } = gatesOf(connection.type)
+  const { ddlRollback } = gatesOf(dialectOf(connection.type))
   const mutation = useMutation({
     meta: { event: 'diagram_changes_applied' },
     mutationFn: async (pending: DiagramDraft[]) => {

@@ -14,8 +14,7 @@ export interface DefinitionsParams {
 }
 
 export const definitionsTab: TabKind<DefinitionsParams> = {
-  available: ({ section }, connectionType) =>
-    sectionAvailable(section, connectionType),
+  available: ({ section }, dialect) => sectionAvailable(section, dialect),
   icon: SecurityCheckIcon,
   match: (id) => {
     const [kind, section, ...extra] = id.split(':')
@@ -36,7 +35,7 @@ export const definitionsSchemaItem = (
   const { icon, title } = sectionMetaOf(section)
 
   return {
-    available: (connectionType) => sectionAvailable(section, connectionType),
+    available: (dialect) => sectionAvailable(section, dialect),
     icon,
     label: title,
     tabId: definitionsTabId(section),

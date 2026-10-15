@@ -1,14 +1,10 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import type { GeneratorFormat } from './types'
 
 export const GENERATOR_COMPATIBILITY: Partial<
-  Record<GeneratorFormat, ConnectionType[]>
+  Record<GeneratorFormat, SqlDialect[]>
 > = {
-  drizzle: [
-    ConnectionType.Postgres,
-    ConnectionType.MySQL,
-    ConnectionType.MSSQL,
-  ],
-  prisma: [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL],
+  drizzle: [SqlDialect.Postgres, SqlDialect.MySQL, SqlDialect.MSSQL],
+  prisma: [SqlDialect.Postgres, SqlDialect.MySQL, SqlDialect.MSSQL],
 }

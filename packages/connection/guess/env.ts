@@ -1,17 +1,12 @@
-import type { Engine } from '@tamery/shared/enums/connection-type'
-import {
-  ConnectionFlavor,
-  ConnectionType,
-  engines,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType, dialectOf } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, engineOf } from '../connection-parts'
+import { DEFAULT_PORTS, connectionTypeOf } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
-  engine?: Engine
+  type?: ConnectionType
   /** Only these fields are read under the prefix: `MYSQL_ROOT_HOST` is an allow-list, not a host. */
   fields?: ServerField[]
   prefix: string
@@ -43,34 +38,34 @@ const UNPACKED_TEMPLATE = /\$\{|<%|process\.env/u
 const BARE_NAME = 'NAME'
 
 const GROUPS: VariableGroup[] = [
-  { engine: ConnectionType.Postgres, prefix: 'PG' },
-  { engine: ConnectionType.Postgres, prefix: 'POSTGRES_' },
-  { engine: ConnectionType.MySQL, prefix: 'MYSQL_' },
-  { engine: ConnectionFlavor.MariaDB, prefix: 'MARIADB_' },
+  { prefix: 'PG', type: ConnectionType.Postgres },
+  { prefix: 'POSTGRES_', type: ConnectionType.Postgres },
+  { prefix: 'MYSQL_', type: ConnectionType.MySQL },
+  { prefix: 'MARIADB_', type: ConnectionType.MariaDB },
   {
-    engine: ConnectionType.MySQL,
     fields: ['password'],
     prefix: 'MYSQL_ROOT_',
+    type: ConnectionType.MySQL,
     user: 'root',
   },
   {
-    engine: ConnectionFlavor.MariaDB,
     fields: ['password'],
     prefix: 'MARIADB_ROOT_',
+    type: ConnectionType.MariaDB,
     user: 'root',
   },
-  { engine: ConnectionType.ClickHouse, prefix: 'CLICKHOUSE_' },
-  { engine: ConnectionType.MSSQL, prefix: 'MSSQL_' },
+  { prefix: 'CLICKHOUSE_', type: ConnectionType.ClickHouse },
+  { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
   {
-    engine: ConnectionType.MSSQL,
     fields: ['password'],
     prefix: 'MSSQL_SA_',
+    type: ConnectionType.MSSQL,
     user: 'sa',
   },
   {
-    engine: ConnectionType.MSSQL,
     fields: ['password'],
     prefix: 'SA_',
+    type: ConnectionType.MSSQL,
     user: 'sa',
   },
   { prefix: 'SPRING.DATASOURCE.' },
@@ -94,14 +89,16 @@ export const partsOfVariables = (
       .map((key) => variables[key])
       .find((value) => value && !UNPACKED_TEMPLATE.test(value)) ?? ''
   let parts: GuessedParts = {}
-  let engine: GuessedParts['engine']
+  let type: GuessedParts['type']
 
   for (const group of GROUPS) {
     const named =
-      group.engine ??
+      group.type ??
       TYPE_SUFFIXES.values()
         .map((suffix) =>
-          engineOf(variables[group.prefix + suffix]?.split('.').at(-1) ?? '')
+          connectionTypeOf(
+            variables[group.prefix + suffix]?.split('.').at(-1) ?? ''
+          )
         )
         .find(Boolean)
     const found: GuessedParts = {}
@@ -128,10 +125,10 @@ export const partsOfVariables = (
     if (!group.user || (!parts.user && !parts.password)) {
       parts = mergeParts(parts, { user: group.user, ...found })
     }
-    engine ??= named
+    type ??= named
   }
 
-  return Object.keys(parts).length > 0 ? mergeParts(parts, { engine }) : null
+  return Object.keys(parts).length > 0 ? mergeParts(parts, { type }) : null
 }
 
 /** Keys come back uppercased. */
@@ -154,7 +151,7 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
     return null
   }
   const composeTarget =
-    parts.engine && String(DEFAULT_PORTS[engines.type(parts.engine)])
+    parts.type && String(DEFAULT_PORTS[dialectOf(parts.type)])
   const published =
     !parts.port &&
     composeTarget &&

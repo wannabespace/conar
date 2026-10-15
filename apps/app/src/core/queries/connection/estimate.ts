@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { dialects, splitStatements } from '@tamery/sql'
 import type { Type } from 'arktype'
@@ -34,10 +34,10 @@ const ESTIMATED_COMMANDS = new Set([
   'UPDATE',
 ])
 
-export const estimateQuery = (text: string, connectionType: ConnectionType) => {
-  const [statement, ...rest] = splitStatements(text, dialects[connectionType])
+export const estimateQuery = (text: string, dialect: SqlDialect) => {
+  const [statement, ...rest] = splitStatements(text, dialects[dialect])
   if (
-    !capabilitiesOf(connectionType).explain ||
+    !capabilitiesOf(dialect).explain ||
     rest.length > 0 ||
     !ESTIMATED_COMMANDS.has(statement?.tokens[0]?.text.toUpperCase() ?? '')
   ) {

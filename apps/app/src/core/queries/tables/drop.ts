@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 
 import { createQuery } from '~/core/runtime/query'
@@ -11,16 +11,14 @@ export const dropTableQuery = memoize(
       query: {
         clickhouse: (db) =>
           db.executeQuery(
-            dropTableStatement(ConnectionType.ClickHouse, db, target)
+            dropTableStatement(SqlDialect.ClickHouse, db, target)
           ),
         mssql: (db) =>
-          db.executeQuery(dropTableStatement(ConnectionType.MSSQL, db, target)),
+          db.executeQuery(dropTableStatement(SqlDialect.MSSQL, db, target)),
         mysql: (db) =>
-          db.executeQuery(dropTableStatement(ConnectionType.MySQL, db, target)),
+          db.executeQuery(dropTableStatement(SqlDialect.MySQL, db, target)),
         postgres: (db) =>
-          db.executeQuery(
-            dropTableStatement(ConnectionType.Postgres, db, target)
-          ),
+          db.executeQuery(dropTableStatement(SqlDialect.Postgres, db, target)),
       },
     })
 )

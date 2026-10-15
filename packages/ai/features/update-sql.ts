@@ -4,10 +4,7 @@ import { generateText } from 'ai'
 import { models } from '../models/list'
 import { EDITOR_CONTEXT, section, sqlOutputRules } from './prompt'
 
-const updateSqlInstructions = (data: {
-  connectionType: string
-  context: string
-}) =>
+const updateSqlInstructions = (data: { dialect: string; context: string }) =>
   [
     'You are an assistant that updates SQL queries.',
     'Given the selected SQL and a request, return the updated query.',
@@ -15,14 +12,14 @@ const updateSqlInstructions = (data: {
     'The selection can contain several queries; update all of them.',
     'Attached images are screenshots the user refers to; with no written prompt, they are the request.',
     EDITOR_CONTEXT,
-    ...sqlOutputRules(data.connectionType),
+    ...sqlOutputRules(data.dialect),
     '',
     'Database context:',
     data.context,
   ].join('\n')
 
 export const updateSql = async (data: {
-  connectionType: string
+  dialect: string
   context: string
   editor: string
   images: File[]

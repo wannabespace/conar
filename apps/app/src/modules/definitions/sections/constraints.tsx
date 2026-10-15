@@ -4,7 +4,7 @@ import {
   Link01Icon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
@@ -171,13 +171,13 @@ const suggestedNameOf = (draft: ConstraintDraft) =>
 const finalNameOf = (draft: ConstraintDraft) =>
   draft.name.trim() || suggestedNameOf(draft)
 
-const fixedNameOf = (draft: ConstraintDraft, connectionType: ConnectionType) =>
-  capabilitiesOf(connectionType).fixedConstraintNames[draft.kind]
+const fixedNameOf = (draft: ConstraintDraft, dialect: SqlDialect) =>
+  capabilitiesOf(dialect).fixedConstraintNames[draft.kind]
 
 const changeOf = (
   draft: ConstraintDraft,
   item: GroupedConstraint | null,
-  connectionType: ConnectionType
+  dialect: SqlDialect
 ) => {
   const opened = item && draftOf(item)
   const reshaped =
@@ -195,8 +195,7 @@ const changeOf = (
 
   return {
     recreates:
-      reshaped ||
-      (renameOnly && !capabilitiesOf(connectionType).renameConstraints),
+      reshaped || (renameOnly && !capabilitiesOf(dialect).renameConstraints),
     renameOnly,
     reshaped,
   }
@@ -283,9 +282,9 @@ const ConstraintInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  type: dialect,
 }: SectionInspectorProps<GroupedConstraint>) => {
-  const kinds = capabilitiesOf(connectionType).constraintKinds
+  const kinds = capabilitiesOf(dialect).constraintKinds
   const mutation = useMutation({
     meta: { event: 'constraint_saved' },
     mutationFn: (draft: ConstraintDraft) => {
@@ -313,7 +312,7 @@ const ConstraintInspector = ({
       const target = { name: item.name, schema: item.schema, table: item.table }
 
       return run(
-        changeOf(draft, item, connectionType).recreates
+        changeOf(draft, item, dialect).recreates
           ? recreateConstraintQuery({ ...target, kind: item.type, shape })
           : renameConstraintQuery({ ...target, newName: shape.name })
       )
@@ -321,7 +320,7 @@ const ConstraintInspector = ({
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Constraint "${fixedNameOf(draft, connectionType) ?? finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+        `Constraint "${fixedNameOf(draft, dialect) ?? finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -355,11 +354,7 @@ const ConstraintInspector = ({
 
   const readOnly = item ? !can.edit || !kinds.includes(item.type) : !can.create
   const shapeLocked = readOnly || !!item?.custom
-  const { recreates, renameOnly, reshaped } = changeOf(
-    draft,
-    item,
-    connectionType
-  )
+  const { recreates, renameOnly, reshaped } = changeOf(draft, item, dialect)
   const singleColumn = draft.columns.length === 1
 
   return (
@@ -402,9 +397,9 @@ const ConstraintInspector = ({
               label="Name"
               autoFocus
               description="Leave it empty to use the suggested name."
-              disabled={readOnly || !!fixedNameOf(draft, connectionType)}
+              disabled={readOnly || !!fixedNameOf(draft, dialect)}
               placeholder={
-                fixedNameOf(draft, connectionType) ??
+                fixedNameOf(draft, dialect) ??
                 (draft.table ? suggestedNameOf(draft) : 'Constraint name')
               }
             />
@@ -538,7 +533,7 @@ const ConstraintInspector = ({
                 <SelectField
                   label="On delete"
                   disabled={shapeLocked}
-                  options={capabilitiesOf(connectionType).referentialActions}
+                  options={capabilitiesOf(dialect).referentialActions}
                   placeholder="Action"
                 />
               )}
@@ -548,7 +543,7 @@ const ConstraintInspector = ({
                 <SelectField
                   label="On update"
                   disabled={shapeLocked}
-                  options={capabilitiesOf(connectionType).referentialActions}
+                  options={capabilitiesOf(dialect).referentialActions}
                   placeholder="Action"
                 />
               )}

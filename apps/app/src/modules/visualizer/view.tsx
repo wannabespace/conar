@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { ReactFlowProvider } from '@xyflow/react'
@@ -49,7 +50,7 @@ const VisualizerTab = () => {
       <VisualizerSkeleton
         drafts={hasDrafts}
         schemaPicker={
-          capabilitiesOf(connection.type).schemas &&
+          capabilitiesOf(dialectOf(connection.type)).schemas &&
           (!tables || new Set(tables.map(({ schema }) => schema)).size > 1)
         }
       />

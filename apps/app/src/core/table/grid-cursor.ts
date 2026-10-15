@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import type { RefObject } from 'react'
 import { useState } from 'react'
@@ -27,7 +27,7 @@ import { glideIntoView } from './glide-into-view'
 export const useGridCursor = ({
   canEdit,
   columns,
-  connectionType,
+  dialect,
   getValue,
   layout,
   onEdit,
@@ -38,7 +38,7 @@ export const useGridCursor = ({
 }: {
   canEdit: (column: Column, rowIndex: number) => boolean
   columns: Column[]
-  connectionType: ConnectionType
+  dialect: SqlDialect
   getValue: (cell: DataGridCell) => unknown
   layout: DataGridLayout
   onEdit?: (cell: DataGridCell, value: unknown) => void
@@ -71,7 +71,7 @@ export const useGridCursor = ({
       if (!isEditable(cell.column, cell.rowIndex)) {
         continue
       }
-      const parsed = parseCellText(connectionType, cell.column, text)
+      const parsed = parseCellText(dialect, cell.column, text)
       if (parsed.isErr()) {
         rejected += 1
       } else {
@@ -107,7 +107,7 @@ export const useGridCursor = ({
         return true
       }
       if (isEditable(cell.column, cell.rowIndex)) {
-        const parsed = parseCellText(connectionType, cell.column, edit.text)
+        const parsed = parseCellText(dialect, cell.column, edit.text)
         if (parsed.isErr()) {
           store.set((state) => ({
             ...state,
@@ -120,10 +120,10 @@ export const useGridCursor = ({
       store.set((state) => ({ ...state, edit: null }))
       return true
     },
-    connectionType,
     copy: () =>
       gridClipboard(cursor, { cellAt, columns, rows, writeAll }).copy(),
     current,
+    dialect,
     edit: (text) => {
       const cell = current()
       if (
@@ -138,7 +138,7 @@ export const useGridCursor = ({
         if (text === undefined) {
           cursor.apply(
             value === null ||
-              !createTransformer(connectionType, cell.column)
+              !createTransformer(dialect, cell.column)
                 .fromConnection(value)
                 .toUI()
           )
@@ -154,7 +154,7 @@ export const useGridCursor = ({
             text ??
             (value === null
               ? null
-              : createTransformer(connectionType, cell.column)
+              : createTransformer(dialect, cell.column)
                   .fromConnection(value)
                   .toRaw()),
         },

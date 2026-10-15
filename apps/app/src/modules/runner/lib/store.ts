@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
@@ -45,13 +45,9 @@ export const runnerPageStore = memoize(({ resourceId, tabId }: RunnerTab) =>
 export type RunnerPageStore = ReturnType<typeof runnerPageStore>
 
 export const runnerStatements = memoize(
-  ({
-    connectionType,
-    resourceId,
-    tabId,
-  }: RunnerTab & { connectionType: ConnectionType }) =>
+  ({ dialect, resourceId, tabId }: RunnerTab & { dialect: SqlDialect }) =>
     createComputed(runnerPageStore({ resourceId, tabId }), (state) =>
-      splitStatements(state.query, dialects[connectionType])
+      splitStatements(state.query, dialects[dialect])
     )
 )
 

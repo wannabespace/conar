@@ -3,6 +3,7 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
@@ -57,12 +58,14 @@ const QueryField = ({
 }) => {
   const { connection, connectionResource } = useRouteContext()
 
+  const dialect = dialectOf(connection.type)
+
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, connection.type)
+      ? attachSqlSource(codeEditor, connectionResource, dialect)
       : undefined
-  }, [editorRef, connectionResource, connection.type])
+  }, [editorRef, connectionResource, dialect])
 
   return (
     <Field>
@@ -74,7 +77,7 @@ const QueryField = ({
         ref={editorRef}
         data-mask
         className="ring-foreground/4 h-40 rounded-xl ring"
-        language={sqlLanguageIds[connection.type]}
+        language={sqlLanguageIds[dialect]}
         value={value}
         options={QUERY_EDITOR_OPTIONS}
         onChange={onChange}
@@ -101,7 +104,10 @@ export const CreateViewDialog = () => {
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = tablesAndSchemas?.schemas ?? []
-  const statements = splitStatements(query, dialects[connection.type])
+  const statements = splitStatements(
+    query,
+    dialects[dialectOf(connection.type)]
+  )
   let queryError: string | null = null
   if (queryRefused && statements.length === 0) {
     queryError = 'Write the query the view selects.'
@@ -151,7 +157,10 @@ export const CreateViewDialog = () => {
       setRequest({
         schema:
           schema ??
-          defaultSchemaOf(connection.type, connectionResource.name) ??
+          defaultSchemaOf(
+            dialectOf(connection.type),
+            connectionResource.name
+          ) ??
           schemas[0]?.name ??
           '',
         table: null,
@@ -191,7 +200,7 @@ export const CreateViewDialog = () => {
         value={query}
         onChange={setQuery}
       />
-      {capabilitiesOf(connection.type).materializedViews && (
+      {capabilitiesOf(dialectOf(connection.type)).materializedViews && (
         <OptionField
           htmlFor="view-dialog-materialized"
           title="Materialized"

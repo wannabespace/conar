@@ -40,7 +40,7 @@ export const gridClipboard = (
     const value = cursor.getValue(cell)
     return value === null || value === undefined
       ? ''
-      : createTransformer(cursor.connectionType, cell.column)
+      : createTransformer(cursor.dialect, cell.column)
           .fromConnection(value)
           .toRaw()
   }

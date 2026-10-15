@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -46,6 +47,7 @@ export const Visualizer = ({
   tables: { schema: string; table: string; type: TableType }[]
 }) => {
   const { connection, connectionResource } = useRouteContext()
+  const dialect = dialectOf(connection.type)
   const flow = useReactFlow()
   const draftsStore = diagramDraftsStore(connectionResource.id)
   const drafts = useSubscription(draftsStore, {
@@ -53,12 +55,9 @@ export const Visualizer = ({
     selector: (state) => state.drafts,
   })
   const edit = diagramDrafts(draftsStore)
-  const can = gatesOf(connection.type)
+  const can = gatesOf(dialect)
 
-  const defaultSchema = defaultSchemaOf(
-    connection.type,
-    connectionResource.name
-  )
+  const defaultSchema = defaultSchemaOf(dialect, connectionResource.name)
   const schemas = [
     ...new Set([
       ...tables.map(({ schema }) => schema),
@@ -278,7 +277,7 @@ export const Visualizer = ({
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         onOpenChangeComplete={(open) => !open && apply.reset()}
-        connectionType={connection.type}
+        dialect={dialect}
         ddlRollback={can.ddlRollback}
         drafts={drafts}
         error={apply.error}

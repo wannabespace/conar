@@ -167,7 +167,7 @@ const findIn = async (source: string, name: string) => {
   return (
     database && {
       ...connectionParts.parse(database.connectionString),
-      engine: database.engine,
+      type: database.type,
     }
   )
 }
@@ -227,40 +227,40 @@ describe('localDatabases', () => {
       { host: 'db.local', user: 'dev' },
     ],
     [
-      'Docker: MariaDB credentials and flavor from the container env, a container whose inspect fails skipped',
+      'Docker: MariaDB credentials and type from the container env, a container whose inspect fails skipped',
       'Docker',
       'maria',
       {
         database: 'shop',
-        engine: 'mariadb',
         host: 'localhost',
         port: '13306',
+        type: 'mariadb',
         user: 'root',
       },
     ],
     [
-      "Docker: the image's MariaDB flavor over the env's MySQL",
+      "Docker: the image's MariaDB type over the env's MySQL",
       'Docker',
       'maria-image',
-      { engine: 'mariadb', port: '13307', user: 'root' },
+      { port: '13307', type: 'mariadb', user: 'root' },
     ],
     [
       "Docker: the published port's engine over the env's and the image's",
       'Docker',
       'mysql-port',
-      { engine: 'mysql', port: '13308' },
+      { port: '13308', type: 'mysql' },
     ],
   ])('%s', async (_case, source, name, parts) => {
     expect(await findIn(source, name)).toMatchObject(parts)
   })
 
   it.skipIf(process.platform !== 'darwin')(
-    'TablePlus: MariaDB driver keeps its flavor, odd entries skipped',
+    'TablePlus: MariaDB driver keeps its type, odd entries skipped',
     async () => {
       expect(await findIn('TablePlus', 'Maria')).toMatchObject({
         database: 'shop',
-        engine: 'mariadb',
         port: '3308',
+        type: 'mariadb',
       })
     }
   )

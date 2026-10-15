@@ -56,9 +56,9 @@ export const TriggerInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  type: dialect,
 }: SectionInspectorProps<TriggerItem>) => {
-  const options = capabilitiesOf(connectionType).triggers
+  const options = capabilitiesOf(dialect).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
@@ -93,7 +93,7 @@ export const TriggerInspector = ({
   })
   const schema = triggerSchemas[options.body ? 'body' : 'function']
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: draftOf(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       const allowed = triggerOrientationsFor(value, options.orientations)
 
@@ -126,7 +126,7 @@ export const TriggerInspector = ({
     )
   }
   const targets = targetsFor(draft.timing)
-  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
+  const saved = item && shapeOf(draftOf(item, draft.schema, dialect))
   const changed = !saved || !sameShape(shapeOf(draft), saved)
 
   return (
@@ -140,7 +140,7 @@ export const TriggerInspector = ({
       readOnly={readOnly}
       warning={
         item
-          ? replaceWarning({ connectionType, name: item.name, noun: 'trigger' })
+          ? replaceWarning({ dialect, name: item.name, noun: 'trigger' })
           : undefined
       }
     >
@@ -275,7 +275,7 @@ export const TriggerInspector = ({
                 label="Body"
                 description="Runs for every change the trigger answers to."
                 disabled={readOnly}
-                language={sqlLanguageIds[connectionType]}
+                language={sqlLanguageIds[dialect]}
               />
             )}
           </form.AppField>

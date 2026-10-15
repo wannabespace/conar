@@ -1,4 +1,3 @@
-import { engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Tooltip,
@@ -48,7 +47,7 @@ export const ConnectionIconWithVersion = ({
       <TooltipTrigger
         render={
           <ConnectionIcon
-            engine={engines.of(connection)}
+            type={connection.type}
             className="pointer-events-auto size-5 shrink-0"
           />
         }

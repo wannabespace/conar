@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
@@ -34,7 +35,7 @@ export const useReferenceTargets = (enabled: boolean) => {
     throwOnError: false,
   })
   const defaultSchema = defaultSchemaOf(
-    connection.type,
+    dialectOf(connection.type),
     connectionResource.name
   )
   const typeOf = new Map(

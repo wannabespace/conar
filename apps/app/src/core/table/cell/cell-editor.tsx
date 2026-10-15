@@ -1,5 +1,5 @@
 import { Monaco } from '@tamery/monaco/editor'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Textarea } from '@tamery/ui/components/textarea'
@@ -30,11 +30,11 @@ const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
 }
 
 const codeLanguage = (
-  connectionType: ConnectionType,
+  dialect: SqlDialect,
   { type = '', uiType }: Column,
   value: unknown
 ) => {
-  const { json, xml } = capabilitiesOf(connectionType).columnTypes
+  const { json, xml } = capabilitiesOf(dialect).columnTypes
   if (json.test(type) || (uiType === 'raw' && isNested(value))) {
     return 'json'
   }
@@ -176,15 +176,15 @@ export const CellField = ({
   value: unknown
 }) => {
   const cursor = useGridCursorContext()
-  const { connectionType } = cursor
+  const { dialect } = cursor
   // State, not a ref: the portal mounts the popup a render after this one, and the hotkeys must bind once it exists.
   const [popup, setPopup] = useState<HTMLDivElement | null>(null)
   const edit = useSubscription(cursor.store, {
     selector: (state) => state.edit,
   })
-  const transformer = createTransformer(connectionType, column)
+  const transformer = createTransformer(dialect, column)
   const readOnly = !cursor.isEditable(column, rowIndex)
-  const language = codeLanguage(connectionType, column, value)
+  const language = codeLanguage(dialect, column, value)
   const reference =
     isPickColumn(column) || readOnly ? undefined : column.foreign
   const props = { column, cursor, edit, readOnly }

@@ -1,7 +1,4 @@
-import type {
-  ConnectionFlavor,
-  ConnectionType,
-} from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { Result } from 'better-result'
 import { v7 } from 'uuid'
@@ -14,7 +11,6 @@ import type { Connection } from '~/core/connection/sync'
 export interface ConnectionDetails {
   color?: string | null
   connectionString: string
-  flavor: ConnectionFlavor | null
   label?: string | null
   name: string
   type: ConnectionType
@@ -86,7 +82,6 @@ const saveConnection = (
     (isPasswordExists) =>
       writeRow({
         color: details.color || null,
-        flavor: details.flavor,
         isPasswordExists,
         label: details.label || null,
         name: details.name,

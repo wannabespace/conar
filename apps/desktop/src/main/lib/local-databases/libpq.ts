@@ -47,10 +47,10 @@ export const pgService: Finder = {
       name,
       parts: {
         database: dbname,
-        engine: ConnectionType.Postgres,
         host,
         password,
         port,
+        type: ConnectionType.Postgres,
         user,
       },
     })),

@@ -1,4 +1,5 @@
 import { HugeiconsIcon } from '@hugeicons/react'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -64,7 +65,7 @@ export const RecentTables = () => {
           <span data-mask className="truncate">
             {table.table}
           </span>
-          {capabilitiesOf(connection.type).schemas && (
+          {capabilitiesOf(dialectOf(connection.type)).schemas && (
             <span
               data-mask
               className="text-muted-foreground ml-auto pl-4 text-xs"

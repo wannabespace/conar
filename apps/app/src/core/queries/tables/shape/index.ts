@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { CreateTableBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -62,7 +62,7 @@ export const clickhouseColumnType = ({
 }
 
 export const createTableStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   { columns, schema, table }: TableTarget & { columns: NewColumn[] }
 ) => {
@@ -71,7 +71,7 @@ export const createTableStatement = (
     .withSchema(schema)
     .schema.createTable(table)
 
-  if (dialectType === ConnectionType.ClickHouse) {
+  if (dialectType === SqlDialect.ClickHouse) {
     for (const column of columns) {
       create = create.addColumn(
         column.name,
@@ -110,21 +110,21 @@ export const createTableStatement = (
 }
 
 export const renameTableStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   { newName, schema, table }: TableTarget & { newName: string }
 ) => {
   // MySQL's ALTER TABLE refuses a view; RENAME TABLE takes both.
   if (
-    dialectType === ConnectionType.ClickHouse ||
-    dialectType === ConnectionType.MySQL
+    dialectType === SqlDialect.ClickHouse ||
+    dialectType === SqlDialect.MySQL
   ) {
     return sql`RENAME TABLE ${sql.id(schema, table)} TO ${sql.id(schema, newName)}`.compile(
       db
     )
   }
 
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialectType === SqlDialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table))}, ${sql.val(newName)}`.compile(
       db
     )
@@ -138,25 +138,25 @@ export const renameTableStatement = (
 }
 
 export const dropTableStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   { cascade, schema, table }: TableTarget & { cascade: boolean }
 ) => {
   const drop = db.withSchema(schema).schema.dropTable(table)
 
   return (
-    cascade && dialectType === ConnectionType.Postgres ? drop.cascade() : drop
+    cascade && dialectType === SqlDialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 
 export const addColumnStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   { column, schema, table }: TableTarget & { column: NewColumn }
 ) => {
   const alter = db.withSchema(schema).schema.alterTable(table)
 
-  if (dialectType === ConnectionType.ClickHouse) {
+  if (dialectType === SqlDialect.ClickHouse) {
     return alter
       .addColumn(column.name, sql.raw(clickhouseColumnType(column)))
       .compile()
@@ -189,13 +189,13 @@ IF @statement IS NOT NULL EXEC sp_executesql @statement;`,
 }
 
 export const dropColumnStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   target: ColumnTarget
 ) => {
   const { column, schema, table } = target
 
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialectType === SqlDialect.MSSQL) {
     return sql`${mssqlDefaultConstraint(target).drop}ALTER TABLE ${sql.id(schema, table)} DROP COLUMN ${sql.id(column)}`.compile(
       db
     )
@@ -209,7 +209,7 @@ export const dropColumnStatement = (
 }
 
 export const renameColumnStatement = (
-  dialectType: ConnectionType,
+  dialectType: SqlDialect,
   db: Db,
   {
     column,
@@ -221,7 +221,7 @@ export const renameColumnStatement = (
     newName: string
   }
 ) => {
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialectType === SqlDialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table, column))}, ${sql.val(newName)}, 'COLUMN'`.compile(
       db
     )

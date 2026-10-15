@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, dialectOf } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import {
@@ -264,7 +264,7 @@ const RULES: {
       if (
         portType &&
         parts.type &&
-        portType !== parts.type &&
+        dialectOf(portType) !== dialectOf(parts.type) &&
         port === String(DEFAULT_PORTS[portType])
       ) {
         return {

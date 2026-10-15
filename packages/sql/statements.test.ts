@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import { dialects } from './dialect'
 import {
@@ -10,10 +10,10 @@ import {
   unwrapTransaction,
 } from './statements'
 
-const pg = dialects[ConnectionType.Postgres]
-const mssql = dialects[ConnectionType.MSSQL]
-const mysql = dialects[ConnectionType.MySQL]
-const clickhouse = dialects[ConnectionType.ClickHouse]
+const pg = dialects[SqlDialect.Postgres]
+const mssql = dialects[SqlDialect.MSSQL]
+const mysql = dialects[SqlDialect.MySQL]
+const clickhouse = dialects[SqlDialect.ClickHouse]
 const texts = (sql: string, dialect = pg) =>
   splitStatements(sql, dialect).map((statement) => statement.text)
 

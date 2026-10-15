@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { useState } from 'react'
 
 import { isComputed } from '~/core/queries/tables/columns'
@@ -11,12 +11,12 @@ import type { DistinctValuesTarget } from './distinct-values'
 import { DistinctValues, hasDistinctValues } from './distinct-values'
 
 export const useColumnActions = ({
-  connectionType,
+  dialect,
   editable,
   schema,
   table,
 }: {
-  connectionType: ConnectionType
+  dialect: SqlDialect
   editable: boolean
   schema: string
   table: string
@@ -24,14 +24,14 @@ export const useColumnActions = ({
   const [distinct, setDistinct] = useState<DistinctValuesTarget | null>(null)
 
   const actionsOf = (column: Column): ColumnActions => ({
-    onDistinctValues: hasDistinctValues(connectionType, column)
+    onDistinctValues: hasDistinctValues(dialect, column)
       ? (anchor) => setDistinct({ anchor, column })
       : undefined,
     onEdit:
       editable && !isComputed(column)
         ? () => columnDialogRef.current?.edit(column)
         : undefined,
-    sortable: isSortable(connectionType, column),
+    sortable: isSortable(dialect, column),
   })
 
   const dialogs = (

@@ -1,7 +1,7 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
-export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
-  [ConnectionType.ClickHouse]: [
+export const COLUMN_TYPES: Record<SqlDialect, readonly string[]> = {
+  [SqlDialect.ClickHouse]: [
     'UInt8',
     'UInt32',
     'UInt64',
@@ -19,7 +19,7 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'DateTime64(3)',
     'Enum',
   ],
-  [ConnectionType.MSSQL]: [
+  [SqlDialect.MSSQL]: [
     'int',
     'bigint',
     'smallint',
@@ -36,7 +36,7 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'datetime2',
     'varbinary(max)',
   ],
-  [ConnectionType.MySQL]: [
+  [SqlDialect.MySQL]: [
     'int',
     'bigint',
     'smallint',
@@ -55,7 +55,7 @@ export const COLUMN_TYPES: Record<ConnectionType, readonly string[]> = {
     'blob',
     'enum',
   ],
-  [ConnectionType.Postgres]: [
+  [SqlDialect.Postgres]: [
     'integer',
     'bigint',
     'smallint',

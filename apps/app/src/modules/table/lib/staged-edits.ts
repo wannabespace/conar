@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { useSubscription } from 'seitu/react'
 
@@ -34,12 +34,12 @@ export const stageRow = (
 
 export const useStagedEdits = ({
   columns,
-  connectionType,
+  dialect,
   rows,
   visible,
 }: {
   columns: Column[]
-  connectionType: ConnectionType
+  dialect: SqlDialect
   rows: GridRow[]
   visible: Column[]
 }) => {
@@ -66,7 +66,7 @@ export const useStagedEdits = ({
       return
     }
     const actions = draftsActions(sessionStore)
-    const transformer = createTransformer(connectionType, column)
+    const transformer = createTransformer(dialect, column)
     if (
       isSameValue(value, row[column.id], (v) =>
         transformer.fromConnection(v).toRaw()

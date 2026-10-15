@@ -1,8 +1,8 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { describeConnectionString } from '@tamery/connection/utils'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { engines } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
@@ -33,7 +33,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const test = useMutation({
     meta: { event: 'connection_tested' },
-    mutationFn: (params: { connectionString: string; type: ConnectionType }) =>
+    mutationFn: (params: { connectionString: string; type: SqlDialect }) =>
       testConnectionQuery.run(params),
   })
   const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)
@@ -67,7 +67,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     )
     const tested =
       test.variables?.connectionString === connectionString &&
-      test.variables.type === engines.type(values.engine)
+      test.variables.type === dialectOf(values.type)
     return {
       canSend: canSend && !!connectionString,
       connectionString,
@@ -84,7 +84,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     inFlight.current = Result.tryPromise(() =>
       test.mutateAsync({
         connectionString,
-        type: engines.type(values.engine),
+        type: dialectOf(values.type),
       })
     )
     return inFlight.current
@@ -121,10 +121,9 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
         {
           color: values.color,
           connectionString,
-          flavor: engines.flavor(values.engine),
           label: values.label.trim() || null,
           name: values.name.trim() || generateRandomName(),
-          type: engines.type(values.engine),
+          type: values.type,
         },
         {
           open: draft.canSend && draft.testStatus !== 'error',

@@ -1,10 +1,10 @@
-import type { Engine } from '@tamery/shared/enums/connection-type'
 import {
-  ConnectionFlavor,
   ConnectionType,
-  engines,
+  dialectOf,
+  SqlDialect,
 } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
+import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
 import type { SshTunnel } from './ssh/params'
@@ -26,10 +26,19 @@ export interface ConnectionParts {
 
 export const DEFAULT_PORTS: Record<ConnectionType, number> = {
   [ConnectionType.ClickHouse]: 8123,
+  [ConnectionType.MariaDB]: 3306,
   [ConnectionType.MSSQL]: 1433,
   [ConnectionType.MySQL]: 3306,
   [ConnectionType.Postgres]: 5432,
 }
+
+/** MariaDB shares MySQL's port, so a bare port names MySQL. */
+export const TYPE_OF_DEFAULT_PORT: Record<string, ConnectionType> =
+  Object.fromEntries(
+    objectEntries(DEFAULT_PORTS)
+      .filter(([type]) => type !== ConnectionType.MariaDB)
+      .map(([type, port]) => [port, type])
+  )
 
 export const HTTPS_PORT = '443'
 export const CLICKHOUSE_HTTPS_PORT = '8443'
@@ -53,13 +62,13 @@ const portOf = ({
   return type ? String(DEFAULT_PORTS[type]) : ''
 }
 
-const ENGINE_OF_NAME: Record<string, Engine> = {
+const TYPE_OF_NAME: Record<string, ConnectionType> = {
   ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
-  mariadb: ConnectionFlavor.MariaDB,
+  mariadb: ConnectionType.MariaDB,
   'microsoft sql server': ConnectionType.MSSQL,
   mssql: ConnectionType.MSSQL,
   mysql: ConnectionType.MySQL,
@@ -75,8 +84,8 @@ const ENGINE_OF_NAME: Record<string, Engine> = {
 }
 
 /** A URL scheme or a tool's driver name, never a whole URL; a `+driver` suffix (`postgresql+asyncpg`) is dropped. */
-export const engineOf = (name: string): Engine | undefined =>
-  ENGINE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')]
+export const connectionTypeOf = (name: string): ConnectionType | null =>
+  TYPE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')] ?? null
 
 const format = (
   parts: ConnectionParts,
@@ -87,9 +96,9 @@ const format = (
   }
 
   const port = portOf(parts)
-  let scheme: string =
-    parts.type === ConnectionType.MSSQL ? 'sqlserver' : parts.type
-  if (parts.type === ConnectionType.ClickHouse) {
+  const dialect = dialectOf(parts.type)
+  let scheme: string = dialect === SqlDialect.MSSQL ? 'sqlserver' : dialect
+  if (dialect === SqlDialect.ClickHouse) {
     const https =
       parts.https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT)
     scheme = https ? 'https' : 'http'
@@ -117,14 +126,13 @@ const parse = (connectionString: string): ConnectionParts => {
     readConnectionString(connectionString)
   const ssh = sshTunnelOf(searchParams)
   deleteSshParams(searchParams)
-  const engine = engineOf(scheme)
 
   return {
     ...parts,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,
-    type: engine ? engines.type(engine) : null,
+    type: connectionTypeOf(scheme),
   }
 }
 

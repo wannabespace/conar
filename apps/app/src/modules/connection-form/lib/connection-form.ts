@@ -6,8 +6,7 @@ import { guessConnection } from '@tamery/connection/guess'
 import { isLocalHost } from '@tamery/connection/hosts'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
-import type { Engine } from '@tamery/shared/enums/connection-type'
-import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -25,18 +24,17 @@ export interface ConnectionFormValues extends Omit<
   'ssh' | 'type'
 > {
   color: string | null
-  engine: Engine
   label: string
   name: string
   ssh: SshTunnel
   sshEnabled: boolean
   syncType: SyncType
+  type: ConnectionType
 }
 
 const DEFAULT_VALUES: ConnectionFormValues = {
   color: null,
   database: '',
-  engine: ConnectionType.Postgres,
   host: '',
   https: null,
   label: '',
@@ -47,6 +45,7 @@ const DEFAULT_VALUES: ConnectionFormValues = {
   ssh: EMPTY_SSH_TUNNEL,
   sshEnabled: false,
   syncType: SyncType.Cloud,
+  type: ConnectionType.Postgres,
   user: '',
 }
 
@@ -83,19 +82,19 @@ export const formValuesOf = (
     ...DEFAULT_VALUES,
     ...(parts && pick(parts, [...SERVER_FIELDS, 'https'])),
     color: connection.color,
-    engine: engines.of(connection),
     label: connection.label ?? '',
     name: connection.name,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
+    type: connection.type,
   }
 }
 
 export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
   ...pick(values, [...SERVER_FIELDS, 'https']),
   ssh: values.sshEnabled ? values.ssh : null,
-  type: engines.type(values.engine),
+  type: values.type,
 })
 
 const BARE_HOST = /^[\w.:%[\]-]+$/u
@@ -116,8 +115,8 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
       form.setFieldValue(field, parts[field] ?? '')
     }
   }
-  if (parts.engine) {
-    form.setFieldValue('engine', parts.engine)
+  if (parts.type) {
+    form.setFieldValue('type', parts.type)
   }
   if (parts.https !== undefined || newServer) {
     form.setFieldValue('https', parts.https ?? null)
@@ -189,8 +188,8 @@ export const useConnectionForm = ({
           form.setFieldValue(field, value)
         }
       }
-      if (patch.type && patch.type !== engines.type(form.state.values.engine)) {
-        form.setFieldValue('engine', patch.type)
+      if (patch.type && patch.type !== form.state.values.type) {
+        form.setFieldValue('type', patch.type)
       }
       if (patch.sshEnabled) {
         form.setFieldValue('sshEnabled', true)

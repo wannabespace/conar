@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
@@ -92,7 +92,7 @@ export interface GridCursor {
   collapse: () => void
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
-  connectionType: ConnectionType
+  dialect: SqlDialect
   copy: () => void
   current: () => DataGridCell | null
   /** `text` types over the cell; without it the edit starts from the current value. */

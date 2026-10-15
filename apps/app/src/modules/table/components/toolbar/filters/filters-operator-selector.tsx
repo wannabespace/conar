@@ -1,3 +1,4 @@
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { Filter } from '@tamery/shared/filters'
 import { FILTER_GROUPS } from '@tamery/shared/filters'
 import {
@@ -27,21 +28,25 @@ export const FiltersOperatorSelector = ({
       <CommandInput placeholder="Select operator..." />
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
-        {offeredFilters(connection.type).map(({ group, filters }) => (
-          <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
-            {filters.map((filter) => (
-              <CommandItem
-                key={filter.operator}
-                value={filter.operator}
-                keywords={[filter.label, filter.symbol]}
-                onSelect={() => onSelect(filter)}
-              >
-                <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-                <CommandShortcut>{filter.symbol}</CommandShortcut>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        ))}
+        {offeredFilters(dialectOf(connection.type)).map(
+          ({ group, filters }) => (
+            <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
+              {filters.map((filter) => (
+                <CommandItem
+                  key={filter.operator}
+                  value={filter.operator}
+                  keywords={[filter.label, filter.symbol]}
+                  onSelect={() => onSelect(filter)}
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {filter.label}
+                  </span>
+                  <CommandShortcut>{filter.symbol}</CommandShortcut>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )
+        )}
       </CommandList>
     </Command>
   )

@@ -1,5 +1,3 @@
-import type { Engine } from '@tamery/shared/enums/connection-type'
-
 import type { ConnectionParts } from '../connection-parts'
 
 export type GuessFormat =
@@ -25,9 +23,7 @@ export type ServerField = Exclude<
   'https' | 'options' | 'ssh' | 'type'
 >
 
-export type GuessedParts = Partial<Omit<ConnectionParts, 'type'>> & {
-  engine?: Engine
-}
+export type GuessedParts = Partial<ConnectionParts>
 
 export interface ConnectionGuess extends DatabaseGuess {
   fixes: GuessFix[]

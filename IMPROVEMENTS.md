@@ -70,13 +70,13 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
 
-- **More flavors.** A database speaking another engine's protocol joins as a `ConnectionFlavor` when only its name and a few gates differ, and as its own `ConnectionType` when its SQL differs throughout (`dialects.md`). Candidates by fit:
+- **More connection types on borrowed dialects.** A database speaking another engine's protocol joins as a `ConnectionType` mapped to that `SqlDialect` when only its name and a few gates differ, and as its own `SqlDialect` when its SQL differs throughout (`dialects.md`). Candidates by fit:
   - Name only: Percona Server and Dolt (MySQL), Azure SQL Database (SQL Server).
   - Name plus capability gates: CockroachDB (partial `pg_catalog`, no extensions, domains or table inheritance, limited `ALTER COLUMN TYPE`), YugabyteDB (reuses Postgres's query layer, near identical), Aurora DSQL (no foreign keys, triggers or extensions), TiDB (no triggers, procedures or events).
   - Own dialect over a borrowed protocol: Redshift, Greenplum, Materialize, RisingWave, QuestDB, CrateDB, SingleStore, StarRocks, Doris, Babelfish, Fabric Warehouse.
-  - Not flavors: Neon, Supabase, RDS, Aurora, AlloyDB, PlanetScale and ClickHouse Cloud are hosts (`hosts.ts`); TimescaleDB, Citus and pgvector are Postgres extensions.
+  - Not connection types: Neon, Supabase, RDS, Aurora, AlloyDB, PlanetScale and ClickHouse Cloud are hosts (`hosts.ts`); TimescaleDB, Citus and pgvector are Postgres extensions.
 
-  The first flavor that lacks something its type offers needs the capability gates (`capabilitiesOf` and friends, about 120 calls) to take the connection's engine instead of its type. Check each candidate's limits on a live server first: they shift between releases.
+  The first type that lacks something its dialect offers needs the capability gates (`capabilitiesOf` and friends, about 120 calls) to take the connection's type instead of its dialect. Check each candidate's limits on a live server first: they shift between releases.
 
 ## Settings
 
@@ -157,7 +157,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Atomic AI usage limits.** Metered AI routes check the quota before the call and record after it, so concurrent requests can all pass the last remaining unit. An increment-then-compare in one statement would close it.
 - **Change a connection's sync type after creating it.** Sync is picked only on the create page; Edit has no Sync row, so moving a Full connection to No password (to take its secrets off the server) means deleting and recreating it. Edit could offer the same Sync row: going to No password strips the server copy on the next upload, and going to Full uploads this device's full string.
 - **MariaDB sequences in the Navigator.** MariaDB lists a `CREATE SEQUENCE` in `information_schema.TABLES` as `SEQUENCE`, and the table list skips it, so sequences are only reachable from a Query tab. A read-only Sequences section (current value, increment, cycle) would cover them.
-- **Detect MariaDB where nothing named it.** A MariaDB server reached through a plain `mysql://` string, a `mysql` command or a saved MySQL connection shows as MySQL. The version query already returns `…-MariaDB`, so a successful test could set the connection's MariaDB flavor.
+- **Detect MariaDB where nothing named it.** A MariaDB server reached through a plain `mysql://` string, a `mysql` command or a saved MySQL connection shows as MySQL. The version query already returns `…-MariaDB`, so a successful test could switch the connection's type to MariaDB.
 - **Browse a system-versioned table's history.** MariaDB's system-versioned tables show only their current rows; an "As of" picker in the table toolbar could add `FOR SYSTEM_TIME AS OF` to the read.
 - **Name the cause on a connection card's error too.** The connection pane titles its error from the connection diagnosis; the card's own error row still shows the raw message, and its query throws to the error page when decrypting fails. It could reuse the same diagnosis and keep a locked keychain on the card.
 - **Remember a declined Keychain prompt.** Picking a found database whose password sits in the Keychain asks macOS each time; after the user declines, picking it again in the same run prompts again. Remembering the denial until restart would fill the form without asking.

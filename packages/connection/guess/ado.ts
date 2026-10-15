@@ -94,12 +94,12 @@ export const guessAdo = (text: string): DatabaseGuess | null => {
     return null
   }
   const has = (keys: string[]) => keys.some((key) => pairs.has(key))
-  const engine =
+  const type =
     TYPE_OF_ODBC_DRIVER.find(([driver]) =>
       driver.test(pairs.get('driver') ?? '')
     )?.[1] ??
     (has(MYSQL_KEYS) ? ConnectionType.MySQL : undefined) ??
     // SQL Server has no `Host` key, and Npgsql shares `Trust Server Certificate`.
     (has(MSSQL_KEYS) && !pairs.has('host') ? ConnectionType.MSSQL : undefined)
-  return { format: 'ado', parts: { ...parts, engine } }
+  return { format: 'ado', parts: { ...parts, type } }
 }

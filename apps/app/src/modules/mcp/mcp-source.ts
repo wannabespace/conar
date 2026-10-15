@@ -1,6 +1,6 @@
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { engines } from '@tamery/shared/enums/connection-type'
+import { dialectOf } from '@tamery/shared/enums/connection-type'
 import type { McpAccess, McpSource } from '@tamery/shared/mcp'
 import { MCP_MAX_ROWS } from '@tamery/shared/mcp'
 import { dialects, readsOnly, splitStatements } from '@tamery/sql'
@@ -77,8 +77,7 @@ const toMcpConnection = ({
 export const mcpSource: McpSource = {
   connections: () =>
     getCollections().connectionsCollection.toArray.map(toMcpConnection),
-  createConnection: async ({ connectionString, engine, name, syncType }) => {
-    const type = engines.type(engine)
+  createConnection: async ({ connectionString, name, syncType, type }) => {
     const { connectionsCollection, workspacesCollection } = getCollections()
     if (
       !permix.check('connection.create', {
@@ -91,10 +90,12 @@ export const mcpSource: McpSource = {
     if (!workspace) {
       throw new Error('Tamery is still loading. Try again in a moment.')
     }
-    await testConnectionQuery.run({ connectionString, type })
+    await testConnectionQuery.run({
+      connectionString,
+      type: dialectOf(type),
+    })
     const { id } = await createConnection({
       connectionString,
-      flavor: engines.flavor(engine),
       name,
       syncType,
       type,
@@ -113,7 +114,9 @@ export const mcpSource: McpSource = {
   describeTable,
   execute: async ({ approve, sql, ...target }, onAbort) => {
     const { connection, resource } = resolveTarget(target)
-    if (splitStatements(sql, dialects[connection.type]).length !== 1) {
+    if (
+      splitStatements(sql, dialects[dialectOf(connection.type)]).length !== 1
+    ) {
       throw new Error(
         'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together (not on ClickHouse, which has no transactions).'
       )
@@ -131,11 +134,14 @@ export const mcpSource: McpSource = {
       })
     }
     const sets = await runForAgent(
-      statementQuery(sql, connection.type).run({ ...params, signal }),
+      statementQuery(sql, dialectOf(connection.type)).run({
+        ...params,
+        signal,
+      }),
       { access: approve ? 'ask' : 'write', connection_type: connection.type }
     )
     if (resource) {
-      refreshAfterRun(resource, connection.type, sql)
+      refreshAfterRun(resource, dialectOf(connection.type), sql)
     }
     if (!approve) {
       notifications.notify({
@@ -147,7 +153,7 @@ export const mcpSource: McpSource = {
   },
   query: async ({ sql, ...target }, onAbort) => {
     const { connection, resource } = resolveTarget(target)
-    if (!readsOnly(sql, dialects[connection.type])) {
+    if (!readsOnly(sql, dialects[dialectOf(connection.type)])) {
       throw new Error(
         'Only one read-only statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN) runs at a time.'
       )
