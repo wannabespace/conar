@@ -1,14 +1,10 @@
 import './lib/warmup'
-import {
-  isKeychainLocked,
-  KEYCHAIN_LOCKED_ERROR,
-} from '@tamery/shared/keychain'
 import { themeStore } from '@tamery/ui/theme-store'
 import { createRouter, Navigate, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import { restartToUnlock } from './core/connection/keychain'
+import { toastUnhandledKeychainLocks } from './core/connection/keychain'
 import { history, lastLocationStorageValue } from './lib/last-location'
 import { transparentBackgroundValue } from './lib/transparent-background'
 import { routeTree } from './routeTree.gen'
@@ -41,15 +37,7 @@ if (window.electron) {
       event.preventDefault()
     }
   })
-  window.addEventListener('unhandledrejection', (event) => {
-    if (isKeychainLocked(event.reason)) {
-      event.preventDefault()
-      toast.error(KEYCHAIN_LOCKED_ERROR, {
-        action: { label: 'Restart', onClick: restartToUnlock },
-        id: 'keychain-locked',
-      })
-    }
-  })
+  toastUnhandledKeychainLocks()
 }
 
 export const router = createRouter({
