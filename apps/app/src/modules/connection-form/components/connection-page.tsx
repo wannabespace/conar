@@ -77,7 +77,7 @@ export const ConnectionPage = ({
       goBack()
     }
   }
-  // A button that disappears once pressed (a fix, Ask AI) hands focus to the page first: on body the page's keys no longer reach.
+  // A button that disappears once pressed (a fix, Explain with AI) hands focus to the page first: on body the page's keys no longer reach.
   const focusPage = () => pageRef.current?.focus()
   const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
   const policy = formPolicyOf(mode)

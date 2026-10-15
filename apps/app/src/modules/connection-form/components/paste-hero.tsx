@@ -64,7 +64,7 @@ export const PasteHero = ({
       ? {
           subtitle: EDIT_SUBTITLES[mode.scope],
           title: (
-            <span data-mask className="block truncate">
+            <span data-mask className="block">
               {mode.name}
             </span>
           ),
@@ -86,7 +86,7 @@ export const PasteHero = ({
   return (
     <div className="flex flex-col gap-7 lg:sticky lg:top-16 lg:col-span-2 lg:self-start">
       <div ref={shakeScope} className="flex flex-col gap-7">
-        <h1 className="relative h-18 overflow-hidden text-3xl font-semibold tracking-tight">
+        <h1 className="relative overflow-hidden text-3xl font-semibold tracking-tight wrap-break-word">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={flash.shown ? flash.result : 'prompt'}

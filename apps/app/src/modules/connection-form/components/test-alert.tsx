@@ -47,7 +47,7 @@ export const TestAlert = ({
   parts,
 }: {
   error: Error
-  /** Ask AI disables itself and then unmounts, so focus has to go somewhere. */
+  /** Explain with AI disables itself and then unmounts, so focus has to go somewhere. */
   onAsk: () => void
   onFix: (patch: ConnectionPatch, source: FixSource) => void
   onFocus: (field: NonNullable<Diagnosis['focus']>) => void
@@ -158,7 +158,7 @@ export const TestAlert = ({
                       >
                         <LoadingContent loading={ask.isPending}>
                           <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />
-                          Ask AI
+                          Explain with AI
                         </LoadingContent>
                       </Button>
                     }
