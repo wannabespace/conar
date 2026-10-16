@@ -58,6 +58,11 @@ export interface QueryExecutor {
       ownerId?: string
     } & TransactionSettings
   ) => Promise<{ txId: string }>
+  /** A connection of its own, driven through the transaction calls but opening nothing: the SQL run in it begins and ends its transaction verbatim. */
+  openSession: (args: {
+    connectionString: string
+    ownerId?: string
+  }) => Promise<{ txId: string }>
   executeTransaction: (
     args: {
       txId: string

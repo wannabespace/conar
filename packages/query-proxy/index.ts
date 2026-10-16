@@ -92,6 +92,15 @@ const createQueryDialect = <T extends AnyBuilder>(
           ownerId: resolve.owner(context),
         })
       ),
+    openSession: orpc
+      .input(type<Params<typeof dialect.openSession>>())
+      .handler(async ({ input, context }) =>
+        dialect.openSession({
+          ...input,
+          connectionString: await resolve.connectionString(input, context),
+          ownerId: resolve.owner(context),
+        })
+      ),
     rollbackTransaction: orpc
       .input(type<Params<typeof dialect.rollbackTransaction>>())
       .handler(({ input, context }) =>

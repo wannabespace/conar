@@ -37,7 +37,7 @@ describe('transactionQueries', () => {
 
     await expect(
       transactionQueries.commitTransaction({ txId })
-    ).rejects.toThrow(txId)
+    ).rejects.toThrow('no longer open')
   })
 
   test('rollback stays idempotent', async () => {
@@ -61,7 +61,7 @@ describe('transactionQueries', () => {
         txId,
         values: [],
       })
-    ).rejects.toThrow(txId)
+    ).rejects.toThrow('no longer open')
 
     await transactionQueries.executeTransaction({
       ownerId: 'owner-a',

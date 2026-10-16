@@ -112,6 +112,9 @@ const dialectQueryBridge = (dialect: string) => ({
   executeTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg)
   ),
+  openSession: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.openSession`, arg)
+  ),
   rollbackTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)
   ),

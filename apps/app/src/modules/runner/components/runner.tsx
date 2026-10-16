@@ -73,6 +73,7 @@ import { RunnerEditor } from './runner-editor'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 import { SavedQueries } from './saved-queries'
+import { TransactionControls } from './transaction-controls'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -345,6 +346,7 @@ export const Runner = () => {
                 <TooltipContent>Run every statement</TooltipContent>
               </Tooltip>
             )}
+            <TransactionControls />
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <ToolbarButton label="Format" onClick={() => actions.format()}>
                 <ContentSwitch

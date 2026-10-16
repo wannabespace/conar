@@ -92,7 +92,8 @@ export const runRequest = async (
       connectionString,
       queryId,
     },
-    () => request.query(sql)
+    // `query` wraps the SQL in sp_executesql, which rejects one leaving a transaction open (error 266) and drops its #temp tables, so a session's BEGIN TRAN needs a plain batch.
+    () => (values.length > 0 ? request.query(sql) : request.batch(sql))
   )
   const error = errors.at(-1)
   if (error) {

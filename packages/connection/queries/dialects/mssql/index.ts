@@ -1,8 +1,12 @@
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
-import { registerTransaction, transactionQueries } from '../../transactions'
-import { getPool } from './client'
+import {
+  registerTransaction,
+  sessionConnection,
+  transactionQueries,
+} from '../../transactions'
+import { getPool, mssql, poolConfig } from './client'
 import { runRequest } from './run'
 
 export const query = {
@@ -51,4 +55,34 @@ export const query = {
       )
     }
   ),
+
+  openSession: handleQueryError(async ({ connectionString, ownerId }) => {
+    const session = await sessionConnection(() =>
+      new mssql.ConnectionPool({
+        ...poolConfig(connectionString),
+        // `min: 1` keeps the idle reaper off the one connection: reaping it would roll the transaction back and run the next request outside it.
+        pool: { max: 1, min: 1 },
+      }).connect()
+    )
+    session.on('error', console.error)
+    const txId = registerTransaction(
+      {
+        commit: async () => {
+          await session.request().batch('COMMIT')
+        },
+        execute: (sql, values, options) =>
+          runRequest(
+            session.request(),
+            { connectionString, sql, values },
+            options
+          ),
+        release: () => session.close(),
+        rollback: async () => {
+          await session.request().batch('ROLLBACK')
+        },
+      },
+      ownerId
+    )
+    return { txId }
+  }),
 } satisfies QueryExecutor

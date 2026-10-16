@@ -6,12 +6,14 @@ import type * as mssqlModule from 'mssql'
 import { parseConnectionString } from '../../..'
 import { parseSSLConfig } from '../../../ssl/mssql'
 
-const mssql = createRequire(import.meta.url)('mssql') as typeof mssqlModule
+export const mssql = createRequire(import.meta.url)(
+  'mssql'
+) as typeof mssqlModule
 
-export const getPool = memoize((connectionString: string) => {
+export const poolConfig = (connectionString: string): mssqlModule.config => {
   const { database, host, password, port, searchParams, user } =
     parseConnectionString(connectionString)
-  const pool = new mssql.ConnectionPool({
+  return {
     database,
     options: parseSSLConfig(searchParams),
     password,
@@ -20,7 +22,11 @@ export const getPool = memoize((connectionString: string) => {
     requestTimeout: 0,
     server: host,
     user,
-  })
+  }
+}
+
+export const getPool = memoize((connectionString: string) => {
+  const pool = new mssql.ConnectionPool(poolConfig(connectionString))
   pool.on('error', console.error)
   return pool.connect()
 })

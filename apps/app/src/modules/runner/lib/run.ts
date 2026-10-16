@@ -1,4 +1,4 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { silently, tryCatchAsync } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -6,7 +6,6 @@ import { refreshAfterRun } from '~/core/connection/refresh-after-run'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { ResultSet } from '~/core/queries/connection/custom'
-import { statementQuery } from '~/core/queries/connection/statement'
 import type { QueryParams } from '~/core/runtime/query'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
@@ -14,6 +13,7 @@ import { queryClient } from '~/lib/query-client'
 
 import { runHistory } from './history'
 import type { RunnerTab } from './store'
+import { runnerTransaction } from './transaction'
 
 export interface RunnerStatement {
   text: string
@@ -65,6 +65,12 @@ const watchTab = (tab: RunnerTab) => {
         return
       }
       runs.get(key)?.abort()
+      if (runnerTransaction.state(tab).get()) {
+        void silently(() => runnerTransaction.close(tab, 'tab_closed'))
+        toast.info('Transaction rolled back', {
+          description: 'Its query tab was closed',
+        })
+      }
       queryClient.removeQueries({
         queryKey: runnerResultsOptions(tab).queryKey,
       })
@@ -89,16 +95,26 @@ const resultOf = (
   ...patch,
 })
 
-const runOne = async (
-  params: QueryParams,
-  statement: RunnerStatement,
+const runOne = async ({
+  connectionResource,
+  params,
+  signal,
+  statement,
+  tab,
+}: {
+  connectionResource: ConnectionResource
+  params: QueryParams
   signal: AbortSignal
-): Promise<RunnerResult[]> => {
+  statement: RunnerStatement
+  tab: RunnerTab
+}): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
   try {
-    const sets = await statementQuery(statement.text, params.type).run({
-      ...params,
-      signal,
+    const sets = await runnerTransaction.run({
+      connectionResource,
+      params: { ...params, signal },
+      tab,
+      text: statement.text,
     })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
@@ -167,7 +183,13 @@ export const runStatements = async ({
       const ranAt = Date.now()
       // Sequential by design: statements run in order on one connection.
       // oxlint-disable-next-line no-await-in-loop
-      const results = await runOne(params, statement, signal)
+      const results = await runOne({
+        connectionResource,
+        params,
+        signal,
+        statement,
+        tab,
+      })
       slots[index] = results
       const [head] = results
       if (head?.error) {

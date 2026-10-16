@@ -4,6 +4,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { dialects } from './dialect'
 import {
+  closesTransaction,
   leavesTransactionOpen,
   splitStatements,
   statementAt,
@@ -188,6 +189,15 @@ COMMIT`
     expect(
       leavesTransactionOpen('BEGIN TRAN\nUPDATE t SET a = 1\nCOMMIT', mssql)
     ).toBe(false)
+  })
+
+  it('tells a statement that ends a transaction', () => {
+    expect(closesTransaction('-- done\nCOMMIT', pg)).toBe(true)
+    expect(closesTransaction('rollback work', mysql)).toBe(true)
+    expect(closesTransaction('END', pg)).toBe(true)
+    expect(closesTransaction('COMMIT TRAN', mssql)).toBe(true)
+    expect(closesTransaction('ROLLBACK TO SAVEPOINT a', pg)).toBe(false)
+    expect(closesTransaction('SELECT commit FROM t', pg)).toBe(false)
   })
 
   it('splits SQL Server batches on GO', () => {

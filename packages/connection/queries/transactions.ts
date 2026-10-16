@@ -23,7 +23,9 @@ interface OwnedTx {
   ownerId?: string
 }
 
-const IDLE_TX_TIMEOUT_MS = 5 * 60 * 1000
+const IDLE_TX_TIMEOUT_MINUTES = 15
+
+const TRANSACTION_GONE = `The transaction is no longer open. One left idle for ${IDLE_TX_TIMEOUT_MINUTES} minutes rolls back.`
 
 const activeTransactions = new Map<string, OwnedTx>()
 
@@ -43,7 +45,7 @@ export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
         await silently(() => current.handle.rollback())
         await silently(() => current.handle.release())
       })()
-    }, IDLE_TX_TIMEOUT_MS)
+    }, IDLE_TX_TIMEOUT_MINUTES * 60_000)
   }
 
   const wrapped: TxHandle = {
@@ -60,13 +62,25 @@ export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
   return txId
 }
 
+export const sessionConnection = async <T>(connect: () => Promise<T>) => {
+  try {
+    return await connect()
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    throw new Error(
+      `The database refused a second connection for the transaction (${reason}). Run BEGIN together with its COMMIT or ROLLBACK to use the app's own connection.`,
+      { cause: error }
+    )
+  }
+}
+
 const owned = (entry: OwnedTx, ownerId?: string) =>
   !entry.ownerId || ownerId === entry.ownerId
 
 const requireTransaction = (txId: string, ownerId?: string) => {
   const entry = activeTransactions.get(txId)
   if (!entry || !owned(entry, ownerId)) {
-    throw new Error(`No active transaction found for id: ${txId}`)
+    throw new Error(TRANSACTION_GONE)
   }
   return entry
 }
@@ -93,7 +107,7 @@ export const transactionQueries = {
     async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
       const handle = disposeTransaction(txId, ownerId)
       if (!handle) {
-        throw new Error(`No active transaction found for id: ${txId}`)
+        throw new Error(TRANSACTION_GONE)
       }
       await settle(handle, () => handle.commit())
     }

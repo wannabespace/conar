@@ -108,6 +108,12 @@ export const leavesTransactionOpen = (text: string, dialect: DialectSpec) => {
   )
 }
 
+/** Reads only the statement's first words, so pass one statement, not a batch. */
+export const closesTransaction = (text: string, dialect: DialectSpec) =>
+  transactionCloser(
+    tokenize(text, dialect).tokens.filter((token) => token.kind !== 'comment')
+  ) !== undefined
+
 export const statementsFromTokens = (
   text: string,
   tokens: Token[],
