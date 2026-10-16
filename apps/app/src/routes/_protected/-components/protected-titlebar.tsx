@@ -37,6 +37,7 @@ import { useConnectionResourceLinkParams } from '~/core/connection/use-connectio
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
 import { CommandPaletteButton } from '~/modules/actions-center/command-palette-button'
+import { GetStartedButton } from '~/modules/get-started/get-started-button'
 import { OpenInWeb } from '~/modules/open-in-web/open-in-web'
 import { UpdateButton, VersionButton } from '~/modules/updates/update-button'
 import { UserButton } from '~/modules/user-menu/user-button'
@@ -395,6 +396,7 @@ export const ProtectedTitleBar = () => {
             }
           />
           <div className="ml-auto flex h-full shrink-0 items-center gap-1">
+            <GetStartedButton />
             <VersionButton />
             <UpdateButton />
             <OpenInWeb />

@@ -3,10 +3,12 @@ import { toast } from 'sonner'
 
 import { queryClient } from '~/lib/query-client'
 
+export const MCP_CLIENTS_REFETCH_INTERVAL = 10_000
+
 export const mcpClientsQuery = queryOptions({
   queryFn: () => window.electron?.mcp.clients(),
   queryKey: ['mcp', 'clients'],
-  refetchInterval: 10_000,
+  refetchInterval: MCP_CLIENTS_REFETCH_INTERVAL,
 })
 
 export const mcpStatusQuery = queryOptions({

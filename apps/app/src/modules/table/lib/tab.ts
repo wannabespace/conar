@@ -5,6 +5,7 @@ import { createWebStorageValue } from 'seitu/web'
 
 import { parseTableTabId } from '~/core/tabs/ids'
 import type { TabKind } from '~/core/tabs/types'
+import { getStarted } from '~/modules/get-started/progress'
 
 import { tablePageStore } from './store'
 
@@ -34,7 +35,8 @@ export const tableTab: TabKind<TableParams> = {
       ? fullTitle(params)
       : params.table,
   match: parseTableTabId,
-  onActivate: (resourceId, { schema, table }) =>
+  onActivate: (resourceId, { schema, table }) => {
+    getStarted.complete('table')
     recentTables(resourceId).set((recent) =>
       [
         { schema, table },
@@ -42,7 +44,8 @@ export const tableTab: TabKind<TableParams> = {
           (item) => item.schema !== schema || item.table !== table
         ),
       ].slice(0, MAX_RECENT_TABLES)
-    ),
+    )
+  },
   onRename: (resourceId, from, to) => {
     const source = tablePageStore({ id: resourceId, ...from })
     tablePageStore({ id: resourceId, ...to }).set(source.get())

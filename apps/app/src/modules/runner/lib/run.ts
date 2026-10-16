@@ -12,6 +12,7 @@ import type { QueryParams } from '~/core/runtime/query'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
+import { getStarted } from '~/modules/get-started/progress'
 
 import { runHistory } from './history'
 import type { RunnerTab } from './store'
@@ -192,6 +193,9 @@ export const runStatements = async ({
     stopped: signal.aborted,
     type: dialect,
   })
+  if (failedAt === undefined && !signal.aborted) {
+    getStarted.complete('query')
+  }
   if (dialect) {
     refreshAfterRun(
       connectionResource,
