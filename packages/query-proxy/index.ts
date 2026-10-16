@@ -99,10 +99,10 @@ const createQueryDialect = <T extends AnyBuilder>(
           ownerId: resolve.owner(context),
         })
       ),
-    transactionOpen: orpc
-      .input(type<Params<typeof dialect.transactionOpen>>())
+    transactionStatus: orpc
+      .input(type<Params<typeof dialect.transactionStatus>>())
       .handler(({ input, context }) =>
-        dialect.transactionOpen({ ...input, ownerId: resolve.owner(context) })
+        dialect.transactionStatus({ ...input, ownerId: resolve.owner(context) })
       ),
   }) satisfies Record<keyof QueryExecutor, unknown>
 

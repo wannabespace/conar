@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
+import type { TransactionStatus } from '.'
 import type { TxHandle } from './transactions'
 import { registerTransaction, transactionQueries } from './transactions'
 
@@ -77,21 +78,22 @@ describe('transactionQueries', () => {
 
   test('a session whose transaction ended is released without a rollback', async () => {
     const { calls, handle } = spyHandle()
-    let inTransaction = true
+    let status: TransactionStatus = 'failed'
     const txId = registerTransaction(
-      { ...handle, inTransaction: () => Promise.resolve(inTransaction) },
+      { ...handle, status: () => Promise.resolve(status) },
       'owner-a'
     )
 
-    expect(await transactionQueries.transactionOpen({ txId })).toBe(false)
+    expect(await transactionQueries.transactionStatus({ txId })).toBe('ended')
     expect(
-      await transactionQueries.transactionOpen({ ownerId: 'owner-a', txId })
-    ).toBe(true)
+      await transactionQueries.transactionStatus({ ownerId: 'owner-a', txId })
+    ).toBe('failed')
+    expect(calls).toEqual([])
 
-    inTransaction = false
+    status = 'ended'
     expect(
-      await transactionQueries.transactionOpen({ ownerId: 'owner-a', txId })
-    ).toBe(false)
+      await transactionQueries.transactionStatus({ ownerId: 'owner-a', txId })
+    ).toBe('ended')
     expect(calls).toEqual(['release'])
     await expect(
       transactionQueries.commitTransaction({ ownerId: 'owner-a', txId })

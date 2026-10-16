@@ -125,8 +125,8 @@ const dialectQueryBridge = (dialect: string) => ({
   rollbackTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)
   ),
-  transactionOpen: handleElectronError((arg: unknown) =>
-    ipcRenderer.invoke(`query.${dialect}.transactionOpen`, arg)
+  transactionStatus: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.transactionStatus`, arg)
   ),
 })
 

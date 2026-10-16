@@ -1,11 +1,17 @@
 import type { ClientBase, Pool } from 'pg'
 
-import type { QueryExecutor } from '../..'
+import type { QueryExecutor, TransactionStatus } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { getPool, pg } from './client'
 import { runOn } from './run'
+
+const TRANSACTION_STATUS = {
+  E: 'failed',
+  I: 'ended',
+  T: 'open',
+} as const satisfies Record<string, TransactionStatus>
 
 const register = (
   client: ClientBase,
@@ -28,12 +34,14 @@ const register = (
       },
       execute: (sql, values, options) =>
         runOn(client, { connectionString, pool, sql, values }, options),
-      inTransaction: () =>
-        Promise.resolve(client.getTransactionStatus() !== 'I'),
       release,
       rollback: async () => {
         await client.query('ROLLBACK')
       },
+      status: () =>
+        Promise.resolve(
+          TRANSACTION_STATUS[client.getTransactionStatus() ?? 'I']
+        ),
     },
     ownerId
   )

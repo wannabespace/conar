@@ -3,14 +3,18 @@ import { silently, toError } from '@tamery/shared/utils'
 import type { Statement } from '@tamery/sql'
 import {
   dialects,
+  endsTransaction,
   leavesTransactionOpen,
   splitStatements,
   statementsFromTokens,
   unwrapTransaction,
 } from '@tamery/sql'
+import { type } from 'arktype'
 import { Result } from 'better-result'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
+import { createWebStorageValue } from 'seitu/web'
+import { toast } from 'sonner'
 
 import { refreshAfterRun } from '~/core/connection/refresh-after-run'
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -20,6 +24,7 @@ import { statementQuery } from '~/core/queries/connection/statement'
 import { createDialectProvider } from '~/core/runtime/dialects/driver'
 import type { QueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
+import { plural } from '~/utils/plural'
 
 import type { RunnerStatement } from './run'
 import type { RunnerTab } from './store'
@@ -27,6 +32,7 @@ import type { RunnerTab } from './store'
 interface OpenTransaction {
   connectionResource: ConnectionResource
   dialect: Dialect
+  failed: boolean
   provider: ReturnType<typeof createDialectProvider>
   ran: Pick<RunnerStatement, 'start' | 'text'>[]
   txId: string
@@ -34,9 +40,29 @@ interface OpenTransaction {
 
 type CloseReason = 'commit' | 'ended' | 'rollback' | 'tab_closed'
 
+export class SessionRefusedError extends Error {
+  override name = 'SessionRefusedError'
+}
+
 const state = memoize((_tab: RunnerTab) =>
   createStore<OpenTransaction | null>(null)
 )
+
+// A reload loses every open transaction (the desktop main process rolls them back), so the next load says so.
+const openTxIds = createWebStorageValue({
+  defaultValue: [],
+  key: 'runner-open-transactions',
+  schema: type('string[]'),
+  type: 'sessionStorage',
+})
+
+const lostTxCount = openTxIds.get().length
+if (lostTxCount > 0) {
+  openTxIds.set([])
+  toast.info(`${plural(lostTxCount, 'transaction')} rolled back`, {
+    description: 'The window reloaded',
+  })
+}
 
 const close = async (tab: RunnerTab, reason: CloseReason) => {
   const open = state(tab).get()
@@ -45,6 +71,7 @@ const close = async (tab: RunnerTab, reason: CloseReason) => {
   }
   state(tab).set(null)
   const { connectionResource, dialect, provider, ran, txId } = open
+  openTxIds.set((ids) => ids.filter((id) => id !== txId))
   posthog.capture('transaction_close', { reason, type: dialect })
   try {
     if (reason === 'commit') {
@@ -69,7 +96,7 @@ const open = async (
   const provider = createDialectProvider(params.dialect, params)
   const session = await Result.tryPromise(() => provider.openSession())
   if (session.isErr()) {
-    throw new Error(
+    throw new SessionRefusedError(
       `The database refused a second connection for the transaction (${toError(session.error.cause).message}). Run the whole block with Run all, or select it, to use the app's own connection.`
     )
   }
@@ -82,25 +109,63 @@ const open = async (
   state(tab).set({
     connectionResource,
     dialect: params.dialect,
+    failed: false,
     provider,
     ran: [],
     txId,
   })
+  openTxIds.set((ids) => [...ids, txId])
   posthog.capture('transaction_open', { type: params.dialect })
   return txId
 }
 
-const releaseIfEnded = async (tab: RunnerTab, txId: string) => {
+const notifyEnded = (
+  { dialect, failed }: OpenTransaction,
+  last: { failed: boolean; text: string }
+) => {
+  if (failed) {
+    toast.info('Transaction rolled back', {
+      description: 'It had failed, so none of its changes were saved',
+    })
+  } else if (last.failed) {
+    toast.warning('Transaction ended', {
+      description: 'The database ended it when the statement failed',
+    })
+  } else if (!endsTransaction(last.text, dialects[dialect])) {
+    toast.info('Transaction committed', {
+      description: 'The database committed it implicitly',
+    })
+  }
+}
+
+const sync = async (
+  tab: RunnerTab,
+  txId: string,
+  last: { failed: boolean; text: string }
+) => {
   const current = state(tab).get()
   if (current?.txId !== txId) {
     return
   }
-  const stillOpen = await Result.tryPromise(() =>
-    current.provider.transactionOpen({ txId })
+  const status = await Result.tryPromise(() =>
+    current.provider.transactionStatus({ txId })
   )
-  if (stillOpen.isOk() && !stillOpen.value) {
-    await close(tab, 'ended')
+  if (status.isErr()) {
+    return
   }
+  if (status.value === 'ended') {
+    notifyEnded(current, last)
+    await close(tab, 'ended')
+    return
+  }
+  const failed = status.value === 'failed'
+  if (failed && !current.failed) {
+    toast.warning('Transaction failed', {
+      description:
+        'The database ignores further statements until you roll it back',
+    })
+  }
+  state(tab).set((item) => item && { ...item, failed })
 }
 
 /** The statement's SQL runs verbatim: a `BEGIN` left open moves the tab onto a session of its own until the database reports its transaction over. */
@@ -125,11 +190,13 @@ const run = async ({
     return statementQuery(statement.text, params.dialect).run(params)
   }
   const sets: ResultSet[] = []
+  const last = { failed: true, text: statement.text }
   try {
     // A `BEGIN … COMMIT` group goes one statement at a time: MySQL rejects several in one string.
     for (const part of splitStatements(statement.text, spec, {
       groupTransactions: false,
     })) {
+      last.text = part.text
       // Sequential by design: the statements run in order on the session's connection.
       // oxlint-disable-next-line no-await-in-loop
       const partSets = await customQuery({ query: part.text }).run({
@@ -148,8 +215,9 @@ const run = async ({
           }
       )
     }
+    last.failed = false
   } finally {
-    await releaseIfEnded(tab, txId)
+    await sync(tab, txId, last)
   }
   return sets
 }

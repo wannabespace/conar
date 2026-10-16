@@ -29,15 +29,17 @@ const register = (
       commit: () => connection.commit(),
       execute: (sql, values, options) =>
         runOn(connection, { conf, connectionString, sql, values }, options),
+      release,
+      rollback: () => connection.rollback(),
       // MySQL and MariaDB both report the transaction in an OK packet's status flags, and mysql2 exposes them only on a result header, hence the no-op `DO 0`.
-      inTransaction: async () => {
+      status: async () => {
         const [header] =
           await connection.query<mysql2Promise.ResultSetHeader>('DO 0')
         // oxlint-disable-next-line no-bitwise -- the server status is a bit field
-        return (header.serverStatus & SERVER_STATUS_IN_TRANS) !== 0
+        return (header.serverStatus & SERVER_STATUS_IN_TRANS) === 0
+          ? 'ended'
+          : 'open'
       },
-      release,
-      rollback: () => connection.rollback(),
     },
     ownerId
   )

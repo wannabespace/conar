@@ -30,6 +30,8 @@ const endings = {
   },
 } as const
 
+const endingReasons = ['commit', 'rollback'] as const
+
 /** `disabled` while the tab runs: a transaction ended mid-run would send the run's remaining statements to the pool, where they autocommit. */
 export const TransactionControls = ({ disabled }: { disabled: boolean }) => {
   const tab = useRunnerTab()
@@ -53,14 +55,14 @@ export const TransactionControls = ({ disabled }: { disabled: boolean }) => {
   return (
     <>
       <Separator orientation="vertical" className="mx-0.5 h-4!" />
-      {(['commit', 'rollback'] as const).map((reason) => (
+      {(open.failed ? (['rollback'] as const) : endingReasons).map((reason) => (
         <Tooltip key={reason}>
           <TooltipTrigger
             render={
               <Button
                 disabled={disabled}
                 size="sm"
-                variant="outline"
+                variant={open.failed ? 'warning' : 'outline'}
                 onClick={() => end(reason)}
               />
             }
@@ -68,7 +70,11 @@ export const TransactionControls = ({ disabled }: { disabled: boolean }) => {
             <HugeiconsIcon icon={endings[reason].icon} strokeWidth={2} />
             {endings[reason].label}
           </TooltipTrigger>
-          <TooltipContent>{endings[reason].tooltip}</TooltipContent>
+          <TooltipContent>
+            {open.failed
+              ? 'The transaction failed and cannot be committed. Discard its changes'
+              : endings[reason].tooltip}
+          </TooltipContent>
         </Tooltip>
       ))}
     </>

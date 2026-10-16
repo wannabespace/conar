@@ -59,8 +59,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Query runner
 
 - **Show an open transaction on its tab.** Commit and Rollback appear only in the runner's toolbar, so a transaction left open in a background tab is invisible until that tab is opened again; a dot on the tab (and a confirm before closing it, rather than the rollback toast after) would keep forgotten transactions from holding locks for the 15-minute idle timeout.
-- **Say when a transaction ends or breaks on its own.** Commit and Rollback just vanish after a MySQL DDL statement commits implicitly or after a window reload rolls the session back, and they stay unchanged after Postgres aborts the transaction on an error or **Stop**, so the user cannot tell whether their earlier statements still count. A short notice ("Committed by CREATE TABLE", "Rolled back on reload", "Transaction failed: only Rollback is possible") would answer it.
-- **Name the rollback when a Run all block fails.** A failed `BEGIN … COMMIT` block shows only the failing statement's error, so it reads as if the statements before it went through; a line saying the block was rolled back would clear that up.
+- **End a reloaded web tab's transactions at once.** On the web nothing rolls back a transaction whose tab reloaded: the proxy holds its session, and its locks, until the 15-minute idle timeout. Rolling back the `txId`s the runner keeps in sessionStorage on the next load (or a `pagehide` beacon) would free them right away.
 - **Keep a window's transactions when another reloads.** The desktop main process rolls back every open transaction when any window navigates (`resetTransactions` in `main.ts`), so reloading one window ends a transaction another window holds. Owning transactions per `webContents` (`ownerId` from the IPC event) would scope the reset to the window that reloaded.
 
 ## Offline writes

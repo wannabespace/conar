@@ -278,7 +278,7 @@ export const Runner = () => {
           model.getPositionAt(start),
           model.getPositionAt(end)
         ),
-        error
+        error.message
       )
     },
     focus: () => editorRef.current?.focus(),

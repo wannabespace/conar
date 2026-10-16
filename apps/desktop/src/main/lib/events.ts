@@ -66,10 +66,10 @@ const lazyQueryExecutor = (
 
       return query.rollbackTransaction(args)
     },
-    transactionOpen: async (args) => {
+    transactionStatus: async (args) => {
       const query = await loadQuery()
 
-      return query.transactionOpen(args)
+      return query.transactionStatus(args)
     },
   }
 }

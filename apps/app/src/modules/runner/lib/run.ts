@@ -1,4 +1,5 @@
 import { silently, toError } from '@tamery/shared/utils'
+import { dialects, unwrapTransaction } from '@tamery/sql'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { Result } from 'better-result'
 import { toast } from 'sonner'
@@ -12,9 +13,10 @@ import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 
+import type { HistoryEntry } from './history'
 import { runHistory } from './history'
 import type { RunnerTab } from './store'
-import { runnerTransaction } from './transaction'
+import { runnerTransaction, SessionRefusedError } from './transaction'
 
 export interface RunnerStatement {
   text: string
@@ -23,13 +25,21 @@ export interface RunnerStatement {
   end: number
 }
 
+export interface RunnerError {
+  /** `block`: a `BEGIN … COMMIT` block the failure rolled back whole; `connection`: no fix to the SQL makes the run start. */
+  kind: 'block' | 'connection' | 'statement'
+  message: string
+}
+
 export interface RunnerResult extends Omit<RunnerStatement, 'text'> {
   duration: number
   set: ResultSet | null
-  error: string | null
+  error: RunnerError | null
   stopped: boolean
   pending: boolean
 }
+
+export type FailedRunnerResult = RunnerResult & { error: RunnerError }
 
 export interface RunnerRun {
   id: string
@@ -107,6 +117,7 @@ const runOne = async ({
   tab: RunnerTab
 }): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
+  const inSession = !!runnerTransaction.state(tab).get()
   try {
     const sets = await runnerTransaction.run({
       connectionResource,
@@ -119,10 +130,21 @@ const runOne = async ({
       getResult(statement, { duration, set })
     )
   } catch (error) {
+    let kind: RunnerError['kind'] = 'statement'
+    if (error instanceof SessionRefusedError) {
+      kind = 'connection'
+    } else if (
+      !inSession &&
+      unwrapTransaction(statement.text, dialects[params.dialect])
+    ) {
+      kind = 'block'
+    }
     return [
       getResult(statement, {
         duration: performance.now() - startedAt,
-        error: signal.aborted ? null : toError(error).message,
+        error: signal.aborted
+          ? null
+          : { kind, message: toError(error).message },
         stopped: signal.aborted,
       }),
     ]
@@ -166,11 +188,18 @@ export const runStatements = async ({
   }))
   if (paramsResult.isErr() && first) {
     slots.splice(0, slots.length, [
-      getResult(first, { error: toError(paramsResult.error.cause).message }),
+      getResult(first, {
+        error: {
+          kind: 'connection',
+          message: toError(paramsResult.error.cause).message,
+        },
+      }),
     ])
   }
   const params = paramsResult.unwrapOr(null)
-  const ran: Parameters<typeof runHistory.add>[1] = []
+  const ran: (Omit<HistoryEntry, 'error' | 'id'> & {
+    error: RunnerError | null
+  })[] = []
   let failedAt: number | undefined
   if (params) {
     for (const [index, statement] of statements.entries()) {
@@ -206,7 +235,10 @@ export const runStatements = async ({
   }
   run.running = false
   publish()
-  runHistory.add(connectionResource.id, ran)
+  runHistory.add(
+    connectionResource.id,
+    ran.map((entry) => ({ ...entry, error: entry.error?.message ?? null }))
+  )
   const dialect = params?.dialect
   posthog.capture('query_run', {
     failed: failedAt !== undefined,

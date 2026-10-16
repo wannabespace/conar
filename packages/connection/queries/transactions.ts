@@ -3,7 +3,12 @@ import { randomUUID } from 'node:crypto'
 import type { MaybePromise } from '@tamery/shared/utils'
 import { silently } from '@tamery/shared/utils'
 
-import type { QueryExecuteResult, QueryExecutor, RunOptions } from '.'
+import type {
+  QueryExecuteResult,
+  QueryExecutor,
+  RunOptions,
+  TransactionStatus,
+} from '.'
 import { handleQueryError } from '.'
 
 export interface TxHandle {
@@ -15,7 +20,7 @@ export interface TxHandle {
   commit: () => MaybePromise<void>
   rollback: () => MaybePromise<void>
   release: () => MaybePromise<void>
-  inTransaction?: () => Promise<boolean>
+  status?: () => Promise<TransactionStatus>
 }
 
 interface OwnedTx {
@@ -132,17 +137,17 @@ export const transactionQueries = {
       await settle(handle, () => handle.rollback())
     }
   ),
-  transactionOpen: handleQueryError(
+  transactionStatus: handleQueryError(
     async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
       const entry = activeTransactions.get(txId)
       if (!entry || !owned(entry, ownerId)) {
-        return false
+        return 'ended'
       }
-      if ((await entry.handle.inTransaction?.()) !== false) {
-        return true
+      const status = (await entry.handle.status?.()) ?? 'open'
+      if (status === 'ended') {
+        await silently(() => disposeTransaction(txId, ownerId)?.release())
       }
-      await silently(() => disposeTransaction(txId, ownerId)?.release())
-      return false
+      return status
     }
   ),
 } satisfies Pick<
@@ -150,7 +155,7 @@ export const transactionQueries = {
   | 'commitTransaction'
   | 'executeTransaction'
   | 'rollbackTransaction'
-  | 'transactionOpen'
+  | 'transactionStatus'
 >
 
 export const resetTransactions = async () => {

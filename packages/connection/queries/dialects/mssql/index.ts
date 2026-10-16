@@ -5,6 +5,8 @@ import { registerTransaction, transactionQueries } from '../../transactions'
 import { getPool, mssql, poolConfig } from './client'
 import { runRequest } from './run'
 
+const XACT_UNCOMMITTABLE = -1
+
 export const query = {
   ...transactionQueries,
 
@@ -72,15 +74,21 @@ export const query = {
             { batch: true, connectionString, sql, values },
             options
           ),
-        inTransaction: async () => {
-          const { recordset } = await session
-            .request()
-            .query<{ count: number }>('SELECT @@TRANCOUNT AS count')
-          return (recordset[0]?.count ?? 0) > 0
-        },
         release: () => session.close(),
         rollback: async () => {
           await session.request().batch('ROLLBACK')
+        },
+        status: async () => {
+          const { recordset } = await session
+            .request()
+            .query<{ count: number; state: number }>(
+              'SELECT @@TRANCOUNT AS count, XACT_STATE() AS state'
+            )
+          const [row] = recordset
+          if (!row?.count) {
+            return 'ended'
+          }
+          return row.state === XACT_UNCOMMITTABLE ? 'failed' : 'open'
         },
       },
       ownerId
