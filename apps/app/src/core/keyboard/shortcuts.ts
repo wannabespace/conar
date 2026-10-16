@@ -1,9 +1,9 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
+import type { HotkeyChord } from '@tanstack/react-hotkeys'
 
 export interface Shortcut {
   description: string
   desktopOnly?: boolean
-  hotkeys: Hotkey[]
+  hotkeys: HotkeyChord[]
   title: string
 }
 

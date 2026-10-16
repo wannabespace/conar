@@ -61,6 +61,11 @@ const note = { name: 'note', nullable: true, primaryKey: false, type: 'text' }
 const mssqlDropDefault =
   "DECLARE @default nvarchar(max), @definition nvarchar(max), @statement nvarchar(max);\nSELECT @default = QUOTENAME(name), @definition = definition FROM sys.default_constraints WHERE parent_object_id = OBJECT_ID(@1) AND parent_column_id = COLUMNPROPERTY(OBJECT_ID(@2), @3, 'ColumnId');\nSET @statement = N'ALTER TABLE ' + @4 + N' DROP CONSTRAINT ' + @default;\nIF @statement IS NOT NULL EXEC sp_executesql @statement;\n"
 
+const newTableId = (dialect: Dialect) => ({
+  ...id,
+  type: getCapabilities(dialect).columnTypes.id,
+})
+
 describe('createTable', () => {
   test('a single key is a column constraint the engine names', () => {
     expect(
@@ -74,10 +79,6 @@ describe('createTable', () => {
   })
 
   test("New table's id fills itself on every engine with a sequence", () => {
-    const newTableId = (dialect: Dialect) => ({
-      ...id,
-      type: getCapabilities(dialect).columnTypes.id,
-    })
     const engines = [
       [Dialect.Postgres, postgres],
       [Dialect.MySQL, mysql],

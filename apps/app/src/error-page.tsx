@@ -2,6 +2,7 @@ import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { isConnectionFailure } from '@tamery/connection/diagnose'
 import { isKeychainLocked } from '@tamery/shared/keychain'
+import { toError } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -19,7 +20,7 @@ import { fullSignOut } from '~/lib/auth'
 import { restartToUnlock } from '~/lib/device-encryption'
 import { posthog } from '~/lib/posthog'
 
-const getStack = (error: ErrorComponentProps['error']) => {
+const getStack = (error: Error) => {
   if (!error.stack) {
     return null
   }
@@ -34,18 +35,19 @@ const isReadableMessage = (message: string) => {
   return !trimmed.startsWith('{') && !trimmed.startsWith('[')
 }
 
-export const ErrorPage = ({ error }: ErrorComponentProps) => {
+export const ErrorPage = ({ error: thrown }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
 
+  const error = toError(thrown)
   const isConnectionError = isConnectionFailure(error.message)
-  const isLocked = isKeychainLocked(error)
+  const isLocked = isKeychainLocked(thrown)
 
   useEffect(() => {
     if (!(isConnectionError || isLocked)) {
-      posthog.captureException(error)
+      posthog.captureException(thrown)
     }
-  }, [error, isConnectionError, isLocked])
+  }, [thrown, isConnectionError, isLocked])
   const isValidationError = error instanceof TraversalError
   const stack = getStack(error)
   const cause =

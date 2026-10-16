@@ -36,6 +36,11 @@ const messages = (sql: string, withCatalog = false) =>
     ({ message, severity }) => `${severity}: ${message}`
   )
 
+const exact = (sql: string) =>
+  diagnose(sql, pg, { ...catalog, exactNames: true }).map(
+    ({ message }) => message
+  )
+
 describe('diagnose', () => {
   it('reports unterminated constructs and unbalanced brackets', () => {
     expect(messages("SELECT 'a")).toEqual(['error: Unterminated string'])
@@ -199,10 +204,6 @@ describe('diagnose', () => {
   })
 
   it('matches Postgres names exactly once unquoted ones fold', () => {
-    const exact = (sql: string) =>
-      diagnose(sql, pg, { ...catalog, exactNames: true }).map(
-        ({ message }) => message
-      )
     expect(exact('SELECT ID FROM USERS')).toEqual([])
     expect(exact('SELECT "ID" FROM "Users"')).toEqual(['Unknown table `Users`'])
     expect(exact('SELECT "ID" FROM users')).toEqual([

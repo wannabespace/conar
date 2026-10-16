@@ -194,12 +194,13 @@ export const chat = orpc
       context: 'string',
       createdAt: 'Date',
       id: 'string.uuid.v7',
-      messages: 'object[]' as type.cast<LegacyUIMessage[]>,
+      messages: 'object[]',
       type: type.valueOf(ConnectionType),
       updatedAt: 'Date',
     })
   )
   .handler(async ({ input, context, signal }) => {
+    const messages = input.messages as LegacyUIMessage[]
     if (
       context.parsedAppVersion &&
       context.parsedAppVersion.minor < MIN_CHAT_VERSION_MINOR
@@ -213,7 +214,7 @@ export const chat = orpc
     context.addLogData({
       chatId: input.id,
       connectionType: input.type,
-      inputMessages: input.messages.map((message) => ({
+      inputMessages: messages.map((message) => ({
         id: message.id,
         partsCount: message.parts.length,
         role: message.role,
@@ -232,7 +233,7 @@ export const chat = orpc
           }),
           role: 'system',
         },
-        ...(await convertToModelMessages(input.messages)),
+        ...(await convertToModelMessages(messages)),
       ],
       model,
       stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
@@ -256,7 +257,7 @@ export const chat = orpc
           },
         })
       },
-      originalMessages: input.messages,
+      originalMessages: messages,
       sendSources: true,
       stream: result.stream,
     })

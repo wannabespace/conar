@@ -1,5 +1,6 @@
 import { isConnectionFailure } from '@tamery/connection/diagnose'
 import { isKeychainLocked } from '@tamery/shared/keychain'
+import { toError } from '@tamery/shared/utils'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 
 import { ConnectionFailure } from './connection-failure'
@@ -7,7 +8,7 @@ import { ConnectionFailure } from './connection-failure'
 export const ConnectionError = (props: ErrorComponentProps) => {
   if (
     isKeychainLocked(props.error) ||
-    !isConnectionFailure(props.error.message)
+    !isConnectionFailure(toError(props.error).message)
   ) {
     throw props.error
   }

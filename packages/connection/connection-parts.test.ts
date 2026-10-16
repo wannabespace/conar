@@ -32,6 +32,12 @@ const VALUES = [
   'пароль 🔑',
 ]
 
+const missingAfterEdit = (ssh: ConnectionParts['ssh']) =>
+  connectionSecrets.missing(
+    new URL(connectionParts.format(parts({ ssh }), ['ssh_password']))
+      .searchParams
+  )
+
 describe('connectionParts', () => {
   it.each(VALUES)('hands %p to the driver as typed', (value) => {
     expect(
@@ -97,11 +103,6 @@ describe('connectionParts', () => {
       auth: 'password' as const,
       host: 'bastion',
     }
-    const missingAfterEdit = (ssh: ConnectionParts['ssh']) =>
-      connectionSecrets.missing(
-        new URL(connectionParts.format(parts({ ssh }), ['ssh_password']))
-          .searchParams
-      )
 
     expect(missingAfterEdit(tunnel)).toEqual(['ssh_password'])
     expect(missingAfterEdit({ ...tunnel, auth: 'agent' })).toEqual([])

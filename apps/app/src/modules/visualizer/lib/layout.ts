@@ -1,4 +1,4 @@
-import dagre from '@dagrejs/dagre'
+import { graphlib, layout } from '@dagrejs/dagre'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -30,7 +30,7 @@ const layoutConnected = (
   tables: DiagramTable[],
   relations: Diagram['relations']
 ) => {
-  const graph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
+  const graph = new graphlib.Graph().setDefaultEdgeLabel(() => ({}))
   graph.setGraph({ nodesep: NODE_GAP, rankdir: 'LR', ranksep: RANK_GAP })
 
   for (const table of tables) {
@@ -40,7 +40,7 @@ const layoutConnected = (
     graph.setEdge(relation.target.table, relation.source.table)
   }
 
-  dagre.layout(graph)
+  layout(graph)
 
   const { height = 0, width = 0 } = graph.graph()
   const positions: Positions = Object.fromEntries(
