@@ -7,6 +7,7 @@ import { Switch } from '@tamery/ui/components/switch'
 
 import { ElectronSwitchRow } from '~/core/settings/electron-switch-row'
 
+import { Activity } from './activity'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
@@ -63,6 +64,7 @@ export const McpSettings = () => {
           <ClientSetup server={status} />
         </>
       )}
+      <Activity />
     </>
   )
 }

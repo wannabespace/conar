@@ -181,6 +181,7 @@ contextBridge.exposeInMainWorld('electron', {
     ),
   },
   mcp: {
+    calls: handleElectronError(() => ipcRenderer.invoke('mcp.calls')),
     clients: handleElectronError(() => ipcRenderer.invoke('mcp.clients')),
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
