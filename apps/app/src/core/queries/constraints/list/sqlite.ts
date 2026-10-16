@@ -1,7 +1,8 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { keyIndexed } from '~/core/queries/shared/sqlite-catalog'
 import type {
   Pragmas,
   Database as SqliteDatabase,
@@ -20,76 +21,81 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
   const tables = db
     .selectFrom('sqlite_schema as t')
     .where('t.type', '=', 'table')
-  const indexedKeys = await tables
-    .innerJoin(
-      sql<Pragmas['index_list']>`pragma_index_list(t.name)`.as('il'),
-      (join) => join.onTrue()
-    )
-    .innerJoin(
-      sql<Pragmas['index_xinfo']>`pragma_index_xinfo(il.name)`.as('ix'),
-      (join) => join.onTrue()
-    )
-    .select([
-      't.name as table',
-      'il.name as name',
-      'ix.name as column',
-      (eb) =>
-        eb
-          .case()
-          .when('il.origin', '=', 'pk')
-          .then('PRIMARY KEY')
-          .else('UNIQUE')
-          .end()
-          .as('type'),
-    ])
-    .$narrowType<{ type: 'PRIMARY KEY' | 'UNIQUE' }>()
-    .where('il.origin', 'in', ['pk', 'u'])
-    .where('ix.key', '=', 1)
-    .orderBy('t.name')
-    .orderBy('il.name')
-    .orderBy('ix.seqno')
-    .execute()
-  const rowidKeys = await tables
-    .innerJoin(
-      sql<Pragmas['table_xinfo']>`pragma_table_xinfo(t.name)`.as('c'),
-      (join) => join.onTrue()
-    )
-    .select(['t.name as table', 'c.name as column'])
-    .where('c.pk', '>', 0)
-    .where(({ eb, exists, not, selectFrom }) =>
-      not(
-        exists(
-          selectFrom(
-            sql<Pragmas['index_list']>`pragma_index_list(t.name)`.as('pk')
-          )
-            .select(eb.lit(1).as('one'))
-            .where('pk.origin', '=', 'pk')
-        )
+  const [indexedKeys, rowidKeys, foreignKeys] = await Promise.all([
+    tables
+      .innerJoin(
+        sql<Pragmas['index_list']>`pragma_index_list(t.name)`.as('il'),
+        (join) => join.onTrue()
       )
-    )
-    .orderBy('t.name')
-    .orderBy('c.pk')
-    .execute()
-  const foreignKeys = await tables
-    .innerJoin(
-      sql<Pragmas['foreign_key_list']>`pragma_foreign_key_list(t.name)`.as(
-        'fk'
-      ),
-      (join) => join.onTrue()
-    )
-    .select([
-      't.name as table',
-      'fk.id',
-      'fk.from as column',
-      'fk.table as foreign_table',
-      'fk.to as foreign_column',
-      'fk.on_delete as onDelete',
-      'fk.on_update as onUpdate',
-    ])
-    .orderBy('t.name')
-    .orderBy('fk.id')
-    .orderBy('fk.seq')
-    .execute()
+      .innerJoin(
+        sql<Pragmas['index_xinfo']>`pragma_index_xinfo(il.name)`.as('ix'),
+        (join) => join.onTrue()
+      )
+      .select([
+        't.name as table',
+        'il.name as name',
+        'ix.name as column',
+        (eb) =>
+          eb
+            .case()
+            .when('il.origin', '=', 'pk')
+            .then('PRIMARY KEY')
+            .else('UNIQUE')
+            .end()
+            .as('type'),
+      ])
+      .$narrowType<{ type: 'PRIMARY KEY' | 'UNIQUE' }>()
+      .where('il.origin', 'in', ['pk', 'u'])
+      .where('ix.key', '=', 1)
+      .orderBy('t.name')
+      .orderBy('il.name')
+      .orderBy('ix.seqno')
+      .execute(),
+    tables
+      .innerJoin(
+        sql<Pragmas['table_xinfo']>`pragma_table_xinfo(t.name)`.as('c'),
+        (join) => join.onTrue()
+      )
+      .select(['t.name as table', 'c.name as column'])
+      .where('c.pk', '>', 0)
+      .where((eb) => eb.not(keyIndexed('t.name')))
+      .orderBy('t.name')
+      .orderBy('c.pk')
+      .execute(),
+    tables
+      .innerJoin(
+        sql<Pragmas['foreign_key_list']>`pragma_foreign_key_list(t.name)`.as(
+          'fk'
+        ),
+        (join) => join.onTrue()
+      )
+      // `REFERENCES parent` without columns stores no target: it names the parent's primary key, in key order.
+      .leftJoin(
+        sql<
+          Pragmas['table_xinfo']
+        >`pragma_table_xinfo(${sql.ref('fk.table')})`.as('target'),
+        (join) =>
+          join.on((eb) =>
+            eb.and([
+              eb('fk.to', 'is', null),
+              eb('target.pk', '=', eb('fk.seq', '+', 1)),
+            ])
+          )
+      )
+      .select((eb) => [
+        't.name as table',
+        'fk.id',
+        'fk.from as column',
+        'fk.table as foreign_table',
+        eb.fn.coalesce('fk.to', 'target.name').as('foreign_column'),
+        'fk.on_delete as onDelete',
+        'fk.on_update as onUpdate',
+      ])
+      .orderBy('t.name')
+      .orderBy('fk.id')
+      .orderBy('fk.seq')
+      .execute(),
+  ])
   const foreignKeyGroups = Map.groupBy(
     foreignKeys,
     (key) => `${key.table}\n${key.id}`

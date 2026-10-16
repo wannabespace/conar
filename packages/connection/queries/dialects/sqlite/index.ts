@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite'
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { registerTransaction, transactionQueries } from '../../transactions'
-import { getDatabase, openDatabase } from './client'
+import { openDatabase } from './client'
 import { runOn } from './run'
 
 const register = (db: DatabaseSync, ownerId?: string) =>
@@ -37,11 +37,16 @@ export const query = {
   // The driver runs a statement synchronously, so it has finished before a cancel can arrive.
   cancel: () => Promise.resolve(),
 
+  // A handle per call: a cached one keeps reading a file another tool deleted and recreated.
   execute: handleQueryError(
-    ({ connectionString, query: sql, values = [], ...options }) =>
-      Promise.resolve(
-        runOn(getDatabase(connectionString), sql, values, options)
-      )
+    ({ connectionString, query: sql, values = [], ...options }) => {
+      const db = openDatabase(connectionString)
+      try {
+        return Promise.resolve(runOn(db, sql, values, options))
+      } finally {
+        db.close()
+      }
+    }
   ),
 
   openSession: handleQueryError(({ connectionString, ownerId }) =>

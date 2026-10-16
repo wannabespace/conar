@@ -1,7 +1,8 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import type { AliasableExpression, Kysely } from 'kysely'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -13,6 +14,30 @@ import {
 
 import type { ColumnTypes } from './shape'
 import { clickhouseFilterValues } from './shape'
+
+interface CountTarget {
+  filters: ActiveFilter[]
+  schema: string
+  table: string
+}
+
+const countRows = async (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  total: AliasableExpression<unknown>,
+  { filters, schema, table }: CountTarget,
+  bind?: FilterValueBinding
+) => {
+  const query = await db
+    .withSchema(schema)
+    .$extendTables<Record<string, Record<string, unknown>>>()
+    .selectFrom(table)
+    .select(total.as('total'))
+    .where((eb) => toKyselyFilter(eb, filters, 'AND', bind))
+    .executeTakeFirst()
+
+  return { count: Number(query?.total ?? 0), isEstimated: false }
+}
 
 export const resourceTableTotalQuery = memoize(
   ({
@@ -29,8 +54,10 @@ export const resourceTableTotalQuery = memoize(
       filters: ActiveFilter[]
       exact: boolean
     }
-  }) =>
-    createQuery({
+  }) => {
+    const target = { filters, schema, table }
+
+    return createQuery({
       query: {
         clickhouse: async (db) => {
           if (!exact && !filters?.length) {
@@ -47,37 +74,14 @@ export const resourceTableTotalQuery = memoize(
             }
           }
 
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .where((eb) =>
-              toKyselyFilter(
-                eb,
-                filters,
-                'AND',
-                clickhouseFilterValues(columns)
-              )
-            )
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
+          return countRows(
+            db,
+            db.fn.countAll(),
+            target,
+            clickhouseFilterValues(columns)
+          )
         },
-        mssql: async (db) => {
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(sql<number>`count_big(*)`.as('total'))
-            .where((eb) => toKyselyFilter(eb, filters))
-            .executeTakeFirst()
-
-          return {
-            count: Number(query?.total ?? 0),
-            isEstimated: false,
-          }
-        },
+        mssql: (db) => countRows(db, sql`count_big(*)`, target),
         mysql: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
@@ -92,15 +96,7 @@ export const resourceTableTotalQuery = memoize(
             }
           }
 
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .where((eb) => toKyselyFilter(eb, filters))
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
+          return countRows(db, db.fn.countAll(), target)
         },
         postgres: async (db) => {
           if (!exact && !filters?.length) {
@@ -124,33 +120,16 @@ export const resourceTableTotalQuery = memoize(
             }
           }
 
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .where((eb) => toKyselyFilter(eb, filters))
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
+          return countRows(db, db.fn.countAll(), target)
         },
-        sqlite: async (db) => {
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .where((eb) => toKyselyFilter(eb, filters))
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
-        },
+        sqlite: (db) => countRows(db, db.fn.countAll(), target),
       },
       type: type({
         count: 'number',
         isEstimated: 'boolean',
       }),
     })
+  }
 )
 
 export const resourceTableTotalQueryKey = ({

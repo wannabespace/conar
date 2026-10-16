@@ -38,12 +38,11 @@ const SOCKETS = (
 const ANSWER_TIMEOUT_MS = 2000
 const ANY_ADDRESS = new Set(['', '0.0.0.0', '::'])
 
-const IMAGE_USERS: Record<Dialect, string | null> = {
+const IMAGE_USERS: Partial<Record<Dialect, string>> = {
   [Dialect.ClickHouse]: 'default',
   [Dialect.MSSQL]: 'sa',
   [Dialect.MySQL]: 'root',
   [Dialect.Postgres]: 'postgres',
-  [Dialect.SQLite]: null,
 }
 
 const containersSchema = type({
@@ -124,7 +123,7 @@ export const docker: Finder = {
               ) ?? connectionType,
           },
           env,
-          { user: IMAGE_USERS[dialect] ?? undefined }
+          { user: IMAGE_USERS[dialect] }
         )
         return {
           name,

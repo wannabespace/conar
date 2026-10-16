@@ -1,4 +1,4 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {

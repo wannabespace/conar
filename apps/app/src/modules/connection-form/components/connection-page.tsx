@@ -34,6 +34,7 @@ import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
+import { FileFields } from './file-fields'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
 import { NameField } from './name-field'
@@ -226,7 +227,11 @@ export const ConnectionPage = ({
                 }
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <ServerFields form={form} locked={policy.locked} />
+                  {opensFile(values.type) ? (
+                    <FileFields form={form} locked={policy.locked} />
+                  ) : (
+                    <ServerFields form={form} locked={policy.locked} />
+                  )}
                   {filled && (
                     <PasteNotes
                       fixes={filled.fixes}
