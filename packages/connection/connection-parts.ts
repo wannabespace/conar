@@ -13,7 +13,7 @@ export interface ConnectionParts {
   /** A SQLite file's path, D1's database ID. */
   database: string
   host: string
-  /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
+  /** ClickHouse's transport: `true` for `clickhouses://` or `https://`, `false` for `http://`, `null` infers it from the port. */
   https: boolean | null
   /** Driver options as a query string, without the leading `?` and without the `ssh_*` params. */
   options: string
@@ -67,10 +67,9 @@ const getPort = ({
 const TYPE_OF_NAME: Record<string, ConnectionType> = {
   ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
+  clickhouses: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
   d1: ConnectionType.SQLite,
-  http: ConnectionType.ClickHouse,
-  https: ConnectionType.ClickHouse,
   libsql: ConnectionType.SQLite,
   mariadb: ConnectionType.MariaDB,
   'microsoft sql server': ConnectionType.MSSQL,
@@ -138,7 +137,7 @@ const format = (
   if (parts.type === ConnectionType.ClickHouse) {
     const https =
       parts.https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT)
-    scheme = https ? 'https' : 'http'
+    scheme = https ? 'clickhouses' : 'clickhouse'
   }
   const host =
     parts.host.includes(':') && !parts.host.startsWith('[')
@@ -154,7 +153,11 @@ const format = (
   return url.toString()
 }
 
-const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
+const HTTPS_OF_SCHEME: Record<string, boolean> = {
+  clickhouses: true,
+  http: false,
+  https: true,
+}
 
 const AUTH_TOKEN_PARAM = 'authtoken'
 

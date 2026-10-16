@@ -14,7 +14,7 @@ const router = createQueryRouter(orpc, {
 
 test('cloud transactions ignore a forged client owner for execute, commit and rollback', async () => {
   const beginInput = {
-    connectionString: 'http://localhost:8123',
+    connectionString: 'clickhouse://localhost:8123',
     ownerId: 'attacker',
   }
   const { txId } = await call(router.clickhouse.beginTransaction, beginInput, {
