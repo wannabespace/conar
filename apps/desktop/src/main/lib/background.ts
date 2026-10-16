@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron'
+import Store from 'electron-store'
 
 import trayIcon from '../../../resources/tray-icon.png?inline'
 import { mcp } from './mcp'
@@ -7,6 +8,11 @@ import { autoUpdater } from './todesktop'
 
 const HIDDEN_ARG = '--hidden'
 const loginItem = { args: [HIDDEN_ARG] }
+
+const store = new Store<{ keepRunning: boolean }>({
+  defaults: { keepRunning: true },
+  name: 'background',
+})
 
 let quitting = false
 let tray: Tray | null = null
@@ -30,14 +36,28 @@ export const openAtLogin = {
   },
 }
 
+export const keepRunning = {
+  get: () => store.get('keepRunning'),
+  set: (enabled: boolean) => {
+    store.set('keepRunning', enabled)
+    if (!enabled) {
+      openAtLogin.set(false)
+    }
+    return enabled
+  },
+}
+
+const runsInBackground = () =>
+  mcp.status().state === 'running' && keepRunning.get()
+
 export const startsInBackground = () =>
-  mcp.status().state === 'running' &&
+  runsInBackground() &&
   (app.getLoginItemSettings().wasOpenedAtLogin ||
     process.argv.includes(HIDDEN_ARG))
 
 export const keepsServingAfterClose = (win: BrowserWindow) =>
   !quitting &&
-  mcp.status().state === 'running' &&
+  runsInBackground() &&
   BrowserWindow.getAllWindows().every(
     (other) => other === win || !other.isVisible()
   )

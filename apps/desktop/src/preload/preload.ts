@@ -168,6 +168,12 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('deviceEncryption.reset')
     ),
   },
+  keepRunning: {
+    get: handleElectronError(() => ipcRenderer.invoke('keepRunning.get')),
+    set: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('keepRunning.set', arg)
+    ),
+  },
   localDatabases: {
     find: handleElectronError(() => ipcRenderer.invoke('localDatabases.find')),
     unlock: handleElectronError((connectionString: string) =>

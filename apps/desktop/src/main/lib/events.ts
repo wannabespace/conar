@@ -9,7 +9,7 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
-import { openAtLogin } from './background'
+import { keepRunning, openAtLogin } from './background'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -81,6 +81,7 @@ export const electron = {
   },
   connectionLinks,
   deviceEncryption,
+  keepRunning,
   localDatabases: {
     find: async () => {
       const { localDatabases } = await loadLocalDatabases()
