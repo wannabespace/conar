@@ -7,7 +7,6 @@ import { isLinux } from '@tamery/ui/lib/os'
 import { useSubscription } from 'seitu/react'
 
 import { analyticsStore } from '~/lib/posthog'
-import { ConnectionLinksRow } from '~/modules/connection-links/connection-links-settings'
 
 import { ElectronSwitchRow } from './electron-switch-row'
 
@@ -26,7 +25,18 @@ export const GeneralSettings = () => {
           set={(enabled) => window.electron?.openAtLogin.set(enabled)}
         />
       )}
-      {window.electron && <ConnectionLinksRow />}
+      {window.electron && (
+        <ElectronSwitchRow
+          id="connection-links-default"
+          title="Open database links in Tamery"
+          description="PostgreSQL, MySQL, MariaDB, SQL Server and ClickHouse links open the matching connection, or a new one filled in from the link."
+          event="connection_links_default_toggled"
+          get={() => window.electron?.connectionLinks.isDefault()}
+          set={(enabled) =>
+            window.electron?.connectionLinks.setDefault(enabled)
+          }
+        />
+      )}
       <SettingsRow
         htmlFor="analytics"
         title="Share usage analytics"
