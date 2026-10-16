@@ -1,7 +1,3 @@
-import type {
-  ConnectionType,
-  Provider,
-} from '@tamery/shared/enums/connection-type'
 import { engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
@@ -17,35 +13,14 @@ import type { ConnectionForm } from '../lib/connection-form'
 import { clearPlace } from '../lib/connection-form'
 import { getPlace } from '../lib/place'
 
-const getEngineKey = ({
-  provider,
-  type,
-}: {
-  provider: Provider | null
-  type: ConnectionType
-}) => provider ?? type
+type Engine = (typeof engines)[number]
 
-type EngineKey = ReturnType<typeof getEngineKey>
-
-const ENGINES = engines.map((engine) => ({
-  ...engine,
-  value: getEngineKey(engine),
-}))
-
-const findEngine = (key: EngineKey | null) =>
-  ENGINES.find(({ value }) => value === key)
-
-const engineLabel = (key: EngineKey) => {
-  const engine = findEngine(key)
-  return (
-    engine && (
-      <>
-        <ConnectionIcon type={engine.type} provider={engine.provider} />
-        {engine.label}
-      </>
-    )
-  )
-}
+const EngineLabel = ({ label, provider, type }: Engine) => (
+  <>
+    <ConnectionIcon type={type} provider={provider} />
+    {label}
+  </>
+)
 
 export const EngineField = ({
   form,
@@ -54,19 +29,22 @@ export const EngineField = ({
   form: ConnectionForm
   locked: (field: string) => boolean
 }) => {
-  const engine = useSelector(form.store, ({ values }) => getEngineKey(values))
+  const engine = useSelector(form.store, ({ values }) =>
+    engines.find(
+      ({ provider, type }) =>
+        type === values.type && provider === values.provider
+    )
+  )
 
   return (
     <form.AppField name="type">
       {(field) => (
         <field.Field orientation="row">
           <field.Label>Engine</field.Label>
-          <Select<EngineKey>
-            items={ENGINES}
+          <Select<Engine>
             disabled={locked(field.name)}
             value={engine}
-            onValueChange={(key) => {
-              const next = findEngine(key)
+            onValueChange={(next) => {
               if (!next) {
                 return
               }
@@ -84,12 +62,14 @@ export const EngineField = ({
               variant="flat"
               onBlur={field.handleBlur}
             >
-              <SelectValue>{engineLabel}</SelectValue>
+              <SelectValue>
+                {(value: Engine) => <EngineLabel {...value} />}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {ENGINES.map(({ value }) => (
-                <SelectItem key={value} value={value}>
-                  {engineLabel(value)}
+              {engines.map((item) => (
+                <SelectItem key={item.label} value={item}>
+                  <EngineLabel {...item} />
                 </SelectItem>
               ))}
             </SelectContent>
