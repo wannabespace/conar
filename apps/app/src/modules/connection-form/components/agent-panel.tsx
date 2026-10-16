@@ -70,7 +70,7 @@ export const AgentPanel = () => {
       {status?.state === 'failed' && (
         <Alert variant="destructive">
           <AlertDescription className="wrap-break-word">
-            The server could not start: {status.error}
+            {status.error}
           </AlertDescription>
         </Alert>
       )}

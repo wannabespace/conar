@@ -197,7 +197,13 @@ const stop = () => {
 
 const status = (): McpStatus => {
   if (server instanceof Error) {
-    return { error: server.message, state: 'failed' }
+    const portTaken = 'code' in server && server.code === 'EADDRINUSE'
+    return {
+      error: portTaken
+        ? `The server could not start because port ${PORTS.MCP} is taken, most likely by another copy of Tamery. Quit it, then turn the server off and on again.`
+        : `The server could not start: ${server.message}`,
+      state: 'failed',
+    }
   }
   if (server) {
     return {
