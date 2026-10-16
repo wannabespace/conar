@@ -9,16 +9,12 @@ export const Engines = () => (
     className="mx-auto max-w-6xl px-4 pt-12 pb-8 sm:px-6"
   >
     <Reveal className="text-muted-foreground flex flex-wrap justify-center gap-x-12 gap-y-6 sm:grid sm:grid-cols-4 sm:justify-items-center">
-      {engines.map(({ label, sqliteLocation, type }) => (
+      {engines.map(({ label, provider, type }) => (
         <span
           key={label}
           className="flex items-center justify-center gap-2.5 text-base font-medium"
         >
-          <ConnectionIcon
-            type={type}
-            sqliteLocation={sqliteLocation}
-            className="size-6"
-          />
+          <ConnectionIcon type={type} provider={provider} className="size-6" />
           {label}
         </span>
       ))}

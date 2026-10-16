@@ -24,7 +24,7 @@ export const PlaceFields = ({
 }: {
   form: ConnectionForm
   locked: (field: string) => boolean
-  values: Pick<ConnectionFormValues, 'host' | 'sqliteLocation' | 'type'>
+  values: Pick<ConnectionFormValues, 'host' | 'provider' | 'type'>
 }) => {
   const place = getPlace(values)
   const dialect = getDialect(values.type)

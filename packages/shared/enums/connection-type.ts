@@ -1,3 +1,5 @@
+import { objectEntries } from '../utils'
+
 export enum ConnectionType {
   Postgres = 'postgres',
   MySQL = 'mysql',
@@ -36,28 +38,27 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.SQLite]: 'SQLite',
 }
 
-/** Where a SQLite connection's database lives. Not a `ConnectionType`: all three speak the same SQLite. */
-export type SqliteLocation = 'd1' | 'file' | 'libsql'
-
-export const sqliteLocationLabels: Record<SqliteLocation, string> = {
-  d1: 'Cloudflare D1',
-  file: 'SQLite',
-  libsql: 'Turso',
+/** A service over a `ConnectionType`: its own fields and mark, the same dialect. Saved on the connection, so it shows without the string. */
+export enum Provider {
+  CloudflareD1 = 'cloudflare_d1',
+  Turso = 'turso',
 }
 
-/** SQLite appears once per location, so a list of these is keyed by `label`, never by `type`. */
-export const engines = Object.values(ConnectionType).flatMap((type) =>
-  type === ConnectionType.SQLite
-    ? (['file', 'libsql', 'd1'] as const).map((sqliteLocation) => ({
-        label: sqliteLocationLabels[sqliteLocation],
-        sqliteLocation,
-        type,
-      }))
-    : [
-        {
-          label: connectionTypeLabels[type],
-          sqliteLocation: 'file' as const,
-          type,
-        },
-      ]
-)
+export const providers: Record<
+  Provider,
+  { label: string; type: ConnectionType }
+> = {
+  [Provider.CloudflareD1]: {
+    label: 'Cloudflare D1',
+    type: ConnectionType.SQLite,
+  },
+  [Provider.Turso]: { label: 'Turso', type: ConnectionType.SQLite },
+}
+
+/** A type appears bare and once per provider, so a list of these is keyed by `label`, never by `type`. */
+export const engines = Object.values(ConnectionType).flatMap((type) => [
+  { label: connectionTypeLabels[type], provider: null, type },
+  ...objectEntries(providers)
+    .filter(([, provider]) => provider.type === type)
+    .map(([provider, { label }]) => ({ label, provider, type })),
+])

@@ -1,4 +1,3 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
@@ -6,6 +5,7 @@ import { getConnectionType } from './connection-parts'
 import { isInternalHost } from './hosts'
 import { readConnectionString } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
+import type { SqliteLocation } from './sqlite-location'
 import { getSqliteLocation, SQLITE_RESOURCE_NAME } from './sqlite-location'
 import { SSH_PARAMS } from './ssh/params'
 

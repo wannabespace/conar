@@ -62,7 +62,11 @@ export const ConnectionAccess = () => {
             key={connection.id}
             title={
               <>
-                <ConnectionIcon type={connection.type} className="size-4" />
+                <ConnectionIcon
+                  type={connection.type}
+                  provider={connection.provider}
+                  className="size-4"
+                />
                 <span data-mask>{connection.name}</span>
               </>
             }

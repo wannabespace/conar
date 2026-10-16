@@ -1,16 +1,19 @@
 import type { ServerField } from '@tamery/connection/guess/types'
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
+import { getSqliteLocationOf } from '@tamery/connection/provider'
+import type { SqliteLocation } from '@tamery/connection/sqlite-location'
+import type { Provider } from '@tamery/shared/enums/connection-type'
 import { ConnectionType, Dialect } from '@tamery/shared/enums/connection-type'
 
 export type Place = SqliteLocation | 'server'
 
 export const getPlace = ({
-  sqliteLocation,
+  provider,
   type,
 }: {
-  sqliteLocation: SqliteLocation
+  provider: Provider | null
   type: ConnectionType
-}): Place => (type === ConnectionType.SQLite ? sqliteLocation : 'server')
+}): Place =>
+  type === ConnectionType.SQLite ? getSqliteLocationOf(provider) : 'server'
 
 interface PlaceRow {
   label: string

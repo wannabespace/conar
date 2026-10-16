@@ -1,5 +1,8 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
-import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionType,
+  Provider,
+} from '@tamery/shared/enums/connection-type'
+import { engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Select,
@@ -15,12 +18,12 @@ import { clearPlace } from '../lib/connection-form'
 import { getPlace } from '../lib/place'
 
 const getEngineKey = ({
-  sqliteLocation,
+  provider,
   type,
 }: {
-  sqliteLocation: SqliteLocation
+  provider: Provider | null
   type: ConnectionType
-}) => (type === ConnectionType.SQLite ? sqliteLocation : type)
+}) => provider ?? type
 
 type EngineKey = ReturnType<typeof getEngineKey>
 
@@ -37,10 +40,7 @@ const engineLabel = (key: EngineKey) => {
   return (
     engine && (
       <>
-        <ConnectionIcon
-          type={engine.type}
-          sqliteLocation={engine.sqliteLocation}
-        />
+        <ConnectionIcon type={engine.type} provider={engine.provider} />
         {engine.label}
       </>
     )
@@ -74,7 +74,7 @@ export const EngineField = ({
                 clearPlace(form)
               }
               field.handleChange(next.type)
-              form.setFieldValue('sqliteLocation', next.sqliteLocation)
+              form.setFieldValue('provider', next.provider)
             }}
           >
             <SelectTrigger

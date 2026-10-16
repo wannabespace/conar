@@ -1,5 +1,8 @@
 import { connectionSecrets } from '@tamery/connection/secrets'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionType,
+  Provider,
+} from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
@@ -19,6 +22,7 @@ export interface Connection extends BaseTable {
   label: string | null
   color: string | null
   isPasswordExists: boolean
+  provider: Provider | null
   syncType: SyncType
 }
 

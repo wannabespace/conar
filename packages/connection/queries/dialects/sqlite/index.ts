@@ -1,4 +1,3 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 import {
   endsTransaction,
   leavesTransactionOpen,
@@ -9,6 +8,7 @@ import {
 import type { QueryExecutor, RunOptions } from '../..'
 import { handleQueryError } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
+import type { SqliteLocation } from '../../../sqlite-location'
 import { getSqliteLocation } from '../../../sqlite-location'
 import type { TxHandle } from '../../transactions'
 import { registerTransaction, transactionQueries } from '../../transactions'

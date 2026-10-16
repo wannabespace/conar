@@ -5,11 +5,11 @@ import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
-import { D1_HOST, getSqliteLocation } from '@tamery/connection/sqlite-location'
+import { getProvider } from '@tamery/connection/provider'
+import { D1_HOST } from '@tamery/connection/sqlite-location'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -32,8 +32,7 @@ export interface ConnectionFormValues extends Omit<
   name: string
   ssh: SshTunnel
   sshEnabled: boolean
-  /** Only read for SQLite. */
-  sqliteLocation: SqliteLocation
+  provider: Provider | null
   syncType: SyncType
   type: ConnectionType
 }
@@ -48,7 +47,7 @@ const DEFAULT_VALUES: ConnectionFormValues = {
   options: '',
   password: '',
   port: '',
-  sqliteLocation: 'file',
+  provider: null,
   ssh: EMPTY_SSH_TUNNEL,
   sshEnabled: false,
   syncType: SyncType.Cloud,
@@ -73,7 +72,7 @@ const connectionFormSchema = type({
   database: 'string',
   host: 'string',
   port,
-  sqliteLocation: "'d1' | 'file' | 'libsql'",
+  provider: type.valueOf(Provider).or('null'),
   ssh: { host: 'string', port },
   sshEnabled: 'boolean',
   type: type.valueOf(ConnectionType),
@@ -112,7 +111,9 @@ export const getFormValues = (
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    sqliteLocation: getSqliteLocation(parts?.host ?? ''),
+    provider: parts
+      ? getProvider({ host: parts.host, type: connection.type })
+      : connection.provider,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
@@ -164,9 +165,12 @@ export const clearPlace = (form: ConnectionForm) => {
 const getGuessedEngine = (
   values: ConnectionFormValues,
   parts: GuessedParts
-): Pick<ConnectionFormValues, 'sqliteLocation' | 'type'> =>
+): Pick<ConnectionFormValues, 'provider' | 'type'> =>
   parts.type
-    ? { sqliteLocation: getSqliteLocation(parts.host ?? ''), type: parts.type }
+    ? {
+        provider: getProvider({ host: parts.host ?? '', type: parts.type }),
+        type: parts.type,
+      }
     : values
 
 const BARE_HOST = /^[\w.:%[\]-]+$/u
@@ -186,7 +190,7 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
     }
   }
   form.setFieldValue('type', engine.type)
-  form.setFieldValue('sqliteLocation', engine.sqliteLocation)
+  form.setFieldValue('provider', engine.provider)
   if (parts.https !== undefined) {
     form.setFieldValue('https', parts.https)
   }

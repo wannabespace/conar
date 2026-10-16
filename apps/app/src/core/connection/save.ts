@@ -1,3 +1,5 @@
+import { readConnectionString } from '@tamery/connection/parse-connection-string'
+import { getProvider } from '@tamery/connection/provider'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { Result } from 'better-result'
@@ -120,6 +122,10 @@ const saveConnection = async (
         isPasswordExists,
         label: details.label || null,
         name: details.name,
+        provider: getProvider({
+          host: readConnectionString(connectionString).host,
+          type: details.type,
+        }),
         type: details.type,
         updatedAt,
       }),

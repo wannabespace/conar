@@ -1,10 +1,10 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
 import { sqliteFile } from './sqlite-file'
+import type { SqliteLocation } from './sqlite-location'
 import { D1_HOST, getSqliteLocation } from './sqlite-location'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'

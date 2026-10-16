@@ -1,5 +1,4 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { ClickHouseIcon } from '@tamery/ui/components/icons/clickhouse'
 import { CloudflareD1Icon } from '@tamery/ui/components/icons/cloudflare-d1'
 import { MariaDBIcon } from '@tamery/ui/components/icons/mariadb'
@@ -23,26 +22,20 @@ const iconMap: Record<
   [ConnectionType.SQLite]: SQLiteIcon,
 }
 
-const sqliteIcons: Record<
-  SqliteLocation,
+const providerIcons: Record<
+  Provider,
   (props: ComponentProps<'svg'>) => ReactNode
 > = {
-  d1: CloudflareD1Icon,
-  file: SQLiteIcon,
-  libsql: TursoIcon,
+  [Provider.CloudflareD1]: CloudflareD1Icon,
+  [Provider.Turso]: TursoIcon,
 }
 
 export const ConnectionIcon = ({
-  sqliteLocation = 'file',
+  provider,
   type,
   ...props
 }: {
-  sqliteLocation?: SqliteLocation
+  provider?: Provider | null
   type: ConnectionType
 } & ComponentProps<'svg'>) =>
-  createElement(
-    type === ConnectionType.SQLite
-      ? sqliteIcons[sqliteLocation]
-      : iconMap[type],
-    props
-  )
+  createElement(provider ? providerIcons[provider] : iconMap[type], props)

@@ -85,7 +85,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
   The first type that lacks something its dialect offers moves the capability gates (about 120 calls) to its type. Check each candidate's limits on a live server first: they shift between releases.
 
-- **Providers as one registry over the connection types.** Turso and D1 are SQLite with their own fields, Supabase and Neon are Postgres with their own host and pooler: all are hosts, not types. Growing `HOST_HINTS` (`hosts.ts`) into a provider list (label, mark, type, host suffixes, default port, form rows and placeholders) would let the create page offer any of them as an engine, the list, title bar and switcher show its mark, and the paste guess and diagnosis read the same entries. The provider stays derived from the saved string's host, so nothing new is stored and every string-only path (paste, MCP, found databases, links) gets it too; a custom domain falls back to the type's mark. SQLite's executor choice stays its own rule (no host is a file, any other host is libSQL), since a self-hosted libSQL server matches no provider.
+- **Hosted Postgres and MySQL as providers.** Turso and Cloudflare D1 are providers (`Provider`); Supabase, Neon, PlanetScale, ClickHouse Cloud and the rest of `HOST_HINTS` (`hosts.ts`) could join them, so the Engine select offers them with their own placeholders and the list shows their marks. Their host suffixes change, so the form saves the provider the user picked, and a paste only guesses it from `HOST_HINTS`; a suffix the list lacks leaves the plain type until it is added.
 
 ## Settings
 

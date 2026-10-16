@@ -1,4 +1,4 @@
-import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
+export type SqliteLocation = 'd1' | 'file' | 'libsql'
 
 export const SQLITE_RESOURCE_NAME = 'main'
 
