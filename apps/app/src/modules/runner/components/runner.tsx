@@ -66,6 +66,7 @@ import {
   useRunnerPageStore,
   useRunnerTab,
 } from '../lib/store'
+import { runnerTransaction } from '../lib/transaction'
 import { RunHistoryButton } from './run-history'
 import { useAiEdit } from './runner-ai-edit'
 import { RunnerAlertDialog } from './runner-alert-dialog'
@@ -188,6 +189,21 @@ export const Runner = () => {
     )
     if (!statement) {
       return { range: null, statements: [] }
+    }
+    const turn = runnerTransaction.step({
+      dialect,
+      statement,
+      tab,
+      text: model.getValue(),
+    })
+    if (turn !== statement) {
+      return {
+        range: Range.fromPositions(
+          model.getPositionAt(turn.start),
+          model.getPositionAt(turn.end)
+        ),
+        statements: [toRunnerStatement(turn)],
+      }
     }
     const getLine = (offset: number) => model.getPositionAt(offset).lineNumber
     const first = getLine(statement.start)

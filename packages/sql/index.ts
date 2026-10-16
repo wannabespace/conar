@@ -11,6 +11,7 @@ export {
   leavesTransactionOpen,
   splitStatements,
   statementAt,
+  statementsFromTokens,
   unwrapTransaction,
 } from './statements'
 export type { TokenizerState } from './tokenizer'

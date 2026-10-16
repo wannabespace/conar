@@ -1,9 +1,13 @@
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { silently } from '@tamery/shared/utils'
+import type { Statement } from '@tamery/sql'
 import {
   closesTransaction,
   dialects,
   leavesTransactionOpen,
   splitStatements,
+  statementsFromTokens,
+  unwrapTransaction,
 } from '@tamery/sql'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
@@ -91,7 +95,9 @@ const run = async ({
         txId: open.txId,
       })
       sets.push(...partSets)
-      open.ran.push(part)
+      store.set(
+        (current) => current && { ...current, ran: [...current.ran, part] }
+      )
       if (closesTransaction(part, dialect)) {
         // The statement already ended it: this rollback only releases the connection, and SQL Server rejects it.
         // oxlint-disable-next-line no-await-in-loop
@@ -107,4 +113,27 @@ const run = async ({
   return sets
 }
 
-export const runnerTransaction = { close, run, state }
+/** The statement of a `BEGIN … COMMIT` block whose turn it is: the opener until the tab has a transaction open, then the one after the last that ran in it. */
+const step = ({
+  dialect,
+  statement,
+  tab,
+  text,
+}: {
+  dialect: Dialect
+  statement: Statement
+  tab: RunnerTab
+  text: string
+}) => {
+  const spec = dialects[dialect]
+  if (!unwrapTransaction(statement.text, spec)) {
+    return statement
+  }
+  const steps = statementsFromTokens(text, statement.tokens, spec, {
+    groupTransactions: false,
+  })
+  const ran = state(tab).get()?.ran.length ?? 0
+  return steps[Math.min(ran, steps.length - 1)] ?? statement
+}
+
+export const runnerTransaction = { close, run, state, step }
