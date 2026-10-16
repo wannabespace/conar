@@ -1,7 +1,6 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
@@ -233,7 +232,7 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                {values.type !== ConnectionType.SQLite && (
+                {engineFields.sshTunnel && (
                   <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                     <SshFields form={form} locked={policy.locked} />
                   </motion.div>

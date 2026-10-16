@@ -25,6 +25,7 @@ export interface EngineFields {
   field: 'database' | 'host'
   message: string
   rows: FieldRow[]
+  sshTunnel?: true
 }
 
 const serverFields = ({
@@ -55,6 +56,7 @@ const serverFields = ({
     },
     { label: 'Options', name: 'options', optional: true, placeholder: options },
   ],
+  sshTunnel: true,
 })
 
 const MYSQL_FIELDS = serverFields({

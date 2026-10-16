@@ -95,7 +95,7 @@ const connectionFormSchema = type({
   .narrow(
     (values, ctx) =>
       !values.sshEnabled ||
-      values.type === ConnectionType.SQLite ||
+      !getEngineFields(values).sshTunnel ||
       /\S/u.test(values.ssh.host) ||
       ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
   )
@@ -121,8 +121,9 @@ export const getFormValues = (
 }
 
 export const getParts = (values: ConnectionFormValues): ConnectionParts => {
+  const engineFields = getEngineFields(values)
   const shown = new Set(
-    getEngineFields(values).rows.flatMap((row) =>
+    engineFields.rows.flatMap((row) =>
       row.port ? [row.name, 'port'] : [row.name]
     )
   )
@@ -135,10 +136,7 @@ export const getParts = (values: ConnectionFormValues): ConnectionParts => {
     options: keep('options'),
     password: keep('password'),
     port: keep('port'),
-    ssh:
-      values.type !== ConnectionType.SQLite && values.sshEnabled
-        ? values.ssh
-        : null,
+    ssh: engineFields.sshTunnel && values.sshEnabled ? values.ssh : null,
     type: values.type,
     user: keep('user'),
   }
