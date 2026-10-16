@@ -148,7 +148,7 @@ Suggestion order is JSX order (`shouldFilter={false}`) — the literal answer fi
 
 One modal, no sidebar: `Dialog variant="panel"` (the kit's full-bleed surface, so the call site writes no padding, gap or max-width). A title row — masked table name, segmented `Tabs` centred, `DialogCloseButton` on the row's centre line — sits over the query-logger detail recipe. The block takes `size="xs"` and `wrap`: a modal exists to read code, and a masked scroller would simply cut an overflowing line. Formats a dialect lacks are hidden, not disabled. No Monaco — a viewer, not an editor.
 
-A list row whose value is code of any length (a logged SQL statement) never prints it inline: the row keeps its one-line summary and ends in a ghost-muted `IconButton` (code glyph, tooltip naming what it shows) that opens this dialog, with the raw text behind Copy and the formatted text on screen. An inline excerpt, however truncated, turns a list of events into a wall of code.
+A list row whose value is code of any length (a logged SQL statement) never prints it inline: the row keeps its one-line summary and puts a ghost-muted `IconButton` (code glyph, tooltip naming what it shows) before its trailing timestamp, so the timestamps stay aligned down the list, and the button opens this dialog, with the raw text behind Copy and the formatted text on screen. An inline excerpt, however truncated, turns a list of events into a wall of code.
 
 ## Seed panel
 

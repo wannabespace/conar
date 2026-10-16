@@ -161,11 +161,6 @@ export const Activity = () => {
                 )
               }
             >
-              <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
-                {formatDistanceStrict(call.at, dataUpdatedAt, {
-                  addSuffix: true,
-                })}
-              </span>
               {sql && (
                 <IconButton
                   icon={SourceCodeIcon}
@@ -181,6 +176,11 @@ export const Activity = () => {
                   }}
                 />
               )}
+              <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+                {formatDistanceStrict(call.at, dataUpdatedAt, {
+                  addSuffix: true,
+                })}
+              </span>
             </SettingsRow>
           )
         })}
