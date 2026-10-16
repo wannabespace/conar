@@ -34,7 +34,7 @@ type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
   dropQueries: (connectionId: string) => void
   /** `write` stores the record synchronously, so a caller can check the stored one right before it. */
-  prepare: (data: ConnectionStringInput) => Promise<{
+  prepareWrite: (data: ConnectionStringInput) => Promise<{
     record: ConnectionString
     write: () => void
   }>
@@ -106,7 +106,7 @@ export const createConnectionStringsCollection = (
                 resources.get(id)?.connectionId === connectionId),
           })
         },
-        async prepare(data) {
+        async prepareWrite(data) {
           const previous = collection.has(data.connectionId)
             ? await collection.utils.decrypt(data.connectionId)
             : null
@@ -143,7 +143,7 @@ export const createConnectionStringsCollection = (
             return
           }
 
-          const { write } = await collection.utils.prepare({
+          const { write } = await collection.utils.prepareWrite({
             connectionId: connection.id,
             connectionString: local
               ? connectionSecrets.restore(result.connectionString, {

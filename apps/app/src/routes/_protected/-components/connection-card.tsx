@@ -118,7 +118,7 @@ export const ConnectionCard = ({
       return
     }
 
-    const { write } = await connectionStringsCollection.utils.prepare({
+    const { write } = await connectionStringsCollection.utils.prepareWrite({
       connectionId: connection.id,
       connectionString: connectionSecrets.strip(saved),
       updatedAt: record.updatedAt,

@@ -54,11 +54,12 @@ export const saveConnectionString = async ({
     connectionsResourcesCollection,
     connectionStringsCollection,
   } = getCollections()
-  const { record, write } = await connectionStringsCollection.utils.prepare({
-    connectionId,
-    connectionString,
-    updatedAt,
-  })
+  const { record, write } =
+    await connectionStringsCollection.utils.prepareWrite({
+      connectionId,
+      connectionString,
+      updatedAt,
+    })
   const stored = connectionStringsCollection.get(connectionId) ?? null
   const resource = record.defaultResourceName || null
   const existingResource = findResource(connectionId, resource)
