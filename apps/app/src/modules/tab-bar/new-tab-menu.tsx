@@ -1,6 +1,6 @@
 import { LayoutTable02Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import {
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import type { Connection, ConnectionResource } from '~/core/connection/sync'
+import type { ConnectionResource } from '~/core/connection/sync'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { openTab } from '~/core/tabs/actions'
@@ -32,21 +32,19 @@ interface TablesAndSchemas {
 }
 
 export const NewTabMenu = ({
-  connection,
   connectionResource,
+  dialect,
   tablesAndSchemas,
 }: {
-  connection: Connection
   connectionResource: ConnectionResource
+  dialect: Dialect
   tablesAndSchemas: TablesAndSchemas | undefined
 }) => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const schemas = tablesAndSchemas?.schemas ?? []
   const showSchema = schemas.length > 1
-  const schemaItems = schemaGroups(getDialect(connection.type)).flatMap(
-    (group) => group.items
-  )
+  const schemaItems = schemaGroups(dialect).flatMap((group) => group.items)
 
   const goToTab = (tabId: string) =>
     router.navigate({

@@ -1,8 +1,8 @@
 import { Alert02Icon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
-import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnose'
 import { diagnoseConnectionError } from '@tamery/connection/diagnose'
+import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnosis'
 import { getDiagnosisRequest } from '@tamery/connection/diagnosis-request'
 import { getSslOptions } from '@tamery/connection/ssl/setting'
 import {

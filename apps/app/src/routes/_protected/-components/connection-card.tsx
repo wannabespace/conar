@@ -92,15 +92,15 @@ export const ConnectionCard = ({
   )
   const needsDetails = fetchType === 'waiting-for-details'
   const canOpenResource =
-    canSend ||
-    needsDetails ||
-    (fetchType === 'waiting-for-password' && !!window.electron)
+    canSend || needsDetails || fetchType === 'waiting-for-password'
   const openResourceId = canOpenResource ? selectedResource?.id : undefined
 
   const handleCopy = async () =>
     copy(
       resourceConnectionString(
-        await connectionStringsCollection.utils.decrypt(connection.id),
+        connectionSecrets.copyable(
+          await connectionStringsCollection.utils.decrypt(connection.id)
+        ),
         resolvedSelectedResourceName
       ),
       'Connection string copied'
@@ -118,11 +118,12 @@ export const ConnectionCard = ({
       return
     }
 
-    await connectionStringsCollection.utils.save({
+    const { write } = await connectionStringsCollection.utils.prepare({
       connectionId: connection.id,
       connectionString: connectionSecrets.strip(saved),
       updatedAt: record.updatedAt,
     })
+    write()
 
     posthog.capture('connection_password_cleared')
     toast.success('Credentials cleared from this device')

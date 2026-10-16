@@ -35,6 +35,7 @@ const connectionSchema = type([
       'port?': 'string | number',
       'user?': 'string',
     },
+    'driver?': 'string',
     name: 'string',
     provider: 'string',
   },
@@ -66,7 +67,7 @@ export const dbeaver: Finder = {
       )
     })
     return validEntries(connectionSchema, Object.entries(connections)).map(
-      ([id, { configuration, name, provider }]) => {
+      ([id, { configuration, driver, name, provider }]) => {
         const saved = credentials.unwrapOr(null)?.[id]?.['#connection']
         return {
           name,
@@ -75,7 +76,9 @@ export const dbeaver: Finder = {
             host: configuration.host,
             password: saved?.password,
             port: String(configuration.port ?? ''),
-            type: getConnectionType(provider),
+            type:
+              (driver === undefined ? null : getConnectionType(driver)) ??
+              getConnectionType(provider),
             user: saved?.user ?? configuration.user,
           },
         }

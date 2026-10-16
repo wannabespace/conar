@@ -51,7 +51,7 @@ export const RunnerEditor = ({
   acceptAi: () => void
   rejectAi: () => void
 }) => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const store = useRunnerPageStore()
   const query = useSubscription(store, { selector: (state) => state.query })
   const actions = useRunnerActions()
@@ -115,9 +115,14 @@ export const RunnerEditor = ({
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, dialect)
+      ? attachSqlSource(
+          codeEditor,
+          connectionResource,
+          connection.type,
+          dialect
+        )
       : undefined
-  }, [editorRef, connectionResource, dialect])
+  }, [editorRef, connectionResource, connection.type, dialect])
 
   return (
     <div className="relative size-full">

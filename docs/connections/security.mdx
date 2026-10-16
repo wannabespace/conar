@@ -40,6 +40,7 @@ Every mode syncs the connection across your devices.
     - It's kept on that device only, encrypted with your device key.
     - Clear it anytime via the connection menu (**⋯ → Clear saved credentials**), which clears the SSH and SSL key secrets too.
     - A compromised account exposes no stored password.
+    - The cloud proxy can't use it, so the web app reaches it only through `tamery proxy`.
 
     Best for production or strict-policy environments.
 
@@ -65,7 +66,7 @@ A connection can reach its database through an SSH tunnel. The tunnel settings a
 - Tamery checks the SSH server's host key against your `~/.ssh/known_hosts` and the system-wide `/etc/ssh/ssh_known_hosts`. A server that isn't listed in either asks once whether to trust its key fingerprint (**Cancel** is the default) and is added to `~/.ssh/known_hosts` when you trust it. A server listed under a different key, or under a different key type, is refused like a changed key, with steps to update `~/.ssh/known_hosts`.
 - The database driver talks to the database through the SSH connection itself, so a tunnel opens no local port on your device.
 - With a key file or your SSH agent, the private key itself is never saved: Tamery stores only the key's path (and its passphrase, if any) and reads the key on your device when you connect.
-- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile`, `IdentityAgent`, `HostKeyAlias` and `HashKnownHosts` apply.
+- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile`, `IdentityAgent`, `HostKeyAlias`, `HashKnownHosts` and `Include` apply. A host your config sends through `ProxyJump` or `ProxyCommand` isn't supported yet and fails rather than connecting directly.
 
 ## AI help with a failed test
 
@@ -74,7 +75,7 @@ The explanations and fixes Tamery shows when a test fails run on your device. **
 - the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host), never the host itself
 - the driver options, keeping only values that can't identify you (like `sslmode=require`) and replacing the rest
 - whether a user and password are set, whether an SSH tunnel is on, and whether you're in the desktop or web app
-- the error message, with your host (the SSH host too), user, database, password and any IP address (IPv4 and IPv6) replaced by placeholders
+- the error message, with your host (the SSH host too), user, database, password, SSH password and key passphrase, and any IP address (IPv4 and IPv6) replaced by placeholders
 
 ## Choosing a mode
 
@@ -102,5 +103,6 @@ Tamery is open source under **AGPL-3.0**, so the encryption implementation is au
   The desktop app can query your database directly. The web app uses `tamery
   proxy` when available, or Tamery's cloud proxy for reachable cloud
   connections. Cloud proxy transactions belong to your authenticated account;
-  another account cannot execute or finish them.
+  another account cannot execute or finish them. The cloud proxy refuses a host
+  that resolves to a loopback, private or link-local address.
 </Note>

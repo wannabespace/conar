@@ -90,6 +90,12 @@ beforeAll(async () => {
     JSON.stringify({
       connections: {
         broken: { name: 'No configuration', provider: 'postgresql' },
+        maria: {
+          configuration: { database: 'shop', host: 'localhost', port: 3309 },
+          driver: 'mariaDB',
+          name: 'Maria',
+          provider: 'mysql',
+        },
         'pg-1': {
           configuration: {
             database: 'app',
@@ -213,6 +219,12 @@ describe('localDatabases', () => {
       'DBeaver',
       'Local app',
       { database: 'app', host: 'localhost', port: '5433', user: 'admin' },
+    ],
+    [
+      'DBeaver: the MariaDB driver under the mysql provider keeps its type',
+      'DBeaver',
+      'Maria',
+      { port: '3309', type: 'mariadb' },
     ],
     [
       'DataGrip: user from the .local.xml beside the data source, a broken file skipped',

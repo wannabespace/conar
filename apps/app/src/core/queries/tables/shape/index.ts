@@ -62,7 +62,7 @@ export const clickhouseColumnType = ({
 }
 
 export const createTableStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   { columns, schema, table }: TableTarget & { columns: NewColumn[] }
 ) => {
@@ -71,7 +71,7 @@ export const createTableStatement = (
     .withSchema(schema)
     .schema.createTable(table)
 
-  if (dialectType === Dialect.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     for (const column of columns) {
       create = create.addColumn(
         column.name,
@@ -110,18 +110,18 @@ export const createTableStatement = (
 }
 
 export const renameTableStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   { newName, schema, table }: TableTarget & { newName: string }
 ) => {
   // MySQL's ALTER TABLE refuses a view; RENAME TABLE takes both.
-  if (dialectType === Dialect.ClickHouse || dialectType === Dialect.MySQL) {
+  if (dialect === Dialect.ClickHouse || dialect === Dialect.MySQL) {
     return sql`RENAME TABLE ${sql.id(schema, table)} TO ${sql.id(schema, newName)}`.compile(
       db
     )
   }
 
-  if (dialectType === Dialect.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table))}, ${sql.val(newName)}`.compile(
       db
     )
@@ -135,25 +135,25 @@ export const renameTableStatement = (
 }
 
 export const dropTableStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   { cascade, schema, table }: TableTarget & { cascade: boolean }
 ) => {
   const drop = db.withSchema(schema).schema.dropTable(table)
 
   return (
-    cascade && dialectType === Dialect.Postgres ? drop.cascade() : drop
+    cascade && dialect === Dialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 
 export const addColumnStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   { column, schema, table }: TableTarget & { column: NewColumn }
 ) => {
   const alter = db.withSchema(schema).schema.alterTable(table)
 
-  if (dialectType === Dialect.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return alter
       .addColumn(column.name, sql.raw(clickhouseColumnType(column)))
       .compile()
@@ -186,13 +186,13 @@ IF @statement IS NOT NULL EXEC sp_executesql @statement;`,
 }
 
 export const dropColumnStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   target: ColumnTarget
 ) => {
   const { column, schema, table } = target
 
-  if (dialectType === Dialect.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`${mssqlDefaultConstraint(target).drop}ALTER TABLE ${sql.id(schema, table)} DROP COLUMN ${sql.id(column)}`.compile(
       db
     )
@@ -206,7 +206,7 @@ export const dropColumnStatement = (
 }
 
 export const renameColumnStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   {
     column,
@@ -218,7 +218,7 @@ export const renameColumnStatement = (
     newName: string
   }
 ) => {
-  if (dialectType === Dialect.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table, column))}, ${sql.val(newName)}, 'COLUMN'`.compile(
       db
     )

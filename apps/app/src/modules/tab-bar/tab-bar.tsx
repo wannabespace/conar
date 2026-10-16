@@ -35,7 +35,7 @@ import { TabRefresh } from './tab-refresh'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const TabBar = ({ className }: { className?: string }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -211,8 +211,8 @@ export const TabBar = ({ className }: { className?: string }) => {
       )}
       <div className="flex shrink-0 items-center gap-0.5 border-b border-l px-1">
         <NewTabMenu
-          connection={connection}
           connectionResource={connectionResource}
+          dialect={dialect}
           tablesAndSchemas={tablesAndSchemas}
         />
         <Separator orientation="vertical" className="mx-0.5 h-4!" />

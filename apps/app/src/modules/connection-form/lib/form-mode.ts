@@ -35,6 +35,10 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
     field: 'options',
     message: 'Enter the SSL key password',
   },
+  sslpfx: {
+    field: 'options',
+    message: 'Enter the SSL client certificate bundle',
+  },
 }
 
 export const getEditMode = (

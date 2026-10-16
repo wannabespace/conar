@@ -1,8 +1,10 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { mssqlModuleBody } from '~/core/queries/shared/definition'
 import {
@@ -152,12 +154,11 @@ const resourceTriggersQuery = createQuery({
               )
               .as('custom'),
         ])
-        .where('t.TRIGGER_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          't.TRIGGER_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .execute(),
     postgres: (db) =>
       db

@@ -5,7 +5,9 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { sql } from 'kysely'
 import { clearMemoizeCache, getCacheStore } from 'memoza'
 
-const execute = mock(() => Promise.resolve({ duration: 0, result: [] }))
+const execute = mock((_input: object) =>
+  Promise.resolve({ duration: 0, result: [] })
+)
 const cloudExecute = mock(() => Promise.resolve({ duration: 0, result: [] }))
 
 mock.module('~/core/collections', () => ({
@@ -33,17 +35,33 @@ Object.assign(globalThis, { window: {} })
 const { createDialectProvider } = await import('./driver')
 const { dialects } = await import('./index')
 
-test('saved and unsaved connections use the available proxy', async () => {
+test("saved and unsaved connections send this device's string to the local proxy", async () => {
+  const connectionString = 'postgres://user:password@localhost/db'
   await Promise.all(
     [{ resourceId: 'resource' }, {}].map((ids) =>
       createDialectProvider(Dialect.Postgres, {
-        connectionString: 'postgres://user:password@localhost/db',
+        connectionString,
         ...ids,
       }).execute({ query: 'SELECT 1', values: [] })
     )
   )
   expect(execute).toHaveBeenCalledTimes(2)
+  for (const [input] of execute.mock.calls) {
+    expect(input).toMatchObject({ connectionString })
+    expect(input).not.toHaveProperty('resourceId')
+  }
   expect(cloudExecute).not.toHaveBeenCalled()
+})
+
+test('a connection that cannot send refuses with its reason', () => {
+  execute.mockClear()
+  expect(() =>
+    createDialectProvider(Dialect.Postgres, {
+      connectionString: 'postgres://user@localhost/db',
+      resourceId: 'resource',
+    }).execute({ query: 'SELECT 1', values: [] })
+  ).toThrow('Filled password is required')
+  expect(execute).not.toHaveBeenCalled()
 })
 
 test('dialect caches reuse equal inputs with fresh log callbacks', async () => {

@@ -5,7 +5,7 @@ import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
 import type * as mysql2Promise from 'mysql2/promise'
 
-import { parseConnectionString } from '../../..'
+import { getDriverConfig } from '../../../parse-connection-string'
 import { readSSLFiles } from '../../../read-ssl-files'
 import { sshForwarding } from '../../../ssh/forwarding'
 import { defaultSSLConfig, parseSSLConfig } from '../../../ssl/mysql'
@@ -25,12 +25,13 @@ const connect = (conf: PoolOptions) =>
   })
 
 export const getPool = memoize(async (connectionString: string) => {
-  const { searchParams, ...config } = parseConnectionString(connectionString)
+  const { searchParams, ...config } = getDriverConfig(connectionString)
   const ssl = parseSSLConfig(searchParams)
   const tunnel = await sshForwarding.of(connectionString)
   const conf: PoolOptions = {
     ...config,
-    ...(tunnel && { stream: tunnel.socket }),
+    // mysql2 keeps an idle connection forever by default, and it would hold the tunnel's SSH session open with it.
+    ...(tunnel && { maxIdle: 0, stream: tunnel.socket }),
     connectionLimit: 1,
     dateStrings: true,
     supportBigNumbers: true,

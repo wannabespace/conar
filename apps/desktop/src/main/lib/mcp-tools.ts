@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { McpAccess, McpRequest, McpTarget } from '@tamery/shared/mcp'
@@ -86,7 +87,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP.`,
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and a string with an SSH tunnel (ssh_* params) is refused.`,
       inputSchema: {
         connectionString: z
           .string()
@@ -104,6 +105,12 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       },
     },
     async (args, { signal }) => {
+      // A tunnel would let the agent make Tamery read any key file on disk and raise host-key dialogs.
+      if (describeConnectionString(args.connectionString).usesSsh) {
+        throw new Error(
+          'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
+        )
+      }
       const connection = await askRenderer(
         { args, method: 'createConnection' },
         signal

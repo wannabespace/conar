@@ -1,4 +1,4 @@
-import { isSshConnectionString } from '@tamery/connection/utils'
+import { describeConnectionString } from '@tamery/connection/utils'
 import { useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
@@ -30,7 +30,7 @@ export const useCreateConnection = (): OnSave => {
       : router.navigate({ to: '/' }))
     posthog.capture('connection_created', {
       origin: origin ?? 'form',
-      ssh: isSshConnectionString(connection.connectionString),
+      ssh: describeConnectionString(connection.connectionString).usesSsh,
       syncType,
       type: connection.type,
     })

@@ -1,76 +1,20 @@
 import { once } from 'node:events'
-import { readFile } from 'node:fs/promises'
-import { homedir, userInfo } from 'node:os'
 
-import { noop, silently, toError } from '@tamery/shared/utils'
+import { noop, toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 import type { Client, ConnectConfig } from 'ssh2'
 
-import type { HostKeyStatus } from './known-hosts'
+import { AGENT_UNAVAILABLE, getSshConfig } from './config'
+import type { ConfirmHostKey } from './host-key'
+import { HOST_KEY_REFUSALS, hostKeyTrust } from './host-key'
 import { knownHosts } from './known-hosts'
 import type { SshTunnel } from './params'
-import { DEFAULT_SSH_PORT, SSH_AUTH_ERRORS, SSH_TUNNEL_ERROR } from './params'
-
-export type ConfirmHostKey = (prompt: {
-  fingerprint: string
-  host: string
-  keyType: string
-}) => Promise<boolean>
+import { SSH_AUTH_ERRORS, tunnelError } from './params'
 
 const READY_TIMEOUT = 20_000
-const AGENT_UNAVAILABLE =
-  'SSH agent not available. Start ssh-agent or pick another method.'
-
-// Worded without the host and user: ~/.ssh/config resolves them, and these messages reach the AI diagnosis, which redacts only what the form holds.
-const HOST_KEY_REFUSALS: Record<Exclude<HostKeyStatus, 'known'>, string> = {
-  changed:
-    "The SSH host presented a key that doesn't match known_hosts, so someone may be impersonating it. If its key changed on purpose, remove the old entry from ~/.ssh/known_hosts (or /etc/ssh/ssh_known_hosts) and connect again.",
-  revoked: "The SSH host's key is revoked in known_hosts",
-  unknown: "The SSH host's key wasn't trusted",
-}
-
-const expandHome = (path: string) => path.replace(/^~(?=$|\/)/u, homedir())
-
-const tunnelError = (message: string) =>
-  new Error(`${SSH_TUNNEL_ERROR}${message}`)
-
-const authConfig = async (
-  tunnel: SshTunnel,
-  sshConfig: (key: string) => string | undefined
-): Promise<ConnectConfig> => {
-  // ssh2 tries to decrypt with an empty passphrase rather than report the key as encrypted.
-  const passphrase = tunnel.passphrase || undefined
-  if (tunnel.auth === 'password') {
-    if (!tunnel.password) {
-      throw tunnelError(SSH_AUTH_ERRORS.passwordMissing)
-    }
-    return { password: tunnel.password }
-  }
-  if (tunnel.auth === 'key') {
-    if (!tunnel.privateKey) {
-      throw tunnelError(SSH_AUTH_ERRORS.privateKeyMissing)
-    }
-    return { passphrase, privateKey: tunnel.privateKey }
-  }
-  if (tunnel.auth === 'keyPath') {
-    const keyPath = tunnel.keyPath || sshConfig('IdentityFile')
-    if (!keyPath) {
-      throw tunnelError(SSH_AUTH_ERRORS.noKeyFile)
-    }
-    const privateKey = await Result.tryPromise(() =>
-      readFile(expandHome(keyPath))
-    )
-    if (privateKey.isErr()) {
-      throw tunnelError(SSH_AUTH_ERRORS.keyFileMissing)
-    }
-    return { passphrase, privateKey: privateKey.value }
-  }
-  const agent = sshConfig('IdentityAgent') ?? process.env.SSH_AUTH_SOCK
-  if (!agent) {
-    throw tunnelError(AGENT_UNAVAILABLE)
-  }
-  return { agent: expandHome(agent) }
-}
+// The two errors ssh2's `connect` throws for a key it cannot parse, an encrypted one without its passphrase included.
+const SSH2_KEY_ERROR =
+  /^(?:Cannot parse privateKey|privateKey value does not contain)/u
 
 const sshErrorMessage = (
   error: Error & { code?: string; level?: string },
@@ -105,64 +49,12 @@ const unreadableKey = ({ auth, passphrase }: SshTunnel, error: Error) => {
     : SSH_AUTH_ERRORS.passphraseNeeded
 }
 
-const trusting = new Map<string, Promise<boolean>>()
-
-const trustOnce = (
-  name: string,
-  key: Buffer,
-  {
-    confirm,
-    hashed,
-    isLive,
-  }: { confirm: ConfirmHostKey; hashed: boolean; isLive: () => boolean }
-) => {
-  const id = `${name} ${key.toString('base64')}`
-  const pending = trusting.get(id)
-  if (pending) {
-    return pending
-  }
-  const trusted = (async () => {
-    try {
-      const confirmed = await confirm({
-        host: name,
-        ...knownHosts.describe(key),
-      })
-      if (confirmed && isLive()) {
-        // A read-only known_hosts (a home-manager symlink) only costs the next prompt, like OpenSSH: the user approved this connection.
-        await silently(() => knownHosts.trust(name, key, { hashed }))
-      }
-      return confirmed
-    } finally {
-      trusting.delete(id)
-    }
-  })()
-  trusting.set(id, trusted)
-  return trusted
-}
-
 export const connectSsh = async (
   tunnel: SshTunnel,
   confirmHostKey: ConfirmHostKey
 ): Promise<Client> => {
-  const { parse } = await import('ssh-config')
-  const userConfig = await Result.tryPromise(() =>
-    readFile(expandHome('~/.ssh/config'), 'utf-8')
-  )
-  // OpenSSH keywords are case-insensitive, and `Match exec` runs through spawnSync, which would freeze the desktop main process.
-  const computed = parse(userConfig.unwrapOr('')).compute(tunnel.host, {
-    ignoreCase: true,
-    matchExec: false,
-  })
-  const sshConfig = (key: string): string | undefined =>
-    [computed[key.toLowerCase()]].flat()[0]
-  const host = sshConfig('HostName') ?? tunnel.host
-  const port = Number(tunnel.port || sshConfig('Port') || DEFAULT_SSH_PORT)
-  const hostKeyName = knownHosts.getName({
-    alias: sshConfig('HostKeyAlias'),
-    host,
-    port,
-  })
-  const auth = await authConfig(tunnel, sshConfig)
+  const { auth, hashKnownHosts, host, hostKeyName, port, username } =
+    await getSshConfig(tunnel)
   const known = await knownHosts.read()
   const listedAlgorithms = knownHosts.listedAlgorithms(known, hostKeyName)
   const { Client: SshClient } = await import('ssh2')
@@ -190,15 +82,15 @@ export const connectSsh = async (
     if (verifiedKey) {
       return verifiedKey.equals(key)
     }
-    const status = knownHosts.check(known, hostKeyName, key)
+    const status = hostKeyTrust.check(known, hostKeyName, key)
     if (status === 'known') {
       return true
     }
     if (status === 'unknown') {
       clearTimeout(readyTimer)
-      const trusted = await trustOnce(hostKeyName, key, {
+      const trusted = await hostKeyTrust.confirm(hostKeyName, key, {
         confirm: confirmHostKey,
-        hashed: sshConfig('HashKnownHosts')?.toLowerCase() === 'yes',
+        hashed: hashKnownHosts,
         isLive: () => !closed,
       })
       if (!closed) {
@@ -244,14 +136,14 @@ export const connectSsh = async (
       port,
       // Replaced by `readyTimer`, which stops while the host-key prompt is open.
       readyTimeout: 0,
-      username: tunnel.user || sshConfig('User') || userInfo().username,
+      username,
     })
   )
   if (connecting.isErr()) {
     const configError = toError(connecting.error.cause)
     client.end()
     throw tunnelError(
-      'privateKey' in auth
+      SSH2_KEY_ERROR.test(configError.message)
         ? unreadableKey(tunnel, configError)
         : sshErrorMessage(configError, auth)
     )

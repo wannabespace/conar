@@ -1,5 +1,5 @@
 import { connectionParts } from './connection-parts'
-import type { DiagnosisContext } from './diagnose'
+import type { DiagnosisContext } from './diagnosis'
 import type { HostKind } from './hosts'
 import { getHostHint, getHostKind } from './hosts'
 
@@ -38,8 +38,23 @@ export const getDiagnosisRequest = ({
   parts,
 }: Pick<DiagnosisContext, 'message' | 'parts'>) => {
   const port = connectionParts.port(parts)
+  const options = [...new URLSearchParams(parts.options)].map(
+    ([key, value]) => ({
+      key,
+      shown:
+        SETTING_KEYS.has(key.toLowerCase()) &&
+        NON_IDENTIFYING_VALUE.test(value),
+      value,
+    })
+  )
   const identifying: [string | undefined, string][] = [
+    ...options
+      .filter(({ shown }) => !shown)
+      .map(({ key, value }): [string, string] => [value, `<${key}>`]),
     [parts.password, '<password>'],
+    [parts.ssh?.password, '<ssh-password>'],
+    [parts.ssh?.passphrase, '<ssh-passphrase>'],
+    [parts.ssh?.privateKey, '<ssh-key>'],
     [parts.ssh?.host, '<ssh-host>'],
     [parts.host, '<host>'],
     [parts.user, '<user>'],
@@ -47,9 +62,15 @@ export const getDiagnosisRequest = ({
     [parts.database, '<database>'],
   ]
   let error = message
+  // A driver may echo the string's own percent-encoded form.
   for (const [value, placeholder] of identifying
-    .filter(
-      (entry): entry is [string, string] => !!entry[0] && entry[0].length > 1
+    .flatMap(([text, label]): [string, string][] =>
+      text && text.length > 1
+        ? [
+            [text, label],
+            [encodeURIComponent(text), label],
+          ]
+        : []
     )
     .toSorted(([a], [b]) => b.length - a.length)) {
     error = error.replaceAll(value, placeholder)
@@ -64,11 +85,9 @@ export const getDiagnosisRequest = ({
       .filter(Boolean)
       .join(' '),
     options: new URLSearchParams(
-      [...new URLSearchParams(parts.options)].map(([key, value]) => [
+      options.map(({ key, shown, value }) => [
         key,
-        SETTING_KEYS.has(key.toLowerCase()) && NON_IDENTIFYING_VALUE.test(value)
-          ? value
-          : '<redacted>',
+        shown ? value : '<redacted>',
       ])
     ).toString(),
     passwordSet: !!parts.password,

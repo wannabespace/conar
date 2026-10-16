@@ -4,7 +4,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { connectionParts } from './connection-parts'
-import { parseConnectionString } from './parse-connection-string'
+import { getDriverConfig } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
 import { EMPTY_SSH_TUNNEL } from './ssh/params'
 
@@ -35,7 +35,7 @@ const VALUES = [
 describe('connectionParts', () => {
   it.each(VALUES)('hands %p to the driver as typed', (value) => {
     expect(
-      parseConnectionString(
+      getDriverConfig(
         connectionParts.format(
           parts({ database: value, password: value, user: value })
         )
@@ -69,7 +69,7 @@ describe('connectionParts', () => {
     (host) => {
       const connectionString = connectionParts.format(parts({ host }))
       expect(connectionString).toContain(`[${host}]`)
-      expect(parseConnectionString(connectionString).host).toBe(host)
+      expect(getDriverConfig(connectionString).host).toBe(host)
     }
   )
 

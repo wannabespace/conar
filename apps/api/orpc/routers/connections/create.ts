@@ -8,7 +8,7 @@ import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
 import { orpc, permissionsMiddleware } from '~/orpc'
 
-import { publisher } from './events'
+import { publisher, syncedColumns } from './events'
 
 export const create = orpc
   .use(permissionsMiddleware)
@@ -54,7 +54,7 @@ export const create = orpc
         workspaceId,
       })
       .onConflictDoNothing()
-      .returning()
+      .returning(syncedColumns)
 
     if (inserted) {
       publisher.publish(context.user.id, {

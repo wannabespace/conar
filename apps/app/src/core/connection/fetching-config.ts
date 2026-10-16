@@ -1,4 +1,3 @@
-import { isInternalHost } from '@tamery/connection/hosts'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 
@@ -20,38 +19,34 @@ export interface FetchingConfig {
   reason: string | null
 }
 
-type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
+/** `null` for a string no saved connection holds, such as one under test: it carries everything it needs. */
+type FetchingConnection = Pick<
+  Connection,
+  'syncType' | 'isPasswordExists'
+> | null
 
 interface FetchingOptions {
   /** `null` while the row loads leaves the password unresolved. */
   connectionString: Pick<
     ConnectionString,
-    'displayUrl' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
+    'isInternal' | 'isPasswordPopulated' | 'missingSecrets' | 'usesSsh'
   > | null
   isLocalProxyAvailable?: boolean
   proxy?: { enabled: boolean; url: string | null }
 }
-
-const PORT_SUFFIX = /:\d*$/u
-
-export const isInternalConnection = ({
-  displayUrl,
-}: Pick<ConnectionString, 'displayUrl'>) =>
-  isInternalHost(displayUrl.replace(PORT_SUFFIX, ''))
 
 const REASONS = {
   connectionStringNotStored:
     'Only the name and color of this connection sync. Add its server details on this device to use it here.',
   internalFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
-  passwordMissingInDesktop:
-    'Filled password is required to query this connection.',
-  passwordMissingInWeb:
-    'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
+  passwordMissing: 'Filled password is required to query this connection.',
   passwordNotStored:
     'You cannot reach this connection from the web app. Open this connection in the desktop app.',
   secretsMissing:
     'Enter the SSH or SSL credentials this device has not saved yet to query this connection.',
+  secretsNotStoredInWeb:
+    'This connection was saved without its credentials, so the web app cannot reach it. Run `tamery proxy` or open this connection in the desktop app.',
 }
 
 const allowed = (type: FetchingType): FetchingConfig => ({
@@ -79,16 +74,19 @@ const resolveFlags = (
 
   return {
     connectionStringMissing:
-      connection.syncType === SyncType.CloudWithoutConnectionString &&
+      connection?.syncType === SyncType.CloudWithoutConnectionString &&
       !connectionString,
     hasPassword:
-      connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
+      !connection ||
+      connection.syncType === SyncType.Cloud ||
+      !!isPasswordPopulated,
     isElectron,
-    isInternal: !!connectionString && isInternalConnection(connectionString),
+    isInternal: !!connectionString?.isInternal,
     missingSecrets: connectionString?.missingSecrets ?? [],
-    needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
+    needsPassword:
+      !!connection?.isPasswordExists && isPasswordPopulated === false,
     passwordUnresolved:
-      connection.isPasswordExists && isPasswordPopulated === undefined,
+      !!connection?.isPasswordExists && isPasswordPopulated === undefined,
     proxyPreferred: !isElectron || options.proxy?.enabled === true,
     proxyReachable:
       (options.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
@@ -126,13 +124,16 @@ export const fetchingConfig = (
     return blocked('resolving-password')
   }
 
+  if (
+    (needsPassword || missingSecrets.length > 0) &&
+    !isElectron &&
+    !proxyReachable
+  ) {
+    return blocked('cloud-proxy', REASONS.secretsNotStoredInWeb)
+  }
+
   if (needsPassword) {
-    return blocked(
-      'waiting-for-password',
-      isElectron
-        ? REASONS.passwordMissingInDesktop
-        : REASONS.passwordMissingInWeb
-    )
+    return blocked('waiting-for-password', REASONS.passwordMissing)
   }
 
   if (missingSecrets.length > 0) {
@@ -155,7 +156,7 @@ export const fetchingConfig = (
     return blocked('proxy', REASONS.internalFromWeb)
   }
 
-  if (connection.syncType !== SyncType.Cloud) {
+  if (connection && connection.syncType !== SyncType.Cloud) {
     return blocked('cloud-proxy', REASONS.passwordNotStored)
   }
 

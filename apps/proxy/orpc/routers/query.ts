@@ -1,41 +1,20 @@
-import type { ConnectionInput } from '@tamery/query-proxy'
 import { createQueryRouter } from '@tamery/query-proxy'
-import { memoize } from 'memoza'
 
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
-
-export const resolveQueryConnectionString = memoize(
-  ({
-    input,
-    headers,
-  }: {
-    input: ConnectionInput
-    headers: Headers
-  }): string | Promise<string> => {
-    if ('connectionString' in input) {
-      return input.connectionString
-    }
-
-    const apiClient = createApiClient({
-      authorization: headers.get('authorization'),
-      cookie: headers.get('cookie'),
-    })
-
-    return apiClient.internal.proxy.resolveConnectionString(input)
-  },
-  {
-    cacheKey: ({ input, headers }) => ({
-      ...input,
-      authorization: headers.get('authorization'),
-      cookie: headers.get('cookie'),
-    }),
-    maxAge: 1000 * 60 * 5,
-  }
-)
+import { assertPublicHost } from '~/public-host'
 
 export const query = createQueryRouter(orpc.use(authMiddleware), {
-  connectionString: (input, context) =>
-    resolveQueryConnectionString({ headers: context.headers, input }),
+  connectionString: async (input, { headers }) => {
+    const connectionString =
+      'connectionString' in input
+        ? input.connectionString
+        : await createApiClient({
+            authorization: headers.get('authorization'),
+            cookie: headers.get('cookie'),
+          }).internal.proxy.resolveConnectionString(input)
+    await assertPublicHost(connectionString)
+    return connectionString
+  },
   owner: (context) => context.session.userId,
 })

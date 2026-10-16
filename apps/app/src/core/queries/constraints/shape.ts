@@ -141,7 +141,7 @@ export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
   })[kind]
 
 export const dropConstraintStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   {
@@ -150,7 +150,7 @@ export const dropConstraintStatement = (
     ...target
   }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
 ) => {
-  if (dialectType === Dialect.MySQL) {
+  if (dialect === Dialect.MySQL) {
     return sql`ALTER TABLE ${sql.id(target.schema, target.table)} DROP ${mysqlDropKey(kind, target.name)}`.compile(
       db
     )
@@ -159,7 +159,7 @@ export const dropConstraintStatement = (
   const drop = dropConstraint(db, target)
 
   return (
-    cascade && dialectType === Dialect.Postgres ? drop.cascade() : drop
+    cascade && dialect === Dialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 

@@ -27,11 +27,11 @@ export const UnlockForm = ({ scope }: { scope: 'credentials' | 'details' }) => {
     meta: { event: `connection_${scope}_saved` },
     mutationFn: async (saved: { connectionString: string }) => {
       // The string keeps the row's `updatedAt`: an unlock never touches the synced row.
-      const opened = await saveConnectionString(
-        connection.id,
-        saved.connectionString,
-        connection.updatedAt
-      )
+      const opened = await saveConnectionString({
+        connectionId: connection.id,
+        connectionString: saved.connectionString,
+        updatedAt: connection.updatedAt,
+      })
       toast.success(scope === 'details' ? 'Details saved' : 'Credentials saved')
       if (
         scope === 'details' &&

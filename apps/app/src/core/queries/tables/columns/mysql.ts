@@ -1,20 +1,14 @@
-import { Result } from 'better-result'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type {
   MariadbTables,
   Database as MysqlDatabase,
 } from '~/core/runtime/dialects/mysql/schema'
 
 import type { ColumnsFilter } from '../shape'
-
-const SYSTEM_SCHEMAS = [
-  'mysql',
-  'information_schema',
-  'performance_schema',
-  'sys',
-]
 
 export const mysqlColumns = async (
   db: Kysely<MysqlDatabase>,
@@ -105,7 +99,11 @@ export const mysqlColumns = async (
               eb('TABLE_NAME', '=', filter.table),
             ])
           )
-        : qb.where('TABLE_SCHEMA', 'not in', SYSTEM_SCHEMAS)
+        : qb.where(
+            'TABLE_SCHEMA',
+            'not in',
+            getCapabilities(Dialect.MySQL).systemSchemas
+          )
     )
     .orderBy('TABLE_SCHEMA')
     .orderBy('TABLE_NAME')
@@ -113,31 +111,39 @@ export const mysqlColumns = async (
     .execute()
 
   // MariaDB's JSON is a LONGTEXT under a json_valid() check, and before 10.2.22/10.3.10 CHECK_CONSTRAINTS does not exist.
-  const checks = await Result.tryPromise(async () =>
-    query.some((column) => column.mariadb && column.type === 'longtext')
-      ? await db
-          .$extendTables<MariadbTables>()
-          .selectFrom('information_schema.CHECK_CONSTRAINTS')
-          .select([
-            'CONSTRAINT_SCHEMA as schema',
-            'TABLE_NAME as table',
-            'CHECK_CLAUSE as clause',
-          ])
-          .where('CHECK_CLAUSE', 'like', 'json_valid(%')
-          .$call((qb) =>
-            filter
-              ? qb
-                  .where('CONSTRAINT_SCHEMA', '=', filter.schema)
-                  .where('TABLE_NAME', '=', filter.table)
-              : qb.where('CONSTRAINT_SCHEMA', 'not in', SYSTEM_SCHEMAS)
-          )
-          .execute()
-      : []
-  )
+  const readsJsonChecks =
+    query.some((column) => column.mariadb && column.type === 'longtext') &&
+    (await db
+      .selectFrom('information_schema.TABLES')
+      .select('TABLE_NAME')
+      .where('TABLE_SCHEMA', '=', 'information_schema')
+      .where('TABLE_NAME', '=', 'CHECK_CONSTRAINTS')
+      .executeTakeFirst()) !== undefined
+  const checks = readsJsonChecks
+    ? await db
+        .$extendTables<MariadbTables>()
+        .selectFrom('information_schema.CHECK_CONSTRAINTS')
+        .select([
+          'CONSTRAINT_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'CHECK_CLAUSE as clause',
+        ])
+        .where('CHECK_CLAUSE', 'like', 'json_valid(%')
+        .$call((qb) =>
+          filter
+            ? qb
+                .where('CONSTRAINT_SCHEMA', '=', filter.schema)
+                .where('TABLE_NAME', '=', filter.table)
+            : qb.where(
+                'CONSTRAINT_SCHEMA',
+                'not in',
+                getCapabilities(Dialect.MySQL).systemSchemas
+              )
+        )
+        .execute()
+    : []
   const jsonColumns = new Set(
-    checks
-      .unwrapOr([])
-      .map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
+    checks.map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
   )
 
   return query.map((column) => ({

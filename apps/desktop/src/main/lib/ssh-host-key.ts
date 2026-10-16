@@ -1,4 +1,4 @@
-import type { ConfirmHostKey } from '@tamery/connection/ssh/session'
+import type { ConfirmHostKey } from '@tamery/connection/ssh/host-key'
 import type { MessageBoxOptions } from 'electron'
 import { BrowserWindow, dialog } from 'electron'
 

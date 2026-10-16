@@ -4,9 +4,6 @@ import { command } from '@drizzle-team/brocli'
 import { serve } from '@hono/node-server'
 import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
-import type { RouterOutputs } from '@tamery/api/orpc/routers'
-import { resourceConnectionString } from '@tamery/connection/utils'
-import type { ConnectionInput } from '@tamery/query-proxy'
 import { createQueryRouter } from '@tamery/query-proxy'
 import { querySerializer } from '@tamery/query-proxy/serializer'
 import { PORTS } from '@tamery/shared/constants'
@@ -14,73 +11,17 @@ import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import { orpc as apiOrpc } from '~/orpc'
 import { requireSession } from '~/session'
 
-type Connection = RouterOutputs['connections']['list'][number]
-type Resource = RouterOutputs['connectionsResources']['list'][number]
-
-const REFRESH_INTERVAL_MS = 60_000
+const onSigint = () => {
+  consola.info('Shutting down proxy...')
+  process.exit(0)
+}
 
 export const proxyCommand = command({
   desc: 'Start a local proxy server so the web app can query local connections',
   handler: async () => {
     const session = await requireSession()
-
-    let connections: Connection[] = []
-    let resources: Resource[] = []
-
-    const fetchConnections = async () => {
-      const prevIds = new Set(connections.map((c) => c.id))
-      const [fetchedConnections, fetchedResources] = await Promise.all([
-        apiOrpc.connections.list(),
-        apiOrpc.connectionsResources.list(),
-      ])
-      connections = fetchedConnections
-      resources = fetchedResources
-      for (const conn of connections) {
-        if (!prevIds.has(conn.id)) {
-          consola.info(`+ Connection: ${conn.name} (${conn.type})`)
-        }
-        prevIds.delete(conn.id)
-      }
-      for (const removed of prevIds) {
-        consola.info(`- Connection removed: ${removed}`)
-      }
-      return connections.length
-    }
-
-    const resolveConnectionString = (input: ConnectionInput): string => {
-      if ('connectionString' in input) {
-        return input.connectionString
-      }
-
-      if ('resourceId' in input) {
-        const resource = resources.find((r) => r.id === input.resourceId)
-        if (!resource) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`tamery proxy\`.`,
-          })
-        }
-
-        const conn = connections.find((c) => c.id === resource.connectionId)
-        if (!conn) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Connection for resource "${input.resourceId}" not found in local cache.`,
-          })
-        }
-
-        return resourceConnectionString(conn.connectionString, resource.name)
-      }
-
-      const conn = connections.find((c) => c.id === input.connectionId)
-      if (!conn) {
-        throw new ORPCError('NOT_FOUND', {
-          message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.`,
-        })
-      }
-      return conn.connectionString
-    }
 
     const verifyBrowserSession = async (headers: Headers): Promise<void> => {
       const res = await fetch(`${import.meta.env.API_URL}/auth/get-session`, {
@@ -113,23 +54,16 @@ export const proxyCommand = command({
     )
 
     const router = createQueryRouter(authed, {
-      connectionString: resolveConnectionString,
+      connectionString: (input) => {
+        if ('connectionString' in input) {
+          return input.connectionString
+        }
+        throw new ORPCError('BAD_REQUEST', {
+          message: 'The local proxy runs only connection strings it is sent.',
+        })
+      },
       owner: () => session.user.id,
     })
-
-    consola.start('Fetching connections...')
-    const count = await fetchConnections()
-    consola.success(`Loaded ${count} connection${count === 1 ? '' : 's'}.`)
-
-    const refreshInterval = setInterval(async () => {
-      try {
-        await fetchConnections()
-      } catch (error) {
-        consola.warn(
-          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`
-        )
-      }
-    }, REFRESH_INTERVAL_MS)
 
     const handler = new RPCHandler(router, {
       interceptors: [
@@ -208,11 +142,6 @@ export const proxyCommand = command({
         return next()
       })
 
-    const onSigint = () => {
-      clearInterval(refreshInterval)
-      consola.info('Shutting down proxy...')
-      process.exit(0)
-    }
     process.once('SIGINT', onSigint)
     process.once('SIGTERM', onSigint)
 

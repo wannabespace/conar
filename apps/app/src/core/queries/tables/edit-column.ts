@@ -37,17 +37,17 @@ const commented = (
 // Alters under the old name first, so a failing alter leaves the column as it
 // was; the key names the new one.
 const editInSteps = async (
-  dialectType: Dialect,
+  dialect: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   target: EditColumnTarget
 ) => {
   const { column, newName, reference } = target
   if (altered(target)) {
-    await db.executeQuery(alterColumnStatement(dialectType, db, target))
+    await db.executeQuery(alterColumnStatement(dialect, db, target))
   }
   if (newName !== column) {
-    await db.executeQuery(renameColumnStatement(dialectType, db, target))
+    await db.executeQuery(renameColumnStatement(dialect, db, target))
   }
   if (reference) {
     await addConstraint(db, target, reference).execute()

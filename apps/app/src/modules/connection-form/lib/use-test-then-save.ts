@@ -39,29 +39,33 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)
 
   const getDraft = (values: ConnectionFormValues) => {
+    const editing = mode.kind === 'edit' ? mode : null
     const connectionString = Result.try(() =>
-      connectionParts.format(
-        getParts(values),
-        mode.kind === 'edit' ? mode.missingSecrets : []
-      )
-    ).unwrapOr('')
-    const described = Result.try(() =>
-      describeConnectionString(connectionString)
+      connectionParts.format(getParts(values), editing?.missingSecrets ?? [])
     ).unwrapOr(null)
-    const editing = described && mode.kind === 'edit' ? mode : null
+    const described = connectionString
+      ? Result.try(() => describeConnectionString(connectionString)).unwrapOr(
+          null
+        )
+      : null
+    if (!connectionString || !described) {
+      return {
+        canSend: false as const,
+        connectionString: null,
+        reason: null,
+        testStatus: 'idle' as const,
+      }
+    }
     const { canSend, reason } = fetchingConfig(
       {
         isPasswordExists:
-          !!described?.isPasswordPopulated || !!editing?.passwordElsewhere,
+          described.isPasswordPopulated || !!editing?.passwordElsewhere,
         syncType: values.syncType,
       },
       {
-        connectionString: {
-          displayUrl: described?.displayUrl ?? '',
-          isPasswordPopulated: !!described?.isPasswordPopulated,
-          missingSecrets: (editing && described?.missingSecrets) || [],
-          usesSsh: values.sshEnabled,
-        },
+        connectionString: editing
+          ? described
+          : { ...described, missingSecrets: [] },
         isLocalProxyAvailable,
       }
     )
@@ -69,7 +73,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
       test.variables?.connectionString === connectionString &&
       test.variables.dialect === getDialect(values.type)
     return {
-      canSend: canSend && !!connectionString,
+      canSend,
       connectionString,
       reason,
       testStatus: tested ? test.status : 'idle',

@@ -148,9 +148,9 @@ test('SQL Server renames through sp_rename with a bracketed name', () => {
 })
 
 test('ClickHouse and MySQL rename with RENAME TABLE, which also takes a view', () => {
-  for (const dialectType of [Dialect.ClickHouse, Dialect.MySQL]) {
+  for (const dialect of [Dialect.ClickHouse, Dialect.MySQL]) {
     expect(
-      renameTableStatement(dialectType, mysql, { ...target, newName: 'u' }).sql
+      renameTableStatement(dialect, mysql, { ...target, newName: 'u' }).sql
     ).toBe('RENAME TABLE `s`.`t` TO `s`.`u`')
   }
 })

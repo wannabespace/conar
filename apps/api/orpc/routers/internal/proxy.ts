@@ -1,8 +1,9 @@
-import { connectionSecrets } from '@tamery/connection/secrets'
-import { resourceConnectionString } from '@tamery/connection/utils'
+import {
+  describeConnectionString,
+  resourceConnectionString,
+} from '@tamery/connection/utils'
 import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { type } from 'arktype'
 
 import { env } from '~/env'
@@ -78,8 +79,7 @@ export const proxy = {
       })
       if (
         withoutSecrets &&
-        connectionSecrets.missing(new SafeURL(connectionString).searchParams)
-          .length > 0
+        describeConnectionString(connectionString).missingSecrets.length > 0
       ) {
         throw errors.FORBIDDEN()
       }

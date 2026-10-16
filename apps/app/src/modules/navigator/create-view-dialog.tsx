@@ -55,14 +55,19 @@ const QueryField = ({
   onChange: (value: string) => void
   value: string
 }) => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
 
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, dialect)
+      ? attachSqlSource(
+          codeEditor,
+          connectionResource,
+          connection.type,
+          dialect
+        )
       : undefined
-  }, [editorRef, connectionResource, dialect])
+  }, [editorRef, connectionResource, connection.type, dialect])
 
   return (
     <Field>

@@ -16,23 +16,10 @@ export const useConnectionStringsSync = () => {
 
     const { connectionsCollection, connectionStringsCollection } = collections
 
-    const resolve = async (
+    const resolve = (
       { value }: { value: Connection },
       { signal }: { signal: AbortSignal }
-    ) => {
-      const connectionString =
-        await connectionStringsCollection.utils.resolve(value)
-
-      if (signal.aborted || !connectionString) {
-        return
-      }
-
-      await connectionStringsCollection.utils.save({
-        connectionId: value.id,
-        connectionString,
-        updatedAt: value.updatedAt,
-      })
-    }
+    ) => connectionStringsCollection.utils.resolve(value, signal)
 
     const effect = createEffect<Connection>({
       onEnter: resolve,

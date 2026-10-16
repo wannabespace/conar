@@ -6,14 +6,14 @@ import { and, eq } from 'drizzle-orm'
 import { encryptConnectionString } from '~/lib/connection-string'
 import { authMiddleware, orpc } from '~/orpc'
 
-import { publisher } from './events'
+import { publisher, syncedColumns } from './events'
 
 export const update = orpc
   .use(authMiddleware)
   .input(
     connectionsUpdateSchema
-      .omit('createdAt', 'updatedAt', 'userId', 'workspaceId', 'id', 'syncType')
-      .merge(connectionsUpdateSchema.pick('id').required())
+      .omit('createdAt', 'userId', 'workspaceId', 'syncType')
+      .merge(connectionsUpdateSchema.pick('id', 'updatedAt').required())
   )
   .errors({
     NOT_FOUND: { message: 'Connection not found' },
@@ -53,7 +53,7 @@ export const update = orpc
       .where(
         and(eq(connections.userId, context.user.id), eq(connections.id, id))
       )
-      .returning()
+      .returning(syncedColumns)
 
     if (!connection) {
       throw errors.NOT_FOUND()

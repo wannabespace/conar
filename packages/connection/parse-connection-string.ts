@@ -1,15 +1,6 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 import { decodeURIComponentOrRaw, lowercaseKeys } from '@tamery/shared/utils'
 
-export interface Config {
-  user?: string
-  password?: string
-  host: string
-  port?: number
-  database?: string
-  searchParams: URLSearchParams
-}
-
 /** Every reader of a stored string must go through here: it decodes the percent-encoded fields and lowercases option keys. */
 export const readConnectionString = (connectionString: string) => {
   const url = new SafeURL(connectionString)
@@ -24,7 +15,8 @@ export const readConnectionString = (connectionString: string) => {
   }
 }
 
-export const parseConnectionString = (connectionString: string): Config => {
+/** Absent fields stay `undefined`, the drivers' spelling for "use your default": an empty string or a `0` port reaches them as a real value. */
+export const getDriverConfig = (connectionString: string) => {
   const { database, host, password, port, searchParams, user } =
     readConnectionString(connectionString)
 

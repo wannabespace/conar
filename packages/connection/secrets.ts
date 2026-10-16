@@ -3,13 +3,18 @@ import { lowercaseKeys } from '@tamery/shared/utils'
 
 import { SSH_PARAMS } from './ssh/params'
 
-/** Sync with the secret params `ssl/*.ts` and `ssh/` read. */
-const SECRET_PARAMS = [
+const SSH_SECRET_PARAMS = [
   SSH_PARAMS.password,
   SSH_PARAMS.privateKey,
   SSH_PARAMS.passphrase,
+] as const
+
+/** Sync with the secret params `ssl/*.ts` and `ssh/` read. `sslkey` stays out: the drivers read it as a file path. */
+const SECRET_PARAMS = [
+  ...SSH_SECRET_PARAMS,
   'sslpassword',
   'sslpassphrase',
+  'sslpfx',
 ] as const
 
 export type SecretParam = (typeof SECRET_PARAMS)[number]
@@ -22,6 +27,14 @@ const getUrl = (connectionString: string) => {
 
 /** `strip` empties a secret rather than dropping it, so another device knows which ones to ask for. */
 export const connectionSecrets = {
+  /** Keeps the database password and the SSL key passphrase: a copied string must still connect from another client. */
+  copyable: (connectionString: string) => {
+    const url = getUrl(connectionString)
+    for (const param of SSH_SECRET_PARAMS) {
+      url.searchParams.delete(param)
+    }
+    return url.toString()
+  },
   missing: (searchParams: URLSearchParams): SecretParam[] => {
     const params = lowercaseKeys(searchParams)
     return SECRET_PARAMS.filter((param) => params.get(param) === '')

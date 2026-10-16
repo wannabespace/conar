@@ -1,3 +1,4 @@
+import { connectionParts } from '@tamery/connection/connection-parts'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
@@ -77,7 +78,12 @@ const toMcpConnection = ({
 export const mcpSource: McpSource = {
   connections: () =>
     getCollections().connectionsCollection.toArray.map(toMcpConnection),
-  createConnection: async ({ connectionString, name, syncType, type }) => {
+  createConnection: async ({
+    connectionString: given,
+    name,
+    syncType,
+    type,
+  }) => {
     const { connectionsCollection, workspacesCollection } = getCollections()
     if (
       !permix.check('connection.create', {
@@ -90,6 +96,10 @@ export const mcpSource: McpSource = {
     if (!workspace) {
       throw new Error('Tamery is still loading. Try again in a moment.')
     }
+    const connectionString = connectionParts.format({
+      ...connectionParts.parse(given),
+      type,
+    })
     await testConnectionQuery.run({
       connectionString,
       dialect: getDialect(type),

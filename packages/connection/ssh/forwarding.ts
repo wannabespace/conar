@@ -1,4 +1,4 @@
-import { isSshConnectionString } from '../utils'
+import { describeConnectionString } from '../utils'
 import { SSH_DESKTOP_ONLY } from './params'
 import type { tunnelSocket } from './socket'
 
@@ -7,7 +7,7 @@ export interface Forwarding {
 }
 
 let getForwarding = (connectionString: string): Promise<Forwarding | null> => {
-  if (isSshConnectionString(connectionString)) {
+  if (describeConnectionString(connectionString).usesSsh) {
     throw new Error(SSH_DESKTOP_ONLY)
   }
   return Promise.resolve(null)

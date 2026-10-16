@@ -9,10 +9,13 @@ import { MATCH_USER_STYLE, section } from './prompt'
 
 const CARET = '<CARET>'
 
-const completeSqlInstructions = (data: { dialect: string; context: string }) =>
+const completeSqlInstructions = (data: {
+  connectionType: string
+  context: string
+}) =>
   [
     'You are an inline SQL completion engine inside a SQL editor.',
-    `The database type is "${data.dialect}".`,
+    `The database type is "${data.connectionType}".`,
     "Values are the user's job, structure is yours. You complete SQL structure only: keywords, operators, functions, and table, column and enum names from the schema. A string, number, date or time value may appear in your text only if it is an enum value from the schema or the user already wrote it; any other value is unknown to you, so end your text right before it, without its opening quote, and let the user type it.",
     `You get the text before the caret and the text after it, each marked with ${CARET} on the caret side.`,
     `Return only the text to insert at ${CARET}: no explanations, markdown or fences.`,
@@ -28,7 +31,7 @@ const completeSqlInstructions = (data: { dialect: string; context: string }) =>
   ].join('\n')
 
 interface CompleteSqlInput {
-  dialect: string
+  connectionType: string
   context: string
   onUsage: (modelId: string, usage: LanguageModelUsage) => Promise<void>
   prefix: string
@@ -78,7 +81,7 @@ const fimCompleteSql = async (data: CompleteSqlInput) => {
       maxTokens: 200,
       model: FIM_MODEL,
       prompt: [
-        `-- Database: ${data.dialect}`,
+        `-- Database: ${data.connectionType}`,
         ...schemaAsDdl(data.context),
         '',
         data.prefix,

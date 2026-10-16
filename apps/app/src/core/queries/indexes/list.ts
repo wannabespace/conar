@@ -1,8 +1,10 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { Database as ClickhouseDatabase } from '~/core/runtime/dialects/clickhouse/schema'
 import {
@@ -213,12 +215,11 @@ export const resourceIndexesQuery = createQuery({
             'is_custom'
           ),
         ])
-        .where('TABLE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          'TABLE_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .orderBy('SEQ_IN_INDEX')
         .execute(),
 

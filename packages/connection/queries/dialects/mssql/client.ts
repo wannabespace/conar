@@ -5,7 +5,7 @@ import type net from 'node:net'
 import { memoize } from 'memoza'
 import type * as mssqlModule from 'mssql'
 
-import { parseConnectionString } from '../../..'
+import { getDriverConfig } from '../../../parse-connection-string'
 import { sshForwarding } from '../../../ssh/forwarding'
 import { parseSSLConfig } from '../../../ssl/mssql'
 
@@ -13,7 +13,7 @@ const mssql = createRequire(import.meta.url)('mssql') as typeof mssqlModule
 
 export const getPool = memoize(async (connectionString: string) => {
   const { database, host, password, port, searchParams, user } =
-    parseConnectionString(connectionString)
+    getDriverConfig(connectionString)
   const tunnel = await sshForwarding.of(connectionString)
   const pool = new mssql.ConnectionPool({
     database,

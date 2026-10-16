@@ -143,7 +143,7 @@ const SavedQueriesButton = () => {
 }
 
 export const Runner = () => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const tab = useRunnerTab()
   const store = useRunnerPageStore()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -158,7 +158,7 @@ export const Runner = () => {
   const running = lastRun?.running ?? false
   const statements = runnerStatements({ ...tab, dialect })
   const spec = dialects[dialect]
-  const aiEdit = useAiEdit({ dialect, editorRef })
+  const aiEdit = useAiEdit({ connectionType: connection.type, editorRef })
 
   const current = (): {
     statements: RunnerStatement[]

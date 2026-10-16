@@ -1,24 +1,20 @@
 import { SafeURL } from '@tamery/shared/safe-url'
 
-import {
-  parseConnectionString,
-  readConnectionString,
-} from './parse-connection-string'
+import { isInternalHost } from './hosts'
+import { readConnectionString } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
-import { getSshTunnel } from './ssh/params'
-
-export const isSshConnectionString = (connectionString: string): boolean =>
-  getSshTunnel(readConnectionString(connectionString).searchParams) !== null
+import { SSH_PARAMS } from './ssh/params'
 
 export const describeConnectionString = (connectionString: string) => {
-  const { database, password, searchParams } =
-    parseConnectionString(connectionString)
+  const { database, host, password, searchParams } =
+    readConnectionString(connectionString)
   return {
-    defaultResourceName: database ?? null,
+    defaultResourceName: database || null,
     displayUrl: new SafeURL(connectionString).host,
+    isInternal: isInternalHost(host),
     isPasswordPopulated: !!password,
     missingSecrets: connectionSecrets.missing(searchParams),
-    usesSsh: getSshTunnel(searchParams) !== null,
+    usesSsh: !!searchParams.get(SSH_PARAMS.host),
   }
 }
 

@@ -1,8 +1,6 @@
 import { rowObjects } from '@tamery/connection/queries'
-import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { describeConnectionString } from '@tamery/connection/utils'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { SyncType } from '@tamery/shared/enums/sync-type'
 import { PORTS } from '@tamery/shared/ports'
 import { silently } from '@tamery/shared/utils'
 import type {
@@ -34,7 +32,7 @@ export interface DialectOptions {
   }) => void
 }
 
-const resolveProxyIdParams = (options: DialectOptions) => {
+const getCloudProxyInput = (options: DialectOptions) => {
   if (options.resourceId) {
     return { resourceId: options.resourceId }
   }
@@ -65,28 +63,32 @@ export const createDialectProvider = (
     : null
   const connectionId = options.connectionId || resource?.connectionId
   const connection = connectionId
-    ? connectionsCollection.get(connectionId)
+    ? (connectionsCollection.get(connectionId) ?? null)
     : null
 
   const maxRows = options.resultSets?.maxRows
   const resolveTransport = () => {
-    const connectionString = describeConnectionString(options.connectionString)
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
-    const config = fetchingConfig(
-      connection ?? { isPasswordExists: false, syncType: SyncType.Cloud },
-      {
-        connectionString,
-        proxy,
-      }
-    )
+    const config = fetchingConfig(connection, {
+      connectionString: describeConnectionString(options.connectionString),
+      proxy,
+    })
+
+    if (!config.canSend) {
+      throw new Error(config.reason ?? 'This connection is still loading.')
+    }
 
     if (config.type === 'proxy') {
       const client = createProxyClient(
         proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`
       )
-      return { kind: 'proxy' as const, proxy: client[dialect] }
+      return {
+        input: { connectionString: options.connectionString },
+        kind: 'proxy' as const,
+        proxy: client[dialect],
+      }
     }
 
     const electron = window.electron?.query[dialect]
@@ -94,11 +96,11 @@ export const createDialectProvider = (
       return { electron, kind: 'electron' as const }
     }
 
-    if (connectionString.usesSsh) {
-      throw new Error(SSH_DESKTOP_ONLY)
+    return {
+      input: getCloudProxyInput(options),
+      kind: 'proxy' as const,
+      proxy: orpcProxy.query[dialect],
     }
-
-    return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[dialect] }
   }
 
   return {
@@ -110,10 +112,7 @@ export const createDialectProvider = (
           ...settings,
         })
       }
-      return t.proxy.beginTransaction({
-        ...resolveProxyIdParams(options),
-        ...settings,
-      })
+      return t.proxy.beginTransaction({ ...t.input, ...settings })
     },
     cancel(queryId: string) {
       const t = resolveTransport()
@@ -123,7 +122,7 @@ export const createDialectProvider = (
           queryId,
         })
       }
-      return t.proxy.cancel({ ...resolveProxyIdParams(options), queryId })
+      return t.proxy.cancel({ ...t.input, queryId })
     },
     commitTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -139,11 +138,7 @@ export const createDialectProvider = (
             ...payload,
             maxRows,
           })
-        : t.proxy.execute({
-            ...resolveProxyIdParams(options),
-            ...payload,
-            maxRows,
-          })
+        : t.proxy.execute({ ...t.input, ...payload, maxRows })
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()

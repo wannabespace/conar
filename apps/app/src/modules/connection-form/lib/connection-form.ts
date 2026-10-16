@@ -1,6 +1,6 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
-import type { ConnectionPatch } from '@tamery/connection/diagnose'
+import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import { isLocalHost } from '@tamery/connection/hosts'

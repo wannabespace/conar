@@ -1,5 +1,5 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
-import type { ConnectionPatch } from '@tamery/connection/diagnose'
+import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'

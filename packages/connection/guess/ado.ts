@@ -19,7 +19,8 @@ const MSSQL_KEYS = [
 const TYPE_OF_ODBC_DRIVER: [RegExp, ConnectionType][] = [
   [/sql server/iu, ConnectionType.MSSQL],
   [/postgres/iu, ConnectionType.Postgres],
-  [/mysql|mariadb/iu, ConnectionType.MySQL],
+  [/mariadb/iu, ConnectionType.MariaDB],
+  [/mysql/iu, ConnectionType.MySQL],
 ]
 const ENCRYPT_OFF = new Set(['false', 'no', 'optional'])
 const TRUST_ON = new Set(['true', 'yes'])

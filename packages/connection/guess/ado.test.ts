@@ -41,6 +41,16 @@ describe('guessConnection — ADO.NET', () => {
       },
     ],
     [
+      'Driver={MariaDB ODBC 3.1 Driver};Server=db.acme.io;Database=shop;Uid=root;Pwd=pw;',
+      {
+        database: 'shop',
+        host: 'db.acme.io',
+        password: 'pw',
+        type: ConnectionType.MariaDB,
+        user: 'root',
+      },
+    ],
+    [
       'Server=aws.connect.psdb.cloud;Database=shop;Uid=u;Pwd=p;SslMode=VerifyFull',
       {
         database: 'shop',

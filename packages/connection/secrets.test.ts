@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { connectionSecrets } from './secrets'
 
 const LOCAL =
-  'postgres://app:db-pass@db.internal:5432/app?sslkey=%2Fkeys%2Fclient.key&sslpassword=key-pass&ssh_host=bastion&ssh_auth=password&ssh_password=ssh-pass'
+  'postgres://app:db-pass@db.internal:5432/app?sslkey=%2Fkeys%2Fclient.key&sslpassword=key-pass&sslpfx=bundle&ssh_host=bastion&ssh_auth=password&ssh_password=ssh-pass'
 
 describe('connectionSecrets', () => {
   it('keeps every secret off the synced string but marks which ones it had', () => {
@@ -12,10 +12,21 @@ describe('connectionSecrets', () => {
     expect(synced.password).toBe('')
     expect(synced.searchParams.get('ssh_password')).toBe('')
     expect(synced.searchParams.get('sslpassword')).toBe('')
+    expect(synced.searchParams.get('sslkey')).toBe('/keys/client.key')
     expect(connectionSecrets.missing(synced.searchParams)).toEqual([
       'ssh_password',
       'sslpassword',
+      'sslpfx',
     ])
+  })
+
+  it('copies a string that still connects but carries no tunnel secret', () => {
+    const copied = new URL(connectionSecrets.copyable(LOCAL))
+
+    expect(copied.password).toBe('db-pass')
+    expect(copied.searchParams.get('sslpassword')).toBe('key-pass')
+    expect(copied.searchParams.get('ssh_host')).toBe('bastion')
+    expect(copied.searchParams.has('ssh_password')).toBe(false)
   })
 
   it('strips a secret pasted in any case', () => {

@@ -1,9 +1,12 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { structureQueryKey } from '~/core/queries/indexes/list'
+import type { MariadbTables } from '~/core/runtime/dialects/mysql/schema'
 import {
   connectionResourceToQueryParams,
   createQuery,
@@ -242,8 +245,14 @@ export const resourceConstraintsQuery = createQuery({
         .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
         .orderBy('kcu.ORDINAL_POSITION')
         .execute(),
-    mysql: (db) =>
-      db
+    mysql: async (db) => {
+      const { mariadb } = await db
+        .selectNoFrom((eb) =>
+          eb(eb.fn('version'), 'like', '%MariaDB%').as('mariadb')
+        )
+        .executeTakeFirstOrThrow()
+      return db
+        .$extendTables<MariadbTables>()
         .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
         .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
           join
@@ -258,11 +267,14 @@ export const resourceConstraintsQuery = createQuery({
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
             .onRef('tc.TABLE_NAME', '=', 'rc.TABLE_NAME')
         )
-        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
-          join
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) => {
+          const sameName = join
             .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
-        )
+          return mariadb
+            ? sameName.onRef('tc.TABLE_NAME', '=', 'cc.TABLE_NAME')
+            : sameName
+        })
         .select([
           'tc.TABLE_SCHEMA as schema',
           'tc.TABLE_NAME as table',
@@ -277,14 +289,14 @@ export const resourceConstraintsQuery = createQuery({
           'cc.CHECK_CLAUSE as expression',
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-        .where('tc.TABLE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          'tc.TABLE_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .orderBy('kcu.ORDINAL_POSITION')
-        .execute(),
+        .execute()
+    },
     postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_constraint as con')

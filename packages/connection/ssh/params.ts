@@ -29,6 +29,9 @@ export const DEFAULT_SSH_PORT = 22
 // Errors reach the renderer as bare messages over IPC, so this prefix is the only way `diagnose.ts` tells a tunnel failure from a driver's.
 export const SSH_TUNNEL_ERROR = 'SSH tunnel: '
 
+export const tunnelError = (message: string) =>
+  new Error(`${SSH_TUNNEL_ERROR}${message}`)
+
 export const SSH_AUTH_ERRORS = {
   keyFileMissing: "The SSH key file wasn't found. Check its path.",
   keyFileNotAKey: "That file isn't an SSH private key.",
@@ -92,9 +95,14 @@ export const getSshTunnel = (
   }
 }
 
+const SSH_PARAM_NAMES = new Set<string>(Object.values(SSH_PARAMS))
+
+/** Matches keys case-insensitively: a raw string's `SSH_HOST` opens a tunnel too, and a driver rejects the leftover param. */
 export const deleteSshParams = (searchParams: URLSearchParams) => {
-  for (const param of Object.values(SSH_PARAMS)) {
-    searchParams.delete(param)
+  for (const key of new Set(searchParams.keys())) {
+    if (SSH_PARAM_NAMES.has(key.toLowerCase())) {
+      searchParams.delete(key)
+    }
   }
 }
 

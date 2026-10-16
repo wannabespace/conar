@@ -108,7 +108,7 @@ const HOST_HINTS: HostHint[] = [
   {
     label: 'MariaDB SkySQL',
     suffixes: ['.skysql.com'],
-    type: ConnectionType.MySQL,
+    type: ConnectionType.MariaDB,
   },
   {
     label: 'TiDB Cloud',
@@ -149,11 +149,18 @@ export const TYPE_OF_PORT: Record<string, ConnectionType> = {
   [PGBOUNCER_PORT]: ConnectionType.Postgres,
 }
 
-const LOCAL_HOSTS = new Set(['localhost', '::1', '[::1]'])
+const LOCAL_HOSTS = new Set([
+  'localhost',
+  '0.0.0.0',
+  '::',
+  '[::]',
+  '::1',
+  '[::1]',
+])
 const LOOPBACK_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
 const PRIVATE_IPV4 =
-  /^(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/u
-const PRIVATE_IPV6 = /^\[?f[cd][\da-f]{2}:/iu
+  /^(?:10\.|192\.168\.|169\.254\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/u
+const PRIVATE_IPV6 = /^\[?(?:f[cd][\da-f]{2}|fe[89ab][\da-f]):/iu
 const PRIVATE_NAME =
   /\.(?:internal|local|lan|svc|cluster\.local|corp|intranet|home\.arpa|ts\.net)$/iu
 

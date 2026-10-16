@@ -1,6 +1,8 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import {
   clickhouseEnumEntries,
@@ -95,12 +97,11 @@ const resourceEnumsQuery = createQuery({
         ])
         .where(({ or, and, eb }) =>
           and([
-            eb('TABLE_SCHEMA', 'not in', [
-              'mysql',
-              'information_schema',
-              'performance_schema',
-              'sys',
-            ]),
+            eb(
+              'TABLE_SCHEMA',
+              'not in',
+              getCapabilities(Dialect.MySQL).systemSchemas
+            ),
             or([eb('DATA_TYPE', '=', 'enum'), eb('DATA_TYPE', '=', 'set')]),
           ])
         )

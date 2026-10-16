@@ -22,7 +22,7 @@ export type ConnectionString = ReturnType<typeof describeConnectionString> & {
   updatedAt: Date
 }
 
-type ConnectionStringInput = Pick<
+export type ConnectionStringInput = Pick<
   ConnectionString,
   'connectionId' | 'updatedAt'
 > & {
@@ -32,13 +32,16 @@ type ConnectionStringInput = Pick<
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  resolve: (
-    connection: Pick<Connection, 'id' | 'isPasswordExists'>
-  ) => Promise<string | null>
-  save: (data: ConnectionStringInput) => Promise<{
+  /** `write` stores the record synchronously, so a caller can check the stored one right before it. */
+  prepare: (data: ConnectionStringInput) => Promise<{
     previous: ConnectionStringInput | null
     record: ConnectionString
+    write: () => void
   }>
+  resolve: (
+    connection: Pick<Connection, 'id' | 'isPasswordExists'>,
+    signal: AbortSignal
+  ) => Promise<void>
 }
 
 export type ConnectionStringsCollection = Collection<
@@ -95,32 +98,7 @@ export const createConnectionStringsCollection = (
             throw error
           }
         },
-        async resolve({ id: connectionId, isPasswordExists }) {
-          const local = collection.get(connectionId)
-
-          const result = await orpc.connections.resolve.call({
-            id: connectionId,
-            updatedAt: local?.updatedAt,
-          })
-
-          if (result.status === 'unchanged') {
-            return null
-          }
-
-          if (result.status === 'not-found') {
-            return collection.utils.decrypt(connectionId)
-          }
-
-          if (!collection.has(connectionId)) {
-            return result.connectionString
-          }
-
-          return connectionSecrets.restore(result.connectionString, {
-            isPasswordExists,
-            local: await collection.utils.decrypt(connectionId),
-          })
-        },
-        async save(data) {
+        async prepare(data) {
           const stored = collection.get(data.connectionId)
           const [previous, encrypted] = await Promise.all([
             stored
@@ -140,28 +118,62 @@ export const createConnectionStringsCollection = (
             encrypted,
             updatedAt: data.updatedAt,
           }
-          if (collection.has(data.connectionId)) {
-            collection.update(data.connectionId, (draft) => {
-              Object.assign(draft, record)
-            })
-          } else {
-            collection.insert(record)
+          const write = () => {
+            if (collection.has(data.connectionId)) {
+              collection.update(data.connectionId, (draft) => {
+                Object.assign(draft, record)
+              })
+            } else {
+              collection.insert(record)
+            }
+            // Compares the plain strings: a rename saves the same string under a new `updatedAt`.
+            if (previous?.connectionString !== data.connectionString) {
+              const ids = new Set<unknown>([
+                data.connectionId,
+                ...resources.toArray
+                  .filter(
+                    ({ connectionId }) => connectionId === data.connectionId
+                  )
+                  .map(({ id }) => id),
+              ])
+              queryClient.removeQueries({
+                predicate: ({ queryKey: [, id] }) => ids.has(id),
+              })
+            }
           }
-          // Compares the plain strings: a rename re-resolves the same string under a new `updatedAt`.
-          if (previous?.connectionString !== data.connectionString) {
-            const ids = new Set<unknown>([
-              data.connectionId,
-              ...resources.toArray
-                .filter(
-                  ({ connectionId }) => connectionId === data.connectionId
-                )
-                .map(({ id }) => id),
-            ])
-            queryClient.removeQueries({
-              predicate: ({ queryKey: [, id] }) => ids.has(id),
-            })
+          return { previous, record, write }
+        },
+        async resolve(connection, signal) {
+          const local = collection.get(connection.id)
+
+          const result = await orpc.connections.resolve.call({
+            id: connection.id,
+            updatedAt: local?.updatedAt,
+          })
+
+          if (result.status !== 'modified') {
+            return
           }
-          return { previous, record }
+
+          const { write } = await collection.utils.prepare({
+            connectionId: connection.id,
+            connectionString: local
+              ? connectionSecrets.restore(result.connectionString, {
+                  isPasswordExists: connection.isPasswordExists,
+                  local: await collection.utils.decrypt(connection.id),
+                })
+              : result.connectionString,
+            updatedAt: result.updatedAt,
+          })
+
+          if (signal.aborted) {
+            return
+          }
+          // Another write landed while this one waited, and the answer may predate it: ask again.
+          if (collection.get(connection.id)?.encrypted !== local?.encrypted) {
+            return collection.utils.resolve(connection, signal)
+          }
+          write()
         },
       },
     })

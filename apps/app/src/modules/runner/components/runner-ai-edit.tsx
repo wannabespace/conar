@@ -1,6 +1,6 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { catalogSummaryFor } from '@tamery/monaco/sql-language'
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { renderWithRoot } from '@tamery/ui/lib/render'
 import { editor as monacoEditor, Range } from 'monaco-editor'
 import type { RefObject } from 'react'
@@ -16,11 +16,11 @@ import type { Phase } from './runner-ai-edit-zone'
 const CARD_HEIGHT = 32
 const SHADOW_ROOM = 12
 export const useAiEdit = ({
+  connectionType,
   editorRef,
-  dialect,
 }: {
+  connectionType: ConnectionType
   editorRef: RefObject<monacoEditor.IStandaloneCodeEditor | null>
-  dialect: Dialect
 }) => {
   const [phase, setPhase] = useState<Phase | null>(null)
   const zoneRef = useRef<{
@@ -133,7 +133,7 @@ export const useAiEdit = ({
         context: string
         editor: string
         sql: string
-        type: Dialect
+        type: ConnectionType
       },
       signal: AbortSignal
     ) => Promise<string>
@@ -155,7 +155,7 @@ export const useAiEdit = ({
           context,
           editor: model.getValue().slice(0, AI_SQL_LIMITS.sql),
           sql: original,
-          type: dialect,
+          type: connectionType,
         },
         controller.signal
       )

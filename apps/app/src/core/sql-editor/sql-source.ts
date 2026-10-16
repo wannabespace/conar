@@ -5,7 +5,10 @@ import {
   bindSqlModel,
   EMPTY_CATALOG,
 } from '@tamery/monaco/sql-language'
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionType,
+  Dialect,
+} from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
@@ -72,6 +75,7 @@ const getSqlCatalog = (
 
 const sqlSourceFor = (
   connectionResource: ConnectionResource,
+  connectionType: ConnectionType,
   dialect: Dialect
 ): SqlSource => {
   const catalog = () => getSqlCatalog(connectionResource, dialect)
@@ -109,7 +113,7 @@ const sqlSourceFor = (
     catalog,
     complete: (input, signal) =>
       orpc.ai.completeSQL.call(
-        { ...input, type: dialect },
+        { ...input, type: connectionType },
         { context: { silent: true }, signal }
       ),
     dialect,
@@ -139,9 +143,10 @@ const sqlSourceFor = (
 export const attachSqlSource = (
   codeEditor: editor.IStandaloneCodeEditor,
   connectionResource: ConnectionResource,
+  connectionType: ConnectionType,
   dialect: Dialect
 ) => {
-  const source = sqlSourceFor(connectionResource, dialect)
+  const source = sqlSourceFor(connectionResource, connectionType, dialect)
   const model = codeEditor.getModel()
   if (model) {
     bindSqlModel(model, source)

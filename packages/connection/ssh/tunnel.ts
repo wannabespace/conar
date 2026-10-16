@@ -6,8 +6,8 @@ import type { Client } from 'ssh2'
 
 import { connectionParts } from '../connection-parts'
 import type { Forwarding } from './forwarding'
+import type { ConfirmHostKey } from './host-key'
 import type { SshTunnel } from './params'
-import type { ConfirmHostKey } from './session'
 import { connectSsh } from './session'
 import { tunnelSocket } from './socket'
 

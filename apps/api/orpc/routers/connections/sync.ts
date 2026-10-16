@@ -1,14 +1,15 @@
 import { db } from '@tamery/db'
-import { connections, connectionsSelectSchema } from '@tamery/db/schema'
-import { SyncType } from '@tamery/shared/enums/sync-type'
+import { connections } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
-import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
+import { syncDiff } from '~/orpc/lib/sync'
 
-const output = createSyncOutputSchema(connectionsSelectSchema).array()
+import { output as eventOutput, syncedColumns } from './events'
+
+const output = eventOutput.array()
 
 export const sync = orpc
   .use(authMiddleware)
@@ -36,7 +37,7 @@ export const sync = orpc
             .then((r) => r.map((i) => i.id)),
         new: (excludeIds) =>
           db
-            .select()
+            .select(syncedColumns)
             .from(connections)
             .where(
               and(
@@ -46,7 +47,7 @@ export const sync = orpc
             ),
         updated: (items) =>
           db
-            .select()
+            .select(syncedColumns)
             .from(connections)
             .where(
               and(
@@ -63,39 +64,13 @@ export const sync = orpc
             ),
       },
     })
-    const decryptItem = async (item: (typeof updatedItems)[number]) => {
-      if (!item.connectionString) {
-        return item
-      }
-
-      try {
-        return {
-          ...item,
-          connectionString: await context.decryptConnectionString({
-            encryptedText: item.connectionString,
-            workspaceId: item.workspaceId,
-          }),
-        }
-      } catch (error) {
-        console.error(`Failed to decrypt connection ${item.id}`, error)
-        return {
-          ...item,
-          connectionString: null,
-          syncType: SyncType.CloudWithoutConnectionString,
-        }
-      }
-    }
-    const [updatedValues, newValues] = await Promise.all([
-      Promise.all(updatedItems.map(decryptItem)),
-      Promise.all(newItems.map(decryptItem)),
-    ])
     const syncResult: typeof output.infer = []
 
-    for (const value of updatedValues) {
+    for (const value of updatedItems) {
       syncResult.push({ type: 'update', value })
     }
 
-    for (const value of newValues) {
+    for (const value of newItems) {
       syncResult.push({ type: 'insert', value })
     }
 

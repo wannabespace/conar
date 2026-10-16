@@ -7,7 +7,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
@@ -39,7 +38,6 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { useCollections } from '~/core/collections'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
@@ -241,12 +239,12 @@ const LogList = ({
 export const QueryLogger = ({
   className,
   connectionResource,
+  dialect,
 }: {
   className?: string
   connectionResource: ConnectionResource
+  dialect: Dialect
 }) => {
-  const { connectionsCollection } = useCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)
   const logsStore = getQueryLogsStore(connectionResource.id)
   const queries = useSubscription(logsStore, {
     isEqual: Object.is,
@@ -261,10 +259,7 @@ export const QueryLogger = ({
     setTab({ id: selected.id, value: selected.error ? 'error' : 'query' })
   }
 
-  const tabs =
-    selected && connection
-      ? buildTabs(selected, getDialect(connection.type))
-      : []
+  const tabs = selected ? buildTabs(selected, dialect) : []
   const activeTab = tabs.find((item) => item.value === tab.value) ?? tabs.at(0)
 
   const clearQueries = () => {

@@ -28,7 +28,7 @@ export const mysqlColumnDefinition = (
   sql`${restatedType(target)}${comment ? sql` COMMENT ${sql.lit(comment)}` : sql``}`
 
 export const alterColumnStatement = (
-  dialectType: Dialect,
+  dialect: Dialect,
   db: Db,
   target: AlterColumnTarget
 ) => {
@@ -36,7 +36,7 @@ export const alterColumnStatement = (
   const retyped = columnType !== original.type
   const alter = db.withSchema(schema).schema.alterTable(table)
 
-  if (dialectType === Dialect.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return alter
       .modifyColumn(
         column,
@@ -45,7 +45,7 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  if (dialectType === Dialect.Postgres) {
+  if (dialect === Dialect.Postgres) {
     const nullability = (builder: AlterColumnBuilder) =>
       nullable ? builder.dropNotNull() : builder.setNotNull()
 
@@ -62,7 +62,7 @@ export const alterColumnStatement = (
       .compile()
   }
 
-  if (dialectType === Dialect.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     const statement = sql`ALTER TABLE ${sql.id(schema, table)} ALTER COLUMN ${sql.id(column)} ${restatedType(target)} ${sql.raw(nullable ? 'NULL' : 'NOT NULL')}`
     if (!retyped) {
       return statement.compile(db)
