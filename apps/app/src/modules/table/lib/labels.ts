@@ -70,7 +70,7 @@ const defaultLabel = (columns: { id: string; type: string }[], key: string) => {
   ).find(Boolean)?.id
 }
 
-export const labelColumnOf = (
+export const getLabelColumn = (
   stored: string | undefined,
   columns: { id: string; type: string }[],
   key: string
@@ -145,7 +145,7 @@ export const useReferenceLabels = (
     if (!foreign) {
       return []
     }
-    const label = labelColumnOf(
+    const label = getLabelColumn(
       stored[id],
       referenced.get(id) ?? [],
       foreign.column
@@ -226,7 +226,7 @@ export const prefetchReferenceLabels = async ({
           table: foreign.table,
         })
       )
-      const label = labelColumnOf(stored[id], referenced, foreign.column)
+      const label = getLabelColumn(stored[id], referenced, foreign.column)
       if (label) {
         await queryClient.query(
           referenceLabelsQueryOptions({

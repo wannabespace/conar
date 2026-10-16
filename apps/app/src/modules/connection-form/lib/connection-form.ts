@@ -72,7 +72,7 @@ const connectionFormSchema = type({
     ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
 )
 
-export const formValuesOf = (
+export const getFormValues = (
   connection: Connection,
   connectionString: string | null
 ): ConnectionFormValues => {
@@ -91,7 +91,7 @@ export const formValuesOf = (
   }
 }
 
-export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
+export const getParts = (values: ConnectionFormValues): ConnectionParts => ({
   ...pick(values, [...SERVER_FIELDS, 'https']),
   ssh: values.sshEnabled ? values.ssh : null,
   type: values.type,
@@ -100,7 +100,7 @@ export const partsOf = (values: ConnectionFormValues): ConnectionParts => ({
 const BARE_HOST = /^[\w.:%[\]-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
-export const missingOf = (values: ConnectionFormValues) =>
+export const getMissing = (values: ConnectionFormValues) =>
   NEEDED_FIELDS.filter(
     (field) =>
       !values[field].trim() &&

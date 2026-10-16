@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
@@ -141,7 +141,7 @@ export const ActionsCopy = ({
   const formats = FORMATS[kind].filter((f) => {
     const compatible = GENERATOR_COMPATIBILITY[f.type]
     return (
-      (!compatible || compatible.includes(dialectOf(connection.type))) &&
+      (!compatible || compatible.includes(getDialect(connection.type))) &&
       (!throughKeys || f.type === 'sql')
     )
   })
@@ -153,7 +153,7 @@ export const ActionsCopy = ({
 
   const code = format.generator({
     columns,
-    dialect: dialectOf(connection.type),
+    dialect: getDialect(connection.type),
     filters: active,
     indexes: indexes ?? [],
     schema,

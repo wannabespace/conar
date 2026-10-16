@@ -4,7 +4,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { diagnoseConnectionError } from './diagnose'
-import { diagnosisRequestOf } from './diagnosis-request'
+import { getDiagnosisRequest } from './diagnosis-request'
 import {
   EMPTY_SSH_TUNNEL,
   SSH_AUTH_ERRORS,
@@ -230,9 +230,9 @@ describe('diagnoseConnectionError', () => {
 })
 
 const request = (message: string, overrides: Partial<ConnectionParts> = {}) =>
-  diagnosisRequestOf({ message, parts: parts(overrides) })
+  getDiagnosisRequest({ message, parts: parts(overrides) })
 
-describe('diagnosisRequestOf', () => {
+describe('getDiagnosisRequest', () => {
   it('carries no address, user or secret option value', () => {
     expect(
       request('password authentication failed for user "me"', {

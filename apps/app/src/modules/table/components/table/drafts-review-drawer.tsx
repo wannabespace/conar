@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { pick } from '@tamery/shared/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -93,7 +93,7 @@ export const DraftsReviewDrawer = ({
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columnsById.get(columnId)
     return column
-      ? createTransformer(dialectOf(connection.type), column).toDisplay(
+      ? createTransformer(getDialect(connection.type), column).toDisplay(
           value,
           Number.POSITIVE_INFINITY
         )

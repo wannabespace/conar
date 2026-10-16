@@ -11,7 +11,7 @@ const AGENT_STALE_TIME = 5000
 export const fetchForAgent: typeof queryClient.query = (options) =>
   queryClient.query({ ...options, staleTime: AGENT_STALE_TIME })
 
-export const resourcesOf = (connectionId: string) =>
+export const getResources = (connectionId: string) =>
   getCollections().connectionsResourcesCollection.toArray.flatMap((resource) =>
     resource.connectionId === connectionId && resource.name
       ? [resource.name]
@@ -19,7 +19,7 @@ export const resourcesOf = (connectionId: string) =>
   )
 
 const openResources = (connection: Connection) => {
-  const resources = resourcesOf(connection.id)
+  const resources = getResources(connection.id)
   return resources.length > 0
     ? `Its open resources: ${resources.join(', ')}.`
     : `Ask the user to open one of its resources in Tamery.`

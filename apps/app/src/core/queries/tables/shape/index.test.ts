@@ -13,7 +13,7 @@ import {
   PostgresQueryCompiler,
 } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 import {
   addColumnStatement,
@@ -76,7 +76,7 @@ describe('createTable', () => {
   test("New table's id fills itself on every engine with a sequence", () => {
     const newTableId = (type: SqlDialect) => ({
       ...id,
-      type: capabilitiesOf(type).columnTypes.id,
+      type: getCapabilities(type).columnTypes.id,
     })
     const engines = [
       [SqlDialect.Postgres, postgres],

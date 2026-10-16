@@ -3,7 +3,7 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
@@ -21,7 +21,7 @@ import {
 } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
@@ -58,7 +58,7 @@ const QueryField = ({
 }) => {
   const { connection, connectionResource } = useRouteContext()
 
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -106,7 +106,7 @@ export const CreateViewDialog = () => {
   const schemas = tablesAndSchemas?.schemas ?? []
   const statements = splitStatements(
     query,
-    dialects[dialectOf(connection.type)]
+    dialects[getDialect(connection.type)]
   )
   let queryError: string | null = null
   if (queryRefused && statements.length === 0) {
@@ -157,8 +157,8 @@ export const CreateViewDialog = () => {
       setRequest({
         schema:
           schema ??
-          defaultSchemaOf(
-            dialectOf(connection.type),
+          getDefaultSchema(
+            getDialect(connection.type),
             connectionResource.name
           ) ??
           schemas[0]?.name ??
@@ -200,7 +200,7 @@ export const CreateViewDialog = () => {
         value={query}
         onChange={setQuery}
       />
-      {capabilitiesOf(dialectOf(connection.type)).materializedViews && (
+      {getCapabilities(getDialect(connection.type)).materializedViews && (
         <OptionField
           htmlFor="view-dialog-materialized"
           title="Materialized"

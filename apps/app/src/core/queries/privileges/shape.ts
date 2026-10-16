@@ -27,7 +27,7 @@ export interface PrivilegeTarget {
 
 const ACCOUNT = /^'?(?<user>[^'@]*)'?(?:@'?(?<host>[^']*)'?)?$/u
 
-export const accountOf = (grantee: string) => {
+export const getAccount = (grantee: string) => {
   const { host, user = grantee } = ACCOUNT.exec(grantee.trim())?.groups ?? {}
 
   return sql`${sql.lit(user)}@${sql.lit(host || '%')}`

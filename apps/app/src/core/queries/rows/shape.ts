@@ -3,7 +3,7 @@ import type { FilterValueBinding } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -30,7 +30,7 @@ export type ColumnTypes = { id: string; type?: string }[]
 export type BindValue = (columnType: string, value: unknown) => unknown
 
 const bindJsonAsText = (dialect: SqlDialect): BindValue => {
-  const { json } = capabilitiesOf(dialect).columnTypes
+  const { json } = getCapabilities(dialect).columnTypes
 
   return (columnType, value) => {
     if (value === undefined) {
@@ -43,7 +43,7 @@ const bindJsonAsText = (dialect: SqlDialect): BindValue => {
   }
 }
 
-const clickhouseJsonColumnType = capabilitiesOf(SqlDialect.ClickHouse)
+const clickhouseJsonColumnType = getCapabilities(SqlDialect.ClickHouse)
   .columnTypes.json
 const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
 

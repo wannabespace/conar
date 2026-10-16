@@ -20,7 +20,7 @@ import type {
   DataGridLayout,
   GridCursor,
 } from './cursor'
-import { createCursorStore, rangeOf } from './cursor'
+import { createCursorStore, getRange } from './cursor'
 import { useFollowRows } from './follow-rows'
 import { glideIntoView } from './glide-into-view'
 
@@ -53,7 +53,7 @@ export const useGridCursor = ({
   const columnIndex = new Map(
     columns.map((column, index) => [column.id, index])
   )
-  const indexOf = (column: string) => columnIndex.get(column) ?? -1
+  const getIndex = (column: string) => columnIndex.get(column) ?? -1
 
   const cellAt = (position: CellPosition | null): DataGridCell | null => {
     const column = position && byId.get(position.column)
@@ -190,8 +190,8 @@ export const useGridCursor = ({
         }
       }
     },
+    getIndex,
     getValue,
-    indexOf,
     isEditable,
     layout,
     leave: (down, right) => {
@@ -238,7 +238,7 @@ export const useGridCursor = ({
       onPreview?.(cell, element)
     },
     selection: () => {
-      const range = rangeOf(store.get(), indexOf)
+      const range = getRange(store.get(), getIndex)
       if (!range) {
         const cell = current()
         return cell ? [[cell]] : []
@@ -260,7 +260,7 @@ export const useGridCursor = ({
       const [rowStep, columnStep] =
         layout === 'documents' ? [right, down] : [down, right]
       const position = store.get().cursor
-      const index = indexOf(position?.column ?? '')
+      const index = getIndex(position?.column ?? '')
       const column =
         columns[Math.min(Math.max(index + columnStep, 0), columns.length - 1)]
       if (column && rows.length > 0) {

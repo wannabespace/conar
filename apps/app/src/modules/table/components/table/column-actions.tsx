@@ -23,7 +23,7 @@ export const useColumnActions = ({
 }) => {
   const [distinct, setDistinct] = useState<DistinctValuesTarget | null>(null)
 
-  const actionsOf = (column: Column): ColumnActions => ({
+  const getActions = (column: Column): ColumnActions => ({
     onDistinctValues: hasDistinctValues(dialect, column)
       ? (anchor) => setDistinct({ anchor, column })
       : undefined,
@@ -43,5 +43,5 @@ export const useColumnActions = ({
     />
   )
 
-  return { actionsOf, dialogs }
+  return { dialogs, getActions }
 }

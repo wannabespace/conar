@@ -3,7 +3,7 @@ import type { constraintsType } from '~/core/queries/constraints/list'
 import type { indexesType } from '~/core/queries/indexes/list'
 import type { policyType } from '~/core/queries/policies/list'
 import type { columnType } from '~/core/queries/tables/columns'
-import { columnDefinitionOf, isComputed } from '~/core/queries/tables/columns'
+import { getColumnDefinition, isComputed } from '~/core/queries/tables/columns'
 import type {
   ColumnDefinition,
   DraftState,
@@ -168,7 +168,7 @@ export const buildDiagram = ({
           state = 'changed'
         }
 
-        const original = columnDefinitionOf(column)
+        const original = getColumnDefinition(column)
 
         return {
           foreign: foreignColumns.has(key),

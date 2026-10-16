@@ -17,9 +17,9 @@ import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
 import type { ConnectionFormValues } from '../lib/connection-form'
-import { missingOf, partsOf, useConnectionForm } from '../lib/connection-form'
+import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
-import { formPolicyOf } from '../lib/form-mode'
+import { getFormPolicy } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import { usePickLocalDatabase } from '../lib/use-pick-local-database'
 import type { OnSave } from '../lib/use-test-then-save'
@@ -77,8 +77,8 @@ export const ConnectionPage = ({
     }
   }
   const focusPage = () => pageRef.current?.focus()
-  const { draftOf, runTest, save, testError } = useTestThenSave(mode, onSave)
-  const policy = formPolicyOf(mode)
+  const { getDraft, runTest, save, testError } = useTestThenSave(mode, onSave)
+  const policy = getFormPolicy(mode)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
@@ -110,7 +110,7 @@ export const ConnectionPage = ({
       if (stage === 'agent') {
         flushSync(() => setStage('form'))
       }
-      const [missing] = missingOf(form.state.values)
+      const [missing] = getMissing(form.state.values)
       if (missing) {
         focusField(missing)
       }
@@ -125,7 +125,7 @@ export const ConnectionPage = ({
 
   const values = useSelector(form.store, (state) => state.values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
-  const { canSend, reason, testStatus } = draftOf(values)
+  const { canSend, reason, testStatus } = getDraft(values)
 
   const applyFix = (fix: ConnectionPatch, source: FixSource) => {
     posthog.capture('connection_fix_applied', {
@@ -239,7 +239,7 @@ export const ConnectionPage = ({
                   <TestAlert
                     key={testError.message}
                     error={testError}
-                    parts={partsOf(values)}
+                    parts={getParts(values)}
                     onAsk={focusPage}
                     onFix={applyFix}
                     onFocus={(field) => {

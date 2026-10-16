@@ -50,7 +50,7 @@ const runs = new Map<string, AbortController>()
 const watchedTabs = new Set<string>()
 const runKey = ({ resourceId, tabId }: RunnerTab) => `${resourceId}\n${tabId}`
 
-const messageOf = (error: unknown) =>
+const getMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error)
 
 const watchTab = (tab: RunnerTab) => {
@@ -74,7 +74,7 @@ const watchTab = (tab: RunnerTab) => {
   )
 }
 
-const resultOf = (
+const getResult = (
   statement: RunnerStatement,
   patch: Partial<RunnerResult> = {}
 ): RunnerResult => ({
@@ -102,13 +102,13 @@ const runOne = async (
     })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
-      resultOf(statement, { duration, set })
+      getResult(statement, { duration, set })
     )
   } catch (error) {
     return [
-      resultOf(statement, {
+      getResult(statement, {
         duration: performance.now() - startedAt,
-        error: signal.aborted ? null : messageOf(error),
+        error: signal.aborted ? null : getMessage(error),
         stopped: signal.aborted,
       }),
     ]
@@ -135,7 +135,7 @@ export const runStatements = async ({
   const current = () => runs.get(key) === controller
   const run: RunnerRun = { id: crypto.randomUUID(), results: [], running: true }
   const slots = statements.map((statement) => [
-    resultOf(statement, { pending: true }),
+    getResult(statement, { pending: true }),
   ])
   const publish = () => {
     run.results = slots.flat()
@@ -152,7 +152,7 @@ export const runStatements = async ({
   }))
   if (paramsResult.isErr() && first) {
     slots.splice(0, slots.length, [
-      resultOf(first, { error: messageOf(paramsResult.error.cause) }),
+      getResult(first, { error: getMessage(paramsResult.error.cause) }),
     ])
   }
   const params = paramsResult.unwrapOr(null)
@@ -161,7 +161,7 @@ export const runStatements = async ({
   if (params) {
     for (const [index, statement] of statements.entries()) {
       if (signal.aborted || failedAt !== undefined) {
-        slots[index] = [resultOf(statement, { stopped: true })]
+        slots[index] = [getResult(statement, { stopped: true })]
         continue
       }
       const ranAt = Date.now()

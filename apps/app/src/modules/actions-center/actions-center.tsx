@@ -13,7 +13,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Command,
   CommandDialog,
@@ -326,7 +326,7 @@ export const ActionsCenter = () => {
                     to: '/connection/$resourceId/$tabId',
                   })
               ),
-              ...schemaGroups(dialectOf(current.connection.type)).flatMap(
+              ...schemaGroups(getDialect(current.connection.type)).flatMap(
                 (group) =>
                   group.items.map((item) =>
                     actionEntry(

@@ -5,10 +5,10 @@ import {
   readConnectionString,
 } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
-import { sshTunnelOf } from './ssh/params'
+import { getSshTunnel } from './ssh/params'
 
 export const isSshConnectionString = (connectionString: string): boolean =>
-  sshTunnelOf(readConnectionString(connectionString).searchParams) !== null
+  getSshTunnel(readConnectionString(connectionString).searchParams) !== null
 
 export const describeConnectionString = (connectionString: string) => {
   const { database, password, searchParams } =
@@ -18,7 +18,7 @@ export const describeConnectionString = (connectionString: string) => {
     displayUrl: new SafeURL(connectionString).host,
     isPasswordPopulated: !!password,
     missingSecrets: connectionSecrets.missing(searchParams),
-    usesSsh: sshTunnelOf(searchParams) !== null,
+    usesSsh: getSshTunnel(searchParams) !== null,
   }
 }
 

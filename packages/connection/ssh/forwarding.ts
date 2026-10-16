@@ -6,7 +6,7 @@ export interface Forwarding {
   socket: () => ReturnType<typeof tunnelSocket>
 }
 
-let forwardingOf = (connectionString: string): Promise<Forwarding | null> => {
+let getForwarding = (connectionString: string): Promise<Forwarding | null> => {
   if (isSshConnectionString(connectionString)) {
     throw new Error(SSH_DESKTOP_ONLY)
   }
@@ -18,8 +18,8 @@ let forwardingOf = (connectionString: string): Promise<Forwarding | null> => {
  * Only the desktop main process plugs tunnels in, so the CLI and proxies, which bundle the dialects, never load ssh2.
  */
 export const sshForwarding = {
-  of: (connectionString: string) => forwardingOf(connectionString),
-  use: (open: typeof forwardingOf) => {
-    forwardingOf = open
+  of: (connectionString: string) => getForwarding(connectionString),
+  use: (open: typeof getForwarding) => {
+    getForwarding = open
   },
 }

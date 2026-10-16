@@ -1,7 +1,7 @@
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { alterPolicyQuery } from '~/core/queries/policies/alter'
 import { createPolicyQuery } from '~/core/queries/policies/create'
 import type { policyType } from '~/core/queries/policies/list'
@@ -56,7 +56,7 @@ export const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
   }
 }
 
-export const draftOf = (
+export const getDraft = (
   item: PolicyItem | null,
   pageSchema: string,
   dialect: SqlDialect
@@ -64,7 +64,7 @@ export const draftOf = (
   check: item?.check ?? '',
   command: item
     ? asCommand(item.command)
-    : (capabilitiesOf(dialect).policies.commands[0] ?? 'ALL'),
+    : (getCapabilities(dialect).policies.commands[0] ?? 'ALL'),
   kind: item?.type ?? 'PERMISSIVE',
   name: item?.name ?? '',
   roles: item?.roles.join(', ') ?? '',
@@ -73,7 +73,7 @@ export const draftOf = (
   using: item?.using ?? '',
 })
 
-export const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
+export const getChanges = (item: PolicyItem, draft: PolicyDraft) => {
   const check = draft.check.trim()
   const using = draft.using.trim()
   const roles = parseRoles(draft.roles)
@@ -96,7 +96,7 @@ export const replaces = (
   draft: PolicyDraft,
   dialect: SqlDialect
 ) =>
-  !capabilitiesOf(dialect).policies.alterInPlace &&
+  !getCapabilities(dialect).policies.alterInPlace &&
   (draft.command !== asCommand(item.command) ||
     draft.kind !== item.type ||
     clearsExpression(item, draft))
@@ -140,7 +140,7 @@ export const savePolicy = async ({
     return
   }
 
-  const changes = changesOf(item, draft)
+  const changes = getChanges(item, draft)
 
   if (
     changes.roles ||

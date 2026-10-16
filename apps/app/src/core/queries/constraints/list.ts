@@ -9,7 +9,7 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { clickhouseConstraintsOf } from './shape'
+import { getClickhouseConstraints } from './shape'
 
 const constraintType = type(
   '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
@@ -101,7 +101,7 @@ export const resourceConstraintsQuery = createQuery({
           })
         ),
         ...tables.flatMap((table) =>
-          clickhouseConstraintsOf(table.create_table_query).map(
+          getClickhouseConstraints(table.create_table_query).map(
             (constraint) => ({
               ...noReference,
               column: null,

@@ -32,8 +32,11 @@ export const EMPTY_CATALOG: SqlCatalog = {
   schemas: [],
 }
 
-export const rangeOf = (model: editor.ITextModel, start: number, end: number) =>
-  Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
+export const getRange = (
+  model: editor.ITextModel,
+  start: number,
+  end: number
+) => Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
 
 export const tablesIn = (text: string, dialect: SqlDialect) =>
   splitStatements(text, dialects[dialect]).flatMap(

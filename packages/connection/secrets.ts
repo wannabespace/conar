@@ -14,7 +14,7 @@ const SECRET_PARAMS = [
 
 export type SecretParam = (typeof SECRET_PARAMS)[number]
 
-const urlOf = (connectionString: string) => {
+const getUrl = (connectionString: string) => {
   const url = new SafeURL(connectionString)
   url.search = lowercaseKeys(url.searchParams).toString()
   return url
@@ -31,8 +31,8 @@ export const connectionSecrets = {
     connectionString: string,
     { isPasswordExists, local }: { isPasswordExists: boolean; local: string }
   ) => {
-    const url = urlOf(connectionString)
-    const localUrl = urlOf(local)
+    const url = getUrl(connectionString)
+    const localUrl = getUrl(local)
     if (isPasswordExists) {
       url.password ||= localUrl.password
     }
@@ -45,14 +45,14 @@ export const connectionSecrets = {
     return url.toString()
   },
   stored: (connectionString: string) => {
-    const url = urlOf(connectionString)
+    const url = getUrl(connectionString)
     return (
       !!url.password ||
       SECRET_PARAMS.some((param) => url.searchParams.get(param))
     )
   },
   strip: (connectionString: string) => {
-    const url = urlOf(connectionString)
+    const url = getUrl(connectionString)
     url.password = ''
     for (const param of SECRET_PARAMS) {
       if (url.searchParams.has(param)) {

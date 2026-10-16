@@ -1,7 +1,7 @@
 import { connectionParts } from './connection-parts'
 import type { DiagnosisContext } from './diagnose'
 import type { HostKind } from './hosts'
-import { hostHintOf, hostKindOf } from './hosts'
+import { getHostHint, getHostKind } from './hosts'
 
 const HOST_KIND_LABELS: Record<HostKind, string> = {
   'ipv6-only': 'direct host (IPv6-only)',
@@ -33,7 +33,7 @@ const SETTING_KEYS = new Set([
 const NON_IDENTIFYING_VALUE =
   /^(?:true|false|yes|no|on|off|\d+(?:\.\d+)?|disable|allow|prefer|require|verify|verify-ca|verify-full|no-verify|strict|optional|mandatory|disabled|preferred|required|verify_ca|verify_identity|tlsv1(?:\.[0-3])?)$/iu
 
-export const diagnosisRequestOf = ({
+export const getDiagnosisRequest = ({
   message,
   parts,
 }: Pick<DiagnosisContext, 'message' | 'parts'>) => {
@@ -58,8 +58,8 @@ export const diagnosisRequestOf = ({
     // IPv4 goes first: an IPv4-mapped IPv6 address would otherwise keep its IPv4 tail.
     error: error.replaceAll(ANY_IPV4, '<ip>').replaceAll(ANY_IPV6, '<ip>'),
     hostKind: [
-      hostHintOf(parts.host)?.label,
-      HOST_KIND_LABELS[hostKindOf(parts.host)],
+      getHostHint(parts.host)?.label,
+      HOST_KIND_LABELS[getHostKind(parts.host)],
     ]
       .filter(Boolean)
       .join(' '),

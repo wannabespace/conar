@@ -1,7 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { DEFAULT_PORTS } from '../connection-parts'
-import { hostHintOf } from '../hosts'
+import { getHostHint } from '../hosts'
 import type { GuessFix, GuessedParts } from './types'
 
 const PASSWORD_PLACEHOLDER =
@@ -18,12 +18,12 @@ export const fixParts = ({ options, ...found }: GuessedParts) => {
     params.size > 0 ? { ...found, options: params.toString() } : found
   const fixes: GuessFix[] = prismaParams.length > 0 ? ['prisma-options'] : []
   const host = parts.host ?? ''
-  const hint = hostHintOf(host)
+  const hint = getHostHint(host)
   if (parts.port && hint?.transactionPoolerPort === parts.port) {
     parts.port = String(DEFAULT_PORTS[ConnectionType.Postgres])
     fixes.push('pooler-port')
   }
-  const directHost = hint?.directHostOf?.(host) ?? host
+  const directHost = hint?.getDirectHost?.(host) ?? host
   if (directHost !== host) {
     parts.host = directHost
     fixes.push('neon-direct')

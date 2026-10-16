@@ -1,7 +1,7 @@
 import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { camelCase } from 'change-case'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import type { TypedColumn } from './types'
@@ -76,7 +76,7 @@ export const isSingleColumnConstraint = (
   columns.filter((c) => c[constraint] === column[constraint]).length === 1
 
 export const explicitSchema = (schema: string, dialect: SqlDialect) => {
-  const { defaultSchema } = capabilitiesOf(dialect)
+  const { defaultSchema } = getCapabilities(dialect)
   return defaultSchema && schema !== defaultSchema ? schema : null
 }
 

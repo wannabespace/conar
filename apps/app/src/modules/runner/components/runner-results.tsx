@@ -7,7 +7,7 @@ import {
   TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -103,7 +103,7 @@ const ResultError = ({
   )
 }
 
-const gridOf = (set: ResultSet | null, needle: string) => {
+const getGrid = (set: ResultSet | null, needle: string) => {
   const columns = uniqueColumns(set?.columns ?? [])
   const records = (set?.rows ?? []).map((row) =>
     Object.fromEntries(columns.map((column, index) => [column, row[index]]))
@@ -171,7 +171,7 @@ const ResultBody = ({
     <RunnerResultsTable
       columns={columns}
       rows={rows}
-      dialect={dialectOf(connection.type)}
+      dialect={getDialect(connection.type)}
     />
   )
 }
@@ -212,7 +212,7 @@ export const RunnerResults = () => {
   const active = String(activeIndex)
   const result = results[activeIndex]
   const needle = useDeferredValue(search).trim().toLowerCase()
-  const { columns, rows } = gridOf(result?.set ?? null, needle)
+  const { columns, rows } = getGrid(result?.set ?? null, needle)
 
   if (!result) {
     return (

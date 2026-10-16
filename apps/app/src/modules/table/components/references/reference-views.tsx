@@ -5,7 +5,7 @@ import {
   Key01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { Button } from '@tamery/ui/components/button'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
@@ -44,7 +44,7 @@ export const Display = ({
       data-mask
       className={cn(!isPresent(value) && 'text-muted-foreground/60')}
     >
-      {createTransformer(dialectOf(connection.type), column).toDisplay(
+      {createTransformer(getDialect(connection.type), column).toDisplay(
         value,
         VALUE_CHARS
       )}

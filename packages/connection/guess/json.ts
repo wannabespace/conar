@@ -16,7 +16,7 @@ const NON_WORD = /[^A-Z\d]+/gu
 const isObject = (value: unknown): value is JsonObject =>
   typeof value === 'object' && value !== null
 
-const namesOf = (key: string) => [
+const getNames = (key: string) => [
   key.toUpperCase(),
   key
     .replaceAll(CAMEL_HUMP, '$<lower>_$<upper>')
@@ -30,10 +30,10 @@ const variablesOfObject = (
   inherited: Record<string, string>
 ) => {
   const variables = { ...inherited }
-  const prefix = parentKey ? `${namesOf(parentKey)[1]}_` : ''
+  const prefix = parentKey ? `${getNames(parentKey)[1]}_` : ''
   for (const [key, value] of Object.entries(object)) {
     if (typeof value === 'string' || typeof value === 'number') {
-      for (const name of namesOf(key)) {
+      for (const name of getNames(key)) {
         variables[name] = String(value)
         variables[prefix + name] ??= String(value)
       }

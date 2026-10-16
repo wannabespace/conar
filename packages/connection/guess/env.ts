@@ -1,7 +1,10 @@
-import { ConnectionType, dialectOf } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionType,
+  getDialect,
+} from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, connectionTypeOf } from '../connection-parts'
+import { DEFAULT_PORTS, getConnectionType } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -96,7 +99,7 @@ export const partsOfVariables = (
       group.type ??
       TYPE_SUFFIXES.values()
         .map((suffix) =>
-          connectionTypeOf(
+          getConnectionType(
             variables[group.prefix + suffix]?.split('.').at(-1) ?? ''
           )
         )
@@ -151,7 +154,7 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
     return null
   }
   const composeTarget =
-    parts.type && String(DEFAULT_PORTS[dialectOf(parts.type)])
+    parts.type && String(DEFAULT_PORTS[getDialect(parts.type)])
   const published =
     !parts.port &&
     composeTarget &&

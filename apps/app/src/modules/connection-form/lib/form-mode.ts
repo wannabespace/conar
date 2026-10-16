@@ -37,7 +37,7 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
   },
 }
 
-export const editModeOf = (
+export const getEditMode = (
   connection: Pick<Connection, 'isPasswordExists' | 'name'>,
   stored: ConnectionString | undefined,
   scope: Extract<FormMode, { kind: 'edit' }>['scope']
@@ -50,7 +50,7 @@ export const editModeOf = (
   scope,
 })
 
-export const formPolicyOf = (mode: FormMode) => {
+export const getFormPolicy = (mode: FormMode) => {
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
   const missing: Secret[] =
     mode.kind === 'edit' && scope === 'credentials'

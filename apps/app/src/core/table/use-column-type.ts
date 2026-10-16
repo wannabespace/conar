@@ -3,7 +3,7 @@ import type { EditableListItem } from '@tamery/ui/components/custom/editable-lis
 import { useState } from 'react'
 
 import type { ArrayType } from '~/core/catalog/capabilities'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 const arrayTypes = {
   join: (arrayType: ArrayType | null, array: boolean, element: string) =>
@@ -27,7 +27,7 @@ const arrayTypes = {
 
 export const useColumnType = (dialect: SqlDialect, declared: string) => {
   const { array: arrayType, enum: inlineEnum } =
-    capabilitiesOf(dialect).columnTypes
+    getCapabilities(dialect).columnTypes
   const initial = arrayTypes.split(arrayType, declared)
   const initialValues = inlineEnum?.parse(initial.element)
   const [element, setElement] = useState(

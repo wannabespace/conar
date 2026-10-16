@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { Filter } from '@tamery/shared/filters'
 import { FILTER_GROUPS } from '@tamery/shared/filters'
 import {
@@ -28,7 +28,7 @@ export const FiltersOperatorSelector = ({
       <CommandInput placeholder="Select operator..." />
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
-        {offeredFilters(dialectOf(connection.type)).map(
+        {offeredFilters(getDialect(connection.type)).map(
           ({ group, filters }) => (
             <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
               {filters.map((filter) => (

@@ -7,7 +7,7 @@ import { posthog } from '~/lib/posthog'
 
 import type { Column } from './cell/utils'
 import type { CellPosition, DataGridCell, GridCursor } from './cursor'
-import { rangeOf } from './cursor'
+import { getRange } from './cursor'
 
 // A single cell copies its raw text, whose newlines and quotes would read back as a block; paste matches it to keep one value.
 let copiedCell: string | null = null
@@ -34,9 +34,9 @@ export const gridClipboard = (
     writeAll: (writes: [DataGridCell, string | null][]) => void
   }
 ) => {
-  const { indexOf, store } = cursor
+  const { getIndex, store } = cursor
 
-  const textOf = (cell: DataGridCell) => {
+  const getText = (cell: DataGridCell) => {
     const value = cursor.getValue(cell)
     return value === null || value === undefined
       ? ''
@@ -46,9 +46,9 @@ export const gridClipboard = (
   }
 
   const pasteBlock = (block: string[][], at: CellPosition) => {
-    const range = rangeOf(store.get(), indexOf)
+    const range = getRange(store.get(), getIndex)
     const top = range?.top ?? at.row
-    const left = range?.left ?? indexOf(at.column)
+    const left = range?.left ?? getIndex(at.column)
     const writes: [DataGridCell, string | null][] = []
     for (const [rowOffset, values] of block.entries()) {
       for (const [columnOffset, value] of values.entries()) {
@@ -88,13 +88,13 @@ export const gridClipboard = (
       const [only, ...rest] = cells.flat()
       posthog.capture('cells_copied', { count: rest.length + 1 })
       if (only && rest.length === 0) {
-        copiedCell = textOf(only)
+        copiedCell = getText(only)
         copy(copiedCell, 'Cell value copied')
         return
       }
       copiedCell = null
       copy(
-        tsvFormatRows(cells.map((row) => row.map(textOf))),
+        tsvFormatRows(cells.map((row) => row.map(getText))),
         `${rest.length + 1} cells copied`
       )
     },
@@ -113,7 +113,7 @@ export const gridClipboard = (
       const value = first[0] ?? ''
       if (
         value &&
-        !rangeOf(store.get(), indexOf) &&
+        !getRange(store.get(), getIndex) &&
         cursor.current()?.column.uiType !== 'boolean'
       ) {
         cursor.edit(value)

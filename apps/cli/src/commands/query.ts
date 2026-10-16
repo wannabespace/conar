@@ -10,7 +10,7 @@ import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { consola } from 'consola'
 import ora from 'ora'
 
@@ -167,7 +167,7 @@ export const queryCommand = command({
     }
 
     const connection = pickConnection(connections, opts.connection)
-    const executor = queryMap[dialectOf(connection.type)]
+    const executor = queryMap[getDialect(connection.type)]
 
     const querySpinner = ora(
       `Executing query on ${connection.name} (${connection.type})...`

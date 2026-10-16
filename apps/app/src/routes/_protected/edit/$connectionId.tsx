@@ -7,8 +7,8 @@ import { Result } from 'better-result'
 import { toast } from 'sonner'
 
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
-import { formValuesOf } from '~/modules/connection-form/lib/connection-form'
-import { editModeOf } from '~/modules/connection-form/lib/form-mode'
+import { getFormValues } from '~/modules/connection-form/lib/connection-form'
+import { getEditMode } from '~/modules/connection-form/lib/form-mode'
 
 import { useUpdateConnection } from './-lib/use-update-connection'
 
@@ -52,8 +52,8 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     }
     return {
       connection,
-      defaultValues: formValuesOf(connection, connectionString),
-      mode: editModeOf(
+      defaultValues: getFormValues(connection, connectionString),
+      mode: getEditMode(
         connection,
         collections.connectionStringsCollection.get(connection.id),
         'all'

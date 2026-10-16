@@ -2,7 +2,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Result } from 'better-result'
 
 import { CLICKHOUSE_HTTP_PORT_OF_NATIVE } from '../connection-parts'
-import { hostHintOf, TYPE_OF_PORT } from '../hosts'
+import { getHostHint, TYPE_OF_PORT } from '../hosts'
 import { guessAdo } from './ado'
 import { guessCli } from './cli'
 import { guessEnv } from './env'
@@ -60,7 +60,7 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
       credentialsBeside(database, rest)
     )
     const parts = throughForwards(pasted, forwards)
-    const hint = hostHintOf(parts.host ?? '')
+    const hint = getHostHint(parts.host ?? '')
     const port = parts.port || hint?.port || ''
     const type = parts.type ?? TYPE_OF_PORT[port] ?? hint?.type
     const httpPort =

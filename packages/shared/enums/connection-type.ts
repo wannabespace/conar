@@ -22,7 +22,7 @@ const DIALECT_OF_TYPE: Record<ConnectionType, SqlDialect> = {
   [ConnectionType.Postgres]: SqlDialect.Postgres,
 }
 
-export const dialectOf = (type: ConnectionType) => DIALECT_OF_TYPE[type]
+export const getDialect = (type: ConnectionType) => DIALECT_OF_TYPE[type]
 
 export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'ClickHouse',

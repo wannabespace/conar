@@ -10,12 +10,12 @@ const LINKED_OPEN_DELAY = 80
 export const useInspector = <T>({
   items,
   keepSchema,
-  keyOf,
+  getKey,
   loading,
 }: {
   items: T[]
   keepSchema: (schema: string | undefined) => void
-  keyOf: (item: T) => string
+  getKey: (item: T) => string
   loading: boolean
 }) => {
   const navigate = useNavigate()
@@ -29,7 +29,7 @@ export const useInspector = <T>({
     session: number
   }>({ item: null, open: false, session: 0 })
   const linkedItem = linkedKey
-    ? items.find((item) => keyOf(item) === linkedKey)
+    ? items.find((item) => getKey(item) === linkedKey)
     : undefined
   const open = (item: T | null, preset?: string) =>
     setInspected((current) => ({
@@ -71,7 +71,7 @@ export const useInspector = <T>({
   const snapshot = inspected.item
   const liveItem =
     snapshot &&
-    (items.find((item) => keyOf(item) === keyOf(snapshot)) ?? snapshot)
+    (items.find((item) => getKey(item) === getKey(snapshot)) ?? snapshot)
 
   return {
     close: () => setInspected((current) => ({ ...current, open: false })),

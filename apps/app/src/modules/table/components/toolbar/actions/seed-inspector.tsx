@@ -48,7 +48,7 @@ const GeneratorPicker = ({
   const [search, setSearch] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const currentRef = useRef<HTMLDivElement>(null)
-  const labelOf = (id: GeneratorId) => generators[id]?.label ?? id
+  const getLabel = (id: GeneratorId) => generators[id]?.label ?? id
 
   useEffect(() => {
     const list = listRef.current
@@ -123,11 +123,11 @@ const GeneratorPicker = ({
                     key={id}
                     ref={id === generator.generatorId ? currentRef : undefined}
                     value={id}
-                    keywords={[labelOf(id)]}
+                    keywords={[getLabel(id)]}
                     data-checked={id === generator.generatorId}
                     onSelect={() => onChange(id)}
                   >
-                    <HighlightText text={labelOf(id)} match={search} />
+                    <HighlightText text={getLabel(id)} match={search} />
                   </CommandItem>
                 ))}
               </CommandGroup>

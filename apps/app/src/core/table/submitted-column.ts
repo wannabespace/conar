@@ -42,7 +42,7 @@ export const normalized = (
   type,
 })
 
-export const errorsOf = (
+export const getErrors = (
   { column, table }: { column: EditableColumn | null; table: EditableTable },
   next: NewColumn,
   enumValues: string[] | null,

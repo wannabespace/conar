@@ -1,5 +1,5 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
@@ -54,7 +54,7 @@ export const Table = ({
   table: string
 }) => {
   const { connection, connectionResource } = useRouteContext()
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -145,7 +145,7 @@ export const Table = ({
     scrollRef.current?.scrollTo({ behavior: 'smooth', top: 0 })
   }, [activeFilters, orderBy])
 
-  const { actionsOf, dialogs } = useColumnActions({
+  const { getActions, dialogs } = useColumnActions({
     dialect,
     editable: !!isBaseTable,
     schema,
@@ -184,7 +184,7 @@ export const Table = ({
         canEdit={staged.canEdit}
         dialect={dialect}
         focusKey={tableTabId(schema, table)}
-        getValue={staged.valueOf}
+        getValue={staged.getValue}
         onEdit={isEditable && !saving ? staged.edit : undefined}
         onExtendRows={
           isEditable
@@ -214,7 +214,7 @@ export const Table = ({
             : undefined
         }
         onPreview={(cell, element) => {
-          const hop = cellHop(cell.column, staged.valueOf(cell))
+          const hop = cellHop(cell.column, staged.getValue(cell))
           if (hop) {
             openPeek(element, hop)
           }
@@ -230,9 +230,9 @@ export const Table = ({
           />
         )}
         renderLabel={(column) => (
-          <TableFieldLabel column={column} {...actionsOf(column)} />
+          <TableFieldLabel column={column} {...getActions(column)} />
         )}
-        sizeOf={(column) => columnSizes[column.id] ?? defaultSize(column)}
+        getSize={(column) => columnSizes[column.id] ?? defaultSize(column)}
         cursorRef={tableGridRef}
         layout={view}
         pinned={pinned}
@@ -248,7 +248,7 @@ export const Table = ({
         }}
         menuItems={(cell, element) =>
           tableCellMenu({
-            actions: actionsOf(cell.column),
+            actions: getActions(cell.column),
             canInsert,
             cell,
             element,
@@ -264,7 +264,7 @@ export const Table = ({
           <TableHeaderCell
             column={column}
             header={header}
-            {...actionsOf(column)}
+            {...getActions(column)}
           />
         )}
         leading={

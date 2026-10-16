@@ -7,7 +7,7 @@ import { definitionsSectionType } from '~/core/catalog/sections'
 import { definitionsTabId } from '~/core/tabs/ids'
 import type { SchemaItem, TabKind } from '~/core/tabs/types'
 
-import { sectionMetaOf } from '../section-meta'
+import { getSectionMeta } from '../section-meta'
 
 export interface DefinitionsParams {
   section: DefinitionsSection
@@ -32,7 +32,7 @@ export const definitionsTab: TabKind<DefinitionsParams> = {
 export const definitionsSchemaItem = (
   section: DefinitionsSection
 ): SchemaItem => {
-  const { icon, title } = sectionMetaOf(section)
+  const { icon, title } = getSectionMeta(section)
 
   return {
     available: (dialect) => sectionAvailable(section, dialect),

@@ -7,7 +7,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { createTriggerQuery } from '~/core/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/core/queries/triggers/definition'
@@ -38,10 +38,10 @@ import {
 } from '../../components/inspector'
 import type { TriggerDraft, TriggerItem } from './trigger-draft'
 import {
-  draftOf,
+  getDraft,
   formEditable,
   sentenceCase,
-  shapeOf,
+  getShape,
   triggerSchemas,
 } from './trigger-draft'
 import { useToggle } from './use-toggle'
@@ -50,7 +50,7 @@ export const TriggerInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
@@ -58,7 +58,7 @@ export const TriggerInspector = ({
   selectedSchema,
   type: dialect,
 }: SectionInspectorProps<TriggerItem>) => {
-  const options = capabilitiesOf(dialect).triggers
+  const options = getCapabilities(dialect).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
@@ -74,12 +74,12 @@ export const TriggerInspector = ({
               mode: item.enabledMode,
               name: item.name,
               schema: item.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
               table: item.table,
             })
           : createTriggerQuery({
               schema: draft.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
               table: draft.table,
             })
       ),
@@ -93,7 +93,7 @@ export const TriggerInspector = ({
   })
   const schema = triggerSchemas[options.body ? 'body' : 'function']
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', dialect),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       const allowed = triggerOrientationsFor(value, options.orientations)
 
@@ -118,16 +118,16 @@ export const TriggerInspector = ({
     }
 
     if (timing !== 'INSTEAD OF') {
-      return relationNamesOf(draft.schema, 'table')
+      return getRelationNames(draft.schema, 'table')
     }
 
     return options.insteadOfTargets.flatMap((target) =>
-      relationNamesOf(draft.schema, target)
+      getRelationNames(draft.schema, target)
     )
   }
   const targets = targetsFor(draft.timing)
-  const saved = item && shapeOf(draftOf(item, draft.schema, dialect))
-  const changed = !saved || !sameShape(shapeOf(draft), saved)
+  const saved = item && getShape(getDraft(item, draft.schema, dialect))
+  const changed = !saved || !sameShape(getShape(draft), saved)
 
   return (
     <Inspector
@@ -235,7 +235,7 @@ export const TriggerInspector = ({
               <SelectField
                 label="Timing"
                 disabled={readOnly}
-                labelOf={sentenceCase}
+                getLabel={sentenceCase}
                 options={options.timings}
                 placeholder="Timing"
                 onChanged={(timing: TriggerTiming) =>
@@ -255,7 +255,7 @@ export const TriggerInspector = ({
                 <SelectField
                   label="For each"
                   disabled={readOnly}
-                  labelOf={sentenceCase}
+                  getLabel={sentenceCase}
                   options={orientations}
                   placeholder="For each"
                 />

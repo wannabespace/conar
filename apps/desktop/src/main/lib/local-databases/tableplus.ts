@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
-import { connectionTypeOf } from '@tamery/connection/connection-parts'
+import { getConnectionType } from '@tamery/connection/connection-parts'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
 import { type } from 'arktype'
 
@@ -63,7 +63,7 @@ export const tablePlus: Finder = {
               user: connection.ServerUser ?? '',
             }
           : null,
-        type: connectionTypeOf(connection.Driver),
+        type: getConnectionType(connection.Driver),
         user: connection.DatabaseUser,
       },
       unlock: () =>

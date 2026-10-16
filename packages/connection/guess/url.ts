@@ -4,10 +4,10 @@ import { omit } from '@tamery/shared/utils'
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
   connectionParts,
-  connectionTypeOf,
+  getConnectionType,
   HTTPS_PORT,
 } from '../connection-parts'
-import { hostHintOf } from '../hosts'
+import { getHostHint } from '../hosts'
 import { adoPairs, adoParts } from './ado'
 import type { DatabaseGuess } from './types'
 
@@ -69,7 +69,7 @@ const guessOfUrl = ({ type, url: candidate }: FoundUrl): DatabaseGuess => {
 
 const urlsIn = (text: string): FoundUrl[] =>
   [...text.matchAll(URL_PATTERN)].flatMap(({ 0: match, groups }) => {
-    const type = connectionTypeOf(groups?.scheme ?? '')
+    const type = getConnectionType(groups?.scheme ?? '')
     return type ? [{ type, url: match.replace(TRAILING_PUNCTUATION, '') }] : []
   })
 
@@ -104,7 +104,7 @@ export const guessWebUrl = (
     return (
       !MULTI_SEGMENT_PATH.test(pathname ?? '') &&
       (Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
-        hostHintOf(hostname ?? '')?.type === ConnectionType.ClickHouse ||
+        getHostHint(hostname ?? '')?.type === ConnectionType.ClickHouse ||
         CLICKHOUSE_NAME.test(context.replace(url, '')))
     )
   })

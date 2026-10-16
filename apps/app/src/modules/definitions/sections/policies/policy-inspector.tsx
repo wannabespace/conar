@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -23,9 +23,9 @@ import type {
 import { Inspector, InspectorSection } from '../../components/inspector'
 import type { PolicyDraft, PolicyItem } from './policy-draft'
 import {
-  changesOf,
+  getChanges,
   clearsExpression,
-  draftOf,
+  getDraft,
   expressionsFor,
   kindLabels,
   kinds,
@@ -58,7 +58,7 @@ export const PolicyInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
@@ -86,7 +86,7 @@ export const PolicyInspector = ({
     subject: `row level security on "${item?.table}"`,
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', dialect),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
@@ -98,7 +98,7 @@ export const PolicyInspector = ({
 
   const readOnly = item ? !can.edit : !can.create
   const { policies: options, rowLevelSecurity: rlsTables } =
-    capabilitiesOf(dialect)
+    getCapabilities(dialect)
   const expressions = expressionsFor(draft.command)
   const checks = options.commands.some(
     (command) => expressionsFor(command).check
@@ -107,7 +107,7 @@ export const PolicyInspector = ({
   const changed =
     !item ||
     replacing ||
-    Object.values(changesOf(item, draft)).some((change) => change !== null)
+    Object.values(getChanges(item, draft)).some((change) => change !== null)
 
   return (
     <Inspector
@@ -166,7 +166,7 @@ export const PolicyInspector = ({
               }
               disabled={readOnly || !!item}
               options={
-                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+                item ? [item.table] : getRelationNames(draft.schema, 'table')
               }
               placeholder="Choose a table"
             />
@@ -194,7 +194,7 @@ export const PolicyInspector = ({
                 label="Type"
                 disabled={readOnly}
                 options={kinds}
-                labelOf={(value) => kindLabels[value]}
+                getLabel={(value) => kindLabels[value]}
                 placeholder="Type"
               />
             )}

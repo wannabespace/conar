@@ -11,7 +11,7 @@ import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
 import type { editor } from 'monaco-editor'
 
-import { defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
@@ -21,7 +21,7 @@ import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
 
-const sqlCatalogOf = (
+const getSqlCatalog = (
   connectionResource: ConnectionResource,
   dialect: SqlDialect
 ): SqlCatalog => {
@@ -35,7 +35,7 @@ const sqlCatalogOf = (
     return EMPTY_CATALOG
   }
   return {
-    defaultSchema: defaultSchemaOf(dialect, connectionResource.name),
+    defaultSchema: getDefaultSchema(dialect, connectionResource.name),
     enums: (enums ?? []).map(({ metadata, name, values }) => ({
       column: metadata?.column,
       name,
@@ -74,7 +74,7 @@ const sqlSourceFor = (
   connectionResource: ConnectionResource,
   dialect: SqlDialect
 ): SqlSource => {
-  const catalog = () => sqlCatalogOf(connectionResource, dialect)
+  const catalog = () => getSqlCatalog(connectionResource, dialect)
   const tablesOptions = resourceTablesAndSchemasQueryOptions({
     connectionResource,
   })

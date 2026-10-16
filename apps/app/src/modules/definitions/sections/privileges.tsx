@@ -45,7 +45,7 @@ const PrivilegeInspector = ({
   item,
   onOpenChange,
   queryKey,
-  relationNamesOf,
+  getRelationNames,
   run,
   schemas,
   selectedSchema,
@@ -131,11 +131,11 @@ const PrivilegeInspector = ({
             <SelectField
               label="Table"
               disabled={readOnly}
-              labelOf={tableLabel}
+              getLabel={tableLabel}
               options={
                 item
                   ? [item.table]
-                  : [ALL_TABLES, ...relationNamesOf(draft.schema, 'table')]
+                  : [ALL_TABLES, ...getRelationNames(draft.schema, 'table')]
               }
               placeholder="Choose a table"
             />
@@ -164,8 +164,8 @@ const columns: DefinitionsColumn<PrivilegeItem>[] = [
     width: '4/12',
   }),
   labelColumn({
+    getLabel: (item: PrivilegeItem) => item.privilege,
     header: 'Privilege',
-    labelOf: (item: PrivilegeItem) => item.privilege,
     width: '3/12',
   }),
   textColumn({
@@ -174,8 +174,8 @@ const columns: DefinitionsColumn<PrivilegeItem>[] = [
   }),
   labelColumn({
     align: 'end',
+    getLabel: (item: PrivilegeItem) => (item.grantable ? 'Yes' : 'No'),
     header: 'Can grant',
-    labelOf: (item: PrivilegeItem) => (item.grantable ? 'Yes' : 'No'),
     width: '2/12',
   }),
 ]
@@ -202,7 +202,7 @@ export const Privileges = () => {
       dropItem={(item) => run(revokePrivilegeQuery(item))}
       Inspector={PrivilegeInspector}
       items={privileges.filter((item) => item.schema === selectedSchema)}
-      keyOf={privilegeKey}
+      getKey={privilegeKey}
       loading={isPending}
       match={(item) =>
         privilegeFilter.matches(item.privilege) &&

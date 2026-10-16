@@ -48,7 +48,7 @@ export const tableCellMenu = ({
 }): CellMenuExtra => {
   const { column } = cell
   const entry = staged.rowAt(cell.rowIndex)
-  const value = staged.valueOf(cell)
+  const value = staged.getValue(cell)
   // Filters match saved rows, so Filter by Value takes the stored value, never a pending draft.
   const storedValue = cell.row[column.id]
   const hop = cellHop(column, value)

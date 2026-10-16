@@ -10,7 +10,7 @@ import { Badge } from '@tamery/ui/components/badge'
 import { useQuery } from '@tanstack/react-query'
 
 import { Link } from '~/components/link'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { definitionKey } from '~/core/catalog/definition-keys'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { dropTriggerQuery } from '~/core/queries/triggers/drop'
@@ -40,14 +40,14 @@ const columns: DefinitionsColumn<TriggerItem>[] = [
     width: '2/12',
   }),
   labelColumn({
+    getLabel: (item: TriggerItem) => sentenceCase(item.timing),
     header: 'Timing',
-    labelOf: (item: TriggerItem) => sentenceCase(item.timing),
     width: '2/12',
   }),
   labelColumn({
-    header: 'Event',
-    labelOf: (item: TriggerItem) =>
+    getLabel: (item: TriggerItem) =>
       item.event.split(' OR ').map(sentenceCase).join(', '),
+    header: 'Event',
     width: '2/12',
   }),
 ]
@@ -59,9 +59,9 @@ const functionColumn = textColumn({
 
 export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
-  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+  const { connectionResource, getRelationNames, run, search, selectedSchema } =
     state
-  const options = capabilitiesOf(state.type).triggers
+  const options = getCapabilities(state.type).triggers
   const query = resourceTriggersQueryOptions({ connectionResource })
   const { data: triggers = [], isPending } = useQuery(query)
   const { data: functions = [], isPending: functionsPending } = useQuery({
@@ -89,7 +89,7 @@ export const Triggers = () => {
     matchesSearch(search, item.name, item.table, item.functionName)
   const schema = selectedSchema ?? ''
   const watchable = ['table' as const, ...options.insteadOfTargets].some(
-    (kind) => relationNamesOf(schema, kind).length > 0
+    (kind) => getRelationNames(schema, kind).length > 0
   )
   const createBlocked = (() => {
     if (!watchable) {
@@ -151,7 +151,7 @@ export const Triggers = () => {
       }
       Inspector={TriggerInspector}
       items={inSchema}
-      keyOf={definitionKey.trigger}
+      getKey={definitionKey.trigger}
       loading={isPending}
       match={matches}
       queryKey={query.queryKey}

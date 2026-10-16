@@ -1,12 +1,12 @@
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { tableTypeIcon } from '~/core/catalog/table-type'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
@@ -65,7 +65,7 @@ export const RecentTables = () => {
           <span data-mask className="truncate">
             {table.table}
           </span>
-          {capabilitiesOf(dialectOf(connection.type)).schemas && (
+          {getCapabilities(getDialect(connection.type)).schemas && (
             <span
               data-mask
               className="text-muted-foreground ml-auto pl-4 text-xs"

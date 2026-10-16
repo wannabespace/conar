@@ -38,7 +38,7 @@ const formatCurrency = (amount: number) =>
     style: 'currency',
   }).format(amount)
 
-const statusOf = (
+const getStatus = (
   subscription: NonNullable<ReturnType<typeof useSubscription>>,
   trialEndsLater: boolean
 ) => {
@@ -146,7 +146,7 @@ export const Subscription = () => {
       {subscription && (
         <SettingsGroup title="Billing">
           <SettingsRow
-            title={statusOf(subscription, trialEndsLater)}
+            title={getStatus(subscription, trialEndsLater)}
             description="Change your plan or payment method, or cancel, in the billing portal."
           >
             <Button

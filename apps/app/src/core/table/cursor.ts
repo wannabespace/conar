@@ -37,9 +37,9 @@ export const createCursorStore = () =>
 type SelectionEnds = Pick<CursorState, 'anchor' | 'cursor'>
 
 /** Inclusive bounds by row and column index; `null` for a single cell. */
-export const rangeOf = (
+export const getRange = (
   { anchor, cursor }: SelectionEnds,
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
 ) => {
   if (
     !anchor ||
@@ -48,7 +48,7 @@ export const rangeOf = (
   ) {
     return null
   }
-  const [from, to] = [indexOf(anchor.column), indexOf(cursor.column)]
+  const [from, to] = [getIndex(anchor.column), getIndex(cursor.column)]
   return {
     bottom: Math.max(anchor.row, cursor.row),
     left: Math.min(from, to),
@@ -60,10 +60,10 @@ export const rangeOf = (
 export const inRange = (
   selection: SelectionEnds,
   position: CellPosition,
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
 ) => {
-  const range = rangeOf(selection, indexOf)
-  const column = indexOf(position.column)
+  const range = getRange(selection, getIndex)
+  const column = getIndex(position.column)
   return (
     !!range &&
     position.row >= range.top &&
@@ -101,7 +101,7 @@ export interface GridCursor {
   fill: () => void
   fillDown: () => void
   getValue: (cell: DataGridCell) => unknown
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
   isEditable: (column: Column, rowIndex: number) => boolean
   layout: DataGridLayout
   leave: (down: number, right: number) => void
@@ -135,11 +135,11 @@ export const useCellCursor = (position: CellPosition) => {
         if (peek) {
           return 'peek'
         }
-        return rangeOf({ anchor, cursor: at }, cursor.indexOf)
+        return getRange({ anchor, cursor: at }, cursor.getIndex)
           ? 'range-cursor'
           : 'cursor'
       }
-      return inRange({ anchor, cursor: at }, position, cursor.indexOf)
+      return inRange({ anchor, cursor: at }, position, cursor.getIndex)
         ? 'range'
         : null
     },

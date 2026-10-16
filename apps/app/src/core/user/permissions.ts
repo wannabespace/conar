@@ -1,6 +1,6 @@
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { Permissions } from '@tamery/shared/permissions'
-import { permissionsOf } from '@tamery/shared/permissions'
+import { getPermissions } from '@tamery/shared/permissions'
 import { Result } from 'better-result'
 import { createPermix } from 'permix'
 import { usePermix } from 'permix/react'
@@ -58,7 +58,7 @@ export const loadPermissions = async () => {
       )
 
   permix.setup(
-    permissionsOf({
+    getPermissions({
       subscription:
         subscriptions?.unwrapOr(null)?.find(isActiveSubscription) ?? null,
       user: user ?? {},
@@ -79,7 +79,7 @@ export const usePermissionsSync = () => {
 
   useEffect(() => {
     if (user && !isLoading) {
-      permix.setup(permissionsOf({ subscription, user }))
+      permix.setup(getPermissions({ subscription, user }))
     }
   }, [user, isLoading, subscription])
 }

@@ -14,7 +14,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { groupInSchema } from '~/core/connection/utils'
 import { createConstraintQuery } from '~/core/queries/constraints/create'
 import { dropConstraintQuery } from '~/core/queries/constraints/drop'
@@ -125,7 +125,7 @@ const groupConstraints = (
     }),
   })
 
-const referenceOf = (item: GroupedConstraint, schema: string | undefined) => {
+const getReference = (item: GroupedConstraint, schema: string | undefined) => {
   const table =
     item.foreignSchema && item.foreignSchema !== schema
       ? `${item.foreignSchema}.${item.foreignTable}`
@@ -151,7 +151,7 @@ const newDraft = (schema: string, kind: ConstraintKind): ConstraintDraft => ({
   table: '',
 })
 
-const draftOf = (item: GroupedConstraint): ConstraintDraft => ({
+const getDraft = (item: GroupedConstraint): ConstraintDraft => ({
   columns: item.columns,
   expression: item.expression ?? '',
   foreignColumns: item.foreignColumns,
@@ -165,21 +165,21 @@ const draftOf = (item: GroupedConstraint): ConstraintDraft => ({
   table: item.table,
 })
 
-const suggestedNameOf = (draft: ConstraintDraft) =>
+const getSuggestedName = (draft: ConstraintDraft) =>
   [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
 
-const finalNameOf = (draft: ConstraintDraft) =>
-  draft.name.trim() || suggestedNameOf(draft)
+const getFinalName = (draft: ConstraintDraft) =>
+  draft.name.trim() || getSuggestedName(draft)
 
-const fixedNameOf = (draft: ConstraintDraft, dialect: SqlDialect) =>
-  capabilitiesOf(dialect).fixedConstraintNames[draft.kind]
+const getFixedName = (draft: ConstraintDraft, dialect: SqlDialect) =>
+  getCapabilities(dialect).fixedConstraintNames[draft.kind]
 
-const changeOf = (
+const getChange = (
   draft: ConstraintDraft,
   item: GroupedConstraint | null,
   dialect: SqlDialect
 ) => {
-  const opened = item && draftOf(item)
+  const opened = item && getDraft(item)
   const reshaped =
     !!opened &&
     (draft.kind !== opened.kind ||
@@ -191,11 +191,12 @@ const changeOf = (
       !sameList(draft.foreignColumns, opened.foreignColumns) ||
       draft.onDelete !== opened.onDelete ||
       draft.onUpdate !== opened.onUpdate)
-  const renameOnly = !!opened && !reshaped && finalNameOf(draft) !== opened.name
+  const renameOnly =
+    !!opened && !reshaped && getFinalName(draft) !== opened.name
 
   return {
     recreates:
-      reshaped || (renameOnly && !capabilitiesOf(dialect).renameConstraints),
+      reshaped || (renameOnly && !getCapabilities(dialect).renameConstraints),
     renameOnly,
     reshaped,
   }
@@ -276,7 +277,7 @@ const ConstraintInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
@@ -284,7 +285,7 @@ const ConstraintInspector = ({
   selectedSchema,
   type: dialect,
 }: SectionInspectorProps<GroupedConstraint>) => {
-  const kinds = capabilitiesOf(dialect).constraintKinds
+  const kinds = getCapabilities(dialect).constraintKinds
   const mutation = useMutation({
     meta: { event: 'constraint_saved' },
     mutationFn: (draft: ConstraintDraft) => {
@@ -295,7 +296,7 @@ const ConstraintInspector = ({
         foreignSchema: draft.foreignSchema,
         foreignTable: draft.foreignTable,
         kind: draft.kind,
-        name: finalNameOf(draft),
+        name: getFinalName(draft),
         onDelete: draft.onDelete,
         onUpdate: draft.onUpdate,
       }
@@ -312,7 +313,7 @@ const ConstraintInspector = ({
       const target = { name: item.name, schema: item.schema, table: item.table }
 
       return run(
-        changeOf(draft, item, dialect).recreates
+        getChange(draft, item, dialect).recreates
           ? recreateConstraintQuery({ ...target, kind: item.type, shape })
           : renameConstraintQuery({ ...target, newName: shape.name })
       )
@@ -320,14 +321,14 @@ const ConstraintInspector = ({
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Constraint "${fixedNameOf(draft, dialect) ?? finalNameOf(draft)}" ${item ? 'saved' : 'created'}`
+        `Constraint "${getFixedName(draft, dialect) ?? getFinalName(draft)}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
   })
   const form = useAppForm({
     defaultValues: item
-      ? draftOf(item)
+      ? getDraft(item)
       : newDraft(selectedSchema ?? '', kinds[0] ?? 'unique'),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
@@ -354,7 +355,7 @@ const ConstraintInspector = ({
 
   const readOnly = item ? !can.edit || !kinds.includes(item.type) : !can.create
   const shapeLocked = readOnly || !!item?.custom
-  const { recreates, renameOnly, reshaped } = changeOf(draft, item, dialect)
+  const { recreates, renameOnly, reshaped } = getChange(draft, item, dialect)
   const singleColumn = draft.columns.length === 1
 
   return (
@@ -397,10 +398,10 @@ const ConstraintInspector = ({
               label="Name"
               autoFocus
               description="Leave it empty to use the suggested name."
-              disabled={readOnly || !!fixedNameOf(draft, dialect)}
+              disabled={readOnly || !!getFixedName(draft, dialect)}
               placeholder={
-                fixedNameOf(draft, dialect) ??
-                (draft.table ? suggestedNameOf(draft) : 'Constraint name')
+                getFixedName(draft, dialect) ??
+                (draft.table ? getSuggestedName(draft) : 'Constraint name')
               }
             />
           )}
@@ -412,7 +413,7 @@ const ConstraintInspector = ({
               description="A primary key identifies a row, unique rejects duplicates, a foreign key points at another table, a check holds every row to a condition."
               disabled={shapeLocked}
               options={kinds}
-              labelOf={(value) => typeLabels[value]}
+              getLabel={(value) => typeLabels[value]}
               placeholder="Type"
             />
           )}
@@ -428,7 +429,7 @@ const ConstraintInspector = ({
               label="Table"
               disabled={readOnly || !!item}
               options={
-                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+                item ? [item.table] : getRelationNames(draft.schema, 'table')
               }
               placeholder="Choose a table"
               onChanged={() => resetFields(form, { columns: [] })}
@@ -489,7 +490,7 @@ const ConstraintInspector = ({
               <SelectField
                 label="Table"
                 disabled={shapeLocked}
-                options={relationNamesOf(draft.foreignSchema, 'table')}
+                options={getRelationNames(draft.foreignSchema, 'table')}
                 placeholder="Choose a table"
                 onChanged={() => resetFields(form, { foreignColumns: [] })}
               />
@@ -533,7 +534,7 @@ const ConstraintInspector = ({
                 <SelectField
                   label="On delete"
                   disabled={shapeLocked}
-                  options={capabilitiesOf(dialect).referentialActions}
+                  options={getCapabilities(dialect).referentialActions}
                   placeholder="Action"
                 />
               )}
@@ -543,7 +544,7 @@ const ConstraintInspector = ({
                 <SelectField
                   label="On update"
                   disabled={shapeLocked}
-                  options={capabilitiesOf(dialect).referentialActions}
+                  options={getCapabilities(dialect).referentialActions}
                   placeholder="Action"
                 />
               )}
@@ -580,7 +581,7 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
         {item.foreignTable && (
           <span className="text-muted-foreground">
             {' → '}
-            <HighlightText text={referenceOf(item, schema)} match={search} />
+            <HighlightText text={getReference(item, schema)} match={search} />
           </span>
         )}
       </span>
@@ -589,15 +590,15 @@ const columns: DefinitionsColumn<GroupedConstraint>[] = [
   },
   labelColumn({
     align: 'end',
+    getLabel: (item: GroupedConstraint) => typeLabels[item.type],
     header: 'Type',
-    labelOf: (item: GroupedConstraint) => typeLabels[item.type],
     width: '2/12',
   }),
 ]
 
 export const Constraints = () => {
   const state = useDefinitionsState({ section: 'constraints' })
-  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+  const { connectionResource, getRelationNames, run, search, selectedSchema } =
     state
   const query = resourceConstraintsQueryOptions({ connectionResource })
   const { data: constraints = [], isPending } = useQuery(query)
@@ -634,17 +635,17 @@ export const Constraints = () => {
     <DefinitionsPage
       columns={columns}
       createBlocked={
-        relationNamesOf(selectedSchema ?? '', 'table').length === 0
+        getRelationNames(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to constrain.'
           : undefined
       }
       canDropItem={(item) =>
-        capabilitiesOf(state.type).constraintKinds.includes(item.type)
+        getCapabilities(state.type).constraintKinds.includes(item.type)
       }
       dropItem={dropItem}
       Inspector={ConstraintInspector}
       items={inSchema}
-      keyOf={constraintKey}
+      getKey={constraintKey}
       loading={isPending}
       match={matches}
       queryKey={structureQueryKey(connectionResource)}

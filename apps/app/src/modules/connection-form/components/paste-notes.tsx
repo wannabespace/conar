@@ -4,7 +4,7 @@ import { useSelector } from '@tanstack/react-form'
 import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
-import { missingOf } from '../lib/connection-form'
+import { getMissing } from '../lib/connection-form'
 import { Footnote } from './footnote'
 
 const FIX_NOTES: Record<GuessFix, string> = {
@@ -28,7 +28,7 @@ export const PasteNotes = ({
   form: ConnectionForm
   passwordWithheldBy?: string
 }) => {
-  const missing = useSelector(form.store, ({ values }) => missingOf(values))
+  const missing = useSelector(form.store, ({ values }) => getMissing(values))
   const withheld =
     passwordWithheldBy && missing.includes('password')
       ? ` (${passwordWithheldBy} keeps it in the Keychain)`

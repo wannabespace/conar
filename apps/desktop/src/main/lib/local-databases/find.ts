@@ -64,7 +64,7 @@ const localDatabase = (
     : []
 }
 
-const databasesOf = async ({ read, source, targets }: Finder) =>
+const getDatabases = async ({ read, source, targets }: Finder) =>
   findEach(await targets(), async (target) => {
     const entries = await read(target)
     return entries.flatMap((entry) => localDatabase(source, entry))
@@ -76,7 +76,7 @@ let found = new Map<string, LocalDatabase>()
 export const localDatabases = {
   find: async () => {
     const unique = new Map<string, LocalDatabase>()
-    for (const database of await findEach(FINDERS, databasesOf)) {
+    for (const database of await findEach(FINDERS, getDatabases)) {
       const first = unique.get(database.connectionString)
       unique.set(
         database.connectionString,

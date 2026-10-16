@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Autocomplete,
   ComboboxCollection,
@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { quoteIdentifier } from '~/core/codegen/utils'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 
@@ -33,12 +33,12 @@ const bareIdentifierRegex = /^[a-z_][a-z0-9_]*$/u
 
 const useColumnTypes = () => {
   const { connection, connectionResource } = useRouteContext()
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
   const { data: enums = [] } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
     throwOnError: false,
   })
-  const defaultSchema = defaultSchemaOf(dialect, connectionResource.name)
+  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const identifier = (name: string) =>
     bareIdentifierRegex.test(name) ? name : quoteIdentifier(name, dialect)
   const namedEnums = enums
@@ -51,7 +51,7 @@ const useColumnTypes = () => {
   const groups: ColumnTypeGroup[] = [
     { items: namedEnums, label: 'Enums' },
     {
-      items: capabilitiesOf(dialect).columnTypes.options,
+      items: getCapabilities(dialect).columnTypes.options,
       label: 'Types',
     },
   ]

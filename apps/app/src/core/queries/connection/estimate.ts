@@ -5,7 +5,7 @@ import type { Type } from 'arktype'
 import { type } from 'arktype'
 import { CompiledQuery } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { createQuery } from '~/core/runtime/query'
 
 import { runInTransaction } from './transaction'
@@ -37,7 +37,7 @@ const ESTIMATED_COMMANDS = new Set([
 export const estimateQuery = (text: string, dialect: SqlDialect) => {
   const [statement, ...rest] = splitStatements(text, dialects[dialect])
   if (
-    !capabilitiesOf(dialect).explain ||
+    !getCapabilities(dialect).explain ||
     rest.length > 0 ||
     !ESTIMATED_COMMANDS.has(statement?.tokens[0]?.text.toUpperCase() ?? '')
   ) {

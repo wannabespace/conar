@@ -5,7 +5,7 @@ import type { IPosition } from 'monaco-editor'
 import { editor, languages } from 'monaco-editor'
 
 import type { TableRef } from './source'
-import { boundSources, EMPTY_CATALOG, rangeOf } from './source'
+import { boundSources, EMPTY_CATALOG, getRange } from './source'
 
 const COMPLETION_KINDS: Record<CompletionKind, languages.CompletionItemKind> = {
   column: languages.CompletionItemKind.Field,
@@ -107,7 +107,7 @@ export const registerCompletion = (id: string, dialect: DialectSpec) =>
       if (loading) {
         void resuggestOnceLoaded(loading, model, position)
       }
-      const range = rangeOf(model, context.replaceStart, context.replaceEnd)
+      const range = getRange(model, context.replaceStart, context.replaceEnd)
       return {
         incomplete: loading !== undefined,
         suggestions: items.map((item) => ({

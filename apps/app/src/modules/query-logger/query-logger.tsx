@@ -7,7 +7,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
@@ -263,7 +263,7 @@ export const QueryLogger = ({
 
   const tabs =
     selected && connection
-      ? buildTabs(selected, dialectOf(connection.type))
+      ? buildTabs(selected, getDialect(connection.type))
       : []
   const activeTab = tabs.find((item) => item.value === tab.value) ?? tabs.at(0)
 

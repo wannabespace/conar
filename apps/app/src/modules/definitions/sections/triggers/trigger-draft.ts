@@ -2,7 +2,7 @@ import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { triggersType } from '~/core/queries/triggers/list'
 import type {
   TriggerEvent,
@@ -33,7 +33,7 @@ export interface TriggerDraft {
   timing: TriggerTiming
 }
 
-const triggerSchemaOf = (usesBody: boolean) =>
+const getTriggerSchema = (usesBody: boolean) =>
   type({
     body: 'string',
     events: type('string[] >= 1').configure({
@@ -63,16 +63,16 @@ const triggerSchemaOf = (usesBody: boolean) =>
   })
 
 export const triggerSchemas = {
-  body: triggerSchemaOf(true),
-  function: triggerSchemaOf(false),
+  body: getTriggerSchema(true),
+  function: getTriggerSchema(false),
 }
 
-export const draftOf = (
+export const getDraft = (
   item: TriggerItem | null,
   pageSchema: string,
   dialect: SqlDialect
 ): TriggerDraft => {
-  const { orientations, timings } = capabilitiesOf(dialect).triggers
+  const { orientations, timings } = getCapabilities(dialect).triggers
 
   return {
     body: item?.body || triggerBodyTemplates[dialect] || '',
@@ -95,7 +95,7 @@ export const draftOf = (
 export const formEditable = (item: TriggerItem, body: boolean) =>
   !item.custom && (!body || !!item.body)
 
-export const shapeOf = (draft: TriggerDraft): TriggerShape => ({
+export const getShape = (draft: TriggerDraft): TriggerShape => ({
   body: draft.body,
   events: draft.events,
   functionName: draft.functionName,

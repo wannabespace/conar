@@ -50,7 +50,7 @@ export const useStagedEdits = ({
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const staged = stagedGrid(newRows, rows, primaryColumns)
 
-  const valueOf = ({ column, row, rowIndex }: DataGridCell) => {
+  const getValue = ({ column, row, rowIndex }: DataGridCell) => {
     const entry = staged.rowAt(rowIndex)
     const draft =
       entry.kind === 'saved'
@@ -96,10 +96,10 @@ export const useStagedEdits = ({
             .filter(
               (column) => !column.primaryKey && !isFilledByDatabase(column)
             )
-            .map((column) => [column.id, valueOf({ ...cell, column })])
+            .map((column) => [column.id, getValue({ ...cell, column })])
         )
       ),
     edit,
-    valueOf,
+    getValue,
   }
 }

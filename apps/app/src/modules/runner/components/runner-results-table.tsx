@@ -41,7 +41,7 @@ export const RunnerResultsTable = ({
     rows={rows}
     columns={columns.map((id): Column => ({ id, uiType: 'raw' }))}
     dialect={dialect}
-    sizeOf={(column) =>
+    getSize={(column) =>
       columnWidth(column.id, rows, column.id === columns.at(-1))
     }
   />

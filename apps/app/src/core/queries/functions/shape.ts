@@ -32,7 +32,7 @@ export interface FunctionShape {
   securityDefiner: boolean
 }
 
-export const functionBodyTemplateOf = ({
+export const getFunctionBodyTemplate = ({
   dialect,
   kind,
   language,

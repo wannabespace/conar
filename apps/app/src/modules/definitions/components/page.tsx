@@ -28,7 +28,7 @@ import { toast } from 'sonner'
 
 import type { AppMenuNode } from '~/components/app-menu'
 import { PaneEmpty } from '~/components/pane-empty'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { DropDialog } from '~/core/catalog/drop-dialog'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcuts } from '~/core/keyboard/use-shortcuts'
@@ -37,7 +37,7 @@ import { queryClient } from '~/lib/query-client'
 import type { DefinitionsState } from '../hooks/use-definitions-state'
 import { useInspector } from '../hooks/use-inspector'
 import type { CellContext, DefinitionsColumn } from '../lib/columns'
-import { sectionMetaOf } from '../section-meta'
+import { getSectionMeta } from '../section-meta'
 import { DefinitionsTable } from './definitions-table'
 import type { SectionInspectorProps } from './inspector'
 import { SchemaSelect } from './schema-select'
@@ -52,7 +52,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   dropItem,
   Inspector,
   items,
-  keyOf,
+  getKey,
   loading,
   match,
   queryKey,
@@ -66,7 +66,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
   Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
-  keyOf: (item: T) => string
+  getKey: (item: T) => string
   loading: boolean
   match: (item: T) => boolean
   queryKey: QueryKey
@@ -86,16 +86,16 @@ export const DefinitionsPage = <T extends { name: string }>({
     type,
   } = state
   const createBlocked = structurePending ? undefined : blockReason
-  const { cascade: cascades, icon, noun, title } = sectionMetaOf(section)
+  const { cascade: cascades, icon, noun, title } = getSectionMeta(section)
   const rows = items.filter(match)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef(new Map<string, HTMLTableRowElement>())
   const [highlighted, setHighlighted] = useState<string | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
   const inspector = useInspector({
+    getKey,
     items: rows,
     keepSchema: setSelectedSchema,
-    keyOf,
     loading,
   })
   const [dropping, setDropping] = useState<{ item: T | null; open: boolean }>({
@@ -103,9 +103,11 @@ export const DefinitionsPage = <T extends { name: string }>({
     open: false,
   })
   const [cascade, setCascade] = useState(false)
-  const cascadable = cascades && capabilitiesOf(type).cascade
+  const cascadable = cascades && getCapabilities(type).cascade
 
-  const highlightedIndex = rows.findIndex((item) => keyOf(item) === highlighted)
+  const highlightedIndex = rows.findIndex(
+    (item) => getKey(item) === highlighted
+  )
   const highlightedItem: T | undefined = rows[highlightedIndex]
   const canDrop = (item?: T): item is T =>
     !!item && !!can.drop && (canDropItem?.(item) ?? true)
@@ -148,7 +150,7 @@ export const DefinitionsPage = <T extends { name: string }>({
         : rows[Math.min(rows.length - 1, Math.max(0, highlightedIndex + delta))]
 
     if (item) {
-      const key = keyOf(item)
+      const key = getKey(item)
       setHighlighted(key)
       rowsRef.current.get(key)?.scrollIntoView({ block: 'nearest' })
     }
@@ -319,13 +321,13 @@ export const DefinitionsPage = <T extends { name: string }>({
               columns={columns}
               context={context}
               highlighted={searchFocused ? highlighted : null}
-              keyOf={keyOf}
+              getKey={getKey}
               loading={loading}
-              menuOf={rowMenuItems}
+              getMenu={rowMenuItems}
               rows={rows}
               rowsRef={rowsRef}
               onOpen={(item) => {
-                setHighlighted(keyOf(item))
+                setHighlighted(getKey(item))
                 inspector.open(item)
               }}
             />

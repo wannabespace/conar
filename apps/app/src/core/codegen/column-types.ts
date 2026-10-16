@@ -1,6 +1,6 @@
 import { SqlDialect } from '@tamery/shared/enums/connection-type'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 import type { TypedColumn } from './types'
 import { toStringLiteral } from './utils'
@@ -18,7 +18,7 @@ const firstMatch = <T extends string>(
 }
 
 const jsonType = (dialect: SqlDialect) =>
-  capabilitiesOf(dialect).columnTypes.json
+  getCapabilities(dialect).columnTypes.json
 
 const tsType = (type: string, dialect: SqlDialect) =>
   firstMatch(type, 'string', [

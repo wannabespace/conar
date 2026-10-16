@@ -1,6 +1,6 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
@@ -13,7 +13,7 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
 
@@ -76,7 +76,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: capabilitiesOf(dialectOf(connection.type)).schemas,
+    showSchemaRows: getCapabilities(getDialect(connection.type)).schemas,
   })
 
   const toggleSchema = (name: string) => {

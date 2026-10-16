@@ -36,7 +36,7 @@ const readOrEmpty = async (file: string) => {
   return contents.unwrapOr('')
 }
 
-const hashOf = (salt: Buffer, name: string) =>
+const getHash = (salt: Buffer, name: string) =>
   createHmac('sha1', salt).update(name).digest('base64')
 
 const globMatches = (pattern: string, name: string) =>
@@ -51,7 +51,7 @@ const globMatches = (pattern: string, name: string) =>
 const hostsMatch = (hosts: string, name: string) => {
   if (hosts.startsWith(HASHED_PREFIX)) {
     const [salt = '', hash] = hosts.slice(HASHED_PREFIX.length).split('|')
-    return hashOf(Buffer.from(salt, 'base64'), name) === hash
+    return getHash(Buffer.from(salt, 'base64'), name) === hash
   }
   const patterns = hosts.split(',')
   return (
@@ -75,7 +75,7 @@ const entriesFor = (contents: string, name: string) =>
       : []
   })
 
-const keyTypeOf = (key: Buffer) =>
+const getKeyType = (key: Buffer) =>
   key.subarray(4, 4 + key.readUInt32BE(0)).toString()
 
 const keyTypeOfAlgorithm = (algorithm: ServerHostKeyAlgorithm) =>
@@ -101,14 +101,29 @@ export const knownHosts = {
   },
   describe: (key: Buffer) => ({
     fingerprint: `SHA256:${createHash('sha256').update(key).digest('base64').replace(/=+$/u, '')}`,
-    keyType: keyTypeOf(key),
+    keyType: getKeyType(key),
   }),
-  lineOf: (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
+  getLine: (name: string, key: Buffer, { hashed }: { hashed: boolean }) => {
     const salt = randomBytes(HASH_SALT_BYTES)
     const hosts = hashed
-      ? `${HASHED_PREFIX}${salt.toString('base64')}|${hashOf(salt, name)}`
+      ? `${HASHED_PREFIX}${salt.toString('base64')}|${getHash(salt, name)}`
       : name
-    return `${hosts} ${keyTypeOf(key)} ${key.toString('base64')}`
+    return `${hosts} ${getKeyType(key)} ${key.toString('base64')}`
+  },
+  getName: ({
+    alias,
+    host,
+    port,
+  }: {
+    alias?: string
+    host: string
+    port: number
+  }) => {
+    if (alias) {
+      return alias
+    }
+    const name = host.toLowerCase()
+    return port === DEFAULT_SSH_PORT ? name : `[${name}]:${port}`
   },
   listedAlgorithms: (contents: string, name: string) => {
     const listed = new Set(
@@ -123,21 +138,6 @@ export const knownHosts = {
             Number(listed.has(keyTypeOfAlgorithm(b))) -
             Number(listed.has(keyTypeOfAlgorithm(a)))
         )
-  },
-  nameOf: ({
-    alias,
-    host,
-    port,
-  }: {
-    alias?: string
-    host: string
-    port: number
-  }) => {
-    if (alias) {
-      return alias
-    }
-    const name = host.toLowerCase()
-    return port === DEFAULT_SSH_PORT ? name : `[${name}]:${port}`
   },
   read: async () => {
     const files = await Promise.all(knownHostsPaths().map(readOrEmpty))
@@ -155,7 +155,7 @@ export const knownHosts = {
     })
     await appendFile(
       userKnownHostsPath(),
-      `${separator}${knownHosts.lineOf(name, key, { hashed })}\n`,
+      `${separator}${knownHosts.getLine(name, key, { hashed })}\n`,
       { mode: 0o600 }
     )
   },

@@ -7,7 +7,7 @@ import {
 } from './connection-parts'
 
 interface HostHint {
-  directHostOf?: (host: string) => string
+  getDirectHost?: (host: string) => string
   ipv6Only?: RegExp
   label: string
   port?: string
@@ -31,7 +31,7 @@ const HOST_HINTS: HostHint[] = [
     type: ConnectionType.Postgres,
   },
   {
-    directHostOf: (host) => host.replace(/-pooler(?=\.)/iu, ''),
+    getDirectHost: (host) => host.replace(/-pooler(?=\.)/iu, ''),
     label: 'Neon',
     suffixes: ['.neon.tech'],
     type: ConnectionType.Postgres,
@@ -157,7 +157,7 @@ const PRIVATE_IPV6 = /^\[?f[cd][\da-f]{2}:/iu
 const PRIVATE_NAME =
   /\.(?:internal|local|lan|svc|cluster\.local|corp|intranet|home\.arpa|ts\.net)$/iu
 
-export const hostHintOf = (host: string): HostHint | undefined => {
+export const getHostHint = (host: string): HostHint | undefined => {
   const lowerHost = host.toLowerCase()
   return HOST_HINTS.find((hint) =>
     hint.suffixes.some((suffix) => lowerHost.endsWith(suffix))
@@ -178,7 +178,7 @@ export const isInternalHost = (host: string) =>
 
 export type HostKind = 'ipv6-only' | 'local' | 'private' | 'public' | 'service'
 
-export const hostKindOf = (host: string): HostKind => {
+export const getHostKind = (host: string): HostKind => {
   if (isLocalHost(host)) {
     return 'local'
   }
@@ -188,5 +188,5 @@ export const hostKindOf = (host: string): HostKind => {
   if (isPrivateHost(host)) {
     return 'private'
   }
-  return hostHintOf(host)?.ipv6Only?.test(host) ? 'ipv6-only' : 'public'
+  return getHostHint(host)?.ipv6Only?.test(host) ? 'ipv6-only' : 'public'
 }

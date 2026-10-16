@@ -24,7 +24,7 @@ import { useGridHandle } from './grid-handle'
 import { useGridHotkeys, useGridPointer } from './grid-input'
 import { usePendingGridFocus } from './pending-grid-focus'
 
-const valueOf = ({ column, row }: DataGridCell) => row[column.id]
+const getCellValue = ({ column, row }: DataGridCell) => row[column.id]
 
 const columnEditable = (column: Column) => column.isEditable !== false
 
@@ -36,7 +36,7 @@ export const DataGrid = ({
   cursorRef,
   focusKey,
   footer,
-  getValue = valueOf,
+  getValue = getCellValue,
   isFetching,
   layout = 'grid',
   leading,
@@ -54,7 +54,7 @@ export const DataGrid = ({
   rowKey,
   rows,
   scrollRef: externalScrollRef,
-  sizeOf,
+  getSize,
   trailing,
 }: {
   bar?: GridBarItem[]
@@ -88,7 +88,7 @@ export const DataGrid = ({
   rowKey?: (rowIndex: number) => string
   rows: GridRow[]
   scrollRef?: RefObject<HTMLDivElement | null>
-  sizeOf: (column: Column) => number
+  getSize: (column: Column) => number
   trailing?: ExtraColumn
 }) => {
   const ownScrollRef = useRef<HTMLDivElement>(null)
@@ -185,7 +185,7 @@ export const DataGrid = ({
           leading={leading}
           trailing={trailing}
           pinned={pinned}
-          sizeOf={sizeOf}
+          getSize={getSize}
           onReorder={onReorder}
           renderHeader={renderHeader}
           renderCell={renderDataCell}

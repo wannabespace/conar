@@ -2,7 +2,7 @@ import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { isNumericColumn } from '~/core/table/cell/utils'
 
@@ -26,7 +26,7 @@ export const createTransformer = (
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytes, json, uuid } = capabilitiesOf(dialect).columnTypes
+  const { bytes, json, uuid } = getCapabilities(dialect).columnTypes
   if (json.test(type)) {
     return createJsonTransformer()
   }

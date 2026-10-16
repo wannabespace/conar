@@ -1,6 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -25,7 +25,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
 import { tableTypeLabel } from '~/core/catalog/table-type'
 import { dropTableQuery } from '~/core/queries/tables/drop'
@@ -150,7 +150,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {capabilitiesOf(dialectOf(connection.type)).cascade && (
+          {getCapabilities(getDialect(connection.type)).cascade && (
             <OptionField
               htmlFor="drop-table-cascade"
               title="Cascade"

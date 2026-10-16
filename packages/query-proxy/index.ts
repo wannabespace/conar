@@ -25,7 +25,7 @@ export type ConnectionInput =
   | { connectionId: string }
   | { resourceId: string }
 
-const connectionKeyOf = (input: ConnectionInput): ConnectionInput => {
+const getConnectionKey = (input: ConnectionInput): ConnectionInput => {
   if ('connectionString' in input) {
     return { connectionString: input.connectionString }
   }
@@ -60,7 +60,7 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.beginTransaction({
           ...input,
           connectionString: await resolve.connectionString(
-            connectionKeyOf(input),
+            getConnectionKey(input),
             context
           ),
           ownerId: resolve.owner(context),
@@ -72,7 +72,7 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.cancel({
           ...input,
           connectionString: await resolve.connectionString(
-            connectionKeyOf(input),
+            getConnectionKey(input),
             context
           ),
         })
@@ -88,7 +88,7 @@ const createQueryDialect = <T extends AnyBuilder>(
         dialect.execute({
           ...input,
           connectionString: await resolve.connectionString(
-            connectionKeyOf(input),
+            getConnectionKey(input),
             context
           ),
         })

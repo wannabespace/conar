@@ -69,7 +69,7 @@ export const SSH_PARAMS = {
   user: 'ssh_user',
 } as const satisfies Record<keyof SshTunnel, string>
 
-export const sshTunnelOf = (
+export const getSshTunnel = (
   searchParams: URLSearchParams
 ): SshTunnel | null => {
   const host = searchParams.get(SSH_PARAMS.host)

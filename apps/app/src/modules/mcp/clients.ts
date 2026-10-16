@@ -7,7 +7,7 @@ export type McpEndpoint = Omit<
 
 const SERVER_NAME = 'tamery'
 
-const headersOf = ({ token }: McpEndpoint) => ({
+const getHeaders = ({ token }: McpEndpoint) => ({
   Authorization: `Bearer ${token}`,
 })
 
@@ -16,7 +16,7 @@ const json = (value: unknown) => JSON.stringify(value, null, 2)
 const mcpServersJson = (urlKey: string) => (server: McpEndpoint) =>
   json({
     mcpServers: {
-      [SERVER_NAME]: { headers: headersOf(server), [urlKey]: server.url },
+      [SERVER_NAME]: { headers: getHeaders(server), [urlKey]: server.url },
     },
   })
 
@@ -33,7 +33,7 @@ interface McpClientSetup {
 export const MCP_CLIENTS: McpClientSetup[] = [
   {
     code: (server) =>
-      `claude mcp add -t http -s user ${SERVER_NAME} ${server.url} -H "Authorization: ${headersOf(server).Authorization}"`,
+      `claude mcp add -t http -s user ${SERVER_NAME} ${server.url} -H "Authorization: ${getHeaders(server).Authorization}"`,
     id: 'claude_code',
     instruction: 'Run in a terminal',
     label: 'Claude Code',
@@ -41,7 +41,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
   },
   {
     code: (server) =>
-      `[mcp_servers.${SERVER_NAME}]\nurl = "${server.url}"\nhttp_headers = { Authorization = "${headersOf(server).Authorization}" }`,
+      `[mcp_servers.${SERVER_NAME}]\nurl = "${server.url}"\nhttp_headers = { Authorization = "${getHeaders(server).Authorization}" }`,
     file: '~/.codex/config.toml',
     id: 'codex',
     instruction: 'Add to',
@@ -54,7 +54,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     id: 'cursor',
     installLink: (server) =>
       `cursor://anysphere.cursor-deeplink/mcp/install?name=${SERVER_NAME}&config=${encodeURIComponent(
-        btoa(JSON.stringify({ headers: headersOf(server), url: server.url }))
+        btoa(JSON.stringify({ headers: getHeaders(server), url: server.url }))
       )}`,
     instruction: 'Add to',
     label: 'Cursor',
@@ -65,7 +65,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
       json({
         servers: {
           [SERVER_NAME]: {
-            headers: headersOf(server),
+            headers: getHeaders(server),
             type: 'http',
             url: server.url,
           },
@@ -76,7 +76,7 @@ export const MCP_CLIENTS: McpClientSetup[] = [
     installLink: (server) =>
       `vscode:mcp/install?${encodeURIComponent(
         JSON.stringify({
-          headers: headersOf(server),
+          headers: getHeaders(server),
           name: SERVER_NAME,
           type: 'http',
           url: server.url,

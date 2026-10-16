@@ -49,7 +49,7 @@ export const OptionSelect = <T extends string>({
   disabled,
   empty = 'Nothing to choose',
   id,
-  labelOf = identity,
+  getLabel = identity,
   mask = true,
   onValueChange,
   options,
@@ -60,7 +60,7 @@ export const OptionSelect = <T extends string>({
   disabled?: boolean
   empty?: ReactNode
   id?: string
-  labelOf?: (value: T) => string
+  getLabel?: (value: T) => string
   mask?: boolean
   onValueChange: (value: T) => void
   options: readonly T[]
@@ -82,7 +82,7 @@ export const OptionSelect = <T extends string>({
       className={cn('w-full', className)}
     >
       <SelectValue placeholder={placeholder}>
-        {(current: T | null) => (current ? labelOf(current) : placeholder)}
+        {(current: T | null) => (current ? getLabel(current) : placeholder)}
       </SelectValue>
     </SelectTrigger>
     <SelectContent data-mask={mask || undefined}>
@@ -91,7 +91,7 @@ export const OptionSelect = <T extends string>({
       ) : (
         options.map((option) => (
           <SelectItem key={option} value={option}>
-            {labelOf(option)}
+            {getLabel(option)}
           </SelectItem>
         ))
       )}
@@ -177,7 +177,7 @@ export const SelectField = <T extends string>({
 }: LabelledProps & {
   disabled?: boolean
   empty?: ReactNode
-  labelOf?: (value: T) => string
+  getLabel?: (value: T) => string
   onChanged?: (value: T) => void
   options: readonly T[]
   placeholder: string

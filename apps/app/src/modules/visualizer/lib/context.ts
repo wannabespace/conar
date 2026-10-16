@@ -4,10 +4,10 @@ import { createContext, use } from 'react'
 import { createStore } from 'seitu'
 
 import {
-  capabilitiesOf,
+  getCapabilities,
   foreignKeysCreatable,
   sectionAvailable,
-  sectionCapabilitiesOf,
+  getSectionCapabilities,
 } from '~/core/catalog/capabilities'
 
 import type {
@@ -17,9 +17,9 @@ import type {
   DiagramTable,
 } from './schema'
 
-export const gatesOf = (dialect: SqlDialect) => {
-  const capabilities = capabilitiesOf(dialect)
-  const constraints = sectionCapabilitiesOf('constraints', dialect)
+export const getGates = (dialect: SqlDialect) => {
+  const capabilities = getCapabilities(dialect)
+  const constraints = getSectionCapabilities('constraints', dialect)
 
   return {
     cascade: capabilities.cascade,
@@ -33,7 +33,7 @@ export const gatesOf = (dialect: SqlDialect) => {
   }
 }
 
-export type DiagramGates = ReturnType<typeof gatesOf>
+export type DiagramGates = ReturnType<typeof getGates>
 
 export interface DiagramActions {
   addColumn: (table: DiagramTable) => void

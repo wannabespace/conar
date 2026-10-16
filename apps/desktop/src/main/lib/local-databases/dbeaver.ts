@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
-import { connectionTypeOf } from '@tamery/connection/connection-parts'
+import { getConnectionType } from '@tamery/connection/connection-parts'
 import { type } from 'arktype'
 import { Result } from 'better-result'
 import { app } from 'electron'
@@ -75,7 +75,7 @@ export const dbeaver: Finder = {
             host: configuration.host,
             password: saved?.password,
             port: String(configuration.port ?? ''),
-            type: connectionTypeOf(provider),
+            type: getConnectionType(provider),
             user: saved?.user ?? configuration.user,
           },
         }

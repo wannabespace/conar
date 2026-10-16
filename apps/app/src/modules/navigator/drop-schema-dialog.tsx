@@ -1,9 +1,9 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { DropDialog } from '~/core/catalog/drop-dialog'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { dropSchemaQuery } from '~/core/queries/schemas/drop'
@@ -66,7 +66,7 @@ export const DropSchemaDialog = ({
 
   return (
     <DropDialog
-      cascadable={capabilitiesOf(dialectOf(connection.type)).cascade}
+      cascadable={getCapabilities(getDialect(connection.type)).cascade}
       cascade={cascade}
       error={error}
       name={schema}

@@ -1,9 +1,9 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { foreignKeyName } from '~/core/queries/constraints/shape'
 import type { NewColumn } from '~/core/queries/tables/shape'
@@ -185,7 +185,7 @@ export const useDiagramActions = ({
           name: 'id',
           nullable: false,
           primaryKey: true,
-          type: capabilitiesOf(dialectOf(connection.type)).columnTypes.id,
+          type: getCapabilities(getDialect(connection.type)).columnTypes.id,
         },
       ])
       const id = tableNodeId(targetSchema, name)

@@ -17,7 +17,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const serverOf = (parts: Partial<ConnectionParts>) =>
+const getServer = (parts: Partial<ConnectionParts>) =>
   parts.type &&
   [
     parts.type,
@@ -51,14 +51,14 @@ export const useConnectionLinks = () => {
       )
       const servers = await Promise.all(
         candidates.map(async (connection) =>
-          serverOf(
+          getServer(
             connectionParts.parse(
               await connectionStringsCollection.utils.decrypt(connection.id)
             )
           )
         )
       )
-      const connectionId = candidates[servers.indexOf(serverOf(parts))]?.id
+      const connectionId = candidates[servers.indexOf(getServer(parts))]?.id
       // Never inserts: the link comes from any page the browser opens, so it may only reach a database the user already saved.
       const resourceId =
         connectionId &&

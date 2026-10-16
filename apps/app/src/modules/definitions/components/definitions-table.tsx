@@ -57,9 +57,9 @@ export const DefinitionsTable = <T,>({
   columns,
   context,
   highlighted,
-  keyOf,
+  getKey,
   loading,
-  menuOf,
+  getMenu,
   onOpen,
   rows,
   rowsRef,
@@ -67,9 +67,9 @@ export const DefinitionsTable = <T,>({
   columns: DefinitionsColumn<T>[]
   context: CellContext
   highlighted: string | null
-  keyOf: (item: T) => string
+  getKey: (item: T) => string
   loading: boolean
-  menuOf: (item: T) => AppMenuNode[]
+  getMenu: (item: T) => AppMenuNode[]
   onOpen: (item: T) => void
   rows: T[]
   rowsRef: RefObject<Map<string, HTMLTableRowElement>>
@@ -102,12 +102,12 @@ export const DefinitionsTable = <T,>({
       <TableBody>
         {loading && <SkeletonRows columns={columns} />}
         {rows.map((item) => {
-          const key = keyOf(item)
+          const key = getKey(item)
 
           return (
             <AppContextMenu
               key={key}
-              items={() => menuOf(item)}
+              items={() => getMenu(item)}
               render={
                 // oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
                 <TableRow
@@ -137,7 +137,7 @@ export const DefinitionsTable = <T,>({
               <TableCell className="text-right">
                 <AppMenuButton
                   variant="muted"
-                  items={() => menuOf(item)}
+                  items={() => getMenu(item)}
                   render={<Button variant="ghost-faint" size="icon-xs" />}
                   className="-my-0.5"
                 />

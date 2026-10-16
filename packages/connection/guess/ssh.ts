@@ -55,7 +55,7 @@ const applyFlag = (
   }
 }
 
-const sshCommandOf = (words: string[]) => {
+const getSshCommand = (words: string[]) => {
   const start = words.findIndex((word) => !ENV_ASSIGNMENT.test(word))
   if (words[start]?.split('/').at(-1) !== 'ssh') {
     return null
@@ -109,11 +109,11 @@ export const guessSsh = (
   text: string
 ): { forwards: Forward[]; rest: string; tunnel: SshTunnel | null } => {
   const privateKey = PRIVATE_KEY.exec(text)?.[0] ?? ''
-  let command: ReturnType<typeof sshCommandOf> = null
+  let command: ReturnType<typeof getSshCommand> = null
   const rest: string[] = []
   for (const line of text.replace(PRIVATE_KEY, '').split('\n')) {
     const commands: string[][] = command ? [] : shellCommands(line)
-    const found = commands.map(sshCommandOf)
+    const found = commands.map(getSshCommand)
     const commandAt = found.findIndex(Boolean)
     const match = found[commandAt]
     if (!match) {

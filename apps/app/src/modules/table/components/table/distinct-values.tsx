@@ -1,7 +1,7 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
@@ -26,7 +26,7 @@ import type { CSSProperties } from 'react'
 import { useDeferredValue, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { columnStatsQuery } from '~/core/queries/rows/column-stats'
 import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import { valueCountsQuery } from '~/core/queries/rows/value-counts'
@@ -51,7 +51,7 @@ export interface DistinctValuesTarget {
 }
 
 export const hasDistinctValues = (dialect: SqlDialect, column: Column) => {
-  const { bytes, incomparable } = capabilitiesOf(dialect).columnTypes
+  const { bytes, incomparable } = getCapabilities(dialect).columnTypes
   const type = column.type ?? ''
   return !column.isArray && !bytes?.test(type) && !incomparable?.test(type)
 }
@@ -97,7 +97,7 @@ const StatsBody = ({
   const { connection, connectionResource } = useRouteContext()
   const [search, setSearch] = useState('')
   const term = useDeferredValue(search)
-  const transformer = createTransformer(dialectOf(connection.type), column)
+  const transformer = createTransformer(getDialect(connection.type), column)
   const display = (value: unknown) => transformer.toDisplay(value, VALUE_CHARS)
   const key = resourceRowsQueryKey({ connectionResource, schema, table })
   const ranged = isNumericColumn(column) || RANGED_UI_TYPES.has(column.uiType)

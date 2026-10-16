@@ -76,7 +76,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
   - Own dialect over a borrowed protocol: Redshift, Greenplum, Materialize, RisingWave, QuestDB, CrateDB, SingleStore, StarRocks, Doris, Babelfish, Fabric Warehouse.
   - Not connection types: Neon, Supabase, RDS, Aurora, AlloyDB, PlanetScale and ClickHouse Cloud are hosts (`hosts.ts`); TimescaleDB, Citus and pgvector are Postgres extensions.
 
-  The first type that lacks something its dialect offers needs the capability gates (`capabilitiesOf` and friends, about 120 calls) to take the connection's type instead of its dialect. Check each candidate's limits on a live server first: they shift between releases.
+  The first type that lacks something its dialect offers needs the capability gates (`getCapabilities` and friends, about 120 calls) to take the connection's type instead of its dialect. Check each candidate's limits on a live server first: they shift between releases.
 
 ## Settings
 

@@ -53,7 +53,7 @@ export const dropSkipIndexStatement = ({ name, schema, table }: IndexTarget) =>
 const IDENTIFIER = /^(?:`(?<quoted>(?:[^`\\]|\\.)*)`|(?<plain>[A-Za-z_]\w*))$/u
 const TUPLE = /^(?:tuple)?\((?<inner>.*)\)$/su
 
-export const skipIndexColumnsOf = (expression: string) => {
+export const getSkipIndexColumns = (expression: string) => {
   const inner = TUPLE.exec(expression.trim())?.groups?.inner ?? expression
   const columns: string[] = []
 

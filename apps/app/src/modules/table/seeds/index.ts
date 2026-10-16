@@ -3,7 +3,7 @@ import { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
@@ -183,7 +183,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 
 // Only a JSON column keeps its parsed value: `bindValue` stringifies it, and no driver binds a plain object otherwise.
 const finalizeValue = (value: unknown, column: Column, dialect: SqlDialect) => {
-  if (capabilitiesOf(dialect).columnTypes.json.test(column.type ?? '')) {
+  if (getCapabilities(dialect).columnTypes.json.test(column.type ?? '')) {
     return value
   }
   if (Array.isArray(value)) {

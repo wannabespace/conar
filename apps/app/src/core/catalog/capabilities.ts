@@ -276,9 +276,9 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
   },
 }
 
-export const capabilitiesOf = (type: SqlDialect) => capabilities[type]
+export const getCapabilities = (type: SqlDialect) => capabilities[type]
 
-export const defaultSchemaOf = (type: SqlDialect, database: string | null) =>
+export const getDefaultSchema = (type: SqlDialect, database: string | null) =>
   capabilities[type].defaultSchema ?? database
 
 export const sectionAvailable = (
@@ -286,11 +286,11 @@ export const sectionAvailable = (
   type: SqlDialect
 ) => capabilities[type].sections[section] !== false
 
-export const sectionCapabilitiesOf = (
+export const getSectionCapabilities = (
   section: DefinitionsSection,
   type: SqlDialect
 ): SectionCapabilities => capabilities[type].sections[section] || readOnly
 
 export const foreignKeysCreatable = (type: SqlDialect) =>
   capabilities[type].constraintKinds.includes('foreignKey') &&
-  !!sectionCapabilitiesOf('constraints', type).create
+  !!getSectionCapabilities('constraints', type).create

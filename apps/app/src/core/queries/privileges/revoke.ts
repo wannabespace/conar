@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { PrivilegeTarget } from './shape'
-import { accountOf, privilegeOn } from './shape'
+import { getAccount, privilegeOn } from './shape'
 
 export const revokePrivilegeQuery = (target: PrivilegeTarget) =>
   createQuery({
@@ -12,7 +12,7 @@ export const revokePrivilegeQuery = (target: PrivilegeTarget) =>
       clickhouse: unsupported('Privileges'),
       mssql: unsupported('Privileges'),
       mysql: (db) =>
-        sql`REVOKE ${privilegeOn(target)} FROM ${accountOf(target.grantee)}`.execute(
+        sql`REVOKE ${privilegeOn(target)} FROM ${getAccount(target.grantee)}`.execute(
           db
         ),
       postgres: unsupported('Privileges'),

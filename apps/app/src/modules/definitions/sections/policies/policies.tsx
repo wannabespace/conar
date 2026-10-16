@@ -6,7 +6,7 @@ import { CodeInline } from '@tamery/ui/components/custom/code-block'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useQuery } from '@tanstack/react-query'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { definitionKey } from '~/core/catalog/definition-keys'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { dropPolicyQuery } from '~/core/queries/policies/drop'
@@ -75,23 +75,23 @@ const columns: DefinitionsColumn<PolicyItem>[] = [
     width: '2/12',
   }),
   labelColumn({
+    getLabel: (item: PolicyItem) => item.command,
     header: 'Command',
-    labelOf: (item: PolicyItem) => item.command,
     width: '2/12',
   }),
   labelColumn({
-    header: 'Roles',
-    labelOf: (item: PolicyItem, { search }) => (
+    getLabel: (item: PolicyItem, { search }) => (
       <span data-mask>
         <HighlightText text={item.roles.join(', ')} match={search} />
       </span>
     ),
+    header: 'Roles',
     width: '2/12',
   }),
   labelColumn({
     align: 'end',
+    getLabel: (item: PolicyItem) => kindLabels[item.type],
     header: 'Type',
-    labelOf: (item: PolicyItem) => kindLabels[item.type],
     width: '2/12',
   }),
 ]
@@ -125,13 +125,13 @@ export const Policies = () => {
   const state = useDefinitionsState({ section: 'policies' })
   const {
     connectionResource,
-    relationNamesOf,
+    getRelationNames,
     run,
     schemas,
     search,
     selectedSchema,
   } = state
-  const { predicates } = capabilitiesOf(state.type).policies
+  const { predicates } = getCapabilities(state.type).policies
   const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
   const { data: functions = [], isPending: functionsPending } = useQuery({
@@ -157,12 +157,12 @@ export const Policies = () => {
     )
   const createBlocked = (() => {
     if (!predicates) {
-      return relationNamesOf(selectedSchema ?? '', 'table').length === 0
+      return getRelationNames(selectedSchema ?? '', 'table').length === 0
         ? 'This schema has no tables to protect.'
         : undefined
     }
     if (
-      schemas.every((schema) => relationNamesOf(schema, 'table').length === 0)
+      schemas.every((schema) => getRelationNames(schema, 'table').length === 0)
     ) {
       return 'This database has no tables to protect.'
     }
@@ -180,7 +180,7 @@ export const Policies = () => {
       dropItem={dropItem}
       Inspector={predicates ? PredicatePolicyInspector : PolicyInspector}
       items={inSchema}
-      keyOf={definitionKey.policy}
+      getKey={definitionKey.policy}
       loading={isPending}
       match={matches}
       queryKey={query.queryKey}

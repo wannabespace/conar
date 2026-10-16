@@ -1,5 +1,5 @@
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { FILTERS_GROUPED } from '@tamery/shared/filters'
 import { useHotkeys } from '@tanstack/react-hotkeys'
@@ -8,7 +8,7 @@ import type { RefObject } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 import { tableGridRef } from '../../lib/grid-ref'
 import { useTablePageStore } from '../../lib/store'
@@ -26,7 +26,7 @@ export const offeredFilters = (dialect: SqlDialect) =>
   FILTERS_GROUPED.map((group) => ({
     ...group,
     filters: group.filters.filter(
-      (filter) => filter.operator !== 'ilike' || capabilitiesOf(dialect).ilike
+      (filter) => filter.operator !== 'ilike' || getCapabilities(dialect).ilike
     ),
   }))
 
@@ -75,7 +75,7 @@ export const useFilterComposer = ({
 
   const setQuery = (value: string) => {
     setPrompt(value)
-    setHighlighted(highlightForStage(dialectOf(connection.type), stage, value))
+    setHighlighted(highlightForStage(getDialect(connection.type), stage, value))
     onQueryChange()
   }
 

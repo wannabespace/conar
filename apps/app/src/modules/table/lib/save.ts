@@ -51,7 +51,7 @@ const failingAs =
     throw new SaveError(error, target)
   }
 
-const updatesOf = (drafts: Draft[]) => {
+const getUpdates = (drafts: Draft[]) => {
   const updates = new Map<
     string,
     { primaryKeys: PrimaryKeys; values: Record<string, unknown> }
@@ -86,7 +86,7 @@ export const useSaveStaged = ({
       const queryParams =
         await connectionResourceToQueryParams(connectionResource)
       await transaction(queryParams).execute(async (tx) => {
-        for (const { primaryKeys, values } of updatesOf(drafts)) {
+        for (const { primaryKeys, values } of getUpdates(drafts)) {
           // oxlint-disable-next-line no-await-in-loop
           await setQuery({ columns, primaryKeys, schema, table, values })
             .run(queryParams, tx)

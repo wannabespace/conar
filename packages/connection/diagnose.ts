@@ -1,4 +1,7 @@
-import { ConnectionType, dialectOf } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionType,
+  getDialect,
+} from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import {
@@ -6,14 +9,14 @@ import {
   connectionParts,
   DEFAULT_PORTS,
 } from './connection-parts'
-import { hostHintOf, hostKindOf, isLocalHost, TYPE_OF_PORT } from './hosts'
+import { getHostHint, getHostKind, isLocalHost, TYPE_OF_PORT } from './hosts'
 import {
   SSH_DESKTOP_ONLY,
   SSH_FIELD_AT_FAULT,
   SSH_TUNNEL_ERROR,
 } from './ssh/params'
 import type { SslSetting } from './ssl/setting'
-import { sslOptionsOf } from './ssl/setting'
+import { getSslOptions } from './ssl/setting'
 
 export interface ConnectionPatch {
   database?: string
@@ -42,7 +45,7 @@ const sslFix = (
   setting: SslSetting,
   label: string
 ): Diagnosis['fix'] => {
-  const options = sslOptionsOf(parts, setting)
+  const options = getSslOptions(parts, setting)
   return options ? { label, patch: { options } } : undefined
 }
 
@@ -141,7 +144,7 @@ const RULES: {
   {
     diagnose: ({ parts }) => {
       if (
-        hostHintOf(parts.host)?.projectInUser?.test(parts.host) &&
+        getHostHint(parts.host)?.projectInUser?.test(parts.host) &&
         !parts.user.includes('.')
       ) {
         return {
@@ -217,7 +220,7 @@ const RULES: {
           title: `The SSH host can't find "${host}"`,
         }
       }
-      const kind = hostKindOf(host)
+      const kind = getHostKind(host)
       if (kind === 'ipv6-only') {
         return {
           hint: SUPABASE_IPV6_ONLY_HINT,
@@ -264,7 +267,7 @@ const RULES: {
       if (
         portType &&
         parts.type &&
-        dialectOf(portType) !== dialectOf(parts.type) &&
+        getDialect(portType) !== getDialect(parts.type) &&
         port === String(DEFAULT_PORTS[portType])
       ) {
         return {
@@ -289,8 +292,8 @@ const RULES: {
   {
     diagnose: (context) => {
       const { host } = context.parts
-      const provider = hostHintOf(host)?.label
-      if (hostKindOf(host) === 'private') {
+      const provider = getHostHint(host)?.label
+      if (getHostKind(host) === 'private') {
         return {
           fix: tunnelFix(context),
           hint: 'That address is on a private network: connect through a bastion host, or over your VPN.',
@@ -310,7 +313,7 @@ const RULES: {
     diagnose: (context) => ({
       fix: tunnelFix(context),
       hint:
-        hostKindOf(context.parts.host) === 'ipv6-only'
+        getHostKind(context.parts.host) === 'ipv6-only'
           ? SUPABASE_IPV6_ONLY_HINT
           : 'No network route to that address: it may be IPv6-only, or need your VPN.',
       title: "This network can't reach the server",

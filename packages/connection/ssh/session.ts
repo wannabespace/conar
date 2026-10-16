@@ -157,7 +157,7 @@ export const connectSsh = async (
     [computed[key.toLowerCase()]].flat()[0]
   const host = sshConfig('HostName') ?? tunnel.host
   const port = Number(tunnel.port || sshConfig('Port') || DEFAULT_SSH_PORT)
-  const hostKeyName = knownHosts.nameOf({
+  const hostKeyName = knownHosts.getName({
     alias: sshConfig('HostKeyAlias'),
     host,
     port,

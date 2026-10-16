@@ -16,7 +16,7 @@ import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { posthog } from '~/lib/posthog'
 
@@ -26,7 +26,7 @@ import { columnLayout, columnsOrder } from './store'
 const OFF = '__off__'
 
 export const isSortable = (dialect: SqlDialect, column: Column) =>
-  !capabilitiesOf(dialect).columnTypes.incomparable?.test(column.type ?? '')
+  !getCapabilities(dialect).columnTypes.incomparable?.test(column.type ?? '')
 
 export interface ColumnActions {
   onEdit?: () => void

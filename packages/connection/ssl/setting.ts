@@ -1,4 +1,4 @@
-import { dialectOf, SqlDialect } from '@tamery/shared/enums/connection-type'
+import { getDialect, SqlDialect } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from '../connection-parts'
 import { TLS_PARAMS as MYSQL_TLS_PARAMS } from './mysql'
@@ -28,11 +28,11 @@ const TLS_PARAMS: Partial<Record<SqlDialect, string[]>> = {
   [SqlDialect.Postgres]: PG_TLS_PARAMS,
 }
 
-export const sslOptionsOf = (
+export const getSslOptions = (
   { options, type }: Pick<ConnectionParts, 'options' | 'type'>,
   setting: SslSetting
 ) => {
-  const dialect = type && dialectOf(type)
+  const dialect = type && getDialect(type)
   const option = dialect ? SSL_OPTIONS[dialect]?.[setting] : undefined
   if (!dialect || !option) {
     return

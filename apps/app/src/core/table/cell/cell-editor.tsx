@@ -10,7 +10,7 @@ import type { RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { isNested } from '~/core/transformers/value-transformer'
@@ -34,7 +34,7 @@ const codeLanguage = (
   { type = '', uiType }: Column,
   value: unknown
 ) => {
-  const { json, xml } = capabilitiesOf(dialect).columnTypes
+  const { json, xml } = getCapabilities(dialect).columnTypes
   if (json.test(type) || (uiType === 'raw' && isNested(value))) {
     return 'json'
   }

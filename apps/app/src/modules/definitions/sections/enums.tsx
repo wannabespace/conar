@@ -319,7 +319,7 @@ export const Enums = () => {
       }}
       Inspector={EnumInspector}
       items={enums.filter((item) => item.schema === selectedSchema)}
-      keyOf={(item) => JSON.stringify([item.schema, item.name])}
+      getKey={(item) => JSON.stringify([item.schema, item.name])}
       loading={isPending}
       match={(item) => matchesSearch(search, item.name, ...item.values)}
       queryKey={query.queryKey}

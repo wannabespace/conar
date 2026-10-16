@@ -51,9 +51,9 @@ describe('knownHosts.check', () => {
   })
 })
 
-describe('knownHosts.nameOf', () => {
+describe('knownHosts.getName', () => {
   it.each<
-    [string, Parameters<typeof knownHosts.nameOf>[0], string, HostKeyStatus]
+    [string, Parameters<typeof knownHosts.getName>[0], string, HostKeyStatus]
   >([
     [
       'a non-default port in brackets',
@@ -80,7 +80,7 @@ describe('knownHosts.nameOf', () => {
       'known',
     ],
   ])('matches %s', (_, host, contents, status) => {
-    expect(knownHosts.check(contents, knownHosts.nameOf(host), key)).toBe(
+    expect(knownHosts.check(contents, knownHosts.getName(host), key)).toBe(
       status
     )
   })
@@ -106,11 +106,11 @@ describe('knownHosts.listedAlgorithms', () => {
   })
 })
 
-describe('knownHosts.lineOf', () => {
+describe('knownHosts.getLine', () => {
   it.each([false, true])(
     'writes a line it reads back (hashed: %p)',
     (hashed) => {
-      const line = knownHosts.lineOf('bastion.example.com', key, { hashed })
+      const line = knownHosts.getLine('bastion.example.com', key, { hashed })
       expect(line.startsWith('|1|')).toBe(hashed)
       expect(knownHosts.check(line, 'bastion.example.com', key)).toBe('known')
       expect(knownHosts.check(line, 'db.example.com', key)).toBe('unknown')

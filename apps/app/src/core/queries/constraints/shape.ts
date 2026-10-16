@@ -165,7 +165,7 @@ export const dropConstraintStatement = (
 
 const QUOTES = new Set(["'", '"', '`'])
 
-const tableElementsOf = (ddl: string) => {
+const getTableElements = (ddl: string) => {
   const elements: string[] = []
   let start = ddl.indexOf('(') + 1
   let depth = 0
@@ -202,8 +202,8 @@ const tableElementsOf = (ddl: string) => {
 const clickhouseConstraintRegex =
   /^CONSTRAINT\s+(?<name>`(?:[^`\\]|\\.)*`|\S+)\s+(?<kind>CHECK|ASSUME)\s+(?<expression>[\s\S]+)$/u
 
-export const clickhouseConstraintsOf = (ddl: string) =>
-  tableElementsOf(ddl).flatMap((element) => {
+export const getClickhouseConstraints = (ddl: string) =>
+  getTableElements(ddl).flatMap((element) => {
     const groups = clickhouseConstraintRegex.exec(element)?.groups
 
     if (!groups?.name || !groups.expression) {

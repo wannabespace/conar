@@ -3,7 +3,7 @@ import { isLocalHost } from '@tamery/connection/hosts'
 import {
   ConnectionType,
   connectionTypeLabels,
-  dialectOf,
+  getDialect,
   SqlDialect,
 } from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
@@ -57,7 +57,7 @@ export const ServerFields = ({
   locked: (field: string) => boolean
 }) => {
   const type = useSelector(form.store, (state) => state.values.type)
-  const dialect = dialectOf(type)
+  const dialect = getDialect(type)
   const isLocal = useSelector(form.store, (state) =>
     isLocalHost(state.values.host.trim())
   )

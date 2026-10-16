@@ -38,11 +38,11 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     { name: 'tamery', version: app.getVersion() },
     { instructions: INSTRUCTIONS }
   )
-  const accessOf = (connectionId: string): McpAccess =>
+  const getAccess = (connectionId: string): McpAccess =>
     access()[connectionId] ?? DEFAULT_MCP_ACCESS
 
-  const sharedAccessOf = (connectionId: string) => {
-    const connectionAccess = accessOf(connectionId)
+  const getSharedAccess = (connectionId: string) => {
+    const connectionAccess = getAccess(connectionId)
     if (connectionAccess === 'off') {
       throw new Error(
         `Connection "${connectionId}" is not shared with agents. The user can share it in Tamery → Settings → MCP.`
@@ -55,7 +55,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     request: Extract<McpRequest, { args: McpTarget }>,
     signal: AbortSignal
   ) => {
-    sharedAccessOf(request.args.connectionId)
+    getSharedAccess(request.args.connectionId)
     return askRenderer(request, signal)
   }
 
@@ -73,7 +73,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       )
       return jsonContent(
         connections.flatMap((connection) => {
-          const connectionAccess = accessOf(connection.id)
+          const connectionAccess = getAccess(connection.id)
           return connectionAccess === 'off'
             ? []
             : [{ ...connection, access: connectionAccess }]
@@ -108,7 +108,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
         { args, method: 'createConnection' },
         signal
       )
-      return jsonContent({ ...connection, access: accessOf(connection.id) })
+      return jsonContent({ ...connection, access: getAccess(connection.id) })
     }
   )
 
@@ -162,7 +162,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       inputSchema: sqlInput,
     },
     async (args, { signal }) => {
-      const connectionAccess = sharedAccessOf(args.connectionId)
+      const connectionAccess = getSharedAccess(args.connectionId)
       if (connectionAccess === 'read') {
         throw new Error(
           `Connection "${args.connectionId}" is read-only for agents. The user can allow writes in Tamery → Settings → MCP.`

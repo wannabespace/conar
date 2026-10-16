@@ -5,14 +5,14 @@ import path from 'node:path'
 import { text } from 'node:stream/consumers'
 
 import {
-  connectionTypeOf,
+  getConnectionType,
   TYPE_OF_DEFAULT_PORT,
 } from '@tamery/connection/connection-parts'
 import { partsOfVariables } from '@tamery/connection/guess/env'
 import { mergeParts } from '@tamery/connection/guess/parts'
 import {
   ConnectionType,
-  dialectOf,
+  getDialect,
   SqlDialect,
 } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
@@ -105,7 +105,7 @@ export const docker: Finder = {
         ) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
       const named = [
-        connectionTypeOf(
+        getConnectionType(
           Image.replace(/[:@][^/]*$/u, '')
             .split('/')
             .at(-1) ?? ''
@@ -113,13 +113,13 @@ export const docker: Finder = {
         env.type,
       ]
       return published.map(({ connectionType, ...server }) => {
-        const dialect = dialectOf(connectionType)
+        const dialect = getDialect(connectionType)
         const parts = mergeParts(
           {
             ...server,
             type:
               named.find(
-                (candidate) => candidate && dialectOf(candidate) === dialect
+                (candidate) => candidate && getDialect(candidate) === dialect
               ) ?? connectionType,
           },
           env,

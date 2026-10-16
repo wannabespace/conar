@@ -4,7 +4,7 @@ import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
-import { permissionsOf } from '@tamery/shared/permissions'
+import { getPermissions } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 import { createPermix } from 'permix/orpc'
@@ -172,7 +172,7 @@ export const permissionsMiddleware = logMiddleware.use(
         decryptConnectionString,
         getWorkspaceSecret,
         ...permix.setupContext(
-          permissionsOf({ subscription, user: session.user })
+          getPermissions({ subscription, user: session.user })
         ),
       },
     })

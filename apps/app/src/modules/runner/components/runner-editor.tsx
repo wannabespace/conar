@@ -3,7 +3,7 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -113,7 +113,7 @@ export const RunnerEditor = ({
     }
   }, [sidePanelOpened, editorRef])
 
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
 
   useEffect(() => {
     const codeEditor = editorRef.current

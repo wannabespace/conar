@@ -9,7 +9,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { createFunctionQuery } from '~/core/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/core/queries/functions/definition'
 import { dropFunctionQuery } from '~/core/queries/functions/drop'
@@ -18,7 +18,7 @@ import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { recreateFunctionQuery } from '~/core/queries/functions/recreate'
 import type { FunctionShape, RoutineKind } from '~/core/queries/functions/shape'
 import {
-  functionBodyTemplateOf,
+  getFunctionBodyTemplate,
   replacesRoutine,
 } from '~/core/queries/functions/shape'
 import { queryClient } from '~/lib/query-client'
@@ -98,7 +98,7 @@ const newDraft = (
   dialect: SqlDialect,
   preset?: string
 ): FunctionDraft => {
-  const { behaviors, languages } = capabilitiesOf(dialect).functions
+  const { behaviors, languages } = getCapabilities(dialect).functions
   const language = languages[0] ?? ''
   const trigger = preset === 'trigger'
 
@@ -107,7 +107,7 @@ const newDraft = (
     behavior: behaviors[0] ?? '',
     body: trigger
       ? TRIGGER_FUNCTION_BODY
-      : functionBodyTemplateOf({
+      : getFunctionBodyTemplate({
           dialect,
           kind: 'function',
           language,
@@ -124,7 +124,7 @@ const newDraft = (
   }
 }
 
-const draftOf = (
+const getDraft = (
   item: FunctionItem | null,
   pageSchema: string,
   dialect: SqlDialect,
@@ -150,7 +150,7 @@ const draftOf = (
     : fallback
 }
 
-const shapeOf = (draft: FunctionDraft): FunctionShape => ({
+const getShape = (draft: FunctionDraft): FunctionShape => ({
   args: draft.args.trim(),
   behavior: draft.kind === 'procedure' ? '' : draft.behavior,
   body: draft.body,
@@ -164,7 +164,7 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
 })
 
 const formEditable = (item: FunctionItem, dialect: SqlDialect) => {
-  const { languages } = capabilitiesOf(dialect).functions
+  const { languages } = getCapabilities(dialect).functions
 
   return (
     !item.custom &&
@@ -181,7 +181,7 @@ const hasExecutionOptions = ({
   languages,
   schemaBinding,
   securityDefiner,
-}: ReturnType<typeof capabilitiesOf>['functions']) =>
+}: ReturnType<typeof getCapabilities>['functions']) =>
   languages.length > 0 ||
   behaviors.length > 0 ||
   schemaBinding ||
@@ -199,7 +199,7 @@ const FunctionInspector = ({
   selectedSchema,
   type: dialect,
 }: SectionInspectorProps<FunctionItem>) => {
-  const options = capabilitiesOf(dialect).functions
+  const options = getCapabilities(dialect).functions
   const mutation = useMutation({
     meta: { event: 'function_saved' },
     mutationFn: (draft: FunctionDraft) =>
@@ -216,15 +216,15 @@ const FunctionInspector = ({
                   name: item.name,
                   returnType: item.return_type,
                 },
-                shapeOf(draft),
+                getShape(draft),
                 dialect
               ),
               schema: item.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
             })
           : createFunctionQuery({
               schema: draft.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
             })
       ),
     onSuccess: async (_result, draft) => {
@@ -236,7 +236,7 @@ const FunctionInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', dialect, preset),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect, preset),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -249,15 +249,18 @@ const FunctionInspector = ({
     : !can.create
   const execution = hasExecutionOptions(options)
   const retemplate = (next: FunctionDraft) => {
-    const template = functionBodyTemplateOf({ dialect, ...next })
+    const template = getFunctionBodyTemplate({ dialect, ...next })
 
-    if (!item && draft.body === functionBodyTemplateOf({ dialect, ...draft })) {
+    if (
+      !item &&
+      draft.body === getFunctionBodyTemplate({ dialect, ...draft })
+    ) {
       resetFields(form, { body: template })
     }
   }
   const returns = draft.kind === 'function'
-  const saved = item && shapeOf(draftOf(item, draft.schema, dialect))
-  const changed = !saved || !sameShape(shapeOf(draft), saved)
+  const saved = item && getShape(getDraft(item, draft.schema, dialect))
+  const changed = !saved || !sameShape(getShape(draft), saved)
 
   return (
     <Inspector
@@ -292,7 +295,7 @@ const FunctionInspector = ({
               label="Type"
               description="A procedure runs for its effects and returns nothing."
               disabled={readOnly}
-              labelOf={(value: RoutineKind) => typeLabels[value]}
+              getLabel={(value: RoutineKind) => typeLabels[value]}
               onChanged={(kind: RoutineKind) => retemplate({ ...draft, kind })}
               options={kinds}
               placeholder="Type"
@@ -412,9 +415,9 @@ const FunctionInspector = ({
 const columns: DefinitionsColumn<FunctionItem>[] = [
   nameColumn({ icon: () => SourceCodeIcon, width: '3/12' }),
   labelColumn({
-    header: 'Language',
-    labelOf: (item: FunctionItem, { search }) =>
+    getLabel: (item: FunctionItem, { search }) =>
       item.language && <HighlightText text={item.language} match={search} />,
+    header: 'Language',
     width: '2/12',
   }),
   textColumn({
@@ -428,8 +431,8 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
   }),
   labelColumn({
     align: 'end',
+    getLabel: (item: FunctionItem) => typeLabels[item.type],
     header: 'Type',
-    labelOf: (item: FunctionItem) => typeLabels[item.type],
     width: '2/12',
   }),
 ]
@@ -468,7 +471,7 @@ export const Functions = () => {
       }
       Inspector={FunctionInspector}
       items={inSchema}
-      keyOf={functionKey}
+      getKey={functionKey}
       loading={isPending}
       match={matches}
       queryKey={query.queryKey}

@@ -18,7 +18,7 @@ const isTypedCharacter = (event: KeyboardEvent) =>
 
 const TO_EDGE = Number.MAX_SAFE_INTEGER
 
-const positionOf = (event: MouseEvent): CellPosition | null => {
+const getPosition = (event: MouseEvent): CellPosition | null => {
   const cell =
     event.target instanceof Element
       ? event.target.closest<HTMLElement>('[data-cell]')
@@ -204,23 +204,23 @@ export const useGridPointer = (cursor: GridCursor) => {
   const dragging = useRef(false)
   return {
     onClick: (event: MouseEvent) => {
-      if (positionOf(event) && isCheckbox(event)) {
+      if (getPosition(event) && isCheckbox(event)) {
         cursor.edit()
       }
     },
     onContextMenuCapture: (event: MouseEvent) => {
-      const position = positionOf(event)
-      if (position && !inRange(cursor.store.get(), position, cursor.indexOf)) {
+      const position = getPosition(event)
+      if (position && !inRange(cursor.store.get(), position, cursor.getIndex)) {
         cursor.place(position)
       }
     },
     onDoubleClick: (event: MouseEvent) => {
-      if (positionOf(event) && !isCheckbox(event)) {
+      if (getPosition(event) && !isCheckbox(event)) {
         cursor.edit()
       }
     },
     onPointerDown: (event: PointerEvent) => {
-      const position = positionOf(event)
+      const position = getPosition(event)
       if (event.button !== 0 || !position) {
         return
       }
@@ -232,7 +232,7 @@ export const useGridPointer = (cursor: GridCursor) => {
         dragging.current = false
         return
       }
-      const position = positionOf(event)
+      const position = getPosition(event)
       if (dragging.current && position) {
         cursor.place(position, true)
       }

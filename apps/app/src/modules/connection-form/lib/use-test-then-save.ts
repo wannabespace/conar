@@ -2,7 +2,7 @@ import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { describeConnectionString } from '@tamery/connection/utils'
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { toError } from '@tamery/shared/utils'
 import { useMutation } from '@tanstack/react-query'
@@ -17,7 +17,7 @@ import { useLocalProxyAvailable } from '~/core/runtime/proxy'
 import { generateRandomName } from '~/utils/faker'
 
 import type { ConnectionForm, ConnectionFormValues } from './connection-form'
-import { partsOf } from './connection-form'
+import { getParts } from './connection-form'
 import type { FormMode } from './form-mode'
 
 export type OnSave = (
@@ -38,10 +38,10 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   })
   const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)
 
-  const draftOf = (values: ConnectionFormValues) => {
+  const getDraft = (values: ConnectionFormValues) => {
     const connectionString = Result.try(() =>
       connectionParts.format(
-        partsOf(values),
+        getParts(values),
         mode.kind === 'edit' ? mode.missingSecrets : []
       )
     ).unwrapOr('')
@@ -67,7 +67,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     )
     const tested =
       test.variables?.connectionString === connectionString &&
-      test.variables.type === dialectOf(values.type)
+      test.variables.type === getDialect(values.type)
     return {
       canSend: canSend && !!connectionString,
       connectionString,
@@ -77,14 +77,14 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   }
 
   const runTest = (values: ConnectionFormValues) => {
-    const { canSend, connectionString } = draftOf(values)
+    const { canSend, connectionString } = getDraft(values)
     if (!canSend) {
       return null
     }
     inFlight.current = Result.tryPromise(() =>
       test.mutateAsync({
         connectionString,
-        type: dialectOf(values.type),
+        type: getDialect(values.type),
       })
     )
     return inFlight.current
@@ -94,7 +94,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     form: ConnectionForm,
     origin: GuessFormat | undefined
   ): Promise<void> => {
-    const draft = draftOf(form.state.values)
+    const draft = getDraft(form.state.values)
     if (
       draft.canSend &&
       (draft.testStatus === 'idle' || draft.testStatus === 'pending')
@@ -106,7 +106,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
         return
       }
       if (
-        draftOf(form.state.values).connectionString !== draft.connectionString
+        getDraft(form.state.values).connectionString !== draft.connectionString
       ) {
         return save(form, origin)
       }
@@ -139,5 +139,5 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     }
   }
 
-  return { draftOf, runTest, save, testError: test.error }
+  return { getDraft, runTest, save, testError: test.error }
 }

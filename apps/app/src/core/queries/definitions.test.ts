@@ -15,21 +15,21 @@ import {
 import type { ConstraintShape } from './constraints/shape'
 import {
   addConstraint,
-  clickhouseConstraintsOf,
+  getClickhouseConstraints,
   constraintClause,
 } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import {
   addSkipIndexStatement,
   createIndexStatement,
-  skipIndexColumnsOf,
+  getSkipIndexColumns,
 } from './indexes/shape'
 import {
   clickhouseRoleList,
   createPolicyStatement,
   policyPredicate,
 } from './policies/shape'
-import { accountOf, privilegeOn } from './privileges/shape'
+import { getAccount, privilegeOn } from './privileges/shape'
 import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
 import {
   createTriggerStatements,
@@ -429,7 +429,7 @@ describe('mssqlModuleBody', () => {
 describe('ClickHouse', () => {
   test('reads constraints out of the table DDL', () => {
     expect(
-      clickhouseConstraintsOf(
+      getClickhouseConstraints(
         "CREATE TABLE db.t (`id` UInt64, `note` String DEFAULT 'a, b', CONSTRAINT positive CHECK id > 0, CONSTRAINT `odd name` ASSUME length(note) < (10)) ENGINE = MergeTree ORDER BY id"
       )
     ).toEqual([
@@ -457,8 +457,8 @@ describe('ClickHouse', () => {
   })
 
   test('reads skip index columns back, or none for an expression', () => {
-    expect(skipIndexColumnsOf('tuple(a, `b c`)')).toEqual(['a', 'b c'])
-    expect(skipIndexColumnsOf('lower(a)')).toBeNull()
+    expect(getSkipIndexColumns('tuple(a, `b c`)')).toEqual(['a', 'b c'])
+    expect(getSkipIndexColumns('lower(a)')).toBeNull()
   })
 
   test('round-trips a row policy audience', () => {
@@ -471,11 +471,11 @@ describe('ClickHouse', () => {
 
 describe('a MySQL privilege', () => {
   test('reads the account the way the catalog and a user write it', () => {
-    expect(compiled(accountOf("'bob'@'%'"), 'mysql')).toBe("'bob'@'%'")
-    expect(compiled(accountOf('bob@localhost'), 'mysql')).toBe(
+    expect(compiled(getAccount("'bob'@'%'"), 'mysql')).toBe("'bob'@'%'")
+    expect(compiled(getAccount('bob@localhost'), 'mysql')).toBe(
       "'bob'@'localhost'"
     )
-    expect(compiled(accountOf('bob'), 'mysql')).toBe("'bob'@'%'")
+    expect(compiled(getAccount('bob'), 'mysql')).toBe("'bob'@'%'")
   })
 
   test('covers a database or one table', () => {

@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { silently } from '@tamery/shared/utils'
 import { createStore } from 'seitu'
 
@@ -42,7 +42,7 @@ const request = async ({
     decided.signal,
     AbortSignal.timeout(ESTIMATE_BUDGET_MS),
   ])
-  const estimate = estimateQuery(sql, dialectOf(connection.type))
+  const estimate = estimateQuery(sql, getDialect(connection.type))
   const estimated = silently(async () => {
     const rows = await estimate?.run({ ...params, signal: estimating })
     if (typeof rows === 'number') {

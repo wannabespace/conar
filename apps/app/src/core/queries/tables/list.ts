@@ -3,7 +3,7 @@ import { type } from 'arktype'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
 import {
@@ -204,12 +204,12 @@ export const resourceTablesAndSchemasQueryOptions = ({
     placeholderData: undefined,
     queryFn: async () => {
       const params = await connectionResourceToQueryParams(connectionResource)
-      const { systemSchemas } = capabilitiesOf(params.type)
+      const { systemSchemas } = getCapabilities(params.type)
       const results = await resourceTablesAndSchemasQuery({
         database: connectionResource.name,
       }).run(params)
       const bySchema = Object.groupBy(results, (table) => table.schema)
-      const defaultSchema = defaultSchemaOf(
+      const defaultSchema = getDefaultSchema(
         params.type,
         connectionResource.name
       )

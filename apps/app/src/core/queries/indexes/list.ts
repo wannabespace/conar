@@ -10,7 +10,7 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { SKIP_INDEX_TYPES, skipIndexColumnsOf } from './shape'
+import { SKIP_INDEX_TYPES, getSkipIndexColumns } from './shape'
 
 export const indexesType = type({
   column: 'string | null',
@@ -61,7 +61,7 @@ const clickhouseSkipIndexes = async (db: Kysely<ClickhouseDatabase>) => {
     .execute()
 
   return rows.flatMap((row) => {
-    const columns = skipIndexColumnsOf(row.expr)
+    const columns = getSkipIndexColumns(row.expr)
     const custom =
       !columns ||
       !SKIP_INDEX_TYPES.some((skipType) => skipType === row.type_full)

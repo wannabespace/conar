@@ -4,9 +4,9 @@ import {
   SidebarLeftIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type {
   CommandContext,
   CommandEntry,
@@ -38,7 +38,7 @@ export const navigatorCommands = ({
           order: 15,
           value: 'New view…',
         },
-        ...(capabilitiesOf(dialectOf(current.connection.type)).schemas
+        ...(getCapabilities(getDialect(current.connection.type)).schemas
           ? [
               {
                 action: () => createSchemaDialogRef.current?.create(),

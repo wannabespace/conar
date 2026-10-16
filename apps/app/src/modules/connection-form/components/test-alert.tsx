@@ -3,8 +3,8 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnose'
 import { diagnoseConnectionError } from '@tamery/connection/diagnose'
-import { diagnosisRequestOf } from '@tamery/connection/diagnosis-request'
-import { sslOptionsOf } from '@tamery/connection/ssl/setting'
+import { getDiagnosisRequest } from '@tamery/connection/diagnosis-request'
+import { getSslOptions } from '@tamery/connection/ssl/setting'
 import {
   Alert,
   AlertDescription,
@@ -127,7 +127,7 @@ export const TestAlert = ({
                       {
                         database: aiFix.database ?? undefined,
                         options: aiFix.ssl
-                          ? sslOptionsOf(
+                          ? getSslOptions(
                               { ...parts, type: aiFix.type ?? parts.type },
                               aiFix.ssl
                             )
@@ -153,7 +153,7 @@ export const TestAlert = ({
                         disabled={ask.isPending}
                         onClick={() => {
                           onAsk()
-                          ask.mutate(diagnosisRequestOf(context))
+                          ask.mutate(getDiagnosisRequest(context))
                         }}
                       >
                         <LoadingContent loading={ask.isPending}>

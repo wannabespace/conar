@@ -1,6 +1,6 @@
 import {
   ConnectionType,
-  dialectOf,
+  getDialect,
   SqlDialect,
 } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -8,7 +8,7 @@ import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
 import type { SshTunnel } from './ssh/params'
-import { deleteSshParams, setSshParams, sshTunnelOf } from './ssh/params'
+import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
 export interface ConnectionParts {
   database: string
@@ -48,7 +48,7 @@ export const CLICKHOUSE_HTTP_PORT_OF_NATIVE: Record<string, string> = {
   9440: CLICKHOUSE_HTTPS_PORT,
 }
 
-const portOf = ({
+const getPort = ({
   https,
   port,
   type,
@@ -84,7 +84,7 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
 }
 
 /** A URL scheme or a tool's driver name, never a whole URL; a `+driver` suffix (`postgresql+asyncpg`) is dropped. */
-export const connectionTypeOf = (name: string): ConnectionType | null =>
+export const getConnectionType = (name: string): ConnectionType | null =>
   TYPE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')] ?? null
 
 const format = (
@@ -95,8 +95,8 @@ const format = (
     return ''
   }
 
-  const port = portOf(parts)
-  const dialect = dialectOf(parts.type)
+  const port = getPort(parts)
+  const dialect = getDialect(parts.type)
   let scheme: string = dialect === SqlDialect.MSSQL ? 'sqlserver' : dialect
   if (dialect === SqlDialect.ClickHouse) {
     const https =
@@ -124,7 +124,7 @@ const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
-  const ssh = sshTunnelOf(searchParams)
+  const ssh = getSshTunnel(searchParams)
   deleteSshParams(searchParams)
 
   return {
@@ -132,8 +132,8 @@ const parse = (connectionString: string): ConnectionParts => {
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,
-    type: connectionTypeOf(scheme),
+    type: getConnectionType(scheme),
   }
 }
 
-export const connectionParts = { format, parse, port: portOf }
+export const connectionParts = { format, parse, port: getPort }

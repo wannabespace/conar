@@ -1,4 +1,4 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -6,7 +6,7 @@ import { useReactFlow } from '@xyflow/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import type { constraintsType } from '~/core/queries/constraints/list'
@@ -22,7 +22,7 @@ import { TableDialog } from '~/core/table/table-dialog'
 import { useDiagramActions } from '../lib/actions'
 import { useApplyDrafts } from '../lib/apply'
 import type { DiagramContextValue } from '../lib/context'
-import { DiagramContext, diagramViewStore, gatesOf } from '../lib/context'
+import { DiagramContext, diagramViewStore, getGates } from '../lib/context'
 import { diagramDrafts, diagramDraftsStore } from '../lib/drafts'
 import { fitViewOptions, usePositions } from '../lib/layout'
 import { visualizerLayout, visualizerStore } from '../lib/positions'
@@ -47,7 +47,7 @@ export const Visualizer = ({
   tables: { schema: string; table: string; type: TableType }[]
 }) => {
   const { connection, connectionResource } = useRouteContext()
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
   const flow = useReactFlow()
   const draftsStore = diagramDraftsStore(connectionResource.id)
   const drafts = useSubscription(draftsStore, {
@@ -55,9 +55,9 @@ export const Visualizer = ({
     selector: (state) => state.drafts,
   })
   const edit = diagramDrafts(draftsStore)
-  const can = gatesOf(dialect)
+  const can = getGates(dialect)
 
-  const defaultSchema = defaultSchemaOf(dialect, connectionResource.name)
+  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const schemas = [
     ...new Set([
       ...tables.map(({ schema }) => schema),

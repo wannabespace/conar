@@ -60,7 +60,7 @@ type CatalogColumn = Partial<
   >
 >
 
-export const columnDefinitionOf = (
+export const getColumnDefinition = (
   column: CatalogColumn
 ): ColumnDefinition => ({
   attributes: column.attributes ?? '',

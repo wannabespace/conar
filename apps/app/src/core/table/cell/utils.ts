@@ -1,7 +1,7 @@
 import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
 
 export interface Column extends Partial<
@@ -124,6 +124,6 @@ export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)
 
 export const canWriteDefault = (dialect: SqlDialect, column: Column) =>
-  capabilitiesOf(dialect).setDefault &&
+  getCapabilities(dialect).setDefault &&
   column.defaultValue !== null &&
   column.defaultValue !== undefined

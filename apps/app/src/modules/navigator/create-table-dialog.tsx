@@ -1,10 +1,10 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { createTableQuery } from '~/core/queries/tables/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -34,8 +34,8 @@ export const CreateTableDialog = () => {
       setRequest({
         schema:
           schema ??
-          defaultSchemaOf(
-            dialectOf(connection.type),
+          getDefaultSchema(
+            getDialect(connection.type),
             connectionResource.name
           ) ??
           schemas[0]?.name ??
@@ -59,7 +59,7 @@ export const CreateTableDialog = () => {
             name: 'id',
             nullable: false,
             primaryKey: true,
-            type: capabilitiesOf(dialectOf(connection.type)).columnTypes.id,
+            type: getCapabilities(getDialect(connection.type)).columnTypes.id,
           },
         ],
         schema,

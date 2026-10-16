@@ -9,7 +9,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { Statement } from '@tamery/sql'
 import {
   destructiveKeywords,
@@ -157,7 +157,7 @@ export const Runner = () => {
   })
   const { data: lastRun } = useQuery(runnerResultsOptions(tab))
   const running = lastRun?.running ?? false
-  const dialect = dialectOf(connection.type)
+  const dialect = getDialect(connection.type)
   const statements = runnerStatements({ ...tab, dialect })
   const spec = dialects[dialect]
   const aiEdit = useAiEdit({ dialect, editorRef })
@@ -190,14 +190,14 @@ export const Runner = () => {
     if (!statement) {
       return { range: null, statements: [] }
     }
-    const lineOf = (offset: number) => model.getPositionAt(offset).lineNumber
-    const first = lineOf(statement.start)
-    const last = lineOf(statement.terminatorEnd)
+    const getLine = (offset: number) => model.getPositionAt(offset).lineNumber
+    const first = getLine(statement.start)
+    const last = getLine(statement.terminatorEnd)
     const sameLines = statements
       .get()
       .filter(
         (item) =>
-          lineOf(item.start) <= last && lineOf(item.terminatorEnd) >= first
+          getLine(item.start) <= last && getLine(item.terminatorEnd) >= first
       )
     return {
       range: Range.fromPositions(

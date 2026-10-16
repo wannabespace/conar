@@ -26,7 +26,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
@@ -147,7 +147,7 @@ export const replaceWarning = ({
   name: string
   noun: string
 }): InspectorWarning | undefined =>
-  capabilitiesOf(dialect).ddlRollback
+  getCapabilities(dialect).ddlRollback
     ? undefined
     : {
         action: `Replace ${noun}`,

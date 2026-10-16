@@ -1,10 +1,10 @@
-import { dialectOf } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import { resourceColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
@@ -50,7 +50,7 @@ const VisualizerTab = () => {
       <VisualizerSkeleton
         drafts={hasDrafts}
         schemaPicker={
-          capabilitiesOf(dialectOf(connection.type)).schemas &&
+          getCapabilities(getDialect(connection.type)).schemas &&
           (!tables || new Set(tables.map(({ schema }) => schema)).size > 1)
         }
       />
