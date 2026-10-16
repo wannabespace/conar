@@ -38,7 +38,6 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.SQLite]: 'SQLite',
 }
 
-/** A service over a `ConnectionType`: its own fields and mark, the same dialect. Saved on the connection, so it shows without the string. */
 export enum Provider {
   CloudflareD1 = 'cloudflare_d1',
   Turso = 'turso',

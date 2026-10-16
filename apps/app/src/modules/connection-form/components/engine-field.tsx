@@ -10,8 +10,7 @@ import {
 import { useSelector } from '@tanstack/react-form'
 
 import type { ConnectionForm } from '../lib/connection-form'
-import { clearPlace } from '../lib/connection-form'
-import { getPlace } from '../lib/place'
+import { switchEngine } from '../lib/connection-form'
 
 type Engine = (typeof engines)[number]
 
@@ -44,16 +43,7 @@ export const EngineField = ({
           <Select<Engine>
             disabled={locked(field.name)}
             value={engine}
-            onValueChange={(next) => {
-              if (!next) {
-                return
-              }
-              if (getPlace(next) !== getPlace(form.state.values)) {
-                clearPlace(form)
-              }
-              field.handleChange(next.type)
-              form.setFieldValue('provider', next.provider)
-            }}
+            onValueChange={(next) => next && switchEngine(form, next)}
           >
             <SelectTrigger
               id={field.name}

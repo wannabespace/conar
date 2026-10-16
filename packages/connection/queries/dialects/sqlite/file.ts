@@ -18,8 +18,6 @@ const runOn = (
 ): StatementResult[] =>
   texts.map((text) => {
     const statement = db.prepare(text)
-    statement.setReadBigInts(true)
-    statement.setReturnArrays(true)
     const columns = statement.columns().map((column) => column.name)
     if (columns.length === 0) {
       return {
@@ -57,15 +55,10 @@ export const fileLocation = {
   // A transaction gets its own handle: on the shared one, every other query would run inside it.
   transaction: (connectionString, readOnly) => {
     const db = openDatabase(connectionString)
-    try {
-      if (readOnly) {
-        db.exec('PRAGMA query_only = ON')
-      }
-      db.exec('BEGIN')
-    } catch (error) {
-      db.close()
-      throw error
+    if (readOnly) {
+      db.exec('PRAGMA query_only = ON')
     }
+    db.exec('BEGIN')
     return Promise.resolve(sessionOn(db))
   },
 } satisfies SqliteLocationQueries

@@ -78,6 +78,7 @@ export const OptionSelect = <T extends string>({
   >
     <SelectTrigger
       id={id}
+      // The trigger is a div, which `<label for>` cannot name; the form's `FieldLabel` has `${field.name}-label`.
       aria-labelledby={id && `${id}-label`}
       data-mask={mask || undefined}
       className={cn('w-full', className)}
@@ -105,15 +106,13 @@ interface LabelledProps {
   label: string
 }
 
-/** `controlId` names an `OptionSelect` by that id: its trigger is a div, which `<label for>` cannot name. */
 export const Labelled = ({
   children,
-  controlId,
   description,
   label,
-}: LabelledProps & { children: ReactNode; controlId?: string }) => (
+}: LabelledProps & { children: ReactNode }) => (
   <Field>
-    <FieldLabel id={controlId && `${controlId}-label`}>{label}</FieldLabel>
+    <FieldLabel>{label}</FieldLabel>
     {children}
     {description && <FieldDescription>{description}</FieldDescription>}
   </Field>
@@ -188,7 +187,7 @@ export const SelectField = <T extends string>({
   const field = useFieldContext<T>()
 
   return (
-    <Labelled controlId={field.name} description={description} label={label}>
+    <Labelled description={description} label={label}>
       <OptionSelect
         id={field.name}
         value={field.state.value}

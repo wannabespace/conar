@@ -1,4 +1,4 @@
-import type { Client, InStatement, Transaction } from '@libsql/client/http'
+import type { Client, Transaction } from '@libsql/client/http'
 import { createClient } from '@libsql/client/http'
 
 import { readConnectionString } from '../../../parse-connection-string'
@@ -18,43 +18,28 @@ const openClient = (connectionString: string) => {
 
 const SQLITE_ERROR_PREFIX = /^(?:SQLITE_\w+: )+SQLite error: /u
 
-/** Drops the client's own prefix, so a SQL error reads as it does from a file. */
-const executeOn = async (
-  target: Client | Transaction,
-  statement: InStatement
-) => {
-  try {
-    return await target.execute(statement)
-  } catch (error) {
-    throw error instanceof Error
-      ? new Error(error.message.replace(SQLITE_ERROR_PREFIX, ''), {
-          cause: error,
-        })
-      : error
-  }
-}
-
 /** On a client, each statement runs on a stream of its own; only a `Transaction` keeps one between them. */
-const runOn = async (
+const runOn = (
   target: Client | Transaction,
   texts: string[],
   args: SqliteValue[]
-) => {
-  const results = []
-  for (const sql of texts) {
-    // Sequential by design: each statement sees the one before it.
-    // oxlint-disable-next-line no-await-in-loop
-    const set = await executeOn(target, { args, sql })
-    results.push({
+) =>
+  // One at a time: each statement sees the one before it.
+  Array.fromAsync(texts, async (sql) => {
+    // Drops the client's own prefix, so a SQL error reads as it does from a file.
+    const set = await target.execute({ args, sql }).catch((error: unknown) => {
+      throw error instanceof Error
+        ? new Error(error.message.replace(SQLITE_ERROR_PREFIX, ''), {
+            cause: error,
+          })
+        : error
+    })
+    return {
       changes: set.rowsAffected,
       columns: set.columns,
-      rows: set.rows.map((row) =>
-        set.columns.map((_, index) => toOutput(row[index]))
-      ),
-    })
-  }
-  return results
-}
+      rows: set.rows.map((row) => Array.from(row, toOutput)),
+    }
+  })
 
 export const libsqlLocation = {
   run: async (connectionString, texts, values) => {

@@ -11,7 +11,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { createElement } from 'react'
 
 const iconMap: Record<
-  ConnectionType,
+  ConnectionType | Provider,
   (props: ComponentProps<'svg'>) => ReactNode
 > = {
   [ConnectionType.MariaDB]: MariaDBIcon,
@@ -20,12 +20,6 @@ const iconMap: Record<
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,
   [ConnectionType.SQLite]: SQLiteIcon,
-}
-
-const providerIcons: Record<
-  Provider,
-  (props: ComponentProps<'svg'>) => ReactNode
-> = {
   [Provider.CloudflareD1]: CloudflareD1Icon,
   [Provider.Turso]: TursoIcon,
 }
@@ -37,5 +31,4 @@ export const ConnectionIcon = ({
 }: {
   provider?: Provider | null
   type: ConnectionType
-} & ComponentProps<'svg'>) =>
-  createElement(provider ? providerIcons[provider] : iconMap[type], props)
+} & ComponentProps<'svg'>) => createElement(iconMap[provider ?? type], props)

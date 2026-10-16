@@ -193,7 +193,6 @@ export const TriggerInspector = ({
               <Labelled
                 label="Event"
                 description="A trigger here answers to a single event."
-                controlId={field.name}
               >
                 <OptionSelect
                   id={field.name}

@@ -10,7 +10,6 @@ interface SqliteSchema {
   sql: string | null
 }
 
-/** Rows of the `pragma_*` table-valued functions, which a read selects from through `sql<Row>`. */
 export interface Pragmas {
   foreign_key_list: {
     id: number

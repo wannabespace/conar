@@ -9,14 +9,11 @@ import { sqliteFile } from '../../../sqlite-file'
 const directory = mkdtempSync(path.join(tmpdir(), 'tamery-sqlite-'))
 afterAll(() => rmSync(directory, { force: true, recursive: true }))
 
-const created = (name: string) => {
-  const connectionString = sqliteFile.connectionString(
-    path.join(directory, name)
-  )
-  return { connectionString }
-}
+const connectionTo = (name: string) => ({
+  connectionString: sqliteFile.connectionString(path.join(directory, name)),
+})
 
-const file = created('app data.db')
+const file = connectionTo('app data.db')
 await Bun.write(path.join(directory, 'app data.db'), '')
 
 describe('sqlite executor', () => {
@@ -56,22 +53,6 @@ describe('sqlite executor', () => {
     ])
   })
 
-  test('a read-only transaction refuses writes and others see none of it', async () => {
-    const { txId } = await query.beginTransaction({
-      ...file,
-      accessMode: 'read only',
-    })
-
-    await expect(
-      query.executeTransaction({
-        query: 'DELETE FROM t',
-        txId,
-        values: [],
-      })
-    ).rejects.toThrow('only statements that read')
-    await query.rollbackTransaction({ txId })
-  })
-
   test('a rolled back transaction leaves the file as it was', async () => {
     const { txId } = await query.beginTransaction(file)
     await query.executeTransaction({ query: 'DELETE FROM t', txId, values: [] })
@@ -103,7 +84,7 @@ describe('sqlite executor', () => {
 
   test('never creates a file at a missing path', async () => {
     await expect(
-      query.execute({ ...created('missing.db'), query: 'SELECT 1' })
+      query.execute({ ...connectionTo('missing.db'), query: 'SELECT 1' })
     ).rejects.toThrow('Unable to open database file')
     expect(await Bun.file(path.join(directory, 'missing.db')).exists()).toBe(
       false

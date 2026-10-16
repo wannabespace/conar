@@ -30,9 +30,9 @@ export interface ConnectionFormValues extends Omit<
   color: string | null
   label: string
   name: string
+  provider: Provider | null
   ssh: SshTunnel
   sshEnabled: boolean
-  provider: Provider | null
   syncType: SyncType
   type: ConnectionType
 }
@@ -111,9 +111,7 @@ export const getFormValues = (
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    provider: parts
-      ? getProvider({ host: parts.host, type: connection.type })
-      : connection.provider,
+    provider: connection.provider,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
@@ -153,7 +151,7 @@ export const getMissing = (values: ConnectionFormValues) =>
   )
 
 /** Starts every field over, so a password or token never travels to another place's host. */
-export const clearPlace = (form: ConnectionForm) => {
+const clearPlace = (form: ConnectionForm) => {
   for (const field of SERVER_FIELDS) {
     form.setFieldValue(field, '')
   }
@@ -162,10 +160,20 @@ export const clearPlace = (form: ConnectionForm) => {
   form.setFieldValue('sshEnabled', false)
 }
 
+type Engine = Pick<ConnectionFormValues, 'provider' | 'type'>
+
+export const switchEngine = (form: ConnectionForm, engine: Engine) => {
+  if (getPlace(engine) !== getPlace(form.state.values)) {
+    clearPlace(form)
+  }
+  form.setFieldValue('type', engine.type)
+  form.setFieldValue('provider', engine.provider)
+}
+
 const getGuessedEngine = (
   values: ConnectionFormValues,
   parts: GuessedParts
-): Pick<ConnectionFormValues, 'provider' | 'type'> =>
+): Engine =>
   parts.type
     ? {
         provider: getProvider({ host: parts.host ?? '', type: parts.type }),
@@ -177,20 +185,16 @@ const BARE_HOST = /^[\w.:%[\]-]+$/u
 
 const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   const { values } = form.state
-  const engine = getGuessedEngine(values, parts)
-  const newHost =
-    !!parts.host && BARE_HOST.test(values.host) && parts.host !== values.host
-  if (newHost || getPlace(engine) !== getPlace(values)) {
+  if (parts.host && BARE_HOST.test(values.host) && parts.host !== values.host) {
     clearPlace(form)
   }
+  switchEngine(form, getGuessedEngine(values, parts))
   for (const field of SERVER_FIELDS) {
     const value = parts[field]
     if (value) {
       form.setFieldValue(field, value)
     }
   }
-  form.setFieldValue('type', engine.type)
-  form.setFieldValue('provider', engine.provider)
   if (parts.https !== undefined) {
     form.setFieldValue('https', parts.https)
   }
@@ -263,21 +267,14 @@ export const useConnectionForm = ({
       onFill(guess, true)
     },
     patch: (patch: ConnectionPatch) => {
-      const { values } = form.state
-      if (
-        patch.type &&
-        getPlace({ ...values, type: patch.type }) !== getPlace(values)
-      ) {
-        clearPlace(form)
+      if (patch.type && patch.type !== form.state.values.type) {
+        switchEngine(form, { provider: null, type: patch.type })
       }
       for (const field of ['database', 'host', 'options', 'port'] as const) {
         const value = patch[field]
         if (value !== undefined) {
           form.setFieldValue(field, value)
         }
-      }
-      if (patch.type && patch.type !== values.type) {
-        form.setFieldValue('type', patch.type)
       }
       if (patch.sshEnabled) {
         form.setFieldValue('sshEnabled', true)

@@ -161,7 +161,7 @@ const AUTH_TOKEN_PARAM = 'authtoken'
 /** A SQLite file's path is the whole string, not its URL path; libSQL may carry its token as a param. */
 const sqliteParts = (
   connectionString: string,
-  parts: Pick<ConnectionParts, 'database' | 'host' | 'password'>,
+  parts: Pick<ConnectionParts, 'host' | 'password'>,
   searchParams: URLSearchParams
 ) => {
   if (!parts.host) {

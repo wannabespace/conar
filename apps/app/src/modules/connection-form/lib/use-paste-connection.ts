@@ -24,15 +24,6 @@ const MAX_DROP_BYTES = 256 * 1024
 const FLASH_SHOWN_MS = 3000
 const SQLITE_HEADER = 'SQLite format 3\0'
 
-const readDrop = async (file: File) => {
-  const header = await file.slice(0, SQLITE_HEADER.length).text()
-  const path = window.electron?.sqlite.getPath(file)
-  if (header === SQLITE_HEADER && path) {
-    return sqliteFile.connectionString(path)
-  }
-  return file.size > MAX_DROP_BYTES ? '' : file.text()
-}
-
 export const usePasteConnection = ({
   enabled,
   onPaste,
@@ -152,7 +143,13 @@ export const usePasteConnection = ({
         return
       }
       event.preventDefault()
-      onRead(await readDrop(file), 'drop')
+      const header = await file.slice(0, SQLITE_HEADER.length).text()
+      const path = window.electron?.sqlite.getPath(file)
+      if (header === SQLITE_HEADER && path) {
+        onRead(sqliteFile.connectionString(path), 'drop')
+        return
+      }
+      onRead(file.size > MAX_DROP_BYTES ? '' : await file.text(), 'drop')
     }
 
     const controller = new AbortController()

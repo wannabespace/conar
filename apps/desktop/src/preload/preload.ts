@@ -34,7 +34,6 @@ export type ElectronPreload = Promisified<typeof electron> & {
     serve: (source: McpSource) => () => void
   }
   sqlite: {
-    /** A dropped file's path on disk; the page itself only ever sees its contents. */
     getPath: (file: File) => string
   }
   versions: {

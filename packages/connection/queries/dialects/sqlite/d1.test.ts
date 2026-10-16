@@ -141,7 +141,7 @@ describe('D1', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  test('sends a whole BEGIN … COMMIT script as one batch', async () => {
+  test('sends a whole BEGIN … COMMIT script without its BEGIN and COMMIT', async () => {
     const fetch = stubFetch(answer([set([], [], 1)]))
 
     await query.execute({
