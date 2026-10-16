@@ -1,6 +1,7 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
 import { guessConnection } from '@tamery/connection/guess'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
@@ -20,7 +21,7 @@ declare module '@tanstack/react-router' {
 const getServer = (parts: Partial<ConnectionParts>) =>
   parts.type &&
   [
-    parts.type,
+    getDialect(parts.type),
     parts.host?.toLowerCase(),
     connectionParts.port(parts),
     parts.user,
@@ -37,6 +38,7 @@ export const useConnectionLinks = () => {
         return
       }
       const parts = guessConnection(link)?.parts ?? {}
+      const dialect = parts.type && getDialect(parts.type)
       const {
         connectionsCollection,
         connectionStringsCollection,
@@ -46,7 +48,7 @@ export const useConnectionLinks = () => {
       const candidates = connectionsCollection.toArray.filter(
         (connection) =>
           connection.workspaceId === workspace?.id &&
-          connection.type === parts.type &&
+          getDialect(connection.type) === dialect &&
           connectionStringsCollection.has(connection.id)
       )
       const servers = await Promise.all(
