@@ -56,6 +56,7 @@ const NEW_WINDOW_OFFSET = 28
 
 let mainWindow: BrowserWindow | null = null
 
+// Allowlist: any other scheme hands the renderer a way to launch arbitrary local apps. cursor: and vscode: carry the MCP install links.
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
 
 const openExternal = async (win: BrowserWindow, url: string) => {

@@ -22,31 +22,24 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-const prepareConnectionStringToCloud = async (
-  connectionStrings: ConnectionStringsCollection,
-  { id, syncType }: Connection
-) => {
-  if (syncType === SyncType.CloudWithoutConnectionString) {
-    return null
-  }
-
-  const connectionString = await connectionStrings.utils.decrypt(id)
-
-  return syncType === SyncType.Cloud
-    ? new SafeURL(connectionString.trim()).toString()
-    : connectionSecrets.strip(connectionString.trim())
-}
-
 const prepareConnectionToCloud = async (
   connectionStrings: ConnectionStringsCollection,
   connection: Connection
-) => ({
-  ...connection,
-  connectionString: await prepareConnectionStringToCloud(
-    connectionStrings,
-    connection
-  ),
-})
+) => {
+  if (connection.syncType === SyncType.CloudWithoutConnectionString) {
+    return { ...connection, connectionString: null }
+  }
+
+  const connectionString = await connectionStrings.utils.decrypt(connection.id)
+
+  return {
+    ...connection,
+    connectionString:
+      connection.syncType === SyncType.Cloud
+        ? new SafeURL(connectionString.trim()).toString()
+        : connectionSecrets.strip(connectionString.trim()),
+  }
+}
 
 export interface ConnectionResource extends BaseTable {
   connectionId: string

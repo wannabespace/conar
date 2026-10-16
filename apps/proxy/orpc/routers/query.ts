@@ -12,7 +12,11 @@ export const query = createQueryRouter(orpc.use(authMiddleware), {
         : await createApiClient({
             authorization: headers.get('authorization'),
             cookie: headers.get('cookie'),
-          }).internal.proxy.resolveConnectionString(input)
+          }).internal.proxy.resolveConnectionString(
+            'connectionId' in input
+              ? { connectionId: input.connectionId }
+              : { resourceId: input.resourceId }
+          )
     await assertPublicHost(connectionString)
     return connectionString
   },

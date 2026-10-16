@@ -137,11 +137,13 @@ export const ConnectionCard = ({
     connection,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
-    onEdit: () =>
-      router.navigate({
+    onEdit: () => {
+      posthog.capture('connection_edit_opened')
+      void router.navigate({
         params: { connectionId: connection.id },
         to: '/edit/$connectionId',
-      }),
+      })
+    },
     onOpenInNewWindow: openResourceId
       ? () =>
           openNewWindow(

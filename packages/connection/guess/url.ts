@@ -1,5 +1,4 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { omit } from '@tamery/shared/utils'
 
 import {
   CLICKHOUSE_HTTP_PORT_OF_NATIVE,
@@ -47,7 +46,7 @@ const guessOfUrl = ({ type, url: candidate }: FoundUrl): DatabaseGuess => {
     }
   }
 
-  const parts = omit(connectionParts.parse(url), ['type'])
+  const parts = connectionParts.parse(url)
   const params = new URLSearchParams(parts.options)
   const user = takeParam(params, ['user', 'username'])
   const password = takeParam(params, ['password'])

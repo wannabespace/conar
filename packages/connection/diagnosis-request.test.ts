@@ -3,24 +3,14 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
+import { connectionParts } from './connection-parts'
 import { getDiagnosisRequest } from './diagnosis-request'
 import { EMPTY_SSH_TUNNEL } from './ssh/params'
 
-const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
-  database: '',
-  host: 'db.acme.io',
-  https: null,
-  options: '',
-  password: 'pw',
-  port: '',
-  ssh: null,
-  type: ConnectionType.Postgres,
-  user: 'me',
-  ...overrides,
-})
+const parts = connectionParts.parse('postgres://me:pw@db.acme.io')
 
 const request = (message: string, overrides: Partial<ConnectionParts> = {}) =>
-  getDiagnosisRequest({ message, parts: parts(overrides) })
+  getDiagnosisRequest({ message, parts: { ...parts, ...overrides } })
 
 describe('getDiagnosisRequest', () => {
   it('carries no address, user or secret option value', () => {

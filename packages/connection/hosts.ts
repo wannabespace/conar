@@ -36,11 +36,7 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['.neon.tech'],
     type: ConnectionType.Postgres,
   },
-  {
-    label: 'Render',
-    suffixes: ['.render.com'],
-    type: ConnectionType.Postgres,
-  },
+  { label: 'Render', suffixes: ['.render.com'], type: ConnectionType.Postgres },
   {
     label: 'Azure Database for PostgreSQL',
     suffixes: ['.postgres.database.azure.com'],
@@ -68,21 +64,13 @@ const HOST_HINTS: HostHint[] = [
     suffixes: ['db.prisma.io'],
     type: ConnectionType.Postgres,
   },
-  {
-    label: 'Xata',
-    suffixes: ['.sql.xata.sh'],
-    type: ConnectionType.Postgres,
-  },
+  { label: 'Xata', suffixes: ['.sql.xata.sh'], type: ConnectionType.Postgres },
   {
     label: 'Nile',
     suffixes: ['db.thenile.dev'],
     type: ConnectionType.Postgres,
   },
-  {
-    label: 'Fly.io',
-    suffixes: ['.flympg.net'],
-    type: ConnectionType.Postgres,
-  },
+  { label: 'Fly.io', suffixes: ['.flympg.net'], type: ConnectionType.Postgres },
   { label: 'Railway', suffixes: ['.railway.app', '.rlwy.net'] },
   { label: 'AWS RDS', suffixes: ['.rds.amazonaws.com'] },
   {

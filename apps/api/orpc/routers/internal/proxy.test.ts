@@ -5,15 +5,14 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 
 import type { Context } from '../../context'
 
-const stored = {
-  connectionString: '',
+const storedDefaults = () => ({
+  connectionString: 'postgres://user:p@ss@host/default?sslmode=require',
   isPasswordExists: false,
   syncType: SyncType.Cloud,
-}
+})
+let stored = storedDefaults()
 beforeEach(() => {
-  stored.connectionString = 'postgres://user:p@ss@host/default?sslmode=require'
-  stored.isPasswordExists = false
-  stored.syncType = SyncType.Cloud
+  stored = storedDefaults()
 })
 
 const connection = () => ({

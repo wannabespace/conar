@@ -19,13 +19,6 @@ import type { TreeRow } from './tree-row'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-interface TreeDialogs {
-  dropSchema: RefObject<ComponentRef<typeof DropSchemaDialog> | null>
-  dropTable: RefObject<ComponentRef<typeof DropTableDialog> | null>
-  renameSchema: RefObject<ComponentRef<typeof RenameSchemaDialog> | null>
-  renameTable: RefObject<ComponentRef<typeof RenameTableDialog> | null>
-}
-
 export const TreeRowContent = ({
   controlId,
   dialogs,
@@ -35,7 +28,12 @@ export const TreeRowContent = ({
   search,
 }: {
   controlId?: string
-  dialogs: TreeDialogs
+  dialogs: {
+    dropSchema: RefObject<ComponentRef<typeof DropSchemaDialog> | null>
+    dropTable: RefObject<ComponentRef<typeof DropTableDialog> | null>
+    renameSchema: RefObject<ComponentRef<typeof RenameSchemaDialog> | null>
+    renameTable: RefObject<ComponentRef<typeof RenameTableDialog> | null>
+  }
   onCreateTable: (schema?: string) => void
   onToggleSchema: (name: string) => void
   row: TreeRow

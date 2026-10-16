@@ -5,19 +5,3 @@ export const findResource = (connectionId: string, name: string | null) =>
     (resource) =>
       resource.connectionId === connectionId && resource.name === name
   )
-
-/** Call inside `mutateOffline`: the insert joins the caller's transaction and rolls back with it. */
-export const insertResource = (
-  connectionId: string,
-  id: string,
-  name: string | null
-) => {
-  const now = new Date()
-  getCollections().connectionsResourcesCollection.insert({
-    connectionId,
-    createdAt: now,
-    id,
-    name,
-    updatedAt: now,
-  })
-}

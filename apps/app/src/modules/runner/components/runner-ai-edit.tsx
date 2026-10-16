@@ -16,11 +16,11 @@ import type { Phase } from './runner-ai-edit-zone'
 const CARD_HEIGHT = 32
 const SHADOW_ROOM = 12
 export const useAiEdit = ({
-  connectionType,
   editorRef,
+  connectionType,
 }: {
-  connectionType: ConnectionType
   editorRef: RefObject<monacoEditor.IStandaloneCodeEditor | null>
+  connectionType: ConnectionType
 }) => {
   const [phase, setPhase] = useState<Phase | null>(null)
   const zoneRef = useRef<{

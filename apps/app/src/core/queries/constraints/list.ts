@@ -267,14 +267,14 @@ export const resourceConstraintsQuery = createQuery({
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
             .onRef('tc.TABLE_NAME', '=', 'rc.TABLE_NAME')
         )
-        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) => {
-          const sameName = join
+        .leftJoin('information_schema.CHECK_CONSTRAINTS as cc', (join) =>
+          join
             .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
-          return mariadb
-            ? sameName.onRef('tc.TABLE_NAME', '=', 'cc.TABLE_NAME')
-            : sameName
-        })
+            .$call((on) =>
+              mariadb ? on.onRef('tc.TABLE_NAME', '=', 'cc.TABLE_NAME') : on
+            )
+        )
         .select([
           'tc.TABLE_SCHEMA as schema',
           'tc.TABLE_NAME as table',

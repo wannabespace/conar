@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
+import { connectionParts } from './connection-parts'
 import { diagnoseConnectionError } from './diagnose'
 import {
   EMPTY_SSH_TUNNEL,
@@ -10,21 +11,14 @@ import {
   SSH_TUNNEL_ERROR,
 } from './ssh/params'
 
-const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
-  database: '',
-  host: 'db.acme.io',
-  https: null,
-  options: '',
-  password: 'pw',
-  port: '',
-  ssh: null,
-  type: ConnectionType.Postgres,
-  user: 'me',
-  ...overrides,
-})
+const parts = connectionParts.parse('postgres://me:pw@db.acme.io')
 
 const diagnose = (message: string, overrides: Partial<ConnectionParts> = {}) =>
-  diagnoseConnectionError({ desktop: true, message, parts: parts(overrides) })
+  diagnoseConnectionError({
+    desktop: true,
+    message,
+    parts: { ...parts, ...overrides },
+  })
 
 describe('diagnoseConnectionError', () => {
   it.each([

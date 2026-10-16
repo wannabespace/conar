@@ -2,21 +2,31 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { isKeychainLocked } from '@tamery/shared/keychain'
 import { title } from '@tamery/shared/title'
 import { Spinner } from '@tamery/ui/components/spinner'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { Result } from 'better-result'
 import { toast } from 'sonner'
 
+import type { ConnectionDetails } from '~/core/connection/save'
+import { updateConnection } from '~/core/connection/save'
+import { useGoBack } from '~/hooks/use-go-back'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 import { getFormValues } from '~/modules/connection-form/lib/connection-form'
 import { getEditMode } from '~/modules/connection-form/lib/form-mode'
-
-import { useUpdateConnection } from './-lib/use-update-connection'
 
 const { useLoaderData } = getRouteApi('/_protected/edit/$connectionId')
 
 const EditConnectionPage = () => {
   const { connection, defaultValues, mode } = useLoaderData()
-  const { mutateAsync } = useUpdateConnection(connection.id)
+  const goBack = useGoBack({ ignoreBlocker: true })
+  const { mutateAsync } = useMutation({
+    meta: { event: 'connection_updated' },
+    mutationFn: async (saved: ConnectionDetails) => {
+      await updateConnection(connection.id, saved)
+      goBack()
+      toast.success('Connection saved')
+    },
+  })
   return (
     <ConnectionPage
       defaultValues={defaultValues}

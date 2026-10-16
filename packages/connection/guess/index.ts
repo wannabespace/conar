@@ -64,11 +64,9 @@ export const guessConnection = (text: string): ConnectionGuess | null =>
     const port = parts.port || hint?.port || ''
     const type = parts.type ?? TYPE_OF_PORT[port] ?? hint?.type
     const httpPort =
-      type === ConnectionType.ClickHouse
-        ? CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
-        : undefined
+      type === ConnectionType.ClickHouse && CLICKHOUSE_HTTP_PORT_OF_NATIVE[port]
     const { fixes, parts: fixed } = fixParts(
-      mergeParts({ ...parts, port: httpPort ?? port, type })
+      mergeParts({ ...parts, port: httpPort || port, type })
     )
     const routingFixes: GuessFix[] = [
       ...(pasted.host && parts !== pasted ? (['ssh-forward'] as const) : []),

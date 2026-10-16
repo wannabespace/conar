@@ -9,7 +9,7 @@ import type {
   ConnectionString,
   ConnectionStringInput,
 } from '~/core/connection/connection-strings'
-import { findResource, insertResource } from '~/core/connection/resources'
+import { findResource } from '~/core/connection/resources'
 import { rememberOpenedResource } from '~/core/connection/stores'
 import type { Connection } from '~/core/connection/sync'
 
@@ -51,8 +51,11 @@ export const saveConnectionString = async ({
   /** Joins the offline transaction that inserts the string's resource. */
   writeRow?: (isPasswordExists: boolean) => void
 }) => {
-  const { connectionsCollection, connectionStringsCollection } =
-    getCollections()
+  const {
+    connectionsCollection,
+    connectionsResourcesCollection,
+    connectionStringsCollection,
+  } = getCollections()
   const { previous, record, write } =
     await connectionStringsCollection.utils.prepare({
       connectionId,
@@ -74,7 +77,14 @@ export const saveConnectionString = async ({
       )
     }
     if (!existingResource) {
-      insertResource(connectionId, resourceId, resource)
+      const now = new Date()
+      connectionsResourcesCollection.insert({
+        connectionId,
+        createdAt: now,
+        id: resourceId,
+        name: resource,
+        updatedAt: now,
+      })
     }
   })
   write()

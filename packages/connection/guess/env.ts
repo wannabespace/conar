@@ -7,10 +7,8 @@ import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
 interface VariableGroup {
   type?: ConnectionType
-  /** Only these fields are read under the prefix: `MYSQL_ROOT_HOST` is an allow-list, not a host. */
-  fields?: ServerField[]
   prefix: string
-  /** Implied user when the group supplies the password and nothing else named one. */
+  /** A group with a user reads only its password (`MYSQL_ROOT_HOST` is an allow-list, not a host) and implies the user when nothing else named one. */
   user?: string
 }
 
@@ -42,32 +40,12 @@ const GROUPS: VariableGroup[] = [
   { prefix: 'POSTGRES_', type: ConnectionType.Postgres },
   { prefix: 'MYSQL_', type: ConnectionType.MySQL },
   { prefix: 'MARIADB_', type: ConnectionType.MariaDB },
-  {
-    fields: ['password'],
-    prefix: 'MYSQL_ROOT_',
-    type: ConnectionType.MySQL,
-    user: 'root',
-  },
-  {
-    fields: ['password'],
-    prefix: 'MARIADB_ROOT_',
-    type: ConnectionType.MariaDB,
-    user: 'root',
-  },
+  { prefix: 'MYSQL_ROOT_', type: ConnectionType.MySQL, user: 'root' },
+  { prefix: 'MARIADB_ROOT_', type: ConnectionType.MariaDB, user: 'root' },
   { prefix: 'CLICKHOUSE_', type: ConnectionType.ClickHouse },
   { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
-  {
-    fields: ['password'],
-    prefix: 'MSSQL_SA_',
-    type: ConnectionType.MSSQL,
-    user: 'sa',
-  },
-  {
-    fields: ['password'],
-    prefix: 'SA_',
-    type: ConnectionType.MSSQL,
-    user: 'sa',
-  },
+  { prefix: 'MSSQL_SA_', type: ConnectionType.MSSQL, user: 'sa' },
+  { prefix: 'SA_', type: ConnectionType.MSSQL, user: 'sa' },
   { prefix: 'SPRING.DATASOURCE.' },
   { prefix: 'QUARKUS.DATASOURCE.' },
   { prefix: 'DB_' },
@@ -103,7 +81,7 @@ export const partsOfVariables = (
         .find(Boolean)
     const found: GuessedParts = {}
     for (const [field, suffixes] of objectEntries(SUFFIXES_OF_FIELD)) {
-      if (!group.fields || group.fields.includes(field)) {
+      if (!group.user || field === 'password') {
         found[field] = valueOf(
           suffixes
             .filter((suffix) => group.prefix || named || suffix !== BARE_NAME)

@@ -20,20 +20,10 @@ type Params<
     : P
 >
 
-export type ConnectionInput =
+type ConnectionInput =
   | { connectionString: string }
   | { connectionId: string }
   | { resourceId: string }
-
-const getConnectionKey = (input: ConnectionInput): ConnectionInput => {
-  if ('connectionString' in input) {
-    return { connectionString: input.connectionString }
-  }
-  if ('connectionId' in input) {
-    return { connectionId: input.connectionId }
-  }
-  return { resourceId: input.resourceId }
-}
 
 type HandlerContext<T extends AnyBuilder> = Parameters<
   Parameters<T['handler']>[0]
@@ -59,10 +49,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.beginTransaction({
           ...input,
-          connectionString: await resolve.connectionString(
-            getConnectionKey(input),
-            context
-          ),
+          connectionString: await resolve.connectionString(input, context),
           ownerId: resolve.owner(context),
         })
       ),
@@ -71,10 +58,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.cancel({
           ...input,
-          connectionString: await resolve.connectionString(
-            getConnectionKey(input),
-            context
-          ),
+          connectionString: await resolve.connectionString(input, context),
         })
       ),
     commitTransaction: orpc
@@ -87,10 +71,7 @@ const createQueryDialect = <T extends AnyBuilder>(
       .handler(async ({ input, context }) =>
         dialect.execute({
           ...input,
-          connectionString: await resolve.connectionString(
-            getConnectionKey(input),
-            context
-          ),
+          connectionString: await resolve.connectionString(input, context),
         })
       ),
     executeTransaction: orpc

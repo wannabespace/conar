@@ -1,14 +1,48 @@
+import { describeConnectionString } from '@tamery/connection/utils'
 import { title } from '@tamery/shared/title'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
+import { createConnection } from '~/core/connection/save'
 import { permix } from '~/core/user/permissions'
+import { useActiveWorkspace } from '~/core/workspace/hooks'
+import { posthog } from '~/lib/posthog'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
 
-import { useCreateConnection } from './-lib/use-create-connection'
-
 const CreateConnectionPage = () => {
-  const onSave = useCreateConnection()
-  return <ConnectionPage mode={{ kind: 'create' }} onSave={onSave} />
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const router = useRouter()
+
+  return (
+    <ConnectionPage
+      mode={{ kind: 'create' }}
+      onSave={async (connection, { open, origin, syncType }) => {
+        if (!activeWorkspace) {
+          throw new Error('Workspace is still loading. Please try again.')
+        }
+
+        const { resourceId } = await createConnection({
+          ...connection,
+          syncType,
+          workspaceId: activeWorkspace.id,
+        })
+
+        await (open
+          ? router.navigate({
+              params: { resourceId },
+              to: '/connection/$resourceId',
+            })
+          : router.navigate({ to: '/' }))
+        posthog.capture('connection_created', {
+          origin: origin ?? 'form',
+          ssh: describeConnectionString(connection.connectionString).usesSsh,
+          syncType,
+          type: connection.type,
+        })
+        toast.success('Connection created')
+      }}
+    />
+  )
 }
 
 export const Route = createFileRoute('/_protected/create/')({

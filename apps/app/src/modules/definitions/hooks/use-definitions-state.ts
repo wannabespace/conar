@@ -26,8 +26,7 @@ export const useDefinitionsState = ({
 }: {
   section: DefinitionsSection
 }) => {
-  const { connection, connectionResource, dialect } =
-    resourceRoute.useRouteContext()
+  const { connectionResource, dialect } = resourceRoute.useRouteContext()
   const { data, isPending: structurePending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -53,7 +52,6 @@ export const useDefinitionsState = ({
 
   return {
     can: getSectionCapabilities(section, dialect),
-    connection,
     connectionResource,
     dialect,
     getRelationNames,

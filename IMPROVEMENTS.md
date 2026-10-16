@@ -70,13 +70,13 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
 
-- **More connection types on borrowed dialects.** A database speaking another engine's protocol joins as a `ConnectionType` mapped to that `Dialect` when only its name and a few gates differ, and as its own `Dialect` when its SQL differs throughout (`dialects.md`). Candidates by fit:
+- **More connection types on borrowed dialects**, added the way `dialects.md` describes for MariaDB. Candidates by fit:
   - Name only: Percona Server and Dolt (MySQL), Azure SQL Database (SQL Server).
   - Name plus capability gates: CockroachDB (partial `pg_catalog`, no extensions, domains or table inheritance, limited `ALTER COLUMN TYPE`), YugabyteDB (reuses Postgres's query layer, near identical), Aurora DSQL (no foreign keys, triggers or extensions), TiDB (no triggers, procedures or events).
   - Own dialect over a borrowed protocol: Redshift, Greenplum, Materialize, RisingWave, QuestDB, CrateDB, SingleStore, StarRocks, Doris, Babelfish, Fabric Warehouse.
   - Not connection types: Neon, Supabase, RDS, Aurora, AlloyDB, PlanetScale and ClickHouse Cloud are hosts (`hosts.ts`); TimescaleDB, Citus and pgvector are Postgres extensions.
 
-  The first type that lacks something its dialect offers needs the capability gates (`getCapabilities` and friends, about 120 calls) to take the connection's type instead of its dialect. Check each candidate's limits on a live server first: they shift between releases.
+  The first type that lacks something its dialect offers moves the capability gates (about 120 calls) to its type. Check each candidate's limits on a live server first: they shift between releases.
 
 ## Settings
 
@@ -88,11 +88,11 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## SSH tunnels
 
-- **Honor more of `~/.ssh/config`.** `UserKnownHostsFile`, `StrictHostKeyChecking` and `ProxyJump` are ignored: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
+- **Honor more of `~/.ssh/config`.** `UserKnownHostsFile` and `StrictHostKeyChecking` are ignored and a `ProxyJump` host is refused: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
 
 ## Connection form
 
-- **A local model for pastes the parsers don't read.** When `guessConnection` finds nothing, the app could hand the text to a small model running on the device (desktop, or the browser through WebGPU/WASM, as in-browser extractors already do) to pull out host, port, user and database from the long tail (compose files, Kubernetes secrets, a wiki paragraph), then show the result for confirmation like any paste. Only as a fallback: the text holds secrets, so it never goes to the cloud, and a model can garble a password, so the parsers keep everything they recognise. Details in `PASTE-MODEL.md`.
+- **A local model for pastes the parsers don't read.** When `guessConnection` finds nothing, the app could hand the text to a small model running on the device (desktop, or the browser through WebGPU/WASM, as in-browser extractors already do) to pull out host, port, user and database from the long tail (compose files, Kubernetes secrets, a wiki paragraph), then show the result through the same fixes, footnote and focus as a parsed paste. Only as a fallback: the text holds secrets, so it never goes to the cloud, and a model can garble a password, so the parsers keep everything they recognise. An extractive span model (GLiNER-style, through transformers.js or ONNX Runtime Web) fits best, since it can only point at text, never invent a value; a generative one would need every value checked verbatim against the input. Weights load on the first paste that needs them, never on page open. Start with a prototype over 20 to 30 real pastes, recording per field found, missed or wrong, plus load and inference time in Chrome and Safari.
 - **Ask for a password the server turns out to need.** A connection saved without a password (Save goes through after a failed test) that the server then rejects for it only shows the diagnosis on the card; the connection's form opens for a missing password only when `isPasswordExists`. Opening it on that auth failure too, and setting `isPasswordExists` on save, would recover it without a trip to Edit.
 - **An SSL control per engine.** SSL today is typed into Options (`sslmode=require`, `encrypt=true`, `ssl=true`). A switch whose meaning comes from `capabilities.ts` would save users from learning each driver's parameter.
 - **Offer the clipboard on open.** The form only reads what is pasted; the desktop app could read the clipboard on open without a prompt and, when it holds something `guessConnection` recognises, offer to fill the form from it.

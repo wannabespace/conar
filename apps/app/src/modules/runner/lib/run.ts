@@ -1,3 +1,4 @@
+import { toError } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
 import { Result } from 'better-result'
 import { toast } from 'sonner'
@@ -49,9 +50,6 @@ export const runnerResultsOptions = ({ resourceId, tabId }: RunnerTab) =>
 const runs = new Map<string, AbortController>()
 const watchedTabs = new Set<string>()
 const runKey = ({ resourceId, tabId }: RunnerTab) => `${resourceId}\n${tabId}`
-
-const getMessage = (error: unknown) =>
-  error instanceof Error ? error.message : String(error)
 
 const watchTab = (tab: RunnerTab) => {
   const key = runKey(tab)
@@ -108,7 +106,7 @@ const runOne = async (
     return [
       getResult(statement, {
         duration: performance.now() - startedAt,
-        error: signal.aborted ? null : getMessage(error),
+        error: signal.aborted ? null : toError(error).message,
         stopped: signal.aborted,
       }),
     ]
@@ -152,7 +150,7 @@ export const runStatements = async ({
   }))
   if (paramsResult.isErr() && first) {
     slots.splice(0, slots.length, [
-      getResult(first, { error: getMessage(paramsResult.error.cause) }),
+      getResult(first, { error: toError(paramsResult.error.cause).message }),
     ])
   }
   const params = paramsResult.unwrapOr(null)

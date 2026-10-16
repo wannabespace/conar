@@ -124,9 +124,8 @@ export const mcpSource: McpSource = {
   describeTable,
   execute: async ({ approve, sql, ...target }, onAbort) => {
     const { connection, resource } = resolveTarget(target)
-    if (
-      splitStatements(sql, dialects[getDialect(connection.type)]).length !== 1
-    ) {
+    const dialect = getDialect(connection.type)
+    if (splitStatements(sql, dialects[dialect]).length !== 1) {
       throw new Error(
         'Run one statement at a time, or wrap several in BEGIN … COMMIT to run them together (not on ClickHouse, which has no transactions).'
       )
@@ -144,14 +143,11 @@ export const mcpSource: McpSource = {
       })
     }
     const sets = await runForAgent(
-      statementQuery(sql, getDialect(connection.type)).run({
-        ...params,
-        signal,
-      }),
+      statementQuery(sql, dialect).run({ ...params, signal }),
       { access: approve ? 'ask' : 'write', connection_type: connection.type }
     )
     if (resource) {
-      refreshAfterRun(resource, getDialect(connection.type), sql)
+      refreshAfterRun(resource, dialect, sql)
     }
     if (!approve) {
       notifications.notify({

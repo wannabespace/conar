@@ -36,10 +36,7 @@ export const useStatementBand = (
 ) => {
   const move = useEffectEvent(onMove)
   const { dialect } = useRouteContext()
-  const statements = runnerStatements({
-    ...useRunnerTab(),
-    dialect,
-  })
+  const statements = runnerStatements({ ...useRunnerTab(), dialect })
 
   useEffect(() => {
     const codeEditor = editorRef.current
