@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -49,7 +49,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
-const lockedFields = (dialect: SqlDialect, column: EditableColumn | null) => {
+const lockedFields = (dialect: Dialect, column: EditableColumn | null) => {
   const { renameColumns, retypeKeyColumns } = getCapabilities(dialect)
   const stored = column !== null && column.state !== 'added'
   return {

@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
   definitionsSchemaItem,
@@ -48,7 +48,7 @@ const SCHEMA_GROUPS = [
 
 export const schemaItems = SCHEMA_GROUPS.flatMap((group) => group.items)
 
-export const schemaGroups = (dialect: SqlDialect) =>
+export const schemaGroups = (dialect: Dialect) =>
   SCHEMA_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter((item) => item.available?.(dialect) ?? true),

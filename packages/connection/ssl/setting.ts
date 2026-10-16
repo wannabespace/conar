@@ -1,4 +1,4 @@
-import { getDialect, SqlDialect } from '@tamery/shared/enums/connection-type'
+import { getDialect, Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from '../connection-parts'
 import { TLS_PARAMS as MYSQL_TLS_PARAMS } from './mysql'
@@ -8,24 +8,24 @@ export type SslSetting = 'off' | 'on' | 'unverified'
 
 // Sync with the options `ssl/<engine>.ts` parses.
 const SSL_OPTIONS: Partial<
-  Record<SqlDialect, Partial<Record<SslSetting, string>>>
+  Record<Dialect, Partial<Record<SslSetting, string>>>
 > = {
-  [SqlDialect.MSSQL]: {
+  [Dialect.MSSQL]: {
     off: 'encrypt=false',
     on: 'encrypt=true',
     unverified: 'trustservercertificate=true',
   },
-  [SqlDialect.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
-  [SqlDialect.Postgres]: {
+  [Dialect.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
+  [Dialect.Postgres]: {
     off: 'sslmode=disable',
     on: 'sslmode=require',
     unverified: 'sslmode=no-verify',
   },
 }
 
-const TLS_PARAMS: Partial<Record<SqlDialect, string[]>> = {
-  [SqlDialect.MySQL]: MYSQL_TLS_PARAMS,
-  [SqlDialect.Postgres]: PG_TLS_PARAMS,
+const TLS_PARAMS: Partial<Record<Dialect, string[]>> = {
+  [Dialect.MySQL]: MYSQL_TLS_PARAMS,
+  [Dialect.Postgres]: PG_TLS_PARAMS,
 }
 
 export const getSslOptions = (

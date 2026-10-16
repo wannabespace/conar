@@ -1,4 +1,4 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects } from '@tamery/sql'
 import type { IDisposable } from 'monaco-editor'
 
@@ -19,7 +19,7 @@ export { sqlLanguageIds } from './language'
 export type { SqlSource, TableRef } from './source'
 export { catalogSummaryFor, EMPTY_CATALOG } from './source'
 
-const registerSqlLanguage = (dialect: SqlDialect) => {
+const registerSqlLanguage = (dialect: Dialect) => {
   const id = sqlLanguageIds[dialect]
   const spec = dialects[dialect]
   return [
@@ -38,4 +38,4 @@ for (const disposable of globalThis.tamerySqlLanguage ?? []) {
   disposable.dispose()
 }
 globalThis.tamerySqlLanguage =
-  Object.values(SqlDialect).flatMap(registerSqlLanguage)
+  Object.values(Dialect).flatMap(registerSqlLanguage)

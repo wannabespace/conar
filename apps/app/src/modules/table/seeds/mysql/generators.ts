@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker/locale/en'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { inCategory } from '../base'
@@ -61,4 +61,4 @@ export const MYSQL_GENERATORS = {
     'mysql.point': ['Point', () => wkt(`POINT(${point()})`)],
     'mysql.polygon': ['Polygon', () => wkt(`POLYGON((${linearRing()}))`)],
   }),
-} satisfies GeneratorMap<SqlDialect.MySQL>
+} satisfies GeneratorMap<Dialect.MySQL>

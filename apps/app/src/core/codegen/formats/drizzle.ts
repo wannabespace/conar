@@ -1,4 +1,4 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
@@ -22,7 +22,7 @@ import {
 } from '~/core/codegen/utils'
 
 const dialectConfig: Record<
-  Exclude<SqlDialect, SqlDialect.ClickHouse>,
+  Exclude<Dialect, Dialect.ClickHouse>,
   {
     anyColumn: string
     schemaFunc: string
@@ -125,13 +125,13 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
 
 const buildGeneratedChain = (
   c: TypedColumn,
-  dialect: SqlDialect,
+  dialect: Dialect,
   coreImports: Set<string>
 ): string => {
-  if (c.isIdentity && dialect === SqlDialect.Postgres) {
+  if (c.isIdentity && dialect === Dialect.Postgres) {
     return '.generatedByDefaultAsIdentity()'
   }
-  if (c.isIdentity && dialect === SqlDialect.MSSQL) {
+  if (c.isIdentity && dialect === Dialect.MSSQL) {
     return '.identity()'
   }
   if (typeof c.defaultValue !== 'string' || isSerialDefault(c.defaultValue)) {
@@ -156,7 +156,7 @@ const buildColumnChain = (
   const name = camelCase(c.id) === c.id ? '' : toStringLiteral(c.id)
   let chain = `${typeFunc}(${[name, options].filter(Boolean).join(', ')})`
 
-  if (c.isArray && dialect === SqlDialect.Postgres) {
+  if (c.isArray && dialect === Dialect.Postgres) {
     chain += '.array()'
   }
   chain += buildGeneratedChain(c, dialect, coreImports)
@@ -233,7 +233,7 @@ export const generateSchemaDrizzle = ({
   dialect,
   indexes,
 }: SchemaParams) => {
-  if (dialect === SqlDialect.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return ''
   }
   const { anyColumn, dialectImportPath, enumFunc, schemaFunc } =
@@ -251,7 +251,7 @@ export const generateSchemaDrizzle = ({
     .filter(hasType)
     .map((c) => {
       let typeFunc = drizzleType(c.type, dialect)
-      if (dialect === SqlDialect.Postgres && isSerialDefault(c.defaultValue)) {
+      if (dialect === Dialect.Postgres && isSerialDefault(c.defaultValue)) {
         typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
       }
 
@@ -259,7 +259,7 @@ export const generateSchemaDrizzle = ({
       if (enumFunc && c.enumName && c.availableValues?.length) {
         const values = `[${c.availableValues.map(toStringLiteral).join(', ')}]`
         dialectImports.add(enumFunc)
-        if (dialect === SqlDialect.MySQL) {
+        if (dialect === Dialect.MySQL) {
           typeFunc = enumFunc
           options = values
         } else {

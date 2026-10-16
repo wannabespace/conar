@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '~/core/table/cell/utils'
 
@@ -14,7 +14,7 @@ export interface GeneratorDef {
   generate: (column: Column) => unknown
 }
 
-export type GeneratorMap<D extends SqlDialect | '' = ''> = Record<
+export type GeneratorMap<D extends Dialect | '' = ''> = Record<
   D extends '' ? string : `${D}.${string}`,
   GeneratorDef
 >

@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { CompiledQuery, Kysely } from 'kysely'
 
 import type { ReferentialAction } from '~/core/queries/constraints/shape'
@@ -69,7 +69,7 @@ export const isDrop = (draft: DiagramDraft) =>
   draft.kind === 'dropForeignKey'
 
 export const draftStatement = (
-  dialectType: SqlDialect,
+  dialectType: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   draft: DiagramDraft

@@ -1,5 +1,5 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties, ReactNode } from 'react'
@@ -145,7 +145,7 @@ export const TableCell = ({
 }: CellGeometry & {
   children?: ReactNode
   column: Column
-  dialect: SqlDialect
+  dialect: Dialect
   draft?: Pick<Draft, 'error' | 'isCommitting'>
   /** Set when a refetch changed the value; a new number replays the flash. */
   flash?: number

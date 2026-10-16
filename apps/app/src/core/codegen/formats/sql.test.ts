@@ -1,6 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test'
 
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '~/core/table/cell/utils'
 
@@ -59,7 +59,7 @@ const columns: Column[] = [
   },
 ]
 
-const typeScriptFor = (dialect: SqlDialect, types: string[]) =>
+const typeScriptFor = (dialect: Dialect, types: string[]) =>
   generateSchemaTypeScript({
     columns: types.map((type, i) => ({
       id: `c${i}`,
@@ -77,7 +77,7 @@ describe('generators (postgres)', () => {
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
       columns,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
     })
@@ -91,7 +91,7 @@ describe('generators (postgres)', () => {
   it('maps arrays and does not confuse interval with int', () => {
     const ts = generateSchemaTypeScript({
       columns,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
     })
@@ -101,10 +101,10 @@ describe('generators (postgres)', () => {
 
   it('types json by the engine, real as a number', () => {
     expect(
-      typeScriptFor(SqlDialect.Postgres, ['json[]', 'jsonpath', 'real'])
+      typeScriptFor(Dialect.Postgres, ['json[]', 'jsonpath', 'real'])
     ).toContain('c0: unknown[];\n  c1: string;\n  c2: number;')
     expect(
-      typeScriptFor(SqlDialect.ClickHouse, [
+      typeScriptFor(Dialect.ClickHouse, [
         'Map(String, DateTime)',
         'Tuple(Int32, String)',
       ])
@@ -114,7 +114,7 @@ describe('generators (postgres)', () => {
   it('prisma emits defaults, uuid and lists', () => {
     const prisma = generateSchemaPrisma({
       columns,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
     })
@@ -142,7 +142,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
     })
@@ -153,7 +153,7 @@ describe('generators (postgres)', () => {
   it('drizzle omits the drizzle-orm import when nothing needs it', () => {
     const code = generateSchemaDrizzle({
       columns: [{ id: 'a', isNullable: false, type: 'int', uiType: 'raw' }],
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
     })
@@ -173,7 +173,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'public',
       table: 'invoices',
     })
@@ -185,7 +185,7 @@ describe('generators (postgres)', () => {
 
   it('kysely null checks compile to (column, is, null)', () => {
     const query = generateQueryKysely({
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       filters: [
         {
           column: 'user_id',
@@ -214,7 +214,7 @@ describe('generators (postgres)', () => {
   it('terminates every index statement', () => {
     const sql = generateSchemaSQL({
       columns,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       indexes: ['a', 'b'].map((column) => ({
         column,
         isPrimary: false,
@@ -240,7 +240,7 @@ describe('generators (postgres)', () => {
     }))
     const sql = generateSchemaSQL({
       columns: pair,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
     })
@@ -258,7 +258,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
     })
@@ -268,7 +268,7 @@ describe('generators (postgres)', () => {
 
   it('prisma turns LIKE patterns into string filters', () => {
     const query = generateQueryPrisma({
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       filters: [
         {
           column: 'title',
@@ -294,14 +294,14 @@ describe('generators (postgres)', () => {
       inlineParameters(
         'select `a?` from `t` where `b` = ?',
         ['x'],
-        SqlDialect.MySQL
+        Dialect.MySQL
       )
     ).toBe("select `a?` from `t` where `b` = 'x'")
   })
 
   it('prisma keeps every filter on a repeated column', () => {
     const query = generateQueryPrisma({
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       filters: ['alice', 'bob'].map((value) => ({
         column: 'name',
         ref: { label: 'Equal', operator: 'eq', symbol: '=' },
@@ -324,7 +324,7 @@ describe('generators (postgres)', () => {
         type: 'integer',
         uiType: 'raw' as const,
       })),
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'public',
       table: 'pairs',
     }
@@ -345,7 +345,7 @@ describe('generators (postgres)', () => {
     }
     const sql = generateSchemaSQL({
       columns,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       indexes: [
         {
           ...index,
@@ -376,7 +376,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw' as const,
         },
       ],
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       schema: 'auth',
       table: 'users',
     }
@@ -404,7 +404,7 @@ describe('generators (mysql)', () => {
           uiType: 'select',
         },
       ],
-      dialect: SqlDialect.MySQL,
+      dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
     })
@@ -425,7 +425,7 @@ describe('generators (mysql)', () => {
           uiType: 'raw',
         },
       ],
-      dialect: SqlDialect.MySQL,
+      dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
     })

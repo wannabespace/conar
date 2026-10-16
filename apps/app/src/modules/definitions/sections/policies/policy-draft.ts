@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
@@ -59,7 +59,7 @@ export const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
 export const getDraft = (
   item: PolicyItem | null,
   pageSchema: string,
-  dialect: SqlDialect
+  dialect: Dialect
 ): PolicyDraft => ({
   check: item?.check ?? '',
   command: item
@@ -94,7 +94,7 @@ export const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
 export const replaces = (
   item: PolicyItem,
   draft: PolicyDraft,
-  dialect: SqlDialect
+  dialect: Dialect
 ) =>
   !getCapabilities(dialect).policies.alterInPlace &&
   (draft.command !== asCommand(item.command) ||
@@ -112,7 +112,7 @@ export const savePolicy = async ({
   item,
   run,
 }: {
-  dialect: SqlDialect
+  dialect: Dialect
   draft: PolicyDraft
   item: PolicyItem | null
   run: RunQuery

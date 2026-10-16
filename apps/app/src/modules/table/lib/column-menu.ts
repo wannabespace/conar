@@ -12,7 +12,7 @@ import {
   Tag01Icon,
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
@@ -25,7 +25,7 @@ import { columnLayout, columnsOrder } from './store'
 
 const OFF = '__off__'
 
-export const isSortable = (dialect: SqlDialect, column: Column) =>
+export const isSortable = (dialect: Dialect, column: Column) =>
   !getCapabilities(dialect).columnTypes.incomparable?.test(column.type ?? '')
 
 export interface ColumnActions {

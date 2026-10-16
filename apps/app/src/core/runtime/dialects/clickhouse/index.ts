@@ -1,5 +1,5 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
-import type { CompiledQuery, Dialect } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { CompiledQuery, Dialect as KyselyDialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '~/core/runtime/dialects/driver'
@@ -74,7 +74,7 @@ export const clickhouseDialect = (options: DialectOptions) =>
   ({
     createAdapter: clickhouseAdapter,
     createDriver: () =>
-      createKyselyDriver(SqlDialect.ClickHouse, options, (compiledQuery) => ({
+      createKyselyDriver(Dialect.ClickHouse, options, (compiledQuery) => ({
         query: prepareQuery(compiledQuery),
         values: [],
       })),
@@ -82,7 +82,7 @@ export const clickhouseDialect = (options: DialectOptions) =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect
 
 export const clickhouseColdDialect = () =>
   ({
@@ -92,4 +92,4 @@ export const clickhouseColdDialect = () =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect

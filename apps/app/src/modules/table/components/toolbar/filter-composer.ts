@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { FILTERS_GROUPED } from '@tamery/shared/filters'
@@ -22,7 +22,7 @@ export type Stage =
   | { step: 'operator'; target: FilterTarget }
   | { step: 'value'; target: FilterTarget; ref: Filter }
 
-export const offeredFilters = (dialect: SqlDialect) =>
+export const offeredFilters = (dialect: Dialect) =>
   FILTERS_GROUPED.map((group) => ({
     ...group,
     filters: group.filters.filter(
@@ -34,11 +34,7 @@ export const operatorMatches = (filter: Filter, text: string) =>
   filter.label.toLowerCase().includes(text) ||
   filter.symbol.toLowerCase().includes(text)
 
-const highlightForStage = (
-  dialect: SqlDialect,
-  stage: Stage,
-  value: string
-) => {
+const highlightForStage = (dialect: Dialect, stage: Stage, value: string) => {
   const trimmed = value.trim().toLowerCase()
   if (stage.step === 'operator') {
     const first = offeredFilters(dialect)

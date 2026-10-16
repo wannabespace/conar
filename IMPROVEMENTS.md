@@ -70,7 +70,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
 
-- **More connection types on borrowed dialects.** A database speaking another engine's protocol joins as a `ConnectionType` mapped to that `SqlDialect` when only its name and a few gates differ, and as its own `SqlDialect` when its SQL differs throughout (`dialects.md`). Candidates by fit:
+- **More connection types on borrowed dialects.** A database speaking another engine's protocol joins as a `ConnectionType` mapped to that `Dialect` when only its name and a few gates differ, and as its own `Dialect` when its SQL differs throughout (`dialects.md`). Candidates by fit:
   - Name only: Percona Server and Dolt (MySQL), Azure SQL Database (SQL Server).
   - Name plus capability gates: CockroachDB (partial `pg_catalog`, no extensions, domains or table inheritance, limited `ALTER COLUMN TYPE`), YugabyteDB (reuses Postgres's query layer, near identical), Aurora DSQL (no foreign keys, triggers or extensions), TiDB (no triggers, procedures or events).
   - Own dialect over a borrowed protocol: Redshift, Greenplum, Materialize, RisingWave, QuestDB, CrateDB, SingleStore, StarRocks, Doris, Babelfish, Fabric Warehouse.

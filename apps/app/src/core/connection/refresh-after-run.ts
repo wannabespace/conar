@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects, invalidatesCatalog, writesData } from '@tamery/sql'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -7,7 +7,7 @@ import { queryClient } from '~/lib/query-client'
 
 export const refreshAfterRun = (
   connectionResource: ConnectionResource,
-  dialect: SqlDialect,
+  dialect: Dialect,
   text: string
 ) => {
   if (invalidatesCatalog(text, dialects[dialect])) {

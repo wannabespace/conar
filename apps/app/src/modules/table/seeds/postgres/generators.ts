@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker/locale/en'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { inCategory } from '../base'
@@ -102,4 +102,4 @@ export const PG_GENERATORS = inCategory('Postgres', {
   'postgres.polygon': ['Polygon', () => `(${points({ max: 6, min: 3 })})`],
   'postgres.tsmultirange': ['Timestamp Multirange', multirange(tsRange)],
   'postgres.tsrange': ['Timestamp Range', tsRange],
-}) satisfies GeneratorMap<SqlDialect.Postgres>
+}) satisfies GeneratorMap<Dialect.Postgres>

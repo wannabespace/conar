@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { useState } from 'react'
 
 import { isComputed } from '~/core/queries/tables/columns'
@@ -16,7 +16,7 @@ export const useColumnActions = ({
   schema,
   table,
 }: {
-  dialect: SqlDialect
+  dialect: Dialect
   editable: boolean
   schema: string
   table: string

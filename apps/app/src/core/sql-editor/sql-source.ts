@@ -5,7 +5,7 @@ import {
   bindSqlModel,
   EMPTY_CATALOG,
 } from '@tamery/monaco/sql-language'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
@@ -23,7 +23,7 @@ import { appStore } from '~/store'
 
 const getSqlCatalog = (
   connectionResource: ConnectionResource,
-  dialect: SqlDialect
+  dialect: Dialect
 ): SqlCatalog => {
   const tables = queryClient.getQueryData(
     resourceTablesAndSchemasQueryOptions({ connectionResource }).queryKey
@@ -72,7 +72,7 @@ const getSqlCatalog = (
 
 const sqlSourceFor = (
   connectionResource: ConnectionResource,
-  dialect: SqlDialect
+  dialect: Dialect
 ): SqlSource => {
   const catalog = () => getSqlCatalog(connectionResource, dialect)
   const tablesOptions = resourceTablesAndSchemasQueryOptions({
@@ -139,7 +139,7 @@ const sqlSourceFor = (
 export const attachSqlSource = (
   codeEditor: editor.IStandaloneCodeEditor,
   connectionResource: ConnectionResource,
-  dialect: SqlDialect
+  dialect: Dialect
 ) => {
   const source = sqlSourceFor(connectionResource, dialect)
   const model = codeEditor.getModel()

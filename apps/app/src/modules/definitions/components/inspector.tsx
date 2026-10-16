@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -143,7 +143,7 @@ export const replaceWarning = ({
   name,
   noun,
 }: {
-  dialect: SqlDialect
+  dialect: Dialect
   name: string
   noun: string
 }): InspectorWarning | undefined =>

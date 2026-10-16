@@ -1,7 +1,7 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { GuessFormat } from '@tamery/connection/guess'
 import { describeConnectionString } from '@tamery/connection/utils'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { toError } from '@tamery/shared/utils'
@@ -33,7 +33,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const test = useMutation({
     meta: { event: 'connection_tested' },
-    mutationFn: (params: { connectionString: string; type: SqlDialect }) =>
+    mutationFn: (params: { connectionString: string; type: Dialect }) =>
       testConnectionQuery.run(params),
   })
   const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)

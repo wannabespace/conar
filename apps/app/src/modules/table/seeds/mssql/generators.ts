@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker/locale/en'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { inCategory } from '../base'
@@ -42,4 +42,4 @@ export const MSSQL_GENERATORS = {
         ),
     ],
   }),
-} satisfies GeneratorMap<SqlDialect.MSSQL>
+} satisfies GeneratorMap<Dialect.MSSQL>

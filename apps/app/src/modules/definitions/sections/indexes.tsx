@@ -4,7 +4,7 @@ import {
   LeftToRightListDashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
@@ -112,7 +112,7 @@ const getFinalName = (draft: IndexDraft) =>
 const getDraft = (
   item: GroupedIndex | null,
   pageSchema: string,
-  dialect: SqlDialect
+  dialect: Dialect
 ): IndexDraft => ({
   columns: item?.columns ?? [],
   granularity: String(item?.granularity ?? 1),
@@ -126,7 +126,7 @@ const getDraft = (
 const reshapes = (
   draft: IndexDraft,
   item: GroupedIndex | null,
-  dialect: SqlDialect
+  dialect: Dialect
 ) => {
   if (!item) {
     return false
@@ -149,7 +149,7 @@ const saveIndex = ({
   item,
   run,
 }: {
-  dialect: SqlDialect
+  dialect: Dialect
   draft: IndexDraft
   item: GroupedIndex | null
   run: RunQuery
@@ -185,7 +185,7 @@ const getLocks = ({
 }: {
   can: SectionCapabilities
   item: GroupedIndex | null
-  type: SqlDialect
+  type: Dialect
 }) => {
   const owned = !!item?.constraintOwned
   const { indexes, renameConstraints } = getCapabilities(dialect)

@@ -4,7 +4,7 @@ import {
   ConnectionType,
   connectionTypeLabels,
   getDialect,
-  SqlDialect,
+  Dialect,
 } from '@tamery/shared/enums/connection-type'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
@@ -29,24 +29,24 @@ const typeLabel = (type: ConnectionType) => (
   </>
 )
 
-const USER_PLACEHOLDERS: Record<SqlDialect, string> = {
-  [SqlDialect.ClickHouse]: 'default',
-  [SqlDialect.MSSQL]: 'e.g. sa',
-  [SqlDialect.MySQL]: 'e.g. root',
-  [SqlDialect.Postgres]: 'e.g. postgres',
+const USER_PLACEHOLDERS: Record<Dialect, string> = {
+  [Dialect.ClickHouse]: 'default',
+  [Dialect.MSSQL]: 'e.g. sa',
+  [Dialect.MySQL]: 'e.g. root',
+  [Dialect.Postgres]: 'e.g. postgres',
 }
 
-const DATABASE_PLACEHOLDERS: Record<SqlDialect, string> = {
-  [SqlDialect.ClickHouse]: 'default',
-  [SqlDialect.MSSQL]: 'master',
-  [SqlDialect.MySQL]: 'Optional',
-  [SqlDialect.Postgres]: 'postgres',
+const DATABASE_PLACEHOLDERS: Record<Dialect, string> = {
+  [Dialect.ClickHouse]: 'default',
+  [Dialect.MSSQL]: 'master',
+  [Dialect.MySQL]: 'Optional',
+  [Dialect.Postgres]: 'postgres',
 }
 
-const OPTIONS_PLACEHOLDERS: Partial<Record<SqlDialect, string>> = {
-  [SqlDialect.MSSQL]: 'e.g. encrypt=true',
-  [SqlDialect.MySQL]: 'e.g. ssl=true',
-  [SqlDialect.Postgres]: 'e.g. sslmode=require',
+const OPTIONS_PLACEHOLDERS: Partial<Record<Dialect, string>> = {
+  [Dialect.MSSQL]: 'e.g. encrypt=true',
+  [Dialect.MySQL]: 'e.g. ssl=true',
+  [Dialect.Postgres]: 'e.g. sslmode=require',
 }
 
 export const ServerFields = ({

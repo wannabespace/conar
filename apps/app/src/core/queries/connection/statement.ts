@@ -1,10 +1,10 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects, leavesTransactionOpen, unwrapTransaction } from '@tamery/sql'
 
 import { customQuery } from './custom'
 import { transactionQuery } from './transaction'
 
-export const statementQuery = (text: string, dialect: SqlDialect) => {
+export const statementQuery = (text: string, dialect: Dialect) => {
   const spec = dialects[dialect]
   const transaction = unwrapTransaction(text, spec)
   if (transaction) {

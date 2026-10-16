@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects } from '@tamery/sql'
 
 import {
@@ -9,7 +9,7 @@ import {
   withinStatement,
 } from './ghost-text-offer'
 
-const pg = dialects[SqlDialect.Postgres]
+const pg = dialects[Dialect.Postgres]
 
 describe('needsLeadingSpace', () => {
   it('separates a keyword the model glued onto a finished word', () => {

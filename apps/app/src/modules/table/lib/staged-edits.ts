@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { useSubscription } from 'seitu/react'
 
@@ -39,7 +39,7 @@ export const useStagedEdits = ({
   visible,
 }: {
   columns: Column[]
-  dialect: SqlDialect
+  dialect: Dialect
   rows: GridRow[]
   visible: Column[]
 }) => {

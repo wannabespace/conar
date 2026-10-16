@@ -6,7 +6,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
@@ -110,7 +110,7 @@ interface DetailTab {
   value: string
 }
 
-const buildTabs = (query: QueryLog, dialect: SqlDialect) =>
+const buildTabs = (query: QueryLog, dialect: Dialect) =>
   [
     {
       code: formatSql(query.query, dialect),

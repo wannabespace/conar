@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { useSubscription } from 'seitu/react'
 
 import type { CellGeometry } from '~/core/table/cell/cell'
@@ -19,7 +19,7 @@ export const TableBodyCell = ({
   onPeek,
 }: {
   cell: DataGridCell
-  dialect: SqlDialect
+  dialect: Dialect
   entry: GridEntry
   geometry?: CellGeometry
   labels?: Map<string, string>

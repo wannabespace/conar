@@ -1,6 +1,6 @@
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { catalogSummaryFor } from '@tamery/monaco/sql-language'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { renderWithRoot } from '@tamery/ui/lib/render'
 import { editor as monacoEditor, Range } from 'monaco-editor'
 import type { RefObject } from 'react'
@@ -20,7 +20,7 @@ export const useAiEdit = ({
   dialect,
 }: {
   editorRef: RefObject<monacoEditor.IStandaloneCodeEditor | null>
-  dialect: SqlDialect
+  dialect: Dialect
 }) => {
   const [phase, setPhase] = useState<Phase | null>(null)
   const zoneRef = useRef<{
@@ -133,7 +133,7 @@ export const useAiEdit = ({
         context: string
         editor: string
         sql: string
-        type: SqlDialect
+        type: Dialect
       },
       signal: AbortSignal
     ) => Promise<string>

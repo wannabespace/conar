@@ -1,6 +1,6 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
@@ -50,7 +50,7 @@ export interface DistinctValuesTarget {
   column: Column
 }
 
-export const hasDistinctValues = (dialect: SqlDialect, column: Column) => {
+export const hasDistinctValues = (dialect: Dialect, column: Column) => {
   const { bytes, incomparable } = getCapabilities(dialect).columnTypes
   const type = column.type ?? ''
   return !column.isArray && !bytes?.test(type) && !incomparable?.test(type)

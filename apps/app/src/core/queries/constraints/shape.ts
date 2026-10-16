@@ -1,4 +1,4 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
@@ -141,7 +141,7 @@ export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
   })[kind]
 
 export const dropConstraintStatement = (
-  dialectType: SqlDialect,
+  dialectType: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   {
@@ -150,7 +150,7 @@ export const dropConstraintStatement = (
     ...target
   }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
 ) => {
-  if (dialectType === SqlDialect.MySQL) {
+  if (dialectType === Dialect.MySQL) {
     return sql`ALTER TABLE ${sql.id(target.schema, target.table)} DROP ${mysqlDropKey(kind, target.name)}`.compile(
       db
     )
@@ -159,7 +159,7 @@ export const dropConstraintStatement = (
   const drop = dropConstraint(db, target)
 
   return (
-    cascade && dialectType === SqlDialect.Postgres ? drop.cascade() : drop
+    cascade && dialectType === Dialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 

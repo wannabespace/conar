@@ -9,7 +9,7 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { consola } from 'consola'
 import ora from 'ora'
@@ -24,7 +24,7 @@ const queryMap = {
   mssql: mssql.query,
   mysql: mysql.query,
   postgres: pg.query,
-} satisfies Record<SqlDialect, QueryExecutor>
+} satisfies Record<Dialect, QueryExecutor>
 
 const fail = (message: string): never => {
   consola.fail(message)

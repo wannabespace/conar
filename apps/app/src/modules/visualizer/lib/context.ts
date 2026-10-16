@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
@@ -17,7 +17,7 @@ import type {
   DiagramTable,
 } from './schema'
 
-export const getGates = (dialect: SqlDialect) => {
+export const getGates = (dialect: Dialect) => {
   const capabilities = getCapabilities(dialect)
   const constraints = getSectionCapabilities('constraints', dialect)
 

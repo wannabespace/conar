@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker/locale/en'
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -22,7 +22,7 @@ import {
   SKIP_GENERATOR,
 } from './types'
 
-const DIALECT_CONFIGS: Record<SqlDialect, DialectSeedConfig> = {
+const DIALECT_CONFIGS: Record<Dialect, DialectSeedConfig> = {
   clickhouse: clickhouseSeedConfig,
   mssql: mssqlSeedConfig,
   mysql: mysqlSeedConfig,
@@ -36,13 +36,13 @@ export interface GeneratorGroup {
 
 export type Generators = Partial<Record<GeneratorId, GeneratorDef>>
 
-export const getGenerators = memoize((dialect: SqlDialect): Generators => ({
+export const getGenerators = memoize((dialect: Dialect): Generators => ({
   ...BASE_GENERATORS,
   ...DIALECT_CONFIGS[dialect].generators,
 }))
 
 export const getGeneratorGroups = memoize(
-  (dialect: SqlDialect): GeneratorGroup[] =>
+  (dialect: Dialect): GeneratorGroup[] =>
     Object.entries(
       Object.groupBy(
         Object.entries(getGenerators(dialect)),
@@ -54,14 +54,14 @@ export const getGeneratorGroups = memoize(
     }))
 )
 
-const canSkipColumn = (column: Column, dialect: SqlDialect) =>
-  dialect === SqlDialect.ClickHouse ||
+const canSkipColumn = (column: Column, dialect: Dialect) =>
+  dialect === Dialect.ClickHouse ||
   !!column.isNullable ||
   !!column.defaultValue ||
   !!column.isGenerated
 
 const AVAILABILITY: Partial<
-  Record<GeneratorId, (column: Column, dialect: SqlDialect) => boolean>
+  Record<GeneratorId, (column: Column, dialect: Dialect) => boolean>
 > = {
   [ENUM_GENERATOR]: (column) => !!column.availableValues?.length,
   [NULL_GENERATOR]: (column) => !!column.isNullable,
@@ -72,12 +72,12 @@ const AVAILABILITY: Partial<
 export const isGeneratorAvailable = (
   id: GeneratorId,
   column: Column,
-  dialect: SqlDialect
+  dialect: Dialect
 ) => AVAILABILITY[id]?.(column, dialect) ?? true
 
 export const autoDetectGenerator = (
   column: Column,
-  dialect: SqlDialect
+  dialect: Dialect
 ): GeneratorId => {
   if (column.foreign) {
     return REFERENCE_GENERATOR
@@ -182,7 +182,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   Object.getPrototypeOf(value) === Object.prototype
 
 // Only a JSON column keeps its parsed value: `bindValue` stringifies it, and no driver binds a plain object otherwise.
-const finalizeValue = (value: unknown, column: Column, dialect: SqlDialect) => {
+const finalizeValue = (value: unknown, column: Column, dialect: Dialect) => {
   if (getCapabilities(dialect).columnTypes.json.test(column.type ?? '')) {
     return value
   }
@@ -210,7 +210,7 @@ export const generateRows = ({
   columns: Column[]
   columnGenerators: Record<string, Generator>
   count: number
-  dialect: SqlDialect
+  dialect: Dialect
   referenceData?: Record<string, unknown[]>
 }) => {
   const generators = getGenerators(dialect)

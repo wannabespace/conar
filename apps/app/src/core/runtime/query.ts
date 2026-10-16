@@ -1,6 +1,6 @@
 import { resourceConnectionString } from '@tamery/connection/utils'
 import { isConnectionError } from '@tamery/shared/connections'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
@@ -58,7 +58,7 @@ export const connectionResourceToQueryParams = async (
 
 export interface QueryParams {
   connectionString: string
-  type: SqlDialect
+  type: Dialect
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
@@ -103,7 +103,7 @@ export const reconnectingPromises = createStore<
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
-    [D in SqlDialect]: (
+    [D in Dialect]: (
       dialect: ReturnType<(typeof dialects)[D]>
     ) => Promise<T extends Type ? T['inferIn'] : unknown>
   }

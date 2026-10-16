@@ -1,6 +1,6 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { sqlLanguageIds } from '@tamery/monaco/sql-language'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -95,7 +95,7 @@ const TRIGGER_FUNCTION_BODY = 'BEGIN\n  RETURN NEW;\nEND;'
 
 const newDraft = (
   pageSchema: string,
-  dialect: SqlDialect,
+  dialect: Dialect,
   preset?: string
 ): FunctionDraft => {
   const { behaviors, languages } = getCapabilities(dialect).functions
@@ -127,7 +127,7 @@ const newDraft = (
 const getDraft = (
   item: FunctionItem | null,
   pageSchema: string,
-  dialect: SqlDialect,
+  dialect: Dialect,
   preset?: string
 ): FunctionDraft => {
   const fallback = newDraft(pageSchema, dialect, preset)
@@ -163,7 +163,7 @@ const getShape = (draft: FunctionDraft): FunctionShape => ({
   securityDefiner: draft.securityDefiner,
 })
 
-const formEditable = (item: FunctionItem, dialect: SqlDialect) => {
+const formEditable = (item: FunctionItem, dialect: Dialect) => {
   const { languages } = getCapabilities(dialect).functions
 
   return (

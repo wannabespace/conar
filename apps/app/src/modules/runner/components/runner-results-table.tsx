@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { valueToText } from '@tamery/shared/value-text'
 
 import type { Column } from '~/core/table/cell/utils'
@@ -35,7 +35,7 @@ export const RunnerResultsTable = ({
 }: {
   columns: string[]
   rows: Record<string, unknown>[]
-  dialect: SqlDialect
+  dialect: Dialect
 }) => (
   <DataGrid
     rows={rows}

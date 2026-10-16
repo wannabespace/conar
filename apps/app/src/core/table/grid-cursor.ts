@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import type { RefObject } from 'react'
 import { useState } from 'react'
@@ -38,7 +38,7 @@ export const useGridCursor = ({
 }: {
   canEdit: (column: Column, rowIndex: number) => boolean
   columns: Column[]
-  dialect: SqlDialect
+  dialect: Dialect
   getValue: (cell: DataGridCell) => unknown
   layout: DataGridLayout
   onEdit?: (cell: DataGridCell, value: unknown) => void

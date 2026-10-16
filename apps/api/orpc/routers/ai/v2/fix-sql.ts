@@ -1,7 +1,7 @@
 import { fixSql } from '@tamery/ai/features'
 import { AI_SQL_LIMITS } from '@tamery/ai/limits'
 import { AiFeature } from '@tamery/ai/usage'
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
 import { aiUsage } from '~/lib/ai-usage'
@@ -16,7 +16,7 @@ export const fixSQL = orpc
       editor: `string <= ${AI_SQL_LIMITS.sql}`,
       error: `string <= ${AI_SQL_LIMITS.error}`,
       sql: `string <= ${AI_SQL_LIMITS.sql}`,
-      type: type.valueOf(SqlDialect),
+      type: type.valueOf(Dialect),
     })
   )
   .handler(({ context, input, signal }) =>

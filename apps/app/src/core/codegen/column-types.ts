@@ -1,4 +1,4 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 
@@ -17,10 +17,9 @@ const firstMatch = <T extends string>(
   return rules.find(([pattern]) => pattern.test(elementType))?.[1] ?? fallback
 }
 
-const jsonType = (dialect: SqlDialect) =>
-  getCapabilities(dialect).columnTypes.json
+const jsonType = (dialect: Dialect) => getCapabilities(dialect).columnTypes.json
 
-const tsType = (type: string, dialect: SqlDialect) =>
+const tsType = (type: string, dialect: Dialect) =>
   firstMatch(type, 'string', [
     [jsonType(dialect), 'unknown'],
     [INT_RE, 'number'],
@@ -29,7 +28,7 @@ const tsType = (type: string, dialect: SqlDialect) =>
     [/date|time/iu, 'Date'],
   ])
 
-export const tsColumnType = (column: TypedColumn, dialect: SqlDialect) => {
+export const tsColumnType = (column: TypedColumn, dialect: Dialect) => {
   if (column.enumName && column.availableValues?.length) {
     const union = column.availableValues.map(toStringLiteral).join(' | ')
     return column.isArray ? `(${union})[]` : union
@@ -45,7 +44,7 @@ const ZOD_BY_TS_TYPE: Record<ReturnType<typeof tsType>, string> = {
   unknown: 'z.json()',
 }
 
-export const zodType = (column: TypedColumn, dialect: SqlDialect) => {
+export const zodType = (column: TypedColumn, dialect: Dialect) => {
   const type = tsType(column.type, dialect)
   if (type === 'string' && column.maxLength && column.maxLength > 0) {
     return `z.string().max(${column.maxLength})`
@@ -56,7 +55,7 @@ export const zodType = (column: TypedColumn, dialect: SqlDialect) => {
   return ZOD_BY_TS_TYPE[type]
 }
 
-export const prismaType = (type: string, dialect: SqlDialect) =>
+export const prismaType = (type: string, dialect: Dialect) =>
   firstMatch(type, 'String', [
     [jsonType(dialect), 'Json'],
     [/decimal|numeric/iu, 'Decimal'],
@@ -68,7 +67,7 @@ export const prismaType = (type: string, dialect: SqlDialect) =>
   ])
 
 const DRIZZLE_TYPES: Record<
-  Exclude<SqlDialect, SqlDialect.ClickHouse>,
+  Exclude<Dialect, Dialect.ClickHouse>,
   [RegExp, string][]
 > = {
   mssql: [
@@ -97,7 +96,7 @@ const DRIZZLE_TYPES: Record<
     [/date/iu, 'date'],
     [/decimal|numeric/iu, 'decimal'],
     [/double|float|real/iu, 'double'],
-    [jsonType(SqlDialect.MySQL), 'json'],
+    [jsonType(Dialect.MySQL), 'json'],
   ],
   postgres: [
     [/serial/iu, 'serial'],
@@ -115,11 +114,11 @@ const DRIZZLE_TYPES: Record<
     [/decimal|numeric/iu, 'numeric'],
     [/real|float4/iu, 'real'],
     [/double|float/iu, 'doublePrecision'],
-    [jsonType(SqlDialect.Postgres), 'json'],
+    [jsonType(Dialect.Postgres), 'json'],
   ],
 }
 
 export const drizzleType = (
   type: string,
-  dialect: Exclude<SqlDialect, SqlDialect.ClickHouse>
+  dialect: Exclude<Dialect, Dialect.ClickHouse>
 ) => firstMatch(type, 'text', DRIZZLE_TYPES[dialect])

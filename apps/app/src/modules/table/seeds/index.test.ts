@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import { rowsPerStatement } from '~/core/queries/rows/shape'
 import type { Column } from '~/core/table/cell/utils'
@@ -18,7 +18,7 @@ describe('autoDetectGenerator', () => {
     expect(
       autoDetectGenerator(
         column({ id: 'id', isGenerated: true, typeLabel: 'int' }),
-        SqlDialect.MySQL
+        Dialect.MySQL
       )
     ).toBe(SKIP_GENERATOR)
     expect(
@@ -28,7 +28,7 @@ describe('autoDetectGenerator', () => {
           id: 'created_at',
           typeLabel: 'timestamptz',
         }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe(SKIP_GENERATOR)
   })
@@ -46,7 +46,7 @@ describe('autoDetectGenerator', () => {
           id: 'user_id',
           typeLabel: 'uuid',
         }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe(REFERENCE_GENERATOR)
   })
@@ -55,19 +55,19 @@ describe('autoDetectGenerator', () => {
     expect(
       autoDetectGenerator(
         column({ id: 'title', typeLabel: 'text' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('lorem.sentence')
     expect(
       autoDetectGenerator(
         column({ id: 'title', typeLabel: 'integer' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('number.int')
     expect(
       autoDetectGenerator(
         column({ id: 'price', typeLabel: 'numeric' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('commerce.price')
   })
@@ -76,7 +76,7 @@ describe('autoDetectGenerator', () => {
     expect(
       autoDetectGenerator(
         column({ id: 'provider_id', typeLabel: 'text' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('string.alphanumeric')
   })
@@ -85,13 +85,13 @@ describe('autoDetectGenerator', () => {
     expect(
       autoDetectGenerator(
         column({ id: 'at', typeLabel: 'DateTime64(3)' }),
-        SqlDialect.ClickHouse
+        Dialect.ClickHouse
       )
     ).toBe('date.recent')
     expect(
       autoDetectGenerator(
         column({ id: 'at', typeLabel: 'time' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('date.time')
   })
@@ -100,13 +100,13 @@ describe('autoDetectGenerator', () => {
     expect(
       autoDetectGenerator(
         column({ id: 'span', typeLabel: 'interval' }),
-        SqlDialect.Postgres
+        Dialect.Postgres
       )
     ).toBe('postgres.interval')
     expect(
       autoDetectGenerator(
         column({ id: 'flag', typeLabel: 'tinyint' }),
-        SqlDialect.MySQL
+        Dialect.MySQL
       )
     ).toBe('datatype.boolean')
   })
@@ -114,7 +114,7 @@ describe('autoDetectGenerator', () => {
 
 describe('getGeneratorGroups', () => {
   test('only the connection dialect contributes its generators', () => {
-    const groups = getGeneratorGroups(SqlDialect.Postgres).map((g) => g.value)
+    const groups = getGeneratorGroups(Dialect.Postgres).map((g) => g.value)
     expect(groups[0]).toBe('Special')
     expect(groups).toContain('Postgres')
     expect(groups).not.toContain('MySQL')
@@ -123,9 +123,9 @@ describe('getGeneratorGroups', () => {
 
 describe('rowsPerStatement', () => {
   test('respects the MSSQL parameter cap', () => {
-    expect(rowsPerStatement(SqlDialect.MSSQL, 5)).toBe(400)
-    expect(rowsPerStatement(SqlDialect.MSSQL, 2)).toBe(500)
-    expect(rowsPerStatement(SqlDialect.Postgres, 200)).toBe(500)
+    expect(rowsPerStatement(Dialect.MSSQL, 5)).toBe(400)
+    expect(rowsPerStatement(Dialect.MSSQL, 2)).toBe(500)
+    expect(rowsPerStatement(Dialect.Postgres, 200)).toBe(500)
   })
 })
 
@@ -141,7 +141,7 @@ describe('generateRows', () => {
         column({ id: 'price', precision: 4, scale: 2, typeLabel: 'numeric' }),
       ],
       count: 200,
-      dialect: SqlDialect.ClickHouse,
+      dialect: Dialect.ClickHouse,
     })
     for (const row of rows) {
       expect(row.code).toBeLessThanOrEqual(255)
@@ -162,7 +162,7 @@ describe('generateRows', () => {
         column({ id: 'slug', typeLabel: 'int', unique: 'slug_key' }),
       ],
       count: 50,
-      dialect: SqlDialect.MySQL,
+      dialect: Dialect.MySQL,
       referenceData: { owner: [1, 2] },
     })
     expect(new Set(rows.map((r) => r.slug)).size).toBe(50)
@@ -177,7 +177,7 @@ describe('generateRows', () => {
       },
       columns: [column({ id: 'parent', isNullable: true, typeLabel: 'int' })],
       count: 3,
-      dialect: SqlDialect.Postgres,
+      dialect: Dialect.Postgres,
       referenceData: { parent: [] },
     })
     expect(rows).toEqual([{ parent: null }, { parent: null }, { parent: null }])

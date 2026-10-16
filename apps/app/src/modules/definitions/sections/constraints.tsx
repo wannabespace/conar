@@ -4,7 +4,7 @@ import {
   Link01Icon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { FieldDescription } from '@tamery/ui/components/field'
@@ -171,13 +171,13 @@ const getSuggestedName = (draft: ConstraintDraft) =>
 const getFinalName = (draft: ConstraintDraft) =>
   draft.name.trim() || getSuggestedName(draft)
 
-const getFixedName = (draft: ConstraintDraft, dialect: SqlDialect) =>
+const getFixedName = (draft: ConstraintDraft, dialect: Dialect) =>
   getCapabilities(dialect).fixedConstraintNames[draft.kind]
 
 const getChange = (
   draft: ConstraintDraft,
   item: GroupedConstraint | null,
-  dialect: SqlDialect
+  dialect: Dialect
 ) => {
   const opened = item && getDraft(item)
   const reshaped =

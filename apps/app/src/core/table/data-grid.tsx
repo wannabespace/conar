@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import type { ReactNode, Ref, RefObject } from 'react'
@@ -60,7 +60,7 @@ export const DataGrid = ({
   bar?: GridBarItem[]
   canEdit?: (column: Column, rowIndex: number) => boolean
   columns: Column[]
-  dialect: SqlDialect
+  dialect: Dialect
   cursorRef?: Ref<DataGridHandle>
   /** The grid takes focus when `focusGridWhenReady` names this key, now or once it mounts. */
   focusKey?: string

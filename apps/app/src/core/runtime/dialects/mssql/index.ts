@@ -1,5 +1,9 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
-import type { Dialect, OffsetNode, SelectQueryNode } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type {
+  Dialect as KyselyDialect,
+  OffsetNode,
+  SelectQueryNode,
+} from 'kysely'
 import {
   MssqlQueryCompiler as DefaultMssqlQueryCompiler,
   DummyDriver,
@@ -53,12 +57,12 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 export const mssqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MssqlAdapter(),
-    createDriver: () => createKyselyDriver(SqlDialect.MSSQL, options),
+    createDriver: () => createKyselyDriver(Dialect.MSSQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect
 
 export const mssqlColdDialect = () =>
   ({
@@ -68,4 +72,4 @@ export const mssqlColdDialect = () =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect

@@ -13,7 +13,7 @@ import { mergeParts } from '@tamery/connection/guess/parts'
 import {
   ConnectionType,
   getDialect,
-  SqlDialect,
+  Dialect,
 } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
@@ -38,11 +38,11 @@ const SOCKETS = (
 const ANSWER_TIMEOUT_MS = 2000
 const ANY_ADDRESS = new Set(['', '0.0.0.0', '::'])
 
-const IMAGE_USERS: Record<SqlDialect, string> = {
-  [SqlDialect.ClickHouse]: 'default',
-  [SqlDialect.MSSQL]: 'sa',
-  [SqlDialect.MySQL]: 'root',
-  [SqlDialect.Postgres]: 'postgres',
+const IMAGE_USERS: Record<Dialect, string> = {
+  [Dialect.ClickHouse]: 'default',
+  [Dialect.MSSQL]: 'sa',
+  [Dialect.MySQL]: 'root',
+  [Dialect.Postgres]: 'postgres',
 }
 
 const containersSchema = type({

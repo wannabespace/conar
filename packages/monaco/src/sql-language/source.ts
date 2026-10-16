@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { silently } from '@tamery/shared/utils'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, splitStatements, statementScope } from '@tamery/sql'
@@ -21,7 +21,7 @@ export interface SqlSource {
   ghostTextEnabled: () => boolean
   load: (refs: TableRef[]) => Promise<unknown> | undefined
   onCatalogChange: (listener: () => void) => () => void
-  type: SqlDialect
+  type: Dialect
 }
 
 export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
@@ -38,7 +38,7 @@ export const getRange = (
   end: number
 ) => Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
 
-export const tablesIn = (text: string, dialect: SqlDialect) =>
+export const tablesIn = (text: string, dialect: Dialect) =>
   splitStatements(text, dialects[dialect]).flatMap(
     (statement) => statementScope(statement.tokens).tables
   )

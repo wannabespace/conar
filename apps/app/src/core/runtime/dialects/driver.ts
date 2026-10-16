@@ -1,7 +1,7 @@
 import { rowObjects } from '@tamery/connection/queries'
 import { SSH_DESKTOP_ONLY } from '@tamery/connection/ssh/params'
 import { describeConnectionString } from '@tamery/connection/utils'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { PORTS } from '@tamery/shared/ports'
 import { silently } from '@tamery/shared/utils'
@@ -55,7 +55,7 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export const createDialectProvider = (
-  type: SqlDialect,
+  type: Dialect,
   options: DialectOptions
 ) => {
   const { connectionsCollection, connectionsResourcesCollection } =
@@ -162,7 +162,7 @@ export const createDialectProvider = (
 }
 
 export const createKyselyDriver = (
-  type: SqlDialect,
+  type: Dialect,
   options: DialectOptions,
   transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
     query: compiledQuery.sql,

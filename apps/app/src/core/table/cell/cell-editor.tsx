@@ -1,5 +1,5 @@
 import { Monaco } from '@tamery/monaco/editor'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Textarea } from '@tamery/ui/components/textarea'
@@ -30,7 +30,7 @@ const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
 }
 
 const codeLanguage = (
-  dialect: SqlDialect,
+  dialect: Dialect,
   { type = '', uiType }: Column,
   value: unknown
 ) => {

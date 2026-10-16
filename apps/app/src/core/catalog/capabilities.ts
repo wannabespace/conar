@@ -1,4 +1,4 @@
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
   CONSTRAINT_KINDS,
@@ -36,8 +36,8 @@ import type { DefinitionsSection } from './sections'
 
 export type { ArrayType, SectionCapabilities } from './capability-presets'
 
-const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
-  [SqlDialect.ClickHouse]: {
+const capabilities: Record<Dialect, ConnectionCapabilities> = {
+  [Dialect.ClickHouse]: {
     cascade: false,
     columnTypes: {
       array: { close: ')', open: 'Array(' },
@@ -47,7 +47,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       incomparable:
         /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
       json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
-      options: COLUMN_TYPES[SqlDialect.ClickHouse],
+      options: COLUMN_TYPES[Dialect.ClickHouse],
       uuid: /\bUUID\b/u,
       xml: null,
     },
@@ -87,7 +87,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
     systemSchemas: [],
     triggers: noTriggers,
   },
-  [SqlDialect.MSSQL]: {
+  [Dialect.MSSQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -96,7 +96,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       id: 'int identity',
       incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[SqlDialect.MSSQL],
+      options: COLUMN_TYPES[Dialect.MSSQL],
       uuid: /^uniqueidentifier$/iu,
       xml: /^xml$/iu,
     },
@@ -148,7 +148,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       toggle: true,
     },
   },
-  [SqlDialect.MySQL]: {
+  [Dialect.MySQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -157,7 +157,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       id: 'int auto_increment',
       incomparable: null,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[SqlDialect.MySQL],
+      options: COLUMN_TYPES[Dialect.MySQL],
       // MariaDB's native UUID; MySQL has none.
       uuid: /^uuid$/iu,
       xml: null,
@@ -210,7 +210,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       toggle: false,
     },
   },
-  [SqlDialect.Postgres]: {
+  [Dialect.Postgres]: {
     cascade: true,
     columnTypes: {
       array: { close: '[]', open: '' },
@@ -220,7 +220,7 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
       incomparable:
         /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
       json: /^jsonb?$/iu,
-      options: COLUMN_TYPES[SqlDialect.Postgres],
+      options: COLUMN_TYPES[Dialect.Postgres],
       uuid: /^uuid$/iu,
       xml: /^xml$/iu,
     },
@@ -276,21 +276,19 @@ const capabilities: Record<SqlDialect, ConnectionCapabilities> = {
   },
 }
 
-export const getCapabilities = (type: SqlDialect) => capabilities[type]
+export const getCapabilities = (type: Dialect) => capabilities[type]
 
-export const getDefaultSchema = (type: SqlDialect, database: string | null) =>
+export const getDefaultSchema = (type: Dialect, database: string | null) =>
   capabilities[type].defaultSchema ?? database
 
-export const sectionAvailable = (
-  section: DefinitionsSection,
-  type: SqlDialect
-) => capabilities[type].sections[section] !== false
+export const sectionAvailable = (section: DefinitionsSection, type: Dialect) =>
+  capabilities[type].sections[section] !== false
 
 export const getSectionCapabilities = (
   section: DefinitionsSection,
-  type: SqlDialect
+  type: Dialect
 ): SectionCapabilities => capabilities[type].sections[section] || readOnly
 
-export const foreignKeysCreatable = (type: SqlDialect) =>
+export const foreignKeysCreatable = (type: Dialect) =>
   capabilities[type].constraintKinds.includes('foreignKey') &&
   !!getSectionCapabilities('constraints', type).create

@@ -5,7 +5,7 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
@@ -120,6 +120,6 @@ export const createQueryRouter = <T extends AnyBuilder>(
     mssql: createQueryDialect(mssql.query, orpc, resolve),
     mysql: createQueryDialect(mysql.query, orpc, resolve),
     postgres: createQueryDialect(pg.query, orpc, resolve),
-  }) satisfies Record<SqlDialect, Record<keyof QueryExecutor, unknown>>
+  }) satisfies Record<Dialect, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

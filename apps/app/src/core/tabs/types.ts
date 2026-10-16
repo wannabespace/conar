@@ -1,5 +1,5 @@
 import type { IconSvgElement } from '@hugeicons/react'
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import type { ReactNode } from 'react'
 
@@ -17,7 +17,7 @@ export type ConnectionTab = typeof connectionTabType.infer
 // typed with its own params still fits `TabKind[]` / `TabView`.
 /* oxlint-disable typescript/method-signature-style */
 export interface TabKind<Params = unknown> {
-  available?(params: Params, dialect: SqlDialect): boolean
+  available?(params: Params, dialect: Dialect): boolean
   fullTitle?(params: Params): string
   icon: IconSvgElement
   label?(params: Params, siblings: Params[]): string
@@ -51,7 +51,7 @@ export const tabSearchType = type({
 type TabSearch = typeof tabSearchType.infer
 
 export interface SchemaItem {
-  available?: (dialect: SqlDialect) => boolean
+  available?: (dialect: Dialect) => boolean
   icon: IconSvgElement
   label: string
   tabId: string

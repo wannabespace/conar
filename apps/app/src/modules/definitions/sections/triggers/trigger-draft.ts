@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { uppercaseFirst } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
@@ -70,7 +70,7 @@ export const triggerSchemas = {
 export const getDraft = (
   item: TriggerItem | null,
   pageSchema: string,
-  dialect: SqlDialect
+  dialect: Dialect
 ): TriggerDraft => {
   const { orientations, timings } = getCapabilities(dialect).triggers
 

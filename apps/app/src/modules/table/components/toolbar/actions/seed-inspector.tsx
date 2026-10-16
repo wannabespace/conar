@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import {
   Command,
   CommandEmpty,
@@ -40,7 +40,7 @@ const GeneratorPicker = ({
   generator: Generator
   generators: Generators
   groups: GeneratorGroup[]
-  dialect: SqlDialect
+  dialect: Dialect
   inputRef: React.RefObject<HTMLInputElement | null>
   onChange: (id: GeneratorId) => void
   onLeave: () => void
@@ -153,7 +153,7 @@ export const SeedInspector = ({
   generator: Generator
   generators: Generators
   groups: GeneratorGroup[]
-  dialect: SqlDialect
+  dialect: Dialect
   inputRef: React.RefObject<HTMLInputElement | null>
   onChange: (patch: Partial<Generator>) => void
   onLeave: () => void

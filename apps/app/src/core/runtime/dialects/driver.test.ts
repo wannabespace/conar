@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'bun:test'
 
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { sql } from 'kysely'
 import { clearMemoizeCache, getCacheStore } from 'memoza'
@@ -36,7 +36,7 @@ const { dialects } = await import('./index')
 test('saved and unsaved connections use the available proxy', async () => {
   await Promise.all(
     [{ resourceId: 'resource' }, {}].map((ids) =>
-      createDialectProvider(SqlDialect.Postgres, {
+      createDialectProvider(Dialect.Postgres, {
         connectionString: 'postgres://user:password@localhost/db',
         ...ids,
       }).execute({ query: 'SELECT 1', values: [] })
@@ -72,7 +72,7 @@ test('the web app never sends an SSH connection string to a proxy', () => {
   execute.mockClear()
   cloudExecute.mockClear()
   expect(() =>
-    createDialectProvider(SqlDialect.Postgres, {
+    createDialectProvider(Dialect.Postgres, {
       connectionString:
         'postgres://user:password@db.internal/db?ssh_host=bastion&ssh_auth=key&ssh_key=secret',
     }).execute({ query: 'SELECT 1', values: [] })

@@ -1,4 +1,4 @@
-import type { SqlDialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 
@@ -21,7 +21,7 @@ import { createTimeTransformer } from './time.ts'
 import type { ValueTransformer } from './value-transformer'
 
 export const createTransformer = (
-  dialect: SqlDialect,
+  dialect: Dialect,
   column: Column
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
@@ -71,7 +71,7 @@ export const createTransformer = (
 }
 
 export const parseCellText = (
-  dialect: SqlDialect,
+  dialect: Dialect,
   column: Column,
   text: string | null
 ) =>
