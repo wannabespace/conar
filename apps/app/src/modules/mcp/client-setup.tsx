@@ -21,15 +21,13 @@ import { maskedToken, MCP_CLIENTS } from './clients'
 export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
     <Tabs defaultValue={MCP_CLIENTS[0]?.id}>
-      <div className={cn(smallItemInsetClassName, 'pt-3.5')}>
-        <TabsList className="w-full">
-          {MCP_CLIENTS.map(({ id, label }) => (
-            <TabsTrigger key={id} value={id}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </div>
+      <TabsList variant="bar" className="after:hidden">
+        {MCP_CLIENTS.map(({ id, label }) => (
+          <TabsTrigger key={id} value={id}>
+            {label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
       {MCP_CLIENTS.map((client) => {
         const installLink = client.installLink?.(server)
 

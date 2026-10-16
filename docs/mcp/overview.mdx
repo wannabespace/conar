@@ -55,7 +55,7 @@ Nothing the agent sent runs before you choose **Run**. On PostgreSQL and MySQL, 
 
 Once a client connects, **Connected clients** lists it by name and version, with when it was last active. Remove one you no longer use with the trash button beside it. That only clears the entry, so a client that still has the token reappears the next time it connects. To cut off every client, regenerate the token, which also clears this list.
 
-**Activity**, at the bottom of **Settings** → **MCP**, shows the last 1000 tool calls, newest first: which client made it, what it did, on which connection and database, the SQL or table, and the error when a call failed or you declined it. The log is kept on this device, in plain text next to Tamery's settings. It never holds connection strings: for `create_connection` it records only the name.
+**Activity**, at the bottom of **Settings** → **MCP**, shows the last 1000 tool calls, newest first: which client made it, what it did, on which connection and database, the table, and the error when a call failed or you declined it. For `query` and `execute`, the code button at the end of the row opens the whole statement, formatted, with a button to copy it. The log is kept on this device, in plain text next to Tamery's settings. It never holds connection strings: for `create_connection` it records only the name.
 
 Any other client that supports Streamable HTTP works too: point it at the URL and send the token as an `Authorization: Bearer <token>` header. Most take this JSON:
 
