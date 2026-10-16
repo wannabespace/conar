@@ -12,12 +12,12 @@ import type {
   ConnectionForm,
   ConnectionFormValues,
 } from '../lib/connection-form'
-import { getPlace, PLACES } from '../lib/place'
+import { getEngineFields, isSqliteFile } from '../lib/engine-fields'
 import { EngineField } from './engine-field'
 import { Footnote } from './footnote'
 import { TextRow } from './text-row'
 
-export const PlaceFields = ({
+export const ConnectionFields = ({
   form,
   locked,
   values,
@@ -26,7 +26,7 @@ export const PlaceFields = ({
   locked: (field: string) => boolean
   values: Pick<ConnectionFormValues, 'host' | 'provider' | 'type'>
 }) => {
-  const place = getPlace(values)
+  const sqliteFile = isSqliteFile(values)
   const dialect = getDialect(values.type)
   const localProxyAvailable = useLocalProxyAvailable()
 
@@ -34,7 +34,7 @@ export const PlaceFields = ({
     <>
       <FieldGroup variant="card">
         <EngineField form={form} locked={locked} />
-        {PLACES[place].rows.map(
+        {getEngineFields(values).rows.map(
           ({ label, name, placeholder, port, secret }) => (
             <TextRow
               key={name}
@@ -57,7 +57,7 @@ export const PlaceFields = ({
                 }
               }
             >
-              {place === 'file' && window.electron && (
+              {sqliteFile && window.electron && (
                 <IconButton
                   variant="ghost-faint"
                   size="icon-sm"
@@ -84,7 +84,7 @@ export const PlaceFields = ({
             Local databases are reached through your tamery proxy.
           </Footnote>
         )}
-      {place === 'file' && !window.electron && (
+      {sqliteFile && !window.electron && (
         <Footnote>
           The file opens on the computer running your tamery proxy.
         </Footnote>

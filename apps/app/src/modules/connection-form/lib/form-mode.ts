@@ -7,7 +7,7 @@ import type { Connection } from '~/core/connection/sync'
 
 import type { ConnectionFormValues } from './connection-form'
 import { getFormValues } from './connection-form'
-import { getPlace, PLACES } from './place'
+import { getEngineFields } from './engine-fields'
 
 export type FormMode =
   | { kind: 'create' }
@@ -74,7 +74,7 @@ export const getFormPolicy = (mode: FormMode) => {
     firstField:
       mode.kind === 'create'
         ? null
-        : (missingFields[0] ?? PLACES[getPlace(mode.values)].field),
+        : (missingFields[0] ?? getEngineFields(mode.values).field),
     guardsUnsaved: mode.kind === 'edit' && scope === 'all',
     locked: (field: string) =>
       scope === 'credentials' && !missingFields.includes(field),

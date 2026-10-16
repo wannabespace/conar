@@ -1,6 +1,7 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
@@ -18,15 +19,16 @@ import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
 import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
+import { getEngineFields } from '../lib/engine-fields'
 import type { FormMode } from '../lib/form-mode'
 import { getFormPolicy } from '../lib/form-mode'
-import { getPlace, PLACES } from '../lib/place'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import { usePickLocalDatabase } from '../lib/use-pick-local-database'
 import type { OnSave } from '../lib/use-test-then-save'
 import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
+import { ConnectionFields } from './connection-fields'
 import { DropOverlay } from './drop-overlay'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
@@ -34,7 +36,6 @@ import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
 import { PasteNotes } from './paste-notes'
-import { PlaceFields } from './place-fields'
 import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
@@ -122,7 +123,7 @@ export const ConnectionPage = ({
   })
 
   const values = useSelector(form.store, (state) => state.values)
-  const place = getPlace(values)
+  const engineFields = getEngineFields(values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
   const { canSend, reason, testStatus } = getDraft(values)
 
@@ -219,7 +220,7 @@ export const ConnectionPage = ({
                 }
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <PlaceFields
+                  <ConnectionFields
                     form={form}
                     locked={policy.locked}
                     values={values}
@@ -232,7 +233,7 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                {place === 'server' && (
+                {values.type !== ConnectionType.SQLite && (
                   <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                     <SshFields form={form} locked={policy.locked} />
                   </motion.div>
@@ -252,7 +253,7 @@ export const ConnectionPage = ({
                     key={testError.message}
                     error={testError}
                     parts={getParts(values)}
-                    place={place}
+                    engineFields={engineFields}
                     onAsk={focusPage}
                     onFix={applyFix}
                     onFocus={(field) => {
@@ -280,7 +281,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={values[PLACES[place].field].trim() ? reason : null}
+          reason={values[engineFields.field].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

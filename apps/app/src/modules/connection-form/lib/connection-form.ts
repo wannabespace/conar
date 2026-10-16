@@ -20,7 +20,7 @@ import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
-import { getPlace, PLACES } from './place'
+import { getEngineFields, isSqliteFile } from './engine-fields'
 import type { PasteVia } from './use-paste-connection'
 
 export interface ConnectionFormValues extends Omit<
@@ -78,12 +78,12 @@ const connectionFormSchema = type({
   type: type.valueOf(ConnectionType),
 })
   .narrow((values, ctx) => {
-    const { field, message } = PLACES[getPlace(values)]
+    const { field, message } = getEngineFields(values)
     return /\S/u.test(values[field]) || ctx.reject({ message, path: [field] })
   })
   .narrow(
     (values, ctx) =>
-      getPlace(values) !== 'file' ||
+      !isSqliteFile(values) ||
       !/\S/u.test(values.database) ||
       FULL_PATH.test(values.database) ||
       ctx.reject({
@@ -120,9 +120,8 @@ export const getFormValues = (
 }
 
 export const getParts = (values: ConnectionFormValues): ConnectionParts => {
-  const place = getPlace(values)
   const shown = new Set(
-    PLACES[place].rows.flatMap((row) =>
+    getEngineFields(values).rows.flatMap((row) =>
       row.port ? [row.name, 'port'] : [row.name]
     )
   )
@@ -130,19 +129,22 @@ export const getParts = (values: ConnectionFormValues): ConnectionParts => {
     shown.has(field) ? values[field] : ''
   return {
     database: keep('database'),
-    host: place === 'd1' ? D1_HOST : keep('host'),
-    https: place === 'server' ? values.https : null,
+    host: values.provider === Provider.CloudflareD1 ? D1_HOST : keep('host'),
+    https: values.type === ConnectionType.SQLite ? null : values.https,
     options: keep('options'),
     password: keep('password'),
     port: keep('port'),
-    ssh: place === 'server' && values.sshEnabled ? values.ssh : null,
+    ssh:
+      values.type !== ConnectionType.SQLite && values.sshEnabled
+        ? values.ssh
+        : null,
     type: values.type,
     user: keep('user'),
   }
 }
 
 export const getMissing = (values: ConnectionFormValues) =>
-  PLACES[getPlace(values)].rows.flatMap(({ name, optional }) =>
+  getEngineFields(values).rows.flatMap(({ name, optional }) =>
     optional ||
     values[name].trim() ||
     (name === 'password' && isLocalHost(values.host.trim()))
@@ -150,8 +152,8 @@ export const getMissing = (values: ConnectionFormValues) =>
       : [name]
   )
 
-/** Starts every field over, so a password or token never travels to another place's host. */
-const clearPlace = (form: ConnectionForm) => {
+/** Starts every field over, so a password or token never travels to another engine's host. */
+const clearFields = (form: ConnectionForm) => {
   for (const field of SERVER_FIELDS) {
     form.setFieldValue(field, '')
   }
@@ -163,8 +165,8 @@ const clearPlace = (form: ConnectionForm) => {
 type Engine = Pick<ConnectionFormValues, 'provider' | 'type'>
 
 export const switchEngine = (form: ConnectionForm, engine: Engine) => {
-  if (getPlace(engine) !== getPlace(form.state.values)) {
-    clearPlace(form)
+  if (getEngineFields(engine) !== getEngineFields(form.state.values)) {
+    clearFields(form)
   }
   form.setFieldValue('type', engine.type)
   form.setFieldValue('provider', engine.provider)
@@ -186,7 +188,7 @@ const BARE_HOST = /^[\w.:%[\]-]+$/u
 const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   const { values } = form.state
   if (parts.host && BARE_HOST.test(values.host) && parts.host !== values.host) {
-    clearPlace(form)
+    clearFields(form)
   }
   switchEngine(form, getGuessedEngine(values, parts))
   for (const field of SERVER_FIELDS) {
@@ -205,19 +207,20 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
 }
 
 /** Reads a whole string typed into the field that names where the database is, as a paste would. */
-const expandPlace = (
+const expandField = (
   form: ConnectionForm,
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
 ) => {
   const { values } = form.state
-  const { field } = PLACES[getPlace(values)]
+  const { field } = getEngineFields(values)
   const value = values[field]
   const guess = guessConnection(value)
   const read = guess?.parts[field]
   if (
     guess &&
     ((read !== undefined && read !== value) ||
-      getPlace(getGuessedEngine(values, guess.parts)) !== getPlace(values))
+      getEngineFields(getGuessedEngine(values, guess.parts)) !==
+        getEngineFields(values))
   ) {
     fill(form, guess)
     onFill(guess, false)
@@ -243,13 +246,13 @@ export const useConnectionForm = ({
     defaultValues: initialValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
-        if (fieldApi.name === PLACES[getPlace(form.state.values)].field) {
-          expandPlace(form, onFill)
+        if (fieldApi.name === getEngineFields(form.state.values).field) {
+          expandField(form, onFill)
         }
       },
     },
     onSubmit: () => {
-      expandPlace(form, onFill)
+      expandField(form, onFill)
       return onSubmit()
     },
     validators: {

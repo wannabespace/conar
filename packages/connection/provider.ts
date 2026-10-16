@@ -1,5 +1,4 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
-import { objectEntries } from '@tamery/shared/utils'
 
 import type { SqliteLocation } from './sqlite-location'
 import { getSqliteLocation } from './sqlite-location'
@@ -21,8 +20,3 @@ export const getProvider = ({
   type === ConnectionType.SQLite
     ? PROVIDER_OF_SQLITE_LOCATION[getSqliteLocation(host)]
     : null
-
-export const getSqliteLocationOf = (provider: Provider | null) =>
-  objectEntries(PROVIDER_OF_SQLITE_LOCATION).find(
-    ([, located]) => located === provider
-  )?.[0] ?? 'file'

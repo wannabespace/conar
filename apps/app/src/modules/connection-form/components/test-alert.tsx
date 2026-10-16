@@ -24,8 +24,8 @@ import { useState } from 'react'
 import { orpc } from '~/lib/orpc'
 import { useIsOnline } from '~/store'
 
-import type { Place } from '../lib/place'
-import { getFieldNoun } from '../lib/place'
+import type { EngineFields } from '../lib/engine-fields'
+import { getFieldNoun } from '../lib/engine-fields'
 
 export type FixSource = 'ai' | 'rule'
 
@@ -47,16 +47,16 @@ export const TestAlert = ({
   onAsk,
   onFix,
   onFocus,
+  engineFields,
   parts,
-  place,
 }: {
   error: Error
   /** Explain with AI disables itself and then unmounts, so focus has to go somewhere. */
   onAsk: () => void
   onFix: (patch: ConnectionPatch, source: FixSource) => void
   onFocus: (field: Focus) => void
+  engineFields: EngineFields
   parts: ConnectionParts
-  place: Place
 }) => {
   const context = { desktop: !!window.electron, message: error.message, parts }
   const diagnosis = diagnoseConnectionError(context)
@@ -121,7 +121,7 @@ export const TestAlert = ({
                   onClick={() => onFocus(focus)}
                 >
                   {SSH_FOCUS_LABELS[focus] ??
-                    `Edit the ${getFieldNoun(place, focus)}`}
+                    `Edit the ${getFieldNoun(engineFields, focus)}`}
                 </Button>
               )}
               {aiFix && (
