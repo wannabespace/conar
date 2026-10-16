@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto'
-
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type {
   ShapeOutput,
@@ -51,7 +49,7 @@ const INSTRUCTIONS = `Tamery is the user's database client. Start with list_conn
 
 export const createMcpServer = (
   access: () => Record<string, McpAccess>,
-  logCall: (call: Omit<McpCall, 'client'>) => void
+  logCall: (call: Omit<McpCall, 'client' | 'id'>) => void
 ) => {
   const server = new McpServer(
     { name: 'tamery', version: app.getVersion() },
@@ -88,7 +86,7 @@ export const createMcpServer = (
     },
     describeCall: (
       args: ShapeOutput<Shape>
-    ) => Partial<McpTarget> & Pick<McpCall, 'detail'>,
+    ) => Partial<McpTarget & Pick<McpCall, 'detail' | 'sql'>>,
     run: (args: ShapeOutput<Shape>, signal: AbortSignal) => Promise<unknown>
   ) =>
     server.registerTool<ZodRawShapeCompat, ZodRawShapeCompat>(
@@ -99,14 +97,19 @@ export const createMcpServer = (
         const args = input as ShapeOutput<Shape>
         const at = Date.now()
         const result = await Result.tryPromise(() => run(args, signal))
-        const { connectionId, detail, resource } = describeCall(args)
+        const {
+          connectionId = null,
+          detail = null,
+          resource = null,
+          sql = null,
+        } = describeCall(args)
         logCall({
           at,
-          connectionId: connectionId ?? null,
+          connectionId,
           detail,
           error: result.isErr() ? toError(result.error.cause).message : null,
-          id: randomUUID(),
-          resource: resource ?? null,
+          resource,
+          sql,
           tool,
         })
         if (result.isErr()) {
@@ -124,7 +127,7 @@ export const createMcpServer = (
         'List the database connections saved in Tamery: id, name, engine, the resources (databases) opened in it, and the access the user gave agents: "read" (query only), "ask" (each execute waits for the user to approve it) or "write" (execute runs at once).',
       inputSchema: {},
     },
-    () => ({ detail: null }),
+    () => ({}),
     async (_args, signal) => {
       const connections = await askRenderer(
         { args: undefined, method: 'connections' },
@@ -183,7 +186,7 @@ export const createMcpServer = (
       description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL and ClickHouse also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
-    ({ sql, ...target }) => ({ ...target, detail: sql }),
+    (args) => args,
     (args, signal) => askShared({ args, method: 'query' }, signal)
   )
 
@@ -198,7 +201,7 @@ export const createMcpServer = (
         schema: z.string().optional(),
       },
     },
-    ({ schema, ...target }) => ({ ...target, detail: schema ?? null }),
+    ({ schema, ...target }) => ({ ...target, detail: schema }),
     (args, signal) => askShared({ args, method: 'tables' }, signal)
   )
 
@@ -228,7 +231,7 @@ export const createMcpServer = (
       description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction, except on ClickHouse, which has no transactions. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
       inputSchema: sqlInput,
     },
-    ({ sql, ...target }) => ({ ...target, detail: sql }),
+    (args) => args,
     async (args, signal) => {
       const connectionAccess = getSharedAccess(args.connectionId)
       if (connectionAccess === 'read') {

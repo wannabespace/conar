@@ -18,7 +18,7 @@ import type {
   McpStatus,
 } from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
-import { omit, toError } from '@tamery/shared/utils'
+import { omit, silently, toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 import Store from 'electron-store'
 
@@ -45,7 +45,7 @@ const store = new Store<{
 
 const connectionAccess = () => store.get('access')
 
-const MAX_LOGGED_CALLS = 1000
+const MAX_LOGGED_CALLS = 100
 
 const log = new Store<{ calls: McpCall[] }>({
   defaults: { calls: [] },
@@ -54,9 +54,11 @@ const log = new Store<{ calls: McpCall[] }>({
 
 let loggedCalls = log.get('calls')
 
-const logCall = (call: McpCall) => {
-  loggedCalls = [call, ...loggedCalls].slice(0, MAX_LOGGED_CALLS)
-  log.set('calls', loggedCalls)
+const logCall = (call: Omit<McpCall, 'id'>) => {
+  loggedCalls = [{ ...call, id: randomUUID() }, ...loggedCalls]
+    .toSorted((a, b) => b.at - a.at)
+    .slice(0, MAX_LOGGED_CALLS)
+  void silently(() => log.set('calls', loggedCalls))
 }
 
 let server: Server | Error | null = null

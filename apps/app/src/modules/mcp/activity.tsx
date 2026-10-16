@@ -27,6 +27,7 @@ import { posthog } from '~/lib/posthog'
 import { formatSql } from '~/utils/formatter'
 
 import { clientLabel } from './clients'
+import { mcpCallsQuery } from './use-mcp-server'
 
 const TOOL_LABELS: Record<McpTool, string> = {
   create_connection: 'created a connection',
@@ -37,11 +38,9 @@ const TOOL_LABELS: Record<McpTool, string> = {
   query: 'ran a query',
 }
 
-const SQL_TOOLS = new Set<McpTool>(['execute', 'query'])
-
 interface Inspected {
   call: McpCall
-  connection?: Connection
+  connection: Connection | null
 }
 
 const CallTitle = ({ call, connection }: Inspected) => (
@@ -72,11 +71,11 @@ const CallDialog = ({
   onOpenChange: (open: boolean) => void
   open: boolean
 }) => {
-  const sql = inspected?.call.detail ?? ''
+  const sql = inspected?.call.sql
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} variant="panel">
-      {inspected && (
+      {inspected && sql && (
         <DialogContent showCloseButton={false}>
           <div className="flex h-12 shrink-0 items-center gap-1 border-b px-2">
             <DialogTitle className="mx-2 min-w-0 flex-1">
@@ -102,7 +101,7 @@ const CallDialog = ({
           />
           {inspected.call.error && (
             <Alert variant="destructive" className="m-2 w-auto shrink-0">
-              <AlertDescription className="wrap-break-word">
+              <AlertDescription data-mask className="wrap-break-word">
                 {inspected.call.error}
               </AlertDescription>
             </Alert>
@@ -118,11 +117,7 @@ export const Activity = () => {
   const { data: connections } = useLiveQuery({
     query: (q) => q.from({ connection: connectionsCollection }),
   })
-  const { data: calls, dataUpdatedAt } = useQuery({
-    queryFn: () => window.electron?.mcp.calls(),
-    queryKey: ['mcp', 'calls'],
-    refetchInterval: 2000,
-  })
+  const { data: calls, dataUpdatedAt } = useQuery(mcpCallsQuery)
   const [open, setOpen] = useState(false)
   const [inspected, setInspected] = useState<Inspected | null>(null)
 
@@ -134,26 +129,26 @@ export const Activity = () => {
     <>
       <SettingsGroup title="Activity">
         {calls.map((call) => {
-          const connection = connections.find(
-            ({ id }) => id === call.connectionId
-          )
-          const sql = SQL_TOOLS.has(call.tool) ? call.detail : null
-          const detail = sql ? null : call.detail
+          const connection =
+            connections.find(({ id }) => id === call.connectionId) ?? null
 
           return (
             <SettingsRow
               key={call.id}
               title={<CallTitle call={call} connection={connection} />}
               description={
-                (detail || call.error) && (
+                (call.detail || call.error) && (
                   <>
-                    {detail && (
+                    {call.detail && (
                       <span data-mask className="font-mono text-xs">
-                        {detail}
+                        {call.detail}
                       </span>
                     )}
                     {call.error && (
-                      <span className="text-destructive block truncate">
+                      <span
+                        data-mask
+                        className="text-destructive block truncate"
+                      >
                         {call.error}
                       </span>
                     )}
@@ -161,7 +156,7 @@ export const Activity = () => {
                 )
               }
             >
-              {sql && (
+              {call.sql && (
                 <IconButton
                   icon={SourceCodeIcon}
                   label="Show query"

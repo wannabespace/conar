@@ -70,11 +70,12 @@ export interface McpCall {
   at: number
   client: string
   connectionId: string | null
-  /** The SQL, the table or the new connection's name; never a connection string. */
+  /** The schema, the table or the new connection's name; never a connection string. */
   detail: string | null
   error: string | null
   id: string
   resource: string | null
+  sql: string | null
   tool: McpTool
 }
 
