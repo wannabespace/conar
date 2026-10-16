@@ -16,6 +16,8 @@ describe('guessConnection — unrecognised input', () => {
     ['{ "broken": '],
     ['postgres://me@db.acme.io:99999/app'],
     ['v1.2.3'],
+    ['/Users/me/notes.txt'],
+    ['file:./dev.db'],
   ])('returns null for %p', (text) => {
     expect(guessConnection(text)).toBeNull()
   })
@@ -96,6 +98,25 @@ describe('guessConnection — snippets from configs and tools', () => {
     [
       'pg_dump -h db.acme.io -U me -p 5433 app > dump.sql',
       { database: 'app', host: 'db.acme.io', port: '5433', user: 'me' },
+    ],
+    [
+      '/Users/me/My Data/app.sqlite3',
+      {
+        database: '/Users/me/My Data/app.sqlite3',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'jdbc:sqlite:/srv/app%20data.db',
+      { database: '/srv/app data.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'sqlite3 "C:\\data\\app.db"',
+      { database: 'C:\\data\\app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'DATABASE_URL=sqlite:////var/lib/app.db',
+      { database: '/var/lib/app.db', type: ConnectionType.SQLite },
     ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)

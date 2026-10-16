@@ -1,3 +1,4 @@
+import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import { createQuery } from '~/core/runtime/query'
@@ -43,6 +44,7 @@ export const recreateConstraintQuery = ({
           await dropConstraint(tx, target).execute()
           await addConstraint(tx, target, shape).execute()
         }),
+      sqlite: unsupported('Editing constraints'),
     },
   })
 }

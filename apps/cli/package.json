@@ -10,6 +10,7 @@
     "mysql",
     "postgres",
     "sql",
+    "sqlite",
     "tamery"
   ],
   "homepage": "https://tamery.app",
@@ -68,6 +69,6 @@
     "typescript": "catalog:"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   }
 }

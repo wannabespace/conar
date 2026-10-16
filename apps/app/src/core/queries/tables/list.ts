@@ -1,3 +1,4 @@
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -187,6 +188,31 @@ export const resourceTablesAndSchemasQuery = memoize(
                 not(eb('n.nspname', 'like', 'pg_toast%')),
                 not(eb('n.nspname', 'like', 'pg_temp%')),
               ])
+            )
+            .execute(),
+        sqlite: (db) =>
+          db
+            .selectFrom('sqlite_schema')
+            .select((eb) => [
+              eb.val(SQLITE_RESOURCE_NAME).as('schema'),
+              'name as table',
+              sql<string | null>`null`.as('comment'),
+              eb
+                .case()
+                .when('type', '=', 'view')
+                .then('view')
+                .else('base table')
+                .end()
+                .as('type'),
+            ])
+            .$narrowType<{ type: 'base table' | 'view' }>()
+            .where('type', 'in', ['table', 'view'])
+            .where((eb) =>
+              eb(
+                eb.fn('substr', ['name', eb.val(1), eb.val(7)]),
+                '!=',
+                'sqlite_'
+              )
             )
             .execute(),
       },

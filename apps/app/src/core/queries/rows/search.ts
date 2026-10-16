@@ -49,6 +49,7 @@ export const searchRowsQuery = (params: SearchRowsParams) =>
       mssql: (db) => searchRows(db, textContains.mssql, params),
       mysql: (db) => searchRows(db, textContains.mysql, params),
       postgres: (db) => searchRows(db, textContains.postgres, params),
+      sqlite: (db) => searchRows(db, textContains.sqlite, params),
     },
     type: rowsType,
   })

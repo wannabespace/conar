@@ -82,6 +82,7 @@ export const alterPolicyQuery = ({
             )
           }
         }),
+      sqlite: unsupported('Row policies'),
     },
   })
 }

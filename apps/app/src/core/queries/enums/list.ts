@@ -159,6 +159,7 @@ const resourceEnumsQuery = createQuery({
 
       return [...grouped.values()]
     },
+    sqlite: () => Promise.resolve([]),
   },
   type: enumType.array(),
 })

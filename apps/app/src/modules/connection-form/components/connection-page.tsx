@@ -17,7 +17,13 @@ import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
 import type { ConnectionFormValues } from '../lib/connection-form'
-import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
+import {
+  getMissing,
+  getParts,
+  getPlaceField,
+  opensFile,
+  useConnectionForm,
+} from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
 import { getFormPolicy } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
@@ -222,9 +228,11 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <SshFields form={form} locked={policy.locked} />
-                </motion.div>
+                {!opensFile(values.type) && (
+                  <motion.div className="flex flex-col gap-5" variants={REVEAL}>
+                    <SshFields form={form} locked={policy.locked} />
+                  </motion.div>
+                )}
                 {policy.showsMeta && (
                   <motion.div variants={REVEAL}>
                     <FieldGroup variant="card">
@@ -267,7 +275,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={values.host.trim() ? reason : null}
+          reason={values[getPlaceField(values.type)].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

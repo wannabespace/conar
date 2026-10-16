@@ -10,10 +10,11 @@ Connections live in one place so you can switch between databases and devices.
 
 <Steps>
   <Step title="Paste what you have">
-    Paste a connection URL, `.env`, JDBC URL, or `psql`/`ssh` command anywhere
-    on the page (or click the paste keys to paste from the clipboard), or drop a
-    `.env` or config file onto the window. Tamery reads it on your device and
-    fills in every field. Nothing you paste is sent anywhere.
+    Paste a connection URL, `.env`, JDBC URL, `psql`/`ssh` command, or a SQLite
+    file's path anywhere on the page (or click the paste keys to paste from the
+    clipboard), or drop a `.env`, config or SQLite file onto the window. Tamery
+    reads it on your device and fills in every field. Nothing you paste is sent
+    anywhere.
   </Step>
   <Step title="Or fill it in yourself">
     The form sits beside the paste prompt: pick the engine and type the host, or
@@ -45,6 +46,7 @@ The desktop app can also open database links: `postgres://`, `postgresql://`, `m
 | JSON or a JS config | `{ "host": "…", "user": "…" }`, an AWS Secrets Manager RDS secret, a DBeaver `data-sources.json`, VS Code SQLTools settings, a Knex/TypeORM/Sequelize config or `module.exports = { … }`, `docker inspect` output |
 | A CLI command | `psql -h … -U …`, `mysql -h … -u … -p…`, `sqlcmd -S …`, `clickhouse-client --host …` |
 | An SSH command | `ssh -L 5433:db.internal:5432 ubuntu@bastion`, which fills the SSH tunnel too |
+| A SQLite file | `/Users/me/app.db`, `sqlite:///Users/me/app.db`, `jdbc:sqlite:/srv/app.sqlite`, `sqlite3 /srv/app.db` |
 
 Partial pastes work too: a paste fills only what it contains and keeps what you've already typed, so you can paste a JDBC URL copied from DBeaver (which leaves out the user and password) and type the credentials around it. Tamery puts the cursor in the first missing field. Pasting a different server replaces the fields instead. Inside a field other than **Host**, a paste stays plain text, so you can paste a whole connection string into **Password** or **Database** and delete everything but the part you need.
 
@@ -149,5 +151,8 @@ These need a connection: signing in, creating a workspace, and AI features. In t
   </Card>
   <Card title="ClickHouse" icon="database" href="/connections/clickhouse">
     ClickHouse Cloud and self-hosted.
+  </Card>
+  <Card title="SQLite" icon="feather" href="/connections/sqlite">
+    A database file on your computer.
   </Card>
 </CardGroup>

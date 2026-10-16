@@ -1,4 +1,5 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
 import type { ConstraintShape } from '~/core/queries/constraints/shape'
@@ -46,5 +47,9 @@ export const addColumnQuery = ({
           await addConstraint(db, target, reference).execute()
         }
       },
+      sqlite: reference
+        ? unsupported('Foreign keys on a stored table')
+        : (db) =>
+            db.executeQuery(addColumnStatement(Dialect.SQLite, db, target)),
     },
   })

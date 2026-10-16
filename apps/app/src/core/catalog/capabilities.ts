@@ -1,3 +1,4 @@
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
@@ -38,6 +39,7 @@ export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<Dialect, ConnectionCapabilities> = {
   [Dialect.ClickHouse]: {
+    alterColumns: true,
     cascade: false,
     columnTypes: {
       array: { close: ')', open: 'Array(' },
@@ -51,6 +53,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       uuid: /\bUUID\b/u,
       xml: null,
     },
+    comments: true,
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
@@ -88,6 +91,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     triggers: noTriggers,
   },
   [Dialect.MSSQL]: {
+    alterColumns: true,
     cascade: false,
     columnTypes: {
       array: null,
@@ -100,6 +104,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       uuid: /^uniqueidentifier$/iu,
       xml: /^xml$/iu,
     },
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -149,6 +154,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     },
   },
   [Dialect.MySQL]: {
+    alterColumns: true,
     cascade: false,
     columnTypes: {
       array: null,
@@ -162,6 +168,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       uuid: /^uuid$/iu,
       xml: null,
     },
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: false,
     defaultSchema: null,
@@ -211,6 +218,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     },
   },
   [Dialect.Postgres]: {
+    alterColumns: true,
     cascade: true,
     columnTypes: {
       array: { close: '[]', open: '' },
@@ -224,6 +232,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       uuid: /^uuid$/iu,
       xml: /^xml$/iu,
     },
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -272,6 +281,61 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       orientations: TRIGGER_ORIENTATIONS,
       timings: TRIGGER_TIMINGS,
       toggle: true,
+    },
+  },
+  [Dialect.SQLite]: {
+    alterColumns: false,
+    cascade: false,
+    columnTypes: {
+      array: null,
+      bytes: /^blob$/iu,
+      enum: null,
+      id: 'integer',
+      incomparable: null,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[Dialect.SQLite],
+      uuid: null,
+      xml: null,
+    },
+    comments: false,
+    constraintKinds: CONSTRAINT_KINDS,
+    ddlRollback: true,
+    defaultSchema: SQLITE_RESOURCE_NAME,
+    explain: false,
+    fixedConstraintNames: {},
+    functions: noFunctions,
+    ilike: false,
+    indexes: { rename: false, skipTypes: [] },
+    materializedViews: false,
+    policies: noPolicies,
+    referentialActions: REFERENTIAL_ACTIONS,
+    renameColumns: true,
+    renameConstraints: false,
+    renameSchema: false,
+    renameViews: false,
+    retypeKeyColumns: false,
+    rowLevelSecurity: false,
+    schemas: false,
+    // A constraint lives in its table's CREATE statement, which only a rebuild changes.
+    sections: {
+      constraints: readOnly,
+      enums: false,
+      functions: false,
+      indexes: full,
+      policies: false,
+      privileges: false,
+      triggers: full,
+    },
+    setDefault: false,
+    systemSchemas: [],
+    triggers: {
+      body: true,
+      events: ROW_EVENTS,
+      insteadOfTargets: ['view'],
+      multipleEvents: false,
+      orientations: ['ROW'],
+      timings: TRIGGER_TIMINGS,
+      toggle: false,
     },
   },
 }

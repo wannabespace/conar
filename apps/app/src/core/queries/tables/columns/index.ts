@@ -13,6 +13,7 @@ import { clickhouseColumns } from './clickhouse'
 import { mssqlColumns } from './mssql'
 import { mysqlColumns } from './mysql'
 import { postgresColumns } from './postgres'
+import { sqliteColumns } from './sqlite'
 
 export const columnType = type({
   // MySQL: the clauses a MODIFY COLUMN drops unless it repeats them.
@@ -80,6 +81,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
       mssql: (db) => mssqlColumns(db, filter),
       mysql: (db) => mysqlColumns(db, filter),
       postgres: (db) => postgresColumns(db, filter),
+      sqlite: (db) => sqliteColumns(db, filter),
     },
     type: columnType.array(),
   })

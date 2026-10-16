@@ -114,8 +114,8 @@ export const Hero = () => (
           )}
         >
           <span className="sm:block">
-            Postgres, MySQL, MariaDB, SQL Server and ClickHouse in one fast
-            client.
+            Postgres, MySQL, MariaDB, SQL Server, ClickHouse and SQLite in one
+            fast client.
           </span>{' '}
           AI writes the SQL, and your agents query through MCP.
         </p>

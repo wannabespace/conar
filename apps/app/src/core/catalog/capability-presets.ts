@@ -72,8 +72,11 @@ interface ColumnTypeCapabilities {
 }
 
 export interface ConnectionCapabilities {
+  // A stored column's type and nullability; SQLite only renames one.
+  alterColumns: boolean
   cascade: boolean
   columnTypes: ColumnTypeCapabilities
+  comments: boolean
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
   // null: the connection's database is the schema

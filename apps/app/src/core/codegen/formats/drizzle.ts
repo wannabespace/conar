@@ -25,7 +25,7 @@ const dialectConfig: Record<
   Exclude<Dialect, Dialect.ClickHouse>,
   {
     anyColumn: string
-    schemaFunc: string
+    schemaFunc: string | null
     tableFunc: string
     dialectImportPath: string
     enumFunc?: string
@@ -50,6 +50,12 @@ const dialectConfig: Record<
     enumFunc: 'pgEnum',
     schemaFunc: 'pgSchema',
     tableFunc: 'pgTable',
+  },
+  sqlite: {
+    anyColumn: 'AnySQLiteColumn',
+    dialectImportPath: 'drizzle-orm/sqlite-core',
+    schemaFunc: null,
+    tableFunc: 'sqliteTable',
   },
 }
 
@@ -111,6 +117,9 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
   ) {
     return `{ length: ${c.maxLength} }`
   }
+  if (typeFunc === 'integer' && /bool/iu.test(c.type)) {
+    return "{ mode: 'boolean' }"
+  }
   if (['bigint', 'bigserial'].includes(typeFunc)) {
     return "{ mode: 'number' }"
   }
@@ -137,7 +146,7 @@ const buildGeneratedChain = (
   if (typeof c.defaultValue !== 'string' || isSerialDefault(c.defaultValue)) {
     return ''
   }
-  if (isNowDefault(c.defaultValue)) {
+  if (isNowDefault(c.defaultValue) && dialect !== Dialect.SQLite) {
     return '.defaultNow()'
   }
   coreImports.add('sql')
@@ -327,7 +336,7 @@ export const generateSchemaDrizzle = ({
   }
 
   const tableSchema = explicitSchema(schema, dialect)
-  if (tableSchema) {
+  if (tableSchema && schemaFunc) {
     const schemaVar = `${camelCase(tableSchema)}Schema`
     dialectImports.add(schemaFunc)
     extras.unshift(

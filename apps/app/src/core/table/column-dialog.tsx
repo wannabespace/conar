@@ -48,12 +48,19 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
-const lockedFields = (dialect: Dialect, column: EditableColumn | null) => {
-  const { renameColumns, retypeKeyColumns } = getCapabilities(dialect)
+const lockedFields = (
+  dialect: Dialect,
+  column: EditableColumn | null,
+  primaryKey: boolean
+) => {
+  const { alterColumns, renameColumns, retypeKeyColumns } =
+    getCapabilities(dialect)
   const stored = column !== null && column.state !== 'added'
   return {
     name: stored && !renameColumns,
-    type: stored && !!column.primaryKey && !retypeKeyColumns,
+    nullable: primaryKey || (stored && !alterColumns),
+    type:
+      stored && (!alterColumns || (!!column.primaryKey && !retypeKeyColumns)),
   }
 }
 
@@ -88,7 +95,7 @@ const ColumnForm = ({
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
   const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
-  const locked = lockedFields(dialect, column)
+  const locked = lockedFields(dialect, column, primaryKey)
   const next = normalized(column, {
     comment,
     name,
@@ -180,7 +187,7 @@ const ColumnForm = ({
             id="column-dialog-nullable"
             size="sm"
             checked={next.nullable}
-            disabled={primaryKey}
+            disabled={locked.nullable}
             onCheckedChange={setNullable}
           />
         </OptionField>

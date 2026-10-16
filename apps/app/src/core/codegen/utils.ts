@@ -62,6 +62,7 @@ const QUOTE_IDENTIFIER_MAP: Record<Dialect, (name: string) => string> = {
   mssql: (name) => `[${name.replaceAll(']', ']]')}]`,
   mysql: quoteWithBackticks,
   postgres: (name) => `"${name.replaceAll('"', '""')}"`,
+  sqlite: (name) => `"${name.replaceAll('"', '""')}"`,
 }
 
 export const quoteIdentifier = (name: string, dialect: Dialect) =>

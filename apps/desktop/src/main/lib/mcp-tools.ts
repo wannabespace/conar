@@ -87,7 +87,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and a string with an SSH tunnel (ssh_* params) is refused.`,
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and SQLite files and strings with an SSH tunnel (ssh_* params) are refused.`,
       inputSchema: {
         connectionString: z
           .string()
@@ -111,6 +111,12 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
           'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
         )
       }
+      // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access.
+      if (args.type === ConnectionType.SQLite) {
+        throw new Error(
+          'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
+        )
+      }
       const connection = await askRenderer(
         { args, method: 'createConnection' },
         signal
@@ -123,7 +129,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL and ClickHouse also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL, ClickHouse and SQLite also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
     async (args, { signal }) =>

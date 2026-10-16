@@ -23,6 +23,8 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), 'char'), 'like', pattern),
   postgres: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
+  sqlite: (eb, column, pattern) =>
+    eb(eb.cast(eb.ref(column), 'text'), 'like', pattern),
 }
 
 export type ColumnTypes = { id: string; type?: string }[]
@@ -74,6 +76,7 @@ export const bindValue: Record<Dialect, BindValue> = {
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
   postgres: bindJsonAsText(Dialect.Postgres),
+  sqlite: bindJsonAsText(Dialect.SQLite),
 }
 
 export const bindRow = (
@@ -108,17 +111,19 @@ export const clickhouseFilterValues =
       value
     )
 
-// MSSQL caps a statement at 2100 bound parameters.
-const MSSQL_PARAMETER_LIMIT = 2000
+// SQL Server caps a statement at 2100 bound parameters, SQLite at 32766.
+const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {
+  [Dialect.MSSQL]: 2000,
+  [Dialect.SQLite]: 32_000,
+}
 const MAX_ROWS_PER_STATEMENT = 500
 
-export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) =>
-  dialect === Dialect.MSSQL
+export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) => {
+  const limit = PARAMETER_LIMITS[dialect]
+  return limit
     ? Math.max(
         1,
-        Math.min(
-          MAX_ROWS_PER_STATEMENT,
-          Math.floor(MSSQL_PARAMETER_LIMIT / valuesPerRow)
-        )
+        Math.min(MAX_ROWS_PER_STATEMENT, Math.floor(limit / valuesPerRow))
       )
     : MAX_ROWS_PER_STATEMENT
+}

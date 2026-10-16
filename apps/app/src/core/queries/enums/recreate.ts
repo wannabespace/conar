@@ -113,5 +113,6 @@ export const recreateEnumQuery = ({
 
           await tx.withSchema(schema).schema.dropType(replacedName).execute()
         }),
+      sqlite: unsupported('Editing enums'),
     },
   })

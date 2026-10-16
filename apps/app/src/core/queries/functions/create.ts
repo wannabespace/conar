@@ -20,6 +20,7 @@ export const createFunctionQuery = ({
       mssql: (db) => create.mssql.execute(db),
       mysql: (db) => create.mysql.execute(db),
       postgres: (db) => create.postgres.execute(db),
+      sqlite: unsupported('Functions'),
     },
   })
 }

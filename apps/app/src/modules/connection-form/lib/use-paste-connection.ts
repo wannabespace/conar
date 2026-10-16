@@ -1,5 +1,6 @@
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import { sqliteFile } from '@tamery/connection/sqlite-file'
 import { isMac } from '@tamery/ui/lib/os'
 import { useLocation } from '@tanstack/react-router'
 import { Result } from 'better-result'
@@ -17,9 +18,20 @@ export interface PasteFlash {
 }
 
 export const PASTE_FORMATS =
-  'Connection URLs, .env files, JDBC strings, and psql, mysql or ssh commands.'
+  'Connection URLs, .env files, JDBC strings, SQLite files, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
+const SQLITE_HEADER = 'SQLite format 3\0'
+
+/** Only the desktop app learns a dropped file's path, which is all a SQLite connection needs. */
+const readDrop = async (file: File) => {
+  const header = await file.slice(0, SQLITE_HEADER.length).text()
+  const path = window.electron?.sqlite.pathOf(file)
+  if (header === SQLITE_HEADER && path) {
+    return sqliteFile.connectionString(path)
+  }
+  return file.size > MAX_DROP_BYTES ? '' : file.text()
+}
 const FLASH_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
@@ -141,7 +153,7 @@ export const usePasteConnection = ({
         return
       }
       event.preventDefault()
-      onRead(file.size > MAX_DROP_BYTES ? '' : await file.text(), 'drop')
+      onRead(await readDrop(file), 'drop')
     }
 
     const controller = new AbortController()

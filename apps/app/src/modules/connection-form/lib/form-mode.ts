@@ -1,4 +1,5 @@
 import type { SecretParam } from '@tamery/connection/secrets'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { lowercaseKeys } from '@tamery/shared/utils'
 import { getBy } from '@tanstack/react-form'
 
@@ -6,6 +7,7 @@ import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
 import type { ConnectionFormValues } from './connection-form'
+import { getPlaceField } from './connection-form'
 
 export type FormMode =
   | { kind: 'create' }
@@ -15,6 +17,7 @@ export type FormMode =
       passwordElsewhere: boolean
       missingSecrets: SecretParam[]
       scope: 'all' | 'credentials' | 'details'
+      type: ConnectionType
     }
 
 type Secret = SecretParam | 'password'
@@ -42,7 +45,7 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
 }
 
 export const getEditMode = (
-  connection: Pick<Connection, 'isPasswordExists' | 'name'>,
+  connection: Pick<Connection, 'isPasswordExists' | 'name' | 'type'>,
   stored: ConnectionString | undefined,
   scope: Extract<FormMode, { kind: 'edit' }>['scope']
 ): FormMode => ({
@@ -52,6 +55,7 @@ export const getEditMode = (
   passwordElsewhere:
     connection.isPasswordExists && !stored?.isPasswordPopulated,
   scope,
+  type: connection.type,
 })
 
 export const getFormPolicy = (mode: FormMode) => {
@@ -66,7 +70,10 @@ export const getFormPolicy = (mode: FormMode) => {
   const missingFields = missing.map((secret) => SECRETS[secret].field)
   return {
     /** `null` focuses the page itself. */
-    firstField: mode.kind === 'create' ? null : (missingFields[0] ?? 'host'),
+    firstField:
+      mode.kind === 'create'
+        ? null
+        : (missingFields[0] ?? getPlaceField(mode.type)),
     guardsUnsaved: mode.kind === 'edit' && scope === 'all',
     locked: (field: string) =>
       scope === 'credentials' && !missingFields.includes(field),

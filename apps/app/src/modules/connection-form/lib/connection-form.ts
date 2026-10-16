@@ -60,17 +60,39 @@ const SERVER_FIELDS = [
 
 const port = type(/^\d{0,5}$/u).configure({ message: 'Use a port number' })
 
+export const opensFile = (connectionType: ConnectionType) =>
+  connectionType === ConnectionType.SQLite
+
+/** The field that names where the database is: SQLite's file, every other engine's host. */
+export const getPlaceField = (connectionType: ConnectionType) =>
+  opensFile(connectionType) ? 'database' : 'host'
+
+const PLACE_MESSAGES = {
+  database: 'Choose the database file',
+  host: 'Enter the host',
+}
+
 const connectionFormSchema = type({
-  host: type(/\S/u).configure({ message: 'Enter the host' }),
+  database: 'string',
+  host: 'string',
   port,
   ssh: { host: 'string', port },
   sshEnabled: 'boolean',
-}).narrow(
-  (values, ctx) =>
-    !values.sshEnabled ||
-    /\S/u.test(values.ssh.host) ||
-    ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
-)
+  type: type.valueOf(ConnectionType),
+})
+  .narrow((values, ctx) => {
+    const field = getPlaceField(values.type)
+    return (
+      /\S/u.test(values[field]) ||
+      ctx.reject({ message: PLACE_MESSAGES[field], path: [field] })
+    )
+  })
+  .narrow(
+    (values, ctx) =>
+      !values.sshEnabled ||
+      /\S/u.test(values.ssh.host) ||
+      ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
+  )
 
 export const getFormValues = (
   connection: Connection,
@@ -101,11 +123,13 @@ const BARE_HOST = /^[\w.:%[\]-]+$/u
 const NEEDED_FIELDS = ['host', 'user', 'password'] as const
 
 export const getMissing = (values: ConnectionFormValues) =>
-  NEEDED_FIELDS.filter(
-    (field) =>
-      !values[field].trim() &&
-      !(field === 'password' && isLocalHost(values.host.trim()))
-  )
+  opensFile(values.type)
+    ? []
+    : NEEDED_FIELDS.filter(
+        (field) =>
+          !values[field].trim() &&
+          !(field === 'password' && isLocalHost(values.host.trim()))
+      )
 
 const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   const { host } = form.state.values

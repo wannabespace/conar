@@ -71,6 +71,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
           rowsPerStatement(Dialect.Postgres, keyWidth),
           params
         ),
+      sqlite: (db) =>
+        deleteInBatches(
+          db,
+          bindValue.sqlite,
+          rowsPerStatement(Dialect.SQLite, keyWidth),
+          params
+        ),
     },
   })
 })

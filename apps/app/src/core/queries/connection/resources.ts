@@ -1,3 +1,4 @@
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'
@@ -58,6 +59,8 @@ const connectionResourcesQuery = createQuery({
         .execute()
       return rows.map((r) => r.datname)
     },
+
+    sqlite: () => Promise.resolve([SQLITE_RESOURCE_NAME]),
   },
   type: type('string[]'),
 })

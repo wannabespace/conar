@@ -35,5 +35,6 @@ export const setQuery = (params: SetParams) =>
       mssql: (db) => updateRow(db, bindValue.mssql, params),
       mysql: (db) => updateRow(db, bindValue.mysql, params),
       postgres: (db) => updateRow(db, bindValue.postgres, params),
+      sqlite: (db) => updateRow(db, bindValue.sqlite, params),
     },
   })

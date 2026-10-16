@@ -69,5 +69,20 @@ export const insertQuery = (params: InsertParams) =>
           (into) => into.defaultValues(),
           params
         ),
+      // SQLite has no DEFAULT in VALUES, so Kysely fills a column one row leaves out with NULL: each set of columns gets its own statement.
+      sqlite: async (db) => {
+        const groups = Object.groupBy(params.rows, (row) =>
+          Object.keys(definedValues(row)).toSorted().join('\0')
+        )
+        for (const rows of Object.values(groups)) {
+          // oxlint-disable-next-line no-await-in-loop -- one statement at a time on the connection
+          await insertRows(
+            db,
+            bindValue.sqlite,
+            (into) => into.defaultValues(),
+            { ...params, rows: rows ?? [] }
+          )
+        }
+      },
     },
   })

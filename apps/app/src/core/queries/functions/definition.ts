@@ -46,6 +46,7 @@ const functionDefinitionQuery = ({
 
         return readDefinition(sql`pg_get_functiondef(${sql.lit(oid)})`)(db)
       },
+      sqlite: unsupported('Functions'),
     },
     type: definitionType,
   })

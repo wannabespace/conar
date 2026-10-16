@@ -1,7 +1,7 @@
 pkgname=tamery
 pkgver=0.27.3
 pkgrel=1
-pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL and ClickHouse."
+pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite."
 arch=('x86_64')
 url="https://github.com/wannabespace/tamery"
 license=('AGPL-3.0-or-later')

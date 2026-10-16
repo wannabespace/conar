@@ -156,6 +156,7 @@ const query = createQuery({
         using: row.qual,
       }))
     },
+    sqlite: unsupported('Row policies'),
   },
   type: policyType.array(),
 })

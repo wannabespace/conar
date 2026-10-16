@@ -83,6 +83,7 @@ export const resourceRowsQuery = memoize(
         mssql: (db) => selectPage(db, props),
         mysql: (db) => selectPage(db, props),
         postgres: (db) => selectPage(db, props),
+        sqlite: (db) => selectPage(db, props),
       },
       type: rowType.array(),
     })

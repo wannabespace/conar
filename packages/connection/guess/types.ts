@@ -10,6 +10,7 @@ export type GuessFormat =
   | 'cli'
   | 'ssh'
   | 'host'
+  | 'path'
 
 export type GuessFix =
   | 'clickhouse-http'

@@ -1240,6 +1240,9 @@ importers:
       '@tamery/shared':
         specifier: workspace:*
         version: link:../shared
+      '@tamery/sql':
+        specifier: workspace:*
+        version: link:../sql
       better-result:
         specifier: 'catalog:'
         version: 3.0.1

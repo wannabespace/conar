@@ -12,7 +12,8 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { SKIP_INDEX_TYPES, getSkipIndexColumns } from './shape'
+import { SKIP_INDEX_TYPES, getSkipIndexColumns } from '../shape'
+import { sqliteIndexes } from './sqlite'
 
 export const indexesType = type({
   column: 'string | null',
@@ -283,6 +284,8 @@ export const resourceIndexesQuery = createQuery({
         .where(sql<boolean>`key.ordinality <= ix.indnkeyatts`)
         .orderBy('key.ordinality')
         .execute(),
+
+    sqlite: sqliteIndexes,
   },
   type: indexesType.array(),
 })

@@ -4,6 +4,7 @@ export enum ConnectionType {
   MariaDB = 'mariadb',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
+  SQLite = 'sqlite',
 }
 
 /** Never build a query from a `ConnectionType`: every query runs on the dialect it speaks through. */
@@ -12,6 +13,7 @@ export enum Dialect {
   MySQL = 'mysql',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
+  SQLite = 'sqlite',
 }
 
 const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
@@ -20,6 +22,7 @@ const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
   [ConnectionType.MSSQL]: Dialect.MSSQL,
   [ConnectionType.MySQL]: Dialect.MySQL,
   [ConnectionType.Postgres]: Dialect.Postgres,
+  [ConnectionType.SQLite]: Dialect.SQLite,
 }
 
 export const getDialect = (type: ConnectionType) => DIALECT_OF_TYPE[type]
@@ -30,4 +33,5 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.Postgres]: 'PostgreSQL',
+  [ConnectionType.SQLite]: 'SQLite',
 }

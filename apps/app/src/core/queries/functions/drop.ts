@@ -19,6 +19,7 @@ export const dropFunctionQuery = ({
       mysql: (db) => drop.mysql.execute(db),
       postgres: (db) =>
         (cascade ? sql`${drop.postgres} CASCADE` : drop.postgres).execute(db),
+      sqlite: unsupported('Functions'),
     },
   })
 }

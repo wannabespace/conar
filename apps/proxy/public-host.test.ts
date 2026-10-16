@@ -16,6 +16,7 @@ test.each([
   'postgres://u:p@[fd00::1]/db',
   'postgres://u:p@[::ffff:127.0.0.1]/db',
   'postgres:///db',
+  'sqlite:///etc/hosts',
 ])('refuses %p', async (connectionString) => {
   await expect(assertPublicHost(connectionString)).rejects.toThrow(
     'only public hosts'

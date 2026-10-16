@@ -19,5 +19,7 @@ export const dropColumnQuery = (target: {
         db.executeQuery(dropColumnStatement(Dialect.MySQL, db, target)),
       postgres: (db) =>
         db.executeQuery(dropColumnStatement(Dialect.Postgres, db, target)),
+      sqlite: (db) =>
+        db.executeQuery(dropColumnStatement(Dialect.SQLite, db, target)),
     },
   })

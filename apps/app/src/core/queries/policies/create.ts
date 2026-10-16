@@ -32,5 +32,6 @@ export const createPolicyQuery = ({
       mysql: unsupported('Row policies'),
       postgres: (db) =>
         createPolicyStatement({ schema, shape, table }).execute(db),
+      sqlite: unsupported('Row policies'),
     },
   })

@@ -1,0 +1,38 @@
+---
+title: 'Connect to SQLite'
+sidebarTitle: 'SQLite'
+description: 'Open a SQLite database file in Tamery from the desktop app, or from the web through tamery proxy.'
+---
+
+A SQLite connection points at a database file on your computer. There is no server, user or password.
+
+## Open a file
+
+On the new-connection page, any of these works:
+
+- **Paste its path**, for example `/Users/me/app.db`. A bare path counts when it ends in `.db`, `.db3`, `.sqlite` or `.sqlite3`. A `sqlite://`, `file:` or `jdbc:sqlite:` URL, or a `sqlite3 <file>` command, works with any extension.
+- **Drop the file** onto the window (desktop app).
+- Pick **SQLite** as the engine and type the path in **File**, or click the folder button beside it to choose the file (desktop app).
+
+Tamery opens a file that already exists and never creates one, so a mistyped path fails the test instead of leaving an empty database behind.
+
+The connection string is the file's absolute path:
+
+```bash
+sqlite:///Users/me/app.db
+```
+
+## From the web app
+
+The web app cannot read files on your computer. Run [`tamery proxy`](/cli/commands) on the computer that holds the file, and Tamery opens the file there. The cloud proxy never opens SQLite files.
+
+## What works
+
+SQLite changes a table mostly by rebuilding it, so Tamery offers only what it can run directly:
+
+- **Columns**: add, rename and drop. A stored column's type and **Allow NULL** stay fixed, and SQLite has no column comments.
+- **Indexes and triggers**: create, edit and drop. An edit drops and creates the object inside one transaction, so a failure leaves the old one in place.
+- **Constraints** are listed: primary keys, unique keys and foreign keys. SQLite only defines them when a table is created, so they are read-only. Check constraints are not listed.
+- **Schemas, functions, enums and policies** don't exist in SQLite, so those lists are hidden.
+
+**Stop** cannot interrupt a SQLite statement that is already running; it finishes first.

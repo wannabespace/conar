@@ -80,6 +80,7 @@ export const recreateFunctionQuery = ({
           }
           await create.postgres.execute(tx)
         }),
+      sqlite: unsupported('Functions'),
     },
   })
 }

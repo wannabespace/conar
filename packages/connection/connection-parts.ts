@@ -3,10 +3,12 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
+import { sqliteFile } from './sqlite-file'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
 export interface ConnectionParts {
+  /** SQLite's file path. */
   database: string
   host: string
   /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
@@ -20,19 +22,20 @@ export interface ConnectionParts {
   user: string
 }
 
-export const DEFAULT_PORTS: Record<ConnectionType, number> = {
+export const DEFAULT_PORTS: Record<ConnectionType, number | null> = {
   [ConnectionType.ClickHouse]: 8123,
   [ConnectionType.MariaDB]: 3306,
   [ConnectionType.MSSQL]: 1433,
   [ConnectionType.MySQL]: 3306,
   [ConnectionType.Postgres]: 5432,
+  [ConnectionType.SQLite]: null,
 }
 
 /** MariaDB shares MySQL's port, so a bare port names MySQL. */
 export const TYPE_OF_DEFAULT_PORT: Record<string, ConnectionType> =
   Object.fromEntries(
     objectEntries(DEFAULT_PORTS)
-      .filter(([type]) => type !== ConnectionType.MariaDB)
+      .filter(([type, port]) => type !== ConnectionType.MariaDB && port)
       .map(([type, port]) => [port, type])
   )
 
@@ -55,7 +58,7 @@ const getPort = ({
   if (https && type === ConnectionType.ClickHouse) {
     return HTTPS_PORT
   }
-  return type ? String(DEFAULT_PORTS[type]) : ''
+  return String((type && DEFAULT_PORTS[type]) ?? '')
 }
 
 const TYPE_OF_NAME: Record<string, ConnectionType> = {
@@ -73,6 +76,8 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   pgsql: ConnectionType.Postgres,
   postgres: ConnectionType.Postgres,
   postgresql: ConnectionType.Postgres,
+  sqlite: ConnectionType.SQLite,
+  sqlite3: ConnectionType.SQLite,
   sqlserver: ConnectionType.MSSQL,
   sqlsrv: ConnectionType.MSSQL,
   tedious: ConnectionType.MSSQL,
@@ -87,6 +92,9 @@ const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []
 ): string => {
+  if (parts.type === ConnectionType.SQLite) {
+    return parts.database && sqliteFile.connectionString(parts.database)
+  }
   if (!parts.type || !parts.host) {
     return ''
   }
@@ -122,13 +130,18 @@ const parse = (connectionString: string): ConnectionParts => {
     readConnectionString(connectionString)
   const ssh = getSshTunnel(searchParams)
   deleteSshParams(searchParams)
+  const type = getConnectionType(scheme)
 
   return {
     ...parts,
+    database:
+      type === ConnectionType.SQLite
+        ? sqliteFile.path(connectionString)
+        : parts.database,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,
-    type: getConnectionType(scheme),
+    type,
   }
 }
 

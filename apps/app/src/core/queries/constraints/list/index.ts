@@ -12,7 +12,8 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-import { getClickhouseConstraints } from './shape'
+import { getClickhouseConstraints } from '../shape'
+import { sqliteConstraints } from './sqlite'
 
 const constraintType = type(
   '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
@@ -402,6 +403,7 @@ export const resourceConstraintsQuery = createQuery({
         .where('n.nspname', '!=', 'information_schema')
         .orderBy(sql<number>`array_position(con.conkey, a.attnum)`)
         .execute(),
+    sqlite: sqliteConstraints,
   },
   type: constraintsType.array(),
 })

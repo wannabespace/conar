@@ -36,6 +36,16 @@ const triggerDefinitionQuery = ({ name, oid, schema }: TriggerItem) =>
 
         return readDefinition(sql`pg_get_triggerdef(${sql.lit(oid)}, true)`)(db)
       },
+      sqlite: async (db) => {
+        const row = await db
+          .selectFrom('sqlite_schema')
+          .select('sql as definition')
+          .where('type', '=', 'trigger')
+          .where('name', '=', name)
+          .executeTakeFirst()
+
+        return { definition: row?.definition ?? null }
+      },
     },
     type: definitionType,
   })

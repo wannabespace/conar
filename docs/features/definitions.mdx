@@ -37,10 +37,11 @@ The **Schema** list in the sidebar covers everything about your database except 
 </CardGroup>
 
 <Note>
-  **Functions** and **Triggers** are not available for ClickHouse. MySQL has
-  **Privileges** in place of **Policies**. Only PostgreSQL has an **Enums**
-  list: MySQL's `ENUM` and `SET` and ClickHouse's `Enum8` and `Enum16` belong to
-  their columns, and an `enum` column's values are edited in its column form.
+  **Functions** and **Triggers** are not available for ClickHouse, and
+  **Functions** and **Policies** not for SQLite. MySQL has **Privileges** in
+  place of **Policies**. Only PostgreSQL has an **Enums** list: MySQL's `ENUM`
+  and `SET` and ClickHouse's `Enum8` and `Enum16` belong to their columns, and
+  an `enum` column's values are edited in its column form.
 </Note>
 
 ## Navigating
@@ -78,21 +79,21 @@ The inspector is also the editor. It groups an object into sections — general,
 
 What each engine supports:
 
-| Object | PostgreSQL | MySQL | SQL Server | ClickHouse |
-| --- | --- | --- | --- | --- |
-| Enums | Create, rename, add, rename and remove values, drop | — | — | — |
-| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop data-skipping indexes |
-| Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks |
-| Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — |
-| Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — |
-| Policies | Create, edit, drop, enable/disable row level security | — | Create, edit predicates, rename, enable/disable, drop | Create, edit, drop row policies |
-| Privileges | — | Grant, revoke | — | — |
+| Object | PostgreSQL | MySQL | SQL Server | ClickHouse | SQLite |
+| --- | --- | --- | --- | --- | --- |
+| Enums | Create, rename, add, rename and remove values, drop | — | — | — | — |
+| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop data-skipping indexes | Create, edit, drop |
+| Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks | View keys |
+| Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — | — |
+| Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — | Create, edit, drop |
+| Policies | Create, edit, drop, enable/disable row level security | — | Create, edit predicates, rename, enable/disable, drop | Create, edit, drop row policies | — |
+| Privileges | — | Grant, revoke | — | — | — |
 
 ## Edits that replace the object
 
 Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence. An index that enforces a constraint, or one built with a method, predicate, expression or ordering the picker cannot show, only changes its name — its shape is edited where it is defined. A constraint carrying a rule with no field in the form — deferrable, not validated, not inherited, a match type, or on SQL Server disabled, untrusted or not for replication — is name-only for the same reason.
 
-PostgreSQL and SQL Server run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement. A MySQL trigger or function has no such statement, so Tamery saves its definition first and recreates it if the new one fails. Either way it keeps its original definer.
+PostgreSQL, SQL Server and SQLite run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement. A MySQL trigger or function has no such statement, so Tamery saves its definition first and recreates it if the new one fails. Either way it keeps its original definer.
 
 Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
 

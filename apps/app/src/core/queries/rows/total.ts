@@ -134,6 +134,17 @@ export const resourceTableTotalQuery = memoize(
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
         },
+        sqlite: async (db) => {
+          const query = await db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+            .select(db.fn.countAll().as('total'))
+            .where((eb) => toKyselyFilter(eb, filters))
+            .executeTakeFirst()
+
+          return { count: Number(query?.total ?? 0), isEstimated: false }
+        },
       },
       type: type({
         count: 'number',

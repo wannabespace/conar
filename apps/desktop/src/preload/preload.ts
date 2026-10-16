@@ -4,7 +4,7 @@ import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 import type { electron } from '../main/lib/events'
 import type { sendToast } from '../main/main'
@@ -32,6 +32,10 @@ export type ElectronPreload = Promisified<typeof electron> & {
   }
   mcp: {
     serve: (source: McpSource) => () => void
+  }
+  sqlite: {
+    /** A dropped file's path on disk; the page itself only ever sees its contents. */
+    pathOf: (file: File) => string
   }
   versions: {
     node: () => string
@@ -214,6 +218,11 @@ contextBridge.exposeInMainWorld('electron', {
     mssql: dialectQueryBridge('mssql'),
     mysql: dialectQueryBridge('mysql'),
     postgres: dialectQueryBridge('postgres'),
+    sqlite: dialectQueryBridge('sqlite'),
+  },
+  sqlite: {
+    pathOf: (file: File) => webUtils.getPathForFile(file),
+    pickFile: handleElectronError(() => ipcRenderer.invoke('sqlite.pickFile')),
   },
   ssh: {
     pickKeyFile: handleElectronError(() =>

@@ -27,6 +27,8 @@ export const renameTableQuery = memoize(
           db.executeQuery(renameTableStatement(Dialect.MySQL, db, target)),
         postgres: (db) =>
           db.executeQuery(renameTableStatement(Dialect.Postgres, db, target)),
+        sqlite: (db) =>
+          db.executeQuery(renameTableStatement(Dialect.SQLite, db, target)),
       },
     })
   }

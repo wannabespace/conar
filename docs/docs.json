@@ -25,6 +25,7 @@
               "connections/mysql",
               "connections/mssql",
               "connections/clickhouse",
+              "connections/sqlite",
               "connections/security"
             ]
           },

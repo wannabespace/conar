@@ -14,6 +14,7 @@ const pg = dialects[Dialect.Postgres]
 const mssql = dialects[Dialect.MSSQL]
 const mysql = dialects[Dialect.MySQL]
 const clickhouse = dialects[Dialect.ClickHouse]
+const sqlite = dialects[Dialect.SQLite]
 const texts = (sql: string, dialect = pg) =>
   splitStatements(sql, dialect).map((statement) => statement.text)
 
@@ -46,6 +47,15 @@ BEGIN
   IF 1 = 1 BEGIN SELECT 1; END
 END`
     expect(texts(`${block};\nSELECT 2`, mssql)).toEqual([block, 'SELECT 2'])
+    const trigger = `CREATE TRIGGER t AFTER INSERT ON a FOR EACH ROW WHEN new.b > 1
+BEGIN
+  INSERT INTO log VALUES (new.id);
+  UPDATE a SET c = CASE WHEN c IS NULL THEN 0 ELSE c END;
+END`
+    expect(texts(`${trigger};\nSELECT 2`, sqlite)).toEqual([
+      trigger,
+      'SELECT 2',
+    ])
   })
 
   it('groups a transaction into one statement', () => {
@@ -129,6 +139,13 @@ COMMIT`
       distributed,
       'SELECT 1',
     ])
+    for (const mode of ['DEFERRED', 'IMMEDIATE', 'EXCLUSIVE TRANSACTION']) {
+      const tx = `BEGIN ${mode}; DELETE FROM t; COMMIT`
+      expect(texts(`${tx};\nSELECT 1`, sqlite)).toEqual([tx, 'SELECT 1'])
+      expect(unwrapTransaction(tx, sqlite)?.statements).toEqual([
+        'DELETE FROM t',
+      ])
+    }
     const atomic = 'BEGIN NOT ATOMIC SELECT 1; SELECT 2; END'
     expect(texts(`${atomic};\nSELECT 3`, mysql)).toEqual([atomic, 'SELECT 3'])
   })

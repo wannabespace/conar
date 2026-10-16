@@ -14,6 +14,7 @@ import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
+import { pickSqliteFile } from './sqlite-file'
 import { confirmHostKey } from './ssh-host-key'
 import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
@@ -115,7 +116,13 @@ export const electron = {
     postgres: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/pg')
     ),
+    sqlite: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/sqlite')
+    ),
   } satisfies Record<Dialect, QueryExecutor>,
+  sqlite: {
+    pickFile: pickSqliteFile,
+  },
   ssh: {
     pickKeyFile: pickSshKeyFile,
   },

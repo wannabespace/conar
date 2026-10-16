@@ -34,6 +34,7 @@ export const distinctQuery = (params: DistinctParams) =>
       mssql: (db) => selectDistinct(db, params),
       mysql: (db) => selectDistinct(db, params),
       postgres: (db) => selectDistinct(db, params),
+      sqlite: (db) => selectDistinct(db, params),
     },
     type: distinctType,
   })

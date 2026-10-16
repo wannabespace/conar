@@ -14,7 +14,10 @@ export interface Statement {
 const TRANSACTION_OPENERS = new Set([
   ';',
   'DEFERRABLE',
+  'DEFERRED',
   'DISTRIBUTED',
+  'EXCLUSIVE',
+  'IMMEDIATE',
   'ISOLATION',
   'READ',
   'TRAN',

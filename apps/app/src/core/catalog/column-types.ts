@@ -72,4 +72,15 @@ export const COLUMN_TYPES: Record<Dialect, readonly string[]> = {
     'jsonb',
     'bytea',
   ],
+  [Dialect.SQLite]: [
+    'integer',
+    'real',
+    'numeric',
+    'boolean',
+    'text',
+    'date',
+    'datetime',
+    'json',
+    'blob',
+  ],
 }

@@ -1,3 +1,4 @@
+import { FolderOpenIcon } from '@hugeicons/core-free-icons'
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
 import { isLocalHost } from '@tamery/connection/hosts'
 import {
@@ -6,14 +7,17 @@ import {
   getDialect,
   Dialect,
 } from '@tamery/shared/enums/connection-type'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { FieldGroup } from '@tamery/ui/components/field'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { SelectItem } from '@tamery/ui/components/select'
 import { useSelector } from '@tanstack/react-form'
 
 import { useLocalProxyAvailable } from '~/core/runtime/proxy'
+import { posthog } from '~/lib/posthog'
 
 import type { ConnectionForm } from '../lib/connection-form'
+import { opensFile } from '../lib/connection-form'
 import { Footnote } from './footnote'
 import { TextRow } from './text-row'
 
@@ -29,14 +33,14 @@ const typeLabel = (type: ConnectionType) => (
   </>
 )
 
-const USER_PLACEHOLDERS: Record<Dialect, string> = {
+const USER_PLACEHOLDERS: Partial<Record<Dialect, string>> = {
   [Dialect.ClickHouse]: 'default',
   [Dialect.MSSQL]: 'e.g. sa',
   [Dialect.MySQL]: 'e.g. root',
   [Dialect.Postgres]: 'e.g. postgres',
 }
 
-const DATABASE_PLACEHOLDERS: Record<Dialect, string> = {
+const DATABASE_PLACEHOLDERS: Partial<Record<Dialect, string>> = {
   [Dialect.ClickHouse]: 'default',
   [Dialect.MSSQL]: 'master',
   [Dialect.MySQL]: 'Optional',
@@ -86,49 +90,85 @@ export const ServerFields = ({
             </field.Field>
           )}
         </form.AppField>
-        <TextRow
-          {...row}
-          label="Host"
-          name="host"
-          placeholder="db.example.com or any connection string"
-          port={{
-            label: 'Port',
-            name: 'port',
-            placeholder: String(DEFAULT_PORTS[type]),
-          }}
-        />
-        <TextRow
-          {...row}
-          label="User"
-          name="user"
-          placeholder={USER_PLACEHOLDERS[dialect]}
-        />
-        <TextRow
-          {...row}
-          label="Password"
-          name="password"
-          placeholder="None"
-          secret
-          autoComplete="new-password"
-        />
-        <TextRow
-          {...row}
-          label="Database"
-          name="database"
-          placeholder={DATABASE_PLACEHOLDERS[dialect]}
-        />
-        <TextRow
-          {...row}
-          label="Options"
-          name="options"
-          placeholder={OPTIONS_PLACEHOLDERS[dialect]}
-        />
+        {opensFile(type) ? (
+          <TextRow
+            {...row}
+            label="File"
+            name="database"
+            placeholder="/path/to/app.db"
+          >
+            {window.electron && (
+              <IconButton
+                variant="ghost-faint"
+                size="icon-sm"
+                icon={FolderOpenIcon}
+                label="Choose file"
+                disabled={locked('database')}
+                onClick={async () => {
+                  const path = await window.electron?.sqlite.pickFile()
+                  if (path) {
+                    posthog.capture('connection_file_picked')
+                    form.setFieldValue('database', path)
+                  }
+                }}
+              />
+            )}
+          </TextRow>
+        ) : (
+          <>
+            <TextRow
+              {...row}
+              label="Host"
+              name="host"
+              placeholder="db.example.com or any connection string"
+              port={{
+                label: 'Port',
+                name: 'port',
+                placeholder: String(DEFAULT_PORTS[type]),
+              }}
+            />
+            <TextRow
+              {...row}
+              label="User"
+              name="user"
+              placeholder={USER_PLACEHOLDERS[dialect]}
+            />
+            <TextRow
+              {...row}
+              label="Password"
+              name="password"
+              placeholder="None"
+              secret
+              autoComplete="new-password"
+            />
+            <TextRow
+              {...row}
+              label="Database"
+              name="database"
+              placeholder={DATABASE_PLACEHOLDERS[dialect]}
+            />
+            <TextRow
+              {...row}
+              label="Options"
+              name="options"
+              placeholder={OPTIONS_PLACEHOLDERS[dialect]}
+            />
+          </>
+        )}
       </FieldGroup>
-      {isLocal && !window.electron && localProxyAvailable && (
+      {opensFile(type) && !window.electron && (
         <Footnote>
-          Local databases are reached through your tamery proxy.
+          The file opens on the computer running your tamery proxy.
         </Footnote>
       )}
+      {!opensFile(type) &&
+        isLocal &&
+        !window.electron &&
+        localProxyAvailable && (
+          <Footnote>
+            Local databases are reached through your tamery proxy.
+          </Footnote>
+        )}
     </>
   )
 }

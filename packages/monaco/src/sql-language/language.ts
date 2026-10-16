@@ -8,6 +8,7 @@ export const sqlLanguageIds = {
   [Dialect.MSSQL]: 'sql-mssql',
   [Dialect.MySQL]: 'sql-mysql',
   [Dialect.Postgres]: 'sql-postgres',
+  [Dialect.SQLite]: 'sql-sqlite',
 } satisfies Record<Dialect, string>
 
 type TokenKind = ReturnType<typeof tokenize>['tokens'][number]['kind']

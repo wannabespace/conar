@@ -1,5 +1,5 @@
 pkgbase = tamery
-	pkgdesc = AI-powered tool for working with Postgres, MySQL, MSSQL and ClickHouse.
+	pkgdesc = AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite.
 	pkgver = 0.31.1
 	pkgrel = 1
 	url = https://github.com/wannabespace/tamery

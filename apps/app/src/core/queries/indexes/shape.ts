@@ -29,6 +29,16 @@ export const createIndexStatement = ({
 }: IndexShape) =>
   sql`CREATE ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(name)} ON ${sql.id(schema, table)} (${identifiers(columns)})`
 
+// SQLite qualifies the index, never the table it is on.
+export const sqliteCreateIndexStatement = ({
+  columns,
+  name,
+  schema,
+  table,
+  unique,
+}: IndexShape) =>
+  sql`CREATE ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(schema, name)} ON ${sql.id(table)} (${identifiers(columns)})`
+
 export const addSkipIndexStatement = ({
   columns,
   granularity = 1,

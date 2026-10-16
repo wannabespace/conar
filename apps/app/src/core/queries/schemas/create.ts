@@ -9,5 +9,6 @@ export const createSchemaQuery = (schema: string) =>
       mssql: (db) => db.schema.createSchema(schema).execute(),
       mysql: (db) => db.schema.createSchema(schema).execute(),
       postgres: (db) => db.schema.createSchema(schema).execute(),
+      sqlite: unsupported('Schemas'),
     },
   })
