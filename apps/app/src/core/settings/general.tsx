@@ -3,19 +3,31 @@ import {
   SettingsRow,
 } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
+import { isLinux } from '@tamery/ui/lib/os'
 import { useSubscription } from 'seitu/react'
 
 import { analyticsStore } from '~/lib/posthog'
 import { ConnectionLinksRow } from '~/modules/connection-links/connection-links-settings'
 
-import { StartAtLoginRow } from './start-at-login'
+import { ElectronSwitchRow } from './electron-switch-row'
+
+const hasStartAtLogin = !!window.electron && !isLinux
 
 export const GeneralSettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)
 
   return (
     <SettingsGroup>
-      {window.electron && <StartAtLoginRow />}
+      {hasStartAtLogin && (
+        <ElectronSwitchRow
+          id="open-at-login"
+          title="Start at login"
+          description="Opens Tamery when you log in to this computer."
+          event="open_at_login_toggled"
+          get={() => window.electron?.openAtLogin.get()}
+          set={(enabled) => window.electron?.openAtLogin.set(enabled)}
+        />
+      )}
       {window.electron && <ConnectionLinksRow />}
       <SettingsRow
         htmlFor="analytics"

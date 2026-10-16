@@ -168,12 +168,6 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('deviceEncryption.reset')
     ),
   },
-  keepRunning: {
-    get: handleElectronError(() => ipcRenderer.invoke('keepRunning.get')),
-    set: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('keepRunning.set', arg)
-    ),
-  },
   localDatabases: {
     find: handleElectronError(() => ipcRenderer.invoke('localDatabases.find')),
     unlock: handleElectronError((connectionString: string) =>
@@ -187,6 +181,9 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     forgetClient: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.forgetClient', arg)
+    ),
+    keepRunning: handleElectronError(() =>
+      ipcRenderer.invoke('mcp.keepRunning')
     ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
@@ -202,6 +199,9 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
+    ),
+    setKeepRunning: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setKeepRunning', arg)
     ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },

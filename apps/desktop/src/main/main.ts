@@ -180,7 +180,7 @@ export const createWindow = (route?: string) => {
   })
 
   win.on('close', (event) => {
-    if (keepsServingAfterClose(win)) {
+    if (keepsServingAfterClose()) {
       event.preventDefault()
       sendToBackground(win)
       return

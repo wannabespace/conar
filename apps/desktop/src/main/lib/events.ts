@@ -9,7 +9,6 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
-import { keepRunning } from './background'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -66,10 +65,13 @@ const lazyQueryExecutor = (
 }
 
 const openAtLogin = {
-  get: () =>
-    process.platform === 'linux'
-      ? null
-      : app.getLoginItemSettings().openAtLogin,
+  get: () => {
+    const settings = app.getLoginItemSettings()
+    // `openAtLogin` stays true after the user disables Tamery in Task Manager's Startup tab.
+    return process.platform === 'win32'
+      ? settings.executableWillLaunchAtLogin
+      : settings.openAtLogin
+  },
   set: (enabled: boolean) => {
     app.setLoginItemSettings({ openAtLogin: enabled })
     return openAtLogin.get()
@@ -92,7 +94,6 @@ export const electron = {
   },
   connectionLinks,
   deviceEncryption,
-  keepRunning,
   localDatabases: {
     find: async () => {
       const { localDatabases } = await loadLocalDatabases()
