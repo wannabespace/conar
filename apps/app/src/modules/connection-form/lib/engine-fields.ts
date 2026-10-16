@@ -142,9 +142,11 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
 export const getEngineFields = ({ provider, type }: Engine) =>
   ENGINE_FIELDS[provider ?? type]
 
-/** A row's label as it reads mid-sentence: `Account ID` becomes `account ID`, but `API token` keeps its capitals. */
-export const getFieldNoun = ({ rows }: EngineFields, field: string) =>
-  (rows.find((row) => row.name === field)?.label ?? field).replace(
-    /^[A-Z](?=[a-z])/u,
-    (letter) => letter.toLowerCase()
-  )
+const startsWithAcronym = (label: string) => /^[A-Z]{2}/u.test(label)
+
+export const getFieldNoun = ({ rows }: EngineFields, field: string) => {
+  const label = rows.find((row) => row.name === field)?.label ?? field
+  return startsWithAcronym(label)
+    ? label
+    : label.charAt(0).toLowerCase() + label.slice(1)
+}
