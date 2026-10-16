@@ -1,6 +1,5 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
-import { silently } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 import { v7 } from 'uuid'
 
@@ -22,24 +21,25 @@ export interface ConnectionDetails {
 }
 
 /** Leaves a newer write in place; two queued saves that both fail keep the first one's string (accepted edge). */
-const rollback = async (
+const rollback = (
   failed: ConnectionString,
-  string: ConnectionStringInput | null
+  stored: ConnectionString | null
 ) => {
   const { connectionStringsCollection } = getCollections()
-  const isCurrent = () =>
-    connectionStringsCollection.get(failed.connectionId)?.encrypted ===
+  if (
+    connectionStringsCollection.get(failed.connectionId)?.encrypted !==
     failed.encrypted
-  if (!string) {
-    if (isCurrent()) {
-      connectionStringsCollection.delete(failed.connectionId)
-    }
+  ) {
     return
   }
-  const { write } = await connectionStringsCollection.utils.prepare(string)
-  if (isCurrent()) {
-    write()
+  if (stored) {
+    connectionStringsCollection.update(failed.connectionId, (draft) => {
+      Object.assign(draft, stored)
+    })
+  } else {
+    connectionStringsCollection.delete(failed.connectionId)
   }
+  connectionStringsCollection.utils.dropQueries(failed.connectionId)
 }
 
 export const saveConnectionString = async ({
@@ -56,13 +56,12 @@ export const saveConnectionString = async ({
     connectionsResourcesCollection,
     connectionStringsCollection,
   } = getCollections()
-  const { previous, record, write } =
-    await connectionStringsCollection.utils.prepare({
-      connectionId,
-      connectionString,
-      updatedAt,
-    })
-  const stored = connectionStringsCollection.get(connectionId)
+  const { record, write } = await connectionStringsCollection.utils.prepare({
+    connectionId,
+    connectionString,
+    updatedAt,
+  })
+  const stored = connectionStringsCollection.get(connectionId) ?? null
   const resource = record.defaultResourceName || null
   const existingResource = findResource(connectionId, resource)
   const resourceId = existingResource?.id ?? v7()
@@ -96,7 +95,7 @@ export const saveConnectionString = async ({
         rememberOpenedResource(connectionId, resource)
       }
     } else {
-      await silently(() => rollback(record, previous))
+      rollback(record, stored)
     }
     return persisted
   }

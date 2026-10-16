@@ -32,9 +32,9 @@ export type ConnectionStringInput = Pick<
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
+  dropQueries: (connectionId: string) => void
   /** `write` stores the record synchronously, so a caller can check the stored one right before it. */
   prepare: (data: ConnectionStringInput) => Promise<{
-    previous: ConnectionStringInput | null
     record: ConnectionString
     write: () => void
   }>
@@ -98,16 +98,17 @@ export const createConnectionStringsCollection = (
             throw error
           }
         },
+        dropQueries(connectionId) {
+          queryClient.removeQueries({
+            predicate: ({ queryKey: [, id] }) =>
+              id === connectionId ||
+              (typeof id === 'string' &&
+                resources.get(id)?.connectionId === connectionId),
+          })
+        },
         async prepare(data) {
-          const stored = collection.get(data.connectionId)
-          const previous = stored
-            ? {
-                connectionId: stored.connectionId,
-                connectionString: await collection.utils.decrypt(
-                  stored.connectionId
-                ),
-                updatedAt: stored.updatedAt,
-              }
+          const previous = collection.has(data.connectionId)
+            ? await collection.utils.decrypt(data.connectionId)
             : null
           const record = {
             ...describeConnectionString(data.connectionString),
@@ -124,16 +125,11 @@ export const createConnectionStringsCollection = (
               collection.insert(record)
             }
             // Compares the plain strings: a rename saves the same string under a new `updatedAt`.
-            if (previous?.connectionString !== data.connectionString) {
-              queryClient.removeQueries({
-                predicate: ({ queryKey: [, id] }) =>
-                  id === data.connectionId ||
-                  (typeof id === 'string' &&
-                    resources.get(id)?.connectionId === data.connectionId),
-              })
+            if (previous !== data.connectionString) {
+              collection.utils.dropQueries(data.connectionId)
             }
           }
-          return { previous, record, write }
+          return { record, write }
         },
         async resolve(connection, signal) {
           const local = collection.get(connection.id)
