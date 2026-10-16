@@ -1,4 +1,3 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-location'
 import type { Kysely } from 'kysely'
 
 import {
@@ -38,9 +37,7 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
       .where('il.origin', 'in', ['pk', 'u'])
       .execute(),
     userTables(db, ['table'])
-      .innerJoin(pragma('table_xinfo', 't.name').as('c'), (join) =>
-        join.onTrue()
-      )
+      .crossJoin(pragma('table_xinfo', 't.name').as('c'))
       .select(['t.name as table', 'c.name as column'])
       .where('c.pk', '>', 0)
       .where((eb) => eb.not(keyIndexed('t.name')))
@@ -48,9 +45,7 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
       .orderBy('c.pk')
       .execute(),
     userTables(db, ['table'])
-      .innerJoin(pragma('foreign_key_list', 't.name').as('fk'), (join) =>
-        join.onTrue()
-      )
+      .crossJoin(pragma('foreign_key_list', 't.name').as('fk'))
       // `REFERENCES parent` without columns stores no target: it names the parent's primary key, in key order.
       .leftJoin(pragma('table_xinfo', 'fk.table').as('target'), (join) =>
         join.on((eb) =>
@@ -64,7 +59,7 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
         't.name as table',
         'fk.id',
         'fk.from as column',
-        eb.val(SQLITE_RESOURCE_NAME).as('foreign_schema'),
+        't.schema as foreign_schema',
         'fk.table as foreign_table',
         eb.fn.coalesce('fk.to', 'target.name').as('foreign_column'),
         'fk.on_delete as onDelete',
@@ -80,6 +75,8 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
     (key) => `${key.table}\n${key.id}`
   ).values()
 
+  const owners = new Map<string, number>()
+
   return [
     ...indexedKeys.map((key) => ({ ...noReference, ...key })),
     ...rowidKeys.map((key) => ({
@@ -89,11 +86,16 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
       type: 'PRIMARY KEY' as const,
     })),
     ...foreignKeyGroups.flatMap((group) =>
-      group.map(({ id: _id, ...key }) => ({
-        ...key,
-        name: `${key.table}_${group.map(({ column }) => column).join('_')}_${key.foreign_table}_fkey`,
-        type: 'FOREIGN KEY' as const,
-      }))
+      group.map(({ id, ...key }) => {
+        const name = `${key.table}_${group.map(({ column }) => column).join('_')}_${key.foreign_table}_fkey`
+        // SQLite allows two keys on the same columns to the same table; the later one gets a number, as Postgres does.
+        const owner = owners.get(name) ?? owners.set(name, id).get(name)
+        return {
+          ...key,
+          name: owner === id ? name : `${name}${id}`,
+          type: 'FOREIGN KEY' as const,
+        }
+      })
     ),
   ]
 }

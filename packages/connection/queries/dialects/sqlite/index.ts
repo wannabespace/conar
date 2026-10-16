@@ -31,23 +31,15 @@ const LOCATIONS: Record<SqliteLocation, SqliteLocationQueries> = {
 const locate = (connectionString: string) =>
   LOCATIONS[getSqliteLocation(readConnectionString(connectionString).host)]
 
-/** The runner wraps it in its own advice to run the whole block. */
-const NO_OPEN_SESSION =
-  'this database keeps no transaction open between requests'
-
-const STRAY_TRANSACTION =
-  'This database keeps no transaction open between requests, so run BEGIN through COMMIT as one whole script.'
-
-const READ_ONLY_REFUSAL =
-  'A read-only transaction runs only statements that read.'
-
 /** Turso and D1 let a read-only transaction write, so every location refuses a write before sending it. */
 const readingOnly =
   (run: RunStatements): RunStatements =>
   (texts, values, maxRows) =>
     texts.every((text) => readsOnly(text, SQLITE))
       ? run(texts, values, maxRows)
-      : Promise.reject(new Error(READ_ONLY_REFUSAL))
+      : Promise.reject(
+          new Error('A read-only transaction runs only statements that read.')
+        )
 
 const toHandle = ({ run, ...tx }: LocationTransaction): TxHandle => ({
   ...tx,
@@ -94,7 +86,6 @@ export const query = {
     }
   ),
 
-  // A file runs a statement synchronously and an HTTP request cannot be called back, so nothing is left to stop.
   cancel: () => Promise.resolve(),
 
   execute: handleQueryError(
@@ -108,7 +99,11 @@ export const query = {
         }
         // A lone BEGIN or COMMIT would act on a connection the next statement never sees.
         if (texts.some(controlsTransaction)) {
-          return Promise.reject(new Error(STRAY_TRANSACTION))
+          return Promise.reject(
+            new Error(
+              'This database keeps no transaction open between requests, so run BEGIN through COMMIT as one whole script.'
+            )
+          )
         }
       }
       return runTimed(
@@ -123,7 +118,10 @@ export const query = {
   openSession: handleQueryError(({ connectionString, ownerId }) => {
     const { openSession } = locate(connectionString)
     if (!openSession) {
-      return Promise.reject(new Error(NO_OPEN_SESSION))
+      // The runner wraps it in its own advice to run the whole block.
+      return Promise.reject(
+        new Error('this database keeps no transaction open between requests')
+      )
     }
     return Promise.resolve({
       txId: registerTransaction(

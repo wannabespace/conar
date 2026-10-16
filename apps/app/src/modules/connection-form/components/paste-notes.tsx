@@ -30,9 +30,7 @@ export const PasteNotes = ({
   passwordWithheldBy?: string
 }) => {
   const missing = useSelector(form.store, ({ values }) => getMissing(values))
-  const labels = useSelector(form.store, ({ values }) =>
-    missing.map((field) => getFieldNoun(getPlace(values), field))
-  )
+  const place = useSelector(form.store, ({ values }) => getPlace(values))
   const withheld =
     passwordWithheldBy && missing.includes('password')
       ? ` (${passwordWithheldBy} keeps it in the Keychain)`
@@ -40,7 +38,9 @@ export const PasteNotes = ({
 
   const note = [
     ...(missing.length > 0
-      ? [`Add the ${labels.join(' and ')}${withheld}.`]
+      ? [
+          `Add the ${missing.map((field) => getFieldNoun(place, field)).join(' and ')}${withheld}.`,
+        ]
       : []),
     ...fixes.map((fix) => FIX_NOTES[fix]),
   ].join(' ')

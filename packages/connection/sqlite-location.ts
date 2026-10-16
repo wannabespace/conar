@@ -1,6 +1,5 @@
 import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 
-/** The one database a SQLite connection opens, wherever it lives. */
 export const SQLITE_RESOURCE_NAME = 'main'
 
 /**

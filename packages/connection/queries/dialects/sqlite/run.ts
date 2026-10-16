@@ -7,7 +7,6 @@ import type { RunStatements, SqliteValue } from './location'
 
 export const SQLITE = dialects[Dialect.SQLite]
 
-/** The same value is stored the same way wherever the database lives. */
 const toInput = (value: unknown): SqliteValue => {
   if (typeof value === 'boolean') {
     return Number(value)

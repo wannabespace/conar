@@ -50,12 +50,8 @@ export const fileLocation = {
 
   // A handle per call: a cached one keeps reading a file another tool deleted and recreated.
   run: (connectionString, texts, values, maxRows) => {
-    const db = openDatabase(connectionString)
-    try {
-      return Promise.resolve(runOn(db, texts, values, maxRows))
-    } finally {
-      db.close()
-    }
+    using db = openDatabase(connectionString)
+    return Promise.resolve(runOn(db, texts, values, maxRows))
   },
 
   // A transaction gets its own handle: on the shared one, every other query would run inside it.

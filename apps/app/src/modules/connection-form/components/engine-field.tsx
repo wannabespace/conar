@@ -1,9 +1,5 @@
 import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
-import {
-  ConnectionType,
-  connectionTypeLabels,
-  sqliteLocationLabels,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType, engines } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import {
   Select,
@@ -18,33 +14,38 @@ import type { ConnectionForm } from '../lib/connection-form'
 import { clearPlace } from '../lib/connection-form'
 import { getPlace } from '../lib/place'
 
-/** Turso and D1 are SQLite in another place, so one engine choice writes both the type and the SQLite location. */
-type EngineKey = Exclude<ConnectionType, ConnectionType.SQLite> | SqliteLocation
+const getEngineKey = ({
+  sqliteLocation,
+  type,
+}: {
+  sqliteLocation: SqliteLocation
+  type: ConnectionType
+}) => (type === ConnectionType.SQLite ? sqliteLocation : type)
 
-const SQLITE_LOCATIONS: SqliteLocation[] = ['file', 'libsql', 'd1']
+type EngineKey = ReturnType<typeof getEngineKey>
 
-const isSqliteLocation = (key: EngineKey): key is SqliteLocation =>
-  Object.hasOwn(sqliteLocationLabels, key)
+const ENGINES = engines.map((engine) => ({
+  ...engine,
+  value: getEngineKey(engine),
+}))
 
-const getEngineName = (key: EngineKey) =>
-  isSqliteLocation(key) ? sqliteLocationLabels[key] : connectionTypeLabels[key]
+const findEngine = (key: EngineKey | null) =>
+  ENGINES.find(({ value }) => value === key)
 
-const ENGINES = Object.values(ConnectionType)
-  .flatMap<EngineKey>((type) =>
-    type === ConnectionType.SQLite ? SQLITE_LOCATIONS : [type]
+const engineLabel = (key: EngineKey) => {
+  const engine = findEngine(key)
+  return (
+    engine && (
+      <>
+        <ConnectionIcon
+          type={engine.type}
+          sqliteLocation={engine.sqliteLocation}
+        />
+        {engine.label}
+      </>
+    )
   )
-  .map((key) => ({ label: getEngineName(key), value: key }))
-
-const engineLabel = (key: EngineKey) => (
-  <>
-    {isSqliteLocation(key) ? (
-      <ConnectionIcon type={ConnectionType.SQLite} sqliteLocation={key} />
-    ) : (
-      <ConnectionIcon type={key} />
-    )}
-    {getEngineName(key)}
-  </>
-)
+}
 
 export const EngineField = ({
   form,
@@ -53,11 +54,7 @@ export const EngineField = ({
   form: ConnectionForm
   locked: (field: string) => boolean
 }) => {
-  const engine = useSelector(
-    form.store,
-    ({ values: { sqliteLocation, type } }): EngineKey =>
-      type === ConnectionType.SQLite ? sqliteLocation : type
-  )
+  const engine = useSelector(form.store, ({ values }) => getEngineKey(values))
 
   return (
     <form.AppField name="type">
@@ -69,12 +66,10 @@ export const EngineField = ({
             disabled={locked(field.name)}
             value={engine}
             onValueChange={(key) => {
-              if (key === null) {
+              const next = findEngine(key)
+              if (!next) {
                 return
               }
-              const next = isSqliteLocation(key)
-                ? { sqliteLocation: key, type: ConnectionType.SQLite }
-                : { sqliteLocation: 'file' as const, type: key }
               if (getPlace(next) !== getPlace(form.state.values)) {
                 clearPlace(form)
               }

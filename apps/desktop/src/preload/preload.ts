@@ -35,7 +35,7 @@ export type ElectronPreload = Promisified<typeof electron> & {
   }
   sqlite: {
     /** A dropped file's path on disk; the page itself only ever sees its contents. */
-    pathOf: (file: File) => string
+    getPath: (file: File) => string
   }
   versions: {
     node: () => string
@@ -240,7 +240,7 @@ contextBridge.exposeInMainWorld('electron', {
     sqlite: dialectQueryBridge('sqlite'),
   },
   sqlite: {
-    pathOf: (file: File) => webUtils.getPathForFile(file),
+    getPath: (file: File) => webUtils.getPathForFile(file),
     pickFile: handleElectronError(() => ipcRenderer.invoke('sqlite.pickFile')),
   },
   ssh: {

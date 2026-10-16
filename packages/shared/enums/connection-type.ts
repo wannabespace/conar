@@ -44,3 +44,20 @@ export const sqliteLocationLabels: Record<SqliteLocation, string> = {
   file: 'SQLite',
   libsql: 'Turso',
 }
+
+/** SQLite appears once per location, so a list of these is keyed by `label`, never by `type`. */
+export const engines = Object.values(ConnectionType).flatMap((type) =>
+  type === ConnectionType.SQLite
+    ? (['file', 'libsql', 'd1'] as const).map((sqliteLocation) => ({
+        label: sqliteLocationLabels[sqliteLocation],
+        sqliteLocation,
+        type,
+      }))
+    : [
+        {
+          label: connectionTypeLabels[type],
+          sqliteLocation: 'file' as const,
+          type,
+        },
+      ]
+)

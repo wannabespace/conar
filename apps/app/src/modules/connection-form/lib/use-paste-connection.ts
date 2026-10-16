@@ -21,18 +21,17 @@ export const PASTE_FORMATS =
   'Connection URLs, .env files, JDBC strings, SQLite files, Turso and D1 links, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
+const FLASH_SHOWN_MS = 3000
 const SQLITE_HEADER = 'SQLite format 3\0'
 
-/** Only the desktop app learns a dropped file's path, which is all a SQLite connection needs. */
 const readDrop = async (file: File) => {
   const header = await file.slice(0, SQLITE_HEADER.length).text()
-  const path = window.electron?.sqlite.pathOf(file)
+  const path = window.electron?.sqlite.getPath(file)
   if (header === SQLITE_HEADER && path) {
     return sqliteFile.connectionString(path)
   }
   return file.size > MAX_DROP_BYTES ? '' : file.text()
 }
-const FLASH_SHOWN_MS = 3000
 
 export const usePasteConnection = ({
   enabled,

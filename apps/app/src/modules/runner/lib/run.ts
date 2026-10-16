@@ -36,7 +36,6 @@ export interface RunnerResult extends Omit<RunnerStatement, 'text'> {
   set: ResultSet | null
   error: RunnerError | null
   stopped: boolean
-  /** An earlier statement failed, so this one never ran. */
   skipped: boolean
   pending: boolean
 }

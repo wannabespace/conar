@@ -156,7 +156,6 @@ const format = (
 
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
-/** libSQL's own spelling of its token, read into the password where the rest of Tamery keeps secrets. */
 const AUTH_TOKEN_PARAM = 'authtoken'
 
 /** A SQLite file's path is the whole string, not its URL path; libSQL may carry its token as a param. */

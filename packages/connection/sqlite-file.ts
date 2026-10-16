@@ -1,7 +1,6 @@
 import { readConnectionString } from './parse-connection-string'
 
 const WINDOWS_DRIVE = /^[a-z]:\//iu
-const HOME = /^~\//u
 
 /**
  * A SQLite string is `sqlite://` and the file's absolute path, never a host. The cloud proxy refuses an empty host,
@@ -19,7 +18,7 @@ export const sqliteFile = {
       /^\/+/u,
       ''
     )
-    return WINDOWS_DRIVE.test(database) || HOME.test(database)
+    return WINDOWS_DRIVE.test(database) || database.startsWith('~/')
       ? database
       : `/${database}`
   },

@@ -21,7 +21,6 @@ export type LocationTransaction = Pick<
   'commit' | 'release' | 'rollback' | 'status'
 > & { run: RunStatements }
 
-/** Where a SQLite database lives supplies only how it runs statements and holds a transaction. */
 export interface SqliteLocationQueries {
   run: (
     connectionString: string,

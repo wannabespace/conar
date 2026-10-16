@@ -1,7 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, getConnectionType } from '../connection-parts'
+import { connectionParts, getConnectionType } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -130,8 +130,7 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
   if (!parts) {
     return null
   }
-  const defaultPort = parts.type && DEFAULT_PORTS[parts.type]
-  const composeTarget = defaultPort && String(defaultPort)
+  const composeTarget = connectionParts.port({ type: parts.type })
   const published =
     !parts.port &&
     composeTarget &&

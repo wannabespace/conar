@@ -5,7 +5,6 @@ import { readConnectionString } from '../../../parse-connection-string'
 import type { SqliteLocationQueries, SqliteValue } from './location'
 import { toOutput } from './run'
 
-/** `tls=0` reaches a self-hosted libSQL server over plain HTTP; Turso always speaks TLS. */
 const openClient = (connectionString: string) => {
   const { host, password, port, searchParams } =
     readConnectionString(connectionString)

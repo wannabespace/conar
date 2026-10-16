@@ -32,7 +32,7 @@ export const userTables = (
 ) =>
   db
     .selectFrom(sql<Pragmas['table_list']>`pragma_table_list()`.as('t'))
-    .select((expr) => expr.val(SQLITE_RESOURCE_NAME).as('schema'))
+    .select('t.schema')
     .where('t.schema', '=', SQLITE_RESOURCE_NAME)
     .where('t.type', 'in', types)
     .where((expr) =>
@@ -50,10 +50,8 @@ export const userTables = (
 /** Each key column of each index on a stored table, as `il` and `ix`, in key order. */
 export const indexKeys = (db: Kysely<SqliteDatabase>) =>
   userTables(db, ['table'])
-    .innerJoin(pragma('index_list', 't.name').as('il'), (join) => join.onTrue())
-    .innerJoin(pragma('index_xinfo', 'il.name').as('ix'), (join) =>
-      join.onTrue()
-    )
+    .crossJoin(pragma('index_list', 't.name').as('il'))
+    .crossJoin(pragma('index_xinfo', 'il.name').as('ix'))
     .where('ix.key', '=', 1)
     .orderBy('t.name')
     .orderBy('il.name')

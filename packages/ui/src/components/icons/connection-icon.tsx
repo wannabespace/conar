@@ -32,7 +32,6 @@ const sqliteIcons: Record<
   libsql: TursoIcon,
 }
 
-/** `sqliteLocation` shows Turso's or Cloudflare's mark for a SQLite connection that lives there. */
 export const ConnectionIcon = ({
   sqliteLocation = 'file',
   type,

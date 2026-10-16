@@ -14,7 +14,7 @@ export const sqliteColumns = (
   filter: ColumnsFilter
 ) =>
   userTables(db, ['table', 'view', 'virtual'])
-    .innerJoin(pragma('table_xinfo', 't.name').as('c'), (join) => join.onTrue())
+    .crossJoin(pragma('table_xinfo', 't.name').as('c'))
     .select((eb) => [
       't.name as table',
       'c.name as id',

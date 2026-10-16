@@ -113,17 +113,16 @@ export const clickhouseFilterValues =
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {
-  [Dialect.MSSQL]: 2000,
-  [Dialect.SQLite]: 100,
+  mssql: 2000,
+  sqlite: 100,
 }
 const MAX_ROWS_PER_STATEMENT = 500
 
-export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) => {
-  const limit = PARAMETER_LIMITS[dialect]
-  return limit
-    ? Math.max(
-        1,
-        Math.min(MAX_ROWS_PER_STATEMENT, Math.floor(limit / valuesPerRow))
-      )
-    : MAX_ROWS_PER_STATEMENT
-}
+export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) =>
+  Math.max(
+    1,
+    Math.min(
+      MAX_ROWS_PER_STATEMENT,
+      Math.floor((PARAMETER_LIMITS[dialect] ?? Infinity) / valuesPerRow)
+    )
+  )
