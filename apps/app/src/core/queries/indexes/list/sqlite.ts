@@ -2,6 +2,7 @@ import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { userObject } from '~/core/queries/shared/sqlite-catalog'
 import type {
   Pragmas,
   Database as SqliteDatabase,
@@ -51,6 +52,7 @@ export const sqliteIndexes = async (db: Kysely<SqliteDatabase>) => {
           .as('is_custom'),
     ])
     .where('t.type', '=', 'table')
+    .where(userObject('t.name'))
     .where('ix.key', '=', 1)
     .orderBy('t.name')
     .orderBy('il.name')

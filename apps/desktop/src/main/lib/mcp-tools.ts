@@ -1,4 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { getConnectionType } from '@tamery/connection/connection-parts'
+import { readConnectionString } from '@tamery/connection/parse-connection-string'
+import { getSqliteLocation } from '@tamery/connection/sqlite-remote'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -126,12 +129,12 @@ export const createMcpServer = (
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and SQLite files and strings with an SSH tunnel (ssh_* params) are refused.`,
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and SQLite files (but not Turso or Cloudflare D1 databases) and strings with an SSH tunnel (ssh_* params) are refused.`,
       inputSchema: {
         connectionString: z
           .string()
           .describe(
-            'URL with credentials, e.g. postgres://user:pass@host:5432/db'
+            'URL with credentials, e.g. postgres://user:pass@host:5432/db. Turso: libsql://host?authToken=TOKEN with type "sqlite". Cloudflare D1: d1://ACCOUNT_ID:API_TOKEN@api.cloudflare.com/DATABASE_ID with type "sqlite".'
           ),
         name: z.string().min(2),
         syncType: z
@@ -152,7 +155,12 @@ export const createMcpServer = (
           )
         }
         // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access.
-        if (args.type === ConnectionType.SQLite) {
+        const { host, scheme } = readConnectionString(args.connectionString)
+        if (
+          (args.type === ConnectionType.SQLite ||
+            getConnectionType(scheme) === ConnectionType.SQLite) &&
+          getSqliteLocation(host) === 'file'
+        ) {
           throw new Error(
             'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
           )

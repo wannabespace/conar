@@ -1,10 +1,10 @@
 ---
 title: 'Connect to SQLite'
 sidebarTitle: 'SQLite'
-description: 'Open a SQLite database file in Tamery from the desktop app, or from the web through tamery proxy.'
+description: 'Open a SQLite database file, a Turso database or a Cloudflare D1 database in Tamery.'
 ---
 
-A SQLite connection points at a database file on your computer. There is no server, user or password.
+A SQLite connection points at a database file on your computer, a [Turso](#turso) database or a [Cloudflare D1](#cloudflare-d1) database. Pick the one you want under **Engine**: **SQLite**, **Turso** or **Cloudflare D1**. All three are SQLite to Tamery, so tables, rows, the SQL editor and the schema pages work the same way.
 
 ## Open a file
 
@@ -24,9 +24,33 @@ The connection string is the file's absolute path:
 sqlite:///Users/me/app.db
 ```
 
+## Turso
+
+Turso gives each database a URL and a token. On the database's page in the Turso dashboard, copy the **Database URL** and click **Create Token**, or run `turso db show <name> --url` and `turso db tokens create <name>`. Then paste either of these anywhere on the new-connection page:
+
+```bash
+libsql://my-db-my-org.aws-eu-west-1.turso.io?authToken=eyJhbGciOi…
+```
+
+```bash
+TURSO_DATABASE_URL=libsql://my-db-my-org.aws-eu-west-1.turso.io
+TURSO_AUTH_TOKEN=eyJhbGciOi…
+```
+
+Tamery fills **Host** and **Auth token**, and keeps the token like a password, so the **No password** sync keeps it on this device. A self-hosted libSQL server works too: give its host and port, and add `tls=0` to the URL if it speaks plain HTTP.
+
+## Cloudflare D1
+
+D1 is reached through Cloudflare's API with three things: the account ID, the database ID and an API token.
+
+- **The IDs**: open the database in the Cloudflare dashboard and paste its address (`https://dash.cloudflare.com/<account-id>/workers/d1/databases/<database-id>`). A `wrangler.toml` or `wrangler.jsonc` with `database_id`, or `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_DATABASE_ID`, works as well.
+- **The token**: in the Cloudflare dashboard, open **My Profile → API Tokens → Create Token → Create Custom Token**. Add the permission **Account · D1 · Edit** (or **Read** for a read-only connection), choose your account under **Account Resources**, then create the token and paste it into **API token**.
+
+D1 runs no transaction across requests, so Tamery sends the statements of a transaction (a grid save, a schema change, a `BEGIN … COMMIT` block run with **Run all**) as one batch when it commits, and D1 runs them all or none. Statements inside such a block return no rows. Running `BEGIN` on its own to keep a transaction open is not available on D1 or Turso; run the whole block with **Run all** instead. Cloudflare's own `_cf_` tables are hidden.
+
 ## From the web app
 
-The web app cannot read files on your computer. Run [`tamery proxy`](/cli/commands) on the computer that holds the file, and Tamery opens the file there. The cloud proxy never opens SQLite files.
+The web app cannot read files on your computer. Run [`tamery proxy`](/cli/commands) on the computer that holds the file, and Tamery opens the file there. The cloud proxy never opens SQLite files. Turso and D1 databases work from the web like any other cloud database.
 
 ## What works
 

@@ -16,12 +16,20 @@ const toInput = (value: unknown) => {
   return (value ?? null) as SQLInputValue
 }
 
-const toOutput = (value: unknown) => {
+export const toOutput = (value: unknown) => {
   if (typeof value !== 'bigint') {
     return value
   }
   return Number.isSafeInteger(Number(value)) ? Number(value) : String(value)
 }
+
+/** A driver prepares only the first statement of a text, so a text without bound values runs one statement at a time. */
+export const statementTexts = (sql: string, values: unknown[]) =>
+  values.length > 0
+    ? [sql]
+    : splitStatements(sql, dialects[Dialect.SQLite], {
+        groupTransactions: false,
+      }).map((statement) => statement.text)
 
 /** A RETURNING write makes all its changes on the first step, so stopping past `maxRows` leaves nothing half done. */
 export const runOn = (
@@ -31,12 +39,7 @@ export const runOn = (
   { maxRows = Infinity }: RunOptions
 ) => {
   const start = performance.now()
-  const texts =
-    values.length > 0
-      ? [sql]
-      : splitStatements(sql, dialects[Dialect.SQLite], {
-          groupTransactions: false,
-        }).map((statement) => statement.text)
+  const texts = statementTexts(sql, values)
   const inputs = values.map(toInput)
   const result = texts.map((text) => {
     const statement = db.prepare(text)

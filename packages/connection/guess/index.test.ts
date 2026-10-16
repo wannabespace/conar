@@ -134,6 +134,49 @@ describe('guessConnection — snippets from configs and tools', () => {
       '~/data/app.db',
       { database: '~/data/app.db', type: ConnectionType.SQLite },
     ],
+    [
+      'libsql://shop-acme.aws-eu-west-1.turso.io?authToken=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.aws-eu-west-1.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'TURSO_DATABASE_URL=https://shop-acme.turso.io\nTURSO_AUTH_TOKEN=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/d1/databases/e179f207-0000-45ea-830c-4efd8618ae6e/metrics',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      'CLOUDFLARE_ACCOUNT_ID=0123456789abcdef0123456789abcdef\nCLOUDFLARE_DATABASE_ID=e179f207-0000-45ea-830c-4efd8618ae6e\nCLOUDFLARE_D1_TOKEN=abcdefghijABCDEFGHIJ0123456789_-abcdefgh',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        password: 'abcdefghijABCDEFGHIJ0123456789_-abcdefgh',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      '[[d1_databases]]\nbinding = "DB"\ndatabase_name = "shop"\ndatabase_id = "e179f207-0000-45ea-830c-4efd8618ae6e"',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        type: ConnectionType.SQLite,
+      },
+    ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
   })

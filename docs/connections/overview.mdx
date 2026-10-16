@@ -47,6 +47,8 @@ The desktop app can also open database links: `postgres://`, `postgresql://`, `m
 | A CLI command | `psql -h … -U …`, `mysql -h … -u … -p…`, `sqlcmd -S …`, `clickhouse-client --host …` |
 | An SSH command | `ssh -L 5433:db.internal:5432 ubuntu@bastion`, which fills the SSH tunnel too |
 | A SQLite file | `/Users/me/app.db`, `sqlite:///Users/me/app.db`, `jdbc:sqlite:/srv/app.sqlite`, `sqlite3 /srv/app.db` |
+| A Turso database | `libsql://my-db-my-org.turso.io?authToken=…`, or `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` lines |
+| A Cloudflare D1 database | its dashboard link, a `wrangler.toml` with `database_id`, or `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_D1_TOKEN` lines |
 
 Partial pastes work too: a paste fills only what it contains and keeps what you've already typed, so you can paste a JDBC URL copied from DBeaver (which leaves out the user and password) and type the credentials around it. Tamery puts the cursor in the first missing field. Pasting a different server replaces the fields instead. Inside a field other than **Host**, a paste stays plain text, so you can paste a whole connection string into **Password** or **Database** and delete everything but the part you need.
 
@@ -153,6 +155,6 @@ These need a connection: signing in, creating a workspace, and AI features. In t
     ClickHouse Cloud and self-hosted.
   </Card>
   <Card title="SQLite" icon="feather" href="/connections/sqlite">
-    A database file on your computer.
+    A database file on your computer, Turso, or Cloudflare D1.
   </Card>
 </CardGroup>

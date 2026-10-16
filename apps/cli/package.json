@@ -44,6 +44,7 @@
     "@clickhouse/client": "catalog:",
     "@drizzle-team/brocli": "catalog:",
     "@hono/node-server": "catalog:",
+    "@libsql/client": "catalog:",
     "@orpc/client": "catalog:",
     "better-result": "catalog:",
     "consola": "catalog:",

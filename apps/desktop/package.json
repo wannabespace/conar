@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@libsql/client": "catalog:",
     "@modelcontextprotocol/sdk": "catalog:",
     "@napi-rs/keyring": "catalog:",
     "@todesktop/runtime": "catalog:",

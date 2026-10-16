@@ -4,6 +4,7 @@ import type { ConnectionParts } from './connection-parts'
 import { NETWORK_RULES } from './diagnose-network'
 import type { Diagnosis, DiagnosisContext, DiagnosisRule } from './diagnosis'
 import { getHostHint, isLocalHost } from './hosts'
+import { D1_HOST } from './sqlite-remote'
 import { SSH_RULES } from './ssh/diagnose'
 import type { SslSetting } from './ssl/setting'
 import { getSslOptions } from './ssl/setting'
@@ -32,6 +33,36 @@ const RULES: DiagnosisRule[] = [
       title: "Can't open the database file",
     }),
     match: /unable to open database file/iu,
+  },
+  {
+    diagnose: ({ parts }) =>
+      parts.host === D1_HOST
+        ? {
+            focus: 'password',
+            hint: 'Use an API token with the D1 Edit permission on this account, made under My Profile → API Tokens.',
+            title: 'Cloudflare refused the API token',
+          }
+        : {
+            focus: 'password',
+            hint: 'Create a token for this database on its page in the Turso dashboard, or with `turso db tokens create`.',
+            title: 'Turso refused the auth token',
+          },
+    match: /authentication error|http status 40[013]\b/iu,
+  },
+  {
+    diagnose: () => ({
+      hint: 'Copy the database URL from its page in the Turso dashboard: the host carries the database, organization and region.',
+      title: "Turso can't find that database",
+    }),
+    match: /server returned http status (?:404|502)\b/iu,
+  },
+  {
+    diagnose: () => ({
+      focus: 'user',
+      hint: "Check the account ID and database ID: both are in the database's dashboard URL.",
+      title: "Cloudflare can't find that database",
+    }),
+    match: /could not route to|object identifier is invalid/iu,
   },
   {
     diagnose: () => ({

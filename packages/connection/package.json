@@ -9,12 +9,14 @@
   "dependencies": {
     "@tamery/shared": "workspace:*",
     "@tamery/sql": "workspace:*",
+    "arktype": "catalog:",
     "better-result": "catalog:",
     "json5": "catalog:",
     "memoza": "catalog:",
     "shell-quote": "catalog:"
   },
   "devDependencies": {
+    "@libsql/client": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
@@ -28,6 +30,7 @@
   },
   "peerDependencies": {
     "@clickhouse/client": "catalog:",
+    "@libsql/client": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:",

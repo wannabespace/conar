@@ -4,6 +4,7 @@ import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
 import { sqliteFile } from './sqlite-file'
+import { getSqliteLocation, remoteSqliteString } from './sqlite-remote'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
@@ -65,8 +66,10 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   ch: ConnectionType.ClickHouse,
   clickhouse: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
+  d1: ConnectionType.SQLite,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
+  libsql: ConnectionType.SQLite,
   mariadb: ConnectionType.MariaDB,
   'microsoft sql server': ConnectionType.MSSQL,
   mssql: ConnectionType.MSSQL,
@@ -93,6 +96,9 @@ const format = (
   missingSecrets: readonly string[] = []
 ): string => {
   if (parts.type === ConnectionType.SQLite) {
+    if (getSqliteLocation(parts.host) !== 'file') {
+      return remoteSqliteString(parts)
+    }
     return parts.database && sqliteFile.connectionString(parts.database)
   }
   if (!parts.type || !parts.host) {
@@ -125,21 +131,30 @@ const format = (
 
 const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
+/** libSQL's own spelling of its token, read into the password where the rest of Tamery keeps secrets. */
+const AUTH_TOKEN_PARAM = 'authtoken'
+
 const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
   const ssh = getSshTunnel(searchParams)
   deleteSshParams(searchParams)
   const type = getConnectionType(scheme)
+  const authToken =
+    type === ConnectionType.SQLite ? searchParams.get(AUTH_TOKEN_PARAM) : null
+  if (authToken !== null) {
+    searchParams.delete(AUTH_TOKEN_PARAM)
+  }
 
   return {
     ...parts,
     database:
-      type === ConnectionType.SQLite
+      type === ConnectionType.SQLite && !parts.host
         ? sqliteFile.path(connectionString)
         : parts.database,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
+    password: authToken ?? parts.password,
     ssh,
     type,
   }

@@ -1,5 +1,4 @@
 import type { SecretParam } from '@tamery/connection/secrets'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { lowercaseKeys } from '@tamery/shared/utils'
 import { getBy } from '@tanstack/react-form'
 
@@ -7,7 +6,7 @@ import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
 import type { ConnectionFormValues } from './connection-form'
-import { getPlaceField } from './connection-form'
+import { getPlaceField } from './sqlite-location'
 
 export type FormMode =
   | { kind: 'create' }
@@ -17,7 +16,6 @@ export type FormMode =
       passwordElsewhere: boolean
       missingSecrets: SecretParam[]
       scope: 'all' | 'credentials' | 'details'
-      type: ConnectionType
     }
 
 type Secret = SecretParam | 'password'
@@ -45,7 +43,7 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
 }
 
 export const getEditMode = (
-  connection: Pick<Connection, 'isPasswordExists' | 'name' | 'type'>,
+  connection: Pick<Connection, 'isPasswordExists' | 'name'>,
   stored: ConnectionString | undefined,
   scope: Extract<FormMode, { kind: 'edit' }>['scope']
 ): FormMode => ({
@@ -55,10 +53,13 @@ export const getEditMode = (
   passwordElsewhere:
     connection.isPasswordExists && !stored?.isPasswordPopulated,
   scope,
-  type: connection.type,
 })
 
-export const getFormPolicy = (mode: FormMode) => {
+/** `opening` are the form's first values, whose place field an edit focuses when nothing is missing. */
+export const getFormPolicy = (
+  mode: FormMode,
+  opening: ConnectionFormValues | undefined
+) => {
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
   const missing: Secret[] =
     mode.kind === 'edit' && scope === 'credentials'
@@ -73,7 +74,7 @@ export const getFormPolicy = (mode: FormMode) => {
     firstField:
       mode.kind === 'create'
         ? null
-        : (missingFields[0] ?? getPlaceField(mode.type)),
+        : (missingFields[0] ?? (opening ? getPlaceField(opening) : null)),
     guardsUnsaved: mode.kind === 'edit' && scope === 'all',
     locked: (field: string) =>
       scope === 'credentials' && !missingFields.includes(field),

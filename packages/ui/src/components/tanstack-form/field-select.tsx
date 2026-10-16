@@ -9,17 +9,22 @@ import {
 } from '../select'
 import { useFieldContext } from './context'
 
+/** `value` and `onValueChange` show and set something derived from the field, for a choice that writes more than it. */
 export const FieldSelect = <Value extends string>({
   children,
   disabled,
   items,
+  onValueChange,
   renderValue,
+  value,
   variant,
 }: Pick<ComponentProps<typeof SelectTrigger>, 'variant'> & {
   children?: ReactNode
   disabled?: boolean
   items: { label: string; value: Value }[]
+  onValueChange?: (value: Value) => void
   renderValue?: (value: Value) => ReactNode
+  value?: Value
 }) => {
   const field = useFieldContext<Value>()
 
@@ -27,8 +32,10 @@ export const FieldSelect = <Value extends string>({
     <Select
       items={items}
       disabled={disabled}
-      value={field.state.value}
-      onValueChange={(next) => next !== null && field.handleChange(next)}
+      value={value ?? field.state.value}
+      onValueChange={(next) =>
+        next !== null && (onValueChange ?? field.handleChange)(next)
+      }
     >
       <SelectTrigger
         id={field.name}
@@ -41,9 +48,9 @@ export const FieldSelect = <Value extends string>({
       </SelectTrigger>
       <SelectContent>
         {children ??
-          items.map(({ label, value }) => (
-            <SelectItem key={value} value={value}>
-              {label}
+          items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
             </SelectItem>
           ))}
       </SelectContent>

@@ -4,7 +4,9 @@ import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { diagnoseConnectionError } from '@tamery/connection/diagnose'
 import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnosis'
 import { getDiagnosisRequest } from '@tamery/connection/diagnosis-request'
+import { getSqliteLocation } from '@tamery/connection/sqlite-remote'
 import { getSslOptions } from '@tamery/connection/ssl/setting'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -24,6 +26,8 @@ import { useState } from 'react'
 import { orpc } from '~/lib/orpc'
 import { useIsOnline } from '~/store'
 
+import { getFieldLabel } from '../lib/sqlite-location'
+
 export type FixSource = 'ai' | 'rule'
 
 // Module scope keeps the ref callback's identity, so it scrolls once on mount and never on a later render.
@@ -38,6 +42,16 @@ const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
   'ssh.privateKey': 'Replace the private key',
   user: 'Edit the user',
 }
+
+/** A remote SQLite location names its user and password fields its own way (account ID, auth token). */
+const getFocusLabel = (
+  focus: NonNullable<Diagnosis['focus']>,
+  parts: ConnectionParts
+) =>
+  parts.type === ConnectionType.SQLite &&
+  (focus === 'password' || focus === 'user')
+    ? `Edit the ${getFieldLabel({ sqliteLocation: getSqliteLocation(parts.host), type: parts.type }, focus)}`
+    : FOCUS_LABELS[focus]
 
 export const TestAlert = ({
   error,
@@ -115,7 +129,7 @@ export const TestAlert = ({
                   size="xs"
                   onClick={() => onFocus(focus)}
                 >
-                  {FOCUS_LABELS[focus]}
+                  {getFocusLabel(focus, parts)}
                 </Button>
               )}
               {aiFix && (

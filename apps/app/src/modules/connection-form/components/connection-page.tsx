@@ -1,6 +1,7 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
@@ -18,15 +19,10 @@ import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
 import type { ConnectionFormValues } from '../lib/connection-form'
-import {
-  getMissing,
-  getParts,
-  getPlaceField,
-  opensFile,
-  useConnectionForm,
-} from '../lib/connection-form'
+import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
 import { getFormPolicy } from '../lib/form-mode'
+import { getPlaceField } from '../lib/sqlite-location'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import { usePickLocalDatabase } from '../lib/use-pick-local-database'
 import type { OnSave } from '../lib/use-test-then-save'
@@ -34,14 +30,13 @@ import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
 import { DropOverlay } from './drop-overlay'
-import { FileFields } from './file-fields'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
 import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
 import { PasteNotes } from './paste-notes'
-import { ServerFields } from './server-fields'
+import { PlaceFields } from './place-fields'
 import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
@@ -85,7 +80,7 @@ export const ConnectionPage = ({
   }
   const focusPage = () => pageRef.current?.focus()
   const { getDraft, runTest, save, testError } = useTestThenSave(mode, onSave)
-  const policy = getFormPolicy(mode)
+  const policy = getFormPolicy(mode, defaultValues)
 
   const { form, paste, patch } = useConnectionForm({
     defaultValues,
@@ -227,11 +222,11 @@ export const ConnectionPage = ({
                 }
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  {opensFile(values.type) ? (
-                    <FileFields form={form} locked={policy.locked} />
-                  ) : (
-                    <ServerFields form={form} locked={policy.locked} />
-                  )}
+                  <PlaceFields
+                    form={form}
+                    locked={policy.locked}
+                    values={values}
+                  />
                   {filled && (
                     <PasteNotes
                       fixes={filled.fixes}
@@ -240,7 +235,7 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                {!opensFile(values.type) && (
+                {values.type !== ConnectionType.SQLite && (
                   <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                     <SshFields form={form} locked={policy.locked} />
                   </motion.div>
@@ -287,7 +282,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={values[getPlaceField(values.type)].trim() ? reason : null}
+          reason={values[getPlaceField(values)].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

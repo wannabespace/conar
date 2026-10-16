@@ -20,6 +20,17 @@ export const keyIndexed = (table: string) =>
       .where('key_index.origin', '=', 'pk')
   )
 
-/** SQLite's own objects carry an exact `sqlite_` prefix, which `LIKE` cannot match since `_` is its wildcard. */
+/**
+ * SQLite's own objects carry an exact `sqlite_` prefix and Cloudflare D1's an `_cf_` one, which D1 refuses to read, so a
+ * catalog read that touches one fails whole. `LIKE` cannot match either, since `_` is its wildcard.
+ */
 export const userObject = (name: string) =>
-  eb(eb.fn('substr', [sql.ref(name), eb.val(1), eb.val(7)]), '!=', 'sqlite_')
+  eb.and(
+    ['sqlite_', '_cf_'].map((prefix) =>
+      eb(
+        eb.fn('substr', [sql.ref(name), eb.val(1), eb.val(prefix.length)]),
+        '!=',
+        prefix
+      )
+    )
+  )

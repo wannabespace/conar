@@ -2,7 +2,7 @@ import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
-import { keyIndexed } from '~/core/queries/shared/sqlite-catalog'
+import { keyIndexed, userObject } from '~/core/queries/shared/sqlite-catalog'
 import type {
   Pragmas,
   Database as SqliteDatabase,
@@ -21,6 +21,7 @@ export const sqliteConstraints = async (db: Kysely<SqliteDatabase>) => {
   const tables = db
     .selectFrom('sqlite_schema as t')
     .where('t.type', '=', 'table')
+    .where(userObject('t.name'))
   const [indexedKeys, rowidKeys, foreignKeys] = await Promise.all([
     tables
       .innerJoin(
