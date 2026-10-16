@@ -57,12 +57,36 @@ const lazyQueryExecutor = (
 
       return query.executeTransaction(args)
     },
+    openSession: async (args) => {
+      const query = await loadQuery()
+
+      return query.openSession(args)
+    },
     rollbackTransaction: async (args) => {
       const query = await loadQuery()
 
       return query.rollbackTransaction(args)
     },
+    transactionStatus: async (args) => {
+      const query = await loadQuery()
+
+      return query.transactionStatus(args)
+    },
   }
+}
+
+const openAtLogin = {
+  get: () => {
+    const settings = app.getLoginItemSettings()
+    // `openAtLogin` stays true after the user disables Tamery in Task Manager's Startup tab.
+    return process.platform === 'win32'
+      ? settings.executableWillLaunchAtLogin
+      : settings.openAtLogin
+  },
+  set: (enabled: boolean) => {
+    app.setLoginItemSettings({ openAtLogin: enabled })
+    return openAtLogin.get()
+  },
 }
 
 export const electron = {
@@ -103,6 +127,7 @@ export const electron = {
   notifications: {
     notify: notifyUnfocused,
   },
+  openAtLogin,
   query: {
     clickhouse: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/clickhouse')

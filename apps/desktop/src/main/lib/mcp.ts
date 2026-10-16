@@ -11,9 +11,14 @@ import {
   isJSONRPCRequest,
 } from '@modelcontextprotocol/sdk/types.js'
 import { PORTS } from '@tamery/shared/constants'
-import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
+import type {
+  McpAccess,
+  McpCall,
+  McpClient,
+  McpStatus,
+} from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
-import { omit, toError } from '@tamery/shared/utils'
+import { omit, silently, toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
 import Store from 'electron-store'
 
@@ -25,18 +30,36 @@ const store = new Store<{
   access: Record<string, McpAccess>
   clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
+  keepRunning: boolean
   token: string
 }>({
   defaults: {
     access: {},
     clients: {},
     enabled: true,
+    keepRunning: true,
     token: newToken(),
   },
   name: 'mcp',
 })
 
 const connectionAccess = () => store.get('access')
+
+const MAX_LOGGED_CALLS = 100
+
+const log = new Store<{ calls: McpCall[] }>({
+  defaults: { calls: [] },
+  name: 'mcp-log',
+})
+
+let loggedCalls = log.get('calls')
+
+const logCall = (call: Omit<McpCall, 'id'>) => {
+  loggedCalls = [{ ...call, id: randomUUID() }, ...loggedCalls]
+    .toSorted((a, b) => b.at - a.at)
+    .slice(0, MAX_LOGGED_CALLS)
+  void silently(() => log.set('calls', loggedCalls))
+}
 
 let server: Server | Error | null = null
 
@@ -109,7 +132,9 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
         sessionIdGenerator: randomUUID,
       }),
     }
-    await createMcpServer(connectionAccess).connect(opened.transport)
+    await createMcpServer(connectionAccess, (call) =>
+      logCall({ ...call, client: opened.client.name })
+    ).connect(opened.transport)
     session = opened
   } else {
     session = sessions.get(String(sessionId))
@@ -190,12 +215,14 @@ const clients = (): McpClient[] =>
     .toSorted((a, b) => b.lastSeenAt - a.lastSeenAt)
 
 export const mcp = {
+  calls: () => loggedCalls,
   clients,
   connectionAccess,
   forgetClient: (name: string) => {
     store.set('clients', omit(store.get('clients'), [name]))
     return clients()
   },
+  keepRunning: () => store.get('keepRunning'),
   regenerateToken: () => {
     store.set('token', newToken())
     store.set('clients', {})
@@ -222,6 +249,10 @@ export const mcp = {
     store.set('enabled', enabled)
     await (enabled ? start() : stop())
     return status()
+  },
+  setKeepRunning: (enabled: boolean) => {
+    store.set('keepRunning', enabled)
+    return enabled
   },
   status,
 }

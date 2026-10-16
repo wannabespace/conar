@@ -102,6 +102,11 @@ export const leavesTransactionOpen = (text: string, dialect: DialectSpec) => {
   )
 }
 
+export const endsTransaction = (text: string, dialect: DialectSpec) =>
+  !!transactionCloser(
+    tokenize(text, dialect).tokens.filter((token) => token.kind !== 'comment')
+  )
+
 export const statementsFromTokens = (
   text: string,
   tokens: Token[],

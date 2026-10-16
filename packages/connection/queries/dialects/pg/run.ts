@@ -1,15 +1,15 @@
 import { once } from 'node:events'
 
-import type { Pool, PoolClient, QueryArrayConfig, QueryResult } from 'pg'
+import type { ClientBase, Pool, QueryArrayConfig, QueryResult } from 'pg'
 
 import type { RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
 import { pg } from './client'
 
-const backendPids = new WeakMap<PoolClient, number>()
+const backendPids = new WeakMap<ClientBase, number>()
 
-const backendPid = async (client: PoolClient) => {
+const backendPid = async (client: ClientBase) => {
   const cached = backendPids.get(client)
   if (cached !== undefined) {
     return cached
@@ -25,7 +25,7 @@ const backendPid = async (client: PoolClient) => {
 }
 
 export const runOn = async (
-  client: PoolClient,
+  client: ClientBase,
   {
     connectionString,
     pool,

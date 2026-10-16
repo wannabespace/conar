@@ -84,6 +84,23 @@ describe('sqlite executor', () => {
     expect(result[0]?.rows).toEqual([[2]])
   })
 
+  test('a session keeps a transaction its SQL opens until the SQL ends it', async () => {
+    const { txId } = await query.openSession(file)
+    const run = (sql: string) =>
+      query.executeTransaction({ query: sql, txId, values: [] })
+
+    await run("BEGIN; INSERT INTO t (tag) VALUES ('draft');")
+    expect(await query.transactionStatus({ txId })).toBe('open')
+    const { result } = await query.execute({
+      ...file,
+      query: 'SELECT count(*) FROM t',
+    })
+    expect(result[0]?.rows).toEqual([[2]])
+
+    await run('ROLLBACK')
+    expect(await query.transactionStatus({ txId })).toBe('ended')
+  })
+
   test('never creates a file at a missing path', async () => {
     await expect(
       query.execute({ ...created('missing.db'), query: 'SELECT 1' })

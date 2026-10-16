@@ -43,6 +43,9 @@ export interface TransactionSettings {
   isolationLevel?: string
 }
 
+/** `failed`: the transaction is open but refuses everything except a rollback (Postgres after an error, SQL Server's uncommittable state). */
+export type TransactionStatus = 'ended' | 'failed' | 'open'
+
 export interface QueryExecutor {
   execute: (
     args: {
@@ -57,6 +60,11 @@ export interface QueryExecutor {
       ownerId?: string
     } & TransactionSettings
   ) => Promise<{ txId: string }>
+  /** A connection of its own, driven through the transaction calls but opening nothing: the SQL run in it begins and ends its transaction verbatim. */
+  openSession: (args: {
+    connectionString: string
+    ownerId?: string
+  }) => Promise<{ txId: string }>
   executeTransaction: (
     args: {
       txId: string
@@ -65,6 +73,11 @@ export interface QueryExecutor {
       ownerId?: string
     } & RunOptions
   ) => Promise<QueryExecuteResult>
+  /** Asks the database for the session's transaction state; one that ended (a COMMIT, an implicit commit, a server-side abort) releases the session. */
+  transactionStatus: (args: {
+    txId: string
+    ownerId?: string
+  }) => Promise<TransactionStatus>
   commitTransaction: (args: { txId: string; ownerId?: string }) => Promise<void>
   rollbackTransaction: (args: {
     txId: string

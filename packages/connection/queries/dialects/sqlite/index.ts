@@ -1,8 +1,23 @@
+import type { DatabaseSync } from 'node:sqlite'
+
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { getDatabase, openDatabase } from './client'
 import { runOn } from './run'
+
+const register = (db: DatabaseSync, ownerId?: string) =>
+  registerTransaction(
+    {
+      commit: () => db.exec('COMMIT'),
+      execute: (sql, values, options) =>
+        Promise.resolve(runOn(db, sql, values, options)),
+      release: () => db.close(),
+      rollback: () => db.exec('ROLLBACK'),
+      status: () => Promise.resolve(db.isTransaction ? 'open' : 'ended'),
+    },
+    ownerId
+  )
 
 export const query = {
   ...transactionQueries,
@@ -15,17 +30,7 @@ export const query = {
         db.exec('PRAGMA query_only = ON')
       }
       db.exec('BEGIN')
-      const txId = registerTransaction(
-        {
-          commit: () => db.exec('COMMIT'),
-          execute: (sql, values, options) =>
-            Promise.resolve(runOn(db, sql, values, options)),
-          release: () => db.close(),
-          rollback: () => db.exec('ROLLBACK'),
-        },
-        ownerId
-      )
-      return Promise.resolve({ txId })
+      return Promise.resolve({ txId: register(db, ownerId) })
     }
   ),
 
@@ -37,5 +42,9 @@ export const query = {
       Promise.resolve(
         runOn(getDatabase(connectionString), sql, values, options)
       )
+  ),
+
+  openSession: handleQueryError(({ connectionString, ownerId }) =>
+    Promise.resolve({ txId: register(openDatabase(connectionString), ownerId) })
   ),
 } satisfies QueryExecutor

@@ -11,6 +11,7 @@ import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
+import { NavigationGuard } from '~/components/navigation-guard'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useGoBack } from '~/hooks/use-go-back'
@@ -44,7 +45,6 @@ import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
 import { TestAlert } from './test-alert'
-import { UnsavedChangesGuard } from './unsaved-changes-guard'
 
 const REVEAL: Variants = {
   animate: {
@@ -180,7 +180,14 @@ export const ConnectionPage = ({
     >
       <DropOverlay shown={dragging} />
       {policy.guardsUnsaved && (
-        <UnsavedChangesGuard isDirty={() => !form.state.isDefaultValue} />
+        <NavigationGuard
+          title="Discard changes?"
+          description="Your edits aren’t saved."
+          cancel="Keep editing"
+          confirm="Discard"
+          shouldBlock={() => !form.state.isDefaultValue}
+          onConfirm={() => posthog.capture('unsaved_changes_discarded')}
+        />
       )}
       <IconButton
         variant="ghost-faint"

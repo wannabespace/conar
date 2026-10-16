@@ -123,8 +123,14 @@ const dialectQueryBridge = (dialect: string) => ({
   executeTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg)
   ),
+  openSession: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.openSession`, arg)
+  ),
   rollbackTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)
+  ),
+  transactionStatus: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.transactionStatus`, arg)
   ),
 })
 
@@ -179,12 +185,16 @@ contextBridge.exposeInMainWorld('electron', {
     ),
   },
   mcp: {
+    calls: handleElectronError(() => ipcRenderer.invoke('mcp.calls')),
     clients: handleElectronError(() => ipcRenderer.invoke('mcp.clients')),
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
     ),
     forgetClient: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.forgetClient', arg)
+    ),
+    keepRunning: handleElectronError(() =>
+      ipcRenderer.invoke('mcp.keepRunning')
     ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
@@ -201,6 +211,9 @@ contextBridge.exposeInMainWorld('electron', {
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
     ),
+    setKeepRunning: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setKeepRunning', arg)
+    ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },
   menu: {
@@ -211,6 +224,12 @@ contextBridge.exposeInMainWorld('electron', {
   notifications: {
     notify: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('notifications.notify', arg)
+    ),
+  },
+  openAtLogin: {
+    get: handleElectronError(() => ipcRenderer.invoke('openAtLogin.get')),
+    set: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('openAtLogin.set', arg)
     ),
   },
   query: {
