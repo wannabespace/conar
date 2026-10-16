@@ -1,7 +1,6 @@
 import { FolderOpenIcon } from '@hugeicons/core-free-icons'
 import { DEFAULT_PORTS } from '@tamery/connection/connection-parts'
 import { isLocalHost } from '@tamery/connection/hosts'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { FieldGroup } from '@tamery/ui/components/field'
 
@@ -27,7 +26,6 @@ export const ConnectionFields = ({
   values: Pick<ConnectionFormValues, 'host' | 'provider' | 'type'>
 }) => {
   const sqliteFile = isSqliteFile(values)
-  const dialect = getDialect(values.type)
   const localProxyAvailable = useLocalProxyAvailable()
 
   return (
@@ -42,11 +40,7 @@ export const ConnectionFields = ({
               locked={locked}
               label={label}
               name={name}
-              placeholder={
-                typeof placeholder === 'string'
-                  ? placeholder
-                  : placeholder?.[dialect]
-              }
+              placeholder={placeholder}
               secret={secret}
               autoComplete={secret ? 'new-password' : 'off'}
               port={

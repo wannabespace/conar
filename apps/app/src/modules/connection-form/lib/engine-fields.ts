@@ -1,11 +1,7 @@
 import type { ServerField } from '@tamery/connection/guess/types'
-import {
-  ConnectionType,
-  Dialect,
-  Provider,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
-interface Engine {
+export interface Engine {
   provider: Provider | null
   type: ConnectionType
 }
@@ -18,7 +14,7 @@ interface FieldRow {
   name: Exclude<ServerField, 'port'> | 'options'
   /** Left out of what a paste says is still missing. */
   optional?: true
-  placeholder?: string | Partial<Record<Dialect, string>>
+  placeholder?: string
   /** Shows the port beside it, which saves the port too. */
   port?: true
   secret?: true
@@ -31,7 +27,65 @@ export interface EngineFields {
   rows: FieldRow[]
 }
 
-const PROVIDER_FIELDS: Record<Provider, EngineFields> = {
+const serverFields = ({
+  database,
+  options,
+  user,
+}: {
+  database: string
+  options?: string
+  user: string
+}): EngineFields => ({
+  field: 'host',
+  message: 'Enter the host',
+  rows: [
+    {
+      label: 'Host',
+      name: 'host',
+      placeholder: 'db.example.com or any connection string',
+      port: true,
+    },
+    { label: 'User', name: 'user', placeholder: user },
+    { label: 'Password', name: 'password', placeholder: 'None', secret: true },
+    {
+      label: 'Database',
+      name: 'database',
+      optional: true,
+      placeholder: database,
+    },
+    { label: 'Options', name: 'options', optional: true, placeholder: options },
+  ],
+})
+
+const MYSQL_FIELDS = serverFields({
+  database: 'Optional',
+  options: 'e.g. ssl=true',
+  user: 'e.g. root',
+})
+
+/** Only the fields an engine's rows show are saved, so nothing the form hides reaches the string. */
+const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
+  [ConnectionType.ClickHouse]: serverFields({
+    database: 'default',
+    user: 'default',
+  }),
+  [ConnectionType.MariaDB]: MYSQL_FIELDS,
+  [ConnectionType.MSSQL]: serverFields({
+    database: 'master',
+    options: 'e.g. encrypt=true',
+    user: 'e.g. sa',
+  }),
+  [ConnectionType.MySQL]: MYSQL_FIELDS,
+  [ConnectionType.Postgres]: serverFields({
+    database: 'postgres',
+    options: 'e.g. sslmode=require',
+    user: 'e.g. postgres',
+  }),
+  [ConnectionType.SQLite]: {
+    field: 'database',
+    message: 'Choose the database file',
+    rows: [{ label: 'File', name: 'database', placeholder: '/path/to/app.db' }],
+  },
   [Provider.CloudflareD1]: {
     field: 'database',
     message: 'Enter the database ID',
@@ -80,69 +134,8 @@ const PROVIDER_FIELDS: Record<Provider, EngineFields> = {
   },
 }
 
-const SQLITE_FILE_FIELDS: EngineFields = {
-  field: 'database',
-  message: 'Choose the database file',
-  rows: [{ label: 'File', name: 'database', placeholder: '/path/to/app.db' }],
-}
-
-const SERVER_ENGINE_FIELDS: EngineFields = {
-  field: 'host',
-  message: 'Enter the host',
-  rows: [
-    {
-      label: 'Host',
-      name: 'host',
-      placeholder: 'db.example.com or any connection string',
-      port: true,
-    },
-    {
-      label: 'User',
-      name: 'user',
-      placeholder: {
-        [Dialect.ClickHouse]: 'default',
-        [Dialect.MSSQL]: 'e.g. sa',
-        [Dialect.MySQL]: 'e.g. root',
-        [Dialect.Postgres]: 'e.g. postgres',
-      },
-    },
-    {
-      label: 'Password',
-      name: 'password',
-      placeholder: 'None',
-      secret: true,
-    },
-    {
-      label: 'Database',
-      name: 'database',
-      optional: true,
-      placeholder: {
-        [Dialect.ClickHouse]: 'default',
-        [Dialect.MSSQL]: 'master',
-        [Dialect.MySQL]: 'Optional',
-        [Dialect.Postgres]: 'postgres',
-      },
-    },
-    {
-      label: 'Options',
-      name: 'options',
-      optional: true,
-      placeholder: {
-        [Dialect.MSSQL]: 'e.g. encrypt=true',
-        [Dialect.MySQL]: 'e.g. ssl=true',
-        [Dialect.Postgres]: 'e.g. sslmode=require',
-      },
-    },
-  ],
-}
-
-/** Only the fields an engine's rows show are saved, so nothing the form hides reaches the string. */
-export const getEngineFields = (engine: Engine) => {
-  if (engine.provider) {
-    return PROVIDER_FIELDS[engine.provider]
-  }
-  return isSqliteFile(engine) ? SQLITE_FILE_FIELDS : SERVER_ENGINE_FIELDS
-}
+export const getEngineFields = ({ provider, type }: Engine) =>
+  ENGINE_FIELDS[provider ?? type]
 
 /** A row's label as it reads mid-sentence: `Account ID` becomes `account ID`, but `API token` keeps its capitals. */
 export const getFieldNoun = ({ rows }: EngineFields, field: string) =>

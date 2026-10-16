@@ -20,6 +20,7 @@ import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
+import type { Engine } from './engine-fields'
 import { getEngineFields, isSqliteFile } from './engine-fields'
 import type { PasteVia } from './use-paste-connection'
 
@@ -162,10 +163,11 @@ const clearFields = (form: ConnectionForm) => {
   form.setFieldValue('sshEnabled', false)
 }
 
-type Engine = Pick<ConnectionFormValues, 'provider' | 'type'>
+const sharesFields = (from: Engine, to: Engine) =>
+  from.provider === to.provider && isSqliteFile(from) === isSqliteFile(to)
 
 export const switchEngine = (form: ConnectionForm, engine: Engine) => {
-  if (getEngineFields(engine) !== getEngineFields(form.state.values)) {
+  if (!sharesFields(form.state.values, engine)) {
     clearFields(form)
   }
   form.setFieldValue('type', engine.type)
@@ -219,8 +221,7 @@ const expandField = (
   if (
     guess &&
     ((read !== undefined && read !== value) ||
-      getEngineFields(getGuessedEngine(values, guess.parts)) !==
-        getEngineFields(values))
+      !sharesFields(values, getGuessedEngine(values, guess.parts)))
   ) {
     fill(form, guess)
     onFill(guess, false)
