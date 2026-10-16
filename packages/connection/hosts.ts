@@ -13,7 +13,7 @@ interface HostHint {
   port?: string
   projectInUser?: RegExp
   suffixes: string[]
-  /** The type's default port skips this provider's transaction pooler. */
+  /** The engine's default port skips this provider's transaction pooler. */
   transactionPoolerPort?: string
   type?: ConnectionType
 }

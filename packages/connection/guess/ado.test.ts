@@ -76,7 +76,7 @@ describe('guessConnection — ADO.NET', () => {
     expect(guess?.parts).toStrictEqual(parts)
   })
 
-  it('reads Npgsql as no particular type, not SQL Server', () => {
+  it('reads Npgsql as no particular engine, not SQL Server', () => {
     expect(
       guessConnection(
         'Host=db.acme.io;Username=me;Trust Server Certificate=true'

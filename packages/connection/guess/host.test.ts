@@ -61,7 +61,7 @@ describe('guessConnection — bare hosts', () => {
     })
   })
 
-  it('types a provider that hosts several getDialect by port', () => {
+  it('types a provider that hosts several engines by port', () => {
     expect(
       guessConnection('mydb.abc123.us-east-1.rds.amazonaws.com:3306')?.parts
         .type
