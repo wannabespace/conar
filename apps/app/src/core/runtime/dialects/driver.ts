@@ -22,6 +22,8 @@ export interface DialectOptions {
   resourceId?: string
   resultSets?: { maxRows: number }
   signal?: AbortSignal
+  /** Runs every query in this open transaction or session instead of the pool. */
+  txId?: string
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -147,11 +149,23 @@ export const createDialectProvider = (
         ? t.electron.executeTransaction(payload)
         : t.proxy.executeTransaction(payload)
     },
+    openSession() {
+      const t = resolveTransport()
+      return t.kind === 'electron'
+        ? t.electron.openSession({ connectionString: options.connectionString })
+        : t.proxy.openSession(t.input)
+    },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
       return t.kind === 'electron'
         ? t.electron.rollbackTransaction(params)
         : t.proxy.rollbackTransaction(params)
+    },
+    transactionStatus(params: { txId: string }) {
+      const t = resolveTransport()
+      return t.kind === 'electron'
+        ? t.electron.transactionStatus(params)
+        : t.proxy.transactionStatus(params)
     },
   }
 }
@@ -199,7 +213,10 @@ export const createKyselyDriver = (
         executeQuery: async <R>(
           compiledQuery: CompiledQuery
         ): Promise<QueryResult<R>> => {
-          const { result } = await executeAndLog(compiledQuery, state.txId)
+          const { result } = await executeAndLog(
+            compiledQuery,
+            state.txId ?? options.txId ?? null
+          )
           return { rows: result as R[] }
         },
         streamQuery() {

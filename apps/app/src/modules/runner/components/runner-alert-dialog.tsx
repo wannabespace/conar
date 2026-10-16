@@ -76,7 +76,7 @@ export const RunnerAlertDialog = ({
             This changes data
           </AlertDialogTitle>
           <AlertDialogDescription>
-            The statements run{' '}
+            This runs{' '}
             <span className="text-warning font-semibold">
               {keywords.join(', ')}
             </span>

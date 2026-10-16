@@ -56,6 +56,12 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Catalog completion in routine bodies.** The Schema pages' function and trigger body editors get keywords only; `attachSqlSource` would give them the runner's table and column completion, as New View has.
 - **SQL Server indexed views.** SQL Server's equivalent of a materialized view is a `SCHEMABINDING` view with a unique clustered index, so New View offers no Materialized option there yet.
 
+## Query runner
+
+- **Show an open transaction on its tab.** Commit and Rollback appear only in the runner's toolbar, so a transaction left open in a background tab is invisible until that tab is opened again; a dot on the tab (and a confirm before closing it, rather than the rollback toast after) would keep forgotten transactions from holding locks for the 15-minute idle timeout.
+- **End a reloaded web tab's transactions at once.** On the web nothing rolls back a transaction whose tab reloaded: the proxy holds its session, and its locks, until the 15-minute idle timeout. Rolling back the `txId`s the runner keeps in sessionStorage on the next load (or a `pagehide` beacon) would free them right away.
+- **Keep a window's transactions when another reloads.** The desktop main process rolls back every open transaction when any window navigates (`resetTransactions` in `main.ts`), so reloading one window ends a transaction another window holds. Owning transactions per `webContents` (`ownerId` from the IPC event) would scope the reset to the window that reloaded.
+
 ## Offline writes
 
 - **Show and unstick the outbox.** Writes replay in order and the executor retries any 5xx or network error forever, so one write a server bug keeps rejecting holds every later one, and web connection creation (which waits for its write) spins until it lands. Nothing on screen says writes are pending; a pending count plus a way to discard a stuck write would make that recoverable without signing out.
@@ -84,6 +90,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
 - **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
 - **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
+- **Start at login on Linux.** Electron's login item is a no-op there, so the row is hidden; an XDG autostart `.desktop` file would cover it.
 - **Ask for browser notification permission from a gesture.** The web build asks on the first notification, which Safari ignores outside a user gesture and which reaches every other browser while the user is away. A Settings → Notifications switch (or the first chat send) could ask instead, and let the user turn notifications off.
 
 ## SSH tunnels

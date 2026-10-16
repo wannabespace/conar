@@ -28,7 +28,7 @@ export const inlineValues = (
 }
 
 export const runOn = async (
-  connection: mysql2Promise.PoolConnection,
+  connection: mysql2Promise.Connection,
   {
     conf,
     connectionString,
@@ -55,8 +55,10 @@ export const runOn = async (
   const start = performance.now()
   const sets: Omit<ResultSet, 'truncated'>[] = []
   await cancellable({ cancel, connectionString, queryId }, () => {
-    // mysql2 types the promise wrapper's inner connection as another promise one; at runtime it is the core connection, whose `query` streams events.
-    const core = connection.connection as unknown as Connection
+    // Every promise wrapper, pooled or not, holds the core connection (whose `query` streams events) at `.connection`; mysql2 types it only on a pool's, and as another promise one.
+    const { connection: core } = connection as unknown as {
+      connection: Connection
+    }
     const query = core
       .query({
         rowsAsArray: true,

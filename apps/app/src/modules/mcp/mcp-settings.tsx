@@ -5,6 +5,8 @@ import {
 } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
 
+import { ElectronSwitchRow } from '~/core/settings/electron-switch-row'
+
 import { Activity } from './activity'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
@@ -35,6 +37,16 @@ export const McpSettings = () => {
             onCheckedChange={(enabled) => setEnabled(enabled)}
           />
         </SettingsRow>
+        {status.state === 'running' && (
+          <ElectronSwitchRow
+            id="mcp-keep-running"
+            title="Keep running in the background"
+            description="Closing the window keeps Tamery and the server running, so agents keep working until you quit."
+            event="mcp_background_toggled"
+            get={() => window.electron?.mcp.keepRunning()}
+            set={(enabled) => window.electron?.mcp.setKeepRunning(enabled)}
+          />
+        )}
       </SettingsGroup>
       {status.state === 'failed' && (
         <Alert variant="destructive">

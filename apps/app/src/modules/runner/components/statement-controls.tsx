@@ -28,7 +28,7 @@ import { useIsAnonymous } from '~/lib/auth'
 
 import type { RunnerActions } from '../lib/actions'
 import { useRunnerActions } from '../lib/actions'
-import type { RunnerResult } from '../lib/run'
+import type { FailedRunnerResult } from '../lib/run'
 import type { RunAnchor } from '../lib/statement-band'
 import { RUN_SLOT_GAP, sameSpot } from '../lib/statement-band'
 
@@ -136,7 +136,7 @@ export const StatementControls = ({
 }: {
   anchor: RunAnchor
   editorRef: RefObject<editor.IStandaloneCodeEditor | null>
-  failed: (RunnerResult & { error: string }) | undefined
+  failed: FailedRunnerResult | undefined
   menuRef: RefObject<HTMLButtonElement | null>
 }) => {
   const { dialect } = useRouteContext()

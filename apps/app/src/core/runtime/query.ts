@@ -63,6 +63,7 @@ export interface QueryParams {
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
   signal?: AbortSignal
+  txId?: string
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -81,6 +82,7 @@ const getDatabase = (queryParams: QueryParams) =>
     resourceId: queryParams.resourceId,
     resultSets: queryParams.resultSets,
     signal: queryParams.signal,
+    txId: queryParams.txId,
   })
 
 export const transaction = (queryParams: QueryParams) =>

@@ -1,9 +1,50 @@
-import type { QueryExecutor } from '../..'
+import type { ClientBase, Pool } from 'pg'
+
+import type { QueryExecutor, TransactionStatus } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
 import { registerTransaction, transactionQueries } from '../../transactions'
-import { getPool } from './client'
+import { getPool, pg } from './client'
 import { runOn } from './run'
+
+const TRANSACTION_STATUS = {
+  E: 'failed',
+  I: 'ended',
+  T: 'open',
+} as const satisfies Record<string, TransactionStatus>
+
+const register = (
+  client: ClientBase,
+  {
+    connectionString,
+    ownerId,
+    pool,
+    release,
+  }: {
+    connectionString: string
+    ownerId?: string
+    pool: Pool
+    release: () => Promise<void>
+  }
+) =>
+  registerTransaction(
+    {
+      commit: async () => {
+        await client.query('COMMIT')
+      },
+      execute: (sql, values, options) =>
+        runOn(client, { connectionString, pool, sql, values }, options),
+      release,
+      rollback: async () => {
+        await client.query('ROLLBACK')
+      },
+      status: () =>
+        Promise.resolve(
+          TRANSACTION_STATUS[client.getTransactionStatus() ?? 'I']
+        ),
+    },
+    ownerId
+  )
 
 export const query = {
   ...transactionQueries,
@@ -28,23 +69,15 @@ export const query = {
         throw error
       }
 
-      const txId = registerTransaction(
-        {
-          commit: async () => {
-            await client.query('COMMIT')
-          },
-          execute: (sql, values, options) =>
-            runOn(client, { connectionString, pool, sql, values }, options),
-          release: () => {
-            client.release()
-            return Promise.resolve()
-          },
-          rollback: async () => {
-            await client.query('ROLLBACK')
-          },
+      const txId = register(client, {
+        connectionString,
+        ownerId,
+        pool,
+        release: () => {
+          client.release()
+          return Promise.resolve()
         },
-        ownerId
-      )
+      })
       return { txId }
     }
   ),
@@ -66,4 +99,19 @@ export const query = {
       }
     }
   ),
+
+  openSession: handleQueryError(async ({ connectionString, ownerId }) => {
+    const pool = await getPool(connectionString)
+    const client = new pg.Client(pool.options)
+    await client.connect()
+    // An unhandled `error` (the server dropping the connection) would crash the process.
+    client.on('error', console.error)
+    const txId = register(client, {
+      connectionString,
+      ownerId,
+      pool,
+      release: () => client.end(),
+    })
+    return { txId }
+  }),
 } satisfies QueryExecutor

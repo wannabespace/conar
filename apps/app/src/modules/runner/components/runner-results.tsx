@@ -43,7 +43,7 @@ import type { ResultSet } from '~/core/queries/connection/custom'
 import { useIsAnonymous } from '~/lib/auth'
 
 import { useRunnerActions } from '../lib/actions'
-import type { RunnerResult } from '../lib/run'
+import type { FailedRunnerResult, RunnerResult } from '../lib/run'
 import { runnerResultsOptions } from '../lib/run'
 import { useRunnerTab } from '../lib/store'
 import { RunnerResultsTable } from './runner-results-table'
@@ -68,36 +68,40 @@ const uniqueColumns = (columns: string[]) => {
   })
 }
 
-const ResultError = ({
-  result,
-}: {
-  result: RunnerResult & { error: string }
-}) => {
+const ERROR_TITLES = {
+  block: 'The block was rolled back',
+  connection: 'The run could not start',
+  statement: 'The statement failed',
+}
+
+const ResultError = ({ result }: { result: FailedRunnerResult }) => {
   const { fixWithAi } = useRunnerActions()
   const isAnonymous = useIsAnonymous()
 
   return (
     <PaneEmpty
       icon={Alert02Icon}
-      title="The statement failed"
-      description={result.error}
+      title={ERROR_TITLES[result.error.kind]}
+      description={result.error.message}
     >
-      <Tooltip shortcut={<ShortcutKbd shortcut="fixWithAi" />}>
-        <TooltipTrigger
-          render={
-            <Button
-              size="sm"
-              variant="outline"
-              className={isAnonymous ? 'opacity-50' : undefined}
-              onClick={() => fixWithAi(result)}
-            />
-          }
-        >
-          <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
-          Fix with AI
-        </TooltipTrigger>
-        <TooltipContent>Rewrite the failed statement</TooltipContent>
-      </Tooltip>
+      {result.error.kind !== 'connection' && (
+        <Tooltip shortcut={<ShortcutKbd shortcut="fixWithAi" />}>
+          <TooltipTrigger
+            render={
+              <Button
+                size="sm"
+                variant="outline"
+                className={isAnonymous ? 'opacity-50' : undefined}
+                onClick={() => fixWithAi(result)}
+              />
+            }
+          >
+            <HugeiconsIcon icon={AiIdeaIcon} strokeWidth={2} />
+            Fix with AI
+          </TooltipTrigger>
+          <TooltipContent>Rewrite the failed statement</TooltipContent>
+        </Tooltip>
+      )}
     </PaneEmpty>
   )
 }
