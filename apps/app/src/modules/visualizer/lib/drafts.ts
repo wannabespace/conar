@@ -56,6 +56,9 @@ const linksTo = (draft: DiagramDraft, ref: TableRef, column?: string) =>
 const renameIn = (names: string[], from: string, to: string) =>
   names.map((name) => (name === from ? to : name))
 
+const withoutTable = (drafts: DiagramDraft[], ref: TableRef) =>
+  drafts.filter((draft) => !sameTable(draft, ref) && !linksTo(draft, ref))
+
 export const diagramDrafts = (store: DiagramDraftsStore) => {
   const update = (change: (drafts: DiagramDraft[]) => DiagramDraft[]) =>
     store.set((state) => ({ drafts: change(state.drafts) }))
@@ -89,8 +92,6 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
         return draft
       })
     )
-  const withoutTable = (drafts: DiagramDraft[], ref: TableRef) =>
-    drafts.filter((draft) => !sameTable(draft, ref) && !linksTo(draft, ref))
 
   return {
     addColumn: (ref: TableRef, column: NewColumn) => {

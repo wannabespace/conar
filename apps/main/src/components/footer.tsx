@@ -15,6 +15,8 @@ const COMMUNITY_LINKS = [
   { href: SOCIAL_LINKS.TWITTER, label: 'X' },
 ]
 
+const COPYRIGHT_YEAR = new Date().getFullYear()
+
 export const Footer = () => {
   const home = useHomePath()
 
@@ -63,7 +65,7 @@ export const Footer = () => {
           </FooterColumn>
         </div>
         <p className="text-muted-foreground mt-16 text-xs">
-          © {new Date().getFullYear()} Tamery
+          © {COPYRIGHT_YEAR} Tamery
         </p>
       </div>
     </footer>

@@ -296,24 +296,24 @@ test('a unique index covers its columns in order', () => {
   ).toBe('CREATE UNIQUE INDEX "i" ON "s"."t" ("a", "b")')
 })
 
-describe('policy statements', () => {
-  const policy = (roles: string[], using: string | null) =>
-    compiled(
-      createPolicyStatement({
-        schema: 's',
-        shape: {
-          check: null,
-          command: 'SELECT',
-          kind: 'PERMISSIVE',
-          name: 'p',
-          predicates: [],
-          roles,
-          using,
-        },
-        table: 't',
-      })
-    )
+const policy = (roles: string[], using: string | null) =>
+  compiled(
+    createPolicyStatement({
+      schema: 's',
+      shape: {
+        check: null,
+        command: 'SELECT',
+        kind: 'PERMISSIVE',
+        name: 'p',
+        predicates: [],
+        roles,
+        using,
+      },
+      table: 't',
+    })
+  )
 
+describe('policy statements', () => {
   test('no role means PUBLIC', () => {
     expect(policy([], null)).toBe(
       'CREATE POLICY "p" ON "s"."t" AS PERMISSIVE FOR SELECT TO PUBLIC'

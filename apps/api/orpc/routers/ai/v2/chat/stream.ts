@@ -15,7 +15,7 @@ export const stream = orpc
     type({
       chatId: 'string.uuid.v7',
       connectionResourceId: 'string.uuid.v7',
-      messages: 'object[]' as type.cast<AppUIMessage[]>,
+      messages: 'object[]',
     })
   )
   .errors({

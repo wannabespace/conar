@@ -4,6 +4,7 @@ import {
   Refresh01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { toError } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import {
   Collapsible,
@@ -24,8 +25,9 @@ import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
 
-export const ErrorPage = ({ error }: ErrorComponentProps) => {
+export const ErrorPage = ({ error: thrown }: ErrorComponentProps) => {
   const router = useRouter()
+  const error = toError(thrown)
 
   return (
     <>

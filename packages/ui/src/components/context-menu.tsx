@@ -91,7 +91,7 @@ const ContextMenuItem = ({
     data-inset={inset}
     data-variant={variant}
     className={cn(
-      `group/context-menu-item focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive focus:data-[variant=destructive]:bg-destructive/15 focus:data-[variant=destructive]:text-destructive *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `group/context-menu-item focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/15 data-[variant=destructive]:focus:text-destructive *:[svg]:text-foreground/70 focus:*:[svg]:text-accent-foreground data-[variant=destructive]:*:[svg]:text-destructive font-row relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm tracking-wide outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}

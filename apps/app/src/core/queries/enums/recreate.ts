@@ -8,6 +8,19 @@ import type { EnumDependent } from './dependents'
 
 const DEFAULT_LITERAL = /^'(?<value>(?:[^']|'')*)'::/u
 
+const remapped = (
+  renames: Record<string, string>,
+  expression: RawBuilder<unknown>
+) => {
+  const cases = Object.entries(renames).map(
+    ([from, to]) => sql` WHEN ${sql.lit(from)} THEN ${sql.lit(to)}`
+  )
+
+  return cases.length === 0
+    ? expression
+    : sql`CASE ${expression}${sql.join(cases, sql``)} ELSE ${expression} END`
+}
+
 export const recreateEnumQuery = ({
   dependents,
   name,
@@ -33,21 +46,11 @@ export const recreateEnumQuery = ({
           const target = sql.id(schema, newName)
           const replacedName = `${name}_tamery_replaced`
 
-          const remapped = (expression: RawBuilder<unknown>) => {
-            const cases = Object.entries(renames).map(
-              ([from, to]) => sql` WHEN ${sql.lit(from)} THEN ${sql.lit(to)}`
-            )
-
-            return cases.length === 0
-              ? expression
-              : sql`CASE ${expression}${sql.join(cases, sql``)} ELSE ${expression} END`
-          }
-
           // A DEFAULT expression cannot hold a subquery, so an array default is
           // remapped by the server before it goes back into SET DEFAULT.
           const remappedArray = async (literal: string) => {
             const { rows } = await sql<{ value: string }>`
-              SELECT ARRAY(SELECT ${remapped(sql`value`)} FROM unnest(${sql.lit(literal)}::text[]) AS value)::text AS value
+              SELECT ARRAY(SELECT ${remapped(renames, sql`value`)} FROM unnest(${sql.lit(literal)}::text[]) AS value)::text AS value
             `.execute(tx)
 
             return rows[0]?.value ?? literal
@@ -58,8 +61,8 @@ export const recreateEnumQuery = ({
             const column = sql.id(dependent.column)
             const columnType = dependent.isArray ? sql`${target}[]` : target
             const cast = dependent.isArray
-              ? sql`ARRAY(SELECT ${remapped(sql`value`)}::${target} FROM unnest(${column}::text[]) AS value)`
-              : sql`${remapped(sql`${column}::text`)}::${target}`
+              ? sql`ARRAY(SELECT ${remapped(renames, sql`value`)}::${target} FROM unnest(${column}::text[]) AS value)`
+              : sql`${remapped(renames, sql`${column}::text`)}::${target}`
             const altered = sql`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${columnType} USING ${cast}`
             const current = dependent.default
 
