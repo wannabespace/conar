@@ -1,3 +1,4 @@
+import { unsupported } from '@tamery/shared/unsupported'
 import { noop, tryParseJson } from '@tamery/shared/utils'
 
 import type { QueryExecutor } from '../..'
@@ -45,4 +46,6 @@ export const query = {
       throw error
     }
   },
+
+  openSession: unsupported('Transactions'),
 } satisfies QueryExecutor

@@ -8,19 +8,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
+import type { ShouldBlockFn } from '@tanstack/react-router'
 import { useBlocker } from '@tanstack/react-router'
 
-import { posthog } from '~/lib/posthog'
-
-export const UnsavedChangesGuard = ({
-  isDirty,
+export const NavigationGuard = ({
+  cancel,
+  confirm,
+  description,
+  onConfirm,
+  shouldBlock,
+  title,
 }: {
-  isDirty: () => boolean
+  cancel: string
+  confirm: string
+  description: string
+  onConfirm?: () => void
+  shouldBlock: ShouldBlockFn
+  title: string
 }) => {
   const { proceed, reset, status } = useBlocker({
     // In Electron a beforeunload veto cancels closing the window with no prompt.
     enableBeforeUnload: false,
-    shouldBlockFn: isDirty,
+    shouldBlockFn: shouldBlock,
     withResolver: true,
   })
 
@@ -31,21 +40,19 @@ export const UnsavedChangesGuard = ({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Your edits aren’t saved.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel variant="outline">Keep editing</AlertDialogCancel>
+          <AlertDialogCancel variant="outline">{cancel}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={() => {
-              posthog.capture('unsaved_changes_discarded')
+              onConfirm?.()
               proceed?.()
             }}
           >
-            Discard
+            {confirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

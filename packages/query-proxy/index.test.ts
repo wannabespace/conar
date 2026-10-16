@@ -24,10 +24,10 @@ test('cloud transactions ignore a forged client owner for execute, commit and ro
   const context = { userId: 'attacker' }
   await expect(
     call(router.postgres.executeTransaction, forged, { context })
-  ).rejects.toThrow(txId)
+  ).rejects.toThrow('no longer open')
   await expect(
     call(router.postgres.commitTransaction, forged, { context })
-  ).rejects.toThrow(txId)
+  ).rejects.toThrow('no longer open')
   await call(router.postgres.rollbackTransaction, forged, { context })
   await expect(
     transactionQueries.executeTransaction({
@@ -36,11 +36,11 @@ test('cloud transactions ignore a forged client owner for execute, commit and ro
       txId,
       values: [],
     })
-  ).rejects.toThrow(txId)
+  ).rejects.toThrow('no longer open')
   await transactionQueries.rollbackTransaction({ ownerId: 'owner', txId })
   await expect(
     call(router.postgres.commitTransaction, forged, {
       context: { userId: 'owner' },
     })
-  ).rejects.toThrow(txId)
+  ).rejects.toThrow('no longer open')
 })

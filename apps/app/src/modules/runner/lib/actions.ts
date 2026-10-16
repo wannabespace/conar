@@ -1,7 +1,7 @@
 import { createContext, use } from 'react'
 
 import type { Query } from '../sync'
-import type { RunnerResult } from './run'
+import type { FailedRunnerResult } from './run'
 
 export interface RunnerActions {
   runCurrent: () => void
@@ -12,7 +12,7 @@ export interface RunnerActions {
   renameSaved: (query: Query) => void
   format: () => void
   askAi: () => void
-  fixWithAi: (result: RunnerResult & { error: string }) => void
+  fixWithAi: (result: FailedRunnerResult) => void
   focus: () => void
 }
 

@@ -17,7 +17,7 @@ import { chatOpen } from '~/modules/chat/stores'
 
 import { useRunnerActions } from '../lib/actions'
 import { useEditorActions } from '../lib/editor-actions'
-import type { RunnerResult } from '../lib/run'
+import type { FailedRunnerResult } from '../lib/run'
 import { runnerResultsOptions } from '../lib/run'
 import type { RunAnchor } from '../lib/statement-band'
 import { sameSpot, useStatementBand } from '../lib/statement-band'
@@ -63,8 +63,9 @@ export const RunnerEditor = ({
 
   const failed = runAnchor
     ? run?.results.find(
-        (result): result is RunnerResult & { error: string } =>
+        (result): result is FailedRunnerResult =>
           result.error !== null &&
+          result.error.kind !== 'connection' &&
           result.start === runAnchor.start &&
           result.source === runAnchor.source
       )
