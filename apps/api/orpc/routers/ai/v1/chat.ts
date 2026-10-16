@@ -1,7 +1,7 @@
 import { webSearch } from '@exalabs/ai-sdk'
 import { openrouter } from '@openrouter/ai-sdk-provider'
 import { ORPCError, streamToAsyncIteratorObject } from '@orpc/server'
-import { SqlDialect } from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { FILTER_OPERATORS } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import type { InferUITools, ToolSet, UIDataTypes, UIMessage } from 'ai'
@@ -195,7 +195,7 @@ export const chat = orpc
       createdAt: 'Date',
       id: 'string.uuid.v7',
       messages: 'object[]' as type.cast<LegacyUIMessage[]>,
-      type: type.valueOf(SqlDialect),
+      type: type.valueOf(ConnectionType),
       updatedAt: 'Date',
     })
   )
