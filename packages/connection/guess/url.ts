@@ -68,9 +68,7 @@ const guessOfUrl = ({ type, url: candidate }: FoundUrl): DatabaseGuess => {
 
 const urlsIn = (text: string): FoundUrl[] =>
   [...text.matchAll(URL_PATTERN)].flatMap(({ 0: match, groups }) => {
-    const type =
-      getConnectionType(groups?.scheme ?? '') ??
-      (WEB_SCHEME.test(match) ? ConnectionType.ClickHouse : null)
+    const type = getConnectionType(groups?.scheme ?? '')
     return type ? [{ type, url: match.replace(TRAILING_PUNCTUATION, '') }] : []
   })
 
