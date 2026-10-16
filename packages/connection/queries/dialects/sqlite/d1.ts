@@ -21,6 +21,9 @@ const d1Answer = type({
   success: 'boolean',
 })
 
+/** D1 ends a SQL error with its result code, which a file's error never carries. */
+const SQLITE_CODE_SUFFIX = /: SQLITE_\w+(?: \(extended: \w+\))?$/u
+
 interface D1Statement {
   params: unknown[]
   sql: string
@@ -68,8 +71,9 @@ const send = async (connectionString: string, statements: D1Statement[]) => {
   const answer = d1Answer.assert(await response.json())
   if (!answer.success || !answer.result) {
     throw new Error(
-      answer.errors.map(({ message }) => message).join('\n') ||
-        `Cloudflare answered ${response.status}`
+      answer.errors
+        .map(({ message }) => message.replace(SQLITE_CODE_SUFFIX, ''))
+        .join('\n') || `Cloudflare answered ${response.status}`
     )
   }
   return answer.result

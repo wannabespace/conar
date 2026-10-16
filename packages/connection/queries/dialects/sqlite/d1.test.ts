@@ -133,6 +133,6 @@ describe('D1', () => {
 
     await expect(
       query.execute({ connectionString: CONNECTION, query: 'select * from t' })
-    ).rejects.toThrow('No such table: t: SQLITE_ERROR')
+    ).rejects.toThrow(/^No such table: t$/u)
   })
 })

@@ -62,7 +62,8 @@ const RULES: DiagnosisRule[] = [
       hint: "Check the account ID and database ID: both are in the database's dashboard URL.",
       title: "Cloudflare can't find that database",
     }),
-    match: /could not route to|object identifier is invalid/iu,
+    match:
+      /could not route to|object identifier is invalid|database \S+ could not be found/iu,
   },
   {
     diagnose: () => ({

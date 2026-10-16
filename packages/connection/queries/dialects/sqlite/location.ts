@@ -6,5 +6,6 @@ export type LocationQueries = Pick<
   'beginTransaction' | 'cancel' | 'execute' | 'openSession'
 >
 
+/** The runner wraps it in its own advice to run the whole block. */
 export const NO_OPEN_SESSION =
-  'This database keeps no transaction open between runs. Run the whole BEGIN … COMMIT block with Run all, or select it.'
+  'this database keeps no transaction open between requests'

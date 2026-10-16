@@ -46,7 +46,7 @@ D1 is reached through Cloudflare's API with three things: the account ID, the da
 - **The IDs**: open the database in the Cloudflare dashboard and paste its address (`https://dash.cloudflare.com/<account-id>/workers/d1/databases/<database-id>`). A `wrangler.toml` or `wrangler.jsonc` with `database_id`, or `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_DATABASE_ID`, works as well.
 - **The token**: in the Cloudflare dashboard, open **My Profile → API Tokens → Create Token → Create Custom Token**. Add the permission **Account · D1 · Edit** (or **Read** for a read-only connection), choose your account under **Account Resources**, then create the token and paste it into **API token**.
 
-D1 runs no transaction across requests, so Tamery sends the statements of a transaction (a grid save, a schema change, a `BEGIN … COMMIT` block run with **Run all**) as one batch when it commits, and D1 runs them all or none. Statements inside such a block return no rows. Running `BEGIN` on its own to keep a transaction open is not available on D1 or Turso; run the whole block with **Run all** instead. Cloudflare's own `_cf_` tables are hidden.
+D1 runs no transaction across requests, so Tamery sends the statements of a transaction (a grid save, a schema change, a `BEGIN … COMMIT` block run with **Run all**) as one batch when it commits, and D1 runs them all or none. Statements inside such a block return no rows. Running `BEGIN` on its own to keep a transaction open is not available on D1 or Turso; run the whole block with **Run all** instead. Cloudflare's own `_cf_` tables are hidden. D1's API sends numbers as JSON, so an integer beyond 2^53 comes back rounded, and D1 refuses `sqlite_version()`, so its connection shows no version.
 
 ## From the web app
 
