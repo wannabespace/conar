@@ -15,6 +15,8 @@ The Tamery desktop app can run an MCP server. AI agents such as Claude Code and 
 
 The server is on by default: it starts with the desktop app and listens only on your machine, at `http://127.0.0.1:26381/mcp`. To turn it off, click your avatar → **Settings** (or press <kbd>⌘</kbd> <kbd>,</kbd>), open **MCP** and turn off **Run MCP server**.
 
+While the server is on, closing the last Tamery window keeps it running in the background, so agents keep working until you quit Tamery (<kbd>⌘</kbd> <kbd>Q</kbd>). On macOS, click Tamery in the Dock to bring the window back; on Windows and Linux, use the Tamery icon in the system tray. Turn on **Open at login** in **Settings** → **MCP** to start Tamery in the background when you log in, so agents can connect before you open it (macOS and Windows).
+
 ## Weekly limit
 
 On the free plan, agents get 100 queries a week: each `query` and `execute` that runs counts as one, while listing connections and tables and describing a table are free. When they are used up, the agent is told so and Tamery shows a dialog; they come back every Monday at 00:00 UTC. The count follows your account across devices; queries run while Tamery can't reach its servers are not counted. **Settings** → **MCP** shows how many are left. [Pro](/account/plans) removes the limit.

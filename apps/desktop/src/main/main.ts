@@ -11,6 +11,11 @@ import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
+import {
+  keepsServingAfterClose,
+  sendToBackground,
+  startsInBackground,
+} from './lib/background'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
@@ -71,7 +76,7 @@ const openExternal = async (win: BrowserWindow, url: string) => {
   }
 }
 
-export const createWindow = (route?: string) => {
+export const createWindow = (route?: string, { show = true } = {}) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   const isMac = process.platform === 'darwin'
@@ -82,6 +87,7 @@ export const createWindow = (route?: string) => {
     height,
     minHeight: MIN_WINDOW_HEIGHT,
     minWidth: MIN_WINDOW_WIDTH,
+    show,
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 16, y: 13 },
     width,
@@ -178,7 +184,13 @@ export const createWindow = (route?: string) => {
     }
   })
 
-  win.on('close', () => {
+  win.on('close', (event) => {
+    if (keepsServingAfterClose(win)) {
+      event.preventDefault()
+      sendToBackground(win)
+      return
+    }
+
     if (saveBoundsTimeout) {
       clearTimeout(saveBoundsTimeout)
     }
@@ -197,7 +209,9 @@ export const createWindow = (route?: string) => {
   })
 
   win.on('ready-to-show', () => {
-    win.show()
+    if (show) {
+      win.show()
+    }
   })
 
   win.on('focus', () => {
@@ -219,16 +233,20 @@ export const createWindow = (route?: string) => {
   return win
 }
 
-app.on('ready', () => {
-  createWindow()
+app.on('ready', async () => {
+  await restoreMcpServer()
+
+  if (startsInBackground()) {
+    sendToBackground(createWindow(undefined, { show: false }))
+  } else {
+    createWindow()
+  }
 
   ipcMain.handle('app.openWindow', (_event, route: string) => {
     createWindow(route)
   })
 
   setupProtocolHandler(createWindow)
-
-  void restoreMcpServer()
 
   setInterval(() => autoUpdater?.checkForUpdates(), 1000 * 60 * 10)
 })
@@ -240,8 +258,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  const windows = BrowserWindow.getAllWindows()
+  if (windows.length === 0) {
     createWindow()
+  } else if (!windows.some((win) => win.isVisible())) {
+    windows[0]?.show()
   }
 })
 

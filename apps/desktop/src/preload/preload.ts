@@ -209,6 +209,12 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.invoke('notifications.notify', arg)
     ),
   },
+  openAtLogin: {
+    get: handleElectronError(() => ipcRenderer.invoke('openAtLogin.get')),
+    set: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('openAtLogin.set', arg)
+    ),
+  },
   query: {
     clickhouse: dialectQueryBridge('clickhouse'),
     mssql: dialectQueryBridge('mssql'),

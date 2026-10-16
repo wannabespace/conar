@@ -8,6 +8,7 @@ import { Switch } from '@tamery/ui/components/switch'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
+import { OpenAtLoginRow } from './open-at-login'
 import { ServerDetails } from './server-details'
 import { useMcpServer } from './use-mcp-server'
 import { WeeklyQuota } from './weekly-quota'
@@ -34,6 +35,7 @@ export const McpSettings = () => {
             onCheckedChange={(enabled) => setEnabled(enabled)}
           />
         </SettingsRow>
+        {status.state === 'running' && <OpenAtLoginRow />}
       </SettingsGroup>
       {status.state === 'failed' && (
         <Alert variant="destructive">

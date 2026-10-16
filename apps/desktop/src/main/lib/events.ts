@@ -9,6 +9,7 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
+import { openAtLogin } from './background'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -102,6 +103,7 @@ export const electron = {
   notifications: {
     notify: notifyUnfocused,
   },
+  openAtLogin,
   query: {
     clickhouse: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/clickhouse')
