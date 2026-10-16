@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { AnimateView } from 'motion/react-animate-view'
@@ -50,10 +49,7 @@ export const Route = createFileRoute(
 
     if (
       !resolved ||
-      resolved.kind.available?.(
-        resolved.params,
-        getDialect(context.connection.type)
-      ) === false
+      resolved.kind.available?.(resolved.params, context.dialect) === false
     ) {
       throw redirect({
         params: { resourceId: params.resourceId },

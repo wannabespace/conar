@@ -64,7 +64,7 @@ export const PolicyInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: dialect,
+  dialect,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
     meta: { event: 'policy_saved' },

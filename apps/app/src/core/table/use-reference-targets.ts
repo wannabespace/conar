@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
@@ -23,7 +22,7 @@ export interface ReferenceTarget extends ColumnReference {
 }
 
 export const useReferenceTargets = (enabled: boolean) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { data: constraints = [], isLoading: constraintsLoading } = useQuery({
     ...resourceConstraintsQueryOptions({ connectionResource }),
     enabled,
@@ -34,10 +33,7 @@ export const useReferenceTargets = (enabled: boolean) => {
     enabled,
     throwOnError: false,
   })
-  const defaultSchema = getDefaultSchema(
-    getDialect(connection.type),
-    connectionResource.name
-  )
+  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const typeOf = new Map(
     columns.map((column) => [
       `${column.schema}.${column.table}.${column.id}`,

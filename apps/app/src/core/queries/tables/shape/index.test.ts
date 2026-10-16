@@ -74,9 +74,9 @@ describe('createTable', () => {
   })
 
   test("New table's id fills itself on every engine with a sequence", () => {
-    const newTableId = (type: Dialect) => ({
+    const newTableId = (dialect: Dialect) => ({
       ...id,
-      type: getCapabilities(type).columnTypes.id,
+      type: getCapabilities(dialect).columnTypes.id,
     })
     const engines = [
       [Dialect.Postgres, postgres],

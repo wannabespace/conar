@@ -1,5 +1,4 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { FILTERS_GROUPED } from '@tamery/shared/filters'
 import { useHotkeys } from '@tanstack/react-hotkeys'
@@ -57,7 +56,7 @@ export const useFilterComposer = ({
   inputRef: RefObject<HTMLInputElement | null>
   onQueryChange: () => void
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -71,7 +70,7 @@ export const useFilterComposer = ({
 
   const setQuery = (value: string) => {
     setPrompt(value)
-    setHighlighted(highlightForStage(getDialect(connection.type), stage, value))
+    setHighlighted(highlightForStage(dialect, stage, value))
     onQueryChange()
   }
 

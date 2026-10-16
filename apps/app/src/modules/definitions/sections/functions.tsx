@@ -197,7 +197,7 @@ const FunctionInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: dialect,
+  dialect,
 }: SectionInspectorProps<FunctionItem>) => {
   const options = getCapabilities(dialect).functions
   const mutation = useMutation({

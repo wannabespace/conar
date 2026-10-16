@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -46,8 +45,7 @@ export const Visualizer = ({
   constraints: (typeof constraintsType.infer)[]
   tables: { schema: string; table: string; type: TableType }[]
 }) => {
-  const { connection, connectionResource } = useRouteContext()
-  const dialect = getDialect(connection.type)
+  const { connectionResource, dialect } = useRouteContext()
   const flow = useReactFlow()
   const draftsStore = diagramDraftsStore(connectionResource.id)
   const drafts = useSubscription(draftsStore, {

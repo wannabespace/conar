@@ -3,7 +3,6 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor } from 'monaco-editor'
@@ -52,7 +51,7 @@ export const RunnerEditor = ({
   acceptAi: () => void
   rejectAi: () => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const store = useRunnerPageStore()
   const query = useSubscription(store, { selector: (state) => state.query })
   const actions = useRunnerActions()
@@ -112,8 +111,6 @@ export const RunnerEditor = ({
       editorRef.current?.focus()
     }
   }, [sidePanelOpened, editorRef])
-
-  const dialect = getDialect(connection.type)
 
   useEffect(() => {
     const codeEditor = editorRef.current

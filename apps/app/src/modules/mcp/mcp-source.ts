@@ -92,7 +92,7 @@ export const mcpSource: McpSource = {
     }
     await testConnectionQuery.run({
       connectionString,
-      type: getDialect(type),
+      dialect: getDialect(type),
     })
     const { id } = await createConnection({
       connectionString,

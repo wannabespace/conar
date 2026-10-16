@@ -12,7 +12,7 @@ export const attachSqlDiagnostics = (
   codeEditor: editor.IStandaloneCodeEditor,
   source: SqlSource
 ) => {
-  const dialect = dialects[source.type]
+  const dialect = dialects[source.dialect]
   let timer: ReturnType<typeof setTimeout> | undefined
 
   const run = () => {
@@ -22,7 +22,7 @@ export const attachSqlDiagnostics = (
     }
     const text = model.getValue()
     const catalog = source.catalog()
-    silently(() => source.load(tablesIn(text, source.type)))
+    silently(() => source.load(tablesIn(text, source.dialect)))
     const markers = diagnose(text, dialect, catalog).map((diagnostic) => ({
       ...getRange(model, diagnostic.start, diagnostic.end),
       message: diagnostic.message,

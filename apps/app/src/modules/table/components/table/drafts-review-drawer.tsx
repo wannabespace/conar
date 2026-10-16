@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { pick } from '@tamery/shared/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -48,7 +47,7 @@ export const DraftsReviewDrawer = ({
   onSave: () => void
   onDiscardAll: () => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const columnsById = new Map(columns.map((column) => [column.id, column]))
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
@@ -93,7 +92,7 @@ export const DraftsReviewDrawer = ({
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columnsById.get(columnId)
     return column
-      ? createTransformer(getDialect(connection.type), column).toDisplay(
+      ? createTransformer(dialect, column).toDisplay(
           value,
           Number.POSITIVE_INFINITY
         )

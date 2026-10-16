@@ -1,7 +1,6 @@
 import { SearchRemoveIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   cellToFilterValues,
@@ -94,10 +93,10 @@ const StatsBody = ({
   table: string
 }) => {
   const { columns } = useTableColumnsContext()
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const [search, setSearch] = useState('')
   const term = useDeferredValue(search)
-  const transformer = createTransformer(getDialect(connection.type), column)
+  const transformer = createTransformer(dialect, column)
   const display = (value: unknown) => transformer.toDisplay(value, VALUE_CHARS)
   const key = resourceRowsQueryKey({ connectionResource, schema, table })
   const ranged = isNumericColumn(column) || RANGED_UI_TYPES.has(column.uiType)

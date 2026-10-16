@@ -283,7 +283,7 @@ const ConstraintInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: dialect,
+  dialect,
 }: SectionInspectorProps<GroupedConstraint>) => {
   const kinds = getCapabilities(dialect).constraintKinds
   const mutation = useMutation({
@@ -640,7 +640,7 @@ export const Constraints = () => {
           : undefined
       }
       canDropItem={(item) =>
-        getCapabilities(state.type).constraintKinds.includes(item.type)
+        getCapabilities(state.dialect).constraintKinds.includes(item.type)
       }
       dropItem={dropItem}
       Inspector={ConstraintInspector}

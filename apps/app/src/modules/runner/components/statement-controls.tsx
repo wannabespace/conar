@@ -9,7 +9,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { acceptGhostText, dismissGhostText } from '@tamery/monaco/sql-language'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Group } from '@tamery/ui/components/group'
 import {
@@ -140,7 +139,7 @@ export const StatementControls = ({
   failed: (RunnerResult & { error: string }) | undefined
   menuRef: RefObject<HTMLButtonElement | null>
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const actions = useRunnerActions()
   const isAnonymous = useIsAnonymous()
   const suggestionHere = sameSpot(anchor.suggestion, anchor)
@@ -224,10 +223,7 @@ export const StatementControls = ({
                 finalFocus: () => editorRef.current?.focus(),
               }}
               items={() =>
-                statementMenuItems(
-                  actions,
-                  getCapabilities(getDialect(connection.type)).explain
-                )
+                statementMenuItems(actions, getCapabilities(dialect).explain)
               }
             />
             <TooltipContent>More actions</TooltipContent>

@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
@@ -124,7 +123,7 @@ export const ActionsCopy = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -141,7 +140,7 @@ export const ActionsCopy = ({
   const formats = FORMATS[kind].filter((f) => {
     const compatible = GENERATOR_COMPATIBILITY[f.type]
     return (
-      (!compatible || compatible.includes(getDialect(connection.type))) &&
+      (!compatible || compatible.includes(dialect)) &&
       (!throughKeys || f.type === 'sql')
     )
   })
@@ -153,7 +152,7 @@ export const ActionsCopy = ({
 
   const code = format.generator({
     columns,
-    dialect: getDialect(connection.type),
+    dialect,
     filters: active,
     indexes: indexes ?? [],
     schema,

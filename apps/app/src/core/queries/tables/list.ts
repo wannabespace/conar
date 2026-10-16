@@ -204,13 +204,13 @@ export const resourceTablesAndSchemasQueryOptions = ({
     placeholderData: undefined,
     queryFn: async () => {
       const params = await connectionResourceToQueryParams(connectionResource)
-      const { systemSchemas } = getCapabilities(params.type)
+      const { systemSchemas } = getCapabilities(params.dialect)
       const results = await resourceTablesAndSchemasQuery({
         database: connectionResource.name,
       }).run(params)
       const bySchema = Object.groupBy(results, (table) => table.schema)
       const defaultSchema = getDefaultSchema(
-        params.type,
+        params.dialect,
         connectionResource.name
       )
 

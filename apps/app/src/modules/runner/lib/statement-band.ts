@@ -1,5 +1,4 @@
 import { drawnGhostTextElement } from '@tamery/monaco/sql-language'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { statementAt } from '@tamery/sql'
 import { getRouteApi } from '@tanstack/react-router'
 import { editor } from 'monaco-editor'
@@ -36,10 +35,10 @@ export const useStatementBand = (
   onMove: (anchor: RunAnchor | null) => void
 ) => {
   const move = useEffectEvent(onMove)
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const statements = runnerStatements({
     ...useRunnerTab(),
-    dialect: getDialect(connection.type),
+    dialect,
   })
 
   useEffect(() => {

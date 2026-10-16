@@ -27,7 +27,7 @@ export const connectionToQueryParams = async (
     connectionString: await connectionStringsCollection.utils.decrypt(
       connection.id
     ),
-    type: getDialect(connection.type),
+    dialect: getDialect(connection.type),
   }
 }
 
@@ -49,16 +49,16 @@ export const connectionResourceToQueryParams = async (
       await connectionStringsCollection.utils.decrypt(connection.id),
       connectionResource.name
     ),
+    dialect: getDialect(connection.type),
     log: ({ promise, query, values }) =>
       logQuery({ promise, query, resourceId: connectionResource.id, values }),
     resourceId: connectionResource.id,
-    type: getDialect(connection.type),
   }
 }
 
 export interface QueryParams {
   connectionString: string
-  type: Dialect
+  dialect: Dialect
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
@@ -74,7 +74,7 @@ export interface QueryParams {
 }
 
 const getDatabase = (queryParams: QueryParams) =>
-  dialects[queryParams.type]({
+  dialects[queryParams.dialect]({
     connectionId: queryParams.connectionId,
     connectionString: queryParams.connectionString,
     log: queryParams.log,
@@ -114,7 +114,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
     tx?: Transaction<any>
   ): Promise<T extends Type ? T['inferOut'] : unknown> => {
     const instance = tx ?? getDatabase(queryParams)
-    const queryFn = options.query[queryParams.type]
+    const queryFn = options.query[queryParams.dialect]
 
     const connectionStringToShow = getConnectionStringToShow(
       queryParams.connectionString,

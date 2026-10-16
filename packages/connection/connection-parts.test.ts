@@ -55,6 +55,15 @@ describe('connectionParts', () => {
     ).toStrictEqual(original)
   })
 
+  it.each(Object.values(ConnectionType))(
+    'reads a %s string back as its type',
+    (type) => {
+      expect(
+        connectionParts.parse(connectionParts.format(parts({ type }))).type
+      ).toBe(type)
+    }
+  )
+
   it.each(['::1', 'fe80::1', '2001:db8::5'])(
     'brackets the IPv6 host %p',
     (host) => {

@@ -1,6 +1,5 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import {
@@ -30,7 +29,7 @@ export const TablesPanel = ({
 }: {
   onCreateTable: (schema?: string) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const store = navigatorStore(connectionResource.id)
   const search = useSubscription(store, {
@@ -76,7 +75,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: getCapabilities(getDialect(connection.type)).schemas,
+    showSchemaRows: getCapabilities(dialect).schemas,
   })
 
   const toggleSchema = (name: string) => {

@@ -1,8 +1,4 @@
-import {
-  ConnectionType,
-  getDialect,
-  Dialect,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
@@ -96,9 +92,9 @@ const format = (
   }
 
   const port = getPort(parts)
-  const dialect = getDialect(parts.type)
-  let scheme: string = dialect === Dialect.MSSQL ? 'sqlserver' : dialect
-  if (dialect === Dialect.ClickHouse) {
+  let scheme: string =
+    parts.type === ConnectionType.MSSQL ? 'sqlserver' : parts.type
+  if (parts.type === ConnectionType.ClickHouse) {
     const https =
       parts.https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT)
     scheme = https ? 'https' : 'http'

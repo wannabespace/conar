@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
@@ -21,7 +20,7 @@ export const createTableDialogRef = createRef<{
 }>()
 
 export const CreateTableDialog = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
   const { data: tablesAndSchemas } = useQuery(
@@ -34,10 +33,7 @@ export const CreateTableDialog = () => {
       setRequest({
         schema:
           schema ??
-          getDefaultSchema(
-            getDialect(connection.type),
-            connectionResource.name
-          ) ??
+          getDefaultSchema(dialect, connectionResource.name) ??
           schemas[0]?.name ??
           '',
         table: null,
@@ -59,7 +55,7 @@ export const CreateTableDialog = () => {
             name: 'id',
             nullable: false,
             primaryKey: true,
-            type: getCapabilities(getDialect(connection.type)).columnTypes.id,
+            type: getCapabilities(dialect).columnTypes.id,
           },
         ],
         schema,

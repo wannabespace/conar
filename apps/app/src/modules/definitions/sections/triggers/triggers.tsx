@@ -61,7 +61,7 @@ export const Triggers = () => {
   const state = useDefinitionsState({ section: 'triggers' })
   const { connectionResource, getRelationNames, run, search, selectedSchema } =
     state
-  const options = getCapabilities(state.type).triggers
+  const options = getCapabilities(state.dialect).triggers
   const query = resourceTriggersQueryOptions({ connectionResource })
   const { data: triggers = [], isPending } = useQuery(query)
   const { data: functions = [], isPending: functionsPending } = useQuery({

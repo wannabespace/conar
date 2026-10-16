@@ -276,19 +276,21 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
   },
 }
 
-export const getCapabilities = (type: Dialect) => capabilities[type]
+export const getCapabilities = (dialect: Dialect) => capabilities[dialect]
 
-export const getDefaultSchema = (type: Dialect, database: string | null) =>
-  capabilities[type].defaultSchema ?? database
+export const getDefaultSchema = (dialect: Dialect, database: string | null) =>
+  capabilities[dialect].defaultSchema ?? database
 
-export const sectionAvailable = (section: DefinitionsSection, type: Dialect) =>
-  capabilities[type].sections[section] !== false
+export const sectionAvailable = (
+  section: DefinitionsSection,
+  dialect: Dialect
+) => capabilities[dialect].sections[section] !== false
 
 export const getSectionCapabilities = (
   section: DefinitionsSection,
-  type: Dialect
-): SectionCapabilities => capabilities[type].sections[section] || readOnly
+  dialect: Dialect
+): SectionCapabilities => capabilities[dialect].sections[section] || readOnly
 
-export const foreignKeysCreatable = (type: Dialect) =>
-  capabilities[type].constraintKinds.includes('foreignKey') &&
-  !!getSectionCapabilities('constraints', type).create
+export const foreignKeysCreatable = (dialect: Dialect) =>
+  capabilities[dialect].constraintKinds.includes('foreignKey') &&
+  !!getSectionCapabilities('constraints', dialect).create

@@ -96,7 +96,7 @@ const runOne = async (
 ): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
   try {
-    const sets = await statementQuery(statement.text, params.type).run({
+    const sets = await statementQuery(statement.text, params.dialect).run({
       ...params,
       signal,
     })
@@ -187,7 +187,7 @@ export const runStatements = async ({
   run.running = false
   publish()
   runHistory.add(connectionResource.id, ran)
-  const dialect = params?.type
+  const dialect = params?.dialect
   posthog.capture('query_run', {
     failed: failedAt !== undefined,
     statements: statements.length,

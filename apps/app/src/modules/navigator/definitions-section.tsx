@@ -1,6 +1,5 @@
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
@@ -24,11 +23,11 @@ import { getNavigatorStore } from './stores'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const DefinitionsPanel = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const [search, setSearch] = useState('')
 
-  const filtered = schemaGroups(getDialect(connection.type))
+  const filtered = schemaGroups(dialect)
     .map((group) => ({
       ...group,
       items: group.items.filter(({ label }) => matchesSearch(search, label)),

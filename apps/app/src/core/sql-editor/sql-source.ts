@@ -112,6 +112,7 @@ const sqlSourceFor = (
         { ...input, type: dialect },
         { context: { silent: true }, signal }
       ),
+    dialect,
     ghostTextEnabled: () =>
       appStore.get().isOnline && permix.check('ai.sql.use'),
     load: (refs) =>
@@ -132,7 +133,6 @@ const sqlSourceFor = (
           listener()
         }
       }),
-    type: dialect,
   }
 }
 

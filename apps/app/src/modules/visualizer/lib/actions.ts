@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
@@ -48,7 +47,7 @@ export const useDiagramActions = ({
   setSelectedId: Dispatch<SetStateAction<string | null>>
   setTableRequest: (request: TableDialogRequest<DiagramTable> | null) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const flow = useReactFlow()
 
@@ -185,7 +184,7 @@ export const useDiagramActions = ({
           name: 'id',
           nullable: false,
           primaryKey: true,
-          type: getCapabilities(getDialect(connection.type)).columnTypes.id,
+          type: getCapabilities(dialect).columnTypes.id,
         },
       ])
       const id = tableNodeId(targetSchema, name)

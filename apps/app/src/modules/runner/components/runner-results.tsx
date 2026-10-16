@@ -7,7 +7,6 @@ import {
   TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -127,7 +126,7 @@ const ResultBody = ({
   columns: string[]
   rows: Record<string, unknown>[]
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
 
   if (result.pending) {
     return running
@@ -167,13 +166,7 @@ const ResultBody = ({
       />
     )
   }
-  return (
-    <RunnerResultsTable
-      columns={columns}
-      rows={rows}
-      dialect={getDialect(connection.type)}
-    />
-  )
+  return <RunnerResultsTable columns={columns} rows={rows} dialect={dialect} />
 }
 
 const ResultMeta = ({

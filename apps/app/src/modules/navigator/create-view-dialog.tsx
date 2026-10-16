@@ -3,7 +3,6 @@ import {
   SQL_COMPLETION_OPTIONS,
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
@@ -56,9 +55,7 @@ const QueryField = ({
   onChange: (value: string) => void
   value: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
-
-  const dialect = getDialect(connection.type)
+  const { connectionResource, dialect } = useRouteContext()
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -93,7 +90,7 @@ const QueryField = ({
 }
 
 export const CreateViewDialog = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
@@ -104,10 +101,7 @@ export const CreateViewDialog = () => {
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = tablesAndSchemas?.schemas ?? []
-  const statements = splitStatements(
-    query,
-    dialects[getDialect(connection.type)]
-  )
+  const statements = splitStatements(query, dialects[dialect])
   let queryError: string | null = null
   if (queryRefused && statements.length === 0) {
     queryError = 'Write the query the view selects.'
@@ -157,10 +151,7 @@ export const CreateViewDialog = () => {
       setRequest({
         schema:
           schema ??
-          getDefaultSchema(
-            getDialect(connection.type),
-            connectionResource.name
-          ) ??
+          getDefaultSchema(dialect, connectionResource.name) ??
           schemas[0]?.name ??
           '',
         table: null,
@@ -200,7 +191,7 @@ export const CreateViewDialog = () => {
         value={query}
         onChange={setQuery}
       />
-      {getCapabilities(getDialect(connection.type)).materializedViews && (
+      {getCapabilities(dialect).materializedViews && (
         <OptionField
           htmlFor="view-dialog-materialized"
           title="Materialized"

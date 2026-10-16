@@ -82,8 +82,8 @@ export const DefinitionsPage = <T extends { name: string }>({
     selectedSchema,
     setSearch,
     setSelectedSchema,
+    dialect,
     structurePending,
-    type,
   } = state
   const createBlocked = structurePending ? undefined : blockReason
   const { cascade: cascades, icon, noun, title } = getSectionMeta(section)
@@ -103,7 +103,7 @@ export const DefinitionsPage = <T extends { name: string }>({
     open: false,
   })
   const [cascade, setCascade] = useState(false)
-  const cascadable = cascades && getCapabilities(type).cascade
+  const cascadable = cascades && getCapabilities(dialect).cascade
 
   const highlightedIndex = rows.findIndex(
     (item) => getKey(item) === highlighted

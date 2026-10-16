@@ -1,5 +1,4 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -72,12 +71,9 @@ const ColumnForm = ({
   request: ColumnDialogRequest
 }) => {
   const { column, table } = request
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const [name, setName] = useState(column?.name ?? '')
-  const columnType = useColumnType(
-    getDialect(connection.type),
-    column?.type ?? ''
-  )
+  const columnType = useColumnType(dialect, column?.type ?? '')
   const {
     array,
     arrayType,
@@ -92,7 +88,7 @@ const ColumnForm = ({
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
   const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
-  const locked = lockedFields(getDialect(connection.type), column)
+  const locked = lockedFields(dialect, column)
   const next = normalized(column, {
     comment,
     name,

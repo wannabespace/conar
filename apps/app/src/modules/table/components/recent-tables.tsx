@@ -1,5 +1,4 @@
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -16,7 +15,7 @@ import { recentTables } from '../lib/tab'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const RecentTables = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const recent = useSubscription(recentTables(connectionResource.id))
   const { data } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
@@ -65,7 +64,7 @@ export const RecentTables = () => {
           <span data-mask className="truncate">
             {table.table}
           </span>
-          {getCapabilities(getDialect(connection.type)).schemas && (
+          {getCapabilities(dialect).schemas && (
             <span
               data-mask
               className="text-muted-foreground ml-auto pl-4 text-xs"

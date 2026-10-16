@@ -33,7 +33,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const test = useMutation({
     meta: { event: 'connection_tested' },
-    mutationFn: (params: { connectionString: string; type: Dialect }) =>
+    mutationFn: (params: { connectionString: string; dialect: Dialect }) =>
       testConnectionQuery.run(params),
   })
   const inFlight = useRef<Promise<Result<unknown, unknown>>>(null)
@@ -67,7 +67,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     )
     const tested =
       test.variables?.connectionString === connectionString &&
-      test.variables.type === getDialect(values.type)
+      test.variables.dialect === getDialect(values.type)
     return {
       canSend: canSend && !!connectionString,
       connectionString,
@@ -84,7 +84,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
     inFlight.current = Result.tryPromise(() =>
       test.mutateAsync({
         connectionString,
-        type: getDialect(values.type),
+        dialect: getDialect(values.type),
       })
     )
     return inFlight.current

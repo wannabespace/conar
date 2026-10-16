@@ -9,7 +9,6 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import type { Statement } from '@tamery/sql'
 import {
   destructiveKeywords,
@@ -144,7 +143,7 @@ const SavedQueriesButton = () => {
 }
 
 export const Runner = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const tab = useRunnerTab()
   const store = useRunnerPageStore()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -157,7 +156,6 @@ export const Runner = () => {
   })
   const { data: lastRun } = useQuery(runnerResultsOptions(tab))
   const running = lastRun?.running ?? false
-  const dialect = getDialect(connection.type)
   const statements = runnerStatements({ ...tab, dialect })
   const spec = dialects[dialect]
   const aiEdit = useAiEdit({ dialect, editorRef })

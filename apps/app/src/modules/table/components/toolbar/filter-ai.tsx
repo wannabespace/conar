@@ -1,6 +1,5 @@
 import { SparklesIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { CommandItem, CommandShortcut } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -57,7 +56,7 @@ export const useFilterAi = ({
   table: string
 }) => {
   const isOnline = useIsOnline()
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const store = useTablePageStore()
   const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(
@@ -90,7 +89,7 @@ export const useFilterAi = ({
       onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
       onSuccess: (data) => {
         const known = new Set(columns.map((column) => column.id))
-        const offered = offeredFilters(getDialect(connection.type)).flatMap(
+        const offered = offeredFilters(dialect).flatMap(
           (group) => group.filters
         )
         const filters = data.filters.flatMap(({ column, operator, values }) => {
@@ -126,7 +125,7 @@ export const useFilterAi = ({
         const current = store.get()
         const context = `
           Filters working with AND operator.
-          Database engine: ${connection.type}${getCapabilities(getDialect(connection.type)).ilike ? '' : ' (no ilike operator: use like)'}
+          Database engine: ${connection.type}${getCapabilities(dialect).ilike ? '' : ' (no ilike operator: use like)'}
           Current filters: ${JSON.stringify(
             current.filters.map(({ column, ref, values }) => ({
               column,

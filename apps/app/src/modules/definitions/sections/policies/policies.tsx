@@ -131,7 +131,7 @@ export const Policies = () => {
     search,
     selectedSchema,
   } = state
-  const { predicates } = getCapabilities(state.type).policies
+  const { predicates } = getCapabilities(state.dialect).policies
   const query = resourcePoliciesQueryOptions({ connectionResource })
   const { data: policies = [], isPending } = useQuery(query)
   const { data: functions = [], isPending: functionsPending } = useQuery({

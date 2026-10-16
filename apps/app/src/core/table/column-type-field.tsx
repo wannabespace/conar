@@ -1,4 +1,3 @@
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Autocomplete,
   ComboboxCollection,
@@ -32,8 +31,7 @@ interface ColumnTypeGroup {
 const bareIdentifierRegex = /^[a-z_][a-z0-9_]*$/u
 
 const useColumnTypes = () => {
-  const { connection, connectionResource } = useRouteContext()
-  const dialect = getDialect(connection.type)
+  const { connectionResource, dialect } = useRouteContext()
   const { data: enums = [] } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
     throwOnError: false,

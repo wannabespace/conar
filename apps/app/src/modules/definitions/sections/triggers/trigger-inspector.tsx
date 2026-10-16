@@ -56,7 +56,7 @@ export const TriggerInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: dialect,
+  dialect,
 }: SectionInspectorProps<TriggerItem>) => {
   const options = getCapabilities(dialect).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({

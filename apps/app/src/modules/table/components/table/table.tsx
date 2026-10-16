@@ -1,5 +1,4 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
@@ -53,8 +52,7 @@ export const Table = ({
   schema: string
   table: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
-  const dialect = getDialect(connection.type)
+  const { connectionResource, dialect } = useRouteContext()
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()

@@ -1,6 +1,5 @@
 import { FolderAddIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { Separator } from '@tamery/ui/components/separator'
 import { SidebarMenuButton } from '@tamery/ui/components/sidebar'
 import { getRouteApi } from '@tanstack/react-router'
@@ -42,7 +41,7 @@ export const TreeRowContent = ({
   row: TreeRow
   search?: string
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
 
   if (row.kind === 'schema') {
     return (
@@ -54,7 +53,7 @@ export const TreeRowContent = ({
           onCreateView={() => createViewDialogRef.current?.create(row.name)}
           onDrop={() => dialogs.dropSchema.current?.drop(row.name)}
           onRename={
-            getCapabilities(getDialect(connection.type)).renameSchema
+            getCapabilities(dialect).renameSchema
               ? () => dialogs.renameSchema.current?.rename(row.name)
               : undefined
           }
@@ -103,8 +102,7 @@ export const TreeRowContent = ({
         row={row}
         search={search}
         onRename={
-          row.table.type === 'table' ||
-          getCapabilities(getDialect(connection.type)).renameViews
+          row.table.type === 'table' || getCapabilities(dialect).renameViews
             ? () =>
                 dialogs.renameTable.current?.rename(
                   row.schema,

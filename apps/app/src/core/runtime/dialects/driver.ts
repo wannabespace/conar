@@ -55,7 +55,7 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export const createDialectProvider = (
-  type: Dialect,
+  dialect: Dialect,
   options: DialectOptions
 ) => {
   const { connectionsCollection, connectionsResourcesCollection } =
@@ -86,10 +86,10 @@ export const createDialectProvider = (
       const client = createProxyClient(
         proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`
       )
-      return { kind: 'proxy' as const, proxy: client[type] }
+      return { kind: 'proxy' as const, proxy: client[dialect] }
     }
 
-    const electron = window.electron?.query[type]
+    const electron = window.electron?.query[dialect]
     if (electron) {
       return { electron, kind: 'electron' as const }
     }
@@ -98,7 +98,7 @@ export const createDialectProvider = (
       throw new Error(SSH_DESKTOP_ONLY)
     }
 
-    return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[type] }
+    return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[dialect] }
   }
 
   return {
@@ -162,14 +162,14 @@ export const createDialectProvider = (
 }
 
 export const createKyselyDriver = (
-  type: Dialect,
+  dialect: Dialect,
   options: DialectOptions,
   transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
   })
 ) => {
-  const provider = createDialectProvider(type, options)
+  const provider = createDialectProvider(dialect, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
   const executeAndLog = (compiledQuery: CompiledQuery, txId: string | null) => {

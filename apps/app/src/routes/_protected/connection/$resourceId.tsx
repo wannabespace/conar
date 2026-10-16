@@ -1,4 +1,5 @@
 import { UnavailableIcon } from '@hugeicons/core-free-icons'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/title'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -208,7 +209,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       throw redirect({ to: '/' })
     }
 
-    return { connection, connectionResource }
+    return {
+      connection,
+      connectionResource,
+      dialect: getDialect(connection.type),
+    }
   },
   loader: ({ context }) => {
     prefetchConnectionResourceCore(context.connectionResource)

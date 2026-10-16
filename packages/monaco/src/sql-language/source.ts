@@ -21,7 +21,7 @@ export interface SqlSource {
   ghostTextEnabled: () => boolean
   load: (refs: TableRef[]) => Promise<unknown> | undefined
   onCatalogChange: (listener: () => void) => () => void
-  type: Dialect
+  dialect: Dialect
 }
 
 export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
@@ -51,6 +51,6 @@ export const catalogSummaryFor = async (
   if (!source) {
     return ''
   }
-  await silently(() => source.load(tablesIn(sql, source.type)))
+  await silently(() => source.load(tablesIn(sql, source.dialect)))
   return catalogSummary(source.catalog())
 }

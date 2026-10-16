@@ -4,7 +4,6 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { getDialect } from '@tamery/shared/enums/connection-type'
 import { FILTER_GROUPS } from '@tamery/shared/filters'
 import {
   CommandGroup,
@@ -34,10 +33,10 @@ export const FilterCommandList = ({
 }) => {
   const { matchingColumns, matchingRelated, matchingValues } =
     useFilterTargets(composer)
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const { applyValue, committedParts, filters, query, stage } = composer
   const trimmedQuery = query.trim()
-  const matchingOperators = offeredFilters(getDialect(connection.type))
+  const matchingOperators = offeredFilters(dialect)
     .map((group) => ({
       ...group,
       filters: group.filters.filter((filter) =>

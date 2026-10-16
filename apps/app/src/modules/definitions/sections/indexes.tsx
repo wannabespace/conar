@@ -181,11 +181,11 @@ const saveIndex = ({
 const getLocks = ({
   can,
   item,
-  type: dialect,
+  dialect,
 }: {
   can: SectionCapabilities
+  dialect: Dialect
   item: GroupedIndex | null
-  type: Dialect
 }) => {
   const owned = !!item?.constraintOwned
   const { indexes, renameConstraints } = getCapabilities(dialect)
@@ -276,7 +276,7 @@ const IndexInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: dialect,
+  dialect,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
     meta: { event: 'index_saved' },
@@ -304,7 +304,7 @@ const IndexInspector = ({
     enabled: draft.table !== '',
   })
 
-  const locked = getLocks({ can, item, type: dialect })
+  const locked = getLocks({ can, dialect, item })
   const reshaped = reshapes(draft, item, dialect)
   const { skipTypes } = getCapabilities(dialect).indexes
 
