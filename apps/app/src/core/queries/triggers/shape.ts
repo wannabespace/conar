@@ -52,39 +52,37 @@ export const triggerOrientationsFor = (
     : allowed
 }
 
-/** SQLite keeps only the CREATE TRIGGER text, so timing, event and body are read back from it; a trigger without a timing fires BEFORE. */
+const SQLITE_TRIGGER_EVENTS = new Set(['DELETE', 'INSERT', 'UPDATE'])
+
+const TIMING_BEFORE_EVENT: Record<string, TriggerTiming> = {
+  AFTER: 'AFTER',
+  OF: 'INSTEAD OF',
+}
+
+/**
+ * SQLite keeps only the CREATE TRIGGER text. Its events are reserved words, so the first bare one is the event and the
+ * timing sits right before it; a trigger without a timing fires BEFORE.
+ */
 export const sqliteTriggerParts = (statement: string) => {
   const tokens = tokenize(statement, dialects[Dialect.SQLite]).tokens.filter(
     (token) => token.kind !== 'comment'
   )
   const words = tokens.map((token) =>
-    token.quoted ? null : token.text.toUpperCase()
+    token.quoted ? '' : token.text.toUpperCase()
   )
-  let index = words.indexOf('TRIGGER') + 1
-  if (words[index] === 'IF') {
-    index += 3
-  }
-  index += words[index + 1] === '.' ? 3 : 1
-  let timing = 'BEFORE'
-  if (words[index] === 'INSTEAD') {
-    timing = 'INSTEAD OF'
-    index += 2
-  } else if (words[index] === 'BEFORE' || words[index] === 'AFTER') {
-    timing = words[index] ?? timing
-    index += 1
-  }
-  const event = words[index]
+  const at = words.findIndex((word) => SQLITE_TRIGGER_EVENTS.has(word))
+  const event = words[at]
   if (!event) {
     throw new Error(`No trigger event in ${statement}`)
   }
-  const begin = words.indexOf('BEGIN', index)
-  const header = words.slice(index + 1, begin)
+  const begin = words.indexOf('BEGIN', at)
+  const header = words.slice(at + 1, begin)
 
   return {
     body: statement.slice(tokens[begin]?.start),
     custom: header[0] === 'OF' || header.includes('WHEN'),
     event,
-    timing,
+    timing: TIMING_BEFORE_EVENT[words[at - 1] ?? ''] ?? 'BEFORE',
   }
 }
 
