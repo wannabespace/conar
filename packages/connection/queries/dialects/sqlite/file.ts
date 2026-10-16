@@ -18,6 +18,9 @@ const runOn = (
 ): StatementResult[] =>
   texts.map((text) => {
     const statement = db.prepare(text)
+    // Not the constructor's readBigInts/returnArrays: Node 22.16, the CLI's floor, ignores them.
+    statement.setReadBigInts(true)
+    statement.setReturnArrays(true)
     const columns = statement.columns().map((column) => column.name)
     if (columns.length === 0) {
       return {

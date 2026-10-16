@@ -15,9 +15,5 @@ export const openDatabase = (connectionString: string) => {
     file.startsWith('~/') ? path.join(homedir(), file.slice(2)) : file
   )
   url.searchParams.set('mode', 'rw')
-  return new DatabaseSync(url, {
-    readBigInts: true,
-    returnArrays: true,
-    timeout: BUSY_TIMEOUT_MS,
-  })
+  return new DatabaseSync(url, { timeout: BUSY_TIMEOUT_MS })
 }
