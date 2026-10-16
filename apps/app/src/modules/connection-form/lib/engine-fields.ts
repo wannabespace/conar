@@ -1,4 +1,5 @@
 import type { ServerField } from '@tamery/connection/guess/types'
+import { D1_HOST } from '@tamery/connection/sqlite-location'
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 export interface Engine {
@@ -23,6 +24,7 @@ interface FieldRow {
 export interface EngineFields {
   /** Names where the database is: required, read whole on blur like a paste, focused when an edit opens. */
   field: 'database' | 'host'
+  fixedHost?: string
   message: string
   rows: FieldRow[]
   sshTunnel?: true
@@ -90,6 +92,7 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
   },
   [Provider.CloudflareD1]: {
     field: 'database',
+    fixedHost: D1_HOST,
     message: 'Enter the database ID',
     rows: [
       {

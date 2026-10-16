@@ -6,7 +6,6 @@ import { guessConnection } from '@tamery/connection/guess'
 import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
 import { getProvider } from '@tamery/connection/provider'
-import { D1_HOST } from '@tamery/connection/sqlite-location'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
@@ -131,8 +130,8 @@ export const getParts = (values: ConnectionFormValues): ConnectionParts => {
     shown.has(field) ? values[field] : ''
   return {
     database: keep('database'),
-    host: values.provider === Provider.CloudflareD1 ? D1_HOST : keep('host'),
-    https: values.type === ConnectionType.SQLite ? null : values.https,
+    host: engineFields.fixedHost ?? keep('host'),
+    https: values.https,
     options: keep('options'),
     password: keep('password'),
     port: keep('port'),
