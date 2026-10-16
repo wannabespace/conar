@@ -150,10 +150,10 @@ export const useConnectionForm = ({
   onSubmit: () => Promise<void>
   unfilledSecrets: (values: ConnectionFormValues) => Record<string, string>
 }) => {
-  const [initialValues, setInitialValues] = useState(
+  // oxlint-disable-next-line react/hook-use-state -- frozen at mount, never set
+  const [initialValues] = useState(
     () => defaultValues ?? { ...DEFAULT_VALUES, name: generateRandomName() }
   )
-  void setInitialValues
   const form = useAppForm({
     defaultValues: initialValues,
     listeners: {

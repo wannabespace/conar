@@ -72,8 +72,8 @@ export const Subscription = () => {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription(clientType)
   const [isYearly, setIsYearly] = useState(period === 'yearly')
-  const [mountedAt, setMountedAt] = useState(() => Date.now())
-  void setMountedAt
+  // oxlint-disable-next-line react/hook-use-state -- frozen at mount, never set
+  const [mountedAt] = useState(() => Date.now())
   const trialEndsLater = Boolean(
     subscription?.trialEnd && subscription.trialEnd.getTime() > mountedAt
   )
