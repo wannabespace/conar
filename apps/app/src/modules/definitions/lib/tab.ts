@@ -1,7 +1,7 @@
 import { SecurityCheckIcon } from '@hugeicons/core-free-icons'
 import { uppercaseFirst } from '@tamery/shared/utils'
 
-import { sectionAvailable } from '~/core/catalog/capabilities'
+import { sectionAvailable } from '~/core/catalog/section-capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import { definitionsSectionType } from '~/core/catalog/sections'
 import { definitionsTabId } from '~/core/tabs/ids'

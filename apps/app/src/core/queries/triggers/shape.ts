@@ -73,13 +73,17 @@ export const sqliteTriggerParts = (statement: string) => {
     timing = words[index] ?? timing
     index += 1
   }
+  const event = words[index]
+  if (!event) {
+    throw new Error(`No trigger event in ${statement}`)
+  }
   const begin = words.indexOf('BEGIN', index)
   const header = words.slice(index + 1, begin)
 
   return {
     body: statement.slice(tokens[begin]?.start),
     custom: header[0] === 'OF' || header.includes('WHEN'),
-    event: words[index] ?? '',
+    event,
     timing,
   }
 }

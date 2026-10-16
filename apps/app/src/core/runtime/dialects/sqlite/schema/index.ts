@@ -36,6 +36,14 @@ export interface Pragmas {
     coll: string | null
     key: 0 | 1
   }
+  table_list: {
+    schema: string
+    name: string
+    type: 'shadow' | 'table' | 'view' | 'virtual'
+    ncol: number
+    wr: 0 | 1
+    strict: 0 | 1
+  }
   table_xinfo: {
     cid: number
     name: string

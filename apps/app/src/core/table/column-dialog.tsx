@@ -176,7 +176,11 @@ const ColumnForm = ({
           }}
         />
         {comment !== undefined && (
-          <CommentField value={comment} onValueChange={setComment} />
+          <CommentField
+            dialect={dialect}
+            value={comment}
+            onValueChange={setComment}
+          />
         )}
         {column === null && table.state === 'added' && (
           <OptionField

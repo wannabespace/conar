@@ -3,7 +3,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import type { ConstraintShape } from '~/core/queries/constraints/shape'
 import { foreignKeyName } from '~/core/queries/constraints/shape'
@@ -39,7 +38,7 @@ export const columnDialogRef = createRef<{
 }>()
 
 interface TableColumn extends NewColumn {
-  comment?: string | null
+  comment: string | null
   foreign: boolean
   id: string
   original: ColumnDefinition
@@ -54,7 +53,7 @@ export const TableColumnDialog = ({
   schema: string
   table: string
 }) => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const [request, setRequest] = useState<Request | null>(null)
   const open = (column: TableColumn | null) =>
@@ -71,7 +70,7 @@ export const TableColumnDialog = ({
     edit: (column) => {
       const original = getColumnDefinition(column)
       open({
-        ...(getCapabilities(dialect).comments && { comment: original.comment }),
+        comment: original.comment,
         foreign: !!column.foreign,
         id: column.id,
         name: column.id,

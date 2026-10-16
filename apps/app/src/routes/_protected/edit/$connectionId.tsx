@@ -11,13 +11,12 @@ import type { ConnectionDetails } from '~/core/connection/save'
 import { updateConnection } from '~/core/connection/save'
 import { useGoBack } from '~/hooks/use-go-back'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
-import { getFormValues } from '~/modules/connection-form/lib/connection-form'
 import { getEditMode } from '~/modules/connection-form/lib/form-mode'
 
 const { useLoaderData } = getRouteApi('/_protected/edit/$connectionId')
 
 const EditConnectionPage = () => {
-  const { connection, defaultValues, mode } = useLoaderData()
+  const { connection, mode } = useLoaderData()
   const goBack = useGoBack({ ignoreBlocker: true })
   const { mutateAsync } = useMutation({
     meta: { event: 'connection_updated' },
@@ -27,13 +26,7 @@ const EditConnectionPage = () => {
       toast.success('Connection saved')
     },
   })
-  return (
-    <ConnectionPage
-      defaultValues={defaultValues}
-      mode={mode}
-      onSave={(saved) => mutateAsync(saved)}
-    />
-  )
+  return <ConnectionPage mode={mode} onSave={(saved) => mutateAsync(saved)} />
 }
 
 export const Route = createFileRoute('/_protected/edit/$connectionId')({
@@ -62,9 +55,9 @@ export const Route = createFileRoute('/_protected/edit/$connectionId')({
     }
     return {
       connection,
-      defaultValues: getFormValues(connection, connectionString),
       mode: getEditMode(
         connection,
+        connectionString,
         collections.connectionStringsCollection.get(connection.id),
         'all'
       ),

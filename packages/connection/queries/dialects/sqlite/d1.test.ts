@@ -128,6 +128,67 @@ describe('D1', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  test('refuses a write in a read-only transaction before sending it', async () => {
+    const fetch = stubFetch()
+    const { txId } = await query.beginTransaction({
+      accessMode: 'read only',
+      connectionString: CONNECTION,
+    })
+
+    await expect(
+      query.executeTransaction({ query: 'delete from t', txId, values: [] })
+    ).rejects.toThrow('only statements that read')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('sends a whole BEGIN … COMMIT script as one batch', async () => {
+    const fetch = stubFetch(answer([set([], [], 1)]))
+
+    await query.execute({
+      connectionString: CONNECTION,
+      query: 'BEGIN; insert into t values (1); COMMIT;',
+    })
+
+    expect(sentBodies(fetch)).toEqual([
+      { params: [], sql: 'insert into t values (1)' },
+    ])
+  })
+
+  test('refuses a lone BEGIN before sending anything', async () => {
+    const fetch = stubFetch()
+
+    await expect(
+      query.execute({
+        connectionString: CONNECTION,
+        query: 'BEGIN; insert into t values (1)',
+      })
+    ).rejects.toThrow('one whole script')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('sends blobs as byte arrays and reads them back as bytes', async () => {
+    const fetch = stubFetch(answer([set(['b'], [[[1, 2, 255]]])]))
+
+    const { result } = await query.execute({
+      connectionString: CONNECTION,
+      query: 'select ? as b',
+      values: [new Uint8Array([1, 2, 255])],
+    })
+
+    expect(sentBodies(fetch)).toEqual([
+      { params: [[1, 2, 255]], sql: 'select ? as b' },
+    ])
+    expect(result[0]?.rows).toEqual([[new Uint8Array([1, 2, 255])]])
+  })
+
+  test('names the status of an answer that is not JSON', async () => {
+    stubFetch(new Response('<html>Bad gateway</html>', { status: 502 }))
+
+    await expect(
+      query.execute({ connectionString: CONNECTION, query: 'select 1' })
+    ).rejects.toThrow('Cloudflare answered 502')
+  })
+
   test("raises Cloudflare's own message", async () => {
     stubFetch(failure('no such table: t: SQLITE_ERROR'))
 

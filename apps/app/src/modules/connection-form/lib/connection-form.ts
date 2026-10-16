@@ -3,11 +3,12 @@ import { connectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
-import type { SqliteLocation } from '@tamery/connection/sqlite-remote'
-import { getSqliteLocation } from '@tamery/connection/sqlite-remote'
+import { D1_HOST, getSqliteLocation } from '@tamery/connection/sqlite-location'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
+import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
@@ -19,13 +20,7 @@ import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
-import {
-  getPlaceField,
-  getPlaceMessage,
-  getSqliteParts,
-  opensFile,
-  SQLITE_NEEDED,
-} from './sqlite-location'
+import { getPlace, PLACES } from './place'
 import type { PasteVia } from './use-paste-connection'
 
 export interface ConnectionFormValues extends Omit<
@@ -84,15 +79,12 @@ const connectionFormSchema = type({
   type: type.valueOf(ConnectionType),
 })
   .narrow((values, ctx) => {
-    const field = getPlaceField(values)
-    return (
-      /\S/u.test(values[field]) ||
-      ctx.reject({ message: getPlaceMessage(values), path: [field] })
-    )
+    const { field, message } = PLACES[getPlace(values)]
+    return /\S/u.test(values[field]) || ctx.reject({ message, path: [field] })
   })
   .narrow(
     (values, ctx) =>
-      !opensFile(values) ||
+      getPlace(values) !== 'file' ||
       !/\S/u.test(values.database) ||
       FULL_PATH.test(values.database) ||
       ctx.reject({
@@ -103,6 +95,7 @@ const connectionFormSchema = type({
   .narrow(
     (values, ctx) =>
       !values.sshEnabled ||
+      values.type === ConnectionType.SQLite ||
       /\S/u.test(values.ssh.host) ||
       ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
   )
@@ -113,15 +106,13 @@ export const getFormValues = (
 ): ConnectionFormValues => {
   const parts =
     connectionString === null ? null : connectionParts.parse(connectionString)
-  const sqliteLocation = getSqliteLocation(parts?.host ?? '')
   return {
     ...DEFAULT_VALUES,
     ...(parts && pick(parts, [...SERVER_FIELDS, 'https'])),
-    ...(sqliteLocation === 'd1' && { host: '' }),
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    sqliteLocation,
+    sqliteLocation: getSqliteLocation(parts?.host ?? ''),
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
@@ -130,53 +121,78 @@ export const getFormValues = (
 }
 
 export const getParts = (values: ConnectionFormValues): ConnectionParts => {
-  const parts = {
-    ...pick(values, [...SERVER_FIELDS, 'https']),
-    ssh: values.sshEnabled ? values.ssh : null,
+  const place = getPlace(values)
+  const shown = new Set(
+    PLACES[place].rows.flatMap((row) =>
+      row.port ? [row.name, 'port'] : [row.name]
+    )
+  )
+  const keep = (field: (typeof SERVER_FIELDS)[number]) =>
+    shown.has(field) ? values[field] : ''
+  return {
+    database: keep('database'),
+    host: place === 'd1' ? D1_HOST : keep('host'),
+    https: place === 'server' ? values.https : null,
+    options: keep('options'),
+    password: keep('password'),
+    port: keep('port'),
+    ssh: place === 'server' && values.sshEnabled ? values.ssh : null,
     type: values.type,
+    user: keep('user'),
   }
-  return values.type === ConnectionType.SQLite
-    ? getSqliteParts(parts, values.sqliteLocation)
-    : parts
 }
 
-const BARE_HOST = /^[\w.:%[\]-]+$/u
-const NEEDED_FIELDS = ['host', 'user', 'password'] as const
-
 export const getMissing = (values: ConnectionFormValues) =>
-  (values.type === ConnectionType.SQLite
-    ? SQLITE_NEEDED[values.sqliteLocation]
-    : NEEDED_FIELDS
-  ).filter(
-    (field) =>
-      !values[field].trim() &&
-      !(field === 'password' && isLocalHost(values.host.trim()))
+  PLACES[getPlace(values)].rows.flatMap(({ name, optional }) =>
+    optional ||
+    values[name].trim() ||
+    (name === 'password' && isLocalHost(values.host.trim()))
+      ? []
+      : [name]
   )
 
-const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
-  const { host } = form.state.values
-  const newServer = !!parts.host && BARE_HOST.test(host) && parts.host !== host
+/** Starts every field over, so a password or token never travels to another place's host. */
+export const clearPlace = (form: ConnectionForm) => {
   for (const field of SERVER_FIELDS) {
-    if (newServer || parts[field]) {
-      form.setFieldValue(field, parts[field] ?? '')
+    form.setFieldValue(field, '')
+  }
+  form.setFieldValue('https', null)
+  form.setFieldValue('ssh', EMPTY_SSH_TUNNEL)
+  form.setFieldValue('sshEnabled', false)
+}
+
+const getGuessedEngine = (
+  values: ConnectionFormValues,
+  parts: GuessedParts
+): Pick<ConnectionFormValues, 'sqliteLocation' | 'type'> =>
+  parts.type
+    ? { sqliteLocation: getSqliteLocation(parts.host ?? ''), type: parts.type }
+    : values
+
+const BARE_HOST = /^[\w.:%[\]-]+$/u
+
+const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
+  const { values } = form.state
+  const engine = getGuessedEngine(values, parts)
+  const newHost =
+    !!parts.host && BARE_HOST.test(values.host) && parts.host !== values.host
+  if (newHost || getPlace(engine) !== getPlace(values)) {
+    clearPlace(form)
+  }
+  for (const field of SERVER_FIELDS) {
+    const value = parts[field]
+    if (value) {
+      form.setFieldValue(field, value)
     }
   }
-  if (parts.type) {
-    form.setFieldValue('type', parts.type)
+  form.setFieldValue('type', engine.type)
+  form.setFieldValue('sqliteLocation', engine.sqliteLocation)
+  if (parts.https !== undefined) {
+    form.setFieldValue('https', parts.https)
   }
-  if (parts.type === ConnectionType.SQLite) {
-    const sqliteLocation = getSqliteLocation(parts.host ?? '')
-    form.setFieldValue('sqliteLocation', sqliteLocation)
-    if (sqliteLocation === 'd1') {
-      form.setFieldValue('host', '')
-    }
-  }
-  if (parts.https !== undefined || newServer) {
-    form.setFieldValue('https', parts.https ?? null)
-  }
-  if (parts.ssh || newServer) {
-    form.setFieldValue('ssh', parts.ssh ?? EMPTY_SSH_TUNNEL)
-    form.setFieldValue('sshEnabled', !!parts.ssh)
+  if (parts.ssh) {
+    form.setFieldValue('ssh', parts.ssh)
+    form.setFieldValue('sshEnabled', true)
   }
 }
 
@@ -186,15 +202,15 @@ const expandPlace = (
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
 ) => {
   const { values } = form.state
-  const field = getPlaceField(values)
+  const { field } = PLACES[getPlace(values)]
   const value = values[field]
   const guess = guessConnection(value)
-  const expands =
-    values.type === ConnectionType.SQLite
-      ? guess?.parts.type === ConnectionType.SQLite &&
-        guess.parts[field] !== value
-      : guess && (guess.format !== 'host' || guess.parts.host !== value)
-  if (guess && expands) {
+  const read = guess?.parts[field]
+  if (
+    guess &&
+    ((read !== undefined && read !== value) ||
+      getPlace(getGuessedEngine(values, guess.parts)) !== getPlace(values))
+  ) {
     fill(form, guess)
     onFill(guess, false)
   }
@@ -219,7 +235,7 @@ export const useConnectionForm = ({
     defaultValues: initialValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
-        if (fieldApi.name === getPlaceField(form.state.values)) {
+        if (fieldApi.name === PLACES[getPlace(form.state.values)].field) {
           expandPlace(form, onFill)
         }
       },
@@ -243,13 +259,20 @@ export const useConnectionForm = ({
       onFill(guess, true)
     },
     patch: (patch: ConnectionPatch) => {
+      const { values } = form.state
+      if (
+        patch.type &&
+        getPlace({ ...values, type: patch.type }) !== getPlace(values)
+      ) {
+        clearPlace(form)
+      }
       for (const field of ['database', 'host', 'options', 'port'] as const) {
         const value = patch[field]
         if (value !== undefined) {
           form.setFieldValue(field, value)
         }
       }
-      if (patch.type && patch.type !== form.state.values.type) {
+      if (patch.type && patch.type !== values.type) {
         form.setFieldValue('type', patch.type)
       }
       if (patch.sshEnabled) {

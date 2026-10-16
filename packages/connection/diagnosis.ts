@@ -14,7 +14,7 @@ export interface ConnectionPatch {
 
 export interface Diagnosis {
   fix?: { label: string; patch: ConnectionPatch }
-  focus?: 'password' | 'user' | (typeof SSH_FIELD_AT_FAULT)[string]
+  focus?: 'database' | 'password' | 'user' | (typeof SSH_FIELD_AT_FAULT)[string]
   hint: string
   title: string
 }
@@ -28,5 +28,7 @@ export interface DiagnosisContext {
 export interface DiagnosisRule {
   match: RegExp
   diagnose: (context: DiagnosisContext) => Diagnosis
+  /** Only this engine's errors carry the matched text. */
+  engine?: ConnectionType
   tunnel?: true
 }

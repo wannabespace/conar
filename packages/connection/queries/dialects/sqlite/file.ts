@@ -1,53 +1,75 @@
 import type { DatabaseSync } from 'node:sqlite'
 
-import { handleQueryError } from '../..'
-import { registerTransaction } from '../../transactions'
 import { openDatabase } from './client'
-import type { LocationQueries } from './location'
-import { runOn } from './run'
+import type {
+  LocationTransaction,
+  SqliteLocationQueries,
+  SqliteValue,
+  StatementResult,
+} from './location'
+import { toOutput } from './run'
 
-const register = (db: DatabaseSync, ownerId?: string) =>
-  registerTransaction(
-    {
-      commit: () => db.exec('COMMIT'),
-      execute: (sql, values, options) =>
-        Promise.resolve(runOn(db, sql, values, options)),
-      release: () => db.close(),
-      rollback: () => db.exec('ROLLBACK'),
-      status: () => Promise.resolve(db.isTransaction ? 'open' : 'ended'),
-    },
-    ownerId
-  )
+/** A RETURNING write makes all its changes on the first step, so stopping past `maxRows` leaves nothing half done. */
+const runOn = (
+  db: DatabaseSync,
+  texts: string[],
+  values: SqliteValue[],
+  maxRows: number
+): StatementResult[] =>
+  texts.map((text) => {
+    const statement = db.prepare(text)
+    statement.setReadBigInts(true)
+    statement.setReturnArrays(true)
+    const columns = statement.columns().map((column) => column.name)
+    if (columns.length === 0) {
+      return {
+        changes: Number(statement.run(...values).changes),
+        columns,
+        rows: [],
+      }
+    }
+    const rows = statement
+      .iterate(...values)
+      .take(maxRows + 1)
+      .map((row) => Object.values(row).map(toOutput))
+      .toArray()
+    return { changes: null, columns, rows }
+  })
 
-export const fileQuery = {
+const sessionOn = (db: DatabaseSync): LocationTransaction => ({
+  commit: () => db.exec('COMMIT'),
+  release: () => db.close(),
+  rollback: () => db.exec('ROLLBACK'),
+  run: (texts, values, maxRows) =>
+    Promise.resolve(runOn(db, texts, values, maxRows)),
+  status: () => Promise.resolve(db.isTransaction ? 'open' : 'ended'),
+})
+
+export const fileLocation = {
+  openSession: (connectionString) => sessionOn(openDatabase(connectionString)),
+
+  // A handle per call: a cached one keeps reading a file another tool deleted and recreated.
+  run: (connectionString, texts, values, maxRows) => {
+    const db = openDatabase(connectionString)
+    try {
+      return Promise.resolve(runOn(db, texts, values, maxRows))
+    } finally {
+      db.close()
+    }
+  },
+
   // A transaction gets its own handle: on the shared one, every other query would run inside it.
-  beginTransaction: handleQueryError(
-    ({ accessMode, connectionString, ownerId }) => {
-      const db = openDatabase(connectionString)
-      if (accessMode === 'read only') {
+  transaction: (connectionString, readOnly) => {
+    const db = openDatabase(connectionString)
+    try {
+      if (readOnly) {
         db.exec('PRAGMA query_only = ON')
       }
       db.exec('BEGIN')
-      return Promise.resolve({ txId: register(db, ownerId) })
+    } catch (error) {
+      db.close()
+      throw error
     }
-  ),
-
-  // The driver runs a statement synchronously, so it has finished before a cancel can arrive.
-  cancel: () => Promise.resolve(),
-
-  // A handle per call: a cached one keeps reading a file another tool deleted and recreated.
-  execute: handleQueryError(
-    ({ connectionString, query: sql, values = [], ...options }) => {
-      const db = openDatabase(connectionString)
-      try {
-        return Promise.resolve(runOn(db, sql, values, options))
-      } finally {
-        db.close()
-      }
-    }
-  ),
-
-  openSession: handleQueryError(({ connectionString, ownerId }) =>
-    Promise.resolve({ txId: register(openDatabase(connectionString), ownerId) })
-  ),
-} satisfies LocationQueries
+    return Promise.resolve(sessionOn(db))
+  },
+} satisfies SqliteLocationQueries

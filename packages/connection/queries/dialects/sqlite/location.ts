@@ -1,11 +1,36 @@
-import type { QueryExecutor } from '../..'
+import type { TxHandle } from '../../transactions'
 
-/** What each place a SQLite database lives in implements; the transaction calls go through the shared registry. */
-export type LocationQueries = Pick<
-  QueryExecutor,
-  'beginTransaction' | 'cancel' | 'execute' | 'openSession'
->
+export type SqliteValue = bigint | number | string | Uint8Array | null
 
-/** The runner wraps it in its own advice to run the whole block. */
-export const NO_OPEN_SESSION =
-  'this database keeps no transaction open between requests'
+/** `changes` is null for a statement held until its transaction commits. */
+export interface StatementResult {
+  changes: number | null
+  columns: string[]
+  rows: unknown[][]
+}
+
+/** `maxRows` lets a location stop reading early; the shared result mapping drops the rest. */
+export type RunStatements = (
+  texts: string[],
+  values: SqliteValue[],
+  maxRows: number
+) => Promise<StatementResult[]>
+
+export type LocationTransaction = Pick<
+  TxHandle,
+  'commit' | 'release' | 'rollback' | 'status'
+> & { run: RunStatements }
+
+/** Where a SQLite database lives supplies only how it runs statements and holds a transaction. */
+export interface SqliteLocationQueries {
+  run: (
+    connectionString: string,
+    ...args: Parameters<RunStatements>
+  ) => Promise<StatementResult[]>
+  transaction: (
+    connectionString: string,
+    readOnly: boolean
+  ) => Promise<LocationTransaction>
+  /** Only a location that holds a connection between requests has one. */
+  openSession?: (connectionString: string) => LocationTransaction
+}

@@ -1,14 +1,14 @@
 import { noop } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
-import type { QueryExecuteResult, RunOptions } from '../..'
-import { handleQueryError, resultSet } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
-import { D1_HOST } from '../../../sqlite-remote'
-import { registerTransaction } from '../../transactions'
-import type { LocationQueries } from './location'
-import { NO_OPEN_SESSION } from './location'
-import { statementTexts } from './run'
+import { D1_HOST } from '../../../sqlite-location'
+import type {
+  SqliteLocationQueries,
+  SqliteValue,
+  StatementResult,
+} from './location'
+import { toOutput } from './run'
 
 const d1Answer = type({
   errors: type({ message: 'string' }).array(),
@@ -29,38 +29,33 @@ interface D1Statement {
   sql: string
 }
 
-const toParam = (value: unknown) => {
-  if (typeof value === 'boolean') {
-    return Number(value)
-  }
+/** JSON carries neither a 64-bit integer nor bytes. */
+const toParam = (value: SqliteValue) => {
   if (typeof value === 'bigint') {
     return String(value)
   }
-  if (value instanceof Date) {
-    return value.toISOString()
-  }
-  if (value instanceof Uint8Array) {
-    return [...value]
-  }
-  return value ?? null
+  return value instanceof Uint8Array ? [...value] : value
 }
 
-const toStatements = (sql: string, values: unknown[]): D1Statement[] =>
-  statementTexts(sql, values).map((text) => ({
-    params: values.map(toParam),
-    sql: text,
-  }))
+const toStatements = (texts: string[], values: SqliteValue[]) => {
+  const params = values.map(toParam)
+  return texts.map((sql): D1Statement => ({ params, sql }))
+}
 
 /** One statement goes alone; several go as a batch, which D1 runs in one transaction. */
-const send = async (connectionString: string, statements: D1Statement[]) => {
+const send = async (
+  connectionString: string,
+  statements: D1Statement[]
+): Promise<StatementResult[]> => {
+  const [only, ...rest] = statements
+  if (!only) {
+    return []
+  }
   const { database, password, user } = readConnectionString(connectionString)
-  const [only] = statements
   const response = await fetch(
     `https://${D1_HOST}/client/v4/accounts/${encodeURIComponent(user)}/d1/database/${encodeURIComponent(database)}/raw`,
     {
-      body: JSON.stringify(
-        statements.length === 1 && only ? only : { batch: statements }
-      ),
+      body: JSON.stringify(rest.length === 0 ? only : { batch: statements }),
       headers: {
         Authorization: `Bearer ${password}`,
         'Content-Type': 'application/json',
@@ -68,97 +63,62 @@ const send = async (connectionString: string, statements: D1Statement[]) => {
       method: 'POST',
     }
   )
-  const answer = d1Answer.assert(await response.json())
-  if (!answer.success || !answer.result) {
+  const answer = d1Answer(await response.json().catch(() => null))
+  if (answer instanceof type.errors || !answer.success || !answer.result) {
+    const messages =
+      answer instanceof type.errors
+        ? []
+        : answer.errors.map(({ message }) =>
+            message.replace(SQLITE_CODE_SUFFIX, '')
+          )
     throw new Error(
-      answer.errors
-        .map(({ message }) => message.replace(SQLITE_CODE_SUFFIX, ''))
-        .join('\n') || `Cloudflare answered ${response.status}`
+      messages.join('\n') || `Cloudflare answered ${response.status}`
     )
   }
-  return answer.result
+  return answer.result.map(({ meta, results }) => ({
+    changes: meta.changes,
+    columns: results.columns,
+    rows: results.rows.map((row) => row.map(toOutput)),
+  }))
 }
 
-const run = async (
-  connectionString: string,
-  statements: D1Statement[],
-  { maxRows = Infinity }: RunOptions
-): Promise<QueryExecuteResult> => {
-  const start = performance.now()
-  const sets = await send(connectionString, statements)
-  return {
-    duration: performance.now() - start,
-    result: sets.map(({ meta, results }) =>
-      resultSet(
-        {
-          affectedRows: results.columns.length === 0 ? meta.changes : null,
-          columns: results.columns,
-          rows: results.rows,
-        },
-        maxRows
-      )
-    ),
-  }
-}
-
-/** A read-only transaction runs each statement at once: nothing it does needs undoing. */
-const readOnlyHandle = (connectionString: string) => ({
+/** D1 keeps no transaction open between requests, so a read-only one sends each statement at once. */
+const readOnlyTransaction = (connectionString: string) => ({
   commit: noop,
-  execute: (sql: string, values: unknown[], options: RunOptions) =>
-    run(connectionString, toStatements(sql, values), options),
   release: noop,
   rollback: noop,
+  run: (texts: string[], values: SqliteValue[]) =>
+    send(connectionString, toStatements(texts, values)),
 })
 
-/**
- * D1 keeps no transaction open between requests, so a write transaction collects its statements and sends them as
- * one batch on commit. Its statements answer with nothing until then.
- */
-const batchedHandle = (connectionString: string) => {
+/** A write transaction collects its statements and sends them as one batch on commit; they answer with nothing until then. */
+const batchedTransaction = (connectionString: string) => {
   let pending: D1Statement[] = []
   return {
     commit: async () => {
-      if (pending.length > 0) {
-        await send(connectionString, pending)
-      }
-    },
-    execute: (sql: string, values: unknown[]) => {
-      const statements = toStatements(sql, values)
-      pending = [...pending, ...statements]
-      return Promise.resolve({
-        duration: 0,
-        result: statements.map(() =>
-          resultSet({ affectedRows: null, columns: [], rows: [] }, Infinity)
-        ),
-      })
+      await send(connectionString, pending)
     },
     release: noop,
     rollback: () => {
       pending = []
     },
+    run: (texts: string[], values: SqliteValue[]) => {
+      pending = [...pending, ...toStatements(texts, values)]
+      return Promise.resolve(
+        texts.map(() => ({ changes: null, columns: [], rows: [] }))
+      )
+    },
   }
 }
 
-export const d1Query = {
-  beginTransaction: handleQueryError(
-    ({ accessMode, connectionString, ownerId }) =>
-      Promise.resolve({
-        txId: registerTransaction(
-          accessMode === 'read only'
-            ? readOnlyHandle(connectionString)
-            : batchedHandle(connectionString),
-          ownerId
-        ),
-      })
-  ),
+export const d1Location = {
+  run: (connectionString, texts, values) =>
+    send(connectionString, toStatements(texts, values)),
 
-  // A request over HTTP cannot be called back once sent.
-  cancel: () => Promise.resolve(),
-
-  execute: handleQueryError(
-    ({ connectionString, query: sql, values = [], ...options }) =>
-      run(connectionString, toStatements(sql, values), options)
-  ),
-
-  openSession: () => Promise.reject(new Error(NO_OPEN_SESSION)),
-} satisfies LocationQueries
+  transaction: (connectionString, readOnly) =>
+    Promise.resolve(
+      readOnly
+        ? readOnlyTransaction(connectionString)
+        : batchedTransaction(connectionString)
+    ),
+} satisfies SqliteLocationQueries

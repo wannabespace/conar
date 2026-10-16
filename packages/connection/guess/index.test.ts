@@ -177,7 +177,35 @@ describe('guessConnection — snippets from configs and tools', () => {
         type: ConnectionType.SQLite,
       },
     ],
+    [
+      'libsql://localhost:8080?tls=0',
+      {
+        host: 'localhost',
+        options: 'tls=0',
+        port: '8080',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'TURSO_DATABASE_URL=libsql://shop-acme.turso.io\nTURSO_AUTH_TOKEN=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
+  })
+
+  it.each([
+    'DATABASE_URL=postgres://app:secret@db.example.com/shop\nDATABASE_ID=e179f207-0000-45ea-830c-4efd8618ae6e',
+    '{"url": "postgres://app:secret@db.example.com/shop", "database_id": "e179f207-0000-45ea-830c-4efd8618ae6e"}',
+    'postgres://app:secret@db.example.com/shop?redirect=https://shop-acme.turso.io',
+  ])('keeps %p a Postgres connection', (text) => {
+    expect(guessConnection(text)?.parts).toMatchObject({
+      host: 'db.example.com',
+      type: ConnectionType.Postgres,
+    })
   })
 })

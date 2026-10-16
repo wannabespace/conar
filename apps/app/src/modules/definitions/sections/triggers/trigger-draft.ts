@@ -3,7 +3,6 @@ import { uppercaseFirst } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
-import type { RelationKind } from '~/core/queries/tables/list'
 import type { triggersType } from '~/core/queries/triggers/list'
 import type {
   TriggerEvent,
@@ -21,16 +20,6 @@ export type TriggerItem = typeof triggersType.infer
 
 export const sentenceCase = (value: string) =>
   uppercaseFirst(value.toLowerCase())
-
-/** A table takes only the timings its engine allows on it, and a view only instead-of. */
-export const getTimings = (dialect: Dialect, target: RelationKind) => {
-  const { insteadOfTargets, timings } = getCapabilities(dialect).triggers
-  return timings.filter((timing) =>
-    timing === 'INSTEAD OF'
-      ? insteadOfTargets.includes(target)
-      : target === 'table'
-  )
-}
 
 export interface TriggerDraft {
   body: string

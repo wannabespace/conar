@@ -1,4 +1,3 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -7,7 +6,7 @@ import { memoize } from 'memoza'
 import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
-import { userObject } from '~/core/queries/shared/sqlite-catalog'
+import { userTables } from '~/core/queries/shared/sqlite-catalog'
 import {
   connectionResourceToQueryParams,
   createQuery,
@@ -192,23 +191,19 @@ export const resourceTablesAndSchemasQuery = memoize(
             )
             .execute(),
         sqlite: (db) =>
-          db
-            .selectFrom('sqlite_schema')
+          userTables(db, ['table', 'view', 'virtual'])
             .select((eb) => [
-              eb.val(SQLITE_RESOURCE_NAME).as('schema'),
-              'name as table',
-              sql<string | null>`null`.as('comment'),
+              't.name as table',
+              eb.lit(null).as('comment'),
               eb
                 .case()
-                .when('type', '=', 'view')
+                .when('t.type', '=', 'view')
                 .then('view')
                 .else('base table')
                 .end()
                 .as('type'),
             ])
             .$narrowType<{ type: 'base table' | 'view' }>()
-            .where('type', 'in', ['table', 'view'])
-            .where(userObject('name'))
             .execute(),
       },
       type: tablesAndSchemasType.array(),

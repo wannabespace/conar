@@ -2,9 +2,9 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { NETWORK_RULES } from './diagnose-network'
+import { SQLITE_RULES } from './diagnose-sqlite'
 import type { Diagnosis, DiagnosisContext, DiagnosisRule } from './diagnosis'
 import { getHostHint, isLocalHost } from './hosts'
-import { D1_HOST } from './sqlite-remote'
 import { SSH_RULES } from './ssh/diagnose'
 import type { SslSetting } from './ssl/setting'
 import { getSslOptions } from './ssl/setting'
@@ -20,51 +20,7 @@ const sslFix = (
 
 const RULES: DiagnosisRule[] = [
   ...SSH_RULES,
-  {
-    diagnose: () => ({
-      hint: 'Choose the database file itself, not a backup, journal or other file. An encrypted database cannot be opened.',
-      title: "That file isn't a SQLite database",
-    }),
-    match: /file is not a database/iu,
-  },
-  {
-    diagnose: () => ({
-      hint: 'It may have been moved, renamed or deleted, or the path names a folder. Choose the file again.',
-      title: "Can't open the database file",
-    }),
-    match: /unable to open database file/iu,
-  },
-  {
-    diagnose: ({ parts }) =>
-      parts.host === D1_HOST
-        ? {
-            focus: 'password',
-            hint: 'Use an API token with the D1 Edit permission on this account, made under My Profile → API Tokens.',
-            title: 'Cloudflare refused the API token',
-          }
-        : {
-            focus: 'password',
-            hint: 'Create a token for this database on its page in the Turso dashboard, or with `turso db tokens create`.',
-            title: 'Turso refused the auth token',
-          },
-    match: /authentication error|http status 40[013]\b/iu,
-  },
-  {
-    diagnose: () => ({
-      hint: 'Copy the database URL from its page in the Turso dashboard: the host carries the database, organization and region.',
-      title: "Turso can't find that database",
-    }),
-    match: /server returned http status (?:404|502)\b/iu,
-  },
-  {
-    diagnose: () => ({
-      focus: 'user',
-      hint: "Check the account ID and database ID: both are in the database's dashboard URL.",
-      title: "Cloudflare can't find that database",
-    }),
-    match:
-      /could not route to|object identifier is invalid|database \S+ could not be found/iu,
-  },
+  ...SQLITE_RULES,
   {
     diagnose: () => ({
       focus: 'user',
@@ -239,19 +195,16 @@ export const isConnectionFailure = (message: string) =>
 export const diagnoseConnectionError = (
   context: DiagnosisContext
 ): Diagnosis | null => {
-  const rule = RULES.find(({ match }) => match.test(context.message))
+  const rule = RULES.find(
+    ({ engine, match }) =>
+      (!engine || engine === context.parts.type) && match.test(context.message)
+  )
   if (!rule) {
     return null
   }
   const diagnosis = rule.diagnose(context)
-  const { host, password, type } = context.parts
-  if (
-    rule.tunnel ||
-    diagnosis.focus ||
-    password ||
-    isLocalHost(host) ||
-    type === ConnectionType.SQLite
-  ) {
+  const { host, password } = context.parts
+  if (rule.tunnel || diagnosis.focus || password || isLocalHost(host)) {
     return diagnosis
   }
   return {

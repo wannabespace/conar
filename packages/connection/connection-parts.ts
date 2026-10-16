@@ -1,21 +1,23 @@
+import type { SqliteLocation } from '@tamery/shared/enums/connection-type'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
 import { sqliteFile } from './sqlite-file'
-import { getSqliteLocation, remoteSqliteString } from './sqlite-remote'
+import { D1_HOST, getSqliteLocation } from './sqlite-location'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
 export interface ConnectionParts {
-  /** SQLite's file path. */
+  /** A SQLite file's path, D1's database ID. */
   database: string
   host: string
   /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
   https: boolean | null
   /** Driver options as a query string, without the leading `?` and without the `ssh_*` params. */
   options: string
+  /** Also a libSQL or D1 token, so every secret path treats it as the password. */
   password: string
   port: string
   ssh: SshTunnel | null
@@ -91,15 +93,40 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
 export const getConnectionType = (name: string): ConnectionType | null =>
   TYPE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')] ?? null
 
+const withCredentials = (
+  base: string,
+  { options, password, user }: ConnectionParts
+) => {
+  const url = new SafeURL(base)
+  url.username = encodeURIComponent(user)
+  url.password = encodeURIComponent(password)
+  url.search = options
+  return url
+}
+
+const SQLITE_FORMATS: Record<
+  SqliteLocation,
+  (parts: ConnectionParts) => string
+> = {
+  d1: (parts) =>
+    withCredentials(
+      `d1://${D1_HOST}/${encodeURIComponent(parts.database)}`,
+      parts
+    ).toString(),
+  file: ({ database }) => database && sqliteFile.connectionString(database),
+  libsql: (parts) =>
+    withCredentials(
+      `libsql://${parts.host}${parts.port ? `:${parts.port}` : ''}`,
+      parts
+    ).toString(),
+}
+
 const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []
 ): string => {
   if (parts.type === ConnectionType.SQLite) {
-    if (getSqliteLocation(parts.host) !== 'file') {
-      return remoteSqliteString(parts)
-    }
-    return parts.database && sqliteFile.connectionString(parts.database)
+    return SQLITE_FORMATS[getSqliteLocation(parts.host)](parts)
   }
   if (!parts.type || !parts.host) {
     return ''
@@ -117,12 +144,10 @@ const format = (
     parts.host.includes(':') && !parts.host.startsWith('[')
       ? `[${parts.host}]`
       : parts.host
-  const url = new SafeURL(
-    `${scheme}://${host}:${port}/${encodeURIComponent(parts.database)}`
+  const url = withCredentials(
+    `${scheme}://${host}:${port}/${encodeURIComponent(parts.database)}`,
+    parts
   )
-  url.username = encodeURIComponent(parts.user)
-  url.password = encodeURIComponent(parts.password)
-  url.search = parts.options
   if (parts.ssh?.host) {
     setSshParams(url.searchParams, parts.ssh, missingSecrets)
   }
@@ -134,27 +159,37 @@ const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 /** libSQL's own spelling of its token, read into the password where the rest of Tamery keeps secrets. */
 const AUTH_TOKEN_PARAM = 'authtoken'
 
+/** A SQLite file's path is the whole string, not its URL path; libSQL may carry its token as a param. */
+const sqliteParts = (
+  connectionString: string,
+  parts: Pick<ConnectionParts, 'database' | 'host' | 'password'>,
+  searchParams: URLSearchParams
+) => {
+  if (!parts.host) {
+    return { database: sqliteFile.path(connectionString) }
+  }
+  const authToken = searchParams.get(AUTH_TOKEN_PARAM)
+  searchParams.delete(AUTH_TOKEN_PARAM)
+  return { password: authToken ?? parts.password }
+}
+
 const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
   const ssh = getSshTunnel(searchParams)
   deleteSshParams(searchParams)
   const type = getConnectionType(scheme)
-  const authToken =
-    type === ConnectionType.SQLite ? searchParams.get(AUTH_TOKEN_PARAM) : null
-  if (authToken !== null) {
-    searchParams.delete(AUTH_TOKEN_PARAM)
-  }
+  // Before `options` is read: it takes libSQL's token out of the params.
+  const sqlite =
+    type === ConnectionType.SQLite
+      ? sqliteParts(connectionString, parts, searchParams)
+      : null
 
   return {
     ...parts,
-    database:
-      type === ConnectionType.SQLite && !parts.host
-        ? sqliteFile.path(connectionString)
-        : parts.database,
+    ...sqlite,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
-    password: authToken ?? parts.password,
     ssh,
     type,
   }

@@ -1,7 +1,6 @@
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { GuessFix, GuessFormat } from '@tamery/connection/guess'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { FieldGroup } from '@tamery/ui/components/field'
@@ -18,11 +17,10 @@ import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
-import type { ConnectionFormValues } from '../lib/connection-form'
 import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
 import type { FormMode } from '../lib/form-mode'
 import { getFormPolicy } from '../lib/form-mode'
-import { getPlaceField } from '../lib/sqlite-location'
+import { getPlace, PLACES } from '../lib/place'
 import { usePasteConnection } from '../lib/use-paste-connection'
 import { usePickLocalDatabase } from '../lib/use-pick-local-database'
 import type { OnSave } from '../lib/use-test-then-save'
@@ -55,11 +53,9 @@ const focusField = (id: string) =>
   document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus()
 
 export const ConnectionPage = ({
-  defaultValues,
   mode,
   onSave,
 }: {
-  defaultValues?: ConnectionFormValues
   mode: FormMode
   onSave: OnSave
 }) => {
@@ -80,10 +76,10 @@ export const ConnectionPage = ({
   }
   const focusPage = () => pageRef.current?.focus()
   const { getDraft, runTest, save, testError } = useTestThenSave(mode, onSave)
-  const policy = getFormPolicy(mode, defaultValues)
+  const policy = getFormPolicy(mode)
 
   const { form, paste, patch } = useConnectionForm({
-    defaultValues,
+    defaultValues: mode.kind === 'edit' ? mode.values : undefined,
     onFill: ({ fixes, format }, pasted) => {
       setFilled((current) => ({
         fixes,
@@ -126,6 +122,7 @@ export const ConnectionPage = ({
   })
 
   const values = useSelector(form.store, (state) => state.values)
+  const place = getPlace(values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
   const { canSend, reason, testStatus } = getDraft(values)
 
@@ -235,7 +232,7 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                {values.type !== ConnectionType.SQLite && (
+                {place === 'server' && (
                   <motion.div className="flex flex-col gap-5" variants={REVEAL}>
                     <SshFields form={form} locked={policy.locked} />
                   </motion.div>
@@ -255,6 +252,7 @@ export const ConnectionPage = ({
                     key={testError.message}
                     error={testError}
                     parts={getParts(values)}
+                    place={place}
                     onAsk={focusPage}
                     onFix={applyFix}
                     onFocus={(field) => {
@@ -282,7 +280,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={values[getPlaceField(values)].trim() ? reason : null}
+          reason={values[PLACES[place].field].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

@@ -6,13 +6,15 @@ import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
 import type { ConnectionFormValues } from './connection-form'
-import { getPlaceField } from './sqlite-location'
+import { getFormValues } from './connection-form'
+import { getPlace, PLACES } from './place'
 
 export type FormMode =
   | { kind: 'create' }
   | {
       kind: 'edit'
       name: string
+      values: ConnectionFormValues
       passwordElsewhere: boolean
       missingSecrets: SecretParam[]
       scope: 'all' | 'credentials' | 'details'
@@ -43,7 +45,8 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
 }
 
 export const getEditMode = (
-  connection: Pick<Connection, 'isPasswordExists' | 'name'>,
+  connection: Connection,
+  connectionString: string | null,
   stored: ConnectionString | undefined,
   scope: Extract<FormMode, { kind: 'edit' }>['scope']
 ): FormMode => ({
@@ -53,13 +56,10 @@ export const getEditMode = (
   passwordElsewhere:
     connection.isPasswordExists && !stored?.isPasswordPopulated,
   scope,
+  values: getFormValues(connection, connectionString),
 })
 
-/** `opening` are the form's first values, whose place field an edit focuses when nothing is missing. */
-export const getFormPolicy = (
-  mode: FormMode,
-  opening: ConnectionFormValues | undefined
-) => {
+export const getFormPolicy = (mode: FormMode) => {
   const scope = mode.kind === 'edit' ? mode.scope : 'all'
   const missing: Secret[] =
     mode.kind === 'edit' && scope === 'credentials'
@@ -74,7 +74,7 @@ export const getFormPolicy = (
     firstField:
       mode.kind === 'create'
         ? null
-        : (missingFields[0] ?? (opening ? getPlaceField(opening) : null)),
+        : (missingFields[0] ?? PLACES[getPlace(mode.values)].field),
     guardsUnsaved: mode.kind === 'edit' && scope === 'all',
     locked: (field: string) =>
       scope === 'credentials' && !missingFields.includes(field),

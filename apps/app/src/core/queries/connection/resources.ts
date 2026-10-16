@@ -1,4 +1,4 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-location'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'

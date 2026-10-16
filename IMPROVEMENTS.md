@@ -114,6 +114,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Open in Tamery links beyond the desktop.** The desktop app opens `postgres://`, `mysql://` and the other database schemes, but a browser can register only `web+` schemes, so the web app gets none. A `tamery://connect?url=…` link (and `tamery add <url>` in the CLI) would reach both.
 - **Fill the password from a matching link.** A database link that matches a saved connection opens it as is; when the saved string has no password and the link carries one, offering to store it would skip the password form.
 - **Secrets from a password manager.** Accept `op://vault/item/password` (1Password) and Keychain references in the password field, resolved at connect time, so a synced connection string never holds the secret itself.
+- **A bare host pasted on a SQLite engine moves to a server.** With SQLite, Turso or D1 chosen, a paste that names only a host with no telling port (`db.example.com`) names no engine, so it stays in the SQLite place and fills nothing visible. A host with no scheme is almost never a SQLite location, so the form could switch to a server engine.
 
 ## Developer experience
 

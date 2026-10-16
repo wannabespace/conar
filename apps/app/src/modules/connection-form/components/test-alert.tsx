@@ -4,9 +4,7 @@ import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { diagnoseConnectionError } from '@tamery/connection/diagnose'
 import type { ConnectionPatch, Diagnosis } from '@tamery/connection/diagnosis'
 import { getDiagnosisRequest } from '@tamery/connection/diagnosis-request'
-import { getSqliteLocation } from '@tamery/connection/sqlite-remote'
 import { getSslOptions } from '@tamery/connection/ssl/setting'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -26,7 +24,8 @@ import { useState } from 'react'
 import { orpc } from '~/lib/orpc'
 import { useIsOnline } from '~/store'
 
-import { getFieldLabel } from '../lib/sqlite-location'
+import type { Place } from '../lib/place'
+import { getFieldNoun } from '../lib/place'
 
 export type FixSource = 'ai' | 'rule'
 
@@ -34,24 +33,14 @@ export type FixSource = 'ai' | 'rule'
 const scrollIntoView = (node: HTMLElement | null) =>
   node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
-const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
-  password: 'Edit the password',
+type Focus = NonNullable<Diagnosis['focus']>
+
+const SSH_FOCUS_LABELS: Partial<Record<Focus, string>> = {
   'ssh.keyPath': 'Edit the key file',
   'ssh.passphrase': 'Edit the passphrase',
   'ssh.password': 'Edit the SSH password',
   'ssh.privateKey': 'Replace the private key',
-  user: 'Edit the user',
 }
-
-/** A remote SQLite location names its user and password fields its own way (account ID, auth token). */
-const getFocusLabel = (
-  focus: NonNullable<Diagnosis['focus']>,
-  parts: ConnectionParts
-) =>
-  parts.type === ConnectionType.SQLite &&
-  (focus === 'password' || focus === 'user')
-    ? `Edit the ${getFieldLabel({ sqliteLocation: getSqliteLocation(parts.host), type: parts.type }, focus)}`
-    : FOCUS_LABELS[focus]
 
 export const TestAlert = ({
   error,
@@ -59,13 +48,15 @@ export const TestAlert = ({
   onFix,
   onFocus,
   parts,
+  place,
 }: {
   error: Error
   /** Explain with AI disables itself and then unmounts, so focus has to go somewhere. */
   onAsk: () => void
   onFix: (patch: ConnectionPatch, source: FixSource) => void
-  onFocus: (field: NonNullable<Diagnosis['focus']>) => void
+  onFocus: (field: Focus) => void
   parts: ConnectionParts
+  place: Place
 }) => {
   const context = { desktop: !!window.electron, message: error.message, parts }
   const diagnosis = diagnoseConnectionError(context)
@@ -129,7 +120,8 @@ export const TestAlert = ({
                   size="xs"
                   onClick={() => onFocus(focus)}
                 >
-                  {getFocusLabel(focus, parts)}
+                  {SSH_FOCUS_LABELS[focus] ??
+                    `Edit the ${getFieldNoun(place, focus)}`}
                 </Button>
               )}
               {aiFix && (

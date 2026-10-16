@@ -1,64 +1,57 @@
-import type { DatabaseSync, SQLInputValue } from 'node:sqlite'
-
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 
-import type { RunOptions } from '../..'
+import type { QueryExecuteResult, RunOptions } from '../..'
 import { resultSet } from '../..'
+import type { RunStatements, SqliteValue } from './location'
 
-const toInput = (value: unknown) => {
+export const SQLITE = dialects[Dialect.SQLite]
+
+/** The same value is stored the same way wherever the database lives. */
+const toInput = (value: unknown): SqliteValue => {
   if (typeof value === 'boolean') {
     return Number(value)
   }
   if (value instanceof Date) {
     return value.toISOString()
   }
-  return (value ?? null) as SQLInputValue
+  return (value ?? null) as SqliteValue
 }
 
+/** A blob arrives as an `ArrayBuffer` from libSQL and as a number array from D1. */
 export const toOutput = (value: unknown) => {
-  if (typeof value !== 'bigint') {
-    return value
+  if (typeof value === 'bigint') {
+    return Number.isSafeInteger(Number(value)) ? Number(value) : String(value)
   }
-  return Number.isSafeInteger(Number(value)) ? Number(value) : String(value)
+  if (value instanceof ArrayBuffer || Array.isArray(value)) {
+    return new Uint8Array(value)
+  }
+  return value
 }
 
 /** A driver prepares only the first statement of a text, so a text without bound values runs one statement at a time. */
 export const statementTexts = (sql: string, values: unknown[]) =>
   values.length > 0
     ? [sql]
-    : splitStatements(sql, dialects[Dialect.SQLite], {
-        groupTransactions: false,
-      }).map((statement) => statement.text)
+    : splitStatements(sql, SQLITE, { groupTransactions: false }).map(
+        (statement) => statement.text
+      )
 
-/** A RETURNING write makes all its changes on the first step, so stopping past `maxRows` leaves nothing half done. */
-export const runOn = (
-  db: DatabaseSync,
-  sql: string,
+export const runTimed = async (
+  run: RunStatements,
+  texts: string[],
   values: unknown[],
   { maxRows = Infinity }: RunOptions
-) => {
+): Promise<QueryExecuteResult> => {
   const start = performance.now()
-  const texts = statementTexts(sql, values)
-  const inputs = values.map(toInput)
-  const result = texts.map((text) => {
-    const statement = db.prepare(text)
-    statement.setReadBigInts(true)
-    statement.setReturnArrays(true)
-    const columns = statement.columns().map((column) => column.name)
-    if (columns.length === 0) {
-      const { changes } = statement.run(...inputs)
-      return resultSet(
-        { affectedRows: Number(changes), columns, rows: [] },
+  const results = await run(texts, values.map(toInput), maxRows)
+  return {
+    duration: performance.now() - start,
+    result: results.map(({ changes, columns, rows }) =>
+      resultSet(
+        { affectedRows: columns.length === 0 ? changes : null, columns, rows },
         maxRows
       )
-    }
-    const rows = statement
-      .iterate(...inputs)
-      .take(maxRows + 1)
-      .map((row) => Object.values(row).map(toOutput))
-      .toArray()
-    return resultSet({ affectedRows: null, columns, rows }, maxRows)
-  })
-  return { duration: performance.now() - start, result }
+    ),
+  }
 }

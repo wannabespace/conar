@@ -56,7 +56,7 @@ export interface ArrayType {
   open: string
 }
 
-interface ColumnTypeCapabilities {
+export interface ColumnTypeCapabilities {
   array: ArrayType | null
   // The driver hands these values over as bytes; Postgres reads `bytea` as text, so it matches none.
   bytes: RegExp | null
@@ -72,7 +72,6 @@ interface ColumnTypeCapabilities {
 }
 
 export interface ConnectionCapabilities {
-  // A stored column's type and nullability; SQLite only renames one.
   alterColumns: boolean
   cascade: boolean
   columnTypes: ColumnTypeCapabilities

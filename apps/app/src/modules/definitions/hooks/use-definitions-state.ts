@@ -2,10 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import {
-  getDefaultSchema,
-  getSectionCapabilities,
-} from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
+import { getSectionCapabilities } from '~/core/catalog/section-capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import type { RelationKind } from '~/core/queries/tables/list'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'

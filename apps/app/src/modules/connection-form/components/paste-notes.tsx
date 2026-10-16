@@ -5,7 +5,7 @@ import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { getMissing } from '../lib/connection-form'
-import { getFieldLabel } from '../lib/sqlite-location'
+import { getFieldNoun, getPlace } from '../lib/place'
 import { Footnote } from './footnote'
 
 const FIX_NOTES: Record<GuessFix, string> = {
@@ -31,7 +31,7 @@ export const PasteNotes = ({
 }) => {
   const missing = useSelector(form.store, ({ values }) => getMissing(values))
   const labels = useSelector(form.store, ({ values }) =>
-    missing.map((field) => getFieldLabel(values, field))
+    missing.map((field) => getFieldNoun(getPlace(values), field))
   )
   const withheld =
     passwordWithheldBy && missing.includes('password')

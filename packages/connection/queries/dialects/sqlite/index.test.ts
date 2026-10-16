@@ -68,7 +68,7 @@ describe('sqlite executor', () => {
         txId,
         values: [],
       })
-    ).rejects.toThrow('readonly')
+    ).rejects.toThrow('only statements that read')
     await query.rollbackTransaction({ txId })
   })
 
@@ -108,14 +108,5 @@ describe('sqlite executor', () => {
     expect(await Bun.file(path.join(directory, 'missing.db')).exists()).toBe(
       false
     )
-  })
-
-  test('refuses a string that names a host', async () => {
-    await expect(
-      query.execute({
-        connectionString: `sqlite://example.com${path.join(directory, 'app data.db')}`,
-        query: 'SELECT 1',
-      })
-    ).rejects.toThrow('names no host')
   })
 })

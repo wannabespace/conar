@@ -53,7 +53,10 @@ const layoutConnected = (
   return { height, positions, width }
 }
 
-const layoutDiagram = ({ relations, tables }: Diagram): Positions => {
+const layoutDiagram = ({
+  relations,
+  tables,
+}: Pick<Diagram, 'relations' | 'tables'>): Positions => {
   const linked = new Set(
     relations.flatMap((relation) => [
       relation.source.table,

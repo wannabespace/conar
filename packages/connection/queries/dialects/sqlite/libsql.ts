@@ -1,19 +1,9 @@
-import type {
-  Client,
-  InStatement,
-  InValue,
-  ResultSet as LibsqlResultSet,
-  Transaction,
-} from '@libsql/client/http'
+import type { Client, InStatement, Transaction } from '@libsql/client/http'
 import { createClient } from '@libsql/client/http'
 
-import type { RunOptions } from '../..'
-import { handleQueryError, resultSet } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
-import { registerTransaction } from '../../transactions'
-import type { LocationQueries } from './location'
-import { NO_OPEN_SESSION } from './location'
-import { statementTexts, toOutput } from './run'
+import type { SqliteLocationQueries, SqliteValue } from './location'
+import { toOutput } from './run'
 
 /** `tls=0` reaches a self-hosted libSQL server over plain HTTP; Turso always speaks TLS. */
 const openClient = (connectionString: string) => {
@@ -26,18 +16,6 @@ const openClient = (connectionString: string) => {
     url: `${protocol}://${host}${port ? `:${port}` : ''}`,
   })
 }
-
-const toInput = (value: unknown) => (value ?? null) as InValue
-
-const toRows = (rows: LibsqlResultSet['rows'], width: number) =>
-  rows.map((row) =>
-    Array.from({ length: width }, (_, index) => {
-      const value = row[index]
-      return value instanceof ArrayBuffer
-        ? new Uint8Array(value)
-        : toOutput(value)
-    })
-  )
 
 const SQLITE_ERROR_PREFIX = /^(?:SQLITE_\w+: )+SQLite error: /u
 
@@ -57,72 +35,55 @@ const executeOn = async (
   }
 }
 
-/** The server sends every row; past `maxRows` they are only dropped here. */
+/** On a client, each statement runs on a stream of its own; only a `Transaction` keeps one between them. */
 const runOn = async (
   target: Client | Transaction,
-  sql: string,
-  values: unknown[],
-  { maxRows = Infinity }: RunOptions
+  texts: string[],
+  args: SqliteValue[]
 ) => {
-  const start = performance.now()
-  const args = values.map(toInput)
-  const result = []
-  for (const text of statementTexts(sql, values)) {
+  const results = []
+  for (const sql of texts) {
     // Sequential by design: each statement sees the one before it.
     // oxlint-disable-next-line no-await-in-loop
-    const set = await executeOn(target, { args, sql: text })
-    result.push(
-      resultSet(
-        {
-          affectedRows: set.columns.length === 0 ? set.rowsAffected : null,
-          columns: set.columns,
-          rows: toRows(set.rows, set.columns.length),
-        },
-        maxRows
-      )
-    )
+    const set = await executeOn(target, { args, sql })
+    results.push({
+      changes: set.rowsAffected,
+      columns: set.columns,
+      rows: set.rows.map((row) =>
+        set.columns.map((_, index) => toOutput(row[index]))
+      ),
+    })
   }
-  return { duration: performance.now() - start, result }
+  return results
 }
 
-export const libsqlQuery = {
-  beginTransaction: handleQueryError(
-    async ({ accessMode, connectionString, ownerId }) => {
-      const client = openClient(connectionString)
-      const tx = await client.transaction(
-        accessMode === 'read only' ? 'read' : 'write'
-      )
-      const txId = registerTransaction(
-        {
-          commit: () => tx.commit(),
-          execute: (sql, values, options) => runOn(tx, sql, values, options),
-          release: () => {
-            tx.close()
-            client.close()
-          },
-          rollback: () => tx.rollback(),
-          status: () => Promise.resolve(tx.closed ? 'ended' : 'open'),
-        },
-        ownerId
-      )
-      return { txId }
+export const libsqlLocation = {
+  run: async (connectionString, texts, values) => {
+    const client = openClient(connectionString)
+    try {
+      return await runOn(client, texts, values)
+    } finally {
+      client.close()
     }
-  ),
+  },
 
-  // A request over HTTP cannot be called back once sent.
-  cancel: () => Promise.resolve(),
-
-  execute: handleQueryError(
-    async ({ connectionString, query: sql, values = [], ...options }) => {
-      const client = openClient(connectionString)
-      try {
-        return await runOn(client, sql, values, options)
-      } finally {
+  transaction: async (connectionString, readOnly) => {
+    const client = openClient(connectionString)
+    const tx = await client
+      .transaction(readOnly ? 'read' : 'write')
+      .catch((error: unknown) => {
         client.close()
-      }
+        throw error
+      })
+    return {
+      commit: () => tx.commit(),
+      release: () => {
+        tx.close()
+        client.close()
+      },
+      rollback: () => tx.rollback(),
+      run: (texts, values) => runOn(tx, texts, values),
+      status: () => Promise.resolve(tx.closed ? 'ended' : 'open'),
     }
-  ),
-
-  // A client holds no connection of its own between requests, so a BEGIN typed in a tab could not stay open.
-  openSession: () => Promise.reject(new Error(NO_OPEN_SESSION)),
-} satisfies LocationQueries
+  },
+} satisfies SqliteLocationQueries

@@ -129,8 +129,8 @@ describe('rowsPerStatement', () => {
   })
 
   test('respects the SQLite parameter cap', () => {
-    expect(rowsPerStatement(Dialect.SQLite, 100)).toBe(320)
-    expect(rowsPerStatement(Dialect.SQLite, 2)).toBe(500)
+    expect(rowsPerStatement(Dialect.SQLite, 2)).toBe(50)
+    expect(rowsPerStatement(Dialect.SQLite, 150)).toBe(1)
   })
 })
 

@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { getConnectionType } from '@tamery/connection/connection-parts'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
-import { getSqliteLocation } from '@tamery/connection/sqlite-remote'
+import { getSqliteLocation } from '@tamery/connection/sqlite-location'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -154,12 +153,12 @@ export const createMcpServer = (
             'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
           )
         }
-        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access.
-        const { host, scheme } = readConnectionString(args.connectionString)
+        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides.
         if (
-          (args.type === ConnectionType.SQLite ||
-            getConnectionType(scheme) === ConnectionType.SQLite) &&
-          getSqliteLocation(host) === 'file'
+          args.type === ConnectionType.SQLite &&
+          getSqliteLocation(
+            readConnectionString(args.connectionString).host
+          ) === 'file'
         ) {
           throw new Error(
             'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'

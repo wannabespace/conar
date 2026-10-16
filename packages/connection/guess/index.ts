@@ -21,13 +21,13 @@ export type { ConnectionGuess, GuessFix, GuessFormat } from './types'
 
 const DETECTORS = [
   guessSqlite,
-  guessRemoteSqlite,
   guessCli,
   guessJson,
   guessUrl,
   guessGoDsn,
   guessAdo,
   guessKeyValue,
+  guessRemoteSqlite,
   guessEnv,
   guessWebUrl,
   guessPgpass,

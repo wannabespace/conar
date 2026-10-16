@@ -35,3 +35,12 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.Postgres]: 'PostgreSQL',
   [ConnectionType.SQLite]: 'SQLite',
 }
+
+/** Where a SQLite connection's database lives. Not a `ConnectionType`: all three speak the same SQLite. */
+export type SqliteLocation = 'd1' | 'file' | 'libsql'
+
+export const sqliteLocationLabels: Record<SqliteLocation, string> = {
+  d1: 'Cloudflare D1',
+  file: 'SQLite',
+  libsql: 'Turso',
+}

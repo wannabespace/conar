@@ -1,38 +1,46 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { D1_HOST } from '../sqlite-remote'
+import { connectionParts } from '../connection-parts'
+import { D1_HOST } from '../sqlite-location'
+import { guessEnv } from './env'
 import type { DatabaseGuess, GuessedParts } from './types'
 
-const LIBSQL_URL =
-  /\b(?:libsql|wss?|https?):\/\/(?<host>[\w.-]+)(?::(?<port>\d+))?[^\s"'`<>]*/giu
-const TURSO_HOST = /\.turso\.io$/iu
-const AUTH_TOKEN =
-  /(?:authToken=|(?:TURSO|LIBSQL|DATABASE)_AUTH_TOKEN["']?\s*[:=]\s*|\bauthToken["']?\s*[:=]\s*)["']?(?<token>[\w.-]{20,})/iu
+/** A `libsql://` URL is read by the URL detector; Turso's dashboard also hands out the same database as `https://` or `wss://`. */
+const TURSO_URL =
+  /\b(?:wss?|https?):\/\/[\w.-]+\.turso\.io(?::\d+)?[^\s"'`<>]*/iu
 
 const D1_LINK =
   /(?:dash\.cloudflare\.com\/|\/client\/v4\/accounts\/)(?<account>[\da-f]{32})\/(?:workers\/)?d1\/databases?\/(?<database>[\da-f-]{36})/iu
+const UUID = String.raw`[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}`
+/** A bare `database_id` counts only inside a wrangler `d1_databases` entry: plenty of other configs have one. */
+const D1_DATABASE_ID = new RegExp(
+  String.raw`(?:CLOUDFLARE_(?:D1_)?DATABASE_ID|\bD1_DATABASE_ID)["']?\s*[:=]\s*["']?(?<database>${UUID})`,
+  'iu'
+)
+const WRANGLER_DATABASE_ID = new RegExp(
+  String.raw`d1_databases[\s\S]*?\bdatabase_id["']?\s*[:=]\s*["']?(?<database>${UUID})`,
+  'iu'
+)
 const ACCOUNT_ID =
   /(?:CLOUDFLARE_ACCOUNT_ID|\baccount_?id)["']?\s*[:=]\s*["']?(?<account>[\da-f]{32})/iu
-const DATABASE_ID =
-  /(?:CLOUDFLARE_(?:D1_)?DATABASE_ID|\bD1_DATABASE_ID|\bdatabase_?id)["']?\s*[:=]\s*["']?(?<database>[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12})/iu
 const API_TOKEN =
   /(?:CLOUDFLARE_(?:D1_|API_)TOKEN|\bD1_TOKEN|\btoken)["']?\s*[:=]\s*["']?(?<token>[\w-]{40,})/iu
 
 const turso = (text: string): DatabaseGuess | null => {
-  const found = [...text.matchAll(LIBSQL_URL)].find(
-    (match) =>
-      match[0].toLowerCase().startsWith('libsql:') ||
-      TURSO_HOST.test(match.groups?.host ?? '')
-  )
-  if (!found?.groups?.host) {
+  const [url] = TURSO_URL.exec(text) ?? []
+  if (!url) {
     return null
   }
-  const token = AUTH_TOKEN.exec(text)?.groups?.token
+  const { host, options, password, port } = connectionParts.parse(
+    url.replace(/^\w+:/u, 'libsql:')
+  )
+  const token = password || guessEnv(text)?.parts.password
   return {
     format: 'url',
     parts: {
-      host: found.groups.host,
-      port: found.groups.port ?? '',
+      host,
+      options,
+      port,
       type: ConnectionType.SQLite,
       ...(token && { password: token }),
     },
@@ -41,11 +49,14 @@ const turso = (text: string): DatabaseGuess | null => {
 
 const d1 = (text: string): DatabaseGuess | null => {
   const link = D1_LINK.exec(text)?.groups
-  const account = link?.account ?? ACCOUNT_ID.exec(text)?.groups?.account
-  const database = link?.database ?? DATABASE_ID.exec(text)?.groups?.database
+  const database =
+    link?.database ??
+    (D1_DATABASE_ID.exec(text) ?? WRANGLER_DATABASE_ID.exec(text))?.groups
+      ?.database
   if (!database) {
     return null
   }
+  const account = link?.account ?? ACCOUNT_ID.exec(text)?.groups?.account
   const token = API_TOKEN.exec(text)?.groups?.token
   const parts: GuessedParts = {
     database,
@@ -57,6 +68,6 @@ const d1 = (text: string): DatabaseGuess | null => {
   return { format: link ? 'url' : 'env', parts }
 }
 
-/** Turso hands out a `libsql://` URL and a token apart; D1 a dashboard link, a wrangler config or drizzle's three IDs. */
+/** Turso hands out its URL and token apart; D1 a dashboard link, a wrangler config or Cloudflare's env names. */
 export const guessRemoteSqlite = (text: string): DatabaseGuess | null =>
   turso(text) ?? d1(text)

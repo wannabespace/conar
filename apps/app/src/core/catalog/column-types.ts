@@ -1,6 +1,11 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
-export const COLUMN_TYPES: Record<Dialect, readonly string[]> = {
+import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
+
+import type { ColumnTypeCapabilities } from './capability-presets'
+import { JSON_COLUMN_TYPE } from './capability-presets'
+
+const COLUMN_TYPES: Record<Dialect, readonly string[]> = {
   [Dialect.ClickHouse]: [
     'UInt8',
     'UInt32',
@@ -84,3 +89,65 @@ export const COLUMN_TYPES: Record<Dialect, readonly string[]> = {
     'blob',
   ],
 }
+
+export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
+  {
+    [Dialect.ClickHouse]: {
+      array: { close: ')', open: 'Array(' },
+      bytes: null,
+      enum: clickhouseEnum,
+      id: 'UInt64',
+      incomparable:
+        /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
+      json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
+      options: COLUMN_TYPES[Dialect.ClickHouse],
+      uuid: /\bUUID\b/u,
+      xml: null,
+    },
+    [Dialect.MSSQL]: {
+      array: null,
+      bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
+      enum: null,
+      id: 'int identity',
+      incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[Dialect.MSSQL],
+      uuid: /^uniqueidentifier$/iu,
+      xml: /^xml$/iu,
+    },
+    [Dialect.MySQL]: {
+      array: null,
+      bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
+      enum: mysqlEnum,
+      id: 'int auto_increment',
+      incomparable: null,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[Dialect.MySQL],
+      // MariaDB's native UUID; MySQL has none.
+      uuid: /^uuid$/iu,
+      xml: null,
+    },
+    [Dialect.Postgres]: {
+      array: { close: '[]', open: '' },
+      bytes: null,
+      enum: null,
+      id: 'serial',
+      incomparable:
+        /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
+      json: /^jsonb?$/iu,
+      options: COLUMN_TYPES[Dialect.Postgres],
+      uuid: /^uuid$/iu,
+      xml: /^xml$/iu,
+    },
+    [Dialect.SQLite]: {
+      array: null,
+      bytes: /^blob$/iu,
+      enum: null,
+      id: 'integer',
+      incomparable: null,
+      json: JSON_COLUMN_TYPE,
+      options: COLUMN_TYPES[Dialect.SQLite],
+      uuid: null,
+      xml: null,
+    },
+  }

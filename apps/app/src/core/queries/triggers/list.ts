@@ -1,4 +1,4 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-file'
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-location'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
@@ -234,7 +234,12 @@ const resourceTriggersQuery = createQuery({
     sqlite: async (db) => {
       const rows = await db
         .selectFrom('sqlite_schema')
-        .select(['name', 'tbl_name as table', 'sql as statement'])
+        .select((eb) => [
+          eb.val(SQLITE_RESOURCE_NAME).as('schema'),
+          'name',
+          'tbl_name as table',
+          'sql as statement',
+        ])
         .$narrowType<{ statement: string }>()
         .where('type', '=', 'trigger')
         .execute()
@@ -243,7 +248,6 @@ const resourceTriggersQuery = createQuery({
         ...row,
         ...sqliteTriggerParts(statement),
         orientation: 'ROW',
-        schema: SQLITE_RESOURCE_NAME,
       }))
     },
   },

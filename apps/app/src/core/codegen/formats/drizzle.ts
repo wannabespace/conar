@@ -21,24 +21,30 @@ import {
   toStringLiteral,
 } from '~/core/codegen/utils'
 
+type DrizzleDialect = Exclude<Dialect, Dialect.ClickHouse>
+
 const dialectConfig: Record<
-  Exclude<Dialect, Dialect.ClickHouse>,
+  DrizzleDialect,
   {
     anyColumn: string
-    schemaFunc: string | null
+    defaultNow: boolean
+    schemaFunc?: string
     tableFunc: string
     dialectImportPath: string
     enumFunc?: string
+    integerBooleans?: boolean
   }
 > = {
   mssql: {
     anyColumn: 'AnyMsSqlColumn',
+    defaultNow: true,
     dialectImportPath: 'drizzle-orm/mssql-core',
     schemaFunc: 'mssqlSchema',
     tableFunc: 'mssqlTable',
   },
   mysql: {
     anyColumn: 'AnyMySqlColumn',
+    defaultNow: true,
     dialectImportPath: 'drizzle-orm/mysql-core',
     enumFunc: 'mysqlEnum',
     schemaFunc: 'mysqlSchema',
@@ -46,6 +52,7 @@ const dialectConfig: Record<
   },
   postgres: {
     anyColumn: 'AnyPgColumn',
+    defaultNow: true,
     dialectImportPath: 'drizzle-orm/pg-core',
     enumFunc: 'pgEnum',
     schemaFunc: 'pgSchema',
@@ -53,8 +60,9 @@ const dialectConfig: Record<
   },
   sqlite: {
     anyColumn: 'AnySQLiteColumn',
+    defaultNow: false,
     dialectImportPath: 'drizzle-orm/sqlite-core',
-    schemaFunc: null,
+    integerBooleans: true,
     tableFunc: 'sqliteTable',
   },
 }
@@ -109,7 +117,11 @@ export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
   ].join('\n')
 }
 
-const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
+const buildColumnOptions = (
+  c: TypedColumn,
+  typeFunc: string,
+  dialect: DrizzleDialect
+) => {
   if (
     c.maxLength &&
     c.maxLength !== -1 &&
@@ -117,7 +129,11 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
   ) {
     return `{ length: ${c.maxLength} }`
   }
-  if (typeFunc === 'integer' && /bool/iu.test(c.type)) {
+  if (
+    dialectConfig[dialect].integerBooleans &&
+    typeFunc === 'integer' &&
+    /bool/iu.test(c.type)
+  ) {
     return "{ mode: 'boolean' }"
   }
   if (['bigint', 'bigserial'].includes(typeFunc)) {
@@ -134,7 +150,7 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
 
 const buildGeneratedChain = (
   c: TypedColumn,
-  dialect: Dialect,
+  dialect: DrizzleDialect,
   coreImports: Set<string>
 ): string => {
   if (c.isIdentity && dialect === Dialect.Postgres) {
@@ -146,7 +162,7 @@ const buildGeneratedChain = (
   if (typeof c.defaultValue !== 'string' || isSerialDefault(c.defaultValue)) {
     return ''
   }
-  if (isNowDefault(c.defaultValue) && dialect !== Dialect.SQLite) {
+  if (dialectConfig[dialect].defaultNow && isNowDefault(c.defaultValue)) {
     return '.defaultNow()'
   }
   coreImports.add('sql')
@@ -157,7 +173,12 @@ const buildColumnChain = (
   c: TypedColumn,
   typeFunc: string,
   options: string | null,
-  { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>,
+  {
+    columns,
+    dialect,
+  }: Pick<SchemaParams, 'columns'> & {
+    dialect: DrizzleDialect
+  },
   selfReferenceType: string | null,
   foreignKeyImports: Set<string>,
   coreImports: Set<string>
@@ -279,7 +300,7 @@ export const generateSchemaDrizzle = ({
         }
       } else {
         dialectImports.add(typeFunc)
-        options = buildColumnOptions(c, typeFunc)
+        options = buildColumnOptions(c, typeFunc, dialect)
       }
 
       const isSelfReference = c.foreign?.table === table
