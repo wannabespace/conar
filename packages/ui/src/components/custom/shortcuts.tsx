@@ -11,7 +11,7 @@ import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { getOS } from '@tamery/shared/os'
 import { cn } from '@tamery/ui/lib/utils'
-import type { Hotkey } from '@tanstack/react-hotkeys'
+import type { HotkeyChord } from '@tanstack/react-hotkeys'
 import { parseHotkey } from '@tanstack/react-hotkeys'
 import type { ComponentProps } from 'react'
 
@@ -88,15 +88,15 @@ export const KbdHotkey = ({
   hotkey,
   userAgent,
   ...props
-}: ComponentProps<typeof Kbd> & { hotkey: Hotkey; userAgent: string }) => {
-  const { key, modifiers } = parseHotkey(
+}: ComponentProps<typeof Kbd> & { hotkey: HotkeyChord; userAgent: string }) => {
+  const { code, key, modifiers } = parseHotkey(
     hotkey,
     getOS(userAgent).type === 'macos' ? 'mac' : 'windows'
   )
 
   return (
     <Kbd {...props}>
-      {[...modifiers, key].map((part) => {
+      {[...modifiers, key ?? code].map((part) => {
         const glyph = GLYPHS[part]
         return glyph ? (
           <HugeiconsIcon key={part} icon={glyph} strokeWidth={2} />

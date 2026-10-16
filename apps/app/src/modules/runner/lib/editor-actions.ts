@@ -1,4 +1,4 @@
-import type { Hotkey } from '@tanstack/react-hotkeys'
+import type { HotkeyChord } from '@tanstack/react-hotkeys'
 import { LETTER_KEYS, parseHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
@@ -57,10 +57,10 @@ const MONACO_KEYS: Record<string, KeyCode> = {
 
 // Monaco keybindings are bit flags; bitwise OR is required by the API.
 /* oxlint-disable no-bitwise */
-const monacoKeybinding = (hotkey: Hotkey) => {
+const monacoKeybinding = (hotkey: HotkeyChord) => {
   // Parsed as macOS so Mod lands on meta, which is what Monaco's CtrlCmd means on every platform.
-  const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey, 'mac')
-  const keyCode = MONACO_KEYS[key]
+  const { alt, code, ctrl, key, meta, shift } = parseHotkey(hotkey, 'mac')
+  const keyCode = MONACO_KEYS[key ?? code]
   if (ctrl || keyCode === undefined) {
     throw new Error(`Monaco cannot bind ${hotkey}: extend MONACO_KEYS`)
   }

@@ -1,4 +1,5 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { toError } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { useQueryErrorResetBoundary } from '@tanstack/react-query'
 import type { ErrorComponentProps } from '@tanstack/react-router'
@@ -11,7 +12,11 @@ import { posthog } from '~/lib/posthog'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export const ConnectionFailure = ({ error, reset }: ErrorComponentProps) => {
+export const ConnectionFailure = ({
+  error: thrown,
+  reset,
+}: ErrorComponentProps) => {
+  const error = toError(thrown)
   const { connection } = useRouteContext()
   const queryErrors = useQueryErrorResetBoundary()
   const goBack = useGoBack()

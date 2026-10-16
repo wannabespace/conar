@@ -61,7 +61,7 @@ const TableRow = ({ className, ...props }: React.ComponentProps<'tr'>) => (
   <tr
     data-slot="table-row"
     className={cn(
-      `even:group-data-[size=sm]/table:bg-foreground/3 hover:bg-accent hover:group-data-[size=sm]/table:bg-accent focus-visible:bg-accent focus-visible:group-data-[size=sm]/table:bg-accent has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted data-highlighted:bg-foreground/7 border-b transition-colors outline-none group-data-[size=sm]/table:transition-none hover:aria-busy:bg-transparent`,
+      `group-data-[size=sm]/table:even:bg-foreground/3 hover:bg-accent group-data-[size=sm]/table:hover:bg-accent focus-visible:bg-accent group-data-[size=sm]/table:focus-visible:bg-accent has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted data-highlighted:bg-foreground/7 border-b transition-colors outline-none group-data-[size=sm]/table:transition-none aria-busy:hover:bg-transparent`,
       className
     )}
     {...props}
@@ -72,7 +72,7 @@ const TableHead = ({ className, ...props }: React.ComponentProps<'th'>) => (
   <th
     data-slot="table-head"
     className={cn(
-      `text-muted-foreground h-8 px-2 text-left align-middle text-sm font-medium whitespace-nowrap group-data-[size=sm]/table:h-7 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:text-xs first:group-data-[size=sm]/table:pl-4 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
+      `text-muted-foreground h-8 px-2 text-left align-middle text-sm font-medium whitespace-nowrap group-data-[size=sm]/table:h-7 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:text-xs group-data-[size=sm]/table:first:pl-4 group-data-[size=sm]/table:last:pr-4 has-[[role=checkbox]]:pr-0`,
       className
     )}
     {...props}
@@ -87,7 +87,7 @@ const TableCell = ({
   <td
     data-slot="table-cell"
     className={cn(
-      `p-2 align-middle whitespace-nowrap group-data-[size=sm]/table:h-8 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:py-0 first:group-data-[size=sm]/table:pl-4 last:group-data-[size=sm]/table:pr-4 has-[[role=checkbox]]:pr-0`,
+      `p-2 align-middle whitespace-nowrap group-data-[size=sm]/table:h-8 group-data-[size=sm]/table:px-3 group-data-[size=sm]/table:py-0 group-data-[size=sm]/table:first:pl-4 group-data-[size=sm]/table:last:pr-4 has-[[role=checkbox]]:pr-0`,
       variant === 'numeric' && 'text-right tabular-nums',
       className
     )}

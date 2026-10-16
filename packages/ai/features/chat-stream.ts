@@ -1,6 +1,7 @@
 import type { TelemetryOptions } from 'ai'
 import { convertToModelMessages, streamText, toUIMessageStream } from 'ai'
-import { createResumableUIMessageStream } from 'ai-resumable-stream'
+import { createRedisAdapter } from 'ai-resumable-stream/adapters/redis'
+import { createResumableUIMessageStream } from 'ai-resumable-stream/ai-sdk'
 import { createClient } from 'redis'
 import { v7 } from 'uuid'
 
@@ -33,13 +34,9 @@ const activeStream = {
   },
 }
 
-const resumable = (streamId: string, abortController?: AbortController) =>
-  createResumableUIMessageStream({
-    abortController,
-    publisher: redis,
-    streamId,
-    subscriber,
-  })
+const resumable = createResumableUIMessageStream({
+  adapter: createRedisAdapter({ publisher: redis, subscriber }),
+})
 
 interface ChatStreamInput {
   chatId: string
@@ -57,7 +54,6 @@ export const chatStream = {
 
     try {
       const abortController = new AbortController()
-      const context = await resumable(streamId, abortController)
 
       const result = streamText({
         abortSignal: abortController.signal,
@@ -67,17 +63,9 @@ export const chatStream = {
         telemetry: data.telemetry,
       })
 
-      // oxlint-disable-next-line no-invalid-void-type
-      const { promise, resolve } = Promise.withResolvers<void>()
       const uiStream = toUIMessageStream({
         generateMessageId: () => v7(),
-        onEnd: async ({ responseMessage }) => {
-          try {
-            await data.onFinish(responseMessage)
-          } finally {
-            resolve()
-          }
-        },
+        onEnd: ({ responseMessage }) => data.onFinish(responseMessage),
         onError: (error) => {
           console.error(`chat stream ${streamId} failed`, error)
           return 'Something went wrong while generating the answer.'
@@ -86,10 +74,12 @@ export const chatStream = {
         stream: result.stream,
       })
 
-      return await context.startStream(uiStream, {
-        keepAlive: promise,
-        onFlush: () => activeStream.release(data.chatId, streamId),
+      const { stream } = await resumable.startStream(uiStream, {
+        abortController,
+        onFinish: () => activeStream.release(data.chatId, streamId),
+        streamId,
       })
+      return stream
     } catch (error) {
       await activeStream.release(data.chatId, streamId)
       throw error
@@ -101,8 +91,7 @@ export const chatStream = {
       return null
     }
 
-    const context = await resumable(streamId)
-    const active = await context.resumeStream().catch(() => null)
+    const active = await resumable.resumeStream({ streamId }).catch(() => null)
     if (!active) {
       await activeStream.release(chatId, streamId)
     }
@@ -111,8 +100,7 @@ export const chatStream = {
   stop: async (chatId: string) => {
     const streamId = await activeStream.get(chatId)
     if (streamId) {
-      const context = await resumable(streamId)
-      await context.stopStream()
+      await resumable.stopStream({ streamId })
     }
   },
 }

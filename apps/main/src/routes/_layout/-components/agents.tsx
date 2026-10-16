@@ -55,7 +55,7 @@ export const Agents = () => (
       {POINTS.map((point) => (
         <div
           key={point.title}
-          className="flex flex-col gap-2 sm:border-l sm:px-6 first:sm:border-l-0 first:sm:pl-0"
+          className="flex flex-col gap-2 sm:border-l sm:px-6 sm:first:border-l-0 sm:first:pl-0"
         >
           <span className="flex items-center gap-2 text-sm font-medium">
             <HugeiconsIcon
