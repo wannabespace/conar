@@ -20,7 +20,6 @@ export interface ConnectionDetails {
   type: ConnectionType
 }
 
-/** Leaves a newer write in place; two queued saves that both fail keep the first one's string (accepted edge). */
 const rollback = (
   failed: ConnectionString,
   stored: ConnectionString | null
@@ -48,7 +47,6 @@ export const saveConnectionString = async ({
   updatedAt,
   writeRow,
 }: ConnectionStringInput & {
-  /** Joins the offline transaction that inserts the string's resource. */
   writeRow?: (isPasswordExists: boolean) => void
 }) => {
   const {
