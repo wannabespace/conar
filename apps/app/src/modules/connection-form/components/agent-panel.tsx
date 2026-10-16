@@ -140,7 +140,7 @@ export const AgentPanel = () => {
           </TerminalLine>
           <TerminalLine
             glyph="›"
-            code="Add the database this project uses to Tamery."
+            code="Add the database to Tamery."
             language="text"
             onCopy={() => posthog.capture('connection_agent_prompt_copied')}
           />
