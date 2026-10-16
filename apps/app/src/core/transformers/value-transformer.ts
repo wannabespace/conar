@@ -14,7 +14,7 @@ export interface ValueTransformer<UI = unknown> {
   }
 }
 
-const textOf = (value: unknown) => {
+const getText = (value: unknown) => {
   if (value === null) {
     return 'null'
   }
@@ -30,6 +30,6 @@ export const isNested = (value: unknown): value is object =>
   !(value instanceof Date || value instanceof Uint8Array)
 
 export const getDisplayValue = (value: unknown, size: number): string =>
-  textOf(value)
+  getText(value)
     .replaceAll('\n', ' ')
     .slice(0, size / 6 + 5 + 50)

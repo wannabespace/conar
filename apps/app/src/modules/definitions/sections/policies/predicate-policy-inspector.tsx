@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -30,9 +30,9 @@ import {
   newPredicate,
   operationLabel,
   predicateKinds,
-  predicateOf,
-  predicatePlanOf,
-  predicatePolicyDraftOf,
+  getPredicate,
+  getPredicatePlan,
+  getPredicatePolicyDraft,
   predicatePolicySchema,
   qualifiedKey,
   qualifiedLabel,
@@ -43,7 +43,7 @@ export const PredicatePolicyInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
@@ -59,7 +59,7 @@ export const PredicatePolicyInspector = ({
       run(
         item
           ? alterPolicyQuery({
-              ...predicatePlanOf(item, draft),
+              ...getPredicatePlan(item, draft),
               name: item.name,
               schema: item.schema,
               table: item.table,
@@ -71,7 +71,7 @@ export const PredicatePolicyInspector = ({
                 command: 'ALL',
                 kind: 'RESTRICTIVE',
                 name: draft.name.trim(),
-                predicates: draft.predicates.map(predicateOf),
+                predicates: draft.predicates.map(getPredicate),
                 roles: [],
                 using: null,
               },
@@ -94,7 +94,7 @@ export const PredicatePolicyInspector = ({
     subject: `policy "${item?.name}"`,
   })
   const form = useAppForm({
-    defaultValues: predicatePolicyDraftOf(item, selectedSchema ?? ''),
+    defaultValues: getPredicatePolicyDraft(item, selectedSchema ?? ''),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
@@ -103,20 +103,22 @@ export const PredicatePolicyInspector = ({
       onMount: predicatePolicySchema,
     },
   })
-  const draft = useStore(form.store, (store) => store.values)
+  const draft = useSelector(form.store, (store) => store.values)
 
   const readable = !!item?.predicates?.every(
     (predicate) => policyPredicate.parse(predicate.definition) !== null
   )
   const readOnly = item ? !can.edit || !readable : !can.create
   const tables = schemas.flatMap((schema) =>
-    relationNamesOf(schema, 'table').map((table) => qualifiedKey(schema, table))
+    getRelationNames(schema, 'table').map((table) =>
+      qualifiedKey(schema, table)
+    )
   )
   const predicateFunctions = functions
     .filter((fn) => fn.inline && fn.schemaBound)
     .map((fn) => qualifiedKey(fn.schema, fn.name))
   const changed =
-    !item || !sameShape(draft, predicatePolicyDraftOf(item, item.schema))
+    !item || !sameShape(draft, getPredicatePolicyDraft(item, item.schema))
 
   return (
     <Inspector
@@ -194,7 +196,7 @@ export const PredicatePolicyInspector = ({
                 <SelectField
                   label="Type"
                   disabled={readOnly}
-                  labelOf={(kind) => uppercaseFirst(kind.toLowerCase())}
+                  getLabel={(kind) => uppercaseFirst(kind.toLowerCase())}
                   options={predicateKinds}
                   placeholder="Type"
                 />
@@ -206,7 +208,7 @@ export const PredicatePolicyInspector = ({
                   <SelectField
                     label="Operation"
                     disabled={readOnly}
-                    labelOf={operationLabel}
+                    getLabel={operationLabel}
                     options={blockOperations}
                     placeholder="Operation"
                   />
@@ -220,7 +222,7 @@ export const PredicatePolicyInspector = ({
                 label="Table"
                 disabled={readOnly}
                 empty="This database has no tables."
-                labelOf={qualifiedLabel}
+                getLabel={qualifiedLabel}
                 options={tables}
                 placeholder="Choose a table"
               />
@@ -237,7 +239,7 @@ export const PredicatePolicyInspector = ({
                     ? 'Loading…'
                     : 'No schema-bound inline table-valued function here.'
                 }
-                labelOf={qualifiedLabel}
+                getLabel={qualifiedLabel}
                 options={predicateFunctions}
                 placeholder="Choose a function"
               />

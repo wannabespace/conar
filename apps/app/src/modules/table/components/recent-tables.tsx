@@ -5,7 +5,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { tableTypeIcon } from '~/core/catalog/table-type'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
@@ -15,7 +15,7 @@ import { recentTables } from '../lib/tab'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const RecentTables = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const recent = useSubscription(recentTables(connectionResource.id))
   const { data } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
@@ -64,7 +64,7 @@ export const RecentTables = () => {
           <span data-mask className="truncate">
             {table.table}
           </span>
-          {capabilitiesOf(connection.type).schemas && (
+          {getCapabilities(dialect).schemas && (
             <span
               data-mask
               className="text-muted-foreground ml-auto pl-4 text-xs"

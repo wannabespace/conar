@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
+import { isMac } from '../lib/os'
+
 const REVEAL_DELAY_MS = 800
 
 export const shortcutRevealStore = createWebStorageValue({
@@ -15,16 +17,14 @@ export const shortcutRevealStore = createWebStorageValue({
 
 export const useShortcutReveal = (trigger: HTMLElement | null) => {
   const isEnabled = useSubscription(shortcutRevealStore)
-  const isHeld = useKeyHold(
-    navigator.userAgent.includes('Mac') ? 'Meta' : 'Control'
-  )
+  const isHeld = useKeyHold(isMac ? 'Meta' : 'Control')
   const [heldLongEnough, setHeldLongEnough] = useState(false)
 
   useEffect(() => {
     if (!isHeld || !trigger) {
       return
     }
-    // The trigger is hit-tested once, as the reveal starts, so a hint never paints over a menu or dialog covering it. A shortcut pressed mid-hold therefore ends the reveal: the dialog or menu it opens would sit under hints nothing re-checks.
+    // The trigger is hit-tested only once, so a shortcut pressed mid-hold must end the reveal: what it opens would sit under the hints.
     const timeout = setTimeout(() => {
       const { left, top, width, height } = trigger.getBoundingClientRect()
       setHeldLongEnough(

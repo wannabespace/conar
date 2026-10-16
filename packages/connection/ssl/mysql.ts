@@ -1,5 +1,18 @@
 import type { SslOptions } from 'mysql2'
 
+export const TLS_PARAMS = [
+  'sslca',
+  'sslcert',
+  'sslkey',
+  'sslpassphrase',
+  'sslpassword',
+  'sslciphers',
+  'sslminversion',
+  'sslmaxversion',
+  'sslpfx',
+  'sslrejectunauthorized',
+]
+
 export const defaultSSLConfig: SslOptions = {
   rejectUnauthorized: false,
 }
@@ -80,17 +93,7 @@ export const parseSSLConfig = (
   const sslMaxVersion = searchParams.get('sslmaxversion')
   const sslPfx = searchParams.get('sslpfx')
 
-  const hasSSLParams = Boolean(
-    sslCa ||
-    sslCert ||
-    sslKey ||
-    sslPassphrase ||
-    sslCiphers ||
-    sslMinVersion ||
-    sslMaxVersion ||
-    sslPfx ||
-    sslRejectUnauthorized
-  )
+  const hasSSLParams = TLS_PARAMS.some((param) => searchParams.get(param))
 
   if (ssl === '0' || ssl?.toLowerCase() === 'false') {
     if (hasSSLParams) {

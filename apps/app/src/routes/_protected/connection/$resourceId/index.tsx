@@ -10,8 +10,6 @@ import { RecentTables } from '~/modules/table/components/recent-tables'
 const EmptyPane = () => {
   const router = useRouter()
 
-  // The tab route is code-split and ships no pending UI: without this the first
-  // click from an empty pane waits on the chunk with nothing on screen.
   useEffect(() => {
     void router.loadRouteChunk(
       router.routesById['/_protected/connection/$resourceId/$tabId']

@@ -73,7 +73,6 @@ export const runOn = async (
   )
   return {
     duration: performance.now() - start,
-    // A text holding several statements answers with one result each.
     result: [results].flat().map((item) =>
       resultSet(
         {

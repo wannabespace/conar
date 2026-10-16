@@ -1,7 +1,12 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
-import type { Database as MysqlDatabase } from '~/core/runtime/dialects/mysql/schema'
+import { getCapabilities } from '~/core/catalog/capabilities'
+import type {
+  MariadbTables,
+  Database as MysqlDatabase,
+} from '~/core/runtime/dialects/mysql/schema'
 
 import type { ColumnsFilter } from '../shape'
 
@@ -14,6 +19,7 @@ export const mysqlColumns = async (
     .select((eb) => {
       const extraHas = (flag: string) => eb('EXTRA', 'like', `%${flag}%`)
       const isAutoIncrement = extraHas('auto_increment')
+      const isMariadb = eb(eb.fn('version'), 'like', '%MariaDB%')
       // MariaDB reports COLUMN_DEFAULT as SQL (quoted literals, NULL for no
       // default); MySQL reports the bare value, and marks expressions only
       // from 8.0.13 on.
@@ -21,7 +27,7 @@ export const mysqlColumns = async (
         .case()
         .when(
           eb.or([
-            eb(eb.fn('version'), 'like', '%MariaDB%'),
+            isMariadb,
             eb('DATA_TYPE', '=', 'bit'),
             eb.and([
               eb('DATA_TYPE', 'in', ['datetime', 'timestamp']),
@@ -82,6 +88,7 @@ export const mysqlColumns = async (
           ])
           .as('isGenerated'),
         eb('IS_NULLABLE', '=', 'YES').as('nullable'),
+        isMariadb.as('mariadb'),
       ]
     })
     .$call((qb) =>
@@ -92,20 +99,58 @@ export const mysqlColumns = async (
               eb('TABLE_NAME', '=', filter.table),
             ])
           )
-        : qb.where('TABLE_SCHEMA', 'not in', [
-            'mysql',
-            'information_schema',
-            'performance_schema',
-            'sys',
-          ])
+        : qb.where(
+            'TABLE_SCHEMA',
+            'not in',
+            getCapabilities(Dialect.MySQL).systemSchemas
+          )
     )
     .orderBy('TABLE_SCHEMA')
     .orderBy('TABLE_NAME')
     .orderBy('ORDINAL_POSITION')
     .execute()
 
+  // MariaDB's JSON is a LONGTEXT under a json_valid() check, and before 10.2.22/10.3.10 CHECK_CONSTRAINTS does not exist.
+  const readsJsonChecks =
+    query.some((column) => column.mariadb && column.type === 'longtext') &&
+    (await db
+      .selectFrom('information_schema.TABLES')
+      .select('TABLE_NAME')
+      .where('TABLE_SCHEMA', '=', 'information_schema')
+      .where('TABLE_NAME', '=', 'CHECK_CONSTRAINTS')
+      .executeTakeFirst()) !== undefined
+  const checks = readsJsonChecks
+    ? await db
+        .$extendTables<MariadbTables>()
+        .selectFrom('information_schema.CHECK_CONSTRAINTS')
+        .select([
+          'CONSTRAINT_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'CHECK_CLAUSE as clause',
+        ])
+        .where('CHECK_CLAUSE', 'like', 'json_valid(%')
+        .$call((qb) =>
+          filter
+            ? qb
+                .where('CONSTRAINT_SCHEMA', '=', filter.schema)
+                .where('TABLE_NAME', '=', filter.table)
+            : qb.where(
+                'CONSTRAINT_SCHEMA',
+                'not in',
+                getCapabilities(Dialect.MySQL).systemSchemas
+              )
+        )
+        .execute()
+    : []
+  const jsonColumns = new Set(
+    checks.map(({ clause, schema, table }) => `${schema}.${table}.${clause}`)
+  )
+
   return query.map((column) => ({
     ...column,
+    ...(jsonColumns.has(
+      `${column.schema}.${column.table}.json_valid(\`${column.id}\`)`
+    ) && { declaredType: 'json', type: 'json' }),
     enumName:
       column.type === 'set' || column.type === 'enum' ? column.id : undefined,
     isArray: column.type === 'set',

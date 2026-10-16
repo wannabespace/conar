@@ -1,13 +1,14 @@
+import { connectionSecrets } from '@tamery/connection/secrets'
+import { resourceConnectionString } from '@tamery/connection/utils'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
-import { SafeURL } from '@tamery/shared/safe-url'
 import { Button } from '@tamery/ui/components/button'
+import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import type { MotionStyle } from 'motion/react'
-import { motion } from 'motion/react'
+import type { CSSProperties } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -29,9 +30,11 @@ import { buildConnectionMenuItems } from './connection-menu-items'
 export const ConnectionCard = ({
   connection,
   onRemove,
+  search,
 }: {
   connection: Connection
   onRemove: VoidFunction
+  search: string
 }) => {
   const router = useRouter()
   const { connectionStringsCollection, connectionsResourcesCollection } =
@@ -87,23 +90,21 @@ export const ConnectionCard = ({
   const selectedResource = connectionResources.find(
     (r) => r.name === resolvedSelectedResourceName
   )
+  const needsDetails = fetchType === 'waiting-for-details'
   const canOpenResource =
-    canSend || (fetchType === 'waiting-for-password' && !!window.electron)
+    canSend || needsDetails || fetchType === 'waiting-for-password'
+  const openResourceId = canOpenResource ? selectedResource?.id : undefined
 
-  const handleCopy = async () => {
-    const decryptedString = await connectionStringsCollection.utils.decrypt(
-      connection.id
+  const handleCopy = async () =>
+    copy(
+      resourceConnectionString(
+        connectionSecrets.copyable(
+          await connectionStringsCollection.utils.decrypt(connection.id)
+        ),
+        resolvedSelectedResourceName
+      ),
+      'Connection string copied'
     )
-
-    const connectionStringToCopy = new SafeURL(decryptedString)
-    connectionStringToCopy.pathname =
-      selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ||
-      selectedResourceName === null
-        ? ''
-        : selectedResourceName
-
-    copy(connectionStringToCopy.toString(), 'Connection string copied')
-  }
 
   const handleClearPassword = async () => {
     const record = connectionStringsCollection.get(connection.id)
@@ -111,60 +112,54 @@ export const ConnectionCard = ({
       return
     }
 
-    const url = new SafeURL(
-      await connectionStringsCollection.utils.decrypt(connection.id)
-    )
-    url.password = ''
+    const saved = await connectionStringsCollection.utils.decrypt(connection.id)
+    if (!connectionSecrets.stored(saved)) {
+      toast.info('No credentials are saved on this device')
+      return
+    }
 
-    const connectionStringRecord =
-      await connectionStringsCollection.utils.prepare({
-        connectionId: connection.id,
-        connectionString: url.toString(),
-        updatedAt: record.updatedAt,
-      })
-
-    connectionStringsCollection.update(connection.id, (draft) => {
-      Object.assign(draft, connectionStringRecord)
+    const { write } = await connectionStringsCollection.utils.prepareWrite({
+      connectionId: connection.id,
+      connectionString: connectionSecrets.strip(saved),
+      updatedAt: record.updatedAt,
     })
+    write()
 
     posthog.capture('connection_password_cleared')
-    toast.success('Password cleared from this device')
+    toast.success('Credentials cleared from this device')
   }
 
-  const isResourcesShown = resources.length > 1
   const isLoadingVisible =
     (isFetching && connectionResourcesNames.length === 0) || refresh.isPending
 
   const items = buildConnectionMenuItems({
     canSend,
     connection,
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
-    onOpenInNewWindow:
-      selectedResource && canOpenResource
-        ? () =>
-            openNewWindow(
-              router.buildLocation({
-                params: { resourceId: selectedResource.id },
-                to: '/connection/$resourceId',
-              }).href
-            )
-        : null,
+    onEdit: () => {
+      posthog.capture('connection_edit_opened')
+      void router.navigate({
+        params: { connectionId: connection.id },
+        to: '/edit/$connectionId',
+      })
+    },
+    onOpenInNewWindow: openResourceId
+      ? () =>
+          openNewWindow(
+            router.buildLocation({
+              params: { resourceId: openResourceId },
+              to: '/connection/$resourceId',
+            }).href
+          )
+      : null,
     onRefresh: () => refresh.mutate(),
     onRemove,
   })
 
   return (
-    <motion.div
-      layout="position"
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-      style={
-        (connection.color ? { '--color': connection.color } : {}) as MotionStyle
-      }
+    <div
+      style={{ '--color': connection.color } as CSSProperties}
       className="relative flex flex-col border-b last:border-b-0"
     >
       <AppContextMenu
@@ -174,16 +169,15 @@ export const ConnectionCard = ({
           <div
             className={cn(
               'group has-[[data-row-link]:focus-visible]:bg-accent relative flex h-9 items-center gap-3 pr-2 pl-3 select-none',
-              selectedResource &&
-                canOpenResource &&
+              openResourceId &&
                 'hover:bg-accent has-[[data-row-link]:hover]:bg-accent'
             )}
           />
         }
       >
-        {selectedResource && canOpenResource && (
+        {openResourceId && (
           <ConnectionResourceLink
-            resourceId={selectedResource.id}
+            resourceId={openResourceId}
             className="focus-visible:inset-ring-ring/50 absolute inset-0 cursor-default outline-hidden focus-visible:inset-ring-3"
             aria-label={`Open ${connection.name}`}
             preload={false}
@@ -206,10 +200,11 @@ export const ConnectionCard = ({
               title={connection.name}
               className="truncate text-sm leading-none"
             >
-              {connection.name}
+              <HighlightText text={connection.name} match={search} />
             </span>
             <ConnectionCardStatus
               canSend={canSend}
+              connectionId={connection.id}
               error={error}
               isLoadingVisible={isLoadingVisible}
               reason={reason}
@@ -218,9 +213,9 @@ export const ConnectionCard = ({
         </div>
         <ConnectionCardMeta
           canSend={canSend}
-          connectionStore={connectionStore}
+          connectionId={connection.id}
+          databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
-          isResourcesShown={isResourcesShown}
           resources={resources}
           selectedResourceName={selectedResourceName}
         />
@@ -228,10 +223,10 @@ export const ConnectionCard = ({
           variant="muted"
           items={items}
           contentProps={{ className: 'min-w-44' }}
-          render={<Button variant="ghost-row" size="icon-xs" />}
+          render={<Button variant="ghost-faint" size="icon-xs" />}
           className="relative z-10"
         />
       </AppContextMenu>
-    </motion.div>
+    </div>
   )
 }

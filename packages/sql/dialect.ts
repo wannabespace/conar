@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 const COMMON_KEYWORDS = [
   'ADD',
@@ -137,14 +137,11 @@ const COMMON_TYPES = [
 export interface DialectSpec {
   identifierQuotes: readonly string[]
   dollarQuotes: boolean
-  /** Backslash escapes inside `'...'` (MySQL/ClickHouse); Postgres and SQL Server only double the quote. */
   backslashEscapes: boolean
   hashComments: boolean
-  /** Unquoted names fold to lowercase and catalog lookups match exactly (Postgres); elsewhere lookups ignore case. */
   foldsNames: boolean
   atVariables: boolean
   goBatches: boolean
-  /** A reserved command word starts a new statement with no `;` before it (T-SQL), so `SELECT 1 SET ROWCOUNT 1` is two statements. */
   separatorFreeStatements: boolean
   /** `BEGIN … COMMIT` really runs as a transaction; ClickHouse's driver only fakes commit and rollback. */
   transactions: boolean
@@ -175,8 +172,8 @@ const spec = (
   types: new Set([...COMMON_TYPES, ...(overrides.types ?? [])]),
 })
 
-export const dialects: Record<ConnectionType, DialectSpec> = {
-  [ConnectionType.ClickHouse]: spec({
+export const dialects: Record<Dialect, DialectSpec> = {
+  [Dialect.ClickHouse]: spec({
     backslashEscapes: true,
     functions: [
       'ARRAYJOIN',
@@ -232,7 +229,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'UUID',
     ],
   }),
-  [ConnectionType.MSSQL]: spec({
+  [Dialect.MSSQL]: spec({
     atVariables: true,
     functions: [
       'CEILING',
@@ -283,7 +280,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
       'UNIQUEIDENTIFIER',
     ],
   }),
-  [ConnectionType.MySQL]: spec({
+  [Dialect.MySQL]: spec({
     atVariables: true,
     backslashEscapes: true,
     functions: [
@@ -319,7 +316,7 @@ export const dialects: Record<ConnectionType, DialectSpec> = {
     ],
     types: ['DATETIME', 'ENUM', 'LONGTEXT', 'MEDIUMINT', 'TINYINT'],
   }),
-  [ConnectionType.Postgres]: spec({
+  [Dialect.Postgres]: spec({
     dollarQuotes: true,
     foldsNames: true,
     functions: [

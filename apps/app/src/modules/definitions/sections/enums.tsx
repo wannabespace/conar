@@ -10,7 +10,7 @@ import {
   fieldErrorMessage,
   useAppForm,
 } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
@@ -60,7 +60,6 @@ const enumPlan = (item: EnumItem | null, drafts: EditableListItem[]) => {
     additions: rows
       .filter((row) => original[row.index] === undefined)
       .map((row) => row.value),
-    // RENAME VALUE cannot land on a label that still exists, so a swap replaces.
     recreate:
       Object.values(renames).some((value) => original.includes(value)) ||
       !original.every((_, index) => rows[index]?.index === index),
@@ -217,7 +216,7 @@ const EnumInspector = ({
     },
     validators: { onChange: enumSchema, onMount: enumSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item ? !can.edit : !can.create
   const { recreate, values } = enumPlan(item, draft.drafts)
@@ -320,7 +319,7 @@ export const Enums = () => {
       }}
       Inspector={EnumInspector}
       items={enums.filter((item) => item.schema === selectedSchema)}
-      keyOf={(item) => JSON.stringify([item.schema, item.name])}
+      getKey={(item) => JSON.stringify([item.schema, item.name])}
       loading={isPending}
       match={(item) => matchesSearch(search, item.name, ...item.values)}
       queryKey={query.queryKey}

@@ -11,7 +11,6 @@ export interface TableRef {
 export interface StatementScope {
   tables: TableRef[]
   ctes: string[]
-  /** Names given after a closing paren — subquery aliases, and harmlessly column aliases too. */
   derived: string[]
   hasUnknownColumns: boolean
 }
@@ -39,7 +38,6 @@ const readQualifiedName = (tokens: Token[], from: number) => {
 const tableRefAt = (
   tokens: Token[],
   from: number,
-  // In FROM/JOIN a name followed by `(` is a function; after INTO it is a column list.
   parenIsCall: boolean
 ): { ref: TableRef; next: number } | null => {
   const { next, parts } = readQualifiedName(tokens, from)
@@ -102,7 +100,6 @@ const isCteName = (tokens: Token[], index: number) => {
   return isPunctuation(tokens[cursor], '(')
 }
 
-// The table a CREATE names is new, and `FOR UPDATE`/`ON DUPLICATE KEY UPDATE` start no UPDATE.
 const introducesTable = (tokens: Token[], index: number) => {
   const previous = tokens[index - 1]?.text.toUpperCase() ?? ''
   if (isKeyword(tokens[index], 'TABLE')) {
@@ -146,8 +143,6 @@ export const statementScope = (tokens: Token[]): StatementScope => {
   const ctes: string[] = []
   const derived: string[] = []
   let hasUnknownColumns = false
-  // One entry per open paren: whether it is a call's argument list, where `FROM` is not a table
-  // clause (`EXTRACT(YEAR FROM ts)`, `SUBSTRING(s FROM 1)`).
   const parens: boolean[] = []
 
   for (const [index, token] of tokens.entries()) {

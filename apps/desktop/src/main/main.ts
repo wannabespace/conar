@@ -1,3 +1,4 @@
+import '@tamery/shared/arktype-config'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -5,6 +6,7 @@ import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { isConnectionError } from '@tamery/shared/connections'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import type { UpdatesStatus } from '@tamery/shared/updates'
+import { Result } from 'better-result'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -14,6 +16,14 @@ import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
 import { autoUpdater } from './lib/todesktop'
+
+const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
+if (
+  app.isPackaged &&
+  DEBUGGING_SWITCHES.some((name) => app.commandLine.hasSwitch(name))
+) {
+  app.exit(1)
+}
 
 initElectronEvents()
 
@@ -48,6 +58,18 @@ let mainWindow: BrowserWindow | null = null
 
 // Allowlist: any other scheme hands the renderer a way to launch arbitrary local apps. cursor: and vscode: carry the MCP install links.
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'cursor:', 'vscode:'])
+
+const openExternal = async (win: BrowserWindow, url: string) => {
+  const opened = await Result.tryPromise(() => shell.openExternal(url))
+  if (opened.isErr()) {
+    win.webContents.send('toast', {
+      description:
+        'No app on this computer opens it. Install the app, or copy the config instead.',
+      message: "Couldn't open the link",
+      type: 'error',
+    })
+  }
+}
 
 export const createWindow = (route?: string) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
@@ -109,7 +131,7 @@ export const createWindow = (route?: string) => {
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (EXTERNAL_PROTOCOLS.has(new URL(url).protocol)) {
-      shell.openExternal(url)
+      void openExternal(win, url)
     }
     return { action: 'deny' }
   })
@@ -198,13 +220,13 @@ export const createWindow = (route?: string) => {
 }
 
 app.on('ready', () => {
-  const win = createWindow()
+  createWindow()
 
   ipcMain.handle('app.openWindow', (_event, route: string) => {
     createWindow(route)
   })
 
-  setupProtocolHandler(win)
+  setupProtocolHandler(createWindow)
 
   void restoreMcpServer()
 

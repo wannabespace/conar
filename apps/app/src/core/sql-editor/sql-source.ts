@@ -5,13 +5,16 @@ import {
   bindSqlModel,
   EMPTY_CATALOG,
 } from '@tamery/monaco/sql-language'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionType,
+  Dialect,
+} from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, findTableWithSchema } from '@tamery/sql'
 import { matchQuery } from '@tanstack/react-query'
 import type { editor } from 'monaco-editor'
 
-import { defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
@@ -21,9 +24,9 @@ import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 import { appStore } from '~/store'
 
-const sqlCatalogOf = (
+const getSqlCatalog = (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  dialect: Dialect
 ): SqlCatalog => {
   const tables = queryClient.getQueryData(
     resourceTablesAndSchemasQueryOptions({ connectionResource }).queryKey
@@ -35,14 +38,14 @@ const sqlCatalogOf = (
     return EMPTY_CATALOG
   }
   return {
-    defaultSchema: defaultSchemaOf(connectionType, connectionResource.name),
+    defaultSchema: getDefaultSchema(dialect, connectionResource.name),
     enums: (enums ?? []).map(({ metadata, name, values }) => ({
       column: metadata?.column,
       name,
       table: metadata?.table,
       values,
     })),
-    exactNames: dialects[connectionType].foldsNames,
+    exactNames: dialects[dialect].foldsNames,
     schemas: tables.schemas.map((schema) => ({
       name: schema.name,
       tables: schema.tables.map((table) => ({
@@ -72,9 +75,10 @@ const sqlCatalogOf = (
 
 const sqlSourceFor = (
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  connectionType: ConnectionType,
+  dialect: Dialect
 ): SqlSource => {
-  const catalog = () => sqlCatalogOf(connectionResource, connectionType)
+  const catalog = () => getSqlCatalog(connectionResource, dialect)
   const tablesOptions = resourceTablesAndSchemasQueryOptions({
     connectionResource,
   })
@@ -82,7 +86,6 @@ const sqlSourceFor = (
   const uncachedColumns = (refs: TableRef[]) => {
     const current = catalog()
     return refs.flatMap((ref) => {
-      // Schema and table from one lookup, so the columns fetched are the table suggestions resolve to.
       const found = findTableWithSchema(current, ref.name, ref.schema)
       return found?.table.columns === null
         ? [
@@ -113,6 +116,7 @@ const sqlSourceFor = (
         { ...input, type: connectionType },
         { context: { silent: true }, signal }
       ),
+    dialect,
     ghostTextEnabled: () =>
       appStore.get().isOnline && permix.check('ai.sql.use'),
     load: (refs) =>
@@ -133,16 +137,16 @@ const sqlSourceFor = (
           listener()
         }
       }),
-    type: connectionType,
   }
 }
 
 export const attachSqlSource = (
   codeEditor: editor.IStandaloneCodeEditor,
   connectionResource: ConnectionResource,
-  connectionType: ConnectionType
+  connectionType: ConnectionType,
+  dialect: Dialect
 ) => {
-  const source = sqlSourceFor(connectionResource, connectionType)
+  const source = sqlSourceFor(connectionResource, connectionType, dialect)
   const model = codeEditor.getModel()
   if (model) {
     bindSqlModel(model, source)

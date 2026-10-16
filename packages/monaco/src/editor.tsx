@@ -1,8 +1,9 @@
 import './worker'
-import { noop, tryCatch } from '@tamery/shared/utils'
+import { noop } from '@tamery/shared/utils'
 import { formatXml } from '@tamery/shared/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedTheme } from '@tamery/ui/theme-store'
+import { Result } from 'better-result'
 import * as monaco from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
@@ -120,10 +121,11 @@ export const Monaco = ({
   const getOptionsEvent = useEffectEvent((editorLanguage?: string) => {
     let initialValue = value
     if (editorLanguage?.includes('json')) {
-      initialValue =
-        tryCatch(() => JSON.stringify(JSON.parse(value), null, 2)).data ?? value
+      initialValue = Result.try(() =>
+        JSON.stringify(JSON.parse(value), null, 2)
+      ).unwrapOr(value)
     } else if (editorLanguage?.includes('xml')) {
-      initialValue = tryCatch(() => formatXml(value)).data ?? value
+      initialValue = Result.try(() => formatXml(value)).unwrapOr(value)
     }
     return {
       automaticLayout: true,

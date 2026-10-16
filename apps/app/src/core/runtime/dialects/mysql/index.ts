@@ -1,5 +1,5 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { Dialect } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect as KyselyDialect } from 'kysely'
 import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '~/core/runtime/dialects/driver'
@@ -8,12 +8,12 @@ import { createKyselyDriver } from '~/core/runtime/dialects/driver'
 export const mysqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MysqlAdapter(),
-    createDriver: () => createKyselyDriver(ConnectionType.MySQL, options),
+    createDriver: () => createKyselyDriver(Dialect.MySQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect
 
 export const mysqlColdDialect = () =>
   ({
@@ -23,4 +23,4 @@ export const mysqlColdDialect = () =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect

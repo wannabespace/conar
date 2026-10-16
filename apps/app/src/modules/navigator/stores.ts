@@ -4,6 +4,7 @@ import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
 import { schemaItems } from '~/core/tabs/kinds'
+import { posthog } from '~/lib/posthog'
 
 export const navigatorOpenValue = createWebStorageValue({
   defaultValue: true,
@@ -11,6 +12,11 @@ export const navigatorOpenValue = createWebStorageValue({
   schema: type('boolean'),
   type: 'localStorage',
 })
+
+export const toggleNavigator = () => {
+  navigatorOpenValue.set((open) => !open)
+  posthog.capture('navigator_toggled')
+}
 
 const tableRefType = type({
   schema: 'string',

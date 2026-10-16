@@ -16,7 +16,6 @@ const NODE_BODY_PADDING = 8
 const RANK_GAP = 96
 const NODE_GAP = 32
 
-// The top inset clears the toolbar floating over the canvas.
 export const fitViewOptions = {
   maxZoom: 1,
   padding: { bottom: '48px', top: '80px', x: '48px' },
@@ -54,8 +53,6 @@ const layoutConnected = (
   return { height, positions, width }
 }
 
-// Dagre stacks every unlinked table into one column beside the graph, so
-// standalone tables get a grid under it instead.
 const layoutDiagram = ({ relations, tables }: Diagram): Positions => {
   const linked = new Set(
     relations.flatMap((relation) => [

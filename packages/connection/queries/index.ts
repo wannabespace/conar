@@ -30,7 +30,6 @@ export const resultSet = (
   truncated: rows.length > maxRows,
 })
 
-/** The first set as row objects; a duplicate column name keeps its last value. */
 export const rowObjects = ([first]: ResultSet[]) =>
   first
     ? first.rows.map((row) =>

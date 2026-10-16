@@ -30,7 +30,6 @@ const adoptAnonymousUser = async (anonymousUserId: string, userId: string) => {
       .from(connections)
       .where(eq(connections.userId, anonymousUserId)),
   ])
-  // Connection strings are encrypted with their workspace's secret, so moving one re-encrypts it.
   const reencrypted = await Promise.all(
     guestConnections.flatMap(({ connectionString, id, workspaceId: from }) =>
       connectionString
@@ -88,7 +87,6 @@ export const exchange = orpc
   .input(
     type({
       codeChallenge: 'string',
-      type: '"crypto" | "noble" = "crypto"',
       verifier: 'string',
     })
   )
@@ -105,11 +103,7 @@ export const exchange = orpc
     },
   })
   .handler(async ({ errors, input, context: { headers } }) => {
-    const generatedCodeChallenge = await challenge[input.type].generateCode(
-      input.verifier
-    )
-
-    if (generatedCodeChallenge !== input.codeChallenge) {
+    if (challenge.generateCode(input.verifier) !== input.codeChallenge) {
       throw errors.NOT_ACCEPTABLE()
     }
 

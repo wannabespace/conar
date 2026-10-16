@@ -41,7 +41,7 @@ const searchRows = (
     .limit(limit)
     .execute()
 
-/** `term` matches anywhere in any of `columns` cast to text, case-insensitively; `%` and `_` in it act as wildcards. */
+/** `%` and `_` in `term` act as wildcards. */
 export const searchRowsQuery = (params: SearchRowsParams) =>
   createQuery({
     query: {

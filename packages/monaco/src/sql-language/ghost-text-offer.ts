@@ -5,10 +5,6 @@ const TRAILING_WORD = /\w+$/u
 const LEADING_WORD = /^\w+/u
 const LEADING_SPACE = /^\s/u
 
-/**
- * The model often omits the space (`accountsWHERE`): add one when the suggestion was asked for, or when the reply
- * opens with a keyword the typed word does not merge into (`in` + `to` is `INTO`, not `IN TO`).
- */
 export const needsLeadingSpace = (
   before: string,
   reply: string,
@@ -57,7 +53,6 @@ export interface GhostTextOffer {
   text: string
 }
 
-/** What is left of an offer once the user typed some of it, or `undefined` once they typed past or off it. */
 export const typedAlong = (
   offer: GhostTextOffer,
   typed: string,
@@ -69,7 +64,6 @@ export const typedAlong = (
     return
   }
   const typedPart = before.slice(offer.before.length)
-  // Typing a quote or bracket auto-closes it after the caret; the suggestion already holds the closer.
   const autoClosed = after.slice(0, after.length - offer.after.length)
   const rest = offer.text.slice(typedPart.length)
   return offer.text.startsWith(typedPart) &&

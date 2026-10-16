@@ -1,5 +1,5 @@
 import type { IconSvgElement } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 import type { ReactNode } from 'react'
 
@@ -15,10 +15,9 @@ export type ConnectionTab = typeof connectionTabType.infer
 
 // Methods, not properties: method parameters are bivariant, so a kind or view
 // typed with its own params still fits `TabKind[]` / `TabView`.
-// Annotate a view as `TabView<Params>` before listing it.
 /* oxlint-disable typescript/method-signature-style */
 export interface TabKind<Params = unknown> {
-  available?(params: Params, connectionType: ConnectionType): boolean
+  available?(params: Params, dialect: Dialect): boolean
   fullTitle?(params: Params): string
   icon: IconSvgElement
   label?(params: Params, siblings: Params[]): string
@@ -52,7 +51,7 @@ export const tabSearchType = type({
 type TabSearch = typeof tabSearchType.infer
 
 export interface SchemaItem {
-  available?: (connectionType: ConnectionType) => boolean
+  available?: (dialect: Dialect) => boolean
   icon: IconSvgElement
   label: string
   tabId: string

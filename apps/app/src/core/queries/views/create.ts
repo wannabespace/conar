@@ -18,7 +18,7 @@ export const createViewQuery = ({
 
   return createQuery({
     query: {
-      // A ClickHouse materialized view stores rows in a table engine it must be given. POPULATE is refused on Cloud and Replicated databases.
+      // POPULATE is refused on ClickHouse Cloud and Replicated databases.
       clickhouse: (db) =>
         materialized
           ? sql`create materialized view ${sql.id(schema, view)} engine = MergeTree order by tuple() as ${definition}`.execute(

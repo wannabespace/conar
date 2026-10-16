@@ -1,5 +1,6 @@
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
 import { queryOptions, skipToken } from '@tanstack/react-query'
+import { Result } from 'better-result'
 import { toast } from 'sonner'
 
 import { refreshAfterRun } from '~/core/connection/refresh-after-run'
@@ -50,9 +51,6 @@ const runs = new Map<string, AbortController>()
 const watchedTabs = new Set<string>()
 const runKey = ({ resourceId, tabId }: RunnerTab) => `${resourceId}\n${tabId}`
 
-const messageOf = (error: unknown) =>
-  error instanceof Error ? error.message : String(error)
-
 const watchTab = (tab: RunnerTab) => {
   const key = runKey(tab)
   if (watchedTabs.has(key)) {
@@ -74,7 +72,7 @@ const watchTab = (tab: RunnerTab) => {
   )
 }
 
-const resultOf = (
+const getResult = (
   statement: RunnerStatement,
   patch: Partial<RunnerResult> = {}
 ): RunnerResult => ({
@@ -96,19 +94,19 @@ const runOne = async (
 ): Promise<RunnerResult[]> => {
   const startedAt = performance.now()
   try {
-    const sets = await statementQuery(statement.text, params.type).run({
+    const sets = await statementQuery(statement.text, params.dialect).run({
       ...params,
       signal,
     })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
-      resultOf(statement, { duration, set })
+      getResult(statement, { duration, set })
     )
   } catch (error) {
     return [
-      resultOf(statement, {
+      getResult(statement, {
         duration: performance.now() - startedAt,
-        error: signal.aborted ? null : messageOf(error),
+        error: signal.aborted ? null : toError(error).message,
         stopped: signal.aborted,
       }),
     ]
@@ -132,11 +130,10 @@ export const runStatements = async ({
   runs.set(key, controller)
   watchTab(tab)
   const { signal } = controller
-  // A newer run on the tab owns its results; this one finishes quietly.
   const current = () => runs.get(key) === controller
   const run: RunnerRun = { id: crypto.randomUUID(), results: [], running: true }
   const slots = statements.map((statement) => [
-    resultOf(statement, { pending: true }),
+    getResult(statement, { pending: true }),
   ])
   const publish = () => {
     run.results = slots.flat()
@@ -147,21 +144,22 @@ export const runStatements = async ({
   publish()
 
   const [first] = statements
-  const { data: params, error } = await tryCatchAsync(async () => ({
+  const paramsResult = await Result.tryPromise(async () => ({
     ...(await connectionResourceToQueryParams(connectionResource)),
     resultSets: { maxRows: MAX_RESULT_ROWS },
   }))
-  if (error && first) {
+  if (paramsResult.isErr() && first) {
     slots.splice(0, slots.length, [
-      resultOf(first, { error: messageOf(error) }),
+      getResult(first, { error: toError(paramsResult.error.cause).message }),
     ])
   }
+  const params = paramsResult.unwrapOr(null)
   const ran: Parameters<typeof runHistory.add>[1] = []
   let failedAt: number | undefined
   if (params) {
     for (const [index, statement] of statements.entries()) {
       if (signal.aborted || failedAt !== undefined) {
-        slots[index] = [resultOf(statement, { stopped: true })]
+        slots[index] = [getResult(statement, { stopped: true })]
         continue
       }
       const ranAt = Date.now()
@@ -187,17 +185,17 @@ export const runStatements = async ({
   run.running = false
   publish()
   runHistory.add(connectionResource.id, ran)
-  const connectionType = params?.type
+  const dialect = params?.dialect
   posthog.capture('query_run', {
     failed: failedAt !== undefined,
     statements: statements.length,
     stopped: signal.aborted,
-    type: connectionType,
+    type: dialect,
   })
-  if (connectionType) {
+  if (dialect) {
     refreshAfterRun(
       connectionResource,
-      connectionType,
+      dialect,
       statements.map((statement) => statement.text).join(';\n')
     )
   }

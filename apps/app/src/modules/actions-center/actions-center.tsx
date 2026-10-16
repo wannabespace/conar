@@ -13,6 +13,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Command,
   CommandDialog,
@@ -37,7 +38,10 @@ import { useSubscription } from 'seitu/react'
 
 import { tableTypeIcon } from '~/core/catalog/table-type'
 import { useCollections } from '~/core/collections'
-import { prefetchConnectionResourceCore } from '~/core/connection/fetching'
+import {
+  canQueryConnection,
+  prefetchConnectionResourceCore,
+} from '~/core/connection/fetching'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
@@ -243,7 +247,7 @@ export const ActionsCenter = () => {
   )
 
   const { data: tablesAndSchemas } = useQuery({
-    ...(current
+    ...(current && canQueryConnection(current.connection)
       ? resourceTablesAndSchemasQueryOptions({
           connectionResource: current.connectionResource,
         })
@@ -322,25 +326,26 @@ export const ActionsCenter = () => {
                     to: '/connection/$resourceId/$tabId',
                   })
               ),
-              ...schemaGroups(current.connection.type).flatMap((group) =>
-                group.items.map((item) =>
-                  actionEntry(
-                    item.label,
-                    ['open', 'go to', group.label, 'definitions'],
-                    item.icon,
-                    () =>
-                      router.navigate({
-                        params: {
-                          resourceId: current.connectionResource.id,
-                          tabId: openTab(
-                            current.connectionResource.id,
-                            item.tabId
-                          ),
-                        },
-                        to: '/connection/$resourceId/$tabId',
-                      })
+              ...schemaGroups(getDialect(current.connection.type)).flatMap(
+                (group) =>
+                  group.items.map((item) =>
+                    actionEntry(
+                      item.label,
+                      ['open', 'go to', group.label, 'definitions'],
+                      item.icon,
+                      () =>
+                        router.navigate({
+                          params: {
+                            resourceId: current.connectionResource.id,
+                            tabId: openTab(
+                              current.connectionResource.id,
+                              item.tabId
+                            ),
+                          },
+                          to: '/connection/$resourceId/$tabId',
+                        })
+                    )
                   )
-                )
               ),
             ]
           : []),

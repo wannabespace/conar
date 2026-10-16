@@ -12,11 +12,11 @@ import {
   Tag01Icon,
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { copy } from '@tamery/ui/lib/copy'
 
 import type { AppMenuNode } from '~/components/app-menu'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { posthog } from '~/lib/posthog'
 
@@ -25,10 +25,8 @@ import { columnLayout, columnsOrder } from './store'
 
 const OFF = '__off__'
 
-export const isSortable = (connectionType: ConnectionType, column: Column) =>
-  !capabilitiesOf(connectionType).columnTypes.incomparable?.test(
-    column.type ?? ''
-  )
+export const isSortable = (dialect: Dialect, column: Column) =>
+  !getCapabilities(dialect).columnTypes.incomparable?.test(column.type ?? '')
 
 export interface ColumnActions {
   onEdit?: () => void
@@ -48,7 +46,6 @@ export const columnMenuItems = ({
 }: ColumnActions & {
   anchor: Element | null
   column: Column
-  /** Referenced columns that can label a foreign key, and the one shown. */
   labels?: { columns: string[]; current?: string }
   store: TablePageStore
 }): AppMenuNode[] => {

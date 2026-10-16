@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { useSubscription } from 'seitu/react'
 
 import type { CellGeometry } from '~/core/table/cell/cell'
@@ -12,14 +12,14 @@ import { ReferenceButtons } from '../references/reference-buttons'
 
 export const TableBodyCell = ({
   cell: { column, row, rowIndex },
-  connectionType,
+  dialect,
   entry,
   geometry,
   labels,
   onPeek,
 }: {
   cell: DataGridCell
-  connectionType: ConnectionType
+  dialect: Dialect
   entry: GridEntry
   geometry?: CellGeometry
   labels?: Map<string, string>
@@ -46,7 +46,7 @@ export const TableBodyCell = ({
     <TableCell
       {...geometry}
       column={column}
-      connectionType={connectionType}
+      dialect={dialect}
       draft={newRow ?? draft}
       flash={flash}
       label={

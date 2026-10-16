@@ -3,7 +3,7 @@ import { type } from 'arktype'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
 import {
@@ -11,7 +11,6 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
-// SQL Server gives every fixed database role (db_owner, db_datareader, …) a schema of its own, numbered from here up.
 const MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID = 16_384
 
 const CLICKHOUSE_MATERIALIZED_VIEW_STORAGE = '.inner%'
@@ -20,7 +19,6 @@ const tableTypes = ['base table', 'view', 'materialized view'] as const
 
 export type RelationKind = 'table' | 'view'
 
-// Every dialect with schemas reads from its schema catalog, so an empty schema is one row whose table is null.
 export const tablesAndSchemasType = type({
   comment: 'string | null',
   'row_level_security?': 'boolean | null',
@@ -117,7 +115,12 @@ export const resourceTablesAndSchemasQuery = memoize(
             .leftJoin('information_schema.TABLES as t', (join) =>
               join
                 .onRef('t.TABLE_SCHEMA', '=', 's.SCHEMA_NAME')
-                .on('t.TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+                // MariaDB types a system-versioned table SYSTEM VERSIONED, not BASE TABLE.
+                .on('t.TABLE_TYPE', 'in', [
+                  'BASE TABLE',
+                  'SYSTEM VERSIONED',
+                  'VIEW',
+                ])
             )
             .select([
               's.SCHEMA_NAME as schema',
@@ -126,7 +129,7 @@ export const resourceTablesAndSchemasQuery = memoize(
               (eb) =>
                 eb
                   .case()
-                  .when('t.TABLE_TYPE', '=', 'BASE TABLE')
+                  .when('t.TABLE_TYPE', '!=', 'VIEW')
                   .then(
                     eb.fn<string | null>('nullif', [
                       't.TABLE_COMMENT',
@@ -136,7 +139,13 @@ export const resourceTablesAndSchemasQuery = memoize(
                   .end()
                   .as('comment'),
               (eb) =>
-                eb.fn.coalesce('t.TABLE_TYPE', eb.val('BASE TABLE')).as('type'),
+                eb
+                  .case()
+                  .when('t.TABLE_TYPE', '=', 'VIEW')
+                  .then('VIEW')
+                  .else('BASE TABLE')
+                  .end()
+                  .as('type'),
             ])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
             .execute(),
@@ -195,13 +204,13 @@ export const resourceTablesAndSchemasQueryOptions = ({
     placeholderData: undefined,
     queryFn: async () => {
       const params = await connectionResourceToQueryParams(connectionResource)
-      const { systemSchemas } = capabilitiesOf(params.type)
+      const { systemSchemas } = getCapabilities(params.dialect)
       const results = await resourceTablesAndSchemasQuery({
         database: connectionResource.name,
       }).run(params)
       const bySchema = Object.groupBy(results, (table) => table.schema)
-      const defaultSchema = defaultSchemaOf(
-        params.type,
+      const defaultSchema = getDefaultSchema(
+        params.dialect,
         connectionResource.name
       )
 

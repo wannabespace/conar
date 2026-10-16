@@ -50,7 +50,6 @@ export const clickhouseColumns = async (
       (eb) =>
         eb.fn<string | null>('nullIf', ['comment', eb.val('')]).as('comment'),
       sql<boolean>`default_kind IN ('MATERIALIZED', 'ALIAS')`.as('isGenerated'),
-      // ClickHouse refuses to UPDATE a sorting or primary key column.
       sql<boolean>`default_kind NOT IN ('MATERIALIZED', 'ALIAS') AND NOT is_in_sorting_key AND NOT is_in_primary_key`.as(
         'editable'
       ),

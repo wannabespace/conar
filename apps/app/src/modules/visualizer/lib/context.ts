@@ -1,13 +1,13 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
 
 import {
-  capabilitiesOf,
+  getCapabilities,
   foreignKeysCreatable,
   sectionAvailable,
-  sectionCapabilitiesOf,
+  getSectionCapabilities,
 } from '~/core/catalog/capabilities'
 
 import type {
@@ -17,23 +17,23 @@ import type {
   DiagramTable,
 } from './schema'
 
-export const gatesOf = (connectionType: ConnectionType) => {
-  const capabilities = capabilitiesOf(connectionType)
-  const constraints = sectionCapabilitiesOf('constraints', connectionType)
+export const getGates = (dialect: Dialect) => {
+  const capabilities = getCapabilities(dialect)
+  const constraints = getSectionCapabilities('constraints', dialect)
 
   return {
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,
-    foreignKeys: foreignKeysCreatable(connectionType),
-    indexes: sectionAvailable('indexes', connectionType),
-    policies: sectionAvailable('policies', connectionType),
+    foreignKeys: foreignKeysCreatable(dialect),
+    indexes: sectionAvailable('indexes', dialect),
+    policies: sectionAvailable('policies', dialect),
     schemas: capabilities.schemas,
-    triggers: sectionAvailable('triggers', connectionType),
+    triggers: sectionAvailable('triggers', dialect),
   }
 }
 
-export type DiagramGates = ReturnType<typeof gatesOf>
+export type DiagramGates = ReturnType<typeof getGates>
 
 export interface DiagramActions {
   addColumn: (table: DiagramTable) => void
@@ -56,9 +56,6 @@ export interface DiagramActions {
   toggleNullable: (table: DiagramTable, column: DiagramColumn) => void
 }
 
-// Hover changes on every pointer move, so it lives in a store each card and
-// edge reads through its own selector instead of in React context, which would
-// re-render every card on the canvas per move.
 interface DiagramView {
   hoveredRelationIds: string[]
   hoveredTableId: string | null
@@ -73,8 +70,6 @@ export const diagramViewStore = memoize((_resourceId: string) =>
 
 type DiagramViewStore = ReturnType<typeof diagramViewStore>
 
-// Below this zoom column text is unreadable, so cards drop their rows and
-// scale the table name up instead.
 export const COMPACT_ZOOM = 0.5
 
 export interface DiagramContextValue {

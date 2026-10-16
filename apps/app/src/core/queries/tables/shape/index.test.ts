@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { DialectAdapter, QueryCompiler } from 'kysely'
 import {
   DummyDriver,
@@ -13,7 +13,7 @@ import {
   PostgresQueryCompiler,
 } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 import {
   addColumnStatement,
@@ -64,7 +64,7 @@ const mssqlDropDefault =
 describe('createTable', () => {
   test('a single key is a column constraint the engine names', () => {
     expect(
-      createTableStatement(ConnectionType.Postgres, postgres, {
+      createTableStatement(Dialect.Postgres, postgres, {
         ...target,
         columns: [id, note],
       }).sql
@@ -74,14 +74,14 @@ describe('createTable', () => {
   })
 
   test("New table's id fills itself on every engine with a sequence", () => {
-    const newTableId = (type: ConnectionType) => ({
+    const newTableId = (dialect: Dialect) => ({
       ...id,
-      type: capabilitiesOf(type).columnTypes.id,
+      type: getCapabilities(dialect).columnTypes.id,
     })
     const engines = [
-      [ConnectionType.Postgres, postgres],
-      [ConnectionType.MySQL, mysql],
-      [ConnectionType.MSSQL, mssql],
+      [Dialect.Postgres, postgres],
+      [Dialect.MySQL, mysql],
+      [Dialect.MSSQL, mssql],
     ] as const
     expect(
       engines.map(
@@ -100,7 +100,7 @@ describe('createTable', () => {
 
   test('a composite key is a table constraint', () => {
     expect(
-      createTableStatement(ConnectionType.Postgres, postgres, {
+      createTableStatement(Dialect.Postgres, postgres, {
         ...target,
         columns: [id, { ...note, nullable: false, primaryKey: true }],
       }).sql
@@ -111,7 +111,7 @@ describe('createTable', () => {
 
   test('ClickHouse orders by the key and wraps nullable types', () => {
     expect(
-      createTableStatement(ConnectionType.ClickHouse, mysql, {
+      createTableStatement(Dialect.ClickHouse, mysql, {
         ...target,
         columns: [id, note],
       }).sql
@@ -122,7 +122,7 @@ describe('createTable', () => {
 
   test('ClickHouse without a key orders by tuple()', () => {
     expect(
-      createTableStatement(ConnectionType.ClickHouse, mysql, {
+      createTableStatement(Dialect.ClickHouse, mysql, {
         ...target,
         columns: [note],
       }).sql
@@ -131,14 +131,14 @@ describe('createTable', () => {
 })
 
 test('SQL Server renames through sp_rename with a bracketed name', () => {
-  const renameTable = renameTableStatement(ConnectionType.MSSQL, mssql, {
+  const renameTable = renameTableStatement(Dialect.MSSQL, mssql, {
     ...target,
     newName: 'u',
   })
   expect(renameTable.sql).toBe('EXEC sp_rename @1, @2')
   expect(renameTable.parameters).toEqual(['[s].[t]', 'u'])
 
-  const renameColumn = renameColumnStatement(ConnectionType.MSSQL, mssql, {
+  const renameColumn = renameColumnStatement(Dialect.MSSQL, mssql, {
     ...target,
     column: 'a',
     newName: 'b',
@@ -148,32 +148,32 @@ test('SQL Server renames through sp_rename with a bracketed name', () => {
 })
 
 test('ClickHouse and MySQL rename with RENAME TABLE, which also takes a view', () => {
-  for (const dialectType of [ConnectionType.ClickHouse, ConnectionType.MySQL]) {
+  for (const dialect of [Dialect.ClickHouse, Dialect.MySQL]) {
     expect(
-      renameTableStatement(dialectType, mysql, { ...target, newName: 'u' }).sql
+      renameTableStatement(dialect, mysql, { ...target, newName: 'u' }).sql
     ).toBe('RENAME TABLE `s`.`t` TO `s`.`u`')
   }
 })
 
 test('only Postgres cascades a table drop', () => {
   const drop = { ...target, cascade: true }
-  expect(dropTableStatement(ConnectionType.Postgres, postgres, drop).sql).toBe(
+  expect(dropTableStatement(Dialect.Postgres, postgres, drop).sql).toBe(
     'drop table "s"."t" cascade'
   )
-  expect(dropTableStatement(ConnectionType.MySQL, mysql, drop).sql).toBe(
+  expect(dropTableStatement(Dialect.MySQL, mysql, drop).sql).toBe(
     'drop table `s`.`t`'
   )
 })
 
 test('ClickHouse wraps a nullable type, except an Array', () => {
   expect(
-    addColumnStatement(ConnectionType.ClickHouse, mysql, {
+    addColumnStatement(Dialect.ClickHouse, mysql, {
       ...target,
       column: note,
     }).sql
   ).toBe('alter table `s`.`t` add column `note` Nullable(text)')
   expect(
-    addColumnStatement(ConnectionType.ClickHouse, mysql, {
+    addColumnStatement(Dialect.ClickHouse, mysql, {
       ...target,
       column: { ...note, type: 'Array(String)' },
     }).sql
@@ -182,7 +182,7 @@ test('ClickHouse wraps a nullable type, except an Array', () => {
 
 test('SQL Server drops a column default before the column', () => {
   expect(
-    dropColumnStatement(ConnectionType.MSSQL, mssql, {
+    dropColumnStatement(Dialect.MSSQL, mssql, {
       ...target,
       column: 'a',
     }).sql
@@ -207,14 +207,11 @@ describe('alterColumn', () => {
   const nullabilityOnly = { ...retype, type: 'integer' }
 
   test('Postgres retypes through a cast, only when the type changed', () => {
-    expect(
-      alterColumnStatement(ConnectionType.Postgres, postgres, retype).sql
-    ).toBe(
+    expect(alterColumnStatement(Dialect.Postgres, postgres, retype).sql).toBe(
       'alter table "s"."t" alter column "a" type bigint USING "a"::bigint, alter column "a" set not null'
     )
     expect(
-      alterColumnStatement(ConnectionType.Postgres, postgres, nullabilityOnly)
-        .sql
+      alterColumnStatement(Dialect.Postgres, postgres, nullabilityOnly).sql
     ).toBe('alter table "s"."t" alter column "a" set not null')
   })
 
@@ -227,7 +224,7 @@ describe('alterColumn', () => {
       type: 'varchar(20)',
     }
     expect(
-      alterColumnStatement(ConnectionType.MySQL, mysql, {
+      alterColumnStatement(Dialect.MySQL, mysql, {
         ...retype,
         original: mysqlOriginal,
         type: 'varchar(20)',
@@ -240,7 +237,7 @@ describe('alterColumn', () => {
   test('SQL Server keeps the collation, and moves the default off a retyped column', () => {
     const mssqlOriginal = { ...original, collation: 'Latin1_General_BIN' }
     expect(
-      alterColumnStatement(ConnectionType.MSSQL, mssql, {
+      alterColumnStatement(Dialect.MSSQL, mssql, {
         ...nullabilityOnly,
         original: mssqlOriginal,
       }).sql
@@ -248,7 +245,7 @@ describe('alterColumn', () => {
       'ALTER TABLE "s"."t" ALTER COLUMN "a" integer COLLATE Latin1_General_BIN NOT NULL'
     )
     expect(
-      alterColumnStatement(ConnectionType.MSSQL, mssql, {
+      alterColumnStatement(Dialect.MSSQL, mssql, {
         ...retype,
         nullable: true,
         original: mssqlOriginal,
@@ -260,13 +257,13 @@ describe('alterColumn', () => {
 
   test('ClickHouse wraps Nullable inside LowCardinality', () => {
     expect(
-      alterColumnStatement(ConnectionType.ClickHouse, mysql, {
+      alterColumnStatement(Dialect.ClickHouse, mysql, {
         ...retype,
         nullable: true,
       }).sql
     ).toBe('alter table `s`.`t` modify column `a` Nullable(bigint)')
     expect(
-      alterColumnStatement(ConnectionType.ClickHouse, mysql, {
+      alterColumnStatement(Dialect.ClickHouse, mysql, {
         ...retype,
         nullable: true,
         type: 'LowCardinality(String)',

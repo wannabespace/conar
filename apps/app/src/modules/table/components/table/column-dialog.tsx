@@ -12,7 +12,7 @@ import { resourceRowsQueryKey } from '~/core/queries/rows/list'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 import { addColumnQuery } from '~/core/queries/tables/add-column'
 import {
-  columnDefinitionOf,
+  getColumnDefinition,
   resourceColumnsQueryKey,
 } from '~/core/queries/tables/columns'
 import { editColumnQuery } from '~/core/queries/tables/edit-column'
@@ -68,7 +68,7 @@ export const TableColumnDialog = ({
   useImperativeHandle(columnDialogRef, () => ({
     add: () => open(null),
     edit: (column) => {
-      const original = columnDefinitionOf(column)
+      const original = getColumnDefinition(column)
       open({
         comment: original.comment,
         foreign: !!column.foreign,

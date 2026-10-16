@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
@@ -22,8 +22,7 @@ export interface FunctionShape {
   args: string
   behavior: string
   body: string
-  // Options the form does not show — STRICT, PARALLEL, COST, SET … — read back
-  // from the catalog and re-emitted, or an edit silently drops them.
+  // Options the form does not show (STRICT, PARALLEL, COST, SET …); an edit drops them unless re-emitted.
   extras: string
   kind: RoutineKind
   language: string
@@ -33,29 +32,27 @@ export interface FunctionShape {
   securityDefiner: boolean
 }
 
-export const functionBodyTemplateOf = ({
-  connectionType,
+export const getFunctionBodyTemplate = ({
+  dialect,
   kind,
   language,
   returnType,
 }: {
-  connectionType: ConnectionType
+  dialect: Dialect
   kind: RoutineKind
   language: string
   returnType: string
 }) => {
-  if (connectionType === ConnectionType.Postgres) {
+  if (dialect === Dialect.Postgres) {
     return language === 'sql' ? 'SELECT 1;' : 'BEGIN\n\nEND;'
   }
 
-  if (connectionType === ConnectionType.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return ''
   }
 
-  // An inline table-valued function is one RETURN of a SELECT; T-SQL rejects a
-  // BEGIN block around it.
   if (
-    connectionType === ConnectionType.MSSQL &&
+    dialect === Dialect.MSSQL &&
     kind === 'function' &&
     /^table$/iu.test(returnType.trim())
   ) {
@@ -67,15 +64,12 @@ export const functionBodyTemplateOf = ({
   }
 
   // T-SQL rejects a block holding no statement; MySQL takes one.
-  return connectionType === ConnectionType.MSSQL
+  return dialect === Dialect.MSSQL
     ? 'BEGIN\n  SET NOCOUNT ON;\nEND'
     : 'BEGIN\n\nEND'
 }
 
-// Dropping loses the routine's grants and owner, and fails while a view or
-// another routine depends on it. Postgres only replaces in place while the
-// whole signature stays put; SQL Server's CREATE OR ALTER also rewrites the
-// arguments and the return type.
+// SQL Server's CREATE OR ALTER also rewrites the arguments and the return type.
 export const replacesRoutine = (
   saved: {
     args: string | null
@@ -84,11 +78,11 @@ export const replacesRoutine = (
     returnType: string | null
   },
   shape: FunctionShape,
-  connectionType: ConnectionType
+  dialect: Dialect
 ) =>
   saved.name !== shape.name ||
   saved.kind !== shape.kind ||
-  (connectionType !== ConnectionType.MSSQL &&
+  (dialect !== Dialect.MSSQL &&
     ((saved.args ?? '') !== shape.args ||
       (saved.returnType ?? '') !== shape.returnType))
 
@@ -100,8 +94,6 @@ export interface RoutineTarget {
   schema: string
 }
 
-// Postgres ends the body at the first repeat of the opening tag, so the tag
-// has to be one the body does not already contain.
 const dollarQuoted = (body: string) => {
   let tag = '$tamery$'
 
@@ -162,7 +154,6 @@ export const dropRoutineStatements = ({
   return {
     mssql: drop,
     mysql: drop,
-    // Postgres overloads by signature, so the drop names the arguments too.
     postgres: sql`${drop}(${sql.raw(identity ?? '')})`,
   }
 }

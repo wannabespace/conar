@@ -4,7 +4,6 @@ import type Stripe from 'stripe'
 import { baseTable } from '../base-table'
 import { users } from './auth'
 
-// Strange solution to fix TS compiler error
 export type SubscriptionStatus = Extract<Stripe.Subscription.Status, string>
 
 export const subscriptionPeriod = d.pgEnum('subscription_period', [

@@ -39,7 +39,7 @@ const envType = type({
   STRIPE_SECRET_KEY: 'string',
   STRIPE_WEBHOOK_SECRET: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
-}).and(dbEnvType)
+}).merge(dbEnvType)
 
 const devOptionalEnvs = [
   'MIN_DESKTOP_VERSION',
@@ -64,9 +64,7 @@ const devOptionalEnvs = [
 export const env =
   nodeEnv === 'production' || nodeEnv === 'test'
     ? envType.assert(process.env)
-    : type
-        .and(
-          envType.omit(...devOptionalEnvs),
-          envType.pick(...devOptionalEnvs).partial()
-        )
+    : envType
+        .omit(...devOptionalEnvs)
+        .merge(envType.pick(...devOptionalEnvs).partial())
         .assert(process.env)

@@ -3,7 +3,6 @@ import {
   connectionsResources,
   connectionsResourcesUpdateSchema,
 } from '@tamery/db/schema'
-import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
@@ -13,15 +12,9 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type.and(
-      connectionsResourcesUpdateSchema.omit(
-        'createdAt',
-        'updatedAt',
-        'id',
-        'connectionId'
-      ),
-      connectionsResourcesUpdateSchema.pick('id').required()
-    )
+    connectionsResourcesUpdateSchema
+      .omit('createdAt', 'updatedAt', 'id', 'connectionId')
+      .merge(connectionsResourcesUpdateSchema.pick('id').required())
   )
   .errors({
     NOT_FOUND: { message: 'Connection resource not found' },

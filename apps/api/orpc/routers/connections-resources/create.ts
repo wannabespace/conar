@@ -39,7 +39,6 @@ export const create = orpc
       .returning()
 
     if (!inserted) {
-      // A null name never conflicts on (connectionId, name), only on the id.
       return db.query.connectionsResources.findFirst({
         where:
           input.name === null || input.name === undefined

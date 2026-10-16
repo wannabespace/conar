@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { McpAccess, McpRequest, McpTarget } from '@tamery/shared/mcp'
@@ -38,11 +39,11 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     { name: 'tamery', version: app.getVersion() },
     { instructions: INSTRUCTIONS }
   )
-  const accessOf = (connectionId: string): McpAccess =>
+  const getAccess = (connectionId: string): McpAccess =>
     access()[connectionId] ?? DEFAULT_MCP_ACCESS
 
-  const sharedAccessOf = (connectionId: string) => {
-    const connectionAccess = accessOf(connectionId)
+  const getSharedAccess = (connectionId: string) => {
+    const connectionAccess = getAccess(connectionId)
     if (connectionAccess === 'off') {
       throw new Error(
         `Connection "${connectionId}" is not shared with agents. The user can share it in Tamery → Settings → MCP.`
@@ -55,7 +56,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     request: Extract<McpRequest, { args: McpTarget }>,
     signal: AbortSignal
   ) => {
-    sharedAccessOf(request.args.connectionId)
+    getSharedAccess(request.args.connectionId)
     return askRenderer(request, signal)
   }
 
@@ -73,7 +74,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       )
       return jsonContent(
         connections.flatMap((connection) => {
-          const connectionAccess = accessOf(connection.id)
+          const connectionAccess = getAccess(connection.id)
           return connectionAccess === 'off'
             ? []
             : [{ ...connection, access: connectionAccess }]
@@ -86,7 +87,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP.`,
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and a string with an SSH tunnel (ssh_* params) is refused.`,
       inputSchema: {
         connectionString: z
           .string()
@@ -98,17 +99,23 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
           .enum(SyncType)
           .default(SyncType.Cloud)
           .describe(
-            'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_password" without the password, "cloud_without_connection_string" not at all'
+            'How the string syncs to the user\'s other devices, always encrypted: "cloud" whole, "cloud_without_secrets" without the password and other secrets, "cloud_without_connection_string" not at all'
           ),
         type: z.enum(ConnectionType),
       },
     },
     async (args, { signal }) => {
+      // A tunnel would let the agent make Tamery read any key file on disk and raise host-key dialogs.
+      if (describeConnectionString(args.connectionString).usesSsh) {
+        throw new Error(
+          'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
+        )
+      }
       const connection = await askRenderer(
         { args, method: 'createConnection' },
         signal
       )
-      return jsonContent({ ...connection, access: accessOf(connection.id) })
+      return jsonContent({ ...connection, access: getAccess(connection.id) })
     }
   )
 
@@ -162,7 +169,7 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       inputSchema: sqlInput,
     },
     async (args, { signal }) => {
-      const connectionAccess = sharedAccessOf(args.connectionId)
+      const connectionAccess = getSharedAccess(args.connectionId)
       if (connectionAccess === 'read') {
         throw new Error(
           `Connection "${args.connectionId}" is read-only for agents. The user can allow writes in Tamery → Settings → MCP.`

@@ -51,7 +51,7 @@ export const RunnerEditor = ({
   acceptAi: () => void
   rejectAi: () => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const store = useRunnerPageStore()
   const query = useSubscription(store, { selector: (state) => state.query })
   const actions = useRunnerActions()
@@ -115,16 +115,21 @@ export const RunnerEditor = ({
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, connection.type)
+      ? attachSqlSource(
+          codeEditor,
+          connectionResource,
+          connection.type,
+          dialect
+        )
       : undefined
-  }, [editorRef, connectionResource, connection.type])
+  }, [editorRef, connectionResource, connection.type, dialect])
 
   return (
     <div className="relative size-full">
       <Monaco
         data-mask
         ref={editorRef}
-        language={sqlLanguageIds[connection.type]}
+        language={sqlLanguageIds[dialect]}
         value={query}
         onChange={(next) => setQuery(store, next)}
         className="size-full"

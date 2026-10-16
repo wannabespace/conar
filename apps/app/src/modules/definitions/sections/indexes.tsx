@@ -4,12 +4,12 @@ import {
   LeftToRightListDashIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, pushUnique, sameList } from '@tamery/shared/utils'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
 import { FieldDescription } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 
 import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/core/catalog/capabilities'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { definitionKey } from '~/core/catalog/definition-keys'
 import { groupInSchema } from '~/core/connection/utils'
 import { createIndexQuery } from '~/core/queries/indexes/create'
@@ -81,9 +81,7 @@ const kindLabels: Record<IndexKind, string> = {
   unique: 'Unique',
 }
 
-// A name may hold the separator of any string key, so the key is the tuple.
-
-const kindOf = (item: IndexItem): IndexKind => {
+const getKind = (item: IndexItem): IndexKind => {
   if (item.isPrimary) {
     return 'primary'
   }
@@ -101,27 +99,26 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
     seed: (item): GroupedIndex => ({
       ...item,
       columns: [],
-      kind: kindOf(item),
+      kind: getKind(item),
     }),
   })
 
-const suggestedNameOf = (draft: IndexDraft) =>
+const getSuggestedName = (draft: IndexDraft) =>
   [draft.table, ...draft.columns, 'idx'].join('_')
 
-const finalNameOf = (draft: IndexDraft) =>
-  draft.name.trim() || suggestedNameOf(draft)
+const getFinalName = (draft: IndexDraft) =>
+  draft.name.trim() || getSuggestedName(draft)
 
-const draftOf = (
+const getDraft = (
   item: GroupedIndex | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  dialect: Dialect
 ): IndexDraft => ({
   columns: item?.columns ?? [],
   granularity: String(item?.granularity ?? 1),
   name: item?.name ?? '',
   schema: item?.schema ?? pageSchema,
-  skipType:
-    item?.type ?? capabilitiesOf(connectionType).indexes.skipTypes[0] ?? '',
+  skipType: item?.type ?? getCapabilities(dialect).indexes.skipTypes[0] ?? '',
   table: item?.table ?? '',
   unique: item ? item.kind !== 'regular' : false,
 })
@@ -129,30 +126,30 @@ const draftOf = (
 const reshapes = (
   draft: IndexDraft,
   item: GroupedIndex | null,
-  connectionType: ConnectionType
+  dialect: Dialect
 ) => {
   if (!item) {
     return false
   }
-  const opened = draftOf(item, item.schema, connectionType)
+  const opened = getDraft(item, item.schema, dialect)
 
   return (
     !sameList(draft.columns, opened.columns) ||
     draft.unique !== opened.unique ||
     draft.skipType !== opened.skipType ||
     draft.granularity !== opened.granularity ||
-    (!capabilitiesOf(connectionType).indexes.rename &&
-      finalNameOf(draft) !== item.name)
+    (!getCapabilities(dialect).indexes.rename &&
+      getFinalName(draft) !== item.name)
   )
 }
 
 const saveIndex = ({
-  connectionType,
+  dialect,
   draft,
   item,
   run,
 }: {
-  connectionType: ConnectionType
+  dialect: Dialect
   draft: IndexDraft
   item: GroupedIndex | null
   run: RunQuery
@@ -166,7 +163,7 @@ const saveIndex = ({
     table,
     unique,
   }
-  const name = finalNameOf(draft)
+  const name = getFinalName(draft)
 
   if (!item) {
     return run(createIndexQuery({ ...shape, name }))
@@ -175,25 +172,23 @@ const saveIndex = ({
   const target = { name: item.name, schema: item.schema, table: item.table }
 
   return run(
-    reshapes(draft, item, connectionType)
+    reshapes(draft, item, dialect)
       ? recreateIndexQuery({ ...shape, ...target, newName: name })
       : renameIndexQuery({ ...target, newName: name })
   )
 }
 
-// A constraint owns its index's columns, and an engine that cannot rename a
-// constraint cannot touch its index at all.
-const locksOf = ({
+const getLocks = ({
   can,
   item,
-  type: connectionType,
+  dialect,
 }: {
   can: SectionCapabilities
+  dialect: Dialect
   item: GroupedIndex | null
-  type: ConnectionType
 }) => {
   const owned = !!item?.constraintOwned
-  const { indexes, renameConstraints } = capabilitiesOf(connectionType)
+  const { indexes, renameConstraints } = getCapabilities(dialect)
   const readOnly = item
     ? !can.edit ||
       (owned && !renameConstraints) ||
@@ -275,32 +270,31 @@ const IndexInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  dialect,
 }: SectionInspectorProps<GroupedIndex>) => {
   const mutation = useMutation({
     meta: { event: 'index_saved' },
-    mutationFn: (draft: IndexDraft) =>
-      saveIndex({ connectionType, draft, item, run }),
+    mutationFn: (draft: IndexDraft) => saveIndex({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
-      toast.success(`Index "${finalNameOf(draft)}" saved`)
+      toast.success(`Index "${getFinalName(draft)}" saved`)
       onOpenChange(false)
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
     validators: { onChange: indexSchema, onMount: indexSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
   const { data: columnNames } = useQuery({
     ...resourceTableColumnIdsQueryOptions({
       connectionResource,
@@ -310,13 +304,13 @@ const IndexInspector = ({
     enabled: draft.table !== '',
   })
 
-  const locked = locksOf({ can, item, type: connectionType })
-  const reshaped = reshapes(draft, item, connectionType)
-  const { skipTypes } = capabilitiesOf(connectionType).indexes
+  const locked = getLocks({ can, dialect, item })
+  const reshaped = reshapes(draft, item, dialect)
+  const { skipTypes } = getCapabilities(dialect).indexes
 
   return (
     <Inspector
-      canSave={!item || reshaped || finalNameOf(draft) !== item.name}
+      canSave={!item || reshaped || getFinalName(draft) !== item.name}
       description={item ? `${item.schema}.${item.table}` : draft.schema}
       form={form}
       item={item}
@@ -345,7 +339,7 @@ const IndexInspector = ({
               autoFocus
               description="Leave it empty to use the suggested name."
               disabled={locked.readOnly}
-              placeholder={draft.table ? suggestedNameOf(draft) : 'Index name'}
+              placeholder={draft.table ? getSuggestedName(draft) : 'Index name'}
             />
           )}
         </form.AppField>
@@ -360,7 +354,7 @@ const IndexInspector = ({
               label="Table"
               disabled={locked.readOnly || !!item}
               options={
-                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+                item ? [item.table] : getRelationNames(draft.schema, 'table')
               }
               placeholder="Choose a table"
               onChanged={() => resetFields(form, { columns: [] })}
@@ -453,16 +447,16 @@ const columns: DefinitionsColumn<GroupedIndex>[] = [
   }),
   labelColumn({
     align: 'end',
-    header: 'Type',
-    labelOf: (item: GroupedIndex) =>
+    getLabel: (item: GroupedIndex) =>
       [kindLabels[item.kind], item.type].filter(Boolean).join(' · '),
+    header: 'Type',
     width: '3/12',
   }),
 ]
 
 export const Indexes = () => {
   const state = useDefinitionsState({ section: 'indexes' })
-  const { connectionResource, relationNamesOf, run, search, selectedSchema } =
+  const { connectionResource, getRelationNames, run, search, selectedSchema } =
     state
   const query = resourceIndexesQueryOptions({ connectionResource })
   const { data: indexes = [], isPending } = useQuery(query)
@@ -477,7 +471,7 @@ export const Indexes = () => {
       canDropItem={(item) => !item.constraintOwned}
       columns={columns}
       createBlocked={
-        relationNamesOf(selectedSchema ?? '', 'table').length === 0
+        getRelationNames(selectedSchema ?? '', 'table').length === 0
           ? 'This schema has no tables to index.'
           : undefined
       }
@@ -492,7 +486,7 @@ export const Indexes = () => {
       }
       Inspector={IndexInspector}
       items={groupIndexes(indexes, selectedSchema)}
-      keyOf={definitionKey.index}
+      getKey={definitionKey.index}
       loading={isPending}
       match={(item) =>
         kindFilter.matches(item.kind) &&

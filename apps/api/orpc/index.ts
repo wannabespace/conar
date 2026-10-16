@@ -2,10 +2,9 @@ import { ORPCError, os } from '@orpc/server'
 import { db } from '@tamery/db'
 import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
-import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
 import { decrypt } from '@tamery/shared/crypto-node'
 import type { Permissions } from '@tamery/shared/permissions'
-import { permissionsOf } from '@tamery/shared/permissions'
+import { getPermissions } from '@tamery/shared/permissions'
 import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 import { createPermix } from 'permix/orpc'
@@ -142,13 +141,9 @@ export const permix = createPermix<Permissions>({
       })
     }
 
-    const minorVersion = context.parsedAppVersion?.minor ?? 0
-
     throw new ORPCError('FORBIDDEN', {
       message:
-        minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-          ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
-          : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
+        'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
     })
   },
 }).contextKey('permissions')
@@ -177,7 +172,7 @@ export const permissionsMiddleware = logMiddleware.use(
         decryptConnectionString,
         getWorkspaceSecret,
         ...permix.setupContext(
-          permissionsOf({ subscription, user: session.user })
+          getPermissions({ subscription, user: session.user })
         ),
       },
     })

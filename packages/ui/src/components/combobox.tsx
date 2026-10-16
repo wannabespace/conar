@@ -22,7 +22,10 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
+import { selectTriggerVariants } from './select.utils'
 
 const Combobox = ComboboxPrimitive.Root
 
@@ -35,11 +38,14 @@ const ComboboxValue = ({ ...props }: ComboboxPrimitive.Value.Props) => (
 const ComboboxTrigger = ({
   className,
   children,
+  variant,
   ...props
-}: ComboboxPrimitive.Trigger.Props) => (
+}: ComboboxPrimitive.Trigger.Props &
+  VariantProps<typeof selectTriggerVariants>) => (
   <ComboboxPrimitive.Trigger
     data-slot="combobox-trigger"
-    className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+    data-size="default"
+    className={cn(selectTriggerVariants({ className, variant }))}
     {...props}
   >
     {children}
@@ -101,12 +107,18 @@ const ComboboxInput = ({
         <InputGroupButton
           size="icon-xs"
           variant="ghost"
-          render={<ComboboxTrigger />}
+          render={<ComboboxPrimitive.Trigger />}
           nativeButton
           data-slot="input-group-button"
           className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
           disabled={disabled}
-        />
+        >
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground pointer-events-none size-4"
+          />
+        </InputGroupButton>
       )}
       {showClear && <ComboboxClear disabled={disabled} />}
     </InputGroupAddon>

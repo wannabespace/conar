@@ -10,7 +10,6 @@ export interface NativeMenuActionItem {
   kind?: 'normal' | 'checkbox' | 'radio'
   checked?: boolean
   accelerator?: string
-  /** macOS only. */
   symbol?: SFSymbol
 }
 

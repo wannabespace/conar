@@ -1,7 +1,9 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import {
   connectionResourceToQueryParams,
@@ -19,13 +21,6 @@ export const privilegeType = type({
   table: 'string',
 })
 
-const SYSTEM_SCHEMAS = [
-  'mysql',
-  'information_schema',
-  'performance_schema',
-  'sys',
-]
-
 const query = createQuery({
   query: {
     clickhouse: unsupported('Privileges'),
@@ -40,7 +35,11 @@ const query = createQuery({
             'PRIVILEGE_TYPE as privilege',
             'IS_GRANTABLE as grantable',
           ])
-          .where('TABLE_SCHEMA', 'not in', SYSTEM_SCHEMAS)
+          .where(
+            'TABLE_SCHEMA',
+            'not in',
+            getCapabilities(Dialect.MySQL).systemSchemas
+          )
           .execute(),
         db
           .selectFrom('information_schema.TABLE_PRIVILEGES')
@@ -51,7 +50,11 @@ const query = createQuery({
             'PRIVILEGE_TYPE as privilege',
             'IS_GRANTABLE as grantable',
           ])
-          .where('TABLE_SCHEMA', 'not in', SYSTEM_SCHEMAS)
+          .where(
+            'TABLE_SCHEMA',
+            'not in',
+            getCapabilities(Dialect.MySQL).systemSchemas
+          )
           .execute(),
       ])
 

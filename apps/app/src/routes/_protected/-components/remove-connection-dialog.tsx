@@ -93,8 +93,10 @@ export const RemoveConnectionDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Connection</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this
-            connection and remove all associated data.
+            <span data-mask className="font-semibold">
+              {connection?.name}
+            </span>{' '}
+            and all its data are removed. This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

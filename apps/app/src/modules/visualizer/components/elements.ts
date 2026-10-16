@@ -4,8 +4,6 @@ import type { RelationEdge } from './relation-edge'
 import { handleId } from './row-handles'
 import type { TableNode } from './table-node'
 
-// React Flow re-renders every node and edge whose object changed identity, so
-// a drag frame must hand back the unmoved ones it already has.
 const nodeCache = new WeakMap<DiagramTable, TableNode>()
 const edgeCache = new WeakMap<DiagramRelation, RelationEdge>()
 

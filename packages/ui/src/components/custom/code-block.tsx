@@ -28,7 +28,7 @@ const highlight = (
       ({ tokens }) => onTokens(tokens)
     )?.tokens
   }
-  // Never import statically or on the server: Shiki is ~190 KB on every page's critical path, and its wasm breaks the site's server bundle
+  // Never import statically or on the server: Shiki's wasm breaks the site's server bundle.
   if (!import.meta.env.SSR) {
     void (async () => {
       const { code: loaded } = await import('@streamdown/code')

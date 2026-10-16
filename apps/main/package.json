@@ -19,6 +19,7 @@
     "@tanstack/react-start": "catalog:",
     "arktype": "catalog:",
     "better-auth": "catalog:",
+    "better-result": "catalog:",
     "date-fns": "catalog:",
     "js-confetti": "catalog:",
     "memoza": "catalog:",

@@ -123,7 +123,7 @@ export const ActionsCopy = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -136,12 +136,11 @@ export const ActionsCopy = ({
   const [formatType, setFormatType] = useState<GeneratorFormat>('sql')
 
   const active = enabledFilters(filters)
-  // The ORM generators have no subquery for a filter through a foreign key, so only SQL can state it.
   const throughKeys = kind === 'query' && active.some((filter) => filter.via)
   const formats = FORMATS[kind].filter((f) => {
     const compatible = GENERATOR_COMPATIBILITY[f.type]
     return (
-      (!compatible || compatible.includes(connection.type)) &&
+      (!compatible || compatible.includes(dialect)) &&
       (!throughKeys || f.type === 'sql')
     )
   })
@@ -153,7 +152,7 @@ export const ActionsCopy = ({
 
   const code = format.generator({
     columns,
-    dialect: connection.type,
+    dialect,
     filters: active,
     indexes: indexes ?? [],
     schema,

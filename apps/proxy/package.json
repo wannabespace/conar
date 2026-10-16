@@ -16,7 +16,6 @@
     "@tamery/shared": "workspace:*",
     "arktype": "catalog:",
     "hono": "catalog:",
-    "memoza": "catalog:",
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {

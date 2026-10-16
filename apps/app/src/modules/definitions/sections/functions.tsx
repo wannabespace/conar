@@ -1,15 +1,15 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
 import { sqlLanguageIds } from '@tamery/monaco/sql-language'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { matchesSearch, sameShape } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { createFunctionQuery } from '~/core/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/core/queries/functions/definition'
 import { dropFunctionQuery } from '~/core/queries/functions/drop'
@@ -18,7 +18,7 @@ import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { recreateFunctionQuery } from '~/core/queries/functions/recreate'
 import type { FunctionShape, RoutineKind } from '~/core/queries/functions/shape'
 import {
-  functionBodyTemplateOf,
+  getFunctionBodyTemplate,
   replacesRoutine,
 } from '~/core/queries/functions/shape'
 import { queryClient } from '~/lib/query-client'
@@ -95,10 +95,10 @@ const TRIGGER_FUNCTION_BODY = 'BEGIN\n  RETURN NEW;\nEND;'
 
 const newDraft = (
   pageSchema: string,
-  connectionType: ConnectionType,
+  dialect: Dialect,
   preset?: string
 ): FunctionDraft => {
-  const { behaviors, languages } = capabilitiesOf(connectionType).functions
+  const { behaviors, languages } = getCapabilities(dialect).functions
   const language = languages[0] ?? ''
   const trigger = preset === 'trigger'
 
@@ -107,8 +107,8 @@ const newDraft = (
     behavior: behaviors[0] ?? '',
     body: trigger
       ? TRIGGER_FUNCTION_BODY
-      : functionBodyTemplateOf({
-          connectionType,
+      : getFunctionBodyTemplate({
+          dialect,
           kind: 'function',
           language,
           returnType: '',
@@ -124,13 +124,13 @@ const newDraft = (
   }
 }
 
-const draftOf = (
+const getDraft = (
   item: FunctionItem | null,
   pageSchema: string,
-  connectionType: ConnectionType,
+  dialect: Dialect,
   preset?: string
 ): FunctionDraft => {
-  const fallback = newDraft(pageSchema, connectionType, preset)
+  const fallback = newDraft(pageSchema, dialect, preset)
 
   return item
     ? {
@@ -150,7 +150,7 @@ const draftOf = (
     : fallback
 }
 
-const shapeOf = (draft: FunctionDraft): FunctionShape => ({
+const getShape = (draft: FunctionDraft): FunctionShape => ({
   args: draft.args.trim(),
   behavior: draft.kind === 'procedure' ? '' : draft.behavior,
   body: draft.body,
@@ -163,11 +163,8 @@ const shapeOf = (draft: FunctionDraft): FunctionShape => ({
   securityDefiner: draft.securityDefiner,
 })
 
-// A catalog row the form cannot rebuild — a CLR or table-valued routine, a
-// language we do not write, or a header option only the definition text
-// carries — loses on save whatever these fields cannot express.
-const formEditable = (item: FunctionItem, connectionType: ConnectionType) => {
-  const { languages } = capabilitiesOf(connectionType).functions
+const formEditable = (item: FunctionItem, dialect: Dialect) => {
+  const { languages } = getCapabilities(dialect).functions
 
   return (
     !item.custom &&
@@ -184,7 +181,7 @@ const hasExecutionOptions = ({
   languages,
   schemaBinding,
   securityDefiner,
-}: ReturnType<typeof capabilitiesOf>['functions']) =>
+}: ReturnType<typeof getCapabilities>['functions']) =>
   languages.length > 0 ||
   behaviors.length > 0 ||
   schemaBinding ||
@@ -200,9 +197,9 @@ const FunctionInspector = ({
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  dialect,
 }: SectionInspectorProps<FunctionItem>) => {
-  const options = capabilitiesOf(connectionType).functions
+  const options = getCapabilities(dialect).functions
   const mutation = useMutation({
     meta: { event: 'function_saved' },
     mutationFn: (draft: FunctionDraft) =>
@@ -219,15 +216,15 @@ const FunctionInspector = ({
                   name: item.name,
                   returnType: item.return_type,
                 },
-                shapeOf(draft),
-                connectionType
+                getShape(draft),
+                dialect
               ),
               schema: item.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
             })
           : createFunctionQuery({
               schema: draft.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
             })
       ),
     onSuccess: async (_result, draft) => {
@@ -239,33 +236,31 @@ const FunctionInspector = ({
     },
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType, preset),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect, preset),
     onSubmit: ({ value }) => {
       mutation.mutate(value)
     },
     validators: { onChange: functionSchema, onMount: functionSchema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item
-    ? !can.edit || !formEditable(item, connectionType)
+    ? !can.edit || !formEditable(item, dialect)
     : !can.create
   const execution = hasExecutionOptions(options)
-  // A starter body only belongs to the shape it was written for, so switching
-  // kind, language or return type swaps it — unless the user has typed their own.
   const retemplate = (next: FunctionDraft) => {
-    const template = functionBodyTemplateOf({ connectionType, ...next })
+    const template = getFunctionBodyTemplate({ dialect, ...next })
 
     if (
       !item &&
-      draft.body === functionBodyTemplateOf({ connectionType, ...draft })
+      draft.body === getFunctionBodyTemplate({ dialect, ...draft })
     ) {
       resetFields(form, { body: template })
     }
   }
   const returns = draft.kind === 'function'
-  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
-  const changed = !saved || !sameShape(shapeOf(draft), saved)
+  const saved = item && getShape(getDraft(item, draft.schema, dialect))
+  const changed = !saved || !sameShape(getShape(draft), saved)
 
   return (
     <Inspector
@@ -278,7 +273,7 @@ const FunctionInspector = ({
       readOnly={readOnly}
       warning={
         item
-          ? replaceWarning({ connectionType, name: item.name, noun: item.type })
+          ? replaceWarning({ dialect, name: item.name, noun: item.type })
           : undefined
       }
     >
@@ -300,7 +295,7 @@ const FunctionInspector = ({
               label="Type"
               description="A procedure runs for its effects and returns nothing."
               disabled={readOnly}
-              labelOf={(value: RoutineKind) => typeLabels[value]}
+              getLabel={(value: RoutineKind) => typeLabels[value]}
               onChanged={(kind: RoutineKind) => retemplate({ ...draft, kind })}
               options={kinds}
               placeholder="Type"
@@ -403,7 +398,7 @@ const FunctionInspector = ({
             <BodyField
               label="Body"
               disabled={readOnly}
-              language={sqlLanguageIds[connectionType]}
+              language={sqlLanguageIds[dialect]}
             />
           )}
         </form.AppField>
@@ -420,9 +415,9 @@ const FunctionInspector = ({
 const columns: DefinitionsColumn<FunctionItem>[] = [
   nameColumn({ icon: () => SourceCodeIcon, width: '3/12' }),
   labelColumn({
-    header: 'Language',
-    labelOf: (item: FunctionItem, { search }) =>
+    getLabel: (item: FunctionItem, { search }) =>
       item.language && <HighlightText text={item.language} match={search} />,
+    header: 'Language',
     width: '2/12',
   }),
   textColumn({
@@ -436,8 +431,8 @@ const columns: DefinitionsColumn<FunctionItem>[] = [
   }),
   labelColumn({
     align: 'end',
+    getLabel: (item: FunctionItem) => typeLabels[item.type],
     header: 'Type',
-    labelOf: (item: FunctionItem) => typeLabels[item.type],
     width: '2/12',
   }),
 ]
@@ -476,7 +471,7 @@ export const Functions = () => {
       }
       Inspector={FunctionInspector}
       items={inSchema}
-      keyOf={functionKey}
+      getKey={functionKey}
       loading={isPending}
       match={matches}
       queryKey={query.queryKey}

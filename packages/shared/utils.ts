@@ -1,3 +1,5 @@
+import { Result } from 'better-result'
+
 export const sleep = (ms: number, signal?: AbortSignal) =>
   // oxlint-disable-next-line promise/avoid-new -- timer-based delay requires Promise constructor
   new Promise<void>((resolve) => {
@@ -52,31 +54,8 @@ export type MaybeArray<T> = T | T[]
 // oxlint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
-export const tryCatch = <T>(
-  fn: () => T
-): { data: T; error: null } | { data: null; error: Error } => {
-  try {
-    return { data: fn(), error: null }
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error : new Error(String(error)),
-    }
-  }
-}
-
-export const tryCatchAsync = async <T>(
-  fn: () => Promise<T>
-): Promise<{ data: T; error: null } | { data: null; error: Error }> => {
-  try {
-    return { data: await fn(), error: null }
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error : new Error(String(error)),
-    }
-  }
-}
+export const toError = (cause: unknown) =>
+  cause instanceof Error ? cause : new Error(String(cause))
 
 export const silently = async (fn: () => MaybePromise<unknown>) => {
   try {
@@ -150,3 +129,11 @@ export const handleAggregateError = <T extends AnyFunction>(fn: T): T =>
       throw error
     }
   }) as T
+
+export const decodeURIComponentOrRaw = (component: string) =>
+  Result.try(() => decodeURIComponent(component)).unwrapOr(component)
+
+export const lowercaseKeys = (searchParams: URLSearchParams) =>
+  new URLSearchParams(
+    Array.from(searchParams, ([key, value]) => [key.toLowerCase(), value])
+  )

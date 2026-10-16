@@ -1,5 +1,6 @@
 import { FREE_WEEKLY_LIMITS } from '@tamery/shared/usage'
-import { silently, tryCatchAsync } from '@tamery/shared/utils'
+import { silently } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { format } from 'date-fns'
 import { createStore } from 'seitu'
 
@@ -11,19 +12,19 @@ import { queryClient } from '~/lib/query-client'
 
 export const limitDialog = createStore({ open: false })
 
-/** Refuses the agent and opens the limit dialog once this week's free `query` and `execute` runs are used up. */
 export const assertQuota = async () => {
   if (permix.check('mcp.unlimited')) {
     return
   }
-  // `networkMode: 'always'`: offline, an 'online' query pauses instead of failing and the agent would hang.
-  const { data: usage } = await tryCatchAsync(() =>
+  // Offline, an 'online' query pauses instead of failing and the agent would hang.
+  const read = await Result.tryPromise(() =>
     queryClient.query({
       ...usageQueryOptions,
       networkMode: 'always',
       staleTime: 0,
     })
   )
+  const usage = read.unwrapOr(null)
   if (!usage?.mcp || usage.mcp.used < usage.mcp.max) {
     return
   }

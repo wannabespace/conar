@@ -2,6 +2,7 @@ import { expect, mock, spyOn, test } from 'bun:test'
 
 import { Pool } from 'pg'
 
+import { SSH_DESKTOP_ONLY } from '../../../ssh/params'
 import { getPool } from './client'
 
 test('both initial and SSL fallback pools handle idle-client errors', async () => {
@@ -38,5 +39,17 @@ test('both initial and SSL fallback pools handle idle-client errors', async () =
     logging.mockRestore()
     poolQuery.mockRestore()
     listeners.mockRestore()
+  }
+})
+
+test('an SSH string reaches no driver unless the desktop app opens its tunnel', async () => {
+  const connect = spyOn(Pool.prototype, 'query')
+  try {
+    await expect(
+      getPool('postgres://user@db.internal/db?ssh_host=bastion')
+    ).rejects.toThrow(SSH_DESKTOP_ONLY)
+    expect(connect).not.toHaveBeenCalled()
+  } finally {
+    connect.mockRestore()
   }
 })

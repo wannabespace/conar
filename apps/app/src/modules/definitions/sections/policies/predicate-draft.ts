@@ -50,7 +50,7 @@ export const newPredicate: PredicateDraft = {
   tableKey: '',
 }
 
-const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
+const getPredicateDraft = (predicate: SavedPredicate): PredicateDraft => {
   const call = policyPredicate.parse(predicate.definition)
 
   return {
@@ -64,16 +64,16 @@ const predicateDraftOf = (predicate: SavedPredicate): PredicateDraft => {
   }
 }
 
-export const predicatePolicyDraftOf = (
+export const getPredicatePolicyDraft = (
   item: PolicyItem | null,
   pageSchema: string
 ): PredicatePolicyDraft => ({
   name: item?.name ?? '',
-  predicates: item?.predicates?.map(predicateDraftOf) ?? [newPredicate],
+  predicates: item?.predicates?.map(getPredicateDraft) ?? [newPredicate],
   schema: item?.schema ?? pageSchema,
 })
 
-export const predicateOf = (draft: PredicateDraft): PolicyPredicate => {
+export const getPredicate = (draft: PredicateDraft): PolicyPredicate => {
   const [functionSchema, functionName] = qualifiedName.assert(draft.functionKey)
   const [schema, table] = qualifiedName.assert(draft.tableKey)
 
@@ -91,14 +91,14 @@ export const predicateOf = (draft: PredicateDraft): PolicyPredicate => {
   }
 }
 
-export const predicatePlanOf = (
+export const getPredicatePlan = (
   item: PolicyItem,
   draft: PredicatePolicyDraft
 ) => {
-  const before = predicatePolicyDraftOf(item, item.schema).predicates.map(
-    predicateOf
+  const before = getPredicatePolicyDraft(item, item.schema).predicates.map(
+    getPredicate
   )
-  const after = draft.predicates.map(predicateOf)
+  const after = draft.predicates.map(getPredicate)
   const name = draft.name.trim()
 
   return {

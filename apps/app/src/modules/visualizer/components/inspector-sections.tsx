@@ -77,10 +77,10 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
     (relation) =>
       relation.source.table === table.id || relation.target.table === table.id
   )
-  const tableOf = (id: string) =>
+  const getTable = (id: string) =>
     diagram.tables.find((entry) => entry.id === id)
   const columnName = ({ column, table: tableId }: DiagramRelation['source']) =>
-    tableOf(tableId)?.columns.find((entry) => entry.id === column)?.name ??
+    getTable(tableId)?.columns.find((entry) => entry.id === column)?.name ??
     column
 
   return (
@@ -110,7 +110,7 @@ export const RelationsSection = ({ table }: { table: DiagramTable }) => {
                 <span className="text-muted-foreground/60">
                   {outgoing ? ' → ' : ' ← '}
                 </span>
-                {tableOf(far.table)?.name ?? far.table}.{columnName(far)}
+                {getTable(far.table)?.name ?? far.table}.{columnName(far)}
               </span>
               <Tooltip>
                 <TooltipTrigger

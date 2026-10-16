@@ -14,16 +14,24 @@
     "build": "vite build && bun ./scripts/copy-renderer.ts",
     "build:todesktop": "todesktop build",
     "check-types": "tsc",
+    "test": "bun test ./src",
     "todesktop:beforeInstall": "./scripts/todesktop-before-install.cjs"
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@modelcontextprotocol/sdk": "catalog:",
+    "@napi-rs/keyring": "catalog:",
     "@todesktop/runtime": "catalog:",
+    "arktype": "catalog:",
+    "better-result": "catalog:",
     "electron-store": "catalog:",
+    "fast-xml-parser": "catalog:",
+    "ini": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:",
+    "ssh-config": "catalog:",
+    "ssh2": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -31,6 +39,7 @@
     "@tamery/connection": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@todesktop/cli": "catalog:",
+    "@types/ini": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "electron": "catalog:",

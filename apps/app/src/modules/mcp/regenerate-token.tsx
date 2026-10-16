@@ -22,6 +22,8 @@ import { toast } from 'sonner'
 
 import { queryClient } from '~/lib/query-client'
 
+import { mcpClientsQuery, mcpStatusQuery } from './use-mcp-server'
+
 export const RegenerateToken = () => {
   const [open, setOpen] = useState(false)
   const { mutate: regenerate } = useMutation({
@@ -29,7 +31,8 @@ export const RegenerateToken = () => {
     mutationFn: async () => await window.electron?.mcp.regenerateToken(),
     onError: (error) => toast.error(error.message),
     onSuccess: (next) => {
-      queryClient.setQueryData(['mcp', 'status'], next)
+      queryClient.setQueryData(mcpStatusQuery.queryKey, next)
+      void queryClient.invalidateQueries(mcpClientsQuery)
       setOpen(false)
     },
   })

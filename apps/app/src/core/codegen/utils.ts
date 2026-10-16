@@ -1,7 +1,7 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { camelCase } from 'change-case'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import type { TypedColumn } from './types'
@@ -25,12 +25,12 @@ export const isNowDefault = (value: string) =>
 export const isSerialDefault = (value: string | null | undefined) =>
   /^nextval\(/iu.test(value ?? '')
 
-const BACKSLASH_ESCAPING_DIALECTS = new Set<ConnectionType>([
-  ConnectionType.ClickHouse,
-  ConnectionType.MySQL,
+const BACKSLASH_ESCAPING_DIALECTS = new Set<Dialect>([
+  Dialect.ClickHouse,
+  Dialect.MySQL,
 ])
 
-export const formatValue = (value: unknown, dialect: ConnectionType) => {
+export const formatValue = (value: unknown, dialect: Dialect) => {
   if (value === null) {
     return 'NULL'
   }
@@ -43,7 +43,7 @@ export const formatValue = (value: unknown, dialect: ConnectionType) => {
   if (typeof value === 'number') {
     return String(value)
   }
-  if (typeof value === 'boolean' && dialect === ConnectionType.MSSQL) {
+  if (typeof value === 'boolean' && dialect === Dialect.MSSQL) {
     return value ? '1' : '0'
   }
   if (typeof value === 'boolean') {
@@ -57,14 +57,14 @@ export const formatValue = (value: unknown, dialect: ConnectionType) => {
 
 const quoteWithBackticks = (name: string) => `\`${name.replaceAll('`', '``')}\``
 
-const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
+const QUOTE_IDENTIFIER_MAP: Record<Dialect, (name: string) => string> = {
   clickhouse: quoteWithBackticks,
   mssql: (name) => `[${name.replaceAll(']', ']]')}]`,
   mysql: quoteWithBackticks,
   postgres: (name) => `"${name.replaceAll('"', '""')}"`,
 }
 
-export const quoteIdentifier = (name: string, dialect: ConnectionType) =>
+export const quoteIdentifier = (name: string, dialect: Dialect) =>
   QUOTE_IDENTIFIER_MAP[dialect](name)
 
 export const isSingleColumnConstraint = (
@@ -75,8 +75,8 @@ export const isSingleColumnConstraint = (
   !!column[constraint] &&
   columns.filter((c) => c[constraint] === column[constraint]).length === 1
 
-export const explicitSchema = (schema: string, dialect: ConnectionType) => {
-  const { defaultSchema } = capabilitiesOf(dialect)
+export const explicitSchema = (schema: string, dialect: Dialect) => {
+  const { defaultSchema } = getCapabilities(dialect)
   return defaultSchema && schema !== defaultSchema ? schema : null
 }
 

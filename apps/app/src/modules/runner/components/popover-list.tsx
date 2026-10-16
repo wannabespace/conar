@@ -55,7 +55,7 @@ export const ActionItem = ({
   <AppContextMenu
     items={actions}
     contentProps={{
-      // An action can unmount its own row, so focus returns to the search by lookup — assumes no other cmdk Command is mounted.
+      // Assumes no other cmdk Command is mounted.
       finalFocus: () =>
         document.querySelector<HTMLElement>('[cmdk-input]')?.focus(),
     }}

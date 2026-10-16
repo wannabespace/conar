@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { DummyDriver, Kysely, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 
 import { dropConstraintStatement } from './shape'
@@ -27,11 +27,11 @@ test('only MySQL drops a key through its own clause', () => {
     table: 't',
   } as const
 
-  expect(dropConstraintStatement(ConnectionType.MySQL, mysql, target).sql).toBe(
+  expect(dropConstraintStatement(Dialect.MySQL, mysql, target).sql).toBe(
     'ALTER TABLE `s`.`t` DROP FOREIGN KEY `fk`'
   )
   expect(
-    dropConstraintStatement(ConnectionType.ClickHouse, mysql, {
+    dropConstraintStatement(Dialect.ClickHouse, mysql, {
       ...target,
       kind: 'check',
     }).sql

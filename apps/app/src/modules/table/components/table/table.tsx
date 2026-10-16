@@ -52,7 +52,7 @@ export const Table = ({
   schema: string
   table: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
@@ -126,7 +126,7 @@ export const Table = ({
   const canInsert = isEditable && !!isBaseTable
   const staged = useStagedEdits({
     columns,
-    connectionType: connection.type,
+    dialect,
     rows,
     visible,
   })
@@ -143,8 +143,8 @@ export const Table = ({
     scrollRef.current?.scrollTo({ behavior: 'smooth', top: 0 })
   }, [activeFilters, orderBy])
 
-  const { actionsOf, dialogs } = useColumnActions({
-    connectionType: connection.type,
+  const { getActions, dialogs } = useColumnActions({
+    dialect,
     editable: !!isBaseTable,
     schema,
     table,
@@ -180,9 +180,9 @@ export const Table = ({
           table,
         })}
         canEdit={staged.canEdit}
-        connectionType={connection.type}
+        dialect={dialect}
         focusKey={tableTabId(schema, table)}
-        getValue={staged.valueOf}
+        getValue={staged.getValue}
         onEdit={isEditable && !saving ? staged.edit : undefined}
         onExtendRows={
           isEditable
@@ -212,7 +212,7 @@ export const Table = ({
             : undefined
         }
         onPreview={(cell, element) => {
-          const hop = cellHop(cell.column, staged.valueOf(cell))
+          const hop = cellHop(cell.column, staged.getValue(cell))
           if (hop) {
             openPeek(element, hop)
           }
@@ -221,16 +221,16 @@ export const Table = ({
           <TableBodyCell
             cell={cell}
             geometry={geometry}
-            connectionType={connection.type}
+            dialect={dialect}
             labels={labels.get(cell.column.id)}
             entry={staged.rowAt(cell.rowIndex)}
             onPeek={openPeek}
           />
         )}
         renderLabel={(column) => (
-          <TableFieldLabel column={column} {...actionsOf(column)} />
+          <TableFieldLabel column={column} {...getActions(column)} />
         )}
-        sizeOf={(column) => columnSizes[column.id] ?? defaultSize(column)}
+        getSize={(column) => columnSizes[column.id] ?? defaultSize(column)}
         cursorRef={tableGridRef}
         layout={view}
         pinned={pinned}
@@ -246,7 +246,7 @@ export const Table = ({
         }}
         menuItems={(cell, element) =>
           tableCellMenu({
-            actions: actionsOf(cell.column),
+            actions: getActions(cell.column),
             canInsert,
             cell,
             element,
@@ -262,7 +262,7 @@ export const Table = ({
           <TableHeaderCell
             column={column}
             header={header}
-            {...actionsOf(column)}
+            {...getActions(column)}
           />
         )}
         leading={

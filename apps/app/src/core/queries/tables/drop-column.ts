@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import { createQuery } from '~/core/runtime/query'
 
@@ -12,16 +12,12 @@ export const dropColumnQuery = (target: {
   createQuery({
     query: {
       clickhouse: (db) =>
-        db.executeQuery(
-          dropColumnStatement(ConnectionType.ClickHouse, db, target)
-        ),
+        db.executeQuery(dropColumnStatement(Dialect.ClickHouse, db, target)),
       mssql: (db) =>
-        db.executeQuery(dropColumnStatement(ConnectionType.MSSQL, db, target)),
+        db.executeQuery(dropColumnStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>
-        db.executeQuery(dropColumnStatement(ConnectionType.MySQL, db, target)),
+        db.executeQuery(dropColumnStatement(Dialect.MySQL, db, target)),
       postgres: (db) =>
-        db.executeQuery(
-          dropColumnStatement(ConnectionType.Postgres, db, target)
-        ),
+        db.executeQuery(dropColumnStatement(Dialect.Postgres, db, target)),
     },
   })

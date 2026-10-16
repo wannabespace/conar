@@ -21,7 +21,6 @@ export interface CompletionItem {
   insertText: string
   detail?: string
   sortText: string
-  /** `insertText` uses `${1:placeholder}` tab stops. */
   snippet?: true
 }
 
@@ -87,7 +86,6 @@ export const resolveComparedColumn = (
 
 const PLAIN_NAME = /^[a-z_][a-z\d_$]*$/u
 
-// A catalog that matches names exactly folds unquoted ones to lowercase, so any other spelling is inserted quoted.
 export const quoteIfNeeded = (catalog: SqlCatalog, name: string) =>
   catalog.exactNames && !PLAIN_NAME.test(name)
     ? `"${name.replaceAll('"', '""')}"`

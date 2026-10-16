@@ -13,6 +13,7 @@ export const SHORTCUT_GROUPS: { shortcuts: ShortcutId[]; title: string }[] = [
       'saveChanges',
       'refresh',
       'newWindow',
+      'newConnection',
     ],
     title: 'App',
   },

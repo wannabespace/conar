@@ -49,8 +49,7 @@ export const Route = createFileRoute(
 
     if (
       !resolved ||
-      resolved.kind.available?.(resolved.params, context.connection.type) ===
-        false
+      resolved.kind.available?.(resolved.params, context.dialect) === false
     ) {
       throw redirect({
         params: { resourceId: params.resourceId },

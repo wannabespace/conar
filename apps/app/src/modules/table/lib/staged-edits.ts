@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { useSubscription } from 'seitu/react'
 
@@ -34,12 +34,12 @@ export const stageRow = (
 
 export const useStagedEdits = ({
   columns,
-  connectionType,
+  dialect,
   rows,
   visible,
 }: {
   columns: Column[]
-  connectionType: ConnectionType
+  dialect: Dialect
   rows: GridRow[]
   visible: Column[]
 }) => {
@@ -50,7 +50,7 @@ export const useStagedEdits = ({
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const staged = stagedGrid(newRows, rows, primaryColumns)
 
-  const valueOf = ({ column, row, rowIndex }: DataGridCell) => {
+  const getValue = ({ column, row, rowIndex }: DataGridCell) => {
     const entry = staged.rowAt(rowIndex)
     const draft =
       entry.kind === 'saved'
@@ -66,7 +66,7 @@ export const useStagedEdits = ({
       return
     }
     const actions = draftsActions(sessionStore)
-    const transformer = createTransformer(connectionType, column)
+    const transformer = createTransformer(dialect, column)
     if (
       isSameValue(value, row[column.id], (v) =>
         transformer.fromConnection(v).toRaw()
@@ -96,10 +96,10 @@ export const useStagedEdits = ({
             .filter(
               (column) => !column.primaryKey && !isFilledByDatabase(column)
             )
-            .map((column) => [column.id, valueOf({ ...cell, column })])
+            .map((column) => [column.id, getValue({ ...cell, column })])
         )
       ),
     edit,
-    valueOf,
+    getValue,
   }
 }

@@ -3,7 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceConstraintsQueryOptions } from '~/core/queries/constraints/list'
 import { resourceColumnsQueryOptions } from '~/core/queries/tables/columns'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
@@ -17,7 +17,7 @@ import { VisualizerSkeleton } from './visualizer-skeleton'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const VisualizerTab = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const { data: tables, error: tablesError } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource }),
     select: (data) =>
@@ -49,7 +49,7 @@ const VisualizerTab = () => {
       <VisualizerSkeleton
         drafts={hasDrafts}
         schemaPicker={
-          capabilitiesOf(connection.type).schemas &&
+          getCapabilities(dialect).schemas &&
           (!tables || new Set(tables.map(({ schema }) => schema)).size > 1)
         }
       />

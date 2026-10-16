@@ -1,8 +1,8 @@
 import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
-// The list shows three, skipping resources that no longer exist; the slack keeps it full after a few disappear.
-export const MAX_REMEMBERED_RESOURCES = 10
+export const SHOWN_LAST_OPENED_RESOURCES = 5
+export const MAX_REMEMBERED_RESOURCES = SHOWN_LAST_OPENED_RESOURCES * 2
 
 export const lastOpenedResourcesStorageValue = createWebStorageValue({
   defaultValue: [],

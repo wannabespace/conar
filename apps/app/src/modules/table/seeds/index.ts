@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker/locale/en'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
@@ -22,7 +22,7 @@ import {
   SKIP_GENERATOR,
 } from './types'
 
-const DIALECT_CONFIGS: Record<ConnectionType, DialectSeedConfig> = {
+const DIALECT_CONFIGS: Record<Dialect, DialectSeedConfig> = {
   clickhouse: clickhouseSeedConfig,
   mssql: mssqlSeedConfig,
   mysql: mysqlSeedConfig,
@@ -36,13 +36,13 @@ export interface GeneratorGroup {
 
 export type Generators = Partial<Record<GeneratorId, GeneratorDef>>
 
-export const getGenerators = memoize((dialect: ConnectionType): Generators => ({
+export const getGenerators = memoize((dialect: Dialect): Generators => ({
   ...BASE_GENERATORS,
   ...DIALECT_CONFIGS[dialect].generators,
 }))
 
 export const getGeneratorGroups = memoize(
-  (dialect: ConnectionType): GeneratorGroup[] =>
+  (dialect: Dialect): GeneratorGroup[] =>
     Object.entries(
       Object.groupBy(
         Object.entries(getGenerators(dialect)),
@@ -54,15 +54,14 @@ export const getGeneratorGroups = memoize(
     }))
 )
 
-// ClickHouse gives every column a zero-value default.
-const canSkipColumn = (column: Column, dialect: ConnectionType) =>
-  dialect === ConnectionType.ClickHouse ||
+const canSkipColumn = (column: Column, dialect: Dialect) =>
+  dialect === Dialect.ClickHouse ||
   !!column.isNullable ||
   !!column.defaultValue ||
   !!column.isGenerated
 
 const AVAILABILITY: Partial<
-  Record<GeneratorId, (column: Column, dialect: ConnectionType) => boolean>
+  Record<GeneratorId, (column: Column, dialect: Dialect) => boolean>
 > = {
   [ENUM_GENERATOR]: (column) => !!column.availableValues?.length,
   [NULL_GENERATOR]: (column) => !!column.isNullable,
@@ -73,12 +72,12 @@ const AVAILABILITY: Partial<
 export const isGeneratorAvailable = (
   id: GeneratorId,
   column: Column,
-  dialect: ConnectionType
+  dialect: Dialect
 ) => AVAILABILITY[id]?.(column, dialect) ?? true
 
 export const autoDetectGenerator = (
   column: Column,
-  dialect: ConnectionType
+  dialect: Dialect
 ): GeneratorId => {
   if (column.foreign) {
     return REFERENCE_GENERATOR
@@ -182,14 +181,9 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   value !== null &&
   Object.getPrototypeOf(value) === Object.prototype
 
-// A JSON column's value stays parsed: the insert's `bindValue` stringifies it, and a string here is stored as a JSON string.
-// Any other column gets the text, since no driver binds a plain object as JSON.
-const finalizeValue = (
-  value: unknown,
-  column: Column,
-  dialect: ConnectionType
-) => {
-  if (capabilitiesOf(dialect).columnTypes.json.test(column.type ?? '')) {
+// Only a JSON column keeps its parsed value: `bindValue` stringifies it, and no driver binds a plain object otherwise.
+const finalizeValue = (value: unknown, column: Column, dialect: Dialect) => {
+  if (getCapabilities(dialect).columnTypes.json.test(column.type ?? '')) {
     return value
   }
   if (Array.isArray(value)) {
@@ -216,7 +210,7 @@ export const generateRows = ({
   columns: Column[]
   columnGenerators: Record<string, Generator>
   count: number
-  dialect: ConnectionType
+  dialect: Dialect
   referenceData?: Record<string, unknown[]>
 }) => {
   const generators = getGenerators(dialect)

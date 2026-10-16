@@ -45,7 +45,7 @@ const countValues = (
     .limit(limit)
     .execute()
 
-/** A column's most frequent values under the table's filters; `term` keeps values whose text contains it, case-insensitively, `%` and `_` acting as wildcards. */
+/** `%` and `_` in `term` act as wildcards. */
 export const valueCountsQuery = (params: ValueCountsParams) =>
   createQuery({
     query: {

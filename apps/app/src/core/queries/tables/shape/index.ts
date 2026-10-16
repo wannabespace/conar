@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { CreateTableBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -16,8 +16,6 @@ export interface NewColumn {
   type: string
 }
 
-// What the catalog says about a column before an alter; engines that restate
-// the whole column (MySQL, SQL Server) repeat the parts the alter leaves alone.
 export interface ColumnDefinition {
   attributes: string
   collation: string | null
@@ -50,8 +48,7 @@ const LOW_CARDINALITY = 'LowCardinality('
 
 const clickhouseNeverNullableRegex = /^(?:Array|Map|Tuple)\(/u
 
-// ClickHouse spells nullability as a type wrapper, never as a NULL keyword,
-// and it has to sit inside LowCardinality. Array, Map and Tuple reject it.
+// ClickHouse needs Nullable() inside LowCardinality(), never around it.
 export const clickhouseColumnType = ({
   nullable,
   type: columnType,
@@ -65,7 +62,7 @@ export const clickhouseColumnType = ({
 }
 
 export const createTableStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   { columns, schema, table }: TableTarget & { columns: NewColumn[] }
 ) => {
@@ -74,7 +71,7 @@ export const createTableStatement = (
     .withSchema(schema)
     .schema.createTable(table)
 
-  if (dialectType === ConnectionType.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     for (const column of columns) {
       create = create.addColumn(
         column.name,
@@ -113,21 +110,18 @@ export const createTableStatement = (
 }
 
 export const renameTableStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   { newName, schema, table }: TableTarget & { newName: string }
 ) => {
   // MySQL's ALTER TABLE refuses a view; RENAME TABLE takes both.
-  if (
-    dialectType === ConnectionType.ClickHouse ||
-    dialectType === ConnectionType.MySQL
-  ) {
+  if (dialect === Dialect.ClickHouse || dialect === Dialect.MySQL) {
     return sql`RENAME TABLE ${sql.id(schema, table)} TO ${sql.id(schema, newName)}`.compile(
       db
     )
   }
 
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table))}, ${sql.val(newName)}`.compile(
       db
     )
@@ -141,25 +135,25 @@ export const renameTableStatement = (
 }
 
 export const dropTableStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   { cascade, schema, table }: TableTarget & { cascade: boolean }
 ) => {
   const drop = db.withSchema(schema).schema.dropTable(table)
 
   return (
-    cascade && dialectType === ConnectionType.Postgres ? drop.cascade() : drop
+    cascade && dialect === Dialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 
 export const addColumnStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   { column, schema, table }: TableTarget & { column: NewColumn }
 ) => {
   const alter = db.withSchema(schema).schema.alterTable(table)
 
-  if (dialectType === ConnectionType.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return alter
       .addColumn(column.name, sql.raw(clickhouseColumnType(column)))
       .compile()
@@ -172,8 +166,6 @@ export const addColumnStatement = (
     .compile()
 }
 
-// SQL Server refuses to drop or retype a column a DEFAULT constraint depends on
-// (Msg 5074), and only the catalog knows that constraint's name.
 export const mssqlDefaultConstraint = ({
   column,
   schema,
@@ -194,13 +186,13 @@ IF @statement IS NOT NULL EXEC sp_executesql @statement;`,
 }
 
 export const dropColumnStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   target: ColumnTarget
 ) => {
   const { column, schema, table } = target
 
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`${mssqlDefaultConstraint(target).drop}ALTER TABLE ${sql.id(schema, table)} DROP COLUMN ${sql.id(column)}`.compile(
       db
     )
@@ -214,7 +206,7 @@ export const dropColumnStatement = (
 }
 
 export const renameColumnStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   db: Db,
   {
     column,
@@ -226,7 +218,7 @@ export const renameColumnStatement = (
     newName: string
   }
 ) => {
-  if (dialectType === ConnectionType.MSSQL) {
+  if (dialect === Dialect.MSSQL) {
     return sql`EXEC sp_rename ${sql.val(mssqlQualified(schema, table, column))}, ${sql.val(newName)}, 'COLUMN'`.compile(
       db
     )

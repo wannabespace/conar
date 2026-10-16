@@ -44,6 +44,7 @@
     "@drizzle-team/brocli": "catalog:",
     "@hono/node-server": "catalog:",
     "@orpc/client": "catalog:",
+    "better-result": "catalog:",
     "consola": "catalog:",
     "hono": "catalog:",
     "mssql": "catalog:",

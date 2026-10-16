@@ -1,9 +1,10 @@
 import { expect, mock, test } from 'bun:test'
 
-import { os } from '@orpc/server'
-import { getCacheStore } from 'memoza'
+import { call, os } from '@orpc/server'
 
-const resolve = mock(() => Promise.resolve('postgres://user:password@host/db'))
+const resolve = mock(() =>
+  Promise.resolve('postgres://user:password@10.0.0.5/db')
+)
 mock.module('~/api-client', () => ({
   createApiClient: () => ({
     internal: { proxy: { resolveConnectionString: resolve } },
@@ -16,25 +17,15 @@ mock.module('~/orpc', () => ({
   ),
   orpc,
 }))
-const { resolveQueryConnectionString } = await import('./query')
+const { query } = await import('./query')
 
-test('connection resolution caches by credentials and input, not Headers identity', async () => {
-  await Promise.all(
-    Array.from({ length: 2 }, () =>
-      resolveQueryConnectionString({
-        headers: new Headers({
-          authorization: 'Bearer a',
-          cookie: 'session=a',
-        }),
-        input: { resourceId: 'resource' },
-      })
+test('a string resolved by id is held to public hosts too', async () => {
+  await expect(
+    call(
+      query.postgres.execute,
+      { query: 'SELECT 1', resourceId: 'resource' },
+      { context: { headers: new Headers() } }
     )
-  )
+  ).rejects.toThrow('only public hosts')
   expect(resolve).toHaveBeenCalledTimes(1)
-  expect(getCacheStore(resolveQueryConnectionString)?.cache.size).toBe(1)
-  await resolveQueryConnectionString({
-    headers: new Headers({ authorization: 'Bearer b', cookie: 'session=a' }),
-    input: { resourceId: 'resource' },
-  })
-  expect(resolve).toHaveBeenCalledTimes(2)
 })

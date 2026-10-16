@@ -23,17 +23,15 @@ export const AUTH_COOKIE_PREFIX = 'tamery' as const
 export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 
 export const COLOR_OPTIONS = [
-  '#ef4444',
-  '#f97316',
-  '#f59e0b',
-  '#16a34a',
-  '#06b6d4',
-  '#2563eb',
-  '#9333ea',
-  '#db2777',
+  { label: 'Red', value: '#ef4444' },
+  { label: 'Orange', value: '#f97316' },
+  { label: 'Amber', value: '#f59e0b' },
+  { label: 'Green', value: '#16a34a' },
+  { label: 'Cyan', value: '#06b6d4' },
+  { label: 'Blue', value: '#2563eb' },
+  { label: 'Purple', value: '#9333ea' },
+  { label: 'Pink', value: '#db2777' },
 ]
-
-export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const
 
 export const SUBSCRIPTION_PAST_DUE_MESSAGE =
   "We couldn't process your recent payment. Please update your payment method to avoid any interruption to your subscription." as const

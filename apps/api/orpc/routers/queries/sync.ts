@@ -83,8 +83,6 @@ export const sync = orpc
       messages.push({
         key: item,
         type: 'delete',
-        // @ts-expect-error kept for clients that still read delete.value
-        value: item,
       })
     }
 

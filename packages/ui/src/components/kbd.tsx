@@ -1,12 +1,17 @@
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 
-const Kbd = ({ className, ...props }: React.ComponentProps<'kbd'>) => (
+import { kbdVariants } from './kbd.utils'
+
+const Kbd = ({
+  className,
+  size,
+  variant,
+  ...props
+}: React.ComponentProps<'kbd'> & VariantProps<typeof kbdVariants>) => (
   <kbd
     data-slot="kbd"
-    className={cn(
-      `text-muted-foreground/80 in-data-[slot=tooltip-content]:text-card in-data-[slot=tooltip-content]:text-2xs in-data-[slot=dropdown-menu-shortcut]:text-2xs in-data-[slot=context-menu-shortcut]:text-2xs pointer-events-none inline-flex h-5 w-fit items-center justify-center font-sans text-xs font-medium tracking-normal select-none in-data-[slot=context-menu-shortcut]:h-4 in-data-[slot=dropdown-menu-shortcut]:h-4 in-data-[slot=tooltip-content]:h-4 in-data-[slot=context-menu-shortcut]:[&_svg]:size-2.5 in-data-[slot=dropdown-menu-shortcut]:[&_svg]:size-2.5 in-data-[slot=tooltip-content]:[&_svg]:size-2.5 [&_svg:not([class*='size-'])]:size-3`,
-      className
-    )}
+    className={cn(kbdVariants({ size, variant }), className)}
     {...props}
   />
 )

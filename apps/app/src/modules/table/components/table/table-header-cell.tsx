@@ -21,7 +21,7 @@ import { posthog } from '~/lib/posthog'
 
 import type { ColumnActions } from '../../lib/column-menu'
 import { columnMenuItems } from '../../lib/column-menu'
-import { labelColumnOf } from '../../lib/labels'
+import { getLabelColumn } from '../../lib/labels'
 import { columnLayout, columnsOrder, useTablePageStore } from '../../lib/store'
 import { ColumnHeading } from './column-type'
 
@@ -52,7 +52,7 @@ const useColumnMenu = (
             columns: labelCandidates(referenced, foreignColumn).map(
               ({ id }) => id
             ),
-            current: labelColumnOf(storedLabel, referenced, foreignColumn),
+            current: getLabelColumn(storedLabel, referenced, foreignColumn),
           }
         : undefined,
       store,

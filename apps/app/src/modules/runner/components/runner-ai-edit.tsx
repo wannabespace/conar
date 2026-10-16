@@ -28,11 +28,9 @@ export const useAiEdit = ({
     root: ReturnType<typeof renderWithRoot>['root']
     zone: monacoEditor.IViewZone
   } | null>(null)
-  // A decoration, not a stored Range: it moves with edits made elsewhere while the AI works.
   const targetRef = useRef<monacoEditor.IEditorDecorationsCollection | null>(
     null
   )
-  // Replies are matched to the request that is still current; a closed or replaced one is dropped.
   const requestRef = useRef<AbortController | null>(null)
 
   const target = () => targetRef.current?.getRange(0) ?? null

@@ -38,7 +38,7 @@ const formatCurrency = (amount: number) =>
     style: 'currency',
   }).format(amount)
 
-const statusOf = (
+const getStatus = (
   subscription: NonNullable<ReturnType<typeof useSubscription>>,
   trialEndsLater: boolean
 ) => {
@@ -72,8 +72,8 @@ export const Subscription = () => {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription(clientType)
   const [isYearly, setIsYearly] = useState(period === 'yearly')
-  const [mountedAt, setMountedAt] = useState(() => Date.now())
-  void setMountedAt
+  // oxlint-disable-next-line react/hook-use-state -- frozen at mount, never set
+  const [mountedAt] = useState(() => Date.now())
   const trialEndsLater = Boolean(
     subscription?.trialEnd && subscription.trialEnd.getTime() > mountedAt
   )
@@ -146,7 +146,7 @@ export const Subscription = () => {
       {subscription && (
         <SettingsGroup title="Billing">
           <SettingsRow
-            title={statusOf(subscription, trialEndsLater)}
+            title={getStatus(subscription, trialEndsLater)}
             description="Change your plan or payment method, or cancel, in the billing portal."
           >
             <Button

@@ -14,10 +14,6 @@ export const handleColumn = (id: string) => id.split(':').slice(0, -2).join(':')
 const handleClass =
   'border-popover bg-foreground/50! size-2! rounded-full border-2! opacity-0 transition-opacity group-hover/node:opacity-100 data-[linked=true]:opacity-100'
 
-// Every handle subscribes to the flow store, so a card mounts only the
-// handles an edge can end on: keys and linked columns always (a drag may land
-// on a key; an edge needs both its ends), other columns' source handles only
-// while the pointer is over a connectable card.
 export const RowHandles = ({
   column,
   connectable,

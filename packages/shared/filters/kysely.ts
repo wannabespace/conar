@@ -19,7 +19,6 @@ export const SQL_OPERATORS: Record<FilterOperator, string> = {
   notLike: 'not like',
 }
 
-/** How a filter value is matched against `column`; an engine that parses values by column type passes one. */
 export type FilterValueBinding = (column: string, value: unknown) => unknown
 
 const unbound: FilterValueBinding = (_, value) => value

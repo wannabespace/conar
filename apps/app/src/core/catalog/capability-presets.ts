@@ -35,7 +35,6 @@ interface IndexCapabilities {
 }
 
 interface PolicyCapabilities {
-  // ClickHouse's ALTER ROW POLICY rewrites every clause, so nothing recreates.
   alterInPlace: boolean
   commands: readonly PolicyCommand[]
   everyone: string
@@ -102,7 +101,6 @@ export interface ConnectionCapabilities {
   triggers: TriggerCapabilities
 }
 
-// Only Postgres fires a trigger on TRUNCATE, and only per statement.
 export const ROW_EVENTS = TRIGGER_EVENTS.filter((event) => event !== 'TRUNCATE')
 
 export const readOnly: SectionCapabilities = {}

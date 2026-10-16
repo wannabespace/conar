@@ -97,7 +97,7 @@ const SortedItem = ({
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const ActionsOrder = () => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, {
     selector: (state) => Object.entries(state.orderBy),
@@ -117,7 +117,7 @@ export const ActionsOrder = () => {
   const activeCount = orderEntries.length
   const availableColumns = columns.filter(
     (column) =>
-      isSortable(connection.type, column) &&
+      isSortable(dialect, column) &&
       !orderEntries.some(([id]) => id === column.id)
   )
   let label = 'Sort order'

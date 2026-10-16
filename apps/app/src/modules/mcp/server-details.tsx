@@ -7,9 +7,8 @@ import {
 import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'
+import { maskedToken } from './clients'
 import { RegenerateToken } from './regenerate-token'
-
-const VISIBLE_TOKEN_CHARS = 4
 
 export const ServerDetails = ({ token, url }: McpEndpoint) => (
   <SettingsGroup title="Server">
@@ -31,7 +30,7 @@ export const ServerDetails = ({ token, url }: McpEndpoint) => (
       description="Clients send it as a Bearer token in the Authorization header. Regenerate it if it leaks."
     >
       <code data-mask className="text-muted-foreground font-mono text-xs">
-        ••••••••{token.slice(-VISIBLE_TOKEN_CHARS)}
+        {maskedToken(token)}
       </code>
       <CopyIconButton
         label="Copy token"

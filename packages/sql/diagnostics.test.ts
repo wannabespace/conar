@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { SqlCatalog } from './catalog'
 import { diagnose } from './diagnostics'
 import { dialects } from './dialect'
 
-const pg = dialects[ConnectionType.Postgres]
+const pg = dialects[Dialect.Postgres]
 const catalog: SqlCatalog = {
   defaultSchema: 'public',
   enums: [{ name: 'status', values: ['active', "o'clock"] }],
@@ -115,7 +115,7 @@ describe('diagnose', () => {
     expect(
       diagnose(
         "INSERT INTO users (email) VALUES ('a') ON DUPLICATE KEY UPDATE email = VALUES(email)",
-        dialects[ConnectionType.MySQL],
+        dialects[Dialect.MySQL],
         catalog
       )
     ).toEqual([])
@@ -192,7 +192,7 @@ describe('diagnose', () => {
     expect(
       diagnose(
         'CREATE PROCEDURE p @a int = NULL AS SELECT 1',
-        dialects[ConnectionType.MSSQL],
+        dialects[Dialect.MSSQL],
         null
       )
     ).toEqual([])
@@ -211,9 +211,7 @@ describe('diagnose', () => {
   })
 
   it('warns that a GO repeat count is ignored', () => {
-    expect(
-      diagnose('SELECT 1\nGO 2', dialects[ConnectionType.MSSQL], null)
-    ).toEqual([
+    expect(diagnose('SELECT 1\nGO 2', dialects[Dialect.MSSQL], null)).toEqual([
       {
         end: 13,
         message: 'The repeat count is ignored — the batch runs once',

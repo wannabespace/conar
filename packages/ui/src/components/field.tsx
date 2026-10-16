@@ -14,6 +14,7 @@ import {
   use,
   useEffect,
   useId,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react'
@@ -63,11 +64,12 @@ const FieldLegend = ({
 const FieldGroup = ({
   className,
   size,
+  variant,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof fieldGroupVariants>) => (
   <div
     data-slot="field-group"
-    className={cn(fieldGroupVariants({ size }), className)}
+    className={cn(fieldGroupVariants({ size, variant }), className)}
     {...props}
   />
 )
@@ -184,8 +186,6 @@ const fieldErrorContent = (
 
 const ERROR_PEEK_MS = 3000
 
-// Tooltips share one provider, so only one can be open: without a single
-// owner, errors marked in the same commit all peek and the last one wins.
 const errorPeek = {
   claim: (id: string) => {
     if (!errorPeek.owner) {
@@ -229,9 +229,11 @@ const FieldError = ({
     errorPeek.get
   )
   const [hovered, setHovered] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    if (!content) {
+    // A label's CSS-hidden twin of an input's error must not peek: its tooltip anchors at the window corner.
+    if (!content || !triggerRef.current?.checkVisibility()) {
       return
     }
     errorPeek.claim(id)
@@ -259,12 +261,13 @@ const FieldError = ({
       <TooltipTrigger
         render={
           <button
+            ref={triggerRef}
             type="button"
             data-slot="field-error"
             onPointerEnter={() => engage(true)}
             onPointerLeave={() => engage(false)}
             className={cn(
-              `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none`,
+              `text-destructive focus-visible:focus-ring inline-flex shrink-0 items-center rounded-full outline-none [--button-size:--spacing(4)]`,
               className
             )}
             {...props}

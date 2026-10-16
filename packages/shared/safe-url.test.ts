@@ -178,6 +178,42 @@ describe('new SafeURL', () => {
     ])
   })
 
+  it.each([
+    [
+      'postgresql://srv.postgres.database.azure.com:5432/db?user=admin@srv&password=pw&sslmode=require',
+      {
+        hostname: 'srv.postgres.database.azure.com',
+        password: '',
+        username: '',
+      },
+    ],
+    [
+      'mysql://srv.mysql.database.azure.com:3306/db?user=admin@srv&password=pw',
+      { hostname: 'srv.mysql.database.azure.com', password: '', username: '' },
+    ],
+    [
+      'postgresql://u:p@host/db?user=admin@srv',
+      { hostname: 'host', password: 'p', username: 'u' },
+    ],
+    [
+      'postgresql://u:a/b?c@d@host/db?user=admin@srv',
+      { hostname: 'host', password: 'a/b?c@d', username: 'u' },
+    ],
+    [
+      'postgresql://u:pa?ss@host/db',
+      { hostname: 'host', password: 'pa?ss', username: 'u' },
+    ],
+    [
+      'postgres://u:123/x?k=v@host/db',
+      { hostname: 'host', password: '123/x?k=v', username: 'u' },
+    ],
+  ])('splits the credentials of %s before its query', (conn, expected) => {
+    const parsed = new SafeURL(conn)
+
+    expect(parsed).toMatchObject(expected)
+    expect(parsed.href).toBe(conn)
+  })
+
   it('throws on invalid connection string', () => {
     expect(() => new SafeURL('not-a-valid-connection-string')).toThrow(
       errorMessage()

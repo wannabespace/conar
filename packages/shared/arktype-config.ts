@@ -1,3 +1,3 @@
 import { configure } from 'arktype/config'
 
-configure({ exactOptionalPropertyTypes: false })
+configure({ exactOptionalPropertyTypes: false, onUndeclaredKey: 'delete' })

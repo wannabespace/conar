@@ -1,7 +1,8 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { tryCatch } from '@tamery/shared/utils'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { isNumericColumn } from '~/core/table/cell/utils'
 
@@ -20,12 +21,12 @@ import { createTimeTransformer } from './time.ts'
 import type { ValueTransformer } from './value-transformer'
 
 export const createTransformer = (
-  connectionType: ConnectionType,
+  dialect: Dialect,
   column: Column
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytes, json, uuid } = capabilitiesOf(connectionType).columnTypes
+  const { bytes, json, uuid } = getCapabilities(dialect).columnTypes
   if (json.test(type)) {
     return createJsonTransformer()
   }
@@ -35,7 +36,7 @@ export const createTransformer = (
 
   switch (column.uiType) {
     case 'list': {
-      return createListTransformer(connectionType, column)
+      return createListTransformer(dialect, column)
     }
 
     case 'boolean': {
@@ -70,18 +71,19 @@ export const createTransformer = (
 }
 
 export const parseCellText = (
-  connectionType: ConnectionType,
+  dialect: Dialect,
   column: Column,
   text: string | null
 ) =>
-  tryCatch(() => {
-    if (text !== null) {
-      return createTransformer(connectionType, column).toConnection.fromRaw(
-        text
-      )
-    }
-    if (column.isNullable === false) {
-      throw new Error(`${column.id} cannot be null`)
-    }
-    return null
+  Result.try({
+    catch: toError,
+    try: () => {
+      if (text !== null) {
+        return createTransformer(dialect, column).toConnection.fromRaw(text)
+      }
+      if (column.isNullable === false) {
+        throw new Error(`${column.id} cannot be null`)
+      }
+      return null
+    },
   })

@@ -18,6 +18,7 @@
     "@tamery/sql": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@types/react": "catalog:",
+    "better-result": "catalog:",
     "monaco-editor": "catalog:",
     "react": "catalog:"
   },

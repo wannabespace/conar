@@ -8,7 +8,7 @@ export const cellToFilterValues = (
     return ['']
   }
 
-  let raw = ''
+  let raw: string
   if (cellValue === null) {
     raw = ''
   } else if (typeof cellValue === 'object') {

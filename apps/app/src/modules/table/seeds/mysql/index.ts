@@ -3,7 +3,6 @@ import { MYSQL_GENERATORS } from './generators'
 
 export const mysqlSeedConfig = {
   generators: MYSQL_GENERATORS,
-  // The only MySQL list column is SET, whose literal is the comma-joined members
   transformArray: (items) => items.map(String).join(','),
   types: {
     binary: 'mysql.binary',
@@ -12,6 +11,8 @@ export const mysqlSeedConfig = {
     geomcollection: 'mysql.geometrycollection',
     geometry: 'mysql.point',
     geometrycollection: 'mysql.geometrycollection',
+    inet4: 'internet.ip',
+    inet6: 'internet.ipv6',
     linestring: 'mysql.linestring',
     longblob: 'mysql.binary',
     mediumblob: 'mysql.binary',

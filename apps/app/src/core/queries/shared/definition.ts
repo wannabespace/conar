@@ -22,9 +22,7 @@ export const readDefinition =
 const headerEnd = /(?<preceding>\S+)\s+AS\s/giu
 const parameterName = /@\w+$/u
 
-// `EXECUTE AS caller` and a parameter's `@p AS int` read as the header's
-// closing AS and are skipped; an AS inside a header comment still wins. Null
-// means the body cannot be read back, and the caller opens it read-only.
+// Null means the body cannot be read back; the caller opens it read-only.
 export const mssqlModuleParts = (definition: string | null) => {
   if (!definition) {
     return null

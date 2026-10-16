@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { valueToText } from '@tamery/shared/value-text'
 
 import type { Column } from '~/core/table/cell/utils'
@@ -31,17 +31,17 @@ const columnWidth = (
 export const RunnerResultsTable = ({
   columns,
   rows,
-  connectionType,
+  dialect,
 }: {
   columns: string[]
   rows: Record<string, unknown>[]
-  connectionType: ConnectionType
+  dialect: Dialect
 }) => (
   <DataGrid
     rows={rows}
     columns={columns.map((id): Column => ({ id, uiType: 'raw' }))}
-    connectionType={connectionType}
-    sizeOf={(column) =>
+    dialect={dialect}
+    getSize={(column) =>
       columnWidth(column.id, rows, column.id === columns.at(-1))
     }
   />

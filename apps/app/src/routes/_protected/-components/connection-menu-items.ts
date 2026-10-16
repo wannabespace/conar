@@ -2,6 +2,7 @@ import {
   AppWindowIcon,
   Copy01Icon,
   Delete02Icon,
+  PencilEdit01Icon,
   Refresh01Icon,
   SquareUnlock01Icon,
 } from '@hugeicons/core-free-icons'
@@ -13,18 +14,18 @@ import type { Connection } from '~/core/connection/sync'
 export const buildConnectionMenuItems = ({
   canSend,
   connection,
-  isPasswordPopulated,
   onClearPassword,
   onCopy,
+  onEdit,
   onOpenInNewWindow,
   onRefresh,
   onRemove,
 }: {
   canSend: boolean
   connection: Connection
-  isPasswordPopulated?: boolean
   onClearPassword: () => void
   onCopy: () => void
+  onEdit: () => void
   onOpenInNewWindow: (() => void) | null
   onRefresh: () => void
   onRemove: VoidFunction
@@ -37,6 +38,11 @@ export const buildConnectionMenuItems = ({
   },
   { type: 'separator' },
   {
+    label: 'Edit',
+    icon: PencilEdit01Icon,
+    onSelect: onEdit,
+  },
+  {
     label: 'Refresh',
     icon: Refresh01Icon,
     disabled: !canSend,
@@ -47,13 +53,12 @@ export const buildConnectionMenuItems = ({
     icon: Copy01Icon,
     onSelect: onCopy,
   },
-  ...(connection.syncType === SyncType.CloudWithoutPassword
+  ...(connection.syncType === SyncType.CloudWithoutSecrets
     ? ([
         {
-          label: 'Clear password',
+          label: 'Clear saved credentials',
           icon: SquareUnlock01Icon,
           className: 'whitespace-nowrap',
-          disabled: !isPasswordPopulated,
           onSelect: onClearPassword,
         },
       ] satisfies AppMenuNode[])

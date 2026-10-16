@@ -4,17 +4,13 @@ import type {
   UseHotkeyOptions,
 } from '@tanstack/react-hotkeys'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-
-import { openContextMenuOn } from '~/components/app-context-menu'
-import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
 import { navigatorOpenValue } from './stores'
 
 let mountedSearch: HTMLInputElement | null = null
 
-// flushSync: the search to focus only mounts once the update commits.
 const focusSearchAfter = (update: () => void) => {
   flushSync(update)
   mountedSearch?.focus()
@@ -79,7 +75,8 @@ export const useNavigatorSearch = ({
   onClear: () => void
 }) => {
   const searchRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
+  const highlightedControlId = useId()
+  const listId = useId()
   const [focused, setFocused] = useState(false)
   const [moved, setMoved] = useState<{
     activeId?: string
@@ -100,11 +97,9 @@ export const useNavigatorSearch = ({
   const index = nodes.findIndex((candidate) => candidate.id === highlighted)
   const node = nodes[index]
 
-  // A virtualized list must keep the highlighted row rendered (TablesList scrolls it into view), or Enter and ⌘. find nothing.
+  // A virtualized list must keep the highlighted row rendered, or Enter and ⌘. find nothing.
   const highlightedControl = () =>
-    listRef.current?.querySelector<HTMLElement>(
-      '[data-highlighted] :is(a, button)'
-    )
+    document.querySelector<HTMLElement>(`#${CSS.escape(highlightedControlId)}`)
 
   const highlight = (id: string) => setMoved({ activeId, id, search })
 
@@ -144,7 +139,6 @@ export const useNavigatorSearch = ({
           } else if (parent) {
             highlight(parent.id)
           } else if (onBack) {
-            // The exiting panel's search keeps focus through its exit animation, so the incoming search's idle-focus in `ref` skips it.
             focusSearchAfter(onBack)
           }
         },
@@ -156,27 +150,21 @@ export const useNavigatorSearch = ({
     ],
     { target: searchRef }
   )
-  useShortcut(
-    'contextMenu',
-    () => {
-      const control = highlightedControl()
-      if (control) {
-        openContextMenuOn(control)
-      }
-    },
-    { target: searchRef }
-  )
+  const highlightedId = focused ? highlighted : undefined
 
   return {
-    highlightedId: focused ? highlighted : undefined,
-    listRef,
+    highlightedControlId,
+    highlightedId,
+    listId,
     searchProps: {
+      'aria-activedescendant': highlightedId && highlightedControlId,
+      'aria-controls': listId,
+      'aria-expanded': true,
       onBlur: () => setFocused(false),
       onFocus: () => setFocused(true),
       ref: (input: HTMLInputElement) => {
         searchRef.current = input
         mountedSearch = input
-        // Only idle focus: a Schema page's autoFocus search mounting in the same commit must keep it.
         if (document.activeElement === document.body) {
           input.focus({ preventScroll: true })
         }
@@ -186,6 +174,7 @@ export const useNavigatorSearch = ({
           }
         }
       },
+      role: 'combobox',
     },
   }
 }

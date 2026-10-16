@@ -1,5 +1,7 @@
 const authRegex =
   /^(?<protocol>[^:]+):\/\/(?<user>[^:]*)(?::(?<password>.*))?$/u
+const QUERY_AFTER_HOST =
+  /^[^:]+:\/\/(?:.*@)?(?:\[[^\]]*\]|[^:/?#@[\]]*)(?::\d*)?(?:\/[^?#]*)?\?[\w.-]+=(?!.*@[\w.-]+(?::\d+)?\/)/u
 
 export class SafeURL implements URL {
   #url!: URL
@@ -14,30 +16,16 @@ export class SafeURL implements URL {
       return
     }
 
-    let normalizedUrl = url
-    const atIndex = url.lastIndexOf('@')
+    const queryAt = QUERY_AFTER_HOST.exec(url)?.[0].lastIndexOf('?')
+    const atIndex = url.lastIndexOf('@', queryAt)
+    const auth =
+      (atIndex > 0 && url.slice(0, atIndex).match(authRegex)?.groups) || null
 
-    let username = ''
-    let password = ''
-
-    if (atIndex > 0) {
-      const beforeAt = url.slice(0, atIndex)
-      const afterAt = url.slice(atIndex + 1)
-      const authMatch = beforeAt.match(authRegex)
-
-      if (authMatch?.groups) {
-        const { protocol, user, password: matchedPassword } = authMatch.groups
-        normalizedUrl = `${protocol}://${afterAt}`
-        username = user || ''
-        password = matchedPassword || ''
-      }
-    }
-
-    const parsedUrl = new URL(normalizedUrl)
-
-    this.#url = parsedUrl
-    this.username = username || ''
-    this.password = password || ''
+    this.#url = new URL(
+      auth ? `${auth.protocol}://${url.slice(atIndex + 1)}` : url
+    )
+    this.username = auth?.user || ''
+    this.password = auth?.password || ''
   }
 
   get protocol() {

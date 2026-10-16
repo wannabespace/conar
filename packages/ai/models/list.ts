@@ -14,12 +14,12 @@ export const models = {
     model: openrouter('anthropic/claude-haiku-4.5'),
     retries: [openrouter('google/gemini-3.8-flash')],
   }),
-  filters: createRetryableModel({
-    model: openrouter('anthropic/claude-sonnet-5.5'),
-    retries: [openrouter('x-ai/grok-4.7')],
-  }),
   sql: createRetryableModel({
     model: openrouter('anthropic/claude-opus-5.5'),
+    retries: [openrouter('x-ai/grok-4.7')],
+  }),
+  structured: createRetryableModel({
+    model: openrouter('anthropic/claude-sonnet-5.5'),
     retries: [openrouter('x-ai/grok-4.7')],
   }),
 }

@@ -6,7 +6,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
@@ -38,7 +38,6 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { useCollections } from '~/core/collections'
 import type { ConnectionResource } from '~/core/connection/sync'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
@@ -80,7 +79,7 @@ const LogRow = ({
     aria-label="Inspect query"
     data-active={isActive || undefined}
     onClick={onSelect}
-    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:focus-ring flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
+    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:bg-foreground/10 focus-visible:data-active:bg-foreground/15 flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
   >
     <StatusDot {...query} />
     <span className="min-w-0 flex-1 truncate font-mono text-xs">
@@ -109,10 +108,10 @@ interface DetailTab {
   value: string
 }
 
-const buildTabs = (query: QueryLog, connectionType: ConnectionType) =>
+const buildTabs = (query: QueryLog, dialect: Dialect) =>
   [
     {
-      code: formatSql(query.query, connectionType),
+      code: formatSql(query.query, dialect),
       label: 'Query',
       language: 'sql',
       value: 'query',
@@ -240,12 +239,12 @@ const LogList = ({
 export const QueryLogger = ({
   className,
   connectionResource,
+  dialect,
 }: {
   className?: string
   connectionResource: ConnectionResource
+  dialect: Dialect
 }) => {
-  const { connectionsCollection } = useCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)
   const logsStore = getQueryLogsStore(connectionResource.id)
   const queries = useSubscription(logsStore, {
     isEqual: Object.is,
@@ -260,8 +259,7 @@ export const QueryLogger = ({
     setTab({ id: selected.id, value: selected.error ? 'error' : 'query' })
   }
 
-  const tabs =
-    selected && connection ? buildTabs(selected, connection.type) : []
+  const tabs = selected ? buildTabs(selected, dialect) : []
   const activeTab = tabs.find((item) => item.value === tab.value) ?? tabs.at(0)
 
   const clearQueries = () => {

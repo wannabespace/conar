@@ -1,8 +1,10 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { mssqlModuleBody } from '~/core/queries/shared/definition'
 import {
@@ -81,8 +83,6 @@ const resourceTriggersQuery = createQuery({
               .else(0)
               .end()
               .as('enabled'),
-          // Replication, schema binding and EXECUTE AS live in the header the
-          // form rewrites, and the body is what follows it.
           (eb) =>
             eb
               .case()
@@ -128,8 +128,6 @@ const resourceTriggersQuery = createQuery({
           't.ACTION_TIMING as timing',
           't.ACTION_ORIENTATION as orientation',
           't.ACTION_STATEMENT as body',
-          // A drop-and-create puts the trigger back last among its event's
-          // triggers, so one that another already follows cannot keep its place.
           (eb) =>
             eb
               .exists(
@@ -156,12 +154,11 @@ const resourceTriggersQuery = createQuery({
               )
               .as('custom'),
         ])
-        .where('t.TRIGGER_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          't.TRIGGER_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .execute(),
     postgres: (db) =>
       db

@@ -25,7 +25,6 @@ export const recreateTriggerQuery = ({
 }) => {
   const drop = dropTriggerStatements({ name, schema, table })
   const create = createTriggerStatements({ schema, shape, table })
-  // A created trigger fires on the origin; one that did not comes back as it was.
   const restore =
     enabled === false || mode !== 'O'
       ? setTriggerEnabledStatements({

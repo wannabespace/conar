@@ -1,12 +1,12 @@
 import { FieldDescription } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -23,9 +23,9 @@ import type {
 import { Inspector, InspectorSection } from '../../components/inspector'
 import type { PolicyDraft, PolicyItem } from './policy-draft'
 import {
-  changesOf,
+  getChanges,
   clearsExpression,
-  draftOf,
+  getDraft,
   expressionsFor,
   kindLabels,
   kinds,
@@ -58,18 +58,18 @@ export const PolicyInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  dialect,
 }: SectionInspectorProps<PolicyItem>) => {
   const mutation = useMutation({
     meta: { event: 'policy_saved' },
     mutationFn: (draft: PolicyDraft) =>
-      savePolicy({ connectionType, draft, item, run }),
+      savePolicy({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
@@ -86,28 +86,28 @@ export const PolicyInspector = ({
     subject: `row level security on "${item?.table}"`,
   })
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
       mutation.mutate(withAllowedExpressions(value))
     },
     validators: { onChange: policySchema, onMount: policySchema },
   })
   const draft = withAllowedExpressions(
-    useStore(form.store, (state) => state.values)
+    useSelector(form.store, (state) => state.values)
   )
 
   const readOnly = item ? !can.edit : !can.create
   const { policies: options, rowLevelSecurity: rlsTables } =
-    capabilitiesOf(connectionType)
+    getCapabilities(dialect)
   const expressions = expressionsFor(draft.command)
   const checks = options.commands.some(
     (command) => expressionsFor(command).check
   )
-  const replacing = !!item && replaces(item, draft, connectionType)
+  const replacing = !!item && replaces(item, draft, dialect)
   const changed =
     !item ||
     replacing ||
-    Object.values(changesOf(item, draft)).some((change) => change !== null)
+    Object.values(getChanges(item, draft)).some((change) => change !== null)
 
   return (
     <Inspector
@@ -166,7 +166,7 @@ export const PolicyInspector = ({
               }
               disabled={readOnly || !!item}
               options={
-                item ? [item.table] : relationNamesOf(draft.schema, 'table')
+                item ? [item.table] : getRelationNames(draft.schema, 'table')
               }
               placeholder="Choose a table"
             />
@@ -194,7 +194,7 @@ export const PolicyInspector = ({
                 label="Type"
                 disabled={readOnly}
                 options={kinds}
-                labelOf={(value) => kindLabels[value]}
+                getLabel={(value) => kindLabels[value]}
                 placeholder="Type"
               />
             )}

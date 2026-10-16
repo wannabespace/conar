@@ -4,8 +4,9 @@ import {
   SidebarLeftIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type {
   CommandContext,
   CommandEntry,
@@ -14,7 +15,7 @@ import type {
 import { createSchemaDialogRef } from './create-schema-dialog'
 import { createTableDialogRef } from './create-table-dialog'
 import { createViewDialogRef } from './create-view-dialog'
-import { navigatorOpenValue } from './stores'
+import { toggleNavigator } from './stores'
 
 export const navigatorCommands = ({
   current,
@@ -37,7 +38,7 @@ export const navigatorCommands = ({
           order: 15,
           value: 'New view…',
         },
-        ...(capabilitiesOf(current.connection.type).schemas
+        ...(getCapabilities(getDialect(current.connection.type)).schemas
           ? [
               {
                 action: () => createSchemaDialogRef.current?.create(),
@@ -50,7 +51,7 @@ export const navigatorCommands = ({
             ]
           : []),
         {
-          action: () => navigatorOpenValue.set((open) => !open),
+          action: toggleNavigator,
           group: 'View',
           icon: SidebarLeftIcon,
           keywords: ['navigator', 'panel', 'hide', 'show'],

@@ -13,7 +13,6 @@ import type { CellGeometry } from './cell/cell'
 import type { Column } from './cell/utils'
 import type { DataGridCell } from './cursor'
 
-/** A column outside the data (row selection, trailing actions) that never moves. */
 export interface ExtraColumn {
   id: string
   renderCell: (props: {
@@ -55,7 +54,7 @@ export const ColumnGrid = ({
   renderHeader = PlainHeader,
   rows,
   scrollToRef,
-  sizeOf,
+  getSize,
   trailing,
   ...scroller
 }: GridScrollerProps & {
@@ -67,7 +66,7 @@ export const ColumnGrid = ({
   renderHeader?: (column: Column, props: GridHeaderProps) => ReactNode
   rows: GridRow[]
   scrollToRef?: Ref<ScrollToCell>
-  sizeOf: (column: Column) => number
+  getSize: (column: Column) => number
   trailing?: ExtraColumn
 }) => {
   const byId = new Map(columns.map((column) => [column.id, column]))
@@ -79,7 +78,7 @@ export const ColumnGrid = ({
     ...columns.map((column) => ({
       id: column.id,
       pinned: !!pinned?.includes(column.id),
-      size: sizeOf(column),
+      size: getSize(column),
     })),
     ...(trailing
       ? [{ fixed: true, id: trailing.id, size: trailing.size }]

@@ -43,7 +43,7 @@ const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button text-foreground hover:bg-foreground/5 not-data-active:group-data-highlighted/menu-item:bg-foreground/10 data-active:group-data-highlighted/menu-item:ring-primary/30 hover:text-foreground focus-visible:focus-ring active:bg-foreground/10 active:text-accent-foreground aria-pressed:bg-foreground/10 data-active:bg-foreground/15 hover:data-active:bg-foreground/15 flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 data-active:group-data-highlighted/menu-item:ring-2 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button text-foreground hover:bg-foreground/5 not-data-active:group-data-highlighted/menu-item:bg-foreground/10 hover:text-foreground focus-visible:bg-foreground/10 active:bg-foreground/10 active:text-accent-foreground aria-pressed:bg-foreground/10 data-active:bg-foreground/15 data-active:group-data-highlighted/menu-item:bg-foreground/20 focus-visible:data-active:bg-foreground/20 flex h-7 w-full cursor-default items-center gap-2 overflow-hidden rounded-md px-2 py-2 text-left text-sm whitespace-nowrap outline-hidden select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           variant === 'muted' && 'text-muted-foreground',
           className
         ),
@@ -121,7 +121,7 @@ const SidebarGroupLabel = ({
     props: mergeProps<'div'>(
       {
         className: cn(
-          `text-muted-foreground font-row group-data-highlighted/menu-item:bg-foreground/10 focus-visible:focus-ring flex h-6 shrink-0 items-center rounded-md px-2 text-xs outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-muted-foreground font-row group-data-highlighted/menu-item:bg-foreground/10 focus-visible:bg-foreground/10 flex h-6 shrink-0 items-center rounded-md px-2 text-xs outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           className
         ),
       },

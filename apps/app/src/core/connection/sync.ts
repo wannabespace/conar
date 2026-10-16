@@ -1,3 +1,4 @@
+import { connectionSecrets } from '@tamery/connection/secrets'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/safe-url'
@@ -10,17 +11,6 @@ import type { BaseTable } from '~/lib/sync'
 import { PERSISTED_SCHEMA_VERSION, syncCollectionOptions } from '~/lib/sync'
 
 import type { ConnectionStringsCollection } from './connection-strings'
-
-const prepareConnectionStringToCloud = (
-  connectionString: string,
-  syncType: SyncType
-) => {
-  const url = new SafeURL(connectionString.trim())
-  if (syncType !== SyncType.Cloud) {
-    url.password = ''
-  }
-  return url.toString()
-}
 
 export interface Connection extends BaseTable {
   type: ConnectionType
@@ -44,11 +34,10 @@ const prepareConnectionToCloud = async (
 
   return {
     ...connection,
-    connectionString: prepareConnectionStringToCloud(
-      connectionString,
-      connection.syncType
-    ),
-    isPasswordExists: connection.isPasswordExists,
+    connectionString:
+      connection.syncType === SyncType.Cloud
+        ? new SafeURL(connectionString.trim()).toString()
+        : connectionSecrets.strip(connectionString.trim()),
   }
 }
 
@@ -78,6 +67,10 @@ export const createConnectionsCollection = (
           insert: async (value) =>
             orpc.connections.create.call(
               await prepareConnectionToCloud(connectionStrings, value)
+            ),
+          update: async (_id, _changes, row) =>
+            orpc.connections.update.call(
+              await prepareConnectionToCloud(connectionStrings, row)
             ),
         },
         sync: ({ rows, signal }) =>

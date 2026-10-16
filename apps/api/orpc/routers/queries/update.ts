@@ -1,7 +1,6 @@
 import { db } from '@tamery/db'
 import { queriesUpdateSchema } from '@tamery/db/schema'
 import { queries } from '@tamery/db/schema/queries'
-import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
@@ -11,10 +10,9 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type.and(
-      queriesUpdateSchema.pick('name'),
-      queriesUpdateSchema.pick('id').required()
-    )
+    queriesUpdateSchema
+      .pick('name')
+      .merge(queriesUpdateSchema.pick('id').required())
   )
   .errors({
     NOT_FOUND: { message: 'Saved query not found' },

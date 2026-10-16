@@ -52,7 +52,7 @@ const selectStats = (
     .where((eb) => toKyselyFilter(eb, filters, 'AND', bind))
     .executeTakeFirstOrThrow()
 
-// `ranged` adds min and max, which only ordered types have.
+// Pass `ranged` only for ordered types: it adds min and max.
 export const columnStatsQuery = (params: ColumnStatsParams) =>
   createQuery({
     query: {

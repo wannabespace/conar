@@ -1,3 +1,4 @@
+import { readConnectionString } from '@tamery/connection/parse-connection-string'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { valueToText } from '@tamery/shared/value-text'
 
@@ -18,7 +19,8 @@ export const getConnectionStringToShow = (
   }: { withPathname?: boolean; withProtocol?: boolean } = {}
 ) => {
   const parsed = new SafeURL(connectionString)
-  return `${withProtocol ? `${parsed.protocol}//` : ''}${parsed.hostname}${parsed.port ? `:${parsed.port}` : ''}${withPathname && parsed.pathname !== '/' ? parsed.pathname : ''}`
+  const { database } = readConnectionString(connectionString)
+  return `${withProtocol ? `${parsed.protocol}//` : ''}${parsed.host}${withPathname && database ? `/${database}` : ''}`
 }
 
 export const groupInSchema = <T extends { schema: string }, G>(

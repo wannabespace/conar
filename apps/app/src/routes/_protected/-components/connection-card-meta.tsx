@@ -11,7 +11,7 @@ import {
 } from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 
-import type { getConnectionStore } from '~/core/connection/stores'
+import { rememberOpenedResource } from '~/core/connection/stores'
 
 const ROOT_RESOURCE_VALUE =
   CONNECTION_RESOURCE_ROOT_SYMBOL.description ?? 'CONNECTION_RESOURCE_ROOT'
@@ -51,7 +51,7 @@ const ConnectionResourcesSelect = ({
     <SelectTrigger
       data-mask
       size="xs"
-      variant="ghost-row"
+      variant="ghost-faint"
       className="pointer-events-auto"
     >
       <SelectValue>
@@ -75,16 +75,17 @@ const ConnectionResourcesSelect = ({
 
 export const ConnectionCardMeta = ({
   canSend,
-  connectionStore,
+  connectionId,
+  databaseKnown,
   displayUrl,
-  isResourcesShown,
   resources,
   selectedResourceName,
 }: {
   canSend: boolean
-  connectionStore: ReturnType<typeof getConnectionStore>
+  connectionId: string
+  /** Off until this device has the server details: the selected database is then only the first one the list stored. */
+  databaseKnown: boolean
   displayUrl: string | undefined
-  isResourcesShown: boolean
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
 }) => (
@@ -95,31 +96,27 @@ export const ConnectionCardMeta = ({
           {displayUrl}
         </span>
       ) : (
-        <Skeleton className="h-3 w-40" />
+        displayUrl === undefined &&
+        databaseKnown && <Skeleton className="h-3 w-40" />
       )}
     </div>
-    {isResourcesShown ? (
-      <ConnectionResourcesSelect
-        resources={resources}
-        selectedResourceName={selectedResourceName}
-        onSelectedResourceNameChange={(value) =>
-          connectionStore.set(
-            (state) =>
-              ({
-                ...state,
-                lastOpenedResourceName: value,
-              }) satisfies typeof state
-          )
-        }
-        disabled={!canSend}
-      />
-    ) : (
-      selectedResourceName !== null && (
-        <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-          <span className="text-muted-foreground/50">/ </span>
-          {resourceLabel(selectedResourceName)}
-        </span>
-      )
-    )}
+    {databaseKnown &&
+      (resources.length > 1 ? (
+        <ConnectionResourcesSelect
+          resources={resources}
+          selectedResourceName={selectedResourceName}
+          onSelectedResourceNameChange={(value) =>
+            rememberOpenedResource(connectionId, value)
+          }
+          disabled={!canSend}
+        />
+      ) : (
+        selectedResourceName !== null && (
+          <span data-mask className="max-w-32 shrink-0 truncate text-xs">
+            <span className="text-muted-foreground/50">/ </span>
+            {resourceLabel(selectedResourceName)}
+          </span>
+        )
+      ))}
   </div>
 )

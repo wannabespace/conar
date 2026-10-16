@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
@@ -34,11 +34,11 @@ export const dialects = {
       new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
     { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
-} satisfies Record<ConnectionType, AnyFunction>
+} satisfies Record<Dialect, AnyFunction>
 
 export const coldDialects = {
   clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
   mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
   mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
   postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
-} satisfies Record<ConnectionType, AnyFunction>
+} satisfies Record<Dialect, AnyFunction>

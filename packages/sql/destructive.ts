@@ -5,7 +5,7 @@ import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
 const RUNNING_EXPLAIN_OPTIONS = new Set(['ANALYSE', 'ANALYZE'])
 
-// EXPLAIN only plans the statement; EXPLAIN ANALYZE runs it. Never a read-only admission: SQL Server runs `EXPLAIN 1 DELETE FROM t` as a procedure call, then the DELETE.
+// Never a read-only admission: SQL Server runs `EXPLAIN 1 DELETE FROM t` as a procedure call, then the DELETE.
 const isPlanOnlyExplain = ({ tokens }: Statement) =>
   isKeyword(tokens[0], 'EXPLAIN') &&
   !tokens.some((token) =>
@@ -17,7 +17,6 @@ const showsDefinition = (words: string[], index: number) =>
 
 const REFERENTIAL_ACTIONS = new Set(['CASCADE', 'NO', 'RESTRICT', 'SET'])
 
-/** `FOR [NO KEY] UPDATE` locks rows, `ON UPDATE` names a referential action, a column's `ON UPDATE CURRENT_TIMESTAMP` or a rule's event, `SHOW CREATE` prints a definition. */
 const namesWithoutRunning = (
   words: string[],
   index: number,
@@ -42,7 +41,6 @@ const DESTRUCTIVE = new Set([
   'UPDATE',
 ])
 
-// A body the tokenizer sees as one string (`DO $$ … $$`, `EXEC 'DROP …'`) or a procedure could drop anything.
 const DYNAMIC_SQL_COMMANDS = new Set(['CALL', 'DO', 'EXEC', 'EXECUTE'])
 
 const DDL_KEYWORDS = new Set(['ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE'])
@@ -92,7 +90,6 @@ export const invalidatesCatalog = (text: string, dialect: DialectSpec) =>
     ({ tokens }) => tokens[0]?.text.toUpperCase() === 'COMMENT'
   )
 
-/** Whether a run may have changed rows; dynamic SQL counts, since a procedure can write anything. */
 export const writesData = (text: string, dialect: DialectSpec) =>
   keywordsRun(DATA_WRITE_KEYWORDS, text, dialect).length > 0
 
@@ -110,7 +107,7 @@ const READ_COMMANDS = new Set([
 // SQL Server has no EXPLAIN, SHOW, DESCRIBE, TABLE or VALUES statement: a batch's first bare word runs as a procedure.
 const SQL_SERVER_READ_COMMANDS = new Set(['SELECT', 'WITH'])
 
-// SELECT … INTO writes a table or a server file. SQL Server runs a later statement with no `;` before it, and its ROLLBACK ends the transaction that would undo the rest. No `FOR`/`ON` exemption: `SET NOCOUNT ON COMMIT` would pass as a referential action.
+// No `FOR`/`ON` exemption: SQL Server's `SET NOCOUNT ON COMMIT` would pass as a referential action.
 const WRITES_INSIDE_READ = new Set([
   ...DDL_KEYWORDS,
   ...DATA_WRITE_KEYWORDS,
@@ -129,7 +126,6 @@ const WRITES_INSIDE_READ = new Set([
   'SHUTDOWN',
 ])
 
-// A session setting (`SET ROWCOUNT 1`, `USE`, `SETUSER`, an opened key), an open transaction or a held lock outlives the rollback on the app's one pooled connection.
 const SESSION_COMMANDS = new Set([
   'BEGIN',
   'DECLARE',
@@ -142,7 +138,6 @@ const SESSION_COMMANDS = new Set([
   'WAITFOR',
 ])
 
-// Each acts outside the read-only transaction or outlives its rollback: another server's statement, a session lock, another backend.
 const SIDE_EFFECT_FUNCTION =
   /^(?:DBLINK\w*|GET_LOCK|OPEN(?:DATASOURCE|QUERY|ROWSET)|PG_(?:CANCEL|TERMINATE)_BACKEND|PG_(?:TRY_)?ADVISORY_LOCK(?:_SHARED)?)$/u
 
@@ -168,7 +163,6 @@ export const readsOnly = (text: string, dialect: DialectSpec) => {
       (word, index) =>
         (WRITES_INSIDE_READ.has(word) && !showsDefinition(words, index)) ||
         (dialect.separatorFreeStatements && SESSION_COMMANDS.has(word)) ||
-        // `NEXT VALUE FOR` (SQL Server, MariaDB) advances a sequence, which no rollback undoes; `FETCH NEXT … ROWS` is paging.
         (word === 'NEXT' &&
           words[index + 1] === 'VALUE' &&
           words[index + 2] === 'FOR')

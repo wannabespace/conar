@@ -24,7 +24,7 @@ import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
 import { tableTypeLabel } from '~/core/catalog/table-type'
 import { dropTableQuery } from '~/core/queries/tables/drop'
@@ -52,7 +52,7 @@ interface DropTableDialogProps {
 }
 
 export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
@@ -149,7 +149,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {capabilitiesOf(connection.type).cascade && (
+          {getCapabilities(dialect).cascade && (
             <OptionField
               htmlFor="drop-table-cascade"
               title="Cascade"

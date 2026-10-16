@@ -16,6 +16,7 @@ export const HOBBY_PLAN: PricingPlan = {
     'Table browser, SQL editor and visualizer',
     'Unlimited synced connections',
     `${FREE_WEEKLY_LIMITS.filters} AI filters a week`,
+    'AI connection diagnosis',
     `${FREE_WEEKLY_LIMITS.mcp} MCP agent queries a week`,
   ],
   name: 'Free',

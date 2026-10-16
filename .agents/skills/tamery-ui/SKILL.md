@@ -45,3 +45,4 @@ Topic files — read what the task touches; record new decisions in the matching
    ```
 
    `open`, closing and actions read the live `item`; everything the user sees reads `shown`.
+15. **Minimum UI, full power.** Tamery is a modern database tool: every surface handles every case with the fewest controls. Before adding a control, make an existing one smarter: parse what is pasted or typed, infer from context, default sensibly, expose power through shortcuts and parsing rather than extra fields. Two controls for one job (a second button for what the first already does) is a review blocker; so is a control the user cannot actually use for its job.

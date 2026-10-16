@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
@@ -103,8 +103,6 @@ export const dropConstraint = (
   { name, schema, table }: ConstraintTarget
 ) => db.withSchema(schema).schema.alterTable(table).dropConstraint(name)
 
-// MySQL swaps a key in one ALTER, which no builder spells, so it keeps the
-// clause as SQL text.
 export const constraintClause = ({
   columns,
   expression,
@@ -134,7 +132,6 @@ export const constraintClause = ({
   return sql`${constraint} REFERENCES ${sql.id(foreignSchema, foreignTable)} (${identifiers(foreignColumns)}) ON DELETE ${sql.raw(onDelete)} ON UPDATE ${sql.raw(onUpdate)}`
 }
 
-// MySQL has no DROP CONSTRAINT for keys; each kind drops through its own clause.
 export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
   ({
     check: sql`CONSTRAINT ${sql.id(name)}`,
@@ -144,7 +141,7 @@ export const mysqlDropKey = (kind: ConstraintKind, name: string) =>
   })[kind]
 
 export const dropConstraintStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   {
@@ -153,7 +150,7 @@ export const dropConstraintStatement = (
     ...target
   }: ConstraintTarget & { cascade: boolean; kind: ConstraintKind }
 ) => {
-  if (dialectType === ConnectionType.MySQL) {
+  if (dialect === Dialect.MySQL) {
     return sql`ALTER TABLE ${sql.id(target.schema, target.table)} DROP ${mysqlDropKey(kind, target.name)}`.compile(
       db
     )
@@ -162,17 +159,17 @@ export const dropConstraintStatement = (
   const drop = dropConstraint(db, target)
 
   return (
-    cascade && dialectType === ConnectionType.Postgres ? drop.cascade() : drop
+    cascade && dialect === Dialect.Postgres ? drop.cascade() : drop
   ).compile()
 }
 
 const QUOTES = new Set(["'", '"', '`'])
 
-const tableElementsOf = (ddl: string) => {
+const getTableElements = (ddl: string) => {
   const elements: string[] = []
   let start = ddl.indexOf('(') + 1
   let depth = 0
-  let quote = ''
+  let quote: string | null = null
 
   for (let index = start; index < ddl.length; index += 1) {
     const char = ddl[index]
@@ -181,7 +178,7 @@ const tableElementsOf = (ddl: string) => {
       if (char === '\\') {
         index += 1
       } else if (char === quote) {
-        quote = ''
+        quote = null
       }
     } else if (char && QUOTES.has(char)) {
       quote = char
@@ -205,9 +202,8 @@ const tableElementsOf = (ddl: string) => {
 const clickhouseConstraintRegex =
   /^CONSTRAINT\s+(?<name>`(?:[^`\\]|\\.)*`|\S+)\s+(?<kind>CHECK|ASSUME)\s+(?<expression>[\s\S]+)$/u
 
-// ClickHouse keeps no catalog of constraints; they live only in the DDL text.
-export const clickhouseConstraintsOf = (ddl: string) =>
-  tableElementsOf(ddl).flatMap((element) => {
+export const getClickhouseConstraints = (ddl: string) =>
+  getTableElements(ddl).flatMap((element) => {
     const groups = clickhouseConstraintRegex.exec(element)?.groups
 
     if (!groups?.name || !groups.expression) {

@@ -1,0 +1,1 @@
+ALTER TYPE "ai_feature" ADD VALUE IF NOT EXISTS 'diagnose_connection' BEFORE 'filters';

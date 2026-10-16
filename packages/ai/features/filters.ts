@@ -57,7 +57,7 @@ export const generateFilters = async (data: {
   const { output } = await generateText({
     abortSignal: data.signal,
     instructions: filtersInstructions(data.context),
-    model: models.filters,
+    model: models.structured,
     output: Output.object({ schema: filtersOutputSchema }),
     prompt: data.prompt,
     telemetry: data.telemetry,

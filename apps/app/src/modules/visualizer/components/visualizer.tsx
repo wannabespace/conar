@@ -5,7 +5,7 @@ import { useReactFlow } from '@xyflow/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import type { constraintsType } from '~/core/queries/constraints/list'
@@ -21,7 +21,7 @@ import { TableDialog } from '~/core/table/table-dialog'
 import { useDiagramActions } from '../lib/actions'
 import { useApplyDrafts } from '../lib/apply'
 import type { DiagramContextValue } from '../lib/context'
-import { DiagramContext, diagramViewStore, gatesOf } from '../lib/context'
+import { DiagramContext, diagramViewStore, getGates } from '../lib/context'
 import { diagramDrafts, diagramDraftsStore } from '../lib/drafts'
 import { fitViewOptions, usePositions } from '../lib/layout'
 import { visualizerLayout, visualizerStore } from '../lib/positions'
@@ -45,7 +45,7 @@ export const Visualizer = ({
   constraints: (typeof constraintsType.infer)[]
   tables: { schema: string; table: string; type: TableType }[]
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const flow = useReactFlow()
   const draftsStore = diagramDraftsStore(connectionResource.id)
   const drafts = useSubscription(draftsStore, {
@@ -53,12 +53,9 @@ export const Visualizer = ({
     selector: (state) => state.drafts,
   })
   const edit = diagramDrafts(draftsStore)
-  const can = gatesOf(connection.type)
+  const can = getGates(dialect)
 
-  const defaultSchema = defaultSchemaOf(
-    connection.type,
-    connectionResource.name
-  )
+  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const schemas = [
     ...new Set([
       ...tables.map(({ schema }) => schema),
@@ -278,7 +275,7 @@ export const Visualizer = ({
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         onOpenChangeComplete={(open) => !open && apply.reset()}
-        connectionType={connection.type}
+        dialect={dialect}
         ddlRollback={can.ddlRollback}
         drafts={drafts}
         error={apply.error}

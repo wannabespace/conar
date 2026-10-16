@@ -1,6 +1,6 @@
-import { isLocalhostConnectionString } from '@tamery/connection/utils'
-import { decryptWithKey, encryptWithKey } from '@tamery/shared/crypto-web'
-import { SafeURL } from '@tamery/shared/safe-url'
+import { connectionSecrets } from '@tamery/connection/secrets'
+import { describeConnectionString } from '@tamery/connection/utils'
+import { isKeychainLocked } from '@tamery/shared/keychain'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import type { PersistedCollectionUtils } from '@tanstack/db-sqlite-persistence-core'
 import type { Collection } from '@tanstack/react-db'
@@ -9,35 +9,39 @@ import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
 import { persistence } from '~/lib/database'
-import { encryptionKey } from '~/lib/encryption-key'
+import { deviceEncryption } from '~/lib/device-encryption'
 import { orpc } from '~/lib/orpc'
+import { queryClient } from '~/lib/query-client'
 import { PERSISTED_SCHEMA_VERSION } from '~/lib/sync'
 
-export interface ConnectionString {
+import type { Connection, ConnectionResource } from './sync'
+
+export type ConnectionString = ReturnType<typeof describeConnectionString> & {
   connectionId: string
   encrypted: string
   updatedAt: Date
-  isPasswordPopulated: boolean
-  isLocalhost: boolean
-  displayUrl: string
-  defaultResourceName: string | null
 }
 
-const encryptConnectionString = async (connectionString: string) =>
-  encryptWithKey(await encryptionKey.get(), connectionString)
-
-const decryptConnectionString = async (encryptedConnectionString: string) =>
-  decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
+export type ConnectionStringInput = Pick<
+  ConnectionString,
+  'connectionId' | 'updatedAt'
+> & {
+  connectionString: string
+}
 
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  prepare: (
-    data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & {
-      connectionString: string
-    }
-  ) => Promise<ConnectionString>
-  resolve: (connectionId: string) => Promise<string | null>
+  dropQueries: (connectionId: string) => void
+  /** `write` stores the record synchronously, so a caller can check the stored one right before it. */
+  prepareWrite: (data: ConnectionStringInput) => Promise<{
+    record: ConnectionString
+    write: () => void
+  }>
+  resolve: (
+    connection: Pick<Connection, 'id' | 'isPasswordExists'>,
+    signal: AbortSignal
+  ) => Promise<void>
 }
 
 export type ConnectionStringsCollection = Collection<
@@ -46,119 +50,122 @@ export type ConnectionStringsCollection = Collection<
   ConnectionStringsUtils & PersistedCollectionUtils
 >
 
-const preserveLocalPassword = async (
-  collection: ConnectionStringsCollection,
-  connectionId: string,
-  connectionString: string
-) => {
-  const url = new SafeURL(connectionString)
-  const local = collection.get(connectionId)
+export const createConnectionStringsCollection = (
+  resources: Collection<ConnectionResource>
+): ConnectionStringsCollection => {
+  const collection: ConnectionStringsCollection = createCollection(
+    persistedCollectionOptions<
+      ConnectionString,
+      string,
+      never,
+      ConnectionStringsUtils
+    >({
+      autoIndex: 'eager',
+      defaultIndexType: BasicIndex,
+      gcTime: 0,
+      getKey: (item) => item.connectionId,
+      id: 'connection-strings',
+      persistence,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
+      utils: {
+        async decrypt(connectionId: string) {
+          const record = collection.get(connectionId)
 
-  if (url.password || !local?.isPasswordPopulated) {
-    return connectionString
-  }
+          if (!record) {
+            const result = await orpc.connections.resolve.call({
+              id: connectionId,
+            })
 
-  url.password = new SafeURL(
-    await collection.utils.decrypt(connectionId)
-  ).password
-
-  return url.toString()
-}
-
-export const createConnectionStringsCollection =
-  (): ConnectionStringsCollection => {
-    const collection: ConnectionStringsCollection = createCollection(
-      persistedCollectionOptions<
-        ConnectionString,
-        string,
-        never,
-        ConnectionStringsUtils
-      >({
-        autoIndex: 'eager',
-        defaultIndexType: BasicIndex,
-        gcTime: 0,
-        getKey: (item) => item.connectionId,
-        id: 'connection-strings',
-        persistence,
-        schemaVersion: PERSISTED_SCHEMA_VERSION,
-        utils: {
-          async decrypt(connectionId: string) {
-            const record = collection.get(connectionId)
-
-            if (!record) {
-              const result = await orpc.connections.resolve.call({
-                id: connectionId,
-              })
-
-              if (result.status === 'modified') {
-                return result.connectionString
-              }
-
-              throw new Error(
-                `No connection string found for connection "${connectionId}"`
-              )
+            if (result.status === 'modified') {
+              return result.connectionString
             }
 
-            try {
-              return await decryptConnectionString(record.encrypted)
-            } catch (error) {
+            throw new Error(
+              `No connection string found for connection "${connectionId}"`
+            )
+          }
+
+          try {
+            return await deviceEncryption.decrypt(record.encrypted)
+          } catch (error) {
+            if (!isKeychainLocked(error)) {
               await fullSignOut()
               toast.error(
                 'Your encryption key is invalid. Please, sign in again.',
-                {
-                  id: 'encryption-key-invalid',
-                }
+                { id: 'encryption-key-invalid' }
               )
-              throw error
             }
-          },
-          async prepare(data: {
-            connectionId: string
-            connectionString: string
-            updatedAt: Date
-          }) {
-            const encrypted = await encryptConnectionString(
-              data.connectionString
-            )
-            const url = new SafeURL(data.connectionString)
-            return {
-              connectionId: data.connectionId,
-              defaultResourceName:
-                url.pathname && url.pathname !== '/'
-                  ? url.pathname.slice(1)
-                  : null,
-              displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
-              encrypted,
-              isLocalhost: isLocalhostConnectionString(data.connectionString),
-              isPasswordPopulated: !!url.password,
-              updatedAt: data.updatedAt,
-            }
-          },
-          async resolve(connectionId: string) {
-            const local = collection.get(connectionId)
-
-            const result = await orpc.connections.resolve.call({
-              id: connectionId,
-              updatedAt: local?.updatedAt,
-            })
-
-            if (result.status === 'unchanged') {
-              return null
-            }
-
-            if (result.status === 'not-found') {
-              return collection.utils.decrypt(connectionId)
-            }
-
-            return preserveLocalPassword(
-              collection,
-              connectionId,
-              result.connectionString
-            )
-          },
+            throw error
+          }
         },
-      })
-    )
+        dropQueries(connectionId) {
+          queryClient.removeQueries({
+            predicate: ({ queryKey: [, id] }) =>
+              id === connectionId ||
+              (typeof id === 'string' &&
+                resources.get(id)?.connectionId === connectionId),
+          })
+        },
+        async prepareWrite(data) {
+          const previous = collection.has(data.connectionId)
+            ? await collection.utils.decrypt(data.connectionId)
+            : null
+          const record = {
+            ...describeConnectionString(data.connectionString),
+            connectionId: data.connectionId,
+            encrypted: await deviceEncryption.encrypt(data.connectionString),
+            updatedAt: data.updatedAt,
+          }
+          const write = () => {
+            if (collection.has(data.connectionId)) {
+              collection.update(data.connectionId, (draft) => {
+                Object.assign(draft, record)
+              })
+            } else {
+              collection.insert(record)
+            }
+            // Compares the plain strings: a rename saves the same string under a new `updatedAt`.
+            if (previous !== data.connectionString) {
+              collection.utils.dropQueries(data.connectionId)
+            }
+          }
+          return { record, write }
+        },
+        async resolve(connection, signal) {
+          const local = collection.get(connection.id)
 
-    return collection
-  }
+          const result = await orpc.connections.resolve.call({
+            id: connection.id,
+            updatedAt: local?.updatedAt,
+          })
+
+          if (result.status !== 'modified') {
+            return
+          }
+
+          const { write } = await collection.utils.prepareWrite({
+            connectionId: connection.id,
+            connectionString: local
+              ? connectionSecrets.restore(result.connectionString, {
+                  isPasswordExists: connection.isPasswordExists,
+                  local: await collection.utils.decrypt(connection.id),
+                })
+              : result.connectionString,
+            updatedAt: result.updatedAt,
+          })
+
+          if (signal.aborted) {
+            return
+          }
+          // Another write landed while this one waited, and the answer may predate it: ask again.
+          if (collection.get(connection.id)?.encrypted !== local?.encrypted) {
+            return collection.utils.resolve(connection, signal)
+          }
+          write()
+        },
+      },
+    })
+  )
+
+  return collection
+}

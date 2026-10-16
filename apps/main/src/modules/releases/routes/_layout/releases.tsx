@@ -1,7 +1,6 @@
 import { GitBranchIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
-import { tryCatchAsync } from '@tamery/shared/utils'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -14,6 +13,7 @@ import {
 } from '@tamery/ui/components/empty'
 import { Response } from '@tamery/ui/components/response'
 import { createFileRoute, getRouteApi } from '@tanstack/react-router'
+import { Result } from 'better-result'
 import { format } from 'date-fns'
 
 import { orpc } from '~/lib/orpc'
@@ -107,7 +107,7 @@ export const Route = createFileRoute('/_layout/releases')({
       path: '/releases',
     }),
   loader: async () => {
-    const { data } = await tryCatchAsync(() => orpc.releases.call())
-    return { releases: data ?? [] }
+    const releases = await Result.tryPromise(() => orpc.releases.call())
+    return { releases: releases.unwrapOr([]) }
   },
 })

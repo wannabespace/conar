@@ -3,8 +3,8 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import {
-  defaultSchemaOf,
-  sectionCapabilitiesOf,
+  getDefaultSchema,
+  getSectionCapabilities,
 } from '~/core/catalog/capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import type { RelationKind } from '~/core/queries/tables/list'
@@ -26,7 +26,7 @@ export const useDefinitionsState = ({
 }: {
   section: DefinitionsSection
 }) => {
-  const { connection, connectionResource } = resourceRoute.useRouteContext()
+  const { connectionResource, dialect } = resourceRoute.useRouteContext()
   const { data, isPending: structurePending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -34,15 +34,13 @@ export const useDefinitionsState = ({
   const linkedSchema = tabRoute.useSearch({ select: (search) => search.schema })
   const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
-  // A link names the schema its row lives in, so it outranks the pick a
-  // mounted tab already made — until the page consumes it.
   const selectedSchema =
     [
       linkedSchema,
       pickedSchema,
-      defaultSchemaOf(connection.type, connectionResource.name),
+      getDefaultSchema(dialect, connectionResource.name),
     ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
-  const relationNamesOf = (schema: string, kind: RelationKind) =>
+  const getRelationNames = (schema: string, kind: RelationKind) =>
     data?.schemas
       .find(({ name }) => name === schema)
       ?.tables.filter((table) => table.type === kind)
@@ -53,10 +51,10 @@ export const useDefinitionsState = ({
     query.run(await connectionResourceToQueryParams(connectionResource))
 
   return {
-    can: sectionCapabilitiesOf(section, connection.type),
-    connection,
+    can: getSectionCapabilities(section, dialect),
     connectionResource,
-    relationNamesOf,
+    dialect,
+    getRelationNames,
     run,
     schemas,
     search,
@@ -65,7 +63,6 @@ export const useDefinitionsState = ({
     setSearch,
     setSelectedSchema: setPickedSchema,
     structurePending,
-    type: connection.type,
   }
 }
 

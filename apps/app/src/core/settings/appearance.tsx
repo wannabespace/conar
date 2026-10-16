@@ -9,10 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
+import { Switch } from '@tamery/ui/components/switch'
+import { isMac } from '@tamery/ui/lib/os'
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
+import { useSubscription } from 'seitu/react'
 
 import { posthog } from '~/lib/posthog'
+import { transparentBackgroundValue } from '~/lib/transparent-background'
 
 const THEMES: { label: string; value: Theme }[] = [
   { label: 'System', value: 'system' },
@@ -20,8 +24,11 @@ const THEMES: { label: string; value: Theme }[] = [
   { label: 'Dark', value: 'dark' },
 ]
 
+const hasVibrancy = !!window.electron && isMac
+
 export const AppearanceSettings = () => {
   const theme = useTheme()
+  const isTransparent = useSubscription(transparentBackgroundValue)
 
   return (
     <SettingsGroup>
@@ -51,6 +58,23 @@ export const AppearanceSettings = () => {
           </SelectContent>
         </Select>
       </SettingsRow>
+      {hasVibrancy && (
+        <SettingsRow
+          htmlFor="transparent-background"
+          title="Transparent background"
+          description="Let the desktop show through the window background."
+        >
+          <Switch
+            id="transparent-background"
+            size="sm"
+            checked={isTransparent}
+            onCheckedChange={(enabled) => {
+              transparentBackgroundValue.set(enabled)
+              posthog.capture('transparent_background_changed', { enabled })
+            }}
+          />
+        </SettingsRow>
+      )}
     </SettingsGroup>
   )
 }

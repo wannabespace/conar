@@ -122,14 +122,12 @@ export const CellReference = ({
   const [highlighted, setHighlighted] = useState('')
   const raw = (rowValue: unknown) =>
     rowValue === null ? '' : transformer.fromConnection(rowValue).toRaw()
-  // A staged row's untouched cell is `undefined` (the column default), not a key to lead with.
   const hasValue = value !== null && value !== undefined
   const text = edit?.text ?? ''
   const untouched = text === raw(value)
   const term = useDeferredValue(untouched ? '' : text)
 
   const columns = useReferencedColumns([column]).get(column.id)
-  // An untouched edit searches nothing, so it needn't wait for the column list.
   const browsing = term === ''
   const searchedColumns = browsing
     ? []
@@ -169,7 +167,6 @@ export const CellReference = ({
     ? highlighted
     : (keys[0] ?? '')
 
-  // A key no row matches still applies (deferred or unenforced constraints); the value's own type check rejects malformed text.
   useHotkeys(
     [
       {

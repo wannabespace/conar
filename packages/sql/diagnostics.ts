@@ -83,7 +83,7 @@ const STATEMENT_STARTERS = new Set([
 
 const CLOSE_TO_OPEN: Record<string, string> = { ')': '(', ']': '[', '}': '{' }
 
-const spanOf = ({ start, end }: Token) => ({ end, start })
+const getSpan = ({ start, end }: Token) => ({ end, start })
 
 const UNCLOSED_MESSAGES: Partial<Record<Token['kind'], string>> = {
   comment: 'Unterminated block comment',
@@ -95,7 +95,7 @@ const unclosedDiagnostics = (tokens: Token[]): Diagnostic[] =>
   tokens
     .filter((token) => token.unclosed)
     .map((token) => ({
-      ...spanOf(token),
+      ...getSpan(token),
       message: UNCLOSED_MESSAGES[token.kind] ?? 'Unterminated token',
       severity: 'error',
     }))
@@ -108,7 +108,7 @@ const repeatCountDiagnostics = (text: string, tokens: Token[]) => {
     return lineEnd && count && count.start < lineEnd
       ? [
           {
-            ...spanOf(count),
+            ...getSpan(count),
             message: 'The repeat count is ignored — the batch runs once',
             severity: 'warning',
           },
@@ -132,7 +132,7 @@ const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
         open.pop()
       } else {
         diagnostics.push({
-          ...spanOf(token),
+          ...getSpan(token),
           message: `Unexpected \`${token.text}\``,
           severity: 'error',
         })
@@ -141,7 +141,7 @@ const bracketDiagnostics = (statement: Statement): Diagnostic[] => {
   }
   for (const token of open) {
     diagnostics.push({
-      ...spanOf(token),
+      ...getSpan(token),
       message: `Unclosed \`${token.text}\``,
       severity: 'error',
     })
@@ -161,14 +161,13 @@ const unknownStatementDiagnostics = (statement: Statement): Diagnostic[] => {
   }
   return [
     {
-      ...spanOf(first),
+      ...getSpan(first),
       message: `Unknown statement \`${first.text}\``,
       severity: 'error',
     },
   ]
 }
 
-// Row pseudo-tables: ON CONFLICT (`excluded`), OUTPUT (`inserted`/`deleted`), triggers (`new`/`old`).
 const PSEUDO_TABLES = new Set(['excluded', 'inserted', 'deleted', 'new', 'old'])
 // Only these read qualifiers against a FROM list; DDL qualifies by schema.
 const QUERY_VERBS = ['SELECT', 'WITH', 'UPDATE', 'DELETE', 'INSERT']
@@ -199,7 +198,7 @@ const unknownQualifier = (
     ...scope.derived,
   ].map((name) => `\`${name}\``)
   return {
-    ...spanOf(qualifier),
+    ...getSpan(qualifier),
     message: `\`${identifierName(qualifier)}\` is not a table or alias in this statement${
       available.length > 0 ? ` — available: ${available.join(', ')}` : ''
     }`,
@@ -254,7 +253,7 @@ const qualifiedColumnDiagnostics = (
       continue
     }
     diagnostics.push({
-      ...spanOf(token),
+      ...getSpan(token),
       message: `Unknown column \`${identifierName(token)}\` on \`${table.name}\``,
       severity: 'warning',
     })
@@ -337,7 +336,7 @@ const unqualifiedColumnDiagnostics = (
     }
     return [
       {
-        ...spanOf(token),
+        ...getSpan(token),
         message: `Unknown column \`${identifierName(token)}\` — not in ${names.join(', ')}`,
         severity: 'warning',
       },
@@ -426,7 +425,7 @@ const literalDiagnostics = (
     return expected
       ? [
           {
-            ...spanOf(literal),
+            ...getSpan(literal),
             message: `${literal.text} is not ${expected} for \`${column.name}\` (${column.type})`,
             severity: 'warning',
           },
@@ -448,7 +447,6 @@ const CLAUSES = [
   'RETURNING',
 ]
 
-// Only conditions: `SET col = NULL` and a parameter's `= NULL` default are assignments.
 const nullComparisonDiagnostics = ({ tokens }: Statement): Diagnostic[] =>
   tokens.flatMap((token, index): Diagnostic[] => {
     const next = tokens[index + 1]
@@ -505,7 +503,7 @@ const catalogDiagnostics = (
           !findTable(catalog, ref.name, ref.schema)
       )
       .map((ref): Diagnostic => ({
-        ...spanOf(ref.token),
+        ...getSpan(ref.token),
         message: `Unknown table \`${ref.schema ? `${ref.schema}.` : ''}${ref.name}\``,
         severity: 'warning',
       })),
