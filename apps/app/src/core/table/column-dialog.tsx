@@ -73,6 +73,9 @@ const lockedFields = (
   }
 }
 
+const editableComment = (dialect: Dialect, column: EditableColumn | null) =>
+  getCapabilities(dialect).comments ? column?.comment : undefined
+
 const ColumnForm = ({
   onSubmit,
   pending,
@@ -102,7 +105,7 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
-  const [comment, setComment] = useState(column?.comment)
+  const [comment, setComment] = useState(() => editableComment(dialect, column))
   const [submitted, setSubmitted] = useState(false)
   const locked = lockedFields(dialect, column, primaryKey)
   const next = normalized(column, {
@@ -176,11 +179,7 @@ const ColumnForm = ({
           }}
         />
         {comment !== undefined && (
-          <CommentField
-            dialect={dialect}
-            value={comment}
-            onValueChange={setComment}
-          />
+          <CommentField value={comment} onValueChange={setComment} />
         )}
         {column === null && table.state === 'added' && (
           <OptionField
