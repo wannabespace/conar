@@ -82,6 +82,15 @@ const createQueryDialect = <T extends AnyBuilder>(
           ownerId: resolve.owner(context),
         })
       ),
+    openSession: orpc
+      .input(type<Params<typeof dialect.openSession>>())
+      .handler(async ({ input, context }) =>
+        dialect.openSession({
+          ...input,
+          connectionString: await resolve.connectionString(input, context),
+          ownerId: resolve.owner(context),
+        })
+      ),
     rollbackTransaction: orpc
       .input(type<Params<typeof dialect.rollbackTransaction>>())
       .handler(({ input, context }) =>
@@ -89,6 +98,11 @@ const createQueryDialect = <T extends AnyBuilder>(
           ...input,
           ownerId: resolve.owner(context),
         })
+      ),
+    transactionStatus: orpc
+      .input(type<Params<typeof dialect.transactionStatus>>())
+      .handler(({ input, context }) =>
+        dialect.transactionStatus({ ...input, ownerId: resolve.owner(context) })
       ),
   }) satisfies Record<keyof QueryExecutor, unknown>
 

@@ -7,9 +7,11 @@ export { dialects } from './dialect'
 export { diagnose } from './diagnostics'
 export type { Statement } from './statements'
 export {
+  endsTransaction,
   leavesTransactionOpen,
   splitStatements,
   statementAt,
+  statementsFromTokens,
   unwrapTransaction,
 } from './statements'
 export type { TokenizerState } from './tokenizer'

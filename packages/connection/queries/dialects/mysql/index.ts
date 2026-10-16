@@ -1,9 +1,48 @@
+import type { PoolOptions } from 'mysql2'
+import type * as mysql2Promise from 'mysql2/promise'
+
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
 import { registerTransaction, transactionQueries } from '../../transactions'
-import { getPool } from './client'
+import { getPool, mysql2 } from './client'
 import { runOn } from './run'
+
+const SERVER_STATUS_IN_TRANS = 1
+
+const register = (
+  connection: mysql2Promise.Connection,
+  {
+    conf,
+    connectionString,
+    ownerId,
+    release,
+  }: {
+    conf: PoolOptions
+    connectionString: string
+    ownerId?: string
+    release: () => Promise<void>
+  }
+) =>
+  registerTransaction(
+    {
+      commit: () => connection.commit(),
+      execute: (sql, values, options) =>
+        runOn(connection, { conf, connectionString, sql, values }, options),
+      release,
+      rollback: () => connection.rollback(),
+      // MySQL and MariaDB both report the transaction in an OK packet's status flags, and mysql2 exposes them only on a result header, hence the no-op `DO 0`.
+      status: async () => {
+        const [header] =
+          await connection.query<mysql2Promise.ResultSetHeader>('DO 0')
+        // oxlint-disable-next-line no-bitwise -- the server status is a bit field
+        return (header.serverStatus & SERVER_STATUS_IN_TRANS) === 0
+          ? 'ended'
+          : 'open'
+      },
+    },
+    ownerId
+  )
 
 export const query = {
   ...transactionQueries,
@@ -28,19 +67,15 @@ export const query = {
         throw error
       }
 
-      const txId = registerTransaction(
-        {
-          commit: () => connection.commit(),
-          execute: (sql, values, options) =>
-            runOn(connection, { conf, connectionString, sql, values }, options),
-          release: () => {
-            connection.release()
-            return Promise.resolve()
-          },
-          rollback: () => connection.rollback(),
+      const txId = register(connection, {
+        conf,
+        connectionString,
+        ownerId,
+        release: () => {
+          connection.release()
+          return Promise.resolve()
         },
-        ownerId
-      )
+      })
       return { txId }
     }
   ),
@@ -62,4 +97,18 @@ export const query = {
       }
     }
   ),
+
+  openSession: handleQueryError(async ({ connectionString, ownerId }) => {
+    const { conf } = await getPool(connectionString)
+    const connection = await mysql2.createConnection(conf)
+    // An unhandled `error` (the server dropping the connection) would crash the process.
+    connection.on('error', console.error)
+    const txId = register(connection, {
+      conf,
+      connectionString,
+      ownerId,
+      release: () => connection.end(),
+    })
+    return { txId }
+  }),
 } satisfies QueryExecutor

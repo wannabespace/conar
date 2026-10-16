@@ -9,13 +9,17 @@ import { getDriverConfig } from '../../../parse-connection-string'
 import { sshForwarding } from '../../../ssh/forwarding'
 import { parseSSLConfig } from '../../../ssl/mssql'
 
-const mssql = createRequire(import.meta.url)('mssql') as typeof mssqlModule
+export const mssql = createRequire(import.meta.url)(
+  'mssql'
+) as typeof mssqlModule
 
-export const getPool = memoize(async (connectionString: string) => {
+export const poolConfig = async (
+  connectionString: string
+): Promise<mssqlModule.config> => {
   const { database, host, password, port, searchParams, user } =
     getDriverConfig(connectionString)
   const tunnel = await sshForwarding.of(connectionString)
-  const pool = new mssql.ConnectionPool({
+  return {
     database,
     options: {
       ...parseSSLConfig(searchParams),
@@ -34,7 +38,11 @@ export const getPool = memoize(async (connectionString: string) => {
     requestTimeout: 0,
     server: host,
     user,
-  })
+  }
+}
+
+export const getPool = memoize(async (connectionString: string) => {
+  const pool = new mssql.ConnectionPool(await poolConfig(connectionString))
   pool.on('error', console.error)
   return pool.connect()
 })

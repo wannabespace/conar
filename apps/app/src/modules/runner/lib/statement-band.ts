@@ -6,6 +6,7 @@ import type { RefObject } from 'react'
 import { useEffect, useEffectEvent } from 'react'
 
 import { runnerStatements, useRunnerTab } from './store'
+import { runnerTransaction } from './transaction'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -36,7 +37,8 @@ export const useStatementBand = (
 ) => {
   const move = useEffectEvent(onMove)
   const { dialect } = useRouteContext()
-  const statements = runnerStatements({ ...useRunnerTab(), dialect })
+  const tab = useRunnerTab()
+  const statements = runnerStatements({ ...tab, dialect })
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -95,21 +97,28 @@ export const useStatementBand = (
         band.clear()
         return
       }
-      active = { source: statement.text, start: statement.start }
-      const startLine = model.getPositionAt(statement.start).lineNumber
-      const endLine = model.getPositionAt(statement.terminatorEnd).lineNumber
+      const turn = runnerTransaction.step({
+        dialect,
+        statement,
+        tab,
+        text: model.getValue(),
+      })
+      active = { source: turn.text, start: turn.start }
+      const lines = (item: typeof statement) => ({
+        options: { className: 'sql-active-band', isWholeLine: true },
+        range: {
+          endColumn: 1,
+          endLineNumber: model.getPositionAt(item.terminatorEnd).lineNumber,
+          startColumn: 1,
+          startLineNumber: model.getPositionAt(item.start).lineNumber,
+        },
+      })
+      const endLine = model.getPositionAt(turn.terminatorEnd).lineNumber
       const endColumn = model.getLineMaxColumn(endLine)
       const ghost = drawnGhostTextElement(codeEditor)
       band.set([
-        {
-          options: { className: 'sql-active-band', isWholeLine: true },
-          range: {
-            endColumn: 1,
-            endLineNumber: endLine,
-            startColumn: 1,
-            startLineNumber: startLine,
-          },
-        },
+        lines(statement),
+        ...(turn === statement ? [] : [lines(turn)]),
         ...(ghost &&
         position.lineNumber === endLine &&
         position.column === endColumn
@@ -139,6 +148,7 @@ export const useStatementBand = (
 
     paint()
     const unsubscribe = statements.subscribe(paint)
+    const unsubscribeTransaction = runnerTransaction.state(tab).subscribe(paint)
     const cursorListener = codeEditor.onDidChangeCursorSelection(paint)
     const scrollListener = codeEditor.onDidScrollChange(paint)
     const layoutListener = codeEditor.onDidLayoutChange(paint)
@@ -166,6 +176,7 @@ export const useStatementBand = (
 
     return () => {
       unsubscribe()
+      unsubscribeTransaction()
       cursorListener.dispose()
       scrollListener.dispose()
       layoutListener.dispose()
@@ -174,5 +185,5 @@ export const useStatementBand = (
       cancelAnimationFrame(frame)
       band.clear()
     }
-  }, [editorRef, statements])
+  }, [dialect, editorRef, statements, tab])
 }

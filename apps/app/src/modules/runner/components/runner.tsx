@@ -66,6 +66,7 @@ import {
   useRunnerPageStore,
   useRunnerTab,
 } from '../lib/store'
+import { runnerTransaction } from '../lib/transaction'
 import { RunHistoryButton } from './run-history'
 import { useAiEdit } from './runner-ai-edit'
 import { RunnerAlertDialog } from './runner-alert-dialog'
@@ -73,6 +74,7 @@ import { RunnerEditor } from './runner-editor'
 import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 import { SavedQueries } from './saved-queries'
+import { TransactionControls } from './transaction-controls'
 
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
@@ -188,6 +190,21 @@ export const Runner = () => {
     if (!statement) {
       return { range: null, statements: [] }
     }
+    const turn = runnerTransaction.step({
+      dialect,
+      statement,
+      tab,
+      text: model.getValue(),
+    })
+    if (turn !== statement) {
+      return {
+        range: Range.fromPositions(
+          model.getPositionAt(turn.start),
+          model.getPositionAt(turn.end)
+        ),
+        statements: [toRunnerStatement(turn)],
+      }
+    }
     const getLine = (offset: number) => model.getPositionAt(offset).lineNumber
     const first = getLine(statement.start)
     const last = getLine(statement.terminatorEnd)
@@ -261,7 +278,7 @@ export const Runner = () => {
           model.getPositionAt(start),
           model.getPositionAt(end)
         ),
-        error
+        error.message
       )
     },
     focus: () => editorRef.current?.focus(),
@@ -338,6 +355,7 @@ export const Runner = () => {
                 <TooltipContent>Run every statement</TooltipContent>
               </Tooltip>
             )}
+            <TransactionControls disabled={running} />
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <ToolbarButton label="Format" onClick={() => actions.format()}>
                 <ContentSwitch

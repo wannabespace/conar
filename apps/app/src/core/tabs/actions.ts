@@ -106,7 +106,10 @@ export const replaceTabId = (id: string, from: string, to: string) => {
 }
 
 export const openTab = (id: string, tabId: string, preview = false) => {
-  closeOtherTabsUnlessMultiple(id, tabId)
+  // With one tab, the route's `ensureTab` replaces it once the navigation lands: replacing it here would close it before a blocker can keep it.
+  if (!permix.check('tab.multiple')) {
+    return tabId
+  }
   setTabs(id, (tabs) => {
     const existingIndex = tabs.findIndex((item) => item.id === tabId)
 

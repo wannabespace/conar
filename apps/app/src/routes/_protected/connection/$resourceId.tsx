@@ -37,6 +37,7 @@ import { navigatorPanel } from '~/modules/navigator/panel'
 import { toggleNavigator } from '~/modules/navigator/stores'
 import { toggleLogger } from '~/modules/query-logger/logger-open'
 import { queryLoggerPanel } from '~/modules/query-logger/panel'
+import { TransactionTabGuard } from '~/modules/runner/components/transaction-tab-guard'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
@@ -152,6 +153,7 @@ const ResourcePage = () => {
             <div className={resourcePanelClassName}>
               <TabBar />
               <Outlet />
+              <TransactionTabGuard />
             </div>
           </ResizablePanel>
           <RegionPanel

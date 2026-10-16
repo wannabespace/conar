@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
+import type { TransactionStatus } from '.'
 import type { TxHandle } from './transactions'
 import { registerTransaction, transactionQueries } from './transactions'
 
@@ -37,7 +38,7 @@ describe('transactionQueries', () => {
 
     await expect(
       transactionQueries.commitTransaction({ txId })
-    ).rejects.toThrow(txId)
+    ).rejects.toThrow('no longer open')
   })
 
   test('rollback stays idempotent', async () => {
@@ -61,7 +62,7 @@ describe('transactionQueries', () => {
         txId,
         values: [],
       })
-    ).rejects.toThrow(txId)
+    ).rejects.toThrow('no longer open')
 
     await transactionQueries.executeTransaction({
       ownerId: 'owner-a',
@@ -73,5 +74,29 @@ describe('transactionQueries', () => {
     expect(calls).toEqual(['execute:SELECT 1'])
 
     await transactionQueries.rollbackTransaction({ ownerId: 'owner-a', txId })
+  })
+
+  test('a session whose transaction ended is released without a rollback', async () => {
+    const { calls, handle } = spyHandle()
+    let status: TransactionStatus = 'failed'
+    const txId = registerTransaction(
+      { ...handle, status: () => Promise.resolve(status) },
+      'owner-a'
+    )
+
+    expect(await transactionQueries.transactionStatus({ txId })).toBe('ended')
+    expect(
+      await transactionQueries.transactionStatus({ ownerId: 'owner-a', txId })
+    ).toBe('failed')
+    expect(calls).toEqual([])
+
+    status = 'ended'
+    expect(
+      await transactionQueries.transactionStatus({ ownerId: 'owner-a', txId })
+    ).toBe('ended')
+    expect(calls).toEqual(['release'])
+    await expect(
+      transactionQueries.commitTransaction({ ownerId: 'owner-a', txId })
+    ).rejects.toThrow('no longer open')
   })
 })

@@ -3,7 +3,12 @@ import { randomUUID } from 'node:crypto'
 import type { MaybePromise } from '@tamery/shared/utils'
 import { silently } from '@tamery/shared/utils'
 
-import type { QueryExecuteResult, QueryExecutor, RunOptions } from '.'
+import type {
+  QueryExecuteResult,
+  QueryExecutor,
+  RunOptions,
+  TransactionStatus,
+} from '.'
 import { handleQueryError } from '.'
 
 export interface TxHandle {
@@ -15,6 +20,7 @@ export interface TxHandle {
   commit: () => MaybePromise<void>
   rollback: () => MaybePromise<void>
   release: () => MaybePromise<void>
+  status?: () => Promise<TransactionStatus>
 }
 
 interface OwnedTx {
@@ -23,7 +29,9 @@ interface OwnedTx {
   ownerId?: string
 }
 
-const IDLE_TX_TIMEOUT_MS = 5 * 60 * 1000
+const IDLE_TX_TIMEOUT_MINUTES = 15
+
+const TRANSACTION_GONE = `The transaction is no longer open. One left idle for ${IDLE_TX_TIMEOUT_MINUTES} minutes rolls back.`
 
 const activeTransactions = new Map<string, OwnedTx>()
 
@@ -43,7 +51,7 @@ export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
         await silently(() => current.handle.rollback())
         await silently(() => current.handle.release())
       })()
-    }, IDLE_TX_TIMEOUT_MS)
+    }, IDLE_TX_TIMEOUT_MINUTES * 60_000)
   }
 
   const wrapped: TxHandle = {
@@ -66,7 +74,7 @@ const owned = (entry: OwnedTx, ownerId?: string) =>
 const requireTransaction = (txId: string, ownerId?: string) => {
   const entry = activeTransactions.get(txId)
   if (!entry || !owned(entry, ownerId)) {
-    throw new Error(`No active transaction found for id: ${txId}`)
+    throw new Error(TRANSACTION_GONE)
   }
   return entry
 }
@@ -93,7 +101,7 @@ export const transactionQueries = {
     async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
       const handle = disposeTransaction(txId, ownerId)
       if (!handle) {
-        throw new Error(`No active transaction found for id: ${txId}`)
+        throw new Error(TRANSACTION_GONE)
       }
       await settle(handle, () => handle.commit())
     }
@@ -129,9 +137,25 @@ export const transactionQueries = {
       await settle(handle, () => handle.rollback())
     }
   ),
+  transactionStatus: handleQueryError(
+    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
+      const entry = activeTransactions.get(txId)
+      if (!entry || !owned(entry, ownerId)) {
+        return 'ended'
+      }
+      const status = (await entry.handle.status?.()) ?? 'open'
+      if (status === 'ended') {
+        await silently(() => disposeTransaction(txId, ownerId)?.release())
+      }
+      return status
+    }
+  ),
 } satisfies Pick<
   QueryExecutor,
-  'commitTransaction' | 'executeTransaction' | 'rollbackTransaction'
+  | 'commitTransaction'
+  | 'executeTransaction'
+  | 'rollbackTransaction'
+  | 'transactionStatus'
 >
 
 export const resetTransactions = async () => {
