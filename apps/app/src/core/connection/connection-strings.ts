@@ -100,22 +100,19 @@ export const createConnectionStringsCollection = (
         },
         async prepare(data) {
           const stored = collection.get(data.connectionId)
-          const [previous, encrypted] = await Promise.all([
-            stored
-              ? collection.utils
-                  .decrypt(stored.connectionId)
-                  .then((connectionString) => ({
-                    connectionId: stored.connectionId,
-                    connectionString,
-                    updatedAt: stored.updatedAt,
-                  }))
-              : null,
-            deviceEncryption.encrypt(data.connectionString),
-          ])
+          const previous = stored
+            ? {
+                connectionId: stored.connectionId,
+                connectionString: await collection.utils.decrypt(
+                  stored.connectionId
+                ),
+                updatedAt: stored.updatedAt,
+              }
+            : null
           const record = {
             ...describeConnectionString(data.connectionString),
             connectionId: data.connectionId,
-            encrypted,
+            encrypted: await deviceEncryption.encrypt(data.connectionString),
             updatedAt: data.updatedAt,
           }
           const write = () => {
@@ -128,16 +125,11 @@ export const createConnectionStringsCollection = (
             }
             // Compares the plain strings: a rename saves the same string under a new `updatedAt`.
             if (previous?.connectionString !== data.connectionString) {
-              const ids = new Set<unknown>([
-                data.connectionId,
-                ...resources.toArray
-                  .filter(
-                    ({ connectionId }) => connectionId === data.connectionId
-                  )
-                  .map(({ id }) => id),
-              ])
               queryClient.removeQueries({
-                predicate: ({ queryKey: [, id] }) => ids.has(id),
+                predicate: ({ queryKey: [, id] }) =>
+                  id === data.connectionId ||
+                  (typeof id === 'string' &&
+                    resources.get(id)?.connectionId === data.connectionId),
               })
             }
           }
