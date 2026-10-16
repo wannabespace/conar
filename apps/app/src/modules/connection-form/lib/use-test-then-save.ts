@@ -127,6 +127,7 @@ export const useTestThenSave = (mode: FormMode, onSave: OnSave) => {
           connectionString,
           label: values.label.trim() || null,
           name: values.name.trim() || generateRandomName(),
+          provider: values.provider,
           type: values.type,
         },
         {
