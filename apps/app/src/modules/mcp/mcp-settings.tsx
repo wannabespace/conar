@@ -5,10 +5,10 @@ import {
 } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
 
-import { BackgroundSettings } from './background-settings'
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
+import { KeepRunningRow } from './keep-running'
 import { ServerDetails } from './server-details'
 import { useMcpServer } from './use-mcp-server'
 import { WeeklyQuota } from './weekly-quota'
@@ -35,7 +35,7 @@ export const McpSettings = () => {
             onCheckedChange={(enabled) => setEnabled(enabled)}
           />
         </SettingsRow>
-        {status.state === 'running' && <BackgroundSettings />}
+        {status.state === 'running' && <KeepRunningRow />}
       </SettingsGroup>
       {status.state === 'failed' && (
         <Alert variant="destructive">

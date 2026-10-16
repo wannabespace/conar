@@ -9,7 +9,7 @@ import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
-import { keepRunning, openAtLogin } from './background'
+import { keepRunning } from './background'
 import { popupNativeContextMenu } from './context-menu'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
@@ -63,6 +63,17 @@ const lazyQueryExecutor = (
       return query.rollbackTransaction(args)
     },
   }
+}
+
+const openAtLogin = {
+  get: () =>
+    process.platform === 'linux'
+      ? null
+      : app.getLoginItemSettings().openAtLogin,
+  set: (enabled: boolean) => {
+    app.setLoginItemSettings({ openAtLogin: enabled })
+    return openAtLogin.get()
+  },
 }
 
 export const electron = {

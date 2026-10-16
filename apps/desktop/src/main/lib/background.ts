@@ -6,9 +6,6 @@ import trayIcon from '../../../resources/tray-icon.png?inline'
 import { mcp } from './mcp'
 import { autoUpdater } from './todesktop'
 
-const HIDDEN_ARG = '--hidden'
-const loginItem = { args: [HIDDEN_ARG] }
-
 const store = new Store<{ keepRunning: boolean }>({
   defaults: { keepRunning: true },
   name: 'background',
@@ -25,39 +22,18 @@ autoUpdater?.on('before-quit-for-update', () => {
   quitting = true
 })
 
-export const openAtLogin = {
-  get: () =>
-    process.platform === 'linux'
-      ? null
-      : app.getLoginItemSettings(loginItem).openAtLogin,
-  set: (enabled: boolean) => {
-    app.setLoginItemSettings({ ...loginItem, openAtLogin: enabled })
-    return openAtLogin.get()
-  },
-}
-
 export const keepRunning = {
   get: () => store.get('keepRunning'),
   set: (enabled: boolean) => {
     store.set('keepRunning', enabled)
-    if (!enabled) {
-      openAtLogin.set(false)
-    }
     return enabled
   },
 }
 
-const runsInBackground = () =>
-  mcp.status().state === 'running' && keepRunning.get()
-
-export const startsInBackground = () =>
-  runsInBackground() &&
-  (app.getLoginItemSettings().wasOpenedAtLogin ||
-    process.argv.includes(HIDDEN_ARG))
-
 export const keepsServingAfterClose = (win: BrowserWindow) =>
   !quitting &&
-  runsInBackground() &&
+  mcp.status().state === 'running' &&
+  keepRunning.get() &&
   BrowserWindow.getAllWindows().every(
     (other) => other === win || !other.isVisible()
   )

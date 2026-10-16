@@ -11,11 +11,7 @@ import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
-import {
-  keepsServingAfterClose,
-  sendToBackground,
-  startsInBackground,
-} from './lib/background'
+import { keepsServingAfterClose, sendToBackground } from './lib/background'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
@@ -76,7 +72,7 @@ const openExternal = async (win: BrowserWindow, url: string) => {
   }
 }
 
-export const createWindow = (route?: string, { show = true } = {}) => {
+export const createWindow = (route?: string) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   const isMac = process.platform === 'darwin'
@@ -87,7 +83,6 @@ export const createWindow = (route?: string, { show = true } = {}) => {
     height,
     minHeight: MIN_WINDOW_HEIGHT,
     minWidth: MIN_WINDOW_WIDTH,
-    show,
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 16, y: 13 },
     width,
@@ -209,9 +204,7 @@ export const createWindow = (route?: string, { show = true } = {}) => {
   })
 
   win.on('ready-to-show', () => {
-    if (show) {
-      win.show()
-    }
+    win.show()
   })
 
   win.on('focus', () => {
@@ -233,20 +226,16 @@ export const createWindow = (route?: string, { show = true } = {}) => {
   return win
 }
 
-app.on('ready', async () => {
-  await restoreMcpServer()
-
-  if (startsInBackground()) {
-    sendToBackground(createWindow(undefined, { show: false }))
-  } else {
-    createWindow()
-  }
+app.on('ready', () => {
+  createWindow()
 
   ipcMain.handle('app.openWindow', (_event, route: string) => {
     createWindow(route)
   })
 
   setupProtocolHandler(createWindow)
+
+  void restoreMcpServer()
 
   setInterval(() => autoUpdater?.checkForUpdates(), 1000 * 60 * 10)
 })

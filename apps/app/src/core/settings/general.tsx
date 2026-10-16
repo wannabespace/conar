@@ -8,11 +8,14 @@ import { useSubscription } from 'seitu/react'
 import { analyticsStore } from '~/lib/posthog'
 import { ConnectionLinksRow } from '~/modules/connection-links/connection-links-settings'
 
+import { StartAtLoginRow } from './start-at-login'
+
 export const GeneralSettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)
 
   return (
     <SettingsGroup>
+      {window.electron && <StartAtLoginRow />}
       {window.electron && <ConnectionLinksRow />}
       <SettingsRow
         htmlFor="analytics"

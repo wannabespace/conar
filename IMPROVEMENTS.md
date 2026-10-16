@@ -12,7 +12,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
    - More per-connection policy: row limit, masked columns.
    - A server-side row cap: on Postgres, MySQL and SQL Server the 200-row cap bounds memory but not transfer — the server still sends every row over the app's only pooled connection. SQL Server's `SET ROWCOUNT` would also cap `execute`'s writes and MySQL's `SQL_SELECT_LIMIT` is session state, so Postgres needs a cursor and the others a reset that cannot be skipped.
    - With no signed-in window open, main could open one instead of answering "Open Tamery and sign in first.".
-   - Start at login on Linux: Electron's login item is a no-op there, so it needs an XDG autostart `.desktop` file passing `--hidden`.
    - Tools that act on Tamery itself — rename a connection, open a table or query in a tab for the user. Asked to rename a connection today, an agent has no tool for it.
    - A Settings switch (or an approval) for agent-created connections: today nothing stops an agent adding one — even one steered by text in the rows it read — and each attempt test-connects to whatever host and port it names; the connection always starts at Ask before writing.
    - `query` is read-only and always rolled back, so it could retry once on a dropped connection like typed catalog reads do; today the first query after a server closes an idle connection fails with "Connection lost".
@@ -85,6 +84,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
 - **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
 - **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
+- **Start at login on Linux.** Electron's login item is a no-op there, so the row is hidden; an XDG autostart `.desktop` file would cover it.
 - **Ask for browser notification permission from a gesture.** The web build asks on the first notification, which Safari ignores outside a user gesture and which reaches every other browser while the user is away. A Settings → Notifications switch (or the first chat send) could ask instead, and let the user turn notifications off.
 
 ## SSH tunnels
