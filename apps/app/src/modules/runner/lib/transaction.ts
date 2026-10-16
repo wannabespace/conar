@@ -119,25 +119,6 @@ const open = async (
   return txId
 }
 
-const notifyEnded = (
-  { dialect, failed }: OpenTransaction,
-  last: { failed: boolean; text: string }
-) => {
-  if (failed) {
-    toast.info('Transaction rolled back', {
-      description: 'It had failed, so none of its changes were saved',
-    })
-  } else if (last.failed) {
-    toast.warning('Transaction ended', {
-      description: 'The database ended it when the statement failed',
-    })
-  } else if (!endsTransaction(last.text, dialects[dialect])) {
-    toast.info('Transaction committed', {
-      description: 'The database committed it implicitly',
-    })
-  }
-}
-
 const sync = async (
   tab: RunnerTab,
   txId: string,
@@ -154,7 +135,19 @@ const sync = async (
     return
   }
   if (status.value === 'ended') {
-    notifyEnded(current, last)
+    if (current.failed) {
+      toast.info('Transaction rolled back', {
+        description: 'It had failed, so none of its changes were saved',
+      })
+    } else if (last.failed) {
+      toast.warning('Transaction ended', {
+        description: 'The database ended it when the statement failed',
+      })
+    } else if (!endsTransaction(last.text, dialects[current.dialect])) {
+      toast.info('Transaction committed', {
+        description: 'The database committed it implicitly',
+      })
+    }
     await close(tab, 'ended')
     return
   }
