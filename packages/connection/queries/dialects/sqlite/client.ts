@@ -1,3 +1,5 @@
+import { homedir } from 'node:os'
+import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { pathToFileURL } from 'node:url'
 
@@ -14,7 +16,10 @@ export const openDatabase = (connectionString: string) => {
       'A SQLite connection opens a file on this computer, so its string names no host.'
     )
   }
-  const url = pathToFileURL(sqliteFile.path(connectionString))
+  const file = sqliteFile.path(connectionString)
+  const url = pathToFileURL(
+    file.startsWith('~/') ? path.join(homedir(), file.slice(2)) : file
+  )
   url.searchParams.set('mode', 'rw')
   return new DatabaseSync(url, { timeout: BUSY_TIMEOUT_MS })
 }

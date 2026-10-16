@@ -227,6 +227,17 @@ describe('diagnoseConnectionError', () => {
     expect(diagnose(message)?.title).toBe(title)
   })
 
+  it('reads a missing SQLite file without asking for a password', () => {
+    expect(
+      diagnose('Unable to open database file', {
+        database: '/srv/app.db',
+        host: '',
+        password: '',
+        type: ConnectionType.SQLite,
+      })?.title
+    ).toBe("Can't open the database file")
+  })
+
   it('returns nothing for an error it does not know', () => {
     expect(diagnose('something odd happened')).toBeNull()
   })

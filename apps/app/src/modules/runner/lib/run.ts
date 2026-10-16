@@ -36,6 +36,8 @@ export interface RunnerResult extends Omit<RunnerStatement, 'text'> {
   set: ResultSet | null
   error: RunnerError | null
   stopped: boolean
+  /** An earlier statement failed, so this one never ran. */
+  skipped: boolean
   pending: boolean
 }
 
@@ -97,6 +99,7 @@ const getResult = (
   error: null,
   pending: false,
   set: null,
+  skipped: false,
   source: statement.source,
   start: statement.start,
   stopped: false,
@@ -204,7 +207,12 @@ export const runStatements = async ({
   if (params) {
     for (const [index, statement] of statements.entries()) {
       if (signal.aborted || failedAt !== undefined) {
-        slots[index] = [getResult(statement, { stopped: true })]
+        slots[index] = [
+          getResult(
+            statement,
+            signal.aborted ? { stopped: true } : { skipped: true }
+          ),
+        ]
         continue
       }
       const ranAt = Date.now()
@@ -263,7 +271,7 @@ export const runStatements = async ({
     toast.info('Run stopped')
   } else if (failedAt !== undefined && failedAt < statements.length - 1) {
     toast.warning(
-      `Statement ${failedAt + 1} of ${statements.length} failed — the rest did not run`
+      `Statement ${failedAt + 1} of ${statements.length} failed, so the rest did not run`
     )
   }
 }

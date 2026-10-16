@@ -37,7 +37,7 @@ const EDIT_SUBTITLES = {
 
 const FLASH_COPY = {
   hit: { subtitle: 'Review and save.', title: 'Got it.' },
-  miss: { subtitle: 'Try another URL.', title: 'That’s not a connection.' },
+  miss: { subtitle: 'Try another one.', title: 'That’s not a connection.' },
 }
 
 export const PasteHero = ({

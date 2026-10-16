@@ -10,9 +10,11 @@ A SQLite connection points at a database file on your computer. There is no serv
 
 On the new-connection page, any of these works:
 
-- **Paste its path**, for example `/Users/me/app.db`. A bare path counts when it ends in `.db`, `.db3`, `.sqlite` or `.sqlite3`. A `sqlite://`, `file:` or `jdbc:sqlite:` URL, or a `sqlite3 <file>` command, works with any extension.
+- **Paste its path**, for example `/Users/me/app.db` or `~/app.db`. A bare path counts when it ends in `.db`, `.db3`, `.sqlite` or `.sqlite3`. A `sqlite://`, `file:` or `jdbc:sqlite:` URL, or a `sqlite3 <file>` command, works with any extension; options after `?` in a URL (`?mode=ro`) are dropped.
 - **Drop the file** onto the window (desktop app).
 - Pick **SQLite** as the engine and type the path in **File**, or click the folder button beside it to choose the file (desktop app).
+
+The path must be a full one. A path starting with `~/` opens from the home folder of whichever computer runs the query, so a synced connection finds the same file on each of your machines.
 
 Tamery opens a file that already exists and never creates one, so a mistyped path fails the test instead of leaving an empty database behind.
 

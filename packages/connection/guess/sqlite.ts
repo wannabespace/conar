@@ -4,9 +4,11 @@ import { decodeURIComponentOrRaw } from '@tamery/shared/utils'
 import type { DatabaseGuess } from './types'
 
 const QUOTED = /^(?<quote>["'])(?<inner>.*)\k<quote>$/su
-const URL_PREFIX = /^(?:jdbc:)?(?:sqlite3?|file):(?:\/\/)?/iu
+const URL_PREFIX = /^(?:jdbc:sqlite:(?:file:)?|(?:sqlite3?|file):)(?:\/\/)?/iu
 const CLI_PREFIX = /^sqlite3?\s+/iu
-const ABSOLUTE_PATH = /^(?:\/|[a-z]:[\\/])[^\n]*$/iu
+const URI_PARAMS = /\?.*$/su
+const LEADING_SLASHES = /^\/{2,}/u
+const ABSOLUTE_PATH = /^(?:\/|~\/|[a-z]:[\\/])[^\n]*$/iu
 const SQLITE_EXTENSION = /\.(?:db|db3|sqlite|sqlite3)$/iu
 
 const unquote = (text: string) => text.replace(QUOTED, '$<inner>')
@@ -17,7 +19,9 @@ export const guessSqlite = (text: string): DatabaseGuess | null => {
   const url = URL_PREFIX.exec(trimmed)?.[0]
   const cli = CLI_PREFIX.exec(trimmed)?.[0]
   const rest = unquote(trimmed.slice((url ?? cli ?? '').length))
-  const path = url ? decodeURIComponentOrRaw(rest) : rest
+  const path = (
+    url ? decodeURIComponentOrRaw(rest.replace(URI_PARAMS, '')) : rest
+  ).replace(LEADING_SLASHES, '/')
   if (
     !ABSOLUTE_PATH.test(path) ||
     (!url && !cli && !SQLITE_EXTENSION.test(path))

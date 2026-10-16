@@ -108,7 +108,7 @@ export const ReviewDrawer = ({
       emptyDescription="Edit tables on the canvas and the changes will show up here."
       notice={
         error && (
-          <Alert variant="destructive" className="mx-3 mb-3">
+          <Alert variant="destructive" className="mx-3 mb-3 w-auto">
             <AlertTitle>The database refused the changes</AlertTitle>
             <AlertDescription>
               <span data-mask className="font-mono select-text">

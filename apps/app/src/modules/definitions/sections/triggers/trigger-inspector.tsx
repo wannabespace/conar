@@ -42,6 +42,7 @@ import {
   formEditable,
   sentenceCase,
   getShape,
+  getTimings,
   triggerSchemas,
 } from './trigger-draft'
 import { useToggle } from './use-toggle'
@@ -214,6 +215,7 @@ export const TriggerInspector = ({
               <Labelled
                 label="Event"
                 description="A trigger here answers to a single event."
+                controlId={field.name}
               >
                 <OptionSelect
                   id={field.name}
@@ -236,7 +238,18 @@ export const TriggerInspector = ({
                 label="Timing"
                 disabled={readOnly}
                 getLabel={sentenceCase}
-                options={options.timings}
+                options={
+                  item
+                    ? getTimings(
+                        dialect,
+                        getRelationNames(draft.schema, 'view').includes(
+                          item.table
+                        )
+                          ? 'view'
+                          : 'table'
+                      )
+                    : options.timings
+                }
                 placeholder="Timing"
                 onChanged={(timing: TriggerTiming) =>
                   resetFields(form, {

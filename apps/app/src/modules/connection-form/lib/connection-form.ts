@@ -72,6 +72,8 @@ const PLACE_MESSAGES = {
   host: 'Enter the host',
 }
 
+const FULL_PATH = /^\s*(?:\/|~\/|[a-z]:[\\/])/iu
+
 const connectionFormSchema = type({
   database: 'string',
   host: 'string',
@@ -87,6 +89,16 @@ const connectionFormSchema = type({
       ctx.reject({ message: PLACE_MESSAGES[field], path: [field] })
     )
   })
+  .narrow(
+    (values, ctx) =>
+      !opensFile(values.type) ||
+      !/\S/u.test(values.database) ||
+      FULL_PATH.test(values.database) ||
+      ctx.reject({
+        message: "Use the file's full path, like /Users/me/app.db",
+        path: ['database'],
+      })
+  )
   .narrow(
     (values, ctx) =>
       !values.sshEnabled ||
@@ -151,11 +163,23 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   }
 }
 
-const expandHost = (
+/** Reads a whole string typed into the field that names where the database is, as a paste would. */
+const expandPlace = (
   form: ConnectionForm,
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
 ) => {
-  const { host } = form.state.values
+  const { database, host, type: connectionType } = form.state.values
+  if (opensFile(connectionType)) {
+    const guess = guessConnection(database)
+    if (
+      guess?.parts.type === ConnectionType.SQLite &&
+      guess.parts.database !== database
+    ) {
+      fill(form, guess)
+      onFill(guess, false)
+    }
+    return
+  }
   const guess = guessConnection(host)
   if (guess && (guess.format !== 'host' || guess.parts.host !== host)) {
     fill(form, guess)
@@ -182,13 +206,13 @@ export const useConnectionForm = ({
     defaultValues: initialValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
-        if (fieldApi.name === 'host') {
-          expandHost(form, onFill)
+        if (fieldApi.name === getPlaceField(form.state.values.type)) {
+          expandPlace(form, onFill)
         }
       },
     },
     onSubmit: () => {
-      expandHost(form, onFill)
+      expandPlace(form, onFill)
       return onSubmit()
     },
     validators: {

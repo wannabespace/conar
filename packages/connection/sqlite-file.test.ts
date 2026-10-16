@@ -11,6 +11,7 @@ describe('sqliteFile', () => {
     '/Users/me/app data.db',
     '/tmp/a#b?c%d.sqlite',
     'C:/Users/me/app.db',
+    '~/data/app.db',
   ])('reads %p back from its string', (path) => {
     expect(sqliteFile.path(sqliteFile.connectionString(path))).toBe(path)
   })
@@ -19,6 +20,12 @@ describe('sqliteFile', () => {
     expect(
       sqliteFile.path(sqliteFile.connectionString(String.raw`C:\data\app.db`))
     ).toBe('C:/data/app.db')
+  })
+
+  test('drops the spaces a copied path carries', () => {
+    expect(
+      sqliteFile.path(sqliteFile.connectionString(' /srv/app.db \n'))
+    ).toBe('/srv/app.db')
   })
 
   test('round-trips through the form parts', () => {

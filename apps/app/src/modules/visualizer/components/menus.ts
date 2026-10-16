@@ -73,12 +73,16 @@ export const columnMenu = (
       label: 'Copy Name',
       onSelect: () => copyToClipboard(column.name, 'Column name copied'),
     },
-    {
-      disabled: !editable || column.primaryKey,
-      icon: EraserIcon,
-      label: column.nullable ? 'Require a Value' : 'Allow NULL',
-      onSelect: () => actions.toggleNullable(table, column),
-    },
+    ...(can.alterColumns || column.state === 'added'
+      ? [
+          {
+            disabled: !editable || column.primaryKey,
+            icon: EraserIcon,
+            label: column.nullable ? 'Require a Value' : 'Allow NULL',
+            onSelect: () => actions.toggleNullable(table, column),
+          } satisfies AppMenuNode,
+        ]
+      : []),
     ...(can.foreignKeys
       ? [
           {

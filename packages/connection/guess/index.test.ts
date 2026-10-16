@@ -118,6 +118,22 @@ describe('guessConnection — snippets from configs and tools', () => {
       'DATABASE_URL=sqlite:////var/lib/app.db',
       { database: '/var/lib/app.db', type: ConnectionType.SQLite },
     ],
+    [
+      'sqlite:////var/lib/app.db',
+      { database: '/var/lib/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'file:/srv/app.db?mode=ro&cache=shared',
+      { database: '/srv/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'jdbc:sqlite:file:/srv/app.db',
+      { database: '/srv/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      '~/data/app.db',
+      { database: '~/data/app.db', type: ConnectionType.SQLite },
+    ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
   })

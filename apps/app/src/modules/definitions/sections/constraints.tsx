@@ -502,6 +502,7 @@ const ConstraintInspector = ({
                 <Labelled
                   label="Column"
                   description="The column this key points at."
+                  controlId={field.name}
                 >
                   <OptionSelect
                     id={field.name}

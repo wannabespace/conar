@@ -10,7 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@tamery/ui/components/field'
 import {
   InputGroup,
   InputGroupAddon,
@@ -56,11 +61,15 @@ const lockedFields = (
   const { alterColumns, renameColumns, retypeKeyColumns } =
     getCapabilities(dialect)
   const stored = column !== null && column.state !== 'added'
+  const name = stored && !renameColumns
+  const type =
+    stored && (!alterColumns || (!!column.primaryKey && !retypeKeyColumns))
   return {
-    name: stored && !renameColumns,
+    focusType: name && !type,
+    name,
+    nameOnly: stored && renameColumns && !alterColumns,
     nullable: primaryKey || (stored && !alterColumns),
-    type:
-      stored && (!alterColumns || (!!column.primaryKey && !retypeKeyColumns)),
+    type,
   }
 }
 
@@ -144,8 +153,13 @@ const ColumnForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
+        {locked.nameOnly && (
+          <FieldDescription>
+            This database can only rename a stored column.
+          </FieldDescription>
+        )}
         <TypeField
-          autoFocus={locked.name && !locked.type}
+          autoFocus={locked.focusType}
           columnType={columnType}
           disabled={locked.type}
           error={errors.type}

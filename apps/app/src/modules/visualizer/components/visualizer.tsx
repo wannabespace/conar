@@ -88,6 +88,15 @@ export const Visualizer = ({
   const { data: indexes = noRows } = useQuery({
     ...resourceIndexesQueryOptions({ connectionResource }),
     enabled: can.indexes,
+    // The list answers one row per indexed column.
+    select: (rows) => [
+      ...new Map(
+        rows.map((row) => [
+          JSON.stringify([row.schema, row.table, row.name]),
+          row,
+        ])
+      ).values(),
+    ],
   })
   const { data: triggers = noRows } = useQuery({
     ...resourceTriggersQueryOptions({ connectionResource }),

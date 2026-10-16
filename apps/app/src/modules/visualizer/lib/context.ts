@@ -22,6 +22,7 @@ export const getGates = (dialect: Dialect) => {
   const constraints = getSectionCapabilities('constraints', dialect)
 
   return {
+    alterColumns: capabilities.alterColumns,
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,

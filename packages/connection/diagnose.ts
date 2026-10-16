@@ -21,6 +21,20 @@ const RULES: DiagnosisRule[] = [
   ...SSH_RULES,
   {
     diagnose: () => ({
+      hint: 'Choose the database file itself, not a backup, journal or other file. An encrypted database cannot be opened.',
+      title: "That file isn't a SQLite database",
+    }),
+    match: /file is not a database/iu,
+  },
+  {
+    diagnose: () => ({
+      hint: 'It may have been moved, renamed or deleted, or the path names a folder. Choose the file again.',
+      title: "Can't open the database file",
+    }),
+    match: /unable to open database file/iu,
+  },
+  {
+    diagnose: () => ({
       focus: 'user',
       hint: 'The sign-in worked, but this user may not open that database. Grant it access, or pick another database or user.',
       title: "This user can't open that database",
@@ -198,8 +212,14 @@ export const diagnoseConnectionError = (
     return null
   }
   const diagnosis = rule.diagnose(context)
-  const { host, password } = context.parts
-  if (rule.tunnel || diagnosis.focus || password || isLocalHost(host)) {
+  const { host, password, type } = context.parts
+  if (
+    rule.tunnel ||
+    diagnosis.focus ||
+    password ||
+    isLocalHost(host) ||
+    type === ConnectionType.SQLite
+  ) {
     return diagnosis
   }
   return {

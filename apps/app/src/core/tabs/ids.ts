@@ -1,7 +1,11 @@
 import type { DefinitionsSection } from '~/core/catalog/sections'
 
+/** Escapes only the id's own separator, and `%` so the name decodes back; the router encodes the rest. */
+const escapeIdPart = (part: string) =>
+  part.replaceAll('%', '%25').replaceAll(':', '%3A')
+
 export const tableTabId = (schema: string, table: string) =>
-  `table:${encodeURIComponent(schema)}:${encodeURIComponent(table)}`
+  `table:${escapeIdPart(schema)}:${escapeIdPart(table)}`
 
 export const parseTableTabId = (id: string) => {
   const [kind, schema, table, ...extra] = id.split(':')
