@@ -11,14 +11,12 @@ import { ConnectionLinksRow } from '~/modules/connection-links/connection-links-
 
 import { ElectronSwitchRow } from './electron-switch-row'
 
-const hasStartAtLogin = !!window.electron && !isLinux
-
 export const GeneralSettings = () => {
   const isAnalyticsOn = useSubscription(analyticsStore)
 
   return (
     <SettingsGroup>
-      {hasStartAtLogin && (
+      {window.electron && !isLinux && (
         <ElectronSwitchRow
           id="open-at-login"
           title="Start at login"
