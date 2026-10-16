@@ -1,14 +1,14 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { silently } from '@tamery/shared/utils'
+import { silently, toError } from '@tamery/shared/utils'
 import type { Statement } from '@tamery/sql'
 import {
-  closesTransaction,
   dialects,
   leavesTransactionOpen,
   splitStatements,
   statementsFromTokens,
   unwrapTransaction,
 } from '@tamery/sql'
+import { Result } from 'better-result'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 
@@ -21,16 +21,18 @@ import { createDialectProvider } from '~/core/runtime/dialects/driver'
 import type { QueryParams } from '~/core/runtime/query'
 import { posthog } from '~/lib/posthog'
 
+import type { RunnerStatement } from './run'
 import type { RunnerTab } from './store'
 
 interface OpenTransaction {
   connectionResource: ConnectionResource
-  params: QueryParams
-  ran: string[]
+  dialect: Dialect
+  provider: ReturnType<typeof createDialectProvider>
+  ran: Pick<RunnerStatement, 'start' | 'text'>[]
   txId: string
 }
 
-type CloseReason = 'commit' | 'rollback' | 'statement' | 'tab_closed'
+type CloseReason = 'commit' | 'ended' | 'rollback' | 'tab_closed'
 
 const state = memoize((_tab: RunnerTab) =>
   createStore<OpenTransaction | null>(null)
@@ -42,78 +44,117 @@ const close = async (tab: RunnerTab, reason: CloseReason) => {
     return
   }
   state(tab).set(null)
-  const { connectionResource, params, ran, txId } = open
-  posthog.capture('transaction_close', { reason, type: params.dialect })
-  const provider = createDialectProvider(params.dialect, params)
+  const { connectionResource, dialect, provider, ran, txId } = open
+  posthog.capture('transaction_close', { reason, type: dialect })
   try {
-    await (reason === 'commit'
-      ? provider.commitTransaction({ txId })
-      : provider.rollbackTransaction({ txId }))
+    if (reason === 'commit') {
+      await provider.commitTransaction({ txId })
+    } else if (reason !== 'ended') {
+      await provider.rollbackTransaction({ txId })
+    }
   } finally {
-    refreshAfterRun(connectionResource, params.dialect, ran.join(';\n'))
+    refreshAfterRun(
+      connectionResource,
+      dialect,
+      ran.map((statement) => statement.text).join(';\n')
+    )
   }
 }
 
-/** The statement's SQL runs verbatim: a `BEGIN` left open moves the tab onto a session of its own until a `COMMIT` or `ROLLBACK` ends it. */
+const open = async (
+  tab: RunnerTab,
+  connectionResource: ConnectionResource,
+  params: QueryParams
+) => {
+  const provider = createDialectProvider(params.dialect, params)
+  const session = await Result.tryPromise(() => provider.openSession())
+  if (session.isErr()) {
+    throw new Error(
+      `The database refused a second connection for the transaction (${toError(session.error.cause).message}). Run the whole block with Run all, or select it, to use the app's own connection.`
+    )
+  }
+  const { txId } = session.value
+  // A newer run aborted this one while it connected and may already hold the tab's session.
+  if (params.signal?.aborted) {
+    await silently(() => provider.rollbackTransaction({ txId }))
+    params.signal.throwIfAborted()
+  }
+  state(tab).set({
+    connectionResource,
+    dialect: params.dialect,
+    provider,
+    ran: [],
+    txId,
+  })
+  posthog.capture('transaction_open', { type: params.dialect })
+  return txId
+}
+
+const releaseIfEnded = async (tab: RunnerTab, txId: string) => {
+  const current = state(tab).get()
+  if (current?.txId !== txId) {
+    return
+  }
+  const stillOpen = await Result.tryPromise(() =>
+    current.provider.transactionOpen({ txId })
+  )
+  if (stillOpen.isOk() && !stillOpen.value) {
+    await close(tab, 'ended')
+  }
+}
+
+/** The statement's SQL runs verbatim: a `BEGIN` left open moves the tab onto a session of its own until the database reports its transaction over. */
 const run = async ({
   connectionResource,
   params,
+  statement,
   tab,
-  text,
 }: {
   connectionResource: ConnectionResource
   params: QueryParams
+  statement: RunnerStatement
   tab: RunnerTab
-  text: string
 }): Promise<ResultSet[]> => {
-  const store = state(tab)
-  const dialect = dialects[params.dialect]
-  const opening =
-    !store.get() && dialect.transactions && leavesTransactionOpen(text, dialect)
-  if (opening) {
-    const { txId } = await createDialectProvider(
-      params.dialect,
-      params
-    ).openSession()
-    store.set({ connectionResource, params, ran: [], txId })
-    posthog.capture('transaction_open', { type: params.dialect })
-  }
-  const open = store.get()
-  if (!open) {
-    return statementQuery(text, params.dialect).run(params)
+  const spec = dialects[params.dialect]
+  const txId =
+    state(tab).get()?.txId ??
+    (spec.transactions && leavesTransactionOpen(statement.text, spec)
+      ? await open(tab, connectionResource, params)
+      : null)
+  if (!txId) {
+    return statementQuery(statement.text, params.dialect).run(params)
   }
   const sets: ResultSet[] = []
   try {
     // A `BEGIN … COMMIT` group goes one statement at a time: MySQL rejects several in one string.
-    for (const { text: part } of splitStatements(text, dialect, {
+    for (const part of splitStatements(statement.text, spec, {
       groupTransactions: false,
     })) {
       // Sequential by design: the statements run in order on the session's connection.
       // oxlint-disable-next-line no-await-in-loop
-      const partSets = await customQuery({ query: part }).run({
+      const partSets = await customQuery({ query: part.text }).run({
         ...params,
-        txId: open.txId,
+        txId,
       })
       sets.push(...partSets)
-      store.set(
-        (current) => current && { ...current, ran: [...current.ran, part] }
+      state(tab).set(
+        (current) =>
+          current && {
+            ...current,
+            ran: [
+              ...current.ran,
+              { start: statement.start + part.start, text: part.text },
+            ],
+          }
       )
-      if (closesTransaction(part, dialect)) {
-        // The statement already ended it: this rollback only releases the connection, and SQL Server rejects it.
-        // oxlint-disable-next-line no-await-in-loop
-        await silently(() => close(tab, 'statement'))
-      }
     }
-  } catch (error) {
-    if (opening) {
-      await silently(() => close(tab, 'rollback'))
-    }
-    throw error
+  } finally {
+    await releaseIfEnded(tab, txId)
   }
   return sets
 }
 
-/** The statement of a `BEGIN … COMMIT` block whose turn it is: the opener until the tab has a transaction open, then the one after the last that ran in it. */
+/** The statement of a `BEGIN … COMMIT` block whose turn it is: the one after the last of the block's statements that ran in the tab's transaction, else its opener. */
 const step = ({
   dialect,
   statement,
@@ -132,8 +173,13 @@ const step = ({
   const steps = statementsFromTokens(text, statement.tokens, spec, {
     groupTransactions: false,
   })
-  const ran = state(tab).get()?.ran.length ?? 0
-  return steps[Math.min(ran, steps.length - 1)] ?? statement
+  const ran = new Set(
+    state(tab)
+      .get()
+      ?.ran.map((item) => item.start)
+  )
+  const last = steps.findLastIndex((item) => ran.has(item.start))
+  return steps[Math.min(last + 1, steps.length - 1)] ?? statement
 }
 
 export const runnerTransaction = { close, run, state, step }

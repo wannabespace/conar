@@ -125,6 +125,9 @@ const dialectQueryBridge = (dialect: string) => ({
   rollbackTransaction: handleElectronError((arg: unknown) =>
     ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)
   ),
+  transactionOpen: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.transactionOpen`, arg)
+  ),
 })
 
 contextBridge.exposeInMainWorld('electron', {

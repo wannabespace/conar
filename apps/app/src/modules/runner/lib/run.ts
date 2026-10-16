@@ -111,8 +111,8 @@ const runOne = async ({
     const sets = await runnerTransaction.run({
       connectionResource,
       params: { ...params, signal },
+      statement,
       tab,
-      text: statement.text,
     })
     const duration = performance.now() - startedAt
     return (sets.length > 0 ? sets : [null]).map((set) =>
@@ -214,7 +214,8 @@ export const runStatements = async ({
     stopped: signal.aborted,
     type: dialect,
   })
-  if (dialect) {
+  // The pool sees none of an open transaction's writes and would wait on its locks; closing it refreshes instead.
+  if (dialect && !runnerTransaction.state(tab).get()) {
     refreshAfterRun(
       connectionResource,
       dialect,

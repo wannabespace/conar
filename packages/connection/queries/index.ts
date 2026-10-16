@@ -70,6 +70,11 @@ export interface QueryExecutor {
       ownerId?: string
     } & RunOptions
   ) => Promise<QueryExecuteResult>
+  /** Asks the database whether the session's transaction is still open; one that ended (a COMMIT, an implicit commit, a server-side abort) releases the session. */
+  transactionOpen: (args: {
+    txId: string
+    ownerId?: string
+  }) => Promise<boolean>
   commitTransaction: (args: { txId: string; ownerId?: string }) => Promise<void>
   rollbackTransaction: (args: {
     txId: string

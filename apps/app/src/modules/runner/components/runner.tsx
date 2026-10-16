@@ -355,7 +355,7 @@ export const Runner = () => {
                 <TooltipContent>Run every statement</TooltipContent>
               </Tooltip>
             )}
-            <TransactionControls />
+            <TransactionControls disabled={running} />
             <div className="ml-auto flex shrink-0 items-center gap-1">
               <ToolbarButton label="Format" onClick={() => actions.format()}>
                 <ContentSwitch

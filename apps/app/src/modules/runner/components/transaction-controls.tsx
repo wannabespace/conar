@@ -30,7 +30,8 @@ const endings = {
   },
 } as const
 
-export const TransactionControls = () => {
+/** `disabled` while the tab runs: a transaction ended mid-run would send the run's remaining statements to the pool, where they autocommit. */
+export const TransactionControls = ({ disabled }: { disabled: boolean }) => {
   const tab = useRunnerTab()
   const open = useSubscription(runnerTransaction.state(tab))
 
@@ -56,7 +57,12 @@ export const TransactionControls = () => {
         <Tooltip key={reason}>
           <TooltipTrigger
             render={
-              <Button size="sm" variant="outline" onClick={() => end(reason)} />
+              <Button
+                disabled={disabled}
+                size="sm"
+                variant="outline"
+                onClick={() => end(reason)}
+              />
             }
           >
             <HugeiconsIcon icon={endings[reason].icon} strokeWidth={2} />

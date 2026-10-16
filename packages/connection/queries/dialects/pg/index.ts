@@ -3,11 +3,7 @@ import type { ClientBase, Pool } from 'pg'
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
-import {
-  registerTransaction,
-  sessionConnection,
-  transactionQueries,
-} from '../../transactions'
+import { registerTransaction, transactionQueries } from '../../transactions'
 import { getPool, pg } from './client'
 import { runOn } from './run'
 
@@ -32,6 +28,8 @@ const register = (
       },
       execute: (sql, values, options) =>
         runOn(client, { connectionString, pool, sql, values }, options),
+      inTransaction: () =>
+        Promise.resolve(client.getTransactionStatus() !== 'I'),
       release,
       rollback: async () => {
         await client.query('ROLLBACK')
@@ -96,11 +94,8 @@ export const query = {
 
   openSession: handleQueryError(async ({ connectionString, ownerId }) => {
     const pool = await getPool(connectionString)
-    const client = await sessionConnection(async () => {
-      const session = new pg.Client(pool.options)
-      await session.connect()
-      return session
-    })
+    const client = new pg.Client(pool.options)
+    await client.connect()
     // An unhandled `error` (the server dropping the connection) would crash the process.
     client.on('error', console.error)
     const txId = register(client, {

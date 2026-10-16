@@ -7,7 +7,6 @@ export { dialects } from './dialect'
 export { diagnose } from './diagnostics'
 export type { Statement } from './statements'
 export {
-  closesTransaction,
   leavesTransactionOpen,
   splitStatements,
   statementAt,

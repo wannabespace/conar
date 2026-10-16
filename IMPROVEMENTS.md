@@ -60,7 +60,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Show an open transaction on its tab.** Commit and Rollback appear only in the runner's toolbar, so a transaction left open in a background tab is invisible until that tab is opened again; a dot on the tab (and a confirm before closing it, rather than the rollback toast after) would keep forgotten transactions from holding locks for the 15-minute idle timeout.
 - **Keep a window's transactions when another reloads.** The desktop main process rolls back every open transaction when any window navigates (`resetTransactions` in `main.ts`), so reloading one window ends a transaction another window holds. Owning transactions per `webContents` (`ownerId` from the IPC event) would scope the reset to the window that reloaded.
-- **Know the transaction state from the database.** The tab tracks an open transaction from the statements it ran, so one ended behind its back (MySQL's implicit commit on DDL, SQL Server's `XACT_ABORT`, a procedure that commits) still shows Commit and Rollback. Asking the session (`@@TRANCOUNT`, `pg_current_xact_id_if_assigned()`) after each run would keep the toolbar honest.
 
 ## Offline writes
 

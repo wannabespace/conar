@@ -161,6 +161,12 @@ export const createDialectProvider = (
         ? t.electron.rollbackTransaction(params)
         : t.proxy.rollbackTransaction(params)
     },
+    transactionOpen(params: { txId: string }) {
+      const t = resolveTransport()
+      return t.kind === 'electron'
+        ? t.electron.transactionOpen(params)
+        : t.proxy.transactionOpen(params)
+    },
   }
 }
 

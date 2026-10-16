@@ -74,4 +74,27 @@ describe('transactionQueries', () => {
 
     await transactionQueries.rollbackTransaction({ ownerId: 'owner-a', txId })
   })
+
+  test('a session whose transaction ended is released without a rollback', async () => {
+    const { calls, handle } = spyHandle()
+    let inTransaction = true
+    const txId = registerTransaction(
+      { ...handle, inTransaction: () => Promise.resolve(inTransaction) },
+      'owner-a'
+    )
+
+    expect(await transactionQueries.transactionOpen({ txId })).toBe(false)
+    expect(
+      await transactionQueries.transactionOpen({ ownerId: 'owner-a', txId })
+    ).toBe(true)
+
+    inTransaction = false
+    expect(
+      await transactionQueries.transactionOpen({ ownerId: 'owner-a', txId })
+    ).toBe(false)
+    expect(calls).toEqual(['release'])
+    await expect(
+      transactionQueries.commitTransaction({ ownerId: 'owner-a', txId })
+    ).rejects.toThrow('no longer open')
+  })
 })

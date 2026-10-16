@@ -15,6 +15,7 @@ export interface TxHandle {
   commit: () => MaybePromise<void>
   rollback: () => MaybePromise<void>
   release: () => MaybePromise<void>
+  inTransaction?: () => Promise<boolean>
 }
 
 interface OwnedTx {
@@ -60,18 +61,6 @@ export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
   keepAlive()
 
   return txId
-}
-
-export const sessionConnection = async <T>(connect: () => Promise<T>) => {
-  try {
-    return await connect()
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    throw new Error(
-      `The database refused a second connection for the transaction (${reason}). Run BEGIN together with its COMMIT or ROLLBACK to use the app's own connection.`,
-      { cause: error }
-    )
-  }
 }
 
 const owned = (entry: OwnedTx, ownerId?: string) =>
@@ -143,9 +132,25 @@ export const transactionQueries = {
       await settle(handle, () => handle.rollback())
     }
   ),
+  transactionOpen: handleQueryError(
+    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
+      const entry = activeTransactions.get(txId)
+      if (!entry || !owned(entry, ownerId)) {
+        return false
+      }
+      if ((await entry.handle.inTransaction?.()) !== false) {
+        return true
+      }
+      await silently(() => disposeTransaction(txId, ownerId)?.release())
+      return false
+    }
+  ),
 } satisfies Pick<
   QueryExecutor,
-  'commitTransaction' | 'executeTransaction' | 'rollbackTransaction'
+  | 'commitTransaction'
+  | 'executeTransaction'
+  | 'rollbackTransaction'
+  | 'transactionOpen'
 >
 
 export const resetTransactions = async () => {

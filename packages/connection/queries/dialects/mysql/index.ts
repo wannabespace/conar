@@ -4,13 +4,11 @@ import type * as mysql2Promise from 'mysql2/promise'
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { cancel } from '../../cancellation'
-import {
-  registerTransaction,
-  sessionConnection,
-  transactionQueries,
-} from '../../transactions'
+import { registerTransaction, transactionQueries } from '../../transactions'
 import { getPool, mysql2 } from './client'
 import { runOn } from './run'
+
+const SERVER_STATUS_IN_TRANS = 1
 
 const register = (
   connection: mysql2Promise.Connection,
@@ -31,6 +29,13 @@ const register = (
       commit: () => connection.commit(),
       execute: (sql, values, options) =>
         runOn(connection, { conf, connectionString, sql, values }, options),
+      // MySQL and MariaDB both report the transaction in an OK packet's status flags, and mysql2 exposes them only on a result header, hence the no-op `DO 0`.
+      inTransaction: async () => {
+        const [header] =
+          await connection.query<mysql2Promise.ResultSetHeader>('DO 0')
+        // oxlint-disable-next-line no-bitwise -- the server status is a bit field
+        return (header.serverStatus & SERVER_STATUS_IN_TRANS) !== 0
+      },
       release,
       rollback: () => connection.rollback(),
     },
@@ -93,9 +98,7 @@ export const query = {
 
   openSession: handleQueryError(async ({ connectionString, ownerId }) => {
     const { conf } = await getPool(connectionString)
-    const connection = await sessionConnection(() =>
-      mysql2.createConnection(conf)
-    )
+    const connection = await mysql2.createConnection(conf)
     // An unhandled `error` (the server dropping the connection) would crash the process.
     connection.on('error', console.error)
     const txId = register(connection, {

@@ -57,10 +57,16 @@ const dateAsText = (value: unknown, column?: ColumnMetadata) => {
 export const runRequest = async (
   request: mssqlModule.Request,
   {
+    batch = false,
     connectionString,
     sql,
     values,
-  }: { connectionString: string; sql: string; values: unknown[] },
+  }: {
+    batch?: boolean
+    connectionString: string
+    sql: string
+    values: unknown[]
+  },
   { maxRows = Infinity, queryId }: RunOptions
 ) => {
   for (const [index, value] of values.entries()) {
@@ -92,8 +98,7 @@ export const runRequest = async (
       connectionString,
       queryId,
     },
-    // `query` wraps the SQL in sp_executesql, which rejects one leaving a transaction open (error 266) and drops its #temp tables, so a session's BEGIN TRAN needs a plain batch.
-    () => (values.length > 0 ? request.query(sql) : request.batch(sql))
+    () => (batch ? request.batch(sql) : request.query(sql))
   )
   const error = errors.at(-1)
   if (error) {
