@@ -39,6 +39,7 @@ export const focusMainWindow = () => {
     mainWindow.restore()
   }
 
+  mainWindow.show()
   mainWindow.focus()
 
   if (process.platform === 'darwin') {

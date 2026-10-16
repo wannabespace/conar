@@ -74,6 +74,20 @@ const lazyQueryExecutor = (
   }
 }
 
+const openAtLogin = {
+  get: () => {
+    const settings = app.getLoginItemSettings()
+    // `openAtLogin` stays true after the user disables Tamery in Task Manager's Startup tab.
+    return process.platform === 'win32'
+      ? settings.executableWillLaunchAtLogin
+      : settings.openAtLogin
+  },
+  set: (enabled: boolean) => {
+    app.setLoginItemSettings({ openAtLogin: enabled })
+    return openAtLogin.get()
+  },
+}
+
 export const electron = {
   app: {
     checkForUpdates: () => autoUpdater?.checkForUpdates(),
@@ -112,6 +126,7 @@ export const electron = {
   notifications: {
     notify: notifyUnfocused,
   },
+  openAtLogin,
   query: {
     clickhouse: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/clickhouse')

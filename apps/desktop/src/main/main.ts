@@ -11,6 +11,7 @@ import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
+import { keepsServingAfterClose, sendToBackground } from './lib/background'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
@@ -178,7 +179,13 @@ export const createWindow = (route?: string) => {
     }
   })
 
-  win.on('close', () => {
+  win.on('close', (event) => {
+    if (keepsServingAfterClose()) {
+      event.preventDefault()
+      sendToBackground(win)
+      return
+    }
+
     if (saveBoundsTimeout) {
       clearTimeout(saveBoundsTimeout)
     }
@@ -240,8 +247,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  const windows = BrowserWindow.getAllWindows()
+  if (windows.length === 0) {
     createWindow()
+  } else if (!windows.some((win) => win.isVisible())) {
+    windows[0]?.show()
   }
 })
 

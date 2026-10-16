@@ -188,6 +188,9 @@ contextBridge.exposeInMainWorld('electron', {
     forgetClient: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.forgetClient', arg)
     ),
+    keepRunning: handleElectronError(() =>
+      ipcRenderer.invoke('mcp.keepRunning')
+    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),
@@ -203,6 +206,9 @@ contextBridge.exposeInMainWorld('electron', {
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
     ),
+    setKeepRunning: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.setKeepRunning', arg)
+    ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },
   menu: {
@@ -213,6 +219,12 @@ contextBridge.exposeInMainWorld('electron', {
   notifications: {
     notify: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('notifications.notify', arg)
+    ),
+  },
+  openAtLogin: {
+    get: handleElectronError(() => ipcRenderer.invoke('openAtLogin.get')),
+    set: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('openAtLogin.set', arg)
     ),
   },
   query: {
