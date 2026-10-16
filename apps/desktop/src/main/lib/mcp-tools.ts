@@ -74,7 +74,7 @@ export const createMcpServer = (
 
   const runLogged = async (
     tool: McpTool,
-    call: Partial<McpTarget & Pick<McpCall, 'detail' | 'sql'>>,
+    call: Partial<McpTarget & Pick<McpCall, 'detail' | 'query'>>,
     run: () => Promise<unknown>
   ) => {
     const at = Date.now()
@@ -82,16 +82,16 @@ export const createMcpServer = (
     const {
       connectionId = null,
       detail = null,
+      query = null,
       resource = null,
-      sql = null,
     } = call
     logCall({
       at,
       connectionId,
       detail,
       error: result.isErr() ? toError(result.error.cause).message : null,
+      query,
       resource,
-      sql,
       tool,
     })
     if (result.isErr()) {
@@ -167,7 +167,7 @@ export const createMcpServer = (
       inputSchema: sqlInput,
     },
     (args, { signal }) =>
-      runLogged('query', args, () =>
+      runLogged('query', { ...args, query: args.sql }, () =>
         askShared({ args, method: 'query' }, signal)
       )
   )
@@ -217,7 +217,7 @@ export const createMcpServer = (
       inputSchema: sqlInput,
     },
     (args, { signal }) =>
-      runLogged('execute', args, async () => {
+      runLogged('execute', { ...args, query: args.sql }, async () => {
         const connectionAccess = getSharedAccess(args.connectionId)
         if (connectionAccess === 'read') {
           throw new Error(

@@ -74,8 +74,8 @@ export interface McpCall {
   detail: string | null
   error: string | null
   id: string
+  query: string | null
   resource: string | null
-  sql: string | null
   tool: McpTool
 }
 

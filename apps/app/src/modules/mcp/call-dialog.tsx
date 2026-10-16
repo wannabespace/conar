@@ -23,11 +23,11 @@ export const CallDialog = ({
   onOpenChange: (open: boolean) => void
   open: boolean
 }) => {
-  const sql = entry?.call.sql
+  const query = entry?.call.query
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} variant="panel">
-      {entry && sql && (
+      {entry && query && (
         <DialogContent showCloseButton={false}>
           <div className="flex h-12 shrink-0 items-center gap-1 border-b px-2">
             <DialogTitle className="mx-2 min-w-0 flex-1">
@@ -35,7 +35,7 @@ export const CallDialog = ({
                 <CallTitle {...entry} />
               </span>
             </DialogTitle>
-            <CopyIconButton label="Copy query" text={sql} />
+            <CopyIconButton label="Copy query" text={query} />
             <DialogCloseButton />
           </div>
           <CodeBlock
@@ -43,8 +43,8 @@ export const CallDialog = ({
             className="no-scrollbar scroll-fade min-h-0 flex-1 py-2"
             code={
               entry.connection
-                ? formatSql(sql, getDialect(entry.connection.type))
-                : sql
+                ? formatSql(query, getDialect(entry.connection.type))
+                : query
             }
             language="sql"
             lineNumbers

@@ -61,7 +61,7 @@ export const Activity = () => {
                 )
               }
             >
-              {call.sql && (
+              {call.query && (
                 <IconButton
                   icon={SourceCodeIcon}
                   label="Show query"
