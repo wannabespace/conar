@@ -58,6 +58,26 @@ export type McpRequest = {
 
 export type McpReply = { result: unknown } | { error: string } | { idle: true }
 
+export type McpTool =
+  | 'list_connections'
+  | 'create_connection'
+  | 'list_tables'
+  | 'describe_table'
+  | 'query'
+  | 'execute'
+
+export interface McpCall {
+  at: number
+  client: string
+  connectionId: string | null
+  /** The SQL, the table or the new connection's name; never a connection string. */
+  detail: string | null
+  error: string | null
+  id: string
+  resource: string | null
+  tool: McpTool
+}
+
 export interface McpClient {
   lastSeenAt: number
   name: string

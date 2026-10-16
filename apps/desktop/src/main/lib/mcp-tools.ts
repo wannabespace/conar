@@ -1,9 +1,24 @@
+import { randomUUID } from 'node:crypto'
+
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type {
+  ShapeOutput,
+  ZodRawShapeCompat,
+} from '@modelcontextprotocol/sdk/server/zod-compat.js'
+import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import type { McpAccess, McpRequest, McpTarget } from '@tamery/shared/mcp'
+import type {
+  McpAccess,
+  McpCall,
+  McpRequest,
+  McpTarget,
+  McpTool,
+} from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS, MCP_MAX_ROWS } from '@tamery/shared/mcp'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { app } from 'electron'
 import { z } from 'zod'
 
@@ -34,11 +49,15 @@ const sqlInput = { ...targetInput, sql: z.string() }
 
 const INSTRUCTIONS = `Tamery is the user's database client. Start with list_connections, then read the schema with list_tables and describe_table before writing SQL in the connection's own dialect. When the user names a record, value or thing to change, it almost always lives in the data, not in Tamery: connection names are only labels. Find it before answering — pick the likely tables from their names and columns, search them with query using case-insensitive partial matches (e.g. LOWER(column) LIKE '%value%'), and if several rows or connections could match, show the candidates and ask which one. query only reads; execute changes data or schema where the connection's access allows it, and on "ask" the user approves or declines each statement in Tamery, so explain in your reply what it changes. Results stop at ${MCP_MAX_ROWS} rows, so filter or aggregate in SQL instead of reading whole tables. create_connection saves a new connection from a connection string the user gives you; no tool edits or removes one.`
 
-export const createMcpServer = (access: () => Record<string, McpAccess>) => {
+export const createMcpServer = (
+  access: () => Record<string, McpAccess>,
+  logCall: (call: Omit<McpCall, 'client'>) => void
+) => {
   const server = new McpServer(
     { name: 'tamery', version: app.getVersion() },
     { instructions: INSTRUCTIONS }
   )
+
   const getAccess = (connectionId: string): McpAccess =>
     access()[connectionId] ?? DEFAULT_MCP_ACCESS
 
@@ -60,30 +79,67 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
     return askRenderer(request, signal)
   }
 
-  server.registerTool(
+  const registerTool = <Shape extends ZodRawShapeCompat>(
+    tool: McpTool,
+    config: {
+      annotations: ToolAnnotations
+      description: string
+      inputSchema: Shape
+    },
+    describeCall: (
+      args: ShapeOutput<Shape>
+    ) => Partial<McpTarget> & Pick<McpCall, 'detail'>,
+    run: (args: ShapeOutput<Shape>, signal: AbortSignal) => Promise<unknown>
+  ) =>
+    server.registerTool<ZodRawShapeCompat, ZodRawShapeCompat>(
+      tool,
+      config,
+      async (input, { signal }) => {
+        // The SDK parsed `input` with `config.inputSchema` before calling; TS cannot carry that through a generic shape.
+        const args = input as ShapeOutput<Shape>
+        const at = Date.now()
+        const result = await Result.tryPromise(() => run(args, signal))
+        const { connectionId, detail, resource } = describeCall(args)
+        logCall({
+          at,
+          connectionId: connectionId ?? null,
+          detail,
+          error: result.isErr() ? toError(result.error.cause).message : null,
+          id: randomUUID(),
+          resource: resource ?? null,
+          tool,
+        })
+        if (result.isErr()) {
+          throw result.error.cause
+        }
+        return jsonContent(result.value)
+      }
+    )
+
+  registerTool(
     'list_connections',
     {
       annotations: { readOnlyHint: true },
       description:
         'List the database connections saved in Tamery: id, name, engine, the resources (databases) opened in it, and the access the user gave agents: "read" (query only), "ask" (each execute waits for the user to approve it) or "write" (execute runs at once).',
+      inputSchema: {},
     },
-    async ({ signal }) => {
+    () => ({ detail: null }),
+    async (_args, signal) => {
       const connections = await askRenderer(
         { args: undefined, method: 'connections' },
         signal
       )
-      return jsonContent(
-        connections.flatMap((connection) => {
-          const connectionAccess = getAccess(connection.id)
-          return connectionAccess === 'off'
-            ? []
-            : [{ ...connection, access: connectionAccess }]
-        })
-      )
+      return connections.flatMap((connection) => {
+        const connectionAccess = getAccess(connection.id)
+        return connectionAccess === 'off'
+          ? []
+          : [{ ...connection, access: connectionAccess }]
+      })
     }
   )
 
-  server.registerTool(
+  registerTool(
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
@@ -104,7 +160,8 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
         type: z.enum(ConnectionType),
       },
     },
-    async (args, { signal }) => {
+    ({ name }) => ({ detail: name }),
+    async (args, signal) => {
       // A tunnel would let the agent make Tamery read any key file on disk and raise host-key dialogs.
       if (describeConnectionString(args.connectionString).usesSsh) {
         throw new Error(
@@ -115,22 +172,22 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
         { args, method: 'createConnection' },
         signal
       )
-      return jsonContent({ ...connection, access: getAccess(connection.id) })
+      return { ...connection, access: getAccess(connection.id) }
     }
   )
 
-  server.registerTool(
+  registerTool(
     'query',
     {
       annotations: { readOnlyHint: true },
       description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL and ClickHouse also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
-    async (args, { signal }) =>
-      jsonContent(await askShared({ args, method: 'query' }, signal))
+    ({ sql, ...target }) => ({ ...target, detail: sql }),
+    (args, signal) => askShared({ args, method: 'query' }, signal)
   )
 
-  server.registerTool(
+  registerTool(
     'list_tables',
     {
       annotations: { readOnlyHint: true },
@@ -141,11 +198,11 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
         schema: z.string().optional(),
       },
     },
-    async (args, { signal }) =>
-      jsonContent(await askShared({ args, method: 'tables' }, signal))
+    ({ schema, ...target }) => ({ ...target, detail: schema ?? null }),
+    (args, signal) => askShared({ args, method: 'tables' }, signal)
   )
 
-  server.registerTool(
+  registerTool(
     'describe_table',
     {
       annotations: { readOnlyHint: true },
@@ -157,18 +214,22 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
         table: z.string(),
       },
     },
-    async (args, { signal }) =>
-      jsonContent(await askShared({ args, method: 'describeTable' }, signal))
+    ({ schema, table, ...target }) => ({
+      ...target,
+      detail: `${schema}.${table}`,
+    }),
+    (args, signal) => askShared({ args, method: 'describeTable' }, signal)
   )
 
-  server.registerTool(
+  registerTool(
     'execute',
     {
       annotations: { destructiveHint: true, readOnlyHint: false },
       description: `Run one SQL statement that may change data or schema, on a Tamery connection whose access is "ask" or "write", in the connection's own SQL dialect. It commits; wrap several statements in BEGIN … COMMIT to run them as one transaction, except on ClickHouse, which has no transactions. On "ask" it waits until the user approves it in Tamery, and fails if they decline. Use query for reads. At most ${MCP_MAX_ROWS} rows come back.`,
       inputSchema: sqlInput,
     },
-    async (args, { signal }) => {
+    ({ sql, ...target }) => ({ ...target, detail: sql }),
+    async (args, signal) => {
       const connectionAccess = getSharedAccess(args.connectionId)
       if (connectionAccess === 'read') {
         throw new Error(
@@ -178,11 +239,9 @@ export const createMcpServer = (access: () => Record<string, McpAccess>) => {
       const approve = connectionAccess === 'ask'
       const bounce = approve ? app.dock?.bounce('critical') : undefined
       try {
-        return jsonContent(
-          await askRenderer(
-            { args: { ...args, approve }, method: 'execute' },
-            signal
-          )
+        return await askRenderer(
+          { args: { ...args, approve }, method: 'execute' },
+          signal
         )
       } finally {
         if (bounce !== undefined) {

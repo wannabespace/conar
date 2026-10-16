@@ -11,7 +11,12 @@ import {
   isJSONRPCRequest,
 } from '@modelcontextprotocol/sdk/types.js'
 import { PORTS } from '@tamery/shared/constants'
-import type { McpAccess, McpClient, McpStatus } from '@tamery/shared/mcp'
+import type {
+  McpAccess,
+  McpCall,
+  McpClient,
+  McpStatus,
+} from '@tamery/shared/mcp'
 import { DEFAULT_MCP_ACCESS } from '@tamery/shared/mcp'
 import { omit, toError } from '@tamery/shared/utils'
 import { Result } from 'better-result'
@@ -37,6 +42,20 @@ const store = new Store<{
 })
 
 const connectionAccess = () => store.get('access')
+
+const MAX_LOGGED_CALLS = 1000
+
+const log = new Store<{ calls: McpCall[] }>({
+  defaults: { calls: [] },
+  name: 'mcp-log',
+})
+
+let loggedCalls = log.get('calls')
+
+const logCall = (call: McpCall) => {
+  loggedCalls = [call, ...loggedCalls].slice(0, MAX_LOGGED_CALLS)
+  log.set('calls', loggedCalls)
+}
 
 let server: Server | Error | null = null
 
@@ -109,7 +128,9 @@ const handle = async (req: IncomingMessage, res: ServerResponse) => {
         sessionIdGenerator: randomUUID,
       }),
     }
-    await createMcpServer(connectionAccess).connect(opened.transport)
+    await createMcpServer(connectionAccess, (call) =>
+      logCall({ ...call, client: opened.client.name })
+    ).connect(opened.transport)
     session = opened
   } else {
     session = sessions.get(String(sessionId))
@@ -190,6 +211,7 @@ const clients = (): McpClient[] =>
     .toSorted((a, b) => b.lastSeenAt - a.lastSeenAt)
 
 export const mcp = {
+  calls: () => loggedCalls,
   clients,
   connectionAccess,
   forgetClient: (name: string) => {
