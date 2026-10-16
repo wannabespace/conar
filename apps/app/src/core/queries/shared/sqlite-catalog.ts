@@ -22,9 +22,8 @@ export const keyIndexed = (table: string) =>
   )
 
 /**
- * The tables of the connection's database as `t`, with `schema` selected. SQLite's own objects carry an exact `sqlite_`
- * prefix and Cloudflare D1's an `_cf_` one, which D1 refuses to read, so a catalog read that touches one fails whole.
- * `LIKE` cannot match either, since `_` is its wildcard.
+ * SQLite's own objects carry an exact `sqlite_` prefix and Cloudflare D1's an `_cf_` one, which D1 refuses to read, so a
+ * catalog read that touches one fails whole. `LIKE` cannot match either, since `_` is its wildcard.
  */
 export const userTables = (
   db: Kysely<SqliteDatabase>,
@@ -47,7 +46,6 @@ export const userTables = (
       )
     )
 
-/** Each key column of each index on a stored table, as `il` and `ix`, in key order. */
 export const indexKeys = (db: Kysely<SqliteDatabase>) =>
   userTables(db, ['table'])
     .crossJoin(pragma('index_list', 't.name').as('il'))

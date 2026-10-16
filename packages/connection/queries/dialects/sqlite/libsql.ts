@@ -26,7 +26,6 @@ const runOn = (
 ) =>
   // One at a time: each statement sees the one before it.
   Array.fromAsync(texts, async (sql) => {
-    // Drops the client's own prefix, so a SQL error reads as it does from a file.
     const set = await target.execute({ args, sql }).catch((error: unknown) => {
       throw error instanceof Error
         ? new Error(error.message.replace(SQLITE_ERROR_PREFIX, ''), {

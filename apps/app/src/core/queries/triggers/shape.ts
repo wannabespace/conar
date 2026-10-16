@@ -59,10 +59,7 @@ const TIMING_BEFORE_EVENT: Record<string, TriggerTiming> = {
   OF: 'INSTEAD OF',
 }
 
-/**
- * SQLite keeps only the CREATE TRIGGER text. Its events are reserved words, so the first bare one is the event and the
- * timing sits right before it; a trigger without a timing fires BEFORE.
- */
+// Trigger events are reserved words, so the first unquoted one is the event and the timing sits right before it.
 export const sqliteTriggerParts = (statement: string) => {
   const tokens = tokenize(statement, dialects[Dialect.SQLite]).tokens.filter(
     (token) => token.kind !== 'comment'

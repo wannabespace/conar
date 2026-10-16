@@ -158,35 +158,21 @@ const HTTPS_OF_SCHEME: Record<string, boolean> = { http: false, https: true }
 
 const AUTH_TOKEN_PARAM = 'authtoken'
 
-/** A SQLite file's path is the whole string, not its URL path; libSQL may carry its token as a param. */
-const sqliteParts = (
-  connectionString: string,
-  parts: Pick<ConnectionParts, 'host' | 'password'>,
-  searchParams: URLSearchParams
-) => {
-  if (!parts.host) {
-    return { database: sqliteFile.path(connectionString) }
-  }
-  const authToken = searchParams.get(AUTH_TOKEN_PARAM)
-  searchParams.delete(AUTH_TOKEN_PARAM)
-  return { password: authToken ?? parts.password }
-}
-
 const parse = (connectionString: string): ConnectionParts => {
   const { scheme, searchParams, ...parts } =
     readConnectionString(connectionString)
   const ssh = getSshTunnel(searchParams)
   deleteSshParams(searchParams)
   const type = getConnectionType(scheme)
-  // Before `options` is read: it takes libSQL's token out of the params.
-  const sqlite =
-    type === ConnectionType.SQLite
-      ? sqliteParts(connectionString, parts, searchParams)
-      : null
+  if (type === ConnectionType.SQLite && parts.host) {
+    parts.password = searchParams.get(AUTH_TOKEN_PARAM) ?? parts.password
+    searchParams.delete(AUTH_TOKEN_PARAM)
+  } else if (type === ConnectionType.SQLite) {
+    parts.database = sqliteFile.path(connectionString)
+  }
 
   return {
     ...parts,
-    ...sqlite,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
     ssh,

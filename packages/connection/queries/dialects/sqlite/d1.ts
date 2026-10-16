@@ -82,7 +82,6 @@ const send = async (
   }))
 }
 
-/** D1 keeps no transaction open between requests, so a read-only one sends each statement at once. */
 const readOnlyTransaction = (connectionString: string) => ({
   commit: noop,
   release: noop,
@@ -91,7 +90,6 @@ const readOnlyTransaction = (connectionString: string) => ({
     send(connectionString, toStatements(texts, values)),
 })
 
-/** A write transaction collects its statements and sends them as one batch on commit; they answer with nothing until then. */
 const batchedTransaction = (connectionString: string) => {
   let pending: D1Statement[] = []
   return {

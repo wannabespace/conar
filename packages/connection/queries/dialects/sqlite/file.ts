@@ -55,7 +55,6 @@ export const fileLocation = {
     return Promise.resolve(runOn(db, texts, values, maxRows))
   },
 
-  // A transaction gets its own handle: on the shared one, every other query would run inside it.
   transaction: (connectionString, readOnly) => {
     const db = openDatabase(connectionString)
     if (readOnly) {

@@ -54,7 +54,7 @@ export const structureQueryKey = (connectionResource: ConnectionResource) => [
   'structure',
 ]
 
-export const resourceIndexesQuery = createQuery({
+const resourceIndexesQuery = createQuery({
   query: {
     clickhouse: clickhouseIndexes,
     mssql: mssqlIndexes,

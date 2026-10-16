@@ -1,9 +1,8 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { connectionParts } from '../connection-parts'
 import { D1_HOST } from '../sqlite-location'
-import { guessEnv } from './env'
 import type { DatabaseGuess, GuessedParts } from './types'
+import { guessUrl } from './url'
 
 /** A `libsql://` URL is read by the URL detector; Turso's dashboard also hands out the same database as `https://` or `wss://`. */
 const TURSO_URL =
@@ -28,23 +27,7 @@ const API_TOKEN =
 
 const turso = (text: string): DatabaseGuess | null => {
   const [url] = TURSO_URL.exec(text) ?? []
-  if (!url) {
-    return null
-  }
-  const { host, options, password, port } = connectionParts.parse(
-    url.replace(/^\w+:/u, 'libsql:')
-  )
-  const token = password || guessEnv(text)?.parts.password
-  return {
-    format: 'url',
-    parts: {
-      host,
-      options,
-      port,
-      type: ConnectionType.SQLite,
-      ...(token && { password: token }),
-    },
-  }
+  return url ? guessUrl(url.replace(/^\w+:/u, 'libsql:')) : null
 }
 
 const d1 = (text: string): DatabaseGuess | null => {

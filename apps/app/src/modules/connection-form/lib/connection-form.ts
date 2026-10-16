@@ -205,7 +205,6 @@ const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
   }
 }
 
-/** Reads a whole string typed into the field that names where the database is, as a paste would. */
 const expandField = (
   form: ConnectionForm,
   onFill: (guess: ConnectionGuess, pasted: boolean) => void

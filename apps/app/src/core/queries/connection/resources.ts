@@ -59,7 +59,6 @@ const connectionResourcesQuery = createQuery({
         .execute()
       return rows.map((r) => r.datname)
     },
-
     sqlite: () => Promise.resolve([SQLITE_RESOURCE_NAME]),
   },
   type: type('string[]'),

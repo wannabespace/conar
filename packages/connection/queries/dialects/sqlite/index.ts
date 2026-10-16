@@ -5,7 +5,7 @@ import {
   unwrapTransaction,
 } from '@tamery/sql'
 
-import type { QueryExecutor, RunOptions } from '../..'
+import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
 import type { SqliteLocation } from '../../../sqlite-location'
@@ -47,26 +47,6 @@ const toHandle = ({ run, ...tx }: LocationTransaction): TxHandle => ({
     runTimed(run, statementTexts(sql, values), values, options),
 })
 
-const controlsTransaction = (text: string) =>
-  leavesTransactionOpen(text, SQLITE) || endsTransaction(text, SQLITE)
-
-/** Without a session each request runs on a connection of its own, so a whole block becomes one transaction. */
-const runBlock = async (
-  location: SqliteLocationQueries,
-  connectionString: string,
-  { commit, statements }: { commit: boolean; statements: string[] },
-  options: RunOptions
-) => {
-  const tx = await location.transaction(connectionString, false)
-  try {
-    const answer = await runTimed(tx.run, statements, [], options)
-    await (commit ? tx.commit() : tx.rollback())
-    return answer
-  } finally {
-    await tx.release()
-  }
-}
-
 export const query = {
   ...transactionQueries,
 
@@ -89,20 +69,31 @@ export const query = {
   cancel: () => Promise.resolve(),
 
   execute: handleQueryError(
-    ({ connectionString, query: sql, values = [], ...options }) => {
+    async ({ connectionString, query: sql, values = [], ...options }) => {
       const location = locate(connectionString)
       const texts = statementTexts(sql, values)
       if (!location.openSession) {
         const block = unwrapTransaction(sql, SQLITE)
         if (block) {
-          return runBlock(location, connectionString, block, options)
+          const tx = await location.transaction(connectionString, false)
+          try {
+            const answer = await runTimed(tx.run, block.statements, [], options)
+            await (block.commit ? tx.commit() : tx.rollback())
+            return answer
+          } finally {
+            await tx.release()
+          }
         }
         // A lone BEGIN or COMMIT would act on a connection the next statement never sees.
-        if (texts.some(controlsTransaction)) {
-          return Promise.reject(
-            new Error(
-              'This database keeps no transaction open between requests, so run BEGIN through COMMIT as one whole script.'
-            )
+        if (
+          texts.some(
+            (text) =>
+              leavesTransactionOpen(text, SQLITE) ||
+              endsTransaction(text, SQLITE)
+          )
+        ) {
+          throw new Error(
+            'This database keeps no transaction open between requests, so run BEGIN through COMMIT as one whole script.'
           )
         }
       }

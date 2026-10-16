@@ -61,7 +61,7 @@ export const constraintsType = type({
   })
 )
 
-export const resourceConstraintsQuery = createQuery({
+const resourceConstraintsQuery = createQuery({
   query: {
     clickhouse: clickhouseConstraints,
     mssql: mssqlConstraints,

@@ -32,11 +32,7 @@ export const sqliteColumns = (
       eb('c.hidden', 'in', [2, 3]).as('isGenerated'),
       eb.and([eb('c.notnull', '=', 0), eb('c.pk', '=', 0)]).as('nullable'),
       eb
-        .and([
-          eb('c.pk', '=', 1),
-          eb(eb.fn('lower', ['c.type']), '=', 'integer'),
-          eb.not(keyIndexed('t.name')),
-        ])
+        .and([eb('c.pk', '=', 1), eb.not(keyIndexed('t.name'))])
         .as('isIdentity'),
     ])
     .where('c.hidden', '!=', 1)
