@@ -26,7 +26,11 @@ export const FieldLabel = ({
   const field = useFieldContext()
 
   return (
-    <FieldLabelPrimitive htmlFor={field.name} {...props}>
+    <FieldLabelPrimitive
+      id={`${field.name}-label`}
+      htmlFor={field.name}
+      {...props}
+    >
       {children}
       <FieldError className="group-has-[[data-slot=combobox-chips]]/field:hidden group-has-[[data-slot=input-group]]/field:hidden group-has-[[data-slot=select-trigger]]/field:hidden" />
     </FieldLabelPrimitive>

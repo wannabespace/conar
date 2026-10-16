@@ -25,7 +25,7 @@ const sectionMeta = {
   { cascade: boolean; icon: IconSvgElement; noun: string }
 >
 
-export const sectionMetaOf = (section: DefinitionsSection) => ({
+export const getSectionMeta = (section: DefinitionsSection) => ({
   ...sectionMeta[section],
   title: uppercaseFirst(section),
 })

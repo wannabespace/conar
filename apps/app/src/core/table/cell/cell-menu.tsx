@@ -18,7 +18,6 @@ import type { DataGridCell, GridCursor } from '../cursor'
 
 export interface CellMenuExtra {
   cell?: AppMenuNode[]
-  /** Whole groups shown between the cell and row groups, e.g. a host's Column group. */
   groups?: AppMenuNode[]
   row?: AppMenuNode[]
 }

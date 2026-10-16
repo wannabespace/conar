@@ -34,7 +34,6 @@ export const recreateIndexQuery = ({
           )
           await create.execute(tx)
         }),
-      // One ALTER swaps the index, which InnoDB applies atomically.
       mysql: (db) =>
         sql`
           ALTER TABLE ${sql.id(schema, table)}

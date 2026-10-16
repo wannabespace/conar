@@ -22,7 +22,7 @@ import type { CSSProperties, RefObject } from 'react'
 
 import { AppMenuButton } from '~/components/app-context-menu'
 import type { AppMenuNode } from '~/components/app-menu'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useIsAnonymous } from '~/lib/auth'
 
@@ -63,12 +63,10 @@ const statementMenuItems = (
   },
 ]
 
-// Monaco keeps focus after running an action, so the popup is focused explicitly or arrows move the caret.
 export const openMenuFromKeyboard = (trigger: HTMLButtonElement | null) => {
   if (!trigger) {
     return
   }
-  // The trigger names its popup only once the menu has rendered open.
   const observer = new MutationObserver(() => {
     const id = trigger.getAttribute('aria-controls')
     if (id) {
@@ -141,7 +139,7 @@ export const StatementControls = ({
   failed: (RunnerResult & { error: string }) | undefined
   menuRef: RefObject<HTMLButtonElement | null>
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const actions = useRunnerActions()
   const isAnonymous = useIsAnonymous()
   const suggestionHere = sameSpot(anchor.suggestion, anchor)
@@ -225,10 +223,7 @@ export const StatementControls = ({
                 finalFocus: () => editorRef.current?.focus(),
               }}
               items={() =>
-                statementMenuItems(
-                  actions,
-                  capabilitiesOf(connection.type).explain
-                )
+                statementMenuItems(actions, getCapabilities(dialect).explain)
               }
             />
             <TooltipContent>More actions</TooltipContent>

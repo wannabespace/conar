@@ -39,14 +39,14 @@ const close = async (tab: RunnerTab, reason: CloseReason) => {
   }
   state(tab).set(null)
   const { connectionResource, params, ran, txId } = open
-  posthog.capture('transaction_close', { reason, type: params.type })
-  const provider = createDialectProvider(params.type, params)
+  posthog.capture('transaction_close', { reason, type: params.dialect })
+  const provider = createDialectProvider(params.dialect, params)
   try {
     await (reason === 'commit'
       ? provider.commitTransaction({ txId })
       : provider.rollbackTransaction({ txId }))
   } finally {
-    refreshAfterRun(connectionResource, params.type, ran.join(';\n'))
+    refreshAfterRun(connectionResource, params.dialect, ran.join(';\n'))
   }
 }
 
@@ -63,20 +63,20 @@ const run = async ({
   text: string
 }): Promise<ResultSet[]> => {
   const store = state(tab)
-  const dialect = dialects[params.type]
+  const dialect = dialects[params.dialect]
   const opening =
     !store.get() && dialect.transactions && leavesTransactionOpen(text, dialect)
   if (opening) {
     const { txId } = await createDialectProvider(
-      params.type,
+      params.dialect,
       params
     ).openSession()
     store.set({ connectionResource, params, ran: [], txId })
-    posthog.capture('transaction_open', { type: params.type })
+    posthog.capture('transaction_open', { type: params.dialect })
   }
   const open = store.get()
   if (!open) {
-    return statementQuery(text, params.type).run(params)
+    return statementQuery(text, params.dialect).run(params)
   }
   const sets: ResultSet[] = []
   try {

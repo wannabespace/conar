@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
   definitionsSchemaItem,
@@ -48,12 +48,10 @@ const SCHEMA_GROUPS = [
 
 export const schemaItems = SCHEMA_GROUPS.flatMap((group) => group.items)
 
-export const schemaGroups = (connectionType: ConnectionType) =>
+export const schemaGroups = (dialect: Dialect) =>
   SCHEMA_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter(
-      (item) => item.available?.(connectionType) ?? true
-    ),
+    items: group.items.filter((item) => item.available?.(dialect) ?? true),
   })).filter((group) => group.items.length > 0)
 
 export const resolveTab = (id: string) => {

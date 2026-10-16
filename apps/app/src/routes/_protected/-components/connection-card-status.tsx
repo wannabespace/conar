@@ -7,13 +7,19 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+import { FetchingReason } from '~/core/connection/fetching-reason'
+
+import { ConnectionCardError } from './connection-card-error'
+
 export const ConnectionCardStatus = ({
   canSend,
+  connectionId,
   error,
   isLoadingVisible,
   reason,
 }: {
   canSend: boolean
+  connectionId: string
   error: Error | null
   isLoadingVisible: boolean
   reason: string | null
@@ -33,30 +39,14 @@ export const ConnectionCardStatus = ({
             />
           }
         />
-        <TooltipContent className="pointer-events-auto max-w-xs">
-          {reason}
+        <TooltipContent className="pointer-events-auto block max-w-xs">
+          <FetchingReason reason={reason} />
         </TooltipContent>
       </Tooltip>
     )
   }
   if (error) {
-    return (
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <HugeiconsIcon
-              icon={Alert02Icon}
-              strokeWidth={2}
-              className="text-warning pointer-events-auto size-3 shrink-0"
-            />
-          }
-        />
-        <TooltipContent className="pointer-events-auto block max-w-3xs">
-          <span className="opacity-50">Failed to get resources: </span>
-          <span data-mask>{error.message}</span>
-        </TooltipContent>
-      </Tooltip>
-    )
+    return <ConnectionCardError connectionId={connectionId} error={error} />
   }
   return null
 }

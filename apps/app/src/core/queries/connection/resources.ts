@@ -1,8 +1,10 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { getCollections, mutateOffline } from '~/core/collections'
 import type { Connection } from '~/core/connection/sync'
 import { connectionToQueryParams, createQuery } from '~/core/runtime/query'
@@ -37,12 +39,11 @@ const connectionResourcesQuery = createQuery({
       const rows = await db
         .selectFrom('information_schema.SCHEMATA')
         .select('SCHEMA_NAME')
-        .where('SCHEMA_NAME', 'not in', [
-          'information_schema',
-          'mysql',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          'SCHEMA_NAME',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .orderBy('SCHEMA_NAME')
         .execute()
       return rows.map((r) => r.SCHEMA_NAME)

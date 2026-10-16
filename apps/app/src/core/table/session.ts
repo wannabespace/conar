@@ -25,7 +25,6 @@ export interface NewRow {
 
 export interface TableSessionState {
   drafts: Record<string, Draft>
-  /** Cells (by `draftKey`) whose values changed in the latest refetch; `at` re-keys the flash so a second change replays it. */
   flash: { at: number; keys: ReadonlySet<string> } | null
   lastClickedIndex: number | null
   /** Staged inserts, newest first; they lead the grid (`stagedGrid`). */
@@ -163,7 +162,6 @@ export const stagedActions = (store: TableSessionStore) => ({
       ),
       newRows: state.newRows.map((row) => ({ ...row, ...status })),
     })),
-  /** Drops exactly the drafts and staged rows a save submitted. */
   settle: (submitted: { drafts: Draft[]; newRows: NewRow[] }) => {
     const ids = new Set(submitted.newRows.map((row) => row.id))
     store.set((state) => ({
@@ -203,7 +201,6 @@ export const stagedGrid = (
   }
   return {
     rowAt,
-    /** Survives the rows above being inserted, saved or refetched. */
     rowKey: (index: number) => {
       const entry = rowAt(index)
       return entry.kind === 'new' ? entry.newRow.id : primaryKeysKey(entry.keys)

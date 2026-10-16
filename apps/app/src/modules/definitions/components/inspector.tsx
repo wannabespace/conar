@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { MotionCollapse } from '@tamery/ui/components/collapse.motion'
@@ -26,7 +26,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 
@@ -37,14 +37,11 @@ export interface InspectorWarning {
   description: ReactNode
 }
 
-// The footer sits outside the scrolling form, so its save button points back
-// at it by id.
 const FORM_ID = 'definition-inspector'
 
 export type SectionInspectorProps<T> = DefinitionsState & {
   item: T | null
   onOpenChange: (open: boolean) => void
-  // Set by a `?create=` link: which starter the new-item form opens on.
   preset?: string
   queryKey: QueryKey
 }
@@ -142,15 +139,15 @@ export const Inspector = ({
 }
 
 export const replaceWarning = ({
-  connectionType,
+  dialect,
   name,
   noun,
 }: {
-  connectionType: ConnectionType
+  dialect: Dialect
   name: string
   noun: string
 }): InspectorWarning | undefined =>
-  capabilitiesOf(connectionType).ddlRollback
+  getCapabilities(dialect).ddlRollback
     ? undefined
     : {
         action: `Replace ${noun}`,

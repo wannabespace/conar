@@ -64,17 +64,17 @@ export const textColumn = <T,>({
 export const labelColumn = <T,>({
   align,
   header,
-  labelOf,
+  getLabel,
   width,
 }: {
   align?: 'end'
   header: string
-  labelOf: (item: T, context: CellContext) => ReactNode
+  getLabel: (item: T, context: CellContext) => ReactNode
   width?: ColumnWidth
 }): DefinitionsColumn<T> => ({
   align,
   cell: (item, context) => (
-    <span className="text-muted-foreground">{labelOf(item, context)}</span>
+    <span className="text-muted-foreground">{getLabel(item, context)}</span>
   ),
   header,
   width,

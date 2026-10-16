@@ -1,9 +1,9 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { FilterValueBinding } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 
 // oxlint-disable-next-line ts/no-explicit-any
 type Eb = ExpressionBuilder<any, any>
@@ -14,10 +14,9 @@ export type ContainsText = (
   pattern: string
 ) => Expression<SqlBool>
 
-export const textContains: Record<ConnectionType, ContainsText> = {
+export const textContains: Record<Dialect, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
-  // Default collations compare case-insensitively, so LIKE already ignores case.
   mssql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
@@ -30,8 +29,8 @@ export type ColumnTypes = { id: string; type?: string }[]
 
 export type BindValue = (columnType: string, value: unknown) => unknown
 
-const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
-  const { json } = capabilitiesOf(connectionType).columnTypes
+const bindJsonAsText = (dialect: Dialect): BindValue => {
+  const { json } = getCapabilities(dialect).columnTypes
 
   return (columnType, value) => {
     if (value === undefined) {
@@ -44,8 +43,8 @@ const bindJsonAsText = (connectionType: ConnectionType): BindValue => {
   }
 }
 
-const clickhouseJsonColumnType = capabilitiesOf(ConnectionType.ClickHouse)
-  .columnTypes.json
+const clickhouseJsonColumnType = getCapabilities(Dialect.ClickHouse).columnTypes
+  .json
 const clickhouseDateTimeType = /\bDateTime(?:64\((?<precision>\d))?/u
 
 // Reads come back ISO (`date_time_output_format`), which a DateTime comparison or cast cannot parse.
@@ -57,8 +56,8 @@ const clickhouseDateTime = (columnType: string, value: unknown) => {
     : value
 }
 
-/** How a value is written to, or matched against, a column of `columnType`; `undefined` is the column's DEFAULT. */
-export const bindValue: Record<ConnectionType, BindValue> = {
+/** `undefined` binds the column's DEFAULT. */
+export const bindValue: Record<Dialect, BindValue> = {
   clickhouse: (columnType, value) => {
     if (value === undefined) {
       return sql`default`
@@ -72,9 +71,9 @@ export const bindValue: Record<ConnectionType, BindValue> = {
     }
     return clickhouseDateTime(columnType, value)
   },
-  mssql: bindJsonAsText(ConnectionType.MSSQL),
-  mysql: bindJsonAsText(ConnectionType.MySQL),
-  postgres: bindJsonAsText(ConnectionType.Postgres),
+  mssql: bindJsonAsText(Dialect.MSSQL),
+  mysql: bindJsonAsText(Dialect.MySQL),
+  postgres: bindJsonAsText(Dialect.Postgres),
 }
 
 export const bindRow = (
@@ -109,15 +108,12 @@ export const clickhouseFilterValues =
       value
     )
 
-// MSSQL caps a statement at 2100 bound parameters; the others comfortably take 500 rows per statement
+// MSSQL caps a statement at 2100 bound parameters.
 const MSSQL_PARAMETER_LIMIT = 2000
 const MAX_ROWS_PER_STATEMENT = 500
 
-export const rowsPerStatement = (
-  dialect: ConnectionType,
-  valuesPerRow: number
-) =>
-  dialect === ConnectionType.MSSQL
+export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) =>
+  dialect === Dialect.MSSQL
     ? Math.max(
         1,
         Math.min(

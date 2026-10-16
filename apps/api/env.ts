@@ -34,13 +34,12 @@ const envType = type({
   PROXY_SHARED_SECRET: 'string',
   REDIS_URL: 'string',
   RESEND_API_KEY: 'string',
-  RESEND_FROM_EMAIL: 'string',
   STRIPE_ANNUAL_PRICE_ID: 'string',
   STRIPE_MONTH_PRICE_ID: 'string',
   STRIPE_SECRET_KEY: 'string',
   STRIPE_WEBHOOK_SECRET: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
-}).and(dbEnvType)
+}).merge(dbEnvType)
 
 const devOptionalEnvs = [
   'MIN_DESKTOP_VERSION',
@@ -65,9 +64,7 @@ const devOptionalEnvs = [
 export const env =
   nodeEnv === 'production' || nodeEnv === 'test'
     ? envType.assert(process.env)
-    : type
-        .and(
-          envType.omit(...devOptionalEnvs),
-          envType.pick(...devOptionalEnvs).partial()
-        )
+    : envType
+        .omit(...devOptionalEnvs)
+        .merge(envType.pick(...devOptionalEnvs).partial())
         .assert(process.env)

@@ -122,7 +122,6 @@ export interface PolicyPredicate {
   table: string
 }
 
-// A part is bracketed ("]" doubled inside) or, in some catalog output, bare.
 const namePart = String.raw`(?:\[((?:[^\]]|\]\])+)\]|([^.[\]()\s]+))`
 const PREDICATE_CALL = new RegExp(
   String.raw`^${namePart}\.${namePart}\((.*)\)$`,
@@ -135,7 +134,6 @@ export const policyPredicate = {
   drop: (predicate: PolicyPredicate) =>
     sql`DROP ${sql.raw(predicate.kind)} PREDICATE ON ${sql.id(predicate.schema, predicate.table)} ${sql.raw(predicate.operation ?? '')}`,
   parse: (definition: string) => {
-    // Servers differ on wrapping the stored call in parentheses.
     const call = definition.startsWith('(')
       ? definition.slice(1, -1)
       : definition

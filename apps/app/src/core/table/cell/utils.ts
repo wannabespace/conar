@@ -1,7 +1,7 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
 
 export interface Column extends Partial<
@@ -92,7 +92,6 @@ export const getColumnUiType = (
     return 'boolean'
   }
 
-  // Postgres `daterange` holds bounds like `[2026-01-01,2026-02-01)`, not a date.
   if (column.type.toLowerCase().includes('range')) {
     return 'raw'
   }
@@ -124,10 +123,7 @@ export const isNumericColumn = (column: Column) =>
 export const hasTabularFigures = (column: Column) =>
   column.uiType !== 'raw' || isNumericColumn(column)
 
-export const canWriteDefault = (
-  connectionType: ConnectionType,
-  column: Column
-) =>
-  capabilitiesOf(connectionType).setDefault &&
+export const canWriteDefault = (dialect: Dialect, column: Column) =>
+  getCapabilities(dialect).setDefault &&
   column.defaultValue !== null &&
   column.defaultValue !== undefined

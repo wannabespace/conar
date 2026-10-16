@@ -17,20 +17,21 @@ import { queryClient } from '~/lib/query-client'
 import { fetchingConfig } from './fetching-config'
 import { getConnectionStore } from './stores'
 
+export const canQueryConnection = (connection: Connection) =>
+  fetchingConfig(connection, {
+    connectionString:
+      getCollections().connectionStringsCollection.get(connection.id) ?? null,
+    proxy: getConnectionStore(connection.id).get().proxy,
+  }).canSend
+
 export const prefetchConnectionResourceCore = async (
   connectionResource: ConnectionResource
 ) => {
-  const { connectionsCollection, connectionStringsCollection } =
-    getCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)
+  const connection = getCollections().connectionsCollection.get(
+    connectionResource.connectionId
+  )
 
-  if (!connection) {
-    return
-  }
-
-  const connectionString = connectionStringsCollection.get(connection.id)
-
-  if (connection.isPasswordExists && !connectionString?.isPasswordPopulated) {
+  if (!(connection && canQueryConnection(connection))) {
     return
   }
 
@@ -58,27 +59,29 @@ export const prefetchConnectionResourceTableCore = async ({
     exact: boolean
   }
 }) => {
-  await Promise.all([
-    queryClient.infiniteQuery(
-      resourceRowsQueryInfiniteOptions({
-        connectionResource,
-        query,
-        schema,
-        table,
-      })
-    ),
-    queryClient.query(
-      resourceTableTotalQueryOptions({
-        connectionResource,
-        query,
-        schema,
-        table,
-      })
-    ),
-    queryClient.query(
-      resourceTableColumnsQueryOptions({ connectionResource, schema, table })
-    ),
-  ]).catch(noop)
+  const [rows = []] =
+    (await Promise.all([
+      queryClient.infiniteQuery(
+        resourceRowsQueryInfiniteOptions({
+          connectionResource,
+          query,
+          schema,
+          table,
+        })
+      ),
+      queryClient.query(
+        resourceTableTotalQueryOptions({
+          connectionResource,
+          query,
+          schema,
+          table,
+        })
+      ),
+      queryClient.query(
+        resourceTableColumnsQueryOptions({ connectionResource, schema, table })
+      ),
+    ]).catch(noop)) ?? []
+  return rows
 }
 
 export const useFetchingConfig = (
@@ -98,10 +101,8 @@ export const useFetchingConfig = (
   })
 
   return fetchingConfig(connection, {
-    hasLocalConnectionString: !!connectionString,
+    connectionString: connectionString ?? null,
     isLocalProxyAvailable: localProxyAvailable,
-    isLocalhost: connectionString?.isLocalhost,
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
     proxy,
   })
 }

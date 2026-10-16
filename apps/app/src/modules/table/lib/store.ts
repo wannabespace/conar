@@ -8,7 +8,7 @@ import { createWebStorageValue } from 'seitu/web'
 import type { GeneratorId } from '../seeds/registry'
 
 export const tablePageType = type({
-  // Foreign-key column → the referenced column whose text labels its keys; '' turns off a default label.
+  // '' turns off a column's default label.
   columnLabels: 'Record<string, string>',
   columnOrder: 'string[]',
   columnSizes: 'Record<string, number>',
@@ -139,7 +139,6 @@ export const columnView = <T extends { id: string }>(
     : []
   return {
     pinned,
-    /** The full column order once the shown columns are dragged into `ids`; hidden ones keep their slots. */
     reordered: (ids: string[]) => {
       const moved = ids.filter((id) => shown.some((column) => column.id === id))
       return ordered.map((column) =>

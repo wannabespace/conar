@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -37,17 +37,17 @@ const commented = (
 // Alters under the old name first, so a failing alter leaves the column as it
 // was; the key names the new one.
 const editInSteps = async (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   target: EditColumnTarget
 ) => {
   const { column, newName, reference } = target
   if (altered(target)) {
-    await db.executeQuery(alterColumnStatement(dialectType, db, target))
+    await db.executeQuery(alterColumnStatement(dialect, db, target))
   }
   if (newName !== column) {
-    await db.executeQuery(renameColumnStatement(dialectType, db, target))
+    await db.executeQuery(renameColumnStatement(dialect, db, target))
   }
   if (reference) {
     await addConstraint(db, target, reference).execute()
@@ -79,7 +79,7 @@ const mysqlMoveRenamedValues = async (
     target.original.type
   )
   await db.executeQuery(
-    alterColumnStatement(ConnectionType.MySQL, db, {
+    alterColumnStatement(Dialect.MySQL, db, {
       ...target,
       nullable: target.original.nullable,
       type: widened,
@@ -93,8 +93,6 @@ const mysqlMoveRenamedValues = async (
   )
 }
 
-// ClickHouse accepts an enum MODIFY that drops a value rows still hold, then
-// fails the rewrite in the background and those rows stop reading.
 const clickhouseRefuseHeldValues = async (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
@@ -141,7 +139,7 @@ export const editColumnQuery = (target: EditColumnTarget) =>
       clickhouse: async (db) => {
         const { comment, newName, schema, table } = target
         await clickhouseRefuseHeldValues(db, target)
-        await editInSteps(ConnectionType.ClickHouse, db, target)
+        await editInSteps(Dialect.ClickHouse, db, target)
         if (commented(target)) {
           await sql`ALTER TABLE ${sql.id(schema, table)} COMMENT COLUMN ${sql.id(newName)} ${sql.lit(comment ?? '')}`.execute(
             db
@@ -150,7 +148,7 @@ export const editColumnQuery = (target: EditColumnTarget) =>
       },
       mssql: async (db) => {
         const { newName, original, schema, table } = target
-        await editInSteps(ConnectionType.MSSQL, db, target)
+        await editInSteps(Dialect.MSSQL, db, target)
         if (commented(target)) {
           const { comment } = target
           const value = comment === null ? sql`` : sql`@value = ${comment}, `
@@ -182,7 +180,7 @@ export const editColumnQuery = (target: EditColumnTarget) =>
       },
       postgres: async (db) => {
         const { comment, newName, schema, table } = target
-        await editInSteps(ConnectionType.Postgres, db, target)
+        await editInSteps(Dialect.Postgres, db, target)
         if (commented(target)) {
           await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment)}`.execute(
             db

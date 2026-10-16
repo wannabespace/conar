@@ -92,11 +92,11 @@ const SettingsShell = () => (
 const AuthShell = () => (
   <div
     aria-hidden
-    className="pointer-events-none fixed inset-0 grid lg:grid-cols-2"
+    className="traffic-lights:pt-10.25 pointer-events-none fixed inset-0 grid lg:grid-cols-2"
     data-shell
     id="shell-auth"
   >
-    <div className="bg-body border-r-border hidden border-r lg:block" />
+    <div className="bg-body traffic-lights:mt-0 m-2 hidden rounded-2xl lg:block" />
     <div className="absolute inset-x-0 top-0 h-10 [-webkit-app-region:drag]" />
   </div>
 )

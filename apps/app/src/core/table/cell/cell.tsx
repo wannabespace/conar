@@ -1,5 +1,5 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties, ReactNode } from 'react'
@@ -122,7 +122,6 @@ const overlayClass = (
     (state === 'range' || state === 'range-cursor') && 'bg-primary/10'
   )
 
-/** Where the grid layout places a cell; the documents layout has none, so a value there is never truncated. */
 export interface CellGeometry {
   isDragging?: boolean
   pinned?: boolean
@@ -133,7 +132,7 @@ export interface CellGeometry {
 export const TableCell = ({
   children,
   column,
-  connectionType,
+  dialect,
   draft,
   flash,
   isDragging,
@@ -146,11 +145,10 @@ export const TableCell = ({
 }: CellGeometry & {
   children?: ReactNode
   column: Column
-  connectionType: ConnectionType
+  dialect: Dialect
   draft?: Pick<Draft, 'error' | 'isCommitting'>
   /** Set when a refetch changed the value; a new number replays the flash. */
   flash?: number
-  /** A readable stand-in for the value, e.g. the referenced row's name; the value stays beside it. */
   label?: string
   rowIndex: number
   value: unknown
@@ -161,7 +159,7 @@ export const TableCell = ({
   })
   const { layout } = cursor
   const ref = useRef<HTMLDivElement>(null)
-  const transformer = createTransformer(connectionType, column)
+  const transformer = createTransformer(dialect, column)
 
   return (
     <div

@@ -5,11 +5,16 @@ export const fieldGroupVariants = cva(
   {
     defaultVariants: {
       size: 'default',
+      variant: 'default',
     },
     variants: {
       size: {
         default: 'gap-6',
         sm: 'gap-4',
+      },
+      variant: {
+        card: `bg-card ring-foreground/4 gap-0 rounded-xl shadow-xs ring *:not-first:border-t [&_[data-slot=field]+[data-slot=field]]:border-t`,
+        default: '',
       },
     },
   }
@@ -23,6 +28,7 @@ export const fieldVariants = cva(`group/field flex w-full`, {
     orientation: {
       horizontal: `flex-row items-center gap-3 has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px`,
       responsive: `flex-col gap-1.5 *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:gap-3 @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px`,
+      row: `flex-row items-center gap-3 px-3 py-1 *:data-[slot=field-label]:min-h-8 *:data-[slot=field-label]:w-24 *:data-[slot=field-label]:shrink-0 *:data-[slot=field-label]:items-center *:data-[slot=select-trigger]:flex-1`,
       vertical: `flex-col gap-1.5 *:w-full [&>.sr-only]:w-auto`,
     },
   },

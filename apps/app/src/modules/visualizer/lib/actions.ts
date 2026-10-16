@@ -2,7 +2,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { foreignKeyName } from '~/core/queries/constraints/shape'
 import type { NewColumn } from '~/core/queries/tables/shape'
@@ -16,7 +16,7 @@ import { openNewWindow } from '~/utils/new-window'
 
 import type { DiagramActions } from './context'
 import type { diagramDrafts } from './drafts'
-import { NODE_WIDTH } from './layout'
+import { fitViewOptions, NODE_WIDTH } from './layout'
 import { visualizerLayout } from './positions'
 import type { Diagram, DiagramColumn, DiagramTable } from './schema'
 import { tableNodeId } from './schema'
@@ -47,7 +47,7 @@ export const useDiagramActions = ({
   setSelectedId: Dispatch<SetStateAction<string | null>>
   setTableRequest: (request: TableDialogRequest<DiagramTable> | null) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const flow = useReactFlow()
 
@@ -92,10 +92,9 @@ export const useDiagramActions = ({
     editColumn: (table, column) => setColumnRequest({ column, table }),
     focusRelation: (relation) => {
       void flow.fitView({
+        ...fitViewOptions,
         duration: 300,
-        maxZoom: 1,
         nodes: [{ id: relation.source.table }, { id: relation.target.table }],
-        padding: 0.2,
       })
     },
     linkColumns: ({ column, foreignColumn, foreignTable, table }) => {
@@ -185,7 +184,7 @@ export const useDiagramActions = ({
           name: 'id',
           nullable: false,
           primaryKey: true,
-          type: capabilitiesOf(connection.type).columnTypes.id,
+          type: getCapabilities(dialect).columnTypes.id,
         },
       ])
       const id = tableNodeId(targetSchema, name)

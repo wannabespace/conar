@@ -7,7 +7,6 @@ import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@tamery/shared/constants'
 import { env } from '~/env'
 import { orpc } from '~/orpc'
 
-// https://www.todesktop.com/electron/docs/guides/release-webhooks#webhook-payload
 interface ToDesktopWebhookPayload {
   appId: string
   buildId: string

@@ -33,10 +33,10 @@ export const FilterCommandList = ({
 }) => {
   const { matchingColumns, matchingRelated, matchingValues } =
     useFilterTargets(composer)
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const { applyValue, committedParts, filters, query, stage } = composer
   const trimmedQuery = query.trim()
-  const matchingOperators = offeredFilters(connection.type)
+  const matchingOperators = offeredFilters(dialect)
     .map((group) => ({
       ...group,
       filters: group.filters.filter((filter) =>

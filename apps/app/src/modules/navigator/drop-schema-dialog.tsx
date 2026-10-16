@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { DropDialog } from '~/core/catalog/drop-dialog'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { dropSchemaQuery } from '~/core/queries/schemas/drop'
@@ -18,7 +18,7 @@ export const DropSchemaDialog = ({
 }: {
   ref: React.RefObject<{ drop: (schema: string) => void } | null>
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId } = useParams({ strict: false })
   const router = useRouter()
   const [schema, setSchema] = useState('')
@@ -65,7 +65,7 @@ export const DropSchemaDialog = ({
 
   return (
     <DropDialog
-      cascadable={capabilitiesOf(connection.type).cascade}
+      cascadable={getCapabilities(dialect).cascade}
       cascade={cascade}
       error={error}
       name={schema}

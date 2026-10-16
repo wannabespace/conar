@@ -1,7 +1,7 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { alterPolicyQuery } from '~/core/queries/policies/alter'
 import { createPolicyQuery } from '~/core/queries/policies/create'
 import type { policyType } from '~/core/queries/policies/list'
@@ -41,8 +41,6 @@ const parseRoles = (value: string) =>
 const asCommand = (value: string | undefined): PolicyCommand =>
   POLICY_COMMANDS.find((command) => command === value) ?? 'ALL'
 
-// PostgreSQL takes USING for rows that exist and WITH CHECK for rows a write
-// would produce, so INSERT has no USING and SELECT and DELETE no WITH CHECK.
 export const expressionsFor = (command: PolicyCommand) => ({
   check: command !== 'SELECT' && command !== 'DELETE',
   using: command !== 'INSERT',
@@ -58,15 +56,15 @@ export const withAllowedExpressions = (draft: PolicyDraft): PolicyDraft => {
   }
 }
 
-export const draftOf = (
+export const getDraft = (
   item: PolicyItem | null,
   pageSchema: string,
-  connectionType: ConnectionType
+  dialect: Dialect
 ): PolicyDraft => ({
   check: item?.check ?? '',
   command: item
     ? asCommand(item.command)
-    : (capabilitiesOf(connectionType).policies.commands[0] ?? 'ALL'),
+    : (getCapabilities(dialect).policies.commands[0] ?? 'ALL'),
   kind: item?.type ?? 'PERMISSIVE',
   name: item?.name ?? '',
   roles: item?.roles.join(', ') ?? '',
@@ -75,7 +73,7 @@ export const draftOf = (
   using: item?.using ?? '',
 })
 
-export const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
+export const getChanges = (item: PolicyItem, draft: PolicyDraft) => {
   const check = draft.check.trim()
   const using = draft.using.trim()
   const roles = parseRoles(draft.roles)
@@ -89,7 +87,6 @@ export const changesOf = (item: PolicyItem, draft: PolicyDraft) => {
   }
 }
 
-// ALTER POLICY has no form that removes an expression the policy already has.
 export const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
   (item.using !== null && draft.using.trim() === '') ||
   (item.check !== null && draft.check.trim() === '')
@@ -97,9 +94,9 @@ export const clearsExpression = (item: PolicyItem, draft: PolicyDraft) =>
 export const replaces = (
   item: PolicyItem,
   draft: PolicyDraft,
-  connectionType: ConnectionType
+  dialect: Dialect
 ) =>
-  !capabilitiesOf(connectionType).policies.alterInPlace &&
+  !getCapabilities(dialect).policies.alterInPlace &&
   (draft.command !== asCommand(item.command) ||
     draft.kind !== item.type ||
     clearsExpression(item, draft))
@@ -110,12 +107,12 @@ export const policySchema = type({
 })
 
 export const savePolicy = async ({
-  connectionType,
+  dialect,
   draft,
   item,
   run,
 }: {
-  connectionType: ConnectionType
+  dialect: Dialect
   draft: PolicyDraft
   item: PolicyItem | null
   run: RunQuery
@@ -138,12 +135,12 @@ export const savePolicy = async ({
   }
   const target = { name: item.name, schema: item.schema, table: item.table }
 
-  if (replaces(item, draft, connectionType)) {
+  if (replaces(item, draft, dialect)) {
     await run(recreatePolicyQuery({ ...target, shape }))
     return
   }
 
-  const changes = changesOf(item, draft)
+  const changes = getChanges(item, draft)
 
   if (
     changes.roles ||

@@ -1,6 +1,6 @@
 import { Refresh01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
@@ -52,7 +52,7 @@ export const SeedPreview = ({
 }: {
   column: Column
   generator: Generator
-  dialect: ConnectionType
+  dialect: Dialect
 }) => {
   const note = previewNote(column, generator.generatorId)
   const sample = () =>

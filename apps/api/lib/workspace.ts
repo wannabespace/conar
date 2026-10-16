@@ -40,13 +40,9 @@ export const ensureDefaultWorkspace = async (userId: string) => {
   }
 
   return db.transaction(async (tx) => {
-    // Serialize concurrent calls for the same user so racing requests (e.g. parallel
-    // session reads on sign-in) can't each create a duplicate default workspace. The
-    // lock is released at transaction end; the re-check below happens under it.
+    // Re-checked under the lock: racing sign-in requests would each create a default workspace.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${userId}))`)
 
-    // The lock is only released when its holder commits, and this read runs
-    // under READ COMMITTED, so it already sees a competitor's created workspace.
     const lockedId = await userDefaultWorkspaceId(userId, tx)
 
     if (lockedId) {

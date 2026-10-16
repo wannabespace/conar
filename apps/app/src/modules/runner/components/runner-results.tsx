@@ -102,7 +102,7 @@ const ResultError = ({
   )
 }
 
-const gridOf = (set: ResultSet | null, needle: string) => {
+const getGrid = (set: ResultSet | null, needle: string) => {
   const columns = uniqueColumns(set?.columns ?? [])
   const records = (set?.rows ?? []).map((row) =>
     Object.fromEntries(columns.map((column, index) => [column, row[index]]))
@@ -126,7 +126,7 @@ const ResultBody = ({
   columns: string[]
   rows: Record<string, unknown>[]
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
 
   if (result.pending) {
     return running
@@ -166,13 +166,7 @@ const ResultBody = ({
       />
     )
   }
-  return (
-    <RunnerResultsTable
-      columns={columns}
-      rows={rows}
-      connectionType={connection.type}
-    />
-  )
+  return <RunnerResultsTable columns={columns} rows={rows} dialect={dialect} />
 }
 
 const ResultMeta = ({
@@ -211,7 +205,7 @@ export const RunnerResults = () => {
   const active = String(activeIndex)
   const result = results[activeIndex]
   const needle = useDeferredValue(search).trim().toLowerCase()
-  const { columns, rows } = gridOf(result?.set ?? null, needle)
+  const { columns, rows } = getGrid(result?.set ?? null, needle)
 
   if (!result) {
     return (

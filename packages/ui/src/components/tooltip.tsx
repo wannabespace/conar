@@ -33,7 +33,6 @@ const ShortcutTooltip = ({
   const [isHovered, setIsHovered] = useState(false)
   const [trigger, setTrigger] = useState<HTMLElement | null>(null)
   const isRevealed = useShortcutReveal(trigger)
-  // A hint ⌘ opened stays glyph-only through its exit animation, or releasing ⌘ flashes the full label.
   const [isClosingReveal, setIsClosingReveal] = useState(false)
   const isOpenByReveal = isRevealed && !isHovered
   if (isOpenByReveal && !isClosingReveal) {
@@ -70,10 +69,7 @@ const ShortcutTooltip = ({
   )
 }
 
-/**
- * `shortcut`: the control's `Kbd`, appended to the content and shown alone while ⌘ is held.
- * Pass nothing while the control is disabled or the key does not fire here.
- */
+/** `shortcut`: pass nothing while the control is disabled or the key does not fire here. */
 const Tooltip = ({
   shortcut,
   ...props

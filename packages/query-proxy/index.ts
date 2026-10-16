@@ -5,7 +5,7 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction, Prettify } from '@tamery/shared/utils'
 
 // oxlint-disable-next-line ts/no-explicit-any
@@ -16,24 +16,14 @@ type Params<
   P extends Parameters<T>[0] = Parameters<T>[0],
 > = Prettify<
   P extends { connectionString: string }
-    ? // oxlint-disable-next-line style/indent-binary-ops
-      Omit<P, 'connectionString'> & {
-        connectionString?: string
-        connectionId?: string
-        resourceId?: string
-      } & (
-          | { resourceId: string }
-          | { connectionString: string }
-          | { connectionId: string }
-        )
+    ? Omit<P, 'connectionString'> & ConnectionInput
     : P
 >
 
-interface ConnectionInput {
-  connectionString?: string
-  connectionId?: string
-  resourceId?: string
-}
+type ConnectionInput =
+  | { connectionString: string }
+  | { connectionId: string }
+  | { resourceId: string }
 
 type HandlerContext<T extends AnyBuilder> = Parameters<
   Parameters<T['handler']>[0]
@@ -120,6 +110,6 @@ export const createQueryRouter = <T extends AnyBuilder>(
     mssql: createQueryDialect(mssql.query, orpc, resolve),
     mysql: createQueryDialect(mysql.query, orpc, resolve),
     postgres: createQueryDialect(pg.query, orpc, resolve),
-  }) satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>
+  }) satisfies Record<Dialect, Record<keyof QueryExecutor, unknown>>
 
 export type ORPCRouter = RouterClient<ReturnType<typeof createQueryRouter>>

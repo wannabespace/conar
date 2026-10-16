@@ -26,7 +26,7 @@ const insertRows = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   bind: BindValue,
-  // Writes one row: only a lone row is ever all defaults, since a seed always generates a column.
+  // Writes one row only.
   insertDefaultRow: (into: Into) => Into,
   { schema, table, columns, rows }: InsertParams
 ) => {

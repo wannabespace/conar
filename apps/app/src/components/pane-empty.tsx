@@ -7,22 +7,24 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 export const PaneEmpty = ({
   children,
   description,
   icon: Icon,
   title,
+  variant = 'muted',
 }: {
   children?: ReactNode
-  description: string
+  description: ReactNode
   icon: IconSvgElement
   title: string
+  variant?: ComponentProps<typeof EmptyMedia>['variant']
 }) => (
   <Empty size="sm" className="min-h-0 flex-1 overflow-y-auto">
     <EmptyHeader>
-      <EmptyMedia variant="muted">
+      <EmptyMedia variant={variant}>
         <HugeiconsIcon icon={Icon} strokeWidth={2} />
       </EmptyMedia>
       <EmptyTitle>{title}</EmptyTitle>

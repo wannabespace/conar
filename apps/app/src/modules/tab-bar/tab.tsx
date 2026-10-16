@@ -218,7 +218,6 @@ export const Tab = ({
         className="block h-full"
         items={items}
         contentProps={{
-          // Rename unmounts this menu's trigger; base-ui's fallback return target would steal focus from the rename field.
           finalFocus: focusTab,
         }}
       >

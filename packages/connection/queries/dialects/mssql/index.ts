@@ -57,9 +57,10 @@ export const query = {
   ),
 
   openSession: handleQueryError(async ({ connectionString, ownerId }) => {
+    const config = await poolConfig(connectionString)
     const session = await sessionConnection(() =>
       new mssql.ConnectionPool({
-        ...poolConfig(connectionString),
+        ...config,
         // `min: 1` keeps the idle reaper off the one connection: reaping it would roll the transaction back and run the next request outside it.
         pool: { max: 1, min: 1 },
       }).connect()

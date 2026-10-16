@@ -8,14 +8,14 @@ import { encryptConnectionString } from '~/lib/connection-string'
 import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
 import { orpc, permissionsMiddleware } from '~/orpc'
 
-import { publisher } from './events'
+import { publisher, syncedColumns } from './events'
 
 export const create = orpc
   .use(permissionsMiddleware)
   .input(
     connectionsInsertSchema
       .omit('userId', 'workspaceId')
-      .and(type({ id: 'string.uuid.v7', 'workspaceId?': 'string | null' }))
+      .merge(type({ id: 'string.uuid.v7', 'workspaceId?': 'string | null' }))
   )
   .errors({
     FORBIDDEN: { message: GUEST_CONNECTIONS_MESSAGE },
@@ -31,8 +31,7 @@ export const create = orpc
         : await ensureDefaultWorkspace(context.user.id)
     const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
-    // Excludes its own id: an outbox replay of a create whose response was
-    // lost would otherwise count its own row and fail with FORBIDDEN.
+    // Excludes its own id, or an outbox replay of a lost response counts its own row and fails.
     const count = await db.$count(
       connections,
       and(eq(connections.userId, context.user.id), ne(connections.id, input.id))
@@ -55,7 +54,7 @@ export const create = orpc
         workspaceId,
       })
       .onConflictDoNothing()
-      .returning()
+      .returning(syncedColumns)
 
     if (inserted) {
       publisher.publish(context.user.id, {

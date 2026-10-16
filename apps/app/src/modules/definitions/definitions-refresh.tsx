@@ -46,7 +46,6 @@ export const DefinitionsRefresh = ({
   const handleRefresh = () => {
     setIsUserRefreshing(true)
 
-    // The pickers and "no tables" notes read the table list, not the section.
     return Promise.all([
       queryClient.invalidateQueries({ queryKey }),
       queryClient.invalidateQueries({

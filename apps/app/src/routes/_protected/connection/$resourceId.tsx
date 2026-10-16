@@ -1,4 +1,7 @@
+import { UnavailableIcon } from '@hugeicons/core-free-icons'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/title'
+import { Button } from '@tamery/ui/components/button'
 import {
   ResizableGroup,
   ResizableSeparator,
@@ -13,28 +16,32 @@ import {
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { PaneEmpty } from '~/components/pane-empty'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
 } from '~/core/connection/fetching'
+import { FetchingReason } from '~/core/connection/fetching-reason'
 import {
   lastOpenedResourcesStorageValue,
   MAX_REMEMBERED_RESOURCES,
 } from '~/core/connection/last-opened-resources'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { workspaceSelection } from '~/core/workspace/utils'
+import { useGoBack } from '~/hooks/use-go-back'
 import type { Panel } from '~/lib/panels'
 import { panelSize, useShellLayout } from '~/lib/panels'
 import { chatPanel } from '~/modules/chat/panel'
 import { useEscapeToNavigator } from '~/modules/navigator/keyboard'
 import { navigatorPanel } from '~/modules/navigator/panel'
-import { navigatorOpenValue } from '~/modules/navigator/stores'
+import { toggleNavigator } from '~/modules/navigator/stores'
 import { toggleLogger } from '~/modules/query-logger/logger-open'
 import { queryLoggerPanel } from '~/modules/query-logger/panel'
 import { TabBar } from '~/modules/tab-bar/tab-bar'
 import { resourcePanelClassName } from '~/shell'
 
-import { PasswordForm } from './-components/password-form'
+import { ConnectionError } from './-components/connection-error'
+import { UnlockForm } from './-components/unlock-form'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -90,6 +97,7 @@ const RegionPanel = ({
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
+  const goBack = useGoBack()
 
   useShellLayout(connectionResource.id)
 
@@ -106,26 +114,32 @@ const ResourcePage = () => {
   }, [connectionResource.id])
 
   const fetching = useFetchingConfig(connection)
-  const locked = fetching.type === 'waiting-for-password'
+  const needsDetails = fetching.type === 'waiting-for-details'
+  const locked = fetching.type === 'waiting-for-password' || needsDetails
 
-  useShortcut(
-    'toggleNavigator',
-    () => navigatorOpenValue.set((open) => !open),
-    {
-      enabled: !locked,
-    }
-  )
+  useShortcut('toggleNavigator', toggleNavigator, { enabled: !locked })
   useShortcut('queryLogger', () => toggleLogger(connectionResource.id), {
     enabled: !locked,
   })
   useEscapeToNavigator(!locked)
 
   if (locked) {
+    return <UnlockForm scope={needsDetails ? 'details' : 'credentials'} />
+  }
+
+  if (!fetching.canSend && fetching.reason) {
     return (
-      <PasswordForm
-        connection={connection}
-        connectionResource={connectionResource}
-      />
+      <div className="flex h-screen min-h-[inherit] flex-col">
+        <PaneEmpty
+          icon={UnavailableIcon}
+          title="Can't open this connection here"
+          description={<FetchingReason reason={fetching.reason} />}
+        >
+          <Button variant="outline" onClick={goBack}>
+            Back
+          </Button>
+        </PaneEmpty>
+      </div>
     )
   }
 
@@ -153,6 +167,7 @@ const ResourcePage = () => {
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
+  errorComponent: ConnectionError,
   beforeLoad: async ({ context, params }) => {
     const {
       connectionsCollection,
@@ -194,7 +209,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       throw redirect({ to: '/' })
     }
 
-    return { connection, connectionResource }
+    return {
+      connection,
+      connectionResource,
+      dialect: getDialect(connection.type),
+    }
   },
   loader: ({ context }) => {
     prefetchConnectionResourceCore(context.connectionResource)

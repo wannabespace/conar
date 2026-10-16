@@ -1,22 +1,24 @@
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { QueryClient } from '@tanstack/react-query'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
-  useRouter,
+  useRouteContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { MotionConfig } from 'motion/react'
+import { useEffect } from 'react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
+import { authClient, sessionQueryOptions } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 import { seo, SITE_URL } from '~/utils/seo'
 
 import appCss from '@tamery/ui/globals.css?url'
@@ -65,21 +67,29 @@ const analyticsScripts = [
 ]
 
 const RootComponent = () => {
-  const router = useRouter()
+  const { session } = useRouteContext({ from: '__root__' })
+
+  useEffect(() => {
+    void posthog.start()
+  }, [])
+
+  useEffect(() => {
+    authClient.hydrateSession(session)
+  }, [session])
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`bg-body relative`)}>
-        <QueryClientProvider client={router.options.context.queryClient}>
+      <body className="bg-body relative">
+        <MotionConfig reducedMotion="user">
           <TooltipProvider>
             <ThemeObserver />
             <Outlet />
           </TooltipProvider>
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-        </QueryClientProvider>
+        </MotionConfig>
+        <ReactQueryDevtools buttonPosition="bottom-left" />
         <Toaster />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
@@ -91,6 +101,11 @@ const RootComponent = () => {
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
+  beforeLoad: async ({ context }) => {
+    const { data } = await context.queryClient.fetchQuery(sessionQueryOptions)
+
+    return { session: data }
+  },
   head: () => {
     const { meta, links } = seo({
       title: `Tamery - ${SEO.title}`,

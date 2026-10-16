@@ -47,7 +47,7 @@ export const DraftsReviewDrawer = ({
   onSave: () => void
   onDiscardAll: () => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const columnsById = new Map(columns.map((column) => [column.id, column]))
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
@@ -92,7 +92,7 @@ export const DraftsReviewDrawer = ({
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columnsById.get(columnId)
     return column
-      ? createTransformer(connection.type, column).toDisplay(
+      ? createTransformer(dialect, column).toDisplay(
           value,
           Number.POSITIVE_INFINITY
         )

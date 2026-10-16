@@ -3,7 +3,7 @@ import { diagnose, dialects } from '@tamery/sql'
 import { editor, MarkerSeverity } from 'monaco-editor'
 
 import type { SqlSource } from './source'
-import { rangeOf, tablesIn } from './source'
+import { getRange, tablesIn } from './source'
 
 const DIAGNOSTICS_DELAY = 250
 const MARKER_OWNER = 'tamery-sql'
@@ -12,7 +12,7 @@ export const attachSqlDiagnostics = (
   codeEditor: editor.IStandaloneCodeEditor,
   source: SqlSource
 ) => {
-  const dialect = dialects[source.type]
+  const dialect = dialects[source.dialect]
   let timer: ReturnType<typeof setTimeout> | undefined
 
   const run = () => {
@@ -22,9 +22,9 @@ export const attachSqlDiagnostics = (
     }
     const text = model.getValue()
     const catalog = source.catalog()
-    silently(() => source.load(tablesIn(text, source.type)))
+    silently(() => source.load(tablesIn(text, source.dialect)))
     const markers = diagnose(text, dialect, catalog).map((diagnostic) => ({
-      ...rangeOf(model, diagnostic.start, diagnostic.end),
+      ...getRange(model, diagnostic.start, diagnostic.end),
       message: diagnostic.message,
       severity:
         diagnostic.severity === 'error'

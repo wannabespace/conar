@@ -1,3 +1,7 @@
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { Ctrl } from '@tamery/ui/components/custom/shortcuts'
 import { Switch } from '@tamery/ui/components/switch'
 import { shortcutRevealStore } from '@tamery/ui/hooks/use-shortcut-reveal'
@@ -5,7 +9,6 @@ import { useSubscription } from 'seitu/react'
 
 import { posthog } from '~/lib/posthog'
 
-import { SettingsGroup, SettingsRow } from './settings-group'
 import { ShortcutsList } from './shortcuts'
 
 export const KeyboardSettings = () => {

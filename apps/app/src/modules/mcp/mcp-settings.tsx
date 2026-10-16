@@ -1,29 +1,19 @@
 import { Alert, AlertDescription } from '@tamery/ui/components/alert'
+import {
+  SettingsGroup,
+  SettingsRow,
+} from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
-
-import { SettingsGroup, SettingsRow } from '~/core/settings/settings-group'
-import { queryClient } from '~/lib/query-client'
 
 import { ClientSetup } from './client-setup'
 import { ConnectedClients } from './connected-clients'
 import { ConnectionAccess } from './connection-access'
 import { ServerDetails } from './server-details'
+import { useMcpServer } from './use-mcp-server'
 import { WeeklyQuota } from './weekly-quota'
 
 export const McpSettings = () => {
-  const { data: status } = useQuery({
-    queryFn: () => window.electron?.mcp.status(),
-    queryKey: ['mcp', 'status'],
-  })
-  const { mutate: setEnabled } = useMutation({
-    meta: { event: 'mcp_server_toggled' },
-    mutationFn: async (enabled: boolean) =>
-      await window.electron?.mcp.setEnabled(enabled),
-    onError: (error) => toast.error(error.message),
-    onSuccess: (next) => queryClient.setQueryData(['mcp', 'status'], next),
-  })
+  const { setEnabled, status } = useMcpServer()
 
   if (!status) {
     return null

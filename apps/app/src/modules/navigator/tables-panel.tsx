@@ -12,7 +12,7 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { tableTabId } from '~/core/tabs/ids'
 
@@ -29,7 +29,7 @@ export const TablesPanel = ({
 }: {
   onCreateTable: (schema?: string) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { tabId: activeTabId } = useParams({ strict: false })
   const store = navigatorStore(connectionResource.id)
   const search = useSubscription(store, {
@@ -75,7 +75,7 @@ export const TablesPanel = ({
     pinnedTables,
     schemas: tablesAndSchemas?.schemas ?? [],
     search,
-    showSchemaRows: capabilitiesOf(connection.type).schemas,
+    showSchemaRows: getCapabilities(dialect).schemas,
   })
 
   const toggleSchema = (name: string) => {
@@ -96,14 +96,15 @@ export const TablesPanel = ({
       tableTabId(row.schema, row.table.name) === activeTabId
   )?.id
 
-  const { highlightedId, listRef, searchProps } = useNavigatorSearch({
-    activeId,
-    nodes: rows.filter(
-      (row) => row.kind !== 'empty' && row.kind !== 'separator'
-    ),
-    onClear: () => setSearch(''),
-    search,
-  })
+  const { highlightedControlId, highlightedId, listId, searchProps } =
+    useNavigatorSearch({
+      activeId,
+      nodes: rows.filter(
+        (row) => row.kind !== 'empty' && row.kind !== 'separator'
+      ),
+      onClear: () => setSearch(''),
+      search,
+    })
 
   return (
     <>
@@ -152,11 +153,12 @@ export const TablesPanel = ({
         </Tooltip>
       </div>
       <TablesList
-        ref={listRef}
         className="min-h-0 flex-1"
         activeId={activeId}
+        highlightedControlId={highlightedControlId}
         highlightedId={highlightedId}
         isPending={isPending}
+        listId={listId}
         rows={rows}
         search={search}
         onCreateTable={onCreateTable}

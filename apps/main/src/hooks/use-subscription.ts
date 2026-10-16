@@ -7,20 +7,24 @@ import { orpc } from '~/lib/orpc'
 
 export const useSubscription = () => {
   const { data } = authClient.useSession()
-  const { data: list, isPending } = useQuery(
+  const isSignedIn = !!data?.user.id
+  const { data: list } = useQuery(
     orpc.account.subscription.list.queryOptions({
-      enabled: !!data?.user.id,
+      enabled: isSignedIn,
     })
   )
 
-  const subscription =
+  if (!isSignedIn) {
+    return null
+  }
+
+  return (
     list?.find((s) =>
       ACTIVE_SUBSCRIPTION_STATUSES.includes(
         s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
       )
     ) ?? null
-
-  return { isPending, subscription }
+  )
 }
 
 export const useUpgradeSubscription = (
@@ -41,6 +45,7 @@ export const useUpgradeSubscription = (
   }).href
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
+    meta: { event: 'subscription_checkout_started' },
     mutationFn: async (isYearly: boolean) => {
       const result = await orpc.account.subscription.upgrade.call({
         cancelUrl: location.origin + cancelHref,
@@ -63,6 +68,7 @@ export const useUpgradeSubscription = (
 export const useBillingPortal = ({ returnHref }: { returnHref: string }) => {
   const { mutate, isPending: isOpening } = useMutation(
     orpc.account.subscription.billingPortal.mutationOptions({
+      meta: { event: 'billing_portal_opened' },
       mutationKey: ['subscription', 'billingPortal'],
       onSuccess(result) {
         location.assign(result.url)

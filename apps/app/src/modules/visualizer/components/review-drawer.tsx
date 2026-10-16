@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
   AlertDescription,
@@ -52,19 +52,21 @@ const draftLabel = (draft: DiagramDraft) => {
   }
 }
 
-// SQL Server's sp_rename takes names as bound values, which the preview
-// has to show; a statement without any keeps its raw text untouched.
-const previewSql = (type: ConnectionType, draft: DiagramDraft) => {
-  const { parameters, sql } = draftStatement(type, coldDialects[type](), draft)
+const previewSql = (dialect: Dialect, draft: DiagramDraft) => {
+  const { parameters, sql } = draftStatement(
+    dialect,
+    coldDialects[dialect](),
+    draft
+  )
   return formatSql(
-    parameters.length > 0 ? inlineParameters(sql, parameters, type) : sql,
-    type
+    parameters.length > 0 ? inlineParameters(sql, parameters, dialect) : sql,
+    dialect
   )
 }
 
 export const ReviewDrawer = ({
   applying,
-  connectionType,
+  dialect,
   ddlRollback,
   drafts,
   error,
@@ -76,7 +78,7 @@ export const ReviewDrawer = ({
   open,
 }: {
   applying: boolean
-  connectionType: ConnectionType
+  dialect: Dialect
   ddlRollback: boolean
   drafts: DiagramDraft[]
   error: Error | null
@@ -150,7 +152,7 @@ export const ReviewDrawer = ({
                   />
                 </div>
                 <CodeBlock
-                  code={previewSql(connectionType, draft)}
+                  code={previewSql(dialect, draft)}
                   language="sql"
                   size="xs"
                   wrap

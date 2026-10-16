@@ -27,7 +27,6 @@ const scientificFormat = new Intl.NumberFormat(undefined, {
   notation: 'scientific',
 })
 const COMPACT_FROM = 1e6
-// Compact notation tops out at trillions, so larger values would grow digits again.
 const SCIENTIFIC_FROM = 1e15
 
 const shortFormat = (value: StatValue) => {
@@ -45,7 +44,6 @@ const isInteger = (value: unknown) =>
   (typeof value === 'number' && Number.isSafeInteger(value)) ||
   (typeof value === 'string' && integerTextRegex.test(value.trim()))
 
-// Drivers hand bigint columns over as text; Number() would round anything past 2^53.
 const integerStats = (values: unknown[]): [string, StatValue][] => {
   const integers = values.map((value) => BigInt(String(value).trim()))
   let [sum, min, max] = [0n, integers[0] ?? 0n, integers[0] ?? 0n]

@@ -4,7 +4,6 @@ import {
   chatsMessages,
   chatsMessagesUpdateSchema,
 } from '@tamery/db/schema'
-import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
 import { orpc, permissionsMiddleware, permix } from '~/orpc'
@@ -15,10 +14,9 @@ export const update = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.chat.use'))
   .input(
-    type.and(
-      chatsMessagesUpdateSchema.omit('id'),
-      chatsMessagesUpdateSchema.pick('id').required()
-    )
+    chatsMessagesUpdateSchema
+      .omit('createdAt', 'updatedAt', 'id', 'chatId')
+      .merge(chatsMessagesUpdateSchema.pick('id').required())
   )
   .errors({
     NOT_FOUND: { message: 'Chat message not found' },

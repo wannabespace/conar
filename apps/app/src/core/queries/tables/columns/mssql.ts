@@ -88,7 +88,6 @@ export const mssqlColumns = async (
 
   return query.map(({ name, ...column }) => ({
     ...column,
-    // Identity, computed and rowversion columns all refuse an UPDATE.
     editable: !column.isGenerated,
     id: name,
     maxLength: column.max_length,

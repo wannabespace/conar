@@ -4,6 +4,6 @@ import { SidebarLink } from '~/components/sidebar-button'
 
 export const AiUsageLink = () => (
   <SidebarLink to="/account/ai-usage" icon={ChartLineData01Icon}>
-    AI Usage
+    AI usage
   </SidebarLink>
 )

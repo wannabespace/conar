@@ -3,33 +3,44 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { themeStore } from '@tamery/ui/theme-store'
+import type { Theme } from '@tamery/ui/theme-store'
+import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import type { ComponentProps } from 'react'
+
+const THEMES = [
+  { icon: Sun03Icon, label: 'Light', value: 'light' },
+  { icon: Moon02Icon, label: 'Dark', value: 'dark' },
+  { icon: ComputerIcon, label: 'System', value: 'system' },
+] as const
 
 export const ThemeToggle = ({
   side = 'right',
   ...props
 }: ComponentProps<typeof DropdownMenuTrigger> & {
   side?: 'top' | 'right' | 'bottom' | 'left'
-}) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger {...props} />
-    <DropdownMenuContent side={side} className="min-w-32">
-      <DropdownMenuItem onClick={() => themeStore.set('light')}>
-        <HugeiconsIcon icon={Sun03Icon} strokeWidth={2} aria-hidden="true" />
-        Light
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => themeStore.set('dark')}>
-        <HugeiconsIcon icon={Moon02Icon} strokeWidth={2} aria-hidden="true" />
-        Dark
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => themeStore.set('system')}>
-        <HugeiconsIcon icon={ComputerIcon} strokeWidth={2} aria-hidden="true" />
-        System
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-)
+}) => {
+  const theme = useTheme()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger {...props} />
+      <DropdownMenuContent side={side} className="min-w-32">
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value: Theme) => themeStore.set(value)}
+        >
+          {THEMES.map(({ icon, label, value }) => (
+            <DropdownMenuRadioItem key={value} value={value} closeOnClick>
+              <HugeiconsIcon icon={icon} strokeWidth={2} aria-hidden="true" />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

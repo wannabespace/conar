@@ -267,8 +267,7 @@ export const diagramDrafts = (store: DiagramDraftsStore) => {
           (draft) => !(draft.kind === 'dropTable' && sameTable(draft, ref))
         )
       ),
-    // Drops exactly the drafts that ran; one edited or queued meanwhile is a
-    // new object and stays.
+    // Compared by identity: a draft edited or queued meanwhile is a new object and must stay.
     settle: (applied: DiagramDraft[]) =>
       update((drafts) => drafts.filter((draft) => !applied.includes(draft))),
   }

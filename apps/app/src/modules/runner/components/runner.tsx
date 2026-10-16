@@ -144,7 +144,7 @@ const SavedQueriesButton = () => {
 }
 
 export const Runner = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const tab = useRunnerTab()
   const store = useRunnerPageStore()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -157,15 +157,9 @@ export const Runner = () => {
   })
   const { data: lastRun } = useQuery(runnerResultsOptions(tab))
   const running = lastRun?.running ?? false
-  const statements = runnerStatements({
-    ...tab,
-    connectionType: connection.type,
-  })
-  const dialect = dialects[connection.type]
-  const aiEdit = useAiEdit({
-    connectionType: connection.type,
-    editorRef,
-  })
+  const statements = runnerStatements({ ...tab, dialect })
+  const spec = dialects[dialect]
+  const aiEdit = useAiEdit({ connectionType: connection.type, editorRef })
 
   const current = (): {
     statements: RunnerStatement[]
@@ -182,10 +176,9 @@ export const Runner = () => {
       const offset = model.getOffsetAt(selection.getStartPosition())
       return {
         range: selection,
-        statements: splitStatements(
-          model.getValueInRange(selection),
-          dialect
-        ).map((statement) => toRunnerStatement(statement, offset)),
+        statements: splitStatements(model.getValueInRange(selection), spec).map(
+          (statement) => toRunnerStatement(statement, offset)
+        ),
       }
     }
     const statement = statementAt(
@@ -196,14 +189,14 @@ export const Runner = () => {
     if (!statement) {
       return { range: null, statements: [] }
     }
-    const lineOf = (offset: number) => model.getPositionAt(offset).lineNumber
-    const first = lineOf(statement.start)
-    const last = lineOf(statement.terminatorEnd)
+    const getLine = (offset: number) => model.getPositionAt(offset).lineNumber
+    const first = getLine(statement.start)
+    const last = getLine(statement.terminatorEnd)
     const sameLines = statements
       .get()
       .filter(
         (item) =>
-          lineOf(item.start) <= last && lineOf(item.terminatorEnd) >= first
+          getLine(item.start) <= last && getLine(item.terminatorEnd) >= first
       )
     return {
       range: Range.fromPositions(
@@ -226,7 +219,7 @@ export const Runner = () => {
       })
     const keywords = destructiveKeywords(
       pending.map((statement) => statement.text).join(';\n'),
-      dialect
+      spec
     )
     if (keywords.length > 0) {
       alertDialogRef.current?.confirm(keywords, start)
@@ -249,7 +242,7 @@ export const Runner = () => {
       run(
         current().statements.flatMap((statement) =>
           (
-            unwrapTransaction(statement.source, dialect)?.statements ?? [
+            unwrapTransaction(statement.source, spec)?.statements ?? [
               statement.source,
             ]
           ).map((text) => ({ ...statement, text: wrapExplainQuery(text) }))
@@ -274,7 +267,7 @@ export const Runner = () => {
     },
     focus: () => editorRef.current?.focus(),
     format: () => {
-      setQuery(store, formatSql(store.get().query, connection.type))
+      setQuery(store, formatSql(store.get().query, dialect))
       setFormatted(true)
     },
     renameSaved: (query) =>

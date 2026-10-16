@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
@@ -22,7 +22,7 @@ import {
 } from '~/core/codegen/utils'
 
 const dialectConfig: Record<
-  Exclude<ConnectionType, ConnectionType.ClickHouse>,
+  Exclude<Dialect, Dialect.ClickHouse>,
   {
     anyColumn: string
     schemaFunc: string
@@ -103,7 +103,7 @@ export const generateQueryDrizzle = ({ table, filters }: QueryParams) => {
   ].join('\n')
 }
 
-const buildColumnOptions = (c: TypedColumn, typeFunc: string): string => {
+const buildColumnOptions = (c: TypedColumn, typeFunc: string) => {
   if (
     c.maxLength &&
     c.maxLength !== -1 &&
@@ -120,18 +120,18 @@ const buildColumnOptions = (c: TypedColumn, typeFunc: string): string => {
   if (['decimal', 'numeric'].includes(typeFunc) && c.precision) {
     return `{ precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
   }
-  return ''
+  return null
 }
 
 const buildGeneratedChain = (
   c: TypedColumn,
-  dialect: ConnectionType,
+  dialect: Dialect,
   coreImports: Set<string>
 ): string => {
-  if (c.isIdentity && dialect === ConnectionType.Postgres) {
+  if (c.isIdentity && dialect === Dialect.Postgres) {
     return '.generatedByDefaultAsIdentity()'
   }
-  if (c.isIdentity && dialect === ConnectionType.MSSQL) {
+  if (c.isIdentity && dialect === Dialect.MSSQL) {
     return '.identity()'
   }
   if (typeof c.defaultValue !== 'string' || isSerialDefault(c.defaultValue)) {
@@ -147,7 +147,7 @@ const buildGeneratedChain = (
 const buildColumnChain = (
   c: TypedColumn,
   typeFunc: string,
-  options: string,
+  options: string | null,
   { columns, dialect }: Pick<SchemaParams, 'columns' | 'dialect'>,
   selfReferenceType: string | null,
   foreignKeyImports: Set<string>,
@@ -156,7 +156,7 @@ const buildColumnChain = (
   const name = camelCase(c.id) === c.id ? '' : toStringLiteral(c.id)
   let chain = `${typeFunc}(${[name, options].filter(Boolean).join(', ')})`
 
-  if (c.isArray && dialect === ConnectionType.Postgres) {
+  if (c.isArray && dialect === Dialect.Postgres) {
     chain += '.array()'
   }
   chain += buildGeneratedChain(c, dialect, coreImports)
@@ -233,7 +233,7 @@ export const generateSchemaDrizzle = ({
   dialect,
   indexes,
 }: SchemaParams) => {
-  if (dialect === ConnectionType.ClickHouse) {
+  if (dialect === Dialect.ClickHouse) {
     return ''
   }
   const { anyColumn, dialectImportPath, enumFunc, schemaFunc } =
@@ -251,18 +251,15 @@ export const generateSchemaDrizzle = ({
     .filter(hasType)
     .map((c) => {
       let typeFunc = drizzleType(c.type, dialect)
-      if (
-        dialect === ConnectionType.Postgres &&
-        isSerialDefault(c.defaultValue)
-      ) {
+      if (dialect === Dialect.Postgres && isSerialDefault(c.defaultValue)) {
         typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
       }
 
-      let options = ''
+      let options: string | null = null
       if (enumFunc && c.enumName && c.availableValues?.length) {
         const values = `[${c.availableValues.map(toStringLiteral).join(', ')}]`
         dialectImports.add(enumFunc)
-        if (dialect === ConnectionType.MySQL) {
+        if (dialect === Dialect.MySQL) {
           typeFunc = enumFunc
           options = values
         } else {

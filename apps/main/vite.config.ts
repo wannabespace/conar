@@ -12,7 +12,7 @@ setupPortlessEnvs({
   VITE_PUBLIC_WEB_URL: 'app.local.tamery',
 })
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     tailwindcss(),
     tanstackStart({
@@ -37,4 +37,8 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-})
+  ssr: {
+    // Build externals load a second React through base-ui's CJS require; dev's module runner cannot inline CJS React.
+    noExternal: command === 'build' ? true : [],
+  },
+}))

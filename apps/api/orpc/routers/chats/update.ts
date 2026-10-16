@@ -1,6 +1,5 @@
 import { db } from '@tamery/db'
 import { chats, chatsUpdateSchema } from '@tamery/db/schema'
-import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
 
 import { orpc, permissionsMiddleware, permix } from '~/orpc'
@@ -11,10 +10,9 @@ export const update = orpc
   .use(permissionsMiddleware)
   .use(permix.checkMiddleware('ai.chat.use'))
   .input(
-    type.and(
-      chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId'),
-      chatsUpdateSchema.pick('id').required()
-    )
+    chatsUpdateSchema
+      .omit('createdAt', 'updatedAt', 'id', 'userId')
+      .merge(chatsUpdateSchema.pick('id').required())
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input

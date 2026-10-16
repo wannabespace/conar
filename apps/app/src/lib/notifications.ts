@@ -7,7 +7,6 @@ const notifyInBrowser = async ({ body, title }: AppNotification) => {
   if (document.hasFocus() || !('Notification' in window)) {
     return
   }
-  // Safari only shows the permission prompt from a user gesture, so there the first notification asks nothing and is dropped.
   if (Notification.permission === 'default') {
     await Notification.requestPermission()
   }

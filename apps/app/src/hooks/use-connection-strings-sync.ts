@@ -14,48 +14,21 @@ export const useConnectionStringsSync = () => {
       return
     }
 
-    const abortController = new AbortController()
     const { connectionsCollection, connectionStringsCollection } = collections
 
+    const resolve = (
+      { value }: { value: Connection },
+      { signal }: { signal: AbortSignal }
+    ) => connectionStringsCollection.utils.resolve(value, signal)
+
     const effect = createEffect<Connection>({
-      onEnter: async ({ value }) => {
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        const connectionString =
-          await connectionStringsCollection.utils.resolve(value.id)
-
-        if (abortController.signal.aborted) {
-          return
-        }
-
-        if (connectionString) {
-          const record = await connectionStringsCollection.utils.prepare({
-            connectionId: value.id,
-            connectionString,
-            updatedAt: value.updatedAt,
-          })
-
-          if (abortController.signal.aborted) {
-            return
-          }
-
-          if (connectionStringsCollection.has(value.id)) {
-            connectionStringsCollection.update(value.id, (draft) => {
-              Object.assign(draft, record)
-            })
-          } else {
-            connectionStringsCollection.insert(record)
-          }
-        }
-      },
+      onEnter: resolve,
+      onUpdate: resolve,
       query: (q) => q.from({ connections: connectionsCollection }),
       skipInitial: false,
     })
 
     return () => {
-      abortController.abort()
       effect.dispose()
     }
   }, [collections, isOnline])

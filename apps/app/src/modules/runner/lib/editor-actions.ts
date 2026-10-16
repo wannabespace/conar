@@ -28,7 +28,6 @@ const EDITOR_ACTIONS = [
   { name: 'askAi', shortcut: 'editWithAi' },
   {
     name: 'fixAi',
-    // Gated on a failed statement, so Monaco's own ⌘I (trigger suggest) answers everywhere else.
     precondition: FAILED_CONTEXT_KEY,
     shortcut: 'fixWithAi',
   },
@@ -40,7 +39,6 @@ const EDITOR_ACTIONS = [
   {
     label: 'Reject AI edit',
     name: 'rejectAi',
-    // An action's keybinding outranks Monaco's own Escape, so it must yield while one of its widgets is open.
     precondition: `${AI_REVIEW_CONTEXT_KEY} && !suggestWidgetVisible && !findWidgetVisible && !inlineSuggestionVisible && !parameterHintsVisible`,
     shortcut: 'stepBack',
   },
@@ -63,7 +61,6 @@ const monacoKeybinding = (hotkey: Hotkey) => {
   // Parsed as macOS so Mod lands on meta, which is what Monaco's CtrlCmd means on every platform.
   const { alt, ctrl, key, meta, shift } = parseHotkey(hotkey, 'mac')
   const keyCode = MONACO_KEYS[key]
-  // A literal Control has no cross-platform KeyMod (WinCtrl is the Windows key off macOS).
   if (ctrl || keyCode === undefined) {
     throw new Error(`Monaco cannot bind ${hotkey}: extend MONACO_KEYS`)
   }

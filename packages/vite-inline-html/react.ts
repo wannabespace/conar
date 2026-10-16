@@ -54,7 +54,7 @@ const renderComponents = async (
 export const inlineReactHtml = ({
   components,
 }: InlineReactHtmlOptions): Plugin => {
-  let root = ''
+  let root: string
 
   return {
     configResolved({ root: resolved }) {

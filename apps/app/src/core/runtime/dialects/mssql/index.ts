@@ -1,5 +1,9 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { Dialect, OffsetNode, SelectQueryNode } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type {
+  Dialect as KyselyDialect,
+  OffsetNode,
+  SelectQueryNode,
+} from 'kysely'
 import {
   MssqlQueryCompiler as DefaultMssqlQueryCompiler,
   DummyDriver,
@@ -12,7 +16,7 @@ import type { DialectOptions } from '~/core/runtime/dialects/driver'
 import { createKyselyDriver } from '~/core/runtime/dialects/driver'
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
-  // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary; a NULL literal converts to any type.
+  // A NULL parameter is typed nvarchar, which SQL Server refuses to convert to varbinary.
   protected override appendValue(value: unknown) {
     if (value === null) {
       this.append('null')
@@ -21,7 +25,6 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
     }
   }
 
-  // SQL Server has no LIMIT: a bare limit becomes TOP, and OFFSET … FETCH needs an ORDER BY.
   protected override visitSelectQuery(node: SelectQueryNode) {
     if (node.offset) {
       super.visitSelectQuery({ ...node, limit: undefined })
@@ -54,12 +57,12 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 export const mssqlDialect = (options: DialectOptions) =>
   ({
     createAdapter: () => new MssqlAdapter(),
-    createDriver: () => createKyselyDriver(ConnectionType.MSSQL, options),
+    createDriver: () => createKyselyDriver(Dialect.MSSQL, options),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect
 
 export const mssqlColdDialect = () =>
   ({
@@ -69,4 +72,4 @@ export const mssqlColdDialect = () =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MssqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect

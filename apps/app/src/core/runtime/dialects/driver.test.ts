@@ -1,19 +1,17 @@
 import { expect, mock, test } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { sql } from 'kysely'
 import { clearMemoizeCache, getCacheStore } from 'memoza'
 
-const execute = mock(() => Promise.resolve({ duration: 0, result: [] }))
+const execute = mock((_input: object) =>
+  Promise.resolve({ duration: 0, result: [] })
+)
 const cloudExecute = mock(() => Promise.resolve({ duration: 0, result: [] }))
-const strings = new Map([
-  ['connection', { isLocalhost: true, isPasswordPopulated: true }],
-])
 
 mock.module('~/core/collections', () => ({
   getCollections: () => ({
-    connectionStringsCollection: strings,
     connectionsCollection: new Map([
       ['connection', { isPasswordExists: true, syncType: SyncType.Cloud }],
     ]),
@@ -37,17 +35,33 @@ Object.assign(globalThis, { window: {} })
 const { createDialectProvider } = await import('./driver')
 const { dialects } = await import('./index')
 
-test('saved and unsaved connections use the available proxy', async () => {
+test("saved and unsaved connections send this device's string to the local proxy", async () => {
+  const connectionString = 'postgres://user:password@localhost/db'
   await Promise.all(
     [{ resourceId: 'resource' }, {}].map((ids) =>
-      createDialectProvider(ConnectionType.Postgres, {
-        connectionString: 'postgres://user:password@localhost/db',
+      createDialectProvider(Dialect.Postgres, {
+        connectionString,
         ...ids,
       }).execute({ query: 'SELECT 1', values: [] })
     )
   )
   expect(execute).toHaveBeenCalledTimes(2)
+  for (const [input] of execute.mock.calls) {
+    expect(input).toMatchObject({ connectionString })
+    expect(input).not.toHaveProperty('resourceId')
+  }
   expect(cloudExecute).not.toHaveBeenCalled()
+})
+
+test('a connection that cannot send refuses with its reason', () => {
+  execute.mockClear()
+  expect(() =>
+    createDialectProvider(Dialect.Postgres, {
+      connectionString: 'postgres://user@localhost/db',
+      resourceId: 'resource',
+    }).execute({ query: 'SELECT 1', values: [] })
+  ).toThrow('Filled password is required')
+  expect(execute).not.toHaveBeenCalled()
 })
 
 test('dialect caches reuse equal inputs with fresh log callbacks', async () => {
@@ -70,4 +84,17 @@ test('dialect caches reuse equal inputs with fresh log callbacks', async () => {
   })
   await sql`SELECT 1`.execute(db)
   expect(log).toHaveBeenCalledTimes(1)
+})
+
+test('the web app never sends an SSH connection string to a proxy', () => {
+  execute.mockClear()
+  cloudExecute.mockClear()
+  expect(() =>
+    createDialectProvider(Dialect.Postgres, {
+      connectionString:
+        'postgres://user:password@db.internal/db?ssh_host=bastion&ssh_auth=key&ssh_key=secret',
+    }).execute({ query: 'SELECT 1', values: [] })
+  ).toThrow('SSH tunnels run in the Tamery desktop app')
+  expect(execute).not.toHaveBeenCalled()
+  expect(cloudExecute).not.toHaveBeenCalled()
 })

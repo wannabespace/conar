@@ -1,6 +1,6 @@
 import { ArrowTurnBackwardIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
 import { Button } from '@tamery/ui/components/button'
 import { Separator } from '@tamery/ui/components/separator'
 import {
@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { Result } from 'better-result'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -38,11 +39,11 @@ export const TransactionControls = () => {
   }
 
   const end = async (reason: keyof typeof endings) => {
-    const { error } = await tryCatchAsync(() =>
+    const result = await Result.tryPromise(() =>
       runnerTransaction.close(tab, reason)
     )
-    if (error) {
-      toast.error(error.message)
+    if (result.isErr()) {
+      toast.error(toError(result.error.cause).message)
     } else {
       toast.success(endings[reason].done)
     }

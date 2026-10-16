@@ -9,21 +9,28 @@
   "dependencies": {
     "@tamery/shared": "workspace:*",
     "better-result": "catalog:",
-    "memoza": "catalog:"
+    "json5": "catalog:",
+    "memoza": "catalog:",
+    "shell-quote": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
+    "@types/ssh2": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
+    "ssh-config": "catalog:",
+    "ssh2": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
     "@clickhouse/client": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "ssh-config": "catalog:",
+    "ssh2": "catalog:"
   }
 }

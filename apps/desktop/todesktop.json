@@ -10,11 +10,27 @@
   "pnpmVersion": "11.25.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": ["dist-electron/**"],
+  "fuses": {
+    "runAsNode": false,
+    "enableNodeOptionsEnvironmentVariable": false,
+    "enableNodeCliInspectArguments": false,
+    "enableEmbeddedAsarIntegrityValidation": true,
+    "onlyLoadAppFromAsar": true
+  },
   "uploadSizeLimit": 80,
   "bundleWorkspacePackages": {
     "enabled": true
   },
-  "appProtocolScheme": "tamery",
+  "appProtocolScheme": [
+    "tamery",
+    "clickhouse",
+    "mariadb",
+    "mssql",
+    "mysql",
+    "postgres",
+    "postgresql",
+    "sqlserver"
+  ],
   "mac": {
     "category": "public.app-category.developer-tools",
     "icon": "./resources/macos-icon-1024x1024.png"

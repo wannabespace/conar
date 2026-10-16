@@ -35,7 +35,7 @@ export const alterPolicyQuery = ({
 
   return createQuery({
     query: {
-      // An empty USING removes the filter, which only ClickHouse alters in place.
+      // An empty `using` removes the filter.
       clickhouse: (db) =>
         sql`
           ALTER ROW POLICY ${policy}

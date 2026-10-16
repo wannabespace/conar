@@ -26,7 +26,7 @@ export const CellFieldActions = ({
   value: unknown
 }) => {
   const cursor = useGridCursorContext()
-  const canDefault = canWriteDefault(cursor.connectionType, column)
+  const canDefault = canWriteDefault(cursor.dialect, column)
   if (!column.isNullable && !canApply && !canDefault) {
     return null
   }

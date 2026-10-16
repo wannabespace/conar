@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
   CONSTRAINT_KINDS,
@@ -36,8 +36,8 @@ import type { DefinitionsSection } from './sections'
 
 export type { ArrayType, SectionCapabilities } from './capability-presets'
 
-const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
-  [ConnectionType.ClickHouse]: {
+const capabilities: Record<Dialect, ConnectionCapabilities> = {
+  [Dialect.ClickHouse]: {
     cascade: false,
     columnTypes: {
       array: { close: ')', open: 'Array(' },
@@ -47,7 +47,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       incomparable:
         /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
       json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
-      options: COLUMN_TYPES[ConnectionType.ClickHouse],
+      options: COLUMN_TYPES[Dialect.ClickHouse],
       uuid: /\bUUID\b/u,
       xml: null,
     },
@@ -87,7 +87,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
     systemSchemas: [],
     triggers: noTriggers,
   },
-  [ConnectionType.MSSQL]: {
+  [Dialect.MSSQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -96,7 +96,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       id: 'int identity',
       incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[ConnectionType.MSSQL],
+      options: COLUMN_TYPES[Dialect.MSSQL],
       uuid: /^uniqueidentifier$/iu,
       xml: /^xml$/iu,
     },
@@ -148,7 +148,7 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       toggle: true,
     },
   },
-  [ConnectionType.MySQL]: {
+  [Dialect.MySQL]: {
     cascade: false,
     columnTypes: {
       array: null,
@@ -157,16 +157,15 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       id: 'int auto_increment',
       incomparable: null,
       json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[ConnectionType.MySQL],
-      uuid: null,
+      options: COLUMN_TYPES[Dialect.MySQL],
+      // MariaDB's native UUID; MySQL has none.
+      uuid: /^uuid$/iu,
       xml: null,
     },
     constraintKinds: CONSTRAINT_KINDS,
-    // MySQL commits DDL implicitly, so a drop-then-create warns before it runs.
     ddlRollback: false,
     defaultSchema: null,
     explain: true,
-    // MySQL names every primary key PRIMARY, whatever the ADD says.
     fixedConstraintNames: { primaryKey: 'PRIMARY' },
     functions: {
       argumentPlaceholder: 'id INT, label VARCHAR(50)',
@@ -211,18 +210,17 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
       toggle: false,
     },
   },
-  [ConnectionType.Postgres]: {
+  [Dialect.Postgres]: {
     cascade: true,
     columnTypes: {
       array: { close: '[]', open: '' },
       bytes: null,
       enum: null,
       id: 'serial',
-      // Geometric types have no btree or hash operator class to sort or group by.
       incomparable:
         /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
       json: /^jsonb?$/iu,
-      options: COLUMN_TYPES[ConnectionType.Postgres],
+      options: COLUMN_TYPES[Dialect.Postgres],
       uuid: /^uuid$/iu,
       xml: /^xml$/iu,
     },
@@ -278,23 +276,21 @@ const capabilities: Record<ConnectionType, ConnectionCapabilities> = {
   },
 }
 
-export const capabilitiesOf = (type: ConnectionType) => capabilities[type]
+export const getCapabilities = (dialect: Dialect) => capabilities[dialect]
 
-export const defaultSchemaOf = (
-  type: ConnectionType,
-  database: string | null
-) => capabilities[type].defaultSchema ?? database
+export const getDefaultSchema = (dialect: Dialect, database: string | null) =>
+  capabilities[dialect].defaultSchema ?? database
 
 export const sectionAvailable = (
   section: DefinitionsSection,
-  type: ConnectionType
-) => capabilities[type].sections[section] !== false
+  dialect: Dialect
+) => capabilities[dialect].sections[section] !== false
 
-export const sectionCapabilitiesOf = (
+export const getSectionCapabilities = (
   section: DefinitionsSection,
-  type: ConnectionType
-): SectionCapabilities => capabilities[type].sections[section] || readOnly
+  dialect: Dialect
+): SectionCapabilities => capabilities[dialect].sections[section] || readOnly
 
-export const foreignKeysCreatable = (type: ConnectionType) =>
-  capabilities[type].constraintKinds.includes('foreignKey') &&
-  !!sectionCapabilitiesOf('constraints', type).create
+export const foreignKeysCreatable = (dialect: Dialect) =>
+  capabilities[dialect].constraintKinds.includes('foreignKey') &&
+  !!getSectionCapabilities('constraints', dialect).create

@@ -27,19 +27,16 @@ Setup and the command list live in `README.md` and the root `package.json`. Not 
 
 ## Opening the running app in a browser
 
-Two CLIs share one command vocabulary (`open`, `snapshot`, `click`, `fill`, `eval`, `console`), so the driving commands are the same either way — neither is an MCP server or a project dependency:
+**`agent-browser`** (install in `README.md`, not an MCP server or a project dependency) opens its own Chrome window and trusts the portless CA, so portless HTTPS hosts load. Dev app: `https://app.local.tamery.app`.
 
-- **`agent-browser`** (install in `README.md`) — its own Chrome window. Trusts the portless CA, so portless HTTPS hosts load.
-- **`terminal-browser`** (`brew install --cask terminal-browser`) — renders in a terminal pane (`terminal-browser open --split right`), driven with `terminal-browser action -- <agent-browser command>`. The user watches it live in their terminal and can take the pointer themselves.
-
-**Which one is the user's call, not a default** — when the session runs in a terminal they are watching, say which you intend to use and let them redirect you; when there is no answer to be had, `agent-browser` is the safe pick. Dev app: `https://app.local.tamery.app`.
-
-Either profile is **signed out**: anything behind auth needs the user's own Chrome (`mcp__claude-in-chrome__*`), since entering credentials is not an agent's to do. That is also the fallback when a binary is missing or the task needs their real profile. Playwright for scripted multi-step runs.
+Its profile is **signed out**: anything behind auth needs the user's own Chrome (`mcp__claude-in-chrome__*`), since entering credentials is not an agent's to do. That is also the fallback when a binary is missing or the task needs their real profile. Playwright for scripted multi-step runs.
 
 **The user's Chrome traps** — each one looks like an app bug and is not:
 
 - The MCP tab usually sits behind another window with `visibilityState: hidden`. rAF never runs, so animations and CSS transitions freeze mid-way (computed colours included), rAF-scheduled opens stay shut (base-ui `Combobox.Trigger` on click; `ArrowDown` still opens it), and ⌘-hotkeys do nothing. Check the tab's visibility before calling a control broken.
 - It shares localStorage with the user's own tab on the same origin: pane sizes and preferences changed there change theirs. Restore them, close the MCP tab when done, and ask the user to reload.
 - A first-time chunk load can make Vite re-optimize deps mid-session and crash the page with `Cannot read properties of null (reading 'useMemoCache')`. That is a dev artifact: navigate to the same URL once and continue.
+
+**The desktop app** is driven through its own isolated Electron instances over CDP, never the user's: the `electron-drive` skill covers launching, signing in, native dialogs and window screenshots.
 
 **A sandboxed/embedded browser pane cannot load portless HTTPS hosts** — every subresource is cancelled with `net::ERR_BLOCKED_BY_CLIENT` by the pane's own request layer (not TLS, CSP or service workers). Bare `http://localhost:<port>` works there.

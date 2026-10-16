@@ -9,7 +9,8 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { consola } from 'consola'
 import ora from 'ora'
 
@@ -23,7 +24,7 @@ const queryMap = {
   mssql: mssql.query,
   mysql: mysql.query,
   postgres: pg.query,
-} satisfies Record<ConnectionType, QueryExecutor>
+} satisfies Record<Dialect, QueryExecutor>
 
 const fail = (message: string): never => {
   consola.fail(message)
@@ -166,7 +167,7 @@ export const queryCommand = command({
     }
 
     const connection = pickConnection(connections, opts.connection)
-    const executor = queryMap[connection.type as ConnectionType]
+    const executor = queryMap[getDialect(connection.type)]
 
     const querySpinner = ora(
       `Executing query on ${connection.name} (${connection.type})...`

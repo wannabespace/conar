@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { PrivilegeTarget } from './shape'
-import { accountOf, privilegeOn } from './shape'
+import { getAccount, privilegeOn } from './shape'
 
 export const grantPrivilegeQuery = (target: PrivilegeTarget) =>
   createQuery({
@@ -12,7 +12,7 @@ export const grantPrivilegeQuery = (target: PrivilegeTarget) =>
       clickhouse: unsupported('Privileges'),
       mssql: unsupported('Privileges'),
       mysql: (db) =>
-        sql`GRANT ${privilegeOn(target)} TO ${accountOf(target.grantee)}${target.grantable ? sql` WITH GRANT OPTION` : sql``}`.execute(
+        sql`GRANT ${privilegeOn(target)} TO ${getAccount(target.grantee)}${target.grantable ? sql` WITH GRANT OPTION` : sql``}`.execute(
           db
         ),
       postgres: unsupported('Privileges'),

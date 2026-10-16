@@ -74,8 +74,6 @@ export const recreateEnumQuery = ({
             const literal = current.match(DEFAULT_LITERAL)?.groups?.value
 
             if (literal === undefined) {
-              // An expression the literal form does not cover names the type,
-              // and the new type takes that name, so it goes back verbatim.
               return [dropped, altered, restore(sql.raw(current))]
             }
             const unescaped = literal.replaceAll("''", "'")

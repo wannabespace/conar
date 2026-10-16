@@ -17,8 +17,55 @@
 @source "../**/*.{ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant traffic-lights (&:where(.electron.mac:not(.window-fullscreen) *));
 
 @theme inline {
+  /* Drops tw-animate-css's `filter: blur(0)`, which stalls every enter/exit on Chrome's main thread; blur-in/out-* do nothing. */
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(
+          var(--tw-enter-translate-x, 0),
+          var(--tw-enter-translate-y, 0),
+          0
+        )
+        scale3d(
+          var(--tw-enter-scale, 1),
+          var(--tw-enter-scale, 1),
+          var(--tw-enter-scale, 1)
+        )
+        rotate(var(--tw-enter-rotate, 0));
+    }
+  }
+
+  --animate-focus-in: focus-in
+    var(--tw-animation-duration, var(--tw-duration, 0.15s)) var(--tw-ease, ease)
+    var(--tw-animation-delay, 0s) var(--tw-animation-fill-mode, none);
+
+  @keyframes focus-in {
+    from {
+      filter: blur(12px);
+    }
+  }
+
+  @keyframes exit {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: translate3d(
+          var(--tw-exit-translate-x, 0),
+          var(--tw-exit-translate-y, 0),
+          0
+        )
+        scale3d(
+          var(--tw-exit-scale, 1),
+          var(--tw-exit-scale, 1),
+          var(--tw-exit-scale, 1)
+        )
+        rotate(var(--tw-exit-rotate, 0));
+    }
+  }
+
+  --ease-house: cubic-bezier(0.32, 0.72, 0, 1);
   --default-border-width: 0.5px;
   --default-ring-width: 0.5px;
   --text-2xs: 0.6875rem;
@@ -134,12 +181,18 @@
   --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.75);
 }
 
-.electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
+.electron.mac:not(.window-fullscreen, .opaque):not(
+    :has([data-slot$='-overlay'])
+  ) {
   --surface-alpha: 0.55;
 }
 
-.electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.65;
+/* Retune both values together: the composite must stay below level 2 (`--card`, L 0.244) at the brightest dark vibrancy. */
+.electron.mac.dark:not(.window-fullscreen, .opaque):not(
+    :has([data-slot$='-overlay'])
+  ) {
+  --body: oklch(0.185 0.0042 259.64 / var(--surface-alpha));
+  --surface-alpha: 0.7;
 }
 
 .electron.window-blurred {
@@ -295,7 +348,7 @@
   container-type: inline-size;
 }
 
-/* The grid and document list rewrite these while scrolling; an inherited custom property restyles every cell below it on each write, so each must stay non-inherited and be set on the element that reads it. */
+/* Keep non-inherited and set on the element that reads it: these change while scrolling, and an inherited one restyles every cell below on each write. */
 @property --grid-top {
   syntax: '<length>';
   inherits: false;
@@ -314,11 +367,7 @@
   initial-value: 0px;
 }
 
-/* A view transition paints its named groups above the whole document, so an
-   open overlay must be a group too or the tab's snapshot covers it. Name the
-   portal's children, never the portal: it has no box and naming it hides them.
-   A portal nested in another (a tooltip in a drawer) is such a child too, and
-   naming it traps its z-index under the outer overlay. */
+/* Name the portal's children, never the portal: it has no box and naming it hides them. Naming a nested portal traps its z-index under the outer overlay. */
 [data-base-ui-portal] > :not([data-base-ui-portal]) {
   view-transition-name: match-element;
   view-transition-class: overlay;

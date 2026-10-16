@@ -20,7 +20,7 @@ import {
 } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { createViewQuery } from '~/core/queries/views/create'
@@ -55,14 +55,19 @@ const QueryField = ({
   onChange: (value: string) => void
   value: string
 }) => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
 
   useEffect(() => {
     const codeEditor = editorRef.current
     return codeEditor
-      ? attachSqlSource(codeEditor, connectionResource, connection.type)
+      ? attachSqlSource(
+          codeEditor,
+          connectionResource,
+          connection.type,
+          dialect
+        )
       : undefined
-  }, [editorRef, connectionResource, connection.type])
+  }, [editorRef, connectionResource, connection.type, dialect])
 
   return (
     <Field>
@@ -74,7 +79,7 @@ const QueryField = ({
         ref={editorRef}
         data-mask
         className="ring-foreground/4 h-40 rounded-xl ring"
-        language={sqlLanguageIds[connection.type]}
+        language={sqlLanguageIds[dialect]}
         value={value}
         options={QUERY_EDITOR_OPTIONS}
         onChange={onChange}
@@ -90,7 +95,7 @@ const QueryField = ({
 }
 
 export const CreateViewDialog = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const router = useRouter()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const [request, setRequest] = useState<TableDialogRequest | null>(null)
@@ -101,7 +106,7 @@ export const CreateViewDialog = () => {
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
   const schemas = tablesAndSchemas?.schemas ?? []
-  const statements = splitStatements(query, dialects[connection.type])
+  const statements = splitStatements(query, dialects[dialect])
   let queryError: string | null = null
   if (queryRefused && statements.length === 0) {
     queryError = 'Write the query the view selects.'
@@ -151,7 +156,7 @@ export const CreateViewDialog = () => {
       setRequest({
         schema:
           schema ??
-          defaultSchemaOf(connection.type, connectionResource.name) ??
+          getDefaultSchema(dialect, connectionResource.name) ??
           schemas[0]?.name ??
           '',
         table: null,
@@ -191,7 +196,7 @@ export const CreateViewDialog = () => {
         value={query}
         onChange={setQuery}
       />
-      {capabilitiesOf(connection.type).materializedViews && (
+      {getCapabilities(dialect).materializedViews && (
         <OptionField
           htmlFor="view-dialog-materialized"
           title="Materialized"

@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -21,7 +21,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { RenamedValue } from '~/core/queries/shared/inline-enum'
 
 import { CommentField } from './column-comment-field'
@@ -32,7 +32,7 @@ import type {
   EditableTable,
   SubmittedColumn,
 } from './submitted-column'
-import { changed, errorsOf, normalized } from './submitted-column'
+import { changed, getErrors, normalized } from './submitted-column'
 import { useColumnType } from './use-column-type'
 import type { ColumnReference, ReferenceTarget } from './use-reference-targets'
 
@@ -48,11 +48,8 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
-const lockedFields = (
-  connectionType: ConnectionType,
-  column: EditableColumn | null
-) => {
-  const { renameColumns, retypeKeyColumns } = capabilitiesOf(connectionType)
+const lockedFields = (dialect: Dialect, column: EditableColumn | null) => {
+  const { renameColumns, retypeKeyColumns } = getCapabilities(dialect)
   const stored = column !== null && column.state !== 'added'
   return {
     name: stored && !renameColumns,
@@ -74,9 +71,9 @@ const ColumnForm = ({
   request: ColumnDialogRequest
 }) => {
   const { column, table } = request
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
   const [name, setName] = useState(column?.name ?? '')
-  const columnType = useColumnType(connection.type, column?.type ?? '')
+  const columnType = useColumnType(dialect, column?.type ?? '')
   const {
     array,
     arrayType,
@@ -91,7 +88,7 @@ const ColumnForm = ({
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
   const [comment, setComment] = useState(column?.comment)
   const [submitted, setSubmitted] = useState(false)
-  const locked = lockedFields(connection.type, column)
+  const locked = lockedFields(dialect, column)
   const next = normalized(column, {
     comment,
     name,
@@ -99,7 +96,7 @@ const ColumnForm = ({
     primaryKey,
     type: columnType.type,
   })
-  const errors = errorsOf(request, next, enumValues, submitted)
+  const errors = getErrors(request, next, enumValues, submitted)
 
   return (
     <>
@@ -115,7 +112,7 @@ const ColumnForm = ({
         onSubmit={(e) => {
           e.preventDefault()
           setSubmitted(true)
-          const refused = errorsOf(request, next, enumValues, true)
+          const refused = getErrors(request, next, enumValues, true)
           if (!refused.name && !refused.type && !refused.values) {
             onSubmit(next, reference, renamedValues)
           }

@@ -3,14 +3,14 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { FieldSet } from '@tamery/ui/components/field'
-import { Separator } from '@tamery/ui/components/separator'
+import { FieldSeparator, FieldSet } from '@tamery/ui/components/field'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 
 import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 import { handleError } from '~/utils/error'
 
 import { sendSignInCode } from '../-lib/sign-in'
@@ -59,6 +59,7 @@ const SocialButton = ({
   const { mutate, isPending } = useMutation({
     mutationKey: ['social', provider.id],
     mutationFn: async () => {
+      void posthog.capture('social_sign_in_started', { provider: provider.id })
       const callbackUrl = new URL(location.origin + (redirectPath || href))
       const newUserCallbackUrl = new URL(callbackUrl)
 
@@ -94,7 +95,7 @@ const SocialButton = ({
 }
 
 const SocialAuthForm = () => (
-  <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-2 gap-3">
     {SOCIAL_PROVIDERS.map((provider) => (
       <SocialButton key={provider.id} provider={provider} />
     ))}
@@ -107,6 +108,7 @@ export const AuthForm = () => {
   const router = useRouter()
 
   const { mutate: sendCode, isPending } = useMutation({
+    meta: { event: 'sign_in_code_sent' },
     mutationFn: sendSignInCode,
     onSuccess: (_, email) =>
       router.navigate({ to: '/email-code', search: { ...search, email } }),
@@ -136,7 +138,7 @@ export const AuthForm = () => {
               <field.Field>
                 <field.Label>Email</field.Label>
                 <field.Input
-                  placeholder="example@gmail.com"
+                  placeholder="you@company.com"
                   type="email"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -159,12 +161,7 @@ export const AuthForm = () => {
           </Button>
         </FieldSet>
       </Form>
-      <div className="relative">
-        <Separator />
-        <span className="bg-background text-muted-foreground absolute top-1/2 left-1/2 -translate-1/2 px-4 text-sm">
-          Or continue with
-        </span>
-      </div>
+      <FieldSeparator>Or continue with</FieldSeparator>
       <SocialAuthForm />
     </>
   )

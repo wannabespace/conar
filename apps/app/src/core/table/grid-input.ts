@@ -9,7 +9,6 @@ import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import type { CellPosition, GridCursor } from './cursor'
 import { inRange } from './cursor'
 
-// Space is the peek shortcut, not a character to type over the cell.
 const isTypedCharacter = (event: KeyboardEvent) =>
   event.key.length === 1 &&
   event.key !== ' ' &&
@@ -19,7 +18,7 @@ const isTypedCharacter = (event: KeyboardEvent) =>
 
 const TO_EDGE = Number.MAX_SAFE_INTEGER
 
-const positionOf = (event: MouseEvent): CellPosition | null => {
+const getPosition = (event: MouseEvent): CellPosition | null => {
   const cell =
     event.target instanceof Element
       ? event.target.closest<HTMLElement>('[data-cell]')
@@ -61,7 +60,6 @@ export const useGridHotkeys = ({
   const ownsKeys = gridFocused && !isEditing
   const navigating = ownsKeys && hasCursor
 
-  // The bindings hear every descendant, so they stay off while a header button or row checkbox holds focus and owns its keys.
   // Listens on document: switching Grid ↔ Documents swaps the scroller element behind the same ref.
   const track = useEffectEvent(() => {
     const focused = document.activeElement === scrollRef.current
@@ -205,25 +203,24 @@ export const useGridHotkeys = ({
 export const useGridPointer = (cursor: GridCursor) => {
   const dragging = useRef(false)
   return {
-    // The press places the cursor, so a click only has the checkbox toggle left to do.
     onClick: (event: MouseEvent) => {
-      if (positionOf(event) && isCheckbox(event)) {
+      if (getPosition(event) && isCheckbox(event)) {
         cursor.edit()
       }
     },
     onContextMenuCapture: (event: MouseEvent) => {
-      const position = positionOf(event)
-      if (position && !inRange(cursor.store.get(), position, cursor.indexOf)) {
+      const position = getPosition(event)
+      if (position && !inRange(cursor.store.get(), position, cursor.getIndex)) {
         cursor.place(position)
       }
     },
     onDoubleClick: (event: MouseEvent) => {
-      if (positionOf(event) && !isCheckbox(event)) {
+      if (getPosition(event) && !isCheckbox(event)) {
         cursor.edit()
       }
     },
     onPointerDown: (event: PointerEvent) => {
-      const position = positionOf(event)
+      const position = getPosition(event)
       if (event.button !== 0 || !position) {
         return
       }
@@ -235,7 +232,7 @@ export const useGridPointer = (cursor: GridCursor) => {
         dragging.current = false
         return
       }
-      const position = positionOf(event)
+      const position = getPosition(event)
       if (dragging.current && position) {
         cursor.place(position, true)
       }

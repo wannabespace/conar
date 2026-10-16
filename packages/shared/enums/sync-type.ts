@@ -1,5 +1,5 @@
 export enum SyncType {
   Cloud = 'cloud',
-  CloudWithoutPassword = 'cloud_without_password',
+  CloudWithoutSecrets = 'cloud_without_secrets',
   CloudWithoutConnectionString = 'cloud_without_connection_string',
 }

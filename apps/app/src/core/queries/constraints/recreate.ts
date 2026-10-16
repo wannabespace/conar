@@ -32,7 +32,6 @@ export const recreateConstraintQuery = ({
           await dropConstraint(tx, target).execute()
           await addConstraint(tx, target, shape).execute()
         }),
-      // One ALTER swaps the key, which InnoDB applies atomically.
       mysql: (db) =>
         sql`
           ALTER TABLE ${sql.id(schema, table)}

@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridHeaderProps, GridRow, GridScrollerProps } from '@tamery/table'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import type { ReactNode, Ref, RefObject } from 'react'
@@ -24,7 +24,7 @@ import { useGridHandle } from './grid-handle'
 import { useGridHotkeys, useGridPointer } from './grid-input'
 import { usePendingGridFocus } from './pending-grid-focus'
 
-const valueOf = ({ column, row }: DataGridCell) => row[column.id]
+const getCellValue = ({ column, row }: DataGridCell) => row[column.id]
 
 const columnEditable = (column: Column) => column.isEditable !== false
 
@@ -32,11 +32,11 @@ export const DataGrid = ({
   bar,
   canEdit = columnEditable,
   columns,
-  connectionType,
+  dialect,
   cursorRef,
   focusKey,
   footer,
-  getValue = valueOf,
+  getValue = getCellValue,
   isFetching,
   layout = 'grid',
   leading,
@@ -54,19 +54,17 @@ export const DataGrid = ({
   rowKey,
   rows,
   scrollRef: externalScrollRef,
-  sizeOf,
+  getSize,
   trailing,
 }: {
-  /** Actions floating over the grid's bottom edge, beside the cell-block summary. */
   bar?: GridBarItem[]
   canEdit?: (column: Column, rowIndex: number) => boolean
   columns: Column[]
-  connectionType: ConnectionType
+  dialect: Dialect
   cursorRef?: Ref<DataGridHandle>
   /** The grid takes focus when `focusGridWhenReady` names this key, now or once it mounts. */
   focusKey?: string
   footer?: ReactNode
-  /** The value the cell shows and the editor starts from, e.g. a pending draft. */
   getValue?: (cell: DataGridCell) => unknown
   isFetching?: boolean
   layout?: DataGridLayout
@@ -77,24 +75,20 @@ export const DataGrid = ({
   ) => CellMenuExtra
   onEdit?: (cell: DataGridCell, value: unknown) => void
   onEndReached?: () => void
-  /** Shift+↑/↓ while no cell has the cursor. */
   onExtendRows?: (direction: 'up' | 'down') => void
-  /** Shift+Space: the rows the cursor or its block covers. */
   onToggleRows?: (rowIndexes: number[]) => void
-  /** Space on the cursor cell, like Quick Look; `anchor` is the cell element. */
   onPreview?: (cell: DataGridCell, anchor: Element) => void
   onReorder?: (ids: string[]) => void
   /** Columns stuck to the left edge; they must lead `columns`. */
   pinned?: string[]
   renderCell?: (cell: DataGridCell, props?: CellGeometry) => ReactNode
   renderHeader?: (column: Column, props: GridHeaderProps) => ReactNode
-  /** A column's name beside each value in the documents layout. */
   renderLabel?: (column: Column) => ReactNode
   /** A row's identity across inserts and refetches; without it the cursor stays on its index. */
   rowKey?: (rowIndex: number) => string
   rows: GridRow[]
   scrollRef?: RefObject<HTMLDivElement | null>
-  sizeOf: (column: Column) => number
+  getSize: (column: Column) => number
   trailing?: ExtraColumn
 }) => {
   const ownScrollRef = useRef<HTMLDivElement>(null)
@@ -102,7 +96,7 @@ export const DataGrid = ({
   const cursor = useGridCursor({
     canEdit,
     columns,
-    connectionType,
+    dialect,
     getValue,
     layout,
     onEdit,
@@ -143,7 +137,7 @@ export const DataGrid = ({
       <TableCell
         {...geometry}
         column={cell.column}
-        connectionType={connectionType}
+        dialect={dialect}
         rowIndex={cell.rowIndex}
         value={getValue(cell)}
       />
@@ -191,7 +185,7 @@ export const DataGrid = ({
           leading={leading}
           trailing={trailing}
           pinned={pinned}
-          sizeOf={sizeOf}
+          getSize={getSize}
           onReorder={onReorder}
           renderHeader={renderHeader}
           renderCell={renderDataCell}

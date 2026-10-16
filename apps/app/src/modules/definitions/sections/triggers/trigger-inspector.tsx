@@ -2,12 +2,12 @@ import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import { sameShape } from '@tamery/shared/utils'
 import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { OptionField } from '~/components/option-field'
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { createTriggerQuery } from '~/core/queries/triggers/create'
 import { triggerDefinitionQueryOptions } from '~/core/queries/triggers/definition'
@@ -38,10 +38,10 @@ import {
 } from '../../components/inspector'
 import type { TriggerDraft, TriggerItem } from './trigger-draft'
 import {
-  draftOf,
+  getDraft,
   formEditable,
   sentenceCase,
-  shapeOf,
+  getShape,
   triggerSchemas,
 } from './trigger-draft'
 import { useToggle } from './use-toggle'
@@ -50,15 +50,15 @@ export const TriggerInspector = ({
   can,
   connectionResource,
   item,
-  relationNamesOf,
+  getRelationNames,
   onOpenChange,
   queryKey,
   run,
   schemas,
   selectedSchema,
-  type: connectionType,
+  dialect,
 }: SectionInspectorProps<TriggerItem>) => {
-  const options = capabilitiesOf(connectionType).triggers
+  const options = getCapabilities(dialect).triggers
   const { data: functions = [], isPending: functionsPending } = useQuery({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
@@ -74,12 +74,12 @@ export const TriggerInspector = ({
               mode: item.enabledMode,
               name: item.name,
               schema: item.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
               table: item.table,
             })
           : createTriggerQuery({
               schema: draft.schema,
-              shape: shapeOf(draft),
+              shape: getShape(draft),
               table: draft.table,
             })
       ),
@@ -93,9 +93,8 @@ export const TriggerInspector = ({
   })
   const schema = triggerSchemas[options.body ? 'body' : 'function']
   const form = useAppForm({
-    defaultValues: draftOf(item, selectedSchema ?? '', connectionType),
+    defaultValues: getDraft(item, selectedSchema ?? '', dialect),
     onSubmit: ({ value }) => {
-      // The picker narrows the orientation, and a hidden one still has to be legal.
       const allowed = triggerOrientationsFor(value, options.orientations)
 
       mutation.mutate(
@@ -106,7 +105,7 @@ export const TriggerInspector = ({
     },
     validators: { onChange: schema, onMount: schema },
   })
-  const draft = useStore(form.store, (state) => state.values)
+  const draft = useSelector(form.store, (state) => state.values)
 
   const readOnly = item
     ? !can.edit || !formEditable(item, options.body)
@@ -119,16 +118,16 @@ export const TriggerInspector = ({
     }
 
     if (timing !== 'INSTEAD OF') {
-      return relationNamesOf(draft.schema, 'table')
+      return getRelationNames(draft.schema, 'table')
     }
 
     return options.insteadOfTargets.flatMap((target) =>
-      relationNamesOf(draft.schema, target)
+      getRelationNames(draft.schema, target)
     )
   }
   const targets = targetsFor(draft.timing)
-  const saved = item && shapeOf(draftOf(item, draft.schema, connectionType))
-  const changed = !saved || !sameShape(shapeOf(draft), saved)
+  const saved = item && getShape(getDraft(item, draft.schema, dialect))
+  const changed = !saved || !sameShape(getShape(draft), saved)
 
   return (
     <Inspector
@@ -141,7 +140,7 @@ export const TriggerInspector = ({
       readOnly={readOnly}
       warning={
         item
-          ? replaceWarning({ connectionType, name: item.name, noun: 'trigger' })
+          ? replaceWarning({ dialect, name: item.name, noun: 'trigger' })
           : undefined
       }
     >
@@ -236,7 +235,7 @@ export const TriggerInspector = ({
               <SelectField
                 label="Timing"
                 disabled={readOnly}
-                labelOf={sentenceCase}
+                getLabel={sentenceCase}
                 options={options.timings}
                 placeholder="Timing"
                 onChanged={(timing: TriggerTiming) =>
@@ -256,7 +255,7 @@ export const TriggerInspector = ({
                 <SelectField
                   label="For each"
                   disabled={readOnly}
-                  labelOf={sentenceCase}
+                  getLabel={sentenceCase}
                   options={orientations}
                   placeholder="For each"
                 />
@@ -276,7 +275,7 @@ export const TriggerInspector = ({
                 label="Body"
                 description="Runs for every change the trigger answers to."
                 disabled={readOnly}
-                language={sqlLanguageIds[connectionType]}
+                language={sqlLanguageIds[dialect]}
               />
             )}
           </form.AppField>
@@ -299,8 +298,6 @@ export const TriggerInspector = ({
                   )
                   .map((fn) => fn.name)}
                 placeholder="Choose a function"
-                // The picker only offers this schema, so a pick moves the
-                // function off the schema the opened trigger named.
                 onChanged={() =>
                   resetFields(form, { functionSchema: draft.schema })
                 }

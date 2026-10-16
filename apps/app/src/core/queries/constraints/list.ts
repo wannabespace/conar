@@ -1,15 +1,18 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { structureQueryKey } from '~/core/queries/indexes/list'
+import type { MariadbTables } from '~/core/runtime/dialects/mysql/schema'
 import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
 
-import { clickhouseConstraintsOf } from './shape'
+import { getClickhouseConstraints } from './shape'
 
 const constraintType = type(
   '"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"'
@@ -67,7 +70,6 @@ export const constraintsType = type({
 export const resourceConstraintsQuery = createQuery({
   query: {
     clickhouse: async (db) => {
-      // ClickHouse has no constraints beyond the primary key
       const query = await db
         .selectFrom('system.columns')
         .select(['database as schema', 'table', 'name as column'])
@@ -102,7 +104,7 @@ export const resourceConstraintsQuery = createQuery({
           })
         ),
         ...tables.flatMap((table) =>
-          clickhouseConstraintsOf(table.create_table_query).map(
+          getClickhouseConstraints(table.create_table_query).map(
             (constraint) => ({
               ...noReference,
               column: null,
@@ -243,8 +245,14 @@ export const resourceConstraintsQuery = createQuery({
         .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
         .orderBy('kcu.ORDINAL_POSITION')
         .execute(),
-    mysql: (db) =>
-      db
+    mysql: async (db) => {
+      const { mariadb } = await db
+        .selectNoFrom((eb) =>
+          eb(eb.fn('version'), 'like', '%MariaDB%').as('mariadb')
+        )
+        .executeTakeFirstOrThrow()
+      return db
+        .$extendTables<MariadbTables>()
         .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
         .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
           join
@@ -263,6 +271,9 @@ export const resourceConstraintsQuery = createQuery({
           join
             .onRef('tc.CONSTRAINT_NAME', '=', 'cc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'cc.CONSTRAINT_SCHEMA')
+            .$call((on) =>
+              mariadb ? on.onRef('tc.TABLE_NAME', '=', 'cc.TABLE_NAME') : on
+            )
         )
         .select([
           'tc.TABLE_SCHEMA as schema',
@@ -278,14 +289,14 @@ export const resourceConstraintsQuery = createQuery({
           'cc.CHECK_CLAUSE as expression',
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-        .where('tc.TABLE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          'tc.TABLE_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .orderBy('kcu.ORDINAL_POSITION')
-        .execute(),
+        .execute()
+    },
     postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_constraint as con')

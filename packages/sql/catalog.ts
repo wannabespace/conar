@@ -21,14 +21,12 @@ interface SqlSchema {
 interface SqlEnum {
   name: string
   values: string[]
-  /** Set for engines whose enum lives on one column (MySQL, ClickHouse) rather than as a named type. */
   table?: string
   column?: string
 }
 
 export interface SqlCatalog {
   defaultSchema: string | null
-  /** The dialect's `foldsNames`: lookups take the query's resolved names verbatim instead of ignoring case. */
   exactNames?: boolean
   schemas: SqlSchema[]
   enums: SqlEnum[]

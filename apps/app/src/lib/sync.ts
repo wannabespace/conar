@@ -15,19 +15,15 @@ export interface BaseTable {
   updatedAt: Date
 }
 
-export interface SyncTracker {
+interface SyncTracker {
   markSynced: (key: string, updatedAt: Date) => void
   awaitChange: (key: string, updatedAt: Date, timeout?: number) => Promise<void>
-}
-
-export type SyncUtils = Pick<SyncTracker, 'awaitChange'> & {
-  whenSynced: () => Promise<void>
 }
 
 const versionKey = (key: string, updatedAt: Date) =>
   `${key}:${updatedAt.getTime()}`
 
-export const createSyncTracker = (): SyncTracker => {
+const createSyncTracker = (): SyncTracker => {
   const synced = new Set<string>()
   const listeners = new Set<() => void>()
 
@@ -67,9 +63,8 @@ export const createSyncTracker = (): SyncTracker => {
   }
 }
 
-// The coordinator keeps one adapter per schema version but a single leader-side
-// slot, so collections declaring different versions reset each other's tables on
-// every boot. Every persisted collection passes this; bump it to wipe local data.
+// Every persisted collection must pass this one version, or they reset each
+// other's tables on every boot. Bumping it wipes local data.
 export const PERSISTED_SCHEMA_VERSION = 2
 
 export type SyncMessage<T> =
@@ -77,7 +72,7 @@ export type SyncMessage<T> =
   | { type: 'update'; value: T }
   | { type: 'delete'; key: string }
 
-export type SyncEventsFn<T> = (params: {
+type SyncEventsFn<T> = (params: {
   signal: AbortSignal
   write: (message: SyncMessage<T>) => void
 }) => void | Promise<void>
@@ -88,7 +83,7 @@ const RETRY_MAX_DELAY = 30_000
 interface ServerMutations<T> {
   delete?: (key: string) => Promise<unknown>
   insert?: (value: T) => Promise<T | undefined> | Promise<void>
-  update?: (key: string, changes: Partial<T>) => Promise<unknown>
+  update?: (key: string, changes: Partial<T>, row: T) => Promise<unknown>
 }
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
@@ -108,6 +103,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
   const tracker = createSyncTracker()
   const firstSync = Promise.withResolvers<undefined>()
   let writeSynced: ((items: SyncMessage<T>[]) => void) | null = null
+  let abortSync: (() => void) | null = null
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -140,14 +136,22 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         commit()
       }
 
-      const catchUp = async () => {
-        const result = await Result.tryPromise({
-          catch: (error) => error,
-          try: async () => {
-            if (signal.aborted) {
-              return
+      const subscribe = async () => {
+        const attempt = new AbortController()
+        const attemptSignal = AbortSignal.any([signal, attempt.signal])
+        let buffered: SyncMessage<T>[] | null = []
+        const events = config.events({
+          signal: attemptSignal,
+          write: (item) => {
+            if (buffered) {
+              buffered.push(item)
+            } else {
+              writeItems([item])
             }
-
+          },
+        })
+        const catchUp = async () => {
+          try {
             await collection.toArrayWhenReady()
             // Server versions, not visible rows: an unsent insert would come
             // back as a delete racing the outbox, and a row with a pending
@@ -155,19 +159,19 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
             const rows = [...collection._state.syncedData.values()].map(
               (item) => ({ id: config.getKey(item), updatedAt: item.updatedAt })
             )
-            writeItems(await config.sync({ rows, signal }))
-          },
-        })
-
-        if (result.isErr() && !signal.aborted) {
-          if (isUnauthorizedError(result.error)) {
-            abortController.abort(`${config.id} sync unauthorized`)
-          } else if (navigator.onLine) {
-            posthog.captureException(result.error)
+            writeItems(await config.sync({ rows, signal: attemptSignal }))
+          } finally {
+            writeItems(buffered ?? [])
+            buffered = null
+            firstSync.resolve()
           }
         }
 
-        firstSync.resolve()
+        try {
+          await Promise.all([catchUp(), events])
+        } finally {
+          attempt.abort()
+        }
       }
 
       const run = async () => {
@@ -187,11 +191,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           // oxlint-disable-next-line no-await-in-loop
           const result = await Result.tryPromise({
             catch: (error) => error,
-            try: () =>
-              Promise.all([
-                catchUp(),
-                config.events({ signal, write: (item) => writeItems([item]) }),
-              ]),
+            try: subscribe,
           })
 
           if (result.isOk()) {
@@ -220,17 +220,17 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       // on the collection, so the row would vanish while a later outbox write
       // is still pending.
       writeSynced = (items) => writeItems(items, { immediate: true })
-      markReady()
-      run()
-
-      return () => {
+      abortSync = () => {
         abortController.abort(`${config.id} sync aborted`)
         firstSync.resolve()
       }
+      markReady()
+      run()
+
+      return abortSync
     },
   }
 
-  // Non-retriable: the outbox is FIFO, so a retried write blocks every later one.
   const serverMutation = <K extends keyof ServerMutations<T>>(type: K) => {
     const send = config.mutations?.[type]
     if (!send) {
@@ -246,9 +246,8 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     id: config.id,
     sync,
     utils: {
+      abortSync: () => abortSync?.(),
       awaitChange: tracker.awaitChange,
-      // Sends one offline-outbox mutation, then writes it as synced so the row
-      // holds still between the optimistic layer dropping and the server echo.
       push: async (mutation: PendingMutation<T>) => {
         if (mutation.type === 'delete') {
           await serverMutation('delete')(mutation.key)
@@ -257,7 +256,11 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         }
 
         if (mutation.type === 'update') {
-          await serverMutation('update')(mutation.key, mutation.changes)
+          await serverMutation('update')(
+            mutation.key,
+            mutation.changes,
+            mutation.modified
+          )
           writeSynced?.([{ type: 'update', value: mutation.modified }])
           return
         }

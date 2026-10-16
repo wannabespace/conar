@@ -5,7 +5,6 @@ import { useSubscription } from 'seitu/react'
 
 const pendingFocus = createStore<{ key: string; from?: Element } | null>(null)
 
-// Focus landing anywhere first means the user moved on; a grid mounting later must not snatch it back.
 // `from` is exempt: a press-nav Link fires its click on mousedown, before the browser focuses it.
 document.addEventListener('focusin', (event) => {
   if (event.target !== pendingFocus.get()?.from) {

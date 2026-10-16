@@ -1,6 +1,5 @@
 interface EnumValue {
-  // The catalog value this one was loaded as, so a renamed value keeps its
-  // stored number; absent for a value added in the form.
+  // The catalog value this one was loaded as; absent for a value added in the form.
   origin?: string
   value: string
 }
@@ -82,10 +81,7 @@ export const clickhouseEnum: InlineEnum = {
     clickhouseEnumRegex.test(columnType)
       ? clickhouseEnumEntries(columnType).map((entry) => entry.value)
       : null,
-  // Renumbering a stored value rewrites what every row holds, so ClickHouse
-  // refuses the MODIFY; new values take numbers above the existing ones. The
-  // catalog lists values by number, so the spelling does too or every save
-  // reads as a change.
+  // ClickHouse refuses renumbering a stored value, and the catalog lists values by number, so every save would read as a change.
   spell: (values, previous) => {
     const kept = new Map(
       clickhouseEnumRegex.test(previous)

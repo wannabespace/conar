@@ -29,7 +29,6 @@ export type ColumnDragHandle = ReturnType<typeof useColumnDrag>['handlers'] & {
 
 const holdsSlot = (column: GridColumn) => column.fixed || column.pinned
 
-/** False for presses on the header's own controls and on its portalled menus, which React bubbles through the header. */
 export const isHeaderPress = (event: MouseEvent<HTMLElement>) => {
   const target = event.target instanceof Element ? event.target : null
   return (
@@ -67,7 +66,7 @@ export const useColumnDrag = ({
   const shifts = useRef(new Map<string, MotionValue<number>>())
   const [dragging, setDragging] = useState<string | null>(null)
 
-  const shiftOf = (id: string) => {
+  const getShift = (id: string) => {
     const existing = shifts.current.get(id)
     if (existing) {
       return existing
@@ -90,7 +89,7 @@ export const useColumnDrag = ({
     const order = commit ? moveItem(columns, current.from, current.to) : columns
     const slots = columnSlots(order)
     for (const column of columns) {
-      const shift = shiftOf(column.id)
+      const shift = getShift(column.id)
       shift.jump(
         shift.get() +
           (current.slots.get(column.id) ?? 0) -
@@ -162,7 +161,7 @@ export const useColumnDrag = ({
         // A pointermove update renders after the shift has already painted, so the lifted column slides a few frames without its background.
         flushSync(() => setDragging(current.column.id))
       }
-      shiftOf(current.column.id).jump(offset)
+      getShift(current.column.id).jump(offset)
 
       const to = targetIndex(columns, current, offset)
       if (to === current.to) {
@@ -173,7 +172,7 @@ export const useColumnDrag = ({
       for (const other of columns) {
         if (other.id !== current.column.id) {
           animate(
-            shiftOf(other.id),
+            getShift(other.id),
             (slots.get(other.id) ?? 0) - (current.slots.get(other.id) ?? 0),
             COLUMN_TRANSITION
           )

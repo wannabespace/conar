@@ -3,7 +3,6 @@ import { useLayoutEffect, useRef } from 'react'
 
 import type { CellPosition, CursorStore } from './cursor'
 
-/** Rows inserted, saved or refetched above the cursor move it with its row; once its row is gone the cursor and its edit end. */
 export const useFollowRows = ({
   rowKey,
   rows,

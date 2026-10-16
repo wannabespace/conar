@@ -1,18 +1,15 @@
 import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@tamery/ui/components/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { IconButton } from '@tamery/ui/components/custom/icon-button'
+import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { useCollections } from '~/core/collections'
-import { ConnectionIcon } from '~/core/connection/connection-icon'
-import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import {
+  lastOpenedResourcesStorageValue,
+  SHOWN_LAST_OPENED_RESOURCES,
+} from '~/core/connection/last-opened-resources'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { useActiveWorkspace } from '~/core/workspace/hooks'
@@ -29,7 +26,7 @@ const LastOpenedResource = ({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group hover:bg-foreground/5 has-[[data-row-link]:focus-visible]:focus-ring has-[[data-row-link]:focus-visible]:bg-foreground/5 flex h-8 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
+    <div className="group hover:bg-foreground/5 has-[[data-row-link]:focus-visible]:bg-foreground/10 flex h-7 items-center gap-1 rounded-lg pr-1 pl-2 text-sm">
       <Link
         className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5 outline-hidden"
         preload={false}
@@ -46,21 +43,14 @@ const LastOpenedResource = ({
         </span>
       </Link>
       <span className="text-muted-foreground flex shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100 has-focus-visible:opacity-100">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost-row"
-                size="icon-xs"
-                aria-label="Remove from recents"
-                onClick={onClose}
-              />
-            }
-          >
-            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-          </TooltipTrigger>
-          <TooltipContent side="top">Remove from recents</TooltipContent>
-        </Tooltip>
+        <IconButton
+          variant="ghost-faint"
+          size="icon-xs"
+          icon={Cancel01Icon}
+          label="Remove from recents"
+          side="top"
+          onClick={onClose}
+        />
       </span>
     </div>
   )
@@ -109,7 +99,7 @@ export const LastOpenedResources = () => {
         lastOpenedResources.indexOf(a.connectionResource.id) -
         lastOpenedResources.indexOf(b.connectionResource.id)
     )
-    .slice(0, 3)
+    .slice(0, SHOWN_LAST_OPENED_RESOURCES)
 
   if (toShow.length === 0) {
     return null

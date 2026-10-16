@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { GridRow } from '@tamery/table'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
@@ -37,9 +37,9 @@ export const createCursorStore = () =>
 type SelectionEnds = Pick<CursorState, 'anchor' | 'cursor'>
 
 /** Inclusive bounds by row and column index; `null` for a single cell. */
-export const rangeOf = (
+export const getRange = (
   { anchor, cursor }: SelectionEnds,
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
 ) => {
   if (
     !anchor ||
@@ -48,7 +48,7 @@ export const rangeOf = (
   ) {
     return null
   }
-  const [from, to] = [indexOf(anchor.column), indexOf(cursor.column)]
+  const [from, to] = [getIndex(anchor.column), getIndex(cursor.column)]
   return {
     bottom: Math.max(anchor.row, cursor.row),
     left: Math.min(from, to),
@@ -60,10 +60,10 @@ export const rangeOf = (
 export const inRange = (
   selection: SelectionEnds,
   position: CellPosition,
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
 ) => {
-  const range = rangeOf(selection, indexOf)
-  const column = indexOf(position.column)
+  const range = getRange(selection, getIndex)
+  const column = getIndex(position.column)
   return (
     !!range &&
     position.row >= range.top &&
@@ -86,15 +86,13 @@ export interface DataGridCell {
 export interface GridCursor {
   apply: (value: unknown) => void
   cancel: () => void
-  /** Space opens the value as a JSON tree instead of the reference peek. */
   canPeek: (cell: DataGridCell) => boolean
   change: (text: string | null) => void
   closePeek: () => void
-  /** Shrinks the range back to the cursor cell. */
   collapse: () => void
   /** Applies the open edit; `false` keeps it open with the reason the value was rejected. */
   commit: () => boolean
-  connectionType: ConnectionType
+  dialect: Dialect
   copy: () => void
   current: () => DataGridCell | null
   /** `text` types over the cell; without it the edit starts from the current value. */
@@ -103,7 +101,7 @@ export interface GridCursor {
   fill: () => void
   fillDown: () => void
   getValue: (cell: DataGridCell) => unknown
-  indexOf: (column: string) => number
+  getIndex: (column: string) => number
   isEditable: (column: Column, rowIndex: number) => boolean
   layout: DataGridLayout
   leave: (down: number, right: number) => void
@@ -111,7 +109,6 @@ export interface GridCursor {
   place: (position: CellPosition, extend?: boolean) => void
   preview: () => void
   selection: () => DataGridCell[][]
-  /** Writes a value picked in the editor and closes it. */
   set: (value: unknown) => void
   step: (down: number, right: number, extend?: boolean) => void
   store: CursorStore
@@ -138,11 +135,11 @@ export const useCellCursor = (position: CellPosition) => {
         if (peek) {
           return 'peek'
         }
-        return rangeOf({ anchor, cursor: at }, cursor.indexOf)
+        return getRange({ anchor, cursor: at }, cursor.getIndex)
           ? 'range-cursor'
           : 'cursor'
       }
-      return inRange({ anchor, cursor: at }, position, cursor.indexOf)
+      return inRange({ anchor, cursor: at }, position, cursor.getIndex)
         ? 'range'
         : null
     },

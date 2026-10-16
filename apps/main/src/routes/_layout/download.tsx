@@ -1,187 +1,67 @@
-import {
-  AppleIcon,
-  SourceCodeIcon,
-  WindowsNewIcon,
-} from '@hugeicons/core-free-icons'
+import { ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import type { IconSvgElement } from '@hugeicons/react'
-import { BREW_INSTALL_COMMAND } from '@tamery/shared/constants'
-import type { OS } from '@tamery/shared/os'
-import { osMap } from '@tamery/shared/os'
-import { Badge } from '@tamery/ui/components/badge'
 import { AppLogoSquare } from '@tamery/ui/components/brand/app-logo-square'
-import { Button } from '@tamery/ui/components/button'
-import { Card } from '@tamery/ui/components/card'
-import { CopyButton } from '@tamery/ui/components/custom/copy-button'
-import { Linux } from '@tamery/ui/components/icons/linux'
-import { Tooltip, TooltipTrigger } from '@tamery/ui/components/tooltip'
-import { createFileRoute } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 
-import { DownloadButton } from '~/components/download-button'
-import { DOWNLOAD_LINKS } from '~/constants'
-import { getOSIsomorphic } from '~/utils/os'
+import { DOWNLOAD_PLATFORMS } from '~/components/download-files'
 import { seo } from '~/utils/seo'
 
-const os = getOSIsomorphic()
+import { PlatformCard } from './-components/platform-card'
 
-const HomebrewInstall = () => {
-  if (os?.type !== 'macos') {
-    return null
-  }
+const { useLoaderData } = getRouteApi('/_layout')
+
+const DownloadPage = () => {
+  const os = useLoaderData()
+  const platforms = DOWNLOAD_PLATFORMS.toSorted(
+    (a, b) => Number(b.os === os?.type) - Number(a.os === os?.type)
+  )
 
   return (
-    <div className="mb-8 w-full max-w-xl px-4 sm:mb-12">
-      <h2 className="mb-4 text-center text-xl font-semibold sm:text-2xl">
-        Install via Homebrew
-      </h2>
-      {/* oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card */}
-      <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-            <HugeiconsIcon
-              icon={SourceCodeIcon}
-              strokeWidth={2}
-              className="text-muted-foreground size-4"
-            />
-          </div>
-          <input
-            type="text"
-            className="m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono text-sm outline-none sm:text-base"
-            value={BREW_INSTALL_COMMAND}
-            readOnly
+    <main className="mx-auto w-full max-w-6xl px-4 pt-16 sm:px-6 sm:pt-24">
+      <header className="flex max-w-2xl flex-col items-start gap-4">
+        <AppLogoSquare className="size-16" aria-hidden="true" />
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Download Tamery
+        </h1>
+        <p className="text-muted-foreground text-base text-pretty sm:text-lg">
+          A native app for macOS, Windows and Linux. Sign in once and your
+          connections follow you to every device.
+        </p>
+      </header>
+      <div className="mt-16 grid items-start gap-4 md:grid-cols-3">
+        {platforms.map((platform) => (
+          <PlatformCard
+            key={platform.os}
+            platform={platform}
+            isCurrent={platform.os === os?.type}
           />
-        </div>
-        <CopyButton text={BREW_INSTALL_COMMAND} />
-      </Card>
-    </div>
+        ))}
+      </div>
+      <p className="text-muted-foreground mt-10 text-sm">
+        Prefer the browser?{' '}
+        <a
+          href={import.meta.env.VITE_PUBLIC_WEB_URL}
+          className="inline-flex items-center gap-0.5"
+        >
+          Open Tamery on the web
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
+        </a>
+      </p>
+    </main>
   )
 }
 
-const platformIconClassName = 'text-muted-foreground size-4'
-
-const PlatformHugeIcon = ({ icon }: { icon: IconSvgElement }) => (
-  <HugeiconsIcon
-    icon={icon}
-    strokeWidth={2}
-    className={platformIconClassName}
-  />
-)
-
-const DownloadOption = ({
-  icon,
-  type,
-  arch,
-  link,
-}: {
-  icon: ReactNode
-  type: OS
-  arch?: string
-  link: string
-}) => (
-  // oxlint-disable-next-line shadcn/no-restyle -- a one-row download card, not a padded content card
-  <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
-    <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-      <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-        {icon}
-      </div>
-      <div className="flex flex-col items-start">
-        <span className="w-full truncate text-sm font-medium sm:text-base">
-          {osMap[type].label} {arch && <Badge variant="outline">{arch}</Badge>}
-        </span>
-      </div>
-    </div>
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            render={<a href={link} download aria-label="Download" />}
-            size="sm"
-            disabled={!link}
-            variant="secondary"
-          />
-        }
-      >
-        Download
-      </TooltipTrigger>
-    </Tooltip>
-  </Card>
-)
-
-const AllPlatforms = () => (
-  <>
-    <DownloadOption
-      icon={<PlatformHugeIcon icon={AppleIcon} />}
-      type="macos"
-      arch="Apple Silicon"
-      link={DOWNLOAD_LINKS.macos.arm64}
-    />
-    <DownloadOption
-      icon={<PlatformHugeIcon icon={AppleIcon} />}
-      type="macos"
-      arch="Intel"
-      link={DOWNLOAD_LINKS.macos.intel}
-    />
-    <DownloadOption
-      icon={<PlatformHugeIcon icon={WindowsNewIcon} />}
-      type="windows"
-      arch="exe"
-      link={DOWNLOAD_LINKS.windows.exe}
-    />
-    <DownloadOption
-      icon={<Linux className={platformIconClassName} />}
-      type="linux"
-      arch="deb"
-      link={DOWNLOAD_LINKS.linux.deb}
-    />
-    <DownloadOption
-      icon={<Linux className={platformIconClassName} />}
-      type="linux"
-      arch="AppImage"
-      link={DOWNLOAD_LINKS.linux.appImage}
-    />
-    <DownloadOption
-      icon={<Linux className={platformIconClassName} />}
-      type="linux"
-      arch="rpm"
-      link={DOWNLOAD_LINKS.linux.rpm}
-    />
-  </>
-)
-
-const RouteComponent = () => (
-  <div className="flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-24">
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-center text-center">
-      <AppLogoSquare className="mb-4 size-24 sm:mb-6 sm:size-32" />
-      <h1 className="mb-2 px-2 text-2xl font-medium tracking-tight sm:mb-3 sm:text-3xl md:text-4xl">
-        Download <strong>Tamery</strong>
-      </h1>
-      <p className="text-muted-foreground mb-6 px-2 text-base sm:mb-10 sm:text-lg">
-        Available for macOS, Windows and Linux
-      </p>
-      <div className="mb-8 space-y-2 px-4 text-center sm:mb-12">
-        <DownloadButton />
-      </div>
-      <HomebrewInstall />
-      <div className="w-full max-w-xl px-4">
-        <h2 className="mb-4 text-center text-xl font-semibold sm:text-2xl">
-          All platforms
-        </h2>
-        <div className="w-full space-y-2">
-          <AllPlatforms />
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
 export const Route = createFileRoute('/_layout/download')({
-  component: RouteComponent,
+  component: DownloadPage,
   head: () =>
     seo({
-      title: 'Download Tamery - Available for macOS, Windows and Linux',
+      title: 'Download Tamery for macOS, Windows and Linux',
       description:
-        'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+        'Download Tamery for macOS (Apple Silicon and Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
       image: '/og-image.png',
       path: '/download',
     }),

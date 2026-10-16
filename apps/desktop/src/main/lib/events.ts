@@ -1,17 +1,25 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
+import { sshForwarding } from '@tamery/connection/ssh/forwarding'
+import { tunnelForwarding } from '@tamery/connection/ssh/tunnel'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
 } from '@tamery/shared/context-menu'
-import { decrypt, encrypt } from '@tamery/shared/crypto-node'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
+import { connectionLinks } from './deep-link'
+import { deviceEncryption } from './device-encryption'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
+import { confirmHostKey } from './ssh-host-key'
+import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
+
+// Stays lazy so the native keyring addon and the finders' parsers don't load at startup.
+const loadLocalDatabases = () => import('./local-databases/find')
 
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>
@@ -67,13 +75,27 @@ export const electron = {
     quitAndInstall: () => {
       autoUpdater?.restartAndInstall()
     },
+    relaunch: () => {
+      app.relaunch()
+      app.exit(0)
+    },
     setNativeTheme: (theme: 'light' | 'dark' | 'system') => {
       nativeTheme.themeSource = theme
     },
   },
-  encryption: {
-    decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
-    encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
+  connectionLinks,
+  deviceEncryption,
+  localDatabases: {
+    find: async () => {
+      const { localDatabases } = await loadLocalDatabases()
+
+      return localDatabases.find()
+    },
+    unlock: async (connectionString: string) => {
+      const { localDatabases } = await loadLocalDatabases()
+
+      return localDatabases.unlock(connectionString)
+    },
   },
   mcp,
   menu: {
@@ -98,7 +120,10 @@ export const electron = {
     postgres: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/pg')
     ),
-  } satisfies Record<ConnectionType, QueryExecutor>,
+  } satisfies Record<Dialect, QueryExecutor>,
+  ssh: {
+    pickKeyFile: pickSshKeyFile,
+  },
   versions: {
     app: () => app.getVersion(),
   },
@@ -117,6 +142,9 @@ const registerHandlers = (prefix: string, value: unknown) => {
 }
 
 export const initElectronEvents = () => {
+  sshForwarding.use((connectionString) =>
+    tunnelForwarding(connectionString, confirmHostKey)
+  )
   for (const [key, value] of Object.entries(electron)) {
     registerHandlers(key, value)
   }

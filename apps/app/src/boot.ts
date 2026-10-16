@@ -1,6 +1,11 @@
+import { isMac } from '@tamery/ui/lib/os'
 import { THEME_STORAGE_KEY } from '@tamery/ui/theme-constants'
 
-import { LAST_LOCATION_KEY, SHELL_LAYOUT_KEY } from './lib/constants'
+import {
+  LAST_LOCATION_KEY,
+  SHELL_LAYOUT_KEY,
+  TRANSPARENT_BACKGROUND_KEY,
+} from './lib/constants'
 
 const read = <T>(key: string): T | undefined => {
   try {
@@ -24,7 +29,8 @@ const classes = {
     theme === 'dark' ||
     (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches),
   electron: isElectron,
-  mac: isElectron && /Mac/u.test(navigator.userAgent),
+  mac: isElectron && isMac,
+  opaque: read<boolean>(TRANSPARENT_BACKGROUND_KEY) === false,
   'shell-auth': lastLocation === undefined,
   'shell-connection': isConnection,
   'shell-dashboard': lastLocation !== undefined && !isConnection && !isSettings,

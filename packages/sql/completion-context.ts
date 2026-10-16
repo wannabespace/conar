@@ -19,7 +19,6 @@ export interface CompletionContext {
   prefix: string
   replaceStart: number
   replaceEnd: number
-  /** `a.b.` before the word, outermost first. */
   qualifier: string[]
   expects:
     | 'statement'
@@ -29,7 +28,6 @@ export interface CompletionContext {
     | 'operator'
     | 'number'
     | 'any'
-  /** What may follow a finished term, in order — filled when `expects` is `clause`. */
   clauses: string[]
   template: 'select' | 'group-by' | 'join-on' | 'into' | null
   comparedColumn: ColumnRef | null
@@ -86,7 +84,6 @@ const NEXT_CLAUSES: Record<string, string[]> = {
   UPDATE: ['SET'],
   WHERE: ['AND', 'OR', 'GROUP BY', 'ORDER BY', 'LIMIT'],
 }
-// In these a term is finished only as the right side of a comparison (`id = 1`), not alone (`id`).
 const CONDITION_CLAUSES = new Set(['AND', 'HAVING', 'ON', 'OR', 'WHERE'])
 const COMPARISON_KEYWORDS = ['IS', 'NOT', 'LIKE', 'ILIKE', 'IN', 'BETWEEN']
 const TERM_KEYWORDS = ['FALSE', 'NULL', 'TRUE']

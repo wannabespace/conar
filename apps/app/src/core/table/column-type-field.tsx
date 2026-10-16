@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { capabilitiesOf, defaultSchemaOf } from '~/core/catalog/capabilities'
+import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { quoteIdentifier } from '~/core/codegen/utils'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 
@@ -31,20 +31,14 @@ interface ColumnTypeGroup {
 const bareIdentifierRegex = /^[a-z_][a-z0-9_]*$/u
 
 const useColumnTypes = () => {
-  const { connection, connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { data: enums = [] } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
     throwOnError: false,
   })
-  const defaultSchema = defaultSchemaOf(
-    connection.type,
-    connectionResource.name
-  )
+  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const identifier = (name: string) =>
-    bareIdentifierRegex.test(name)
-      ? name
-      : quoteIdentifier(name, connection.type)
-  // MySQL and ClickHouse enums are inline column types (they carry metadata), not named types.
+    bareIdentifierRegex.test(name) ? name : quoteIdentifier(name, dialect)
   const namedEnums = enums
     .filter((enumType) => !enumType.metadata)
     .map((enumType) =>
@@ -55,7 +49,7 @@ const useColumnTypes = () => {
   const groups: ColumnTypeGroup[] = [
     { items: namedEnums, label: 'Enums' },
     {
-      items: capabilitiesOf(connection.type).columnTypes.options,
+      items: getCapabilities(dialect).columnTypes.options,
       label: 'Types',
     },
   ]

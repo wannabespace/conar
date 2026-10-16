@@ -3,13 +3,10 @@ import type { Token } from './tokenizer'
 import { isKeyword, isPunctuation, tokenize } from './tokenizer'
 
 export interface Statement {
-  /** Source slice from the first token to the last, terminator excluded, inner comments kept. */
   text: string
   start: number
   end: number
-  /** End of the terminating `;`, which may sit on a later line; `end` when there is none. */
   terminatorEnd: number
-  /** Non-comment tokens, terminator excluded. */
   tokens: Token[]
 }
 
@@ -25,9 +22,7 @@ const TRANSACTION_OPENERS = new Set([
   'WORK',
 ])
 const WHOLE_STATEMENT_ENDINGS = new Set([undefined, 'TRANSACTION', 'WORK'])
-// `END IF` / `END LOOP` close constructs that never opened a depth level.
 const END_QUALIFIERS = ['IF', 'LOOP', 'WHILE', 'REPEAT']
-// Kysely's transaction settings; any other opener option (DEFERRABLE, WITH CONSISTENT SNAPSHOT) is dropped.
 const ACCESS_MODES = ['read only', 'read write'] as const
 const ISOLATION_LEVELS = [
   'read uncommitted',
@@ -39,7 +34,6 @@ const ISOLATION_LEVELS = [
 
 const GO_REPEAT_COUNT = /^\s*\d*\s*$/u
 
-/** End of the line holding a `GO` batch separator — alone on its line, with an optional repeat count — or `null`. */
 export const goSeparatorLineEnd = (
   text: string,
   tokens: Token[],
@@ -67,7 +61,6 @@ const opensTransactionAt = (tokens: Token[], index: number) => {
   if (word === 'START') {
     return next === 'TRANSACTION'
   }
-  // MariaDB's `BEGIN NOT ATOMIC` opens a block, Postgres' `BEGIN NOT DEFERRABLE` a transaction.
   if (next === 'NOT') {
     return word === 'BEGIN' && after === 'DEFERRABLE'
   }
@@ -76,7 +69,6 @@ const opensTransactionAt = (tokens: Token[], index: number) => {
   )
 }
 
-// `ROLLBACK TO` a savepoint closes nothing; Postgres' `END` and `ABORT` close only as a whole statement.
 const transactionCloser = (tokens: Token[]) => {
   const words = upperTexts(tokens.slice(0, 3))
   const [word, next, after] = words
@@ -92,7 +84,6 @@ const transactionCloser = (tokens: Token[]) => {
   }
 }
 
-// Postgres and MySQL leave BEGIN unreserved, so `SELECT begin, …` is a column, not a block.
 const isColumnPosition = (previous: Token | undefined) =>
   isKeyword(previous, 'SELECT') ||
   isPunctuation(previous, ',') ||
@@ -124,7 +115,6 @@ export const statementsFromTokens = (
   const significant = tokens.filter((token) => token.kind !== 'comment')
   const groups = groupTransactions && dialect.transactions
   let current: Token[] = []
-  // Only a `;` at depth 0 starts an inner statement: a block's own `;` would make its `END` read as a closer.
   let innerStart = 0
   let depth = 0
   let inTransaction = false
@@ -202,7 +192,6 @@ export const splitStatements = (
 ) =>
   statementsFromTokens(text, tokenize(text, dialect).tokens, dialect, options)
 
-// Drivers without multi-statement support reject a `BEGIN … COMMIT` group sent as one string.
 export const unwrapTransaction = (text: string, dialect: DialectSpec) => {
   if (!dialect.transactions) {
     return null
@@ -224,7 +213,6 @@ export const unwrapTransaction = (text: string, dialect: DialectSpec) => {
   }
 }
 
-/** The statement under the caret — its terminator and the rest of that line count. A caret on a line of its own belongs to none. */
 export const statementAt = (
   statements: Statement[],
   offset: number,

@@ -1,11 +1,11 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { dialects, splitStatements } from '@tamery/sql'
 import type { Type } from 'arktype'
 import { type } from 'arktype'
 import { CompiledQuery } from 'kysely'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { createQuery } from '~/core/runtime/query'
 
 import { runInTransaction } from './transaction'
@@ -34,10 +34,10 @@ const ESTIMATED_COMMANDS = new Set([
   'UPDATE',
 ])
 
-export const estimateQuery = (text: string, connectionType: ConnectionType) => {
-  const [statement, ...rest] = splitStatements(text, dialects[connectionType])
+export const estimateQuery = (text: string, dialect: Dialect) => {
+  const [statement, ...rest] = splitStatements(text, dialects[dialect])
   if (
-    !capabilitiesOf(connectionType).explain ||
+    !getCapabilities(dialect).explain ||
     rest.length > 0 ||
     !ESTIMATED_COMMANDS.has(statement?.tokens[0]?.text.toUpperCase() ?? '')
   ) {
@@ -57,7 +57,6 @@ export const estimateQuery = (text: string, connectionType: ConnectionType) => {
           return null
         }
         const at = (column: string) => set.columns.indexOf(column)
-        // A plan row counts its table's rows per row of the tables joined before it, so only a target alone in its join gives a total.
         const [target, ...joined] = set.rows.filter(
           (row) => row[at('id')] === set.rows[0]?.[at('id')]
         )

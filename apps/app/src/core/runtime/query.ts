@@ -1,6 +1,7 @@
+import { resourceConnectionString } from '@tamery/connection/utils'
 import { isConnectionError } from '@tamery/shared/connections'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { SafeURL } from '@tamery/shared/safe-url'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { getDialect } from '@tamery/shared/enums/connection-type'
 import { noop } from '@tamery/shared/utils'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
@@ -26,7 +27,7 @@ export const connectionToQueryParams = async (
     connectionString: await connectionStringsCollection.utils.decrypt(
       connection.id
     ),
-    type: connection.type,
+    dialect: getDialect(connection.type),
   }
 }
 
@@ -43,23 +44,21 @@ export const connectionResourceToQueryParams = async (
     )
   }
 
-  const connectionString = new SafeURL(
-    await connectionStringsCollection.utils.decrypt(connection.id)
-  )
-  connectionString.pathname = connectionResource.name || ''
-
   return {
-    connectionString: connectionString.toString(),
+    connectionString: resourceConnectionString(
+      await connectionStringsCollection.utils.decrypt(connection.id),
+      connectionResource.name
+    ),
+    dialect: getDialect(connection.type),
     log: ({ promise, query, values }) =>
       logQuery({ promise, query, resourceId: connectionResource.id, values }),
     resourceId: connectionResource.id,
-    type: connection.type,
   }
 }
 
 export interface QueryParams {
   connectionString: string
-  type: ConnectionType
+  dialect: Dialect
   resourceId?: string
   connectionId?: string
   resultSets?: DialectOptions['resultSets']
@@ -75,8 +74,8 @@ export interface QueryParams {
   }) => void
 }
 
-const dialectOf = (queryParams: QueryParams) =>
-  dialects[queryParams.type]({
+const getDatabase = (queryParams: QueryParams) =>
+  dialects[queryParams.dialect]({
     connectionId: queryParams.connectionId,
     connectionString: queryParams.connectionString,
     log: queryParams.log,
@@ -87,7 +86,7 @@ const dialectOf = (queryParams: QueryParams) =>
   })
 
 export const transaction = (queryParams: QueryParams) =>
-  dialectOf(queryParams).transaction()
+  getDatabase(queryParams).transaction()
 
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
@@ -106,7 +105,7 @@ export const reconnectingPromises = createStore<
 export const createQuery = <T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
-    [D in ConnectionType]: (
+    [D in Dialect]: (
       dialect: ReturnType<(typeof dialects)[D]>
     ) => Promise<T extends Type ? T['inferIn'] : unknown>
   }
@@ -116,8 +115,8 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
     // oxlint-disable-next-line ts/no-explicit-any
     tx?: Transaction<any>
   ): Promise<T extends Type ? T['inferOut'] : unknown> => {
-    const instance = tx ?? dialectOf(queryParams)
-    const queryFn = options.query[queryParams.type]
+    const instance = tx ?? getDatabase(queryParams)
+    const queryFn = options.query[queryParams.dialect]
 
     const connectionStringToShow = getConnectionStringToShow(
       queryParams.connectionString,
@@ -185,8 +184,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
         retry: {
           backoff: 'constant',
           delayMs: RECONNECTION_DELAY,
-          // A write is not idempotent — a lost response may still have
-          // committed — so only queries reading a result reconnect and retry.
+          // A write whose response was lost may still have committed: never retry one.
           shouldRetry: (error) =>
             Boolean(options.type) && isConnectionError(error),
           times: MAX_RECONNECTION_ATTEMPTS,

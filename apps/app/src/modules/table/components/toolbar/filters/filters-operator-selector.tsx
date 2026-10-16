@@ -20,14 +20,14 @@ export const FiltersOperatorSelector = ({
 }: {
   onSelect: (filter: Filter) => void
 }) => {
-  const { connection } = useRouteContext()
+  const { dialect } = useRouteContext()
 
   return (
     <Command>
       <CommandInput placeholder="Select operator..." />
       <CommandList className="h-fit max-h-[70vh]">
         <CommandEmpty>No operators found.</CommandEmpty>
-        {offeredFilters(connection.type).map(({ group, filters }) => (
+        {offeredFilters(dialect).map(({ group, filters }) => (
           <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
             {filters.map((filter) => (
               <CommandItem

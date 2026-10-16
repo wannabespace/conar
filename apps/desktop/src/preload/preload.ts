@@ -2,7 +2,8 @@ import { replaceErrorPrefix } from '@tamery/connection/queries'
 import type { McpReply, McpRequest, McpSource } from '@tamery/shared/mcp'
 import type { UpdatesStatus } from '@tamery/shared/updates'
 import type { AnyFunction } from '@tamery/shared/utils'
-import { tryCatchAsync } from '@tamery/shared/utils'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { electron } from '../main/lib/events'
@@ -26,6 +27,7 @@ export type ElectronPreload = Promisified<typeof electron> & {
       callback: (isFullscreen: boolean) => void
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
+    onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
   }
   mcp: {
@@ -85,7 +87,7 @@ ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
     args: McpRequest['args'],
     onAbort: (listener: () => void) => void
   ) => unknown
-  const { data, error } = await tryCatchAsync(() =>
+  const result = await Result.tryPromise(() =>
     Promise.resolve(
       method(request.args, (listener) => {
         port.addEventListener('message', listener)
@@ -93,7 +95,12 @@ ipcRenderer.on('mcp.request', async (event, request: McpRequest) => {
       })
     )
   )
-  reply(error ? { error: error.message } : { result: data })
+  reply(
+    result.match<McpReply>({
+      err: ({ cause }) => ({ error: toError(cause).message }),
+      ok: (value) => ({ result: value }),
+    })
+  )
 })
 
 const dialectQueryBridge = (dialect: string) => ({
@@ -129,28 +136,54 @@ contextBridge.exposeInMainWorld('electron', {
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),
     onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
+    onUrlOpened: (onMessage) => onEvent('url-opened', onMessage),
     openWindow: handleElectronError((route: string) =>
       ipcRenderer.invoke('app.openWindow', route)
     ),
     quitAndInstall: handleElectronError(() =>
       ipcRenderer.invoke('app.quitAndInstall')
     ),
+    relaunch: handleElectronError(() => ipcRenderer.invoke('app.relaunch')),
     setNativeTheme: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('app.setNativeTheme', arg)
     ),
   },
-  encryption: {
-    decrypt: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('encryption.decrypt', arg)
+  connectionLinks: {
+    isDefault: handleElectronError(() =>
+      ipcRenderer.invoke('connectionLinks.isDefault')
     ),
-    encrypt: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('encryption.encrypt', arg)
+    setDefault: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('connectionLinks.setDefault', arg)
+    ),
+    take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
+  },
+  deviceEncryption: {
+    createKey: handleElectronError(() =>
+      ipcRenderer.invoke('deviceEncryption.createKey')
+    ),
+    decrypt: handleElectronError((encrypted: string) =>
+      ipcRenderer.invoke('deviceEncryption.decrypt', encrypted)
+    ),
+    encrypt: handleElectronError((text: string) =>
+      ipcRenderer.invoke('deviceEncryption.encrypt', text)
+    ),
+    reset: handleElectronError(() =>
+      ipcRenderer.invoke('deviceEncryption.reset')
+    ),
+  },
+  localDatabases: {
+    find: handleElectronError(() => ipcRenderer.invoke('localDatabases.find')),
+    unlock: handleElectronError((connectionString: string) =>
+      ipcRenderer.invoke('localDatabases.unlock', connectionString)
     ),
   },
   mcp: {
     clients: handleElectronError(() => ipcRenderer.invoke('mcp.clients')),
     connectionAccess: handleElectronError(() =>
       ipcRenderer.invoke('mcp.connectionAccess')
+    ),
+    forgetClient: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('mcp.forgetClient', arg)
     ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
@@ -184,6 +217,11 @@ contextBridge.exposeInMainWorld('electron', {
     mssql: dialectQueryBridge('mssql'),
     mysql: dialectQueryBridge('mysql'),
     postgres: dialectQueryBridge('postgres'),
+  },
+  ssh: {
+    pickKeyFile: handleElectronError(() =>
+      ipcRenderer.invoke('ssh.pickKeyFile')
+    ),
   },
   versions: {
     app: () => ipcRenderer.invoke('versions.app'),

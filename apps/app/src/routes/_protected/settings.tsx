@@ -14,15 +14,14 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import {
   createFileRoute,
   Outlet,
-  useCanGoBack,
   useNavigate,
   useParams,
-  useRouter,
 } from '@tanstack/react-router'
 import { useRef } from 'react'
 
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { settingsSections } from '~/core/settings/sections'
+import { useGoBack } from '~/hooks/use-go-back'
 import {
   resourcePanelClassName,
   settingsPageClassName,
@@ -33,8 +32,6 @@ import { pressNavProps } from '~/utils/press-nav'
 const SettingsPage = () => {
   const { section } = useParams({ strict: false })
   const navigate = useNavigate()
-  const router = useRouter()
-  const canGoBack = useCanGoBack()
   const pageRef = useRef<HTMLDivElement>(null)
   const navRef = useRef<HTMLElement>(null)
   const activeIndex = settingsSections.findIndex(({ slug }) => slug === section)
@@ -55,15 +52,9 @@ const SettingsPage = () => {
     }
   }
 
-  const leave = () => {
-    if (canGoBack) {
-      router.history.back()
-    } else {
-      void navigate({ to: '/' })
-    }
-  }
+  const leave = useGoBack()
 
-  // Scoped to the page, not the document: Escape inside a portalled popup (a Select, an MCP approval) must close only that popup. The page's tabIndex keeps a click on empty space inside the scope.
+  // Scoped to the page so Escape in a portalled popup closes only the popup; the page's tabIndex keeps clicks on empty space in scope.
   useHotkey('Escape', leave, { target: pageRef })
   useHotkey('ArrowDown', () => stepSection(1), { target: navRef })
   useHotkey('ArrowUp', () => stepSection(-1), { target: navRef })

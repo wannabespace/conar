@@ -16,14 +16,16 @@ import { useState } from 'react'
 
 export const PasswordInput = ({
   addon,
+  variant,
   ...props
-}: Omit<ComponentProps<typeof InputGroupInput>, 'type'> & {
-  addon?: ReactNode
-}) => {
+}: Omit<ComponentProps<typeof InputGroupInput>, 'type'> &
+  Pick<ComponentProps<typeof InputGroup>, 'variant'> & {
+    addon?: ReactNode
+  }) => {
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <InputGroup className="relative">
+    <InputGroup variant={variant} className="relative">
       <InputGroupInput type={showPassword ? 'text' : 'password'} {...props} />
       <InputGroupAddon align="inline-end">
         {addon}

@@ -18,9 +18,7 @@ export interface Token {
   start: number
   end: number
   unclosed?: true
-  /** Quoted identifiers keep `identifier`; this marks them. */
   quoted?: true
-  /** The name the engine resolves, when it differs from `text`: quotes stripped and undoubled, or folded to lowercase. */
   name?: string
 }
 
@@ -153,7 +151,6 @@ const openingAt = (
       },
     }
   }
-  // MySQL reads "..." as a string unless ANSI_QUOTES is on; every dialect reads '...' as one.
   if (char === "'" || char === '"') {
     return {
       contentStart: index + 1,

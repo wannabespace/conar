@@ -5,8 +5,8 @@ export const parseSSLConfig = (searchParams: URLSearchParams): IOptions => {
   const trustServerCertificate = searchParams.get('trustservercertificate')
 
   const options: IOptions = {
-    encrypt: encrypt !== 'false',
-    trustServerCertificate: trustServerCertificate !== 'false',
+    encrypt: encrypt?.toLowerCase() !== 'false',
+    trustServerCertificate: trustServerCertificate?.toLowerCase() !== 'false',
   }
 
   return options

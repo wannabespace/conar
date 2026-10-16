@@ -2,7 +2,7 @@ import { type } from 'arktype'
 
 import { orpc } from '~/orpc'
 
-import { codeChallengePublisher } from './code-challenge'
+import { codeChallengePublisher, codeChallengeRedis } from './code-challenge'
 
 export const listen = orpc
   .input(
@@ -11,10 +11,10 @@ export const listen = orpc
     })
   )
   .handler(async function* listen({ input, signal }) {
-    for await (const payload of codeChallengePublisher.subscribe(
-      input.codeChallenge,
-      { signal }
-    )) {
-      yield payload
-    }
+    const events = codeChallengePublisher.subscribe(input.codeChallenge, {
+      signal,
+    })
+
+    yield { ready: !!(await codeChallengeRedis.get(input.codeChallenge)) }
+    yield* events
   })

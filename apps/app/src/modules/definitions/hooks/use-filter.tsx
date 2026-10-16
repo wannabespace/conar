@@ -23,7 +23,7 @@ export const useFilter = <T extends string>(
         className="w-40"
         mask={false}
         options={choices.map((choice) => choice.value)}
-        labelOf={(current) =>
+        getLabel={(current) =>
           choices.find((choice) => choice.value === current)?.label ?? current
         }
         value={value}

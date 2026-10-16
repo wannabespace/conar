@@ -1,5 +1,5 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { CompiledQuery, Dialect } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import type { CompiledQuery, Dialect as KyselyDialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
 import type { DialectOptions } from '~/core/runtime/dialects/driver'
@@ -57,7 +57,6 @@ export const prepareQuery = (compiledQuery: CompiledQuery) => {
     compiledSqlParameterRegex,
     'alter table $<table> update'
   )
-  // A mutation runs in the background by default, so the refresh right after a save would read the old row.
   return mutation === compiledSql
     ? compiledSql
     : `${mutation} settings mutations_sync = 1`
@@ -75,19 +74,15 @@ export const clickhouseDialect = (options: DialectOptions) =>
   ({
     createAdapter: clickhouseAdapter,
     createDriver: () =>
-      createKyselyDriver(
-        ConnectionType.ClickHouse,
-        options,
-        (compiledQuery) => ({
-          query: prepareQuery(compiledQuery),
-          values: [],
-        })
-      ),
+      createKyselyDriver(Dialect.ClickHouse, options, (compiledQuery) => ({
+        query: prepareQuery(compiledQuery),
+        values: [],
+      })),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect
 
 export const clickhouseColdDialect = () =>
   ({
@@ -97,4 +92,4 @@ export const clickhouseColdDialect = () =>
       throw new Error('Not implemented')
     },
     createQueryCompiler: () => new MysqlQueryCompiler(),
-  }) satisfies Dialect
+  }) satisfies KyselyDialect

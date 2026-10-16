@@ -10,26 +10,25 @@ import { tablePageStore } from './store'
 
 type Staged = Pick<TableSessionState, 'drafts' | 'newRows'>
 
-const stagedOf = ({ drafts, newRows }: TableSessionState): Staged => ({
+const getStaged = ({ drafts, newRows }: TableSessionState): Staged => ({
   drafts,
   newRows,
 })
 
-const queryOf = ({ filters, orderBy }: typeof tablePageType.infer) =>
+const getQuery = ({ filters, orderBy }: typeof tablePageType.infer) =>
   JSON.stringify([filters, orderBy])
 
-/** Undo/redo over the staged changes; a filter or sort change drops the drafts as an undoable step, staged rows stay. */
 export const stagedHistory = memoize(
   (key: { id: string; schema: string; table: string }) => {
     const store = tableSessionStore(key)
     const pageStore = tablePageStore(key)
     let steps = { redo: [] as Staged[], undo: [] as Staged[] }
-    let previous = stagedOf(store.get())
+    let previous = getStaged(store.get())
     let restoring = false
     let batching = false
 
     store.subscribe((state) => {
-      const next = stagedOf(state)
+      const next = getStaged(state)
       if (
         next.drafts === previous.drafts &&
         next.newRows === previous.newRows
@@ -47,9 +46,9 @@ export const stagedHistory = memoize(
       previous = next
     })
 
-    let query = queryOf(pageStore.get())
+    let query = getQuery(pageStore.get())
     pageStore.subscribe((state) => {
-      const next = queryOf(state)
+      const next = getQuery(state)
       if (next === query) {
         return
       }
@@ -69,7 +68,7 @@ export const stagedHistory = memoize(
         return
       }
       posthog.capture(from === steps.undo ? 'drafts_undone' : 'drafts_redone')
-      to.push(stagedOf(store.get()))
+      to.push(getStaged(store.get()))
       restoring = true
       store.set((state) => ({ ...state, ...staged }))
       restoring = false

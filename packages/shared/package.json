@@ -11,6 +11,7 @@
     "@noble/hashes": "catalog:",
     "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
+    "better-result": "catalog:",
     "d3-dsv": "catalog:",
     "drizzle-orm": "catalog:",
     "kysely": "catalog:",

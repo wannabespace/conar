@@ -9,7 +9,7 @@ export const tabsListVariants = cva(
     variants: {
       variant: {
         bar: 'bg-body/50 gap-0',
-        default: 'bg-foreground/5',
+        default: 'bg-muted',
         line: 'gap-1 bg-transparent',
       },
     },

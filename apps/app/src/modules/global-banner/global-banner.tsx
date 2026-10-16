@@ -148,7 +148,6 @@ const GuestBannerContent = ({
   const flashRef = useRef<HTMLSpanElement>(null)
   const shakeRef = useRef<HTMLDivElement>(null)
 
-  // Imperative because the banner's AnimatePresence initial={false} blocks mount animations of keyed children.
   useEffect(() => {
     if (!prompt.at || !flashRef.current || !shakeRef.current) {
       return

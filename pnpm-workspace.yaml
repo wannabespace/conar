@@ -8,6 +8,7 @@ minimumReleaseAgeExclude:
   - '@orpc/json-schema@2.0.0-beta.41'
   - '@orpc/openapi@2.0.0-beta.41'
   - '@orpc/publisher@2.0.0-beta.41'
+  - '@orpc/ratelimit@2.0.0-beta.41'
   - '@orpc/server@2.0.0-beta.41'
   - '@orpc/shared@2.0.0-beta.41'
   - '@orpc/tanstack-query@2.0.0-beta.41'
@@ -39,12 +40,14 @@ catalog:
   '@infisical/sdk': ^5.0.2
   '@mistralai/mistralai': ^2.7.0
   '@modelcontextprotocol/sdk': ^1.32.1
+  '@napi-rs/keyring': 2.1.0
   '@noble/hashes': ^2.4.0
   '@number-flow/react': ^0.6.2
   '@octokit/rest': ^22.0.1
   '@openrouter/ai-sdk-provider': ^3.1.0
   '@orpc/client': 2.0.0-beta.41
   '@orpc/publisher': 2.0.0-beta.41
+  '@orpc/ratelimit': 2.0.0-beta.41
   '@orpc/server': 2.0.0-beta.41
   '@orpc/tanstack-query': 2.0.0-beta.41
   '@playwright/test': ^1.62.1
@@ -129,7 +132,6 @@ catalog:
   react: ^19.3.0
   react-day-picker: ^9.12.0
   react-dom: ^19.3.0
-  react-markdown: ^10.1.0
   react-qr-code: ^2.2.0
   redis: ^6.2.1
   resend: ^6.25.0
@@ -160,13 +162,27 @@ catalog:
   ultracite: ^7.10.7
   sf-symbols-typescript: ^2.2.0
   '@shadcn/lint': ^0.2.0
+  shell-quote: ^1.12.0
+  json5: ^2.2.3
+  '@types/ssh2': ^1.15.6
+  ssh2: ^1.17.0
+  ssh-config: ^5.3.0
+  '@tanstack/react-router-ssr-query': 1.167.1
+  ini: ^7.0.0
+  fast-xml-parser: ^5.11.2
+  '@types/ini': ^4.1.1
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false
   '@journeyapps/wa-sqlite': true
   core-js: false
+  cpu-features: false
   dtrace-provider: false
   electron: true
   esbuild: true
   msgpackr-extract: false
   protobufjs: false
+  ssh2: false
+# @types/ssh2 pins Node 18 types, which clash with Electron's in any workspace compiling the SSH tunnel.
+overrides:
+  '@types/ssh2>@types/node': ^24.13.3

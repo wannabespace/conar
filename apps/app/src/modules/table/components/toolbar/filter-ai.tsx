@@ -9,7 +9,7 @@ import type { RefObject } from 'react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { usageQueryOptions } from '~/core/user/usage'
@@ -56,7 +56,7 @@ export const useFilterAi = ({
   table: string
 }) => {
   const isOnline = useIsOnline()
-  const { connection, connectionResource } = useRouteContext()
+  const { connection, connectionResource, dialect } = useRouteContext()
   const store = useTablePageStore()
   const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(
@@ -89,7 +89,7 @@ export const useFilterAi = ({
       onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
       onSuccess: (data) => {
         const known = new Set(columns.map((column) => column.id))
-        const offered = offeredFilters(connection.type).flatMap(
+        const offered = offeredFilters(dialect).flatMap(
           (group) => group.filters
         )
         const filters = data.filters.flatMap(({ column, operator, values }) => {
@@ -125,7 +125,7 @@ export const useFilterAi = ({
         const current = store.get()
         const context = `
           Filters working with AND operator.
-          Database engine: ${connection.type}${capabilitiesOf(connection.type).ilike ? '' : ' (no ilike operator: use like)'}
+          Database engine: ${connection.type}${getCapabilities(dialect).ilike ? '' : ' (no ilike operator: use like)'}
           Current filters: ${JSON.stringify(
             current.filters.map(({ column, ref, values }) => ({
               column,

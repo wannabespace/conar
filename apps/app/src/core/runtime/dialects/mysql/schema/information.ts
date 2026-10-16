@@ -41,7 +41,7 @@ interface Tables {
   TABLE_CATALOG: string
   TABLE_SCHEMA: string
   TABLE_NAME: string
-  TABLE_TYPE: 'BASE TABLE' | 'VIEW' | 'SYSTEM VIEW'
+  TABLE_TYPE: 'BASE TABLE' | 'VIEW' | 'SYSTEM VIEW' | 'SYSTEM VERSIONED'
   ENGINE: string | null
   VERSION: number | null
   ROW_FORMAT: string | null

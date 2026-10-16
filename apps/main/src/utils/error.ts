@@ -2,6 +2,7 @@ import { ORPCError } from '@orpc/client'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
@@ -39,6 +40,7 @@ export const handleError = async (error: unknown) => {
     toast.info('Your session has expired. Please, sign in again.', {
       id: 'session-expired',
     })
+    void posthog.reset()
     await authClient.signOut()
     return
   }

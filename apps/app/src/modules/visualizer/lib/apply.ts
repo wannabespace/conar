@@ -10,7 +10,7 @@ import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/lib/query-client'
 import { plural } from '~/utils/plural'
 
-import { gatesOf } from './context'
+import { getGates } from './context'
 import type { diagramDrafts } from './drafts'
 import { draftQuery } from './queries'
 import { inApplyOrder, isDrop } from './statements'
@@ -57,8 +57,8 @@ export const useApplyDrafts = ({
   reviewOpen: boolean
   setReviewOpen: (open: boolean) => void
 }) => {
-  const { connection, connectionResource } = useRouteContext()
-  const { ddlRollback } = gatesOf(connection.type)
+  const { connectionResource, dialect } = useRouteContext()
+  const { ddlRollback } = getGates(dialect)
   const mutation = useMutation({
     meta: { event: 'diagram_changes_applied' },
     mutationFn: async (pending: DiagramDraft[]) => {
@@ -100,7 +100,6 @@ export const useApplyDrafts = ({
       toast.success(`Applied ${plural(applied.length, 'change')}`)
     },
   })
-  // A drop runs only from the review, which is its confirmation.
   const request = () => {
     if (drafts.some(isDrop) && !reviewOpen) {
       setReviewOpen(true)

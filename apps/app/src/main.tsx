@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
 import { history, lastLocationStorageValue } from './lib/last-location'
+import { transparentBackgroundValue } from './lib/transparent-background'
 import { routeTree } from './routeTree.gen'
 
 if (window.electron) {
@@ -12,6 +13,10 @@ if (window.electron) {
     immediate: true,
   })
 }
+
+transparentBackgroundValue.subscribe((isTransparent) =>
+  document.documentElement.classList.toggle('opaque', !isTransparent)
+)
 
 window.electron?.app.onSendToast(({ message, type, description, duration }) => {
   toast[type](message, {

@@ -16,13 +16,16 @@ const QueryLogger = lazy(async () => {
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const QueryLoggerPanel = () => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
 
   return (
     <div className="flex h-full flex-col pt-1.5">
       <div className={resourcePanelClassName}>
         <Suspense fallback={<QueryLoggerSkeleton />}>
-          <QueryLogger connectionResource={connectionResource} />
+          <QueryLogger
+            connectionResource={connectionResource}
+            dialect={dialect}
+          />
         </Suspense>
       </div>
     </div>

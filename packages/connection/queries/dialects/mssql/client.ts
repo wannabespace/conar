@@ -1,21 +1,37 @@
+import { once } from 'node:events'
 import { createRequire } from 'node:module'
+import type net from 'node:net'
 
 import { memoize } from 'memoza'
 import type * as mssqlModule from 'mssql'
 
-import { parseConnectionString } from '../../..'
+import { getDriverConfig } from '../../../parse-connection-string'
+import { sshForwarding } from '../../../ssh/forwarding'
 import { parseSSLConfig } from '../../../ssl/mssql'
 
 export const mssql = createRequire(import.meta.url)(
   'mssql'
 ) as typeof mssqlModule
 
-export const poolConfig = (connectionString: string): mssqlModule.config => {
+export const poolConfig = async (
+  connectionString: string
+): Promise<mssqlModule.config> => {
   const { database, host, password, port, searchParams, user } =
-    parseConnectionString(connectionString)
+    getDriverConfig(connectionString)
+  const tunnel = await sshForwarding.of(connectionString)
   return {
     database,
-    options: parseSSLConfig(searchParams),
+    options: {
+      ...parseSSLConfig(searchParams),
+      ...(tunnel && {
+        connector: async () => {
+          const socket = tunnel.socket()
+          await once(socket, 'connect')
+          // tedious types its socket as net.Socket but calls only the stream half and setKeepAlive, which the tunnel socket has.
+          return socket as unknown as net.Socket
+        },
+      }),
+    },
     password,
     pool: { max: 1 },
     port,
@@ -25,8 +41,8 @@ export const poolConfig = (connectionString: string): mssqlModule.config => {
   }
 }
 
-export const getPool = memoize((connectionString: string) => {
-  const pool = new mssql.ConnectionPool(poolConfig(connectionString))
+export const getPool = memoize(async (connectionString: string) => {
+  const pool = new mssql.ConnectionPool(await poolConfig(connectionString))
   pool.on('error', console.error)
   return pool.connect()
 })

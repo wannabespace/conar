@@ -10,10 +10,8 @@ const END_REACHED_DISTANCE = 20 * DEFAULT_ROW_HEIGHT
 
 export interface GridScrollerProps {
   footer?: ReactNode
-  /** While true `onEndReached` waits; it fires again once the fetch settles if the end is still in reach. */
   isFetching?: boolean
   onEndReached?: () => void
-  /** Wraps the rows container, e.g. to make it one context-menu trigger. */
   renderBody: (body: ReactNode) => ReactNode
   scrollRef: RefObject<HTMLDivElement | null>
 }

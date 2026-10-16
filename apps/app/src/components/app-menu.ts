@@ -9,15 +9,13 @@ export interface AppMenuItem {
   onSelect: () => void
   disabled?: boolean
   variant?: 'default' | 'destructive'
-  /** Native only: renders a checkbox-style checkmark. Web styles via `className`/`icon`. */
+  /** Native only; web styles it via `className`/`icon`. */
   checked?: boolean
-  /** Native menus show its `sfSymbols` twin; unmapped icons render web-only. */
+  /** Native menus show its `sfSymbols` twin; an unmapped icon renders web-only. */
   icon?: IconSvgElement
-  /** Right-aligned hint on web, accelerator hint on native. */
   shortcut?: ShortcutId
-  /** Web only: raw right-aligned node. */
+  /** Web only. */
   trailing?: ReactNode
-  /** Native only: label override (fold web-only trailing info into the text). */
   nativeLabel?: string
   /** Web only. */
   className?: string

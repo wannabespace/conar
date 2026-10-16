@@ -1,8 +1,10 @@
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { mssqlModuleParts } from '~/core/queries/shared/definition'
 import {
@@ -12,8 +14,7 @@ import {
 
 const mssqlType = sql<string>`TYPE_NAME(pa.user_type_id)`
 
-// Types the form has to rebuild verbatim: a parameter that loses its length or
-// precision comes back as varchar(1) or decimal(18,0).
+// Without its length or precision a parameter comes back as varchar(1) or decimal(18,0).
 const mssqlParameterType = sql<string>`CONCAT(${mssqlType}, CASE
   WHEN ${mssqlType} IN ('varchar', 'varbinary', 'char', 'binary') THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length AS varchar(10))), ')')
   WHEN ${mssqlType} IN ('nvarchar', 'nchar') THEN CONCAT('(', IIF(pa.max_length = -1, 'max', CAST(pa.max_length / 2 AS varchar(10))), ')')
@@ -25,13 +26,9 @@ END)`
 // A parameter default, a READONLY parameter and every WITH option live in the
 // header text alone, so a signature rebuilt from the catalog would drop them.
 const mssqlHeaderOptions = /[=]|\bREADONLY\b|\bWITH\b/iu
-// SCHEMABINDING alone is read back from sys.sql_modules, so it is no option the
-// form would drop.
 const mssqlSchemaBindingOnly = /\bWITH\s+SCHEMABINDING(?=\s+AS\s*$)/iu
 
-// GROUP_CONCAT cuts its result at group_concat_max_len without saying so, so a
-// signature that reaches the cap reads as unreadable instead of saving back
-// truncated.
+// GROUP_CONCAT silently truncates at group_concat_max_len; a capped signature must read as unreadable.
 const mysqlArguments = sql<string | null>`(
   SELECT GROUP_CONCAT(
     CONCAT_WS(' ', NULLIF(pm.PARAMETER_MODE, 'IN'), pm.PARAMETER_NAME, pm.DTD_IDENTIFIER)
@@ -155,12 +152,11 @@ const resourceFunctionsQuery = createQuery({
               .end()
               .as('return_type'),
         ])
-        .where('r.ROUTINE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where(
+          'r.ROUTINE_SCHEMA',
+          'not in',
+          getCapabilities(Dialect.MySQL).systemSchemas
+        )
         .execute(),
     postgres: (db) =>
       db

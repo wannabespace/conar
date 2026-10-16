@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyIconButton } from '@tamery/ui/components/custom/copy-button'
+import { SettingsGroup } from '@tamery/ui/components/custom/settings-group'
 import { smallItemInsetClassName } from '@tamery/ui/components/item'
 import {
   Tabs,
@@ -12,11 +13,10 @@ import {
 } from '@tamery/ui/components/tabs'
 import { cn } from '@tamery/ui/lib/utils'
 
-import { SettingsGroup } from '~/core/settings/settings-group'
 import { posthog } from '~/lib/posthog'
 
 import type { McpEndpoint } from './clients'
-import { MCP_CLIENTS } from './clients'
+import { maskedToken, MCP_CLIENTS } from './clients'
 
 export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
   <SettingsGroup title="Add to a client">
@@ -31,7 +31,6 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
         </TabsList>
       </div>
       {MCP_CLIENTS.map((client) => {
-        const code = client.code(server)
         const installLink = client.installLink?.(server)
 
         return (
@@ -71,14 +70,18 @@ export const ClientSetup = ({ server }: { server: McpEndpoint }) => (
               )}
               <CopyIconButton
                 label="Copy"
-                text={code}
+                text={client.code(server)}
                 onClick={() =>
                   posthog.capture('mcp_config_copied', { client: client.id })
                 }
               />
             </div>
             <CodeBlock
-              code={code}
+              code={client.code({
+                ...server,
+                token: maskedToken(server.token),
+              })}
+              data-mask
               language={client.language}
               padding="item"
               size="xs"

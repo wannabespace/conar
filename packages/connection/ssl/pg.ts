@@ -4,6 +4,14 @@ export const defaultSSLConfig: PoolOptions['ssl'] = {
   rejectUnauthorized: false,
 }
 
+export const TLS_PARAMS = [
+  'sslcert',
+  'sslkey',
+  'sslrootcert',
+  'sslpassword',
+  'sslservername',
+]
+
 const SSL_MODES_WITHOUT_VERIFY = new Set(['prefer', 'no-verify'])
 
 const buildCertificateSslConfig = (
@@ -58,13 +66,7 @@ export const parseSSLConfig = (
 ): PoolOptions['ssl'] => {
   const sslMode = searchParams.get('sslmode')
   const ssl = searchParams.get('ssl')
-  const hasMainSSLParams = !!(
-    searchParams.get('sslcert') ||
-    searchParams.get('sslkey') ||
-    searchParams.get('sslrootcert') ||
-    searchParams.get('sslpassword') ||
-    searchParams.get('sslservername')
-  )
+  const hasMainSSLParams = TLS_PARAMS.some((param) => searchParams.get(param))
 
   if (sslMode || hasMainSSLParams) {
     if (sslMode === 'disable' && hasMainSSLParams) {

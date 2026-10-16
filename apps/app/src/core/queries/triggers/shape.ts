@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
@@ -26,19 +26,17 @@ export interface TriggerShape {
   timing: TriggerTiming
 }
 
-export const triggerBodyTemplates: Partial<Record<ConnectionType, string>> = {
+export const triggerBodyTemplates: Partial<Record<Dialect, string>> = {
   mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
   mysql: 'BEGIN\n\nEND',
 }
 
-// Postgres has no INSTEAD OF TRUNCATE, so a timing pick prunes the events.
 export const triggerEventsFor = (
   timing: TriggerTiming,
   events: readonly TriggerEvent[]
 ) =>
   events.filter((event) => !(timing === 'INSTEAD OF' && event === 'TRUNCATE'))
 
-// Postgres refuses FOR EACH ROW on TRUNCATE and anything but ROW on INSTEAD OF.
 export const triggerOrientationsFor = (
   { events, timing }: Pick<TriggerShape, 'events' | 'timing'>,
   allowed: readonly TriggerOrientation[]
@@ -94,8 +92,6 @@ export const dropTriggerStatements = ({
   }
 }
 
-// Postgres remembers whether a trigger fires on the origin, on a replica or
-// always; a plain ENABLE would quietly move a replica trigger to the origin.
 const postgresEnableVerb = (enabled: boolean, mode: string) => {
   if (!enabled) {
     return sql`DISABLE`

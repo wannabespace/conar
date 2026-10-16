@@ -14,7 +14,7 @@ export type Permissions = {
   workspace: ['create']
 }
 
-export const permissionsOf = ({
+export const getPermissions = ({
   subscription,
   user,
 }: {

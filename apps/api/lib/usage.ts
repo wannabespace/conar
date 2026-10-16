@@ -14,10 +14,10 @@ type UsageContext = ReturnType<typeof permix.setupContext> & {
   user: { id: string }
 }
 
-const keyOf = (userId: string, feature: MeteredFeature, resetsAt: number) =>
+const getKey = (userId: string, feature: MeteredFeature, resetsAt: number) =>
   `usage:${userId}:${feature}:${resetsAt}`
 
-const quotaOf = (feature: MeteredFeature, used: number) => ({
+const getQuota = (feature: MeteredFeature, used: number) => ({
   max: FREE_WEEKLY_LIMITS[feature],
   resetAt: new Date(usageResetsAt()),
   used,
@@ -27,9 +27,9 @@ export const usage = {
   get: async ({ permissions, user }: UsageContext, feature: MeteredFeature) =>
     permissions.check(unlimitedPermission[feature])
       ? null
-      : quotaOf(
+      : getQuota(
           feature,
-          Number(await redis.get(keyOf(user.id, feature, usageResetsAt())))
+          Number(await redis.get(getKey(user.id, feature, usageResetsAt())))
         ),
   record: async (
     { permissions, user }: UsageContext,
@@ -39,12 +39,12 @@ export const usage = {
       return null
     }
     const resetsAt = usageResetsAt()
-    const key = keyOf(user.id, feature, resetsAt)
+    const key = getKey(user.id, feature, resetsAt)
     const [used] = await redis
       .multi()
       .incr(key)
       .expireAt(key, new Date(resetsAt))
       .exec()
-    return quotaOf(feature, Number(used))
+    return getQuota(feature, Number(used))
   },
 }

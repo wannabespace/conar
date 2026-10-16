@@ -6,6 +6,7 @@ import { Field, FieldLabel } from './field'
 import { FieldError } from './field-error'
 import { FieldInput } from './field-input'
 import { FieldPasswordInput } from './field-password-input'
+import { FieldSelect } from './field-select'
 import { FieldTextarea } from './field-textarea'
 
 export { Form } from './form'
@@ -29,6 +30,7 @@ const { useAppForm: useKitForm } = createFormHook({
     Input: FieldInput,
     Label: FieldLabel,
     PasswordInput: FieldPasswordInput,
+    Select: FieldSelect,
     Textarea: FieldTextarea,
   },
   fieldContext,

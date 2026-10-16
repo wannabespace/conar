@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { silently } from '@tamery/shared/utils'
 import type { SqlCatalog } from '@tamery/sql'
 import { dialects, splitStatements, statementScope } from '@tamery/sql'
@@ -19,10 +19,9 @@ export interface SqlSource {
     signal: AbortSignal
   ) => Promise<string>
   ghostTextEnabled: () => boolean
-  /** Fetches the catalog and the columns of `refs` that are not cached; `undefined` when nothing is missing. */
   load: (refs: TableRef[]) => Promise<unknown> | undefined
   onCatalogChange: (listener: () => void) => () => void
-  type: ConnectionType
+  dialect: Dialect
 }
 
 export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
@@ -33,11 +32,14 @@ export const EMPTY_CATALOG: SqlCatalog = {
   schemas: [],
 }
 
-export const rangeOf = (model: editor.ITextModel, start: number, end: number) =>
-  Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
+export const getRange = (
+  model: editor.ITextModel,
+  start: number,
+  end: number
+) => Range.fromPositions(model.getPositionAt(start), model.getPositionAt(end))
 
-export const tablesIn = (text: string, connectionType: ConnectionType) =>
-  splitStatements(text, dialects[connectionType]).flatMap(
+export const tablesIn = (text: string, dialect: Dialect) =>
+  splitStatements(text, dialects[dialect]).flatMap(
     (statement) => statementScope(statement.tokens).tables
   )
 
@@ -49,6 +51,6 @@ export const catalogSummaryFor = async (
   if (!source) {
     return ''
   }
-  await silently(() => source.load(tablesIn(sql, source.type)))
+  await silently(() => source.load(tablesIn(sql, source.dialect)))
   return catalogSummary(source.catalog())
 }

@@ -5,15 +5,19 @@ import type { FormInputProps } from './context'
 import { formInputProps, useFieldContext } from './context'
 import { FieldError } from './field-error'
 
-export const FieldTextarea = (
-  props: Omit<ComponentProps<typeof InputGroupTextarea>, keyof FormInputProps>
-) => {
+export const FieldTextarea = ({
+  children,
+  variant,
+  ...props
+}: Omit<ComponentProps<typeof InputGroupTextarea>, keyof FormInputProps> &
+  Pick<ComponentProps<typeof InputGroup>, 'variant'>) => {
   const field = useFieldContext()
 
   return (
-    <InputGroup>
+    <InputGroup variant={variant}>
       <InputGroupTextarea {...props} {...formInputProps(field)} />
       <InputGroupAddon align="inline-end">
+        {children}
         <FieldError />
       </InputGroupAddon>
     </InputGroup>

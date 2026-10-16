@@ -95,7 +95,7 @@ const Trail = ({
   const view = tableView(hop)
 
   return (
-    <div ref={ref} tabIndex={-1} className="flex min-h-0 flex-col outline-none">
+    <div className="flex min-h-0 flex-col">
       <div className="flex h-9 shrink-0 items-center gap-1 border-b px-1.5">
         <div
           // The compiler memoizes the ref callback, so remounting per hop is what re-runs it.
@@ -163,7 +163,11 @@ const Trail = ({
           </Button>
         )}
       </div>
-      <ScrollArea className="relative max-h-[min(32rem,60vh)] min-h-0 overflow-x-hidden">
+      <ScrollArea
+        ref={ref}
+        tabIndex={-1}
+        className="relative max-h-[min(32rem,60vh)] min-h-0 overflow-x-hidden outline-none"
+      >
         <AnimatePresence initial={false} mode="popLayout" custom={direction}>
           <motion.div
             key={`${hops.length}:${hopKey(hop)}`}
@@ -182,7 +186,6 @@ const Trail = ({
   )
 }
 
-/** One peek per table; it anchors to a cell that virtualization can unmount, so it closes once the grid moves. */
 export const useReferencePeek = (
   scrollRef: RefObject<HTMLDivElement | null>
 ) => {
@@ -250,7 +253,6 @@ export const ReferencePeek = ({
           return
         }
         const pressed = details.event.target
-        // The cell's peek buttons toggle the popover; closing on their press would let the click reopen it.
         if (
           details.reason === 'outside-press' &&
           pressed instanceof Element &&

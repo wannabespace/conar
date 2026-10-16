@@ -9,44 +9,107 @@ Connections live in one place so you can switch between databases and devices.
 ## Add a connection
 
 <Steps>
-  <Step title="Choose a database type">
-    PostgreSQL, MySQL, MSSQL, or ClickHouse.
+  <Step title="Paste what you have">
+    Paste a connection URL, `.env`, JDBC URL, or `psql`/`ssh` command anywhere
+    on the page (or click the paste keys to paste from the clipboard), or drop a
+    `.env` or config file onto the window. Tamery reads it on your device and
+    fills in every field. Nothing you paste is sent anywhere.
   </Step>
-  <Step title="Enter a connection string">
-    Paste your string and click **Test connection** to verify it before saving.
+  <Step title="Or fill it in yourself">
+    The form sits beside the paste prompt: pick the engine and type the host, or
+    a whole connection string, which is split into the fields when you leave
+    **Host**. Turn on **SSH tunnel** to reach a database behind a bastion host.
   </Step>
-  <Step title="Name and configure">
-    Set a name, a sync type (see below), and optionally a label and color. Click
-    **Save**.
+  <Step title="Name and save">
+    Set a name (Tamery fills in a random one), a sync type (see below), and
+    optionally a label and color. Click **Save connection** or press{' '}
+    <kbd>⌘</kbd> <kbd>Enter</kbd>.
   </Step>
 </Steps>
 
+The desktop app also lists the databases it finds on your computer under the paste prompt: running Docker containers of a supported engine (with the credentials from their `POSTGRES_*`, `MYSQL_*`, `MARIADB_*`, `MSSQL_*` or `CLICKHOUSE_*` environment), connections saved in DBeaver, TablePlus, DataGrip (and other JetBrains IDEs) and pgAdmin, and entries in `~/.pgpass`, `~/.pg_service.conf` and `~/.my.cnf`. Click one to fill the form with it, then review and save. Users and passwords saved in DBeaver come along. TablePlus and DataGrip keep passwords in the macOS Keychain, so Tamery asks for the one you click and macOS asks you to allow it. pgAdmin's stay encrypted, so Tamery puts the cursor in **Password** for you to type. The list is read on your device each time you open the page and never leaves it.
+
+In the desktop app, an AI agent connected over [MCP](/mcp/overview) can add a connection for you too. It can find the database in your project's `.env` or config and tests the connection before saving it. Choose **Add via MCP** on the new-connection page: it starts the MCP server if it's off, shows how to add it to your client, and gives you a prompt to copy. The connection opens as soon as the agent adds it.
+
+The desktop app can also open database links: `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://`. Tamery becomes the default app for any of them that no other app opens. When another app already owns them, turn on **Open database links in Tamery** in **Settings → General** to take them over; turning it off keeps Tamery from claiming them again. A link to a server you've already saved (same engine, host, port and user) opens that connection when it already lists the link's database; any other link opens this form filled in, and nothing connects until you save.
+
+### What you can paste
+
+| You paste | Example |
+| --- | --- |
+| A connection URL | `postgresql://user:pass@host:5432/db`, `mysql://…`, `sqlserver://…`, `https://…:8443` |
+| A JDBC URL | `jdbc:postgresql://host/db?user=…`, `jdbc:sqlserver://host:1433;databaseName=…` |
+| A libpq string | `host=localhost port=5432 dbname=app user=me` |
+| An ADO.NET string | `Server=tcp:x.database.windows.net,1433;Initial Catalog=db;User ID=…` |
+| Environment variables | `.env` lines like `DATABASE_URL=…` or `PGHOST`/`PGUSER`/…, a docker-compose `environment:` block, a Rails `database.yml` |
+| JSON or a JS config | `{ "host": "…", "user": "…" }`, an AWS Secrets Manager RDS secret, a DBeaver `data-sources.json`, VS Code SQLTools settings, a Knex/TypeORM/Sequelize config or `module.exports = { … }`, `docker inspect` output |
+| A CLI command | `psql -h … -U …`, `mysql -h … -u … -p…`, `sqlcmd -S …`, `clickhouse-client --host …` |
+| An SSH command | `ssh -L 5433:db.internal:5432 ubuntu@bastion`, which fills the SSH tunnel too |
+
+Partial pastes work too: a paste fills only what it contains and keeps what you've already typed, so you can paste a JDBC URL copied from DBeaver (which leaves out the user and password) and type the credentials around it. Tamery puts the cursor in the first missing field. Pasting a different server replaces the fields instead. Inside a field other than **Host**, a paste stays plain text, so you can paste a whole connection string into **Password** or **Database** and delete everything but the part you need.
+
+Tamery also fixes strings that connect but break a database client, and says what it changed:
+
+- **Supabase transaction pooler** (port `6543`) becomes the session pooler on `5432`, which keeps transactions and session settings between queries.
+- **Azure Database for PostgreSQL's PgBouncer** (port `6432`) becomes the direct server on `5432`, for the same reason.
+- **Neon's `-pooler` endpoint** becomes the direct endpoint, for the same reason.
+- **Prisma-only parameters** like `pgbouncer=true` and `connection_limit` are dropped.
+- **ClickHouse's native port** (`9000` or `9440`) becomes the HTTP port (`8123` or `8443`), since Tamery connects over HTTP.
+- **A localhost port forwarded with `ssh -L`** becomes the forwarded server, reached through the SSH tunnel.
+- **A password placeholder** like `[YOUR-PASSWORD]` is cleared, and the cursor waits in **Password**.
+
+If a test fails on Supabase's direct host (`db.<project>.supabase.co`), Tamery points out that it's IPv6-only and suggests the Session pooler string.
+
+You can paste several at once: an `ssh -L` command and a `psql` command on the next line become one connection through the tunnel.
+
 <Note>
-  Tamery tests the connection before saving. If it fails, check the host, port,
-  credentials, and database name. The test uses the available local proxy in the
-  web app, including for localhost connections. Queries use the database
-  selected in the Navigator.
+  **Save connection** tests the connection first. If the test fails, the button
+  changes to **Save anyway**, so you can still save a database you can't reach
+  right now. In the web app, the test goes through the local proxy for localhost
+  and private network connections (a VPN, a LAN or Docker). Queries use the
+  database selected in the Navigator.
 </Note>
+
+### When the test fails
+
+Tamery explains common failures in plain words and, when the cause is clear, offers a one-click fix that applies the change and tests again:
+
+| Error | What Tamery suggests |
+| --- | --- |
+| Host not found for a name like `postgres` or `db` | It's a Docker Compose service: **Use localhost** |
+| Host not found or timeout for a private address (`10.x`, `*.internal`) | **Set up an SSH tunnel** (desktop app) |
+| Connection refused on another engine's port | **Switch the engine**, or for ClickHouse's native port 9000, **Use port 8123** |
+| The server requires SSL, or doesn't support it | **Turn on SSL** / **Turn off SSL** with the engine's own option |
+| The certificate can't be verified | **Skip the certificate check** (the connection stays encrypted) |
+| The database doesn't exist | **Use the default database** |
+| Wrong user or password, including Supabase's `postgres.<project-ref>` pooler user | Points you to the field to fix |
+| Timeout on a cloud provider | Allow your IP address in the provider's network settings |
+
+For anything else, **Explain with AI** explains the error and suggests steps, sometimes with a fix to apply. An AI fix only changes the port, the SSL setting, the engine or the database, or turns on an SSH tunnel; it never changes the host or credentials. See [Security](/connections/security#ai-help-with-a-failed-test) for what it sends.
+
+## SSH tunnels
+
+Turn on **SSH tunnel** and enter the bastion host. Sign in with your ssh-agent (it honours `~/.ssh/config`), a key file on this device (type its path or pick it with the folder button), a pasted private key, or a password. Tunnels open in the desktop app only. See [Security](/connections/security) for where SSH secrets are stored.
 
 ## Sync types
 
 Sync type controls whether Tamery stores your password or connection string. Every option syncs the connection across your devices.
 
 <Tabs>
-  <Tab title="Cloud (with password)">
+  <Tab title="Full">
     The full connection string, including the password, is encrypted with your per-user key and stored in the cloud. Available on every device with no re-entry.
 
     Good for dev and staging.
 
   </Tab>
-  <Tab title="Cloud (without password)">
+  <Tab title="No password">
     Only metadata (host, port, database, username) is stored; the password is never uploaded. You enter it on each device.
 
     Good for production or when policy forbids storing passwords externally.
 
   </Tab>
-  <Tab title="Cloud (without connection string)">
-    Only the name, label and color are stored; the connection string never leaves the device where you created it. Other devices list the connection but can't open it.
+  <Tab title="Metadata only">
+    Only the name, label and color are stored; the connection string never leaves the device where you created it. On another device, open the connection and enter or paste its server details there; they stay on that device. Until you do, the connection shows no database.
 
     Good when a database's address must not be stored externally.
 
@@ -58,12 +121,15 @@ Sync type controls whether Tamery stores your password or connection string. Eve
 - **Labels** — tag connections (e.g. `production`, `staging`) to group and filter them.
 - **Colors** — color-code environments.
 - **Pinning** — pin frequently used connections to the top.
+- **Search**: with more than ten connections, a search field (⌘F) filters the list by name, label or database type.
 
-Change a connection's name, label, color, or sync type anytime from its settings.
+## Edit a connection
+
+Choose **Edit** from a connection's **⋯** menu (or right-click it) on the connections list. The same form opens filled in, so you can change the server, credentials, SSH tunnel, name, label or color, or paste a new connection string over it. **Save changes** tests it first, just like adding one. Leaving with unsaved changes asks before discarding them. A saved connection that can't connect opens to its error, with **Edit connection** to fix it. The sync type can't be changed: to sync a connection differently, add it again as a new one.
 
 ## Working offline
 
-Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create and remove connections, save and rename queries, and — in the desktop app — query any database you can still reach.
+Most of Tamery works without an internet connection. Your connections, saved queries, and workspaces are stored on your device, so you can create, edit and remove connections, save and rename queries, and, in the desktop app, query any database you can still reach.
 
 Changes you make offline are saved on your device right away and sent to your account, in order, the next time Tamery is online. They survive restarting the app. If the server rejects a change — for example, because you removed the connection on another device — Tamery undoes it locally and shows the reason. In the web app, only the first Tamery tab you opened keeps offline changes; make them there.
 

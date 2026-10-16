@@ -25,7 +25,7 @@ export const UserAvatar = ({
       className
     )}
   >
-    <AvatarImage src={user?.image ?? undefined} />
+    <AvatarImage className="rounded-none" src={user?.image ?? undefined} />
     <AvatarFallback className="rounded-lg bg-transparent">
       <Blobatar className="size-full" name={user?.email ?? ''} />
     </AvatarFallback>

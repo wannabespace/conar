@@ -1,5 +1,5 @@
 import { Monaco } from '@tamery/monaco/editor'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Textarea } from '@tamery/ui/components/textarea'
@@ -10,7 +10,7 @@ import type { RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { capabilitiesOf } from '~/core/catalog/capabilities'
+import { getCapabilities } from '~/core/catalog/capabilities'
 import { useShortcuts } from '~/core/keyboard/use-shortcuts'
 import { createTransformer } from '~/core/transformers/create-transformer'
 import { isNested } from '~/core/transformers/value-transformer'
@@ -30,11 +30,11 @@ const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
 }
 
 const codeLanguage = (
-  connectionType: ConnectionType,
+  dialect: Dialect,
   { type = '', uiType }: Column,
   value: unknown
 ) => {
-  const { json, xml } = capabilitiesOf(connectionType).columnTypes
+  const { json, xml } = getCapabilities(dialect).columnTypes
   if (json.test(type) || (uiType === 'raw' && isNested(value))) {
     return 'json'
   }
@@ -146,7 +146,7 @@ const CodeField = ({
     <div data-mask className="p-0.75">
       <Monaco
         ref={ref}
-        className="h-64 w-120"
+        className="h-64 w-120 rounded-lg"
         language={language}
         value={edit?.text ?? ''}
         onChange={(text) => cursor.change(text)}
@@ -176,15 +176,15 @@ export const CellField = ({
   value: unknown
 }) => {
   const cursor = useGridCursorContext()
-  const { connectionType } = cursor
+  const { dialect } = cursor
   // State, not a ref: the portal mounts the popup a render after this one, and the hotkeys must bind once it exists.
   const [popup, setPopup] = useState<HTMLDivElement | null>(null)
   const edit = useSubscription(cursor.store, {
     selector: (state) => state.edit,
   })
-  const transformer = createTransformer(connectionType, column)
+  const transformer = createTransformer(dialect, column)
   const readOnly = !cursor.isEditable(column, rowIndex)
-  const language = codeLanguage(connectionType, column, value)
+  const language = codeLanguage(dialect, column, value)
   const reference =
     isPickColumn(column) || readOnly ? undefined : column.foreign
   const props = { column, cursor, edit, readOnly }
@@ -193,7 +193,6 @@ export const CellField = ({
     popup
       ? [
           { callback: cursor.cancel, hotkey: 'Escape' },
-          // Code fields keep Tab for indenting.
           {
             callback: () => cursor.leave(0, 1),
             hotkey: 'Tab',
@@ -275,7 +274,6 @@ export const CellField = ({
         onContextMenu={(event) => event.stopPropagation()}
       >
         {field()}
-        {/* A reference's text is a search, and its list already says when nothing matches. */}
         {edit?.error && !reference && (
           <p role="alert" className="text-destructive text-2xs px-2 pb-2">
             {edit.error}

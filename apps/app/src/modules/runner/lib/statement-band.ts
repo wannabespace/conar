@@ -11,10 +11,9 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-// Injected after the statement's last line so typed text pushes the Run button along instead of running under it.
 const RUN_SLOT = '\u00A0'.repeat(8)
 export const RUN_SLOT_GAP = 12
-// Sync with the kit button's `icon-2xs` height; a translate would fight the press nudge.
+// Sync with the kit button's `icon-2xs` height.
 const RUN_BUTTON_HEIGHT = 20
 const RUN_SLOT_CLASS = 'sql-run-slot'
 
@@ -36,11 +35,8 @@ export const useStatementBand = (
   onMove: (anchor: RunAnchor | null) => void
 ) => {
   const move = useEffectEvent(onMove)
-  const { connection } = useRouteContext()
-  const statements = runnerStatements({
-    ...useRunnerTab(),
-    connectionType: connection.type,
-  })
+  const { dialect } = useRouteContext()
+  const statements = runnerStatements({ ...useRunnerTab(), dialect })
 
   useEffect(() => {
     const codeEditor = editorRef.current
@@ -51,8 +47,6 @@ export const useStatementBand = (
     let frame = 0
     let active = { source: '', start: 0 }
 
-    // The slot may wrap to its own visual row and the ghost text re-renders as it streams in,
-    // so read where Monaco actually drew whichever anchors the controls.
     const measure = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
@@ -95,7 +89,6 @@ export const useStatementBand = (
         model.getOffsetAt(position),
         model.getValue()
       )
-      // Monaco paints a selection across injected text, so the slot and button step aside while one exists.
       if (!statement || !codeEditor.getSelection()?.isEmpty()) {
         cancelAnimationFrame(frame)
         move(null)
@@ -117,8 +110,6 @@ export const useStatementBand = (
             startLineNumber: startLine,
           },
         },
-        // Ghost text at the statement's end renders after injected text at the same column, so the
-        // slot yields to it and the buttons follow the suggestion; mid-line ghost text keeps the slot.
         ...(ghost &&
         position.lineNumber === endLine &&
         position.column === endColumn
@@ -153,7 +144,6 @@ export const useStatementBand = (
     const layoutListener = codeEditor.onDidLayoutChange(paint)
     // View zones (the AI card) shift lines without a cursor, scroll or layout event.
     const sizeListener = codeEditor.onDidContentSizeChange(paint)
-    // Ghost text comes and goes with no editor event of its own.
     let hadGhost = false
     const ghostObserver = new MutationObserver(() => {
       const hasGhost = drawnGhostTextElement(codeEditor) !== null

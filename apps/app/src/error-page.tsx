@@ -1,5 +1,7 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { isConnectionFailure } from '@tamery/connection/diagnose'
+import { isKeychainLocked } from '@tamery/shared/keychain'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -13,19 +15,9 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/components/events-provider'
+import { fullSignOut } from '~/lib/auth'
+import { restartToUnlock } from '~/lib/device-encryption'
 import { posthog } from '~/lib/posthog'
-
-const CONNECTION_ERRORS = [
-  'ERR_TIMED_OUT',
-  'ETIMEDOUT',
-  'ENOTFOUND',
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'Password authentication',
-  'No pg_hba.conf entry for host',
-  'Could not connect to database',
-  'Password authentication failed for user',
-]
 
 const getStack = (error: ErrorComponentProps['error']) => {
   if (!error.stack) {
@@ -46,17 +38,14 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
 
+  const isConnectionError = isConnectionFailure(error.message)
+  const isLocked = isKeychainLocked(error)
+
   useEffect(() => {
-    if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {
-      return
+    if (!(isConnectionError || isLocked)) {
+      posthog.captureException(error)
     }
-
-    posthog.captureException(error)
-  }, [error])
-
-  const isConnectionError = CONNECTION_ERRORS.some((e) =>
-    error.message.includes(e)
-  )
+  }, [error, isConnectionError, isLocked])
   const isValidationError = error instanceof TraversalError
   const stack = getStack(error)
   const cause =
@@ -66,7 +55,10 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const arkErrors = isValidationError ? error.arkErrors : null
 
   let description = 'An unexpected error occurred while showing this page.'
-  if (isConnectionError) {
+  if (isLocked) {
+    description =
+      'Restart Tamery to unlock saved connections, or sign out to reset this device.'
+  } else if (isConnectionError) {
     description =
       'Check your database connection settings and network, then try again.'
   } else if (isValidationError) {
@@ -126,7 +118,22 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
             >
               Home
             </Button>
-            <Button onClick={() => window.location.reload()}>Refresh</Button>
+            {isLocked ? (
+              <>
+                <Button
+                  variant="ghost-muted"
+                  onClick={() => {
+                    posthog.capture('signed_out_to_unlock')
+                    void fullSignOut()
+                  }}
+                >
+                  Sign out
+                </Button>
+                <Button onClick={restartToUnlock}>Restart Tamery</Button>
+              </>
+            ) : (
+              <Button onClick={() => window.location.reload()}>Refresh</Button>
+            )}
           </div>
 
           <div className="text-muted-foreground/70 mt-5 flex items-center gap-1 text-xs">

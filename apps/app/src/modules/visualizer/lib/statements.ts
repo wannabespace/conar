@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { CompiledQuery, Kysely } from 'kysely'
 
 import type { ReferentialAction } from '~/core/queries/constraints/shape'
@@ -69,32 +69,32 @@ export const isDrop = (draft: DiagramDraft) =>
   draft.kind === 'dropForeignKey'
 
 export const draftStatement = (
-  dialectType: ConnectionType,
+  dialect: Dialect,
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   draft: DiagramDraft
 ): CompiledQuery => {
   switch (draft.kind) {
     case 'createTable': {
-      return createTableStatement(dialectType, db, draft)
+      return createTableStatement(dialect, db, draft)
     }
     case 'renameTable': {
-      return renameTableStatement(dialectType, db, draft)
+      return renameTableStatement(dialect, db, draft)
     }
     case 'dropTable': {
-      return dropTableStatement(dialectType, db, draft)
+      return dropTableStatement(dialect, db, draft)
     }
     case 'addColumn': {
-      return addColumnStatement(dialectType, db, draft)
+      return addColumnStatement(dialect, db, draft)
     }
     case 'renameColumn': {
-      return renameColumnStatement(dialectType, db, draft)
+      return renameColumnStatement(dialect, db, draft)
     }
     case 'alterColumn': {
-      return alterColumnStatement(dialectType, db, draft)
+      return alterColumnStatement(dialect, db, draft)
     }
     case 'dropColumn': {
-      return dropColumnStatement(dialectType, db, draft)
+      return dropColumnStatement(dialect, db, draft)
     }
     case 'addForeignKey': {
       return addConstraint(db, draft, {
@@ -104,7 +104,7 @@ export const draftStatement = (
       }).compile()
     }
     case 'dropForeignKey': {
-      return dropConstraintStatement(dialectType, db, {
+      return dropConstraintStatement(dialect, db, {
         ...draft,
         cascade: false,
         kind: 'foreignKey',
