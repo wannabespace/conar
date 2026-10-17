@@ -197,3 +197,16 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Keep a dialog's typed SQL on Escape.** Escape in the New view query editor closes the dialog and drops the query; asking first, or keeping the draft for the next open, would save a long query from one stray key.
 - **List an account's D1 databases as resources.** A D1 connection names one database ID; Cloudflare's API lists every database the token can reach, which could become the connection's resources like a server's databases.
 - **Keep a libSQL session open across runs.** `@libsql/client` holds a stream only inside its transaction object, so a `BEGIN` run alone is refused on Turso; opening the transaction when the tab runs `BEGIN` and treating its `COMMIT` or `ROLLBACK` as the end would let the runner keep one open there too.
+- **Accept Postgres array literals in the grid.** A `text[]` cell takes only JSON (`["red","blue"]`); typing Postgres's own `{red,blue}` fails with "Invalid JSON array format".
+- **Follow the schema an object was created in.** After creating an enum or index in another schema, the Schema list stays on the one it showed, so the new object looks missing.
+- **Make `ilike` match a fragment by default.** A filter value without `%` matches only the whole cell, so typing part of a word finds nothing; a "contains" default or a hint would fix it.
+- **Warn on a duplicate connection name.** A second connection with an existing name saves silently, and in the switcher the two rows differ only by their colour dot.
+- **Say a removed connection leaves the database alone.** The remove dialog's "…and all its data are removed" can read as dropping the database's data.
+- **Name every changing statement in the run warning.** A run with an `INSERT` and an `UPDATE` warns about the `UPDATE` only.
+- **Search connections by host.** Dashboard search matches names only, not host or port.
+- **A `set` type in MySQL's Add column.** `enum` has a Values editor, `set` must be typed by hand as `set('a','b')`.
+- **Hint the fix for MySQL's binary-logging refusal.** Creating a function or trigger fails with the raw "You do not have the SUPER privilege and binary logging is enabled" message; naming `log_bin_trust_function_creators` would tell the user what to change.
+- **Notice an engine that does not match the server.** MariaDB picked against a MySQL 8 server just says "Connected".
+- **Mark found databases that already have a connection.** The form's found-databases list keeps offering a local database after a connection to it exists.
+- **Check ClickHouse row-policy rights up front.** Without the grant, **Add policy** fails only after submit with "Not enough privileges"; disabling it with the reason would save the form.
+- **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
