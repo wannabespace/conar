@@ -196,4 +196,12 @@ describe('D1', () => {
       query.execute({ connectionString: CONNECTION, query: 'select * from t' })
     ).rejects.toThrow(/^No such table: t$/u)
   })
+
+  test('words an offset like a libSQL error', async () => {
+    stubFetch(failure('no such column: titel at offset 7: SQLITE_ERROR'))
+
+    await expect(
+      query.execute({ connectionString: CONNECTION, query: 'select titel' })
+    ).rejects.toThrow(/^No such column: titel \(at offset 7\)$/u)
+  })
 })
