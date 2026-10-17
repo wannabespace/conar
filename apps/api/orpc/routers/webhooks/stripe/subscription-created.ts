@@ -25,18 +25,20 @@ export const subscriptionCreated = async (event: Stripe.Event) => {
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
     .limit(1)
 
+  const [item] = subscription.items.data
+
+  if (!item) {
+    throw new Error(`Subscription ${subscription.id} has no items`)
+  }
+
   const period =
-    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID
-      ? 'yearly'
-      : 'monthly'
-  const price = subscription.items.data[0]?.price.unit_amount
-    ? subscription.items.data[0].price.unit_amount / 100
-    : 0
-  const periodStart = subscription.items.data[0]?.current_period_start
-    ? new Date(subscription.items.data[0].current_period_start * 1000)
+    item.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = item.price.unit_amount ? item.price.unit_amount / 100 : 0
+  const periodStart = item.current_period_start
+    ? new Date(item.current_period_start * 1000)
     : null
-  const periodEnd = subscription.items.data[0]?.current_period_end
-    ? new Date(subscription.items.data[0].current_period_end * 1000)
+  const periodEnd = item.current_period_end
+    ? new Date(item.current_period_end * 1000)
     : null
 
   const subscriptionData = {
@@ -50,6 +52,7 @@ export const subscriptionCreated = async (event: Stripe.Event) => {
     plan: 'pro',
     price,
     status: subscription.status,
+    stripePriceId: item.price.id,
     stripeSubscriptionId: subscription.id,
     trialEnd: subscription.trial_end
       ? new Date(subscription.trial_end * 1000)

@@ -48,6 +48,7 @@ export const subscriptionUpdated = async (event: Stripe.Event) => {
       periodStart,
       price,
       status: subscription.status,
+      stripePriceId: subscription.items.data[0]?.price.id ?? null,
       trialEnd: subscription.trial_end
         ? new Date(subscription.trial_end * 1000)
         : null,
