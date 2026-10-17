@@ -12,7 +12,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import {
   Command,
@@ -42,6 +41,7 @@ import {
   canQueryConnection,
   prefetchConnectionResourceCore,
 } from '~/core/connection/fetching'
+import { ResourceLabel } from '~/core/connection/resource-label'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
@@ -101,13 +101,13 @@ const actionEntry = (
   value,
 })
 
-const resourceName = (connectionResource: ConnectionResource) =>
-  connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL
-
 const connectionTitle = (
   connection: Connection,
   connectionResource: ConnectionResource
-) => `${connection.name} - ${resourceName(connectionResource)}`
+) =>
+  connectionResource.name
+    ? `${connection.name} - ${connectionResource.name}`
+    : connection.name
 
 const ConnectionItem = ({
   connection,
@@ -135,8 +135,11 @@ const ConnectionItem = ({
       <span data-mask className="min-w-0 flex-1 truncate">
         {connection.name}
         <span className="text-muted-foreground">
-          {' '}
-          - {resourceName(connectionResource)}
+          <ResourceLabel
+            connection={connection}
+            name={connectionResource.name}
+            prefix=" - "
+          />
         </span>
       </span>
       {connection.label && (

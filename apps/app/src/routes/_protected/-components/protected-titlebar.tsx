@@ -6,7 +6,6 @@ import {
   UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -32,6 +31,7 @@ import { TitleBar } from '~/components/title-bar'
 import { useCollections } from '~/core/collections'
 import { ConnectionResourceLink } from '~/core/connection/connection-resource-link'
 import { lastOpenedResourcesStorageValue } from '~/core/connection/last-opened-resources'
+import { ResourceLabel } from '~/core/connection/resource-label'
 import type { Connection, ConnectionResource } from '~/core/connection/sync'
 import { useConnectionResourceLinkParams } from '~/core/connection/use-connection-resource-link-params'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
@@ -113,7 +113,7 @@ const ConnectionSubMenu = ({
             }
           >
             <span data-mask className="truncate">
-              {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
+              <ResourceLabel connection={connection} name={resource.name} />
             </span>
             {resource.id === currentResourceId && (
               <CurrentTick className="ml-auto" />
@@ -246,9 +246,11 @@ const ConnectionsDropdown = ({
 }
 
 const ResourcesDropdown = ({
+  connection,
   resources,
   current,
 }: {
+  connection: Connection
   resources: ConnectionResource[]
   current: ConnectionResource
 }) => (
@@ -264,7 +266,7 @@ const ResourcesDropdown = ({
       }
     >
       <span data-mask className="text-muted-foreground truncate">
-        {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
+        <ResourceLabel connection={connection} name={current.name} />
       </span>
       <HugeiconsIcon
         icon={UnfoldMoreIcon}
@@ -287,7 +289,7 @@ const ResourcesDropdown = ({
           }
         >
           <span data-mask className="truncate">
-            {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
+            <ResourceLabel connection={connection} name={resource.name} />
           </span>
           {resource.id === current.id && <CurrentTick className="ml-auto" />}
         </DropdownMenuItem>
@@ -359,6 +361,7 @@ const ConnectionsBreadcrumb = ({
             className="text-muted-foreground/40 size-3.5 shrink-0"
           />
           <ResourcesDropdown
+            connection={current.connection}
             resources={currentGroup.resources}
             current={current.resource}
           />

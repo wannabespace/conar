@@ -1,7 +1,4 @@
-import {
-  CONNECTION_RESOURCE_ROOT_LABEL,
-  CONNECTION_RESOURCE_ROOT_SYMBOL,
-} from '@tamery/shared/constants'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import {
   Select,
   SelectContent,
@@ -11,7 +8,9 @@ import {
 } from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 
+import { ResourceLabel } from '~/core/connection/resource-label'
 import { rememberOpenedResource } from '~/core/connection/stores'
+import type { Connection } from '~/core/connection/sync'
 
 const ROOT_RESOURCE_VALUE =
   CONNECTION_RESOURCE_ROOT_SYMBOL.description ?? 'CONNECTION_RESOURCE_ROOT'
@@ -21,19 +20,18 @@ const resourceValue = (
 ) =>
   resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? ROOT_RESOURCE_VALUE : resource
 
-const resourceLabel = (
+const resourceName = (
   resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
-) =>
-  resource === CONNECTION_RESOURCE_ROOT_SYMBOL
-    ? CONNECTION_RESOURCE_ROOT_LABEL
-    : resource
+) => (resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? '' : resource)
 
 const ConnectionResourcesSelect = ({
+  connection,
   resources,
   selectedResourceName,
   onSelectedResourceNameChange,
   disabled,
 }: {
+  connection: Connection
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
   onSelectedResourceNameChange: (resource: string | null) => void
@@ -55,9 +53,12 @@ const ConnectionResourcesSelect = ({
       className="pointer-events-auto"
     >
       <SelectValue>
-        {selectedResourceName === null
-          ? null
-          : resourceLabel(selectedResourceName)}
+        {selectedResourceName !== null && (
+          <ResourceLabel
+            connection={connection}
+            name={resourceName(selectedResourceName)}
+          />
+        )}
       </SelectValue>
     </SelectTrigger>
     <SelectContent data-mask size="xs">
@@ -66,7 +67,10 @@ const ConnectionResourcesSelect = ({
           key={resourceValue(resource)}
           value={resourceValue(resource)}
         >
-          {resourceLabel(resource)}
+          <ResourceLabel
+            connection={connection}
+            name={resourceName(resource)}
+          />
         </SelectItem>
       ))}
     </SelectContent>
@@ -75,14 +79,14 @@ const ConnectionResourcesSelect = ({
 
 export const ConnectionCardMeta = ({
   canSend,
-  connectionId,
+  connection,
   databaseKnown,
   displayUrl,
   resources,
   selectedResourceName,
 }: {
   canSend: boolean
-  connectionId: string
+  connection: Connection
   /** Off until this device has the server details: the selected database is then only the first one the list stored. */
   databaseKnown: boolean
   displayUrl: string | undefined
@@ -103,18 +107,22 @@ export const ConnectionCardMeta = ({
     {databaseKnown &&
       (resources.length > 1 ? (
         <ConnectionResourcesSelect
+          connection={connection}
           resources={resources}
           selectedResourceName={selectedResourceName}
           onSelectedResourceNameChange={(value) =>
-            rememberOpenedResource(connectionId, value)
+            rememberOpenedResource(connection.id, value)
           }
           disabled={!canSend}
         />
       ) : (
         selectedResourceName !== null && (
           <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-            <span className="text-muted-foreground/50">/ </span>
-            {resourceLabel(selectedResourceName)}
+            <ResourceLabel
+              connection={connection}
+              name={resourceName(selectedResourceName)}
+              prefix={<span className="text-muted-foreground/50">/ </span>}
+            />
           </span>
         )
       ))}
