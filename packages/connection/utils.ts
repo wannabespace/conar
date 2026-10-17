@@ -9,6 +9,14 @@ import { SSH_PARAMS } from './ssh/params'
 
 export const SQLITE_RESOURCE_NAME = 'main'
 
+const SQLITE_SERVER_NAMES: Record<
+  Provider,
+  (parts: { database: string; host: string }) => string
+> = {
+  [Provider.CloudflareD1]: ({ database }) => database,
+  [Provider.Turso]: ({ host }) => host,
+}
+
 const getSqliteDisplayName = ({
   database,
   host,
@@ -21,7 +29,8 @@ const getSqliteDisplayName = ({
   if (!host) {
     return database.slice(database.lastIndexOf('/') + 1)
   }
-  return getProviderOfScheme(scheme) === Provider.CloudflareD1 ? database : host
+  const provider = getProviderOfScheme(scheme)
+  return provider ? SQLITE_SERVER_NAMES[provider]({ database, host }) : host
 }
 
 export const describeConnectionString = (connectionString: string) => {
