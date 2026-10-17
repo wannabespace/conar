@@ -52,8 +52,12 @@ export const getRouter = () => {
   setupRouterSsrQueryIntegration({ queryClient, router })
 
   if (typeof window !== 'undefined') {
+    // Better Auth fires the signal 10ms after sign-in, mid root `beforeLoad` fetch: removing a fetching query cancels it and the route throws CancelledError.
     authClient.$store.listen('$sessionSignal', () =>
-      queryClient.removeQueries({ queryKey: sessionQueryOptions.queryKey })
+      queryClient.removeQueries({
+        fetchStatus: 'idle',
+        queryKey: sessionQueryOptions.queryKey,
+      })
     )
   }
 
