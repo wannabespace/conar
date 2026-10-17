@@ -260,6 +260,7 @@ const ResourcesDropdown = ({
         <Button
           variant="ghost"
           size="sm"
+          aria-label="Switch database"
           // oxlint-disable-next-line shadcn/no-restyle -- title-bar pickers sit tighter than a toolbar button
           className="max-w-64 gap-1.5 px-2"
         />
