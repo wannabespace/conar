@@ -17,6 +17,7 @@ import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
+import { ensureDefaultWorkspace } from './workspace'
 
 export const auth = betterAuth({
   appName: 'Conar',
@@ -127,6 +128,8 @@ export const auth = betterAuth({
               await db.delete(users).where(eq(users.id, user.id))
               throw error
             })
+
+          await ensureDefaultWorkspace(user.id)
 
           if (resend) {
             const [firstName, ...lastName] = user.name.split(' ')
