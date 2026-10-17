@@ -139,7 +139,7 @@ export const invitations = d.snakeCase.table(
 )
 
 export const apiKeys = d.snakeCase.table(
-  'api_keys',
+  'conar_api_keys',
   {
     ...baseTable,
     configId: d.text().default('default').notNull(),

@@ -9,7 +9,7 @@ import { users } from './auth'
 import { connectionsResources } from './connections'
 
 export const chats = d.snakeCase.table(
-  'chats',
+  'conar_chats',
   {
     ...baseTable,
     userId: d
@@ -31,7 +31,7 @@ export const chatsInsertSchema = createInsertSchema(chats)
 export const chatsUpdateSchema = createUpdateSchema(chats)
 
 export const chatsMessages = d.snakeCase.table(
-  'chats_messages',
+  'conar_chats_messages',
   {
     ...baseTable,
     chatId: d
