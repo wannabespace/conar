@@ -1,10 +1,9 @@
 import type { AppMessagePart, AppUIMessage } from '@tamery/ai/message'
+import { db } from '@tamery/db'
+import { env } from '@tamery/db/env'
+import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
 import { decrypt } from '@tamery/shared/crypto-node'
 import { sql } from 'drizzle-orm'
-
-import { db } from '.'
-import { env } from './env'
-import { chats, chatsMessages, chatsMessagesParts } from './schema'
 
 // Chat v2 runs without tools: replaying Conar's tool calls makes the provider reject the request.
 const IMPORTED_PART_TYPES = new Set<AppMessagePart['type']>([
