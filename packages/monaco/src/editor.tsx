@@ -91,6 +91,19 @@ export const FIELD_EDITOR_OPTIONS = {
   wordWrap: 'on',
 } satisfies monaco.editor.IStandaloneEditorConstructionOptions
 
+// Every editor state Monaco's own Escape bindings undo; the leave action must not shadow any of them. Monaco also dispatches keys from its focused frame, so without `editorTextFocus` the action would swallow every later Escape.
+const ESCAPE_UNUSED = [
+  'editorTextFocus',
+  ...[
+    'suggestWidgetVisible',
+    'inlineSuggestionVisible',
+    'parameterHintsVisible',
+    'findWidgetVisible',
+    'editorHasSelection',
+    'editorHasMultipleSelections',
+  ].map((key) => `!${key}`),
+].join(' && ')
+
 export const Monaco = ({
   ref,
   value,
@@ -98,6 +111,7 @@ export const Monaco = ({
   options,
   onChange = noop,
   onSubmit,
+  leaveOnEscape = false,
   ...props
 }: {
   ref?: RefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -107,6 +121,8 @@ export const Monaco = ({
   language?: string
   onChange?: (value: string) => void
   onSubmit?: () => void
+  /** Escape the editor has no use for moves focus from the text to the editor's frame instead of reaching the page, so a dialog around it stays open until the next Escape. */
+  leaveOnEscape?: boolean
   options?: monaco.editor.IStandaloneEditorConstructionOptions
 }) => {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -114,6 +130,7 @@ export const Monaco = ({
     null
   )
   const preventTriggerChangeEventRef = useRef(false)
+  const pendingEchoesRef = useRef<string[]>([])
 
   const onChangeEvent = useEffectEvent(onChange)
   const onSubmitEvent = useEffectEvent(() => onSubmit?.())
@@ -157,8 +174,9 @@ export const Monaco = ({
     const subscription = monacoInstanceRef.current.onDidChangeModelContent(
       () => {
         if (!preventTriggerChangeEventRef.current) {
-          const val = monacoInstanceRef.current?.getValue()
-          onChangeEvent(val ?? '')
+          const val = monacoInstanceRef.current?.getValue() ?? ''
+          pendingEchoesRef.current.push(val)
+          onChangeEvent(val)
         }
       }
     )
@@ -173,16 +191,27 @@ export const Monaco = ({
         })
       : undefined
 
+    const leaveAction = leaveOnEscape
+      ? monacoInstanceRef.current.addAction({
+          id: 'tamery.monaco-leave',
+          keybindings: [monaco.KeyCode.Escape],
+          label: 'Leave editor',
+          precondition: ESCAPE_UNUSED,
+          run: (editor) => editor.getContainerDomNode().focus(),
+        })
+      : undefined
+
     return () => {
       subscription.dispose()
       submitAction?.dispose()
+      leaveAction?.dispose()
       monacoInstanceRef.current?.dispose()
       monacoInstanceRef.current = null
       if (ref) {
         ref.current = null
       }
     }
-  }, [language, ref, submitEnabled])
+  }, [language, leaveOnEscape, ref, submitEnabled])
 
   useMountedEffect(() => {
     if (!monacoInstanceRef.current || !options) {
@@ -204,9 +233,15 @@ export const Monaco = ({
       return
     }
 
-    const currentValue = editor.getValue()
+    // A parent can render a value this editor emitted after the user typed past it; writing that echo back drops the newer keystrokes.
+    const echo = pendingEchoesRef.current.indexOf(value)
+    if (echo !== -1) {
+      pendingEchoesRef.current.splice(0, echo + 1)
+      return
+    }
+    pendingEchoesRef.current = []
 
-    if (currentValue === value) {
+    if (editor.getValue() === value) {
       return
     }
 
@@ -226,5 +261,11 @@ export const Monaco = ({
     }
   }, [value, options?.readOnly, language])
 
-  return <div ref={elementRef} {...props} />
+  return (
+    <div
+      ref={elementRef}
+      tabIndex={leaveOnEscape ? -1 : undefined}
+      {...props}
+    />
+  )
 }

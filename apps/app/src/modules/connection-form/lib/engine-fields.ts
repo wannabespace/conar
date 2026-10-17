@@ -18,6 +18,8 @@ interface FieldRow {
   placeholder?: string
   /** Shows the port beside it, which saves the port too. */
   port?: true
+  /** Blocks saving while empty, with this message; the engine's `field` is always required. */
+  required?: string
   secret?: true
 }
 
@@ -99,6 +101,7 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
         label: 'Account ID',
         name: 'user',
         placeholder: 'In the dashboard URL, after dash.cloudflare.com/',
+        required: 'Enter the account ID',
       },
       {
         label: 'Database ID',
@@ -109,6 +112,7 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
         label: 'API token',
         name: 'password',
         placeholder: 'With D1 Edit permission',
+        required: 'Enter the API token',
         secret: true,
       },
     ],

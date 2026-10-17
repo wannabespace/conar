@@ -14,6 +14,7 @@ const URL_PATTERN = /(?:jdbc:)?(?<scheme>[a-z][\w+.-]*):\/\/[^\s"'`<>]+/giu
 /** Keeps the `]` that closes an IPv6 host (`postgres://[::1]`). */
 const TRAILING_PUNCTUATION = /(?<!\[[\da-f:.%]*)[.,;:)\]]+$/iu
 const WEB_SCHEME = /^https?:/iu
+const SECURE_VALUES = new Set(['1', 'true'])
 const SEMICOLON_URL =
   /^(?:sqlserver|mssql):\/\/(?<address>[^;/?]*);(?<props>.*)$/iu
 
@@ -51,15 +52,20 @@ const guessOfUrl = ({ type, url: candidate }: FoundUrl): DatabaseGuess => {
   const user = takeParam(params, ['user', 'username'])
   const password = takeParam(params, ['password'])
   const database = takeParam(params, ['database', 'databasename', 'dbname'])
+  // clickhouse-go's DSN names the transport in `secure`; the ClickHouse client refuses any parameter it does not know.
+  const secure =
+    type === ConnectionType.ClickHouse ? takeParam(params, ['secure']) : ''
+  const https = secure ? SECURE_VALUES.has(secure.toLowerCase()) : parts.https
 
   return {
     format,
     parts: {
       ...parts,
       database: parts.database || database,
+      https,
       options: params.toString(),
       password: parts.password || password,
-      port: !parts.port && parts.https ? HTTPS_PORT : parts.port,
+      port: !parts.port && https ? HTTPS_PORT : parts.port,
       type,
       user: parts.user || user,
     },
@@ -96,10 +102,14 @@ export const guessGoDsn = (text: string): DatabaseGuess | null => {
 const CLICKHOUSE_NAME = /clickhouse/iu
 const MULTI_SEGMENT_PATH = /^\/[^/]+\/./u
 
-/** Any page link is http(s) too, so it needs ClickHouse evidence; keep it after the other detectors or any `APP_URL=https://…` wins. */
+/**
+ * Any page link is http(s) too, so it needs ClickHouse evidence unless `isConnection` says the text names a database;
+ * keep it after the other detectors or any `APP_URL=https://…` wins.
+ */
 export const guessWebUrl = (
   text: string,
-  context = text
+  context = text,
+  isConnection = false
 ): DatabaseGuess | null => {
   const found = urlsIn(text).find(({ url }) => {
     if (!WEB_SCHEME.test(url)) {
@@ -108,7 +118,8 @@ export const guessWebUrl = (
     const { hostname, pathname, port } = URL.parse(url) ?? {}
     return (
       !MULTI_SEGMENT_PATH.test(pathname ?? '') &&
-      (Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
+      (isConnection ||
+        Object.values(CLICKHOUSE_HTTP_PORT_OF_NATIVE).includes(port ?? '') ||
         getHostHint(hostname ?? '')?.type === ConnectionType.ClickHouse ||
         CLICKHOUSE_NAME.test(context.replace(url, '')))
     )

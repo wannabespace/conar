@@ -84,6 +84,7 @@ Tamery explains common failures in plain words and, when the cause is clear, off
 | Host not found or timeout for a private address (`10.x`, `*.internal`) | **Set up an SSH tunnel** (desktop app) |
 | Connection refused on another engine's port | **Switch the engine**, or for ClickHouse's native port 9000, **Use port 8123** |
 | The server requires SSL, or doesn't support it | **Turn on SSL** / **Turn off SSL** with the engine's own option |
+| A ClickHouse port that answers over plain HTTP | **Use http://** |
 | The certificate can't be verified | **Skip the certificate check** (the connection stays encrypted) |
 | The database doesn't exist | **Use the default database** |
 | Wrong user or password, including Supabase's `postgres.<project-ref>` pooler user | Points you to the field to fix |

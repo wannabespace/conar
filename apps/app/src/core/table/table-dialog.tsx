@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -45,6 +46,7 @@ const FORM_ID = 'table-dialog'
 const TableForm = ({
   children,
   description,
+  error,
   isTaken,
   noun,
   onSubmit,
@@ -55,6 +57,7 @@ const TableForm = ({
 }: {
   children?: ReactNode
   description?: ReactNode
+  error: Error | null
   isTaken: (schema: string, name: string) => boolean
   noun: string
   onSubmit: (schema: string, name: string) => void
@@ -155,6 +158,13 @@ const TableForm = ({
           </InputGroup>
         </Field>
         {children}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription data-mask className="wrap-break-word">
+              {error.message}
+            </AlertDescription>
+          </Alert>
+        )}
       </form>
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>
@@ -176,6 +186,7 @@ const TableForm = ({
 export const TableDialog = <Table extends TableTarget>({
   children,
   description = 'The table is created with an id primary key.',
+  error = null,
   isTaken,
   noun = 'table',
   onOpenChange,
@@ -187,6 +198,7 @@ export const TableDialog = <Table extends TableTarget>({
 }: {
   children?: ReactNode
   description?: ReactNode
+  error?: Error | null
   isTaken: (schema: string, name: string) => boolean
   noun?: string
   onOpenChange: (open: boolean) => void
@@ -220,6 +232,7 @@ export const TableDialog = <Table extends TableTarget>({
           <TableForm
             key={shown.table ? `${shown.table.schema}.${shown.table.name}` : ''}
             description={description}
+            error={error}
             isTaken={isTaken}
             noun={noun}
             pending={pending}

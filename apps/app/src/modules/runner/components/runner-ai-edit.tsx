@@ -26,6 +26,7 @@ export const useAiEdit = ({
   const zoneRef = useRef<{
     id: string
     root: ReturnType<typeof renderWithRoot>['root']
+    widget: monacoEditor.IOverlayWidget
     zone: monacoEditor.IViewZone
   } | null>(null)
   const targetRef = useRef<monacoEditor.IEditorDecorationsCollection | null>(
@@ -63,6 +64,7 @@ export const useAiEdit = ({
     const zone = zoneRef.current
     if (editor && zone) {
       editor.changeViewZones((accessor) => accessor.removeZone(zone.id))
+      editor.removeOverlayWidget(zone.widget)
       queueMicrotask(() => zone.root.unmount())
     }
     zoneRef.current = null
@@ -113,13 +115,12 @@ export const useAiEdit = ({
     editor.executeEdits('ai-edit', [{ range, text }])
     editor.pushUndoStop()
     const startOffset = model.getOffsetAt(range.getStartPosition())
-    track(
-      Range.fromPositions(
-        model.getPositionAt(startOffset),
-        model.getPositionAt(startOffset + text.length)
-      ),
-      true
+    const rewritten = Range.fromPositions(
+      model.getPositionAt(startOffset),
+      model.getPositionAt(startOffset + text.length)
     )
+    track(rewritten, true)
+    editor.revealRangeInCenterIfOutsideViewport(rewritten)
     setPhase({ applied: text, fix, kind: 'review', original })
     // The prompt input unmounts on review; without focus back in the editor ⌘↩ and Esc reach nothing.
     editor.focus()
@@ -234,13 +235,26 @@ export const useAiEdit = ({
     }
     const { domNode, root } = renderWithRoot(element)
     domNode.style.zIndex = '10'
+    // The card lives in an overlay widget, the zone only makes room: Monaco marks every view zone aria-hidden.
+    const widget = {
+      getDomNode: () => domNode,
+      getId: () => 'tamery.ai-edit',
+      getPosition: () => null,
+    }
+    editor.addOverlayWidget(widget)
     const zone = {
       afterLineNumber: range.startLineNumber - 1,
-      domNode,
+      domNode: document.createElement('div'),
       heightInPx: CARD_HEIGHT + SHADOW_ROOM,
+      onDomNodeTop: (top: number) => {
+        const { contentLeft, contentWidth } = editor.getLayoutInfo()
+        domNode.style.top = `${top}px`
+        domNode.style.left = `${contentLeft}px`
+        domNode.style.width = `${contentWidth}px`
+      },
     }
     editor.changeViewZones((accessor) => {
-      zoneRef.current = { id: accessor.addZone(zone), root, zone }
+      zoneRef.current = { id: accessor.addZone(zone), root, widget, zone }
     })
   })
 

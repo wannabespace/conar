@@ -137,13 +137,20 @@ const RULES: DiagnosisRule[] = [
     match: /no pg_hba\.conf entry/iu,
   },
   {
-    diagnose: ({ parts }) => ({
-      fix: sslFix(parts, 'off', 'Turn off SSL'),
-      hint: "The server doesn't speak SSL. Only turn it off on a network you trust.",
-      title: "The server doesn't support SSL",
-    }),
+    diagnose: ({ parts }) =>
+      parts.type === ConnectionType.ClickHouse
+        ? {
+            fix: { label: 'Use http://', patch: { https: false } },
+            hint: "This port answers over plain HTTP. Connect with http://, or use the server's HTTPS port, usually 8443. Only use http:// on a network you trust.",
+            title: "This port doesn't use HTTPS",
+          }
+        : {
+            fix: sslFix(parts, 'off', 'Turn off SSL'),
+            hint: "The server doesn't speak SSL. Only turn it off on a network you trust.",
+            title: "The server doesn't support SSL",
+          },
     match:
-      /does not support ssl|ssl is not enabled on the server|wrong version number|handshake_ssl_error|ssl3_get_record/iu,
+      /does not support ssl|ssl is not enabled on the server|wrong[ _]version[ _]number|handshake_ssl_error|ssl3_get_record/iu,
   },
   {
     diagnose: ({ parts }) => ({

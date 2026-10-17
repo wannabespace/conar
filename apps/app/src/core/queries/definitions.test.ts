@@ -29,7 +29,7 @@ import {
   createPolicyStatement,
   policyPredicate,
 } from './policies/shape'
-import { getAccount, privilegeOn } from './privileges/shape'
+import { getAccount, grantCoversSchema, privilegeOn } from './privileges/shape'
 import { mssqlModuleBody, mssqlModuleParts } from './shared/definition'
 import {
   createTriggerStatements,
@@ -487,5 +487,14 @@ describe('a MySQL privilege', () => {
     expect(compiled(privilegeOn({ ...target, table: 't' }), 'mysql')).toBe(
       'SELECT ON `app`.`t`'
     )
+  })
+
+  test('on a whole database matches it as a LIKE pattern', () => {
+    expect(grantCoversSchema(String.raw`qa\_tx`, 'qa_tx')).toBe(true)
+    expect(grantCoversSchema(String.raw`qa\_tx`, 'qaXtx')).toBe(false)
+    expect(grantCoversSchema('qa_tx', 'qaXtx')).toBe(true)
+    expect(grantCoversSchema('app%', 'app_staging')).toBe(true)
+    expect(grantCoversSchema('app%', 'my_app')).toBe(false)
+    expect(grantCoversSchema('a.b', 'aXb')).toBe(false)
   })
 })

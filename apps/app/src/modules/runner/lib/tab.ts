@@ -10,7 +10,7 @@ export interface RunnerParams {
 }
 
 export const runnerTab: TabKind<RunnerParams> = {
-  icon: PlayIcon,
+  icon: () => PlayIcon,
   label: (params, siblings) =>
     siblings.length > 1
       ? `Query ${siblings.findIndex((sibling) => sibling.id === params.id) + 1}`

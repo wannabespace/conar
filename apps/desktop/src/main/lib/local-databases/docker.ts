@@ -117,6 +117,8 @@ export const docker: Finder = {
         const parts = mergeParts(
           {
             ...server,
+            // The image's HTTP port is plain text whatever port it is published on, which would read as HTTPS.
+            https: dialect === Dialect.ClickHouse ? false : null,
             type:
               named.find(
                 (candidate) => candidate && getDialect(candidate) === dialect

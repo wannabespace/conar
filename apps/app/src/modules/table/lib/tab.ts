@@ -28,7 +28,7 @@ const fullTitle = ({ schema, table }: TableParams) => `${schema}.${table}`
 
 export const tableTab: TabKind<TableParams> = {
   fullTitle,
-  icon: LayoutTable02Icon,
+  icon: () => LayoutTable02Icon,
   label: (params, siblings) =>
     new Set(siblings.map((sibling) => sibling.schema)).size > 1
       ? fullTitle(params)

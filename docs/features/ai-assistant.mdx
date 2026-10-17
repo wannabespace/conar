@@ -1,7 +1,7 @@
 ---
 title: 'AI assistant'
 sidebarTitle: 'AI assistant'
-description: "Tamery's schema-aware AI assistant explores your database, writes and runs SQL, drives the app, and powers natural-language filters and data seeding."
+description: "Tamery's schema-aware AI assistant explores your database, writes and runs SQL, drives the app, and powers natural-language filters."
 ---
 
 The assistant has full context of your connected database — schemas, tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It lives in its own panel beside whatever you have open, and it can act on the app: opening tables, filling a query tab, applying filters.
@@ -88,7 +88,8 @@ The assistant is a subscription feature. See [Plans](/account/plans).
     then choose **Ask AI**.
   </Step>
   <Step title="Review and adjust">
-    The AI builds structured filter chips in the field. Edit any chip's column,
+    The AI builds structured filter chips in the field and names any part of the
+    request this table's columns cannot express. Edit any chip's column,
     operator, or value directly.
   </Step>
 </Steps>
@@ -97,10 +98,6 @@ The assistant is a subscription feature. See [Plans](/account/plans).
   Free accounts get a limited number of AI filter uses per week. Paid plans are
   unlimited. See [Plans](/account/plans).
 </Note>
-
-## AI data seeding
-
-Open a table, click **Seed**, set a row count. Tamery picks generators from column names and types — names, emails, timestamps, and foreign keys referencing existing rows. Rows are previewed before insertion.
 
 ## Plans
 
@@ -111,6 +108,5 @@ Open a table, click **Seed**, set a row count. Tamery picks generators from colu
 | Fix SQL                  | —       | ✓            |
 | Modify SQL               | —       | ✓            |
 | Natural-language filters | Limited | Unlimited    |
-| Data seeding             | Limited | Unlimited    |
 
 See [Plans](/account/plans).

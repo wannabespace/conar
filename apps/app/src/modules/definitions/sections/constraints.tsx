@@ -461,8 +461,8 @@ const ConstraintInspector = ({
         )}
         {item?.custom && (
           <FieldDescription>
-            Carries a rule the form cannot show — deferrable, not validated, not
-            inherited, disabled or a match type — so only its name can change.
+            Carries a rule the form cannot show (deferrable, not validated, not
+            inherited, disabled or a match type), so only its name can change.
           </FieldDescription>
         )}
       </InspectorSection>

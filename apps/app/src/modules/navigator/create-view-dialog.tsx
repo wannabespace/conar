@@ -4,7 +4,6 @@ import {
   sqlLanguageIds,
 } from '@tamery/monaco/sql-language'
 import { dialects, splitStatements } from '@tamery/sql'
-import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -83,6 +82,7 @@ const QueryField = ({
         value={value}
         options={QUERY_EDITOR_OPTIONS}
         onChange={onChange}
+        leaveOnEscape
         onSubmit={() =>
           editorRef.current
             ?.getContainerDomNode()
@@ -168,6 +168,7 @@ export const CreateViewDialog = () => {
     <TableDialog
       noun="view"
       description="A saved query that reads like a table."
+      error={error}
       shortcut={<ShortcutKbd shortcut="submit" />}
       request={request}
       schemas={schemas.map(({ name }) => name)}
@@ -209,13 +210,6 @@ export const CreateViewDialog = () => {
             onCheckedChange={setMaterialized}
           />
         </OptionField>
-      )}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription data-mask className="wrap-break-word">
-            {error.message}
-          </AlertDescription>
-        </Alert>
       )}
     </TableDialog>
   )

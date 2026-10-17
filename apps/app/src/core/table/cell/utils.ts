@@ -78,6 +78,7 @@ export const getColumnSize = (type: string): number =>
   )?.[1] ?? DEFAULT_COLUMN_WIDTH
 
 export const getColumnUiType = (
+  dialect: Dialect,
   column: typeof columnType.infer
 ): Column['uiType'] => {
   if (column.isArray) {
@@ -88,7 +89,7 @@ export const getColumnUiType = (
     return 'select'
   }
 
-  if (column.type === 'boolean') {
+  if (getCapabilities(dialect).columnTypes.boolean?.test(column.typeLabel)) {
     return 'boolean'
   }
 

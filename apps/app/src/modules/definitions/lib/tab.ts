@@ -1,4 +1,3 @@
-import { SecurityCheckIcon } from '@hugeicons/core-free-icons'
 import { uppercaseFirst } from '@tamery/shared/utils'
 
 import { sectionAvailable } from '~/core/catalog/section-capabilities'
@@ -15,7 +14,7 @@ export interface DefinitionsParams {
 
 export const definitionsTab: TabKind<DefinitionsParams> = {
   available: ({ section }, dialect) => sectionAvailable(section, dialect),
-  icon: SecurityCheckIcon,
+  icon: ({ section }) => getSectionMeta(section).icon,
   match: (id) => {
     const [kind, section, ...extra] = id.split(':')
 

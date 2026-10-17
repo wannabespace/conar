@@ -9,6 +9,8 @@ import { resolveTab, tabFullTitle } from '~/core/tabs/kinds'
 import { tabSearchType } from '~/core/tabs/types'
 import { tabViews } from '~/core/tabs/views'
 
+import { TabError } from '../-components/tab-error'
+
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
@@ -43,6 +45,7 @@ export const Route = createFileRoute(
   '/_protected/connection/$resourceId/$tabId'
 )({
   component: TabPage,
+  errorComponent: TabError,
   validateSearch: tabSearchType,
   beforeLoad: ({ context, params }) => {
     const resolved = resolveTab(params.tabId)

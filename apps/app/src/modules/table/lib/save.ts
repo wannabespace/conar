@@ -92,7 +92,8 @@ export const useSaveStaged = ({
             .run(queryParams, tx)
             .catch(failingAs({ kind: 'row', primaryKeys }))
         }
-        for (const { id, values } of newRows) {
+        // Staged rows list the newest first; insert them in the order they were added.
+        for (const { id, values } of newRows.toReversed()) {
           // oxlint-disable-next-line no-await-in-loop
           await insertQuery({ columns, rows: [values], schema, table })
             .run(queryParams, tx)

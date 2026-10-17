@@ -2,11 +2,12 @@ import { SparklesIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { CommandItem, CommandShortcut } from '@tamery/ui/components/command'
 import { cn } from '@tamery/ui/lib/utils'
+import { useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { RefObject } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
@@ -14,6 +15,7 @@ import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 import { checkOrUpgrade, usePermissions } from '~/core/user/permissions'
 import { usageQueryOptions } from '~/core/user/usage'
 import { orpc } from '~/lib/orpc'
+import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
 import { useIsOnline } from '~/store'
 import { plural } from '~/utils/plural'
@@ -28,7 +30,8 @@ const SUMMARY_VISIBLE_MS = 6000
 
 const summarize = (
   filters: { column: string }[],
-  orderBy: Record<string, 'ASC' | 'DESC'>
+  orderBy: Record<string, 'ASC' | 'DESC'>,
+  ignored: string[]
 ) => {
   const parts: string[] = []
 
@@ -41,7 +44,8 @@ const summarize = (
     parts.push(`sorted by ${column} ${direction.toLowerCase()}`)
   }
 
-  return parts.length > 0 ? `Applied ${parts.join(' · ')}` : null
+  const skipped = ignored.length > 0 ? ` · Skipped ${ignored.join(', ')}` : ''
+  return `Applied ${parts.join(' · ')}${skipped}`
 }
 
 export type FilterAi = ReturnType<typeof useFilterAi>
@@ -72,6 +76,7 @@ export const useFilterAi = ({
     remaining: Math.max(0, usage.filters.max - usage.filters.used),
   }
   const [summary, setSummary] = useState<string | null>(null)
+  const requestRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     if (!summary) {
@@ -83,38 +88,61 @@ export const useFilterAi = ({
     return () => clearTimeout(timer)
   }, [summary])
 
-  const { mutate: generateFilter, isPending } = useMutation(
-    orpc.ai.filters.mutationOptions({
-      meta: { event: 'ai_filter_generated' },
-      onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
-      onSuccess: (data) => {
-        const known = new Set(columns.map((column) => column.id))
-        const offered = offeredFilters(dialect).flatMap(
-          (group) => group.filters
-        )
-        const filters = data.filters.flatMap(({ column, operator, values }) => {
-          const ref = offered.find((filter) => filter.operator === operator)
-          return ref && known.has(column) ? [{ column, ref, values }] : []
-        })
-        const orderBy = Object.fromEntries(
-          Object.entries(data.orderBy).filter(([column]) => known.has(column))
-        )
+  const {
+    mutate: generateFilter,
+    isPending,
+    reset,
+  } = useMutation({
+    meta: { event: 'ai_filter_generated' },
+    mutationFn: (input: { context: string; prompt: string }) => {
+      requestRef.current = new AbortController()
+      return orpc.ai.filters.call(input, {
+        signal: requestRef.current.signal,
+      })
+    },
+    onSettled: () => queryClient.invalidateQueries(usageQueryOptions),
+    onSuccess: (data) => {
+      const known = new Set(columns.map((column) => column.id))
+      const offered = offeredFilters(dialect).flatMap((group) => group.filters)
+      const filters = data.filters.flatMap(({ column, operator, values }) => {
+        const ref = offered.find((filter) => filter.operator === operator)
+        return ref && known.has(column) ? [{ column, ref, values }] : []
+      })
+      const orderBy = Object.fromEntries(
+        Object.entries(data.orderBy).filter(([column]) => known.has(column))
+      )
 
-        if (filters.length === 0 && Object.keys(orderBy).length === 0) {
-          toast.info(
-            'No filters or ordering were generated, please try again with a different prompt',
-            { id: 'no-filters-or-ordering' }
-          )
-          return
-        }
-
-        store.set(
-          (state) =>
-            ({ ...state, filters, orderBy, prompt: '' }) satisfies typeof state
+      if (filters.length === 0 && Object.keys(orderBy).length === 0) {
+        toast.info(
+          data.ignored.length > 0
+            ? `Couldn't filter this table by ${data.ignored.join(', ')}`
+            : "Couldn't turn that into filters for this table",
+          { id: 'no-filters-or-ordering' }
         )
-        setSummary(summarize(filters, orderBy))
+        return
+      }
+
+      store.set(
+        (state) =>
+          ({ ...state, filters, orderBy, prompt: '' }) satisfies typeof state
+      )
+      setSummary(summarize(filters, orderBy, data.ignored))
+    },
+  })
+
+  useHotkeys(
+    [
+      {
+        callback: () => {
+          posthog.capture('ai_filter_cancelled')
+          requestRef.current?.abort()
+          reset()
+        },
+        hotkey: 'Escape',
+        options: { enabled: isPending },
       },
-    })
+    ],
+    { target: inputRef }
   )
 
   const canAsk = isOnline && !isPending && freeAiUsage?.remaining !== 0
@@ -149,13 +177,7 @@ export const useFilterAi = ({
           )}
           Enums: ${JSON.stringify(enums, null, 2)}
         `.trim()
-        generateFilter(
-          { context, prompt },
-          {
-            // The input stays disabled until the pending state re-renders away.
-            onSuccess: () => setTimeout(() => inputRef.current?.focus(), 100),
-          }
-        )
+        generateFilter({ context, prompt })
       }
     },
     canAsk,

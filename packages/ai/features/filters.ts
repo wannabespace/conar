@@ -21,7 +21,8 @@ const filtersInstructions = (tableContext: string) =>
     "- If user asks 'empty' and the column is a string, use empty string as item in values array",
     '- If context already contains a filter, you can use it as reference to generate a new filter',
     '- User can paste only the value, you should try to understand to which column the value belongs',
-    '- Try to generate at least one filter unless the prompt is completely unclear',
+    "- Filter only on what this table's own columns can express; never stretch a condition onto an unrelated column (such as matching words inside a JSON or text column it has nothing to do with)",
+    "- List every part of the request you could not express as a filter or ordering in ignored, in a few of the user's words each; otherwise return an empty ignored array",
     '',
     'Ordering:',
     '- If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy array.',
@@ -42,6 +43,7 @@ const filtersOutputSchema = type({
     operator: type.enumerated(...FILTER_OPERATORS),
     values: 'string[]',
   }).array(),
+  ignored: 'string[]',
   orderBy: type({
     column: 'string',
     direction: "'ASC' | 'DESC'",
@@ -65,6 +67,7 @@ export const generateFilters = async (data: {
 
   return {
     filters: output.filters,
+    ignored: output.ignored,
     orderBy: Object.fromEntries(
       output.orderBy.map(({ column, direction }) => [column, direction])
     ),

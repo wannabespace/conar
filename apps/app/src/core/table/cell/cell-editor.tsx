@@ -5,6 +5,7 @@ import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
+import { format } from 'date-fns'
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -23,10 +24,10 @@ import { CellSelect, isPickColumn } from './cell-select'
 import type { Column } from './utils'
 import { hasTabularFigures } from './utils'
 
-const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
-  date: [0, 10],
-  datetime: [0, 19],
-  time: [11, 19],
+const NOW_FORMAT: Partial<Record<Column['uiType'], string>> = {
+  date: 'yyyy-MM-dd',
+  datetime: 'yyyy-MM-dd HH:mm:ss',
+  time: 'HH:mm:ss',
 }
 
 const codeLanguage = (
@@ -52,7 +53,7 @@ interface FieldProps {
 
 const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
   const ref = useRef<HTMLTextAreaElement>(null)
-  const nowSlice = readOnly ? undefined : NOW_SLICE[column.uiType]
+  const nowFormat = readOnly ? undefined : NOW_FORMAT[column.uiType]
 
   useHotkeys(
     [
@@ -107,18 +108,18 @@ const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
           field.scrollTop = field.scrollHeight
         }}
       />
-      {nowSlice && (
+      {nowFormat && (
         <Button
           variant="ghost-muted"
           size="xs"
           className="m-1 shrink-0"
           onClick={() => {
-            // UTC wall clock: engines read a bare timestamp in the session time zone.
+            const { zoned } = getCapabilities(cursor.dialect).columnTypes
             cursor.change(
-              new Date()
-                .toISOString()
-                .replace('T', ' ')
-                .slice(...nowSlice)
+              format(
+                new Date(),
+                zoned?.test(column.type ?? '') ? `${nowFormat}xxx` : nowFormat
+              )
             )
             ref.current?.focus()
           }}

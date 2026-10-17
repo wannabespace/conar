@@ -50,9 +50,11 @@ const highlightForStage = (dialect: Dialect, stage: Stage, value: string) => {
 export type FilterComposer = ReturnType<typeof useFilterComposer>
 
 export const useFilterComposer = ({
+  busy,
   inputRef,
   onQueryChange,
 }: {
+  busy: boolean
   inputRef: RefObject<HTMLInputElement | null>
   onQueryChange: () => void
 }) => {
@@ -127,6 +129,7 @@ export const useFilterComposer = ({
           }
         },
         hotkey: 'Escape',
+        options: { enabled: !busy },
       },
     ],
     { target: inputRef }

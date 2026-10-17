@@ -59,7 +59,7 @@ export const TableError = ({ error }: { error: Error }) => {
               <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
             </EmptyMedia>
             <EmptyTitle>Query failed</EmptyTitle>
-            <EmptyDescription className="wrap-break-word select-text">
+            <EmptyDescription className="wrap-anywhere select-text">
               <span data-mask className="font-mono">
                 {summary}
               </span>

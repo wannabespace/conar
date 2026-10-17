@@ -60,7 +60,7 @@ test('a connection that cannot send refuses with its reason', () => {
       connectionString: 'postgres://user@localhost/db',
       resourceId: 'resource',
     }).execute({ query: 'SELECT 1', values: [] })
-  ).toThrow('Filled password is required')
+  ).toThrow('Enter the password to query')
   expect(execute).not.toHaveBeenCalled()
 })
 

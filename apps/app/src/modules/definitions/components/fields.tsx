@@ -166,6 +166,7 @@ export const BodyField = ({
         }}
         onSubmit={disabled ? undefined : () => form.handleSubmit()}
         onChange={field.handleChange}
+        leaveOnEscape
       />
     </Labelled>
   )

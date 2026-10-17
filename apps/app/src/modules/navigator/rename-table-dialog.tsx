@@ -36,14 +36,12 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   const label = tableTypeLabel[type]
   const noun = label.toLowerCase()
 
-  useImperativeHandle(ref, () => ({
-    rename: (schema, name, nextType) => {
-      setType(nextType)
-      setRequest({ schema, table: { name, schema } })
-    },
-  }))
-
-  const { mutate: renameTable, isPending } = useMutation({
+  const {
+    error,
+    isPending,
+    mutate: renameTable,
+    reset,
+  } = useMutation({
     meta: { event: type === 'table' ? 'table_renamed' : 'view_renamed' },
     mutationFn: async ({
       newTable,
@@ -57,9 +55,6 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
       await renameTableQuery({ newTable, oldTable: table, schema }).run(
         await connectionResourceToQueryParams(connectionResource)
       )
-    },
-    onError: (error) => {
-      toast.error(`Failed to rename ${noun} "${error.message}".`)
     },
     onSuccess: async (_, { newTable, schema, table }) => {
       toast.success(`${label} "${table}" successfully renamed to "${newTable}"`)
@@ -83,8 +78,17 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
     },
   })
 
+  useImperativeHandle(ref, () => ({
+    rename: (schema, name, nextType) => {
+      reset()
+      setType(nextType)
+      setRequest({ schema, table: { name, schema } })
+    },
+  }))
+
   return (
     <TableDialog
+      error={error}
       noun={noun}
       request={request}
       schemas={schemas.map(({ name }) => name)}

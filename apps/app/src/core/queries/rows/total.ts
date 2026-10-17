@@ -2,6 +2,7 @@ import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { Result } from 'better-result'
 import type { AliasableExpression, Kysely } from 'kysely'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
@@ -61,16 +62,20 @@ export const resourceTableTotalQuery = memoize(
       query: {
         clickhouse: async (db) => {
           if (!exact && !filters?.length) {
-            const estimate = await db
-              .selectFrom('system.parts')
-              .select(db.fn.sum(sql.ref('rows')).as('count'))
-              .where('database', '=', schema)
-              .where('table', '=', table)
-              .where('active', '=', 1)
-              .executeTakeFirst()
+            // system.parts needs a grant a read-only user often lacks; the exact count below does not.
+            const estimate = await Result.tryPromise(() =>
+              db
+                .selectFrom('system.parts')
+                .select(db.fn.sum(sql.ref('rows')).as('count'))
+                .where('database', '=', schema)
+                .where('table', '=', table)
+                .where('active', '=', 1)
+                .executeTakeFirst()
+            )
 
-            if (estimate && Number(estimate.count) > 0) {
-              return { count: Number(estimate.count), isEstimated: true }
+            const count = Number(estimate.unwrapOr(null)?.count)
+            if (count > 0) {
+              return { count, isEstimated: true }
             }
           }
 

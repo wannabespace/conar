@@ -54,6 +54,11 @@ const typeLabels: Record<FunctionType, string> = {
 
 const kinds = Object.keys(typeLabels) as RoutineKind[]
 
+const kindDescriptions: Record<RoutineKind, string> = {
+  function: 'A function returns a value, so queries can call it.',
+  procedure: 'A procedure runs for its effects and returns nothing.',
+}
+
 interface FunctionDraft {
   args: string
   behavior: string
@@ -293,7 +298,7 @@ const FunctionInspector = ({
           {() => (
             <SelectField
               label="Type"
-              description="A procedure runs for its effects and returns nothing."
+              description={kindDescriptions[draft.kind]}
               disabled={readOnly}
               getLabel={(value: RoutineKind) => typeLabels[value]}
               onChanged={(kind: RoutineKind) => retemplate({ ...draft, kind })}

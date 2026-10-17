@@ -40,7 +40,7 @@ const REASONS = {
     'Only the name and color of this connection sync. Add its server details on this device to use it here.',
   internalFromWeb:
     'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
-  passwordMissing: 'Filled password is required to query this connection.',
+  passwordMissing: 'Enter the password to query this connection.',
   passwordNotStored:
     'You cannot reach this connection from the web app. Open this connection in the desktop app.',
   secretsMissing:

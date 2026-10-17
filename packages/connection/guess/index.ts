@@ -19,7 +19,7 @@ import { guessGoDsn, guessUrl, guessWebUrl } from './url'
 
 export type { ConnectionGuess, GuessFix, GuessFormat } from './types'
 
-const DETECTORS = [
+const getDetectors = (isConnection: boolean) => [
   guessSqlite,
   guessCli,
   guessJson,
@@ -29,7 +29,7 @@ const DETECTORS = [
   guessKeyValue,
   guessRemoteSqlite,
   guessEnv,
-  guessWebUrl,
+  (text: string) => guessWebUrl(text, text, isConnection),
   guessPgpass,
   guessHost,
 ]
@@ -46,12 +46,17 @@ const credentialsBeside = (
   return { password, user }
 }
 
-export const guessConnection = (text: string): ConnectionGuess | null =>
+/** `isConnection`: the text is known to name a database (a Host field, a found server), so a bare http(s) URL is ClickHouse. */
+export const guessConnection = (
+  text: string,
+  isConnection = false
+): ConnectionGuess | null =>
   Result.try(() => {
     const { forwards, rest, tunnel } = guessSsh(
       text.replaceAll(LINE_CONTINUATION, ' ')
     )
-    const database = DETECTORS.values()
+    const database = getDetectors(isConnection)
+      .values()
       .map((detect) => detect(rest))
       .find(Boolean)
     if (!database && !tunnel) {

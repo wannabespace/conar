@@ -94,7 +94,9 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
   {
     [Dialect.ClickHouse]: {
       array: { close: ')', open: 'Array(' },
+      boolean: /^Bool$/u,
       bytes: null,
+      dateKeywords: null,
       enum: clickhouseEnum,
       id: 'UInt64',
       incomparable:
@@ -103,10 +105,13 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       options: COLUMN_TYPES[Dialect.ClickHouse],
       uuid: /\bUUID\b/u,
       xml: null,
+      zoned: /\bDateTime/u,
     },
     [Dialect.MSSQL]: {
       array: null,
+      boolean: /^bit$/iu,
       bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
+      dateKeywords: null,
       enum: null,
       id: 'int identity',
       incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
@@ -114,10 +119,13 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       options: COLUMN_TYPES[Dialect.MSSQL],
       uuid: /^uniqueidentifier$/iu,
       xml: /^xml$/iu,
+      zoned: /^datetimeoffset$/iu,
     },
     [Dialect.MySQL]: {
       array: null,
+      boolean: null,
       bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
+      dateKeywords: null,
       enum: mysqlEnum,
       id: 'int auto_increment',
       incomparable: null,
@@ -126,10 +134,14 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       // MariaDB's native UUID; MySQL has none.
       uuid: /^uuid$/iu,
       xml: null,
+      // TIMESTAMP holds an instant, but MariaDB refuses an offset in its text.
+      zoned: null,
     },
     [Dialect.Postgres]: {
       array: { close: '[]', open: '' },
+      boolean: /^boolean$/u,
       bytes: null,
+      dateKeywords: /^(?:-?infinity|now|today|tomorrow|yesterday|epoch)$/iu,
       enum: null,
       id: 'serial',
       incomparable:
@@ -138,10 +150,13 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       options: COLUMN_TYPES[Dialect.Postgres],
       uuid: /^uuid$/iu,
       xml: /^xml$/iu,
+      zoned: / with time zone$/u,
     },
     [Dialect.SQLite]: {
       array: null,
+      boolean: /^boolean$/iu,
       bytes: /^blob$/iu,
+      dateKeywords: null,
       enum: null,
       id: 'integer',
       incomparable: null,
@@ -149,5 +164,6 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       options: COLUMN_TYPES[Dialect.SQLite],
       uuid: null,
       xml: null,
+      zoned: null,
     },
   }

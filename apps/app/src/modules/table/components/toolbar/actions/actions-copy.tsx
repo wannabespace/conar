@@ -129,9 +129,10 @@ export const ActionsCopy = ({
     selector: (state) => state.filters,
   })
   const { columns } = useTableColumnsContext()
-  const { data: indexes } = useQuery(
-    resourceIndexesQueryOptions({ connectionResource })
-  )
+  const { data: indexes } = useQuery({
+    ...resourceIndexesQueryOptions({ connectionResource }),
+    throwOnError: false,
+  })
   const [kind, setKind] = useState<Kind>('schema')
   const [formatType, setFormatType] = useState<GeneratorFormat>('sql')
 
