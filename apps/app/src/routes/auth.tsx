@@ -64,6 +64,14 @@ const AuthPage = () => {
     })
   )
 
+  const isWaiting = !!codeChallenge && !data?.ready && !error
+
+  const cancelSignIn = () => {
+    setVerifier(null)
+    setCodeChallenge(null)
+    posthog.capture('sign_in_cancelled')
+  }
+
   const { mutate: exchange } = useMutation(
     orpc.account.challenge.exchange.mutationOptions({
       onSuccess: async (exchangeData) => {
@@ -171,15 +179,23 @@ const AuthPage = () => {
                 size="lg"
                 onClick={() => signInWithChallenge()}
               >
-                {!!codeChallenge && !data?.ready && !error ? (
+                {isWaiting ? (
                   <span className="animate-pulse">Waiting for sign in...</span>
                 ) : (
                   'Sign In'
                 )}
               </Button>
-              <p className="text-muted-foreground mb-4 text-center text-xs">
-                Sign-in unlocks AI and cloud sync.
-              </p>
+              {isWaiting ? (
+                <div className="mb-2 flex justify-center">
+                  <Button variant="link-muted" size="xs" onClick={cancelSignIn}>
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-muted-foreground mb-4 text-center text-xs">
+                  Sign-in unlocks AI and cloud sync.
+                </p>
+              )}
             </motion.div>
             {!!error && (
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
