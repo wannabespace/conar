@@ -22,8 +22,8 @@ Double-click a tab label to rename it — handy when several query tabs are open
 
 Use the filter field in the toolbar above the table (or press <kbd>⌘</kbd> <kbd>F</kbd>). Start typing to either:
 
-- **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `like`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
-- **Ask AI** — type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically.
+- **Pick a column**: choose a _Filter by column_ suggestion, then pick an operator (`=`, `like`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
+- **Ask AI**: type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically. Parts the table's own columns cannot express are skipped and named in the result; <kbd>Esc</kbd> cancels a request still running.
 
 Typing a column name from a table a foreign key points at also offers _Filter by users.email_ (through `user_id`): it keeps the rows whose `user_id` belongs to a user matching the condition. These filters copy as SQL only.
 
@@ -92,13 +92,14 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     <kbd>Backspace</kbd> on the cursor cell empties it. Nullable columns show
     **Set null** at the bottom of the card. <kbd>⌘</kbd> <kbd>V</kbd> pastes
     straight into the cursor cell. Booleans are checkboxes — click one (or press
-    <kbd>Enter</kbd>) to flip it. Date and time fields have a **Now** button.
-    Enum values show as colored tags and open a list of tags to pick from; sets
-    of enum values toggle and stay open. Foreign keys open a search of the
-    referenced table — type a key or any text in that row, such as a name, and
-    pick the row. Columns with a default show **Default** at the bottom of the
-    card to put the default back (not on ClickHouse or SQLite). With a block of
-    cells selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of
+    <kbd>Enter</kbd>) to flip it. Date and time fields have a **Now** button,
+    which fills in your local time (with its offset where the column stores a
+    time zone). Enum values show as colored tags and open a list of tags to pick
+    from; sets of enum values toggle and stay open. Foreign keys open a search
+    of the referenced table: type a key or any text in that row, such as a name,
+    and pick the row. Columns with a default show **Default** at the bottom of
+    the card to put the default back (not on ClickHouse or SQLite). With a block
+    of cells selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of
     them. JSON and XML open a code editor, applied with <kbd>⌘</kbd>{' '}
     <kbd>Enter</kbd>; invalid JSON, a value missing from an enum, and text a
     number, date, timestamp or UUID column cannot read, are caught before they

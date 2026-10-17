@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -18,7 +19,6 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 
 import { createSchemaQuery } from '~/core/queries/schemas/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
@@ -34,11 +34,13 @@ const FORM_ID = 'schema-dialog'
 export const createSchemaDialogRef = createRef<{ create: () => void }>()
 
 export const SchemaForm = ({
+  error,
   isTaken,
   onSubmit,
   pending,
   schema,
 }: {
+  error: Error | null
   isTaken: (name: string) => boolean
   onSubmit: (name: string) => void
   pending: boolean
@@ -65,6 +67,7 @@ export const SchemaForm = ({
       </DialogHeader>
       <form
         id={FORM_ID}
+        className="flex flex-col gap-3"
         onSubmit={(e) => {
           e.preventDefault()
           setSubmitted(true)
@@ -91,6 +94,13 @@ export const SchemaForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription data-mask className="wrap-break-word">
+              {error.message}
+            </AlertDescription>
+          </Alert>
+        )}
       </form>
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>
@@ -113,19 +123,17 @@ export const CreateSchemaDialog = () => {
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
 
-  useImperativeHandle(createSchemaDialogRef, () => ({
-    create: () => setOpen(true),
-  }))
-
-  const { mutate: createSchema, isPending } = useMutation({
+  const {
+    error,
+    isPending,
+    mutate: createSchema,
+    reset,
+  } = useMutation({
     meta: { event: 'schema_created' },
     mutationFn: async (schema: string) => {
       await createSchemaQuery(schema).run(
         await connectionResourceToQueryParams(connectionResource)
       )
-    },
-    onError: (error) => {
-      toast.error(`Failed to create schema "${error.message}".`)
     },
     onSuccess: (_, schema) => {
       setOpen(false)
@@ -136,10 +144,18 @@ export const CreateSchemaDialog = () => {
     },
   })
 
+  useImperativeHandle(createSchemaDialogRef, () => ({
+    create: () => {
+      reset()
+      setOpen(true)
+    },
+  }))
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <SchemaForm
+          error={error}
           isTaken={(name) =>
             !!tablesAndSchemas?.schemas.some((schema) => schema.name === name)
           }

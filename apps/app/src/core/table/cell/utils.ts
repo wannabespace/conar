@@ -1,5 +1,6 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
+import { format } from 'date-fns'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
@@ -45,6 +46,26 @@ export interface Column extends Partial<
   }[]
 }
 
+export const TIME_FORMATS: Partial<Record<Column['uiType'], string>> = {
+  date: 'yyyy-MM-dd',
+  datetime: 'yyyy-MM-dd HH:mm:ss',
+  time: 'HH:mm:ss',
+}
+
+/** Local wall-clock text, with the offset only where the column stores a time zone. */
+export const formatColumnTime = (
+  date: Date,
+  pattern: string,
+  column: Column,
+  dialect: Dialect
+) =>
+  format(
+    date,
+    getCapabilities(dialect).columnTypes.zoned?.test(column.type ?? '')
+      ? `${pattern}xxx`
+      : pattern
+  )
+
 const SELECT_COLUMN_ID = '!__(selection_column)__!'
 const ACTIONS_COLUMN_ID = '!__(actions_column)__!'
 
@@ -78,6 +99,7 @@ export const getColumnSize = (type: string): number =>
   )?.[1] ?? DEFAULT_COLUMN_WIDTH
 
 export const getColumnUiType = (
+  dialect: Dialect,
   column: typeof columnType.infer
 ): Column['uiType'] => {
   if (column.isArray) {
@@ -88,7 +110,7 @@ export const getColumnUiType = (
     return 'select'
   }
 
-  if (column.type === 'boolean') {
+  if (getCapabilities(dialect).columnTypes.boolean?.test(column.typeLabel)) {
     return 'boolean'
   }
 

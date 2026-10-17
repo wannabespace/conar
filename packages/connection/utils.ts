@@ -10,6 +10,8 @@ import { SSH_PARAMS } from './ssh/params'
 export const SQLITE_RESOURCE_NAME = 'main'
 
 interface EngineString {
+  /** The database the server opens when the string names none; absent when only the server knows (a login's default). */
+  defaultDatabase?: (user: string) => string
   label: (parts: { address: string; database: string; host: string }) => string
   /** The one resource the engine opens, kept out of the string's path; `null` when the path names it. */
   resource: string | null
@@ -21,11 +23,17 @@ const SERVER_STRING: EngineString = {
 }
 
 const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
-  [ConnectionType.ClickHouse]: SERVER_STRING,
+  [ConnectionType.ClickHouse]: {
+    ...SERVER_STRING,
+    defaultDatabase: () => 'default',
+  },
   [ConnectionType.MariaDB]: SERVER_STRING,
   [ConnectionType.MSSQL]: SERVER_STRING,
   [ConnectionType.MySQL]: SERVER_STRING,
-  [ConnectionType.Postgres]: SERVER_STRING,
+  [ConnectionType.Postgres]: {
+    ...SERVER_STRING,
+    defaultDatabase: (user) => user,
+  },
   [ConnectionType.SQLite]: {
     label: ({ database }) => database.slice(database.lastIndexOf('/') + 1),
     resource: SQLITE_RESOURCE_NAME,
@@ -46,11 +54,12 @@ const getEngineString = (connectionString: string) => {
 }
 
 export const describeConnectionString = (connectionString: string) => {
-  const { database, host, password, searchParams } =
+  const { database, host, password, searchParams, user } =
     readConnectionString(connectionString)
-  const { label, resource } = getEngineString(connectionString)
+  const { defaultDatabase, label, resource } = getEngineString(connectionString)
   return {
-    defaultResourceName: resource ?? (database || null),
+    defaultResourceName:
+      resource ?? (database || defaultDatabase?.(user) || null),
     displayUrl: label({
       address: new SafeURL(connectionString).host,
       database,

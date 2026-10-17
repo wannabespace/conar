@@ -21,9 +21,13 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
+import { getRouteApi } from '@tanstack/react-router'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
 import { isNumericColumn } from '~/core/table/cell/utils'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const columnClauses = (column: Column) =>
   [
@@ -50,7 +54,10 @@ const UI_TYPE_ICONS: Partial<Record<Column['uiType'], IconSvgElement>> = {
   time: Clock01Icon,
 }
 
-const columnIcon = (column: Column) => {
+const columnIcon = (
+  column: Column,
+  { json, xml }: ReturnType<typeof getCapabilities>['columnTypes']
+) => {
   if (column.primaryKey) {
     return Key01Icon
   }
@@ -65,7 +72,7 @@ const columnIcon = (column: Column) => {
     return HashtagIcon
   }
   const type = column.type?.toLowerCase() ?? ''
-  if (type.includes('json') || type.includes('xml')) {
+  if (json.test(type) || xml?.test(type)) {
     return BracesIcon
   }
   if (type.includes('uuid') || type.includes('uniqueidentifier')) {
@@ -90,27 +97,30 @@ const ColumnClauses = ({ column }: { column: Column }) => (
   </TooltipContent>
 )
 
-export const ColumnHeading = ({ column }: { column: Column }) => (
-  <Tooltip>
-    <TooltipTrigger
-      render={<div className="flex min-w-0 items-center gap-1.5" />}
-    >
-      <HugeiconsIcon
-        icon={columnIcon(column)}
-        strokeWidth={2}
-        aria-label={column.typeLabel}
-        className={cn(
-          'size-3.5 shrink-0',
-          column.primaryKey ? 'text-primary' : 'text-muted-foreground'
-        )}
-      />
-      <span data-mask className="truncate text-xs font-medium">
-        {column.id}
-      </span>
-    </TooltipTrigger>
-    <ColumnClauses column={column} />
-  </Tooltip>
-)
+export const ColumnHeading = ({ column }: { column: Column }) => {
+  const { dialect } = useRouteContext()
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={<div className="flex min-w-0 items-center gap-1.5" />}
+      >
+        <HugeiconsIcon
+          icon={columnIcon(column, getCapabilities(dialect).columnTypes)}
+          strokeWidth={2}
+          aria-label={column.typeLabel}
+          className={cn(
+            'size-3.5 shrink-0',
+            column.primaryKey ? 'text-primary' : 'text-muted-foreground'
+          )}
+        />
+        <span data-mask className="truncate text-xs font-medium">
+          {column.id}
+        </span>
+      </TooltipTrigger>
+      <ColumnClauses column={column} />
+    </Tooltip>
+  )
+}
 
 export const ColumnType = ({ column }: { column: Column }) => (
   <Tooltip>

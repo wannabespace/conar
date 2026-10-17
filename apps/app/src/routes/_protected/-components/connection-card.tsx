@@ -213,7 +213,7 @@ export const ConnectionCard = ({
         </div>
         <ConnectionCardMeta
           canSend={canSend}
-          connectionId={connection.id}
+          connection={connection}
           databaseKnown={!needsDetails}
           displayUrl={connectionString?.displayUrl}
           resources={resources}

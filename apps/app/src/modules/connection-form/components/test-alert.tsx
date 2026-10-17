@@ -99,7 +99,7 @@ export const TestAlert = ({
               diagnosis && <span>{diagnosis.hint}</span>
             )}
             {(!diagnosis || showError) && (
-              <span data-mask className="font-mono text-xs wrap-break-word">
+              <span data-mask className="font-mono text-xs wrap-anywhere">
                 {error.message}
               </span>
             )}

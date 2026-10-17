@@ -239,7 +239,7 @@ export const attachGhostTextEscape = (
 }
 
 // `?` stays out: it is Postgres's jsonb key-exists operator.
-const PROSE = /[.!:…]\s|[.!:…]$/u
+const NOT_SQL = /[.!:…]\s|[.!:…]$|```|^\(empty response\b/iu
 
 const LEADING_BLANK_LINES = /^\s*\n/u
 
@@ -321,7 +321,7 @@ export const registerGhostText = (id: string, dialect: DialectSpec) =>
         blankLine ? reply.replace(LEADING_BLANK_LINES, '') : reply,
         dialect
       )
-      if (!suggestion.trim() || PROSE.test(suggestion.trim())) {
+      if (!suggestion.trim() || NOT_SQL.test(suggestion.trim())) {
         return { items: [] }
       }
       const insertText = needsLeadingSpace(

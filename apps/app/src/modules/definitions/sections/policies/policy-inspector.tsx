@@ -125,7 +125,11 @@ export const PolicyInspector = ({
           <OptionField
             htmlFor="policy-row-level-security"
             title="Row level security"
-            description="Off, the table ignores every policy on it."
+            description={
+              item.enabled
+                ? 'On, the table applies its policies.'
+                : 'Off, the table ignores every policy on it.'
+            }
           >
             <Switch
               id="policy-row-level-security"
@@ -201,7 +205,7 @@ export const PolicyInspector = ({
           </form.AppField>
         </div>
         <FieldDescription>
-          Permissive policies widen access, restrictive ones narrow it — every
+          Permissive policies widen access, restrictive ones narrow it: every
           restrictive policy must also pass.
         </FieldDescription>
         <form.AppField name="roles">

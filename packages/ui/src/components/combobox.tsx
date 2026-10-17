@@ -300,6 +300,9 @@ const ComboboxChip = ({
     {showRemove && (
       <ComboboxPrimitive.ChipRemove
         render={<Button variant="ghost" size="icon-xs" />}
+        aria-label={
+          props['aria-label'] ? `Remove ${props['aria-label']}` : 'Remove'
+        }
         className="-ml-0.5 size-4.5 opacity-50 hover:opacity-100 aria-disabled:pointer-events-none"
         data-slot="combobox-chip-remove"
       >

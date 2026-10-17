@@ -69,15 +69,27 @@ const FULL_PATH = /^\s*(?:\/|~\/|[a-z]:[\\/])/iu
 const connectionFormSchema = type({
   database: 'string',
   host: 'string',
+  options: 'string',
+  password: 'string',
   port,
   provider: type.valueOf(Provider).or('null'),
   ssh: { host: 'string', port },
   sshEnabled: 'boolean',
   type: type.valueOf(ConnectionType),
+  user: 'string',
 })
   .narrow((values, ctx) => {
-    const { field, message } = getEngineFields(values)
-    return /\S/u.test(values[field]) || ctx.reject({ message, path: [field] })
+    const { field, message, rows } = getEngineFields(values)
+    const empty = [
+      { message, name: field },
+      ...rows.flatMap(({ name, required }) =>
+        required ? [{ message: required, name }] : []
+      ),
+    ].filter(({ name }) => !/\S/u.test(values[name]))
+    for (const row of empty) {
+      ctx.reject({ message: row.message, path: [row.name] })
+    }
+    return empty.length === 0
   })
   .narrow(
     (values, ctx) =>
@@ -109,7 +121,7 @@ export const getFormValues = (
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    provider: connection.provider,
+    provider: parts ? parts.provider : connection.provider,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
@@ -211,7 +223,7 @@ const expandField = (
   const { values } = form.state
   const { field } = getEngineFields(values)
   const value = values[field]
-  const guess = guessConnection(value)
+  const guess = guessConnection(value, true)
   const read = guess?.parts[field]
   if (
     guess &&
@@ -274,6 +286,9 @@ export const useConnectionForm = ({
         if (value !== undefined) {
           form.setFieldValue(field, value)
         }
+      }
+      if (patch.https !== undefined) {
+        form.setFieldValue('https', patch.https)
       }
       if (patch.sshEnabled) {
         form.setFieldValue('sshEnabled', true)

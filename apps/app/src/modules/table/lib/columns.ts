@@ -1,4 +1,5 @@
 import { useQueries } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { createContext, use } from 'react'
 
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -8,6 +9,8 @@ import { resourceTableColumnsQueryOptions } from '~/core/queries/tables/columns'
 import type { Column } from '~/core/table/cell/utils'
 import { getColumnUiType } from '~/core/table/cell/utils'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 export const useTableColumnsQuery = ({
   connectionResource,
   table,
@@ -16,8 +19,9 @@ export const useTableColumnsQuery = ({
   connectionResource: ConnectionResource
   table: string
   schema: string
-}) =>
-  useQueries({
+}) => {
+  const { dialect } = useRouteContext()
+  return useQueries({
     combine: ([columns, constraints, enums]): {
       data?: Column[]
       isPending: boolean
@@ -105,7 +109,7 @@ export const useTableColumnsQuery = ({
                 }
               })
               .filter((ref) => ref !== null),
-            uiType: getColumnUiType(column),
+            uiType: getColumnUiType(dialect, column),
             unique: uniqueConstraint?.name,
           } satisfies Column
         })
@@ -131,6 +135,7 @@ export const useTableColumnsQuery = ({
       resourceEnumsQueryOptions({ connectionResource }),
     ],
   })
+}
 
 export const ColumnsContext = createContext<{
   columns: Column[]

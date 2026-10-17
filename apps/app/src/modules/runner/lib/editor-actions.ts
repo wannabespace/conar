@@ -128,5 +128,6 @@ export const useEditorActions = (
     const codeEditor = editorRef.current
     codeEditor?.createContextKey(AI_REVIEW_CONTEXT_KEY, reviewing)
     codeEditor?.createContextKey(FAILED_CONTEXT_KEY, failing)
+    codeEditor?.updateOptions({ inlineSuggest: { enabled: !reviewing } })
   }, [editorRef, failing, reviewing])
 }

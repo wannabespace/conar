@@ -47,14 +47,10 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const display = (value: unknown) =>
   getDisplayValue(value, Number.MAX_SAFE_INTEGER)
 
-const rowLabel = (primaryKeys: PrimaryKeys) => {
-  const entries = Object.entries(primaryKeys)
-  return entries.length === 1
-    ? display(entries[0]?.[1])
-    : entries
-        .map(([column, value]) => `${column} ${display(value)}`)
-        .join(' · ')
-}
+const rowLabel = (primaryKeys: PrimaryKeys) =>
+  Object.entries(primaryKeys)
+    .map(([column, value]) => `${column} ${display(value)}`)
+    .join(' · ')
 
 export const ActionsDelete = ({
   table,
@@ -120,9 +116,12 @@ export const ActionsDelete = ({
             <AlertDialogTitle>Delete {noun}?</AlertDialogTitle>
             <AlertDialogDescription>
               {only ? (
-                <span data-mask className="text-foreground font-medium">
-                  {rowLabel(only)}
-                </span>
+                <>
+                  The row with{' '}
+                  <span data-mask className="text-foreground font-medium">
+                    {rowLabel(only)}
+                  </span>
+                </>
               ) : (
                 'These rows'
               )}{' '}

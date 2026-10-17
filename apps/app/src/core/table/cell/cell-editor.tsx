@@ -21,13 +21,7 @@ import { CellFieldActions } from './cell-field-actions'
 import { CellReference } from './cell-reference'
 import { CellSelect, isPickColumn } from './cell-select'
 import type { Column } from './utils'
-import { hasTabularFigures } from './utils'
-
-const NOW_SLICE: Partial<Record<Column['uiType'], [number, number]>> = {
-  date: [0, 10],
-  datetime: [0, 19],
-  time: [11, 19],
-}
+import { formatColumnTime, hasTabularFigures, TIME_FORMATS } from './utils'
 
 const codeLanguage = (
   dialect: Dialect,
@@ -52,7 +46,7 @@ interface FieldProps {
 
 const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
   const ref = useRef<HTMLTextAreaElement>(null)
-  const nowSlice = readOnly ? undefined : NOW_SLICE[column.uiType]
+  const nowFormat = readOnly ? undefined : TIME_FORMATS[column.uiType]
 
   useHotkeys(
     [
@@ -107,18 +101,14 @@ const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
           field.scrollTop = field.scrollHeight
         }}
       />
-      {nowSlice && (
+      {nowFormat && (
         <Button
           variant="ghost-muted"
           size="xs"
           className="m-1 shrink-0"
           onClick={() => {
-            // UTC wall clock: engines read a bare timestamp in the session time zone.
             cursor.change(
-              new Date()
-                .toISOString()
-                .replace('T', ' ')
-                .slice(...nowSlice)
+              formatColumnTime(new Date(), nowFormat, column, cursor.dialect)
             )
             ref.current?.focus()
           }}

@@ -41,6 +41,9 @@ import { nameColumn } from '../lib/columns'
 
 type EnumItem = typeof enumType.infer
 
+const REMOVED_VALUE_IN_USE =
+  /invalid input value for enum .+?: "(?<value>[^"]*)"/iu
+
 const enumPlan = (item: EnumItem | null, drafts: EditableListItem[]) => {
   const original = item?.values ?? []
   const rows = drafts
@@ -132,7 +135,15 @@ const saveEnum = async ({
         schema: item.schema,
         values: plan.values,
       })
-    )
+    ).catch((error: Error) => {
+      const value = error.message.match(REMOVED_VALUE_IN_USE)?.groups?.value
+
+      throw value === undefined
+        ? error
+        : new Error(
+            `Rows still hold "${value}". Change them to another value first, or keep "${value}" in the list.`
+          )
+    })
     return
   }
 
@@ -174,7 +185,7 @@ const valuesNote = ({
     return null
   }
   if (readOnly) {
-    return 'We cannot edit enums on this database yet.'
+    return 'Tamery can’t edit enums on this database.'
   }
   return recreating
     ? null

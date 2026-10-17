@@ -164,7 +164,7 @@ export const Tab = ({
 
   const icon = resolved && (
     <HugeiconsIcon
-      icon={resolved.kind.icon}
+      icon={resolved.kind.icon(resolved.params)}
       strokeWidth={2}
       className={cn(
         'text-muted-foreground/60 size-3.5 shrink-0 transition-colors duration-40',

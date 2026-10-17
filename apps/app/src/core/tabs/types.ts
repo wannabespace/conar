@@ -19,7 +19,7 @@ export type ConnectionTab = typeof connectionTabType.infer
 export interface TabKind<Params = unknown> {
   available?(params: Params, dialect: Dialect): boolean
   fullTitle?(params: Params): string
-  icon: IconSvgElement
+  icon(params: Params): IconSvgElement
   label?(params: Params, siblings: Params[]): string
   match(id: string): Params | null
   onActivate?(resourceId: string, params: Params): void

@@ -20,6 +20,8 @@ const d1Answer = type({
 /** D1 ends a SQL error with its result code, which a file's error never carries. */
 const SQLITE_CODE_SUFFIX = /: SQLITE_\w+(?: \(extended: \w+\))?$/u
 
+const BARE_OFFSET = / at offset (?<offset>\d+)$/u
+
 interface D1Statement {
   params: unknown[]
   sql: string
@@ -65,7 +67,9 @@ const send = async (
       answer instanceof type.errors
         ? []
         : answer.errors.map(({ message }) =>
-            message.replace(SQLITE_CODE_SUFFIX, '')
+            message
+              .replace(SQLITE_CODE_SUFFIX, '')
+              .replace(BARE_OFFSET, ' (at offset $<offset>)')
           )
     throw new Error(
       messages.join('\n') || `Cloudflare answered ${response.status}`

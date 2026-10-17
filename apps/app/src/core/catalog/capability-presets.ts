@@ -58,8 +58,12 @@ export interface ArrayType {
 
 export interface ColumnTypeCapabilities {
   array: ArrayType | null
+  // Matched against the type label, which drops ClickHouse's Nullable and LowCardinality wrappers.
+  boolean: RegExp | null
   // The driver hands these values over as bytes; Postgres reads `bytea` as text, so it matches none.
   bytes: RegExp | null
+  // Words a date or timestamp column takes in place of a date; the rest fail on save.
+  dateKeywords: RegExp | null
   enum: InlineEnum | null
   id: string
   // ORDER BY, GROUP BY or COUNT(DISTINCT) reject these; Distinct Values also skips `bytes`.
@@ -69,6 +73,8 @@ export interface ColumnTypeCapabilities {
   options: readonly string[]
   uuid: RegExp | null
   xml: RegExp | null
+  // Hold an instant, so Now spells the local offset; the rest take the local wall clock.
+  zoned: RegExp | null
 }
 
 export interface ConnectionCapabilities {

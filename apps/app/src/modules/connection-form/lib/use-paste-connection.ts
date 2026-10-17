@@ -62,7 +62,7 @@ export const usePasteConnection = ({
     if (!enabled) {
       return
     }
-    const guess = guessConnection(text)
+    const guess = guessConnection(text, via === 'found')
     if (guess) {
       hit(guess, via)
       return
@@ -106,7 +106,7 @@ export const usePasteConnection = ({
       read(text, 'paste')
       return
     }
-    const guess = guessConnection(text)
+    const guess = guessConnection(text, true)
     if (
       guess &&
       guess.format !== 'host' &&

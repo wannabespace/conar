@@ -10,7 +10,11 @@ import type { privilegeType } from '~/core/queries/privileges/list'
 import { resourcePrivilegesQueryOptions } from '~/core/queries/privileges/list'
 import { revokePrivilegeQuery } from '~/core/queries/privileges/revoke'
 import type { PrivilegeTarget } from '~/core/queries/privileges/shape'
-import { ALL_TABLES, PRIVILEGE_TYPES } from '~/core/queries/privileges/shape'
+import {
+  ALL_TABLES,
+  grantCoversSchema,
+  PRIVILEGE_TYPES,
+} from '~/core/queries/privileges/shape'
 import { queryClient } from '~/lib/query-client'
 
 import {
@@ -181,7 +185,7 @@ const columns: DefinitionsColumn<PrivilegeItem>[] = [
 ]
 
 const privilegeKey = (item: PrivilegeItem) =>
-  JSON.stringify([item.grantee, item.table, item.privilege])
+  JSON.stringify([item.grantee, item.schema, item.table, item.privilege])
 
 export const Privileges = () => {
   const state = useDefinitionsState({ section: 'privileges' })
@@ -200,13 +204,29 @@ export const Privileges = () => {
     <DefinitionsPage
       columns={columns}
       dropItem={(item) => run(revokePrivilegeQuery(item))}
+      dropWording={(item) => ({
+        action: 'Revoke',
+        done: `Revoked ${item.privilege} from ${item.grantee}`,
+        effect: 'The account loses this privilege at once.',
+        title: `Revoke ${item.privilege} from ${item.grantee}?`,
+      })}
       Inspector={PrivilegeInspector}
-      items={privileges.filter((item) => item.schema === selectedSchema)}
+      items={privileges.filter((item) =>
+        item.table === ALL_TABLES && selectedSchema
+          ? grantCoversSchema(item.schema, selectedSchema)
+          : item.schema === selectedSchema
+      )}
       getKey={privilegeKey}
       loading={isPending}
       match={(item) =>
         privilegeFilter.matches(item.privilege) &&
-        matchesSearch(search, item.grantee, item.table, item.privilege)
+        matchesSearch(
+          search,
+          item.grantee,
+          item.grantee.replaceAll("'", ''),
+          tableLabel(item.table),
+          item.privilege
+        )
       }
       queryKey={query.queryKey}
       state={state}

@@ -6,6 +6,7 @@ import type { SSH_FIELD_AT_FAULT } from './ssh/params'
 export interface ConnectionPatch {
   database?: string
   host?: string
+  https?: boolean
   options?: string
   port?: string
   sshEnabled?: boolean

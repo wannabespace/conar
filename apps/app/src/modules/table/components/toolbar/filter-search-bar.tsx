@@ -31,7 +31,7 @@ const getFilterPlaceholder = ({
     return stage.ref.isArray ? 'Values, comma-separated…' : 'Value…'
   }
   if (!isOnline) {
-    return 'Offline — AI unavailable'
+    return 'Offline, AI unavailable'
   }
   return 'Filter or ask AI…'
 }
@@ -48,7 +48,11 @@ export const FilterSearchBar = ({
   const [isFocused, setIsFocused] = useState(false)
   const { columns } = useTableColumnsContext()
   const ai = useFilterAi({ inputRef, schema, table })
-  const composer = useFilterComposer({ inputRef, onQueryChange: ai.dismiss })
+  const composer = useFilterComposer({
+    busy: ai.isPending,
+    inputRef,
+    onQueryChange: ai.dismiss,
+  })
   const {
     filters,
     highlighted,
@@ -135,7 +139,8 @@ export const FilterSearchBar = ({
             value={query}
             onValueChange={setQuery}
             placeholder={getFilterPlaceholder({ isOnline: ai.isOnline, stage })}
-            disabled={ai.isPending}
+            // Read-only, not disabled: a disabled input drops focus, and Esc must still cancel the request.
+            readOnly={ai.isPending}
             className="placeholder:text-muted-foreground h-6 min-w-32 flex-1 bg-transparent text-sm outline-none"
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}

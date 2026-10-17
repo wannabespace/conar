@@ -17,6 +17,21 @@ export const PRIVILEGE_TYPES = [
 
 export const ALL_TABLES = '*'
 
+const LIKE_TOKEN = /\\(?<literal>.)|[%_]|[^\\%_]+|\\/gsu
+const LIKE_WILDCARDS: Record<string, string> = { '%': '.*', _: '.' }
+
+// A database-wide grant names a LIKE pattern (`app\_db`, `app%`), not a
+// database, and REVOKE needs that exact pattern back.
+export const grantCoversSchema = (pattern: string, schema: string) =>
+  new RegExp(
+    `^${pattern.replaceAll(LIKE_TOKEN, (token, literal?: string) =>
+      literal === undefined
+        ? (LIKE_WILDCARDS[token] ?? RegExp.escape(token))
+        : RegExp.escape(literal)
+    )}$`,
+    'su'
+  ).test(schema)
+
 export interface PrivilegeTarget {
   grantable?: boolean
   grantee: string

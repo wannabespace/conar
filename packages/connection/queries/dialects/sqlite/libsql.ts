@@ -16,7 +16,7 @@ const openClient = (connectionString: string) => {
   })
 }
 
-const SQLITE_ERROR_PREFIX = /^(?:SQLITE_\w+: )+SQLite error: /u
+const SQLITE_ERROR_PREFIX = /^(?:[A-Z][A-Z_]*: )+SQLite(?: input)? error: /u
 
 /** On a client, each statement runs on a stream of its own; only a `Transaction` keeps one between them. */
 const runOn = (

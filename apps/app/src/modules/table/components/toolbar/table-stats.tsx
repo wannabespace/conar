@@ -37,7 +37,7 @@ const CountDetails = ({
   updatedAt: number
 }) => {
   if (failed) {
-    return 'No row count — the query failed.'
+    return "Couldn't count the rows."
   }
   if (!total) {
     return 'Counting rows…'

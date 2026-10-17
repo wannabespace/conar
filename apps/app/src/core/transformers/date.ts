@@ -5,11 +5,10 @@ import type { ValueTransformer } from './value-transformer'
 
 const DATE_TEXT =
   /^\d{4,}-\d{1,2}-\d{1,2}(?:[ T]\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:\s?(?:Z|[+-]\d{2}(?::?\d{2})?))?)?(?: BC)?$/iu
-const SPECIAL_DATE_TEXT =
-  /^(?:-?infinity|now|today|tomorrow|yesterday|epoch)$/iu
 
 export const createDateTransformer = (
-  column: Column
+  column: Column,
+  keywords: RegExp | null
 ): ValueTransformer<unknown> => ({
   ...createRawTransformer(),
   toConnection: {
@@ -18,7 +17,7 @@ export const createDateTransformer = (
       if (text === '' && column.isNullable) {
         return null
       }
-      if (!DATE_TEXT.test(text) && !SPECIAL_DATE_TEXT.test(text)) {
+      if (!(DATE_TEXT.test(text) || keywords?.test(text))) {
         throw new Error(
           column.uiType === 'date'
             ? 'Enter a date like 2026-08-23'

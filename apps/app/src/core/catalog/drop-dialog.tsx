@@ -16,10 +16,18 @@ import { AnimatePresence } from 'motion/react'
 
 import { OptionField } from '~/components/option-field'
 
+export interface DropWording {
+  action: string
+  done: string
+  effect?: string
+  title?: string
+}
+
 export const DropDialog = ({
   cascadable,
   cascade,
   error,
+  wording,
   name,
   noun,
   onCascadeChange,
@@ -38,16 +46,23 @@ export const DropDialog = ({
   onOpenChange: (open: boolean) => void
   open: boolean
   pending: boolean
+  wording?: Omit<DropWording, 'done'>
 }) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Drop {noun}?</AlertDialogTitle>
+        <AlertDialogTitle data-mask={!!wording?.title || undefined}>
+          {wording?.title ?? `Drop ${noun}?`}
+        </AlertDialogTitle>
         <AlertDialogDescription>
-          <span data-mask className="text-foreground font-medium">
-            {name}
-          </span>{' '}
-          will be removed from the database. This cannot be undone.
+          {wording?.effect ?? (
+            <>
+              <span data-mask className="text-foreground font-medium">
+                {name}
+              </span>{' '}
+              will be removed from the database. This cannot be undone.
+            </>
+          )}
         </AlertDialogDescription>
       </AlertDialogHeader>
       {cascadable && (
@@ -82,7 +97,9 @@ export const DropDialog = ({
           disabled={pending}
           onClick={onDrop}
         >
-          <LoadingContent loading={pending}>Drop {noun}</LoadingContent>
+          <LoadingContent loading={pending}>
+            {wording?.action ?? `Drop ${noun}`}
+          </LoadingContent>
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

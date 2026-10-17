@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 
 import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { createTableQuery } from '~/core/queries/tables/create'
@@ -28,19 +27,12 @@ export const CreateTableDialog = () => {
   )
   const schemas = tablesAndSchemas?.schemas ?? []
 
-  useImperativeHandle(createTableDialogRef, () => ({
-    create: (schema) =>
-      setRequest({
-        schema:
-          schema ??
-          getDefaultSchema(dialect, connectionResource.name) ??
-          schemas[0]?.name ??
-          '',
-        table: null,
-      }),
-  }))
-
-  const { mutate: createTable, isPending } = useMutation({
+  const {
+    error,
+    isPending,
+    mutate: createTable,
+    reset,
+  } = useMutation({
     meta: { event: 'table_created' },
     mutationFn: async ({
       schema,
@@ -62,9 +54,6 @@ export const CreateTableDialog = () => {
         table,
       }).run(await connectionResourceToQueryParams(connectionResource))
     },
-    onError: (error) => {
-      toast.error(`Failed to create table "${error.message}".`)
-    },
     onSuccess: async (_, { schema, table }) => {
       setRequest(null)
       await queryClient.invalidateQueries({
@@ -81,8 +70,23 @@ export const CreateTableDialog = () => {
     },
   })
 
+  useImperativeHandle(createTableDialogRef, () => ({
+    create: (schema) => {
+      reset()
+      setRequest({
+        schema:
+          schema ??
+          getDefaultSchema(dialect, connectionResource.name) ??
+          schemas[0]?.name ??
+          '',
+        table: null,
+      })
+    },
+  }))
+
   return (
     <TableDialog
+      error={error}
       request={request}
       schemas={schemas.map(({ name }) => name)}
       isTaken={(schema, name) =>

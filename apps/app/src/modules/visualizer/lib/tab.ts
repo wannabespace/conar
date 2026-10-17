@@ -11,7 +11,7 @@ export const visualizerSchemaItem: SchemaItem = {
 }
 
 export const visualizerTab: TabKind = {
-  icon: HierarchyIcon,
+  icon: () => HierarchyIcon,
   match: (id) => (id === VISUALIZER_TAB_ID ? {} : null),
   title: () => 'Visualizer',
   type: 'visualizer',

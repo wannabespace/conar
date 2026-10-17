@@ -14,6 +14,7 @@ import {
   bindValue,
   clickhouseFilterValues,
   matchesPrimaryKeys,
+  sqliteFilterValues,
 } from './shape'
 
 mock.module('~/core/runtime/dialects/driver', () => ({
@@ -79,6 +80,29 @@ test('ClickHouse filters parse ISO text for a DateTime column and keep it for a 
   expect(prepareQuery(query.compile())).toBe(
     `select * from \`events\` where (\`at\` = parseDateTime64BestEffort('${iso}', 0) and \`note\` = '${iso}')`
   )
+})
+
+test('SQLite filters bind true and false as 1 and 0 on a boolean column only', () => {
+  const { parameters } = postgres
+    .selectFrom('items')
+    .selectAll()
+    .where((eb) =>
+      toKyselyFilter(
+        eb,
+        [
+          { column: 'active', ref: EQUAL_FILTER, values: ['true'] },
+          { column: 'note', ref: EQUAL_FILTER, values: ['false'] },
+        ],
+        'AND',
+        sqliteFilterValues([
+          { id: 'active', type: 'boolean' },
+          { id: 'note', type: 'text' },
+        ])
+      )
+    )
+    .compile()
+
+  expect(parameters).toEqual([1, 'false'])
 })
 
 test('a json column binds json text, NULL as is and undefined as DEFAULT', () => {

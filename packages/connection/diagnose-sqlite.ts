@@ -12,9 +12,9 @@ const RULES: Omit<DiagnosisRule, 'engine'>[] = [
     match: /file is not a database/iu,
   },
   {
-    diagnose: () => ({
+    diagnose: ({ parts }) => ({
       focus: 'database',
-      hint: 'It may have been moved, renamed or deleted, or the path names a folder. Choose the file again.',
+      hint: `Tamery looked for it at ${parts.database}. It may have been moved, renamed or deleted, or the path names a folder. Choose the file again.`,
       title: "Can't open the database file",
     }),
     match: /unable to open database file/iu,

@@ -26,7 +26,8 @@ export const createTransformer = (
   // oxlint-disable-next-line ts/no-explicit-any
 ): ValueTransformer<any> => {
   const type = column.type ?? ''
-  const { bytes, json, uuid } = getCapabilities(dialect).columnTypes
+  const { bytes, dateKeywords, json, uuid } =
+    getCapabilities(dialect).columnTypes
   if (json.test(type)) {
     return createJsonTransformer()
   }
@@ -49,7 +50,7 @@ export const createTransformer = (
 
     case 'date':
     case 'datetime': {
-      return createDateTransformer(column)
+      return createDateTransformer(column, dateKeywords)
     }
 
     case 'select': {

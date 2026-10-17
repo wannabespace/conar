@@ -2,7 +2,6 @@ import { Dialog, DialogContent } from '@tamery/ui/components/dialog'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import { renameSchemaQuery } from '~/core/queries/schemas/rename'
@@ -30,22 +29,17 @@ export const RenameSchemaDialog = ({
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
 
-  useImperativeHandle(ref, () => ({
-    rename: (next) => {
-      setSchema(next)
-      setOpen(true)
-    },
-  }))
-
-  const { mutate: renameSchema, isPending } = useMutation({
+  const {
+    error,
+    isPending,
+    mutate: renameSchema,
+    reset,
+  } = useMutation({
     meta: { event: 'schema_renamed' },
     mutationFn: async (name: string) => {
       await renameSchemaQuery({ name, schema }).run(
         await connectionResourceToQueryParams(connectionResource)
       )
-    },
-    onError: (error) => {
-      toast.error(`Failed to rename schema "${error.message}".`)
     },
     onSuccess: async () => {
       setOpen(false)
@@ -69,12 +63,21 @@ export const RenameSchemaDialog = ({
     },
   })
 
+  useImperativeHandle(ref, () => ({
+    rename: (next) => {
+      reset()
+      setSchema(next)
+      setOpen(true)
+    },
+  }))
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <SchemaForm
           key={schema}
           schema={schema}
+          error={error}
           isTaken={(name) =>
             !!tablesAndSchemas?.schemas.some((other) => other.name === name)
           }

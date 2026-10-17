@@ -46,7 +46,6 @@ export const GUEST_CONNECTIONS_MESSAGE = 'Guests can save one connection.'
 export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol(
   'CONNECTION_RESOURCE_ROOT'
 )
-export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
 
 export const PROXY_ERROR_MESSAGE =
   "We can't connect to the proxy, please check your connection and try again."

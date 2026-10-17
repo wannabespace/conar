@@ -20,6 +20,8 @@ const FIX_NOTES: Record<GuessFix, string> = {
   'ssh-forward': 'Connecting to the forwarded server through the SSH tunnel.',
 }
 
+const FIELD_LIST = new Intl.ListFormat('en', { type: 'conjunction' })
+
 export const PasteNotes = ({
   fixes,
   form,
@@ -41,7 +43,7 @@ export const PasteNotes = ({
   const note = [
     ...(missing.length > 0
       ? [
-          `Add the ${missing.map((field) => getFieldNoun(engineFields, field)).join(' and ')}${withheld}.`,
+          `Add the ${FIELD_LIST.format(missing.map((field) => getFieldNoun(engineFields, field)))}${withheld}.`,
         ]
       : []),
     ...fixes.map((fix) => FIX_NOTES[fix]),

@@ -70,7 +70,7 @@ The **Schema** list in the sidebar covers everything about your database except 
 
 The inspector is also the editor. It groups an object into sections — general, what it targets, its options, and the SQL behind it — with a short note beside each section and under the fields that need one. Fields you can change are enabled; the rest are shown read-only.
 
-- **Add** with the **+ Add** button at the top right, or <kbd>⌘</kbd><kbd>N</kbd> in the desktop app. When nothing can be added yet, the reason shows beside the button, and a list Tamery cannot add to on this engine says so where the button would be. For example, a PostgreSQL trigger needs a function that returns `trigger`, and **Create trigger function** opens one ready to fill in.
+- **Add** with the **+ Add** button at the top right, or <kbd>⌘</kbd><kbd>N</kbd> in the desktop app. When nothing can be added yet, the reason shows under the button, and a list Tamery cannot add to on this engine says so in its place. For example, a PostgreSQL trigger needs a function that returns `trigger`, and **Create trigger function** opens one ready to fill in.
 - **Schema** is the first field when you create an enum, index, constraint, or policy. It starts on the schema the list is showing, and choosing another one clears the table and column pickers below it. A database with a single schema hides the field.
 - **Save** with the primary button or <kbd>⌘</kbd><kbd>Enter</kbd>. Errors from the database show inline under the form.
 - **Drop** from the row's context menu, or <kbd>⌘</kbd><kbd>D</kbd> on the highlighted row; for a MySQL privilege this revokes it. A confirmation asks first; PostgreSQL types, functions, and constraints can drop dependents with the **Cascade** switch.
@@ -82,7 +82,7 @@ What each engine supports:
 | Object | PostgreSQL | MySQL | SQL Server | ClickHouse | SQLite |
 | --- | --- | --- | --- | --- | --- |
 | Enums | Create, rename, add, rename and remove values, drop | — | — | — | — |
-| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop data-skipping indexes | Create, edit, drop |
+| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename (rebuilds it), drop data-skipping indexes | Create, edit, drop |
 | Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks | View keys |
 | Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — | — |
 | Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — | Create, edit, drop |
@@ -97,6 +97,6 @@ PostgreSQL, SQL Server and SQLite run the replacement inside a transaction, so a
 
 Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
 
-Functions and triggers open as fields, with only the body as SQL in an editor. A function saves in place — PostgreSQL with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER` — as long as its name, arguments, return type and kind stay put; change one of those and it is dropped and created again, which loses its grants and owner. A trigger is always dropped and created again, keeping whether it was disabled. PostgreSQL enums can gain and rename values but never lose them.
+Functions and triggers open as fields, with only the body as SQL in an editor. A function saves in place (PostgreSQL with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER`) as long as its name, arguments, return type and kind stay put; change one of those and it is dropped and created again, which loses its grants and owner. A trigger is always dropped and created again, keeping whether it was disabled. PostgreSQL enums can gain and rename values but never lose them.
 
-On ClickHouse, a data-skipping index takes a type (`minmax`, `set(0)`, `bloom_filter`) and a granularity instead of **Unique**; saving builds it for existing rows in the background, and any edit, a rename included, drops and adds it again; one over an expression, or of a type the picker cannot show, is read only. The sorting key shows as the primary key and is read only. Constraints are `CHECK` only; an `ASSUME` constraint is shown but only dropped. A row policy covers `SELECT`, and every change — its filter, type, roles or name — alters it in place; leaving **Roles** empty applies it to `ALL`.
+On ClickHouse, a data-skipping index takes a type (`minmax`, `set(0)`, `bloom_filter`) and a granularity instead of **Unique**; saving builds it for existing rows in the background, and any edit, a rename included, drops and adds it again; one over an expression, or of a type the picker cannot show, is read only. The sorting key shows as the primary key and is read only. Constraints are `CHECK` only; an `ASSUME` constraint is shown but only dropped. A row policy covers `SELECT`, and every change to its filter, type, roles or name alters it in place; leaving **Roles** empty applies it to `ALL`.

@@ -238,6 +238,15 @@ describe('diagnoseConnectionError', () => {
     ).toBe("Can't open the database file")
   })
 
+  it('offers http:// when a ClickHouse port answers without TLS', () => {
+    expect(
+      diagnose(
+        'write EPROTO 1254133270560:error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER',
+        connectionParts.parse('https://default:pw@ch.acme.io:8124')
+      )?.fix
+    ).toStrictEqual({ label: 'Use http://', patch: { https: false } })
+  })
+
   it('returns nothing for an error it does not know', () => {
     expect(diagnose('something odd happened')).toBeNull()
   })

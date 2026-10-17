@@ -49,21 +49,17 @@ const resourceEnumsQuery = createQuery({
   query: {
     clickhouse: async (db) => {
       const query = await db
-        .selectFrom('information_schema.columns')
-        .select([
-          'table_schema as schema',
-          'table_name as table',
-          'column_name as name',
-          'data_type as type',
-        ])
+        // system.columns lists what the user may read without a grant; information_schema needs one.
+        .selectFrom('system.columns')
+        .select(['database as schema', 'table', 'name', 'type'])
         .where(({ and, eb }) =>
           and([
-            eb('table_schema', 'not in', [
+            eb('database', 'not in', [
               'INFORMATION_SCHEMA',
               'information_schema',
               'system',
             ]),
-            eb('data_type', 'ilike', '%Enum%'),
+            eb('type', 'ilike', '%Enum%'),
           ])
         )
         .execute()

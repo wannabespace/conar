@@ -5,6 +5,7 @@ import { memoize } from 'memoza'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { Column } from '~/core/table/cell/utils'
+import { formatColumnTime, TIME_FORMATS } from '~/core/table/cell/utils'
 
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
 import { clickhouseSeedConfig } from './clickhouse.ts'
@@ -187,6 +188,10 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 const finalizeValue = (value: unknown, column: Column, dialect: Dialect) => {
   if (getCapabilities(dialect).columnTypes.json.test(column.type ?? '')) {
     return value
+  }
+  const timeFormat = TIME_FORMATS[column.uiType]
+  if (value instanceof Date && timeFormat) {
+    return formatColumnTime(value, timeFormat, column, dialect)
   }
   if (Array.isArray(value)) {
     return column.isArray

@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import type { AppMenuNode } from '~/components/app-menu'
 import { PaneEmpty } from '~/components/pane-empty'
 import { getCapabilities } from '~/core/catalog/capabilities'
+import type { DropWording } from '~/core/catalog/drop-dialog'
 import { DropDialog } from '~/core/catalog/drop-dialog'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { useShortcuts } from '~/core/keyboard/use-shortcuts'
@@ -50,6 +51,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   columns,
   createBlocked: blockReason,
   dropItem,
+  dropWording,
   Inspector,
   items,
   getKey,
@@ -64,6 +66,7 @@ export const DefinitionsPage = <T extends { name: string }>({
   columns: DefinitionsColumn<T>[]
   createBlocked?: ReactNode
   dropItem: (item: T, cascade: boolean) => Promise<unknown>
+  dropWording?: (item: T) => DropWording
   Inspector: ComponentType<SectionInspectorProps<T>>
   items: T[]
   getKey: (item: T) => string
@@ -104,6 +107,11 @@ export const DefinitionsPage = <T extends { name: string }>({
   })
   const [cascade, setCascade] = useState(false)
   const cascadable = cascades && getCapabilities(dialect).cascade
+  const getDropWording = (item: T | null): DropWording => ({
+    action: `Drop ${noun}`,
+    done: `${uppercaseFirst(noun)} "${item?.name}" dropped`,
+    ...(item && dropWording?.(item)),
+  })
 
   const highlightedIndex = rows.findIndex(
     (item) => getKey(item) === highlighted
@@ -118,14 +126,14 @@ export const DefinitionsPage = <T extends { name: string }>({
   const plural = title.toLowerCase()
   const addNote = can.create
     ? createBlocked
-    : `Tamery can’t add ${plural} to this database yet.`
+    : `Tamery can’t add ${plural} to this database.`
 
   const dropMutation = useMutation({
     meta: { event: 'definition_dropped' },
     mutationFn: (item: T) => dropItem(item, cascade),
     onSuccess: async (_result, item) => {
       await queryClient.invalidateQueries({ queryKey })
-      toast.success(`${uppercaseFirst(noun)} "${item.name}" dropped`)
+      toast.success(getDropWording(item).done)
       setDropping((current) => ({ ...current, open: false }))
       inspector.close()
     },
@@ -221,7 +229,7 @@ export const DefinitionsPage = <T extends { name: string }>({
           { type: 'separator' },
           {
             icon: Delete02Icon,
-            label: `Drop ${noun}`,
+            label: getDropWording(item).action,
             onSelect: () => requestDrop(item),
             variant: 'destructive',
           },
@@ -270,33 +278,32 @@ export const DefinitionsPage = <T extends { name: string }>({
           )}
         </h2>
         <div className="flex items-center gap-3">
-          <p className="text-muted-foreground text-xs text-pretty empty:hidden">
-            {addNote}
-          </p>
+          <div className="flex items-center gap-2">
+            {toolbar}
+            <SchemaSelect
+              schemas={schemas}
+              selectedSchema={selectedSchema}
+              setSelectedSchema={setSelectedSchema}
+            />
+          </div>
           {can.create && addButton}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <SearchInput
-          ref={searchRef}
-          data-mask
-          className="flex-1"
-          aria-label={`Search ${plural}`}
-          placeholder={`Search ${plural}`}
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
-        />
-        {toolbar}
-        <SchemaSelect
-          schemas={schemas}
-          selectedSchema={selectedSchema}
-          setSelectedSchema={setSelectedSchema}
-        />
-      </div>
+      <p className="text-muted-foreground -mt-1 text-right text-xs text-pretty empty:hidden">
+        {addNote}
+      </p>
+      <SearchInput
+        ref={searchRef}
+        data-mask
+        aria-label={`Search ${plural}`}
+        placeholder={`Search ${plural}`}
+        autoFocus
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        onClear={() => setSearch('')}
+        onFocus={() => setSearchFocused(true)}
+        onBlur={() => setSearchFocused(false)}
+      />
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={empty ? 'empty' : 'list'}
@@ -361,6 +368,7 @@ export const DefinitionsPage = <T extends { name: string }>({
         name={dropping.item?.name}
         noun={noun}
         open={dropping.open}
+        wording={getDropWording(dropping.item)}
         pending={dropMutation.isPending}
         onCascadeChange={setCascade}
         onOpenChange={(open) =>

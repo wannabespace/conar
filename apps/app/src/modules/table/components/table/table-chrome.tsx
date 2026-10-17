@@ -74,6 +74,7 @@ export const addColumnColumn = (onAddColumn?: () => void): ExtraColumn => ({
                 variant="ghost-muted"
                 size="icon-xs"
                 aria-label="Add column"
+                tabIndex={-1}
                 onClick={onAddColumn}
               />
             }

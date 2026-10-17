@@ -114,6 +114,25 @@ describe('guessConnection — URLs', () => {
     expect(guessConnection(text)?.parts.type).toBe(ConnectionType.ClickHouse)
   })
 
+  it('reads any web URL as ClickHouse once the text is known to name a database', () => {
+    expect(
+      guessConnection('http://localhost:58123', true)?.parts
+    ).toMatchObject({
+      host: 'localhost',
+      https: false,
+      port: '58123',
+      type: 'clickhouse',
+    })
+  })
+
+  it('reads the transport from a clickhouse-go secure parameter', () => {
+    const parts = guessConnection(
+      'clickhouse://u:p@localhost:58123/logs?secure=false'
+    )?.parts
+    expect(parts).toMatchObject({ https: false, port: '58123' })
+    expect(parts?.options).toBeUndefined()
+  })
+
   it.each([
     ['CLICKHOUSE_URL=https://ch.acme.io', { host: 'ch.acme.io', port: '443' }],
     [
