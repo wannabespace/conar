@@ -1,7 +1,7 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
-import { getConnectionType, getProviderOfScheme } from './connection-parts'
+import { connectionParts } from './connection-parts'
 import { isInternalHost } from './hosts'
 import { readConnectionString } from './parse-connection-string'
 import { connectionSecrets } from './secrets'
@@ -9,39 +9,53 @@ import { SSH_PARAMS } from './ssh/params'
 
 export const SQLITE_RESOURCE_NAME = 'main'
 
-const SQLITE_SERVER_NAMES: Record<
-  Provider,
-  (parts: { database: string; host: string }) => string
-> = {
-  [Provider.CloudflareD1]: ({ database }) => database,
-  [Provider.Turso]: ({ host }) => host,
+interface EngineString {
+  label: (parts: { address: string; database: string; host: string }) => string
+  /** The one resource the engine opens, kept out of the string's path; `null` when the path names it. */
+  resource: string | null
 }
 
-const getSqliteDisplayName = ({
-  database,
-  host,
-  scheme,
-}: {
-  database: string
-  host: string
-  scheme: string
-}) => {
-  if (!host) {
-    return database.slice(database.lastIndexOf('/') + 1)
-  }
-  const provider = getProviderOfScheme(scheme)
-  return provider ? SQLITE_SERVER_NAMES[provider]({ database, host }) : host
+const SERVER_STRING: EngineString = {
+  label: ({ address }) => address,
+  resource: null,
+}
+
+const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
+  [ConnectionType.ClickHouse]: SERVER_STRING,
+  [ConnectionType.MariaDB]: SERVER_STRING,
+  [ConnectionType.MSSQL]: SERVER_STRING,
+  [ConnectionType.MySQL]: SERVER_STRING,
+  [ConnectionType.Postgres]: SERVER_STRING,
+  [ConnectionType.SQLite]: {
+    label: ({ database }) => database.slice(database.lastIndexOf('/') + 1),
+    resource: SQLITE_RESOURCE_NAME,
+  },
+  [Provider.CloudflareD1]: {
+    label: ({ database }) => database,
+    resource: SQLITE_RESOURCE_NAME,
+  },
+  [Provider.Turso]: {
+    label: ({ host }) => host,
+    resource: SQLITE_RESOURCE_NAME,
+  },
+}
+
+const getEngineString = (connectionString: string) => {
+  const { provider, type } = connectionParts.parse(connectionString)
+  return type ? ENGINE_STRINGS[provider ?? type] : SERVER_STRING
 }
 
 export const describeConnectionString = (connectionString: string) => {
-  const { database, host, password, scheme, searchParams } =
+  const { database, host, password, searchParams } =
     readConnectionString(connectionString)
-  const isSqlite = getConnectionType(scheme) === ConnectionType.SQLite
+  const { label, resource } = getEngineString(connectionString)
   return {
-    defaultResourceName: isSqlite ? SQLITE_RESOURCE_NAME : database || null,
-    displayUrl: isSqlite
-      ? getSqliteDisplayName({ database, host, scheme })
-      : new SafeURL(connectionString).host,
+    defaultResourceName: resource ?? (database || null),
+    displayUrl: label({
+      address: new SafeURL(connectionString).host,
+      database,
+      host,
+    }),
     isInternal: isInternalHost(host),
     isPasswordPopulated: !!password,
     missingSecrets: connectionSecrets.missing(searchParams),
@@ -53,10 +67,7 @@ export const resourceConnectionString = (
   connectionString: string,
   resourceName: string | null
 ) => {
-  if (
-    getConnectionType(readConnectionString(connectionString).scheme) ===
-    ConnectionType.SQLite
-  ) {
+  if (getEngineString(connectionString).resource) {
     return connectionString
   }
   const url = new SafeURL(connectionString)
