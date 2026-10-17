@@ -16,7 +16,7 @@
 
 ## Dev commands
 
-Setup and the command list live in `README.md` and the root `package.json`. Not obvious:
+Setup lives in `README.md`, the command list in the root `package.json`. Not obvious:
 
 - Feature branches start from `tamery` (the integration branch) or `main`; a PR targets whichever the branch is based on, and diffs are taken against the nearer of the two.
 - `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
@@ -27,7 +27,7 @@ Setup and the command list live in `README.md` and the root `package.json`. Not 
 
 ## Opening the running app in a browser
 
-**`agent-browser`** (install in `README.md`, not an MCP server or a project dependency) opens its own Chrome window and trusts the portless CA, so portless HTTPS hosts load. Dev app: `https://app.local.tamery.app`.
+**`agent-browser`** (`npm install -g agent-browser && agent-browser install`; not an MCP server or a project dependency) opens its own Chrome window and trusts the portless CA, so portless HTTPS hosts load. Dev app: `https://app.local.tamery.app`.
 
 Its profile is **signed out**: anything behind auth needs the user's own Chrome (`mcp__claude-in-chrome__*`), since entering credentials is not an agent's to do. That is also the fallback when a binary is missing or the task needs their real profile. Playwright for scripted multi-step runs.
 
