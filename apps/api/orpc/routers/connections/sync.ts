@@ -1,5 +1,5 @@
 import { db } from '@conar/db'
-import { connections, connectionsSelectSchema } from '@conar/db/schema'
+import { connections, connectionsSelectSchema, connectionsVisibleInConar } from '@conar/db/schema'
 import { decrypt } from '@conar/shared/utils/crypto-node'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
@@ -30,6 +30,7 @@ export const sync = orpc
             .where(
               and(
                 eq(connections.userId, context.user.id),
+                connectionsVisibleInConar,
                 or(
                   ...items.map(c =>
                     and(
@@ -45,14 +46,22 @@ export const sync = orpc
             .select()
             .from(connections)
             .where(
-              and(eq(connections.userId, context.user.id), notInArray(connections.id, excludeIds)),
+              and(
+                eq(connections.userId, context.user.id),
+                connectionsVisibleInConar,
+                notInArray(connections.id, excludeIds),
+              ),
             ),
         existing: includeIds =>
           db
             .select({ id: connections.id })
             .from(connections)
             .where(
-              and(eq(connections.userId, context.user.id), inArray(connections.id, includeIds)),
+              and(
+                eq(connections.userId, context.user.id),
+                connectionsVisibleInConar,
+                inArray(connections.id, includeIds),
+              ),
             )
             .then(r => r.map(i => i.id)),
       },

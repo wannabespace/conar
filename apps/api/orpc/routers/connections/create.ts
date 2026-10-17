@@ -5,17 +5,21 @@ import { encrypt } from '@conar/shared/utils/crypto-node'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { type } from 'arktype'
 
+import { ensureDefaultWorkspace } from '~/lib/workspace'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const schema = connectionsInsertSchema.omit('userId')
+const schema = connectionsInsertSchema.omit('userId', 'workspaceId')
 
 export const create = orpc
   .use(authMiddleware)
   .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
-    const userSecret = await context.getUserSecret()
+    const [userSecret, workspaceId] = await Promise.all([
+      context.getUserSecret(),
+      ensureDefaultWorkspace(context.user.id),
+    ])
 
     const inserted = await db
       .insert(connections)
@@ -35,6 +39,7 @@ export const create = orpc
                 secret: userSecret,
               }),
               userId: context.user.id,
+              workspaceId,
             }
           }),
         ),

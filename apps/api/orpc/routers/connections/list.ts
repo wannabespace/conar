@@ -1,8 +1,8 @@
 import { db } from '@conar/db'
-import { connections } from '@conar/db/schema'
+import { connections, connectionsVisibleInConar } from '@conar/db/schema'
 import { decrypt } from '@conar/shared/utils/crypto-node'
 import { ORPCError } from '@orpc/server'
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -18,7 +18,7 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
       connectionString: connections.connectionString,
     })
     .from(connections)
-    .where(eq(connections.userId, context.user.id))
+    .where(and(eq(connections.userId, context.user.id), connectionsVisibleInConar))
     .orderBy(desc(connections.createdAt))
 
   const secret = await context.getUserSecret()
