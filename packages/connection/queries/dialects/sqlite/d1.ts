@@ -3,11 +3,7 @@ import { type } from 'arktype'
 
 import { D1_HOST } from '../../../connection-parts'
 import { readConnectionString } from '../../../parse-connection-string'
-import type {
-  SqliteLocationQueries,
-  SqliteValue,
-  StatementResult,
-} from './location'
+import type { RunStatements, SqliteTransport, SqliteValue } from './run'
 import { toOutput } from './run'
 
 const d1Answer = type({
@@ -46,7 +42,7 @@ const toStatements = (texts: string[], values: SqliteValue[]) => {
 const send = async (
   connectionString: string,
   statements: D1Statement[]
-): Promise<StatementResult[]> => {
+): ReturnType<RunStatements> => {
   const [only, ...rest] = statements
   if (!only) {
     return []
@@ -76,7 +72,7 @@ const send = async (
     )
   }
   return answer.result.map(({ meta, results }) => ({
-    changes: meta.changes,
+    affectedRows: meta.changes,
     columns: results.columns,
     rows: results.rows.map((row) => row.map(toOutput)),
   }))
@@ -103,13 +99,13 @@ const batchedTransaction = (connectionString: string) => {
     run: (texts: string[], values: SqliteValue[]) => {
       pending = [...pending, ...toStatements(texts, values)]
       return Promise.resolve(
-        texts.map(() => ({ changes: null, columns: [], rows: [] }))
+        texts.map(() => ({ affectedRows: null, columns: [], rows: [] }))
       )
     },
   }
 }
 
-export const d1Location = {
+export const d1Transport = {
   run: (connectionString, texts, values) =>
     send(connectionString, toStatements(texts, values)),
 
@@ -119,4 +115,4 @@ export const d1Location = {
         ? readOnlyTransaction(connectionString)
         : batchedTransaction(connectionString)
     ),
-} satisfies SqliteLocationQueries
+} satisfies SqliteTransport

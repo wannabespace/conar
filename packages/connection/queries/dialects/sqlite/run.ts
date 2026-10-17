@@ -1,11 +1,42 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 
-import type { QueryExecuteResult, RunOptions } from '../..'
+import type { QueryExecuteResult, ResultSet, RunOptions } from '../..'
 import { resultSet } from '../..'
-import type { RunStatements, SqliteValue } from './location'
+import type { TxHandle } from '../../transactions'
 
 export const SQLITE = dialects[Dialect.SQLite]
+
+export type SqliteValue = bigint | number | string | Uint8Array | null
+
+/**
+ * `affectedRows` is the raw change count, `null` for a statement held until its transaction commits; `maxRows` lets a
+ * transport stop reading early. `runTimed` drops both past their use.
+ */
+export type RunStatements = (
+  texts: string[],
+  values: SqliteValue[],
+  maxRows: number
+) => Promise<Omit<ResultSet, 'truncated'>[]>
+
+export type SqliteTransaction = Pick<
+  TxHandle,
+  'commit' | 'release' | 'rollback' | 'status'
+> & { run: RunStatements }
+
+/** How a file, D1 or a libSQL server runs statements; everything else about SQLite is shared. */
+export interface SqliteTransport {
+  run: (
+    connectionString: string,
+    ...args: Parameters<RunStatements>
+  ) => ReturnType<RunStatements>
+  transaction: (
+    connectionString: string,
+    readOnly: boolean
+  ) => Promise<SqliteTransaction>
+  /** Only a transport that holds a connection between requests has one. */
+  openSession?: (connectionString: string) => SqliteTransaction
+}
 
 const toInput = (value: unknown): SqliteValue => {
   if (typeof value === 'boolean') {
@@ -46,9 +77,13 @@ export const runTimed = async (
   const results = await run(texts, values.map(toInput), maxRows)
   return {
     duration: performance.now() - start,
-    result: results.map(({ changes, columns, rows }) =>
+    result: results.map(({ affectedRows, columns, rows }) =>
       resultSet(
-        { affectedRows: columns.length === 0 ? changes : null, columns, rows },
+        {
+          affectedRows: columns.length === 0 ? affectedRows : null,
+          columns,
+          rows,
+        },
         maxRows
       )
     ),

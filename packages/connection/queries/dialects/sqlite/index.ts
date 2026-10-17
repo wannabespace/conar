@@ -12,26 +12,22 @@ import { getProviderOfScheme } from '../../../connection-parts'
 import { readConnectionString } from '../../../parse-connection-string'
 import type { TxHandle } from '../../transactions'
 import { registerTransaction, transactionQueries } from '../../transactions'
-import { d1Location } from './d1'
-import { fileLocation } from './file'
-import { libsqlLocation } from './libsql'
-import type {
-  LocationTransaction,
-  RunStatements,
-  SqliteLocationQueries,
-} from './location'
+import { d1Transport } from './d1'
+import { fileTransport } from './file'
+import { libsqlTransport } from './libsql'
+import type { RunStatements, SqliteTransaction, SqliteTransport } from './run'
 import { runTimed, SQLITE, statementTexts } from './run'
 
-const SERVER_LOCATIONS: Record<Provider, SqliteLocationQueries> = {
-  [Provider.CloudflareD1]: d1Location,
-  [Provider.Turso]: libsqlLocation,
+const SERVER_TRANSPORTS: Record<Provider, SqliteTransport> = {
+  [Provider.CloudflareD1]: d1Transport,
+  [Provider.Turso]: libsqlTransport,
 }
 
 /** Only an empty host opens a file, whatever the scheme says, so no server ever opens one on its own disk. */
-const locate = (connectionString: string) => {
+const getTransport = (connectionString: string) => {
   const { host, scheme } = readConnectionString(connectionString)
   if (!host) {
-    return fileLocation
+    return fileTransport
   }
   const provider = getProviderOfScheme(scheme)
   if (!provider) {
@@ -39,10 +35,10 @@ const locate = (connectionString: string) => {
       `Tamery cannot tell which provider serves this SQLite server: its string starts with ${scheme}://, not libsql:// or d1://.`
     )
   }
-  return SERVER_LOCATIONS[provider]
+  return SERVER_TRANSPORTS[provider]
 }
 
-/** Turso and D1 let a read-only transaction write, so every location refuses a write before sending it. */
+/** Turso and D1 let a read-only transaction write, so every transport refuses a write before sending it. */
 const readingOnly =
   (run: RunStatements): RunStatements =>
   (texts, values, maxRows) =>
@@ -52,7 +48,7 @@ const readingOnly =
           new Error('A read-only transaction runs only statements that read.')
         )
 
-const toHandle = ({ run, ...tx }: LocationTransaction): TxHandle => ({
+const toHandle = ({ run, ...tx }: SqliteTransaction): TxHandle => ({
   ...tx,
   execute: (sql, values, options) =>
     runTimed(run, statementTexts(sql, values), values, options),
@@ -64,7 +60,7 @@ export const query = {
   beginTransaction: handleQueryError(
     async ({ accessMode, connectionString, ownerId }) => {
       const readOnly = accessMode === 'read only'
-      const tx = await locate(connectionString).transaction(
+      const tx = await getTransport(connectionString).transaction(
         connectionString,
         readOnly
       )
@@ -81,12 +77,12 @@ export const query = {
 
   execute: handleQueryError(
     async ({ connectionString, query: sql, values = [], ...options }) => {
-      const location = locate(connectionString)
+      const transport = getTransport(connectionString)
       const texts = statementTexts(sql, values)
-      if (!location.openSession) {
+      if (!transport.openSession) {
         const block = unwrapTransaction(sql, SQLITE)
         if (block) {
-          const tx = await location.transaction(connectionString, false)
+          const tx = await transport.transaction(connectionString, false)
           try {
             const answer = await runTimed(tx.run, block.statements, [], options)
             await (block.commit ? tx.commit() : tx.rollback())
@@ -109,7 +105,7 @@ export const query = {
         }
       }
       return runTimed(
-        (...args) => location.run(connectionString, ...args),
+        (...args) => transport.run(connectionString, ...args),
         texts,
         values,
         options
@@ -118,7 +114,7 @@ export const query = {
   ),
 
   openSession: handleQueryError(({ connectionString, ownerId }) => {
-    const { openSession } = locate(connectionString)
+    const { openSession } = getTransport(connectionString)
     if (!openSession) {
       // The runner wraps it in its own advice to run the whole block.
       return Promise.reject(

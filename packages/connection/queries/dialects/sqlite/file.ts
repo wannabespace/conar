@@ -2,11 +2,11 @@ import type { DatabaseSync } from 'node:sqlite'
 
 import { openDatabase } from './client'
 import type {
-  LocationTransaction,
-  SqliteLocationQueries,
+  RunStatements,
+  SqliteTransaction,
+  SqliteTransport,
   SqliteValue,
-  StatementResult,
-} from './location'
+} from './run'
 import { toOutput } from './run'
 
 /** A RETURNING write makes all its changes on the first step, so stopping past `maxRows` leaves nothing half done. */
@@ -15,7 +15,7 @@ const runOn = (
   texts: string[],
   values: SqliteValue[],
   maxRows: number
-): StatementResult[] =>
+): Awaited<ReturnType<RunStatements>> =>
   texts.map((text) => {
     const statement = db.prepare(text)
     // Not the constructor's readBigInts/returnArrays: Node 22.16, the CLI's floor, ignores them.
@@ -24,7 +24,7 @@ const runOn = (
     const columns = statement.columns().map((column) => column.name)
     if (columns.length === 0) {
       return {
-        changes: Number(statement.run(...values).changes),
+        affectedRows: Number(statement.run(...values).changes),
         columns,
         rows: [],
       }
@@ -34,10 +34,10 @@ const runOn = (
       .take(maxRows + 1)
       .map((row) => Object.values(row).map(toOutput))
       .toArray()
-    return { changes: null, columns, rows }
+    return { affectedRows: null, columns, rows }
   })
 
-const sessionOn = (db: DatabaseSync): LocationTransaction => ({
+const sessionOn = (db: DatabaseSync): SqliteTransaction => ({
   commit: () => db.exec('COMMIT'),
   release: () => db.close(),
   rollback: () => db.exec('ROLLBACK'),
@@ -46,7 +46,7 @@ const sessionOn = (db: DatabaseSync): LocationTransaction => ({
   status: () => Promise.resolve(db.isTransaction ? 'open' : 'ended'),
 })
 
-export const fileLocation = {
+export const fileTransport = {
   openSession: (connectionString) => sessionOn(openDatabase(connectionString)),
 
   // A handle per call: a cached one keeps reading a file another tool deleted and recreated.
@@ -63,4 +63,4 @@ export const fileLocation = {
     db.exec('BEGIN')
     return Promise.resolve(sessionOn(db))
   },
-} satisfies SqliteLocationQueries
+} satisfies SqliteTransport

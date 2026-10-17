@@ -2,7 +2,7 @@ import type { Client, Transaction } from '@libsql/client/http'
 import { createClient } from '@libsql/client/http'
 
 import { readConnectionString } from '../../../parse-connection-string'
-import type { SqliteLocationQueries, SqliteValue } from './location'
+import type { SqliteTransport, SqliteValue } from './run'
 import { toOutput } from './run'
 
 const openClient = (connectionString: string) => {
@@ -34,13 +34,13 @@ const runOn = (
         : error
     })
     return {
-      changes: set.rowsAffected,
+      affectedRows: set.rowsAffected,
       columns: set.columns,
       rows: set.rows.map((row) => Array.from(row, toOutput)),
     }
   })
 
-export const libsqlLocation = {
+export const libsqlTransport = {
   run: async (connectionString, texts, values) => {
     const client = openClient(connectionString)
     try {
@@ -69,4 +69,4 @@ export const libsqlLocation = {
       status: () => Promise.resolve(tx.closed ? 'ended' : 'open'),
     }
   },
-} satisfies SqliteLocationQueries
+} satisfies SqliteTransport
