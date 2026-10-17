@@ -85,6 +85,9 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
   The first type that lacks something its dialect offers moves the capability gates (about 120 calls) to its type. Check each candidate's limits on a live server first: they shift between releases.
 
+- **Pin the cloud proxy's resolved address.** `assertPublicHost` resolves the host, then the driver resolves it again, so a DNS answer that changes between the two (rebinding) still reaches a private address. Passing the checked IP to each driver (pg `host` plus `ssl.servername`, mysql2 `host`, tedious `server` plus `serverName`, a `lookup` on the ClickHouse agent) closes it.
+- **Refuse redirects from a libSQL server on the cloud proxy.** `@libsql/hrana-client` fetches with the default `redirect: 'follow'`, so a public libSQL host could send the proxy on to an internal URL the host check never saw.
+
 - **Hosted Postgres and MySQL as providers.** Turso and Cloudflare D1 are providers (`Provider`); Supabase, Neon, PlanetScale, ClickHouse Cloud and the rest of `HOST_HINTS` (`hosts.ts`) could join them, so the Engine select offers them with their own placeholders and the list shows their marks. Their host suffixes change, so the form saves the provider the user picked, and a paste only guesses it from `HOST_HINTS`; a suffix the list lacks leaves the plain type until it is added.
 
 ## Settings
