@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@todesktop/cli/schemas/schema.json",
-  "id": "25112796k32u7",
-  "appId": "com.wannabespace.conar",
+  "id": "2610172p48e2t",
+  "appId": "com.wannabespace.tamery",
   "icon": "./resources/icon-1024x1024.png",
   "appPath": ".",
   "schemaVersion": 1,
