@@ -1,6 +1,6 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
-import { D1_HOST } from '../provider'
+import { D1_HOST } from '../connection-parts'
 import type { DatabaseGuess, GuessedParts } from './types'
 import { guessUrl } from './url'
 

@@ -3,7 +3,6 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
-import { D1_HOST, getProviderOfScheme } from './provider'
 import { sqliteFile } from './sqlite-file'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
@@ -93,6 +92,21 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
 /** A URL scheme or a tool's driver name, never a whole URL; a `+driver` suffix (`postgresql+asyncpg`) is dropped. */
 export const getConnectionType = (name: string): ConnectionType | null =>
   TYPE_OF_NAME[name.toLowerCase().replace(/\+.*$/u, '')] ?? null
+
+/**
+ * A D1 string names Cloudflare's API host, so the cloud proxy sees a public host; its executor sends the token to this
+ * host whatever the string says.
+ */
+export const D1_HOST = 'api.cloudflare.com'
+
+const PROVIDER_OF_SCHEME: Partial<Record<string, Provider>> = {
+  d1: Provider.CloudflareD1,
+  libsql: Provider.Turso,
+}
+
+/** `null` for a scheme Tamery does not know: a SQLite server is never guessed to be one it does. */
+export const getProviderOfScheme = (scheme: string) =>
+  PROVIDER_OF_SCHEME[scheme] ?? null
 
 const withCredentials = (
   base: string,

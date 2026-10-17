@@ -1,10 +1,9 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
-import { getConnectionType } from './connection-parts'
+import { getConnectionType, getProviderOfScheme } from './connection-parts'
 import { isInternalHost } from './hosts'
 import { readConnectionString } from './parse-connection-string'
-import { getProviderOfScheme } from './provider'
 import { connectionSecrets } from './secrets'
 import { SSH_PARAMS } from './ssh/params'
 

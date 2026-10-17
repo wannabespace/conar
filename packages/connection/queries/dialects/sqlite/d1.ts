@@ -1,8 +1,8 @@
 import { noop } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
+import { D1_HOST } from '../../../connection-parts'
 import { readConnectionString } from '../../../parse-connection-string'
-import { D1_HOST } from '../../../provider'
 import type {
   SqliteLocationQueries,
   SqliteValue,

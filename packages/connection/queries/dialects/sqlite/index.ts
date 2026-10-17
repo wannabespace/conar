@@ -8,8 +8,8 @@ import {
 
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
+import { getProviderOfScheme } from '../../../connection-parts'
 import { readConnectionString } from '../../../parse-connection-string'
-import { getProviderOfScheme } from '../../../provider'
 import type { TxHandle } from '../../transactions'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { d1Location } from './d1'
