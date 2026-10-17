@@ -1,36 +1,36 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 
 import { getConnectionType } from './connection-parts'
 import { isInternalHost } from './hosts'
 import { readConnectionString } from './parse-connection-string'
+import { getSqliteProvider } from './provider'
 import { connectionSecrets } from './secrets'
-import type { SqliteLocation } from './sqlite-location'
-import { getSqliteLocation, SQLITE_RESOURCE_NAME } from './sqlite-location'
 import { SSH_PARAMS } from './ssh/params'
 
+export const SQLITE_RESOURCE_NAME = 'main'
+
 const SQLITE_DISPLAY_NAMES: Record<
-  SqliteLocation,
+  Provider | ConnectionType.SQLite,
   (parts: { database: string; host: string }) => string
 > = {
-  d1: ({ database }) => database,
-  file: ({ database }) => database.slice(database.lastIndexOf('/') + 1),
-  libsql: ({ host }) => host,
+  [ConnectionType.SQLite]: ({ database }) =>
+    database.slice(database.lastIndexOf('/') + 1),
+  [Provider.CloudflareD1]: ({ database }) => database,
+  [Provider.Turso]: ({ host }) => host,
 }
 
 export const describeConnectionString = (connectionString: string) => {
   const { database, host, password, scheme, searchParams } =
     readConnectionString(connectionString)
-  const sqliteLocation =
+  const sqliteEngine =
     getConnectionType(scheme) === ConnectionType.SQLite
-      ? getSqliteLocation(host)
+      ? (getSqliteProvider(host) ?? ConnectionType.SQLite)
       : null
   return {
-    defaultResourceName: sqliteLocation
-      ? SQLITE_RESOURCE_NAME
-      : database || null,
-    displayUrl: sqliteLocation
-      ? SQLITE_DISPLAY_NAMES[sqliteLocation]({ database, host })
+    defaultResourceName: sqliteEngine ? SQLITE_RESOURCE_NAME : database || null,
+    displayUrl: sqliteEngine
+      ? SQLITE_DISPLAY_NAMES[sqliteEngine]({ database, host })
       : new SafeURL(connectionString).host,
     isInternal: isInternalHost(host),
     isPasswordPopulated: !!password,

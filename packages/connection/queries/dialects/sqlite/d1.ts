@@ -2,7 +2,7 @@ import { noop } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
 import { readConnectionString } from '../../../parse-connection-string'
-import { D1_HOST } from '../../../sqlite-location'
+import { D1_HOST } from '../../../provider'
 import type {
   SqliteLocationQueries,
   SqliteValue,

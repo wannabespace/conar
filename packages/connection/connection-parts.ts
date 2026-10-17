@@ -1,11 +1,10 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
+import { D1_HOST, getSqliteProvider } from './provider'
 import { sqliteFile } from './sqlite-file'
-import type { SqliteLocation } from './sqlite-location'
-import { D1_HOST, getSqliteLocation } from './sqlite-location'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
@@ -105,16 +104,17 @@ const withCredentials = (
 }
 
 const SQLITE_FORMATS: Record<
-  SqliteLocation,
+  Provider | ConnectionType.SQLite,
   (parts: ConnectionParts) => string
 > = {
-  d1: (parts) =>
+  [Provider.CloudflareD1]: (parts) =>
     withCredentials(
       `d1://${D1_HOST}/${encodeURIComponent(parts.database)}`,
       parts
     ).toString(),
-  file: ({ database }) => database && sqliteFile.connectionString(database),
-  libsql: (parts) =>
+  [ConnectionType.SQLite]: ({ database }) =>
+    database && sqliteFile.connectionString(database),
+  [Provider.Turso]: (parts) =>
     withCredentials(
       `libsql://${parts.host}${parts.port ? `:${parts.port}` : ''}`,
       parts
@@ -126,7 +126,9 @@ const format = (
   missingSecrets: readonly string[] = []
 ): string => {
   if (parts.type === ConnectionType.SQLite) {
-    return SQLITE_FORMATS[getSqliteLocation(parts.host)](parts)
+    return SQLITE_FORMATS[
+      getSqliteProvider(parts.host) ?? ConnectionType.SQLite
+    ](parts)
   }
   if (!parts.type || !parts.host) {
     return ''

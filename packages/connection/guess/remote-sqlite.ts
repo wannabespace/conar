@@ -1,6 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { D1_HOST } from '../sqlite-location'
+import { D1_HOST } from '../provider'
 import type { DatabaseGuess, GuessedParts } from './types'
 import { guessUrl } from './url'
 

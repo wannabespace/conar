@@ -1,5 +1,5 @@
 import type { ServerField } from '@tamery/connection/guess/types'
-import { D1_HOST } from '@tamery/connection/sqlite-location'
+import { D1_HOST } from '@tamery/connection/provider'
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 export interface Engine {

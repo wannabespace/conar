@@ -1,3 +1,4 @@
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import {
   endsTransaction,
   leavesTransactionOpen,
@@ -8,8 +9,7 @@ import {
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
-import type { SqliteLocation } from '../../../sqlite-location'
-import { getSqliteLocation } from '../../../sqlite-location'
+import { getSqliteProvider } from '../../../provider'
 import type { TxHandle } from '../../transactions'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { d1Location } from './d1'
@@ -22,14 +22,20 @@ import type {
 } from './location'
 import { runTimed, SQLITE, statementTexts } from './run'
 
-const LOCATIONS: Record<SqliteLocation, SqliteLocationQueries> = {
-  d1: d1Location,
-  file: fileLocation,
-  libsql: libsqlLocation,
+const LOCATIONS: Record<
+  Provider | ConnectionType.SQLite,
+  SqliteLocationQueries
+> = {
+  [ConnectionType.SQLite]: fileLocation,
+  [Provider.CloudflareD1]: d1Location,
+  [Provider.Turso]: libsqlLocation,
 }
 
 const locate = (connectionString: string) =>
-  LOCATIONS[getSqliteLocation(readConnectionString(connectionString).host)]
+  LOCATIONS[
+    getSqliteProvider(readConnectionString(connectionString).host) ??
+      ConnectionType.SQLite
+  ]
 
 /** Turso and D1 let a read-only transaction write, so every location refuses a write before sending it. */
 const readingOnly =

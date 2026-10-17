@@ -1,4 +1,4 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/sqlite-location'
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import type { Kysely } from 'kysely'
 import { expressionBuilder, sql } from 'kysely'
 

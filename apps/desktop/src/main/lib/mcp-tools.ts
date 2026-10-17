@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
-import { getSqliteLocation } from '@tamery/connection/sqlite-location'
+import { getSqliteProvider } from '@tamery/connection/provider'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -156,9 +156,7 @@ export const createMcpServer = (
         // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides.
         if (
           args.type === ConnectionType.SQLite &&
-          getSqliteLocation(
-            readConnectionString(args.connectionString).host
-          ) === 'file'
+          !getSqliteProvider(readConnectionString(args.connectionString).host)
         ) {
           throw new Error(
             'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
