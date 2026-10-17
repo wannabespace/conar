@@ -71,15 +71,14 @@ const columnIcon = (
   if (isNumericColumn(column)) {
     return HashtagIcon
   }
-  const type = column.type ?? ''
+  const type = column.type?.toLowerCase() ?? ''
   if (json.test(type) || xml?.test(type)) {
     return BracesIcon
   }
-  const lowerType = type.toLowerCase()
-  if (lowerType.includes('uuid') || lowerType.includes('uniqueidentifier')) {
+  if (type.includes('uuid') || type.includes('uniqueidentifier')) {
     return FingerPrintIcon
   }
-  if (/blob|binary|bytea/u.test(lowerType)) {
+  if (/blob|binary|bytea/u.test(type)) {
     return BinaryCodeIcon
   }
   return TextIcon

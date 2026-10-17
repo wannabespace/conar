@@ -11,7 +11,7 @@ export const SQLITE_RESOURCE_NAME = 'main'
 
 interface EngineString {
   /** The database the server opens when the string names none; absent when only the server knows (a login's default). */
-  defaultDatabase?: (user: string) => string | null
+  defaultDatabase?: (user: string) => string
   label: (parts: { address: string; database: string; host: string }) => string
   /** The one resource the engine opens, kept out of the string's path; `null` when the path names it. */
   resource: string | null

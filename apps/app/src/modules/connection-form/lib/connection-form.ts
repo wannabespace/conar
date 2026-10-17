@@ -80,19 +80,16 @@ const connectionFormSchema = type({
 })
   .narrow((values, ctx) => {
     const { field, message, rows } = getEngineFields(values)
-    const required = [
+    const empty = [
       { message, name: field },
-      ...rows.flatMap(({ name, required: rowMessage }) =>
-        rowMessage ? [{ message: rowMessage, name }] : []
+      ...rows.flatMap(({ name, required }) =>
+        required ? [{ message: required, name }] : []
       ),
-    ]
-    let filled = true
-    for (const { message: rowMessage, name } of required) {
-      if (!/\S/u.test(values[name])) {
-        filled = ctx.reject({ message: rowMessage, path: [name] })
-      }
+    ].filter(({ name }) => !/\S/u.test(values[name]))
+    for (const row of empty) {
+      ctx.reject({ message: row.message, path: [row.name] })
     }
-    return filled
+    return empty.length === 0
   })
   .narrow(
     (values, ctx) =>
