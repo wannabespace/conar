@@ -153,7 +153,7 @@ export const createMcpServer = (
             'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
           )
         }
-        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides.
+        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides it is SQLite; the executor opens a file by the string's host alone, so the check reads the host, never a provider.
         if (
           args.type === ConnectionType.SQLite &&
           !getSqliteProvider(readConnectionString(args.connectionString).host)
