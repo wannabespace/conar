@@ -178,6 +178,18 @@ describe('guessConnection — snippets from configs and tools', () => {
       },
     ],
     [
+      'curl https://api.cloudflare.com/client/v4/accounts/0123456789abcdef0123456789abcdef/d1/database/e179f207-0000-45ea-830c-4efd8618ae6e/raw',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      'wss://shop-acme.turso.io',
+      { host: 'shop-acme.turso.io', type: ConnectionType.SQLite },
+    ],
+    [
       'libsql://localhost:8080?tls=0',
       {
         host: 'localhost',
