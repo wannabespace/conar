@@ -21,7 +21,7 @@ export interface Index {
   column: string | null
   customExpression?: string
   custom?: boolean
-  definition?: string
+  definition?: string | null
   isUnique: boolean
   isPrimary: boolean
 }

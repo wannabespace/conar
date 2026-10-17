@@ -5,11 +5,11 @@ import { Pool } from 'pg'
 import { SSH_DESKTOP_ONLY } from '../../../ssh/params'
 import { getPool } from './client'
 
-test('both initial and SSL fallback pools handle idle-client errors', async () => {
+test('both the TLS pool and its plaintext fallback handle idle-client errors', async () => {
   const logging = spyOn(console, 'error').mockImplementation(mock())
   const poolQuery = spyOn(Pool.prototype, 'query')
     .mockImplementationOnce(() => {
-      throw new Error('SSL required')
+      throw new Error('The server does not support SSL connections')
     })
     .mockImplementation(() =>
       Promise.resolve({
@@ -39,6 +39,20 @@ test('both initial and SSL fallback pools handle idle-client errors', async () =
     logging.mockRestore()
     poolQuery.mockRestore()
     listeners.mockRestore()
+  }
+})
+
+test('falls back to plaintext only when the server has no TLS', async () => {
+  const poolQuery = spyOn(Pool.prototype, 'query').mockImplementation(() => {
+    throw new Error('password authentication failed')
+  })
+  try {
+    await expect(
+      getPool('postgres://user:password@tls-host/db')
+    ).rejects.toThrow('password authentication failed')
+    expect(poolQuery).toHaveBeenCalledTimes(1)
+  } finally {
+    poolQuery.mockRestore()
   }
 })
 

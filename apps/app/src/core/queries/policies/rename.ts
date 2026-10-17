@@ -22,5 +22,6 @@ export const renamePolicyQuery = ({
         sql`ALTER POLICY ${policyOn(target)} RENAME TO ${sql.id(newName)}`.execute(
           db
         ),
+      sqlite: unsupported('Row policies'),
     },
   })

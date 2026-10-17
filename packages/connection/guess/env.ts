@@ -1,7 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { objectEntries } from '@tamery/shared/utils'
 
-import { DEFAULT_PORTS, getConnectionType } from '../connection-parts'
+import { connectionParts, getConnectionType } from '../connection-parts'
 import { mergeParts } from './parts'
 import type { DatabaseGuess, GuessedParts, ServerField } from './types'
 
@@ -15,7 +15,7 @@ interface VariableGroup {
 const SUFFIXES_OF_FIELD: Record<ServerField, string[]> = {
   database: ['DATABASE', 'DBNAME', 'DB', 'NAME'],
   host: ['HOST', 'HOSTNAME', 'SERVER', 'ENDPOINT', 'ADDRESS'],
-  password: ['PASSWORD', 'PASS', 'PWD'],
+  password: ['PASSWORD', 'PASS', 'PWD', 'AUTH_TOKEN'],
   port: ['PORT'],
   user: ['USER', 'USERNAME'],
 }
@@ -46,6 +46,8 @@ const GROUPS: VariableGroup[] = [
   { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
   { prefix: 'MSSQL_SA_', type: ConnectionType.MSSQL, user: 'sa' },
   { prefix: 'SA_', type: ConnectionType.MSSQL, user: 'sa' },
+  { prefix: 'TURSO_' },
+  { prefix: 'LIBSQL_' },
   { prefix: 'SPRING.DATASOURCE.' },
   { prefix: 'QUARKUS.DATASOURCE.' },
   { prefix: 'DB_' },
@@ -128,7 +130,7 @@ export const guessEnv = (text: string): DatabaseGuess | null => {
   if (!parts) {
     return null
   }
-  const composeTarget = parts.type && String(DEFAULT_PORTS[parts.type])
+  const composeTarget = connectionParts.port({ type: parts.type })
   const published =
     !parts.port &&
     composeTarget &&

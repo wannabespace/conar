@@ -1,4 +1,7 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type {
+  ConnectionType,
+  Provider,
+} from '@tamery/shared/enums/connection-type'
 import type { SyncType } from '@tamery/shared/enums/sync-type'
 import { Result } from 'better-result'
 import { v7 } from 'uuid'
@@ -17,6 +20,7 @@ export interface ConnectionDetails {
   connectionString: string
   label?: string | null
   name: string
+  provider: Provider | null
   type: ConnectionType
 }
 
@@ -120,6 +124,7 @@ const saveConnection = async (
         isPasswordExists,
         label: details.label || null,
         name: details.name,
+        provider: details.provider,
         type: details.type,
         updatedAt,
       }),

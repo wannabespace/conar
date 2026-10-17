@@ -48,6 +48,7 @@ export const ConnectionIconWithVersion = ({
         render={
           <ConnectionIcon
             type={connection.type}
+            provider={connection.provider}
             className="pointer-events-auto size-5 shrink-0"
           />
         }

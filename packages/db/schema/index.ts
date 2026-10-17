@@ -37,6 +37,7 @@ export {
   connectionsResourcesUpdateSchema,
   connectionsSelectSchema,
   connectionsUpdateSchema,
+  provider,
   syncType,
 } from './connections'
 export {

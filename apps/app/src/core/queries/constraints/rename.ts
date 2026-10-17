@@ -26,5 +26,6 @@ export const renameConstraintQuery = ({
           .schema.alterTable(table)
           .renameConstraint(name, newName)
           .execute(),
+      sqlite: unsupported('Renaming constraints'),
     },
   })

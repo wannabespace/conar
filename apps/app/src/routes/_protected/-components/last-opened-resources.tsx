@@ -33,7 +33,11 @@ const LastOpenedResource = ({
         data-row-link
         {...params}
       >
-        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+        <ConnectionIcon
+          type={connection.type}
+          provider={connection.provider}
+          className="size-4 shrink-0"
+        />
         <span data-mask className="truncate">
           {connection.name}
           <span className="text-muted-foreground">

@@ -38,6 +38,7 @@ const WORD_START = /[\p{L}_]/u
 const WORD = /[\p{L}\p{N}_$]/u
 const DIGIT = /\d/u
 const DOLLAR_TAG = /\$(?<tag>[A-Za-z_]\w*)?\$/uy
+const STRING_OPENER = /[BENXbenx]?'|"/uy
 const NUMBER =
   /(?:0x[\dA-Fa-f]+|\d+(?:\.\d*)?(?:[Ee][+-]?\d+)?|\.\d+(?:[Ee][+-]?\d+)?)/uy
 const CALL_PAREN = /\s*\(/uy
@@ -151,12 +152,13 @@ const openingAt = (
       },
     }
   }
-  if (char === "'" || char === '"') {
+  const stringOpener = stickyMatch(STRING_OPENER, text, index)
+  if (stringOpener) {
     return {
-      contentStart: index + 1,
+      contentStart: index + stringOpener.length,
       pending: {
-        backslash: dialect.backslashEscapes,
-        close: char,
+        backslash: dialect.backslashEscapes || char.toUpperCase() === 'E',
+        close: char === '"' ? '"' : "'",
         doubled: true,
         kind: 'string',
       },

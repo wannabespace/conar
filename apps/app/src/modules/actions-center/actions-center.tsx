@@ -127,7 +127,11 @@ const ConnectionItem = ({
         router.navigate(params)
       })}
     >
-      <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+      <ConnectionIcon
+        type={connection.type}
+        provider={connection.provider}
+        className="size-4 shrink-0"
+      />
       <span data-mask className="min-w-0 flex-1 truncate">
         {connection.name}
         <span className="text-muted-foreground">

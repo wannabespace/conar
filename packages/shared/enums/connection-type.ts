@@ -1,9 +1,12 @@
+import { objectEntries } from '../utils'
+
 export enum ConnectionType {
   Postgres = 'postgres',
   MySQL = 'mysql',
   MariaDB = 'mariadb',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
+  SQLite = 'sqlite',
 }
 
 /** Never build a query from a `ConnectionType`: every query runs on the dialect it speaks through. */
@@ -12,6 +15,7 @@ export enum Dialect {
   MySQL = 'mysql',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
+  SQLite = 'sqlite',
 }
 
 const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
@@ -20,6 +24,7 @@ const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
   [ConnectionType.MSSQL]: Dialect.MSSQL,
   [ConnectionType.MySQL]: Dialect.MySQL,
   [ConnectionType.Postgres]: Dialect.Postgres,
+  [ConnectionType.SQLite]: Dialect.SQLite,
 }
 
 export const getDialect = (type: ConnectionType) => DIALECT_OF_TYPE[type]
@@ -30,4 +35,29 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.Postgres]: 'PostgreSQL',
+  [ConnectionType.SQLite]: 'SQLite',
 }
+
+export enum Provider {
+  CloudflareD1 = 'cloudflare_d1',
+  Turso = 'turso',
+}
+
+export const providers: Record<
+  Provider,
+  { label: string; type: ConnectionType }
+> = {
+  [Provider.CloudflareD1]: {
+    label: 'Cloudflare D1',
+    type: ConnectionType.SQLite,
+  },
+  [Provider.Turso]: { label: 'Turso', type: ConnectionType.SQLite },
+}
+
+/** A type appears bare and once per provider, so a list of these is keyed by `label`, never by `type`. */
+export const engines = Object.values(ConnectionType).flatMap((type) => [
+  { label: connectionTypeLabels[type], provider: null, type },
+  ...objectEntries(providers)
+    .filter(([, provider]) => provider.type === type)
+    .map(([provider, { label }]) => ({ label, provider, type })),
+])

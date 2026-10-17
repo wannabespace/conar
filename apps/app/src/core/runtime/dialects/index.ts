@@ -12,6 +12,8 @@ import { mysqlColdDialect, mysqlDialect } from './mysql'
 import type { Database as MysqlDatabase } from './mysql/schema'
 import { postgresColdDialect, postgresDialect } from './postgres'
 import type { Database as PostgresDatabase } from './postgres/schema'
+import { sqliteColdDialect, sqliteDialect } from './sqlite'
+import type { Database as SqliteDatabase } from './sqlite/schema'
 
 export const dialects = {
   clickhouse: memoize(
@@ -34,6 +36,11 @@ export const dialects = {
       new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
     { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
+  sqlite: memoize(
+    (options: DialectOptions) =>
+      new Kysely<SqliteDatabase>({ dialect: sqliteDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
+  ),
 } satisfies Record<Dialect, AnyFunction>
 
 export const coldDialects = {
@@ -41,4 +48,5 @@ export const coldDialects = {
   mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
   mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
   postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
+  sqlite: memoize(() => new Kysely({ dialect: sqliteColdDialect() })),
 } satisfies Record<Dialect, AnyFunction>

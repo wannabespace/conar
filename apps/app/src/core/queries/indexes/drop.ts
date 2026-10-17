@@ -17,5 +17,6 @@ export const dropIndexQuery = ({ name, schema, table }: IndexTarget) =>
           db
         ),
       postgres: (db) => sql`DROP INDEX ${sql.id(schema, name)}`.execute(db),
+      sqlite: (db) => db.withSchema(schema).schema.dropIndex(name).execute(),
     },
   })

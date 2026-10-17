@@ -6,12 +6,15 @@ import type { ConnectionString } from '~/core/connection/connection-strings'
 import type { Connection } from '~/core/connection/sync'
 
 import type { ConnectionFormValues } from './connection-form'
+import { getFormValues } from './connection-form'
+import { getEngineFields } from './engine-fields'
 
 export type FormMode =
   | { kind: 'create' }
   | {
       kind: 'edit'
       name: string
+      values: ConnectionFormValues
       passwordElsewhere: boolean
       missingSecrets: SecretParam[]
       scope: 'all' | 'credentials' | 'details'
@@ -42,7 +45,8 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
 }
 
 export const getEditMode = (
-  connection: Pick<Connection, 'isPasswordExists' | 'name'>,
+  connection: Connection,
+  connectionString: string | null,
   stored: ConnectionString | undefined,
   scope: Extract<FormMode, { kind: 'edit' }>['scope']
 ): FormMode => ({
@@ -52,6 +56,7 @@ export const getEditMode = (
   passwordElsewhere:
     connection.isPasswordExists && !stored?.isPasswordPopulated,
   scope,
+  values: getFormValues(connection, connectionString),
 })
 
 export const getFormPolicy = (mode: FormMode) => {
@@ -66,7 +71,10 @@ export const getFormPolicy = (mode: FormMode) => {
   const missingFields = missing.map((secret) => SECRETS[secret].field)
   return {
     /** `null` focuses the page itself. */
-    firstField: mode.kind === 'create' ? null : (missingFields[0] ?? 'host'),
+    firstField:
+      mode.kind === 'create'
+        ? null
+        : (missingFields[0] ?? getEngineFields(mode.values).field),
     guardsUnsaved: mode.kind === 'edit' && scope === 'all',
     locked: (field: string) =>
       scope === 'credentials' && !missingFields.includes(field),

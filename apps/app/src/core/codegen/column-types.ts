@@ -116,6 +116,13 @@ const DRIZZLE_TYPES: Record<
     [/double|float/iu, 'doublePrecision'],
     [jsonType(Dialect.Postgres), 'json'],
   ],
+  sqlite: [
+    [/bool/iu, 'integer'],
+    [INT_RE, 'integer'],
+    [/decimal|numeric/iu, 'numeric'],
+    [/double|float|real/iu, 'real'],
+    [/blob/iu, 'blob'],
+  ],
 }
 
 export const drizzleType = (

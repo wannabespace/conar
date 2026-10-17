@@ -1,3 +1,4 @@
+import { definitionKey } from '~/core/catalog/definition-keys'
 import type { TableType } from '~/core/catalog/table-type'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import type { indexesType } from '~/core/queries/indexes/list'
@@ -50,6 +51,8 @@ export interface DiagramRelation {
 }
 
 export interface Diagram {
+  /** One per index in the schema, though the list query answers one row per indexed column. */
+  indexes: (typeof indexesType.infer)[]
   relations: DiagramRelation[]
   tables: DiagramTable[]
 }
@@ -137,7 +140,14 @@ export const buildDiagram = ({
   ].flatMap(([first]) => (first ? [first] : []))
   const countBy = <T extends { schema: string; table: string }>(items: T[]) =>
     Map.groupBy(inSchema(items), (item) => item.table)
-  const indexCounts = countBy(indexes.filter((index) => !index.constraintOwned))
+  const schemaIndexes = [
+    ...new Map(
+      inSchema(indexes).map((index) => [definitionKey.index(index), index])
+    ).values(),
+  ]
+  const indexCounts = countBy(
+    schemaIndexes.filter((index) => !index.constraintOwned)
+  )
   const triggerCounts = countBy(triggers)
   const policyCounts = countBy(policies)
   const draftsByTable = Map.groupBy(schemaDrafts, (draft) => draft.table)
@@ -278,5 +288,5 @@ export const buildDiagram = ({
       nodeIds.has(relation.source.table) && nodeIds.has(relation.target.table)
   )
 
-  return { relations, tables: allTables }
+  return { indexes: schemaIndexes, relations, tables: allTables }
 }

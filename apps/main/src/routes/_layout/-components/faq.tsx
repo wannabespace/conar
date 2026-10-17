@@ -14,7 +14,7 @@ import { PRO_PLAN } from '~/utils/pricing'
 const QUESTIONS = [
   {
     answer:
-      'PostgreSQL, MySQL, MariaDB, Microsoft SQL Server and ClickHouse, in the desktop app, the web app and the CLI.',
+      'PostgreSQL, MySQL, MariaDB, Microsoft SQL Server, ClickHouse and SQLite, including SQLite on Turso and Cloudflare D1, in the desktop app, the web app and the CLI. A local SQLite file opens in the desktop app, or on the web through tamery proxy.',
     question: 'Which databases does Tamery support?',
   },
   {

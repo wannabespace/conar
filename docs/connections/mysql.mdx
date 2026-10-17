@@ -32,6 +32,8 @@ To reject untrusted certificates, add `sslrejectunauthorized=true`:
 mysql://username:password@hostname:3306/database?ssl=true&sslrejectunauthorized=true
 ```
 
+Without `ssl`, Tamery connects over SSL without verifying the certificate, and uses an unencrypted connection only when the server says it has no SSL. `ssl=false` always connects unencrypted.
+
 Check your provider's docs for the exact parameters they require.
 
 ## Providers

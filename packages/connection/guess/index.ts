@@ -11,6 +11,8 @@ import { guessHost, guessPgpass } from './host'
 import { guessJson } from './json'
 import { guessKeyValue } from './key-value'
 import { mergeParts } from './parts'
+import { guessRemoteSqlite } from './remote-sqlite'
+import { guessSqlite } from './sqlite'
 import { guessSsh, throughForwards } from './ssh'
 import type { ConnectionGuess, DatabaseGuess, GuessFix } from './types'
 import { guessGoDsn, guessUrl, guessWebUrl } from './url'
@@ -18,12 +20,14 @@ import { guessGoDsn, guessUrl, guessWebUrl } from './url'
 export type { ConnectionGuess, GuessFix, GuessFormat } from './types'
 
 const DETECTORS = [
+  guessSqlite,
   guessCli,
   guessJson,
   guessUrl,
   guessGoDsn,
   guessAdo,
   guessKeyValue,
+  guessRemoteSqlite,
   guessEnv,
   guessWebUrl,
   guessPgpass,

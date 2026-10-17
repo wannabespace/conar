@@ -36,6 +36,7 @@ export const customQuery = ({
       mssql: run,
       mysql: run,
       postgres: run,
+      sqlite: run,
     },
   })
 }

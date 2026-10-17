@@ -4,18 +4,18 @@ sidebarTitle: 'ClickHouse'
 description: 'Connect Tamery to ClickHouse or ClickHouse Cloud over HTTP or HTTPS.'
 ---
 
-Tamery connects to ClickHouse over its HTTP interface. Two schemes:
+Tamery connects to ClickHouse over its HTTP interface, so its connection string is the same URL other ClickHouse clients take:
 
 **HTTP (port 8123):**
 
 ```bash
-clickhouse://username:password@hostname:8123/database
+http://username:password@hostname:8123/database
 ```
 
 **HTTPS (port 8443):**
 
 ```bash
-clickhouses://username:password@hostname:8443/database
+https://username:password@hostname:8443/database
 ```
 
 | Part            | Description                                 |
@@ -26,26 +26,28 @@ clickhouses://username:password@hostname:8443/database
 | `8123` / `8443` | HTTP / HTTPS port                           |
 | `database`      | Database name                               |
 
+When you fill in the host instead of pasting a string, Tamery uses HTTPS on every port except `8123`.
+
 ## ClickHouse Cloud
 
-Get the string from the [Cloud console](https://console.clickhouse.cloud) → your service → **Connect**. Cloud requires TLS, so use `clickhouses://` on port 8443:
+Get the string from the [Cloud console](https://console.clickhouse.cloud) → your service → **Connect**. Cloud requires TLS, so use `https://` on port 8443:
 
 ```bash
-clickhouses://default:your-password@abc123xyz.us-east-1.aws.clickhouse.cloud:8443/default
+https://default:your-password@abc123xyz.us-east-1.aws.clickhouse.cloud:8443/default
 ```
 
 ## Self-hosted
 
-Default ports: HTTP `8123`, native TCP `9000`. Tamery uses HTTP, so use `8123` (or `8443` with `clickhouses://` if TLS is configured):
+Default ports: HTTP `8123`, native TCP `9000`. Tamery uses HTTP, so use `8123` (or `8443` with `https://` if TLS is configured):
 
 ```bash
-clickhouse://default:password@localhost:8123/default
+http://default:password@localhost:8123/default
 ```
 
 No password? Omit it:
 
 ```bash
-clickhouse://default@localhost:8123/default
+http://default@localhost:8123/default
 ```
 
 <Tip>

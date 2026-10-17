@@ -72,6 +72,12 @@ const urlsIn = (text: string): FoundUrl[] =>
     return type ? [{ type, url: match.replace(TRAILING_PUNCTUATION, '') }] : []
   })
 
+/** Every URL in the text whatever its scheme, so a provider can read its own links. */
+export const parsedUrlsIn = (text: string) =>
+  [...text.matchAll(URL_PATTERN)].flatMap(
+    ({ 0: match }) => URL.parse(match.replace(TRAILING_PUNCTUATION, '')) ?? []
+  )
+
 export const guessUrl = (text: string): DatabaseGuess | null => {
   const found = urlsIn(text).find(({ url }) => !WEB_SCHEME.test(url))
   return found ? guessOfUrl(found) : null

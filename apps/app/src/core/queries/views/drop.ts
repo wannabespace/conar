@@ -22,5 +22,6 @@ export const dropViewQuery = ({
 
         return (cascade ? kind.cascade() : kind).execute()
       },
+      sqlite: (db) => db.withSchema(schema).schema.dropView(view).execute(),
     },
   })

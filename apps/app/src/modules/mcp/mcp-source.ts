@@ -96,10 +96,8 @@ export const mcpSource: McpSource = {
     if (!workspace) {
       throw new Error('Tamery is still loading. Try again in a moment.')
     }
-    const connectionString = connectionParts.format({
-      ...connectionParts.parse(given),
-      type,
-    })
+    const parts = { ...connectionParts.parse(given), type }
+    const connectionString = connectionParts.format(parts)
     await testConnectionQuery.run({
       connectionString,
       dialect: getDialect(type),
@@ -107,6 +105,7 @@ export const mcpSource: McpSource = {
     const { id } = await createConnection({
       connectionString,
       name,
+      provider: connectionParts.parse(connectionString).provider,
       syncType,
       type,
       workspaceId: workspace.id,

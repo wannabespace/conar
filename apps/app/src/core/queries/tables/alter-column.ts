@@ -1,4 +1,5 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 
 import { createQuery } from '~/core/runtime/query'
 
@@ -16,5 +17,6 @@ export const alterColumnQuery = (target: AlterColumnTarget) =>
         db.executeQuery(alterColumnStatement(Dialect.MySQL, db, target)),
       postgres: (db) =>
         db.executeQuery(alterColumnStatement(Dialect.Postgres, db, target)),
+      sqlite: unsupported('Changing a column'),
     },
   })

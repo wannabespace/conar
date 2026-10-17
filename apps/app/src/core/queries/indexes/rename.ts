@@ -27,5 +27,6 @@ export const renameIndexQuery = ({
         sql`ALTER INDEX ${sql.id(schema, name)} RENAME TO ${sql.id(newName)}`.execute(
           db
         ),
+      sqlite: unsupported('Renaming indexes'),
     },
   })

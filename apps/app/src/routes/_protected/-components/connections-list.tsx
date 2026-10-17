@@ -1,6 +1,9 @@
 import { PlusSignIcon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { connectionTypeLabels } from '@tamery/shared/enums/connection-type'
+import {
+  connectionTypeLabels,
+  providers,
+} from '@tamery/shared/enums/connection-type'
 import { matchesSearch } from '@tamery/shared/utils'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
@@ -108,7 +111,8 @@ export const ConnectionsList = () => {
       query,
       connection.name,
       connection.label,
-      connectionTypeLabels[connection.type]
+      connectionTypeLabels[connection.type],
+      connection.provider && providers[connection.provider].label
     )
   )
 

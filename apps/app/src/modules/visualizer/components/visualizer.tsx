@@ -250,7 +250,7 @@ export const Visualizer = ({
         </div>
         <InspectorPane
           table={selectedTable}
-          indexes={indexes}
+          indexes={diagram.indexes}
           triggers={triggers}
           policies={policies}
           onClose={() => setSelectedId(null)}

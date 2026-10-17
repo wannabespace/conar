@@ -13,6 +13,13 @@ export const CONSTRAINT_KINDS = [
 
 export type ConstraintKind = (typeof CONSTRAINT_KINDS)[number]
 
+export const LISTED_CONSTRAINT_TYPES = [
+  'PRIMARY KEY',
+  'UNIQUE',
+  'FOREIGN KEY',
+  'CHECK',
+] as const
+
 export const REFERENTIAL_ACTIONS = [
   'NO ACTION',
   'RESTRICT',

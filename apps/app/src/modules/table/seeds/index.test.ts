@@ -127,6 +127,11 @@ describe('rowsPerStatement', () => {
     expect(rowsPerStatement(Dialect.MSSQL, 2)).toBe(500)
     expect(rowsPerStatement(Dialect.Postgres, 200)).toBe(500)
   })
+
+  test('respects the SQLite parameter cap', () => {
+    expect(rowsPerStatement(Dialect.SQLite, 2)).toBe(50)
+    expect(rowsPerStatement(Dialect.SQLite, 150)).toBe(1)
+  })
 })
 
 describe('generateRows', () => {

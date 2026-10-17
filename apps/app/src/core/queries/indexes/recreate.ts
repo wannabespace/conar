@@ -9,6 +9,7 @@ import {
   createIndexStatement,
   dropSkipIndexStatement,
   materializeIndexStatement,
+  sqliteCreateIndexStatement,
 } from './shape'
 
 export const recreateIndexQuery = ({
@@ -44,6 +45,11 @@ export const recreateIndexQuery = ({
         db.transaction().execute(async (tx) => {
           await sql`DROP INDEX ${sql.id(schema, name)}`.execute(tx)
           await create.execute(tx)
+        }),
+      sqlite: (db) =>
+        db.transaction().execute(async (tx) => {
+          await tx.withSchema(schema).schema.dropIndex(name).execute()
+          await sqliteCreateIndexStatement(replacement).execute(tx)
         }),
     },
   })

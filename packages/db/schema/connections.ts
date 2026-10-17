@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
@@ -16,6 +16,8 @@ export const connectionType = d.pgEnum('connection_type', ConnectionType)
 
 export const syncType = d.pgEnum('sync_type', SyncType)
 
+export const provider = d.pgEnum('provider', Provider)
+
 export const connections = d.snakeCase.table(
   'connections',
   {
@@ -25,6 +27,7 @@ export const connections = d.snakeCase.table(
     isPasswordExists: d.boolean('password_exists').notNull(),
     label: d.text(),
     name: d.text().notNull(),
+    provider: provider(),
     syncType: syncType().notNull(),
     type: connectionType().notNull(),
     userId: d

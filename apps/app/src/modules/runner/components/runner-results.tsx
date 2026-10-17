@@ -135,6 +135,15 @@ const ResultBody = ({
   if (result.pending) {
     return running
   }
+  if (result.skipped) {
+    return (
+      <PaneEmpty
+        icon={StopIcon}
+        title="Not run"
+        description="An earlier statement failed, so this one did not run"
+      />
+    )
+  }
   if (result.stopped) {
     return (
       <PaneEmpty
@@ -254,8 +263,9 @@ export const RunnerResults = () => {
                       'flex-none transition-none',
                       // oxlint-disable-next-line shadcn/no-restyle -- a failed statement's tab reads red
                       item.error !== null && 'text-destructive',
-                      // oxlint-disable-next-line shadcn/no-restyle -- a statement that never finished reads muted
-                      (item.stopped || item.pending) && 'text-muted-foreground'
+                      (item.stopped || item.skipped || item.pending) &&
+                        // oxlint-disable-next-line shadcn/no-restyle -- a statement that never finished reads muted
+                        'text-muted-foreground'
                     )}
                   />
                 }

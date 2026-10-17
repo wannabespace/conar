@@ -82,6 +82,11 @@ export const recreateTriggerQuery = ({
           await create.postgres.execute(tx)
           await restore?.postgres.execute(tx)
         }),
+      sqlite: (db) =>
+        db.transaction().execute(async (tx) => {
+          await drop.sqlite.execute(tx)
+          await create.sqlite.execute(tx)
+        }),
     },
   })
 }

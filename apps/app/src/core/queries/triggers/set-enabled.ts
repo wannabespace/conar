@@ -16,6 +16,7 @@ export const setTriggerEnabledQuery = (
       mssql: (db) => setEnabled.mssql.execute(db),
       mysql: unsupported('Disabling triggers'),
       postgres: (db) => setEnabled.postgres.execute(db),
+      sqlite: unsupported('Disabling triggers'),
     },
   })
 }

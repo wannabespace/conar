@@ -68,6 +68,7 @@ const query = createQuery({
       }))
     },
     postgres: unsupported('Privileges'),
+    sqlite: unsupported('Privileges'),
   },
   type: privilegeType.array(),
 })

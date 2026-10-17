@@ -1,4 +1,5 @@
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import { dialects, tokenize } from '@tamery/sql'
 import { sql } from 'kysely'
 
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
@@ -29,6 +30,7 @@ export interface TriggerShape {
 export const triggerBodyTemplates: Partial<Record<Dialect, string>> = {
   mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
   mysql: 'BEGIN\n\nEND',
+  sqlite: 'BEGIN\n\nEND',
 }
 
 export const triggerEventsFor = (
@@ -48,6 +50,37 @@ export const triggerOrientationsFor = (
   return events.includes('TRUNCATE')
     ? allowed.filter((orientation) => orientation === 'STATEMENT')
     : allowed
+}
+
+const SQLITE_TRIGGER_EVENTS = new Set(['DELETE', 'INSERT', 'UPDATE'])
+
+const TIMING_BEFORE_EVENT: Record<string, TriggerTiming> = {
+  AFTER: 'AFTER',
+  OF: 'INSTEAD OF',
+}
+
+// Trigger events are reserved words, so the first unquoted one is the event and the timing sits right before it.
+export const sqliteTriggerParts = (statement: string) => {
+  const tokens = tokenize(statement, dialects[Dialect.SQLite]).tokens.filter(
+    (token) => token.kind !== 'comment'
+  )
+  const words = tokens.map((token) =>
+    token.quoted ? '' : token.text.toUpperCase()
+  )
+  const at = words.findIndex((word) => SQLITE_TRIGGER_EVENTS.has(word))
+  const event = words[at]
+  if (!event) {
+    throw new Error(`No trigger event in ${statement}`)
+  }
+  const begin = words.indexOf('BEGIN', at)
+  const header = words.slice(at + 1, begin)
+
+  return {
+    body: statement.slice(tokens[begin]?.start),
+    custom: header[0] === 'OF' || header.includes('WHEN'),
+    event,
+    timing: TIMING_BEFORE_EVENT[words[at - 1] ?? ''] ?? 'BEFORE',
+  }
 }
 
 export interface TriggerTarget {
@@ -75,6 +108,8 @@ export const createTriggerStatements = ({
       FOR EACH ${sql.raw(shape.orientation)}
       EXECUTE FUNCTION ${sql.id(shape.functionSchema || schema, shape.functionName)}()
     `,
+    // SQLite refuses a qualified table here: the trigger's own schema names it.
+    sqlite: sql`CREATE TRIGGER ${name} ${timing} ${events} ON ${sql.id(table)} FOR EACH ROW ${body}`,
   }
 }
 
@@ -89,6 +124,7 @@ export const dropTriggerStatements = ({
     mssql: drop,
     mysql: drop,
     postgres: sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`,
+    sqlite: drop,
   }
 }
 

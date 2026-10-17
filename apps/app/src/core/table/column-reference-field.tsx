@@ -10,7 +10,7 @@ import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { foreignKeysCreatable } from '~/core/catalog/capabilities'
+import { foreignKeysCreatable } from '~/core/catalog/section-capabilities'
 
 import type { ReferenceTarget } from './use-reference-targets'
 import { useReferenceTargets } from './use-reference-targets'

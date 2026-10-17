@@ -80,7 +80,7 @@ const applyRejectUnauthorized = (
 
 export const parseSSLConfig = (
   searchParams: URLSearchParams
-): SslOptions | undefined => {
+): SslOptions | false | undefined => {
   const ssl = searchParams.get('ssl')
   const sslCa = searchParams.get('sslca')
   const sslCert = searchParams.get('sslcert')
@@ -101,7 +101,7 @@ export const parseSSLConfig = (
         'ssl=false cannot be used with SSL certificate parameters'
       )
     }
-    return undefined
+    return false
   }
 
   if (ssl === '1' || ssl?.toLowerCase() === 'true' || hasSSLParams) {

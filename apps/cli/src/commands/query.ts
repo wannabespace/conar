@@ -9,6 +9,7 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
+import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
 import { consola } from 'consola'
@@ -24,6 +25,7 @@ const queryMap = {
   mssql: mssql.query,
   mysql: mysql.query,
   postgres: pg.query,
+  sqlite: sqlite.query,
 } satisfies Record<Dialect, QueryExecutor>
 
 const fail = (message: string): never => {

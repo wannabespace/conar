@@ -1,3 +1,4 @@
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { unsupported } from '@tamery/shared/unsupported'
 import { queryOptions } from '@tanstack/react-query'
@@ -11,6 +12,8 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
+
+import { sqliteTriggerParts } from './shape'
 
 export const triggersType = type({
   'body?': 'string | null',
@@ -228,6 +231,25 @@ const resourceTriggersQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .execute(),
+    sqlite: async (db) => {
+      const rows = await db
+        .selectFrom('sqlite_schema')
+        .select((eb) => [
+          eb.val(SQLITE_RESOURCE_NAME).as('schema'),
+          'name',
+          'tbl_name as table',
+          'sql as statement',
+        ])
+        .$narrowType<{ statement: string }>()
+        .where('type', '=', 'trigger')
+        .execute()
+
+      return rows.map(({ statement, ...row }) => ({
+        ...row,
+        ...sqliteTriggerParts(statement),
+        orientation: 'ROW',
+      }))
+    },
   },
   type: triggersType.array(),
 })

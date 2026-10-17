@@ -3,12 +3,12 @@ import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createStore } from 'seitu'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import {
-  getCapabilities,
   foreignKeysCreatable,
-  sectionAvailable,
   getSectionCapabilities,
-} from '~/core/catalog/capabilities'
+  sectionAvailable,
+} from '~/core/catalog/section-capabilities'
 
 import type {
   Diagram,
@@ -22,6 +22,7 @@ export const getGates = (dialect: Dialect) => {
   const constraints = getSectionCapabilities('constraints', dialect)
 
   return {
+    alterColumns: capabilities.alterColumns,
     cascade: capabilities.cascade,
     ddlRollback: capabilities.ddlRollback,
     dropForeignKeys: !!constraints.drop,

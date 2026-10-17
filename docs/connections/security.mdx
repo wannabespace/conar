@@ -104,5 +104,8 @@ Tamery is open source under **AGPL-3.0**, so the encryption implementation is au
   proxy` when available, or Tamery's cloud proxy for reachable cloud
   connections. Cloud proxy transactions belong to your authenticated account;
   another account cannot execute or finish them. The cloud proxy refuses a host
-  that resolves to a loopback, private or link-local address.
+  that resolves to a loopback, private, link-local or other non-public address,
+  and a connection string that names a certificate file (`sslrootcert`,
+  `sslcert`, `sslkey`, `sslca`): those files live on your computer, so open such
+  a connection in the desktop app or through `tamery proxy`.
 </Note>

@@ -2,7 +2,7 @@
 
 ![image](https://tamery.app/github-demo.png)
 
-Tamery is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, MySQL, MSSQL, Clickhouse with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
+Tamery is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, MySQL, MSSQL, Clickhouse, SQLite with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
 
 <div align="center">
   <a href="https://tamery.app/download">
@@ -22,7 +22,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
   - MySQL
   - MSSQL
   - Clickhouse
-  - Sqlite (coming soon)
+  - SQLite
   - MongoDB (coming soon)
 
 - **🤖 AI-Powered Features**

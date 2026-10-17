@@ -131,7 +131,7 @@ const RowCount = ({ table }: { table: DiagramTable }) => {
           <NumberFlow value={data.count} />
         </>
       )}{' '}
-      rows
+      {data?.count === 1 ? 'row' : 'rows'}
     </span>
   )
 }

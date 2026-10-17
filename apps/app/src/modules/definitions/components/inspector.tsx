@@ -111,7 +111,7 @@ export const Inspector = ({
       <AnimatePresence initial={false}>
         {mutation.error && (
           <MotionCollapse key="error" className="shrink-0">
-            <Alert variant="destructive" className="mx-3 mb-3">
+            <Alert variant="destructive" className="mx-3 mb-3 w-auto">
               <AlertDescription data-mask className="wrap-break-word">
                 {mutation.error.message}
               </AlertDescription>

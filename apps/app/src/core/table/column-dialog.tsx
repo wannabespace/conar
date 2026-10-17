@@ -10,7 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@tamery/ui/components/field'
 import {
   InputGroup,
   InputGroupAddon,
@@ -48,14 +53,28 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const FORM_ID = 'column-dialog'
 
-const lockedFields = (dialect: Dialect, column: EditableColumn | null) => {
-  const { renameColumns, retypeKeyColumns } = getCapabilities(dialect)
+const lockedFields = (
+  dialect: Dialect,
+  column: EditableColumn | null,
+  primaryKey: boolean
+) => {
+  const { alterColumns, renameColumns, retypeKeyColumns } =
+    getCapabilities(dialect)
   const stored = column !== null && column.state !== 'added'
+  const name = stored && !renameColumns
+  const type =
+    stored && (!alterColumns || (!!column.primaryKey && !retypeKeyColumns))
   return {
-    name: stored && !renameColumns,
-    type: stored && !!column.primaryKey && !retypeKeyColumns,
+    focusType: name && !type,
+    name,
+    nameOnly: stored && renameColumns && !alterColumns,
+    nullable: primaryKey || (stored && !alterColumns),
+    type,
   }
 }
+
+const editableComment = (dialect: Dialect, column: EditableColumn | null) =>
+  getCapabilities(dialect).comments ? column?.comment : undefined
 
 const ColumnForm = ({
   onSubmit,
@@ -86,9 +105,9 @@ const ColumnForm = ({
   const [reference, setReference] = useState<ReferenceTarget | null>(null)
   const [nullable, setNullable] = useState(column?.nullable ?? true)
   const [primaryKey, setPrimaryKey] = useState(column?.primaryKey ?? false)
-  const [comment, setComment] = useState(column?.comment)
+  const [comment, setComment] = useState(() => editableComment(dialect, column))
   const [submitted, setSubmitted] = useState(false)
-  const locked = lockedFields(dialect, column)
+  const locked = lockedFields(dialect, column, primaryKey)
   const next = normalized(column, {
     comment,
     name,
@@ -137,8 +156,13 @@ const ColumnForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
+        {locked.nameOnly && (
+          <FieldDescription>
+            This database can only rename a stored column.
+          </FieldDescription>
+        )}
         <TypeField
-          autoFocus={locked.name && !locked.type}
+          autoFocus={locked.focusType}
           columnType={columnType}
           disabled={locked.type}
           error={errors.type}
@@ -180,7 +204,7 @@ const ColumnForm = ({
             id="column-dialog-nullable"
             size="sm"
             checked={next.nullable}
-            disabled={primaryKey}
+            disabled={locked.nullable}
             onCheckedChange={setNullable}
           />
         </OptionField>

@@ -2,6 +2,7 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { NETWORK_RULES } from './diagnose-network'
+import { SQLITE_RULES } from './diagnose-sqlite'
 import type { Diagnosis, DiagnosisContext, DiagnosisRule } from './diagnosis'
 import { getHostHint, isLocalHost } from './hosts'
 import { SSH_RULES } from './ssh/diagnose'
@@ -19,6 +20,7 @@ const sslFix = (
 
 const RULES: DiagnosisRule[] = [
   ...SSH_RULES,
+  ...SQLITE_RULES,
   {
     diagnose: () => ({
       focus: 'user',
@@ -193,7 +195,10 @@ export const isConnectionFailure = (message: string) =>
 export const diagnoseConnectionError = (
   context: DiagnosisContext
 ): Diagnosis | null => {
-  const rule = RULES.find(({ match }) => match.test(context.message))
+  const rule = RULES.find(
+    ({ engine, match }) =>
+      (!engine || engine === context.parts.type) && match.test(context.message)
+  )
   if (!rule) {
     return null
   }

@@ -42,6 +42,17 @@ describe('tokenize', () => {
     ])
   })
 
+  it('keeps a string prefix in the literal', () => {
+    expect(kinds("SELECT X'00FF', E'a\\'b', N'n'")).toEqual([
+      'keyword:SELECT',
+      "string:X'00FF'",
+      'punctuation:,',
+      "string:E'a\\'b'",
+      'punctuation:,',
+      "string:N'n'",
+    ])
+  })
+
   it('follows dialect quoting', () => {
     expect(kinds('SELECT `a`, "b", @v, # c', mysql)).toEqual([
       'keyword:SELECT',

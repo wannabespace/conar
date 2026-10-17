@@ -61,6 +61,7 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),
+      sqlite: (db) => selectStats(db, params),
     },
     type: statsType,
   })

@@ -10,6 +10,7 @@
     "mysql",
     "postgres",
     "sql",
+    "sqlite",
     "tamery"
   ],
   "homepage": "https://tamery.app",
@@ -43,6 +44,7 @@
     "@clickhouse/client": "catalog:",
     "@drizzle-team/brocli": "catalog:",
     "@hono/node-server": "catalog:",
+    "@libsql/client": "catalog:",
     "@orpc/client": "catalog:",
     "better-result": "catalog:",
     "consola": "catalog:",
@@ -68,6 +70,6 @@
     "typescript": "catalog:"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.16"
   }
 }

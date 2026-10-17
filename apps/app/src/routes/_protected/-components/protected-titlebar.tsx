@@ -82,7 +82,11 @@ const ConnectionSubMenu = ({
           navigate(lastResourceLink)
         }}
       >
-        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+        <ConnectionIcon
+          type={connection.type}
+          provider={connection.provider}
+          className="size-4 shrink-0"
+        />
         <span data-mask className="truncate">
           {connection.name}
         </span>
@@ -164,7 +168,11 @@ const ConnectionsDropdown = ({
       >
         {current ? (
           <>
-            <ConnectionIcon type={current.type} className="size-4 shrink-0" />
+            <ConnectionIcon
+              type={current.type}
+              provider={current.provider}
+              className="size-4 shrink-0"
+            />
             <span data-mask className="truncate">
               {current.name}
             </span>

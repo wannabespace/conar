@@ -31,6 +31,7 @@ const connectionVersionQuery = createQuery({
     mssql: readVersion(sql`SERVERPROPERTY('ProductVersion')`),
     mysql: readVersion(sql`VERSION()`),
     postgres: readVersion(sql`current_setting('server_version')`),
+    sqlite: readVersion(sql`sqlite_version()`),
   },
   type: connectionVersionType,
 })

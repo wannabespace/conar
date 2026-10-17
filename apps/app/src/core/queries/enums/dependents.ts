@@ -63,6 +63,7 @@ const dependentsQuery = ({ name, schema }: { name: string; schema: string }) =>
           .where('c.relkind', 'in', ['r', 'p'])
           .where('c.relispartition', '=', false)
           .execute(),
+      sqlite: () => Promise.resolve([]),
     },
     type: enumDependentType.array(),
   })

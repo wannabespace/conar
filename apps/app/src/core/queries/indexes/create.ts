@@ -5,6 +5,7 @@ import {
   addSkipIndexStatement,
   createIndexStatement,
   materializeIndexStatement,
+  sqliteCreateIndexStatement,
 } from './shape'
 
 export const createIndexQuery = (shape: IndexShape) => {
@@ -19,6 +20,7 @@ export const createIndexQuery = (shape: IndexShape) => {
       mssql: (db) => create.execute(db),
       mysql: (db) => create.execute(db),
       postgres: (db) => create.execute(db),
+      sqlite: (db) => sqliteCreateIndexStatement(shape).execute(db),
     },
   })
 }

@@ -1,4 +1,5 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 
 import { createQuery } from '~/core/runtime/query'
 
@@ -20,5 +21,6 @@ export const dropConstraintQuery = (
         db.executeQuery(dropConstraintStatement(Dialect.MySQL, db, target)),
       postgres: (db) =>
         db.executeQuery(dropConstraintStatement(Dialect.Postgres, db, target)),
+      sqlite: unsupported('Dropping constraints'),
     },
   })

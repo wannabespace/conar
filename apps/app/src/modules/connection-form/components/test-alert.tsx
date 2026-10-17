@@ -24,19 +24,22 @@ import { useState } from 'react'
 import { orpc } from '~/lib/orpc'
 import { useIsOnline } from '~/store'
 
+import type { EngineFields } from '../lib/engine-fields'
+import { getFieldNoun } from '../lib/engine-fields'
+
 export type FixSource = 'ai' | 'rule'
 
 // Module scope keeps the ref callback's identity, so it scrolls once on mount and never on a later render.
 const scrollIntoView = (node: HTMLElement | null) =>
   node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
-const FOCUS_LABELS: Record<NonNullable<Diagnosis['focus']>, string> = {
-  password: 'Edit the password',
+type Focus = NonNullable<Diagnosis['focus']>
+
+const SSH_FOCUS_LABELS: Partial<Record<Focus, string>> = {
   'ssh.keyPath': 'Edit the key file',
   'ssh.passphrase': 'Edit the passphrase',
   'ssh.password': 'Edit the SSH password',
   'ssh.privateKey': 'Replace the private key',
-  user: 'Edit the user',
 }
 
 export const TestAlert = ({
@@ -44,13 +47,15 @@ export const TestAlert = ({
   onAsk,
   onFix,
   onFocus,
+  engineFields,
   parts,
 }: {
   error: Error
   /** Explain with AI disables itself and then unmounts, so focus has to go somewhere. */
   onAsk: () => void
   onFix: (patch: ConnectionPatch, source: FixSource) => void
-  onFocus: (field: NonNullable<Diagnosis['focus']>) => void
+  onFocus: (field: Focus) => void
+  engineFields: EngineFields
   parts: ConnectionParts
 }) => {
   const context = { desktop: !!window.electron, message: error.message, parts }
@@ -115,7 +120,8 @@ export const TestAlert = ({
                   size="xs"
                   onClick={() => onFocus(focus)}
                 >
-                  {FOCUS_LABELS[focus]}
+                  {SSH_FOCUS_LABELS[focus] ??
+                    `Edit the ${getFieldNoun(engineFields, focus)}`}
                 </Button>
               )}
               {aiFix && (

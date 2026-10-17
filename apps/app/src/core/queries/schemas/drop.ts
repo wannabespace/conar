@@ -18,5 +18,6 @@ export const dropSchemaQuery = ({
         const drop = db.schema.dropSchema(schema)
         return (cascade ? drop.cascade() : drop).execute()
       },
+      sqlite: unsupported('Schemas'),
     },
   })

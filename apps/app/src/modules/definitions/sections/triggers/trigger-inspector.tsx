@@ -1,12 +1,10 @@
 import { sqlLanguageIds } from '@tamery/monaco/sql-language'
 import { sameShape } from '@tamery/shared/utils'
-import { Switch } from '@tamery/ui/components/switch'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useSelector } from '@tanstack/react-form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { OptionField } from '~/components/option-field'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { resourceFunctionsQueryOptions } from '~/core/queries/functions/list'
 import { createTriggerQuery } from '~/core/queries/triggers/create'
@@ -44,7 +42,7 @@ import {
   getShape,
   triggerSchemas,
 } from './trigger-draft'
-import { useToggle } from './use-toggle'
+import { TriggerStatus } from './trigger-status'
 
 export const TriggerInspector = ({
   can,
@@ -63,7 +61,6 @@ export const TriggerInspector = ({
     ...resourceFunctionsQueryOptions({ connectionResource }),
     enabled: !options.body,
   })
-  const toggle = useToggle({ queryKey, run })
   const mutation = useMutation({
     meta: { event: 'trigger_saved' },
     mutationFn: (draft: TriggerDraft) =>
@@ -112,20 +109,16 @@ export const TriggerInspector = ({
     : !can.create
   const orientations = triggerOrientationsFor(draft, options.orientations)
   const instead = draft.timing === 'INSTEAD OF'
-  const targetsFor = (timing: TriggerTiming) => {
-    if (item) {
-      return [item.table]
-    }
-
-    if (timing !== 'INSTEAD OF') {
-      return getRelationNames(draft.schema, 'table')
-    }
-
-    return options.insteadOfTargets.flatMap((target) =>
-      getRelationNames(draft.schema, target)
-    )
-  }
-  const targets = targetsFor(draft.timing)
+  const targetsFor = (timing: TriggerTiming) =>
+    timing === 'INSTEAD OF'
+      ? options.insteadOfTargets.flatMap((target) =>
+          getRelationNames(draft.schema, target)
+        )
+      : getRelationNames(draft.schema, 'table')
+  const targets = item ? [item.table] : targetsFor(draft.timing)
+  const timings = options.timings.filter(
+    (timing) => !item || targetsFor(timing).includes(item.table)
+  )
   const saved = item && getShape(getDraft(item, draft.schema, dialect))
   const changed = !saved || !sameShape(getShape(draft), saved)
 
@@ -145,21 +138,7 @@ export const TriggerInspector = ({
       }
     >
       {item && options.toggle && (
-        <InspectorSection title="Status">
-          <OptionField
-            htmlFor="trigger-enabled"
-            title="Enabled"
-            description="A disabled trigger stays defined but never fires."
-          >
-            <Switch
-              id="trigger-enabled"
-              size="sm"
-              disabled={toggle.isPending}
-              checked={item.enabled !== false}
-              onCheckedChange={(enabled) => toggle.mutate({ enabled, item })}
-            />
-          </OptionField>
-        </InspectorSection>
+        <TriggerStatus item={item} queryKey={queryKey} run={run} />
       )}
       <InspectorSection
         title="General"
@@ -236,7 +215,7 @@ export const TriggerInspector = ({
                 label="Timing"
                 disabled={readOnly}
                 getLabel={sentenceCase}
-                options={options.timings}
+                options={timings}
                 placeholder="Timing"
                 onChanged={(timing: TriggerTiming) =>
                   resetFields(form, {

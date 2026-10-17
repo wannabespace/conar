@@ -6,6 +6,7 @@ import { memoize } from 'memoza'
 import { getCapabilities, getDefaultSchema } from '~/core/catalog/capabilities'
 import { getConnectionResourceStore } from '~/core/connection/stores'
 import type { ConnectionResource } from '~/core/connection/sync'
+import { userTables } from '~/core/queries/shared/sqlite-catalog'
 import {
   connectionResourceToQueryParams,
   createQuery,
@@ -188,6 +189,21 @@ export const resourceTablesAndSchemasQuery = memoize(
                 not(eb('n.nspname', 'like', 'pg_temp%')),
               ])
             )
+            .execute(),
+        sqlite: (db) =>
+          userTables(db, ['table', 'view', 'virtual'])
+            .select((eb) => [
+              't.name as table',
+              eb.lit(null).as('comment'),
+              eb
+                .case()
+                .when('t.type', '=', 'view')
+                .then('view')
+                .else('base table')
+                .end()
+                .as('type'),
+            ])
+            .$narrowType<{ type: 'base table' | 'view' }>()
             .execute(),
       },
       type: tablesAndSchemasType.array(),

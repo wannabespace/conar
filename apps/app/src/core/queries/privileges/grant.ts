@@ -16,5 +16,6 @@ export const grantPrivilegeQuery = (target: PrivilegeTarget) =>
           db
         ),
       postgres: unsupported('Privileges'),
+      sqlite: unsupported('Privileges'),
     },
   })

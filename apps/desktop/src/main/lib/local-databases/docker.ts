@@ -38,7 +38,7 @@ const SOCKETS = (
 const ANSWER_TIMEOUT_MS = 2000
 const ANY_ADDRESS = new Set(['', '0.0.0.0', '::'])
 
-const IMAGE_USERS: Record<Dialect, string> = {
+const IMAGE_USERS: Partial<Record<Dialect, string>> = {
   [Dialect.ClickHouse]: 'default',
   [Dialect.MSSQL]: 'sa',
   [Dialect.MySQL]: 'root',

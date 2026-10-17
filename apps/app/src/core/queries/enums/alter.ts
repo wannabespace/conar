@@ -45,5 +45,6 @@ export const alterEnumQuery = ({
             await statement.execute(tx)
           }
         }),
+      sqlite: unsupported('Editing enums'),
     },
   })

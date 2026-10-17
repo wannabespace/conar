@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { useCollections } from '~/core/collections'
 import { saveConnectionString } from '~/core/connection/save'
 import { ConnectionPage } from '~/modules/connection-form/components/connection-page'
-import { getFormValues } from '~/modules/connection-form/lib/connection-form'
 import { getEditMode } from '~/modules/connection-form/lib/form-mode'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -52,9 +51,9 @@ export const UnlockForm = ({ scope }: { scope: 'credentials' | 'details' }) => {
 
   return (
     <ConnectionPage
-      defaultValues={getFormValues(connection, connectionString)}
       mode={getEditMode(
         connection,
+        connectionString,
         connectionStringsCollection.get(connection.id),
         scope
       )}

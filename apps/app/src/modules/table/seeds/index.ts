@@ -13,6 +13,7 @@ import { mssqlSeedConfig } from './mssql'
 import { mysqlSeedConfig } from './mysql'
 import { pgSeedConfig } from './postgres'
 import type { DialectSeedConfig, Generator, GeneratorId } from './registry'
+import { sqliteSeedConfig } from './sqlite'
 import type { GeneratorDef } from './types'
 import {
   CUSTOM_GENERATOR,
@@ -27,6 +28,7 @@ const DIALECT_CONFIGS: Record<Dialect, DialectSeedConfig> = {
   mssql: mssqlSeedConfig,
   mysql: mysqlSeedConfig,
   postgres: pgSeedConfig,
+  sqlite: sqliteSeedConfig,
 }
 
 export interface GeneratorGroup {

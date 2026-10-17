@@ -45,7 +45,7 @@ Views are read-only in the diagram. A foreign key over several columns shows as 
 
 ## Applying changes
 
-Click the **eye** button to review every queued change with the exact SQL Tamery will run, grouped by table in the order it runs, then **Apply** (or press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>S</kbd>). When a drop is queued, Apply opens the review first — applying from there is the confirmation. On PostgreSQL and SQL Server all statements run in one transaction, so a failure leaves the database untouched. MySQL and ClickHouse commit each DDL statement on its own; the Apply button turns amber to say so (red whenever a drop is queued), and a failure keeps the remaining drafts so you can fix and retry. The database's error message appears in the review drawer.
+Click the **eye** button to review every queued change with the exact SQL Tamery will run, grouped by table in the order it runs, then **Apply** (or press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>S</kbd>). When a drop is queued, Apply opens the review first — applying from there is the confirmation. On PostgreSQL, SQL Server and SQLite all statements run in one transaction, so a failure leaves the database untouched. MySQL and ClickHouse commit each DDL statement on its own; the Apply button turns amber to say so (red whenever a drop is queued), and a failure keeps the remaining drafts so you can fix and retry. The database's error message appears in the review drawer.
 
 ## Navigating
 

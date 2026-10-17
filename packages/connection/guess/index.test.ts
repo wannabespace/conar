@@ -16,6 +16,8 @@ describe('guessConnection — unrecognised input', () => {
     ['{ "broken": '],
     ['postgres://me@db.acme.io:99999/app'],
     ['v1.2.3'],
+    ['/Users/me/notes.txt'],
+    ['file:./dev.db'],
   ])('returns null for %p', (text) => {
     expect(guessConnection(text)).toBeNull()
   })
@@ -97,7 +99,125 @@ describe('guessConnection — snippets from configs and tools', () => {
       'pg_dump -h db.acme.io -U me -p 5433 app > dump.sql',
       { database: 'app', host: 'db.acme.io', port: '5433', user: 'me' },
     ],
+    [
+      '/Users/me/My Data/app.sqlite3',
+      {
+        database: '/Users/me/My Data/app.sqlite3',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'jdbc:sqlite:/srv/app%20data.db',
+      { database: '/srv/app data.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'sqlite3 "C:\\data\\app.db"',
+      { database: 'C:\\data\\app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'DATABASE_URL=sqlite:////var/lib/app.db',
+      { database: '/var/lib/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'sqlite:////var/lib/app.db',
+      { database: '/var/lib/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'file:/srv/app.db?mode=ro&cache=shared',
+      { database: '/srv/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'jdbc:sqlite:file:/srv/app.db',
+      { database: '/srv/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      '~/data/app.db',
+      { database: '~/data/app.db', type: ConnectionType.SQLite },
+    ],
+    [
+      'libsql://shop-acme.aws-eu-west-1.turso.io?authToken=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.aws-eu-west-1.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'TURSO_DATABASE_URL=https://shop-acme.turso.io\nTURSO_AUTH_TOKEN=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/d1/databases/e179f207-0000-45ea-830c-4efd8618ae6e/metrics',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      'CLOUDFLARE_ACCOUNT_ID=0123456789abcdef0123456789abcdef\nCLOUDFLARE_DATABASE_ID=e179f207-0000-45ea-830c-4efd8618ae6e\nCLOUDFLARE_D1_TOKEN=abcdefghijABCDEFGHIJ0123456789_-abcdefgh',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        password: 'abcdefghijABCDEFGHIJ0123456789_-abcdefgh',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      '[[d1_databases]]\nbinding = "DB"\ndatabase_name = "shop"\ndatabase_id = "e179f207-0000-45ea-830c-4efd8618ae6e"',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        host: 'api.cloudflare.com',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'curl https://api.cloudflare.com/client/v4/accounts/0123456789abcdef0123456789abcdef/d1/database/e179f207-0000-45ea-830c-4efd8618ae6e/raw',
+      {
+        database: 'e179f207-0000-45ea-830c-4efd8618ae6e',
+        type: ConnectionType.SQLite,
+        user: '0123456789abcdef0123456789abcdef',
+      },
+    ],
+    [
+      'wss://shop-acme.turso.io',
+      { host: 'shop-acme.turso.io', type: ConnectionType.SQLite },
+    ],
+    [
+      'libsql://localhost:8080?tls=0',
+      {
+        host: 'localhost',
+        options: 'tls=0',
+        port: '8080',
+        type: ConnectionType.SQLite,
+      },
+    ],
+    [
+      'TURSO_DATABASE_URL=libsql://shop-acme.turso.io\nTURSO_AUTH_TOKEN=eyJhbGciOi.eyJpYXQi.sig_part-1',
+      {
+        host: 'shop-acme.turso.io',
+        password: 'eyJhbGciOi.eyJpYXQi.sig_part-1',
+        type: ConnectionType.SQLite,
+      },
+    ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
+  })
+
+  it.each([
+    'DATABASE_URL=postgres://app:secret@db.example.com/shop\nDATABASE_ID=e179f207-0000-45ea-830c-4efd8618ae6e',
+    '{"url": "postgres://app:secret@db.example.com/shop", "database_id": "e179f207-0000-45ea-830c-4efd8618ae6e"}',
+    'postgres://app:secret@db.example.com/shop?redirect=https://shop-acme.turso.io',
+  ])('keeps %p a Postgres connection', (text) => {
+    expect(guessConnection(text)?.parts).toMatchObject({
+      host: 'db.example.com',
+      type: ConnectionType.Postgres,
+    })
   })
 })

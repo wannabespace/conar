@@ -31,7 +31,7 @@ Or right-click a cell: _Filter by value_ keeps only rows where that column equal
 
 Active filters appear as chips inside the field. Each chip can be edited segment by segment, temporarily disabled with the eye toggle (kept in the field but excluded from the query), or removed with ×. Press <kbd>Backspace</kbd> in the empty field to remove the last chip.
 
-Conditions combine with `AND`. `ilike` (case-insensitive match) is offered on Postgres and ClickHouse only; on MySQL and SQL Server `like` already ignores case under the usual collations. Filters are saved per table in local storage.
+Conditions combine with `AND`. `ilike` (case-insensitive match) is offered on Postgres and ClickHouse only; on MySQL and SQL Server `like` already ignores case under the usual collations, and on SQLite it ignores case for ASCII letters. Filters are saved per table in local storage.
 
 ## Sorting
 
@@ -97,14 +97,14 @@ The trail of followed references sits at the top of the peek. Click an earlier s
     of enum values toggle and stay open. Foreign keys open a search of the
     referenced table — type a key or any text in that row, such as a name, and
     pick the row. Columns with a default show **Default** at the bottom of the
-    card to put the default back (not on ClickHouse). With a block of cells
-    selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of them.
-    JSON and XML open a code editor, applied with <kbd>⌘</kbd> <kbd>Enter</kbd>;
-    invalid JSON, a value missing from an enum, and text a number, date,
-    timestamp or UUID column cannot read, are caught before they are staged.
-    Columns the database fills itself (identity, computed and generated columns)
-    are read-only. ClickHouse sorting keys take a value on a new row but cannot
-    change once saved. Edited cells are highlighted.
+    card to put the default back (not on ClickHouse or SQLite). With a block of
+    cells selected, <kbd>⌘</kbd> <kbd>Enter</kbd> applies the value to all of
+    them. JSON and XML open a code editor, applied with <kbd>⌘</kbd>{' '}
+    <kbd>Enter</kbd>; invalid JSON, a value missing from an enum, and text a
+    number, date, timestamp or UUID column cannot read, are caught before they
+    are staged. Columns the database fills itself (identity, computed and
+    generated columns) are read-only. ClickHouse sorting keys take a value on a
+    new row but cannot change once saved. Edited cells are highlighted.
   </Step>
   <Step title="Review drafts">
     Staged changes show up in a bar at the bottom of the grid. Click its
@@ -143,14 +143,14 @@ The panel lists every column with its generator on the left. Select a column to 
 
 | Action | Description |
 | --- | --- |
-| **Add column** | The **+** after the last column header, the toolbar's **+**, or **Add column…** from the command menu. On MySQL and ClickHouse, pick the `enum` type to list the column's values. **References** picks a primary or unique key to point a foreign key at (not on ClickHouse); the column takes that key's type unless you set one, and the column and its foreign key are added together. |
+| **Add column** | The **+** after the last column header, the toolbar's **+**, or **Add column…** from the command menu. On MySQL and ClickHouse, pick the `enum` type to list the column's values. **References** picks a primary or unique key to point a foreign key at (not on ClickHouse or SQLite); the column takes that key's type unless you set one, and the column and its foreign key are added together. |
 | **Column visibility** | Hide/show columns (hidden, not deleted). |
 | **Copy data** | Copy selected rows or the whole result as TSV. |
 | **Rename schema** | Postgres only. Right-click a schema in the sidebar, or hover it and click **⋯**, then **Rename**. |
 | **Full-text search** | Filter rows across visible columns. |
 | **Drop schema** | Right-click a schema in the sidebar, or hover it and click **⋯**, then **Drop** (with confirmation). On Postgres, turning on **Cascade** also drops the tables inside; on MySQL a schema is a database, so its tables always go with it; SQL Server only drops an empty schema. |
-| **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema. The new schema shows in the sidebar and opens **New table** right away. |
+| **New schema** | Click **New schema** at the bottom of the sidebar's tables, or run **New schema…** from the command menu. Not on ClickHouse, where the database is the schema, or SQLite, which has one schema per file. The new schema shows in the sidebar and opens **New table** right away. |
 | **New table** | Hover a schema in the sidebar and click **+**, or run **New table…** from the command menu. Starts with an `id` primary key the database numbers itself (on ClickHouse, a plain `UInt64` sorting key). |
 | **New view** | Right-click a schema in the sidebar (or hover it and click **⋯**) and choose **New View**, or run **New view…** from the command menu. Name it and write the `SELECT` it saves; it opens like a table once created. On Postgres and ClickHouse, turn on **Materialized** to store the query's rows instead of running it on every read (on ClickHouse it starts empty and stores the rows inserted into its source table from then on). |
-| **Edit column** | Right-click a column header and choose **Edit Column** to change its name, type, nullability, foreign key or comment — the same options as **Add column** plus **Comment**, saved together. The comment is stored in the database, where AI features and agents read it; the visualizer's column dialog has no Comment field. Renaming an enum value keeps the rows that hold it; on ClickHouse, removing a value that rows still hold is refused until you change them. Not on views or computed columns; ClickHouse keeps the name fixed, and SQL Server and ClickHouse keep a primary key's type. |
+| **Edit column** | Right-click a column header and choose **Edit Column** to change its name, type, nullability, foreign key or comment — the same options as **Add column** plus **Comment**, saved together. The comment is stored in the database, where AI features and agents read it; the visualizer's column dialog has no Comment field. Renaming an enum value keeps the rows that hold it; on ClickHouse, removing a value that rows still hold is refused until you change them. Not on views or computed columns; ClickHouse keeps the name fixed, SQL Server and ClickHouse keep a primary key's type, and SQLite only renames a column. |
 | **Rename / drop table or view** | Right-click the table or view in the sidebar. Renaming keeps its filters, sort and column layout. Dropping a view leaves the tables it reads untouched; on Postgres, **Cascade** also drops what depends on it. |

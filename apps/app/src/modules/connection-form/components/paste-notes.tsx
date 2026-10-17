@@ -5,6 +5,7 @@ import { AnimatePresence } from 'motion/react'
 
 import type { ConnectionForm } from '../lib/connection-form'
 import { getMissing } from '../lib/connection-form'
+import { getEngineFields, getFieldNoun } from '../lib/engine-fields'
 import { Footnote } from './footnote'
 
 const FIX_NOTES: Record<GuessFix, string> = {
@@ -29,6 +30,9 @@ export const PasteNotes = ({
   passwordWithheldBy?: string
 }) => {
   const missing = useSelector(form.store, ({ values }) => getMissing(values))
+  const engineFields = useSelector(form.store, ({ values }) =>
+    getEngineFields(values)
+  )
   const withheld =
     passwordWithheldBy && missing.includes('password')
       ? ` (${passwordWithheldBy} keeps it in the Keychain)`
@@ -36,7 +40,9 @@ export const PasteNotes = ({
 
   const note = [
     ...(missing.length > 0
-      ? [`Add the ${missing.join(' and ')}${withheld}.`]
+      ? [
+          `Add the ${missing.map((field) => getFieldNoun(engineFields, field)).join(' and ')}${withheld}.`,
+        ]
       : []),
     ...fixes.map((fix) => FIX_NOTES[fix]),
   ].join(' ')

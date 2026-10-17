@@ -17,8 +17,8 @@ import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import { useGoBack } from '~/hooks/use-go-back'
 import { posthog } from '~/lib/posthog'
 
-import type { ConnectionFormValues } from '../lib/connection-form'
 import { getMissing, getParts, useConnectionForm } from '../lib/connection-form'
+import { getEngineFields } from '../lib/engine-fields'
 import type { FormMode } from '../lib/form-mode'
 import { getFormPolicy } from '../lib/form-mode'
 import { usePasteConnection } from '../lib/use-paste-connection'
@@ -27,6 +27,7 @@ import type { OnSave } from '../lib/use-test-then-save'
 import { useTestThenSave } from '../lib/use-test-then-save'
 import { AgentPanel } from './agent-panel'
 import { ColorField } from './color-field'
+import { ConnectionFields } from './connection-fields'
 import { DropOverlay } from './drop-overlay'
 import { FormFooter } from './form-footer'
 import { LabelField } from './label-field'
@@ -34,7 +35,6 @@ import { NameField } from './name-field'
 import { PageColumns } from './page-columns'
 import { PasteHero } from './paste-hero'
 import { PasteNotes } from './paste-notes'
-import { ServerFields } from './server-fields'
 import { SshFields } from './ssh-fields'
 import { SyncField } from './sync-field'
 import type { FixSource } from './test-alert'
@@ -53,11 +53,9 @@ const focusField = (id: string) =>
   document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus()
 
 export const ConnectionPage = ({
-  defaultValues,
   mode,
   onSave,
 }: {
-  defaultValues?: ConnectionFormValues
   mode: FormMode
   onSave: OnSave
 }) => {
@@ -81,7 +79,7 @@ export const ConnectionPage = ({
   const policy = getFormPolicy(mode)
 
   const { form, paste, patch } = useConnectionForm({
-    defaultValues,
+    defaultValues: mode.kind === 'edit' ? mode.values : undefined,
     onFill: ({ fixes, format }, pasted) => {
       setFilled((current) => ({
         fixes,
@@ -124,6 +122,7 @@ export const ConnectionPage = ({
   })
 
   const values = useSelector(form.store, (state) => state.values)
+  const engineFields = getEngineFields(values)
   const submitting = useSelector(form.store, (state) => state.isSubmitting)
   const { canSend, reason, testStatus } = getDraft(values)
 
@@ -220,7 +219,11 @@ export const ConnectionPage = ({
                 }
               >
                 <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <ServerFields form={form} locked={policy.locked} />
+                  <ConnectionFields
+                    form={form}
+                    locked={policy.locked}
+                    values={values}
+                  />
                   {filled && (
                     <PasteNotes
                       fixes={filled.fixes}
@@ -229,9 +232,11 @@ export const ConnectionPage = ({
                     />
                   )}
                 </motion.div>
-                <motion.div className="flex flex-col gap-5" variants={REVEAL}>
-                  <SshFields form={form} locked={policy.locked} />
-                </motion.div>
+                {engineFields.sshTunnel && (
+                  <motion.div className="flex flex-col gap-5" variants={REVEAL}>
+                    <SshFields form={form} locked={policy.locked} />
+                  </motion.div>
+                )}
                 {policy.showsMeta && (
                   <motion.div variants={REVEAL}>
                     <FieldGroup variant="card">
@@ -247,6 +252,7 @@ export const ConnectionPage = ({
                     key={testError.message}
                     error={testError}
                     parts={getParts(values)}
+                    engineFields={engineFields}
                     onAsk={focusPage}
                     onFix={applyFix}
                     onFocus={(field) => {
@@ -274,7 +280,7 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
-          reason={values.host.trim() ? reason : null}
+          reason={values[engineFields.field].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
           onSave={submit}

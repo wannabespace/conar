@@ -8,5 +8,6 @@ export const testConnectionQuery = createQuery({
     mssql: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
     mysql: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
     postgres: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
+    sqlite: (db) => db.executeQuery(sql`SELECT 1`.compile(db)),
   },
 })

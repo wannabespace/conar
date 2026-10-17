@@ -1,4 +1,5 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
@@ -187,5 +188,12 @@ export const editColumnQuery = (target: EditColumnTarget) =>
           )
         }
       },
+      sqlite:
+        altered(target) || commented(target) || target.reference
+          ? unsupported('Changing a column')
+          : (db) =>
+              db.executeQuery(
+                renameColumnStatement(Dialect.SQLite, db, target)
+              ),
     },
   })

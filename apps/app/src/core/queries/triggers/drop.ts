@@ -14,6 +14,7 @@ export const dropTriggerQuery = (params: TriggerTarget & { name: string }) => {
       mssql: (db) => drop.mssql.execute(db),
       mysql: (db) => drop.mysql.execute(db),
       postgres: (db) => drop.postgres.execute(db),
+      sqlite: (db) => drop.sqlite.execute(db),
     },
   })
 }

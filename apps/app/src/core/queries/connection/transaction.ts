@@ -53,6 +53,7 @@ export const transactionQuery = ({
       mssql: run,
       mysql: run,
       postgres: run,
+      sqlite: run,
     },
   })
 }

@@ -23,6 +23,8 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), 'char'), 'like', pattern),
   postgres: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
+  sqlite: (eb, column, pattern) =>
+    eb(eb.cast(eb.ref(column), 'text'), 'like', pattern),
 }
 
 export type ColumnTypes = { id: string; type?: string }[]
@@ -74,6 +76,7 @@ export const bindValue: Record<Dialect, BindValue> = {
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
   postgres: bindJsonAsText(Dialect.Postgres),
+  sqlite: bindJsonAsText(Dialect.SQLite),
 }
 
 export const bindRow = (
@@ -108,17 +111,18 @@ export const clickhouseFilterValues =
       value
     )
 
-// MSSQL caps a statement at 2100 bound parameters.
-const MSSQL_PARAMETER_LIMIT = 2000
+// SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
+const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {
+  mssql: 2000,
+  sqlite: 100,
+}
 const MAX_ROWS_PER_STATEMENT = 500
 
 export const rowsPerStatement = (dialect: Dialect, valuesPerRow: number) =>
-  dialect === Dialect.MSSQL
-    ? Math.max(
-        1,
-        Math.min(
-          MAX_ROWS_PER_STATEMENT,
-          Math.floor(MSSQL_PARAMETER_LIMIT / valuesPerRow)
-        )
-      )
-    : MAX_ROWS_PER_STATEMENT
+  Math.max(
+    1,
+    Math.min(
+      MAX_ROWS_PER_STATEMENT,
+      Math.floor((PARAMETER_LIMITS[dialect] ?? Infinity) / valuesPerRow)
+    )
+  )

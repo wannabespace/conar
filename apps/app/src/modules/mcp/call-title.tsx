@@ -27,7 +27,11 @@ export const CallTitle = ({ call, connection }: ActivityEntry) => (
     </span>
     {connection && (
       <>
-        <ConnectionIcon type={connection.type} className="size-4" />
+        <ConnectionIcon
+          type={connection.type}
+          provider={connection.provider}
+          className="size-4"
+        />
         <span data-mask className="truncate">
           {call.resource
             ? `${connection.name} / ${call.resource}`

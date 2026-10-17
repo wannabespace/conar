@@ -56,7 +56,7 @@ export interface ArrayType {
   open: string
 }
 
-interface ColumnTypeCapabilities {
+export interface ColumnTypeCapabilities {
   array: ArrayType | null
   // The driver hands these values over as bytes; Postgres reads `bytea` as text, so it matches none.
   bytes: RegExp | null
@@ -72,8 +72,10 @@ interface ColumnTypeCapabilities {
 }
 
 export interface ConnectionCapabilities {
+  alterColumns: boolean
   cascade: boolean
   columnTypes: ColumnTypeCapabilities
+  comments: boolean
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
   // null: the connection's database is the schema

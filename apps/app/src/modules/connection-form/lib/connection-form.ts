@@ -3,10 +3,11 @@ import { connectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
+import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { pick } from '@tamery/shared/utils'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
@@ -17,6 +18,8 @@ import type { Connection } from '~/core/connection/sync'
 import { posthog } from '~/lib/posthog'
 import { generateRandomName } from '~/utils/faker'
 
+import type { Engine } from './engine-fields'
+import { getEngineFields, isSqliteFile } from './engine-fields'
 import type { PasteVia } from './use-paste-connection'
 
 export interface ConnectionFormValues extends Omit<
@@ -42,6 +45,7 @@ const DEFAULT_VALUES: ConnectionFormValues = {
   options: '',
   password: '',
   port: '',
+  provider: null,
   ssh: EMPTY_SSH_TUNNEL,
   sshEnabled: false,
   syncType: SyncType.Cloud,
@@ -60,17 +64,38 @@ const SERVER_FIELDS = [
 
 const port = type(/^\d{0,5}$/u).configure({ message: 'Use a port number' })
 
+const FULL_PATH = /^\s*(?:\/|~\/|[a-z]:[\\/])/iu
+
 const connectionFormSchema = type({
-  host: type(/\S/u).configure({ message: 'Enter the host' }),
+  database: 'string',
+  host: 'string',
   port,
+  provider: type.valueOf(Provider).or('null'),
   ssh: { host: 'string', port },
   sshEnabled: 'boolean',
-}).narrow(
-  (values, ctx) =>
-    !values.sshEnabled ||
-    /\S/u.test(values.ssh.host) ||
-    ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
-)
+  type: type.valueOf(ConnectionType),
+})
+  .narrow((values, ctx) => {
+    const { field, message } = getEngineFields(values)
+    return /\S/u.test(values[field]) || ctx.reject({ message, path: [field] })
+  })
+  .narrow(
+    (values, ctx) =>
+      !isSqliteFile(values) ||
+      !/\S/u.test(values.database) ||
+      FULL_PATH.test(values.database) ||
+      ctx.reject({
+        message: "Use the file's full path, like /Users/me/app.db",
+        path: ['database'],
+      })
+  )
+  .narrow(
+    (values, ctx) =>
+      !values.sshEnabled ||
+      !getEngineFields(values).sshTunnel ||
+      /\S/u.test(values.ssh.host) ||
+      ctx.reject({ message: 'Enter the SSH host', path: ['ssh', 'host'] })
+  )
 
 export const getFormValues = (
   connection: Connection,
@@ -84,6 +109,7 @@ export const getFormValues = (
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
+    provider: connection.provider,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,
@@ -91,49 +117,107 @@ export const getFormValues = (
   }
 }
 
-export const getParts = (values: ConnectionFormValues): ConnectionParts => ({
-  ...pick(values, [...SERVER_FIELDS, 'https']),
-  ssh: values.sshEnabled ? values.ssh : null,
-  type: values.type,
-})
-
-const BARE_HOST = /^[\w.:%[\]-]+$/u
-const NEEDED_FIELDS = ['host', 'user', 'password'] as const
-
-export const getMissing = (values: ConnectionFormValues) =>
-  NEEDED_FIELDS.filter(
-    (field) =>
-      !values[field].trim() &&
-      !(field === 'password' && isLocalHost(values.host.trim()))
+export const getParts = (values: ConnectionFormValues): ConnectionParts => {
+  const engineFields = getEngineFields(values)
+  const shown = new Set(
+    engineFields.rows.flatMap((row) =>
+      row.port ? [row.name, 'port'] : [row.name]
+    )
   )
-
-const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
-  const { host } = form.state.values
-  const newServer = !!parts.host && BARE_HOST.test(host) && parts.host !== host
-  for (const field of SERVER_FIELDS) {
-    if (newServer || parts[field]) {
-      form.setFieldValue(field, parts[field] ?? '')
-    }
-  }
-  if (parts.type) {
-    form.setFieldValue('type', parts.type)
-  }
-  if (parts.https !== undefined || newServer) {
-    form.setFieldValue('https', parts.https ?? null)
-  }
-  if (parts.ssh || newServer) {
-    form.setFieldValue('ssh', parts.ssh ?? EMPTY_SSH_TUNNEL)
-    form.setFieldValue('sshEnabled', !!parts.ssh)
+  const keep = (field: (typeof SERVER_FIELDS)[number]) =>
+    shown.has(field) ? values[field] : ''
+  return {
+    database: keep('database'),
+    host: engineFields.fixedHost ?? keep('host'),
+    https: values.https,
+    options: keep('options'),
+    password: keep('password'),
+    port: keep('port'),
+    provider: values.provider,
+    ssh: engineFields.sshTunnel && values.sshEnabled ? values.ssh : null,
+    type: values.type,
+    user: keep('user'),
   }
 }
 
-const expandHost = (
+export const getMissing = (values: ConnectionFormValues) =>
+  getEngineFields(values).rows.flatMap(({ name, optional }) =>
+    optional ||
+    values[name].trim() ||
+    (name === 'password' && isLocalHost(values.host.trim()))
+      ? []
+      : [name]
+  )
+
+/** Starts every field over, so a password or token never travels to another engine's host. */
+const clearFields = (form: ConnectionForm) => {
+  for (const field of SERVER_FIELDS) {
+    form.setFieldValue(field, '')
+  }
+  form.setFieldValue('https', null)
+  form.setFieldValue('ssh', EMPTY_SSH_TUNNEL)
+  form.setFieldValue('sshEnabled', false)
+}
+
+const sharesFields = (from: Engine, to: Engine) =>
+  from.provider === to.provider && isSqliteFile(from) === isSqliteFile(to)
+
+export const switchEngine = (form: ConnectionForm, engine: Engine) => {
+  if (!sharesFields(form.state.values, engine)) {
+    clearFields(form)
+  }
+  form.setFieldValue('type', engine.type)
+  form.setFieldValue('provider', engine.provider)
+}
+
+const getGuessedEngine = (
+  values: ConnectionFormValues,
+  parts: GuessedParts
+): Engine =>
+  parts.type
+    ? {
+        provider: parts.provider ?? null,
+        type: parts.type,
+      }
+    : values
+
+const BARE_HOST = /^[\w.:%[\]-]+$/u
+
+const fill = (form: ConnectionForm, { parts }: ConnectionGuess) => {
+  const { values } = form.state
+  if (parts.host && BARE_HOST.test(values.host) && parts.host !== values.host) {
+    clearFields(form)
+  }
+  switchEngine(form, getGuessedEngine(values, parts))
+  for (const field of SERVER_FIELDS) {
+    const value = parts[field]
+    if (value) {
+      form.setFieldValue(field, value)
+    }
+  }
+  if (parts.https !== undefined) {
+    form.setFieldValue('https', parts.https)
+  }
+  if (parts.ssh) {
+    form.setFieldValue('ssh', parts.ssh)
+    form.setFieldValue('sshEnabled', true)
+  }
+}
+
+const expandField = (
   form: ConnectionForm,
   onFill: (guess: ConnectionGuess, pasted: boolean) => void
 ) => {
-  const { host } = form.state.values
-  const guess = guessConnection(host)
-  if (guess && (guess.format !== 'host' || guess.parts.host !== host)) {
+  const { values } = form.state
+  const { field } = getEngineFields(values)
+  const value = values[field]
+  const guess = guessConnection(value)
+  const read = guess?.parts[field]
+  if (
+    guess &&
+    ((read !== undefined && read !== value) ||
+      !sharesFields(values, getGuessedEngine(values, guess.parts)))
+  ) {
     fill(form, guess)
     onFill(guess, false)
   }
@@ -158,13 +242,13 @@ export const useConnectionForm = ({
     defaultValues: initialValues,
     listeners: {
       onBlur: ({ fieldApi }) => {
-        if (fieldApi.name === 'host') {
-          expandHost(form, onFill)
+        if (fieldApi.name === getEngineFields(form.state.values).field) {
+          expandField(form, onFill)
         }
       },
     },
     onSubmit: () => {
-      expandHost(form, onFill)
+      expandField(form, onFill)
       return onSubmit()
     },
     validators: {
@@ -182,14 +266,14 @@ export const useConnectionForm = ({
       onFill(guess, true)
     },
     patch: (patch: ConnectionPatch) => {
+      if (patch.type && patch.type !== form.state.values.type) {
+        switchEngine(form, { provider: null, type: patch.type })
+      }
       for (const field of ['database', 'host', 'options', 'port'] as const) {
         const value = patch[field]
         if (value !== undefined) {
           form.setFieldValue(field, value)
         }
-      }
-      if (patch.type && patch.type !== form.state.values.type) {
-        form.setFieldValue('type', patch.type)
       }
       if (patch.sshEnabled) {
         form.setFieldValue('sshEnabled', true)

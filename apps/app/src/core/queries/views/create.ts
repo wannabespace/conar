@@ -52,6 +52,14 @@ export const createViewQuery = ({
           .as(definition)
           .execute()
       },
+      sqlite: materialized
+        ? unsupported('Materialized views')
+        : (db) =>
+            db
+              .withSchema(schema)
+              .schema.createView(view)
+              .as(definition)
+              .execute(),
     },
   })
 }

@@ -1,3 +1,4 @@
+import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import {
@@ -10,47 +11,32 @@ import {
 } from '~/core/queries/functions/shape'
 import { SKIP_INDEX_TYPES } from '~/core/queries/indexes/shape'
 import { POLICY_COMMANDS } from '~/core/queries/policies/shape'
-import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
 import {
   TRIGGER_EVENTS,
   TRIGGER_ORIENTATIONS,
   TRIGGER_TIMINGS,
 } from '~/core/queries/triggers/shape'
 
-import type {
-  ConnectionCapabilities,
-  SectionCapabilities,
-} from './capability-presets'
+import type { ConnectionCapabilities } from './capability-presets'
 import {
   btreeIndexes,
   full,
-  JSON_COLUMN_TYPE,
   noFunctions,
   noPolicies,
   noTriggers,
   readOnly,
   ROW_EVENTS,
 } from './capability-presets'
-import { COLUMN_TYPES } from './column-types'
-import type { DefinitionsSection } from './sections'
+import { COLUMN_TYPE_CAPABILITIES } from './column-types'
 
 export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<Dialect, ConnectionCapabilities> = {
   [Dialect.ClickHouse]: {
+    alterColumns: true,
     cascade: false,
-    columnTypes: {
-      array: { close: ')', open: 'Array(' },
-      bytes: null,
-      enum: clickhouseEnum,
-      id: 'UInt64',
-      incomparable:
-        /\b(?:JSON|Object|Dynamic|Variant|Geometry)\b|(?<!Simple)AggregateFunction/u,
-      json: /json|\b(?:Map|Nested|Tuple|Variant)\(/iu,
-      options: COLUMN_TYPES[Dialect.ClickHouse],
-      uuid: /\bUUID\b/u,
-      xml: null,
-    },
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.ClickHouse],
+    comments: true,
     constraintKinds: ['check'],
     ddlRollback: false,
     defaultSchema: null,
@@ -88,18 +74,10 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     triggers: noTriggers,
   },
   [Dialect.MSSQL]: {
+    alterColumns: true,
     cascade: false,
-    columnTypes: {
-      array: null,
-      bytes: /^(?:binary|image|timestamp|varbinary)$/iu,
-      enum: null,
-      id: 'int identity',
-      incomparable: /^(?:n?text|image|xml|json|vector|geometry|geography)$/iu,
-      json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[Dialect.MSSQL],
-      uuid: /^uniqueidentifier$/iu,
-      xml: /^xml$/iu,
-    },
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.MSSQL],
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'dbo',
@@ -149,19 +127,10 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     },
   },
   [Dialect.MySQL]: {
+    alterColumns: true,
     cascade: false,
-    columnTypes: {
-      array: null,
-      bytes: /^(?:binary|bit|(?:tiny|medium|long)?blob|varbinary)$/iu,
-      enum: mysqlEnum,
-      id: 'int auto_increment',
-      incomparable: null,
-      json: JSON_COLUMN_TYPE,
-      options: COLUMN_TYPES[Dialect.MySQL],
-      // MariaDB's native UUID; MySQL has none.
-      uuid: /^uuid$/iu,
-      xml: null,
-    },
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.MySQL],
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: false,
     defaultSchema: null,
@@ -211,19 +180,10 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     },
   },
   [Dialect.Postgres]: {
+    alterColumns: true,
     cascade: true,
-    columnTypes: {
-      array: { close: '[]', open: '' },
-      bytes: null,
-      enum: null,
-      id: 'serial',
-      incomparable:
-        /^(?:json|jsonpath|xml|bytea|point|line|lseg|box|path|polygon|circle|xid|cid|aclitem|refcursor|txid_snapshot|pg_snapshot)$/iu,
-      json: /^jsonb?$/iu,
-      options: COLUMN_TYPES[Dialect.Postgres],
-      uuid: /^uuid$/iu,
-      xml: /^xml$/iu,
-    },
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.Postgres],
+    comments: true,
     constraintKinds: CONSTRAINT_KINDS,
     ddlRollback: true,
     defaultSchema: 'public',
@@ -274,23 +234,53 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       toggle: true,
     },
   },
+  [Dialect.SQLite]: {
+    alterColumns: false,
+    cascade: false,
+    columnTypes: COLUMN_TYPE_CAPABILITIES[Dialect.SQLite],
+    comments: false,
+    constraintKinds: CONSTRAINT_KINDS,
+    ddlRollback: true,
+    defaultSchema: SQLITE_RESOURCE_NAME,
+    explain: false,
+    fixedConstraintNames: {},
+    functions: noFunctions,
+    ilike: false,
+    indexes: { rename: false, skipTypes: [] },
+    materializedViews: false,
+    policies: noPolicies,
+    referentialActions: REFERENTIAL_ACTIONS,
+    renameColumns: true,
+    renameConstraints: false,
+    renameSchema: false,
+    renameViews: false,
+    retypeKeyColumns: false,
+    rowLevelSecurity: false,
+    schemas: false,
+    sections: {
+      constraints: readOnly,
+      enums: false,
+      functions: false,
+      indexes: full,
+      policies: false,
+      privileges: false,
+      triggers: full,
+    },
+    setDefault: false,
+    systemSchemas: [],
+    triggers: {
+      body: true,
+      events: ROW_EVENTS,
+      insteadOfTargets: ['view'],
+      multipleEvents: false,
+      orientations: ['ROW'],
+      timings: TRIGGER_TIMINGS,
+      toggle: false,
+    },
+  },
 }
 
 export const getCapabilities = (dialect: Dialect) => capabilities[dialect]
 
 export const getDefaultSchema = (dialect: Dialect, database: string | null) =>
   capabilities[dialect].defaultSchema ?? database
-
-export const sectionAvailable = (
-  section: DefinitionsSection,
-  dialect: Dialect
-) => capabilities[dialect].sections[section] !== false
-
-export const getSectionCapabilities = (
-  section: DefinitionsSection,
-  dialect: Dialect
-): SectionCapabilities => capabilities[dialect].sections[section] || readOnly
-
-export const foreignKeysCreatable = (dialect: Dialect) =>
-  capabilities[dialect].constraintKinds.includes('foreignKey') &&
-  !!getSectionCapabilities('constraints', dialect).create

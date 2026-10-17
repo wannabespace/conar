@@ -97,7 +97,7 @@ const open = async (
   const session = await Result.tryPromise(() => provider.openSession())
   if (session.isErr()) {
     throw new SessionRefusedError(
-      `The database refused a second connection for the transaction (${toError(session.error.cause).message}). Run the whole block with Run all, or select it, to use the app's own connection.`
+      `The transaction could not stay open (${toError(session.error.cause).message}). Run the whole block with Run all, or select it, to use the app's own connection.`
     )
   }
   const { txId } = session.value

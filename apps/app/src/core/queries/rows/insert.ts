@@ -69,5 +69,12 @@ export const insertQuery = (params: InsertParams) =>
           (into) => into.defaultValues(),
           params
         ),
+      sqlite: (db) =>
+        insertRows(
+          db,
+          bindValue.sqlite,
+          (into) => into.defaultValues(),
+          params
+        ),
     },
   })

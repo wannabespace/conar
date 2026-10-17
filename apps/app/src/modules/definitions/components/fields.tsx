@@ -78,6 +78,8 @@ export const OptionSelect = <T extends string>({
   >
     <SelectTrigger
       id={id}
+      // The trigger is a div, which `<label for>` cannot name; the form's `FieldLabel` has `${field.name}-label`.
+      aria-labelledby={id && `${id}-label`}
       data-mask={mask || undefined}
       className={cn('w-full', className)}
     >

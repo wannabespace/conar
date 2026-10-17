@@ -15,6 +15,7 @@ const parts = (overrides: Partial<ConnectionParts>): ConnectionParts => ({
   options: '',
   password: 'pw',
   port: '5432',
+  provider: null,
   ssh: null,
   type: ConnectionType.Postgres,
   user: 'me',
@@ -61,14 +62,15 @@ describe('connectionParts', () => {
     ).toStrictEqual(original)
   })
 
-  it.each(Object.values(ConnectionType))(
-    'reads a %s string back as its type',
-    (type) => {
-      expect(
-        connectionParts.parse(connectionParts.format(parts({ type }))).type
-      ).toBe(type)
-    }
-  )
+  it.each(
+    Object.values(ConnectionType).filter(
+      (type) => type !== ConnectionType.SQLite
+    )
+  )('reads a %s string back as its type', (type) => {
+    expect(
+      connectionParts.parse(connectionParts.format(parts({ type }))).type
+    ).toBe(type)
+  })
 
   it.each(['::1', 'fe80::1', '2001:db8::5'])(
     'brackets the IPv6 host %p',
@@ -84,6 +86,7 @@ describe('connectionParts', () => {
     [false, '8443', 'http://me:pw@ch.acme.io:8443/logs'],
     [null, '8443', 'https://me:pw@ch.acme.io:8443/logs'],
     [null, '8123', 'http://me:pw@ch.acme.io:8123/logs'],
+    [null, '9443', 'https://me:pw@ch.acme.io:9443/logs'],
   ])(
     'keeps ClickHouse on https=%p over port %p',
     (https, port, connectionString) => {
