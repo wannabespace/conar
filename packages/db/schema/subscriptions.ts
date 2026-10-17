@@ -21,6 +21,7 @@ export const subscriptions = d.snakeCase.table('subscriptions', {
   plan: d.text().notNull().$type<'pro'>(),
   price: d.numeric({ mode: 'number' }).notNull(),
   status: d.text().$type<SubscriptionStatus>().default('incomplete'),
+  stripePriceId: d.text(),
   stripeSubscriptionId: d.text(),
   trialEnd: d.timestamp({ withTimezone: true }),
   trialStart: d.timestamp({ withTimezone: true }),
