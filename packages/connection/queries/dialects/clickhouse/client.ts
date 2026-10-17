@@ -16,7 +16,7 @@ const clickhouse = createRequire(import.meta.url)(
 ) as typeof ClickHouse
 
 export const getClient = memoize(async (connectionString: string) => {
-  const url = new SafeURL(connectionString.replace(/^clickhouse/u, 'http'))
+  const url = new SafeURL(connectionString)
   const tunnel = await sshForwarding.of(connectionString)
   deleteSshParams(url.searchParams)
 

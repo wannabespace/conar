@@ -46,6 +46,11 @@ const connect = (options: PoolConfig) =>
     },
   })
 
+// pg gives this refusal no code, only the message.
+const refusesTls = (error: unknown) =>
+  error instanceof Error &&
+  error.message === 'The server does not support SSL connections'
+
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = getDriverConfig(connectionString)
   const ssl = parseSSLConfig(searchParams)
@@ -55,16 +60,15 @@ export const getPool = memoize(async (connectionString: string) => {
     ...(tunnel && { stream: tunnel.socket }),
     connectionTimeoutMillis: 30_000,
     max: 1,
-    ssl: typeof ssl === 'object' ? readSSLFiles(ssl) : ssl,
+    ssl:
+      typeof ssl === 'object' ? readSSLFiles(ssl) : (ssl ?? defaultSSLConfig),
   }
 
-  const direct = await connect(conf)
-  const result = ssl
-    ? direct
-    : await direct.tryRecoverAsync(async (error) => {
-        const fallback = await connect({ ...conf, ssl: defaultSSLConfig })
-        return fallback.mapError(() => error)
-      })
+  const secure = await connect(conf)
+  const result =
+    ssl === undefined && secure.isErr() && refusesTls(secure.error)
+      ? await connect({ ...conf, ssl: false })
+      : secure
 
   if (result.isErr()) {
     throw result.error

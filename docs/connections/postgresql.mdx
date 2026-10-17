@@ -43,6 +43,8 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
 
 `require` works for most managed providers; use `verify-full` for stricter setups.
 
+Without `sslmode`, Tamery connects over SSL without verifying the certificate, and uses an unencrypted connection only when the server says it has no SSL.
+
 ## Providers
 
 <Tabs>

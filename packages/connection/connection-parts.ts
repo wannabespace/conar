@@ -147,7 +147,7 @@ const format = (
     parts.type === ConnectionType.MSSQL ? 'sqlserver' : parts.type
   if (parts.type === ConnectionType.ClickHouse) {
     const https =
-      parts.https ?? (port === HTTPS_PORT || port === CLICKHOUSE_HTTPS_PORT)
+      parts.https ?? port !== String(DEFAULT_PORTS[ConnectionType.ClickHouse])
     scheme = https ? 'https' : 'http'
   }
   const host =

@@ -19,7 +19,7 @@ describe('MySQL SSL Configuration', () => {
     )
     const config = parseSSLConfig(connectionString.searchParams)
 
-    expect(config).toBeUndefined()
+    expect(config).toBe(false)
   })
 
   it('should parse ssl=0', () => {
@@ -28,7 +28,7 @@ describe('MySQL SSL Configuration', () => {
     )
     const config = parseSSLConfig(connectionString.searchParams)
 
-    expect(config).toBeUndefined()
+    expect(config).toBe(false)
   })
 
   it('should parse ssl=true', () => {
@@ -76,20 +76,20 @@ describe('MySQL SSL Configuration', () => {
           'mysql://user:password@localhost:3306/mydb?ssl=false'
         ).searchParams
       )
-    ).toBeUndefined()
+    ).toBe(false)
     expect(
       parseSSLConfig(
         readConnectionString('mysql://user:password@localhost:3306/mydb?ssl=0')
           .searchParams
       )
-    ).toBeUndefined()
+    ).toBe(false)
     expect(
       parseSSLConfig(
         readConnectionString(
           'mysql://user:password@localhost:3306/mydb?ssl=FALSE'
         ).searchParams
       )
-    ).toBeUndefined()
+    ).toBe(false)
   })
 
   it('should throw error for ssl=false with SSL parameters', () => {
