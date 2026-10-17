@@ -1,7 +1,6 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 import type { DiagnosisRule } from './diagnosis'
-import { getSqliteProvider } from './provider'
 
 const RULES: Omit<DiagnosisRule, 'engine'>[] = [
   {
@@ -22,7 +21,7 @@ const RULES: Omit<DiagnosisRule, 'engine'>[] = [
   },
   {
     diagnose: ({ parts }) =>
-      getSqliteProvider(parts.host) === Provider.CloudflareD1
+      parts.provider === Provider.CloudflareD1
         ? {
             focus: 'password',
             hint: 'Use an API token with the D1 Edit permission on this account, made under My Profile → API Tokens, and check the account ID.',

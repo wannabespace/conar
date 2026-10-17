@@ -1,4 +1,4 @@
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 import { D1_HOST } from '../provider'
 import type { DatabaseGuess, GuessedParts } from './types'
@@ -44,6 +44,7 @@ const d1 = (text: string): DatabaseGuess | null => {
   const parts: GuessedParts = {
     database,
     host: D1_HOST,
+    provider: Provider.CloudflareD1,
     type: ConnectionType.SQLite,
     ...(account && { user: account }),
     ...(token && { password: token }),

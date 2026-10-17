@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 import { connectionParts } from './connection-parts'
 import { describeConnectionString, resourceConnectionString } from './utils'
@@ -15,6 +15,7 @@ describe('remote SQLite strings', () => {
       host: 'shop-acme.turso.io',
       options: '',
       password: 'tok.en',
+      provider: Provider.Turso,
       type: ConnectionType.SQLite,
     })
     expect(connectionParts.format(parts)).toBe(
@@ -30,10 +31,18 @@ describe('remote SQLite strings', () => {
       database: 'db-id',
       host: 'api.cloudflare.com',
       password: 'tok',
+      provider: Provider.CloudflareD1,
       type: ConnectionType.SQLite,
       user: 'acc',
     })
     expect(connectionParts.format(parts)).toBe(connectionString)
+  })
+
+  test('never guesses the provider of a server whose scheme it does not know', () => {
+    const parts = connectionParts.parse('sqlite://evil.example.com/etc/passwd')
+
+    expect(parts.provider).toBeNull()
+    expect(connectionParts.format(parts)).toBe('')
   })
 
   test('opens as the single database main and shows where it lives', () => {

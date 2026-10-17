@@ -1,4 +1,4 @@
-import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
+import { Provider } from '@tamery/shared/enums/connection-type'
 import {
   endsTransaction,
   leavesTransactionOpen,
@@ -9,7 +9,7 @@ import {
 import type { QueryExecutor } from '../..'
 import { handleQueryError } from '../..'
 import { readConnectionString } from '../../../parse-connection-string'
-import { getSqliteProvider } from '../../../provider'
+import { getProviderOfScheme } from '../../../provider'
 import type { TxHandle } from '../../transactions'
 import { registerTransaction, transactionQueries } from '../../transactions'
 import { d1Location } from './d1'
@@ -22,20 +22,25 @@ import type {
 } from './location'
 import { runTimed, SQLITE, statementTexts } from './run'
 
-const LOCATIONS: Record<
-  Provider | ConnectionType.SQLite,
-  SqliteLocationQueries
-> = {
-  [ConnectionType.SQLite]: fileLocation,
+const SERVER_LOCATIONS: Record<Provider, SqliteLocationQueries> = {
   [Provider.CloudflareD1]: d1Location,
   [Provider.Turso]: libsqlLocation,
 }
 
-const locate = (connectionString: string) =>
-  LOCATIONS[
-    getSqliteProvider(readConnectionString(connectionString).host) ??
-      ConnectionType.SQLite
-  ]
+/** Only an empty host opens a file, whatever the scheme says, so no server ever opens one on its own disk. */
+const locate = (connectionString: string) => {
+  const { host, scheme } = readConnectionString(connectionString)
+  if (!host) {
+    return fileLocation
+  }
+  const provider = getProviderOfScheme(scheme)
+  if (!provider) {
+    throw new Error(
+      `Tamery cannot tell which provider serves this SQLite server: its string starts with ${scheme}://, not libsql:// or d1://.`
+    )
+  }
+  return SERVER_LOCATIONS[provider]
+}
 
 /** Turso and D1 let a read-only transaction write, so every location refuses a write before sending it. */
 const readingOnly =

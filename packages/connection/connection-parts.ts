@@ -3,7 +3,7 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
 import { readConnectionString } from './parse-connection-string'
-import { D1_HOST, getSqliteProvider } from './provider'
+import { D1_HOST, getProviderOfScheme } from './provider'
 import { sqliteFile } from './sqlite-file'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
@@ -19,6 +19,8 @@ export interface ConnectionParts {
   /** Also a libSQL or D1 token, so every secret path treats it as the password. */
   password: string
   port: string
+  /** Read from a SQLite server's scheme; `null` for a file and every other engine. */
+  provider: Provider | null
   ssh: SshTunnel | null
   type: ConnectionType | null
   user: string
@@ -103,8 +105,8 @@ const withCredentials = (
   return url
 }
 
-const SQLITE_FORMATS: Record<
-  Provider | ConnectionType.SQLite,
+const SQLITE_SERVER_FORMATS: Record<
+  Provider,
   (parts: ConnectionParts) => string
 > = {
   [Provider.CloudflareD1]: (parts) =>
@@ -112,8 +114,6 @@ const SQLITE_FORMATS: Record<
       `d1://${D1_HOST}/${encodeURIComponent(parts.database)}`,
       parts
     ).toString(),
-  [ConnectionType.SQLite]: ({ database }) =>
-    database && sqliteFile.connectionString(database),
   [Provider.Turso]: (parts) =>
     withCredentials(
       `libsql://${parts.host}${parts.port ? `:${parts.port}` : ''}`,
@@ -121,14 +121,22 @@ const SQLITE_FORMATS: Record<
     ).toString(),
 }
 
+/** A host without a provider formats to nothing, never to a file string. */
+const formatSqlite = (parts: ConnectionParts) => {
+  if (parts.provider) {
+    return SQLITE_SERVER_FORMATS[parts.provider](parts)
+  }
+  return parts.host || !parts.database
+    ? ''
+    : sqliteFile.connectionString(parts.database)
+}
+
 const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []
 ): string => {
   if (parts.type === ConnectionType.SQLite) {
-    return SQLITE_FORMATS[
-      getSqliteProvider(parts.host) ?? ConnectionType.SQLite
-    ](parts)
+    return formatSqlite(parts)
   }
   if (!parts.type || !parts.host) {
     return ''
@@ -177,6 +185,10 @@ const parse = (connectionString: string): ConnectionParts => {
     ...parts,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
+    provider:
+      type === ConnectionType.SQLite && parts.host
+        ? getProviderOfScheme(scheme)
+        : null,
     ssh,
     type,
   }

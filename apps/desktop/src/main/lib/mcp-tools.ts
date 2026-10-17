@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
-import { getSqliteProvider } from '@tamery/connection/provider'
+import { getProviderOfScheme } from '@tamery/connection/provider'
 import { describeConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -153,14 +153,19 @@ export const createMcpServer = (
             'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
           )
         }
-        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides it is SQLite; the executor opens a file by the string's host alone, so the check reads the host, never a provider.
-        if (
-          args.type === ConnectionType.SQLite &&
-          !getSqliteProvider(readConnectionString(args.connectionString).host)
-        ) {
-          throw new Error(
-            'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
-          )
+        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides it is SQLite, and the executor opens a file for an empty host alone.
+        if (args.type === ConnectionType.SQLite) {
+          const { host, scheme } = readConnectionString(args.connectionString)
+          if (!host) {
+            throw new Error(
+              'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
+            )
+          }
+          if (!getProviderOfScheme(scheme)) {
+            throw new Error(
+              'Send a Turso database as libsql://… and a Cloudflare D1 one as d1://…; Tamery reads no other SQLite server.'
+            )
+          }
         }
         const connection = await askRenderer(
           { args, method: 'createConnection' },

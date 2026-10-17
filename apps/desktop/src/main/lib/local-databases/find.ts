@@ -35,6 +35,7 @@ const NO_PARTS = {
   options: '',
   password: '',
   port: '',
+  provider: null,
   ssh: null,
   user: '',
 }

@@ -5,7 +5,6 @@ import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
-import { getProvider } from '@tamery/connection/provider'
 import type { SshTunnel } from '@tamery/connection/ssh/params'
 import { EMPTY_SSH_TUNNEL } from '@tamery/connection/ssh/params'
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
@@ -30,7 +29,6 @@ export interface ConnectionFormValues extends Omit<
   color: string | null
   label: string
   name: string
-  provider: Provider | null
   ssh: SshTunnel
   sshEnabled: boolean
   syncType: SyncType
@@ -135,6 +133,7 @@ export const getParts = (values: ConnectionFormValues): ConnectionParts => {
     options: keep('options'),
     password: keep('password'),
     port: keep('port'),
+    provider: values.provider,
     ssh: engineFields.sshTunnel && values.sshEnabled ? values.ssh : null,
     type: values.type,
     user: keep('user'),
@@ -177,7 +176,7 @@ const getGuessedEngine = (
 ): Engine =>
   parts.type
     ? {
-        provider: getProvider({ host: parts.host ?? '', type: parts.type }),
+        provider: parts.provider ?? null,
         type: parts.type,
       }
     : values

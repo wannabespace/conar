@@ -1,5 +1,4 @@
 import { connectionParts } from '@tamery/connection/connection-parts'
-import { getProvider } from '@tamery/connection/provider'
 import { GUEST_CONNECTIONS_MESSAGE } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { getDialect } from '@tamery/shared/enums/connection-type'
@@ -106,7 +105,7 @@ export const mcpSource: McpSource = {
     const { id } = await createConnection({
       connectionString,
       name,
-      provider: getProvider(parts),
+      provider: connectionParts.parse(connectionString).provider,
       syncType,
       type,
       workspaceId: workspace.id,

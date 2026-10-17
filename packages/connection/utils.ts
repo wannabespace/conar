@@ -4,33 +4,35 @@ import { SafeURL } from '@tamery/shared/safe-url'
 import { getConnectionType } from './connection-parts'
 import { isInternalHost } from './hosts'
 import { readConnectionString } from './parse-connection-string'
-import { getSqliteProvider } from './provider'
+import { getProviderOfScheme } from './provider'
 import { connectionSecrets } from './secrets'
 import { SSH_PARAMS } from './ssh/params'
 
 export const SQLITE_RESOURCE_NAME = 'main'
 
-const SQLITE_DISPLAY_NAMES: Record<
-  Provider | ConnectionType.SQLite,
-  (parts: { database: string; host: string }) => string
-> = {
-  [ConnectionType.SQLite]: ({ database }) =>
-    database.slice(database.lastIndexOf('/') + 1),
-  [Provider.CloudflareD1]: ({ database }) => database,
-  [Provider.Turso]: ({ host }) => host,
+const getSqliteDisplayName = ({
+  database,
+  host,
+  scheme,
+}: {
+  database: string
+  host: string
+  scheme: string
+}) => {
+  if (!host) {
+    return database.slice(database.lastIndexOf('/') + 1)
+  }
+  return getProviderOfScheme(scheme) === Provider.CloudflareD1 ? database : host
 }
 
 export const describeConnectionString = (connectionString: string) => {
   const { database, host, password, scheme, searchParams } =
     readConnectionString(connectionString)
-  const sqliteEngine =
-    getConnectionType(scheme) === ConnectionType.SQLite
-      ? (getSqliteProvider(host) ?? ConnectionType.SQLite)
-      : null
+  const isSqlite = getConnectionType(scheme) === ConnectionType.SQLite
   return {
-    defaultResourceName: sqliteEngine ? SQLITE_RESOURCE_NAME : database || null,
-    displayUrl: sqliteEngine
-      ? SQLITE_DISPLAY_NAMES[sqliteEngine]({ database, host })
+    defaultResourceName: isSqlite ? SQLITE_RESOURCE_NAME : database || null,
+    displayUrl: isSqlite
+      ? getSqliteDisplayName({ database, host, scheme })
       : new SafeURL(connectionString).host,
     isInternal: isInternalHost(host),
     isPasswordPopulated: !!password,
