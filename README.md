@@ -1,120 +1,69 @@
-# <img src="https://tamery.app/logo.png" alt="Tamery Logo" width="25"/> Tamery.app
+# <img src="https://tamery.app/logo.png" alt="Tamery logo" width="25"/> Tamery
 
-![image](https://tamery.app/github-demo.png)
+_The AI-powered database client and MCP server for desktop and web_
 
-Tamery is an AI-powered open-source project that simplifies database interactions. Built for PostgreSQL, MySQL, MSSQL, Clickhouse, SQLite with support for other databases coming in the near future. Store your connections securely in our cloud and ask AI to help you write and optimize SQL queries.
+<a href="https://tamery.app/download">
+  <img src="https://img.shields.io/badge/Download-Tamery-green?style=for-the-badge" alt="Download Tamery" />
+</a>
 
-<div align="center">
-  <a href="https://tamery.app/download">
-    <img src="https://img.shields.io/badge/Download-Tamery-green?style=for-the-badge" alt="Download Tamery" />
-  </a>
-</div>
+We built Tamery because we wanted a database client that is fast, simple and nice to look at.
 
-## Features
+And one that actually helps instead of getting in the way.
 
-- **🔐 Secure & Open**
-  - Open-source codebase
-  - Encrypted connection strings
-  - Password protection
+It works with **PostgreSQL**, **MySQL**, **MariaDB**, **SQL Server**, **ClickHouse** and **SQLite** (Turso and Cloudflare D1 too).
 
-- **💾 Multi-Database Support**
-  - PostgreSQL
-  - MySQL
-  - MSSQL
-  - Clickhouse
-  - SQLite
-  - MongoDB (coming soon)
+## Get started
 
-- **🤖 AI-Powered Features**
-  - Intelligent SQL assistance
-  - Ability to change AI model
-  - More coming soon..
+1. Open [tamery.app](https://tamery.app) or [download the app](https://tamery.app/download).
 
-## Stack
+   ```bash
+   brew install --cask tamery   # macOS
+   yay -S tamery-bin            # Arch Linux
+   ```
 
-- React with TypeScript
-- Electron
-- TailwindCSS and shadcn/ui
-- Vite
-- TanStack Start/Router/Query/Form/Virtual
-- Arktype
-- Bun
-- Hono
-- oRPC
-- Drizzle ORM
-- Better Auth
-- Vercel AI SDK with OpenRouter
-- Railway
-- PostHog
-- Resend
-- ToDesktop
-- Stripe
+2. Sign in. Or skip it on desktop with **Continue without an account**.
+3. Paste a connection string. Or an `.env` file, a JDBC URL, a `psql` command. Tamery figures it out.
+4. Open a table or run a query.
 
-## Development Setup
+> [!TIP]
+> Start with the desktop app. It connects to `localhost` and private networks out of the box.
 
-- **📦 Package Installation**
+## What's inside
 
-  ```bash
-  pnpm install
-  ```
+- Table browser. Sort, filter, edit right in the cell.
+- Query editor with autocomplete that knows your schema.
+- AI assistant that writes, explains and fixes SQL. It never changes data without asking.
+- Schema visualizer.
+- Connections synced across devices, with or without passwords.
+- SSH tunnels and SSL.
+- MCP server. Claude Code, Cursor and other agents can query your databases. Every write waits for your click.
 
-- **🌐 Browser Automation (recommended)**
+## Small things we care about
 
-  Either CLI drives the running app for agents and manual debugging; they share one command vocabulary, so pick whichever fits the session:
+- Anything that changes or deletes data asks first.
+- Works offline. Syncs when you are back.
+- Connection strings are always encrypted. With **Metadata only** they never leave your machine.
+- Everyday features are free. Pro adds the full AI assistant.
+- Open source. You can read every line that touches your credentials.
 
-  ```bash
-  npm install -g agent-browser && agent-browser install   # its own Chrome window
-  brew install --cask terminal-browser                    # renders in a terminal pane
-  ```
+## Run it yourself
 
-  Neither is a project dependency — agents call the CLI directly (`agent-browser open <url>`, `snapshot`, `click`, `console`, or the same commands through `terminal-browser action --`). Without them, any other browser automation works instead.
+You need [pnpm](https://pnpm.io), [Bun](https://bun.sh), and Postgres + Redis (or [Docker](https://docs.docker.com/get-docker/)).
 
-- **🐳 Start Backing Services**
+```bash
+pnpm install
+pnpm run docker:start
+pnpm run drizzle:migrate
+pnpm run dev
+```
 
-  Postgres and Redis must be reachable from `apps/api/.env` (copy `.env.example`). Either point it at hosted instances, or start local ones with Docker (https://docs.docker.com/get-docker/):
+The app opens at https://app.local.tamery.app. Tests: `pnpm run test`, and `pnpm run test:e2e` after `pnpm run test:start`.
 
-  ```bash
-  pnpm run docker:start
-  ```
+## Issues
 
-- **🗄️ Prepare Database**
+We don't accept pull requests. But we read every issue.
 
-  This will run database migrations to set up the required tables and schema.
-
-  ```bash
-  pnpm run drizzle:migrate
-  ```
-
-- **🚀 Run the Project**
-
-  This opens a package picker (all packages pre-selected — press Enter to accept) and starts the selected development servers through [portless](https://portless.sh) (HTTPS on `.local.tamery.app` domains):
-
-  | Service | URL                            |
-  | ------- | ------------------------------ |
-  | API     | https://api.local.tamery.app   |
-  | App     | https://app.local.tamery.app   |
-  | Main    | https://main.local.tamery.app  |
-  | Proxy   | https://proxy.local.tamery.app |
-
-  ```bash
-  pnpm run dev
-  ```
-
-  Pass `-a` to skip the prompt and start everything. To run a subset, deselect the rest in the picker, or `cd` into a single app's directory (e.g. `apps/api`) and run `pnpm run dev`.
-
-## Testing
-
-- **Unit Tests**
-  ```bash
-  pnpm run test
-  ```
-
-> Before running E2E tests, make sure to start the test server: `pnpm run test:start`
-
-- **E2E Tests**
-  ```bash
-  pnpm run test:e2e
-  ```
+Found a bug or something off by one pixel? [Open an issue](https://github.com/wannabespace/conar/issues). Our perfectionists will thank you.
 
 <div align="center">
   <sub>Built with ❤️</sub>
