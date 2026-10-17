@@ -13,32 +13,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Set pkgver from the desktop app
+        id: version
+        run: |
+          version=$(jq -r .version apps/desktop/package.json)
+          sed -i "s/^pkgver=.*/pkgver=$version/" aur/PKGBUILD
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Publish tamery-bin
+        uses: KSXGitHub/github-actions-deploy-aur@v4.2.0
         with:
-          bun-version: latest
-
-      - name: Sync AUR files (version + checksum)
-        run: bun scripts/sync-aur-version.ts --checksum
-
-      - name: Setup SSH for AUR
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/aur_key
-          chmod 600 ~/.ssh/aur_key
-          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
-
-      - name: Clone AUR repo and push
-        env:
-          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          AUR_GIT_NAME: ${{ secrets.AUR_GIT_NAME }}
-          AUR_GIT_EMAIL: ${{ secrets.AUR_GIT_EMAIL }}
-        run: |
-          git config --global user.name "$AUR_GIT_NAME"
-          git config --global user.email "$AUR_GIT_EMAIL"
-          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur_key -o StrictHostKeyChecking=accept-new"
-          git clone ssh://aur@aur.archlinux.org/tamery-bin.git aur-repo
-          cp aur/PKGBUILD aur/.SRCINFO aur-repo/
-          cd aur-repo
-          git add PKGBUILD .SRCINFO
-          git diff --staged --quiet || (git commit -m "Update to $(grep '^pkgver=' PKGBUILD | cut -d= -f2)" && git push origin master)
+          pkgname: tamery-bin
+          pkgbuild: aur/PKGBUILD
+          updpkgsums: true
+          test: true
+          commit_username: ${{ secrets.AUR_GIT_NAME }}
+          commit_email: ${{ secrets.AUR_GIT_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Update to ${{ steps.version.outputs.version }}
