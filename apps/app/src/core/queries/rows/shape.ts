@@ -111,6 +111,17 @@ export const clickhouseFilterValues =
       value
     )
 
+const sqliteBooleanType = getCapabilities(Dialect.SQLite).columnTypes.boolean
+
+// SQLite stores a boolean as 1 or 0, so the filter's `true` text never equals it.
+export const sqliteFilterValues =
+  (columns: ColumnTypes = []): FilterValueBinding =>
+  (column, value) =>
+    (value === 'true' || value === 'false') &&
+    sqliteBooleanType?.test(columns.find(({ id }) => id === column)?.type ?? '')
+      ? Number(value === 'true')
+      : value
+
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {
   mssql: 2000,

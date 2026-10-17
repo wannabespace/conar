@@ -6,7 +6,11 @@ import type { Kysely } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { ColumnTypes, ContainsText } from './shape'
-import { clickhouseFilterValues, textContains } from './shape'
+import {
+  clickhouseFilterValues,
+  sqliteFilterValues,
+  textContains,
+} from './shape'
 
 const valueCountsType = type({
   count: type('number | string | bigint').pipe(Number),
@@ -15,7 +19,7 @@ const valueCountsType = type({
 
 interface ValueCountsParams {
   column: string
-  /** The table's columns, whose types ClickHouse parses filter values by. */
+  /** The table's columns, whose types ClickHouse and SQLite bind filter values by. */
   columns: ColumnTypes
   filters: ActiveFilter[]
   limit: number
@@ -59,7 +63,13 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
       mssql: (db) => countValues(db, textContains.mssql, params),
       mysql: (db) => countValues(db, textContains.mysql, params),
       postgres: (db) => countValues(db, textContains.postgres, params),
-      sqlite: (db) => countValues(db, textContains.sqlite, params),
+      sqlite: (db) =>
+        countValues(
+          db,
+          textContains.sqlite,
+          params,
+          sqliteFilterValues(params.columns)
+        ),
     },
     type: valueCountsType,
   })

@@ -13,7 +13,7 @@ import {
 } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues } from './shape'
+import { clickhouseFilterValues, sqliteFilterValues } from './shape'
 
 const rowType = type('Record<string, unknown>')
 
@@ -22,7 +22,7 @@ interface PageResult {
 }
 
 export interface RowsQueryProps {
-  /** The table's columns, whose types ClickHouse parses filter values by. */
+  /** The table's columns, whose types ClickHouse and SQLite bind filter values by. */
   columns?: ColumnTypes
   limit?: number
   select?: string[]
@@ -83,7 +83,8 @@ export const resourceRowsQuery = memoize(
         mssql: (db) => selectPage(db, props),
         mysql: (db) => selectPage(db, props),
         postgres: (db) => selectPage(db, props),
-        sqlite: (db) => selectPage(db, props),
+        sqlite: (db) =>
+          selectPage(db, props, sqliteFilterValues(props.columns)),
       },
       type: rowType.array(),
     })

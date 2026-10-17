@@ -124,7 +124,7 @@ export const getFormValues = (
     color: connection.color,
     label: connection.label ?? '',
     name: connection.name,
-    provider: connection.provider,
+    provider: parts ? parts.provider : connection.provider,
     ssh: parts?.ssh ?? EMPTY_SSH_TUNNEL,
     sshEnabled: !!parts?.ssh,
     syncType: connection.syncType,

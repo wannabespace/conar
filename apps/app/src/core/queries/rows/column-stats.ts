@@ -6,7 +6,7 @@ import type { Kysely } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues } from './shape'
+import { clickhouseFilterValues, sqliteFilterValues } from './shape'
 
 const count = type('number | string | bigint').pipe(Number)
 
@@ -20,7 +20,7 @@ const statsType = type({
 
 interface ColumnStatsParams {
   column: string
-  /** The table's columns, whose types ClickHouse parses filter values by. */
+  /** The table's columns, whose types ClickHouse and SQLite bind filter values by. */
   columns: ColumnTypes
   filters: ActiveFilter[]
   ranged: boolean
@@ -61,7 +61,8 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),
-      sqlite: (db) => selectStats(db, params),
+      sqlite: (db) =>
+        selectStats(db, params, sqliteFilterValues(params.columns)),
     },
     type: statsType,
   })

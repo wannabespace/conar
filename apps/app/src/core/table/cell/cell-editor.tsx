@@ -5,7 +5,6 @@ import { Popover, PopoverContent } from '@tamery/ui/components/popover'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkeys } from '@tanstack/react-hotkeys'
-import { format } from 'date-fns'
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -22,13 +21,7 @@ import { CellFieldActions } from './cell-field-actions'
 import { CellReference } from './cell-reference'
 import { CellSelect, isPickColumn } from './cell-select'
 import type { Column } from './utils'
-import { hasTabularFigures } from './utils'
-
-const NOW_FORMAT: Partial<Record<Column['uiType'], string>> = {
-  date: 'yyyy-MM-dd',
-  datetime: 'yyyy-MM-dd HH:mm:ss',
-  time: 'HH:mm:ss',
-}
+import { formatColumnTime, hasTabularFigures, TIME_FORMATS } from './utils'
 
 const codeLanguage = (
   dialect: Dialect,
@@ -53,7 +46,7 @@ interface FieldProps {
 
 const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
   const ref = useRef<HTMLTextAreaElement>(null)
-  const nowFormat = readOnly ? undefined : NOW_FORMAT[column.uiType]
+  const nowFormat = readOnly ? undefined : TIME_FORMATS[column.uiType]
 
   useHotkeys(
     [
@@ -114,12 +107,8 @@ const TextField = ({ column, cursor, edit, readOnly }: FieldProps) => {
           size="xs"
           className="m-1 shrink-0"
           onClick={() => {
-            const { zoned } = getCapabilities(cursor.dialect).columnTypes
             cursor.change(
-              format(
-                new Date(),
-                zoned?.test(column.type ?? '') ? `${nowFormat}xxx` : nowFormat
-              )
+              formatColumnTime(new Date(), nowFormat, column, cursor.dialect)
             )
             ref.current?.focus()
           }}

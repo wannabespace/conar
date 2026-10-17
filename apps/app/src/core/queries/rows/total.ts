@@ -14,7 +14,7 @@ import {
 } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues } from './shape'
+import { clickhouseFilterValues, sqliteFilterValues } from './shape'
 
 interface CountTarget {
   filters: ActiveFilter[]
@@ -47,7 +47,7 @@ export const resourceTableTotalQuery = memoize(
     schema,
     query: { filters, exact },
   }: {
-    /** The table's columns, whose types ClickHouse parses filter values by. */
+    /** The table's columns, whose types ClickHouse and SQLite bind filter values by. */
     columns?: ColumnTypes
     table: string
     schema: string
@@ -127,7 +127,8 @@ export const resourceTableTotalQuery = memoize(
 
           return countRows(db, db.fn.countAll(), target)
         },
-        sqlite: (db) => countRows(db, db.fn.countAll(), target),
+        sqlite: (db) =>
+          countRows(db, db.fn.countAll(), target, sqliteFilterValues(columns)),
       },
       type: type({
         count: 'number',

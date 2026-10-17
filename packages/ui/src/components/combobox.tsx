@@ -284,11 +284,13 @@ const ComboboxChip = ({
   className,
   children,
   showRemove = true,
+  'aria-label': label,
   ...props
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean
 }) => (
   <ComboboxPrimitive.Chip
+    aria-label={label}
     data-slot="combobox-chip"
     className={cn(
       `bg-foreground/5 text-foreground flex h-[calc(--spacing(5.25))] w-fit items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5`,
@@ -300,6 +302,7 @@ const ComboboxChip = ({
     {showRemove && (
       <ComboboxPrimitive.ChipRemove
         render={<Button variant="ghost" size="icon-xs" />}
+        aria-label={label ? `Remove ${label}` : 'Remove'}
         className="-ml-0.5 size-4.5 opacity-50 hover:opacity-100 aria-disabled:pointer-events-none"
         data-slot="combobox-chip-remove"
       >
