@@ -1,33 +1,27 @@
 {
   "fill": {
-    "solid": "extended-srgb:0.33333,0.56471,1.00000,1.00000"
+    "linear-gradient": [
+      "extended-srgb:1.00000,1.00000,1.00000,1.00000",
+      "extended-srgb:0.92549,0.93333,0.97255,1.00000"
+    ]
   },
   "groups": [
     {
       "layers": [
         {
-          "image-name": "glyph.svg",
+          "image-name": "glyph.png",
           "name": "glyph",
           "glass": true
         }
       ],
       "shadow": {
-        "kind": "neutral",
+        "kind": "layer-color",
         "opacity": 0.5
       },
       "translucency": {
-        "enabled": true,
+        "enabled": false,
         "value": 0.5
       }
-    },
-    {
-      "layers": [
-        {
-          "image-name": "background.png",
-          "name": "background",
-          "glass": false
-        }
-      ]
     }
   ],
   "supported-platforms": {
