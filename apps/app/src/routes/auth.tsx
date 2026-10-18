@@ -140,7 +140,8 @@ const AuthPage = () => {
                 Sign in to continue
               </h1>
               <p className="text-muted-foreground mt-2 mb-8">
-                Sync your connections, queries, and chats across every device.
+                Tamery is in early access. Sign in to request access — we'll
+                email you when it's ready.
               </p>
             </motion.div>
             <motion.div
@@ -176,7 +177,7 @@ const AuthPage = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground mb-4 text-center text-xs">
-                  Tamery is in early access. A new email joins the list.
+                  If you already have access, sign in as usual.
                 </p>
               )}
             </motion.div>
