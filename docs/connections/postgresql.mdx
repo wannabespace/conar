@@ -1,90 +1,37 @@
 ---
-title: 'Connect to PostgreSQL'
+title: 'PostgreSQL'
 sidebarTitle: 'PostgreSQL'
-description: 'Connect Tamery to PostgreSQL: connection string format, SSL options, and provider tips.'
+description: 'Connect to PostgreSQL, including Supabase, Neon, and local servers.'
 ---
 
-Tamery accepts both `postgresql://` and `postgres://`:
+Paste your provider's connection string into **Add new**, or fill in the fields:
 
-```bash
-postgresql://username:password@hostname:5432/database
+```text
+postgresql://user:password@localhost:5432/mydb
 ```
 
-| Part       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `username` | PostgreSQL user (e.g. `postgres`)           |
-| `password` | Password for that user                      |
-| `hostname` | Host (e.g. `localhost` or a remote address) |
-| `5432`     | Port (default)                              |
-| `database` | Database name                               |
+Both `postgresql://` and `postgres://` work. The default port is **5432**.
 
-## Parameters
+## Hosted databases
 
-Append query parameters after the database name with `?`, separated by `&`.
+Copy the connection string from Supabase, Neon, Railway, or your provider. Replace password placeholders before saving.
 
-| Parameter | Description | Example |
-| --- | --- | --- |
-| `sslmode` | SSL/TLS negotiation | `sslmode=require` |
-| `connect_timeout` | Max seconds to open a connection | `connect_timeout=10` |
-| `application_name` | Label in `pg_stat_activity` | `application_name=tamery` |
+Tamery may switch a pooled address to a session or direct address so transactions work correctly. Review any change shown in the form. For Supabase, use the **Session pooler** if your network cannot reach the direct server over IPv6.
 
-```bash
-postgresql://username:password@hostname:5432/database?sslmode=require&connect_timeout=10
+## SSL
+
+Keep the SSL settings supplied by your provider.
+
+| Option | Behavior |
+| --- | --- |
+| `sslmode=disable` | Unencrypted connection. |
+| `sslmode=require` | Encrypted, without verifying the certificate. |
+| `sslmode=verify-full` | Encrypted, with certificate and hostname verification. |
+
+```text
+postgresql://user:password@db.example.com:5432/mydb?sslmode=verify-full
 ```
 
-## SSL / TLS
+With no SSL option, Tamery tries an encrypted connection without certificate verification. It uses an unencrypted connection only if the server reports that SSL is unavailable.
 
-| `sslmode`     | Behavior                                       |
-| ------------- | ---------------------------------------------- |
-| `disable`     | No SSL                                         |
-| `require`     | SSL on, certificate not verified               |
-| `verify-ca`   | SSL on, certificate must be from a trusted CA  |
-| `verify-full` | SSL on, trusted CA **and** hostname must match |
-
-`require` works for most managed providers; use `verify-full` for stricter setups.
-
-Without `sslmode`, Tamery connects over SSL without verifying the certificate, and uses an unencrypted connection only when the server says it has no SSL.
-
-## Providers
-
-<Tabs>
-  <Tab title="Supabase">
-    **Settings → Database → Connection string**. Replace `[YOUR-PASSWORD]`.
-
-    ```bash
-    postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
-    ```
-
-    Supabase requires SSL — add `?sslmode=require` if missing.
-
-  </Tab>
-  <Tab title="Neon">
-    Copy either the pooled or direct string from the dashboard — both include SSL settings.
-
-    ```bash
-    postgresql://username:password@ep-<name>.us-east-2.aws.neon.tech/neondb?sslmode=require
-    ```
-
-  </Tab>
-  <Tab title="Railway">
-    Project → PostgreSQL service → **Connect** → **Database URL**.
-
-    ```bash
-    postgresql://postgres:password@monorail.proxy.rlwy.net:12345/railway
-    ```
-
-  </Tab>
-  <Tab title="Local">
-    ```bash
-    postgresql://postgres:password@localhost:5432/mydb
-    ```
-
-    Depending on `pg_hba.conf`, you may be able to omit the password.
-
-  </Tab>
-</Tabs>
-
-<Tip>
-  **Save connection** tests the connection first. If the test fails, check host,
-  port, credentials, database name, and SSL parameters.
-</Tip>
+For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

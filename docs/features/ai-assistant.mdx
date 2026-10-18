@@ -1,112 +1,31 @@
 ---
-title: 'AI assistant'
+title: 'Get help with SQL'
 sidebarTitle: 'AI assistant'
-description: "Tamery's schema-aware AI assistant explores your database, writes and runs SQL, drives the app, and powers natural-language filters."
+description: 'Get SQL help in chat, filter rows with AI, and fix queries in the editor.'
 ---
 
-The assistant has full context of your connected database — schemas, tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It lives in its own panel beside whatever you have open, and it can act on the app: opening tables, filling a query tab, applying filters.
+Open the chat button in the tab bar, or press **Cmd+L** on macOS, **Ctrl+L** on Windows or Linux. Paste a query, an error, or a table definition and ask for help.
 
-## Opening the panel
+Try:
 
-Press <kbd>⌘L</kbd> (<kbd>Ctrl+L</kbd> on Windows and Linux), or click the **chat** icon in the tab bar, right of the new-tab **+**. Drag the panel's left edge to resize it; double-click that edge to reset the width.
+- “Explain this query.”
+- “Why does this SQL fail?”
+- “Write a monthly sales query using these tables.”
 
-The panel belongs to the connection, not to a tab — it stays open while you move between tables, query tabs, the schema browser, and the diagram. Each connection keeps its own conversation, and it survives reloads; use the **new chat** icon in the panel header to start a fresh one.
+Follow up in the same conversation to refine the answer. Use **New chat** to start over.
 
-The answer runs on the server, so reloading mid-reply does not cancel it — the finished answer is saved to the conversation and appears the next time the chat opens. The live text is not re-tailed after a reload.
+## Give it context
 
-## Asking
+The chat uses what you send it. It does not automatically read your schema, query your data, or make changes. Include the relevant table and column names, then review and run suggested SQL yourself.
 
-Ask in plain English:
+Messages are processed by external AI providers. See [Security and privacy](/connections/security#ai-and-your-data).
 
-- _"Which tables store customer order data?"_
-- _"Explain this query and whether it can be optimized."_
-- _"Find users who signed up in the last 7 days but haven't ordered."_
+## AI elsewhere in Tamery
 
-Follow-ups like _"now only EU users"_ work — the conversation keeps its context.
+- **Table filters:** describe the rows you want and choose **Ask AI**.
+- **SQL editor:** use **Edit with AI**, **Fix with AI**, or accept a completion with **Tab**. These features receive schema context automatically.
+- **Connection errors:** choose **Explain with AI** after a failed test.
 
-## What it can do
+The assistant and SQL help require [Pro](/account/plans). Free accounts include limited AI filters and connection diagnosis. Tamery chooses the model automatically.
 
-<CardGroup cols={2}>
-  <Card title="Explore the schema" icon="magnifying-glass">
-    List schemas, tables, columns, indexes, constraints, enums, triggers,
-    functions, and policies — and search across them by name.
-  </Card>
-  <Card title="Read your data" icon="database">
-    Run SELECTs, count rows, sample distinct values, and read query plans to
-    check its own answers.
-  </Card>
-  <Card title="Write and run SQL" icon="pen-nib">
-    Describe the data; get a complete query against your real schema, opened in
-    a query tab you can edit and run.
-  </Card>
-  <Card title="Drive the app" icon="table">
-    Open a table, filter and sort it, open the schema browser or the diagram —
-    so the answer lands on screen, not only in chat.
-  </Card>
-  <Card title="Change data" icon="circle-exclamation">
-    Insert, update, delete, and schema changes — each one pauses for your
-    approval first.
-  </Card>
-  <Card title="Generate code" icon="code">
-    Turn a table into a Drizzle, Kysely, Prisma, Zod, TypeScript, or SQL model.
-  </Card>
-</CardGroup>
-
-## Approving changes
-
-Reads run on their own. Anything that changes data or schema — `INSERT`, `UPDATE`, `DELETE`, `CREATE INDEX`, `RENAME`, `DROP` — stops and shows you a card with the exact statement, the assistant's reason, and a warning when a write has no filter and would touch every row. Nothing runs until you choose **Run it**.
-
-<Note>
-  Your credentials never leave your device: the assistant's database tools run
-  in the app, against your connection, exactly like a query you type yourself.
-</Note>
-
-## Models
-
-The assistant runs on a frontier model automatically — nothing to pick or configure. If the primary model is overloaded, Tamery falls back to another top model to stay responsive.
-
-<CardGroup cols={2}>
-  <Card title="Claude" icon="robot" href="/account/plans">
-    Anthropic's Claude (Opus) is the default.
-  </Card>
-  <Card title="GPT" icon="robot" href="/account/plans">
-    OpenAI's GPT is the automatic fallback.
-  </Card>
-</CardGroup>
-
-The assistant is a subscription feature. See [Plans](/account/plans).
-
-## Natural-language filters
-
-<Steps>
-  <Step title="Focus the filter field">
-    In the table browser, click the filter field in the bottom toolbar or press
-    <kbd>⌘</kbd> <kbd>F</kbd>.
-  </Step>
-  <Step title="Describe the filter">
-    Type, e.g. *"orders in the last 30 days over $500 that haven't shipped"*,
-    then choose **Ask AI**.
-  </Step>
-  <Step title="Review and adjust">
-    The AI builds structured filter chips in the field and names any part of the
-    request this table's columns cannot express. Edit any chip's column,
-    operator, or value directly.
-  </Step>
-</Steps>
-
-<Note>
-  Free accounts get a limited number of AI filter uses per week. Paid plans are
-  unlimited. See [Plans](/account/plans).
-</Note>
-
-## Plans
-
-| Feature                  | Free    | Subscription |
-| ------------------------ | ------- | ------------ |
-| AI assistant             | —       | ✓            |
-| Inline SQL generation    | —       | ✓            |
-| Fix SQL                  | —       | ✓            |
-| Modify SQL               | —       | ✓            |
-| Natural-language filters | Limited | Unlimited    |
-
-See [Plans](/account/plans).
+To let a coding agent inspect tables and run SQL, connect it through [MCP](/mcp/overview).
