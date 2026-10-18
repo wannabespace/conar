@@ -18,6 +18,7 @@ import { useConnectionLinks } from '~/modules/connection-links/use-connection-li
 import { GlobalBanner } from '~/modules/global-banner/global-banner'
 import { McpHost } from '~/modules/mcp/mcp-host'
 import { SubscriptionModal } from '~/modules/subscription/subscription-modal'
+import { WhatsNew } from '~/modules/updates/whats-new'
 
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
@@ -52,6 +53,7 @@ const ProtectedLayout = () => {
         <ActionsCenter />
         {window.electron && <McpHost />}
         <SubscriptionModal />
+        <WhatsNew />
         <div className="flex h-full flex-col">
           <ProtectedTitleBar />
           <GlobalBanner />

@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 
 import { Octokit } from '@octokit/rest'
+import { CHANGELOG, formatReleaseNotes } from '@tamery/shared/changelog'
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@tamery/shared/constants'
 
 import { env } from '~/env'
@@ -88,14 +89,18 @@ export const todesktop = orpc
 
       const tagName = `v${payload.appVersion}`
       const releaseName = payload.appVersion
+      const notes = CHANGELOG.find(
+        (release) => release.version === payload.appVersion
+      )
 
       const octokit = new Octokit({
         auth: env.GITHUB_TOKEN,
       })
 
       const { data: release } = await octokit.rest.repos.createRelease({
+        body: notes ? formatReleaseNotes(notes) : undefined,
         draft: true,
-        generate_release_notes: true,
+        generate_release_notes: !notes,
         name: releaseName,
         owner: GITHUB_REPO_OWNER,
         repo: GITHUB_REPO_NAME,
