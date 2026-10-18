@@ -1,6 +1,6 @@
 {
   "private": true,
-  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
+  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite.",
   "homepage": "https://tamery.app",
   "author": {
     "name": "Wannabe Space, LLC",
