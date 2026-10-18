@@ -212,3 +212,4 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Mark found databases that already have a connection.** The form's found-databases list keeps offering a local database after a connection to it exists.
 - **Check ClickHouse row-policy rights up front.** Without the grant, **Add policy** fails only after submit with "Not enough privileges"; disabling it with the reason would save the form.
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
+- **Email people when their early access is approved.** Approving is setting `granted_at` by hand, and nobody is told; a notice when the row flips would bring them back without a manual email.

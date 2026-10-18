@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as OpenRouteImport } from './modules/deep-link/routes/open'
+import { Route as AuthEarlyAccessRouteImport } from './routes/_auth/early-access'
 import { Route as AuthEmailCodeRouteImport } from './routes/_auth/email-code'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
@@ -45,6 +46,11 @@ const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthEarlyAccessRoute = AuthEarlyAccessRouteImport.update({
+  id: '/early-access',
+  path: '/early-access',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthEmailCodeRoute = AuthEmailCodeRouteImport.update({
   id: '/email-code',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
+  '/early-access': typeof AuthEarlyAccessRoute
   '/email-code': typeof AuthEmailCodeRoute
   '/sign-in': typeof AuthSignInRoute
   '/two-factor': typeof AuthTwoFactorRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/open': typeof OpenRoute
+  '/early-access': typeof AuthEarlyAccessRoute
   '/email-code': typeof AuthEmailCodeRoute
   '/sign-in': typeof AuthSignInRoute
   '/two-factor': typeof AuthTwoFactorRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/account': typeof AccountRouteWithChildren
   '/open': typeof OpenRoute
+  '/_auth/early-access': typeof AuthEarlyAccessRoute
   '/_auth/email-code': typeof AuthEmailCodeRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/two-factor': typeof AuthTwoFactorRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/open'
+    | '/early-access'
     | '/email-code'
     | '/sign-in'
     | '/two-factor'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/open'
+    | '/early-access'
     | '/email-code'
     | '/sign-in'
     | '/two-factor'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/_layout'
     | '/account'
     | '/open'
+    | '/_auth/early-access'
     | '/_auth/email-code'
     | '/_auth/sign-in'
     | '/_auth/two-factor'
@@ -268,6 +280,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/open'
       preLoaderRoute: typeof OpenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_auth/early-access': {
+      id: '/_auth/early-access'
+      path: '/early-access'
+      fullPath: '/early-access'
+      preLoaderRoute: typeof AuthEarlyAccessRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_auth/email-code': {
       id: '/_auth/email-code'
@@ -371,12 +390,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteChildren {
+  AuthEarlyAccessRoute: typeof AuthEarlyAccessRoute
   AuthEmailCodeRoute: typeof AuthEmailCodeRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthTwoFactorRoute: typeof AuthTwoFactorRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthEarlyAccessRoute: AuthEarlyAccessRoute,
   AuthEmailCodeRoute: AuthEmailCodeRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthTwoFactorRoute: AuthTwoFactorRoute,
