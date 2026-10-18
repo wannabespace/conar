@@ -8,6 +8,8 @@ export const SOCIAL_LINKS = {
 
 export const RELEASES_URL = 'https://tamery.app/releases' as const
 
+export const DOCS_URL = 'https://docs.tamery.app' as const
+
 export const MIN_WINDOW_WIDTH = 600
 export const MIN_WINDOW_HEIGHT = 300
 

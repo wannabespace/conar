@@ -3,10 +3,12 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { orpc } from '~/lib/orpc'
 
+import { homeHead } from './-home-head'
 import { HomePage } from './-home-page'
 
 export const Route = createFileRoute('/_layout/')({
   component: HomePage,
+  head: homeHead,
   loader: async ({ context }) => {
     if (context.session) {
       throw redirect({ to: '/account' })
