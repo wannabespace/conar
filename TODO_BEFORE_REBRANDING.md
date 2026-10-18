@@ -14,7 +14,7 @@ The cask is ready in `homebrew/tamery.rb` but not yet in Homebrew, so the comman
   ```
 - [x] Verify the updater cache folder name in zap: launch the Tamery build, let it check for updates, then `ls ~/Library/Caches | grep -i updater`, then fix `@tamerydesktop-updater` if it differs.
 - [x] Run style, audit and a real install from a local tap (commands in `homebrew/README.md`); all must pass.
-- [ ] Fork `Homebrew/homebrew-cask`, copy the cask to `Casks/t/tamery.rb`, open a PR titled `tamery <version> (new cask)` and fill in its checklist.
+- [x] Fork `Homebrew/homebrew-cask`, copy the cask to `Casks/t/tamery.rb`, open a PR titled `tamery <version> (new cask)` and fill in its checklist: [Homebrew/homebrew-cask#295236](https://github.com/Homebrew/homebrew-cask/pull/295236). Answer maintainers there yourself, without AI (Homebrew's policy).
 - [ ] After merge, confirm `brew install --cask tamery` works on a clean machine; later versions are autobumped by Homebrew, nothing else to do.
 
 ## Until the cask is merged
@@ -31,6 +31,7 @@ These already advertise `brew install --cask tamery`; hide them or accept a brok
 
 - [x] Make sure the first Tamery release is published only after `download.tamery.app` is live, since the workflow downloads `https://download.tamery.app/versions/<version>/linux/deb/x64` and fails otherwise.
 - [x] Check the `.deb` layout of that release: the binary must be `/opt/Tamery/tamery-desktop` (it is, in 0.99.0).
-- [ ] Confirm the `AUR_SSH_PRIVATE_KEY` secret's AUR account is the one that should own `tamery-bin`.
+- [x] Confirm the `AUR_SSH_PRIVATE_KEY` secret's AUR account is the one that should own `tamery-bin` (`letstri`; [tamery-bin 0.99.0-1](https://aur.archlinux.org/packages/tamery-bin) published by the v0.99.0 release).
 - [ ] After the workflow passes, `yay -S tamery-bin` on a clean Arch machine; `tamery` must launch the app.
-- [ ] File an AUR merge request for `conar-bin` into `tamery-bin` (https://aur.archlinux.org/pkgbase/conar-bin/request) so existing users move over; `conar-bin` is currently broken (pkgver stuck at 0.27.3 with a stale checksum).
+- [ ] Move `tamery-bin` to an AUR account `wannabespace` once AUR registration reopens (paused since 2026-10-18): register it, add a new SSH key there and put its private half, name and email in the `AUR_SSH_PRIVATE_KEY` / `AUR_GIT_NAME` / `AUR_GIT_EMAIL` secrets; then, signed in as `letstri`, add `wannabespace` under **Manage Co-Maintainers** on https://aur.archlinux.org/pkgbase/tamery-bin and **Disown** it, which makes the co-maintainer the maintainer. Votes, comments and history stay.
+- [ ] Decide on `conar-bin`: it is maintained by another AUR user (`a2n`) and tracks Conar (0.32.0), so moving its users to `tamery-bin` needs an AUR merge request (https://aur.archlinux.org/pkgbase/conar-bin/request) or a note to its maintainer.
