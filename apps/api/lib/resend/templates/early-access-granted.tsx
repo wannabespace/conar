@@ -14,5 +14,13 @@ export const EarlyAccessGranted = () => (
       </Text>
     </Section>
     <Button href={`${env.MAIN_URL}/download`}>Get Tamery</Button>
+    <Section className="mt-5">
+      <Text>
+        All the core features are in, and now we are polishing. Your feedback
+        decides what we polish first. Tell us what works, what breaks and what
+        you miss. Click your avatar in the app and pick Support. We read every
+        message.
+      </Text>
+    </Section>
   </Base>
 )
