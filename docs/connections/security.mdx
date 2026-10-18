@@ -1,111 +1,53 @@
 ---
-title: 'Security'
+title: 'Security and privacy'
 sidebarTitle: 'Security'
-description: 'How Tamery encrypts connection strings and how the sync modes handle your password and SSH secrets.'
+description: 'Understand where connection details, queries, and AI context go.'
 ---
 
-Every connection string is encrypted before it leaves your device. The sync type controls whether your password — or the connection string itself — is stored in the cloud at all.
+## Connection details
 
-## Encryption at rest
+Connection strings are encrypted on your device. On desktop, the device key uses the system keychain where available.
 
-All connection strings are encrypted with a **per-workspace secret key**, unique to the workspace the connection belongs to. Without that key, stored strings are unreadable. Encryption is automatic — nothing to configure.
+You choose what reaches Tamery's cloud when you create a connection:
 
-On your device, connection strings are encrypted with a separate **device key** that never leaves it. In the desktop app that key is protected by your system's keychain (the macOS Keychain, Windows DPAPI, or the Linux secret service), and it never leaves Tamery's own process, so another app can't read it without asking. Where no keychain is available, and in the web app, the key stays in the app's own storage, where the app can use it but never read it out. Signing out deletes the key.
+| Sync type | Stored in the cloud |
+| --- | --- |
+| **Full** | The complete connection string, encrypted. |
+| **No password** | Connection details without the password, SSH secrets, or SSL key secrets. |
+| **Metadata only** | Name, engine, label, and color. No connection string. |
 
-## Encryption in transit
+Synced connection strings are encrypted with a workspace key. They are decrypted on Tamery's server when another device retrieves them, then sent over HTTPS. This is not end-to-end encryption.
 
-When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
+## Where queries run
 
-To keep the server from ever handling your plaintext password, use **No password**: then only metadata is stored and returned. To keep the connection string off the server entirely, use **Metadata only**.
+- **Desktop:** your computer connects to the database directly.
+- **Web with `tamery proxy`:** the computer running the proxy connects to the database.
+- **Web without a local proxy:** Tamery's cloud proxy connects to public database servers and handles the query and its results.
 
-## Sync modes
+The cloud proxy cannot reach private addresses or open SQLite and certificate files on your computer. Use desktop or the local proxy for those. Connections whose secrets stay on your device also need desktop or the local proxy.
 
-Every mode syncs the connection across your devices.
-
-<Tabs>
-  <Tab title="Full">
-    Stores the full connection string, including the password, encrypted with your workspace key.
-
-    - Synced to every device you sign in on.
-    - No password re-entry when switching devices.
-    - Decrypted server-side and sent over HTTPS on sync.
-
-    Best for dev and staging.
-
-  </Tab>
-  <Tab title="No password">
-    Stores only metadata (host, port, database, username). The password is **never** uploaded.
-
-    - You enter the password the first time you use the connection.
-    - It's kept on that device only, encrypted with your device key.
-    - Clear it anytime via the connection menu (**⋯ → Clear saved credentials**), which clears the SSH and SSL key secrets too.
-    - A compromised account exposes no stored password.
-    - The cloud proxy can't use it, so the web app reaches it only through `tamery proxy`.
-
-    Best for production or strict-policy environments.
-
-  </Tab>
-  <Tab title="Metadata only">
-    Stores only the connection's name, label and color. The connection string is **never** uploaded.
-
-    - It's kept on the device where you created the connection, encrypted with your device key.
-    - Other devices list the connection and ask for its server details when you open it; what you enter stays on that device.
-    - The CLI and cloud proxy can't use it.
-
-    Best when a database's address must not leave the device.
-
-  </Tab>
-</Tabs>
+Encryption between Tamery and your database depends on the connection's SSL settings. Use your provider's recommended settings and certificate verification.
 
 ## SSH tunnels
 
-A connection can reach its database through an SSH tunnel. The tunnel settings are part of the connection string, so they're encrypted and synced with it.
+SSH tunnels run on desktop only. Tamery checks the server's host key and asks before trusting an unknown one. A changed key is refused.
 
-- Tunnels run only in the desktop app. The web app, `tamery proxy`, `tamery query` and the cloud proxy refuse SSH connections.
-- **No password** also keeps the SSH password, private key and key passphrase, and the SSL client key passphrase, off the server. Tamery asks for them the first time you open the connection on another device.
-- Tamery checks the SSH server's host key against your `~/.ssh/known_hosts` and the system-wide `/etc/ssh/ssh_known_hosts`. A server that isn't listed in either asks once whether to trust its key fingerprint (**Cancel** is the default) and is added to `~/.ssh/known_hosts` when you trust it. A server listed under a different key, or under a different key type, is refused like a changed key, with steps to update `~/.ssh/known_hosts`.
-- The database driver talks to the database through the SSH connection itself, so a tunnel opens no local port on your device.
-- With a key file or your SSH agent, the private key itself is never saved: Tamery stores only the key's path (and its passphrase, if any) and reads the key on your device when you connect.
-- Tamery reads your `~/.ssh/config` for the SSH host, so host aliases, `HostName`, `User`, `Port`, `IdentityFile`, `IdentityAgent`, `HostKeyAlias`, `HashKnownHosts` and `Include` apply. A host your config sends through `ProxyJump` or `ProxyCommand` isn't supported yet and fails rather than connecting directly.
+You can use your SSH agent, a key file, a pasted private key, or a password. `~/.ssh/config` is supported; `ProxyJump` and `ProxyCommand` are not.
 
-## AI help with a failed test
+## AI and your data
 
-The explanations and fixes Tamery shows when a test fails run on your device. **Explain with AI** is the only part that sends anything, and only when you click it. It sends:
+AI requests are processed on Tamery's servers using external model providers. Chat sends your messages; editor and filter features also send relevant schema context. Share only data you are allowed to send.
 
-- the engine, the port, and the kind of host (localhost, private network, a provider like Supabase, or a public host), never the host itself
-- the driver options, keeping only values that can't identify you (like `sslmode=require`) and replacing the rest
-- whether a user and password are set, whether an SSH tunnel is on, and whether you're in the desktop or web app
-- the error message, with your host (the SSH host too), user, database, password, SSH password and key passphrase, and any IP address (IPv4 and IPv6) replaced by placeholders
+The built-in chat does not execute SQL. Coding agents connected through [MCP](/mcp/overview#connection-access) can read data and make changes according to the access you grant; their results become part of the agent's context.
 
-## Choosing a mode
+### AI help with a failed test
 
-| Situation                      | Mode          |
-| ------------------------------ | ------------- |
-| Local / dev databases          | Full          |
-| Staging                        | Full          |
-| Production                     | No password   |
-| External secret-storage policy | No password   |
-| Shared machines                | No password   |
-| Address must stay on device    | Metadata only |
+**Explain with AI** sends connection diagnostics when you click it. Tamery removes connection identifiers and secrets from the error, and sends details such as the engine, port, SSL options, and whether the host is local or public.
 
-You can mix modes per connection.
+## Agent access
 
-## Open source
+MCP clients use a local access token. Keep it out of shared config files; regenerate it in **Settings → MCP** if it leaks.
 
-Tamery is open source under **AGPL-3.0**, so the encryption implementation is auditable: [github.com/wannabespace/tamery](https://github.com/wannabespace/tamery). Report security issues via the repository.
+For a database-enforced restriction, connect with a database user that has only the permissions you need. Tamery's read-only checks cannot prevent every side effect of a database function.
 
-<Warning>
-  Never share connection strings — they contain everything needed to access your
-  database. If one leaks, rotate the password and update the connection.
-</Warning>
-
-<Note>
-  The desktop app can query your database directly. The web app uses `tamery
-  proxy` when available, or Tamery's cloud proxy for reachable cloud
-  connections. Cloud proxy transactions belong to your authenticated account;
-  another account cannot execute or finish them. The cloud proxy refuses a host
-  that resolves to a loopback, private, link-local or other non-public address,
-  and a connection string that names a certificate file (`sslrootcert`,
-  `sslcert`, `sslkey`, `sslca`): those files live on your computer, so open such
-  a connection in the desktop app or through `tamery proxy`.
-</Note>
+Tamery is [open source](https://github.com/wannabespace/tamery) under AGPL-3.0.

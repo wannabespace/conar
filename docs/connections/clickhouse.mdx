@@ -1,56 +1,33 @@
 ---
-title: 'Connect to ClickHouse'
+title: 'ClickHouse'
 sidebarTitle: 'ClickHouse'
-description: 'Connect Tamery to ClickHouse or ClickHouse Cloud over HTTP or HTTPS.'
+description: 'Connect to ClickHouse Cloud or a self-hosted server over HTTP.'
 ---
 
-Tamery connects to ClickHouse over its HTTP interface, so its connection string is the same URL other ClickHouse clients take:
-
-**HTTP (port 8123):**
-
-```bash
-http://username:password@hostname:8123/database
-```
-
-**HTTPS (port 8443):**
-
-```bash
-https://username:password@hostname:8443/database
-```
-
-| Part            | Description                                 |
-| --------------- | ------------------------------------------- |
-| `username`      | ClickHouse user (e.g. `default`)            |
-| `password`      | Password for that user                      |
-| `hostname`      | Host (e.g. `localhost` or a remote address) |
-| `8123` / `8443` | HTTP / HTTPS port                           |
-| `database`      | Database name                               |
-
-When you fill in the host instead of pasting a string, Tamery uses HTTPS on every port except `8123`. If that port only speaks plain HTTP, the test offers **Use http://**.
+Tamery uses ClickHouse's **HTTP interface**. Paste its HTTP or HTTPS connection string into **Add new**.
 
 ## ClickHouse Cloud
 
-Get the string from the [Cloud console](https://console.clickhouse.cloud) → your service → **Connect**. Cloud requires TLS, so use `https://` on port 8443:
+Copy the HTTPS connection details from your service's **Connect** panel:
 
-```bash
-https://default:your-password@abc123xyz.us-east-1.aws.clickhouse.cloud:8443/default
+```text
+https://default:password@your-service.clickhouse.cloud:8443/default
 ```
 
-## Self-hosted
+## Local server
 
-Default ports: HTTP `8123`, native TCP `9000`. Tamery uses HTTP, so use `8123` (or `8443` with `https://` if TLS is configured):
-
-```bash
+```text
 http://default:password@localhost:8123/default
 ```
 
-No password? Omit it:
+Omit `:password` if the user has no password.
 
-```bash
-http://default@localhost:8123/default
-```
+Use port **8123** for HTTP or **8443** for HTTPS. The native TCP ports, **9000** and **9440**, are not used by Tamery.
 
-<Tip>
-  **Save connection** tests the connection first. If the test fails, confirm the
-  HTTP interface is enabled and reachable on the expected port.
-</Tip>
+When you enter a host manually, Tamery uses HTTPS unless you choose port 8123.
+
+## Differences to know
+
+ClickHouse does not support transactions. Schema changes apply one at a time, and existing sorting-key values cannot be edited in the table browser.
+
+For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

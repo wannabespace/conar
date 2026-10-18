@@ -1,56 +1,25 @@
 ---
-title: 'Tamery overview'
+title: 'Meet Tamery'
 sidebarTitle: 'Introduction'
-description: 'Tamery is an AI-powered database client for PostgreSQL, MySQL, MariaDB, MSSQL, ClickHouse, and SQLite. Manage connections, browse data, and get AI SQL help.'
+description: 'Browse data, run SQL, and work with your database using AI.'
 ---
 
-Tamery is a database client for relational and analytical databases. Connect, browse, query, and edit data, with an AI assistant that knows your schema.
+Tamery is a database client for PostgreSQL, MySQL, MariaDB, SQL Server, ClickHouse, and SQLite, including Turso and Cloudflare D1.
 
-## Supported databases
+Use it on [macOS, Windows, or Linux](/installation), or [in your browser](https://tamery.app).
 
-- **PostgreSQL**: full support
-- **MySQL**: full support
-- **MariaDB**: full support
-- **MSSQL** (SQL Server): full support
-- **ClickHouse**: full support
-- **SQLite**, including **Turso** and **Cloudflare D1**: tables, rows, indexes and triggers; [what works](/connections/sqlite#what-works)
-- **MongoDB**: coming soon
+## What you can do
 
-## Key features
+| Task | Where to go |
+| --- | --- |
+| Find, filter, and edit rows without SQL | [Table browser](/features/table-browser) |
+| Write SQL, inspect results, and save queries | [SQL editor](/features/sql-editor) |
+| See how tables connect and change their structure | [Schema visualizer](/features/schema-visualizer) |
+| Manage indexes, constraints, functions, and more | [Schema](/features/definitions) |
+| Get SQL explanations, edits, and error fixes | [AI assistant](/features/ai-assistant) |
+| Let your coding agent use your connections | [MCP](/mcp/overview) |
+| Run queries from your terminal | [CLI](/cli/overview) |
 
-<CardGroup cols={2}>
-  <Card title="AI SQL assistant" icon="sparkles" href="/features/ai-assistant">
-    Generate SQL from plain English, explain queries, and fix errors — with
-    schema context.
-  </Card>
-  <Card title="Table browser" icon="table" href="/features/table-browser">
-    Filter, sort, and edit rows inline. No SQL required.
-  </Card>
-  <Card title="SQL editor" icon="code" href="/features/sql-editor">
-    Monaco editor with autocomplete and a results grid.
-  </Card>
-  <Card
-    title="Schema visualizer"
-    icon="diagram-project"
-    href="/features/schema-visualizer"
-  >
-    Interactive ER diagram, plus a definitions browser for enums, indexes,
-    functions, triggers, and policies.
-  </Card>
-</CardGroup>
+Your connections sync across devices. You choose whether passwords sync too.
 
-## Platforms
-
-- **Web**: [tamery.app](https://tamery.app). No install; sign in and connect.
-- **Desktop**: [download](https://tamery.app/download) for macOS, Windows, Linux. Runs a local proxy for localhost and private-network databases.
-- **CLI**: `tamery` via npm (Node.js 20+). `tamery login` to authenticate, `tamery proxy` for a local proxy.
-
-## Security
-
-Tamery encrypts every connection string at rest with a per-user key. When you save a connection, you choose how its password is handled:
-
-- **Full**: the full connection string, including the password, is encrypted and synced to every device.
-- **No password**: only metadata (host, port, database, username) syncs; the password stays on the device where you enter it.
-- **Metadata only**: only the name, label and color sync; the connection string stays on the device where you create it.
-
-Every mode syncs the connection across devices. See [Security](/connections/security) for details.
+[Connect your first database →](/quickstart)

@@ -1,49 +1,37 @@
 ---
-title: 'Quickstart'
+title: 'Your first connection'
 sidebarTitle: 'Quickstart'
-description: 'Create a Tamery account, add a connection, run your first query, and try the AI assistant.'
+description: 'Connect a database and run your first query.'
 ---
 
-From zero to your first query.
+## 1. Open Tamery
 
-<Steps>
-  <Step title="Create an account">
-    Go to [tamery.app](https://tamery.app) and click **Sign in**. Enter your email and type the code we send you, or continue with Google or GitHub. Your first sign-in creates the account.
-  </Step>
-  <Step title="Add a connection">
-    Click **Add new** and paste your connection string, an `.env` file, a JDBC URL, or a `psql`/`mysql` command. Tamery fills in the fields; check them and click **Save connection**.
+[Download the desktop app](https://tamery.app/download) or [open the web app](https://tamery.app).
 
-    Pick how it syncs: **Full** syncs the full string, encrypted, to every device; **No password** syncs everything but the password and SSH or SSL key secrets; **Metadata only** keeps the whole string on this device. The connection is listed wherever you sign in.
+Sign in with email, Google, or GitHub. On desktop, **Continue without an account** lets you try one connection first.
 
-  </Step>
-  <Step title="Browse data">
-    Open the connection, go to **Table browser**, pick a schema and table. Sort by clicking headers, filter rows, and click a cell to edit it.
-  </Step>
-  <Step title="Run a query">
-    Open the **Query editor** and run SQL:
+## 2. Add a connection
 
-    ```sql
-    SELECT * FROM users ORDER BY created_at DESC LIMIT 10;
-    ```
+Click **Add new** and paste your connection string. You can also paste an `.env` file or fill in the fields yourself.
 
-    Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd> to execute. Results show below the editor.
+```text
+postgresql://user:password@localhost:5432/mydb
+```
 
-  </Step>
-  <Step title="Try the AI assistant">
-    Open the AI assistant panel and ask in plain English — e.g. *"top 5 customers by total order value"*. The assistant knows your schema, and can generate, explain, and fix SQL — it opens the table or fills a query tab for you.
-  </Step>
-</Steps>
+Give it a name and click **Save connection**. Tamery tests it before saving. If it fails, check the highlighted fields or try **Explain with AI**.
 
-## Next
+For a local database, use the desktop app or run [`tamery proxy`](/cli/commands#tamery-proxy) alongside the web app.
 
-<CardGroup cols={3}>
-  <Card title="Connections" icon="database" href="/connections/overview">
-    Manage connections and sync types.
-  </Card>
-  <Card title="AI assistant" icon="sparkles" href="/features/ai-assistant">
-    Natural-language queries and error fixes.
-  </Card>
-  <Card title="CLI" icon="terminal" href="/cli/overview">
-    Query and proxy from the terminal.
-  </Card>
-</CardGroup>
+## 3. Explore
+
+Open the connection and pick a table in the Navigator. Click a column header to sort; use the filter field to narrow the rows.
+
+To run SQL, open a **Query** tab with **+** and try:
+
+```sql
+SELECT 1 AS hello;
+```
+
+Click **Run** or press **Cmd+Enter** on macOS, **Ctrl+Enter** on Windows or Linux.
+
+From here, [edit table data](/features/table-browser), [explore the schema](/features/schema-visualizer), or [ask the AI assistant](/features/ai-assistant).
