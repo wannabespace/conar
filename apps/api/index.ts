@@ -132,6 +132,7 @@ const app = new Hono<{
     if (
       status >= 400 &&
       status !== 401 &&
+      status !== 403 &&
       status !== 404 &&
       env.ALERTS_EMAIL &&
       !c.req.url.includes('healthcheck.railway.app')
@@ -187,5 +188,7 @@ const app = new Hono<{
 
 export default {
   fetch: app.fetch,
+  // Bun's 10s default closes event streams between oRPC's 15s keepalive pings (sign-in shows "network error").
+  idleTimeout: 60,
   port: Number(process.env.PORT || 3000),
 }

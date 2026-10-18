@@ -1,9 +1,9 @@
-pkgname=tamery
-pkgver=0.27.3
+pkgname=tamery-bin
+pkgver=0.32.0
 pkgrel=1
 pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite."
 arch=('x86_64')
-url="https://github.com/wannabespace/tamery"
+url="https://tamery.app"
 license=('AGPL-3.0-or-later')
 depends=(
   'alsa-lib'
@@ -31,19 +31,15 @@ depends=(
   'pango'
   'systemd-libs'
 )
+provides=('tamery')
+conflicts=('tamery')
 options=('!strip' '!emptydirs')
-source_x86_64=("tamery-.deb::https://download.tamery.app/linux/deb/x64")
-sha256sums_x86_64=('b2a736572cf4fde0a3869c90a00dae1cfb500fd86d6ac20473a0d36d6bf0ba8c')
+source_x86_64=("tamery-${pkgver}.deb::https://download.tamery.app/versions/${pkgver}/linux/deb/x64")
+sha256sums_x86_64=('SKIP')
 
 package() {
-  ar -x "${srcdir}/tamery-.deb"
-
-  tar -xJ -f data.tar.xz -C "${pkgdir}"
+  bsdtar -xf data.tar.xz -C "${pkgdir}"
 
   install -dm755 "${pkgdir}/usr/bin"
-  ln -s "/opt/Tamery/Tamery" "${pkgdir}/usr/bin/tamery"
-
-  if [ -f "${pkgdir}/usr/share/applications/tamery.desktop" ]; then
-    sed -i 's|/opt/Tamery/Tamery|tamery|g' "${pkgdir}/usr/share/applications/tamery.desktop"
-  fi
+  ln -s /opt/Tamery/tamery-desktop "${pkgdir}/usr/bin/tamery"
 }

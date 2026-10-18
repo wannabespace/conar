@@ -134,7 +134,12 @@ const AccountLayout = () => {
 
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
-  head: () => ({ meta: [{ title: 'Account - Tamery' }] }),
+  head: () => ({
+    meta: [
+      { title: 'Account - Tamery' },
+      { content: 'noindex', name: 'robots' },
+    ],
+  }),
   beforeLoad: ({ context }) => {
     if (!context.session) {
       throw redirect({ to: '/sign-in' })

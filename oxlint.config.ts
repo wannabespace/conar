@@ -56,7 +56,7 @@ export default defineConfig({
           // Motion drives these through MotionValues; a class cannot.
           {
             allow: ['opacity', 'rotateX', 'scale', 'translateY'],
-            pattern: '^(motion\\.|AppLogoMotion$)',
+            pattern: '^motion\\.',
           },
         ],
       },

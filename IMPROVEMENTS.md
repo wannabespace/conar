@@ -147,6 +147,8 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Re-verify before deleting an account.** better-auth only deletes a passwordless account from a session younger than `freshAge` (a day), so anyone signed in longer gets a bare "session expired" error. Asking for a fresh email code inside the delete dialog would keep the protection without the dead end.
 - **One support dialog for both apps.** The site's support dialog body is a near-copy of the app's; moving one version into `packages/ui` (like the auth side panel and `SettingsGroup`) would end the drift.
 - **The deep-link status is a hand-built `Empty`.** `deep-link/open-status.tsx` stacks logo, title, description and action by hand; the kit `Empty` the error page uses covers it, at the cost of a small visual change.
+- **Redirect conar.app to tamery.app.** Search Console still lists `conar.app` as a page linking to the home page and gets "conar app" searches; a 301 from every legacy Conar URL to its Tamery counterpart would move that traffic and link weight over instead of splitting it.
+- **`/email-code` without an email answers 500.** Opening the page bare (a crawler or a stale bookmark) throws on search validation instead of sending the visitor back to `/sign-in`.
 
 ## Keyboard
 

@@ -48,6 +48,10 @@ Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `ac
 - Active workspace is per-device `localStorage`, **never** pushed to the session; callers pass the active id explicitly to Better Auth endpoints.
 - `connections.create` accepts the client's `workspaceId` (membership-checked) so offline-created connections land in the device-active workspace. Multi-member and invites are not built yet.
 
+## Early access
+
+**Temporary**: the whole gate goes away when early access ends, so nothing else builds on it (no new reads of `early_access`, no UI that assumes it). Removing it is `git revert` of PR #546's merge commit, which restores the previous copy and guest sign-in word for word; keep that PR's migration folder (applied in production, and its snapshot is what lets `drizzle-kit generate` produce the `DROP TABLE`) and generate a new migration. Only emails approved in the `early_access` table (`granted_at` set) can use Tamery, existing accounts included. `apps/api/lib/early-access.ts` checks before a sign-in code is sent, before a user is created and before every session is created; a refused email is added to the table and the client lands on the site's `/early-access` page (`EARLY_ACCESS_ERROR_CODE`, social sign-ins through `errorCallbackURL` → `/sign-in?error=`). Approving is `bun scripts/grant-early-access.ts <email…>` in `apps/api`, run inside the API's Railway container (`railway ssh`) so it gets production env: it sets `granted_at` and emails the person that their account is ready. A session already open is not checked again, so revoking an email also means deleting its sessions. Guest sign-in is refused while early access lasts and the desktop app offers no **Continue without an account**.
+
 ## Anonymous users
 
 Desktop-only "Continue without an account" signs in through Better Auth's `anonymous` plugin, so an anonymous user is a real server user with a default workspace and its own Infisical secret — every sync and encryption path stays shared.

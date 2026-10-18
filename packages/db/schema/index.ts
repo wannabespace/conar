@@ -40,6 +40,7 @@ export {
   provider,
   syncType,
 } from './connections'
+export { earlyAccess } from './early-access'
 export {
   queries,
   queriesUpdateSchema,

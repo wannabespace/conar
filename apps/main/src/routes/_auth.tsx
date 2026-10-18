@@ -46,6 +46,12 @@ const AuthLayout = () => {
 
 export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
+  head: () => ({
+    meta: [
+      { title: 'Sign in - Tamery' },
+      { content: 'noindex', name: 'robots' },
+    ],
+  }),
   validateSearch: type({
     'redirectPath?': 'string',
   }),

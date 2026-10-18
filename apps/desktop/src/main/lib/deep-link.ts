@@ -87,11 +87,14 @@ export const connectionLinks = {
 export const setupProtocolHandler = (openWindow: () => BrowserWindow) => {
   createWindow = openWindow
 
-  app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, handlerPath, handlerArgs)
-  if (!store.get('declined')) {
-    for (const scheme of CONNECTION_LINK_SCHEMES) {
-      if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
-        app.setAsDefaultProtocolClient(scheme, handlerPath, handlerArgs)
+  // macOS ignores path and args, so a dev run would bind the schemes to the bare Electron.app and steal sign-in links from the installed Tamery.
+  if (app.isPackaged) {
+    app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
+    if (!store.get('declined')) {
+      for (const scheme of CONNECTION_LINK_SCHEMES) {
+        if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
+          app.setAsDefaultProtocolClient(scheme)
+        }
       }
     }
   }

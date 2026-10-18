@@ -1,21 +1,26 @@
 # Tamery
 
-> Tamery is an AI-powered, open-source database client for Postgres, MySQL, MSSQL, ClickHouse, and SQLite. It lets developers write queries, explore and edit data, and manage databases with AI handling the complexity. Available as a native desktop app for macOS, Windows, and Linux.
+> Tamery is an AI-powered, open-source database client for PostgreSQL, MySQL, MariaDB, Microsoft SQL Server, ClickHouse and SQLite, including Turso and Cloudflare D1. It lets developers write queries, explore and edit data, and manage databases with AI doing the heavy lifting. Available as a native desktop app for macOS, Windows and Linux, a web app and a CLI, with a local MCP server for AI agents.
 
 ## Key facts
 
-- Supported databases: PostgreSQL, MySQL, Microsoft SQL Server (MSSQL), ClickHouse, SQLite
-- Platforms: macOS (Apple Silicon & Intel), Windows, Linux (DEB, RPM, AppImage)
-- Open source: https://github.com/wannabespace/tamery
+- Supported databases: PostgreSQL, MySQL, MariaDB, Microsoft SQL Server (MSSQL), ClickHouse, SQLite, Turso, Cloudflare D1
+- Platforms: macOS (Apple Silicon and Intel), Windows, Linux (DEB, RPM, AppImage), web
+- Open source under AGPL-3.0: https://github.com/wannabespace/tamery
 - Install via Homebrew: `brew install --cask tamery`
 
 ## Pages
 
-- [Home](https://tamery.app): Product overview, features, and pricing
-- [Download](https://tamery.app/download): Download links for macOS, Windows, and Linux
+- [Home](https://tamery.app/): Product overview, features, pricing and FAQ
+- [Download](https://tamery.app/download): Download links for macOS, Windows and Linux
 - [Releases](https://tamery.app/releases): Changelog and version history
 - [Privacy Policy](https://tamery.app/privacy-policy): How Tamery handles your data
 - [Terms of Service](https://tamery.app/terms-of-service): Terms and conditions
+
+## Docs
+
+- [Documentation](https://docs.tamery.app): Setup, connections, features, CLI and MCP
+- [Docs for LLMs](https://docs.tamery.app/llms.txt): The documentation index in llms.txt format
 
 ## Links
 
