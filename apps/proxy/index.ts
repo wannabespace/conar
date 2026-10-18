@@ -127,5 +127,7 @@ const app = new Hono<{
 
 export default {
   fetch: app.fetch,
+  // Bun's 10s default cuts off any query that runs longer; 255 is Bun's max.
+  idleTimeout: 255,
   port: Number(process.env.PORT || 3004),
 }
