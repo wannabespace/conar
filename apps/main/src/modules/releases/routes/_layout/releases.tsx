@@ -33,7 +33,7 @@ const ReleasesPage = () => (
         Releases
       </h1>
       <p className="text-muted-foreground text-base text-pretty sm:text-lg">
-        New features, fixes and improvements in every version of Tamery.
+        New features and fixes in every version of Tamery.
       </p>
     </header>
     <ol className="flex flex-col gap-16">
@@ -91,7 +91,7 @@ export const Route = createFileRoute('/_layout/releases')({
     seo({
       title: 'Releases - Tamery',
       description:
-        'What changed in each version of Tamery: new features, fixes and improvements.',
+        'What changed in each version of Tamery: new features and fixes.',
       image: '/og-image.png',
       path: '/releases',
     }),

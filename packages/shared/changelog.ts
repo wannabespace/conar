@@ -1,9 +1,8 @@
-const changelogKindOrder = ['new', 'improved', 'fixed'] as const
+const changelogKindOrder = ['new', 'fixed'] as const
 
 export const changelogKindLabel = {
-  fixed: 'Fixed',
-  improved: 'Improved',
-  new: 'New',
+  fixed: 'Fixes',
+  new: 'Features',
 } as const
 
 export type ChangelogKind = (typeof changelogKindOrder)[number]
@@ -65,22 +64,6 @@ export const CHANGELOG = [
       {
         kind: 'new',
         text: 'Sign in with an email code, or continue without an account.',
-      },
-      {
-        kind: 'improved',
-        text: 'Edits you make offline are sent when you are back online.',
-      },
-      {
-        kind: 'improved',
-        text: 'Everything you do with the mouse has a key, and Escape walks back to the navigator.',
-      },
-      {
-        kind: 'improved',
-        text: 'Menus are native on macOS, and a table or connection can open in its own window.',
-      },
-      {
-        kind: 'improved',
-        text: 'Panels resize, and the macOS window can be transparent.',
       },
     ],
     version: '0.99.0',
