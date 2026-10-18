@@ -37,7 +37,7 @@
     "icon": "./resources/macos-icon.icon"
   },
   "windows": {
-    "publisherName": ["Wannabe Space, LLC"]
+    "publisherName": ["Todesktop Limited"]
   },
   "linux": {
     "category": "Development"
