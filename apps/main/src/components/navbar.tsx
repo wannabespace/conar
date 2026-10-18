@@ -1,5 +1,6 @@
 import { Menu01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { DOCS_URL } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import { useState } from 'react'
 
 import { useHomePath } from '~/hooks/use-home-path'
 import { authClient } from '~/lib/auth'
+import { posthog } from '~/lib/posthog'
 
 import { Brand } from './brand'
 import { ThemeButton } from './theme-button'
@@ -29,6 +31,13 @@ export const Navbar = () => {
     { label: 'Pricing', link: { hash: 'pricing', to: home } },
     { label: 'FAQ', link: { hash: 'faq', to: home } },
     { label: 'Releases', link: { to: '/releases' } },
+    {
+      label: 'Docs',
+      link: {
+        href: DOCS_URL,
+        onClick: () => posthog.capture('docs_opened', { source: 'navbar' }),
+      },
+    },
   ]
   const account = session?.user
     ? { label: 'Account', to: '/account' as const }
