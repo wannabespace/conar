@@ -17,6 +17,10 @@ module.exports = async function toDesktopBeforeInstall({
   // pnpm fails the install on any build script left unlisted, so every runtime
   // dependency with one is listed here; keep in sync with the root allowBuilds.
   //
+  // cpu-features stays uninstalled: Electron Builder rebuilds every binding.gyp
+  // whatever allowBuilds says, and this one only builds after its own install
+  // script. ssh2 loads it optionally.
+  //
   // nodeLinker: hoisted forces a flat, npm-style node_modules. pnpm's default
   // symlinked layout breaks once packed into app.asar: Node's ESM resolver
   // can't follow the symlinks to find transitive deps (e.g. electron-store's
@@ -33,8 +37,9 @@ nodeLinker: hoisted
 supportedArchitectures:
   os: [current]
   cpu: [x64, arm64]
+ignoredOptionalDependencies:
+  - cpu-features
 allowBuilds:
-  cpu-features: false
   electron: true
   ssh2: false
 `
