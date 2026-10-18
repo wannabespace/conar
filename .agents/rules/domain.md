@@ -50,7 +50,7 @@ Better Auth's `organization` plugin is remapped to `workspace`; the plugin's `ac
 
 ## Early access
 
-Only emails approved in the `early_access` table (`granted_at` set) can use Tamery, existing accounts included. `apps/api/lib/early-access.ts` checks before a sign-in code is sent, before a user is created and before every session is created; a refused email is added to the table and the client lands on the site's `/early-access` page (`EARLY_ACCESS_ERROR_CODE`, social sign-ins through `errorCallbackURL` → `/sign-in?error=`). Approving is setting `granted_at` by hand. A session already open is not checked again, so revoking an email also means deleting its sessions. Guest sign-in is refused while early access lasts and the desktop app offers no **Continue without an account**.
+**Temporary**: the whole gate goes away when early access ends, so nothing else builds on it (no new reads of `early_access`, no UI that assumes it). Only emails approved in the `early_access` table (`granted_at` set) can use Tamery, existing accounts included. `apps/api/lib/early-access.ts` checks before a sign-in code is sent, before a user is created and before every session is created; a refused email is added to the table and the client lands on the site's `/early-access` page (`EARLY_ACCESS_ERROR_CODE`, social sign-ins through `errorCallbackURL` → `/sign-in?error=`). Approving is setting `granted_at` by hand. A session already open is not checked again, so revoking an email also means deleting its sessions. Guest sign-in is refused while early access lasts and the desktop app offers no **Continue without an account**.
 
 ## Anonymous users
 
