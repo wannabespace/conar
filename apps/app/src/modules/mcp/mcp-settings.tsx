@@ -41,7 +41,7 @@ export const McpSettings = () => {
           <ElectronSwitchRow
             id="mcp-keep-running"
             title="Keep running in the background"
-            description="Tamery handles closing the app and keeps the server running."
+            description="Prevents closing the app and keeps the server running."
             event="mcp_background_toggled"
             get={() => window.electron?.mcp.keepRunning()}
             set={(enabled) => window.electron?.mcp.setKeepRunning(enabled)}
