@@ -1,15 +1,4 @@
-import { type } from 'arktype'
 import type { PostHog } from 'posthog-js'
-import { createWebStorageValue } from 'seitu/web'
-
-export const ANALYTICS_STORAGE_KEY = 'analytics-enabled'
-
-export const analyticsStore = createWebStorageValue({
-  defaultValue: true,
-  key: ANALYTICS_STORAGE_KEY,
-  schema: type('boolean'),
-  type: 'localStorage',
-})
 
 let instance: Promise<PostHog> | null = null
 let identity: Parameters<PostHog['identify']> | null = null
@@ -26,28 +15,16 @@ const init = async () => {
     },
   })
   client.register({ app: 'app' })
-  // Applied once after init too: the choice may have changed during the import, and PostHog persists an opt-out across reloads.
-  const apply = (isEnabled: boolean) => {
-    if (isEnabled) {
-      client.opt_in_capturing({ captureEventName: false })
-    } else {
-      client.opt_out_capturing()
-    }
-  }
-  apply(analyticsStore.get())
-  analyticsStore.subscribe(apply)
+  // PostHog stores an opt-out on its own. Without this, the removed Settings switch stays in effect.
+  client.opt_in_capturing({ captureEventName: false })
   if (identity) {
     client.identify(...identity)
   }
   return client
 }
 
-// A loaded client keeps receiving identify/reset while opted out, or the next opt-in sends events under the previous user's id.
 const withClient = async (run: (client: PostHog) => void) => {
-  if (
-    import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN &&
-    (analyticsStore.get() || instance)
-  ) {
+  if (import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN) {
     run(await (instance ??= init()))
   }
 }

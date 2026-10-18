@@ -92,9 +92,7 @@ export const setupProtocolHandler = (openWindow: () => BrowserWindow) => {
     app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
     if (!store.get('declined')) {
       for (const scheme of CONNECTION_LINK_SCHEMES) {
-        if (!app.getApplicationNameForProtocol(`${scheme}://`)) {
-          app.setAsDefaultProtocolClient(scheme)
-        }
+        app.setAsDefaultProtocolClient(scheme)
       }
     }
   }

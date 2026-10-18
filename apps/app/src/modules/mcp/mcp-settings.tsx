@@ -4,7 +4,6 @@ import {
   SettingsRow,
 } from '@tamery/ui/components/custom/settings-group'
 import { Switch } from '@tamery/ui/components/switch'
-import { isMac } from '@tamery/ui/lib/os'
 
 import { ElectronSwitchRow } from '~/core/settings/electron-switch-row'
 
@@ -42,11 +41,7 @@ export const McpSettings = () => {
           <ElectronSwitchRow
             id="mcp-keep-running"
             title="Keep running in the background"
-            description={
-              isMac
-                ? 'Closing the window keeps Tamery and the server running, and so does ⌘Q once an agent has connected. Quit from the Dock to stop both.'
-                : 'Closing the window keeps Tamery and the server running, so agents keep working until you quit.'
-            }
+            description="Tamery handles closing the app and keeps the server running."
             event="mcp_background_toggled"
             get={() => window.electron?.mcp.keepRunning()}
             set={(enabled) => window.electron?.mcp.setKeepRunning(enabled)}
