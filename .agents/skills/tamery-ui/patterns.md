@@ -256,7 +256,7 @@ The marketing site and the web account area speak the app's language at page sca
 - **The account area mirrors desktop Settings**: a sidebar on the canvas (identity, then a `SidebarMenuButton` row per page, Sign out last after a hairline separator, dropped in the mobile strip), the page in an inset level-2 panel under an `AccountPage` title aligned to the rows' inset, built from the kit's `SettingsGroup`/`SettingsRow`. Tables inside the panel sit in a level-3 `cardClass` card; an empty one is a small kit `Empty` in that card, and the page-level Create action hides while the empty state offers it. Below `md` the sidebar becomes a horizontal strip.
 - **Long-form markdown** (legal pages, release notes) is `Response variant="document"`; `default` stays chat density.
 - **Download cards**: a level-2 card per OS (detected OS first, marked) with an icon header on the row inset and full-width `Item` rows rendered as `<a download>`, in a plain flex column (an `ItemGroup`'s gap splits grouped rows apart).
-- **Auth (web and app)** puts the mesh in an inset rounded panel, mounted late and faded in, logo and tagline at its bottom; on web the form-side brand shows only below `lg`. **Status pages** (error, `/open`) are a centred column: icon, `text-2xl` title, a muted line, one outline action.
+- **Auth (web and app)** keeps the working Conar app linked while Tamery access is pending, and puts the mesh in an inset rounded panel, mounted late and faded in, logo and tagline at its bottom; on web the form-side brand shows only below `lg`. **Status pages** (error, `/open`) are a centred column: icon, `text-2xl` title, a muted line, one outline action.
 
 ## Two principles behind the rest
 
