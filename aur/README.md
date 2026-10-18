@@ -1,33 +1,10 @@
 # Tamery on AUR
 
-- Repo: https://github.com/wannabespace/tamery
-- Package: https://aur.archlinux.org/packages/tamery
+- Package: https://aur.archlinux.org/packages/tamery-bin
+- Install: `yay -S tamery-bin` (or any AUR helper)
 
-Contributions welcome — fork and open a PR.
+`PKGBUILD` repackages the released `.deb`. On every published GitHub release, `.github/workflows/aur-sync.yml` sets `pkgver` from `apps/desktop/package.json`, fills the checksum with `updpkgsums`, generates `.SRCINFO`, test-builds the package and pushes it to the AUR, so `pkgver` and `sha256sums` in this folder are not kept current.
 
-## Syncing versions with the repo
+Needs the `AUR_SSH_PRIVATE_KEY`, `AUR_GIT_NAME` and `AUR_GIT_EMAIL` secrets; the key must belong to an AUR account that maintains `tamery-bin`.
 
-The AUR package (`tamery`) is kept in sync with the app version from this repo.
-
-- **Source of truth:** `apps/desktop/package.json` → `version`
-- **Synced files:** `aur/PKGBUILD` (`pkgver`) and `aur/.SRCINFO`
-
-### From the repo root
-
-```bash
-# Sync pkgver from apps/desktop/package.json (no network)
-pnpm run aur:sync
-
-# Sync version and update sha256sums by fetching the .deb (recommended before releasing to AUR)
-pnpm run aur:sync:checksum
-```
-
-After running, push the updated `aur/` files to the AUR package:
-
-- Clone: `git clone ssh://aur@aur.archlinux.org/tamery.git` (or use your AUR helper)
-- Copy `PKGBUILD`, `.SRCINFO`, and optionally `LICENSE` from this `aur/` folder
-- Commit and push to AUR
-
-### CI
-
-A GitHub Actions workflow runs to ensure `aur/` stays in sync when the desktop version changes. See `.github/workflows/aur-sync.yml`.
+To try it locally on Arch: set `pkgver` to a released version, then `updpkgsums && makepkg -si` in this folder.
