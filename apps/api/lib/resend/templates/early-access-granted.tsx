@@ -6,23 +6,18 @@ import { Base } from '../components/base'
 import { Button } from '../components/button'
 
 export const EarlyAccessGranted = () => (
-  <Base
-    preview="Your early access is ready. Come take a look!"
-    title="Welcome to Tamery!"
-  >
+  <Base preview="Your early access is ready" title="Welcome to Tamery">
     <Section className="mb-5">
-      <Text>Thanks for waiting — we're happy to have you here!</Text>
+      <Text>Thanks for waiting. You can now try Tamery.</Text>
       <Text>
-        Your early access is ready. Download the app or open Tamery in your
-        browser, then sign in with this email.
+        Sign in with this email in the desktop app or in your browser.
       </Text>
     </Section>
-    <Button href={`${env.MAIN_URL}/download`}>Try Tamery</Button>
+    <Button href={`${env.MAIN_URL}/download`}>Get Tamery</Button>
     <Section className="mt-5">
       <Text>
-        We're still polishing things, and we'd love to hear what you think. If
-        you spot a bug or have an idea, open your avatar menu and choose
-        Support. We read every message.
+        We're still polishing Tamery. If something feels off or you have an
+        idea, open your avatar menu and choose Support. We read every message.
       </Text>
     </Section>
   </Base>
