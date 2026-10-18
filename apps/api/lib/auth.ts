@@ -181,14 +181,14 @@ export const auth = betterAuth({
   },
   onAPIError: {
     onError: async (error) => {
+      if (isAPIError(error) && error.statusCode < 500) {
+        return
+      }
+
       const text =
         typeof error === 'object' && error !== null
           ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
           : String(error)
-
-      if (text.includes('Invalid email')) {
-        return
-      }
 
       if (env.ALERTS_EMAIL) {
         await sendEmail({
