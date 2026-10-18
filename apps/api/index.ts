@@ -132,6 +132,7 @@ const app = new Hono<{
     if (
       status >= 400 &&
       status !== 401 &&
+      status !== 403 &&
       status !== 404 &&
       env.ALERTS_EMAIL &&
       !c.req.url.includes('healthcheck.railway.app')
