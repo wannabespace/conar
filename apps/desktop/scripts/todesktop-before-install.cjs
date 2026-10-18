@@ -14,7 +14,8 @@ module.exports = async function toDesktopBeforeInstall({
   // Treat the app as a standalone single-package workspace so install doesn't
   // try to reach back into the monorepo root (which isn't uploaded). electron
   // is the only allowed build — its install script must run to fetch the binary.
-  // Everything else is blocked by pnpm's default, so no need to list it.
+  // pnpm fails the install on any build script left unlisted, so every runtime
+  // dependency with one is listed here; keep in sync with the root allowBuilds.
   //
   // nodeLinker: hoisted forces a flat, npm-style node_modules. pnpm's default
   // symlinked layout breaks once packed into app.asar: Node's ESM resolver
@@ -33,7 +34,9 @@ supportedArchitectures:
   os: [current]
   cpu: [x64, arm64]
 allowBuilds:
+  cpu-features: false
   electron: true
+  ssh2: false
 `
   )
 
