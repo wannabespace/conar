@@ -14,7 +14,7 @@ export const AppLogoSquare = (props: ComponentProps<'svg'>) => {
       {...props}
     >
       <g clipPath={`url(#a-${id})`}>
-        <path fill="#006eff" d="M0 0h846v846H0z" />
+        <path fill={`url(#b-${id})`} d="M0 0h846v846H0z" />
         <path
           fill="#fff"
           fillRule="evenodd"
@@ -26,6 +26,10 @@ export const AppLogoSquare = (props: ComponentProps<'svg'>) => {
         <clipPath id={`a-${id}`}>
           <rect width="846" height="846" fill="#fff" rx="196" />
         </clipPath>
+        <linearGradient id={`b-${id}`} x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#2e9bff" />
+          <stop offset="1" stopColor="#0050e6" />
+        </linearGradient>
       </defs>
     </svg>
   )
