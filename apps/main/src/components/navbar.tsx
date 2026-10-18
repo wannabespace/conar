@@ -26,17 +26,19 @@ export const Navbar = () => {
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 0))
   const { data: session } = authClient.useSession()
   const home = useHomePath()
-  const links: { label: string; link: LinkProps }[] = [
+  const links: {
+    label: string
+    link: LinkProps
+    onClick?: () => void
+  }[] = [
     { label: 'Features', link: { hash: 'features', to: home } },
     { label: 'Pricing', link: { hash: 'pricing', to: home } },
     { label: 'FAQ', link: { hash: 'faq', to: home } },
     { label: 'Releases', link: { to: '/releases' } },
     {
       label: 'Docs',
-      link: {
-        href: DOCS_URL,
-        onClick: () => posthog.capture('docs_opened', { source: 'navbar' }),
-      },
+      link: { href: DOCS_URL },
+      onClick: () => posthog.capture('docs_opened', { source: 'navbar' }),
     },
   ]
   const account = session?.user
@@ -54,11 +56,12 @@ export const Navbar = () => {
           <Brand to={home} />
         </div>
         <div className="hidden items-center md:flex">
-          {links.map(({ label, link }) => (
+          {links.map(({ label, link, onClick }) => (
             <Button
               key={label}
               variant="ghost-muted"
               size="sm"
+              onClick={onClick}
               render={<Link {...link} />}
             >
               {label}
@@ -92,8 +95,12 @@ export const Navbar = () => {
               <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-40">
-              {links.map(({ label, link }) => (
-                <DropdownMenuItem key={label} render={<Link {...link} />}>
+              {links.map(({ label, link, onClick }) => (
+                <DropdownMenuItem
+                  key={label}
+                  onClick={onClick}
+                  render={<Link {...link} />}
+                >
                   {label}
                 </DropdownMenuItem>
               ))}

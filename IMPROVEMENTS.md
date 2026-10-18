@@ -94,7 +94,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Settings
 
 - **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
-- **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
+- **Sync preferences to the account.** Theme and shortcut reveal are per device (localStorage), and Clear cache resets them. Syncing them would carry the choice to a new machine.
 - **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
 - **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
 - **Start at login on Linux.** Electron's login item is a no-op there, so the row is hidden; an XDG autostart `.desktop` file would cover it.
