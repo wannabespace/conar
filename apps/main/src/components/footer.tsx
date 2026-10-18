@@ -1,4 +1,4 @@
-import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { DOCS_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Link } from '@tanstack/react-router'
 
 import { useHomePath } from '~/hooks/use-home-path'
@@ -41,6 +41,9 @@ export const Footer = () => {
             <Link to="/releases" className={linkClassName}>
               Releases
             </Link>
+            <a href={DOCS_URL} className={linkClassName}>
+              Docs
+            </a>
           </FooterColumn>
           <FooterColumn title="Community">
             {COMMUNITY_LINKS.map(({ href, label }) => (

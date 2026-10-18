@@ -27,6 +27,13 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: 'Tamery',
+      url: `${SITE_URL}/`,
+      publisher: { '@id': `${SITE_URL}/#org` },
+    },
+    {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#app`,
       name: 'Tamery',
@@ -35,6 +42,9 @@ const structuredData = {
       description: SEO.description,
       applicationCategory: 'DeveloperApplication',
       operatingSystem: 'macOS, Windows, Linux',
+      downloadUrl: `${SITE_URL}/download`,
+      license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+      publisher: { '@id': `${SITE_URL}/#org` },
       offers: {
         '@type': 'Offer',
         price: '0',
@@ -107,7 +117,8 @@ export const Route = createRootRouteWithContext<{
     return { session: data }
   },
   head: () => {
-    const { meta, links } = seo({
+    // Links are not deduplicated across routes: a canonical here would sit beside every page's own.
+    const { meta } = seo({
       title: `Tamery - ${SEO.title}`,
       description: SEO.description,
       image: '/og-image.png',
@@ -138,7 +149,6 @@ export const Route = createRootRouteWithContext<{
           sizes: '180x180',
         },
         { rel: 'manifest', href: '/site.webmanifest' },
-        ...links,
       ],
       scripts: [
         {
