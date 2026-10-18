@@ -22,7 +22,7 @@ await db
 await Promise.all(
   emails.map((email) =>
     sendEmail({
-      subject: 'Your Tamery account is ready',
+      subject: 'Your early access to Tamery is ready',
       template: 'EarlyAccessGranted',
       to: email,
     })

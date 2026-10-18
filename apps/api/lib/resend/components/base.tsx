@@ -31,7 +31,8 @@ export const Base = ({
       theme: {
         extend: {
           colors: {
-            primary: '#4778ea',
+            // Keep in sync with --primary in packages/ui/src/styles/globals.css; email clients need sRGB.
+            primary: '#006eff',
           },
         },
       },
