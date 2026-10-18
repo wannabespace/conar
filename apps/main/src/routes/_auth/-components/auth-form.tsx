@@ -141,12 +141,10 @@ export const AuthForm = () => {
           Sign in to Tamery
         </h1>
         <p className="text-muted-foreground text-sm">
-          Tamery is in early access. Continue below to request access — we'll
-          email you when it's ready. If you already have access, sign in as
-          usual.
+          Tamery is in early access. Sign in or request access below.
         </p>
         <p className="text-muted-foreground text-sm">
-          You can still use Conar at{' '}
+          Conar is still available at{' '}
           <a
             href="https://conar.app"
             target="_blank"
