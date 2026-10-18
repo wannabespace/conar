@@ -1,9 +1,9 @@
 cask "tamery" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.32.0"
-  sha256 arm:   "0d4d7b29ab2ed645879dd16f88eacd5028cda701f6a5141ee00c0af4711d9cb8",
-         intel: "8463d86aa37f3d3b254b714816152347cf238f885a95c1f4d438cf6b31945184"
+  version "0.99.0"
+  sha256 arm:   "ff02ad5a3fb116f07effb6fa6c67a05fe2f47dd5f5a7de23bf7fed44370bea91",
+         intel: "cfc6a09232065b4ff94cc0505fdba1ecb211b036d1842c043a36487f57f740de"
 
   url "https://download.tamery.app/versions/#{version}/mac/dmg/#{arch}"
   name "Tamery"
