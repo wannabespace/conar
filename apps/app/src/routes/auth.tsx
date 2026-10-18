@@ -2,7 +2,6 @@ import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { challenge } from '@tamery/shared/challenge'
 import { title } from '@tamery/shared/title'
-import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
 import { AuthSidePanel } from '@tamery/ui/components/custom/auth-side-panel'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
@@ -107,8 +106,10 @@ const AuthPage = () => {
         <AuthSidePanel />
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
           <div className="relative m-auto flex w-full max-w-87.5 flex-1 flex-col justify-center">
-            <motion.div
-              className="bg-primary relative mb-8 flex size-12 items-center justify-center rounded-2xl will-change-transform"
+            <motion.img
+              src={`${import.meta.env.BASE_URL}web-app-manifest-192x192.png`}
+              alt=""
+              className="mb-8 size-12 will-change-transform"
               initial={{
                 opacity: 0,
                 transform: 'translateY(10px)',
@@ -120,14 +121,7 @@ const AuthPage = () => {
                 filter: 'none',
               }}
               transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <AppLogoMotion
-                className="size-8.5 text-white will-change-transform"
-                initial={{ rotate: 60 }}
-                animate={{ rotate: 0 }}
-                transition={{ duration: 3, delay: 0.6, type: 'spring' }}
-              />
-            </motion.div>
+            />
             <motion.div
               className="will-change-transform"
               initial={{
