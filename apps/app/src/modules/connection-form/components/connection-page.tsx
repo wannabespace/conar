@@ -49,6 +49,8 @@ const REVEAL: Variants = {
   initial: { opacity: 0, y: 8 },
 }
 
+const FORM_ID = 'connection-form'
+
 const focusField = (id: string) =>
   document.querySelector<HTMLElement>(`#${CSS.escape(id)}`)?.focus()
 
@@ -193,7 +195,12 @@ export const ConnectionPage = ({
         onClick={back}
       />
       <ScrollArea className="min-h-0 flex-1">
-        <Form ref={formRef} form={form} className="flex min-h-full flex-col">
+        <Form
+          ref={formRef}
+          id={FORM_ID}
+          form={form}
+          className="flex min-h-full flex-col"
+        >
           {stage === 'form' ? (
             <motion.div
               key="form"
@@ -280,10 +287,10 @@ export const ConnectionPage = ({
         <FormFooter
           canTest={canSend}
           editing={mode.kind === 'edit'}
+          formId={FORM_ID}
           reason={values[engineFields.field].trim() ? reason : null}
           submitting={submitting}
           testStatus={testStatus}
-          onSave={submit}
           onTest={() => runTest(values)}
         />
       )}

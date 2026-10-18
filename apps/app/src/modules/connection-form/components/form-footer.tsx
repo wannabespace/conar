@@ -17,7 +17,7 @@ import { PageColumns } from './page-columns'
 export const FormFooter = ({
   canTest,
   editing,
-  onSave,
+  formId,
   onTest,
   reason,
   submitting,
@@ -25,8 +25,7 @@ export const FormFooter = ({
 }: {
   canTest: boolean
   editing: boolean
-  /** Not a submit button: with none in the form, Enter in a field never saves. */
-  onSave: () => void
+  formId: string
   onTest: () => void
   reason: string | null
   submitting: boolean
@@ -75,10 +74,11 @@ export const FormFooter = ({
             <TooltipTrigger
               render={
                 <Button
+                  type="submit"
+                  form={formId}
                   variant={failed ? 'warning' : 'default'}
                   disabled={submitting}
                   focusableWhenDisabled
-                  onClick={onSave}
                 />
               }
             >
