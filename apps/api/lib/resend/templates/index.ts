@@ -1,3 +1,4 @@
 export { Alert } from './alert'
+export { ContactReceived } from './contact-received'
 export { EarlyAccessGranted } from './early-access-granted'
 export { SignInCode } from './sign-in-code'
