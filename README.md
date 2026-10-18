@@ -63,7 +63,7 @@ The app opens at https://app.local.tamery.app. Tests: `pnpm run test`, and `pnpm
 
 We don't accept pull requests. But we read every issue.
 
-Found a bug or something off by one pixel? [Open an issue](https://github.com/wannabespace/conar/issues). Our perfectionists will thank you.
+Found a bug or something off by one pixel? [Open an issue](https://github.com/wannabespace/tamery/issues). Our perfectionists will thank you.
 
 <div align="center">
   <sub>Built with ❤️</sub>
