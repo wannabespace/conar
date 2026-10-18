@@ -7,7 +7,7 @@ import { AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
 import { getPermissions } from '@tamery/shared/permissions'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { createAuthMiddleware, isAPIError } from 'better-auth/api'
+import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api'
 import {
   anonymous,
   bearer,
@@ -24,6 +24,7 @@ import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 
+import { requireEarlyAccess, requireUserEarlyAccess } from './early-access'
 import { redisMemoize } from './redis'
 import { getSubscription } from './subscription'
 import { ensureDefaultWorkspace } from './workspace'
@@ -56,6 +57,8 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async (session) => {
+          await requireUserEarlyAccess(session.userId)
+
           try {
             await ensureDefaultWorkspace(session.userId)
           } catch (error) {
@@ -70,6 +73,17 @@ export const auth = betterAuth({
     },
     user: {
       create: {
+        before: async (user) => {
+          if (user.isAnonymous) {
+            throw new APIError('FORBIDDEN', {
+              message: 'Tamery is in early access. Sign in to join the list.',
+            })
+          }
+
+          await requireEarlyAccess(user.email)
+
+          return { data: user }
+        },
         after: async (user) => {
           await infisical.secrets
             .set({
@@ -136,6 +150,11 @@ export const auth = betterAuth({
     },
   },
   hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/email-otp/send-verification-otp') {
+        await requireEarlyAccess(ctx.body.email)
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
 
