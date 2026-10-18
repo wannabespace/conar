@@ -6,6 +6,7 @@
   "appPath": ".",
   "schemaVersion": 1,
   "nodeVersion": "24.6.0",
+  "appBuilderLibVersion": "26.15.3",
   "packageManager": "pnpm",
   "pnpmVersion": "12.13.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
