@@ -46,8 +46,16 @@ export const isPickColumn = (column: Column) =>
   column.uiType === 'select' ||
   (column.uiType === 'list' && !!column.availableValues)
 
-export const Tag = ({ column, value }: { column: Column; value: string }) => (
-  <Badge variant="secondary">
+export const Tag = ({
+  className,
+  column,
+  value,
+}: {
+  className?: string
+  column: Column
+  value: string
+}) => (
+  <Badge variant="secondary" className={className}>
     <span
       className={cn('size-1.5 shrink-0 rounded-full', tagColor(column, value))}
     />

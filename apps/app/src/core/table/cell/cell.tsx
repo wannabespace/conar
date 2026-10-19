@@ -50,7 +50,7 @@ const CellValue = ({
         )
       }
       case 'select': {
-        return <Tag column={column} value={String(value)} />
+        return <Tag className="shrink" column={column} value={String(value)} />
       }
       case 'list': {
         const items: unknown = transformer.fromConnection(value).toUI()
