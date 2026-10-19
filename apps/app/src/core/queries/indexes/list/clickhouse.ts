@@ -7,20 +7,20 @@ import { SKIP_INDEX_TYPES, getSkipIndexColumns } from '../shape'
 const clickhouseSkipIndexes = async (db: Kysely<ClickhouseDatabase>) => {
   const rows = await db
     .selectFrom('system.data_skipping_indices')
-    .select(['database', 'table', 'name', 'type_full', 'expr', 'granularity'])
+    .selectAll()
     .where('database', 'not in', ['system', 'information_schema'])
     .execute()
 
   return rows.flatMap((row) => {
+    const type = row.type_full ?? row.type
     const columns = getSkipIndexColumns(row.expr)
     const custom =
-      !columns ||
-      !SKIP_INDEX_TYPES.some((skipType) => skipType === row.type_full)
+      !columns || !SKIP_INDEX_TYPES.some((skipType) => skipType === type)
     const index = {
       custom_expression: columns ? null : row.expr,
       granularity: Number(row.granularity),
-      index_definition: `INDEX ${row.name} ${row.expr} TYPE ${row.type_full} GRANULARITY ${row.granularity}`,
-      index_type: row.type_full,
+      index_definition: `INDEX ${row.name} ${row.expr} TYPE ${type} GRANULARITY ${row.granularity}`,
+      index_type: type,
       is_custom: custom,
       is_primary: false,
       is_unique: false,

@@ -56,3 +56,17 @@ test('a table name outside \\w is still turned into a mutation', () => {
     'alter table `my-db`.`events-2024` update `value` = 1 where `id` = 2 settings mutations_sync = 1'
   )
 })
+
+test('a delete is turned into a mutation', () => {
+  expect(
+    prepareQuery(
+      db
+        .withSchema('default')
+        .deleteFrom('events')
+        .where('id', '=', 3)
+        .compile()
+    )
+  ).toBe(
+    'alter table `default`.`events` delete where `id` = 3 settings mutations_sync = 1'
+  )
+})
