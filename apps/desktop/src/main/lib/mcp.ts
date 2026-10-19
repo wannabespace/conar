@@ -30,14 +30,12 @@ const store = new Store<{
   access: Record<string, McpAccess>
   clients: Record<string, Omit<McpClient, 'name'>>
   enabled: boolean
-  keepRunning: boolean
   token: string
 }>({
   defaults: {
     access: {},
     clients: {},
     enabled: true,
-    keepRunning: true,
     token: newToken(),
   },
   name: 'mcp',
@@ -228,7 +226,6 @@ export const mcp = {
     store.set('clients', omit(store.get('clients'), [name]))
     return clients()
   },
-  keepRunning: () => store.get('keepRunning'),
   regenerateToken: () => {
     store.set('token', newToken())
     store.set('clients', {})
@@ -255,10 +252,6 @@ export const mcp = {
     store.set('enabled', enabled)
     await (enabled ? start() : stop())
     return status()
-  },
-  setKeepRunning: (enabled: boolean) => {
-    store.set('keepRunning', enabled)
-    return enabled
   },
   status,
 }

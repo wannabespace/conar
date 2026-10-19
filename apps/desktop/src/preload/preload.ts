@@ -27,7 +27,6 @@ export type ElectronPreload = Promisified<typeof electron> & {
       callback: (isFullscreen: boolean) => void
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
-    onKeptRunningOnQuit: (callback: () => void) => () => void
     onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
   }
@@ -141,8 +140,6 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     onFocusChange: (onMessage) => onEvent('focus-changed', onMessage),
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
-    onKeptRunningOnQuit: (onMessage) =>
-      onEvent('kept-running-on-quit', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),
     onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
     onUrlOpened: (onMessage) => onEvent('url-opened', onMessage),
@@ -195,9 +192,6 @@ contextBridge.exposeInMainWorld('electron', {
     forgetClient: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.forgetClient', arg)
     ),
-    keepRunning: handleElectronError(() =>
-      ipcRenderer.invoke('mcp.keepRunning')
-    ),
     regenerateToken: handleElectronError(() =>
       ipcRenderer.invoke('mcp.regenerateToken')
     ),
@@ -212,9 +206,6 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     setEnabled: handleElectronError((arg: unknown) =>
       ipcRenderer.invoke('mcp.setEnabled', arg)
-    ),
-    setKeepRunning: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('mcp.setKeepRunning', arg)
     ),
     status: handleElectronError(() => ipcRenderer.invoke('mcp.status')),
   },
