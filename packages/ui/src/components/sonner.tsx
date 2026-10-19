@@ -73,12 +73,12 @@ const Toaster = () => {
         toastOptions={{
           classNames: {
             actionButton: `
-              mt-0.5 h-6 shrink-0 self-center rounded-md bg-primary px-2 text-xs
+              h-6 shrink-0 self-center rounded-md bg-primary px-2 text-xs
               font-medium whitespace-nowrap text-primary-foreground
               hover:bg-primary/90
             `,
             cancelButton: `
-              mt-0.5 h-6 shrink-0 self-center rounded-md bg-input px-2 text-xs
+              h-6 shrink-0 self-center rounded-md bg-input px-2 text-xs
               font-medium whitespace-nowrap text-foreground
               hover:bg-accent
             `,
@@ -90,12 +90,16 @@ const Toaster = () => {
             `,
             content: 'flex min-w-0 flex-1 flex-col gap-0.5',
             description: 'text-xs leading-snug text-muted-foreground',
-            icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
+            icon: `
+              flex h-lh w-4 shrink-0 items-center justify-center text-sm
+              leading-tight
+            `,
             title: 'text-sm leading-tight font-medium text-foreground',
             toast: `
-              flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
+              flex w-(--width) items-center gap-2.5 rounded-xl bg-background/80
               p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
               select-none
+              has-data-description:items-start
               data-[expanded=false]:data-[front=false]:*:opacity-0
             `,
           },

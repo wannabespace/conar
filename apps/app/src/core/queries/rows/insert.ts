@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { BindValue, ColumnTypes } from './shape'
-import { bindRow, bindValue } from './shape'
+import { bindRow, bindValue, clickhouseWrite } from './shape'
 
 interface InsertParams {
   schema: string
@@ -22,19 +22,28 @@ const definedValues = (row: Record<string, unknown>) =>
     Object.entries(row).filter(([, value]) => value !== undefined)
   )
 
+const intoTable = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { schema, table }: Pick<InsertParams, 'schema' | 'table'>
+) =>
+  db
+    .withSchema(schema)
+    .$extendTables<Record<string, Record<string, unknown>>>()
+    .insertInto(table)
+
 const insertRows = (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
   bind: BindValue,
   // Writes one row only.
   insertDefaultRow: (into: Into) => Into,
-  { schema, table, columns, rows }: InsertParams
+  params: InsertParams
 ) => {
-  const into = db
-    .withSchema(schema)
-    .$extendTables<Record<string, Record<string, unknown>>>()
-    .insertInto(table)
-  const values = rows.map((row) => bindRow(bind, columns, definedValues(row)))
+  const into = intoTable(db, params)
+  const values = params.rows.map((row) =>
+    bindRow(bind, params.columns, definedValues(row))
+  )
 
   return (
     values.some((row) => Object.keys(row).length > 0)
@@ -43,21 +52,37 @@ const insertRows = (
   ).execute()
 }
 
+// ClickHouse 21.12 rejects `DEFAULT` in VALUES, so each group lists only the columns its rows set and the server fills the rest.
+const insertClickhouseRows = async (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  params: InsertParams
+) => {
+  const groups = Map.groupBy(params.rows, (row) =>
+    Object.keys(definedValues(row)).toSorted().join('\0')
+  )
+  for (const [columns, rows] of groups) {
+    // oxlint-disable-next-line no-await-in-loop
+    await (columns === ''
+      ? sql`insert into ${sql.id(params.schema, params.table)} format JSONEachRow ${sql.raw(rows.map(() => '{}').join('\n'))}`.execute(
+          db
+        )
+      : clickhouseWrite((bind) =>
+          intoTable(db, params)
+            .values(
+              rows.map((row) =>
+                bindRow(bind, params.columns, definedValues(row))
+              )
+            )
+            .execute()
+        ))
+  }
+}
+
 export const insertQuery = (params: InsertParams) =>
   createQuery({
     query: {
-      clickhouse: (db) =>
-        insertRows(
-          db,
-          bindValue.clickhouse,
-          (into) =>
-            into.values(
-              Object.fromEntries(
-                params.columns.slice(0, 1).map(({ id }) => [id, sql`default`])
-              )
-            ),
-          params
-        ),
+      clickhouse: (db) => insertClickhouseRows(db, params),
       mssql: (db) =>
         insertRows(db, bindValue.mssql, (into) => into.defaultValues(), params),
       mysql: (db) =>

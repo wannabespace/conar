@@ -65,7 +65,12 @@ const CellValue = ({
               )}
             >
               {items.map((item, index) => (
-                <Tag key={index} column={column} value={String(item)} />
+                <Tag
+                  key={index}
+                  className="shrink-0"
+                  column={column}
+                  value={String(item)}
+                />
               ))}
             </div>
           )
