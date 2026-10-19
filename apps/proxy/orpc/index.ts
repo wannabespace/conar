@@ -1,3 +1,5 @@
+import { isIP } from 'node:net'
+
 import { os } from '@orpc/server'
 import { type } from 'arktype'
 
@@ -10,10 +12,13 @@ export const orpc = os.$context<Context>()
 const sessionResponse = type({ session: { userId: 'string' } })
 
 const getSession = async (headers: Headers) => {
+  const clientIp = headers.get('x-real-ip')
   const res = await fetch(`${env.API_URL}/auth/get-session`, {
     headers: {
       authorization: headers.get('authorization') ?? '',
       cookie: headers.get('cookie') ?? '',
+      'x-proxy-token': env.PROXY_SHARED_SECRET,
+      ...(clientIp && isIP(clientIp) ? { 'x-client-ip': clientIp } : {}),
     },
   })
 
