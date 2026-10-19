@@ -57,11 +57,10 @@ export const useFlashChangedCells = (
     if (!flash) {
       return
     }
-    const clearFlash = () => {
+    const clearFlash = () =>
       store.set((state) =>
         state.flash === flash ? { ...state, flash: null } : state
       )
-    }
     const timeout = setTimeout(clearFlash, CELL_FLASH_DURATION_MS)
     return () => {
       clearTimeout(timeout)
