@@ -11,7 +11,6 @@ import type { Rectangle } from 'electron'
 import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
-import { keepsServingAfterClose, sendToBackground } from './lib/background'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
@@ -179,13 +178,7 @@ export const createWindow = (route?: string) => {
     }
   })
 
-  win.on('close', (event) => {
-    if (keepsServingAfterClose()) {
-      event.preventDefault()
-      sendToBackground(win)
-      return
-    }
-
+  win.on('close', () => {
     if (saveBoundsTimeout) {
       clearTimeout(saveBoundsTimeout)
     }
