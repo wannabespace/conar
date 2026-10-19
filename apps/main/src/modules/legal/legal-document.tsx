@@ -9,7 +9,7 @@ export const LegalDocument = ({
   title: string
   updatedAt: string
 }) => (
-  <main className="mx-auto w-full max-w-3xl px-4 pt-16 sm:px-6 sm:pt-24">
+  <main className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
     <header className="mb-12 flex flex-col gap-3">
       <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
         {title}
