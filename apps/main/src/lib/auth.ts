@@ -12,16 +12,10 @@ import { createAuthClient } from 'better-auth/react'
 const getAuthHeadersIsomorphic = createIsomorphicFn()
   .server(() => {
     const request = getRequest()
-    const clientIp = request.headers.get('x-real-ip')
-    const secret = process.env.PROXY_SHARED_SECRET
 
     return {
       cookie: request.headers.get('cookie') ?? '',
       'user-agent': request.headers.get('user-agent') ?? '',
-      // This fetch leaves from the site server. The API counts that IP unless we pass the visitor's, and it accepts the swap only with the proxy secret.
-      ...(clientIp && secret
-        ? { 'x-client-ip': clientIp, 'x-proxy-token': secret }
-        : {}),
     }
   })
   .client(() => ({}))

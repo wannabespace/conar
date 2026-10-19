@@ -1,5 +1,4 @@
 import '@tamery/shared/arktype-config'
-import { isIP } from 'node:net'
 import process from 'node:process'
 
 import { ORPCError, ValidationError } from '@orpc/server'
@@ -169,15 +168,6 @@ const app = new Hono<{
 
     if (!origin) {
       req.headers.set('origin', 'file://')
-    }
-
-    // The public edge records our own server as the client when the site or the proxy calls on a visitor's behalf. A public caller can send x-client-ip too, so it replaces x-real-ip only with the proxy secret.
-    const clientIp = req.headers.get('x-client-ip')
-    const proxyToken = req.headers.get('x-proxy-token')
-    req.headers.delete('x-client-ip')
-    req.headers.delete('x-proxy-token')
-    if (proxyToken === env.PROXY_SHARED_SECRET && clientIp && isIP(clientIp)) {
-      req.headers.set('x-real-ip', clientIp)
     }
 
     return auth.handler(req)
