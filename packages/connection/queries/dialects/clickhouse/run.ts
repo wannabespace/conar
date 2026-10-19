@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
+import { memoize } from 'memoza'
+
 import type { RunOptions } from '../..'
 import { resultSet } from '../..'
 import { cancellable } from '../../cancellation'
@@ -19,6 +21,17 @@ const ROW_RETURNING_COMMANDS = new Set([
 // Leading comments and parentheses skipped. Each comment matches exactly one way, or a text without a word backtracks exponentially.
 const FIRST_WORD =
   /^(?:\s|\(|(?:--|#)[^\n]*(?:\n|$)|\/\*(?:[^*]|\*(?!\/))*\*\/)*(?<command>\w+)/u
+
+// A server older than a setting rejects it and fails the query (21.12 has no decimal quoting), so these are dropped per connection on UNKNOWN_SETTING.
+const OUTPUT_SETTINGS = {
+  output_format_json_quote_64bit_integers: 1,
+  output_format_json_quote_decimals: 1,
+}
+const UNKNOWN_SETTING = /Unknown setting (?<name>\w+)/u
+
+const unknownSettingsOf = memoize(
+  (_connectionString: string) => new Set<string>()
+)
 
 const bigIntegerType = /^(?:Nullable\()?U?Int(?:64|128|256)\b/u
 
@@ -85,22 +98,41 @@ export const runQuery = ({
       }
     }
 
-    const response = await ready.query({
-      abort_signal: controller.signal,
-      clickhouse_settings: {
-        output_format_json_quote_64bit_integers: 1,
-        output_format_json_quote_decimals: 1,
-        ...(readOnly && { readonly: '2' }),
-        // One row past the cap is how `truncated` finds out there were more.
-        ...(Number.isFinite(maxRows) && {
-          max_result_rows: String(maxRows + 1),
-          result_overflow_mode: 'break',
-        }),
-      },
-      format: 'JSONCompactEachRowWithNamesAndTypes',
-      query: sql,
-      query_id: clickhouseQueryId,
-    })
+    const unknownSettings = unknownSettingsOf(connectionString)
+    const send = async (): ReturnType<typeof ready.query> => {
+      try {
+        return await ready.query({
+          abort_signal: controller.signal,
+          clickhouse_settings: {
+            ...Object.fromEntries(
+              Object.entries(OUTPUT_SETTINGS).filter(
+                ([name]) => !unknownSettings.has(name)
+              )
+            ),
+            ...(readOnly && { readonly: '2' }),
+            // One row past the cap is how `truncated` finds out there were more.
+            ...(Number.isFinite(maxRows) && {
+              max_result_rows: String(maxRows + 1),
+              result_overflow_mode: 'break',
+            }),
+          },
+          format: 'JSONCompactEachRowWithNamesAndTypes',
+          query: sql,
+          query_id: clickhouseQueryId,
+        })
+      } catch (error) {
+        const name =
+          error instanceof Error
+            ? UNKNOWN_SETTING.exec(error.message)?.groups?.name
+            : undefined
+        if (!name || !(name in OUTPUT_SETTINGS) || unknownSettings.has(name)) {
+          throw error
+        }
+        unknownSettings.add(name)
+        return send()
+      }
+    }
+    const response = await send()
     // `break` overflows to the end of a block, so the read itself stops at the cap. The first two rows are the names and types.
     const header: unknown[][] = []
     const rows: unknown[][] = []
