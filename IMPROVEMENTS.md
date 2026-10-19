@@ -216,3 +216,4 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Check ClickHouse row-policy rights up front.** Without the grant, **Add policy** fails only after submit with "Not enough privileges"; disabling it with the reason would save the form.
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
+- **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
