@@ -1,96 +1,33 @@
 ---
-title: 'Connect to MySQL'
-sidebarTitle: 'MySQL'
-description: 'Connect Tamery to MySQL or MariaDB: connection string format, SSL options, and provider tips.'
+title: 'MySQL and MariaDB'
+sidebarTitle: 'MySQL and MariaDB'
+description: 'Connect to MySQL or MariaDB using a connection string or the connection form.'
 ---
 
-Tamery supports MySQL and MariaDB via the `mysql://` scheme:
+Choose **MySQL** or **MariaDB** under **Engine**, or paste a connection string:
 
-```bash
-mysql://username:password@hostname:3306/database
+```text
+mysql://user:password@localhost:3306/mydb
 ```
 
-| Part       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `username` | MySQL user (e.g. `root`)                    |
-| `password` | Password for that user                      |
-| `hostname` | Host (e.g. `localhost` or a remote address) |
-| `3306`     | Port (default)                              |
-| `database` | Database name                               |
-
-## SSL / TLS
-
-Enable SSL with query parameters:
-
-```bash
-mysql://username:password@hostname:3306/database?ssl=true
+```text
+mariadb://user:password@localhost:3306/mydb
 ```
 
-To reject untrusted certificates, add `sslrejectunauthorized=true`:
+The default port is **3306**. An `.env` file or a `mysql` / `mariadb` command works too.
 
-```bash
-mysql://username:password@hostname:3306/database?ssl=true&sslrejectunauthorized=true
+## SSL
+
+Use your provider's connection string with its SSL options. To require encryption and verify the certificate:
+
+```text
+mysql://user:password@db.example.com:3306/mydb?ssl=true&sslrejectunauthorized=true
 ```
 
-Without `ssl`, Tamery connects over SSL without verifying the certificate, and uses an unencrypted connection only when the server says it has no SSL. `ssl=false` always connects unencrypted.
-
-Check your provider's docs for the exact parameters they require.
-
-## Providers
-
-<Tabs>
-  <Tab title="PlanetScale">
-    Dashboard → database/branch → **Connect**. PlanetScale requires SSL.
-
-    ```bash
-    mysql://username:password@aws.connect.psdb.cloud/your-database?sslaccept=strict
-    ```
-
-  </Tab>
-  <Tab title="Railway">
-    Project → MySQL service → **Connect** → **Database URL**.
-
-    ```bash
-    mysql://root:password@monorail.proxy.rlwy.net:12345/railway
-    ```
-
-  </Tab>
-  <Tab title="Local">
-    ```bash
-    mysql://root:password@localhost:3306/mydb
-    ```
-
-    No password? Omit it:
-
-    ```bash
-    mysql://root@localhost:3306/mydb
-    ```
-
-  </Tab>
-</Tabs>
+With no SSL option, Tamery tries an encrypted connection without certificate verification. It uses an unencrypted connection only if the server reports that SSL is unavailable. `ssl=false` turns encryption off explicitly.
 
 ## MariaDB
 
-Pick **MariaDB** under **Engine**, or paste a `mariadb://` string, a `mariadb` command or a `MARIADB_*` environment (including Laravel's `DB_CONNECTION=mariadb`) and Tamery picks it for you. The connection shows the MariaDB name and icon and runs on the MySQL driver, so everything above applies:
+You can browse and edit rows, run SQL, and manage the schema as with MySQL. System-versioned tables show current rows; query their history with SQL. Sequences are available through SQL rather than the Navigator.
 
-```bash
-mariadb://username:password@hostname:3306/database
-```
-
-Where MariaDB differs from MySQL:
-
-- **JSON columns** are `LONGTEXT` with a `json_valid()` check in MariaDB. Tamery still reads them as JSON, so you edit their cells as JSON.
-- **System-versioned tables** list in the Navigator with your other tables and show their current rows. Query their history with `FOR SYSTEM_TIME` in a **Query** tab.
-- **`UUID` cells** tell you when what you typed isn't a UUID, before it reaches the database.
-- **Data seeding** fills `INET4` and `INET6` columns with IP addresses.
-- **Sequences** don't list in the Navigator. Read and advance them with `NEXTVAL()` and `SHOW CREATE SEQUENCE` in a **Query** tab.
-
-<Note>
-  MySQL `SET` columns show as **Enums** in the Schema list. Display only — your
-  data and schema are unaffected.
-</Note>
-
-<Tip>
-  **Save connection** tests the connection first. If the test fails, check host,
-  port, credentials, and SSL parameters.
-</Tip>
+For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

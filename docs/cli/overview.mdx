@@ -1,71 +1,37 @@
 ---
-title: 'CLI overview'
+title: 'Tamery in your terminal'
 sidebarTitle: 'Overview'
-description: 'The Tamery CLI runs SQL against saved connections, executes SQL files, and bridges the web app to local databases.'
+description: 'Run SQL from the terminal or connect the web app to local databases.'
 ---
 
-The Tamery CLI runs SQL against your saved connections, executes SQL files in scripts, and runs a local proxy so the web app can reach private databases.
+## Install and sign in
 
-## Install
-
-Requires Node.js 22.16 or later.
+Requires **Node.js 22.16 or later**.
 
 ```bash
 npm install -g tamery
-```
-
-The CLI checks for updates and tells you when a newer version is available.
-
-## Authenticate
-
-```bash
 tamery login
 ```
 
-Opens the browser sign-in flow and saves your session locally. Over SSH or without a browser, use `--no-open` to print the URL instead:
+Finish signing in in the browser. Use the same account as the app.
+
+## Run a query
+
+Create a connection in Tamery first, then find its name:
 
 ```bash
-tamery login --no-open
+tamery query --list-connections
+tamery query -c my-db "SELECT 1 AS hello"
 ```
 
-The flow times out after 5 minutes. Check who you're signed in as with `tamery whoami`.
+You can also run SQL files or request JSON output. See [all commands](/cli/commands).
 
-## Commands
-
-<CardGroup cols={2}>
-  <Card
-    title="login"
-    icon="arrow-right-to-bracket"
-    href="/cli/commands#tamery-login"
-  >
-    Sign in via browser.
-  </Card>
-  <Card
-    title="logout"
-    icon="arrow-right-from-bracket"
-    href="/cli/commands#tamery-logout"
-  >
-    Sign out and clear the session.
-  </Card>
-  <Card title="whoami" icon="circle-user" href="/cli/commands#tamery-whoami">
-    Show the signed-in user.
-  </Card>
-  <Card title="query" icon="database" href="/cli/commands#tamery-query">
-    Run SQL inline or from a file.
-  </Card>
-  <Card title="proxy" icon="plug" href="/cli/commands#tamery-proxy">
-    Bridge the web app to private databases.
-  </Card>
-</CardGroup>
-
-## Proxy
-
-The web app connects to databases from the browser. For a database on localhost, a private network, or behind a firewall, run a local proxy:
+## Reach local databases from the web
 
 ```bash
 tamery proxy
 ```
 
-The web app routes queries through your machine — credentials and traffic stay local. Stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
+Keep this running on the computer that can reach the database. The web app detects it automatically. Stop it with **Ctrl+C**.
 
-See the [command reference](/cli/commands) for all flags and examples.
+The proxy also opens SQLite files on that computer. SSH tunnels require the desktop app.

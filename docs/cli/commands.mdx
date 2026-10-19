@@ -1,115 +1,68 @@
 ---
 title: 'CLI commands'
 sidebarTitle: 'Commands'
-description: 'Reference for the Tamery CLI: login, logout, whoami, query, and proxy, with flags and examples.'
+description: 'Sign in, run queries, and start a local proxy.'
 ---
 
-Run `tamery --help` for a summary, or `tamery <command> --help` for one command.
-
----
+Use `tamery --help` or `tamery <command> --help` for help in your terminal.
 
 ## tamery login
 
-Sign in. Opens the browser sign-in flow and saves the session locally. Times out after 5 minutes.
-
-```bash
-tamery login [options]
-```
-
-<ParamField query="--force" type="boolean">
-  Sign in even if already authenticated (switch accounts). Alias: `-f`.
-</ParamField>
-
-<ParamField query="--no-open" type="boolean">
-  Don't open the browser; print the URL instead. Useful over SSH.
-</ParamField>
-
 ```bash
 tamery login
-tamery login --no-open
-tamery login --force
 ```
 
-```text
-✓ Signed in as user@example.com.
-```
+Opens browser sign-in and saves your session locally.
 
----
+| Flag            | Use                                                 |
+| --------------- | --------------------------------------------------- |
+| `--no-open`     | Print the sign-in URL instead of opening a browser. |
+| `--force`, `-f` | Sign in again, for example to switch accounts.      |
 
 ## tamery logout
-
-Sign out and clear the local session.
 
 ```bash
 tamery logout
 ```
 
-```text
-✓ Signed out.
-```
-
----
+Clears your local CLI session.
 
 ## tamery whoami
-
-Show the signed-in user. Prints `Not signed in.` if there's no session; an expired session is cleared automatically.
 
 ```bash
 tamery whoami
 ```
 
-```text
-user@example.com
-```
-
----
+Shows which account is signed in.
 
 ## tamery query
 
-Run SQL against a saved connection. Provide SQL inline or via `--file`. Output is a formatted table, or JSON with `--json`.
-
-Supports PostgreSQL, MySQL, MariaDB, MSSQL, ClickHouse, and SQLite (a file on the computer running the command).
+Run SQL against a connection saved in the app:
 
 ```bash
-tamery query [options] [sql]
-```
-
-<ParamField query="--connection" type="string">
-  Connection ID or name. Required if you have more than one. Alias: `-c`.
-</ParamField>
-
-<ParamField query="--file" type="string">
-  Path to a `.sql` file to run instead of inline SQL. Alias: `-f`.
-</ParamField>
-
-<ParamField query="--json" type="boolean">
-  Output JSON instead of a table.
-</ParamField>
-
-<ParamField query="--list-connections" type="boolean">
-  Print saved connections and exit.
-</ParamField>
-
-```bash
-tamery query -c my-db "SELECT * FROM users LIMIT 10"
-tamery query -c my-db --file ./queries/report.sql
-tamery query -c my-db --json "SELECT id, name FROM products"
 tamery query --list-connections
+tamery query -c my-db "SELECT 1 AS hello"
+tamery query -c my-db --file ./report.sql
+tamery query -c my-db --json "SELECT 1 AS hello"
 ```
 
-<Note>Output includes execution time in milliseconds.</Note>
+| Flag | Use |
+| --- | --- |
+| `--connection`, `-c` | Connection name or ID. Required when you have more than one; use the ID if names repeat. |
+| `--file`, `-f` | Read SQL from a file. |
+| `--json` | Display result rows as JSON. |
+| `--list-connections` | List saved connections and exit. |
 
----
+The CLI needs a synced connection string with the secrets required to connect. **Metadata only** connections cannot be used, and **No password** connections do not supply the saved password. SSH tunnels require desktop. SQLite paths refer to files on the computer running the command.
+
+SQL runs against the database, including writes. The CLI does not show the app's confirmation dialogs.
 
 ## tamery proxy
-
-Start a local proxy so the web app can reach databases that aren't publicly accessible (localhost, private network, VPC). Credentials and traffic stay on your machine. Stop with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
 ```bash
 tamery proxy
 ```
 
-<Tip>
-  You only need the proxy for databases not reachable from the internet. Public
-  cloud endpoints work without it.
-</Tip>
+Lets the web app reach localhost, private networks, and SQLite files through this computer. Sign in to the same account in the CLI and browser; the web app detects the proxy automatically.
+
+Database queries go through your machine. The proxy still needs internet to verify your Tamery session. Stop it with **Ctrl+C**.

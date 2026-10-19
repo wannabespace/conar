@@ -44,6 +44,10 @@ export const auth = betterAuth({
     database: {
       generateId: () => v7(),
     },
+    // x-forwarded-for has extra hops on Railway, and a multi-value chain is discarded into one global rate-limit bucket. The edge overwrites x-real-ip with the connecting client.
+    ipAddress: {
+      ipAddressHeaders: ['x-real-ip'],
+    },
   },
   appName: 'Tamery',
   basePath: '/auth',

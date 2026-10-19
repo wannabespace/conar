@@ -54,15 +54,15 @@ export const DraftsActions = ({
           render={
             <Button
               variant="ghost-muted"
-              size="icon-sm"
+              size="sm"
               className="relative overflow-visible"
-              aria-label="Review changes"
               onClick={() => setIsReviewOpen(true)}
               disabled={isSaving}
             />
           }
         >
           <HugeiconsIcon icon={FileDiffIcon} strokeWidth={2} />
+          Review
           {errorCount > 0 && (
             <span
               aria-hidden

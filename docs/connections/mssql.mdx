@@ -1,56 +1,39 @@
 ---
-title: 'Connect to SQL Server (MSSQL)'
+title: 'SQL Server'
 sidebarTitle: 'SQL Server'
-description: 'Connect Tamery to Microsoft SQL Server or Azure SQL: connection string format and SSL/TLS options.'
+description: 'Connect to Microsoft SQL Server or Azure SQL.'
 ---
 
-Tamery accepts both `mssql://` and `sqlserver://` (identical behavior):
+Choose **SQL Server** under **Engine**, or paste:
 
-```bash
-mssql://username:password@hostname:1433/database
+```text
+sqlserver://user:password@localhost:1433/mydb
 ```
 
-| Part       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `username` | SQL Server login (e.g. `sa`)                |
-| `password` | Password for that login                     |
-| `hostname` | Host (e.g. `localhost` or a remote address) |
-| `1433`     | Port (default)                              |
-| `database` | Database name                               |
+`mssql://` works too. The default port is **1433**. You can also paste a JDBC or ADO.NET connection string.
 
 ## Azure SQL
 
-Use your `.database.windows.net` hostname. Azure SQL requires encryption.
+Use the hostname and database from your Azure connection details:
 
-```bash
-sqlserver://username:password@your-server.database.windows.net:1433/your-database?encrypt=true&trustServerCertificate=false
+```text
+sqlserver://user:password@your-server.database.windows.net:1433/mydb?encrypt=true&trustServerCertificate=false
 ```
 
-## SSL / TLS
+Allow your IP address in the server's firewall settings.
 
-Both default to `true` when unset.
+## Encryption
 
-| Parameter | Description |
-| --- | --- |
-| `encrypt=true` | Encrypt the connection. Required for Azure SQL. |
-| `encrypt=false` | No encryption. Local dev only. |
-| `trustServerCertificate=true` | Skip certificate validation. Local dev with self-signed certs. |
-| `trustServerCertificate=false` | Validate against a trusted CA. Use in production and Azure SQL. |
+| Option                         | Behavior                         |
+| ------------------------------ | -------------------------------- |
+| `encrypt=true`                 | Encrypt the connection.          |
+| `trustServerCertificate=false` | Verify the server's certificate. |
+| `trustServerCertificate=true`  | Skip certificate verification.   |
 
-**Local with self-signed cert:**
+For a local development server with a self-signed certificate:
 
-```bash
+```text
 mssql://sa:password@localhost:1433/mydb?encrypt=true&trustServerCertificate=true
 ```
 
-**Production / Azure SQL:**
-
-```bash
-sqlserver://username:password@hostname:1433/database?encrypt=true&trustServerCertificate=false
-```
-
-<Tip>
-  For a named instance like `SQLEXPRESS`, URI-encode the backslash:
-  `localhost%5CSQLEXPRESS`. When in doubt, use `127.0.0.1` with the explicit
-  port.
-</Tip>
+For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

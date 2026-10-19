@@ -39,7 +39,6 @@ import { toast } from 'sonner'
 import { Link } from '~/components/link'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import { authClient } from '~/lib/auth'
-import { ANALYTICS_STORAGE_KEY } from '~/lib/posthog'
 import { clearDb } from '~/lib/sync'
 import { accountUrl } from '~/lib/urls'
 
@@ -56,7 +55,7 @@ const clearLocalAppCache = async () => {
 
   await clearDb()
   for (const key of Object.keys(localStorage)) {
-    if (!key.includes('bearer_token') && key !== ANALYTICS_STORAGE_KEY) {
+    if (!key.includes('bearer_token')) {
       localStorage.removeItem(key)
     }
   }

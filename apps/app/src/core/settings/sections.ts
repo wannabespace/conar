@@ -12,12 +12,16 @@ import { GeneralSettings } from './general'
 import { KeyboardSettings } from './keyboard'
 
 export const settingsSections = [
-  {
-    component: GeneralSettings,
-    icon: Settings02Icon,
-    label: 'General',
-    slug: 'general',
-  },
+  ...(window.electron
+    ? [
+        {
+          component: GeneralSettings,
+          icon: Settings02Icon,
+          label: 'General',
+          slug: 'general',
+        },
+      ]
+    : []),
   {
     component: AppearanceSettings,
     icon: PaintBoardIcon,

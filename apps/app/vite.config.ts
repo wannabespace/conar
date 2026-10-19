@@ -7,7 +7,7 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-import { version } from '../desktop/package.json' with { type: 'json' }
+import packageJson from '../desktop/package.json' with { type: 'json' }
 
 setupPortlessEnvs({
   VITE_PUBLIC_API_URL: 'api.local.tamery',
@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version),
     'import.meta.env.VITE_TEST': mode === 'test',
   },
   plugins: [

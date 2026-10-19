@@ -1,102 +1,33 @@
 ---
-title: 'Schema'
+title: 'Manage your schema'
 sidebarTitle: 'Schema'
-description: "Browse, create, edit, and drop enums, indexes, constraints, functions, triggers, policies, and privileges in Tamery's Schema list."
+description: 'Inspect and edit indexes, constraints, functions, triggers, and access rules.'
 ---
 
-The **Schema** list in the sidebar covers everything about your database except the table data itself — enums, indexes, constraints, functions, triggers, policies, privileges, and the [schema visualizer](/features/schema-visualizer). It adapts to the database engine, showing only the object types that engine supports, and lets you create, edit, and drop them where the engine allows.
+Click **Schema** at the top of the Navigator, then choose an object type. Pick a row to inspect its definition and available settings.
 
-## Definition types
+| Object          | What you can inspect                                 |
+| --------------- | ---------------------------------------------------- |
+| **Enums**       | PostgreSQL types and their allowed values.           |
+| **Indexes**     | Indexed columns, uniqueness, and index type.         |
+| **Constraints** | Primary keys, foreign keys, unique keys, and checks. |
+| **Functions**   | Arguments, return type, and SQL body.                |
+| **Triggers**    | Table, event, and trigger body or function.          |
+| **Policies**    | Row access rules.                                    |
+| **Privileges**  | MySQL grants and who holds them.                     |
 
-<CardGroup cols={2}>
-  <Card title="Enums" icon="list-ul" href="/features/definitions">
-    PostgreSQL `ENUM` types. Shows the name and allowed values.
-  </Card>
-  <Card title="Indexes" icon="bolt" href="/features/definitions">
-    Indexed columns, index type (B-tree, Hash, GiST, …), and uniqueness.
-  </Card>
-  <Card title="Constraints" icon="link" href="/features/definitions">
-    Primary keys, unique constraints, foreign keys and checks, including
-    referencing/referenced columns and check conditions.
-  </Card>
-  <Card title="Policies" icon="shield-halved" href="/features/definitions">
-    PostgreSQL RLS policies, SQL Server policies, ClickHouse row policies.
-  </Card>
-  <Card title="Privileges" icon="lock" href="/features/definitions">
-    MySQL grants on a database or a table: the account, the privilege, and
-    whether it can grant it on.
-  </Card>
-  <Card title="Functions" icon="code" href="/features/definitions">
-    Functions/procedures (PostgreSQL, MySQL, SQL Server): signature, return
-    type, language, body.
-  </Card>
-  <Card title="Triggers" icon="bolt-lightning" href="/features/definitions">
-    Triggers (PostgreSQL, MySQL, SQL Server): table, event, timing, and called
-    function.
-  </Card>
-</CardGroup>
+Tamery shows the categories supported by your engine. For table relationships, open the [Visualizer](/features/schema-visualizer).
 
-<Note>
-  **Functions** and **Triggers** are not available for ClickHouse, and
-  **Functions** and **Policies** not for SQLite. MySQL has **Privileges** in
-  place of **Policies**. Only PostgreSQL has an **Enums** list: MySQL's `ENUM`
-  and `SET` and ClickHouse's `Enum8` and `Enum16` belong to their columns, and
-  an `enum` column's values are edited in its column form.
-</Note>
+## Create, edit, or drop
 
-## Navigating
+Click **+ Add** to create an object. To edit one, open it, change the enabled fields, and save. Right-click a row to drop it; Tamery asks for confirmation.
 
-<Steps>
-  <Step title="Click Schema at the top of the sidebar">
-    The sidebar slides to the schema list, grouped by kind and filterable. The
-    same row turns into **Tables** to take you back.
-  </Step>
-  <Step title="Choose a category">
-    Click a category (e.g. **Indexes**) to open it as a tab, listing that object
-    type for the selected schema. The **Overview** group at the top holds the
-    [schema visualizer](/features/schema-visualizer).
-  </Step>
-  <Step title="Switch schemas">
-    Use the **Schema** dropdown at the top of the list.
-  </Step>
-  <Step title="Inspect an object">
-    Click a row (or press <kbd>↑</kbd>/<kbd>↓</kbd> and <kbd>Enter</kbd> from
-    the search field) to open it in the inspector — index columns, function
-    bodies, policy rules, etc.
-  </Step>
-</Steps>
+Some changes require replacing the object. The save button names the action, such as **Rebuild index** or **Replace enum**. Check its warning before saving: replacement can affect dependent objects or permissions.
 
-## Editing
+Read-only fields indicate changes Tamery cannot make safely through the form. You can use the [SQL editor](/features/sql-editor) for changes outside it.
 
-The inspector is also the editor. It groups an object into sections — general, what it targets, its options, and the SQL behind it — with a short note beside each section and under the fields that need one. Fields you can change are enabled; the rest are shown read-only.
+## Row level security
 
-- **Add** with the **+ Add** button at the top right, or <kbd>⌘</kbd><kbd>N</kbd> in the desktop app. When nothing can be added yet, the reason shows under the button, and a list Tamery cannot add to on this engine says so in its place. For example, a PostgreSQL trigger needs a function that returns `trigger`, and **Create trigger function** opens one ready to fill in.
-- **Schema** is the first field when you create an enum, index, constraint, or policy. It starts on the schema the list is showing, and choosing another one clears the table and column pickers below it. A database with a single schema hides the field.
-- **Save** with the primary button or <kbd>⌘</kbd><kbd>Enter</kbd>. Errors from the database show inline under the form.
-- **Drop** from the row's context menu, or <kbd>⌘</kbd><kbd>D</kbd> on the highlighted row; for a MySQL privilege this revokes it. A confirmation asks first; PostgreSQL types, functions, and constraints can drop dependents with the **Cascade** switch.
-- **Row level security** belongs to the table: right-click a PostgreSQL table in the sidebar and choose **Enable RLS** or **Disable RLS**, no policy needed. The switch at the top of a policy toggles it for the policy's table. A table that does not enforce it ignores every policy on it, so a policy on such a table shows as **Disabled** in the list.
-- **SQL Server policies** bind one or more predicates to tables. Each predicate is a filter (hides rows) or a block (refuses writes, on every write or one operation), and calls an inline table-valued function with columns of its table as arguments. SQL Server only accepts a schema-bound function, so turn on **Schema bound** when you create it in **Functions**. Setting the return type to `TABLE` fills in an inline table-valued starter body. Add and remove predicates in the inspector; saving drops the changed ones and adds their replacements in one transaction. The **Enabled** switch turns the policy on or off without touching its predicates.
+On PostgreSQL, a policy takes effect only when row level security is enabled on its table. Right-click the table in the Navigator and choose **Enable RLS** or **Disable RLS**.
 
-What each engine supports:
-
-| Object | PostgreSQL | MySQL | SQL Server | ClickHouse | SQLite |
-| --- | --- | --- | --- | --- | --- |
-| Enums | Create, rename, add, rename and remove values, drop | — | — | — | — |
-| Indexes | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename (rebuilds it), drop data-skipping indexes | Create, edit, drop |
-| Constraints | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, rename, drop | Create, edit, drop checks | View keys |
-| Functions | Create, edit, drop | Create, edit, drop | Create, edit, drop | — | — |
-| Triggers | Create, edit, enable/disable, drop | Create, edit, drop | Create, edit, enable/disable, drop | — | Create, edit, drop |
-| Policies | Create, edit, drop, enable/disable row level security | — | Create, edit predicates, rename, enable/disable, drop | Create, edit, drop row policies | — |
-| Privileges | — | Grant, revoke | — | — | — |
-
-## Edits that replace the object
-
-Databases refuse to alter some things in place. Removing a value from a PostgreSQL enum, changing an index's columns, and switching a policy's command are all impossible as an `ALTER`. Tamery performs those by dropping the object and creating it again. The inspector says so before you save: the save button turns amber, names the real action (Rebuild index, Replace enum), and its tooltip spells out the consequence. An index that enforces a constraint, or one built with a method, predicate, expression or ordering the picker cannot show, only changes its name — its shape is edited where it is defined. A constraint carrying a rule with no field in the form — deferrable, not validated, not inherited, a match type, or on SQL Server disabled, untrusted or not for replication — is name-only for the same reason.
-
-PostgreSQL, SQL Server and SQLite run the replacement inside a transaction, so a failure leaves the database exactly as it was. MySQL cannot roll DDL back, so index and constraint replacements go out as a single `ALTER TABLE` that drops and adds in one statement. A MySQL trigger or function has no such statement, so Tamery saves its definition first and recreates it if the new one fails. Either way it keeps its original definer.
-
-Replacing a PostgreSQL enum also moves every column that stores it, carrying over the column defaults. It fails, and changes nothing, when a row still holds a value you removed.
-
-Functions and triggers open as fields, with only the body as SQL in an editor. A function saves in place (PostgreSQL with `CREATE OR REPLACE`, SQL Server with `CREATE OR ALTER`) as long as its name, arguments, return type and kind stay put; change one of those and it is dropped and created again, which loses its grants and owner. A trigger is always dropped and created again, keeping whether it was disabled. PostgreSQL enums can gain and rename values but never lose them.
-
-On ClickHouse, a data-skipping index takes a type (`minmax`, `set(0)`, `bloom_filter`) and a granularity instead of **Unique**; saving builds it for existing rows in the background, and any edit, a rename included, drops and adds it again; one over an expression, or of a type the picker cannot show, is read only. The sorting key shows as the primary key and is read only. Constraints are `CHECK` only; an `ASSUME` constraint is shown but only dropped. A row policy covers `SELECT`, and every change to its filter, type, roles or name alters it in place; leaving **Roles** empty applies it to `ALL`.
+On SQL Server, use the policy's **Enabled** switch and configure its predicates in the inspector.

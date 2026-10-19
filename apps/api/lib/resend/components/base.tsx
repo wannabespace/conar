@@ -31,7 +31,8 @@ export const Base = ({
       theme: {
         extend: {
           colors: {
-            primary: '#4778ea',
+            // Keep in sync with --primary in packages/ui/src/styles/globals.css; email clients need sRGB.
+            primary: '#006eff',
           },
         },
       },
@@ -44,7 +45,7 @@ export const Base = ({
         <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
           <Section className="mb-5">
             <Img
-              src={`${env.MAIN_URL}/logo.png`}
+              src={`${env.MAIN_URL}/web-app-manifest-192x192.png`}
               width="48"
               height="48"
               alt="Tamery"

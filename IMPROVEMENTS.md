@@ -16,6 +16,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
    - A Settings switch (or an approval) for agent-created connections: today nothing stops an agent adding one — even one steered by text in the rows it read — and each attempt test-connects to whatever host and port it names; the connection always starts at Ask before writing.
    - `query` is read-only and always rolled back, so it could retry once on a dropped connection like typed catalog reads do; today the first query after a server closes an idle connection fails with "Connection lost".
    - Row estimates beyond Postgres and MySQL: SQL Server's `SHOWPLAN_XML` `EstimateRows`, ClickHouse's `EXPLAIN ESTIMATE` for the `SELECT` a mutation filters on.
+   - The Dock's "Running in Background" label. macOS 27 shows it only once the main process quits and a registered helper (an `SMAppService` agent, which brings the one-time Background Items prompt) keeps going, so it needs the server hosted outside the renderer.
    - A token per client: every client shares one token, so **Connected clients** trusts the name each reports and none can be cut off alone. Per-client tokens make the list trustworthy and revocable, at the cost of a different config per client.
 3. **Impact preview before a destructive run.** The runner, and MCP's Ask before writing, could try an `UPDATE`/`DELETE` in a transaction that rolls back, show the changed rows, and require it on connections marked as prod. Only an allowlist is safe to try: one plain DML statement with no transaction-control, `INTO`, `COPY` or procedure word, since a SQL Server batch can `COMMIT` mid-statement and some statements act outside the transaction.
 4. **Undo for applied changes.** Store inverse statements when a draft is applied; offer "Undo last apply" in the query logger.
@@ -93,7 +94,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## Settings
 
 - **One home for the theme.** Theme now lives in Settings → Appearance and still in the avatar menu; keep one once it is clear which people use.
-- **Sync preferences to the account.** Theme, shortcut reveal and the analytics choice are per device (localStorage), and Clear cache resets all but the analytics choice. Syncing them would carry the choice to a new machine.
+- **Sync preferences to the account.** Theme and shortcut reveal are per device (localStorage), and Clear cache resets them. Syncing them would carry the choice to a new machine.
 - **Settings… in the native app menu.** Mac users look for ⌘, under the Tamery menu, but only the avatar menu and the in-page hotkey open Settings. Needs a menu item plus a main-to-renderer navigate event.
 - **Re-check ⌘ hints while ⌘ is held.** A hint hit-tests its control once, when the reveal starts, so a control uncovered mid-hold (a menu closed) shows no hint until ⌘ is pressed again.
 - **Start at login on Linux.** Electron's login item is a no-op there, so the row is hidden; an XDG autostart `.desktop` file would cover it.
@@ -214,3 +215,4 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Mark found databases that already have a connection.** The form's found-databases list keeps offering a local database after a connection to it exists.
 - **Check ClickHouse row-policy rights up front.** Without the grant, **Add policy** fails only after submit with "Not enough privileges"; disabling it with the reason would save the form.
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
+- **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.

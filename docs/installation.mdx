@@ -1,108 +1,39 @@
 ---
 title: 'Install Tamery'
 sidebarTitle: 'Installation'
-description: 'Download the Tamery desktop app for macOS, Windows, or Linux, or install the CLI via npm.'
+description: 'Get the desktop app, open Tamery in your browser, or install the CLI.'
 ---
-
-Tamery comes in three forms — web, desktop, and CLI. All share the same account and cloud-synced connections.
-
-A new version opens with a short note of what changed. The same notes are on the [releases page](https://tamery.app/releases).
-
-<Note>
-  The desktop app is recommended for most users. It runs a local proxy, so
-  localhost and private-network databases work without extra setup.
-</Note>
-
-## Web
-
-No install. Open [tamery.app](https://tamery.app), sign in, and connect.
-
-<Tip>
-  To reach local databases from the web app, run `tamery proxy` (see the
-  [CLI](/cli/overview)) and point a connection at it.
-</Tip>
 
 ## Desktop
 
-Download from [tamery.app/download](https://tamery.app/download).
+[Download Tamery](https://tamery.app/download) for macOS, Windows, or Linux. Use desktop for local databases, SQLite files, SSH tunnels, and [MCP](/mcp/overview).
 
-<Tabs>
-  <Tab title="macOS">
-    **Homebrew (recommended)**
+- **macOS:** open the `.dmg` and drag Tamery to **Applications**. Or install with Homebrew:
 
-    ```bash
-    brew install --cask tamery
-    ```
+  ```bash
+  brew install --cask tamery
+  ```
 
-    **Direct download**
+- **Windows:** run the `.exe` installer.
+- **Linux:** choose the `.deb`, `.rpm`, or AppImage download. On Arch, install `tamery-bin` from the AUR and launch `tamery-app`.
 
-    1. Download the `.dmg` (Apple Silicon or Intel) from [tamery.app/download](https://tamery.app/download).
-    2. Open it and drag **Tamery** to **Applications**.
-    3. Launch and sign in.
+Tamery is in early access. Sign in with email, Google, or GitHub to join the list. We email you when your account is ready.
 
-    Requires macOS 12 Monterey or later.
+A new version opens with a short note of what changed. The same notes are on the [releases page](https://tamery.app/releases).
 
-  </Tab>
-  <Tab title="Windows">
-    1. Download the `.exe` from [tamery.app/download](https://tamery.app/download).
-    2. Run the installer.
-    3. Launch and sign in.
+## Web
 
-    Requires Windows 10 or 11 (64-bit).
+Open [tamery.app](https://tamery.app) and sign in. Public database servers work without installing anything.
 
-  </Tab>
-  <Tab title="Linux">
-    **Arch (AUR)**
-
-    ```bash
-    yay -S tamery-bin
-    # or
-    paru -S tamery-bin
-    ```
-
-    Then run `tamery-app`.
-
-    **Debian / Ubuntu**
-
-    ```bash
-    sudo dpkg -i tamery_*.deb
-    ```
-
-    **Fedora / RHEL / openSUSE**
-
-    ```bash
-    sudo dnf install ./tamery_*.rpm
-    ```
-
-    **AppImage**
-
-    ```bash
-    chmod +x Tamery-*.AppImage
-    ./Tamery-*.AppImage
-    ```
-
-    Download packages from [tamery.app/download](https://tamery.app/download).
-
-  </Tab>
-</Tabs>
-
-<Note>
-  Tamery is in early access. Sign in with your email, Google or GitHub to join
-  the list. We email you when your account is ready.
-</Note>
+For localhost, private networks, or SQLite files, keep the [local proxy](/cli/commands#tamery-proxy) running on the computer that can reach them. SSH tunnels require desktop.
 
 ## CLI
 
-Requires Node.js 20+.
+Requires **Node.js 22.16 or later**.
 
 ```bash
 npm install -g tamery
-```
-
-Authenticate:
-
-```bash
 tamery login
 ```
 
-This opens the browser sign-in flow and saves your session locally. See the [CLI reference](/cli/commands) for all commands.
+See [CLI commands](/cli/commands) to run SQL or start the local proxy.

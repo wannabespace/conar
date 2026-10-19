@@ -141,7 +141,19 @@ export const AuthForm = () => {
           Sign in to Tamery
         </h1>
         <p className="text-muted-foreground text-sm">
-          Tamery is in early access. A new email joins the list.
+          Tamery is in early access. Sign in or request access below.
+        </p>
+        <p className="text-muted-foreground text-sm">
+          Conar is still available at{' '}
+          <a
+            href="https://conar.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => posthog.capture('legacy_app_opened')}
+          >
+            conar.app
+          </a>
+          .
         </p>
       </div>
       <Form form={form}>

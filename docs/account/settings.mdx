@@ -1,71 +1,30 @@
 ---
-title: 'Account settings'
+title: 'Settings'
 sidebarTitle: 'Settings'
-description: 'Manage your Tamery subscription, billing, sign-out, and account deletion.'
+description: 'Change app preferences and manage your account.'
 ---
-
-Account settings — subscription, billing — are managed on the web at [tamery.app/account](https://tamery.app/account), separate from the database app.
-
-<Note>
-  Account settings live at [tamery.app/account](https://tamery.app/account). App
-  preferences are under your avatar → **Settings** (<kbd>⌘</kbd> <kbd>,</kbd>)
-  in the app.
-</Note>
 
 ## App preferences
 
-- **Keyboard**: whether holding <kbd>⌘</kbd> shows each control's shortcut, and every keyboard shortcut with what it does. Search the list by action or by key (<kbd>⌘</kbd> <kbd>F</kbd>), for example `copy` or `⌘D`.
-- **Appearance**: the theme, System, Light or Dark. In the desktop app on macOS, **Transparent background** (on by default) lets the desktop show through the window; turn it off for a solid window.
-- **General**: in the desktop app on macOS and Windows, **Start at login** (off by default) opens Tamery when you log in. **Share usage analytics**. Turning it off stops all usage events, error reports and session recordings from this device. In the desktop app, **Open database links in Tamery** (on by default for the schemes no other app opens) makes `postgres://`, `postgresql://`, `mysql://`, `mariadb://`, `sqlserver://`, `mssql://` and `clickhouse://` links open the matching connection, or a new one filled in from the link.
-- **MCP** (desktop): the [MCP server](/mcp/overview).
+Open your avatar menu → **Settings**. On macOS, you can also press **Cmd+,**.
 
-Preferences are stored on the device, not synced to your account.
+| Section | What you can change |
+| --- | --- |
+| **Appearance** | Light, dark, or system theme; transparent windows on macOS desktop. |
+| **Keyboard** | Shortcut hints and a searchable list of shortcuts. |
+| **General** | Desktop only. Start at login, and open database links in Tamery. |
+| **MCP** | Desktop agent access, client setup, and activity. |
 
-## Account page
+Preferences apply to this device.
 
-The account page lists its sections in a sidebar: **Subscription**, **Billing**, **AI usage**, **Settings** and **Support**. **Settings** holds two-factor authentication, your signed-in sessions and account deletion.
+## Your account
 
-## Subscription
+Open [tamery.app/account](https://tamery.app/account) for your subscription, billing, [AI usage](/account/ai-usage), two-factor authentication, and signed-in sessions.
 
-The **Subscription** section shows your plan and the upgrade; **Billing** links to the Stripe portal. From there you can:
+To sign out of the app, use the avatar menu. In the CLI, run `tamery logout`.
 
-- View your plan and renewal date
-- Upgrade to Pro (activates immediately after payment)
-- Open the Stripe portal to update payment details and download invoices
-- Cancel (Pro stays active until the end of the billing period)
+## Delete your account
 
-## Signing out
+On the account page, open **Settings → Account → Delete** and confirm. This permanently removes your Tamery account data; it does not delete the databases you connected to.
 
-**Web** — on the account page, click **Sign out** at the bottom of the sidebar.
-
-**Desktop** — open the account menu → **Sign out**. Local connections stay; signing back in restores synced connections.
-
-**CLI**
-
-```bash
-tamery logout
-```
-
-Clears local credentials. Run `tamery login` to sign back in.
-
-## Deleting your account
-
-Open **Settings** on the account page and click **Delete** under **Account**. Deletion is permanent and confirmed before it proceeds.
-
-<Warning>
-  Deletion is irreversible — all connections, settings, and account data are
-  removed. Cancel any active Pro subscription first to avoid further charges.
-</Warning>
-
-<CardGroup cols={2}>
-  <Card title="Plans" icon="credit-card" href="/account/plans">
-    Free vs Pro and how to upgrade.
-  </Card>
-  <Card
-    title="Account page"
-    icon="circle-user"
-    href="https://tamery.app/account"
-  >
-    Manage your profile and billing.
-  </Card>
-</CardGroup>
+Cancel any active subscription before deleting your account.

@@ -2,6 +2,7 @@ import { CONTACT_EMAIL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 
 import { resend } from '~/lib/resend'
+import { ContactReceived } from '~/lib/resend/templates'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const contact = orpc
@@ -26,8 +27,10 @@ export const contact = orpc
       },
       {
         from: `Tamery <${CONTACT_EMAIL}>`,
-        html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
-        subject: 'Your contact request has been received by Tamery',
+        react: ContactReceived({
+          name: context.user.name || context.user.email,
+        }),
+        subject: "We've received your message",
         to: context.user.email,
       },
     ])
