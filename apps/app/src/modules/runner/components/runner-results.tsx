@@ -243,11 +243,11 @@ export const RunnerResults = () => {
       }
       className="size-full"
     >
-      <div className="flex h-8 shrink-0 items-center gap-2 border-b pr-1 pl-3">
+      <div className="flex h-8 shrink-0 items-center gap-2 border-b pr-1 pl-4">
         {results.length > 1 ? (
           <TabsList
             variant="bar"
-            className="no-scrollbar -ml-3 h-full shrink-0 overflow-x-auto after:hidden data-[variant=bar]:w-auto"
+            className="no-scrollbar -ml-4 h-full shrink-0 overflow-x-auto after:hidden data-[variant=bar]:w-auto"
           >
             {results.map((item, index) => (
               <PopoverTrigger

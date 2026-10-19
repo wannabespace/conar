@@ -3,7 +3,12 @@ import type { Kysely } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { BindValue, ColumnTypes } from './shape'
-import { bindRow, bindValue, matchesPrimaryKeys } from './shape'
+import {
+  bindRow,
+  bindValue,
+  clickhouseWrite,
+  matchesPrimaryKeys,
+} from './shape'
 
 interface SetParams {
   schema: string
@@ -31,7 +36,8 @@ const updateRow = (
 export const setQuery = (params: SetParams) =>
   createQuery({
     query: {
-      clickhouse: (db) => updateRow(db, bindValue.clickhouse, params),
+      clickhouse: (db) =>
+        clickhouseWrite((bind) => updateRow(db, bind, params)),
       mssql: (db) => updateRow(db, bindValue.mssql, params),
       mysql: (db) => updateRow(db, bindValue.mysql, params),
       postgres: (db) => updateRow(db, bindValue.postgres, params),

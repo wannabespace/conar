@@ -3,13 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { createStore } from 'seitu'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 
 import packageJson from '~/../../desktop/package.json' with { type: 'json' }
 import { posthog } from '~/lib/posthog'
 import { queryClient } from '~/lib/query-client'
-
-const TOAST_UPDATE_READY_ID = 'update-ready-toast'
 
 export const installUpdate = () => {
   posthog.capture('update_installed')
@@ -67,22 +64,6 @@ export const UpdatesObserver = () => {
   useEffect(() => {
     if (status === 'ready') {
       posthog.capture('update_downloaded')
-      const showToast = () => {
-        toast.success('New update downloaded!', {
-          action: {
-            label: 'Restart',
-            onClick: installUpdate,
-          },
-          duration: 60_000,
-          id: TOAST_UPDATE_READY_ID,
-          position: 'bottom-right',
-        })
-      }
-
-      showToast()
-      const interval = setInterval(showToast, 1000 * 60 * 10)
-
-      return () => clearInterval(interval)
     }
   }, [status])
 

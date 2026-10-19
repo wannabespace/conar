@@ -58,25 +58,53 @@ const clickhouseDateTime = (columnType: string, value: unknown) => {
     : value
 }
 
-/** `undefined` binds the column's DEFAULT. */
-export const bindValue: Record<Dialect, BindValue> = {
-  clickhouse: (columnType, value) => {
+const clickhouseBind =
+  (parseJson: (columnType: string, json: string) => unknown): BindValue =>
+  (columnType, value) => {
     if (value === undefined) {
       return sql`default`
     }
     if (value === null) {
       return value
     }
-    // No string casts to a ClickHouse Map or Tuple; `format(JSONEachRow)` rejects a misfit where `JSONExtract` silently writes a default.
+    // No string casts to a ClickHouse Map or Tuple.
     if (clickhouseJsonColumnType.test(columnType)) {
-      return sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${`{"v":${JSON.stringify(value)}}`}))`
+      return parseJson(columnType, `{"v":${JSON.stringify(value)}}`)
     }
     return clickhouseDateTime(columnType, value)
-  },
+  }
+
+/** `undefined` binds the column's DEFAULT. */
+export const bindValue: Record<Dialect, BindValue> = {
+  clickhouse: clickhouseBind(
+    (columnType, json) =>
+      sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${json}))`
+  ),
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
   postgres: bindJsonAsText(Dialect.Postgres),
   sqlite: bindJsonAsText(Dialect.SQLite),
+}
+
+const NO_FORMAT_FUNCTION = /Unknown table function format\b/u
+
+// ClickHouse 21.12 has no `format()`. There only `JSONExtract` parses a value, and it writes the type's default for a misfit where `format(JSONEachRow)` rejects it.
+const bindClickhouseWithoutFormat = clickhouseBind(
+  (columnType, json) => sql`JSONExtract(${json}, 'v', ${columnType})`
+)
+
+/** Retries once with the `JSONExtract` binder, so `write` must be a single statement or fail before its first one runs. */
+export const clickhouseWrite = async <T>(
+  write: (bind: BindValue) => Promise<T>
+) => {
+  try {
+    return await write(bindValue.clickhouse)
+  } catch (error) {
+    if (!(error instanceof Error && NO_FORMAT_FUNCTION.test(error.message))) {
+      throw error
+    }
+    return write(bindClickhouseWithoutFormat)
+  }
 }
 
 export const bindRow = (

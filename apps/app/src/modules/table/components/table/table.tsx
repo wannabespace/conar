@@ -131,7 +131,12 @@ export const Table = ({
     visible,
   })
 
-  const labels = useReferenceLabels(visible, staged.rows, columnLabels)
+  const newRowValues = staged.rows.slice(0, staged.rows.length - rows.length)
+  const labels = useReferenceLabels(
+    visible,
+    [...rows, ...newRowValues],
+    columnLabels
+  )
 
   useSyncSelectionWithRows(rows, primaryColumns)
   useFlashChangedCells(rows, primaryColumns)

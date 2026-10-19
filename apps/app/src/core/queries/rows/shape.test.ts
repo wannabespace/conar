@@ -13,6 +13,7 @@ import {
   bindRow,
   bindValue,
   clickhouseFilterValues,
+  clickhouseWrite,
   matchesPrimaryKeys,
   sqliteFilterValues,
 } from './shape'
@@ -117,4 +118,26 @@ test('a json column binds json text, NULL as is and undefined as DEFAULT', () =>
     'update "posts" set "tags" = $1, "body" = default, "title" = $2'
   )
   expect(parameters).toEqual(['["a"]', null])
+})
+
+test('a ClickHouse write without format() runs again with JSONExtract', async () => {
+  const columns = [{ id: 'tags', type: 'Map(String, UInt8)' }]
+  const sent: string[] = []
+  await clickhouseWrite((bind) => {
+    const statement = prepareQuery(
+      clickhouse
+        .updateTable('events')
+        .set(bindRow(bind, columns, { tags: { a: 1 } }))
+        .where('id', '=', 1)
+        .compile()
+    )
+    sent.push(statement)
+    return statement.includes('format(')
+      ? Promise.reject(new Error('Unknown table function format'))
+      : Promise.resolve()
+  })
+
+  expect(sent.at(-1)).toBe(
+    `alter table \`events\` update \`tags\` = JSONExtract('{"v":{"a":1}}', 'v', 'Map(String, UInt8)') where \`id\` = 1 settings mutations_sync = 1`
+  )
 })

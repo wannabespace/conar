@@ -5,7 +5,12 @@ import { memoize } from 'memoza'
 import { createQuery } from '~/core/runtime/query'
 
 import type { BindValue, ColumnTypes } from './shape'
-import { bindValue, rowsPerStatement, matchesPrimaryKeys } from './shape'
+import {
+  bindValue,
+  clickhouseWrite,
+  rowsPerStatement,
+  matchesPrimaryKeys,
+} from './shape'
 
 interface DeleteParams {
   table: string
@@ -44,11 +49,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
   return createQuery({
     query: {
       clickhouse: (db) =>
-        deleteInBatches(
-          db,
-          bindValue.clickhouse,
-          rowsPerStatement(Dialect.ClickHouse, keyWidth),
-          params
+        clickhouseWrite((bind) =>
+          deleteInBatches(
+            db,
+            bind,
+            rowsPerStatement(Dialect.ClickHouse, keyWidth),
+            params
+          )
         ),
       mssql: (db) =>
         deleteInBatches(
