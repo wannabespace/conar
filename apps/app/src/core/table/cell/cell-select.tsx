@@ -55,7 +55,7 @@ export const Tag = ({
   column: Column
   value: string
 }) => (
-  <Badge variant="secondary" className={className}>
+  <Badge variant="secondary" className={cn('shrink', className)}>
     <span
       className={cn('size-1.5 shrink-0 rounded-full', tagColor(column, value))}
     />

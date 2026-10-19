@@ -50,7 +50,7 @@ const CellValue = ({
         )
       }
       case 'select': {
-        return <Tag className="shrink" column={column} value={String(value)} />
+        return <Tag column={column} value={String(value)} />
       }
       case 'list': {
         const items: unknown = transformer.fromConnection(value).toUI()
@@ -65,7 +65,12 @@ const CellValue = ({
               )}
             >
               {items.map((item, index) => (
-                <Tag key={index} column={column} value={String(item)} />
+                <Tag
+                  key={index}
+                  className="shrink-0"
+                  column={column}
+                  value={String(item)}
+                />
               ))}
             </div>
           )
