@@ -149,6 +149,7 @@ const ConnectionsDropdown = ({
   onRemove: (connection: Connection) => void
 }) => {
   const [open, setOpen] = useState(false)
+  const { connectionStringsCollection } = useCollections()
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const atGuestLimit = !usePermissions().check('connection.create', {
     count: groups.length,
@@ -206,8 +207,14 @@ const ConnectionsDropdown = ({
           const lastOpenedId = lastOpenedResources.find((id) =>
             group.resources.some((resource) => resource.id === id)
           )
+          const defaultResourceName = connectionStringsCollection.get(
+            group.connection.id
+          )?.defaultResourceName
           const lastResource =
             group.resources.find((resource) => resource.id === lastOpenedId) ??
+            group.resources.find(
+              (resource) => resource.name === defaultResourceName
+            ) ??
             group.resources[0]
           if (!lastResource) {
             return null
