@@ -5,3 +5,7 @@ Product docs = Mintlify MDX under `docs/` — `docs/docs.json` is the nav, `docs
 **Update in same task** when a change touches: features, UI flows, CLI or MCP behavior, connection setup, drivers, security, connection-string handling, public APIs, auth, billing, plans, account settings. Renamed/removed user-visible concepts → terminology updated **everywhere**. Register new MDX pages in `docs/docs.json`.
 
 **Skip** for internal refactors with no user-visible change, tests, tooling, CI, dev-only scripts, typos in comments/private types. Don't create or expand docs for code-only-scoped work unless asked.
+
+## Release notes
+
+The ToDesktop webhook prepares GitHub release drafts with AI-written user-facing highlights and the original GitHub notes in a collapsed technical changelog. AI failure keeps the original notes so it cannot block a release. The website renders the same body; Discord receives only the highlights because its Markdown does not render HTML details. Publication remains manual.
