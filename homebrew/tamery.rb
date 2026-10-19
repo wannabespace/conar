@@ -7,7 +7,7 @@ cask "tamery" do
 
   url "https://download.tamery.app/versions/#{version}/mac/dmg/#{arch}"
   name "Tamery"
-  desc "AI-powered database client for Postgres, MySQL, MSSQL, ClickHouse and SQLite"
+  desc "AI-powered database client"
   homepage "https://tamery.app/"
 
   livecheck do
