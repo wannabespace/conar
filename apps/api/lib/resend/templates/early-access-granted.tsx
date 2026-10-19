@@ -16,7 +16,7 @@ export const EarlyAccessGranted = () => (
     <Button href={`${env.MAIN_URL}/download`}>Get Tamery</Button>
     <Section className="mt-5">
       <Text>
-        We're still polishing Tamery. If something feels off or you have an
+        We’re still polishing Tamery. If something feels off or you have an
         idea, open your avatar menu and choose Support. We read every message.
       </Text>
     </Section>
