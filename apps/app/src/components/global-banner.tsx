@@ -20,7 +20,6 @@ import { createWebStorageValue } from 'seitu/web'
 
 import { MAX_RECONNECTION_ATTEMPTS, reconnectingPromises } from '~/entities/connection/runtime'
 import { orpc } from '~/lib/orpc'
-import { posthog } from '~/lib/posthog'
 import { appStore } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
@@ -98,21 +97,6 @@ export function GlobalBanner() {
 
   return (
     <AnimatePresence initial={false} mode="popLayout">
-      <div
-        key="tamery-early-access"
-        className="flex shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-primary/20 bg-primary/5 px-4 py-2 text-sm"
-      >
-        <span>Tamery early access is open!</span>
-        <a
-          href="https://tamery.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="cursor-default text-primary underline underline-offset-4"
-          onClick={() => posthog.capture('tamery_early_access_clicked')}
-        >
-          Sign in for an invite ↗
-        </a>
-      </div>
       {data.map(item => (
         <Banner key={item.text} className={typeConfig[item.type].className}>
           {typeConfig[item.type].icon}
