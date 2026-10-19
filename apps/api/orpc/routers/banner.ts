@@ -55,7 +55,7 @@ export const banner = orpc
     }
 
     items.push({
-      text: "Come try Tamery! Sign in at tamery.app for an early access invite. We'd love your feedback!",
+      text: "Tamery early access is open! Sign in at tamery.app for an invite — we'd love to hear your feedback.",
       type: 'info',
       dismissible: false,
     })
