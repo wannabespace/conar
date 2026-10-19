@@ -26,6 +26,7 @@ const FIRST_WORD =
 const OUTPUT_SETTINGS = {
   output_format_json_quote_64bit_integers: 1,
   output_format_json_quote_decimals: 1,
+  output_format_json_named_tuples_as_objects: 1,
 }
 const UNKNOWN_SETTING = /Unknown setting (?<name>\w+)/u
 
