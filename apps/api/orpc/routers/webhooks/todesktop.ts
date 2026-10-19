@@ -2,7 +2,9 @@ import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 
 import { Octokit } from '@octokit/rest'
+import { generateReleaseNotes } from '@tamery/ai/features'
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@tamery/shared/constants'
+import { silently } from '@tamery/shared/utils'
 
 import { env } from '~/env'
 import { orpc } from '~/orpc'
@@ -102,6 +104,22 @@ export const todesktop = orpc
         tag_name: tagName,
         target_commitish: payload.versionControlInfo?.commitId || undefined,
       })
+
+      if (release.body) {
+        const notes = release.body
+        await silently(async () => {
+          const body = await generateReleaseNotes({
+            notes,
+            signal: AbortSignal.timeout(20_000),
+          })
+          await octokit.rest.repos.updateRelease({
+            body,
+            owner: GITHUB_REPO_OWNER,
+            release_id: release.id,
+            repo: GITHUB_REPO_NAME,
+          })
+        })
+      }
 
       context.addLogData({
         build: {
