@@ -16,7 +16,7 @@ import { CellField } from './cell-editor'
 import { Tag } from './cell-select'
 import { JsonPeek, JsonTree } from './json-tree'
 import type { Column } from './utils'
-import { hasTabularFigures } from './utils'
+import { getLocalTime, hasTabularFigures } from './utils'
 
 const CellValue = ({
   column,
@@ -84,7 +84,9 @@ const CellValue = ({
     if (label !== undefined) {
       return (
         <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
-          <span className="max-w-2/3 shrink-0 truncate">{label}</span>
+          <span className="max-w-2/3 shrink-0 truncate tabular-nums">
+            {label}
+          </span>
           <span className="text-muted-foreground min-w-0 truncate tabular-nums">
             {transformer.toDisplay(value, size)}
           </span>
@@ -199,7 +201,7 @@ export const TableCell = ({
       )}
       <CellValue
         column={column}
-        label={label}
+        label={label ?? getLocalTime(value)}
         layout={layout}
         size={size}
         transformer={transformer}

@@ -1,6 +1,6 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
-import { format } from 'date-fns'
+import { format, isValid, parseISO } from 'date-fns'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { columnType } from '~/core/queries/tables/columns'
@@ -65,6 +65,33 @@ export const formatColumnTime = (
       ? `${pattern}xxx`
       : pattern
   )
+
+const ZONED_TIME_TEXT =
+  /^(?:(?<day>\d{4}-\d{2}-\d{2})[ T])?(?<minutes>\d{2}:\d{2})(?<seconds>:\d{2}(?:\.\d+)?)?\s?(?:Z|(?<zoneHours>[+-]\d{2}):?(?<zoneMinutes>\d{2})?)$/iu
+
+/** The viewer's wall-clock text for a time stored with an offset other than theirs. */
+export const getLocalTime = (value: unknown) => {
+  const groups =
+    typeof value === 'string' && ZONED_TIME_TEXT.exec(value.trim())?.groups
+  if (!groups) {
+    return
+  }
+  const {
+    day,
+    minutes,
+    seconds = '',
+    zoneHours = '+00',
+    zoneMinutes = '00',
+  } = groups
+  const offset = `${zoneHours}:${zoneMinutes}`
+  const date = parseISO(
+    `${day ?? format(new Date(), 'yyyy-MM-dd')}T${minutes}${seconds}${offset}`
+  )
+  if (!isValid(date) || format(date, 'xxx') === offset) {
+    return
+  }
+  return `${format(date, day ? 'yyyy-MM-dd HH:mm' : 'HH:mm')}${seconds}`
+}
 
 const SELECT_COLUMN_ID = '!__(selection_column)__!'
 const ACTIONS_COLUMN_ID = '!__(actions_column)__!'
