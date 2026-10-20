@@ -1,7 +1,6 @@
-import { Download04Icon, LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
-import { Button } from '@tamery/ui/components/button'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
   Empty,
@@ -48,9 +47,9 @@ const SharePage = () => {
   )
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-7xl flex-col gap-6 px-4 pt-10 sm:px-6">
-      <header className="flex shrink-0 flex-wrap items-end gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+    <div className="flex h-dvh flex-col p-2">
+      <main className="bg-background ring-foreground/4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring">
+        <header className="flex shrink-0 flex-col gap-2 px-4 pt-8 pb-6">
           <h1
             data-mask
             className="text-3xl font-semibold tracking-tight text-balance"
@@ -74,50 +73,32 @@ const SharePage = () => {
               ))}
             </div>
           )}
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          render={
-            <a
-              href={`/csv/${shareId}?${new URLSearchParams(
-                search.sort
-                  ? { order: search.order ?? 'asc', sort: search.sort }
-                  : {}
-              )}`}
-              download
-              aria-label="Download CSV"
+        </header>
+        <div className="flex min-h-0 flex-1 flex-col border-t">
+          {rows.length === 0 ? (
+            <Empty size="sm">
+              <EmptyHeader>
+                <EmptyMedia variant="muted">
+                  <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
+                </EmptyMedia>
+                <EmptyTitle>No rows</EmptyTitle>
+                <EmptyDescription>
+                  Nothing in this table matches.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <ShareGrid
+              columns={first.columns}
+              isFetching={isFetching}
+              onEndReached={() => hasNextPage && fetchNextPage()}
+              rows={rows}
+              search={search}
             />
-          }
-        >
-          <HugeiconsIcon icon={Download04Icon} strokeWidth={2} />
-          Download CSV
-        </Button>
-      </header>
-      <main className="bg-background ring-foreground/4 flex min-h-0 flex-col overflow-hidden rounded-2xl shadow-xs ring">
-        {rows.length === 0 ? (
-          <Empty size="sm">
-            <EmptyHeader>
-              <EmptyMedia variant="muted">
-                <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
-              </EmptyMedia>
-              <EmptyTitle>No rows</EmptyTitle>
-              <EmptyDescription>
-                Nothing in this table matches.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <ShareGrid
-            columns={first.columns}
-            isFetching={isFetching}
-            onEndReached={() => hasNextPage && fetchNextPage()}
-            rows={rows}
-            search={search}
-          />
-        )}
+          )}
+        </div>
       </main>
-      <footer className="flex shrink-0 justify-center pb-4">
+      <footer className="flex shrink-0 justify-center pt-3 pb-1">
         <a
           href={import.meta.env.VITE_PUBLIC_MAIN_URL}
           className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"

@@ -1481,9 +1481,6 @@ importers:
       better-result:
         specifier: 'catalog:'
         version: 3.0.1
-      d3-dsv:
-        specifier: 'catalog:'
-        version: 3.0.1
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
@@ -1527,9 +1524,6 @@ importers:
       '@tamery/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@types/d3-dsv':
-        specifier: 'catalog:'
-        version: 3.0.7
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0

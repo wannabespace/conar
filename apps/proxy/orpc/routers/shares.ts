@@ -1,5 +1,4 @@
 import {
-  SHARE_EXPORT_LIMIT,
   SHARE_PAGE_SIZE,
   shareCheckInput,
   shareSort,
@@ -16,46 +15,6 @@ import { readShareRows, shareRows } from '~/share-rows'
 const assertReachable = async (connectionString: string) => {
   assertNoServerFiles(connectionString)
   await assertPublicHost(connectionString)
-}
-
-const viewerInput = type({
-  id: 'string.uuid',
-  password: 'string | null',
-  sort: shareSort,
-})
-
-const unavailable = {
-  UNAVAILABLE: {
-    message: 'This table cannot be loaded right now. Try again later.',
-  },
-}
-
-const loadShare = async (
-  { id, password, sort }: typeof viewerInput.infer,
-  page: { limit: number; offset: number }
-) => {
-  const api = createApiClient({})
-  const share = await api.internal.shares.resolve({ id, password })
-  const view = { ...share.view, schema: share.schema, table: share.table }
-  const read = await Result.tryPromise(async () => {
-    await assertReachable(share.connectionString)
-    return shareRows[share.refresh]({
-      ...page,
-      connectionString: share.connectionString,
-      dialect: share.dialect,
-      share,
-      // A hidden column must not even order what the viewer sees.
-      sort: sort && view.columns.includes(sort.column) ? sort : null,
-      view,
-    })
-  })
-  const failing = read.isErr()
-
-  if (failing !== (share.failingSince !== null)) {
-    await silently(() => api.internal.shares.report({ failing, id }))
-  }
-
-  return { read, share }
 }
 
 export const shares = {
@@ -102,47 +61,56 @@ export const shares = {
         })
       }
     }),
-  export: orpc
-    .input(viewerInput)
-    .errors(unavailable)
-    .handler(async ({ errors, input }) => {
-      const { read, share } = await loadShare(input, {
-        limit: SHARE_EXPORT_LIMIT,
-        offset: 0,
-      })
-
-      if (read.isErr()) {
-        throw errors.UNAVAILABLE({ cause: read.error.cause })
-      }
-
-      return {
-        columns: share.view.columns,
-        name: share.name,
-        rows: read.value,
-      }
-    }),
   rows: orpc
-    .input(viewerInput.merge({ offset: 'number.integer >= 0' }))
-    .errors(unavailable)
-    .handler(async ({ errors, input }) => {
-      const { read, share } = await loadShare(input, {
-        limit: SHARE_PAGE_SIZE + 1,
-        offset: input.offset,
+    .input(
+      type({
+        id: 'string.uuid',
+        offset: 'number.integer >= 0',
+        password: 'string | null',
+        sort: shareSort,
       })
+    )
+    .errors({
+      UNAVAILABLE: {
+        message: 'This table cannot be loaded right now. Try again later.',
+      },
+    })
+    .handler(async ({ errors, input: { id, offset, password, sort } }) => {
+      const api = createApiClient({})
+      const share = await api.internal.shares.resolve({ id, password })
+      const view = { ...share.view, schema: share.schema, table: share.table }
+      const read = await Result.tryPromise(async () => {
+        await assertReachable(share.connectionString)
+        return shareRows[share.refresh]({
+          connectionString: share.connectionString,
+          dialect: share.dialect,
+          limit: SHARE_PAGE_SIZE + 1,
+          offset,
+          share,
+          // A hidden column must not even order what the viewer sees.
+          sort: sort && view.columns.includes(sort.column) ? sort : null,
+          view,
+        })
+      })
+      const failing = read.isErr()
+
+      if (failing !== (share.failingSince !== null)) {
+        await silently(() => api.internal.shares.report({ failing, id }))
+      }
 
       if (read.isErr()) {
         throw errors.UNAVAILABLE({ cause: read.error.cause })
       }
 
       return {
-        columns: share.view.columns.map((id) => ({
-          id,
+        columns: view.columns.map((column) => ({
+          id: column,
           type:
-            share.view.columnTypes.find((column) => column.id === id)?.type ??
+            view.columnTypes.find(({ id: typed }) => typed === column)?.type ??
             '',
         })),
         description: share.description,
-        filters: share.view.filters,
+        filters: view.filters,
         hasMore: read.value.length > SHARE_PAGE_SIZE,
         name: share.name,
         refresh: share.refresh,

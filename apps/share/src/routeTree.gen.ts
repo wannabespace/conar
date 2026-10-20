@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareIdRouteImport } from './routes/$shareId'
-import { Route as CsvShareIdRouteImport } from './routes/csv.$shareId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +22,31 @@ const ShareIdRoute = ShareIdRouteImport.update({
   path: '/$shareId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CsvShareIdRoute = CsvShareIdRouteImport.update({
-  id: '/csv/$shareId',
-  path: '/csv/$shareId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$shareId': typeof ShareIdRoute
-  '/csv/$shareId': typeof CsvShareIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$shareId': typeof ShareIdRoute
-  '/csv/$shareId': typeof CsvShareIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$shareId': typeof ShareIdRoute
-  '/csv/$shareId': typeof CsvShareIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$shareId' | '/csv/$shareId'
+  fullPaths: '/' | '/$shareId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$shareId' | '/csv/$shareId'
-  id: '__root__' | '/' | '/$shareId' | '/csv/$shareId'
+  to: '/' | '/$shareId'
+  id: '__root__' | '/' | '/$shareId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShareIdRoute: typeof ShareIdRoute
-  CsvShareIdRoute: typeof CsvShareIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,20 +65,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/csv/$shareId': {
-      id: '/csv/$shareId'
-      path: '/csv/$shareId'
-      fullPath: '/csv/$shareId'
-      preLoaderRoute: typeof CsvShareIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShareIdRoute: ShareIdRoute,
-  CsvShareIdRoute: CsvShareIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

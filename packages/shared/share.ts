@@ -6,7 +6,6 @@ import { SQL_OPERATORS } from './filters'
 import { objectEntries } from './utils'
 
 export const SHARE_PAGE_SIZE = 100
-export const SHARE_EXPORT_LIMIT = 10_000
 
 const orderDirection = type('"ASC" | "DESC"')
 

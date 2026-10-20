@@ -234,9 +234,10 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Sharing
 
-- **Viewer analytics on the share site.** `apps/share` has no PostHog facade, so CSV downloads, page views and unlocks are not counted. A cookieless facade like the website's would show which shares get used.
+- **Viewer analytics on the share site.** `apps/share` has no PostHog facade, so page views and unlocks are not counted. A cookieless facade like the website's would show which shares get used.
 - **Values rendered by type on the share page.** Cells are plain text today; booleans, enums, dates and JSON could reuse the grid's renderers once they live outside `apps/app`.
 - **Viewer filters.** Viewers can only sort and page; a search over the shown columns, narrowing on top of the owner's filters, would cover most "find my row" visits.
 - **A bounded share cache.** The proxy keeps cached pages in memory and clears them once a day; a size cap (or Redis) would keep a very popular share from growing it between clears, and would share the cache across proxy instances.
 - **Unlock without resending the password.** The share site keeps the password in an httpOnly cookie and sends it on every page; a short-lived signed token from the first unlock would keep the password out of later requests and let the lockout count only real guesses.
+- **CSV download for viewers.** Left out of the first version; the proxy would need an export read capped well past a page, and the share site a server route turning it into CSV.
 - **Share a saved query.** A share is one table; a share of a saved runner query would cover joins and aggregates, with the same read-only and public-host checks.
