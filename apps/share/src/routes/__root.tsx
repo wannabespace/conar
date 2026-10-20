@@ -1,7 +1,8 @@
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
+import type { QueryClient } from '@tanstack/react-query'
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
@@ -29,32 +30,34 @@ const RootComponent = () => (
   </html>
 )
 
-export const Route = createRootRoute({
-  component: RootComponent,
-  errorComponent: () => <StatusPage status="unavailable" />,
-  head: () => ({
-    links: [
-      { href: appCss, rel: 'stylesheet' },
-      {
-        href: '/favicon-96x96.png',
-        rel: 'icon',
-        sizes: '96x96',
-        type: 'image/png',
-      },
-      { href: '/favicon.svg', rel: 'icon', type: 'image/svg+xml' },
-      { href: '/favicon.ico', rel: 'shortcut icon' },
-      {
-        href: '/apple-touch-icon.png',
-        rel: 'apple-touch-icon',
-        sizes: '180x180',
-      },
-    ],
-    meta: [
-      { charSet: 'utf-8' },
-      { title: 'Shared table · Tamery' },
-      { content: 'width=device-width, initial-scale=1', name: 'viewport' },
-      { content: 'noindex, nofollow', name: 'robots' },
-    ],
-  }),
-  notFoundComponent: () => <StatusPage status="gone" />,
-})
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    component: RootComponent,
+    errorComponent: () => <StatusPage status="unavailable" />,
+    head: () => ({
+      links: [
+        { href: appCss, rel: 'stylesheet' },
+        {
+          href: '/favicon-96x96.png',
+          rel: 'icon',
+          sizes: '96x96',
+          type: 'image/png',
+        },
+        { href: '/favicon.svg', rel: 'icon', type: 'image/svg+xml' },
+        { href: '/favicon.ico', rel: 'shortcut icon' },
+        {
+          href: '/apple-touch-icon.png',
+          rel: 'apple-touch-icon',
+          sizes: '180x180',
+        },
+      ],
+      meta: [
+        { charSet: 'utf-8' },
+        { title: 'Shared table · Tamery' },
+        { content: 'width=device-width, initial-scale=1', name: 'viewport' },
+        { content: 'noindex, nofollow', name: 'robots' },
+      ],
+    }),
+    notFoundComponent: () => <StatusPage status="gone" />,
+  }
+)

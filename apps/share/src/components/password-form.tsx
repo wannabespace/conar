@@ -3,10 +3,12 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { PasswordInput } from '@tamery/ui/components/custom/password-input'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useActionState } from 'react'
 
 import { unlockShare } from '~/lib/share'
+import { shareRowsQueryKey } from '~/lib/share-rows'
 
 export const PasswordForm = ({
   message,
@@ -16,12 +18,14 @@ export const PasswordForm = ({
   shareId: string
 }) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [error, submit, pending] = useActionState(
     async (_previous: string | null, form: FormData) => {
       const refused = await unlockShare({
         data: { id: shareId, password: String(form.get('password')) },
       })
       if (!refused) {
+        queryClient.removeQueries({ queryKey: shareRowsQueryKey(shareId) })
         await router.invalidate()
       }
       return refused

@@ -135,7 +135,12 @@ export const shares = {
       }
 
       return {
-        columns: share.view.columns,
+        columns: share.view.columns.map((id) => ({
+          id,
+          type:
+            share.view.columnTypes.find((column) => column.id === id)?.type ??
+            '',
+        })),
         description: share.description,
         filters: share.view.filters,
         hasMore: read.value.length > SHARE_PAGE_SIZE,

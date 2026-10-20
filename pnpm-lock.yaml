@@ -1463,9 +1463,15 @@ importers:
       '@orpc/client':
         specifier: 'catalog:'
         version: 2.0.0-beta.44
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.104.3(react@19.3.1)
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.44(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@tanstack/react-router-ssr-query':
+        specifier: 'catalog:'
+        version: 1.167.3(@tanstack/query-core@5.104.3)(@tanstack/react-query@5.104.3(react@19.3.1))(@tanstack/react-router@1.170.44(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@tanstack/router-core@1.171.37)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@tanstack/react-start':
         specifier: 'catalog:'
         version: 1.169.2(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(supports-color@7.2.0)(vite@8.3.4(@types/node@26.1.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -1515,6 +1521,9 @@ importers:
       '@tamery/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@tamery/table':
+        specifier: workspace:*
+        version: link:../../packages/table
       '@tamery/ui':
         specifier: workspace:*
         version: link:../../packages/ui

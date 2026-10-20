@@ -1,4 +1,5 @@
 export type { GridColumn } from './columns'
+export { getColumnSize } from './column-size'
 export { Grid } from './grid'
 export type { ScrollToCell } from './grid'
 export type { GridCellProps, GridHeaderProps, GridRow } from './grid-row'
