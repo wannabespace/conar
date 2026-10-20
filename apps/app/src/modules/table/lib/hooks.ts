@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useSubscription } from 'seitu/react'
 
 import { getValueForEditor } from '~/core/connection/utils'
+import { CELL_FLASH_DURATION_MS } from '~/core/table/cell/cell'
 import {
   draftKey,
   getRowKeyByPrimaryKeys,
@@ -9,9 +9,6 @@ import {
   primaryKeysKey,
   useTableSessionStore,
 } from '~/core/table/session'
-
-// Must match the flash overlay's duration-1500 in core/table/cell/cell.tsx.
-const CELL_FLASH_DURATION_MS = 1500
 
 export const useSyncSelectionWithRows = (
   rows: Record<string, unknown>[],
@@ -51,22 +48,6 @@ export const useFlashChangedCells = (
 ) => {
   const store = useTableSessionStore()
   const previousRef = useRef<Map<string, Record<string, unknown>>>(null)
-  const flash = useSubscription(store, { selector: (state) => state.flash })
-
-  useEffect(() => {
-    if (!flash) {
-      return
-    }
-    const clearFlash = () =>
-      store.set((state) =>
-        state.flash === flash ? { ...state, flash: null } : state
-      )
-    const timeout = setTimeout(clearFlash, CELL_FLASH_DURATION_MS)
-    return () => {
-      clearTimeout(timeout)
-      clearFlash()
-    }
-  }, [store, flash])
 
   useEffect(() => {
     if (primaryColumns.length === 0) {
@@ -92,7 +73,13 @@ export const useFlashChangedCells = (
       }
     }
     if (keys.size > 0) {
-      store.set((state) => ({ ...state, flash: { at: Date.now(), keys } }))
+      const flash = { at: Date.now(), keys }
+      store.set((state) => ({ ...state, flash }))
+      setTimeout(() => {
+        store.set((state) =>
+          state.flash === flash ? { ...state, flash: null } : state
+        )
+      }, CELL_FLASH_DURATION_MS)
     }
   }, [store, rows, primaryColumns])
 }

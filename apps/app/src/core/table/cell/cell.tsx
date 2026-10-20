@@ -18,6 +18,8 @@ import { JsonPeek, JsonTree } from './json-tree'
 import type { Column } from './utils'
 import { hasTabularFigures } from './utils'
 
+export const CELL_FLASH_DURATION_MS = 1500
+
 const CellValue = ({
   column,
   label,
@@ -191,7 +193,12 @@ export const TableCell = ({
         <div
           key={flash}
           aria-hidden
-          className="bg-primary/20 animate-out fade-out fill-mode-forwards pointer-events-none absolute inset-0 -z-10 duration-1500 ease-out"
+          className="bg-primary/20 animate-out fade-out fill-mode-forwards pointer-events-none absolute inset-0 -z-10 duration-(--flash-duration) ease-out"
+          style={
+            {
+              '--flash-duration': `${CELL_FLASH_DURATION_MS}ms`,
+            } as CSSProperties
+          }
         />
       )}
       {(state || draft) && (
