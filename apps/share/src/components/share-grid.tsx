@@ -70,7 +70,7 @@ export const ShareGrid = ({
               aria-sort={sorted ? ARIA_SORT[sorted] : undefined}
               // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
               style={style}
-              className="relative flex items-center py-1 pr-3 pl-2 select-none"
+              className="relative flex items-center py-2.5 pr-3 pl-2 select-none"
             >
               <Link
                 to="."

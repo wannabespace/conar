@@ -40,12 +40,21 @@ export const getShare = createServerFn({ method: 'GET' })
       return failure(result.error.cause)
     }
 
-    const { columns, description, filters, hasMore, name, refresh, rows } =
-      result.value
+    const {
+      columns,
+      description,
+      fetchedAt,
+      filters,
+      hasMore,
+      name,
+      refresh,
+      rows,
+    } = result.value
 
     return {
       columns,
       description,
+      fetchedAt,
       filters: filters.map(({ column, ref, values, via }) => ({
         column: via ? `${via.table}.${via.target}` : column,
         operator: ref.label,

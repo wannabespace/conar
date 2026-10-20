@@ -10,8 +10,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { formatDistanceToNow } from 'date-fns'
 
 import { PasswordForm } from '~/components/password-form'
 import { ShareGrid, shareSearch } from '~/components/share-grid'
@@ -62,7 +68,15 @@ const SharePage = () => {
           </p>
         )}
         <p className="text-muted-foreground text-xs">
-          {`${plural(first.columns.length, 'column')} · ${shareRefreshLabels[first.refresh]}`}
+          {`${plural(first.columns.length, 'column')} · `}
+          <Tooltip>
+            <TooltipTrigger render={<span />}>
+              {shareRefreshLabels[first.refresh]}
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
+            </TooltipContent>
+          </Tooltip>
         </p>
         {first.filters.length > 0 && (
           <div data-mask className="flex flex-wrap gap-1 pt-1">

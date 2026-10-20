@@ -84,7 +84,7 @@ export const readShareRows = async ({
         }
   )
 
-  return result[0]?.rows ?? []
+  return { fetchedAt: new Date(), rows: result[0]?.rows ?? [] }
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000

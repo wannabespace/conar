@@ -110,11 +110,12 @@ export const shares = {
             '',
         })),
         description: share.description,
+        fetchedAt: read.value.fetchedAt,
         filters: view.filters,
-        hasMore: read.value.length > SHARE_PAGE_SIZE,
+        hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
         name: share.name,
         refresh: share.refresh,
-        rows: read.value.slice(0, SHARE_PAGE_SIZE),
+        rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
       }
     }),
 }
