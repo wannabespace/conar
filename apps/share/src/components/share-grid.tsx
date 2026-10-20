@@ -1,22 +1,11 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- the app's virtualized flex grid cannot be built from table elements */
-import {
-  ArrowDown02Icon,
-  ArrowUp02Icon,
-  MoreHorizontalIcon,
-} from '@hugeicons/core-free-icons'
+import { ArrowDown02Icon, ArrowUp02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize, Grid } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@tamery/ui/components/empty'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
@@ -30,25 +19,9 @@ export const shareSearch = type({
 
 type ShareSearch = typeof shareSearch.infer
 
-export type RowsEnd = 'capped' | 'last' | 'more'
-
-const EndOfRows = ({ end }: { end: Exclude<RowsEnd, 'capped'> }) => (
+const LoadingMoreRows = () => (
   <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
-    {end === 'more' ? (
-      <Spinner />
-    ) : (
-      <Empty size="sm">
-        <EmptyHeader>
-          <EmptyMedia variant="muted">
-            <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
-          </EmptyMedia>
-          <EmptyTitle>No more rows</EmptyTitle>
-          <EmptyDescription>
-            You’ve reached the end of this table.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )}
+    <Spinner />
   </div>
 )
 
@@ -78,7 +51,7 @@ const nextSort = (
 
 export const ShareGrid = ({
   columns,
-  end,
+  hasNextPage,
   isFetching,
   onEndReached,
   orderBy,
@@ -86,7 +59,7 @@ export const ShareGrid = ({
   search,
 }: {
   columns: { id: string; kind: ColumnKind; type: string | null }[]
-  end: RowsEnd
+  hasNextPage: boolean
   isFetching: boolean
   onEndReached: () => void
   orderBy: Record<string, 'ASC' | 'DESC'>
@@ -114,7 +87,7 @@ export const ShareGrid = ({
     <div className="min-h-0 flex-1">
       <Grid
         scrollRef={scrollRef}
-        footer={end !== 'capped' && <EndOfRows end={end} />}
+        footer={hasNextPage && <LoadingMoreRows />}
         isFetching={isFetching}
         onEndReached={onEndReached}
         renderBody={(body) => body}
