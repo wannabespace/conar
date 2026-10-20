@@ -1,6 +1,53 @@
+import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from '@tamery/ui/components/item'
+
 import { nav } from '~/lib/nav'
 
 import { DocsLink } from './docs-link'
+
+const Neighbour = ({
+  direction,
+  page,
+}: {
+  direction: 'next' | 'previous'
+  page: { href: string; title: string }
+}) => {
+  const icon = (
+    <HugeiconsIcon
+      className="text-muted-foreground size-4"
+      icon={direction === 'next' ? ArrowRight01Icon : ArrowLeft01Icon}
+      strokeWidth={2}
+    />
+  )
+
+  return (
+    <Item
+      className={
+        direction === 'next'
+          ? 'text-foreground sm:col-start-2'
+          : 'text-foreground'
+      }
+      render={<DocsLink href={page.href} />}
+      size="sm"
+      variant="card"
+    >
+      {direction === 'previous' && icon}
+      <ItemContent className={direction === 'next' ? 'items-end' : undefined}>
+        <ItemDescription>
+          {direction === 'next' ? 'Next' : 'Previous'}
+        </ItemDescription>
+        <ItemTitle>{page.title}</ItemTitle>
+      </ItemContent>
+      {direction === 'next' && icon}
+    </Item>
+  )
+}
 
 export const PageNeighbours = ({ href }: { href: string }) => {
   const { next, previous } = nav.getNeighbours(href)
@@ -10,25 +57,9 @@ export const PageNeighbours = ({ href }: { href: string }) => {
   }
 
   return (
-    <nav className="border-border mt-12 grid grid-cols-2 gap-4 border-t pt-6">
-      {previous && (
-        <DocsLink
-          className="text-foreground flex flex-col gap-1"
-          href={previous.href}
-        >
-          <span className="text-muted-foreground text-xs">Previous</span>
-          <span className="text-sm font-medium">{previous.title}</span>
-        </DocsLink>
-      )}
-      {next && (
-        <DocsLink
-          className="text-foreground col-start-2 flex flex-col items-end gap-1"
-          href={next.href}
-        >
-          <span className="text-muted-foreground text-xs">Next</span>
-          <span className="text-sm font-medium">{next.title}</span>
-        </DocsLink>
-      )}
+    <nav aria-label="Pages" className="mt-16 grid gap-3 sm:grid-cols-2">
+      {previous && <Neighbour direction="previous" page={previous} />}
+      {next && <Neighbour direction="next" page={next} />}
     </nav>
   )
 }
