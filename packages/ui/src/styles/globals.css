@@ -387,10 +387,7 @@
 }
 
 @utility invalid-ring {
-  /* :where keeps the specificity of a plain utility, so a control's own ring-0 still wins over it */
-  &:where(:not(:focus-visible, :has(:focus-visible))) {
-    @apply ring-destructive/50 ring-3;
-  }
+  @apply ring-destructive/50 ring-3;
 }
 
 @utility hit-area-* {
