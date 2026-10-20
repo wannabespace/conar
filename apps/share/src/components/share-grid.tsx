@@ -20,31 +20,59 @@ type ShareSearch = typeof shareSearch.infer
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
 
+const DIRECTIONS = { ASC: 'asc', DESC: 'desc' } as const
+
 const nextSort = (
-  { order, sort }: ShareSearch,
-  column: string
+  current: ShareSearch,
+  column: string,
+  ownerSort: ShareSearch
 ): ShareSearch => {
-  if (sort !== column) {
-    return { order: 'asc', sort: column }
+  if (current.sort === column && current.order === 'desc' && !ownerSort.sort) {
+    return {}
   }
-  return order === 'desc' ? {} : { order: 'desc', sort: column }
+  const next = {
+    order:
+      current.sort === column && current.order === 'asc'
+        ? ('desc' as const)
+        : ('asc' as const),
+    sort: column,
+  }
+  return next.sort === ownerSort.sort && next.order === ownerSort.order
+    ? {}
+    : next
 }
 
 export const ShareGrid = ({
   columns,
   isFetching,
   onEndReached,
+  orderBy,
   rows,
   search,
 }: {
   columns: { id: string; kind: ColumnKind; type: string | null }[]
   isFetching: boolean
   onEndReached: () => void
+  orderBy: Record<string, 'ASC' | 'DESC'>
   rows: GridRow[]
   search: ShareSearch
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const kinds = new Map(columns.map(({ id, kind }) => [id, kind]))
+  const [ownerColumn, ownerDirection] = Object.entries(orderBy)[0] ?? []
+  const ownerSort: ShareSearch = ownerColumn
+    ? { order: ownerDirection && DIRECTIONS[ownerDirection], sort: ownerColumn }
+    : {}
+  const current: ShareSearch = search.sort
+    ? { order: search.order ?? 'asc', sort: search.sort }
+    : ownerSort
+  const sortOf = (column: string) => {
+    if (search.sort) {
+      return current.sort === column ? current.order : undefined
+    }
+    const direction = orderBy[column]
+    return direction && DIRECTIONS[direction]
+  }
 
   return (
     <div className="min-h-0 flex-1">
@@ -59,8 +87,7 @@ export const ShareGrid = ({
           size: getColumnSize(column.type),
         }))}
         renderHeader={({ column, style }) => {
-          const sorted =
-            search.sort === column.id ? (search.order ?? 'asc') : null
+          const sorted = sortOf(column.id)
           return (
             <div
               role="columnheader"
@@ -70,7 +97,7 @@ export const ShareGrid = ({
             >
               <Link
                 to="."
-                search={nextSort(search, column.id)}
+                search={nextSort(current, column.id, ownerSort)}
                 className="text-foreground flex min-w-0 flex-1 items-center gap-1.5"
               >
                 <ColumnKindIcon kind={kinds.get(column.id) ?? 'text'} />

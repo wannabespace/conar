@@ -81,6 +81,8 @@ export const shares = {
       const api = createApiClient({})
       const share = await api.internal.shares.resolve({ id, password, token })
       const view = { ...share.view, schema: share.schema, table: share.table }
+      const isShown = (column: string) =>
+        view.columns.some((shown) => shown.id === column)
       const read = await Result.tryPromise(async () => {
         await assertReachable(share.connectionString)
         return shareRows.read(share, {
@@ -89,10 +91,7 @@ export const shares = {
           limit: SHARE_PAGE_SIZE + 1,
           offset: (page - 1) * SHARE_PAGE_SIZE,
           // A hidden column must not even order what the viewer sees.
-          sort:
-            sort && view.columns.some((column) => column.id === sort.column)
-              ? sort
-              : null,
+          sort: sort && isShown(sort.column) ? sort : null,
           view,
         })
       })
@@ -123,6 +122,9 @@ export const shares = {
         filters: view.filters,
         hasMore: read.value.rows.length > SHARE_PAGE_SIZE,
         name: share.name,
+        orderBy: Object.fromEntries(
+          Object.entries(view.orderBy).filter(([column]) => isShown(column))
+        ),
         refresh: share.refresh,
         rows: read.value.rows.slice(0, SHARE_PAGE_SIZE),
         token: share.token,

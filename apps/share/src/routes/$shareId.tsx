@@ -8,11 +8,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
@@ -36,7 +31,6 @@ const SharePage = () => {
       shareRowsQueryOptions({ id: shareId, sort: toSort(search) })
     )
   const [first] = data.pages
-  const last = data.pages.at(-1)
 
   if (first?.status === 'locked') {
     return <PasswordForm shareId={shareId} message={first.message} />
@@ -69,17 +63,7 @@ const SharePage = () => {
           </p>
         )}
         <p className="text-muted-foreground text-xs">
-          {`${plural(first.columns.length, 'column')} · `}
-          <Tooltip>
-            <TooltipTrigger render={<span />}>
-              {last?.status === 'ready' && last.hasMore
-                ? `${rows.length}+ rows`
-                : plural(rows.length, 'row')}
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
-            </TooltipContent>
-          </Tooltip>
+          {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
         </p>
         {first.filters.length > 0 && (
           <div data-mask className="flex flex-wrap gap-1 pt-1">
@@ -112,6 +96,7 @@ const SharePage = () => {
             columns={first.columns}
             isFetching={isFetching}
             onEndReached={() => hasNextPage && fetchNextPage()}
+            orderBy={first.orderBy}
             rows={rows}
             search={search}
           />
@@ -120,9 +105,6 @@ const SharePage = () => {
     </div>
   )
 }
-
-const plural = (count: number, noun: string) =>
-  `${count} ${noun}${count === 1 ? '' : 's'}`
 
 export const Route = createFileRoute('/$shareId')({
   validateSearch: shareSearch,
