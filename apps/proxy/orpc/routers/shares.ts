@@ -19,6 +19,12 @@ const assertReachable = async (connectionString: string) => {
   await assertPublicHost(connectionString)
 }
 
+const shareAccess = type({
+  id: 'string.uuid',
+  password: 'string | null',
+  token: 'string | null',
+})
+
 export const shares = {
   check: orpc
     .use(authMiddleware)
@@ -62,16 +68,17 @@ export const shares = {
         })
       }
     }),
+  info: orpc.input(shareAccess).handler(async ({ input }) => {
+    const share = await createApiClient({}).internal.shares.resolve(input)
+    return {
+      description: share.description,
+      filters: share.view.filters,
+      name: share.name,
+      token: share.token,
+    }
+  }),
   rows: orpc
-    .input(
-      type({
-        id: 'string.uuid',
-        page: sharePage,
-        password: 'string | null',
-        sort: shareSort,
-        token: 'string | null',
-      })
-    )
+    .input(shareAccess.merge({ page: sharePage, sort: shareSort }))
     .errors({
       UNAVAILABLE: {
         message: 'This table cannot be loaded right now. Try again later.',

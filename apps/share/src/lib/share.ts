@@ -50,11 +50,35 @@ export const getShare = createServerFn({ method: 'GET' })
       return failure(result.error.cause)
     }
 
-    const { columns, filters, rows } = result.value
+    const { columns, rows } = result.value
+
+    return {
+      ...omit(result.value, ['filters', 'token']),
+      rows: rows.map((row) =>
+        row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
+      ),
+      status: 'ready' as const,
+    }
+  })
+
+export const getShareInfo = createServerFn({ method: 'GET' })
+  .validator(type({ id: 'string' }))
+  .handler(async ({ data }) => {
+    const result = await Result.tryPromise(() =>
+      proxy.shares.info({
+        id: data.id,
+        password: null,
+        token: unlockToken.get(data.id),
+      })
+    )
+
+    if (result.isErr()) {
+      return failure(result.error.cause)
+    }
 
     return {
       ...omit(result.value, ['token']),
-      filters: filters.map(({ column, ref, values, via }) => ({
+      filters: result.value.filters.map(({ column, ref, values, via }) => ({
         column: via ? `${via.table}.${via.target}` : column,
         operator: ref.label,
         value:
@@ -62,9 +86,6 @@ export const getShare = createServerFn({ method: 'GET' })
             ? null
             : values.map((value) => cellText(value, null)).join(', '),
       })),
-      rows: rows.map((row) =>
-        row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
-      ),
       status: 'ready' as const,
     }
   })
@@ -73,13 +94,7 @@ export const unlockShare = createServerFn({ method: 'POST' })
   .validator(type({ id: 'string', password: 'string > 0' }))
   .handler(async ({ data }) => {
     const result = await Result.tryPromise(() =>
-      proxy.shares.rows({
-        id: data.id,
-        page: 1,
-        password: data.password,
-        sort: null,
-        token: null,
-      })
+      proxy.shares.info({ id: data.id, password: data.password, token: null })
     )
 
     if (result.isErr()) {

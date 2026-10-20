@@ -1,51 +1,109 @@
-import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import { Alert02Icon, LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { TableSkeleton } from '@tamery/table'
+import { Button } from '@tamery/ui/components/button'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
+import { Skeleton } from '@tamery/ui/components/skeleton'
+import {
+  useSuspenseInfiniteQuery,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
-import { useDeferredValue } from 'react'
+import type { ReactNode } from 'react'
+import { Suspense, useDeferredValue } from 'react'
 
 import { PasswordForm } from '~/components/password-form'
 import { ShareGrid, shareSearch } from '~/components/share-grid'
-import {
-  SHARE_HEADER_CLASS,
-  SHARE_PAGE_CLASS,
-  SHARE_TABLE_CLASS,
-  ShareSkeleton,
-} from '~/components/share-skeleton'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
-import { shareRowsQueryOptions } from '~/lib/share-rows'
+import { shareInfoQueryOptions, shareRowsQueryOptions } from '~/lib/share-rows'
 
 const toSort = ({ order, sort }: typeof shareSearch.infer) =>
   sort
     ? ({ column: sort, direction: order === 'desc' ? 'DESC' : 'ASC' } as const)
     : null
 
-const SharePage = () => {
+const useShareRows = () => {
   const { shareId } = Route.useParams()
   const search = Route.useSearch()
   const shownSearch = useDeferredValue(search)
-  const { data, fetchNextPage, hasNextPage, isFetching } =
-    useSuspenseInfiniteQuery(
-      shareRowsQueryOptions({ id: shareId, sort: toSort(shownSearch) })
+  const query = useSuspenseInfiniteQuery(
+    shareRowsQueryOptions({ id: shareId, sort: toSort(shownSearch) })
+  )
+  return { ...query, search, sorting: search !== shownSearch }
+}
+
+const UpdatedAt = () => {
+  const { data } = useShareRows()
+  const [first] = data.pages
+  return (
+    first?.status === 'ready' && (
+      <p className="text-muted-foreground text-xs">
+        {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
+      </p>
     )
+  )
+}
+
+const TableEmpty = ({
+  children,
+  description,
+  icon,
+  title,
+}: {
+  children?: ReactNode
+  description: string
+  icon: IconSvgElement
+  title: string
+}) => (
+  <Empty size="sm">
+    <EmptyHeader>
+      <EmptyMedia variant="muted">
+        <HugeiconsIcon icon={icon} strokeWidth={2} />
+      </EmptyMedia>
+      <EmptyTitle>{title}</EmptyTitle>
+      <EmptyDescription>{description}</EmptyDescription>
+    </EmptyHeader>
+    {children}
+  </Empty>
+)
+
+const ShareTable = () => {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    refetch,
+    search,
+    sorting,
+  } = useShareRows()
   const [first] = data.pages
 
-  if (first?.status === 'locked') {
-    return <PasswordForm shareId={shareId} message={first.message} />
-  }
   if (first?.status !== 'ready') {
-    return <StatusPage status={first?.status ?? 'unavailable'} />
+    return (
+      <TableEmpty
+        icon={Alert02Icon}
+        title="This table cannot be loaded right now"
+        description="The database behind this link is not answering. Try again in a little while."
+      >
+        <EmptyContent>
+          <Button variant="outline" onClick={() => refetch()}>
+            Try again
+          </Button>
+        </EmptyContent>
+      </TableEmpty>
+    )
   }
 
   const rows = data.pages.flatMap((page) =>
@@ -57,26 +115,65 @@ const SharePage = () => {
   )
 
   return (
-    <div className={SHARE_PAGE_CLASS}>
+    <>
+      {rows.length === 0 ? (
+        <TableEmpty
+          icon={LayoutTable02Icon}
+          title="No rows"
+          description="Nothing in this table matches."
+        />
+      ) : (
+        <ShareGrid
+          columns={first.columns}
+          hasNextPage={hasNextPage}
+          isFetching={isFetching}
+          onEndReached={() => hasNextPage && fetchNextPage()}
+          orderBy={first.orderBy}
+          rows={rows}
+          search={search}
+        />
+      )}
+      {sorting && (
+        <div className="bg-background animate-in fade-in fill-mode-both absolute inset-0 delay-150 duration-150">
+          <TableSkeleton selectable={false} />
+        </div>
+      )}
+    </>
+  )
+}
+
+const SharePage = () => {
+  const { shareId } = Route.useParams()
+  const { data: info } = useSuspenseQuery(shareInfoQueryOptions(shareId))
+
+  if (info.status === 'locked') {
+    return <PasswordForm shareId={shareId} message={info.message} />
+  }
+  if (info.status !== 'ready') {
+    return <StatusPage status={info.status} />
+  }
+
+  return (
+    <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 pt-4 pb-10 sm:px-6">
       <TopBar />
-      <header className={SHARE_HEADER_CLASS}>
+      <header className="flex shrink-0 flex-col gap-2 px-4">
         <h1
           data-mask
           className="text-3xl font-semibold tracking-tight text-balance"
         >
-          {first.name}
+          {info.name}
         </h1>
-        {first.description && (
+        {info.description && (
           <p data-mask className="text-muted-foreground max-w-2xl text-sm">
-            {first.description}
+            {info.description}
           </p>
         )}
-        <p className="text-muted-foreground text-xs">
-          {`Updated ${formatDistanceToNow(first.fetchedAt, { addSuffix: true })}`}
-        </p>
-        {first.filters.length > 0 && (
+        <Suspense fallback={<Skeleton className="my-0.5 h-3 w-36" />}>
+          <UpdatedAt />
+        </Suspense>
+        {info.filters.length > 0 && (
           <div data-mask className="flex flex-wrap gap-1 pt-1">
-            {first.filters.map(({ column, operator, value }) => (
+            {info.filters.map(({ column, operator, value }) => (
               <FilterChip
                 key={`${column}-${operator}-${value}`}
                 column={column}
@@ -87,35 +184,10 @@ const SharePage = () => {
           </div>
         )}
       </header>
-      <main className={SHARE_TABLE_CLASS}>
-        {rows.length === 0 ? (
-          <Empty size="sm">
-            <EmptyHeader>
-              <EmptyMedia variant="muted">
-                <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
-              </EmptyMedia>
-              <EmptyTitle>No rows</EmptyTitle>
-              <EmptyDescription>
-                Nothing in this table matches.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <ShareGrid
-            columns={first.columns}
-            hasNextPage={hasNextPage}
-            isFetching={isFetching}
-            onEndReached={() => hasNextPage && fetchNextPage()}
-            orderBy={first.orderBy}
-            rows={rows}
-            search={search}
-          />
-        )}
-        {search !== shownSearch && (
-          <div className="bg-background animate-in fade-in fill-mode-both absolute inset-0 delay-150 duration-150">
-            <TableSkeleton selectable={false} />
-          </div>
-        )}
+      <main className="bg-background ring-foreground/4 relative flex min-h-0 flex-col overflow-hidden rounded-xl ring">
+        <Suspense fallback={<TableSkeleton selectable={false} />}>
+          <ShareTable />
+        </Suspense>
       </main>
     </div>
   )
@@ -128,7 +200,21 @@ export const Route = createFileRoute('/$shareId')({
     void context.queryClient.ensureInfiniteQueryData(
       shareRowsQueryOptions({ id: params.shareId, sort: toSort(deps) })
     )
+    return context.queryClient.ensureQueryData(
+      shareInfoQueryOptions(params.shareId)
+    )
   },
-  pendingComponent: ShareSkeleton,
+  head: ({ loaderData }) => ({
+    meta:
+      loaderData?.status === 'ready'
+        ? [
+            { title: `${loaderData.name} · Tamery` },
+            ...(loaderData.description
+              ? [{ content: loaderData.description, name: 'description' }]
+              : []),
+            { content: loaderData.name, property: 'og:title' },
+          ]
+        : [],
+  }),
   component: SharePage,
 })

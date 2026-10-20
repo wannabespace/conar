@@ -1,11 +1,17 @@
 import { SHARE_REFRESH_MS } from '@tamery/shared/enums/share-refresh'
 import type { shareSort } from '@tamery/shared/share'
 import { SHARE_MAX_PAGES } from '@tamery/shared/share'
-import { infiniteQueryOptions } from '@tanstack/react-query'
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query'
 
-import { getShare } from './share'
+import { getShare, getShareInfo } from './share'
 
 export const shareRowsQueryKey = (id: string) => ['share', id]
+
+export const shareInfoQueryOptions = (id: string) =>
+  queryOptions({
+    queryFn: () => getShareInfo({ data: { id } }),
+    queryKey: [...shareRowsQueryKey(id), 'info'],
+  })
 
 export const shareRowsQueryOptions = ({
   id,
