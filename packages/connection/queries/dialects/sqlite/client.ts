@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 import { sqliteFile } from '../../../sqlite-file'
 
-// The driver waits for a lock synchronously, holding the desktop main process, so the wait stays short.
+// The driver waits for a lock synchronously, holding every other query in the desktop database process, so the wait stays short.
 const BUSY_TIMEOUT_MS = 2000
 
 /** `mode=rw` fails on a missing file instead of creating an empty database at a mistyped path. */

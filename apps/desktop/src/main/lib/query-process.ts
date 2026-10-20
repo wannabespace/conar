@@ -1,28 +1,19 @@
 import path from 'node:path'
 
 import type { QueryExecutor } from '@tamery/connection/queries'
-import type { ConfirmHostKey } from '@tamery/connection/ssh/host-key'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import type { UtilityProcess } from 'electron'
 import { utilityProcess } from 'electron'
 
+import type { QueryProcessReply, QueryProcessRequest } from '../query'
 import { confirmHostKey } from './ssh-host-key'
-
-type Method = keyof QueryExecutor
-
-export type QueryProcessRequest =
-  | { id: number; dialect: Dialect; method: Method; args: unknown }
-  | { hostKeyId: number; trusted: boolean }
-  | 'resetTransactions'
-
-export type QueryProcessReply =
-  | { id: number; result: unknown }
-  | { id: number; error: string }
-  | { hostKeyId: number; prompt: Parameters<ConfirmHostKey>[0] }
 
 const pending = new Map<number, PromiseWithResolvers<unknown>>()
 let nextId = 0
 let child: UtilityProcess | null = null
+
+const send = (queryProcess: UtilityProcess, request: QueryProcessRequest) =>
+  queryProcess.postMessage(request)
 
 const start = () => {
   const queryProcess = utilityProcess.fork(
@@ -31,21 +22,26 @@ const start = () => {
     { serviceName: 'Tamery Databases' }
   )
   queryProcess.on('message', async (reply: QueryProcessReply) => {
-    if ('hostKeyId' in reply) {
+    if (reply.type === 'hostKey') {
       const trusted = await confirmHostKey(reply.prompt)
-      queryProcess.postMessage({
+      send(queryProcess, {
         hostKeyId: reply.hostKeyId,
         trusted,
-      } satisfies QueryProcessRequest)
+        type: 'hostKey',
+      })
       return
     }
     const request = pending.get(reply.id)
     pending.delete(reply.id)
-    if ('error' in reply) {
+    if (reply.type === 'error') {
       request?.reject(new Error(reply.error))
     } else {
       request?.resolve(reply.result)
     }
+  })
+  // Without a listener the emitter throws a fatal child error into main.
+  queryProcess.on('error', (type, location) => {
+    console.error('[Database process]', type, location)
   })
   queryProcess.once('exit', () => {
     child = null
@@ -57,7 +53,7 @@ const start = () => {
   return queryProcess
 }
 
-const call = <M extends Method>(
+const call = <M extends keyof QueryExecutor>(
   dialect: Dialect,
   method: M,
   args: Parameters<QueryExecutor[M]>[0]
@@ -67,11 +63,10 @@ const call = <M extends Method>(
   nextId += 1
   const request = Promise.withResolvers<unknown>()
   pending.set(id, request)
-  child.postMessage({ args, dialect, id, method } satisfies QueryProcessRequest)
+  send(child, { args, dialect, id, method, type: 'call' })
   return request.promise as ReturnType<QueryExecutor[M]>
 }
 
-// A socket close blocks its thread for a second per socket under a macOS network content filter (VPN, endpoint security), so drivers never run in main.
 export const queryProcessExecutor = (dialect: Dialect): QueryExecutor => ({
   beginTransaction: (args) => call(dialect, 'beginTransaction', args),
   cancel: (args) => call(dialect, 'cancel', args),
@@ -84,5 +79,7 @@ export const queryProcessExecutor = (dialect: Dialect): QueryExecutor => ({
 })
 
 export const resetQueryTransactions = () => {
-  child?.postMessage('resetTransactions' satisfies QueryProcessRequest)
+  if (child) {
+    send(child, { type: 'resetTransactions' })
+  }
 }
