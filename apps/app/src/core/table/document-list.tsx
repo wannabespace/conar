@@ -9,6 +9,7 @@ import { memo, useImperativeHandle } from 'react'
 import { getDisplayValue } from '~/core/transformers/value-transformer'
 
 import type { Column } from './cell/utils'
+import { rowSelectId } from './cell/utils'
 import type { DataGridCell } from './cursor'
 
 const OVERSCAN = 4
@@ -61,7 +62,7 @@ const DocumentBase = ({
       role="row"
       className={`${DOCUMENT_ITEM_CLASS} grid grid-cols-[minmax(6rem,max-content)_minmax(0,1fr)]`}
     >
-      <label
+      <div
         className={`bg-background sticky top-0 z-40 col-span-2 tabular-nums ${DOCUMENT_HEADER_CLASS}`}
       >
         {leading && (
@@ -69,16 +70,21 @@ const DocumentBase = ({
             {leading({ row, rowIndex: index })}
           </div>
         )}
-        Row {index + 1}
-        {label && (
-          <span
-            data-mask
-            className="truncate font-normal tracking-normal normal-case"
-          >
-            · {label}
-          </span>
-        )}
-      </label>
+        <label
+          htmlFor={rowSelectId(index)}
+          className="flex min-w-0 flex-1 items-center gap-1"
+        >
+          Row {index + 1}
+          {label && (
+            <span
+              data-mask
+              className="truncate font-normal tracking-normal normal-case"
+            >
+              · {label}
+            </span>
+          )}
+        </label>
+      </div>
       {columns.map((column) => (
         <div
           key={column.id}
