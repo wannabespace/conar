@@ -28,6 +28,7 @@ export const recreateConstraintQuery = ({
           DROP ${mysqlDropKey(kind, name)},
           ADD ${constraintClause(shape)}
         `.execute(db),
+      duckdb: unsupported('Editing constraints'),
       mssql: (db) =>
         db.transaction().execute(async (tx) => {
           await dropConstraint(tx, target).execute()

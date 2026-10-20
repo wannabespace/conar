@@ -1,6 +1,10 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
-import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
+import {
+  clickhouseEnum,
+  duckdbEnum,
+  mysqlEnum,
+} from '~/core/queries/shared/inline-enum'
 
 import type { ColumnTypeCapabilities } from './capability-presets'
 import { JSON_COLUMN_TYPE } from './capability-presets'
@@ -23,6 +27,24 @@ const COLUMN_TYPES: Record<Dialect, readonly string[]> = {
     'DateTime',
     'DateTime64(3)',
     'Enum',
+  ],
+  [Dialect.DuckDB]: [
+    'INTEGER',
+    'BIGINT',
+    'SMALLINT',
+    'DECIMAL(18, 3)',
+    'DOUBLE',
+    'BOOLEAN',
+    'VARCHAR',
+    'UUID',
+    'DATE',
+    'TIME',
+    'TIMESTAMP',
+    'TIMESTAMPTZ',
+    'INTERVAL',
+    'JSON',
+    'BLOB',
+    'ENUM',
   ],
   [Dialect.MSSQL]: [
     'int',
@@ -106,6 +128,21 @@ export const COLUMN_TYPE_CAPABILITIES: Record<Dialect, ColumnTypeCapabilities> =
       uuid: /\bUUID\b/u,
       xml: null,
       zoned: /\bDateTime/u,
+    },
+    [Dialect.DuckDB]: {
+      array: { close: '[]', open: '' },
+      boolean: /^BOOLEAN$/u,
+      // JSON hands a BLOB over as its escaped text.
+      bytes: null,
+      dateKeywords: /^(?:-?infinity|epoch)$/iu,
+      enum: duckdbEnum,
+      id: 'INTEGER',
+      incomparable: null,
+      json: /^JSON$|^(?:MAP|STRUCT|UNION)\(/u,
+      options: COLUMN_TYPES[Dialect.DuckDB],
+      uuid: /^UUID$/u,
+      xml: null,
+      zoned: / WITH TIME ZONE$/u,
     },
     [Dialect.MSSQL]: {
       array: null,

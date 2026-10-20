@@ -46,6 +46,7 @@ export const searchRowsQuery = (params: SearchRowsParams) =>
   createQuery({
     query: {
       clickhouse: (db) => searchRows(db, textContains.clickhouse, params),
+      duckdb: (db) => searchRows(db, textContains.duckdb, params),
       mssql: (db) => searchRows(db, textContains.mssql, params),
       mysql: (db) => searchRows(db, textContains.mysql, params),
       postgres: (db) => searchRows(db, textContains.postgres, params),

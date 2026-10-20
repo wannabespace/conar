@@ -1,6 +1,6 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { AlterColumnBuilder } from 'kysely'
-import { sql } from 'kysely'
+import { CompiledQuery, sql } from 'kysely'
 
 import type { AlterColumnTarget, Db } from '.'
 import { clickhouseColumnType, mssqlDefaultConstraint } from '.'
@@ -60,6 +60,25 @@ export const alterColumnStatement = (
       )
       .alterColumn(column, nullability)
       .compile()
+  }
+
+  // DuckDB takes one action per ALTER TABLE, and refuses any on a column a key or index depends on, so only what changed goes out.
+  if (dialect === Dialect.DuckDB) {
+    const newType = sql.raw(columnType)
+    const retype = alter.alterColumn(column, (builder) =>
+      builder.setDataType(sql`${newType} USING ${sql.id(column)}::${newType}`)
+    )
+    const nullability = alter.alterColumn(column, (builder) =>
+      nullable ? builder.dropNotNull() : builder.setNotNull()
+    )
+    return CompiledQuery.raw(
+      [
+        ...(retyped ? [retype] : []),
+        ...(!retyped || nullable !== original.nullable ? [nullability] : []),
+      ]
+        .map((statement) => statement.compile().sql)
+        .join(';\n')
+    )
   }
 
   if (dialect === Dialect.MSSQL) {

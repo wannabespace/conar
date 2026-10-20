@@ -2,13 +2,13 @@ import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/safe-url'
 import { objectEntries } from '@tamery/shared/utils'
 
+import { databaseFile } from './database-file'
 import { readConnectionString } from './parse-connection-string'
-import { sqliteFile } from './sqlite-file'
 import type { SshTunnel } from './ssh/params'
 import { deleteSshParams, setSshParams, getSshTunnel } from './ssh/params'
 
 export interface ConnectionParts {
-  /** A SQLite file's path, D1's database ID. */
+  /** A SQLite or DuckDB file's path, D1's database ID. */
   database: string
   host: string
   /** ClickHouse's transport as the string named it (`https://` or `http://`); `null` infers it from the port. */
@@ -18,7 +18,7 @@ export interface ConnectionParts {
   /** Also a libSQL or D1 token, so every secret path treats it as the password. */
   password: string
   port: string
-  /** Read from a SQLite server's scheme; `null` for a file and every other engine. */
+  /** Read from a SQLite or DuckDB server's scheme; `null` for a file and every other engine. */
   provider: Provider | null
   ssh: SshTunnel | null
   type: ConnectionType | null
@@ -27,6 +27,7 @@ export interface ConnectionParts {
 
 export const DEFAULT_PORTS: Record<ConnectionType, number | null> = {
   [ConnectionType.ClickHouse]: 8123,
+  [ConnectionType.DuckDB]: 9494,
   [ConnectionType.MariaDB]: 3306,
   [ConnectionType.MSSQL]: 1433,
   [ConnectionType.MySQL]: 3306,
@@ -34,11 +35,16 @@ export const DEFAULT_PORTS: Record<ConnectionType, number | null> = {
   [ConnectionType.SQLite]: null,
 }
 
-/** MariaDB shares MySQL's port, so a bare port names MySQL. */
+/** MariaDB shares MySQL's port, so a bare port names MySQL; DuckDB's names a Quack server, which only its scheme can say. */
 export const TYPE_OF_DEFAULT_PORT: Record<string, ConnectionType> =
   Object.fromEntries(
     objectEntries(DEFAULT_PORTS)
-      .filter(([type, port]) => type !== ConnectionType.MariaDB && port)
+      .filter(
+        ([type, port]) =>
+          type !== ConnectionType.MariaDB &&
+          type !== ConnectionType.DuckDB &&
+          port
+      )
       .map(([type, port]) => [port, type])
   )
 
@@ -69,6 +75,7 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   clickhouse: ConnectionType.ClickHouse,
   cockroachdb: ConnectionType.Postgres,
   d1: ConnectionType.SQLite,
+  duckdb: ConnectionType.DuckDB,
   http: ConnectionType.ClickHouse,
   https: ConnectionType.ClickHouse,
   libsql: ConnectionType.SQLite,
@@ -81,6 +88,7 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   pgsql: ConnectionType.Postgres,
   postgres: ConnectionType.Postgres,
   postgresql: ConnectionType.Postgres,
+  quack: ConnectionType.DuckDB,
   sqlite: ConnectionType.SQLite,
   sqlite3: ConnectionType.SQLite,
   sqlserver: ConnectionType.MSSQL,
@@ -102,9 +110,10 @@ export const D1_HOST = 'api.cloudflare.com'
 const PROVIDER_OF_SCHEME: Partial<Record<string, Provider>> = {
   d1: Provider.CloudflareD1,
   libsql: Provider.Turso,
+  quack: Provider.Quack,
 }
 
-/** `null` for a scheme Tamery does not know: a SQLite server is never guessed to be one it does. */
+/** `null` for a scheme Tamery does not know: a SQLite or DuckDB server is never guessed to be one it does. */
 export const getProviderOfScheme = (scheme: string) =>
   PROVIDER_OF_SCHEME[scheme] ?? null
 
@@ -119,13 +128,15 @@ const withCredentials = (
   return url
 }
 
-const SQLITE_SERVER_FORMATS: Record<
-  Provider,
-  (parts: ConnectionParts) => string
-> = {
+const SERVER_FORMATS: Record<Provider, (parts: ConnectionParts) => string> = {
   [Provider.CloudflareD1]: (parts) =>
     withCredentials(
       `d1://${D1_HOST}/${encodeURIComponent(parts.database)}`,
+      parts
+    ).toString(),
+  [Provider.Quack]: (parts) =>
+    withCredentials(
+      `quack://${parts.host}:${getPort(parts)}`,
       parts
     ).toString(),
   [Provider.Turso]: (parts) =>
@@ -136,21 +147,27 @@ const SQLITE_SERVER_FORMATS: Record<
 }
 
 /** A host without a provider formats to nothing, never to a file string. */
-const formatSqlite = (parts: ConnectionParts) => {
+const formatFileEngine = (
+  type: ConnectionType.DuckDB | ConnectionType.SQLite,
+  parts: ConnectionParts
+) => {
   if (parts.provider) {
-    return SQLITE_SERVER_FORMATS[parts.provider](parts)
+    return SERVER_FORMATS[parts.provider](parts)
   }
   return parts.host || !parts.database
     ? ''
-    : sqliteFile.connectionString(parts.database)
+    : databaseFile.connectionString(type, parts.database)
 }
 
 const format = (
   parts: ConnectionParts,
   missingSecrets: readonly string[] = []
 ): string => {
-  if (parts.type === ConnectionType.SQLite) {
-    return formatSqlite(parts)
+  if (
+    parts.type === ConnectionType.SQLite ||
+    parts.type === ConnectionType.DuckDB
+  ) {
+    return formatFileEngine(parts.type, parts)
   }
   if (!parts.type || !parts.host) {
     return ''
@@ -191,18 +208,18 @@ const parse = (connectionString: string): ConnectionParts => {
   if (type === ConnectionType.SQLite && parts.host) {
     parts.password = searchParams.get(AUTH_TOKEN_PARAM) ?? parts.password
     searchParams.delete(AUTH_TOKEN_PARAM)
-  } else if (type === ConnectionType.SQLite) {
-    parts.database = sqliteFile.path(connectionString)
+  } else if (
+    (type === ConnectionType.SQLite || type === ConnectionType.DuckDB) &&
+    !parts.host
+  ) {
+    parts.database = databaseFile.path(connectionString)
   }
 
   return {
     ...parts,
     https: HTTPS_OF_SCHEME[scheme] ?? null,
     options: searchParams.toString(),
-    provider:
-      type === ConnectionType.SQLite && parts.host
-        ? getProviderOfScheme(scheme)
-        : null,
+    provider: parts.host ? getProviderOfScheme(scheme) : null,
     ssh,
     type,
   }

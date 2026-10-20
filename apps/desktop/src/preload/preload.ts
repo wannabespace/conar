@@ -30,11 +30,11 @@ export type ElectronPreload = Promisified<typeof electron> & {
     onUrlOpened: (callback: () => void) => () => void
     openWindow: (route: string) => Promise<void>
   }
+  databaseFile: {
+    getPath: (file: File) => string
+  }
   mcp: {
     serve: (source: McpSource) => () => void
-  }
-  sqlite: {
-    getPath: (file: File) => string
   }
   versions: {
     node: () => string
@@ -163,6 +163,12 @@ contextBridge.exposeInMainWorld('electron', {
     ),
     take: handleElectronError(() => ipcRenderer.invoke('connectionLinks.take')),
   },
+  databaseFile: {
+    getPath: (file: File) => webUtils.getPathForFile(file),
+    pickFile: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('databaseFile.pickFile', arg)
+    ),
+  },
   deviceEncryption: {
     createKey: handleElectronError(() =>
       ipcRenderer.invoke('deviceEncryption.createKey')
@@ -227,15 +233,13 @@ contextBridge.exposeInMainWorld('electron', {
   },
   query: {
     clickhouse: dialectQueryBridge('clickhouse'),
+    duckdb: dialectQueryBridge('duckdb'),
     mssql: dialectQueryBridge('mssql'),
     mysql: dialectQueryBridge('mysql'),
     postgres: dialectQueryBridge('postgres'),
     sqlite: dialectQueryBridge('sqlite'),
   },
-  sqlite: {
-    getPath: (file: File) => webUtils.getPathForFile(file),
-    pickFile: handleElectronError(() => ipcRenderer.invoke('sqlite.pickFile')),
-  },
+
   ssh: {
     pickKeyFile: handleElectronError(() =>
       ipcRenderer.invoke('ssh.pickKeyFile')

@@ -24,7 +24,7 @@ Synced connection strings are encrypted with a workspace key. They are decrypted
 - **Web with `tamery proxy`:** the computer running the proxy connects to the database.
 - **Web without a local proxy:** Tamery's cloud proxy connects to public database servers and handles the query and its results.
 
-The cloud proxy cannot reach private addresses or open SQLite and certificate files on your computer. Use desktop or the local proxy for those. Connections whose secrets stay on your device also need desktop or the local proxy.
+The cloud proxy cannot reach private addresses or open SQLite, DuckDB and certificate files on your computer. Use desktop or the local proxy for those. Connections whose secrets stay on your device also need desktop or the local proxy.
 
 Encryption between Tamery and your database depends on the connection's SSL settings. Use your provider's recommended settings and certificate verification.
 

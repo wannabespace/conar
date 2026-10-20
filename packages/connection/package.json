@@ -16,6 +16,7 @@
     "shell-quote": "catalog:"
   },
   "devDependencies": {
+    "@duckdb/node-api": "catalog:",
     "@libsql/client": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
@@ -30,6 +31,7 @@
   },
   "peerDependencies": {
     "@clickhouse/client": "catalog:",
+    "@duckdb/node-api": "catalog:",
     "@libsql/client": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",

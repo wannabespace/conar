@@ -7,8 +7,14 @@ export interface Engine {
   type: ConnectionType
 }
 
-export const isSqliteFile = ({ provider, type }: Engine) =>
-  type === ConnectionType.SQLite && !provider
+export const isDatabaseFile = (
+  engine: Engine
+): engine is Engine & {
+  type: ConnectionType.DuckDB | ConnectionType.SQLite
+} =>
+  (engine.type === ConnectionType.SQLite ||
+    engine.type === ConnectionType.DuckDB) &&
+  !engine.provider
 
 interface FieldRow {
   label: string
@@ -75,6 +81,13 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
     database: 'default',
     user: 'default',
   }),
+  [ConnectionType.DuckDB]: {
+    field: 'database',
+    message: 'Choose the database file',
+    rows: [
+      { label: 'File', name: 'database', placeholder: '/path/to/data.duckdb' },
+    ],
+  },
   [ConnectionType.MariaDB]: MYSQL_FIELDS,
   [ConnectionType.MSSQL]: serverFields({
     database: 'master',
@@ -114,6 +127,30 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
         placeholder: 'With D1 Edit permission',
         required: 'Enter the API token',
         secret: true,
+      },
+    ],
+  },
+  [Provider.Quack]: {
+    field: 'host',
+    message: 'Enter the host',
+    rows: [
+      {
+        label: 'Host',
+        name: 'host',
+        placeholder: 'duckdb.example.com or its quack: URI',
+        port: true,
+      },
+      {
+        label: 'Token',
+        name: 'password',
+        placeholder: 'The one quack_serve returned',
+        secret: true,
+      },
+      {
+        label: 'Options',
+        name: 'options',
+        optional: true,
+        placeholder: 'e.g. disable_ssl=true',
       },
     ],
   },

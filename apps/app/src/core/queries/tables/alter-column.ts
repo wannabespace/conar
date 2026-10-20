@@ -11,6 +11,8 @@ export const alterColumnQuery = (target: AlterColumnTarget) =>
     query: {
       clickhouse: (db) =>
         db.executeQuery(alterColumnStatement(Dialect.ClickHouse, db, target)),
+      duckdb: (db) =>
+        db.executeQuery(alterColumnStatement(Dialect.DuckDB, db, target)),
       mssql: (db) =>
         db.executeQuery(alterColumnStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>

@@ -58,6 +58,7 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
     query: {
       clickhouse: (db) =>
         selectStats(db, params, clickhouseFilterValues(params.columns)),
+      duckdb: (db) => selectStats(db, params),
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
       postgres: (db) => selectStats(db, params),

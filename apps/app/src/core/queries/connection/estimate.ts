@@ -46,6 +46,7 @@ export const estimateQuery = (text: string, dialect: Dialect) => {
   return createQuery<Type<number | null>>({
     query: {
       clickhouse: unsupported('Row estimates'),
+      duckdb: unsupported('Row estimates'),
       mssql: unsupported('Row estimates'),
       mysql: async (db) => {
         // Not read only: MySQL refuses even EXPLAIN of a write there.

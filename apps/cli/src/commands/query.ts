@@ -6,6 +6,7 @@ import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import type { QueryExecutor } from '@tamery/connection/queries'
 import { rowObjects } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as duckdb from '@tamery/connection/queries/dialects/duckdb'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
@@ -22,6 +23,7 @@ type Connection = RouterOutputs['connections']['list'][number]
 
 const queryMap = {
   clickhouse: clickhouse.query,
+  duckdb: duckdb.query,
   mssql: mssql.query,
   mysql: mysql.query,
   postgres: pg.query,

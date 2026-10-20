@@ -17,6 +17,7 @@ export const createFunctionQuery = ({
   return createQuery({
     query: {
       clickhouse: unsupported('Functions'),
+      duckdb: unsupported('Functions'),
       mssql: (db) => create.mssql.execute(db),
       mysql: (db) => create.mysql.execute(db),
       postgres: (db) => create.postgres.execute(db),

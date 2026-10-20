@@ -1,4 +1,7 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
+import {
+  DUCKDB_RESOURCE_NAME,
+  SQLITE_RESOURCE_NAME,
+} from '@tamery/connection/utils'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -12,6 +15,7 @@ const connectionCurrentDatabaseQuery = createQuery({
       db
         .selectNoFrom(sql<string>`currentDatabase()`.as('name'))
         .executeTakeFirstOrThrow(),
+    duckdb: () => Promise.resolve({ name: DUCKDB_RESOURCE_NAME }),
     mssql: (db) =>
       db
         .selectNoFrom(sql<string>`DB_NAME()`.as('name'))

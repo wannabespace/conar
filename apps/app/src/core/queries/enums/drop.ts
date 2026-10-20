@@ -14,6 +14,7 @@ export const dropEnumQuery = ({
   createQuery({
     query: {
       clickhouse: unsupported('Editing enums'),
+      duckdb: (db) => db.withSchema(schema).schema.dropType(name).execute(),
       mssql: unsupported('Editing enums'),
       mysql: unsupported('Editing enums'),
       postgres: (db) =>

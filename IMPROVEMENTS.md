@@ -90,6 +90,15 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Refuse redirects from a libSQL server on the cloud proxy.** `@libsql/hrana-client` fetches with the default `redirect: 'follow'`, so a public libSQL host could send the proxy on to an internal URL the host check never saw.
 
 - **Hosted Postgres and MySQL as providers.** Turso and Cloudflare D1 are providers (`Provider`); Supabase, Neon, PlanetScale, ClickHouse Cloud and the rest of `HOST_HINTS` (`hosts.ts`) could join them, so the Engine select offers them with their own placeholders and the list shows their marks. Their host suffixes change, so the form saves the provider the user picked, and a paste only guesses it from `HOST_HINTS`; a suffix the list lacks leaves the plain type until it is added.
+- **DuckDB gaps.**
+  - An agent with `query` access to a DuckDB file connection can read any file on the computer (`read_text`, `read_csv`), a read the `readsOnly` check lets through. MCP runs could open the file with `enable_external_access = false`, or the connection could carry a switch for it.
+  - `@duckdb/node-bindings` is about 110 MB unpacked per platform, in the desktop app, the CLI and the cloud proxy. Loading it only when the first DuckDB connection opens, or downloading it then, keeps the installer size down.
+  - Quack sessions: once the extension's `ATTACH` survives foreign keys and forwards transactions, a Quack server can hold a transaction between runs, keep temp tables, and stop the server's query on **Stop**.
+  - Macros as the Functions section (`duckdb_functions()` lists them with their definition), sequences somewhere in Schema, and `EXPLAIN` in the runner plus row estimates from `EXPLAIN (FORMAT JSON)`.
+  - Attached databases as resources: today a connection shows only the database it opens.
+  - The local database finder could list a Docker container serving Quack on 9494, once it can learn the token.
+  - Adding a primary key after the table exists (`ALTER TABLE … ADD PRIMARY KEY`, the one constraint DuckDB accepts later) from the constraints section.
+  - Quack renames repeated result columns (`id_1`), and the grid shows a JSON column as JSON text.
 
 ## Settings
 

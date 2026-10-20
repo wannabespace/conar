@@ -28,7 +28,7 @@ export const Footer = () => {
             <Brand to={home} />
             <p className="text-muted-foreground max-w-xs text-sm text-pretty">
               The AI database client for Postgres, MySQL, MariaDB, SQL Server,
-              ClickHouse, SQLite, Turso and Cloudflare D1.
+              ClickHouse, SQLite, Turso, Cloudflare D1 and DuckDB.
             </p>
           </div>
           <FooterColumn title="Product">

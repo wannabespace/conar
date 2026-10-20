@@ -10,6 +10,7 @@ import {
 
 import type { ColumnDefinition, ColumnsFilter } from '../shape'
 import { clickhouseColumns } from './clickhouse'
+import { duckdbColumns } from './duckdb'
 import { mssqlColumns } from './mssql'
 import { mysqlColumns } from './mysql'
 import { postgresColumns } from './postgres'
@@ -78,6 +79,7 @@ const columnsQuery = memoize((filter: ColumnsFilter) =>
   createQuery({
     query: {
       clickhouse: (db) => clickhouseColumns(db, filter),
+      duckdb: (db) => duckdbColumns(db, filter),
       mssql: (db) => mssqlColumns(db, filter),
       mysql: (db) => mysqlColumns(db, filter),
       postgres: (db) => postgresColumns(db, filter),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { connectionParts } from './connection-parts'
@@ -64,12 +64,26 @@ describe('connectionParts', () => {
 
   it.each(
     Object.values(ConnectionType).filter(
-      (type) => type !== ConnectionType.SQLite
+      (type) => type !== ConnectionType.SQLite && type !== ConnectionType.DuckDB
     )
   )('reads a %s string back as its type', (type) => {
     expect(
       connectionParts.parse(connectionParts.format(parts({ type }))).type
     ).toBe(type)
+  })
+
+  it('keeps a Quack token as the password and names the default port', () => {
+    const quack = connectionParts.parse('quack://:s3cret@duck.acme.io')
+
+    expect(quack).toMatchObject({
+      host: 'duck.acme.io',
+      password: 's3cret',
+      provider: Provider.Quack,
+      type: ConnectionType.DuckDB,
+    })
+    expect(connectionParts.format(quack)).toBe(
+      'quack://:s3cret@duck.acme.io:9494'
+    )
   })
 
   it.each(['::1', 'fe80::1', '2001:db8::5'])(

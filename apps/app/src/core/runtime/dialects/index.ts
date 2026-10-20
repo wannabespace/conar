@@ -6,6 +6,8 @@ import { memoize } from 'memoza'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import type { DialectOptions } from './driver'
+import { duckdbColdDialect, duckdbDialect } from './duckdb'
+import type { Database as DuckdbDatabase } from './duckdb/schema'
 import { mssqlColdDialect, mssqlDialect } from './mssql'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
@@ -19,6 +21,11 @@ export const dialects = {
   clickhouse: memoize(
     (options: DialectOptions) =>
       new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
+  ),
+  duckdb: memoize(
+    (options: DialectOptions) =>
+      new Kysely<DuckdbDatabase>({ dialect: duckdbDialect(options) }),
     { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
   mssql: memoize(
@@ -45,6 +52,7 @@ export const dialects = {
 
 export const coldDialects = {
   clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
+  duckdb: memoize(() => new Kysely({ dialect: duckdbColdDialect() })),
   mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
   mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
   postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),

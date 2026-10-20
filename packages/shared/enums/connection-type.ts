@@ -7,6 +7,7 @@ export enum ConnectionType {
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
   SQLite = 'sqlite',
+  DuckDB = 'duckdb',
 }
 
 /** Never build a query from a `ConnectionType`: every query runs on the dialect it speaks through. */
@@ -16,10 +17,12 @@ export enum Dialect {
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
   SQLite = 'sqlite',
+  DuckDB = 'duckdb',
 }
 
 const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
   [ConnectionType.ClickHouse]: Dialect.ClickHouse,
+  [ConnectionType.DuckDB]: Dialect.DuckDB,
   [ConnectionType.MariaDB]: Dialect.MySQL,
   [ConnectionType.MSSQL]: Dialect.MSSQL,
   [ConnectionType.MySQL]: Dialect.MySQL,
@@ -31,6 +34,7 @@ export const getDialect = (type: ConnectionType) => DIALECT_OF_TYPE[type]
 
 export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'ClickHouse',
+  [ConnectionType.DuckDB]: 'DuckDB',
   [ConnectionType.MariaDB]: 'MariaDB',
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
   [ConnectionType.MySQL]: 'MySQL',
@@ -40,6 +44,7 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
 
 export enum Provider {
   CloudflareD1 = 'cloudflare_d1',
+  Quack = 'quack',
   Turso = 'turso',
 }
 
@@ -51,6 +56,7 @@ export const providers: Record<
     label: 'Cloudflare D1',
     type: ConnectionType.SQLite,
   },
+  [Provider.Quack]: { label: 'DuckDB Quack', type: ConnectionType.DuckDB },
   [Provider.Turso]: { label: 'Turso', type: ConnectionType.SQLite },
 }
 

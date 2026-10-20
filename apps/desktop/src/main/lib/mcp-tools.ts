@@ -2,7 +2,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { getProviderOfScheme } from '@tamery/connection/connection-parts'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
 import { describeConnectionString } from '@tamery/connection/utils'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import {
+  ConnectionType,
+  connectionTypeLabels,
+  providers,
+} from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import type {
   McpAccess,
@@ -18,6 +22,13 @@ import { app } from 'electron'
 import { z } from 'zod'
 
 import { askRenderer } from './mcp-renderer'
+
+const SERVER_SCHEMES: Partial<Record<ConnectionType, string>> = {
+  [ConnectionType.DuckDB]:
+    'Send a DuckDB server as quack://…; Tamery reaches no other DuckDB server.',
+  [ConnectionType.SQLite]:
+    'Send a Turso database as libsql://… and a Cloudflare D1 one as d1://…; Tamery reads no other SQLite server.',
+}
 
 const jsonContent = (value: unknown) => ({
   content: [
@@ -128,12 +139,12 @@ export const createMcpServer = (
     'create_connection',
     {
       annotations: { destructiveHint: false, readOnlyHint: false },
-      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and SQLite files (but not Turso or Cloudflare D1 databases) and strings with an SSH tunnel (ssh_* params) are refused.`,
+      description: `Save a new database connection in Tamery from a connection string. Tamery tests it first and saves it only if it connects. Put a database in the string's path to open it as the connection's first resource. The new connection's access is "${DEFAULT_MCP_ACCESS}". Existing connections cannot be edited or removed through MCP, and SQLite or DuckDB files (but not Turso, Cloudflare D1 or DuckDB Quack servers) and strings with an SSH tunnel (ssh_* params) are refused.`,
       inputSchema: {
         connectionString: z
           .string()
           .describe(
-            'URL with credentials, e.g. postgres://user:pass@host:5432/db. Turso: libsql://host?authToken=TOKEN with type "sqlite". Cloudflare D1: d1://ACCOUNT_ID:API_TOKEN@api.cloudflare.com/DATABASE_ID with type "sqlite".'
+            'URL with credentials, e.g. postgres://user:pass@host:5432/db. Turso: libsql://host?authToken=TOKEN with type "sqlite". Cloudflare D1: d1://ACCOUNT_ID:API_TOKEN@api.cloudflare.com/DATABASE_ID with type "sqlite". DuckDB Quack server: quack://:TOKEN@host:9494 with type "duckdb".'
           ),
         name: z.string().min(2),
         syncType: z
@@ -153,18 +164,18 @@ export const createMcpServer = (
             'Connections through an SSH tunnel cannot be created through MCP. Ask the user to add this one in Tamery.'
           )
         }
-        // A SQLite file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides it is SQLite, and the executor opens a file for an empty host alone.
-        if (args.type === ConnectionType.SQLite) {
+        // A file would let the agent make Tamery open any database on disk with Tamery's own file access. The renderer formats the string as `type`, so `type` alone decides it is a file engine, and the executor opens a file for an empty host alone.
+        const serverSchemes = SERVER_SCHEMES[args.type]
+        if (serverSchemes) {
           const { host, scheme } = readConnectionString(args.connectionString)
           if (!host) {
             throw new Error(
-              'SQLite files cannot be added through MCP. Ask the user to add this one in Tamery.'
+              `${connectionTypeLabels[args.type]} files cannot be added through MCP. Ask the user to add this one in Tamery.`
             )
           }
-          if (!getProviderOfScheme(scheme)) {
-            throw new Error(
-              'Send a Turso database as libsql://… and a Cloudflare D1 one as d1://…; Tamery reads no other SQLite server.'
-            )
+          const provider = getProviderOfScheme(scheme)
+          if (!provider || providers[provider].type !== args.type) {
+            throw new Error(serverSchemes)
           }
         }
         const connection = await askRenderer(
@@ -179,7 +190,7 @@ export const createMcpServer = (
     'query',
     {
       annotations: { readOnlyHint: true },
-      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL, ClickHouse and SQLite also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
+      description: `Run one read-only SQL statement on a Tamery connection, in the connection's own SQL dialect. Statements that write are rejected. PostgreSQL, MySQL, ClickHouse, SQLite and DuckDB also run it read-only, and every engine but ClickHouse, which has no transactions, rolls it back; a function with side effects can still act, so only a read-only database login guarantees no writes. At most ${MCP_MAX_ROWS} rows come back; "truncated" says there were more. Read the schema with list_tables and describe_table first.`,
       inputSchema: sqlInput,
     },
     (args, { signal }) =>

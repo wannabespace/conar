@@ -13,6 +13,8 @@ export const dropColumnQuery = (target: {
     query: {
       clickhouse: (db) =>
         db.executeQuery(dropColumnStatement(Dialect.ClickHouse, db, target)),
+      duckdb: (db) =>
+        db.executeQuery(dropColumnStatement(Dialect.DuckDB, db, target)),
       mssql: (db) =>
         db.executeQuery(dropColumnStatement(Dialect.MSSQL, db, target)),
       mysql: (db) =>

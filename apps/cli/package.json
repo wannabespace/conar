@@ -6,6 +6,7 @@
     "cli",
     "clickhouse",
     "database",
+    "duckdb",
     "mssql",
     "mysql",
     "postgres",
@@ -43,6 +44,7 @@
   "dependencies": {
     "@clickhouse/client": "catalog:",
     "@drizzle-team/brocli": "catalog:",
+    "@duckdb/node-api": "catalog:",
     "@hono/node-server": "catalog:",
     "@libsql/client": "catalog:",
     "@orpc/client": "catalog:",

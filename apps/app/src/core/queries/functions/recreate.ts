@@ -26,6 +26,7 @@ export const recreateFunctionQuery = ({
   return createQuery({
     query: {
       clickhouse: unsupported('Functions'),
+      duckdb: unsupported('Functions'),
       mssql: (db) =>
         db.transaction().execute(async (tx) => {
           if (replacesObject) {

@@ -12,6 +12,7 @@ export const dropSchemaQuery = ({
   createQuery({
     query: {
       clickhouse: unsupported('Schemas'),
+      duckdb: (db) => db.schema.dropSchema(schema).execute(),
       mssql: (db) => db.schema.dropSchema(schema).execute(),
       mysql: (db) => db.schema.dropSchema(schema).execute(),
       postgres: (db) => {

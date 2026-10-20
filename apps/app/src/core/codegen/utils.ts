@@ -59,6 +59,7 @@ const quoteWithBackticks = (name: string) => `\`${name.replaceAll('`', '``')}\``
 
 const QUOTE_IDENTIFIER_MAP: Record<Dialect, (name: string) => string> = {
   clickhouse: quoteWithBackticks,
+  duckdb: (name) => `"${name.replaceAll('"', '""')}"`,
   mssql: (name) => `[${name.replaceAll(']', ']]')}]`,
   mysql: quoteWithBackticks,
   postgres: (name) => `"${name.replaceAll('"', '""')}"`,

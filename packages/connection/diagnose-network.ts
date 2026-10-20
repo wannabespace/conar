@@ -56,7 +56,7 @@ export const NETWORK_RULES: DiagnosisRule[] = [
       }
     },
     match:
-      /enotfound|eai_again|getaddrinfo|could not translate host name|name or service not known|name does not resolve|nodename nor servname/iu,
+      /enotfound|eai_again|getaddrinfo|could not translate host name|could not resolve hostname|name or service not known|name does not resolve|nodename nor servname/iu,
   },
   {
     diagnose: ({ parts }) => {
@@ -96,7 +96,7 @@ export const NETWORK_RULES: DiagnosisRule[] = [
           }
     },
     match:
-      /econnrefused|connection refused|actively refused|could not connect \(sequence\)|expected http|parse error/iu,
+      /econnrefused|connection refused|actively refused|could not connect \(sequence\)|could not connect to server|expected http|parse error/iu,
   },
   {
     diagnose: (context) => {

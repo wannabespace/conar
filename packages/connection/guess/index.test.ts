@@ -135,6 +135,26 @@ describe('guessConnection — snippets from configs and tools', () => {
       { database: '~/data/app.db', type: ConnectionType.SQLite },
     ],
     [
+      '/Users/me/warehouse.duckdb',
+      { database: '/Users/me/warehouse.duckdb', type: ConnectionType.DuckDB },
+    ],
+    [
+      'duckdb ~/data/events.db',
+      { database: '~/data/events.db', type: ConnectionType.DuckDB },
+    ],
+    [
+      'duckdb:///srv/lake.ddb',
+      { database: '/srv/lake.ddb', type: ConnectionType.DuckDB },
+    ],
+    [
+      'quack:localhost:9494',
+      { host: 'localhost', port: '9494', type: ConnectionType.DuckDB },
+    ],
+    [
+      'quack://:s3cret@duck.acme.io',
+      { host: 'duck.acme.io', password: 's3cret', type: ConnectionType.DuckDB },
+    ],
+    [
       'libsql://shop-acme.aws-eu-west-1.turso.io?authToken=eyJhbGciOi.eyJpYXQi.sig_part-1',
       {
         host: 'shop-acme.aws-eu-west-1.turso.io',

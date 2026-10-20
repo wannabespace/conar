@@ -80,6 +80,7 @@ export const resourceRowsQuery = memoize(
       query: {
         clickhouse: (db) =>
           selectPage(db, props, clickhouseFilterValues(props.columns)),
+        duckdb: (db) => selectPage(db, props),
         mssql: (db) => selectPage(db, props),
         mysql: (db) => selectPage(db, props),
         postgres: (db) => selectPage(db, props),

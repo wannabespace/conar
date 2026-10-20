@@ -8,8 +8,15 @@ import {
   addConstraint,
   constraintClause,
 } from '~/core/queries/constraints/shape'
-import type { RenamedValue } from '~/core/queries/shared/inline-enum'
-import { clickhouseEnum, mysqlEnum } from '~/core/queries/shared/inline-enum'
+import type {
+  InlineEnum,
+  RenamedValue,
+} from '~/core/queries/shared/inline-enum'
+import {
+  clickhouseEnum,
+  duckdbEnum,
+  mysqlEnum,
+} from '~/core/queries/shared/inline-enum'
 import { createQuery } from '~/core/runtime/query'
 
 import type { AlterColumnTarget } from './shape'
@@ -94,18 +101,20 @@ const mysqlMoveRenamedValues = async (
   )
 }
 
-const clickhouseRefuseHeldValues = async (
+// ClickHouse and DuckDB fail the whole conversion on a row holding a dropped value, with no word of which.
+const refuseHeldValues = async (
   // oxlint-disable-next-line ts/no-explicit-any
   db: Kysely<any>,
-  target: EditColumnTarget
+  target: EditColumnTarget,
+  inlineEnum: InlineEnum
 ) => {
   const { column, original, renamedValues, schema, table } = target
-  const next = clickhouseEnum.parse(target.type)
+  const next = inlineEnum.parse(target.type)
   if (!next) {
     return
   }
   const kept = new Set([...next, ...renamedValues.map(({ from }) => from)])
-  const dropped = (clickhouseEnum.parse(original.type) ?? []).filter(
+  const dropped = (inlineEnum.parse(original.type) ?? []).filter(
     (value) => !kept.has(value)
   )
   if (dropped.length === 0) {
@@ -125,6 +134,44 @@ const clickhouseRefuseHeldValues = async (
   }
 }
 
+// DuckDB converts an enum by label, so a renamed label is mapped across in the conversion itself.
+const duckdbConvertRenamedValues = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  { column, renamedValues, schema, table, type: columnType }: EditColumnTarget
+) => {
+  const label = sql`CAST(${sql.id(column)} AS VARCHAR)`
+  const newType = sql.raw(columnType)
+  return db
+    .withSchema(schema)
+    .schema.alterTable(table)
+    .alterColumn(column, (builder) =>
+      builder.setDataType(
+        sql`${newType} USING CAST(CASE ${label} ${sql.join(
+          renamedValues.map(
+            ({ from, to }) => sql`WHEN ${sql.lit(from)} THEN ${sql.lit(to)}`
+          ),
+          sql` `
+        )} ELSE ${label} END AS ${newType})`
+      )
+    )
+    .execute()
+}
+
+const commentOnColumn = (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  {
+    comment,
+    newName,
+    schema,
+    table,
+  }: EditColumnTarget & { comment: string | null }
+) =>
+  sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment)}`.execute(
+    db
+  )
+
 const mssqlCommentProcedure = (from: string | null, to: string | null) => {
   if (to === null) {
     return sql`sp_dropextendedproperty`
@@ -139,7 +186,7 @@ export const editColumnQuery = (target: EditColumnTarget) =>
     query: {
       clickhouse: async (db) => {
         const { comment, newName, schema, table } = target
-        await clickhouseRefuseHeldValues(db, target)
+        await refuseHeldValues(db, target, clickhouseEnum)
         await editInSteps(Dialect.ClickHouse, db, target)
         if (commented(target)) {
           await sql`ALTER TABLE ${sql.id(schema, table)} COMMENT COLUMN ${sql.id(newName)} ${sql.lit(comment ?? '')}`.execute(
@@ -147,6 +194,27 @@ export const editColumnQuery = (target: EditColumnTarget) =>
           )
         }
       },
+      duckdb: target.reference
+        ? unsupported('Foreign keys on a stored table')
+        : async (db) => {
+            await refuseHeldValues(db, target, duckdbEnum)
+            if (target.renamedValues.length > 0) {
+              await duckdbConvertRenamedValues(db, target)
+            }
+            await editInSteps(
+              Dialect.DuckDB,
+              db,
+              target.renamedValues.length > 0
+                ? {
+                    ...target,
+                    original: { ...target.original, type: target.type },
+                  }
+                : target
+            )
+            if (commented(target)) {
+              await commentOnColumn(db, target)
+            }
+          },
       mssql: async (db) => {
         const { newName, original, schema, table } = target
         await editInSteps(Dialect.MSSQL, db, target)
@@ -180,12 +248,9 @@ export const editColumnQuery = (target: EditColumnTarget) =>
         }
       },
       postgres: async (db) => {
-        const { comment, newName, schema, table } = target
         await editInSteps(Dialect.Postgres, db, target)
         if (commented(target)) {
-          await sql`COMMENT ON COLUMN ${sql.id(schema, table, newName)} IS ${sql.lit(comment)}`.execute(
-            db
-          )
+          await commentOnColumn(db, target)
         }
       },
       sqlite:

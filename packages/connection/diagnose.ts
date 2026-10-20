@@ -1,6 +1,7 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
+import { DUCKDB_RULES } from './diagnose-duckdb'
 import { NETWORK_RULES } from './diagnose-network'
 import { SQLITE_RULES } from './diagnose-sqlite'
 import type { Diagnosis, DiagnosisContext, DiagnosisRule } from './diagnosis'
@@ -21,6 +22,7 @@ const sslFix = (
 const RULES: DiagnosisRule[] = [
   ...SSH_RULES,
   ...SQLITE_RULES,
+  ...DUCKDB_RULES,
   {
     diagnose: () => ({
       focus: 'user',

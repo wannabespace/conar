@@ -238,6 +238,18 @@ describe('diagnoseConnectionError', () => {
     ).toBe("Can't open the database file")
   })
 
+  it('names the program holding a DuckDB file', () => {
+    expect(
+      diagnose(
+        'IO Error: Could not set lock on file "/srv/data.duckdb": Conflicting lock is held in /usr/local/bin/duckdb (PID 42) by user me.',
+        { database: '/srv/data.duckdb', host: '', type: ConnectionType.DuckDB }
+      )
+    ).toStrictEqual({
+      hint: 'DuckDB lets one program open a file for writing at a time, and duckdb has it. Close it there, or detach it from that session, then try again.',
+      title: 'Another program has this file open',
+    })
+  })
+
   it('offers http:// when a ClickHouse port answers without TLS', () => {
     expect(
       diagnose(

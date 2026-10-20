@@ -10,11 +10,11 @@ import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
 import { popupNativeContextMenu } from './context-menu'
+import { pickDatabaseFile } from './database-file'
 import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
-import { pickSqliteFile } from './sqlite-file'
 import { confirmHostKey } from './ssh-host-key'
 import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
@@ -117,6 +117,9 @@ export const electron = {
       return localDatabases.unlock(connectionString)
     },
   },
+  databaseFile: {
+    pickFile: pickDatabaseFile,
+  },
   mcp,
   menu: {
     popup: ((arg: MenuPopupRequest, event?: IpcMainInvokeEvent) =>
@@ -132,6 +135,9 @@ export const electron = {
     clickhouse: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/clickhouse')
     ),
+    duckdb: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/duckdb')
+    ),
     mssql: lazyQueryExecutor(
       () => import('@tamery/connection/queries/dialects/mssql')
     ),
@@ -145,9 +151,6 @@ export const electron = {
       () => import('@tamery/connection/queries/dialects/sqlite')
     ),
   } satisfies Record<Dialect, QueryExecutor>,
-  sqlite: {
-    pickFile: pickSqliteFile,
-  },
   ssh: {
     pickKeyFile: pickSshKeyFile,
   },

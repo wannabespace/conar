@@ -1,6 +1,7 @@
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { ClickHouseIcon } from '@tamery/ui/components/icons/clickhouse'
 import { CloudflareD1Icon } from '@tamery/ui/components/icons/cloudflare-d1'
+import { DuckDBIcon } from '@tamery/ui/components/icons/duckdb'
 import { MariaDBIcon } from '@tamery/ui/components/icons/mariadb'
 import { MSSQLIcon } from '@tamery/ui/components/icons/mssql'
 import { MySQLIcon } from '@tamery/ui/components/icons/mysql'
@@ -20,7 +21,9 @@ const iconMap: Record<
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,
   [ConnectionType.SQLite]: SQLiteIcon,
+  [ConnectionType.DuckDB]: DuckDBIcon,
   [Provider.CloudflareD1]: CloudflareD1Icon,
+  [Provider.Quack]: DuckDBIcon,
   [Provider.Turso]: TursoIcon,
 }
 

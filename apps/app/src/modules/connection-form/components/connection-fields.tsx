@@ -11,7 +11,7 @@ import type {
   ConnectionForm,
   ConnectionFormValues,
 } from '../lib/connection-form'
-import { getEngineFields, isSqliteFile } from '../lib/engine-fields'
+import { getEngineFields, isDatabaseFile } from '../lib/engine-fields'
 import { EngineField } from './engine-field'
 import { Footnote } from './footnote'
 import { TextRow } from './text-row'
@@ -25,7 +25,6 @@ export const ConnectionFields = ({
   locked: (field: string) => boolean
   values: Pick<ConnectionFormValues, 'host' | 'provider' | 'type'>
 }) => {
-  const sqliteFile = isSqliteFile(values)
   const localProxyAvailable = useLocalProxyAvailable()
 
   return (
@@ -51,7 +50,7 @@ export const ConnectionFields = ({
                 }
               }
             >
-              {sqliteFile && window.electron && (
+              {isDatabaseFile(values) && window.electron && (
                 <IconButton
                   variant="ghost-faint"
                   size="icon-sm"
@@ -59,7 +58,9 @@ export const ConnectionFields = ({
                   label="Choose file"
                   disabled={locked(name)}
                   onClick={async () => {
-                    const path = await window.electron?.sqlite.pickFile()
+                    const path = await window.electron?.databaseFile.pickFile(
+                      values.type
+                    )
                     if (path) {
                       posthog.capture('connection_file_picked')
                       form.setFieldValue(name, path)
@@ -78,7 +79,7 @@ export const ConnectionFields = ({
             Local databases are reached through your tamery proxy.
           </Footnote>
         )}
-      {sqliteFile && !window.electron && (
+      {isDatabaseFile(values) && !window.electron && (
         <Footnote>
           The file opens on the computer running your tamery proxy.
         </Footnote>

@@ -10,6 +10,7 @@ export const dropIndexQuery = ({ name, schema, table }: IndexTarget) =>
     query: {
       clickhouse: (db) =>
         dropSkipIndexStatement({ name, schema, table }).execute(db),
+      duckdb: (db) => sql`DROP INDEX ${sql.id(schema, name)}`.execute(db),
       mssql: (db) =>
         sql`DROP INDEX ${sql.id(name)} ON ${sql.id(schema, table)}`.execute(db),
       mysql: (db) =>

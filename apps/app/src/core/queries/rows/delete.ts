@@ -57,6 +57,13 @@ export const deleteRowsQuery = memoize((params: DeleteParams) => {
             params
           )
         ),
+      duckdb: (db) =>
+        deleteInBatches(
+          db,
+          bindValue.duckdb,
+          rowsPerStatement(Dialect.DuckDB, keyWidth),
+          params
+        ),
       mssql: (db) =>
         deleteInBatches(
           db,

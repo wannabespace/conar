@@ -9,6 +9,9 @@ import { SSH_PARAMS } from './ssh/params'
 
 export const SQLITE_RESOURCE_NAME = 'main'
 
+/** DuckDB's catalog takes its name from the file, so the one resource keeps a fixed name and reads say `current_database()`. */
+export const DUCKDB_RESOURCE_NAME = 'main'
+
 interface EngineString {
   /** The database the server opens when the string names none; absent when only the server knows (a login's default). */
   defaultDatabase?: (user: string) => string
@@ -27,6 +30,10 @@ const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
     ...SERVER_STRING,
     defaultDatabase: () => 'default',
   },
+  [ConnectionType.DuckDB]: {
+    label: ({ database }) => database.slice(database.lastIndexOf('/') + 1),
+    resource: DUCKDB_RESOURCE_NAME,
+  },
   [ConnectionType.MariaDB]: SERVER_STRING,
   [ConnectionType.MSSQL]: SERVER_STRING,
   [ConnectionType.MySQL]: SERVER_STRING,
@@ -41,6 +48,10 @@ const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
   [Provider.CloudflareD1]: {
     label: ({ database }) => database,
     resource: SQLITE_RESOURCE_NAME,
+  },
+  [Provider.Quack]: {
+    label: ({ address }) => address,
+    resource: DUCKDB_RESOURCE_NAME,
   },
   [Provider.Turso]: {
     label: ({ host }) => host,

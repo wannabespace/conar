@@ -13,6 +13,7 @@ export const setTriggerEnabledQuery = (
   return createQuery({
     query: {
       clickhouse: unsupported('Disabling triggers'),
+      duckdb: unsupported('Disabling triggers'),
       mssql: (db) => setEnabled.mssql.execute(db),
       mysql: unsupported('Disabling triggers'),
       postgres: (db) => setEnabled.postgres.execute(db),

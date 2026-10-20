@@ -1,6 +1,7 @@
+import { databaseFile } from '@tamery/connection/database-file'
 import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
-import { sqliteFile } from '@tamery/connection/sqlite-file'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { isMac } from '@tamery/ui/lib/os'
 import { useLocation } from '@tanstack/react-router'
 import { Result } from 'better-result'
@@ -18,11 +19,12 @@ export interface PasteFlash {
 }
 
 export const PASTE_FORMATS =
-  'Connection URLs, .env files, JDBC strings, SQLite files, Turso and D1 links, and psql, mysql or ssh commands.'
+  'Connection URLs, .env files, JDBC strings, SQLite and DuckDB files, Turso and D1 links, and psql, mysql or ssh commands.'
 
 const MAX_DROP_BYTES = 256 * 1024
 const FLASH_SHOWN_MS = 3000
 const SQLITE_HEADER = 'SQLite format 3\0'
+const DUCKDB_MAGIC = { at: 8, text: 'DUCK' }
 
 export const usePasteConnection = ({
   enabled,
@@ -144,9 +146,13 @@ export const usePasteConnection = ({
       }
       event.preventDefault()
       const header = await file.slice(0, SQLITE_HEADER.length).text()
-      const path = window.electron?.sqlite.getPath(file)
-      if (header === SQLITE_HEADER && path) {
-        onRead(sqliteFile.connectionString(path), 'drop')
+      const path = window.electron?.databaseFile.getPath(file)
+      const type =
+        (header === SQLITE_HEADER && ConnectionType.SQLite) ||
+        (header.slice(DUCKDB_MAGIC.at).startsWith(DUCKDB_MAGIC.text) &&
+          ConnectionType.DuckDB)
+      if (type && path) {
+        onRead(databaseFile.connectionString(type, path), 'drop')
         return
       }
       onRead(file.size > MAX_DROP_BYTES ? '' : await file.text(), 'drop')

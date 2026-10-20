@@ -33,6 +33,7 @@ export const customQuery = ({
   return createQuery<Type<ResultSet[]>>({
     query: {
       clickhouse: run,
+      duckdb: run,
       mssql: run,
       mysql: run,
       postgres: run,

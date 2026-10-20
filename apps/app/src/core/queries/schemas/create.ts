@@ -6,6 +6,7 @@ export const createSchemaQuery = (schema: string) =>
   createQuery({
     query: {
       clickhouse: unsupported('Schemas'),
+      duckdb: (db) => db.schema.createSchema(schema).execute(),
       mssql: (db) => db.schema.createSchema(schema).execute(),
       mysql: (db) => db.schema.createSchema(schema).execute(),
       postgres: (db) => db.schema.createSchema(schema).execute(),

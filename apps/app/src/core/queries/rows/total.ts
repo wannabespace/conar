@@ -86,6 +86,23 @@ export const resourceTableTotalQuery = memoize(
             clickhouseFilterValues(columns)
           )
         },
+        duckdb: async (db) => {
+          if (!exact && !filters?.length) {
+            const estimate = await db
+              .selectFrom('duckdb_tables')
+              .select('estimated_size as count')
+              .where('database_name', '=', sql<string>`current_database()`)
+              .where('schema_name', '=', schema)
+              .where('table_name', '=', table)
+              .executeTakeFirst()
+
+            if (estimate && estimate.count > 0) {
+              return { count: estimate.count, isEstimated: true }
+            }
+          }
+
+          return countRows(db, db.fn.countAll(), target)
+        },
         mssql: (db) => countRows(db, sql`count_big(*)`, target),
         mysql: async (db) => {
           if (!exact && !filters?.length) {

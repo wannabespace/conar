@@ -2,6 +2,7 @@ import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
 import { type } from '@orpc/server'
 import type { QueryExecutor } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as duckdb from '@tamery/connection/queries/dialects/duckdb'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
@@ -113,6 +114,7 @@ export const createQueryRouter = <T extends AnyBuilder>(
 ) =>
   ({
     clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
+    duckdb: createQueryDialect(duckdb.query, orpc, resolve),
     mssql: createQueryDialect(mssql.query, orpc, resolve),
     mysql: createQueryDialect(mysql.query, orpc, resolve),
     postgres: createQueryDialect(pg.query, orpc, resolve),

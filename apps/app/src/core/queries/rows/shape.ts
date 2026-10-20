@@ -1,5 +1,6 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { FilterValueBinding } from '@tamery/shared/filters'
+import { type } from 'arktype'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
@@ -17,6 +18,8 @@ export type ContainsText = (
 export const textContains: Record<Dialect, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
+  duckdb: (eb, column, pattern) =>
+    eb(eb.cast(eb.ref(column), 'varchar'), 'ilike', pattern),
   mssql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
@@ -74,12 +77,38 @@ const clickhouseBind =
     return clickhouseDateTime(columnType, value)
   }
 
+const duckdbJsonColumnType = getCapabilities(Dialect.DuckDB).columnTypes.json
+const duckdbMapType = /^MAP\(/u
+const duckdbMapEntries = type({ key: 'unknown', value: 'unknown' }).array()
+
+// DuckDB casts text to a list or STRUCT itself, but a MAP only from a JSON object, while it reads one back as key/value entries.
+const duckdbBind: BindValue = (columnType, value) => {
+  if (value === undefined) {
+    return sql`default`
+  }
+  if (value === null) {
+    return value
+  }
+  if (duckdbMapType.test(columnType)) {
+    const object = duckdbMapEntries.allows(value)
+      ? Object.fromEntries(
+          value.map((entry) => [String(entry.key), entry.value])
+        )
+      : value
+    return sql`CAST(CAST(${JSON.stringify(object)} AS JSON) AS ${sql.raw(columnType)})`
+  }
+  return Array.isArray(value) || duckdbJsonColumnType.test(columnType)
+    ? JSON.stringify(value)
+    : value
+}
+
 /** `undefined` binds the column's DEFAULT. */
 export const bindValue: Record<Dialect, BindValue> = {
   clickhouse: clickhouseBind(
     (columnType, json) =>
       sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${json}))`
   ),
+  duckdb: duckdbBind,
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
   postgres: bindJsonAsText(Dialect.Postgres),

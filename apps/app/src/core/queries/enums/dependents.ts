@@ -22,6 +22,8 @@ const dependentsQuery = ({ name, schema }: { name: string; schema: string }) =>
   createQuery({
     query: {
       clickhouse: () => Promise.resolve([]),
+      // A column copies the enum's values into its own type, so dropping the enum leaves it standing.
+      duckdb: () => Promise.resolve([]),
       mssql: () => Promise.resolve([]),
       mysql: () => Promise.resolve([]),
       postgres: (db) =>

@@ -14,6 +14,7 @@ export const setRowLevelSecurityQuery = ({
   createQuery({
     query: {
       clickhouse: unsupported('Row level security'),
+      duckdb: unsupported('Row level security'),
       mssql: (db) =>
         sql`ALTER SECURITY POLICY ${sql.id(schema, name)} WITH (STATE = ${sql.raw(enabled ? 'ON' : 'OFF')})`.execute(
           db

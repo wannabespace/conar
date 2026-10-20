@@ -17,6 +17,7 @@ export const createConstraintQuery = ({
   createQuery({
     query: {
       clickhouse: (db) => addConstraint(db, { schema, table }, shape).execute(),
+      duckdb: unsupported('Adding constraints'),
       mssql: (db) => addConstraint(db, { schema, table }, shape).execute(),
       mysql: (db) => addConstraint(db, { schema, table }, shape).execute(),
       postgres: (db) => addConstraint(db, { schema, table }, shape).execute(),

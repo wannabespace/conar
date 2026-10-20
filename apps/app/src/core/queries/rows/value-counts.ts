@@ -60,6 +60,7 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           params,
           clickhouseFilterValues(params.columns)
         ),
+      duckdb: (db) => countValues(db, textContains.duckdb, params),
       mssql: (db) => countValues(db, textContains.mssql, params),
       mysql: (db) => countValues(db, textContains.mysql, params),
       postgres: (db) => countValues(db, textContains.postgres, params),

@@ -110,3 +110,19 @@ export const clickhouseEnum: InlineEnum = {
     return `Enum${bits}(${entries.map(({ number, value }) => `'${escape(value, clickhouseEscapedRegex)}' = ${number}`).join(', ')})`
   },
 }
+
+const duckdbEnumRegex = /^ENUM\(.*\)$/su
+const duckdbQuotedRegex = /'(?<value>(?:[^']|'')*)'/gsu
+
+// DuckDB spells a value with its quotes doubled and nothing escaped.
+export const duckdbEnum: InlineEnum = {
+  keyword: 'ENUM',
+  parse: (columnType) =>
+    duckdbEnumRegex.test(columnType)
+      ? Array.from(columnType.matchAll(duckdbQuotedRegex), (match) =>
+          (match.groups?.value ?? '').replaceAll("''", "'")
+        )
+      : null,
+  spell: (values) =>
+    `ENUM(${values.map(({ value }) => `'${value.replaceAll("'", "''")}'`).join(', ')})`,
+}

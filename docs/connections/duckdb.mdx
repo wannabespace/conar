@@ -1,0 +1,50 @@
+---
+title: 'DuckDB'
+sidebarTitle: 'DuckDB'
+description: 'Open a DuckDB file or connect to a DuckDB server over Quack.'
+---
+
+## DuckDB files
+
+On desktop, drop a `.duckdb` file onto Tamery, paste its full path into **Add new**, or choose **DuckDB** and pick the file with the folder button.
+
+```text
+duckdb:///Users/me/warehouse.duckdb
+```
+
+The file must already exist. A `~/` path is relative to the home folder on the computer opening it. Syncing the connection does not copy the file.
+
+DuckDB lets only one program open a file for writing. Tamery opens it only while a query runs, so close the file in the DuckDB CLI or a notebook before you query it here, and leave a transaction open in Tamery only as long as you need it.
+
+In the web app, run [`tamery proxy`](/cli/commands#tamery-proxy) on the computer that holds the file.
+
+## DuckDB servers
+
+DuckDB 1.5.3 and later can serve a database over [Quack](https://duckdb.org/docs/current/quack/overview), its client-server protocol. Start a server from a DuckDB session:
+
+```sql
+INSTALL quack;
+LOAD quack;
+CALL quack_serve('quack:0.0.0.0:9494', token => 'your-token', allow_other_hostname => true);
+```
+
+Choose **DuckDB Quack** and enter the host, port and token, or paste:
+
+```text
+quack://:your-token@duck.example.com:9494
+```
+
+Tamery uses plain HTTP for `localhost` and HTTPS for every other host, as DuckDB does. Put a TLS proxy in front of a server you reach over the internet, or add `disable_ssl=true` to **Options** for a server on your own network. The token follows the same [sync rules](/connections/overview#choose-what-syncs) as passwords.
+
+Quack is in beta in DuckDB, so its protocol can still change between DuckDB releases.
+
+## What works
+
+Browse and edit rows, run SQL, explore relationships, and manage schemas, tables, views, indexes and enum types.
+
+- Constraints are read-only: DuckDB fixes them when the table is created.
+- DuckDB refuses to change a table that a foreign key points at, and to change the type of a column an index covers. Tamery shows DuckDB's error when that happens.
+- Schemas and indexes cannot be renamed.
+- A Quack server keeps no transaction open between runs. Run the whole `BEGIN … COMMIT` block with **Run all** instead; it returns no rows from statements inside that block.
+- **Stop** ends a file query at once. On a Quack server it stops Tamery waiting, while the server finishes the query.
+- A Quack server renames repeated column names in a result (`id`, `id_1`).

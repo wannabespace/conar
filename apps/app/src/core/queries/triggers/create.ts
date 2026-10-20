@@ -13,6 +13,7 @@ export const createTriggerQuery = (
   return createQuery({
     query: {
       clickhouse: unsupported('Triggers'),
+      duckdb: unsupported('Triggers'),
       mssql: (db) => create.mssql.execute(db),
       mysql: (db) => create.mysql.execute(db),
       postgres: (db) => create.postgres.execute(db),

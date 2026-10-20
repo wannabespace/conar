@@ -1,6 +1,7 @@
 import type { Column } from '~/core/table/cell/utils'
 
 import type { BASE_GENERATORS } from './base'
+import type { DUCKDB_GENERATORS } from './duckdb/generators'
 import type { MSSQL_GENERATORS } from './mssql/generators'
 import type { MYSQL_GENERATORS } from './mysql/generators'
 import type { PG_GENERATORS } from './postgres/generators'
@@ -11,7 +12,8 @@ export type GeneratorId = keyof (typeof BASE_GENERATORS &
   typeof PG_GENERATORS &
   typeof MYSQL_GENERATORS &
   typeof MSSQL_GENERATORS &
-  typeof SQLITE_GENERATORS)
+  typeof SQLITE_GENERATORS &
+  typeof DUCKDB_GENERATORS)
 
 export interface Generator {
   generatorId: GeneratorId

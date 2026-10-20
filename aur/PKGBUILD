@@ -1,7 +1,7 @@
 pkgname=tamery-bin
 pkgver=0.32.0
 pkgrel=1
-pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse and SQLite."
+pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL, ClickHouse, SQLite and DuckDB."
 arch=('x86_64')
 url="https://tamery.app"
 license=('AGPL-3.0-or-later')

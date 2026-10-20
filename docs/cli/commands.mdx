@@ -53,7 +53,7 @@ tamery query -c my-db --json "SELECT 1 AS hello"
 | `--json` | Display result rows as JSON. |
 | `--list-connections` | List saved connections and exit. |
 
-The CLI needs a synced connection string with the secrets required to connect. **Metadata only** connections cannot be used, and **No password** connections do not supply the saved password. SSH tunnels require desktop. SQLite paths refer to files on the computer running the command.
+The CLI needs a synced connection string with the secrets required to connect. **Metadata only** connections cannot be used, and **No password** connections do not supply the saved password. SSH tunnels require desktop. SQLite and DuckDB paths refer to files on the computer running the command.
 
 SQL runs against the database, including writes. The CLI does not show the app's confirmation dialogs.
 
@@ -63,6 +63,6 @@ SQL runs against the database, including writes. The CLI does not show the app's
 tamery proxy
 ```
 
-Lets the web app reach localhost, private networks, and SQLite files through this computer. Sign in to the same account in the CLI and browser; the web app detects the proxy automatically.
+Lets the web app reach localhost, private networks, and SQLite and DuckDB files through this computer. Sign in to the same account in the CLI and browser; the web app detects the proxy automatically.
 
 Database queries go through your machine. The proxy still needs internet to verify your Tamery session. Stop it with **Ctrl+C**.

@@ -28,6 +28,7 @@ const readVersion =
 const connectionVersionQuery = createQuery({
   query: {
     clickhouse: readVersion(sql`version()`),
+    duckdb: readVersion(sql`version()`),
     mssql: readVersion(sql`SERVERPROPERTY('ProductVersion')`),
     mysql: readVersion(sql`VERSION()`),
     postgres: readVersion(sql`current_setting('server_version')`),

@@ -31,6 +31,7 @@ export const distinctQuery = (params: DistinctParams) =>
   createQuery({
     query: {
       clickhouse: (db) => selectDistinct(db, params),
+      duckdb: (db) => selectDistinct(db, params),
       mssql: (db) => selectDistinct(db, params),
       mysql: (db) => selectDistinct(db, params),
       postgres: (db) => selectDistinct(db, params),

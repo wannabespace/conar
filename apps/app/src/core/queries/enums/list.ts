@@ -1,6 +1,7 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
@@ -81,6 +82,19 @@ const resourceEnumsQuery = createQuery({
         )
         .filter((res) => res.values.length > 0)
     },
+    duckdb: (db) =>
+      db
+        .selectFrom('duckdb_types')
+        .select([
+          'schema_name as schema',
+          'type_name as name',
+          'labels as values',
+        ])
+        .$narrowType<{ values: string[] }>()
+        .where('database_name', '=', sql<string>`current_database()`)
+        .where('logical_type', '=', 'ENUM')
+        .where('internal', '=', false)
+        .execute(),
     mssql: () => Promise.resolve([]),
     mysql: async (db) => {
       const query = await db

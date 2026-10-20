@@ -74,6 +74,41 @@ export const resourceTablesAndSchemasQuery = memoize(
             .where('is_temporary', '=', 0)
             .where('name', 'not like', CLICKHOUSE_MATERIALIZED_VIEW_STORAGE)
             .execute(),
+        // information_schema.schemata, since `duckdb_schemas` leaves out the internal `main`.
+        duckdb: (db) =>
+          db
+            .selectFrom('information_schema.schemata')
+            .select((eb) => [
+              'schema_name as schema',
+              eb.lit(null).$castTo<string | null>().as('table'),
+              eb.lit(null).$castTo<string | null>().as('comment'),
+              eb.val('base table').as('type'),
+            ])
+            .where('catalog_name', '=', sql<string>`current_database()`)
+            .unionAll((eb) =>
+              eb
+                .selectFrom('duckdb_tables')
+                .select((table) => [
+                  'schema_name as schema',
+                  'table_name as table',
+                  'comment',
+                  table.val('base table').as('type'),
+                ])
+                .where('database_name', '=', sql<string>`current_database()`)
+            )
+            .unionAll((eb) =>
+              eb
+                .selectFrom('duckdb_views')
+                .select((view) => [
+                  'schema_name as schema',
+                  'view_name as table',
+                  'comment',
+                  view.val('view').as('type'),
+                ])
+                .where('database_name', '=', sql<string>`current_database()`)
+            )
+            .$narrowType<{ type: 'base table' | 'view' }>()
+            .execute(),
         // information_schema cannot tell the tables SQL Server ships in master
         // (spt_*, MSreplication_options) from the user's own.
         mssql: (db) =>
@@ -256,10 +291,10 @@ export const resourceTablesAndSchemasQueryOptions = ({
 
       return {
         schemas: schemas.toSorted((a, b) => {
-          if (a.name === 'public' && b.name !== 'public') {
+          if (a.name === defaultSchema && b.name !== defaultSchema) {
             return -1
           }
-          if (b.name === 'public' && a.name !== 'public') {
+          if (b.name === defaultSchema && a.name !== defaultSchema) {
             return 1
           }
           return a.name.localeCompare(b.name)

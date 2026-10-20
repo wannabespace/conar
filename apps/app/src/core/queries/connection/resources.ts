@@ -1,4 +1,7 @@
-import { SQLITE_RESOURCE_NAME } from '@tamery/connection/utils'
+import {
+  DUCKDB_RESOURCE_NAME,
+  SQLITE_RESOURCE_NAME,
+} from '@tamery/connection/utils'
 import { Dialect } from '@tamery/shared/enums/connection-type'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'
@@ -25,6 +28,8 @@ const connectionResourcesQuery = createQuery({
         .execute()
       return rows.map((r) => r.name)
     },
+
+    duckdb: () => Promise.resolve([DUCKDB_RESOURCE_NAME]),
 
     mssql: async (db) => {
       const rows = await db

@@ -10,6 +10,7 @@ import { formatColumnTime, TIME_FORMATS } from '~/core/table/cell/utils'
 import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
 import { clickhouseSeedConfig } from './clickhouse.ts'
 import { detectGenerator } from './detect'
+import { duckdbSeedConfig } from './duckdb'
 import { mssqlSeedConfig } from './mssql'
 import { mysqlSeedConfig } from './mysql'
 import { pgSeedConfig } from './postgres'
@@ -26,6 +27,7 @@ import {
 
 const DIALECT_CONFIGS: Record<Dialect, DialectSeedConfig> = {
   clickhouse: clickhouseSeedConfig,
+  duckdb: duckdbSeedConfig,
   mssql: mssqlSeedConfig,
   mysql: mysqlSeedConfig,
   postgres: pgSeedConfig,
