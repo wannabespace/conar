@@ -13,6 +13,8 @@ import {
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { WEB_URL } from '~/constants'
+
 import { Search } from './search'
 import { SectionTabs, Sidebar } from './sidebar'
 
@@ -41,14 +43,22 @@ export const Navbar = () => {
           </div>
         </DrawerContent>
       </Drawer>
-      <Link
-        className="text-foreground flex items-center gap-2 text-base font-semibold tracking-tight"
-        to="/$"
-      >
-        <AppLogo aria-hidden="true" className="text-primary size-5" />
-        Tamery
-        <span className="text-muted-foreground font-normal">Docs</span>
-      </Link>
+      <div className="flex items-center gap-2 text-base tracking-tight">
+        <a
+          className="text-foreground flex cursor-default items-center gap-2 font-semibold"
+          href={WEB_URL}
+        >
+          <AppLogo aria-hidden="true" className="text-primary size-5" />
+          Tamery
+        </a>
+        <Link
+          className="text-muted-foreground hover:text-foreground cursor-default transition-colors"
+          params={{ _splat: '' }}
+          to="/$"
+        >
+          Docs
+        </Link>
+      </div>
       <SectionTabs className="ml-4 hidden md:flex" />
       <div className="ml-auto flex items-center gap-2">
         <Search />
@@ -65,9 +75,7 @@ export const Navbar = () => {
           <HugeiconsIcon icon={ContrastIcon} strokeWidth={2} />
         </ThemeToggle>
         <Button
-          render={
-            <a aria-label="Download" href="https://tamery.app/download" />
-          }
+          render={<a aria-label="Download" href={`${WEB_URL}/download`} />}
           size="sm"
         >
           Download
