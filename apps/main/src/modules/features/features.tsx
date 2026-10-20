@@ -7,6 +7,7 @@ import { CompletionIllustration } from './completion-illustration'
 import { FilterIllustration } from './filter-illustration'
 import { KeyboardIllustration } from './keyboard-illustration'
 import { SchemaIllustration } from './schema-illustration'
+import { ShareIllustration } from './share-illustration'
 import { SyncIllustration } from './sync-illustration'
 
 export const Features = () => (
@@ -52,7 +53,6 @@ export const Features = () => (
         <SyncIllustration />
       </BentoCard>
       <BentoCard
-        className="md:col-span-2"
         title="Completion that knows your data"
         description="The SQL editor suggests tables, columns and the values a column takes, checked against your live schema."
       >
@@ -63,6 +63,12 @@ export const Features = () => (
         description="An ER diagram of every table and relation. Drag the cards around."
       >
         <SchemaIllustration />
+      </BentoCard>
+      <BentoCard
+        title="Share a table as a link"
+        description="Send anyone a read-only link to a table, with your filters and columns. Opening it needs no account."
+      >
+        <ShareIllustration />
       </BentoCard>
     </div>
   </section>
