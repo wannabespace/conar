@@ -1,12 +1,9 @@
+import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import type { ComponentProps, ReactNode } from 'react'
 
-const collapsed = { height: 0, opacity: 0, overflow: 'hidden' }
-const expanded = {
-  height: 'auto' as const,
-  opacity: 1,
-  transitionEnd: { overflow: 'visible' },
-}
+const collapsed = { height: 0, opacity: 0 }
+const expanded = { height: 'auto' as const, opacity: 1 }
 
 const absorbStackGap = (node: HTMLDivElement | null) => {
   const parent = node?.previousElementSibling?.parentElement
@@ -33,7 +30,8 @@ export const MotionCollapse = ({
     animate={expanded}
     exit={collapsed}
     transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-    className={className}
+    // overflow-hidden would cut the focus and invalid rings (3px) of the controls inside
+    className={cn('[clip-path:inset(-4px)]', className)}
     {...props}
   >
     <div>{children}</div>
