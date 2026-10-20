@@ -11,8 +11,8 @@ import { MotionConfig } from 'motion/react'
 import { useEffect } from 'react'
 
 import { StatusPage } from '~/components/status-page'
+import { getViewer } from '~/lib/account'
 import { posthog } from '~/lib/posthog'
-import { viewerQueryOptions } from '~/lib/viewer'
 
 import appCss from '~/styles.css?url'
 
@@ -43,7 +43,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     beforeLoad: async ({ context }) => ({
       viewer: await context.queryClient.query({
-        ...viewerQueryOptions,
+        queryFn: () => getViewer(),
+        queryKey: ['viewer'],
         staleTime: 'static',
       }),
     }),

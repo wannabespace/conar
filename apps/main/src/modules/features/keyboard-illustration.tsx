@@ -9,7 +9,7 @@ import { Kbd } from '@tamery/ui/components/kbd'
 import { motion } from 'motion/react'
 
 import { ProductCrop } from './product-crop'
-import { Typed, typedEnd } from './typed'
+import { Typed } from './typed'
 import { appear, collapse, rise } from './variants'
 
 const QUERY = 'ord'
@@ -24,7 +24,7 @@ const TABLES = [
 
 const TYPE_AT = 0.3
 const TYPE_STEP = 0.14
-const MATCH_AT = typedEnd(TYPE_AT, TYPE_STEP, QUERY) + 0.05
+const MATCH_AT = TYPE_AT + QUERY.length * TYPE_STEP + 0.05
 const PICKED_AT = MATCH_AT + 0.25
 
 export const KeyboardIllustration = () => (

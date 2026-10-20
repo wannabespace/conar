@@ -4,7 +4,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { ColumnKind } from '@tamery/shared/column-kind'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize, Grid } from '@tamery/table'
-import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ColumnKindIcon } from '@tamery/ui/components/custom/column-kind-icon'
 import { cn } from '@tamery/ui/lib/utils'
@@ -28,7 +27,7 @@ const nextSort = (
   if (sort !== column) {
     return { order: 'asc', sort: column }
   }
-  return order === 'asc' ? { order: 'desc', sort: column } : {}
+  return order === 'desc' ? {} : { order: 'desc', sort: column }
 }
 
 export const ShareGrid = ({
@@ -55,9 +54,9 @@ export const ShareGrid = ({
         onEndReached={onEndReached}
         renderBody={(body) => body}
         rows={rows}
-        columns={columns.map(({ id, type: columnType }) => ({
-          id,
-          size: columnType ? getColumnSize(columnType) : DEFAULT_COLUMN_WIDTH,
+        columns={columns.map((column) => ({
+          id: column.id,
+          size: getColumnSize(column.type),
         }))}
         renderHeader={({ column, style }) => {
           const sorted =
@@ -66,7 +65,6 @@ export const ShareGrid = ({
             <div
               role="columnheader"
               aria-sort={sorted ? ARIA_SORT[sorted] : undefined}
-              // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
               style={style}
               className="relative flex items-center py-2.5 pr-3 pl-2 select-none"
             >
@@ -96,7 +94,6 @@ export const ShareGrid = ({
           return (
             <div
               role="gridcell"
-              // oxlint-disable-next-line shadcn/no-inline-styles -- column geometry comes from the grid's per-column variables
               style={style}
               className={cn(
                 'relative flex h-full items-center gap-1 px-2 text-xs',

@@ -1,4 +1,6 @@
-import type { ComponentProps, ReactNode } from 'react'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { ComponentProps } from 'react'
 
 export const Chip = (props: ComponentProps<'div'>) => (
   <div
@@ -11,16 +13,16 @@ export const ChipDivider = () => (
   <span aria-hidden className="bg-border w-px shrink-0" />
 )
 
-/** A read-only picture of the table toolbar's chip; `children` is a trailing segment, such as the remove glyph. */
+/** A read-only picture of the table toolbar's chip. */
 export const FilterChip = ({
-  children,
   column,
   operator,
+  removable,
   value,
 }: {
-  children?: ReactNode
   column: string
   operator: string
+  removable?: boolean
   value: string | null
 }) => (
   <Chip>
@@ -39,11 +41,15 @@ export const FilterChip = ({
         </span>
       </>
     )}
-    {children && (
+    {removable && (
       <>
         <ChipDivider />
         <span className="text-muted-foreground flex items-center px-1">
-          {children}
+          <HugeiconsIcon
+            icon={Cancel01Icon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
         </span>
       </>
     )}

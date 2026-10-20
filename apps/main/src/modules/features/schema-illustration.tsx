@@ -11,7 +11,6 @@ const ROW_HEIGHT = 20
 
 interface Card {
   columns: string[]
-  delay: number
   left: number
   name: string
   top: number
@@ -23,11 +22,9 @@ const useCard = (
   name: string,
   columns: string[],
   left: number,
-  top: number,
-  delay: number
+  top: number
 ): Card => ({
   columns,
-  delay,
   left,
   name,
   top,
@@ -81,9 +78,11 @@ const Edge = ({
 const TableCard = ({
   card,
   constraints,
+  delay,
 }: {
   card: Card
   constraints: React.RefObject<HTMLDivElement | null>
+  delay: number
 }) => (
   <motion.div
     drag
@@ -95,11 +94,7 @@ const TableCard = ({
       shown: {
         opacity: 1,
         scale: 1,
-        transition: {
-          delay: card.delay,
-          duration: 0.3,
-          ease: EASE,
-        },
+        transition: { delay, duration: 0.3, ease: EASE },
       },
     }}
     // oxlint-disable-next-line shadcn/no-inline-styles -- each card's start and drag offset are per-card numbers
@@ -122,15 +117,14 @@ const TableCard = ({
 
 export const SchemaIllustration = () => {
   const ref = useRef<HTMLDivElement>(null)
-  const users = useCard('users', ['id', 'email', 'plan'], 20, 24, 0.1)
+  const users = useCard('users', ['id', 'email', 'plan'], 20, 24)
   const orders = useCard(
     'orders',
     ['id', 'user_id', 'total', 'status'],
     184,
-    64,
-    0.2
+    64
   )
-  const items = useCard('order_items', ['order_id', 'product_id'], 36, 132, 0.3)
+  const items = useCard('order_items', ['order_id', 'product_id'], 36, 132)
 
   return (
     <ProductCrop>
@@ -150,8 +144,13 @@ export const SchemaIllustration = () => {
           <Edge from={users} fromColumn="id" to={orders} toColumn="user_id" />
           <Edge from={items} fromColumn="order_id" to={orders} toColumn="id" />
         </svg>
-        {[users, orders, items].map((card) => (
-          <TableCard key={card.name} card={card} constraints={ref} />
+        {[users, orders, items].map((card, index) => (
+          <TableCard
+            key={card.name}
+            card={card}
+            constraints={ref}
+            delay={(index + 1) / 10}
+          />
         ))}
       </div>
     </ProductCrop>

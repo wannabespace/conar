@@ -234,7 +234,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Sharing
 
-- **Values rendered by type on the share page.** Cells are plain text today; booleans, enums, dates and JSON could reuse the grid's renderers once they live outside `apps/app`.
+- **Values rendered by type on the share page.** Cells are plain text today apart from booleans; enums, dates and JSON could reuse the grid's renderers once they live outside `apps/app`.
 - **Viewer filters.** Viewers can only sort and page; a search over the shown columns, narrowing on top of the owner's filters, would cover most "find my row" visits.
 - **A share cache shared across proxy instances.** Each proxy keeps its own bounded page cache and rate limit in memory; Redis would let a second instance reuse the first one's pages and count one limit.
 - **CSV download for viewers.** Left out of the first version; the proxy would need an export read capped well past a page, and the share site a server route turning it into CSV.

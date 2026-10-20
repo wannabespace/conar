@@ -20,17 +20,15 @@ const createIntrospector = () => {
   throw new Error('Not implemented')
 }
 
-const clickhouseAdapter = () => ({
-  acquireMigrationLock: () => Promise.resolve(),
-  releaseMigrationLock: () => Promise.resolve(),
-  supportsCreateIfNotExists: false,
-  supportsReturning: false,
-  supportsTransactionalDdl: false,
-})
-
 export const kyselyDialects = {
   clickhouse: {
-    createAdapter: clickhouseAdapter,
+    createAdapter: () => ({
+      acquireMigrationLock: () => Promise.resolve(),
+      releaseMigrationLock: () => Promise.resolve(),
+      supportsCreateIfNotExists: false,
+      supportsReturning: false,
+      supportsTransactionalDdl: false,
+    }),
     createIntrospector,
     createQueryCompiler: () => new MysqlQueryCompiler(),
   },
@@ -67,7 +65,6 @@ export const coldDialect = memoize(
     })
 )
 
-/** What an executor runs for a compiled statement: ClickHouse takes its values inlined. */
 export const toQueryPayload = (dialect: Dialect, compiled: CompiledQuery) =>
   dialect === Dialect.ClickHouse
     ? { query: prepareQuery(compiled), values: [] }

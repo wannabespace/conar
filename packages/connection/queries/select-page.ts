@@ -3,17 +3,6 @@ import { toKyselyFilter } from '@tamery/shared/filters'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
-export interface PageSelection {
-  filters?: ActiveFilter[]
-  filtersConcatOperator?: 'AND' | 'OR'
-  limit: number
-  offset: number
-  orderBy?: Record<string, 'ASC' | 'DESC'>
-  schema: string
-  select?: string[]
-  table: string
-}
-
 // Columns go through `sql.id`: a plain string is parsed, so `first name` reads as a column and a direction, `a.b` as a table and a column.
 export const selectPage = (
   // oxlint-disable-next-line ts/no-explicit-any
@@ -27,7 +16,16 @@ export const selectPage = (
     schema,
     select,
     table,
-  }: PageSelection,
+  }: {
+    filters?: ActiveFilter[]
+    filtersConcatOperator?: 'AND' | 'OR'
+    limit: number
+    offset: number
+    orderBy?: Record<string, 'ASC' | 'DESC'>
+    schema: string
+    select?: string[]
+    table: string
+  },
   bind?: FilterValueBinding
 ) => {
   let query = db

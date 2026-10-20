@@ -2,7 +2,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 
 import { ProductCrop } from './product-crop'
-import { Typed, typedEnd } from './typed'
+import { Typed } from './typed'
 import { appear, pop, rise } from './variants'
 
 const LINES = [
@@ -16,8 +16,8 @@ const SUGGESTIONS = ["'paid'", "'pending'", "'refunded'"]
 
 const TYPE_AT = 0.3
 const TYPE_STEP = 0.045
-const REST_AT = typedEnd(TYPE_AT, TYPE_STEP, TYPED_KEYWORD)
-const OPEN_AT = typedEnd(REST_AT, TYPE_STEP, TYPED_REST) + 0.1
+const REST_AT = TYPE_AT + TYPED_KEYWORD.length * TYPE_STEP
+const OPEN_AT = REST_AT + TYPED_REST.length * TYPE_STEP + 0.1
 
 const LineNumber = ({ line }: { line: number }) => (
   <span className="text-muted-foreground/60 w-10 shrink-0 pr-3 text-right">

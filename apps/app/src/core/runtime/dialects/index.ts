@@ -12,59 +12,22 @@ import type { Database as MysqlDatabase } from './mysql/schema'
 import type { Database as PostgresDatabase } from './postgres/schema'
 import type { Database as SqliteDatabase } from './sqlite/schema'
 
-const byConnection = {
-  cacheKey: ({ log: _log, ...rest }: DialectOptions) => rest,
-}
+const createDialect = <Database>(dialect: Dialect) =>
+  memoize(
+    (options: DialectOptions) =>
+      new Kysely<Database>({
+        dialect: {
+          ...kyselyDialects[dialect],
+          createDriver: () => createKyselyDriver(dialect, options),
+        },
+      }),
+    { cacheKey: ({ log: _log, ...rest }) => rest }
+  )
 
 export const dialects = {
-  clickhouse: memoize(
-    (options: DialectOptions) =>
-      new Kysely<ClickhouseDatabase>({
-        dialect: {
-          ...kyselyDialects.clickhouse,
-          createDriver: () => createKyselyDriver(Dialect.ClickHouse, options),
-        },
-      }),
-    byConnection
-  ),
-  mssql: memoize(
-    (options: DialectOptions) =>
-      new Kysely<MssqlDatabase>({
-        dialect: {
-          ...kyselyDialects.mssql,
-          createDriver: () => createKyselyDriver(Dialect.MSSQL, options),
-        },
-      }),
-    byConnection
-  ),
-  mysql: memoize(
-    (options: DialectOptions) =>
-      new Kysely<MysqlDatabase>({
-        dialect: {
-          ...kyselyDialects.mysql,
-          createDriver: () => createKyselyDriver(Dialect.MySQL, options),
-        },
-      }),
-    byConnection
-  ),
-  postgres: memoize(
-    (options: DialectOptions) =>
-      new Kysely<PostgresDatabase>({
-        dialect: {
-          ...kyselyDialects.postgres,
-          createDriver: () => createKyselyDriver(Dialect.Postgres, options),
-        },
-      }),
-    byConnection
-  ),
-  sqlite: memoize(
-    (options: DialectOptions) =>
-      new Kysely<SqliteDatabase>({
-        dialect: {
-          ...kyselyDialects.sqlite,
-          createDriver: () => createKyselyDriver(Dialect.SQLite, options),
-        },
-      }),
-    byConnection
-  ),
+  clickhouse: createDialect<ClickhouseDatabase>(Dialect.ClickHouse),
+  mssql: createDialect<MssqlDatabase>(Dialect.MSSQL),
+  mysql: createDialect<MysqlDatabase>(Dialect.MySQL),
+  postgres: createDialect<PostgresDatabase>(Dialect.Postgres),
+  sqlite: createDialect<SqliteDatabase>(Dialect.SQLite),
 } satisfies Record<Dialect, AnyFunction>

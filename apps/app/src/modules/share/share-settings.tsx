@@ -1,5 +1,4 @@
 import { Unlink01Icon } from '@hugeicons/core-free-icons'
-import { cardClass } from '@tamery/ui/components/card.utils'
 import { IconButton } from '@tamery/ui/components/custom/icon-button'
 import { SettingsGroup } from '@tamery/ui/components/custom/settings-group'
 import { ShareRow } from '@tamery/ui/components/custom/share-row'
@@ -13,12 +12,13 @@ import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/lib/query-client'
 
 import { ShareLinkActions } from './share-link'
-import type { Share } from './shares-query'
 import { sharesQueryOptions } from './shares-query'
 
 export const ShareSettings = () => {
   const { data: shares } = useQuery(sharesQueryOptions)
-  const [stopping, setStopping] = useState<Share | null>(null)
+  const [stopping, setStopping] = useState<{ id: string; name: string } | null>(
+    null
+  )
   const stop = useMutation({
     meta: { event: 'share_removed' },
     mutationFn: (id: string) => orpc.shares.remove.call({ id }),
@@ -35,17 +35,10 @@ export const ShareSettings = () => {
     return null
   }
 
-  if (shares.length === 0) {
-    return (
-      <div className={cardClass}>
-        <SharesEmpty />
-      </div>
-    )
-  }
-
   return (
     <>
-      <SettingsGroup title="Shared tables">
+      <SettingsGroup title={shares.length > 0 && 'Shared tables'}>
+        {shares.length === 0 && <SharesEmpty />}
         {shares.map((share) => (
           <ShareRow key={share.id} share={share}>
             <ShareLinkActions shareId={share.id} />

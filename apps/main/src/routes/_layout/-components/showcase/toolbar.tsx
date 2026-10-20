@@ -1,6 +1,5 @@
 import {
   ArrowUpDownIcon,
-  Cancel01Icon,
   CommandIcon,
   HashtagIcon,
   MoreHorizontalIcon,
@@ -39,13 +38,7 @@ export const Toolbar = () => (
       />
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
         {FILTERS.map((filter) => (
-          <FilterChip key={filter.column} {...filter}>
-            <HugeiconsIcon
-              icon={Cancel01Icon}
-              strokeWidth={2}
-              className="size-3.5"
-            />
-          </FilterChip>
+          <FilterChip key={filter.column} removable {...filter} />
         ))}
         <span className="text-muted-foreground truncate text-sm">
           Filter or ask AI…

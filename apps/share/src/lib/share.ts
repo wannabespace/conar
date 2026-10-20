@@ -1,6 +1,7 @@
 import { ORPCError } from '@orpc/client'
 import type { ColumnKind } from '@tamery/shared/column-kind'
 import { sharePage, shareSort } from '@tamery/shared/share'
+import { omit } from '@tamery/shared/utils'
 import { valueToText } from '@tamery/shared/value-text'
 import { createServerFn } from '@tanstack/react-start'
 import { type } from 'arktype'
@@ -49,21 +50,10 @@ export const getShare = createServerFn({ method: 'GET' })
       return failure(result.error.cause)
     }
 
-    const {
-      columns,
-      description,
-      fetchedAt,
-      filters,
-      hasMore,
-      name,
-      refresh,
-      rows,
-    } = result.value
+    const { columns, filters, rows } = result.value
 
     return {
-      columns,
-      description,
-      fetchedAt,
+      ...omit(result.value, ['token']),
       filters: filters.map(({ column, ref, values, via }) => ({
         column: via ? `${via.table}.${via.target}` : column,
         operator: ref.label,
@@ -72,9 +62,6 @@ export const getShare = createServerFn({ method: 'GET' })
             ? null
             : values.map((value) => cellText(value, null)).join(', '),
       })),
-      hasMore,
-      name,
-      refresh,
       rows: rows.map((row) =>
         row.map((value, index) => cellText(value, columns[index]?.kind ?? null))
       ),

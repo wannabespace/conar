@@ -1,8 +1,4 @@
-import {
-  Cancel01Icon,
-  CommandIcon,
-  SparklesIcon,
-} from '@hugeicons/core-free-icons'
+import { CommandIcon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import { Kbd } from '@tamery/ui/components/kbd'
@@ -12,7 +8,7 @@ import { ORDERS } from '~/components/product/orders'
 
 import { OrdersGrid } from './orders-grid'
 import { ProductCrop } from './product-crop'
-import { Typed, typedEnd } from './typed'
+import { Typed } from './typed'
 import { appear, pop, vanish } from './variants'
 
 const MIN_TOTAL = 580
@@ -25,7 +21,7 @@ const FILTERS = [
 
 const TYPE_AT = 0.2
 const TYPE_STEP = 0.03
-const CONVERT_AT = typedEnd(TYPE_AT, TYPE_STEP, SENTENCE) + 0.25
+const CONVERT_AT = TYPE_AT + SENTENCE.length * TYPE_STEP + 0.25
 
 export const FilterIllustration = () => (
   <ProductCrop>
@@ -47,13 +43,7 @@ export const FilterIllustration = () => (
             key={filter.column}
             variants={pop(CONVERT_AT + 0.05 + index * 0.1, 0)}
           >
-            <FilterChip {...filter}>
-              <HugeiconsIcon
-                icon={Cancel01Icon}
-                strokeWidth={2}
-                className="size-3.5"
-              />
-            </FilterChip>
+            <FilterChip removable {...filter} />
           </motion.span>
         ))}
         <motion.span

@@ -1,12 +1,12 @@
 import { expect, test } from 'bun:test'
 
-import { DummyDriver, Kysely } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 
-import { kyselyDialects } from '../../kysely'
+import { coldDialect } from '../../kysely'
 
-const db = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: { ...kyselyDialects.mssql, createDriver: () => new DummyDriver() },
-})
+const db = coldDialect(Dialect.MSSQL).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 test('a null is inlined and the remaining parameters keep their numbering', () => {
   const { parameters, sql } = db

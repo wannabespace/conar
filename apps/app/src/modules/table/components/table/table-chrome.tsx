@@ -6,10 +6,7 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize } from '@tamery/table'
-import {
-  DEFAULT_COLUMN_WIDTH,
-  LEADING_COLUMN_SIZE,
-} from '@tamery/table/constants'
+import { LEADING_COLUMN_SIZE } from '@tamery/table/constants'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -34,7 +31,7 @@ const TRAILING_COLUMN_SIZE = 48
 const REFERENCE_BUTTON_WIDTH = 24
 
 export const defaultSize = (column: Column) =>
-  (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
+  getColumnSize(column.type ?? null) +
   (column.foreign ? REFERENCE_BUTTON_WIDTH : 0) +
   (column.references?.length ? REFERENCE_BUTTON_WIDTH : 0)
 

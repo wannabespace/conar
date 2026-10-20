@@ -1,7 +1,8 @@
 import { expect, test } from 'bun:test'
 
 import { prepareQuery } from '@tamery/connection/queries/dialects/clickhouse/prepare-query'
-import { kyselyDialects } from '@tamery/connection/queries/kysely'
+import { coldDialect } from '@tamery/connection/queries/kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
 import {
   clickhouseFilterValues,
   EQUAL_FILTER,
@@ -23,12 +24,9 @@ import {
   matchesPrimaryKeys,
 } from './shape'
 
-const clickhouse = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: {
-    ...kyselyDialects.clickhouse,
-    createDriver: () => new DummyDriver(),
-  },
-})
+const clickhouse = coldDialect(Dialect.ClickHouse).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 const postgres = new Kysely<Record<string, Record<string, unknown>>>({
   dialect: {

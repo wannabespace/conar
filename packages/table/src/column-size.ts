@@ -19,7 +19,7 @@ const columnsSizeMap: Record<string, number> = {
   variant: 200,
 }
 
-export const getColumnSize = (type: string): number =>
+export const getColumnSize = (type: string | null) =>
   Object.entries(columnsSizeMap).find(([key]) =>
-    type.toLowerCase().includes(key.toLowerCase())
+    type?.toLowerCase().includes(key)
   )?.[1] ?? DEFAULT_COLUMN_WIDTH

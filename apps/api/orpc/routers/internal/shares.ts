@@ -29,12 +29,6 @@ const passwordFailures = {
       .exec(),
 }
 
-// Signed over the hash, so changing the password turns away every viewer who unlocked with the old one.
-const getUnlockToken = (shareId: string, passwordHash: string) =>
-  new Bun.CryptoHasher('sha256', env.BETTER_AUTH_SECRET)
-    .update(`share-unlock:${shareId}:${passwordHash}`)
-    .digest('hex')
-
 export const shares = {
   report: orpc
     .use(proxySecretMiddleware)
@@ -90,8 +84,11 @@ export const shares = {
         throw errors.NOT_FOUND()
       }
 
+      // Signed over the hash, so changing the password turns away every viewer who unlocked with the old one.
       const token = share.passwordHash
-        ? getUnlockToken(share.id, share.passwordHash)
+        ? new Bun.CryptoHasher('sha256', env.BETTER_AUTH_SECRET)
+            .update(`share-unlock:${share.id}:${share.passwordHash}`)
+            .digest('hex')
         : null
       const unlocked =
         token === null ||

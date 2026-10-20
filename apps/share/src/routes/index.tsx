@@ -42,13 +42,9 @@ const SharesPage = () => {
         )
       }
     >
-      {shares && shares.length === 0 && (
+      {shares && (
         <SettingsGroup>
-          <SharesEmpty />
-        </SettingsGroup>
-      )}
-      {shares && shares.length > 0 && (
-        <SettingsGroup>
+          {shares.length === 0 && <SharesEmpty />}
           {shares.map((share) => (
             <ShareRow key={share.id} share={share}>
               <CopyIconButton

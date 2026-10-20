@@ -3,8 +3,7 @@ import { type } from 'arktype'
 import { columnKind } from './column-kind'
 import { Dialect } from './enums/connection-type'
 import { ShareRefresh } from './enums/share-refresh'
-import { SQL_OPERATORS } from './filters'
-import { objectEntries } from './utils'
+import { FILTER_OPERATORS } from './filters'
 
 export const SHARE_PAGE_SIZE = 100
 export const SHARE_MAX_PAGES = 100
@@ -22,9 +21,7 @@ const shareFilter = type({
     'hasValue?': 'boolean',
     'isArray?': 'boolean',
     label: 'string',
-    operator: type.enumerated(
-      ...objectEntries(SQL_OPERATORS).map(([operator]) => operator)
-    ),
+    operator: type.enumerated(...FILTER_OPERATORS),
     symbol: 'string',
   },
   values: 'unknown[]',
@@ -36,7 +33,7 @@ const shareFilter = type({
   },
 })
 
-export const shareView = type({
+const shareView = type({
   /** The type of every column in the table, which ClickHouse and SQLite bind filter values by. */
   columnTypes: type({ id: 'string', type: 'string' }).array(),
   /** The shown columns, in their order. */

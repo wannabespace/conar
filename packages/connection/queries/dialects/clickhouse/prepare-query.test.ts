@@ -1,16 +1,14 @@
 import { expect, test } from 'bun:test'
 
-import { DummyDriver, Kysely, sql } from 'kysely'
+import { Dialect } from '@tamery/shared/enums/connection-type'
+import { sql } from 'kysely'
 
-import { kyselyDialects } from '../../kysely'
+import { coldDialect } from '../../kysely'
 import { prepareQuery } from './prepare-query'
 
-const db = new Kysely<Record<string, Record<string, unknown>>>({
-  dialect: {
-    ...kyselyDialects.clickhouse,
-    createDriver: () => new DummyDriver(),
-  },
-})
+const db = coldDialect(Dialect.ClickHouse).withTables<
+  Record<string, Record<string, unknown>>
+>()
 
 const update = (value: unknown) =>
   prepareQuery(

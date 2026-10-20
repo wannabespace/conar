@@ -63,7 +63,6 @@ export const AskIllustration = () => (
       </motion.div>
       <p className="text-pretty">
         {ANSWER.split(' ').map((word, index) => (
-          // oxlint-disable-next-line react/no-array-index-key -- words of a fixed sentence repeat; their position is their identity
           <motion.span
             key={index}
             variants={appear(STREAM_AT + index * WORD_STEP)}
