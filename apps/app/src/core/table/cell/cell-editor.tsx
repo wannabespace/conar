@@ -243,10 +243,12 @@ export const CellField = ({
         className={cn(
           'min-h-(--anchor-height) overflow-hidden data-closed:animate-none data-open:animate-none',
           // A textarea's min-content is its longest unbroken run, so only a fixed width keeps it wrapping.
-          !language &&
-            (column.foreign
-              ? 'w-[max(var(--anchor-width),--spacing(96))]'
-              : 'w-[max(var(--anchor-width),--spacing(72))]'),
+          isPickColumn(column)
+            ? 'w-max min-w-[max(var(--anchor-width),--spacing(72))]'
+            : !language &&
+                (column.foreign
+                  ? 'w-[max(var(--anchor-width),--spacing(96))]'
+                  : 'w-[max(var(--anchor-width),--spacing(72))]'),
           language && 'w-auto'
         )}
         onBlur={(event) => {
