@@ -62,6 +62,8 @@ export const shareSaveInput = shareView.merge({
   connectionResourceId: 'string.uuid',
   description: 'string | null',
   expiresAt: 'Date | null',
+  /** Left out creates a new share. */
+  'id?': 'string.uuid',
   name: 'string > 0',
   /** Left out keeps the current password; `null` removes it. */
   'password?': 'string > 0 | null',

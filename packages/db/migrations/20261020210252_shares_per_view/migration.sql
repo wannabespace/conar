@@ -1,0 +1,1 @@
+ALTER TABLE "shares" DROP CONSTRAINT "shares_connection_resource_id_schema_table_unique";

@@ -3,7 +3,7 @@ import { shares, users } from '@tamery/db/schema'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { shareSaveInput } from '@tamery/shared/share'
 import { FREE_SHARE_LIMIT } from '@tamery/shared/usage'
-import { and, eq, ne, or } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { orpc, permissionsMiddleware } from '~/orpc'
 
@@ -12,9 +12,9 @@ export const save = orpc
   .input(shareSaveInput)
   .errors({
     FORBIDDEN: {
-      message: `The free plan shares up to ${FREE_SHARE_LIMIT} tables. Upgrade to Pro to share more.`,
+      message: `The free plan keeps up to ${FREE_SHARE_LIMIT} shared links. Upgrade to Pro to share more.`,
     },
-    NOT_FOUND: { message: 'Connection resource not found' },
+    NOT_FOUND: { message: 'This share or its connection no longer exists.' },
     NOT_SYNCED: {
       message: 'Only a connection synced with Full can be shared.',
     },
@@ -24,6 +24,7 @@ export const save = orpc
       connectionResourceId,
       description,
       expiresAt,
+      id,
       name,
       password,
       refresh,
@@ -59,6 +60,18 @@ export const save = orpc
       }),
     }
 
+    if (id) {
+      const [row] = await db
+        .update(shares)
+        .set(changes)
+        .where(and(eq(shares.id, id), eq(shares.userId, context.user.id)))
+        .returning({ id: shares.id })
+      if (!row) {
+        throw errors.NOT_FOUND()
+      }
+      return row
+    }
+
     // The user's row lock serializes their saves, or two at once both count under the free limit.
     return db.transaction(async (tx) => {
       await tx
@@ -67,17 +80,7 @@ export const save = orpc
         .where(eq(users.id, context.user.id))
         .for('update')
 
-      const count = await tx.$count(
-        shares,
-        and(
-          eq(shares.userId, context.user.id),
-          or(
-            ne(shares.connectionResourceId, connectionResourceId),
-            ne(shares.schema, schema),
-            ne(shares.table, table)
-          )
-        )
-      )
+      const count = await tx.$count(shares, eq(shares.userId, context.user.id))
 
       if (!context.permissions.check('share.create', { count })) {
         throw errors.FORBIDDEN()
@@ -91,10 +94,6 @@ export const save = orpc
           schema,
           table,
           userId: context.user.id,
-        })
-        .onConflictDoUpdate({
-          set: changes,
-          target: [shares.connectionResourceId, shares.schema, shares.table],
         })
         .returning({ id: shares.id })
       return row

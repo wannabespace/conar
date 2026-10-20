@@ -25,6 +25,13 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@tamery/ui/components/input-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 import { Switch } from '@tamery/ui/components/switch'
 import { Form, useAppForm } from '@tamery/ui/components/tanstack-form'
 import { copy } from '@tamery/ui/lib/copy'
@@ -33,6 +40,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { addDays, format } from 'date-fns'
 import { AnimatePresence } from 'motion/react'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -48,7 +56,7 @@ import { plural } from '~/utils/plural'
 
 import { ShareLinkActions } from './share-link'
 import { sharesQueryOptions } from './shares-query'
-import { useTableShare } from './use-table-share'
+import { sameShareView, useTableShare } from './use-table-share'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -77,9 +85,10 @@ interface ShareTarget {
   table: string
 }
 
-const ShareForm = ({ schema, table }: ShareTarget) => {
-  const { connectionResource, dialect } = useRouteContext()
-  const { share } = useTableShare(schema, table)
+const NEW_LINK = 'new'
+
+const useShareView = () => {
+  const { dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const { filters, orderBy, ...layout } = useSubscription(useTablePageStore(), {
     selector: (state) => ({
@@ -88,7 +97,7 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
       orderBy: state.orderBy,
     }),
   })
-  const view = {
+  return {
     columnTypes: columns.flatMap(({ id, type: columnType }) =>
       columnType === undefined ? [] : [{ id, type: columnType }]
     ),
@@ -100,6 +109,47 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
     filters,
     orderBy,
   }
+}
+
+type TableShare = ReturnType<typeof useTableShare>['shares'][number]
+
+const formDefaults = (share: TableShare | null, table: string) => ({
+  description: share?.description ?? '',
+  expires: (share?.expiresAt ? 'current' : 'never') as Expiry,
+  includeFilters: !share || share.view.filters.length > 0,
+  name: share?.name ?? table,
+  password: '',
+  protect: share?.hasPassword ?? false,
+  refresh: share?.refresh ?? ShareRefresh.Minute,
+})
+
+const MovedViewNote = ({
+  saved,
+  view,
+}: {
+  saved: TableShare['view']
+  view: ReturnType<typeof useShareView>
+}) =>
+  !sameShareView(saved, view) && (
+    <p className="text-muted-foreground text-xs">
+      This link was saved with other columns, filters or sort. Saving moves it
+      to what the table shows now.
+    </p>
+  )
+
+const ShareLinkForm = ({
+  onCreated,
+  schema,
+  share,
+  table,
+  view,
+}: ShareTarget & {
+  onCreated: (id: string) => void
+  share: TableShare | null
+  view: ReturnType<typeof useShareView>
+}) => {
+  const { connectionResource, dialect } = useRouteContext()
+  const { filters } = view
   const expiryItems: { label: string; value: Expiry }[] = [
     ...(share?.expiresAt
       ? [
@@ -132,6 +182,7 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
       return orpc.shares.save.call({
         ...shared,
         connectionResourceId: connectionResource.id,
+        id: share?.id,
         description: values.description.trim() || null,
         expiresAt: getExpiresAt(values.expires, share?.expiresAt ?? null),
         name: values.name.trim(),
@@ -149,20 +200,13 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
       } else if (saved) {
         copy(shareUrl(saved.id))
         toast.success('Link copied')
+        onCreated(saved.id)
       }
     },
   })
 
   const form = useAppForm({
-    defaultValues: {
-      description: share?.description ?? '',
-      expires: (share?.expiresAt ? 'current' : 'never') as Expiry,
-      includeFilters: true,
-      name: share?.name ?? table,
-      password: '',
-      protect: share?.hasPassword ?? false,
-      refresh: share?.refresh ?? ShareRefresh.Minute,
-    },
+    defaultValues: formDefaults(share, table),
     onSubmit: ({ value }) => save.mutate(value),
     validators: {
       onChange: type({
@@ -181,10 +225,6 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
-        <DialogDescription data-mask>{`${schema}.${table}`}</DialogDescription>
-      </DialogHeader>
       {share && (
         <Field>
           <FieldLabel htmlFor="share-link">Link</FieldLabel>
@@ -295,6 +335,16 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
               </AnimatePresence>
             )}
           </form.Subscribe>
+          {share && (
+            <form.Subscribe selector={(state) => state.values.includeFilters}>
+              {(includeFilters) => (
+                <MovedViewNote
+                  saved={share.view}
+                  view={{ ...view, filters: includeFilters ? filters : [] }}
+                />
+              )}
+            </form.Subscribe>
+          )}
           <p className="text-muted-foreground text-xs">
             {`Anyone with the link sees the ${plural(view.columns.length, 'column')} the table shows, in its order. Tamery’s servers read the rows from your database each time the link refreshes; viewers can sort and scroll, never edit.`}
           </p>
@@ -328,6 +378,60 @@ const ShareForm = ({ schema, table }: ShareTarget) => {
           </Button>
         </div>
       </DialogFooter>
+    </>
+  )
+}
+
+const ShareForm = ({ schema, table }: ShareTarget) => {
+  const { shares } = useTableShare(schema, table)
+  const view = useShareView()
+  const [linkId, setLinkId] = useState(
+    () =>
+      shares.find((entry) => sameShareView(entry.view, view))?.id ?? NEW_LINK
+  )
+  const share = shares.find(({ id }) => id === linkId) ?? null
+  const linkItems = [
+    ...shares.map(({ id, name }) => ({ label: name, value: id })),
+    { label: 'New link', value: NEW_LINK },
+  ]
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
+        <DialogDescription data-mask>{`${schema}.${table}`}</DialogDescription>
+      </DialogHeader>
+      {shares.length > 0 && (
+        <Field>
+          <FieldLabel id="share-target-label">Link</FieldLabel>
+          <Select
+            items={linkItems}
+            value={linkId}
+            onValueChange={(next) => next !== null && setLinkId(next)}
+          >
+            <SelectTrigger aria-labelledby="share-target-label">
+              <SelectValue data-mask />
+            </SelectTrigger>
+            <SelectContent>
+              {linkItems.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  <span data-mask={value !== NEW_LINK || undefined}>
+                    {label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      )}
+      <ShareLinkForm
+        key={linkId}
+        schema={schema}
+        share={share}
+        table={table}
+        view={view}
+        onCreated={setLinkId}
+      />
     </>
   )
 }

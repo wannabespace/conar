@@ -15,19 +15,19 @@ export const ShareMenuItem = ({
   schema: string
   table: string
 }) => {
-  const { count, share, synced } = useTableShare(schema, table)
+  const { count, shares, synced } = useTableShare(schema, table)
 
   return (
     <DropdownMenuItem
       disabled={!synced}
       onClick={() => {
-        if (share || checkOrUpgrade('share.create', { count })) {
+        if (shares.length > 0 || checkOrUpgrade('share.create', { count })) {
           onOpen()
         }
       }}
     >
       <HugeiconsIcon icon={Share08Icon} strokeWidth={2} />
-      {share ? 'Shared link' : 'Share'}
+      Share
       {!synced && (
         <span className="text-muted-foreground ml-auto text-xs">
           Needs Full sync
