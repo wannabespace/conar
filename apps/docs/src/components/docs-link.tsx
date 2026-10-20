@@ -1,6 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import type { ComponentProps } from 'react'
 
 import { SITE_URL } from '~/constants'
 
@@ -16,27 +16,15 @@ export const docsLinkProps = (href: string): LinkProps => {
 
 export const DocsLink = ({
   children,
-  className,
   href,
   ...props
-}: {
-  children: ReactNode
-  className?: string
-  href: string
-  onClick?: () => void
-  'aria-current'?: 'page' | undefined
-}) => {
-  if (!href.startsWith('/')) {
-    return (
-      <a className={className} href={href} {...props}>
-        {children}
-      </a>
-    )
-  }
-
-  return (
-    <Link className={className} {...docsLinkProps(href)} {...props}>
+}: Omit<ComponentProps<'a'>, 'href'> & { href: string }) =>
+  href.startsWith('/') ? (
+    <Link {...docsLinkProps(href)} {...props}>
       {children}
     </Link>
+  ) : (
+    <a href={href} {...props}>
+      {children}
+    </a>
   )
-}

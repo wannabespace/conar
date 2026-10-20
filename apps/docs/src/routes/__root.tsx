@@ -19,7 +19,7 @@ import { MotionConfig } from 'motion/react'
 
 import { ErrorPage } from '~/error-page'
 
-import appCss from '@tamery/ui/globals.css?url'
+import appCss from '~/styles.css?url'
 
 const RootComponent = () => (
   <html lang="en" suppressHydrationWarning>
@@ -75,6 +75,7 @@ export const Route = createRootRoute({
     ],
     meta: [
       { charSet: 'utf-8' },
+      { title: 'Tamery Docs' },
       { content: 'width=device-width, initial-scale=1', name: 'viewport' },
       { content: '#0a0a0a', name: 'theme-color' },
       { content: '1475164F19E362EBC46DEE1D9813275A', name: 'msvalidate.01' },

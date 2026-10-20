@@ -10,26 +10,16 @@ const getNavPage = (path: string) => {
   }
 }
 
-const tabs = docsConfig.navigation.tabs.map((tab) => ({
-  groups: tab.groups
-    ? tab.groups.map((group) => ({
-        pages: group.pages.map(getNavPage),
-        title: group.group,
-      }))
-    : [{ pages: tab.pages.map(getNavPage), title: tab.tab }],
-  label: tab.tab,
+const groups = docsConfig.navigation.groups.map((group) => ({
+  pages: group.pages.map(getNavPage),
+  title: group.group,
 }))
 
-const pages = tabs.flatMap((tab) => tab.groups.flatMap((group) => group.pages))
+const pages = groups.flatMap((group) => group.pages)
 
 export const nav = {
-  getActiveTab: (pathname: string) =>
-    tabs.find((tab) =>
-      tab.groups.some((group) =>
-        group.pages.some((page) => page.href === pathname)
-      )
-    ) ??
-    tabs[0] ??
+  getGroup: (href: string) =>
+    groups.find((group) => group.pages.some((page) => page.href === href)) ??
     null,
   getNeighbours: (href: string) => {
     const index = pages.findIndex((page) => page.href === href)
@@ -43,5 +33,6 @@ export const nav = {
       previous: pages[index - 1] ?? null,
     }
   },
-  tabs,
+  getPage: (href: string) => pages.find((page) => page.href === href) ?? null,
+  groups,
 }
