@@ -25,22 +25,6 @@ import { getLocalTime, hasTabularFigures } from './utils'
 
 const TIME_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone
 
-const ZonedTime = ({ local, stored }: { local: string; stored: string }) => (
-  <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
-    <span className="max-w-full shrink-0 truncate tabular-nums">{stored}</span>
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <span className="text-muted-foreground min-w-0 truncate tabular-nums" />
-        }
-      >
-        {local}
-      </TooltipTrigger>
-      <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
-    </Tooltip>
-  </span>
-)
-
 const CellValue = ({
   column,
   label,
@@ -117,10 +101,21 @@ const CellValue = ({
     const localTime = getLocalTime(value)
     if (localTime) {
       return (
-        <ZonedTime
-          local={localTime}
-          stored={transformer.toDisplay(value, size)}
-        />
+        <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="max-w-full shrink-0 truncate tabular-nums">
+            {transformer.toDisplay(value, size)}
+          </span>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <span className="text-muted-foreground min-w-0 truncate tabular-nums" />
+              }
+            >
+              {localTime}
+            </TooltipTrigger>
+            <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
+          </Tooltip>
+        </span>
       )
     }
     if (layout === 'documents' && isNested(value)) {
