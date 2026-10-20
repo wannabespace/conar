@@ -40,8 +40,16 @@ export const getShare = createServerFn({ method: 'GET' })
       return failure(result.error.cause)
     }
 
-    const { columns, description, fetchedAt, filters, hasMore, name, rows } =
-      result.value
+    const {
+      columns,
+      description,
+      fetchedAt,
+      filters,
+      hasMore,
+      name,
+      refresh,
+      rows,
+    } = result.value
 
     return {
       columns,
@@ -54,6 +62,7 @@ export const getShare = createServerFn({ method: 'GET' })
       })),
       hasMore,
       name,
+      refresh,
       rows: rows.map((row) => row.map(cellText)),
       status: 'ready' as const,
     }

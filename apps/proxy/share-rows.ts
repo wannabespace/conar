@@ -7,7 +7,10 @@ import * as pg from '@tamery/connection/queries/dialects/pg'
 import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
 import { coldDialects } from '@tamery/connection/queries/kysely'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import { ShareRefresh } from '@tamery/shared/enums/share-refresh'
+import {
+  SHARE_REFRESH_MS,
+  ShareRefresh,
+} from '@tamery/shared/enums/share-refresh'
 import type { ColumnTypes, FilterValueBinding } from '@tamery/shared/filters'
 import {
   clickhouseFilterValues,
@@ -87,8 +90,6 @@ export const readShareRows = async ({
   return { fetchedAt: new Date(), rows: result[0]?.rows ?? [] }
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
 const cachedRead = (maxAge: number) =>
   memoize(readShareRows, {
     cacheKey: ({ limit, offset, share, sort }) =>
@@ -96,12 +97,11 @@ const cachedRead = (maxAge: number) =>
     maxAge,
   })
 
-// Live still caches a few seconds, so a busy link cannot hammer the owner's database.
 export const shareRows: Record<ShareRefresh, typeof readShareRows> = {
-  [ShareRefresh.Day]: cachedRead(DAY_MS),
-  [ShareRefresh.Hour]: cachedRead(60 * 60 * 1000),
-  [ShareRefresh.Live]: cachedRead(5000),
-  [ShareRefresh.Minute]: cachedRead(60 * 1000),
+  [ShareRefresh.Day]: cachedRead(SHARE_REFRESH_MS.day),
+  [ShareRefresh.Hour]: cachedRead(SHARE_REFRESH_MS.hour),
+  [ShareRefresh.Live]: cachedRead(SHARE_REFRESH_MS.live),
+  [ShareRefresh.Minute]: cachedRead(SHARE_REFRESH_MS.minute),
 }
 
 // memoza never evicts an expired key, so without this every page ever viewed stays in memory.
@@ -109,4 +109,4 @@ setInterval(() => {
   for (const read of Object.values(shareRows)) {
     clearMemoizeCache(read)
   }
-}, DAY_MS)
+}, SHARE_REFRESH_MS.day)
