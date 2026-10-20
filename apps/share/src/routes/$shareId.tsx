@@ -49,7 +49,7 @@ const SharePage = () => {
   return (
     <div className="flex h-dvh flex-col p-2">
       <main className="bg-background ring-foreground/4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring">
-        <header className="flex shrink-0 flex-col gap-2 px-4 pt-8 pb-6">
+        <header className="flex shrink-0 flex-col gap-2 px-10 pt-12 pb-8">
           <h1
             data-mask
             className="text-3xl font-semibold tracking-tight text-balance"
@@ -74,7 +74,7 @@ const SharePage = () => {
             </div>
           )}
         </header>
-        <div className="flex min-h-0 flex-1 flex-col border-t">
+        <div className="mx-6 mb-6 flex min-h-0 flex-1 flex-col border-t">
           {rows.length === 0 ? (
             <Empty size="sm">
               <EmptyHeader>
