@@ -6,7 +6,6 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { ColumnKind } from '@tamery/shared/column-kind'
-import { SHARE_MAX_PAGES, SHARE_PAGE_SIZE } from '@tamery/shared/share'
 import type { GridRow } from '@tamery/table'
 import { getColumnSize, Grid } from '@tamery/table'
 import { Checkbox } from '@tamery/ui/components/checkbox'
@@ -31,20 +30,9 @@ export const shareSearch = type({
 
 type ShareSearch = typeof shareSearch.infer
 
-const ROWS_END = {
-  capped: {
-    description: `A shared link shows the first ${(SHARE_MAX_PAGES * SHARE_PAGE_SIZE).toLocaleString('en-US')} rows.`,
-    title: 'No more rows here',
-  },
-  last: {
-    description: 'You’ve reached the end of this table.',
-    title: 'No more rows',
-  },
-}
+export type RowsEnd = 'capped' | 'last' | 'more'
 
-export type RowsEnd = keyof typeof ROWS_END | 'more'
-
-const EndOfRows = ({ end }: { end: RowsEnd }) => (
+const EndOfRows = ({ end }: { end: Exclude<RowsEnd, 'capped'> }) => (
   <div className="pointer-events-none sticky left-0 flex h-80 w-[100cqw] items-center justify-center">
     {end === 'more' ? (
       <Spinner />
@@ -54,8 +42,10 @@ const EndOfRows = ({ end }: { end: RowsEnd }) => (
           <EmptyMedia variant="muted">
             <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
           </EmptyMedia>
-          <EmptyTitle>{ROWS_END[end].title}</EmptyTitle>
-          <EmptyDescription>{ROWS_END[end].description}</EmptyDescription>
+          <EmptyTitle>No more rows</EmptyTitle>
+          <EmptyDescription>
+            You’ve reached the end of this table.
+          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     )}
@@ -124,7 +114,7 @@ export const ShareGrid = ({
     <div className="min-h-0 flex-1">
       <Grid
         scrollRef={scrollRef}
-        footer={<EndOfRows end={end} />}
+        footer={end !== 'capped' && <EndOfRows end={end} />}
         isFetching={isFetching}
         onEndReached={onEndReached}
         renderBody={(body) => body}
