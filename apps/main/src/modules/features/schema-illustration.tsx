@@ -10,6 +10,7 @@ const ROW_HEIGHT = 20
 
 interface Card {
   columns: string[]
+  delay: number
   left: number
   name: string
   top: number
@@ -21,9 +22,11 @@ const useCard = (
   name: string,
   columns: string[],
   left: number,
-  top: number
+  top: number,
+  delay: number
 ): Card => ({
   columns,
+  delay,
   left,
   name,
   top,
@@ -62,6 +65,13 @@ const Edge = ({
       d={d}
       fill="none"
       strokeWidth={1.5}
+      variants={{
+        hidden: { pathLength: 0 },
+        shown: {
+          pathLength: 1,
+          transition: { delay: 0.5, duration: 0.6, ease: [0.32, 0.72, 0, 1] },
+        },
+      }}
       className="stroke-primary"
     />
   )
@@ -79,6 +89,18 @@ const TableCard = ({
     dragConstraints={constraints}
     dragMomentum={false}
     whileDrag={{ scale: 1.04 }}
+    variants={{
+      hidden: { opacity: 0, scale: 0.94 },
+      shown: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+          delay: card.delay,
+          duration: 0.3,
+          ease: [0.32, 0.72, 0, 1],
+        },
+      },
+    }}
     // oxlint-disable-next-line shadcn/no-inline-styles -- each card's start and drag offset are per-card numbers
     style={{ left: card.left, top: card.top, x: card.x, y: card.y }}
     className="bg-popover ring-foreground/4 text-2xs absolute w-28 overflow-hidden rounded-lg shadow-md ring"
@@ -99,14 +121,15 @@ const TableCard = ({
 
 export const SchemaIllustration = () => {
   const ref = useRef<HTMLDivElement>(null)
-  const users = useCard('users', ['id', 'email', 'plan'], 20, 24)
+  const users = useCard('users', ['id', 'email', 'plan'], 20, 24, 0.1)
   const orders = useCard(
     'orders',
     ['id', 'user_id', 'total', 'status'],
     184,
-    64
+    64,
+    0.2
   )
-  const items = useCard('order_items', ['order_id', 'product_id'], 36, 132)
+  const items = useCard('order_items', ['order_id', 'product_id'], 36, 132, 0.3)
 
   return (
     <ProductCrop>

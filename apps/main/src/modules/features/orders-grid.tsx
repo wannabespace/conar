@@ -13,7 +13,7 @@ import { motion } from 'motion/react'
 import { OrderStatusBadge } from '~/components/product/order-status-badge'
 import type { ORDERS } from '~/components/product/orders'
 
-import { rise } from './variants'
+import { collapse, flash, rise } from './variants'
 
 type Order = (typeof ORDERS)[number]
 
@@ -31,7 +31,19 @@ const COLUMNS: {
 
 const cellClassName = 'flex h-full shrink-0 items-center border-r px-2'
 
-export const OrdersGrid = ({ at, orders }: { at: number; orders: Order[] }) => (
+export const OrdersGrid = ({
+  at,
+  filtered,
+  flashed,
+  orders,
+}: {
+  at: number
+  /** Rows that do not match fold away at `at`, as the grid answers a new filter. */
+  filtered?: { at: number; matches: (order: Order) => boolean }
+  /** That row's total flashes at `at`, as a refresh changes it. */
+  flashed?: { at: number; id: string }
+  orders: Order[]
+}) => (
   <div className="text-xs">
     <div className="flex h-8 border-b">
       {COLUMNS.map(({ icon, id, width }) => (
@@ -58,21 +70,42 @@ export const OrdersGrid = ({ at, orders }: { at: number; orders: Order[] }) => (
     {orders.map((order, index) => (
       <motion.div
         key={order.id}
-        variants={rise(at + index * 0.05)}
-        className="flex h-8 border-b"
+        variants={
+          filtered && !filtered.matches(order)
+            ? collapse(filtered.at)
+            : undefined
+        }
+        className="overflow-hidden"
       >
-        {COLUMNS.map(({ id, numeric, width }) => (
-          <div
-            key={id}
-            className={cn(cellClassName, width, numeric && 'tabular-nums')}
-          >
-            {id === 'status' ? (
-              <OrderStatusBadge status={order.status} />
-            ) : (
-              order[id]
-            )}
-          </div>
-        ))}
+        <motion.div
+          variants={rise(at + index * 0.05)}
+          className="flex h-8 border-b"
+        >
+          {COLUMNS.map(({ id, numeric, width }) => (
+            <div
+              key={id}
+              className={cn(
+                cellClassName,
+                'relative isolate',
+                width,
+                numeric && 'tabular-nums'
+              )}
+            >
+              {flashed?.id === order.id && id === 'total' && (
+                <motion.span
+                  aria-hidden
+                  variants={flash(flashed.at)}
+                  className="bg-primary/20 absolute inset-0 -z-10"
+                />
+              )}
+              {id === 'status' ? (
+                <OrderStatusBadge status={order.status} />
+              ) : (
+                order[id]
+              )}
+            </div>
+          ))}
+        </motion.div>
       </motion.div>
     ))}
   </div>

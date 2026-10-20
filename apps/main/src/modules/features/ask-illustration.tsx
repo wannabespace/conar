@@ -18,9 +18,17 @@ import {
 import { motion } from 'motion/react'
 
 import { ProductCrop } from './product-crop'
-import { rise } from './variants'
+import { appear, revealDown, rise } from './variants'
 
 const MotionTableRow = motion.create(TableRow)
+
+const ANSWER =
+  'Priya Raman leads with two paid orders. I summed paid totals per customer:'
+
+const STREAM_AT = 0.45
+const WORD_STEP = 0.035
+const SQL_AT = STREAM_AT + ANSWER.split(' ').length * WORD_STEP + 0.1
+const RESULTS_AT = SQL_AT + 0.45
 
 const SQL = `SELECT customer, sum(total)
 FROM orders
@@ -53,14 +61,21 @@ export const AskIllustration = () => (
           <BubbleContent>Who spent the most on paid orders?</BubbleContent>
         </Bubble>
       </motion.div>
-      <motion.p variants={rise(0.35)} className="text-pretty">
-        Priya Raman leads with two paid orders. I summed paid totals per
-        customer:
-      </motion.p>
-      <motion.div variants={rise(0.5)}>
+      <p className="text-pretty">
+        {ANSWER.split(' ').map((word, index) => (
+          // oxlint-disable-next-line react/no-array-index-key -- words of a fixed sentence repeat; their position is their identity
+          <motion.span
+            key={index}
+            variants={appear(STREAM_AT + index * WORD_STEP)}
+          >
+            {`${word} `}
+          </motion.span>
+        ))}
+      </p>
+      <motion.div variants={revealDown(SQL_AT, 0.4)}>
         <CodeBlock code={SQL} language="sql" size="xs" variant="field" />
       </motion.div>
-      <motion.div variants={rise(0.65)}>
+      <motion.div variants={rise(RESULTS_AT)}>
         <Table size="sm">
           <TableHeader>
             <TableRow>
@@ -72,7 +87,7 @@ export const AskIllustration = () => (
             {RESULTS.map(([customer, total], index) => (
               <MotionTableRow
                 key={customer}
-                variants={rise(0.7 + index * 0.05)}
+                variants={rise(RESULTS_AT + 0.05 + index * 0.05)}
               >
                 <TableCell>{customer}</TableCell>
                 <TableCell variant="numeric">{total}</TableCell>

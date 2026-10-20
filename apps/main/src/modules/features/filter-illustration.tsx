@@ -12,30 +12,39 @@ import { ORDERS } from '~/components/product/orders'
 
 import { OrdersGrid } from './orders-grid'
 import { ProductCrop } from './product-crop'
-import { pop } from './variants'
+import { Typed, typedEnd } from './typed'
+import { appear, pop, vanish } from './variants'
+
+const SENTENCE = 'paid orders over $580'
 
 const FILTERS = [
   { column: 'status', operator: 'is', value: 'paid' },
   { column: 'total', operator: 'over', value: '580' },
 ]
 
-const MATCHES = ORDERS.filter(
-  ({ status, total }) => status === 'paid' && Number(total.slice(1)) > 580
-)
+const TYPE_AT = 0.2
+const TYPE_STEP = 0.03
+const CONVERT_AT = typedEnd(TYPE_AT, TYPE_STEP, SENTENCE) + 0.25
 
 export const FilterIllustration = () => (
   <ProductCrop>
     <div className="flex items-center gap-2 px-3 py-2">
-      <div className="bg-input ring-foreground/4 flex min-h-8 min-w-0 flex-1 items-center gap-1 rounded-xl py-0.75 pr-1.5 pl-2 shadow-xs ring">
+      <div className="bg-input ring-foreground/4 relative flex min-h-8 min-w-0 flex-1 items-center gap-1 rounded-xl py-0.75 pr-1.5 pl-2 shadow-xs ring">
         <HugeiconsIcon
           icon={SparklesIcon}
           strokeWidth={2}
           className="text-primary mr-1 size-4 shrink-0"
         />
+        <motion.span
+          variants={vanish(CONVERT_AT)}
+          className="absolute inset-y-0 left-8 flex items-center text-sm whitespace-pre"
+        >
+          <Typed at={TYPE_AT} step={TYPE_STEP} text={SENTENCE} />
+        </motion.span>
         {FILTERS.map((filter, index) => (
           <motion.span
             key={filter.column}
-            variants={pop(0.15 + index * 0.1, 0)}
+            variants={pop(CONVERT_AT + 0.05 + index * 0.1, 0)}
           >
             <FilterChip {...filter}>
               <HugeiconsIcon
@@ -46,16 +55,27 @@ export const FilterIllustration = () => (
             </FilterChip>
           </motion.span>
         ))}
-        <span className="text-muted-foreground min-w-0 flex-1 truncate pl-1 text-sm">
-          paid orders over $580
-        </span>
+        <motion.span
+          variants={appear(CONVERT_AT + 0.3)}
+          className="text-muted-foreground min-w-0 flex-1 truncate pl-1 text-sm"
+        >
+          Filter or ask AI…
+        </motion.span>
         <Kbd>
           <HugeiconsIcon icon={CommandIcon} strokeWidth={2} />F
         </Kbd>
       </div>
     </div>
     <div className="border-t">
-      <OrdersGrid at={0.45} orders={MATCHES} />
+      <OrdersGrid
+        at={0.1}
+        filtered={{
+          at: CONVERT_AT + 0.3,
+          matches: ({ status, total }) =>
+            status === 'paid' && Number(total.slice(1)) > 580,
+        }}
+        orders={ORDERS.slice(0, 8)}
+      />
     </div>
   </ProductCrop>
 )

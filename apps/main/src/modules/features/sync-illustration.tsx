@@ -1,9 +1,14 @@
+import { Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionType, Provider } from '@tamery/shared/enums/connection-type'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { motion } from 'motion/react'
 
 import { ProductCrop } from './product-crop'
-import { pop, rise } from './variants'
+import { appear, pop, rise, vanish } from './variants'
+
+const ARRIVE_STEP = 0.18
+const SYNCED_AT = 0.2 + 4 * ARRIVE_STEP + 0.2
 
 const CONNECTIONS = [
   {
@@ -37,12 +42,28 @@ export const SyncIllustration = () => (
   <ProductCrop className="min-w-0">
     <div className="text-muted-foreground flex h-8 items-center border-b px-3 text-xs font-medium">
       Connections
+      <span className="relative ml-auto flex items-center">
+        <motion.span variants={vanish(SYNCED_AT)} className="absolute right-0">
+          Syncing…
+        </motion.span>
+        <motion.span
+          variants={appear(SYNCED_AT)}
+          className="flex items-center gap-1"
+        >
+          <HugeiconsIcon
+            icon={Tick02Icon}
+            strokeWidth={2}
+            className="text-primary size-3.5"
+          />
+          Up to date
+        </motion.span>
+      </span>
     </div>
     {CONNECTIONS.map(
       ({ label, name, provider, sync, type: connectionType }, index) => (
         <motion.div
           key={name}
-          variants={rise(0.1 + index * 0.06)}
+          variants={rise(0.2 + index * ARRIVE_STEP)}
           className="flex h-11 items-center gap-2.5 border-b px-3 text-sm"
         >
           <ConnectionIcon
@@ -53,7 +74,7 @@ export const SyncIllustration = () => (
           <span className="font-medium">{name}</span>
           <span className="text-muted-foreground">{label}</span>
           <motion.span
-            variants={pop(0.4 + index * 0.06, 0)}
+            variants={pop(0.35 + index * ARRIVE_STEP, 0)}
             className="bg-secondary text-muted-foreground text-2xs ml-auto rounded-md px-1.5 py-0.5"
           >
             {sync}
