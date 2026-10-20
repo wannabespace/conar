@@ -1,7 +1,7 @@
 ---
 title: 'Security and privacy'
 sidebarTitle: 'Security'
-description: 'Understand where connection details, queries, and AI context go.'
+description: 'Where your connection details, queries and AI requests go, and what Tamery stores.'
 ---
 
 ## Connection details
@@ -26,7 +26,7 @@ Synced connection strings are encrypted with a workspace key. They are decrypted
 
 The cloud proxy cannot reach private addresses or open SQLite and certificate files on your computer. Use desktop or the local proxy for those. Connections whose secrets stay on your device also need desktop or the local proxy.
 
-Encryption between Tamery and your database depends on the connection's SSL settings. Use your provider's recommended settings and certificate verification.
+Encryption between Tamery and your database depends on the connection's SSL settings.
 
 ## SSH tunnels
 
@@ -34,9 +34,15 @@ SSH tunnels run on desktop only. Tamery checks the server's host key and asks be
 
 You can use your SSH agent, a key file, a pasted private key, or a password. `~/.ssh/config` is supported; `ProxyJump` and `ProxyCommand` are not.
 
+## What else we store
+
+Saved queries and AI chats are stored on our servers, so they follow you to every device. They are kept per database and go away when you remove the connection.
+
+Query history and the query logger stay on the device that ran the queries. So do your Navigator, tab, and table layout.
+
 ## AI and your data
 
-AI requests are processed on Tamery's servers using external model providers. Chat sends your messages; editor and filter features also send relevant schema context. Share only data you are allowed to send.
+AI requests go through our servers to external model providers. The chat sends your messages. Editor and filter features also send the schema context they need.
 
 The built-in chat does not execute SQL. Coding agents connected through [MCP](/mcp/overview#connection-access) can read data and make changes according to the access you grant; their results become part of the agent's context.
 
@@ -46,8 +52,8 @@ The built-in chat does not execute SQL. Coding agents connected through [MCP](/m
 
 ## Agent access
 
-MCP clients use a local access token. Keep it out of shared config files; regenerate it in **Settings → MCP** if it leaks.
+MCP clients use a local access token. Keep it out of shared config files. If it leaks, regenerate it in **Settings → MCP**.
 
-For a database-enforced restriction, connect with a database user that has only the permissions you need. Tamery's read-only checks cannot prevent every side effect of a database function.
+Tamery's read-only checks cannot stop every side effect of a database function. For a hard limit, connect with a database user that has only the permissions you need.
 
 Tamery is [open source](https://github.com/wannabespace/tamery) under AGPL-3.0.

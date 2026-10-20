@@ -51,6 +51,7 @@ export const selectColumn = ({
     <LeadingCell
       entry={entryAt(rowIndex)}
       keys={keys}
+      rowIndex={rowIndex}
       rows={rows}
       style={style}
     />

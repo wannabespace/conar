@@ -1,4 +1,9 @@
-import { Search01Icon } from '@hugeicons/core-free-icons'
+import {
+  File01Icon,
+  HashtagIcon,
+  Search01Icon,
+  TextAlignLeftIcon,
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -7,99 +12,189 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandInput,
   CommandList,
+  CommandPaletteFooter,
+  CommandPaletteInput,
+  CommandShortcut,
 } from '@tamery/ui/components/command'
 import { KbdHotkey } from '@tamery/ui/components/custom/shortcuts'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
-import { useFetchSearch } from 'fumadocs-core/search/client'
+import { useFetchSearch, useHighlightQuery } from 'fumadocs-core/search/client'
+import type { SearchResultRecord } from 'fumadocs-core/search/client'
 import { useState } from 'react'
 
+import { nav } from '~/lib/nav'
 import { getUserAgent } from '~/utils/user-agent'
 
 import { docsLinkProps } from './docs-link'
+
+const MAX_RESULTS = 30
+
+interface HastNode {
+  type: string
+  tagName?: string
+  value?: string
+  children?: HastNode[]
+}
+
+const hastText = (node: HastNode): string =>
+  node.value ?? node.children?.map(hastText).join('') ?? ''
+
+const findAll = (node: HastNode, tagName: string): HastNode[] =>
+  node.tagName === tagName
+    ? [node]
+    : (node.children?.flatMap((child) => findAll(child, tagName)) ?? [])
+
+// A table row is indexed as a Markdown table with its header; only the row's own cells are the match.
+const resultText = (record: SearchResultRecord) => {
+  const cells = findAll(record.hastContent, 'td')
+
+  return cells.length > 0
+    ? cells.map(hastText).join(' · ')
+    : hastText(record.hastContent)
+}
+
+const groupByPage = (records: SearchResultRecord[]) =>
+  Map.groupBy(records, (record) => record.url.split('#')[0] ?? record.url)
 
 export const Search = () => {
   const [open, setOpen] = useState(false)
   const userAgent = getUserAgent()
   const router = useRouter()
   const { data, isLoading, onSearchChange, search } = useFetchSearch()
-  const rows = (data?.items ?? [])
+  const highlight = useHighlightQuery(data?.query ?? '')
+  const records = (data?.items ?? [])
     .flatMap((item) => (item.type === 'table' ? item.rows : [item]))
-    .slice(0, 20)
+    .slice(0, MAX_RESULTS)
+
+  const setOpenAndReset = (next: boolean) => {
+    setOpen(next)
+    if (!next) {
+      onSearchChange('')
+    }
+  }
+
+  const go = (href: string) => {
+    setOpenAndReset(false)
+    void router.navigate(docsLinkProps(href))
+  }
 
   useHotkey('Mod+K', (event) => {
     event.preventDefault()
-    setOpen((current) => !current)
+    setOpenAndReset(!open)
   })
 
   return (
     <>
       <Button
         aria-label="Search"
+        className="sm:w-52 sm:justify-start"
         onClick={() => setOpen(true)}
-        variant="outline"
+        size="sm"
+        variant="outline-muted"
       >
-        {userAgent ? (
-          <KbdHotkey hotkey="Mod+K" userAgent={userAgent} />
-        ) : (
-          <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
+        <HugeiconsIcon icon={Search01Icon} strokeWidth={2} />
+        <span className="hidden flex-1 text-left sm:inline">Search</span>
+        {userAgent && (
+          <KbdHotkey
+            className="hidden sm:inline-flex"
+            hotkey="Mod+K"
+            userAgent={userAgent}
+          />
         )}
       </Button>
       <CommandDialog
         description="Search the documentation"
-        onOpenChange={setOpen}
+        onOpenChange={setOpenAndReset}
         open={open}
         title="Search docs"
       >
-        <Command className="min-h-0" shouldFilter={false} variant="transparent">
-          <CommandInput
+        <Command
+          className="min-h-0 flex-1"
+          loop
+          shouldFilter={false}
+          variant="transparent"
+        >
+          <CommandPaletteInput
+            end={
+              isLoading && (
+                <span className="animate-in fade-in fill-mode-both flex delay-300">
+                  <Spinner className="text-muted-foreground" />
+                </span>
+              )
+            }
             onValueChange={onSearchChange}
-            placeholder="Search docs"
+            placeholder="Search docs…"
             value={search}
-            variant="flat"
           />
-          <CommandList>
-            {!isLoading && search.length === 0 && (
-              <p className="text-muted-foreground px-4 py-6 text-sm">
-                Search pages and headings
-              </p>
-            )}
-            {isLoading && (
-              <div className="flex justify-center py-6">
-                <Spinner className="text-muted-foreground" />
-              </div>
-            )}
-            {!isLoading && search.length > 0 && rows.length === 0 && (
-              <CommandEmpty>No results</CommandEmpty>
-            )}
-            {rows.length > 0 && (
-              <CommandGroup>
-                {rows.map((row) => (
-                  <CommandItem
-                    key={row.id}
-                    onSelect={() => {
-                      setOpen(false)
-                      void router.navigate(docsLinkProps(row.url))
-                    }}
-                    value={row.id}
-                  >
-                    <span className="flex min-w-0 flex-col">
-                      <span className="truncate">{row.content}</span>
-                      {row.breadcrumbs && row.breadcrumbs.length > 0 && (
-                        <span className="text-muted-foreground truncate text-xs">
-                          {row.breadcrumbs.join(' · ')}
-                        </span>
-                      )}
-                    </span>
-                  </CommandItem>
+          <CommandList className="scroll-fade max-h-none flex-1 scroll-py-2">
+            <div key={data?.query} ref={highlight} className="p-1">
+              {search.length === 0 &&
+                nav.groups.map((group) => (
+                  <CommandGroup key={group.title} heading={group.title}>
+                    {group.pages.map((page) => (
+                      <CommandItem
+                        key={page.href}
+                        onSelect={() => go(page.href)}
+                        value={page.href}
+                      >
+                        <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
+                        {page.title}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
                 ))}
-              </CommandGroup>
+              {search.length > 0 &&
+                [...groupByPage(records)].map(([href, pageRecords]) => (
+                  <CommandGroup key={href}>
+                    <CommandItem onSelect={() => go(href)} value={href}>
+                      <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
+                      <span className="truncate">
+                        {nav.getPage(href)?.title ?? href}
+                      </span>
+                      <CommandShortcut>
+                        {nav.getGroup(href)?.title}
+                      </CommandShortcut>
+                    </CommandItem>
+                    {pageRecords
+                      .filter((record) => record.type !== 'page')
+                      .map((record) => (
+                        <CommandItem
+                          key={record.id}
+                          onSelect={() => go(record.url)}
+                          value={record.id}
+                        >
+                          <span aria-hidden="true" className="w-4 shrink-0" />
+                          <HugeiconsIcon
+                            icon={
+                              record.type === 'heading'
+                                ? HashtagIcon
+                                : TextAlignLeftIcon
+                            }
+                            strokeWidth={2}
+                          />
+                          <span
+                            className={
+                              record.type === 'text'
+                                ? 'text-muted-foreground truncate'
+                                : 'truncate'
+                            }
+                          >
+                            {resultText(record)}
+                          </span>
+                        </CommandItem>
+                      ))}
+                  </CommandGroup>
+                ))}
+            </div>
+            {!isLoading && (
+              <CommandEmpty>No results for “{search}”</CommandEmpty>
             )}
           </CommandList>
         </Command>
+        <CommandPaletteFooter />
       </CommandDialog>
     </>
   )

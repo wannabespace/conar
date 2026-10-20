@@ -1,0 +1,38 @@
+---
+title: 'Export and code'
+sidebarTitle: 'Export and code'
+description: 'Download or copy rows as CSV, JSON or Markdown, and turn a table into SQL, TypeScript, Zod, Prisma, Drizzle or Kysely.'
+---
+
+## Export rows
+
+In the table browser, open **⋯** in the toolbar. In the SQL editor, use the export button above a result.
+
+1. Choose **Export** to download a file, or **Copy** to put it on the clipboard.
+2. Pick **CSV**, **JSON**, or **Markdown**.
+3. Pick the rows: the ones you selected, the first 50 to 5,000, or **All rows**.
+
+From a table, the export follows your current filters and sort. From a result, it includes only the rows that match your search.
+
+For a single row, right-click any of its cells and use **Copy Row As**.
+
+## Generate code
+
+In the table browser, choose **⋯ → Code**. The dialog has two tabs.
+
+**Schema** describes the table as code, indexes included:
+
+| Format         | Gives you                     |
+| -------------- | ----------------------------- |
+| **SQL**        | The `CREATE TABLE` statement. |
+| **TypeScript** | A type for one row.           |
+| **Zod**        | A schema to validate a row.   |
+| **Prisma**     | A Prisma model.               |
+| **Drizzle**    | A Drizzle table definition.   |
+| **Kysely**     | A Kysely table interface.     |
+
+**Query** turns your current filters into a query as SQL, Prisma, Drizzle, or Kysely. Filters through a related table are only available as SQL.
+
+Prisma and Drizzle are offered for PostgreSQL, MySQL, MariaDB, and SQL Server.
+
+Copy the result with the button in the corner. Tamery never writes it into your project.

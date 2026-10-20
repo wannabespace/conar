@@ -1,6 +1,11 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- a virtualized flex grid cannot be built from table elements */
 import type { Dialect } from '@tamery/shared/enums/connection-type'
 import { Checkbox } from '@tamery/ui/components/checkbox'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties, ReactNode } from 'react'
 import { useRef } from 'react'
@@ -16,7 +21,11 @@ import { CellField } from './cell-editor'
 import { Tag } from './cell-select'
 import { JsonPeek, JsonTree } from './json-tree'
 import type { Column } from './utils'
-import { hasTabularFigures } from './utils'
+import { getLocalTime, hasTabularFigures } from './utils'
+
+const TIME_ZONE = new Intl.DateTimeFormat().resolvedOptions().timeZone
+
+export const CELL_FLASH_DURATION_MS = 1500
 
 const CellValue = ({
   column,
@@ -88,6 +97,26 @@ const CellValue = ({
           <span className="text-muted-foreground min-w-0 truncate tabular-nums">
             {transformer.toDisplay(value, size)}
           </span>
+        </span>
+      )
+    }
+    const localTime = getLocalTime(value)
+    if (localTime) {
+      return (
+        <span data-mask className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="max-w-full shrink-0 truncate tabular-nums">
+            {transformer.toDisplay(value, size)}
+          </span>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <span className="text-muted-foreground min-w-0 truncate tabular-nums" />
+              }
+            >
+              {localTime}
+            </TooltipTrigger>
+            <TooltipContent>Your time ({TIME_ZONE})</TooltipContent>
+          </Tooltip>
         </span>
       )
     }
@@ -191,7 +220,12 @@ export const TableCell = ({
         <div
           key={flash}
           aria-hidden
-          className="bg-primary/20 animate-out fade-out fill-mode-forwards pointer-events-none absolute inset-0 -z-10 duration-1500 ease-out"
+          className="bg-primary/20 animate-out fade-out fill-mode-forwards pointer-events-none absolute inset-0 -z-10 duration-(--flash-duration) ease-out"
+          style={
+            {
+              '--flash-duration': `${CELL_FLASH_DURATION_MS}ms`,
+            } as CSSProperties
+          }
         />
       )}
       {(state || draft) && (

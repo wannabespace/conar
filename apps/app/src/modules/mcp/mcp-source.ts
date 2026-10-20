@@ -66,10 +66,12 @@ const runForAgent = async (
 
 const toMcpConnection = ({
   id,
+  label,
   name,
   type,
-}: Pick<Connection, 'id' | 'name' | 'type'>) => ({
+}: Pick<Connection, 'id' | 'label' | 'name' | 'type'>) => ({
   id,
+  label,
   name,
   resources: getResources(id),
   type,
@@ -118,7 +120,7 @@ export const mcpSource: McpSource = {
       body: name,
       title: 'An agent created a connection',
     })
-    return toMcpConnection({ id, name, type })
+    return toMcpConnection({ id, label: null, name, type })
   },
   describeTable,
   execute: async ({ approve, sql, ...target }, onAbort) => {

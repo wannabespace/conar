@@ -1,58 +1,70 @@
 ---
-title: 'Connect your AI agent'
+title: 'MCP server'
 sidebarTitle: 'Overview'
-description: 'Use Tamery connections from Claude Code, Codex, Cursor, and other MCP clients.'
+description: 'Let Claude Code, Codex, Cursor and other agents query your connections. Writes wait for your approval by default.'
 ---
 
-Tamery's desktop app includes an MCP server. Your coding agent can inspect tables and run SQL through your saved connections, without putting connection strings in its config.
+The desktop app has an MCP server built in. Your coding agent can look at tables and run SQL through the connections you already have, and no connection string ever goes into its config.
 
 ## Connect an agent
 
 1. Open **Settings → MCP** in the desktop app.
-2. Check that **Run MCP server** is on.
-3. Choose your client and copy its command or configuration.
-4. Add it to your client, then ask: “List my Tamery connections.”
+2. Check that **Run MCP server** is on. It is by default.
+3. Under **Add to a client**, pick your agent and copy its command or config. Cursor and VS Code also get a one-click **Add to Cursor** or **Add to VS Code** button.
+4. Ask your agent: “List my Tamery connections.”
 
-Setup is available for Claude Code, Codex, Cursor, VS Code, Gemini CLI, and Windsurf. Keep a signed-in Tamery window open while using the agent.
+Setup is ready for Claude Code, Codex, Cursor, VS Code, Gemini CLI, and Windsurf. Pick **Other** for anything else that speaks Streamable HTTP: the server is at `http://127.0.0.1:26381/mcp` and wants an `Authorization: Bearer <token>` header. The token is under **Server → Access token**.
 
-Other clients can use Streamable HTTP at `http://127.0.0.1:26381/mcp` with an `Authorization: Bearer <token>` header. Copy the token from **Settings → MCP**.
+Keep a signed-in Tamery window open while the agent works. Tables and schema are read from the databases you have open in Tamery, so if the agent says a database isn't open, open it.
+
+If another copy of Tamery already holds the port, Settings says so. Quit the other copy, then switch the server off and on.
 
 ## Connection access
 
-In **Settings → MCP → Connection access**, choose what agents can do for each connection:
+In **Settings → MCP → Connection access**, choose what agents may do with each connection:
 
 | Access | What it allows |
 | --- | --- |
-| **Not shared** | The agent cannot see or use the connection. |
+| **Not shared** | The agent can't see or use the connection. |
 | **Read only** | Read data and schema. |
-| **Ask before writing** | Read freely; approve each write in Tamery. This is the default. |
+| **Ask before writing** | Read freely, and you approve each write in Tamery. This is the default. |
 | **Read and write** | Read and change data or schema without asking. |
 
-Access settings apply on this device. For database-enforced read-only access, use a database user with read-only permissions; Tamery's checks cannot prevent every function side effect.
+Access applies on this device.
+
+Tamery checks every statement, but a database function can still have side effects nobody can see from the SQL. If you need a hard guarantee, connect with a database user that can only read.
 
 ## Approving a write
 
-With **Ask before writing**, Tamery shows the SQL before it runs. Choose **Run** to apply it or **Decline** to refuse. A notification tells you when an agent is waiting.
+With **Ask before writing**, Tamery shows the statement and asks **Run this statement?**. A write commits and can't be undone, so **Decline** has focus by default, and closing the dialog declines too. **Run** turns red when the statement changes or removes something that already exists.
 
-Check the statement carefully, especially its `WHERE` clause. Any row-count estimate is approximate.
+On PostgreSQL and MySQL, the dialog also shows how many rows the database expects to change. It is an estimate, so read the `WHERE` clause anyway.
+
+When Tamery is in the background, a notification tells you an agent is waiting. On macOS the Dock icon bounces too. If the agent gives up waiting, the request goes away.
+
+With **Read and write**, you get a notification after each change instead.
 
 ## Available tools
 
 | Tool | Purpose |
 | --- | --- |
 | `list_connections` | Find shared connections and their databases. |
-| `create_connection` | Test and save a new connection. SQLite files and SSH connections must be added in Tamery instead. |
+| `create_connection` | Test and save a new connection in your open workspace. SQLite files and SSH tunnels have to be added in Tamery. |
 | `list_tables` | List tables and views. |
-| `describe_table` | Inspect columns, keys, and indexes. |
-| `query` | Read data, returning up to 200 rows. |
-| `execute` | Change data or schema, subject to connection access. |
+| `describe_table` | Show columns, keys, and indexes. |
+| `query` | Run one read-only statement, like `SELECT` or `EXPLAIN`, and return up to 200 rows. Nothing it does is kept. |
+| `execute` | Change data or schema, within the connection's access. Several statements need a `BEGIN … COMMIT` block. |
 
-Try “Describe the orders table” or “Find duplicate customer emails.” Results returned to your agent become part of that client's AI context.
+Connections an agent creates start at **Ask before writing**. No tool can edit or remove a connection.
+
+Try “Describe the orders table” or “Find duplicate customer emails.” Whatever the agent reads becomes part of its AI context, so share only what you would paste into that chat yourself.
 
 ## Limits and security
 
-Free accounts include **100 queries or writes per week**, resetting Monday at 00:00 UTC. Listing connections and inspecting schema do not count. [Pro](/account/plans) removes the limit.
+Free accounts get **100 queries or writes per week**, reset on Monday at 00:00 UTC. Only `query` and `execute` calls that succeed count. Listing connections and reading schema are free. **Agent queries this week** in Settings shows what is left. [Pro](/account/plans) removes the limit.
 
-**Settings → MCP** also shows connected clients and recent activity. The local activity log includes SQL statements, so avoid putting secrets in queries.
+**Connected clients** lists each agent with its version and when it was last active. **Remove** forgets one until it connects again.
 
-Keep the access token private. **Regenerate** replaces it and disconnects clients using the old token. Reconfigure the clients you want to keep.
+**Activity** keeps the last 100 calls on this device, with any errors and the SQL behind each one. Connection strings are never stored there, but your SQL is, so keep secrets out of queries.
+
+Treat the access token like a password. **Regenerate** replaces it and disconnects every client using the old one. Set up the clients you still want again.

@@ -4,17 +4,17 @@ sidebarTitle: 'SQL Server'
 description: 'Connect to Microsoft SQL Server or Azure SQL.'
 ---
 
-Choose **SQL Server** under **Engine**, or paste:
+Choose **Microsoft SQL Server** under **Engine**, or paste:
 
 ```text
 sqlserver://user:password@localhost:1433/mydb
 ```
 
-`mssql://` works too. The default port is **1433**. You can also paste a JDBC or ADO.NET connection string.
+`mssql://` works too. The default port is **1433**. JDBC, ADO.NET, and ODBC strings and `sqlcmd` commands work as well.
 
 ## Azure SQL
 
-Use the hostname and database from your Azure connection details:
+Use the server name and database from your Azure connection details:
 
 ```text
 sqlserver://user:password@your-server.database.windows.net:1433/mydb?encrypt=true&trustServerCertificate=false
@@ -24,16 +24,12 @@ Allow your IP address in the server's firewall settings.
 
 ## Encryption
 
-| Option                         | Behavior                         |
-| ------------------------------ | -------------------------------- |
-| `encrypt=true`                 | Encrypt the connection.          |
-| `trustServerCertificate=false` | Verify the server's certificate. |
-| `trustServerCertificate=true`  | Skip certificate verification.   |
+Connections are encrypted by default. The certificate is not checked unless you ask for it.
 
-For a local development server with a self-signed certificate:
-
-```text
-mssql://sa:password@localhost:1433/mydb?encrypt=true&trustServerCertificate=true
-```
+| Option | Behavior |
+| --- | --- |
+| `trustServerCertificate=false` | Verify the server's certificate. Use this for Azure SQL and anything public. |
+| `trustServerCertificate=true` | Skip the check. Fine for a local server with a self-signed certificate. |
+| `encrypt=false` | No encryption. |
 
 For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

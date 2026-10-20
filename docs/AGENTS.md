@@ -6,7 +6,7 @@
 
 ## Terminology
 
-Follow domain terms in `.agents/rules/domain.md` (Connection, Workspace, Tab, Navigator — with their avoid-words).
+Follow domain terms in `.agents/rules/domain.md` (Connection, Workspace, Tab, Navigator, with their avoid-words).
 
 ## Style preferences
 
@@ -15,7 +15,10 @@ Follow domain terms in `.agents/rules/domain.md` (Connection, Workspace, Tab, Na
 - Describe shipped behavior verified in code. Keep implementation details and future features out of product docs.
 - Give each topic one home and link to it instead of repeating it. Keep warnings beside the action they affect.
 - Active voice, second person ("you")
-- Concise sentences — one idea each
+- Concise sentences, one idea each
+- Plain and specific, so it never reads as generated: no three-item lists by reflex, no filler advice ("review carefully", "where possible"), no clever titles. A page title is the feature's name
+- No em dashes
 - Sentence case headings
 - Bold for UI elements: Click **Settings**
 - Code formatting for file names, commands, paths, code references
+- Link to other pages as cards with `<Cards>` around `<Card href="/path" />`; the title and description come from that page's frontmatter

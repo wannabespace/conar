@@ -1,55 +1,48 @@
 {
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "App",
-        "groups": [
-          {
-            "group": "Get started",
-            "pages": ["introduction", "quickstart", "installation"]
-          },
-          {
-            "group": "Connections",
-            "pages": [
-              "connections/overview",
-              "connections/postgresql",
-              "connections/mysql",
-              "connections/mssql",
-              "connections/oracle",
-              "connections/clickhouse",
-              "connections/sqlite",
-              "connections/security"
-            ]
-          },
-          {
-            "group": "Features",
-            "pages": [
-              "features/table-browser",
-              "features/sql-editor",
-              "features/ai-assistant",
-              "features/schema-visualizer",
-              "features/definitions",
-              "features/workspaces"
-            ]
-          },
-          {
-            "group": "Account and billing",
-            "pages": ["account/plans", "account/ai-usage", "account/settings"]
-          }
+        "group": "Get started",
+        "pages": ["introduction", "quickstart", "installation"]
+      },
+      {
+        "group": "Connections",
+        "pages": [
+          "connections/overview",
+          "connections/postgresql",
+          "connections/mysql",
+          "connections/mssql",
+          "connections/oracle",
+          "connections/clickhouse",
+          "connections/sqlite",
+          "connections/security"
         ]
       },
       {
-        "tab": "CLI",
-        "groups": [
-          {
-            "group": "CLI",
-            "pages": ["cli/overview", "cli/commands"]
-          }
+        "group": "Features",
+        "pages": [
+          "features/navigator",
+          "features/table-browser",
+          "features/sql-editor",
+          "features/export",
+          "features/ai-assistant",
+          "features/schema-visualizer",
+          "features/definitions",
+          "features/workspaces",
+          "features/command-palette"
         ]
       },
       {
-        "tab": "MCP",
+        "group": "MCP",
         "pages": ["mcp/overview"]
+      },
+      {
+        "group": "CLI",
+        "pages": ["cli/overview", "cli/commands"]
+      },
+      {
+        "group": "Account and billing",
+        "pages": ["account/plans", "account/ai-usage", "account/settings"]
       }
     ]
   }
