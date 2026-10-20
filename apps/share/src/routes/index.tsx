@@ -1,8 +1,8 @@
 import {
   Alert02Icon,
-  LinkSquare02Icon,
   Share08Icon,
   Unlink01Icon,
+  ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { shareRefreshLabels } from '@tamery/shared/enums/share-refresh'
@@ -117,8 +117,8 @@ const SharesPage = () => {
                 text={() => `${location.origin}/${share.id}`}
               />
               <IconButton
-                icon={LinkSquare02Icon}
-                label="Open"
+                icon={ViewIcon}
+                label="View"
                 side="bottom"
                 size="icon-xs"
                 variant="ghost-muted"
