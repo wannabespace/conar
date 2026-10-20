@@ -86,6 +86,8 @@ export interface ConnectionCapabilities {
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
+  // Rows are documents: a table's columns are sampled, never declared, so none is added, edited or dropped.
+  declaredColumns: boolean
   // null: the login's schema or the resource, resolved by getDefaultSchema
   defaultSchema: string | null
   explain: boolean

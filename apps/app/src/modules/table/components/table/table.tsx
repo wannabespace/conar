@@ -48,7 +48,7 @@ export const Table = ({
   schema,
   table,
 }: {
-  onAddColumn: () => void
+  onAddColumn?: () => void
   schema: string
   table: string
 }) => {
@@ -150,7 +150,7 @@ export const Table = ({
 
   const { getActions, dialogs } = useColumnActions({
     dialect,
-    editable: !!isBaseTable,
+    editable: !!isBaseTable && !!onAddColumn,
     schema,
     table,
   })

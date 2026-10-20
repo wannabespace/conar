@@ -13,7 +13,12 @@ import {
 } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues, sqliteFilterValues } from './shape'
+import {
+  clickhouseFilterValues,
+  fromMongodbDocument,
+  mongodbMatch,
+  sqliteFilterValues,
+} from './shape'
 
 const rowType = type('Record<string, unknown>')
 
@@ -80,6 +85,34 @@ export const resourceRowsQuery = memoize(
       query: {
         clickhouse: (db) =>
           selectPage(db, props, clickhouseFilterValues(props.columns)),
+        mongodb: async (db) => {
+          const { orderBy, filters, filtersConcatOperator } = props.query
+          // `_id` last keeps rows that tie on the sort in one order across pages.
+          const sort = { ...orderBy, _id: orderBy?._id ?? 'ASC' }
+          const documents = await db.collection(props.table).aggregate([
+            ...mongodbMatch(props.columns, filters, filtersConcatOperator),
+            {
+              $sort: Object.fromEntries(
+                orderEntries(sort).map(([column, direction]) => [
+                  column,
+                  direction === 'ASC' ? 1 : -1,
+                ])
+              ),
+            },
+            { $skip: props.offset },
+            { $limit: props.limit ?? DEFAULT_PAGE_LIMIT },
+            ...(props.select
+              ? [
+                  {
+                    $project: Object.fromEntries(
+                      props.select.map((column) => [column, 1])
+                    ),
+                  },
+                ]
+              : []),
+          ])
+          return documents.map(fromMongodbDocument)
+        },
         mssql: (db) => selectPage(db, props),
         mysql: (db) => selectPage(db, props),
         oracle: (db) => selectPage(db, props),

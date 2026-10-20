@@ -6,6 +6,7 @@ import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import type { QueryExecutor } from '@tamery/connection/queries'
 import { rowObjects } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as mongodb from '@tamery/connection/queries/dialects/mongodb'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as oracle from '@tamery/connection/queries/dialects/oracle'
@@ -23,6 +24,7 @@ type Connection = RouterOutputs['connections']['list'][number]
 
 const queryMap = {
   clickhouse: clickhouse.query,
+  mongodb: mongodb.query,
   mssql: mssql.query,
   mysql: mysql.query,
   oracle: oracle.query,

@@ -6,7 +6,12 @@ import type { Kysely } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues, sqliteFilterValues } from './shape'
+import {
+  clickhouseFilterValues,
+  fromMongodbDocument,
+  mongodbMatch,
+  sqliteFilterValues,
+} from './shape'
 
 const count = type('number | string | bigint').pipe(Number)
 
@@ -58,6 +63,52 @@ export const columnStatsQuery = (params: ColumnStatsParams) =>
     query: {
       clickhouse: (db) =>
         selectStats(db, params, clickhouseFilterValues(params.columns)),
+      mongodb: async (db) => {
+        const field = `$${params.column}`
+        const [result] = await db.collection(params.table).aggregate<{
+          stats: Record<string, unknown>[]
+          unique: { count: number }[]
+        }>([
+          ...mongodbMatch(params.columns, params.filters),
+          {
+            $facet: {
+              stats: [
+                {
+                  $group: {
+                    _id: null,
+                    filled: {
+                      $sum: {
+                        $cond: [
+                          { $eq: [{ $ifNull: [field, null] }, null] },
+                          0,
+                          1,
+                        ],
+                      },
+                    },
+                    total: { $sum: 1 },
+                    ...(params.ranged && {
+                      max: { $max: field },
+                      min: { $min: field },
+                    }),
+                  },
+                },
+              ],
+              unique: [
+                { $match: { [params.column]: { $ne: null } } },
+                { $group: { _id: field } },
+                { $count: 'count' },
+              ],
+            },
+          },
+        ])
+        const { _id, ...stats } = fromMongodbDocument(result?.stats[0] ?? {})
+        return {
+          filled: 0,
+          total: 0,
+          ...stats,
+          unique: result?.unique[0]?.count ?? 0,
+        }
+      },
       mssql: (db) => selectStats(db, params),
       mysql: (db) => selectStats(db, params),
       oracle: (db) => selectStats(db, params),

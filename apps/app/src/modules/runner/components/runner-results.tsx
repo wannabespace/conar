@@ -40,6 +40,7 @@ import type { ExportDataProps } from '~/core/export/export-data'
 import { ExportData } from '~/core/export/export-data'
 import { ShortcutKbd } from '~/core/keyboard/shortcut-kbd'
 import type { ResultSet } from '~/core/queries/connection/custom'
+import { getQueryLanguage } from '~/core/runtime/language'
 import { useIsAnonymous } from '~/lib/auth'
 
 import { useRunnerActions } from '../lib/actions'
@@ -204,6 +205,7 @@ const ResultMeta = ({
   )
 
 export const RunnerResults = () => {
+  const { dialect } = useRouteContext()
   const tab = useRunnerTab()
   const { data: run } = useQuery(runnerResultsOptions(tab))
   const results = run?.results ?? []
@@ -287,7 +289,7 @@ export const RunnerResults = () => {
                       padding="popup"
                       className="max-h-80"
                       code={payload}
-                      language="sql"
+                      language={getQueryLanguage(dialect).highlight}
                       size="xs"
                       wrap
                     />

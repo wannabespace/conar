@@ -1,8 +1,12 @@
+import type { LookupAddress } from 'node:dns'
 import { lookup } from 'node:dns/promises'
+import type { LookupFunction } from 'node:net'
 import { BlockList } from 'node:net'
 
 import { ORPCError } from '@orpc/server'
 import { readConnectionString } from '@tamery/connection/parse-connection-string'
+import { toError } from '@tamery/shared/utils'
+import { Result } from 'better-result'
 
 const NON_PUBLIC_NETWORKS = new BlockList()
 for (const [network, prefix, family] of [
@@ -27,28 +31,65 @@ for (const [network, prefix, family] of [
   NON_PUBLIC_NETWORKS.addSubnet(network, prefix, family)
 }
 
+const FORBIDDEN_HOST =
+  'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.'
+
+const SRV_SCHEME = 'mongodb+srv'
+
+const isPublic = ({ address, family }: LookupAddress) =>
+  !NON_PUBLIC_NETWORKS.check(address, family === 6 ? 'ipv6' : 'ipv4')
+
+const publicAddresses = async (hostname: string) => {
+  const addresses = await lookup(hostname, { all: true })
+  if (addresses.length === 0 || !addresses.every(isPublic)) {
+    throw new ORPCError('FORBIDDEN', { message: FORBIDDEN_HOST })
+  }
+  return addresses
+}
+
+/** A socket lookup that refuses non-public addresses; the MongoDB driver dials every server it discovers through it. */
+export const publicLookup: LookupFunction = (hostname, options, respond) => {
+  void (async () => {
+    const found = await Result.tryPromise(() => publicAddresses(hostname))
+    if (found.isErr()) {
+      respond(toError(found.error.cause), '')
+      return
+    }
+    const [first] = found.value
+    // Node asks for every address when it races IPv4 against IPv6 (`autoSelectFamily`), else for one.
+    if (options.all) {
+      respond(null, found.value)
+    } else if (first) {
+      respond(null, first.address, first.family)
+    }
+  })()
+}
+
 /**
  * The driver resolves the host again, so a DNS answer that changes between the two lookups still slips through.
  * An empty host is refused too: drivers fall back to localhost for it.
  */
 export const assertPublicHost = async (connectionString: string) => {
-  const { host } = readConnectionString(connectionString)
-  const addresses = host ? await lookup(host, { all: true }) : []
-  if (
-    addresses.length === 0 ||
-    addresses.some(({ address, family }) =>
-      NON_PUBLIC_NETWORKS.check(address, family === 6 ? 'ipv6' : 'ipv4')
-    )
-  ) {
-    throw new ORPCError('FORBIDDEN', {
-      message:
-        'The cloud proxy reaches only public hosts. Run `tamery proxy` or open this connection in the desktop app.',
-    })
+  const { host, scheme } = readConnectionString(connectionString)
+  // An SRV name has no address of its own: the servers it lists are checked by `publicLookup` as the driver dials them.
+  if (host && scheme === SRV_SCHEME) {
+    return
   }
+  if (!host) {
+    throw new ORPCError('FORBIDDEN', { message: FORBIDDEN_HOST })
+  }
+  await publicAddresses(host)
 }
 
 /** The drivers read each of these as a path on the proxy's own disk. */
-const FILE_PARAMS = ['sslca', 'sslcert', 'sslkey', 'sslrootcert']
+const FILE_PARAMS = [
+  'sslca',
+  'sslcert',
+  'sslkey',
+  'sslrootcert',
+  'tlscafile',
+  'tlscertificatekeyfile',
+]
 
 export const assertNoServerFiles = (connectionString: string) => {
   const { searchParams } = readConnectionString(connectionString)

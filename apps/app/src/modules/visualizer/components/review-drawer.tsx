@@ -1,4 +1,6 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
+import { isSqlDialect } from '@tamery/shared/enums/connection-type'
+import { unsupported } from '@tamery/shared/unsupported'
 import {
   Alert,
   AlertDescription,
@@ -53,6 +55,9 @@ const draftLabel = (draft: DiagramDraft) => {
 }
 
 const previewSql = (dialect: Dialect, draft: DiagramDraft) => {
+  if (!isSqlDialect(dialect)) {
+    return unsupported('The visualizer')()
+  }
   const { parameters, sql } = draftStatement(
     dialect,
     coldDialects[dialect](),

@@ -1,5 +1,8 @@
+import { fromWire, toWire } from '@tamery/mongo/values'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import type { FilterValueBinding } from '@tamery/shared/filters'
+import { likeToRegex, toMongoPipeline } from '@tamery/shared/filters'
+import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
 import { sql } from 'kysely'
 
@@ -14,7 +17,7 @@ export type ContainsText = (
   pattern: string
 ) => Expression<SqlBool>
 
-export const textContains: Record<Dialect, ContainsText> = {
+export const textContains: Record<SqlDialect, ContainsText> = {
   clickhouse: (eb, column, pattern) =>
     eb(eb.fn('toString', [eb.ref(column)]), 'ilike', pattern),
   mssql: (eb, column, pattern) =>
@@ -85,12 +88,13 @@ const oracleDateTimeType = /^(?:DATE|TIMESTAMP)\b/iu
 // The session's NLS formats put a space between date and time, so ISO's T fails with ORA-01861.
 const ISO_TIME_SEPARATOR = /(?<=^\d{4}-\d{2}-\d{2})T/u
 
-/** `undefined` binds the column's DEFAULT. */
+/** `undefined` binds the column's DEFAULT; MongoDB has none, so there the field is left out. */
 export const bindValue: Record<Dialect, BindValue> = {
   clickhouse: clickhouseBind(
     (columnType, json) =>
       sql`(select v from format(JSONEachRow, ${`v ${columnType}`}, ${json}))`
   ),
+  mongodb: toWire,
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
   oracle: (columnType, value) => {
@@ -171,6 +175,37 @@ export const sqliteFilterValues =
     sqliteBooleanType?.test(columns.find(({ id }) => id === column)?.type ?? '')
       ? Number(value === 'true')
       : value
+const definedFields = (values: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== undefined)
+  )
+
+export const mongodbDocument = (
+  columns: ColumnTypes,
+  values: Record<string, unknown>
+) => bindRow(bindValue.mongodb, columns, definedFields(values))
+
+export const fromMongodbDocument = (document: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(document).map(([field, value]) => [field, fromWire(value)])
+  )
+
+export const mongodbMatch = (
+  columns: ColumnTypes = [],
+  filters: ActiveFilter[] = [],
+  concatOperator?: 'AND' | 'OR'
+) =>
+  toMongoPipeline(filters, concatOperator, (column, value) =>
+    bindValue.mongodb(
+      columns.find(({ id }) => id === column)?.type ?? '',
+      value
+    )
+  )
+
+/** Matches as SQL's `%term%` does on the other engines, with `%` and `_` still wildcards inside the term. */
+export const mongodbTextContains = (column: string, term: string) => ({
+  [column]: { $options: 'i', $regex: likeToRegex(`%${term}%`) },
+})
 
 // SQL Server caps a statement at 2100 bound parameters, Cloudflare D1 (the tightest SQLite location) at 100.
 const PARAMETER_LIMITS: Partial<Record<Dialect, number>> = {

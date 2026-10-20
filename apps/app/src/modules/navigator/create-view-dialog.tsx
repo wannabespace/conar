@@ -1,8 +1,9 @@
 import { FIELD_EDITOR_OPTIONS, Monaco } from '@tamery/monaco/editor'
 import {
   SQL_COMPLETION_OPTIONS,
-  sqlLanguageIds,
+  languageIds,
 } from '@tamery/monaco/sql-language'
+import type { SqlDialect } from '@tamery/shared/enums/connection-type'
 import { dialects, splitStatements } from '@tamery/sql'
 import { Field, FieldError, FieldLabel } from '@tamery/ui/components/field'
 import { Switch } from '@tamery/ui/components/switch'
@@ -78,7 +79,7 @@ const QueryField = ({
         ref={editorRef}
         data-mask
         className="ring-foreground/4 h-40 rounded-xl ring"
-        language={sqlLanguageIds[dialect]}
+        language={languageIds[dialect]}
         value={value}
         options={QUERY_EDITOR_OPTIONS}
         onChange={onChange}
@@ -94,8 +95,8 @@ const QueryField = ({
   )
 }
 
-export const CreateViewDialog = () => {
-  const { connectionResource, defaultSchema, dialect } = useRouteContext()
+export const CreateViewDialog = ({ dialect }: { dialect: SqlDialect }) => {
+  const { connectionResource, defaultSchema } = useRouteContext()
   const router = useRouter()
   const editorRef = useRef<editor.IStandaloneCodeEditor>(null)
   const [request, setRequest] = useState<TableDialogRequest | null>(null)

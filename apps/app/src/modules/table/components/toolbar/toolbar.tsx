@@ -52,7 +52,7 @@ export const TableToolbar = ({
   table,
   schema,
 }: {
-  onAddColumn: () => void
+  onAddColumn?: () => void
   table: string
   schema: string
 }) => {

@@ -4,7 +4,7 @@ import {
   SidebarLeftIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
-import { getDialect } from '@tamery/shared/enums/connection-type'
+import { getDialect, isSqlDialect } from '@tamery/shared/enums/connection-type'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type {
@@ -30,14 +30,18 @@ export const navigatorCommands = ({
           order: 10,
           value: 'New table…',
         },
-        {
-          action: () => createViewDialogRef.current?.create(),
-          group: 'Database',
-          icon: ViewIcon,
-          keywords: ['create', 'add', 'view', 'materialized'],
-          order: 15,
-          value: 'New view…',
-        },
+        ...(isSqlDialect(getDialect(current.connection.type))
+          ? [
+              {
+                action: () => createViewDialogRef.current?.create(),
+                group: 'Database',
+                icon: ViewIcon,
+                keywords: ['create', 'add', 'view', 'materialized'],
+                order: 15,
+                value: 'New view…',
+              } satisfies CommandEntry,
+            ]
+          : []),
         ...(getCapabilities(getDialect(current.connection.type)).schemas
           ? [
               {

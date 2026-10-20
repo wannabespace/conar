@@ -24,7 +24,7 @@ import { useTableColumnsContext } from '../../../lib/columns'
 import { stageRow } from '../../../lib/staged-edits'
 import { columnView, useTablePageStore } from '../../../lib/store'
 
-export const ActionsAdd = ({ onAddColumn }: { onAddColumn: () => void }) => {
+export const ActionsAdd = ({ onAddColumn }: { onAddColumn?: () => void }) => {
   const store = useTablePageStore()
   const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
@@ -60,10 +60,12 @@ export const ActionsAdd = ({ onAddColumn }: { onAddColumn: () => void }) => {
           <HugeiconsIcon icon={LayoutThreeRowIcon} strokeWidth={2} />
           Add row
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onAddColumn}>
-          <HugeiconsIcon icon={LayoutThreeColumnIcon} strokeWidth={2} />
-          Add column
-        </DropdownMenuItem>
+        {onAddColumn && (
+          <DropdownMenuItem onClick={onAddColumn}>
+            <HugeiconsIcon icon={LayoutThreeColumnIcon} strokeWidth={2} />
+            Add column
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

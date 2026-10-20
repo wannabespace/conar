@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { createQuery } from '~/core/runtime/query'
 
 import type { BindValue, ColumnTypes } from './shape'
-import { bindRow, bindValue, clickhouseWrite } from './shape'
+import { bindRow, bindValue, clickhouseWrite, mongodbDocument } from './shape'
 
 interface InsertParams {
   schema: string
@@ -83,6 +83,12 @@ export const insertQuery = (params: InsertParams) =>
   createQuery({
     query: {
       clickhouse: (db) => insertClickhouseRows(db, params),
+      mongodb: (db) =>
+        db
+          .collection(params.table)
+          .insertMany(
+            params.rows.map((row) => mongodbDocument(params.columns, row))
+          ),
       mssql: (db) =>
         insertRows(db, bindValue.mssql, (into) => into.defaultValues(), params),
       mysql: (db) =>

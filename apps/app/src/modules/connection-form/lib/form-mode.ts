@@ -42,6 +42,10 @@ const SECRETS: Record<Secret, { field: string; message: string }> = {
     field: 'options',
     message: 'Enter the SSL client certificate bundle',
   },
+  tlscertificatekeyfilepassword: {
+    field: 'options',
+    message: 'Enter the TLS key file password',
+  },
 }
 
 export const getEditMode = (

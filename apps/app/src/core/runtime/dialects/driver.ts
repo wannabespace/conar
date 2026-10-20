@@ -1,6 +1,7 @@
+import type { QueryExecuteResult } from '@tamery/connection/queries'
 import { rowObjects } from '@tamery/connection/queries'
 import { describeConnectionString } from '@tamery/connection/utils'
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect, SqlDialect } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
 import { silently } from '@tamery/shared/utils'
 import type {
@@ -170,40 +171,66 @@ export const createDialectProvider = (
   }
 }
 
-export const createKyselyDriver = (
+export const createStatementRunner = (
   dialect: Dialect,
+  options: DialectOptions
+) => {
+  const provider = createDialectProvider(dialect, options)
+
+  const run = (
+    payload: Required<QueryPayload>,
+    txId: string | null,
+    logged: Pick<QueryPayload, 'query' | 'values'> = payload
+  ): Promise<QueryExecuteResult> => {
+    const { signal } = options
+    signal?.throwIfAborted()
+    const cancel = () => silently(() => provider.cancel(payload.queryId))
+    signal?.addEventListener('abort', cancel, { once: true })
+    const promise: Promise<QueryExecuteResult> = (
+      txId
+        ? provider.executeTransaction({ txId, ...payload })
+        : provider.execute(payload)
+    ).finally(() => signal?.removeEventListener('abort', cancel))
+    options.log?.({
+      promise: promise.then(({ duration, result }) => ({
+        duration,
+        result: options.resultSets ? result : rowObjects(result),
+      })),
+      ...logged,
+    })
+    return promise
+  }
+
+  return { provider, run }
+}
+
+export const createKyselyDriver = (
+  dialect: SqlDialect,
   options: DialectOptions,
   transformQuery = (compiledQuery: CompiledQuery): QueryPayload => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
   })
 ) => {
-  const provider = createDialectProvider(dialect, options)
+  const { provider, run } = createStatementRunner(dialect, options)
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
-  const executeAndLog = (compiledQuery: CompiledQuery, txId: string | null) => {
-    const { signal } = options
-    signal?.throwIfAborted()
-    const { queryId } = compiledQuery.queryId
-    const payload = { ...transformQuery(compiledQuery), queryId }
-    const cancel = () => silently(() => provider.cancel(queryId))
-    signal?.addEventListener('abort', cancel, { once: true })
-    const promise = (
-      txId
-        ? provider.executeTransaction({ txId, ...payload })
-        : provider.execute(payload)
+  const executeAndLog = async (
+    compiledQuery: CompiledQuery,
+    txId: string | null
+  ) => {
+    const { result } = await run(
+      {
+        ...transformQuery(compiledQuery),
+        queryId: compiledQuery.queryId.queryId,
+      },
+      txId,
+      {
+        query: compiledQuery.sql,
+        values: compiledQuery.parameters as unknown[],
+      }
     )
-      .then(({ duration, result }) => ({
-        duration,
-        result: options.resultSets ? result : rowObjects(result),
-      }))
-      .finally(() => signal?.removeEventListener('abort', cancel))
-    options.log?.({
-      promise,
-      query: compiledQuery.sql,
-      values: compiledQuery.parameters as unknown[],
-    })
-    return promise
+    return options.resultSets ? result : rowObjects(result)
   }
 
   return {
@@ -213,11 +240,11 @@ export const createKyselyDriver = (
         executeQuery: async <R>(
           compiledQuery: CompiledQuery
         ): Promise<QueryResult<R>> => {
-          const { result } = await executeAndLog(
+          const rows = await executeAndLog(
             compiledQuery,
             state.txId ?? options.txId ?? null
           )
-          return { rows: result as R[] }
+          return { rows: rows as R[] }
         },
         streamQuery() {
           throw new Error('Not implemented')

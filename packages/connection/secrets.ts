@@ -15,6 +15,7 @@ const SECRET_PARAMS = [
   'sslpassword',
   'sslpassphrase',
   'sslpfx',
+  'tlscertificatekeyfilepassword',
 ] as const
 
 export type SecretParam = (typeof SECRET_PARAMS)[number]

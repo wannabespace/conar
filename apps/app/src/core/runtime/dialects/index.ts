@@ -1,4 +1,4 @@
-import type { Dialect } from '@tamery/shared/enums/connection-type'
+import type { Dialect, SqlDialect } from '@tamery/shared/enums/connection-type'
 import type { AnyFunction } from '@tamery/shared/utils'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
@@ -6,6 +6,7 @@ import { memoize } from 'memoza'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import type { DialectOptions } from './driver'
+import { mongodbDialect } from './mongodb'
 import { mssqlColdDialect, mssqlDialect } from './mssql'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
@@ -23,6 +24,7 @@ export const dialects = {
       new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
     { cacheKey: ({ log: _log, ...rest }) => rest }
   ),
+  mongodb: mongodbDialect,
   mssql: memoize(
     (options: DialectOptions) =>
       new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }),
@@ -57,4 +59,4 @@ export const coldDialects = {
   oracle: memoize(() => new Kysely({ dialect: oracleColdDialect() })),
   postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
   sqlite: memoize(() => new Kysely({ dialect: sqliteColdDialect() })),
-} satisfies Record<Dialect, AnyFunction>
+} satisfies Record<SqlDialect, AnyFunction>

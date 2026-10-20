@@ -1,10 +1,11 @@
 import type { Dialect } from '@tamery/shared/enums/connection-type'
-import { dialects, splitStatements } from '@tamery/sql'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createComputed } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
+
+import { getQueryLanguage } from '~/core/runtime/language'
 
 import { runnerStoreKey } from './tab'
 
@@ -47,7 +48,7 @@ export type RunnerPageStore = ReturnType<typeof runnerPageStore>
 export const runnerStatements = memoize(
   ({ dialect, resourceId, tabId }: RunnerTab & { dialect: Dialect }) =>
     createComputed(runnerPageStore({ resourceId, tabId }), (state) =>
-      splitStatements(state.query, dialects[dialect])
+      getQueryLanguage(dialect).split(state.query)
     )
 )
 

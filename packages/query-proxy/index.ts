@@ -2,6 +2,7 @@ import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
 import { type } from '@orpc/server'
 import type { QueryExecutor } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as mongodb from '@tamery/connection/queries/dialects/mongodb'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as oracle from '@tamery/connection/queries/dialects/oracle'
@@ -114,6 +115,7 @@ export const createQueryRouter = <T extends AnyBuilder>(
 ) =>
   ({
     clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
+    mongodb: createQueryDialect(mongodb.query, orpc, resolve),
     mssql: createQueryDialect(mssql.query, orpc, resolve),
     mysql: createQueryDialect(mysql.query, orpc, resolve),
     oracle: createQueryDialect(oracle.query, orpc, resolve),

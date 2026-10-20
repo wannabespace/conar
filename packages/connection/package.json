@@ -7,10 +7,14 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@mongodb-js/shell-bson-parser": "catalog:",
+    "@tamery/mongo": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tamery/sql": "workspace:*",
+    "acorn": "catalog:",
     "arktype": "catalog:",
     "better-result": "catalog:",
+    "bson": "catalog:",
     "json5": "catalog:",
     "memoza": "catalog:",
     "shell-quote": "catalog:"
@@ -23,6 +27,7 @@
     "@types/oracledb": "catalog:",
     "@types/pg": "catalog:",
     "@types/ssh2": "catalog:",
+    "mongodb": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "oracledb": "catalog:",
@@ -33,6 +38,7 @@
   "peerDependencies": {
     "@clickhouse/client": "catalog:",
     "@libsql/client": "catalog:",
+    "mongodb": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "oracledb": "catalog:",

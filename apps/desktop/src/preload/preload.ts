@@ -227,6 +227,7 @@ contextBridge.exposeInMainWorld('electron', {
   },
   query: {
     clickhouse: dialectQueryBridge('clickhouse'),
+    mongodb: dialectQueryBridge('mongodb'),
     mssql: dialectQueryBridge('mssql'),
     mysql: dialectQueryBridge('mysql'),
     oracle: dialectQueryBridge('oracle'),

@@ -14,7 +14,11 @@ import {
 } from '~/core/runtime/query'
 
 import type { ColumnTypes } from './shape'
-import { clickhouseFilterValues, sqliteFilterValues } from './shape'
+import {
+  clickhouseFilterValues,
+  mongodbMatch,
+  sqliteFilterValues,
+} from './shape'
 
 interface CountTarget {
   filters: ActiveFilter[]
@@ -85,6 +89,20 @@ export const resourceTableTotalQuery = memoize(
             target,
             clickhouseFilterValues(columns)
           )
+        },
+        mongodb: async (db) => {
+          const collection = db.collection(table)
+          if (!exact && !filters?.length) {
+            const count = await collection.estimatedDocumentCount()
+            if (count > 0) {
+              return { count, isEstimated: true }
+            }
+          }
+          const [counted] = await collection.aggregate<{ count: number }>([
+            ...mongodbMatch(columns, filters),
+            { $count: 'count' },
+          ])
+          return { count: counted?.count ?? 0, isEstimated: false }
         },
         mssql: (db) => countRows(db, sql`count_big(*)`, target),
         mysql: async (db) => {

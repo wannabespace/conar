@@ -1,3 +1,4 @@
+import { fromWire } from '@tamery/mongo/values'
 import type { ActiveFilter, FilterValueBinding } from '@tamery/shared/filters'
 import { toKyselyFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
@@ -8,6 +9,8 @@ import { createQuery } from '~/core/runtime/query'
 import type { ColumnTypes, ContainsText } from './shape'
 import {
   clickhouseFilterValues,
+  mongodbMatch,
+  mongodbTextContains,
   sqliteFilterValues,
   textContains,
 } from './shape'
@@ -60,6 +63,17 @@ export const valueCountsQuery = (params: ValueCountsParams) =>
           params,
           clickhouseFilterValues(params.columns)
         ),
+      mongodb: async (db) => {
+        const field = `$${params.column}`
+        const counts = await db.collection(params.table).aggregate<{
+          count: number
+          value: unknown
+        }>([...mongodbMatch(params.columns, params.filters), ...(params.term === '' ? [] : [{ $match: mongodbTextContains(params.column, params.term) }]), { $group: { _id: field, count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }, { $limit: params.limit }, { $project: { _id: 0, count: 1, value: '$_id' } }])
+        return counts.map(({ count, value }) => ({
+          count,
+          value: fromWire(value),
+        }))
+      },
       mssql: (db) => countValues(db, textContains.mssql, params),
       mysql: (db) => countValues(db, textContains.mysql, params),
       oracle: (db) => countValues(db, textContains.oracle, params),

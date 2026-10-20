@@ -41,7 +41,7 @@ One folder per domain; a file goes in the domain it is about, never in a technic
 | `collections.ts` | Every synced collection, core and module alike |
 | `workspace/`, `user/` | Workspace records and hooks; the user's subscription |
 | `connection/` | Connection and resource records, connection strings, fetching and password gating, the connection and resource stores, icon, resource link, refreshing a resource's cache after a statement runs |
-| `runtime/` | Running SQL: `createQuery`, the proxy, per-engine Kysely dialects, the query log |
+| `runtime/` | Running queries: `createQuery`, the proxy, MongoDB's `MongoDatabase`, each dialect's query language (`language.ts`), per-engine Kysely dialects, the query log |
 | `catalog/` | Per-engine vocabulary: capabilities, column types, definition sections, definition keys, table types; the drop confirmation dialog |
 | `queries/<subject>/` | One file per catalog or row statement (see below) |
 | `tabs/` | Tab ids, kind resolution, open/close/rename actions, the tab refresh button |

@@ -1,5 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
 
+import { getCapabilities } from '~/core/catalog/capabilities'
 import {
   tableSessionStore,
   TableSessionStoreContext,
@@ -23,7 +24,10 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const addColumn = () => columnDialogRef.current?.add()
 
 const TableContent = ({ table, schema }: { table: string; schema: string }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
+  const onAddColumn = getCapabilities(dialect).declaredColumns
+    ? addColumn
+    : undefined
   const { data = [], isPending } = useTableColumnsQuery({
     connectionResource,
     schema,
@@ -39,9 +43,9 @@ const TableContent = ({ table, schema }: { table: string; schema: string }) => {
           openTab(connectionResource.id, tableTabId(schema, table))
         }
       >
-        <TableToolbar table={table} schema={schema} onAddColumn={addColumn} />
+        <TableToolbar table={table} schema={schema} onAddColumn={onAddColumn} />
         <div className="relative min-h-0 flex-1 border-t">
-          <Table table={table} schema={schema} onAddColumn={addColumn} />
+          <Table table={table} schema={schema} onAddColumn={onAddColumn} />
         </div>
       </div>
       <TableColumnDialog schema={schema} table={table} />

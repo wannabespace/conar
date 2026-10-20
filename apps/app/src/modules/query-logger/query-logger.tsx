@@ -39,6 +39,7 @@ import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import type { ConnectionResource } from '~/core/connection/sync'
+import { getQueryLanguage } from '~/core/runtime/language'
 import type { QueryLog } from '~/core/runtime/log'
 import { getQueryLogsStore } from '~/core/runtime/log'
 import { formatSql } from '~/utils/formatter'
@@ -67,10 +68,12 @@ const StatusDot = (query: QueryLog) => (
 
 const LogRow = ({
   isActive,
+  language,
   onSelect,
   query,
 }: {
   isActive: boolean
+  language: string
   onSelect: () => void
   query: QueryLog
 }) => (
@@ -83,7 +86,7 @@ const LogRow = ({
   >
     <StatusDot {...query} />
     <span className="min-w-0 flex-1 truncate font-mono text-xs">
-      <CodeInline data-mask code={query.query} language="sql" />
+      <CodeInline data-mask code={query.query} language={language} />
     </span>
     <span className="text-2xs text-muted-foreground/70 flex items-center gap-3 tabular-nums">
       <span className="w-12 text-right">
@@ -113,7 +116,7 @@ const buildTabs = (query: QueryLog, dialect: Dialect) =>
     {
       code: formatSql(query.query, dialect),
       label: 'Query',
-      language: 'sql',
+      language: getQueryLanguage(dialect).highlight,
       value: 'query',
     },
     {
@@ -162,10 +165,12 @@ const QueryDetails = ({
 )
 
 const LogList = ({
+  language,
   onSelect,
   queries,
   selectedId,
 }: {
+  language: string
   onSelect: (id: string) => void
   queries: QueryLog[]
   selectedId?: string
@@ -200,6 +205,7 @@ const LogList = ({
             return query ? (
               <LogRow
                 key={virtualItem.key}
+                language={language}
                 query={query}
                 isActive={query.id === selectedId}
                 onSelect={() => onSelect(query.id)}
@@ -339,6 +345,7 @@ export const QueryLogger = ({
         <div className="flex min-h-0 flex-1">
           <div className="min-w-0 flex-1">
             <LogList
+              language={getQueryLanguage(dialect).highlight}
               queries={queries}
               selectedId={selectedId}
               onSelect={(id) =>
