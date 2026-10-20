@@ -1,7 +1,7 @@
 ---
 title: 'PostgreSQL'
 sidebarTitle: 'PostgreSQL'
-description: 'Connect to PostgreSQL, including Supabase, Neon, and local servers.'
+description: 'Connect to PostgreSQL or TimescaleDB, including Supabase, Neon, Timescale Cloud, and local servers.'
 ---
 
 Paste your provider's connection string into **Add new**, or fill in the fields:
@@ -33,5 +33,9 @@ postgresql://user:password@db.example.com:5432/mydb?sslmode=verify-full
 ```
 
 With no SSL option, Tamery tries an encrypted connection without certificate verification. It uses an unencrypted connection only if the server reports that SSL is unavailable.
+
+## TimescaleDB
+
+TimescaleDB is a Postgres extension, so connect to it as PostgreSQL: paste your Timescale Cloud connection string or fill in the fields. Hypertables and continuous aggregates show up in the Navigator as tables and views. TimescaleDB's internal schemas, where chunks live, stay hidden.
 
 For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).
