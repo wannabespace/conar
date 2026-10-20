@@ -104,6 +104,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## SSH tunnels
 
 - **Honor more of `~/.ssh/config`.** `UserKnownHostsFile` and `StrictHostKeyChecking` are ignored and a `ProxyJump` host is refused: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
+- **Docker beyond Linux bridge networks.** A container host resolves to its bridge address, which only the SSH host's own network stack reaches: rootless Docker, a container on `network_mode: host`, and Docker Desktop on the user's own Mac need another route (`docker exec` into a relay, or the published port).
 
 ## Connection form
 
