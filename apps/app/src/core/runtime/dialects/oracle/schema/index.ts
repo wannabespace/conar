@@ -55,6 +55,7 @@ export interface Database {
   DATABASE_PROPERTIES: { PROPERTY_NAME: string; PROPERTY_VALUE: string }
   DUAL: { DUMMY: string }
   PRODUCT_COMPONENT_VERSION: ProductComponentVersion
+  SESSION_PRIVS: { PRIVILEGE: string }
 }
 
 type YesNo = 'NO' | 'YES'

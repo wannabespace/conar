@@ -3,6 +3,7 @@ import { useReactFlow } from '@xyflow/react'
 import type { Dispatch, SetStateAction } from 'react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { engineName } from '~/core/catalog/engine-name'
 import type { constraintsType } from '~/core/queries/constraints/list'
 import { foreignKeyName } from '~/core/queries/constraints/shape'
 import type { NewColumn } from '~/core/queries/tables/shape'
@@ -181,7 +182,7 @@ export const useDiagramActions = ({
     } else {
       edit.createTable({ schema: targetSchema, table: name }, [
         {
-          name: 'id',
+          name: engineName(dialect, 'id'),
           nullable: false,
           primaryKey: true,
           type: getCapabilities(dialect).columnTypes.id,

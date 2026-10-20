@@ -85,7 +85,14 @@ export const DraftsActions = ({
       </Tooltip>
       <Tooltip shortcut={!isSaving && <ShortcutKbd shortcut="saveChanges" />}>
         <TooltipTrigger
-          render={<Button size="sm" onClick={save} disabled={isSaving} />}
+          render={
+            <Button
+              size="sm"
+              aria-label={`Save (${changeCount})`}
+              onClick={save}
+              disabled={isSaving}
+            />
+          }
         >
           <LoadingContent loading={isSaving}>
             <span>

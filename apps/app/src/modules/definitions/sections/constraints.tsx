@@ -15,7 +15,7 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
-import { suggestedName } from '~/core/catalog/suggested-name'
+import { submittedName, suggestedName } from '~/core/catalog/engine-name'
 import { groupInSchema } from '~/core/connection/utils'
 import { createConstraintQuery } from '~/core/queries/constraints/create'
 import { dropConstraintQuery } from '~/core/queries/constraints/drop'
@@ -173,8 +173,12 @@ const getSuggestedName = (draft: ConstraintDraft, dialect: Dialect) =>
     nameSuffix[draft.kind],
   ])
 
-const getFinalName = (draft: ConstraintDraft, dialect: Dialect) =>
-  draft.name.trim() || getSuggestedName(draft, dialect)
+const getFinalName = (
+  draft: ConstraintDraft,
+  dialect: Dialect,
+  item: GroupedConstraint | null
+) =>
+  submittedName(dialect, draft.name, item) || getSuggestedName(draft, dialect)
 
 const getFixedName = (draft: ConstraintDraft, dialect: Dialect) =>
   getCapabilities(dialect).fixedConstraintNames[draft.kind]
@@ -197,7 +201,7 @@ const getChange = (
       draft.onDelete !== opened.onDelete ||
       draft.onUpdate !== opened.onUpdate)
   const renameOnly =
-    !!opened && !reshaped && getFinalName(draft, dialect) !== opened.name
+    !!opened && !reshaped && getFinalName(draft, dialect, item) !== opened.name
 
   return {
     recreates:
@@ -301,7 +305,7 @@ const ConstraintInspector = ({
         foreignSchema: draft.foreignSchema,
         foreignTable: draft.foreignTable,
         kind: draft.kind,
-        name: getFinalName(draft, dialect),
+        name: getFinalName(draft, dialect, item),
         onDelete: draft.onDelete,
         onUpdate: draft.onUpdate,
       }
@@ -326,7 +330,7 @@ const ConstraintInspector = ({
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Constraint "${getFixedName(draft, dialect) ?? getFinalName(draft, dialect)}" ${item ? 'saved' : 'created'}`
+        `Constraint "${getFixedName(draft, dialect) ?? getFinalName(draft, dialect, item)}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },

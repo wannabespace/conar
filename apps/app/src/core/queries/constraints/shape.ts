@@ -2,7 +2,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { Kysely, OnModifyForeignAction } from 'kysely'
 import { sql } from 'kysely'
 
-import { suggestedName } from '~/core/catalog/suggested-name'
+import { suggestedName } from '~/core/catalog/engine-name'
 import { identifiers } from '~/core/queries/shared/sql-fragments'
 
 export const CONSTRAINT_KINDS = [

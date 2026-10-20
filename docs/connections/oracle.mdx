@@ -16,7 +16,11 @@ The path is the service name. The default port is **1521**. You can also paste a
 
 Each Oracle user is a schema. Tamery opens your own schema and lists the other schemas you can see. Oracle's built-in accounts, such as `SYS` and `XDB`, stay hidden.
 
-**New schema** creates a locked user that owns the new objects, which needs the `CREATE USER` privilege.
+**New schema** creates a locked user that owns the new objects, then its first table. That needs a DBA account, or these privileges: `CREATE USER`, `CREATE ANY TABLE`, `CREATE ANY INDEX`, `CREATE ANY SEQUENCE`, `SELECT ANY SEQUENCE`, and `SELECT ANY TABLE`. Tamery checks them before it creates anything.
+
+## Names
+
+A name you type for a new table, view, column, schema, index, constraint, function, or trigger is stored in upper case, the way Oracle stores a name written without quotes. So `orders` becomes `ORDERS`, and your SQL can refer to it without quotes. Existing objects keep their names until you rename them.
 
 ## Encryption
 

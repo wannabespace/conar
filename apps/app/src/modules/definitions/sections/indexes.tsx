@@ -19,7 +19,7 @@ import { Link } from '~/components/link'
 import type { SectionCapabilities } from '~/core/catalog/capabilities'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import { definitionKey } from '~/core/catalog/definition-keys'
-import { suggestedName } from '~/core/catalog/suggested-name'
+import { submittedName, suggestedName } from '~/core/catalog/engine-name'
 import { groupInSchema } from '~/core/connection/utils'
 import { createIndexQuery } from '~/core/queries/indexes/create'
 import { dropIndexQuery } from '~/core/queries/indexes/drop'
@@ -107,8 +107,12 @@ const groupIndexes = (indexes: IndexItem[], schema: string | undefined) =>
 const getSuggestedName = (draft: IndexDraft, dialect: Dialect) =>
   suggestedName(dialect, [draft.table, ...draft.columns, 'idx'])
 
-const getFinalName = (draft: IndexDraft, dialect: Dialect) =>
-  draft.name.trim() || getSuggestedName(draft, dialect)
+const getFinalName = (
+  draft: IndexDraft,
+  dialect: Dialect,
+  item: GroupedIndex | null
+) =>
+  submittedName(dialect, draft.name, item) || getSuggestedName(draft, dialect)
 
 const getDraft = (
   item: GroupedIndex | null,
@@ -140,7 +144,7 @@ const reshapes = (
     draft.skipType !== opened.skipType ||
     draft.granularity !== opened.granularity ||
     (!getCapabilities(dialect).indexes.rename &&
-      getFinalName(draft, dialect) !== item.name)
+      getFinalName(draft, dialect, item) !== item.name)
   )
 }
 
@@ -164,7 +168,7 @@ const saveIndex = ({
     table,
     unique,
   }
-  const name = getFinalName(draft, dialect)
+  const name = getFinalName(draft, dialect, item)
 
   if (!item) {
     return run(createIndexQuery({ ...shape, name }))
@@ -284,7 +288,7 @@ const IndexInspector = ({
     mutationFn: (draft: IndexDraft) => saveIndex({ dialect, draft, item, run }),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
-      toast.success(`Index "${getFinalName(draft, dialect)}" saved`)
+      toast.success(`Index "${getFinalName(draft, dialect, item)}" saved`)
       onOpenChange(false)
     },
   })
@@ -311,7 +315,9 @@ const IndexInspector = ({
 
   return (
     <Inspector
-      canSave={!item || reshaped || getFinalName(draft, dialect) !== item.name}
+      canSave={
+        !item || reshaped || getFinalName(draft, dialect, item) !== item.name
+      }
       description={item ? `${item.schema}.${item.table}` : draft.schema}
       form={form}
       item={item}

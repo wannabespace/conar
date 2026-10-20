@@ -3,6 +3,7 @@ import { uppercaseFirst } from '@tamery/shared/utils'
 import { type } from 'arktype'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { submittedName } from '~/core/catalog/engine-name'
 import type { triggersType } from '~/core/queries/triggers/list'
 import type {
   TriggerEvent,
@@ -95,12 +96,16 @@ export const getDraft = (
 export const formEditable = (item: TriggerItem, body: boolean) =>
   !item.custom && (!body || !!item.body)
 
-export const getShape = (draft: TriggerDraft): TriggerShape => ({
+export const getShape = (
+  draft: TriggerDraft,
+  dialect: Dialect,
+  item: TriggerItem | null
+): TriggerShape => ({
   body: draft.body,
   events: draft.events,
   functionName: draft.functionName,
   functionSchema: draft.functionSchema || draft.schema,
-  name: draft.name.trim(),
+  name: submittedName(dialect, draft.name, item),
   orientation: draft.orientation,
   timing: draft.timing,
 })

@@ -3,6 +3,7 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { engineName } from '~/core/catalog/engine-name'
 import { createTableQuery } from '~/core/queries/tables/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -44,7 +45,7 @@ export const CreateTableDialog = () => {
       await createTableQuery({
         columns: [
           {
-            name: 'id',
+            name: engineName(dialect, 'id'),
             nullable: false,
             primaryKey: true,
             type: getCapabilities(dialect).columnTypes.id,
