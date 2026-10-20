@@ -1,48 +1,28 @@
-import { Link01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { cardClass } from '@tamery/ui/components/card.utils'
-import { cn } from '@tamery/ui/lib/utils'
+import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { motion } from 'motion/react'
 
-import { ResultsTable } from './results-table'
-import { pop, rise } from './variants'
+import { ORDERS } from '~/components/product/orders'
 
-const LINK = 'share.tamery.app/7kq2'
-
-const ROWS = [
-  ['Priya Raman', '$608.94'],
-  ['Tomás Ferreira', '$608.65'],
-]
-
-const COPIED_AT = 0.2
-const OPEN_AT = 0.7
+import { OrdersGrid } from './orders-grid'
+import { ProductCrop } from './product-crop'
+import { rise } from './variants'
 
 export const ShareIllustration = () => (
-  <div className="absolute inset-x-6 bottom-6 flex flex-col gap-3">
-    <motion.div
-      variants={pop(COPIED_AT, 6)}
-      className="bg-input ring-foreground/4 flex h-8 items-center gap-1.5 self-start rounded-lg px-2.5 text-xs shadow-xs ring"
-    >
-      <HugeiconsIcon
-        icon={Link01Icon}
-        strokeWidth={2}
-        className="text-muted-foreground size-3.5 shrink-0"
-      />
-      {LINK}
-      <HugeiconsIcon
-        icon={Tick02Icon}
-        strokeWidth={2}
-        className="text-primary size-3.5 shrink-0"
-      />
-    </motion.div>
-    <motion.div
-      variants={rise(OPEN_AT)}
-      className={cn(cardClass, 'flex flex-col gap-2 p-2.5 shadow-md')}
-    >
-      <span className="px-1 text-sm font-semibold tracking-tight">
-        Top orders
-      </span>
-      <ResultsTable at={OPEN_AT + 0.1} rows={ROWS} />
-    </motion.div>
-  </div>
+  <ProductCrop className="bg-body">
+    <div className="text-muted-foreground flex h-8 items-center gap-2 border-b px-3 text-xs">
+      <AppLogo className="text-primary size-3.5" />
+      share.tamery.app/7kq2
+    </div>
+    <div className="flex flex-col gap-3 p-4">
+      <motion.div variants={rise(0.1)} className="flex flex-col gap-1 px-1">
+        <span className="text-xl font-semibold tracking-tight">Top orders</span>
+        <span className="text-muted-foreground text-xs">
+          4 columns · 24 rows
+        </span>
+      </motion.div>
+      <div className="bg-background ring-foreground/4 overflow-hidden rounded-xl ring">
+        <OrdersGrid at={0.25} orders={ORDERS.slice(0, 6)} />
+      </div>
+    </div>
+  </ProductCrop>
 )

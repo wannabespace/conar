@@ -11,7 +11,7 @@ import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import type { ReactNode } from 'react'
 
-import { WindowButtons } from '../window-buttons'
+import { WindowButtons } from '~/components/product/window-buttons'
 
 const DEMO_USER = { email: 'demo@tamery.app' }
 

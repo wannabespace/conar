@@ -2,6 +2,8 @@ import type { MotionValue } from 'motion/react'
 import { motion, useMotionValue, useTransform } from 'motion/react'
 import { useRef } from 'react'
 
+import { ProductCrop } from './product-crop'
+
 const CARD_WIDTH = 112
 const HEADER_HEIGHT = 24
 const ROW_HEIGHT = 20
@@ -107,28 +109,27 @@ export const SchemaIllustration = () => {
   const items = useCard('order_items', ['order_id', 'product_id'], 36, 132)
 
   return (
-    <div
-      ref={ref}
-      className="absolute inset-x-4 top-2 bottom-4 overflow-hidden"
-    >
-      <svg className="absolute inset-0 size-full">
-        <defs>
-          <pattern
-            id="schema-dots"
-            width="12"
-            height="12"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1" cy="1" r="1" className="fill-secondary" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#schema-dots)" />
-        <Edge from={users} fromColumn="id" to={orders} toColumn="user_id" />
-        <Edge from={items} fromColumn="order_id" to={orders} toColumn="id" />
-      </svg>
-      {[users, orders, items].map((card) => (
-        <TableCard key={card.name} card={card} constraints={ref} />
-      ))}
-    </div>
+    <ProductCrop>
+      <div ref={ref} className="relative size-full">
+        <svg className="absolute inset-0 size-full">
+          <defs>
+            <pattern
+              id="schema-dots"
+              width="12"
+              height="12"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1" cy="1" r="1" className="fill-secondary" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#schema-dots)" />
+          <Edge from={users} fromColumn="id" to={orders} toColumn="user_id" />
+          <Edge from={items} fromColumn="order_id" to={orders} toColumn="id" />
+        </svg>
+        {[users, orders, items].map((card) => (
+          <TableCard key={card.name} card={card} constraints={ref} />
+        ))}
+      </div>
+    </ProductCrop>
   )
 }

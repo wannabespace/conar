@@ -15,8 +15,8 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 
-import { OrderStatusBadge } from '../order-status-badge'
-import { ORDERS } from '../orders'
+import { OrderStatusBadge } from '~/components/product/order-status-badge'
+import { ORDERS } from '~/components/product/orders'
 
 const COLUMNS = [
   { icon: Key01Icon, id: 'id', width: 'w-20' },

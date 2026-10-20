@@ -8,8 +8,9 @@ import {
 } from '@tamery/ui/components/table'
 import { motion } from 'motion/react'
 
-import { OrderStatusBadge } from '../order-status-badge'
-import { ORDERS } from '../orders'
+import { OrderStatusBadge } from '~/components/product/order-status-badge'
+import { ORDERS } from '~/components/product/orders'
+
 import { ORDER_ID } from './script'
 
 const ROWS = ORDERS.filter((order) => order.status !== 'refunded').slice(0, 7)

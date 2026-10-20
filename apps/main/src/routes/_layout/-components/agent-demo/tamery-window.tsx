@@ -5,7 +5,8 @@ import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { ConnectionIcon } from '@tamery/ui/components/icons/connection-icon'
 import { AnimatePresence } from 'motion/react'
 
-import { WindowButtons } from '../window-buttons'
+import { WindowButtons } from '~/components/product/window-buttons'
+
 import { ApprovalDialog } from './approval-dialog'
 import { OrdersGrid } from './orders-grid'
 import { APPROVAL_STEP, RUN_PRESS_STEP, UPDATED_STEP } from './script'

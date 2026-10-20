@@ -35,7 +35,7 @@ export const Features = () => (
       <BentoCard
         className="min-h-128 md:col-start-2 md:row-span-2"
         title="Ask in plain English"
-        description="The assistant knows your schema. Ask a question and get the query, the answer and a fix when something fails."
+        description="The assistant knows your schema. Ask and get the query, the answer and a fix when something fails."
       >
         <AskIllustration />
       </BentoCard>
@@ -53,20 +53,20 @@ export const Features = () => (
       </BentoCard>
       <BentoCard
         title="Share a table as a link"
-        description="Send anyone a read-only link to a table, with your filters and columns. Opening it needs no account."
+        description="A read-only link to a table with your filters and columns. No account needed to open it."
       >
         <ShareIllustration />
       </BentoCard>
       <BentoCard
         className="md:col-span-2"
         title="Filters from a sentence"
-        description="Type what you want to see and Tamery turns it into filters you can still edit by hand."
+        description="Type what you want to see. Tamery turns it into filters you can still edit by hand."
       >
         <FilterIllustration />
       </BentoCard>
       <BentoCard
         title="Completion that knows your data"
-        description="The SQL editor suggests tables, columns and the values a column takes, checked against your live schema."
+        description="Tables, columns and the values a column takes, checked against your live schema."
       >
         <CompletionIllustration />
       </BentoCard>
