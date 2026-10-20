@@ -9,6 +9,7 @@ export const DEFAULT_MCP_ACCESS: McpAccess = 'ask'
 
 interface McpConnection {
   id: string
+  label: string | null
   name: string
   type: ConnectionType
   resources: string[]

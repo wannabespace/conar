@@ -90,6 +90,11 @@ const ConnectionSubMenu = ({
         <span data-mask className="truncate">
           {connection.name}
         </span>
+        {connection.label && (
+          <span data-mask className="text-muted-foreground shrink-0">
+            {connection.label}
+          </span>
+        )}
         {connection.color && (
           <span
             aria-hidden
