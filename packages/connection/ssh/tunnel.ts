@@ -5,6 +5,7 @@ import { Result } from 'better-result'
 import type { Client } from 'ssh2'
 
 import { connectionParts } from '../connection-parts'
+import { dockerAddress } from './docker'
 import type { Forwarding } from './forwarding'
 import type { ConfirmHostKey } from './host-key'
 import type { SshTunnel } from './params'
@@ -69,7 +70,7 @@ const openSession = (
         const channel = await promisify(connected.forwardOut.bind(connected))(
           '127.0.0.1',
           0,
-          target.host,
+          await dockerAddress(connected, target.host),
           target.port
         )
         channel.once('close', release)
