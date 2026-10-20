@@ -1,5 +1,6 @@
 import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { TableSkeleton } from '@tamery/table'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
   Empty,
@@ -9,7 +10,7 @@ import {
   EmptyTitle,
 } from '@tamery/ui/components/empty'
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouterState } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 
 import { PasswordForm } from '~/components/password-form'
@@ -31,6 +32,9 @@ const SharePage = () => {
       shareRowsQueryOptions({ id: shareId, sort: toSort(search) })
     )
   const [first] = data.pages
+  const sorting = useRouterState({
+    select: (state) => state.status === 'pending',
+  })
 
   if (first?.status === 'locked') {
     return <PasswordForm shareId={shareId} message={first.message} />
@@ -78,7 +82,7 @@ const SharePage = () => {
           </div>
         )}
       </header>
-      <main className="bg-background ring-foreground/4 flex min-h-0 flex-col overflow-hidden rounded-xl ring">
+      <main className="bg-background ring-foreground/4 relative flex min-h-0 flex-col overflow-hidden rounded-xl ring">
         {rows.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>
@@ -100,6 +104,11 @@ const SharePage = () => {
             rows={rows}
             search={search}
           />
+        )}
+        {sorting && (
+          <div className="bg-background animate-in fade-in fill-mode-both absolute inset-0 delay-150 duration-150">
+            <TableSkeleton selectable={false} />
+          </div>
         )}
       </main>
     </div>

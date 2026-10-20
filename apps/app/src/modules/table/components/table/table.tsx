@@ -1,6 +1,7 @@
 import { LayoutThreeColumnIcon } from '@hugeicons/core-free-icons'
 import { enabledFilters } from '@tamery/shared/filters'
 import { pick } from '@tamery/shared/utils'
+import { TableSkeleton } from '@tamery/table'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -39,7 +40,7 @@ import {
 } from './table-chrome'
 import { TableFieldLabel, TableHeaderCell } from './table-header-cell'
 import { keysInRange } from './table-selection'
-import { DocumentsSkeleton, TableSkeleton } from './table-skeleton'
+import { DocumentsSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

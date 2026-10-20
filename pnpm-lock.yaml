@@ -1840,6 +1840,9 @@ importers:
 
   packages/table:
     dependencies:
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@tamery/ui':
         specifier: workspace:*
         version: link:../ui
