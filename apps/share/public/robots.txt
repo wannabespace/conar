@@ -1,2 +1,13 @@
+# Shared tables are private links. Search engines may fetch a page only to read its noindex; a crawler blocked here would never see it and could still list the bare URL.
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: DuckDuckBot
+User-agent: Applebot
+User-agent: YandexBot
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Google-Extended
+User-agent: Applebot-Extended
 User-agent: *
 Disallow: /

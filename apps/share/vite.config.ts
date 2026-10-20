@@ -16,7 +16,17 @@ export default defineConfig(({ command }) => ({
   plugins: [
     tailwindcss(),
     tanstackStart(),
-    nitro({ preset: 'bun' }),
+    nitro({
+      preset: 'bun',
+      routeRules: {
+        '/**': {
+          headers: {
+            'X-Robots-Tag':
+              'noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai',
+          },
+        },
+      },
+    }),
     react(),
     babel({
       presets: [reactCompilerPreset()],
