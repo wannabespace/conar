@@ -69,7 +69,7 @@ const SharePage = () => {
           </p>
         )}
         <p className="text-muted-foreground text-xs">
-          {`${plural(first.columns.length, 'column')} · `}
+          {`${plural(first.columns.length, 'column')} · ${hasNextPage ? `${rows.length}+ rows` : plural(rows.length, 'row')} · `}
           <Tooltip>
             <TooltipTrigger render={<span />}>
               {shareRefreshLabels[first.refresh]}
@@ -114,11 +114,6 @@ const SharePage = () => {
             search={search}
           />
         )}
-        <footer className="text-muted-foreground flex h-9 shrink-0 items-center gap-2 border-t px-4 text-xs">
-          <span className="tabular-nums">
-            {hasNextPage ? `${rows.length}+ rows` : plural(rows.length, 'row')}
-          </span>
-        </footer>
       </main>
     </div>
   )
