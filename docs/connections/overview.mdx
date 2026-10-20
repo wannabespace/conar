@@ -1,7 +1,7 @@
 ---
 title: 'Connections'
 sidebarTitle: 'Overview'
-description: 'Add a connection, choose what syncs, and organize your databases.'
+description: 'How to add a database, what syncs to your other devices, and how to reach local servers.'
 ---
 
 ## Add a connection
@@ -34,7 +34,7 @@ For an SSH bastion, turn on **SSH tunnel** in the connection form. Use your SSH 
 
 ## If the test fails
 
-Tamery points to common causes and offers fixes where possible. Check the host, port, password, SSL settings, and your provider's allowed IP addresses.
+Tamery names the likely cause and offers a fix when it has one. Check the host, port, password, SSL settings, and your provider's allowed IP addresses.
 
 **Explain with AI** can help with an unfamiliar error. **Save anyway** saves a connection you cannot reach yet.
 
@@ -50,4 +50,10 @@ On desktop, you can query databases you can still reach without internet. Change
 
 ## Connection examples
 
-[PostgreSQL and TimescaleDB](/connections/postgresql) · [MySQL and MariaDB](/connections/mysql) · [SQL Server](/connections/mssql) · [ClickHouse](/connections/clickhouse) · [SQLite, Turso, and D1](/connections/sqlite)
+<Cards>
+  <Card href="/connections/postgresql" />
+  <Card href="/connections/mysql" />
+  <Card href="/connections/mssql" />
+  <Card href="/connections/clickhouse" />
+  <Card href="/connections/sqlite" />
+</Cards>

@@ -94,7 +94,7 @@ export const getSshConfig = async (tunnel: SshTunnel) => {
   const userConfig = await readConfigFile(
     path.join(homedir(), '.ssh', 'config')
   )
-  // OpenSSH keywords are case-insensitive, and `Match exec` runs through spawnSync, which would freeze the desktop main process.
+  // OpenSSH keywords are case-insensitive, and `Match exec` runs through spawnSync, which would freeze the desktop database process.
   const computed = parse(userConfig).compute(tunnel.host, {
     ignoreCase: true,
     matchExec: false,

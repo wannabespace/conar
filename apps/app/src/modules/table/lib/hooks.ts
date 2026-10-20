@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { getValueForEditor } from '~/core/connection/utils'
+import { CELL_FLASH_DURATION_MS } from '~/core/table/cell/cell'
 import {
   draftKey,
   getRowKeyByPrimaryKeys,
@@ -72,7 +73,13 @@ export const useFlashChangedCells = (
       }
     }
     if (keys.size > 0) {
-      store.set((state) => ({ ...state, flash: { at: Date.now(), keys } }))
+      const flash = { at: Date.now(), keys }
+      store.set((state) => ({ ...state, flash }))
+      setTimeout(() => {
+        store.set((state) =>
+          state.flash === flash ? { ...state, flash: null } : state
+        )
+      }, CELL_FLASH_DURATION_MS)
     }
   }, [store, rows, primaryColumns])
 }
