@@ -42,7 +42,7 @@ Run a `BEGIN … COMMIT` block with **Run all**, or run `BEGIN` on its own and g
 
 Closing the tab, reloading the window, or leaving the transaction idle for 15 minutes rolls it back. An open transaction holds its own database connection and may hold locks, so end it when you are done.
 
-ClickHouse has no transactions. Turso and D1 need the whole block in one run. MySQL commits schema changes immediately, even inside a transaction, and Tamery warns you when that happens.
+ClickHouse has no transactions. Turso and D1 need the whole block in one run. MySQL commits schema changes immediately, even inside a transaction, and Tamery warns you when that happens. On Oracle, `BEGIN` starts a PL/SQL block, so each statement commits as it runs; put statements in one `BEGIN … END;` block to run them together.
 
 ## Get AI help
 

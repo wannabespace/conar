@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { getDefaultSchema } from '~/core/catalog/capabilities'
 import { getSectionCapabilities } from '~/core/catalog/section-capabilities'
 import type { DefinitionsSection } from '~/core/catalog/sections'
 import type { RelationKind } from '~/core/queries/tables/list'
@@ -24,7 +23,8 @@ export const useDefinitionsState = ({
 }: {
   section: DefinitionsSection
 }) => {
-  const { connectionResource, dialect } = resourceRoute.useRouteContext()
+  const { connectionResource, defaultSchema, dialect } =
+    resourceRoute.useRouteContext()
   const { data, isPending: structurePending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -33,11 +33,9 @@ export const useDefinitionsState = ({
   const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
   const selectedSchema =
-    [
-      linkedSchema,
-      pickedSchema,
-      getDefaultSchema(dialect, connectionResource.name),
-    ].find((schema) => schema && schemas.includes(schema)) ?? schemas[0]
+    [linkedSchema, pickedSchema, defaultSchema].find(
+      (schema) => schema && schemas.includes(schema)
+    ) ?? schemas[0]
   const getRelationNames = (schema: string, kind: RelationKind) =>
     data?.schemas
       .find(({ name }) => name === schema)

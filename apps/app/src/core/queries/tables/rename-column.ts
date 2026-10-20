@@ -29,6 +29,8 @@ export const renameColumnQuery = memoize(
           db.executeQuery(renameColumnStatement(Dialect.MSSQL, db, target)),
         mysql: (db) =>
           db.executeQuery(renameColumnStatement(Dialect.MySQL, db, target)),
+        oracle: (db) =>
+          db.executeQuery(renameColumnStatement(Dialect.Oracle, db, target)),
         postgres: (db) =>
           db.executeQuery(renameColumnStatement(Dialect.Postgres, db, target)),
         sqlite: (db) =>

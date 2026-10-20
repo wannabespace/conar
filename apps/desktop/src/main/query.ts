@@ -33,6 +33,7 @@ const dialects: Record<Dialect, () => Promise<{ query: QueryExecutor }>> = {
   clickhouse: () => import('@tamery/connection/queries/dialects/clickhouse'),
   mssql: () => import('@tamery/connection/queries/dialects/mssql'),
   mysql: () => import('@tamery/connection/queries/dialects/mysql'),
+  oracle: () => import('@tamery/connection/queries/dialects/oracle'),
   postgres: () => import('@tamery/connection/queries/dialects/pg'),
   sqlite: () => import('@tamery/connection/queries/dialects/sqlite'),
 }

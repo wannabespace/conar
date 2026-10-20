@@ -168,6 +168,7 @@ export const ActionsDelete = ({
             <Button
               variant="destructive"
               size="sm"
+              aria-label={`Delete (${selected.length})`}
               onClick={() => setOpen(true)}
             />
           }

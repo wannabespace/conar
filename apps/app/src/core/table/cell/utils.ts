@@ -150,7 +150,8 @@ export const getColumnUiType = (
 
   if (
     column.type.toLowerCase().includes('datetime') ||
-    column.type.toLowerCase().includes('timestamp')
+    column.type.toLowerCase().includes('timestamp') ||
+    getCapabilities(dialect).columnTypes.datesWithTime?.test(column.type)
   ) {
     return 'datetime'
   }

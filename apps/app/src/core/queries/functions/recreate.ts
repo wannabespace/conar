@@ -1,6 +1,7 @@
 import { unsupported } from '@tamery/shared/unsupported'
 import { sql } from 'kysely'
 
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import { createQuery } from '~/core/runtime/query'
 
 import type { FunctionShape, RoutineTarget } from './shape'
@@ -8,6 +9,7 @@ import {
   createFunctionStatements,
   dropRoutineStatements,
   routineKeyword,
+  routineType,
 } from './shape'
 
 // replacesObject marks a signature the engine cannot replace in place.
@@ -39,11 +41,7 @@ export const recreateFunctionQuery = ({
           .select('DEFINER')
           .where('ROUTINE_SCHEMA', '=', target.schema)
           .where('ROUTINE_NAME', '=', target.name)
-          .where(
-            'ROUTINE_TYPE',
-            '=',
-            target.kind === 'procedure' ? 'PROCEDURE' : 'FUNCTION'
-          )
+          .where('ROUTINE_TYPE', '=', routineType(target.kind))
           .executeTakeFirst()
         const column =
           target.kind === 'procedure' ? 'Create Procedure' : 'Create Function'
@@ -73,6 +71,23 @@ export const recreateFunctionQuery = ({
           throw error
         }
       },
+      oracle: (db) =>
+        plsqlUnit.save(db, {
+          body: shape.body,
+          create: (replace) =>
+            createFunctionStatements({ replace, schema: target.schema, shape })
+              .oracle,
+          original: {
+            name: target.name,
+            schema: target.schema,
+            type: routineType(target.kind),
+          },
+          unit: {
+            name: shape.name,
+            schema: target.schema,
+            type: routineType(shape.kind),
+          },
+        }),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           if (replacesObject) {

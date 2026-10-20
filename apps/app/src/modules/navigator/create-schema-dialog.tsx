@@ -20,6 +20,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { createRef, useImperativeHandle, useState } from 'react'
 
+import { submittedName } from '~/core/catalog/engine-name'
 import { createSchemaQuery } from '~/core/queries/schemas/create'
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
@@ -46,14 +47,15 @@ export const SchemaForm = ({
   pending: boolean
   schema?: string
 }) => {
+  const { dialect } = useRouteContext()
   const [name, setName] = useState(schema ?? '')
   const [submitted, setSubmitted] = useState(false)
-  const trimmed = name.trim()
-  const taken = trimmed !== schema && isTaken(trimmed)
+  const stored = submittedName(dialect, name, schema ? { name: schema } : null)
+  const taken = stored !== schema && isTaken(stored)
   let nameError: string | null = null
   if (taken) {
     nameError = 'A schema with this name already exists'
-  } else if (submitted && !trimmed) {
+  } else if (submitted && !stored) {
     nameError = 'Give the schema a name.'
   }
 
@@ -71,8 +73,8 @@ export const SchemaForm = ({
         onSubmit={(e) => {
           e.preventDefault()
           setSubmitted(true)
-          if (trimmed && !taken && trimmed !== schema) {
-            onSubmit(trimmed)
+          if (stored && !taken && stored !== schema) {
+            onSubmit(stored)
           }
         }}
       >

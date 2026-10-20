@@ -14,7 +14,7 @@ export const explicitIndexes = ({
   indexes = [],
   schema,
   table,
-}: Omit<SchemaParams, 'dialect'>) => {
+}: Pick<SchemaParams, 'columns' | 'indexes' | 'schema' | 'table'>) => {
   const grouped = new Map<string, GroupedIndex>()
 
   for (const idx of indexes) {

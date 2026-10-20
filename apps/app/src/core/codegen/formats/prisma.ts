@@ -11,7 +11,6 @@ import type {
 } from '~/core/codegen/types'
 import {
   claimRelationName,
-  explicitSchema,
   hasType,
   isNowDefault,
   isSerialDefault,
@@ -177,6 +176,7 @@ const NATIVE_TYPES: Record<Dialect, Record<string, string>> = {
   clickhouse: {},
   mssql: { date: '@db.Date' },
   mysql: { date: '@db.Date' },
+  oracle: {},
   postgres: {
     date: '@db.Date',
     'time without time zone': '@db.Time',
@@ -276,6 +276,7 @@ const relationFields = (
 export const generateSchemaPrisma = ({
   table,
   schema,
+  defaultSchema,
   columns,
   dialect,
   indexes,
@@ -284,8 +285,8 @@ export const generateSchemaPrisma = ({
   const relations: PrismaField[] = []
   const enumBlocks = new Set<string>()
   const usedNames = new Set<string>()
-  const tableSchema = explicitSchema(schema, dialect)
-  const schemaAttributes = tableSchema ? [`@@schema("${tableSchema}")`] : []
+  const schemaAttributes =
+    schema === defaultSchema ? [] : [`@@schema("${schema}")`]
 
   for (const c of columns.filter(hasType)) {
     let fieldType: string = prismaType(c.type, dialect)

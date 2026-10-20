@@ -82,6 +82,7 @@ export const resourceRowsQuery = memoize(
           selectPage(db, props, clickhouseFilterValues(props.columns)),
         mssql: (db) => selectPage(db, props),
         mysql: (db) => selectPage(db, props),
+        oracle: (db) => selectPage(db, props),
         postgres: (db) => selectPage(db, props),
         sqlite: (db) =>
           selectPage(db, props, sqliteFilterValues(props.columns)),

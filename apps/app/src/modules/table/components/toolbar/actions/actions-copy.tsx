@@ -123,7 +123,7 @@ export const ActionsCopy = ({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connectionResource, defaultSchema, dialect } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -153,6 +153,7 @@ export const ActionsCopy = ({
 
   const code = format.generator({
     columns,
+    defaultSchema,
     dialect,
     filters: active,
     indexes: indexes ?? [],

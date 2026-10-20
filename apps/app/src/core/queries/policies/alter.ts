@@ -67,6 +67,7 @@ export const alterPolicyQuery = ({
           }
         }),
       mysql: unsupported('Row policies'),
+      oracle: unsupported('Row policies'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           await sql`

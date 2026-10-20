@@ -21,6 +21,7 @@ export const alterEnumQuery = ({
       clickhouse: unsupported('Editing enums'),
       mssql: unsupported('Editing enums'),
       mysql: unsupported('Editing enums'),
+      oracle: unsupported('Editing enums'),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           const target = sql.id(schema, name)

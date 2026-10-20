@@ -23,6 +23,7 @@ import {
   addSkipIndexStatement,
   createIndexStatement,
   getSkipIndexColumns,
+  oracleCreateIndexStatement,
 } from './indexes/shape'
 import {
   clickhouseRoleList,
@@ -233,21 +234,27 @@ describe('a foreign key names its columns in order', () => {
     onUpdate: 'NO ACTION',
   }
 
-  test('through the builder', () => {
-    expect(
-      addConstraint(
-        compilers.postgres,
-        { schema: 's', table: 't' },
-        shape
-      ).compile().sql
-    ).toBe(
-      'alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y") on delete cascade on update no action'
-    )
-  })
+  test.each([
+    ['CASCADE', ' on delete cascade'],
+    ['NO ACTION', ''],
+  ] as const)(
+    'through the builder, ON DELETE %s leaves NO ACTION unspelled',
+    (onDelete, clause) => {
+      expect(
+        addConstraint(
+          compilers.postgres,
+          { schema: 's', table: 't' },
+          { ...shape, onDelete }
+        ).compile().sql
+      ).toBe(
+        `alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y")${clause}`
+      )
+    }
+  )
 
   test('as the MySQL clause', () => {
-    expect(compiled(constraintClause(shape))).toBe(
-      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
+    expect(compiled(constraintClause({ ...shape, onUpdate: 'SET NULL' }))).toBe(
+      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE SET NULL'
     )
   })
 })
@@ -294,6 +301,19 @@ test('a unique index covers its columns in order', () => {
       })
     )
   ).toBe('CREATE UNIQUE INDEX "i" ON "s"."t" ("a", "b")')
+})
+
+test("an Oracle index lands in its table's schema", () => {
+  expect(
+    compiled(
+      oracleCreateIndexStatement({
+        columns: ['a'],
+        name: 'i',
+        schema: 's',
+        table: 't',
+      })
+    )
+  ).toBe('CREATE INDEX "s"."i" ON "s"."t" ("a")')
 })
 
 const policy = (roles: string[], using: string | null) =>

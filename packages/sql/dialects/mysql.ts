@@ -1,0 +1,38 @@
+import { spec } from '../dialect'
+
+export const mysql = spec({
+  atVariables: true,
+  backslashEscapes: true,
+  functions: [
+    'CEIL',
+    'DATE_FORMAT',
+    'GROUP_CONCAT',
+    'IFNULL',
+    'JSON_EXTRACT',
+    'LAST_INSERT_ID',
+    'LENGTH',
+    'NOW',
+    'RAND',
+    'UUID',
+  ],
+  hashComments: true,
+  identifierQuotes: ['`'],
+  keywords: [
+    'AUTO_INCREMENT',
+    'CHARSET',
+    'COLLATE',
+    'DUPLICATE',
+    'ENGINE',
+    'IGNORE',
+    'LIMIT',
+    'LOCK',
+    'PROCEDURE',
+    'REGEXP',
+    'RENAME',
+    'STRAIGHT_JOIN',
+    'UNLOCK',
+    'UNSIGNED',
+    'USE',
+  ],
+  types: ['DATETIME', 'ENUM', 'LONGTEXT', 'MEDIUMINT', 'TINYINT'],
+})

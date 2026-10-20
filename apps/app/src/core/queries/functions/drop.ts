@@ -17,6 +17,7 @@ export const dropFunctionQuery = ({
       clickhouse: unsupported('Functions'),
       mssql: (db) => drop.mssql.execute(db),
       mysql: (db) => drop.mysql.execute(db),
+      oracle: (db) => drop.oracle.execute(db),
       postgres: (db) =>
         (cascade ? sql`${drop.postgres} CASCADE` : drop.postgres).execute(db),
       sqlite: unsupported('Functions'),

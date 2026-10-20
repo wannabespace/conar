@@ -10,6 +10,7 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { submittedName } from '~/core/catalog/engine-name'
 import { createFunctionQuery } from '~/core/queries/functions/create'
 import { functionDefinitionQueryOptions } from '~/core/queries/functions/definition'
 import { dropFunctionQuery } from '~/core/queries/functions/drop'
@@ -155,14 +156,18 @@ const getDraft = (
     : fallback
 }
 
-const getShape = (draft: FunctionDraft): FunctionShape => ({
+const getShape = (
+  draft: FunctionDraft,
+  dialect: Dialect,
+  item: FunctionItem | null
+): FunctionShape => ({
   args: draft.args.trim(),
   behavior: draft.kind === 'procedure' ? '' : draft.behavior,
   body: draft.body,
   extras: draft.extras,
   kind: draft.kind,
   language: draft.language,
-  name: draft.name.trim(),
+  name: submittedName(dialect, draft.name, item),
   returnType: draft.returnType.trim(),
   schemaBound: draft.kind === 'function' && draft.schemaBound,
   securityDefiner: draft.securityDefiner,
@@ -221,21 +226,21 @@ const FunctionInspector = ({
                   name: item.name,
                   returnType: item.return_type,
                 },
-                getShape(draft),
+                getShape(draft, dialect, item),
                 dialect
               ),
               schema: item.schema,
-              shape: getShape(draft),
+              shape: getShape(draft, dialect, item),
             })
           : createFunctionQuery({
               schema: draft.schema,
-              shape: getShape(draft),
+              shape: getShape(draft, dialect, item),
             })
       ),
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `${typeLabels[draft.kind]} "${draft.name.trim()}" ${item ? 'saved' : 'created'}`
+        `${typeLabels[draft.kind]} "${getShape(draft, dialect, item).name}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -264,8 +269,9 @@ const FunctionInspector = ({
     }
   }
   const returns = draft.kind === 'function'
-  const saved = item && getShape(getDraft(item, draft.schema, dialect))
-  const changed = !saved || !sameShape(getShape(draft), saved)
+  const saved =
+    item && getShape(getDraft(item, draft.schema, dialect), dialect, item)
+  const changed = !saved || !sameShape(getShape(draft, dialect, item), saved)
 
   return (
     <Inspector

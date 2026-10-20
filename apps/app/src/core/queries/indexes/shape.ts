@@ -39,6 +39,16 @@ export const sqliteCreateIndexStatement = ({
 }: IndexShape) =>
   sql`CREATE ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(schema, name)} ON ${sql.id(table)} (${identifiers(columns)})`
 
+// Oracle files an unqualified index under the session's schema, not the table's.
+export const oracleCreateIndexStatement = ({
+  columns,
+  name,
+  schema,
+  table,
+  unique,
+}: IndexShape) =>
+  sql`CREATE ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(schema, name)} ON ${sql.id(schema, table)} (${identifiers(columns)})`
+
 export const addSkipIndexStatement = ({
   columns,
   granularity = 1,

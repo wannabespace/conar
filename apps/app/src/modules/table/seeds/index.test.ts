@@ -70,6 +70,12 @@ describe('autoDetectGenerator', () => {
         Dialect.Postgres
       )
     ).toBe('commerce.price')
+    expect(
+      autoDetectGenerator(
+        column({ id: 'price', typeLabel: 'NUMBER(10,2)' }),
+        Dialect.Oracle
+      )
+    ).toBe('commerce.price')
   })
 
   test('text columns named like ids get opaque identifiers', () => {
@@ -109,6 +115,12 @@ describe('autoDetectGenerator', () => {
         Dialect.MySQL
       )
     ).toBe('datatype.boolean')
+    expect(
+      autoDetectGenerator(
+        column({ id: 'span', typeLabel: 'INTERVAL DAY(2) TO SECOND(6)' }),
+        Dialect.Oracle
+      )
+    ).toBe('oracle.interval')
   })
 })
 

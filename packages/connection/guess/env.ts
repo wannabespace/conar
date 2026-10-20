@@ -13,7 +13,7 @@ interface VariableGroup {
 }
 
 const SUFFIXES_OF_FIELD: Record<ServerField, string[]> = {
-  database: ['DATABASE', 'DBNAME', 'DB', 'NAME'],
+  database: ['DATABASE', 'DBNAME', 'DB', 'NAME', 'SERVICE_NAME'],
   host: ['HOST', 'HOSTNAME', 'SERVER', 'ENDPOINT', 'ADDRESS'],
   password: ['PASSWORD', 'PASS', 'PWD', 'AUTH_TOKEN'],
   port: ['PORT'],
@@ -33,7 +33,7 @@ const HOST_AND_PORT = /^(?<host>[^:\s]+):(?<port>\d+)$/u
 const PUBLISHED_PORT =
   /^\s*-\s*["']?(?:[\d.]+:)?(?<published>\d+):(?<target>\d+)(?:\/tcp)?["']?\s*$/gmu
 const UNPACKED_TEMPLATE = /\$\{|<%|process\.env/u
-const BARE_NAME = 'NAME'
+const BARE_SUFFIXES = new Set(['NAME', 'SERVICE_NAME'])
 
 const GROUPS: VariableGroup[] = [
   { prefix: 'PG', type: ConnectionType.Postgres },
@@ -46,6 +46,7 @@ const GROUPS: VariableGroup[] = [
   { prefix: 'MSSQL_', type: ConnectionType.MSSQL },
   { prefix: 'MSSQL_SA_', type: ConnectionType.MSSQL, user: 'sa' },
   { prefix: 'SA_', type: ConnectionType.MSSQL, user: 'sa' },
+  { prefix: 'ORACLE_', type: ConnectionType.Oracle },
   { prefix: 'TURSO_' },
   { prefix: 'LIBSQL_' },
   { prefix: 'SPRING.DATASOURCE.' },
@@ -86,7 +87,9 @@ export const partsOfVariables = (
       if (!group.user || field === 'password') {
         found[field] = valueOf(
           suffixes
-            .filter((suffix) => group.prefix || named || suffix !== BARE_NAME)
+            .filter(
+              (suffix) => group.prefix || named || !BARE_SUFFIXES.has(suffix)
+            )
             .map((suffix) => group.prefix + suffix)
         )
       }

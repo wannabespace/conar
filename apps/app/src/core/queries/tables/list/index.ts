@@ -1,3 +1,4 @@
+import { describeConnectionString } from '@tamery/connection/utils'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -11,6 +12,8 @@ import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
+
+import { oracleTablesAndSchemas } from './oracle'
 
 const MSSQL_FIRST_FIXED_ROLE_SCHEMA_ID = 16_384
 
@@ -150,6 +153,7 @@ export const resourceTablesAndSchemasQuery = memoize(
             ])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
             .execute(),
+        oracle: oracleTablesAndSchemas,
         postgres: (db) =>
           db
             .selectFrom('pg_catalog.pg_namespace as n')
@@ -225,10 +229,11 @@ export const resourceTablesAndSchemasQueryOptions = ({
         database: connectionResource.name,
       }).run(params)
       const bySchema = Object.groupBy(results, (table) => table.schema)
-      const defaultSchema = getDefaultSchema(
-        params.dialect,
-        connectionResource.name
-      )
+      const defaultSchema = getDefaultSchema(params.dialect, {
+        loginSchema: describeConnectionString(params.connectionString)
+          .defaultSchema,
+        resourceName: connectionResource.name,
+      })
 
       if (defaultSchema) {
         bySchema[defaultSchema] ??= []
@@ -255,11 +260,12 @@ export const resourceTablesAndSchemasQueryOptions = ({
         }))
 
       return {
+        defaultSchema,
         schemas: schemas.toSorted((a, b) => {
-          if (a.name === 'public' && b.name !== 'public') {
+          if (a.name === defaultSchema && b.name !== defaultSchema) {
             return -1
           }
-          if (b.name === 'public' && a.name !== 'public') {
+          if (b.name === defaultSchema && a.name !== defaultSchema) {
             return 1
           }
           return a.name.localeCompare(b.name)

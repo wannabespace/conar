@@ -16,6 +16,7 @@ export const createEnumQuery = ({
       clickhouse: unsupported('Editing enums'),
       mssql: unsupported('Editing enums'),
       mysql: unsupported('Editing enums'),
+      oracle: unsupported('Editing enums'),
       postgres: (db) =>
         db.withSchema(schema).schema.createType(name).asEnum(values).execute(),
       sqlite: unsupported('Editing enums'),

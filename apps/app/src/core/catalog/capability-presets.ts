@@ -64,6 +64,8 @@ export interface ColumnTypeCapabilities {
   bytes: RegExp | null
   // Words a date or timestamp column takes in place of a date; the rest fail on save.
   dateKeywords: RegExp | null
+  // Named like a date but hold a time of day too (Oracle's DATE), so they edit as a datetime.
+  datesWithTime: RegExp | null
   enum: InlineEnum | null
   id: string
   // ORDER BY, GROUP BY or COUNT(DISTINCT) reject these; Distinct Values also skips `bytes`.
@@ -84,10 +86,11 @@ export interface ConnectionCapabilities {
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
-  // null: the connection's database is the schema
+  // null: the login's schema or the resource, resolved by getDefaultSchema
   defaultSchema: string | null
   explain: boolean
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
+  foreignKeyOnUpdate: boolean
   functions: FunctionCapabilities
   ilike: boolean
   indexes: IndexCapabilities
@@ -98,6 +101,8 @@ export interface ConnectionCapabilities {
   renameConstraints: boolean
   renameSchema: boolean
   renameViews: boolean
+  // A routine or trigger save overwrites the object instead of dropping it first.
+  replacesInPlace: boolean
   // A primary key column's type and nullability; SQL Server and ClickHouse refuse the ALTER.
   retypeKeyColumns: boolean
   rowLevelSecurity: boolean

@@ -2,6 +2,7 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
 
+import type { DrizzleDialect } from './compatibility'
 import type { TypedColumn } from './types'
 import { toStringLiteral } from './utils'
 
@@ -66,10 +67,7 @@ export const prismaType = (type: string, dialect: Dialect) =>
     [/float|double|real/iu, 'Float'],
   ])
 
-const DRIZZLE_TYPES: Record<
-  Exclude<Dialect, Dialect.ClickHouse>,
-  [RegExp, string][]
-> = {
+const DRIZZLE_TYPES: Record<DrizzleDialect, [RegExp, string][]> = {
   mssql: [
     [/datetime2/iu, 'datetime2'],
     [/datetime/iu, 'datetime'],
@@ -125,7 +123,5 @@ const DRIZZLE_TYPES: Record<
   ],
 }
 
-export const drizzleType = (
-  type: string,
-  dialect: Exclude<Dialect, Dialect.ClickHouse>
-) => firstMatch(type, 'text', DRIZZLE_TYPES[dialect])
+export const drizzleType = (type: string, dialect: DrizzleDialect) =>
+  firstMatch(type, 'text', DRIZZLE_TYPES[dialect])

@@ -68,6 +68,7 @@ const typeScriptFor = (dialect: Dialect, types: string[]) =>
       type,
       uiType: 'raw',
     })),
+    defaultSchema: 'public',
     dialect,
     schema: 'app',
     table: 't',
@@ -77,6 +78,7 @@ describe('generators (postgres)', () => {
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -91,6 +93,7 @@ describe('generators (postgres)', () => {
   it('maps arrays and does not confuse interval with int', () => {
     const ts = generateSchemaTypeScript({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -114,6 +117,7 @@ describe('generators (postgres)', () => {
   it('prisma emits defaults, uuid and lists', () => {
     const prisma = generateSchemaPrisma({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -142,6 +146,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -150,9 +155,32 @@ describe('generators (postgres)', () => {
     expect(sql).not.toContain('"a" INT PRIMARY KEY')
   })
 
+  it('drizzle spells a SQLite table with sqlite-core builders', () => {
+    const code = generateSchemaDrizzle({
+      columns: [
+        { id: 'done', isNullable: false, type: 'boolean', uiType: 'raw' },
+        {
+          defaultValue: 'CURRENT_TIMESTAMP',
+          id: 'created',
+          isNullable: false,
+          type: 'text',
+          uiType: 'raw',
+        },
+      ],
+      defaultSchema: 'main',
+      dialect: Dialect.SQLite,
+      schema: 'main',
+      table: 'tasks',
+    })
+    expect(code).toContain("from 'drizzle-orm/sqlite-core'")
+    expect(code).toContain("integer({ mode: 'boolean' })")
+    expect(code).not.toContain('defaultNow')
+  })
+
   it('drizzle omits the drizzle-orm import when nothing needs it', () => {
     const code = generateSchemaDrizzle({
       columns: [{ id: 'a', isNullable: false, type: 'int', uiType: 'raw' }],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -173,6 +201,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'public',
       table: 'invoices',
@@ -185,6 +214,7 @@ describe('generators (postgres)', () => {
 
   it('kysely null checks compile to (column, is, null)', () => {
     const query = generateQueryKysely({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: [
         {
@@ -214,6 +244,7 @@ describe('generators (postgres)', () => {
   it('terminates every index statement', () => {
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       indexes: ['a', 'b'].map((column) => ({
         column,
@@ -240,6 +271,7 @@ describe('generators (postgres)', () => {
     }))
     const sql = generateSchemaSQL({
       columns: pair,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -258,6 +290,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -268,6 +301,7 @@ describe('generators (postgres)', () => {
 
   it('prisma turns LIKE patterns into string filters', () => {
     const query = generateQueryPrisma({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: [
         {
@@ -301,6 +335,7 @@ describe('generators (postgres)', () => {
 
   it('prisma keeps every filter on a repeated column', () => {
     const query = generateQueryPrisma({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: ['alice', 'bob'].map((value) => ({
         column: 'name',
@@ -324,6 +359,7 @@ describe('generators (postgres)', () => {
         type: 'integer',
         uiType: 'raw' as const,
       })),
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'public',
       table: 'pairs',
@@ -345,6 +381,7 @@ describe('generators (postgres)', () => {
     }
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       indexes: [
         {
@@ -376,6 +413,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw' as const,
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'auth',
       table: 'users',
@@ -404,6 +442,7 @@ describe('generators (mysql)', () => {
           uiType: 'select',
         },
       ],
+      defaultSchema: 'app',
       dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
@@ -425,10 +464,76 @@ describe('generators (mysql)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'app',
       dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
     })
     expect(sql).not.toContain('AUTO_INCREMENT')
+  })
+})
+
+describe('generators (oracle)', () => {
+  it('writes DDL Oracle accepts', () => {
+    const sql = generateSchemaSQL({
+      columns: [
+        {
+          declaredType: 'NUMBER',
+          defaultValue: '"APP"."ISEQ$$_1".nextval',
+          id: 'ID',
+          isIdentity: true,
+          isNullable: false,
+          primaryKey: 'PK',
+          type: 'NUMBER',
+          uiType: 'raw',
+        },
+        {
+          declaredType: 'NUMBER',
+          foreign: {
+            column: 'ID',
+            name: 'FK',
+            onDelete: 'NO ACTION',
+            onUpdate: 'NO ACTION',
+            schema: 'APP',
+            table: 'USERS',
+          },
+          id: 'USER_ID',
+          isNullable: true,
+          type: 'NUMBER',
+          uiType: 'raw',
+        },
+      ],
+      defaultSchema: 'APP',
+      dialect: Dialect.Oracle,
+      indexes: [
+        {
+          column: 'USER_ID',
+          isPrimary: false,
+          isUnique: false,
+          name: 'BY_USER',
+          schema: 'APP',
+          table: 'EVENTS',
+        },
+      ],
+      schema: 'APP',
+      table: 'EVENTS',
+    })
+    expect(sql).toContain(
+      '"ID" NUMBER GENERATED BY DEFAULT AS IDENTITY NOT NULL,'
+    )
+    expect(sql).toContain('REFERENCES "APP"."USERS"("ID")\n')
+    expect(sql).toContain(
+      'CREATE INDEX "APP"."BY_USER" ON "APP"."EVENTS" ("USER_ID");'
+    )
+  })
+
+  it('inlines positional placeholders and numeric booleans', () => {
+    expect(
+      inlineParameters(
+        'select * from "t" where "a" = :1 and "b" = :2',
+        ['x', true],
+        Dialect.Oracle
+      )
+    ).toBe(`select * from "t" where "a" = 'x' and "b" = 1`)
   })
 })

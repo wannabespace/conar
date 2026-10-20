@@ -30,6 +30,7 @@ export interface TriggerShape {
 export const triggerBodyTemplates: Partial<Record<Dialect, string>> = {
   mssql: 'BEGIN\n  SET NOCOUNT ON;\nEND',
   mysql: 'BEGIN\n\nEND',
+  oracle: 'BEGIN\n  NULL;\nEND;',
   sqlite: 'BEGIN\n\nEND',
 }
 
@@ -90,10 +91,15 @@ export interface TriggerTarget {
 
 export const createTriggerStatements = ({
   definer,
+  replace = false,
   schema,
   shape,
   table,
-}: TriggerTarget & { definer?: string; shape: TriggerShape }) => {
+}: TriggerTarget & {
+  definer?: string
+  replace?: boolean
+  shape: TriggerShape
+}) => {
   const target = sql.id(schema, table)
   const name = sql.id(schema, shape.name)
   const timing = sql.raw(shape.timing)
@@ -103,6 +109,8 @@ export const createTriggerStatements = ({
   return {
     mssql: sql`CREATE TRIGGER ${name} ON ${target} ${timing} ${events} AS ${body}`,
     mysql: sql`CREATE ${mysqlDefiner(definer)} TRIGGER ${name} ${timing} ${events} ON ${target} FOR EACH ROW ${body}`,
+    oracle: sql`${replace ? sql`CREATE OR REPLACE` : sql`CREATE`} TRIGGER ${name} ${timing} ${sql.raw(shape.events.join(' OR '))} ON ${target}${shape.orientation === 'ROW' ? sql` FOR EACH ROW` : sql``}
+${body}`,
     postgres: sql`
       CREATE TRIGGER ${sql.id(shape.name)} ${timing} ${sql.raw(shape.events.join(' OR '))} ON ${target}
       FOR EACH ${sql.raw(shape.orientation)}
@@ -123,6 +131,7 @@ export const dropTriggerStatements = ({
   return {
     mssql: drop,
     mysql: drop,
+    oracle: drop,
     postgres: sql`DROP TRIGGER ${sql.id(name)} ON ${sql.id(schema, table)}`,
     sqlite: drop,
   }
@@ -144,5 +153,6 @@ export const setTriggerEnabledStatements = ({
   table,
 }: TriggerTarget & { enabled: boolean; mode: string; name: string }) => ({
   mssql: sql`${enabled ? sql`ENABLE` : sql`DISABLE`} TRIGGER ${sql.id(schema, name)} ON ${sql.id(schema, table)}`,
+  oracle: sql`ALTER TRIGGER ${sql.id(schema, name)} ${enabled ? sql`ENABLE` : sql`DISABLE`}`,
   postgres: sql`ALTER TABLE ${sql.id(schema, table)} ${postgresEnableVerb(enabled, mode)} TRIGGER ${sql.id(name)}`,
 })

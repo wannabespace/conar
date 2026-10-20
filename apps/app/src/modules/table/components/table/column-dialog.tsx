@@ -53,7 +53,7 @@ export const TableColumnDialog = ({
   schema: string
   table: string
 }) => {
-  const { connectionResource } = useRouteContext()
+  const { connectionResource, dialect } = useRouteContext()
   const { columns } = useTableColumnsContext()
   const [request, setRequest] = useState<Request | null>(null)
   const open = (column: TableColumn | null) =>
@@ -111,6 +111,7 @@ export const TableColumnDialog = ({
             foreignTable: reference.table,
             kind: 'foreignKey',
             name: foreignKeyName(
+              dialect,
               table,
               next.name,
               new Set(

@@ -12,6 +12,7 @@ import { clickhouseSeedConfig } from './clickhouse.ts'
 import { detectGenerator } from './detect'
 import { mssqlSeedConfig } from './mssql'
 import { mysqlSeedConfig } from './mysql'
+import { oracleSeedConfig } from './oracle'
 import { pgSeedConfig } from './postgres'
 import type { DialectSeedConfig, Generator, GeneratorId } from './registry'
 import { sqliteSeedConfig } from './sqlite'
@@ -28,6 +29,7 @@ const DIALECT_CONFIGS: Record<Dialect, DialectSeedConfig> = {
   clickhouse: clickhouseSeedConfig,
   mssql: mssqlSeedConfig,
   mysql: mysqlSeedConfig,
+  oracle: oracleSeedConfig,
   postgres: pgSeedConfig,
   sqlite: sqliteSeedConfig,
 }

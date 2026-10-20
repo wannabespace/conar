@@ -8,7 +8,7 @@ import {
   readsOnly,
   writesData,
 } from './destructive'
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 
 const mysql = dialects[Dialect.MySQL]
 const pg = dialects[Dialect.Postgres]
@@ -51,7 +51,7 @@ describe('destructiveKeywords', () => {
     ).toEqual([])
   })
 
-  it('ignores row locks, referential actions, privileges and a plain EXPLAIN', () => {
+  it('ignores row locks, referential actions, trigger events, privileges and a plain EXPLAIN', () => {
     expect(
       destructiveKeywords(
         'SELECT * FROM t FOR UPDATE; SELECT * FROM t FOR NO KEY UPDATE',
@@ -88,6 +88,24 @@ describe('destructiveKeywords', () => {
         pg
       )
     ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'CREATE TRIGGER g AFTER INSERT OR UPDATE OR DELETE ON t FOR EACH ROW EXECUTE FUNCTION f()',
+        pg
+      )
+    ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'CREATE OR REPLACE TRIGGER g INSTEAD OF DELETE ON v FOR EACH ROW BEGIN NULL; END;',
+        dialects[Dialect.Oracle]
+      )
+    ).toEqual([])
+    expect(
+      destructiveKeywords(
+        'CREATE TRIGGER g BEFORE INSERT ON t FOR EACH ROW UPDATE c SET n = n + 1',
+        mysql
+      )
+    ).toEqual(['UPDATE'])
     expect(destructiveKeywords('EXPLAIN DELETE FROM t', pg)).toEqual([])
     expect(destructiveKeywords('EXPLAIN ANALYZE DELETE FROM t', pg)).toEqual([
       'DELETE',

@@ -17,6 +17,7 @@ import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { PaneEmpty } from '~/components/pane-empty'
+import { getDefaultSchema } from '~/core/catalog/capabilities'
 import {
   prefetchConnectionResourceCore,
   useFetchingConfig,
@@ -174,6 +175,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
     const {
       connectionsCollection,
       connectionsResourcesCollection,
+      connectionStringsCollection,
       workspacesCollection,
     } = context.collections
 
@@ -211,10 +213,17 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       throw redirect({ to: '/' })
     }
 
+    const dialect = getDialect(connection.type)
+
     return {
       connection,
       connectionResource,
-      dialect: getDialect(connection.type),
+      defaultSchema: getDefaultSchema(dialect, {
+        loginSchema:
+          connectionStringsCollection.get(connection.id)?.defaultSchema ?? null,
+        resourceName: connectionResource.name,
+      }),
+      dialect,
     }
   },
   loader: ({ context }) => {

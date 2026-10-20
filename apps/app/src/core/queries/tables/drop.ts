@@ -15,6 +15,8 @@ export const dropTableQuery = memoize(
           db.executeQuery(dropTableStatement(Dialect.MSSQL, db, target)),
         mysql: (db) =>
           db.executeQuery(dropTableStatement(Dialect.MySQL, db, target)),
+        oracle: (db) =>
+          db.executeQuery(dropTableStatement(Dialect.Oracle, db, target)),
         postgres: (db) =>
           db.executeQuery(dropTableStatement(Dialect.Postgres, db, target)),
         sqlite: (db) =>
