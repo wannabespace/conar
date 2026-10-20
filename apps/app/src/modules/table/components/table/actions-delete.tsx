@@ -184,7 +184,14 @@ export const ActionsDelete = () => {
   return (
     <Tooltip shortcut={<ShortcutKbd shortcut="deleteRows" />}>
       <TooltipTrigger
-        render={<Button variant="destructive" size="sm" onClick={openDialog} />}
+        render={
+          <Button
+            variant="destructive"
+            size="sm"
+            aria-label={`Delete (${selected.length})`}
+            onClick={openDialog}
+          />
+        }
       >
         <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
         <span>

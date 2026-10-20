@@ -15,6 +15,7 @@ export const setTriggerEnabledQuery = (
       clickhouse: unsupported('Disabling triggers'),
       mssql: (db) => setEnabled.mssql.execute(db),
       mysql: unsupported('Disabling triggers'),
+      oracle: (db) => setEnabled.oracle.execute(db),
       postgres: (db) => setEnabled.postgres.execute(db),
       sqlite: unsupported('Disabling triggers'),
     },

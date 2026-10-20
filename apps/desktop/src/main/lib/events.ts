@@ -77,6 +77,7 @@ export const electron = {
     clickhouse: queryProcess.executor(Dialect.ClickHouse),
     mssql: queryProcess.executor(Dialect.MSSQL),
     mysql: queryProcess.executor(Dialect.MySQL),
+    oracle: queryProcess.executor(Dialect.Oracle),
     postgres: queryProcess.executor(Dialect.Postgres),
     sqlite: queryProcess.executor(Dialect.SQLite),
   } satisfies Record<Dialect, QueryExecutor>,

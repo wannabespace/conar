@@ -29,6 +29,7 @@ export const boundSources = new WeakMap<editor.ITextModel, SqlSource>()
 export const EMPTY_CATALOG: SqlCatalog = {
   defaultSchema: null,
   enums: [],
+  nameCase: null,
   schemas: [],
 }
 

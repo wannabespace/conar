@@ -21,6 +21,12 @@ export const textContains: Record<Dialect, ContainsText> = {
     eb(eb.cast(eb.ref(column), sql`nvarchar(max)`), 'like', pattern),
   mysql: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'char'), 'like', pattern),
+  oracle: (eb, column, pattern) =>
+    eb(
+      eb.fn('upper', [eb.ref(column)]),
+      'like',
+      eb.fn('upper', [eb.val(pattern)])
+    ),
   postgres: (eb, column, pattern) =>
     eb(eb.cast(eb.ref(column), 'text'), 'ilike', pattern),
   sqlite: (eb, column, pattern) =>
@@ -74,6 +80,11 @@ const clickhouseBind =
     return clickhouseDateTime(columnType, value)
   }
 
+const bindOracleJson = bindJsonAsText(Dialect.Oracle)
+const oracleDateTimeType = /^(?:DATE|TIMESTAMP)\b/iu
+// The session's NLS formats put a space between date and time, so ISO's T fails with ORA-01861.
+const ISO_TIME_SEPARATOR = /(?<=^\d{4}-\d{2}-\d{2})T/u
+
 /** `undefined` binds the column's DEFAULT. */
 export const bindValue: Record<Dialect, BindValue> = {
   clickhouse: clickhouseBind(
@@ -82,6 +93,12 @@ export const bindValue: Record<Dialect, BindValue> = {
   ),
   mssql: bindJsonAsText(Dialect.MSSQL),
   mysql: bindJsonAsText(Dialect.MySQL),
+  oracle: (columnType, value) => {
+    const bound = bindOracleJson(columnType, value)
+    return typeof bound === 'string' && oracleDateTimeType.test(columnType)
+      ? bound.replace(ISO_TIME_SEPARATOR, ' ')
+      : bound
+  },
   postgres: bindJsonAsText(Dialect.Postgres),
   sqlite: bindJsonAsText(Dialect.SQLite),
 }

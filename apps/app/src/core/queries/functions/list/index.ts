@@ -12,6 +12,8 @@ import {
   createQuery,
 } from '~/core/runtime/query'
 
+import { oracleFunctions } from './oracle'
+
 const mssqlType = sql<string>`TYPE_NAME(pa.user_type_id)`
 
 // Without its length or precision a parameter comes back as varchar(1) or decimal(18,0).
@@ -158,6 +160,7 @@ const resourceFunctionsQuery = createQuery({
           getCapabilities(Dialect.MySQL).systemSchemas
         )
         .execute(),
+    oracle: oracleFunctions,
     postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_proc as p')

@@ -4,6 +4,7 @@ import type { QueryExecutor } from '@tamery/connection/queries'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
+import * as oracle from '@tamery/connection/queries/dialects/oracle'
 import * as pg from '@tamery/connection/queries/dialects/pg'
 import * as sqlite from '@tamery/connection/queries/dialects/sqlite'
 import type { Dialect } from '@tamery/shared/enums/connection-type'
@@ -115,6 +116,7 @@ export const createQueryRouter = <T extends AnyBuilder>(
     clickhouse: createQueryDialect(clickhouse.query, orpc, resolve),
     mssql: createQueryDialect(mssql.query, orpc, resolve),
     mysql: createQueryDialect(mysql.query, orpc, resolve),
+    oracle: createQueryDialect(oracle.query, orpc, resolve),
     postgres: createQueryDialect(pg.query, orpc, resolve),
     sqlite: createQueryDialect(sqlite.query, orpc, resolve),
   }) satisfies Record<Dialect, Record<keyof QueryExecutor, unknown>>

@@ -5,7 +5,6 @@ import { useReactFlow } from '@xyflow/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getDefaultSchema } from '~/core/catalog/capabilities'
 import type { TableType } from '~/core/catalog/table-type'
 import { useShortcut } from '~/core/keyboard/use-shortcuts'
 import type { constraintsType } from '~/core/queries/constraints/list'
@@ -45,7 +44,7 @@ export const Visualizer = ({
   constraints: (typeof constraintsType.infer)[]
   tables: { schema: string; table: string; type: TableType }[]
 }) => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connectionResource, defaultSchema, dialect } = useRouteContext()
   const flow = useReactFlow()
   const draftsStore = diagramDraftsStore(connectionResource.id)
   const drafts = useSubscription(draftsStore, {
@@ -55,7 +54,6 @@ export const Visualizer = ({
   const edit = diagramDrafts(draftsStore)
   const can = getGates(dialect)
 
-  const defaultSchema = getDefaultSchema(dialect, connectionResource.name)
   const schemas = [
     ...new Set([
       ...tables.map(({ schema }) => schema),

@@ -2,6 +2,8 @@ import { type } from 'arktype'
 import type { Kysely, RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
+import type { Database as OracleDatabase } from '~/core/runtime/dialects/oracle/schema'
+
 import { mssqlQualified } from './sql-fragments'
 
 export const definitionType = type({ definition: 'string | null' }).pipe(
@@ -18,6 +20,35 @@ export const readDefinition =
 
     return { definition: row?.definition ?? null }
   }
+
+// Oracle commits each DDL statement, so only the object's saved DDL brings it back when its replacement fails.
+export const replaceWithSavedDdl = async (
+  db: Kysely<OracleDatabase>,
+  {
+    create,
+    drop,
+    savedDdl,
+  }: {
+    create: () => Promise<unknown>
+    drop: () => Promise<unknown>
+    savedDdl: RawBuilder<string | null>
+  }
+) => {
+  const { definition } = await readDefinition(savedDdl)(db)
+
+  if (!definition) {
+    throw new Error(
+      'Cannot read the saved DDL, so a failed save could not restore it.'
+    )
+  }
+  await drop()
+  try {
+    await create()
+  } catch (error) {
+    await sql.raw(definition).execute(db)
+    throw error
+  }
+}
 
 const headerEnd = /(?<preceding>\S+)\s+AS\s/giu
 const parameterName = /@\w+$/u

@@ -121,6 +121,7 @@ const query = createQuery({
       )
     },
     mysql: unsupported('Row policies'),
+    oracle: unsupported('Row policies'),
     postgres: async (db) => {
       const rows = await db
         .selectFrom('pg_catalog.pg_policies as p')

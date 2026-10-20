@@ -31,8 +31,8 @@ export const addColumnQuery = ({
           await addConstraint(db, target, reference).execute()
         }
       },
-      // MySQL commits each DDL statement, so the key goes in the same ALTER:
-      // a key that fails leaves no column behind.
+      // MySQL and Oracle commit each DDL statement, so the key goes in the
+      // same ALTER: a key that fails leaves no column behind.
       mysql: (db) => {
         const { column, schema, table } = target
         return reference
@@ -40,6 +40,14 @@ export const addColumnQuery = ({
               db
             )
           : db.executeQuery(addColumnStatement(Dialect.MySQL, db, target))
+      },
+      oracle: (db) => {
+        const { column, schema, table } = target
+        return reference
+          ? sql`ALTER TABLE ${sql.id(schema, table)} ADD (${sql.id(column.name)} ${sql.raw(column.type)}${sql.raw(column.nullable ? '' : ' NOT NULL')}, ${constraintClause(reference)})`.execute(
+              db
+            )
+          : db.executeQuery(addColumnStatement(Dialect.Oracle, db, target))
       },
       postgres: async (db) => {
         await db.executeQuery(addColumnStatement(Dialect.Postgres, db, target))

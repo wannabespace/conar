@@ -87,6 +87,23 @@ export const insertQuery = (params: InsertParams) =>
         insertRows(db, bindValue.mssql, (into) => into.defaultValues(), params),
       mysql: (db) =>
         insertRows(db, bindValue.mysql, (into) => into.values({}), params),
+      // Oracle before 23ai has neither multi-row VALUES nor DEFAULT VALUES.
+      oracle: async (db) => {
+        for (const row of params.rows) {
+          // oxlint-disable-next-line no-await-in-loop
+          await insertRows(
+            db,
+            bindValue.oracle,
+            (into) =>
+              into.values(
+                Object.fromEntries(
+                  params.columns.map(({ id }) => [id, sql`default`])
+                )
+              ),
+            { ...params, rows: [row] }
+          )
+        }
+      },
       postgres: (db) =>
         insertRows(
           db,

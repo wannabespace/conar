@@ -16,6 +16,7 @@ const SSL_OPTIONS: Partial<
     unverified: 'trustservercertificate=true',
   },
   [Dialect.MySQL]: { off: 'ssl=false', on: 'ssl=true' },
+  [Dialect.Oracle]: { off: 'ssl=false', on: 'ssl=true' },
   [Dialect.Postgres]: {
     off: 'sslmode=disable',
     on: 'sslmode=require',

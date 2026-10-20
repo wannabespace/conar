@@ -23,6 +23,10 @@ export const renameIndexQuery = ({
         sql`ALTER TABLE ${sql.id(schema, table)} RENAME INDEX ${sql.id(name)} TO ${sql.id(newName)}`.execute(
           db
         ),
+      oracle: (db) =>
+        sql`ALTER INDEX ${sql.id(schema, name)} RENAME TO ${sql.id(newName)}`.execute(
+          db
+        ),
       postgres: (db) =>
         sql`ALTER INDEX ${sql.id(schema, name)} RENAME TO ${sql.id(newName)}`.execute(
           db

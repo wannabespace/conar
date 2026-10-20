@@ -8,13 +8,14 @@ import {
   mssqlObjectDefinition,
   readDefinition,
 } from '~/core/queries/shared/definition'
+import { plsqlUnit } from '~/core/queries/shared/plsql'
 import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
 
 import type { functionsType } from './list'
-import { routineKeyword } from './shape'
+import { routineType, routineKeyword } from './shape'
 
 type FunctionItem = typeof functionsType.infer
 
@@ -39,6 +40,13 @@ const functionDefinitionQuery = ({
             row?.['Create Function'] ?? row?.['Create Procedure'] ?? null,
         }
       },
+      oracle: async (db) => ({
+        definition: await plsqlUnit.definition(db, {
+          name,
+          schema,
+          type: routineType(kind),
+        }),
+      }),
       postgres: (db) => {
         if (oid === undefined) {
           throw new Error(`Function "${name}" has no oid`)

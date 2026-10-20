@@ -54,6 +54,19 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
   '/containers/c3/json': {
     Config: { Env: ['POSTGRES_USER=me', 'POSTGRES_PASSWORD=pw'] },
   },
+  '/containers/c4/json': {
+    Config: {
+      Env: [
+        'APP_USER_PASSWORD=app-pw',
+        'ORACLE_PASSWORD=sys-pw',
+        'APP_USER=app',
+        'ORACLE_SID=FREE',
+      ],
+    },
+  },
+  '/containers/c5/json': {
+    Config: { Env: ['ORACLE_PWD=sys-pw', 'ORACLE_SID=XE'] },
+  },
   '/containers/json': [
     {
       Id: 'c1',
@@ -72,6 +85,18 @@ const DOCKER_ANSWERS: Record<string, unknown> = {
       Image: 'postgres:16',
       Names: ['/mysql-port'],
       Ports: [{ IP: '0.0.0.0', PrivatePort: 3306, PublicPort: 13_308 }],
+    },
+    {
+      Id: 'c4',
+      Image: 'gvenzl/oracle-free:23-slim-faststart',
+      Names: ['/oracle-free'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 1521, PublicPort: 11_521 }],
+    },
+    {
+      Id: 'c5',
+      Image: 'container-registry.oracle.com/database/express:21.3.0-xe',
+      Names: ['/oracle-xe'],
+      Ports: [{ IP: '0.0.0.0', PrivatePort: 1521, PublicPort: 11_522 }],
     },
     {
       Id: 'exited',
@@ -203,6 +228,8 @@ describe('localDatabases', () => {
         ['DBeaver No saved password', 'from-pgpass'],
         ['.my.cnf db.local', 'pw'],
         ['Docker maria', 'a=b'],
+        ['Docker oracle-free', 'app-pw'],
+        ['Docker oracle-xe', 'sys-pw'],
       ])
     )
   })
@@ -261,6 +288,24 @@ describe('localDatabases', () => {
       'Docker',
       'mysql-port',
       { port: '13308', type: 'mysql' },
+    ],
+    [
+      "Docker: the Oracle image's app user and pluggable database",
+      'Docker',
+      'oracle-free',
+      {
+        database: 'FREEPDB1',
+        host: 'localhost',
+        port: '11521',
+        type: 'oracle',
+        user: 'app',
+      },
+    ],
+    [
+      "Docker: SYSTEM on Oracle's own XE image",
+      'Docker',
+      'oracle-xe',
+      { database: 'XEPDB1', port: '11522', type: 'oracle', user: 'system' },
     ],
   ])('%s', async (_case, source, name, parts) => {
     expect(await findIn(source, name)).toMatchObject(parts)

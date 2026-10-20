@@ -4,7 +4,7 @@ import type { DialectSpec } from './dialect'
 import type { StatementScope } from './scope'
 import { statementScope, TABLE_INTRODUCERS } from './scope'
 import type { Statement } from './statements'
-import { goSeparatorLineEnd, statementsFromTokens } from './statements'
+import { separatorLineEnd, statementsFromTokens } from './statements'
 import type { Token } from './tokenizer'
 import { identifierName, isKeyword, isPunctuation, tokenize } from './tokenizer'
 
@@ -100,10 +100,14 @@ const unclosedDiagnostics = (tokens: Token[]): Diagnostic[] =>
       severity: 'error',
     }))
 
-const repeatCountDiagnostics = (text: string, tokens: Token[]) => {
+const repeatCountDiagnostics = (
+  text: string,
+  tokens: Token[],
+  dialect: DialectSpec
+) => {
   const significant = tokens.filter((token) => token.kind !== 'comment')
   return significant.flatMap((_, index): Diagnostic[] => {
-    const lineEnd = goSeparatorLineEnd(text, significant, index)
+    const lineEnd = separatorLineEnd(text, significant, index, dialect)
     const count = significant[index + 1]
     return lineEnd && count && count.start < lineEnd
       ? [
@@ -299,7 +303,7 @@ const unqualifiedColumnDiagnostics = (
   ) {
     return []
   }
-  const key = (name: string) => (catalog.exactNames ? name : name.toLowerCase())
+  const key = (name: string) => (catalog.nameCase ? name : name.toLowerCase())
   const refTokens = new Set(scope.tables.map((ref) => ref.token))
   const known = new Set(
     [
@@ -522,7 +526,7 @@ export const diagnose = (
   const statements = statementsFromTokens(text, tokens, dialect)
   return [
     ...unclosedDiagnostics(tokens),
-    ...(dialect.goBatches ? repeatCountDiagnostics(text, tokens) : []),
+    ...(dialect.goBatches ? repeatCountDiagnostics(text, tokens, dialect) : []),
     ...statements.flatMap((statement) => [
       ...bracketDiagnostics(statement),
       ...unknownStatementDiagnostics(statement),

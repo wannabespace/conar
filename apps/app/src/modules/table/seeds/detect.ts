@@ -22,7 +22,10 @@ const FAMILY_RULES: Rules<Family> = [
   [['date', 'timestamp'], 'date'],
   [['time'], 'time'],
   [['int', 'serial'], 'int'],
-  [['float', 'double', 'decimal', 'numeric', 'real', 'money'], 'float'],
+  [
+    ['float', 'double', 'decimal', 'number', 'numeric', 'real', 'money'],
+    'float',
+  ],
   [['char', 'text', 'string', 'clob', 'citext', 'name'], 'text'],
 ]
 

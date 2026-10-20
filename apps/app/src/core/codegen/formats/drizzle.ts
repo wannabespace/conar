@@ -3,6 +3,8 @@ import type { FilterOperator } from '@tamery/shared/filters'
 import { camelCase } from 'change-case'
 
 import { drizzleType } from '~/core/codegen/column-types'
+import { isDrizzleDialect } from '~/core/codegen/compatibility'
+import type { DrizzleDialect } from '~/core/codegen/compatibility'
 import { explicitIndexes } from '~/core/codegen/indexes'
 import type {
   QueryParams,
@@ -11,7 +13,6 @@ import type {
 } from '~/core/codegen/types'
 import {
   claimRelationName,
-  explicitSchema,
   hasType,
   isNowDefault,
   isSerialDefault,
@@ -22,7 +23,7 @@ import {
 } from '~/core/codegen/utils'
 
 const dialectConfig: Record<
-  Exclude<Dialect, Dialect.ClickHouse>,
+  DrizzleDialect,
   {
     anyColumn: string
     schemaFunc?: string
@@ -237,11 +238,12 @@ const buildRelationships = (
 export const generateSchemaDrizzle = ({
   table,
   schema,
+  defaultSchema,
   columns,
   dialect,
   indexes,
 }: SchemaParams) => {
-  if (dialect === Dialect.ClickHouse) {
+  if (!isDrizzleDialect(dialect)) {
     return ''
   }
   const { anyColumn, dialectImportPath, enumFunc, schemaFunc } =
@@ -334,12 +336,11 @@ export const generateSchemaDrizzle = ({
     config.push(`  ${func}(${toStringLiteral(idx.name)}).on(${on.join(', ')}),`)
   }
 
-  const tableSchema = explicitSchema(schema, dialect)
-  if (tableSchema && schemaFunc) {
-    const schemaVar = `${camelCase(tableSchema)}Schema`
+  if (schema !== defaultSchema && schemaFunc) {
+    const schemaVar = `${camelCase(schema)}Schema`
     dialectImports.add(schemaFunc)
     extras.unshift(
-      `export const ${schemaVar} = ${schemaFunc}(${toStringLiteral(tableSchema)});`
+      `export const ${schemaVar} = ${schemaFunc}(${toStringLiteral(schema)});`
     )
     tableFunc = `${schemaVar}.table`
   } else {

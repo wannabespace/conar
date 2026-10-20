@@ -18,6 +18,7 @@ export const renamePolicyQuery = ({
         ),
       mssql: unsupported('Row policies'),
       mysql: unsupported('Row policies'),
+      oracle: unsupported('Row policies'),
       postgres: (db) =>
         sql`ALTER POLICY ${policyOn(target)} RENAME TO ${sql.id(newName)}`.execute(
           db

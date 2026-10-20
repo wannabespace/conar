@@ -4,12 +4,13 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { SqlCatalog } from './catalog'
 import { diagnose } from './diagnostics'
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 
 const pg = dialects[Dialect.Postgres]
 const catalog: SqlCatalog = {
   defaultSchema: 'public',
   enums: [{ name: 'status', values: ['active', "o'clock"] }],
+  nameCase: null,
   schemas: [
     {
       name: 'public',
@@ -37,7 +38,7 @@ const messages = (sql: string, withCatalog = false) =>
   )
 
 const exact = (sql: string) =>
-  diagnose(sql, pg, { ...catalog, exactNames: true }).map(
+  diagnose(sql, pg, { ...catalog, nameCase: 'lower' }).map(
     ({ message }) => message
   )
 

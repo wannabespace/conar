@@ -67,6 +67,7 @@ const query = createQuery({
         name: `${row.privilege} for ${row.grantee}`,
       }))
     },
+    oracle: unsupported('Privileges'),
     postgres: unsupported('Privileges'),
     sqlite: unsupported('Privileges'),
   },

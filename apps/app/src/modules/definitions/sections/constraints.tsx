@@ -15,6 +15,7 @@ import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
+import { submittedName, suggestedName } from '~/core/catalog/engine-name'
 import { groupInSchema } from '~/core/connection/utils'
 import { createConstraintQuery } from '~/core/queries/constraints/create'
 import { dropConstraintQuery } from '~/core/queries/constraints/drop'
@@ -165,11 +166,19 @@ const getDraft = (item: GroupedConstraint): ConstraintDraft => ({
   table: item.table,
 })
 
-const getSuggestedName = (draft: ConstraintDraft) =>
-  [draft.table, ...draft.columns, nameSuffix[draft.kind]].join('_')
+const getSuggestedName = (draft: ConstraintDraft, dialect: Dialect) =>
+  suggestedName(dialect, [
+    draft.table,
+    ...draft.columns,
+    nameSuffix[draft.kind],
+  ])
 
-const getFinalName = (draft: ConstraintDraft) =>
-  draft.name.trim() || getSuggestedName(draft)
+const getFinalName = (
+  draft: ConstraintDraft,
+  dialect: Dialect,
+  item: GroupedConstraint | null
+) =>
+  submittedName(dialect, draft.name, item) || getSuggestedName(draft, dialect)
 
 const getFixedName = (draft: ConstraintDraft, dialect: Dialect) =>
   getCapabilities(dialect).fixedConstraintNames[draft.kind]
@@ -192,7 +201,7 @@ const getChange = (
       draft.onDelete !== opened.onDelete ||
       draft.onUpdate !== opened.onUpdate)
   const renameOnly =
-    !!opened && !reshaped && getFinalName(draft) !== opened.name
+    !!opened && !reshaped && getFinalName(draft, dialect, item) !== opened.name
 
   return {
     recreates:
@@ -296,7 +305,7 @@ const ConstraintInspector = ({
         foreignSchema: draft.foreignSchema,
         foreignTable: draft.foreignTable,
         kind: draft.kind,
-        name: getFinalName(draft),
+        name: getFinalName(draft, dialect, item),
         onDelete: draft.onDelete,
         onUpdate: draft.onUpdate,
       }
@@ -321,7 +330,7 @@ const ConstraintInspector = ({
     onSuccess: async (_result, draft) => {
       await queryClient.invalidateQueries({ queryKey })
       toast.success(
-        `Constraint "${getFixedName(draft, dialect) ?? getFinalName(draft)}" ${item ? 'saved' : 'created'}`
+        `Constraint "${getFixedName(draft, dialect) ?? getFinalName(draft, dialect, item)}" ${item ? 'saved' : 'created'}`
       )
       onOpenChange(false)
     },
@@ -401,7 +410,9 @@ const ConstraintInspector = ({
               disabled={readOnly || !!getFixedName(draft, dialect)}
               placeholder={
                 getFixedName(draft, dialect) ??
-                (draft.table ? getSuggestedName(draft) : 'Constraint name')
+                (draft.table
+                  ? getSuggestedName(draft, dialect)
+                  : 'Constraint name')
               }
             />
           )}
@@ -539,16 +550,18 @@ const ConstraintInspector = ({
                 />
               )}
             </form.AppField>
-            <form.AppField name="onUpdate">
-              {() => (
-                <SelectField
-                  label="On update"
-                  disabled={shapeLocked}
-                  options={getCapabilities(dialect).referentialActions}
-                  placeholder="Action"
-                />
-              )}
-            </form.AppField>
+            {getCapabilities(dialect).foreignKeyOnUpdate && (
+              <form.AppField name="onUpdate">
+                {() => (
+                  <SelectField
+                    label="On update"
+                    disabled={shapeLocked}
+                    options={getCapabilities(dialect).referentialActions}
+                    placeholder="Action"
+                  />
+                )}
+              </form.AppField>
+            )}
           </div>
           <FieldDescription>
             What the database does to these rows when a referenced row is

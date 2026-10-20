@@ -153,12 +153,18 @@ export const replaceWarning = ({
         action: `Replace ${noun}`,
         description: (
           <>
-            This database cannot roll DDL back, so we drop{' '}
+            This database cannot roll DDL back, so{' '}
+            {getCapabilities(dialect).replacesInPlace
+              ? 'saving overwrites'
+              : 'we drop'}{' '}
             <span data-mask className="font-medium">
               {name}
             </span>{' '}
-            and create it again. If the new statement fails, we recreate the old
-            one from its saved definition.
+            {getCapabilities(dialect).replacesInPlace
+              ? 'in place'
+              : 'and create it again'}
+            . If the new statement fails, we recreate the old one from its saved
+            definition.
           </>
         ),
       }

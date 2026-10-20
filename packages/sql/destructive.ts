@@ -17,12 +17,28 @@ const showsDefinition = (words: string[], index: number) =>
 
 const REFERENTIAL_ACTIONS = new Set(['CASCADE', 'NO', 'RESTRICT', 'SET'])
 
+const TRIGGER_TIMINGS = new Set(['AFTER', 'BEFORE', 'OF'])
+
+const TRIGGER_EVENTS = new Set(['DELETE', 'INSERT', 'TRUNCATE', 'UPDATE'])
+
+const namesTriggerEvent = (words: string[], index: number) => {
+  let before = index - 1
+  while (
+    words[before] === 'OR' &&
+    TRIGGER_EVENTS.has(words[before - 1] ?? '')
+  ) {
+    before -= 2
+  }
+  return TRIGGER_TIMINGS.has(words[before] ?? '')
+}
+
 const namesWithoutRunning = (
   words: string[],
   index: number,
   dialect: DialectSpec
 ) =>
   words[index - 1] === 'FOR' ||
+  namesTriggerEvent(words, index) ||
   (words[index - 1] === 'ON' &&
     // SQL Server runs `SET NOCOUNT ON DELETE FROM t` as a setting and a DELETE.
     (!dialect.separatorFreeStatements ||

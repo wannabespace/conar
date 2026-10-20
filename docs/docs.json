@@ -12,6 +12,7 @@
           "connections/postgresql",
           "connections/mysql",
           "connections/mssql",
+          "connections/oracle",
           "connections/clickhouse",
           "connections/sqlite",
           "connections/security"

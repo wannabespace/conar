@@ -36,6 +36,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 - **Name the ClickHouse error when a read fails mid-stream.** A table whose rows no longer fit its column type (an enum value dropped outside Tamery) fails every read, but ClickHouse has already sent HTTP 200, so the client rejects with a bare `aborted` and the grid's error view says nothing useful; one QA pass on an older server even showed `This table is empty.` The column form now refuses dropping a value rows still hold.
 - **Column form gaps.** MySQL `SET` columns could take the same values list as `enum`; **References** always writes `NO ACTION` for ON DELETE / ON UPDATE and only on a column without a foreign key, so changing or dropping a column's reference still means the Schema page or the visualizer; ClickHouse lists enum values by their stored number, so dragging them in the list changes nothing and the grip could hide there. The visualizer applies one statement per draft, so renaming a MySQL enum value there is still refused in strict mode; the table grid's form moves the rows.
+- **New visualizer tables land on top of others.** **+ Table** places the node at the viewport centre whatever is there. Moving it clear of the cards it covers can push it off screen, and panning to it is computed before the inspector opens and narrows the canvas, so it needs the pane's size after that render.
 - **Hold-⌘ hints for shortcuts without a control.** Tooltips with a shortcut reveal on ⌘; undo/redo (⌘Z/⇧⌘Z), the grid's copy/paste/fill (⌘C/⌘V/⌘D, listed only in the cell menu) and the Schema pages' ⌘D drop have no control to carry a hint, so they stay undiscoverable until something on screen names them.
 - **Esc hints on dialog and drawer closes.** Every `Cancel`/`Close` that Esc fires (dialogs, drawers, the seed panel) carries no hint while ⌘ is held; a kit-level `shortcut` on the close components would cover all of them at once. The editable list's reorder keys (`⌥↑ ⌥↓`) are still unicode in its tooltip text rather than a `shortcut` glyph.
 - **Referenced columns on the columns context.** Each header still calls `useReferencedColumns` for its own column; the fetch is shared through the query cache, but one lookup on `ColumnsContext` would drop the per-header hook.
@@ -103,6 +104,7 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 ## SSH tunnels
 
 - **Honor more of `~/.ssh/config`.** `UserKnownHostsFile` and `StrictHostKeyChecking` are ignored and a `ProxyJump` host is refused: host keys always go to `~/.ssh/known_hosts`, a new key always asks, and a bastion behind another bastion can't be reached.
+- **Docker beyond Linux bridge networks.** A container host resolves to its bridge address, which only the SSH host's own network stack reaches: rootless Docker, a container on `network_mode: host`, and Docker Desktop on the user's own Mac need another route (`docker exec` into a relay, or the published port).
 
 ## Connection form
 
@@ -229,6 +231,24 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 - **Change the sync type of an existing connection.** The edit form has no Sync field, so Full / No password / Metadata only can only be picked at creation.
 - **Link straight to the Support form from emails.** The early-access email can only say "click your avatar and pick Support"; a deep link that opens the Support dialog would turn the feedback ask into one click.
 - **Non-blocking Paper shader compilation.** The library checks WebGL compilation synchronously. Adopt upstream asynchronous initialization when available so cold startup can avoid compilation stalls as well as keeping them out of entrance animations.
+- **SSH tunnels for Oracle.** node-oracledb opens its own socket and takes no stream, so an Oracle connection cannot use the SSH channel the other engines plug in; a driver hook (or a contribution upstream) would let it.
+- **Oracle wallets and TNS aliases.** Only `host:port/service` strings connect; Autonomous Database's wallet (`cwallet.sso`) and a `tnsnames.ora` alias would cover managed Oracle.
+- **Group an Oracle transaction in the runner.** Oracle has no `BEGIN` statement (it starts PL/SQL), so a runner script commits each statement as it runs; reading `SET TRANSACTION` as the opener on Oracle would let a script hold its changes until `COMMIT`.
+- **List an Oracle container's other PDBs.** A connection opens the one service its string names; a CDB login could list `V$PDBS` as resources.
+- **Microsecond Oracle timestamps.** node-oracledb hands a TIMESTAMP over as a JS `Date`, so the grid shows and writes back milliseconds; a `TIMESTAMP(6)` cell edited elsewhere loses its last three digits. Its thin decoder also drops a TIMESTAMP WITH TIME ZONE's offset, so the cell shows the UTC instant.
+- **Batch Oracle seed rows.** Before 23ai Oracle has no multi-row `VALUES`, so seeding inserts one row per statement; `INSERT ALL` would batch the rows that need no `DEFAULT`.
+- **Drop a non-empty Oracle schema.** `DROP USER … CASCADE` is wired, but `cascade` is off for Oracle because its table and view drops would need `CASCADE CONSTRAINTS`; turning both on would let **Drop schema** remove a schema that still holds objects.
+- **Row estimates for Oracle.** MCP approval shows no estimate on Oracle; `EXPLAIN PLAN FOR` and `PLAN_TABLE.CARDINALITY` in a rolled-back transaction could give one, with Oracle's own spelling for the runner's Explain.
+- **Hide New schema without CREATE USER on Oracle.** An Oracle schema is a user, so a login without the privilege sees ORA-01031 only after submitting the dialog.
+- **Oracle index definitions from `DBMS_METADATA`.** Function-based and descending Oracle indexes list as custom expressions; carrying `GET_DDL` as the definition would let codegen reproduce them exactly.
+- **Mark INVALID Oracle routines and triggers.** A unit created outside Tamery can sit INVALID; a badge from `ALL_OBJECTS.STATUS` in the Schema list would show it before something calls it.
+- **A DETERMINISTIC toggle for Oracle functions.** It saves through the header's extras today, so it can only be typed.
+- **List Oracle package members.** Functions and procedures inside a package are not listed; showing them read-only would cover most Oracle codebases.
+- **Paste Oracle TNS descriptors.** A `(DESCRIPTION=(ADDRESS=…)(CONNECT_DATA=…))` string or a `tnsnames.ora` entry is not read; a JDBC `@host:port:SID` saves the SID as a service name, which connects only where the SID is also a registered service.
+- **Turn on SSL for Oracle Autonomous hosts.** A `.oraclecloud.com` host on port 1522 always speaks TCPS, so the form could add `ssl=true` itself.
+- **Seed `NUMBER(1)` flags as booleans on Oracle.** Before 23ai a flag is a `NUMBER(1)`, which seeds as any digit.
+- **Per-engine type hints in the column dialog.** The Type placeholder reads `integer, varchar(255)…` on every engine; Oracle users would recognise `NUMBER, VARCHAR2(255)`.
+- **Drive native menus in desktop QA.** Row and column actions (drop index, rename or drop a column, drop a table) open native macOS menus that agents cannot click, so those Oracle paths were checked only against the database, not through the app.
 - **Rescan found databases each time the form opens.** The list is scanned once per window, so a Docker container started (or a Docker daemon that recovered) after the first scan stays missing until a reload.
 - **Show what TimescaleDB adds.** Hypertables read as plain tables and continuous aggregates as views; a mark on each, with chunk count, compression ratio and refresh policy in the table's details, would surface what users choose TimescaleDB for.
 - **One unknown connection type should not empty the whole list.** A synced row whose `type` or `provider` this build does not know (a newer engine, or another branch on the shared dev database) fails validation for the whole batch: the list shows no connections and an error toast repeats. Skipping the rows it cannot read, with one quiet "update Tamery to see N more" hint, would keep the rest usable on an older desktop build.

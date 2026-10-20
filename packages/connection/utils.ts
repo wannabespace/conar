@@ -12,6 +12,8 @@ export const SQLITE_RESOURCE_NAME = 'main'
 interface EngineString {
   /** The database the server opens when the string names none; absent when only the server knows (a login's default). */
   defaultDatabase?: (user: string) => string
+  /** The schema unqualified names resolve in, where the engine takes it from the login rather than the database. */
+  defaultSchema?: (user: string) => string
   label: (parts: { address: string; database: string; host: string }) => string
   /** The one resource the engine opens, kept out of the string's path; `null` when the path names it. */
   resource: string | null
@@ -30,6 +32,10 @@ const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
   [ConnectionType.MariaDB]: SERVER_STRING,
   [ConnectionType.MSSQL]: SERVER_STRING,
   [ConnectionType.MySQL]: SERVER_STRING,
+  [ConnectionType.Oracle]: {
+    ...SERVER_STRING,
+    defaultSchema: (user) => user.toUpperCase(),
+  },
   [ConnectionType.Postgres]: {
     ...SERVER_STRING,
     defaultDatabase: (user) => user,
@@ -56,10 +62,12 @@ const getEngineString = (connectionString: string) => {
 export const describeConnectionString = (connectionString: string) => {
   const { database, host, password, searchParams, user } =
     readConnectionString(connectionString)
-  const { defaultDatabase, label, resource } = getEngineString(connectionString)
+  const { defaultDatabase, defaultSchema, label, resource } =
+    getEngineString(connectionString)
   return {
     defaultResourceName:
       resource ?? (database || defaultDatabase?.(user) || null),
+    defaultSchema: defaultSchema?.(user) || null,
     displayUrl: label({
       address: new SafeURL(connectionString).host,
       database,

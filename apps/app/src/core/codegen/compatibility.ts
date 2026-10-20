@@ -2,9 +2,21 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 
 import type { GeneratorFormat } from './types'
 
+const DRIZZLE_DIALECTS = [
+  Dialect.MSSQL,
+  Dialect.MySQL,
+  Dialect.Postgres,
+  Dialect.SQLite,
+] as const
+
+export type DrizzleDialect = (typeof DRIZZLE_DIALECTS)[number]
+
+export const isDrizzleDialect = (dialect: Dialect): dialect is DrizzleDialect =>
+  DRIZZLE_DIALECTS.some((drizzleDialect) => drizzleDialect === dialect)
+
 export const GENERATOR_COMPATIBILITY: Partial<
-  Record<GeneratorFormat, Dialect[]>
+  Record<GeneratorFormat, readonly Dialect[]>
 > = {
-  drizzle: [Dialect.Postgres, Dialect.MySQL, Dialect.MSSQL],
+  drizzle: DRIZZLE_DIALECTS,
   prisma: [Dialect.Postgres, Dialect.MySQL, Dialect.MSSQL],
 }
