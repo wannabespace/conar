@@ -7,6 +7,7 @@ import {
 import { openTab } from '~/core/tabs/actions'
 import { tableTabId } from '~/core/tabs/ids'
 
+import { DeleteRowsDialog } from './components/table/actions-delete'
 import {
   columnDialogRef,
   TableColumnDialog,
@@ -44,6 +45,7 @@ const TableContent = ({ table, schema }: { table: string; schema: string }) => {
         </div>
       </div>
       <TableColumnDialog schema={schema} table={table} />
+      <DeleteRowsDialog schema={schema} table={table} />
     </ColumnsContext>
   )
 }

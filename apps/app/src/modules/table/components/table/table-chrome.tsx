@@ -104,7 +104,7 @@ export const tableBar = ({
   ...(canDelete
     ? [
         {
-          content: <ActionsDelete table={table} schema={schema} />,
+          content: <ActionsDelete />,
           id: 'delete',
         },
       ]
