@@ -38,15 +38,23 @@ const ISOLATION_LEVELS = [
 const GO_REPEAT_COUNT = /^\s*\d*\s*$/u
 const BLANK = /^\s*$/u
 
-const lineSeparatorEnd = (
+const separatorRest = (token: Token, dialect: DialectSpec) => {
+  if (dialect.goBatches && isKeyword(token, 'GO')) {
+    return GO_REPEAT_COUNT
+  }
+  return dialect.plsqlUnits && token.text === '/' ? BLANK : null
+}
+
+export const separatorLineEnd = (
   text: string,
   tokens: Token[],
   index: number,
-  { rest, separator }: { rest: RegExp; separator: (token: Token) => boolean }
+  dialect: DialectSpec
 ) => {
   const token = tokens[index]
   const previous = tokens[index - 1]
-  if (!(token && separator(token))) {
+  const rest = token && separatorRest(token, dialect)
+  if (!(token && rest)) {
     return null
   }
   const lineEnd = text.indexOf('\n', token.end) + 1 || text.length
@@ -57,22 +65,6 @@ const lineSeparatorEnd = (
     ? lineEnd
     : null
 }
-
-export const goSeparatorLineEnd = (
-  text: string,
-  tokens: Token[],
-  index: number
-) =>
-  lineSeparatorEnd(text, tokens, index, {
-    rest: GO_REPEAT_COUNT,
-    separator: (token) => isKeyword(token, 'GO'),
-  })
-
-const slashSeparatorLineEnd = (text: string, tokens: Token[], index: number) =>
-  lineSeparatorEnd(text, tokens, index, {
-    rest: BLANK,
-    separator: (token) => token.text === '/',
-  })
 
 const upperTexts = (tokens: Token[]) =>
   tokens.map((token) => token.text.toUpperCase())
@@ -149,15 +141,6 @@ export const endsTransaction = (text: string, dialect: DialectSpec) =>
     tokenize(text, dialect).tokens.filter((token) => token.kind !== 'comment')
   )
 
-const batchSeparatorEnd = (
-  text: string,
-  tokens: Token[],
-  index: number,
-  dialect: DialectSpec
-) =>
-  (dialect.goBatches && goSeparatorLineEnd(text, tokens, index)) ||
-  (dialect.plsqlUnits && slashSeparatorLineEnd(text, tokens, index))
-
 /** `END CASE` closes the CASE its END already counted. */
 const blockDepthChange = (tokens: Token[], index: number) => {
   const token = tokens[index]
@@ -214,15 +197,15 @@ export const statementsFromTokens = (
     inPlsqlUnit = false
   }
 
-  let separatorLineEnd = 0
+  let separatorEnd = 0
 
   for (const [index, token] of significant.entries()) {
-    if (token.start < separatorLineEnd) {
+    if (token.start < separatorEnd) {
       continue
     }
-    const separatorEnd = batchSeparatorEnd(text, significant, index, dialect)
-    if (separatorEnd) {
-      separatorLineEnd = separatorEnd
+    const lineEnd = separatorLineEnd(text, significant, index, dialect)
+    if (lineEnd) {
+      separatorEnd = lineEnd
       flush()
       continue
     }

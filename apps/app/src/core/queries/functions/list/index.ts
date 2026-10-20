@@ -7,13 +7,12 @@ import { sql } from 'kysely'
 import { getCapabilities } from '~/core/catalog/capabilities'
 import type { ConnectionResource } from '~/core/connection/sync'
 import { mssqlModuleParts } from '~/core/queries/shared/definition'
-import { userSchemas } from '~/core/queries/shared/oracle-catalog'
 import {
   connectionResourceToQueryParams,
   createQuery,
 } from '~/core/runtime/query'
 
-import { oracleRoutineParts } from './shape'
+import { oracleFunctions } from './oracle'
 
 const mssqlType = sql<string>`TYPE_NAME(pa.user_type_id)`
 
@@ -161,46 +160,7 @@ const resourceFunctionsQuery = createQuery({
           getCapabilities(Dialect.MySQL).systemSchemas
         )
         .execute(),
-    oracle: async (db) => {
-      const lines = await db
-        .selectFrom('ALL_SOURCE')
-        .select([
-          'OWNER as schema',
-          'NAME as name',
-          'TYPE as kind',
-          'TEXT as text',
-        ])
-        .where('TYPE', 'in', ['FUNCTION', 'PROCEDURE'])
-        .where('OWNER', 'in', userSchemas(db))
-        .orderBy('OWNER')
-        .orderBy('NAME')
-        .orderBy('LINE')
-        .execute()
-
-      return [
-        ...Map.groupBy(lines, ({ name, schema }) =>
-          JSON.stringify([schema, name])
-        ).values(),
-      ].flatMap(([first, ...rest]) => {
-        if (!first) {
-          return []
-        }
-        const parts = oracleRoutineParts(
-          [first, ...rest].map((line) => line.text ?? '').join('')
-        )
-
-        return {
-          args: parts?.args ?? null,
-          body: parts?.body ?? null,
-          extras: parts?.extras ?? null,
-          language: 'PL/SQL',
-          name: first.name,
-          return_type: parts?.returnType ?? null,
-          schema: first.schema,
-          type: first.kind === 'PROCEDURE' ? 'procedure' : 'function',
-        } as const
-      })
-    },
+    oracle: oracleFunctions,
     postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_proc as p')

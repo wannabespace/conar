@@ -8,6 +8,7 @@ import { catalogSummary } from './catalog-summary'
 const catalog = (tables: number): SqlCatalog => ({
   defaultSchema: 'public',
   enums: [],
+  nameCase: null,
   schemas: [
     {
       name: 'public',
@@ -37,6 +38,7 @@ describe('catalogSummary', () => {
       catalogSummary({
         defaultSchema: 'public',
         enums: [],
+        nameCase: null,
         schemas: [
           {
             name: 'public',

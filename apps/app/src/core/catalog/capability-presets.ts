@@ -86,22 +86,23 @@ export interface ConnectionCapabilities {
   comments: boolean
   constraintKinds: readonly ConstraintKind[]
   ddlRollback: boolean
-  // null: the connection's database is the schema
+  // null: the login's schema or the resource, resolved by getDefaultSchema
   defaultSchema: string | null
   explain: boolean
   fixedConstraintNames: Partial<Record<ConstraintKind, string>>
+  foreignKeyOnUpdate: boolean
   functions: FunctionCapabilities
   ilike: boolean
   indexes: IndexCapabilities
   materializedViews: boolean
-  // A foreign key's ON UPDATE action, which Oracle lacks.
-  onUpdate: boolean
   policies: PolicyCapabilities
   referentialActions: readonly ReferentialAction[]
   renameColumns: boolean
   renameConstraints: boolean
   renameSchema: boolean
   renameViews: boolean
+  // A routine or trigger save overwrites the object instead of dropping it first.
+  replacesInPlace: boolean
   // A primary key column's type and nullability; SQL Server and ClickHouse refuse the ALTER.
   retypeKeyColumns: boolean
   rowLevelSecurity: boolean

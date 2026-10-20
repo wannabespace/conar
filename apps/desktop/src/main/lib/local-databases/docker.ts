@@ -46,12 +46,12 @@ const IMAGE_USERS: Partial<Record<Dialect, string>> = {
   [Dialect.Postgres]: 'postgres',
 }
 
-/** The pluggable database each image creates, by its last path segment; the root container holds no app schemas. */
+/** The pluggable database each Oracle image creates; the root container holds no app schemas. */
 const ORACLE_IMAGE_SERVICES: Record<string, string> = {
-  express: 'XEPDB1',
-  free: 'FREEPDB1',
-  'oracle-free': 'FREEPDB1',
-  'oracle-xe': 'XEPDB1',
+  'container-registry.oracle.com/database/express': 'XEPDB1',
+  'container-registry.oracle.com/database/free': 'FREEPDB1',
+  'gvenzl/oracle-free': 'FREEPDB1',
+  'gvenzl/oracle-xe': 'XEPDB1',
 }
 
 const containersSchema = type({
@@ -103,21 +103,19 @@ export const docker: Finder = {
         await dockerGet(socketPath, `/containers/${Id}/json`)
       )
       // Split by hand, not `variablesOfLines`: a container's value is exact, so quotes and ` #` belong to the password.
-      const env =
-        partsOfVariables(
-          Object.fromEntries(
-            Config.Env.map((variable) => {
-              const equals = variable.indexOf('=')
-              return [variable.slice(0, equals), variable.slice(equals + 1)]
-            })
-          )
-        ) ?? {}
+      const variables: Record<string, string> = Object.fromEntries(
+        Config.Env.map((variable) => {
+          const equals = variable.indexOf('=')
+          return [variable.slice(0, equals), variable.slice(equals + 1)]
+        })
+      )
+      const env = partsOfVariables(variables) ?? {}
       const name = Names[0]?.replace(/^\//u, '') ?? ''
-      const image =
-        Image.replace(/[:@][^/]*$/u, '')
-          .split('/')
-          .at(-1) ?? ''
-      const named = [getConnectionType(image), env.type]
+      const repository = Image.replace(/[:@][^/]*$/u, '')
+      const named = [
+        getConnectionType(repository.split('/').at(-1) ?? ''),
+        env.type,
+      ]
       return published.map(({ connectionType, ...server }) => {
         const dialect = getDialect(connectionType)
         const parts = mergeParts(
@@ -130,19 +128,26 @@ export const docker: Finder = {
                 (candidate) => candidate && getDialect(candidate) === dialect
               ) ?? connectionType,
           },
+          // Ahead of `env`: the gvenzl Oracle images' ORACLE_PASSWORD is SYSTEM's, and the app account they create beside it must win.
+          dialect === Dialect.Oracle
+            ? {
+                password: variables.APP_USER_PASSWORD,
+                user: variables.APP_USER,
+              }
+            : {},
           env,
-          { user: IMAGE_USERS[dialect] }
-        )
-        if (connectionType === ConnectionType.Postgres) {
-          return { name, parts: { database: parts.user, ...parts } }
-        }
-        if (connectionType === ConnectionType.Oracle) {
-          return {
-            name,
-            parts: { database: ORACLE_IMAGE_SERVICES[image], ...parts },
+          {
+            database: ORACLE_IMAGE_SERVICES[repository],
+            user: IMAGE_USERS[dialect],
           }
+        )
+        return {
+          name,
+          parts:
+            connectionType === ConnectionType.Postgres
+              ? { database: parts.user, ...parts }
+              : parts,
         }
-        return { name, parts }
       })
     })
   },

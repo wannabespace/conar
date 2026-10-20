@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 import {
   endsTransaction,
   leavesTransactionOpen,
@@ -244,6 +244,27 @@ END;`
     expect(
       texts('SELECT 4 / 2 FROM dual\n/\nSELECT 2 FROM dual', oracle)
     ).toEqual(['SELECT 4 / 2 FROM dual', 'SELECT 2 FROM dual'])
+  })
+
+  it('closes a MySQL CASE statement at END CASE', () => {
+    const procedure =
+      'CREATE PROCEDURE p() BEGIN CASE x WHEN 1 THEN SELECT 1; END CASE; END'
+    expect(texts(`${procedure}; SELECT 2`, mysql)).toEqual([
+      procedure,
+      'SELECT 2',
+    ])
+  })
+
+  it('keeps semicolons inside Oracle q-quoted strings', () => {
+    for (const literal of ["q'[it's; fine]'", "Q'{a; b}'", "nq'!x; y!'"]) {
+      expect(
+        texts(`SELECT ${literal} FROM dual; SELECT 2 FROM dual`, oracle)
+      ).toEqual([`SELECT ${literal} FROM dual`, 'SELECT 2 FROM dual'])
+    }
+    expect(texts("SELECT q'[a]' FROM t; SELECT 2", pg)).toEqual([
+      "SELECT q'[a]' FROM t",
+      'SELECT 2',
+    ])
   })
 
   it('finds the statement at an offset', () => {

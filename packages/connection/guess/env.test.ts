@@ -92,14 +92,9 @@ describe('guessConnection — env files', () => {
       { password: 'Str0ng!', type: ConnectionType.MSSQL, user: 'sa' },
     ],
     [
-      'the Oracle image, its app user over SYSTEM',
-      'ORACLE_PASSWORD=sys-pw\nAPP_USER=app\nAPP_USER_PASSWORD=app-pw\nORACLE_DATABASE=APPPDB',
-      {
-        database: 'APPPDB',
-        password: 'app-pw',
-        type: ConnectionType.Oracle,
-        user: 'app',
-      },
+      'an app user beside generic variables, not an Oracle login',
+      'DB_HOST=localhost\nDB_USER=me\nDB_PASSWORD=dbpw\nDB_NAME=app\nAPP_USER=admin\nAPP_USER_PASSWORD=adminpw',
+      { database: 'app', host: 'localhost', password: 'dbpw', user: 'me' },
     ],
     [
       'Oracle variables naming the service',

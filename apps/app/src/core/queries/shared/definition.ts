@@ -19,6 +19,36 @@ export const readDefinition =
     return { definition: row?.definition ?? null }
   }
 
+// Oracle commits each DDL statement, so only the object's saved DDL brings it back when its replacement fails.
+export const replaceWithSavedDdl = async (
+  // oxlint-disable-next-line ts/no-explicit-any
+  db: Kysely<any>,
+  {
+    create,
+    drop,
+    savedDdl,
+  }: {
+    create: () => Promise<unknown>
+    drop: () => Promise<unknown>
+    savedDdl: RawBuilder<string | null>
+  }
+) => {
+  const { definition } = await readDefinition(savedDdl)(db)
+
+  if (!definition) {
+    throw new Error(
+      'Cannot read the saved DDL, so a failed save could not restore it.'
+    )
+  }
+  await drop()
+  try {
+    await create()
+  } catch (error) {
+    await sql.raw(definition).execute(db)
+    throw error
+  }
+}
+
 const headerEnd = /(?<preceding>\S+)\s+AS\s/giu
 const parameterName = /@\w+$/u
 

@@ -29,8 +29,7 @@ interface SqlEnum {
 
 export interface SqlCatalog {
   defaultSchema: string | null
-  /** Set where names compare exactly once an unquoted one folds to this case. */
-  nameCase?: NameCase | null
+  nameCase: NameCase | null
   schemas: SqlSchema[]
   enums: SqlEnum[]
 }

@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 
-import { readDefinition } from '~/core/queries/shared/definition'
+import { replaceWithSavedDdl } from '~/core/queries/shared/definition'
 import { identifiers } from '~/core/queries/shared/sql-fragments'
 import { createQuery } from '~/core/runtime/query'
 
@@ -43,22 +43,12 @@ export const recreateIndexQuery = ({
           DROP INDEX ${sql.id(name)},
           ADD ${unique ? sql`UNIQUE INDEX` : sql`INDEX`} ${sql.id(newName)} (${identifiers(columns)})
         `.execute(db),
-      oracle: async (db) => {
-        const { definition } = await readDefinition(
-          sql<string>`DBMS_METADATA.GET_DDL('INDEX', ${name}, ${schema})`
-        )(db)
-
-        await sql`DROP INDEX ${sql.id(schema, name)}`.execute(db)
-        try {
-          await oracleCreateIndexStatement(replacement).execute(db)
-        } catch (error) {
-          // Oracle commits the drop at once, so only its saved DDL brings the index back.
-          if (definition) {
-            await sql.raw(definition).execute(db)
-          }
-          throw error
-        }
-      },
+      oracle: (db) =>
+        replaceWithSavedDdl(db, {
+          create: () => oracleCreateIndexStatement(replacement).execute(db),
+          drop: () => sql`DROP INDEX ${sql.id(schema, name)}`.execute(db),
+          savedDdl: sql<string>`DBMS_METADATA.GET_DDL('INDEX', ${name}, ${schema})`,
+        }),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           await sql`DROP INDEX ${sql.id(schema, name)}`.execute(tx)

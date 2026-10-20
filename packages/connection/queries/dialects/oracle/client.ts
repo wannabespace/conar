@@ -11,12 +11,12 @@ export const oracledb = createRequire(import.meta.url)(
   'oracledb'
 ) as typeof OracleDb
 
-// A string bound to a date column converts through these, so it takes the same text a date reads back as.
-const SESSION_FORMATS = `ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS' NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF' NLS_TIMESTAMP_TZ_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM'`
+// A string bound to a date column converts through these, so it takes the same text `values.ts` reads a date back as; a TIMESTAMP WITH LOCAL TIME ZONE reads and binds in this zone.
+const SESSION_SETTINGS = `ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS' NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF' NLS_TIMESTAMP_TZ_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM' TIME_ZONE = '+00:00'`
 
-const SSH_UNSUPPORTED = 'Oracle connections cannot use an SSH tunnel yet.'
+const SSH_UNSUPPORTED = 'Oracle connections cannot use an SSH tunnel.'
 
-export const connectionConfig = (
+const connectionConfig = (
   connectionString: string
 ): OracleDb.ConnectionAttributes => {
   // node-oracledb opens its own socket, so an SSH channel has nothing to plug into.
@@ -33,15 +33,11 @@ export const connectionConfig = (
   }
 }
 
-export const setSessionFormats = async (connection: OracleDb.Connection) => {
-  await connection.execute(SESSION_FORMATS)
-}
-
 export const connect = async (connectionString: string) => {
   const connection = await oracledb.getConnection(
     connectionConfig(connectionString)
   )
-  await setSessionFormats(connection)
+  await connection.execute(SESSION_SETTINGS)
   return connection
 }
 
@@ -51,11 +47,10 @@ export const getPool = memoize((connectionString: string) =>
     poolIncrement: 1,
     poolMax: 1,
     poolMin: 0,
-    queueTimeout: 0,
     sessionCallback: (connection, _tag, done) => {
       void (async () => {
         try {
-          await setSessionFormats(connection)
+          await connection.execute(SESSION_SETTINGS)
           done()
         } catch (error) {
           done(error)

@@ -5,12 +5,13 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type { SqlCatalog } from './catalog'
 import { completionItems } from './completion'
 import { completionContext } from './completion-context'
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 
 const pg = dialects[Dialect.Postgres]
 const catalog: SqlCatalog = {
   defaultSchema: 'public',
   enums: [{ name: 'status', values: ['active', 'banned'] }],
+  nameCase: null,
   schemas: [
     {
       name: 'public',

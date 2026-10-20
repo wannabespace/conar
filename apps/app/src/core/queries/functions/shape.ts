@@ -1,8 +1,8 @@
 import { Dialect } from '@tamery/shared/enums/connection-type'
-import { dialects, tokenize } from '@tamery/sql'
 import type { Token } from '@tamery/sql/tokenizer'
 import { sql } from 'kysely'
 
+import { plsqlHeader } from '~/core/queries/shared/plsql'
 import { mysqlDefiner } from '~/core/queries/shared/sql-fragments'
 
 export type RoutineKind = 'function' | 'procedure'
@@ -99,7 +99,7 @@ export const replacesRoutine = (
 
 export interface RoutineTarget {
   // pg_get_function_identity_arguments output, the form DROP expects
-  identity: string | undefined
+  identity?: string
   kind: RoutineKind
   name: string
   schema: string
@@ -212,16 +212,13 @@ const closingParen = (words: string[], open: number) => {
   return -1
 }
 
-// ALL_SOURCE text starts at FUNCTION or PROCEDURE and its name; null means the header
-// cannot be read back (wrapped source, no IS/AS), so the routine opens read-only.
+// Null means the header cannot be read back (wrapped source, no IS/AS), so the routine opens read-only.
 export const oracleRoutineParts = (source: string) => {
-  const tokens = tokenize(source, dialects[Dialect.Oracle]).tokens.filter(
-    (token) => token.kind !== 'comment'
-  )
+  const { name, tokens } = plsqlHeader(source)
   const words = tokens.map((token) =>
     token.quoted ? '' : token.text.toUpperCase()
   )
-  const close = words[2] === '(' ? closingParen(words, 2) : 1
+  const close = words[name + 1] === '(' ? closingParen(words, name + 1) : name
   const end = words.findIndex(
     (word, index) => index > close && (word === 'IS' || word === 'AS')
   )
@@ -237,7 +234,7 @@ export const oracleRoutineParts = (source: string) => {
   )
 
   return {
-    args: close > 1 ? joinTokens(tokens.slice(3, close)) : '',
+    args: close > name ? joinTokens(tokens.slice(name + 2, close)) : '',
     body: source.slice(headerEnd.end).trim(),
     extras: joinTokens(tokens.slice(returns ? options : close + 1, end)),
     returnType: returns ? joinTokens(tokens.slice(close + 2, options)) : null,

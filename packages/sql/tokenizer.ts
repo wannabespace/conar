@@ -1,4 +1,5 @@
 import type { DialectSpec, NameCase } from './dialect'
+import { OPERATORS } from './vocabulary'
 
 type TokenKind =
   | 'comment'
@@ -39,50 +40,17 @@ const WORD = /[\p{L}\p{N}_$]/u
 const DIGIT = /\d/u
 const DOLLAR_TAG = /\$(?<tag>[A-Za-z_]\w*)?\$/uy
 const STRING_OPENER = /[BENXbenx]?'|"/uy
+const ALTERNATIVE_QUOTE_OPENER = /[Nn]?[Qq]'\S/uy
 const NUMBER =
   /(?:0x[\dA-Fa-f]+|\d+(?:\.\d*)?(?:[Ee][+-]?\d+)?|\.\d+(?:[Ee][+-]?\d+)?)/uy
 const CALL_PAREN = /\s*\(/uy
-const OPERATORS = [
-  '->>',
-  '#>>',
-  '!~*',
-  '<=>',
-  '<>',
-  '!=',
-  '<=',
-  '>=',
-  '||',
-  '::',
-  '->',
-  '#>',
-  '@>',
-  '<@',
-  '?|',
-  '?&',
-  '~*',
-  '!~',
-  '<<',
-  '>>',
-  '&&',
-  '+',
-  '-',
-  '*',
-  '/',
-  '%',
-  '<',
-  '>',
-  '=',
-  '~',
-  '^',
-  '!',
-  '&',
-  '|',
-  '?',
-  '#',
-  '@',
-]
 const PUNCTUATION = new Set(['(', ')', ',', ';', '.', '[', ']', '{', '}', ':'])
-const CLOSING_QUOTE: Record<string, string> = { '"': '"', '[': ']', '`': '`' }
+const CLOSING_BRACKET: Record<string, string> = {
+  '(': ')',
+  '<': '>',
+  '[': ']',
+  '{': '}',
+}
 
 const stickyMatch = (regex: RegExp, text: string, at: number) => {
   regex.lastIndex = at
@@ -146,9 +114,23 @@ const openingAt = (
       contentStart: index + 1,
       pending: {
         ...NO_ESCAPES,
-        close: CLOSING_QUOTE[char] ?? char,
+        close: CLOSING_BRACKET[char] ?? char,
         doubled: true,
         kind: 'identifier',
+      },
+    }
+  }
+  const alternativeOpener =
+    dialect.alternativeQuotes &&
+    stickyMatch(ALTERNATIVE_QUOTE_OPENER, text, index)
+  if (alternativeOpener) {
+    const delimiter = alternativeOpener.at(-1) ?? ''
+    return {
+      contentStart: index + alternativeOpener.length,
+      pending: {
+        ...NO_ESCAPES,
+        close: `${CLOSING_BRACKET[delimiter] ?? delimiter}'`,
+        kind: 'string',
       },
     }
   }

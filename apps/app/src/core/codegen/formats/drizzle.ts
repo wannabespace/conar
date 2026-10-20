@@ -12,7 +12,6 @@ import type {
 } from '~/core/codegen/types'
 import {
   claimRelationName,
-  explicitSchema,
   hasType,
   isNowDefault,
   isSerialDefault,
@@ -238,6 +237,7 @@ const buildRelationships = (
 export const generateSchemaDrizzle = ({
   table,
   schema,
+  defaultSchema,
   columns,
   dialect,
   indexes,
@@ -335,12 +335,11 @@ export const generateSchemaDrizzle = ({
     config.push(`  ${func}(${toStringLiteral(idx.name)}).on(${on.join(', ')}),`)
   }
 
-  const tableSchema = explicitSchema(schema, dialect)
-  if (tableSchema && schemaFunc) {
-    const schemaVar = `${camelCase(tableSchema)}Schema`
+  if (schema !== defaultSchema && schemaFunc) {
+    const schemaVar = `${camelCase(schema)}Schema`
     dialectImports.add(schemaFunc)
     extras.unshift(
-      `export const ${schemaVar} = ${schemaFunc}(${toStringLiteral(tableSchema)});`
+      `export const ${schemaVar} = ${schemaFunc}(${toStringLiteral(schema)});`
     )
     tableFunc = `${schemaVar}.table`
   } else {

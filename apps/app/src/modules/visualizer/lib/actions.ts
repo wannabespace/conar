@@ -70,7 +70,7 @@ export const useDiagramActions = ({
       foreignSchema: target.schema,
       foreignTable: target.table,
       kind: 'addForeignKey',
-      name: foreignKeyName(source.table, column, taken),
+      name: foreignKeyName(dialect, source.table, column, taken),
       onDelete: 'NO ACTION',
       onUpdate: 'NO ACTION',
       schema: source.schema,

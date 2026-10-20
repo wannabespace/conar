@@ -35,10 +35,13 @@ export interface EngineFields {
 const serverFields = ({
   database,
   options,
+  sshTunnel = true,
   user,
 }: {
-  database: string
+  /** The placeholder of an optional Database row, or the engine's own row. */
+  database: string | Omit<FieldRow, 'name'>
   options?: string
+  sshTunnel?: boolean
   user: string
 }): EngineFields => ({
   field: 'host',
@@ -52,15 +55,17 @@ const serverFields = ({
     },
     { label: 'User', name: 'user', placeholder: user },
     { label: 'Password', name: 'password', placeholder: 'None', secret: true },
-    {
-      label: 'Database',
-      name: 'database',
-      optional: true,
-      placeholder: database,
-    },
+    typeof database === 'string'
+      ? {
+          label: 'Database',
+          name: 'database',
+          optional: true,
+          placeholder: database,
+        }
+      : { ...database, name: 'database' },
     { label: 'Options', name: 'options', optional: true, placeholder: options },
   ],
-  sshTunnel: true,
+  ...(sshTunnel && { sshTunnel }),
 })
 
 const MYSQL_FIELDS = serverFields({
@@ -82,38 +87,17 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
     user: 'e.g. sa',
   }),
   [ConnectionType.MySQL]: MYSQL_FIELDS,
-  // No `sshTunnel`: node-oracledb opens its own socket, so the executor refuses one.
-  [ConnectionType.Oracle]: {
-    field: 'host',
-    message: 'Enter the host',
-    rows: [
-      {
-        label: 'Host',
-        name: 'host',
-        placeholder: 'db.example.com or any connection string',
-        port: true,
-      },
-      { label: 'User', name: 'user', placeholder: 'e.g. system' },
-      {
-        label: 'Password',
-        name: 'password',
-        placeholder: 'None',
-        secret: true,
-      },
-      {
-        label: 'Service name',
-        name: 'database',
-        placeholder: 'e.g. FREEPDB1',
-        required: 'Enter the service name',
-      },
-      {
-        label: 'Options',
-        name: 'options',
-        optional: true,
-        placeholder: 'e.g. ssl=true',
-      },
-    ],
-  },
+  [ConnectionType.Oracle]: serverFields({
+    database: {
+      label: 'Service name',
+      placeholder: 'e.g. FREEPDB1',
+      required: 'Enter the service name',
+    },
+    options: 'e.g. ssl=true',
+    // node-oracledb opens its own socket, so the executor refuses a tunnel.
+    sshTunnel: false,
+    user: 'e.g. system',
+  }),
   [ConnectionType.Postgres]: serverFields({
     database: 'postgres',
     options: 'e.g. sslmode=require',

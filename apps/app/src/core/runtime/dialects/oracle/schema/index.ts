@@ -191,8 +191,6 @@ interface AllIndexes {
   TABLESPACE_NAME: string | null
   STATUS: string
   GENERATED: YN
-  /** 12c and up. */
-  CONSTRAINT_INDEX: YesNo
   PARTITIONED: YesNo
   VISIBILITY: 'INVISIBLE' | 'VISIBLE'
   COMPRESSION: string | null
@@ -286,7 +284,5 @@ interface AllTabPrivs {
 interface ProductComponentVersion {
   PRODUCT: string
   VERSION: string
-  /** 18c and up. */
-  VERSION_FULL: string
   STATUS: string
 }

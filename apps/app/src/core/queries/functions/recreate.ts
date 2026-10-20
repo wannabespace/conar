@@ -75,51 +75,23 @@ export const recreateFunctionQuery = ({
           throw error
         }
       },
-      oracle: async (db) => {
-        const original = await plsqlUnit.definition(db, {
-          name: target.name,
-          schema: target.schema,
-          type: routineType(target.kind),
-        })
-        // Oracle commits the drop at once, and CREATE OR REPLACE stores a routine that fails to
-        // compile over the old one, so only the saved source brings the old routine back.
-        const restoreOriginal = () =>
-          original ? sql.raw(original).execute(db) : null
-
-        if (replacesObject) {
-          await drop.oracle.execute(db)
-        }
-        try {
-          await createFunctionStatements({
-            replace: !replacesObject,
+      oracle: (db) =>
+        plsqlUnit.save(db, {
+          body: shape.body,
+          create: (replace) =>
+            createFunctionStatements({ replace, schema: target.schema, shape })
+              .oracle,
+          original: {
+            name: target.name,
             schema: target.schema,
-            shape,
-          }).oracle.execute(db)
-        } catch (error) {
-          if (replacesObject) {
-            await restoreOriginal()
-          }
-          throw error
-        }
-        const errors = await plsqlUnit.errors(db, {
-          name: shape.name,
-          schema: target.schema,
-          type: routineType(shape.kind),
-        })
-
-        if (errors) {
-          if (replacesObject) {
-            await dropRoutineStatements({
-              identity: undefined,
-              kind: shape.kind,
-              name: shape.name,
-              schema: target.schema,
-            }).oracle.execute(db)
-          }
-          await restoreOriginal()
-          throw new Error(errors)
-        }
-      },
+            type: routineType(target.kind),
+          },
+          unit: {
+            name: shape.name,
+            schema: target.schema,
+            type: routineType(shape.kind),
+          },
+        }),
       postgres: (db) =>
         db.transaction().execute(async (tx) => {
           if (replacesObject) {

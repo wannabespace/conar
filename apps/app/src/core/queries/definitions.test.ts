@@ -17,7 +17,6 @@ import {
   addConstraint,
   getClickhouseConstraints,
   constraintClause,
-  oracleAddConstraint,
 } from './constraints/shape'
 import { createFunctionStatements } from './functions/shape'
 import {
@@ -235,26 +234,14 @@ describe('a foreign key names its columns in order', () => {
     onUpdate: 'NO ACTION',
   }
 
-  test('through the builder', () => {
-    expect(
-      addConstraint(
-        compilers.postgres,
-        { schema: 's', table: 't' },
-        shape
-      ).compile().sql
-    ).toBe(
-      'alter table "s"."t" add constraint "fk" foreign key ("a", "b") references "ref"."other" ("x", "y") on delete cascade on update no action'
-    )
-  })
-
   test.each([
     ['CASCADE', ' on delete cascade'],
     ['NO ACTION', ''],
   ] as const)(
-    'on Oracle, ON DELETE %s spells no ON UPDATE',
+    'through the builder, ON DELETE %s leaves NO ACTION unspelled',
     (onDelete, clause) => {
       expect(
-        oracleAddConstraint(
+        addConstraint(
           compilers.postgres,
           { schema: 's', table: 't' },
           { ...shape, onDelete }
@@ -266,8 +253,8 @@ describe('a foreign key names its columns in order', () => {
   )
 
   test('as the MySQL clause', () => {
-    expect(compiled(constraintClause(shape))).toBe(
-      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE NO ACTION'
+    expect(compiled(constraintClause({ ...shape, onUpdate: 'SET NULL' }))).toBe(
+      'CONSTRAINT "fk" FOREIGN KEY ("a", "b") REFERENCES "ref"."other" ("x", "y") ON DELETE CASCADE ON UPDATE SET NULL'
     )
   })
 })

@@ -42,11 +42,11 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
+    foreignKeyOnUpdate: true,
     functions: noFunctions,
     ilike: true,
     indexes: { rename: false, skipTypes: SKIP_INDEX_TYPES },
     materializedViews: true,
-    onUpdate: true,
     policies: {
       alterInPlace: true,
       commands: ['SELECT'],
@@ -58,6 +58,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     renameConstraints: false,
     renameSchema: false,
     renameViews: true,
+    replacesInPlace: false,
     retypeKeyColumns: false,
     rowLevelSecurity: false,
     schemas: false,
@@ -84,6 +85,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: 'dbo',
     explain: false,
     fixedConstraintNames: {},
+    foreignKeyOnUpdate: true,
     functions: {
       argumentPlaceholder: '@id int, @label nvarchar(50)',
       behaviors: [],
@@ -94,7 +96,6 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
-    onUpdate: true,
     policies: { ...noPolicies, predicates: true },
     referentialActions: REFERENTIAL_ACTIONS.filter(
       (action) => action !== 'RESTRICT'
@@ -104,6 +105,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     renameSchema: false,
     // sp_rename leaves the old name in the view's stored definition, which a refresh or scripted recreate brings back.
     renameViews: false,
+    replacesInPlace: false,
     retypeKeyColumns: false,
     rowLevelSecurity: false,
     schemas: true,
@@ -138,6 +140,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: null,
     explain: true,
     fixedConstraintNames: { primaryKey: 'PRIMARY' },
+    foreignKeyOnUpdate: true,
     functions: {
       argumentPlaceholder: 'id INT, label VARCHAR(50)',
       behaviors: FUNCTION_DETERMINISM,
@@ -148,7 +151,6 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: false,
-    onUpdate: true,
     policies: noPolicies,
     // InnoDB parses SET DEFAULT but rejects the table.
     referentialActions: REFERENTIAL_ACTIONS.filter(
@@ -158,6 +160,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     renameConstraints: false,
     renameSchema: false,
     renameViews: true,
+    replacesInPlace: false,
     retypeKeyColumns: true,
     rowLevelSecurity: false,
     schemas: true,
@@ -192,6 +195,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: null,
     explain: false,
     fixedConstraintNames: {},
+    foreignKeyOnUpdate: false,
     functions: {
       argumentPlaceholder: 'p_id IN NUMBER, p_label OUT VARCHAR2',
       behaviors: [],
@@ -202,15 +206,14 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: false,
     indexes: btreeIndexes,
     materializedViews: true,
-    onUpdate: false,
     policies: noPolicies,
-    // Oracle has ON DELETE CASCADE and SET NULL, and no ON UPDATE at all.
     referentialActions: ['NO ACTION', 'CASCADE', 'SET NULL'],
     renameColumns: true,
     renameConstraints: true,
     renameSchema: false,
     // RENAME reaches only the session's own schema, and ALTER VIEW cannot rename.
     renameViews: false,
+    replacesInPlace: true,
     retypeKeyColumns: true,
     rowLevelSecurity: false,
     schemas: true,
@@ -245,6 +248,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: 'public',
     explain: true,
     fixedConstraintNames: {},
+    foreignKeyOnUpdate: true,
     functions: {
       argumentPlaceholder: 'id integer, label text',
       behaviors: FUNCTION_VOLATILITIES,
@@ -255,7 +259,6 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     ilike: true,
     indexes: btreeIndexes,
     materializedViews: true,
-    onUpdate: true,
     policies: {
       alterInPlace: false,
       commands: POLICY_COMMANDS,
@@ -267,6 +270,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     renameConstraints: true,
     renameSchema: true,
     renameViews: true,
+    replacesInPlace: false,
     retypeKeyColumns: true,
     rowLevelSecurity: true,
     schemas: true,
@@ -301,17 +305,18 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     defaultSchema: SQLITE_RESOURCE_NAME,
     explain: false,
     fixedConstraintNames: {},
+    foreignKeyOnUpdate: true,
     functions: noFunctions,
     ilike: false,
     indexes: { rename: false, skipTypes: [] },
     materializedViews: false,
-    onUpdate: true,
     policies: noPolicies,
     referentialActions: REFERENTIAL_ACTIONS,
     renameColumns: true,
     renameConstraints: false,
     renameSchema: false,
     renameViews: false,
+    replacesInPlace: false,
     retypeKeyColumns: false,
     rowLevelSecurity: false,
     schemas: false,
@@ -339,3 +344,11 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
 }
 
 export const getCapabilities = (dialect: Dialect) => capabilities[dialect]
+
+export const getDefaultSchema = (
+  dialect: Dialect,
+  {
+    loginSchema,
+    resourceName,
+  }: { loginSchema: string | null; resourceName: string | null }
+) => capabilities[dialect].defaultSchema ?? loginSchema ?? resourceName

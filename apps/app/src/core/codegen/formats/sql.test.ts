@@ -68,6 +68,7 @@ const typeScriptFor = (dialect: Dialect, types: string[]) =>
       type,
       uiType: 'raw',
     })),
+    defaultSchema: 'public',
     dialect,
     schema: 'app',
     table: 't',
@@ -77,6 +78,7 @@ describe('generators (postgres)', () => {
   it('qualifies schema, keeps identity, resolves FK schema', () => {
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -91,6 +93,7 @@ describe('generators (postgres)', () => {
   it('maps arrays and does not confuse interval with int', () => {
     const ts = generateSchemaTypeScript({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -114,6 +117,7 @@ describe('generators (postgres)', () => {
   it('prisma emits defaults, uuid and lists', () => {
     const prisma = generateSchemaPrisma({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -142,6 +146,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -153,6 +158,7 @@ describe('generators (postgres)', () => {
   it('drizzle omits the drizzle-orm import when nothing needs it', () => {
     const code = generateSchemaDrizzle({
       columns: [{ id: 'a', isNullable: false, type: 'int', uiType: 'raw' }],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -173,6 +179,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'public',
       table: 'invoices',
@@ -185,6 +192,7 @@ describe('generators (postgres)', () => {
 
   it('kysely null checks compile to (column, is, null)', () => {
     const query = generateQueryKysely({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: [
         {
@@ -214,6 +222,7 @@ describe('generators (postgres)', () => {
   it('terminates every index statement', () => {
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       indexes: ['a', 'b'].map((column) => ({
         column,
@@ -240,6 +249,7 @@ describe('generators (postgres)', () => {
     }))
     const sql = generateSchemaSQL({
       columns: pair,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'pairs',
@@ -258,6 +268,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'app',
       table: 'events',
@@ -268,6 +279,7 @@ describe('generators (postgres)', () => {
 
   it('prisma turns LIKE patterns into string filters', () => {
     const query = generateQueryPrisma({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: [
         {
@@ -301,6 +313,7 @@ describe('generators (postgres)', () => {
 
   it('prisma keeps every filter on a repeated column', () => {
     const query = generateQueryPrisma({
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       filters: ['alice', 'bob'].map((value) => ({
         column: 'name',
@@ -324,6 +337,7 @@ describe('generators (postgres)', () => {
         type: 'integer',
         uiType: 'raw' as const,
       })),
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'public',
       table: 'pairs',
@@ -345,6 +359,7 @@ describe('generators (postgres)', () => {
     }
     const sql = generateSchemaSQL({
       columns,
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       indexes: [
         {
@@ -376,6 +391,7 @@ describe('generators (postgres)', () => {
           uiType: 'raw' as const,
         },
       ],
+      defaultSchema: 'public',
       dialect: Dialect.Postgres,
       schema: 'auth',
       table: 'users',
@@ -404,6 +420,7 @@ describe('generators (mysql)', () => {
           uiType: 'select',
         },
       ],
+      defaultSchema: 'app',
       dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
@@ -425,6 +442,7 @@ describe('generators (mysql)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'app',
       dialect: Dialect.MySQL,
       schema: 'app',
       table: 'jobs',
@@ -463,6 +481,7 @@ describe('generators (oracle)', () => {
           uiType: 'raw',
         },
       ],
+      defaultSchema: 'APP',
       dialect: Dialect.Oracle,
       indexes: [
         {

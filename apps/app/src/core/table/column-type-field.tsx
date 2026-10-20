@@ -16,7 +16,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { getCapabilities } from '~/core/catalog/capabilities'
-import { getDefaultSchema } from '~/core/catalog/default-schema'
 import { quoteIdentifier } from '~/core/codegen/utils'
 import { resourceEnumsQueryOptions } from '~/core/queries/enums/list'
 
@@ -32,12 +31,11 @@ interface ColumnTypeGroup {
 const bareIdentifierRegex = /^[a-z_][a-z0-9_]*$/u
 
 const useColumnTypes = () => {
-  const { connectionResource, dialect } = useRouteContext()
+  const { connectionResource, defaultSchema, dialect } = useRouteContext()
   const { data: enums = [] } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
     throwOnError: false,
   })
-  const defaultSchema = getDefaultSchema(dialect, connectionResource)
   const identifier = (name: string) =>
     bareIdentifierRegex.test(name) ? name : quoteIdentifier(name, dialect)
   const namedEnums = enums

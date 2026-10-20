@@ -8,7 +8,7 @@ import {
   readsOnly,
   writesData,
 } from './destructive'
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 
 const mysql = dialects[Dialect.MySQL]
 const pg = dialects[Dialect.Postgres]

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 
 import { Dialect } from '@tamery/shared/enums/connection-type'
 
-import { dialects } from './dialect'
+import { dialects } from './dialects'
 import { tokenize } from './tokenizer'
 
 const pg = dialects[Dialect.Postgres]

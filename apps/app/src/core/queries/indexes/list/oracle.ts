@@ -1,9 +1,25 @@
-import type { Kysely } from 'kysely'
+import type { ExpressionBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
 import type { Database as OracleDatabase } from '~/core/runtime/dialects/oracle/schema'
 
 const QUOTED_COLUMN = /^"(?<column>[^"]+)"$/u
+
+const backsConstraint = (
+  eb: ExpressionBuilder<
+    OracleDatabase & { i: OracleDatabase['ALL_INDEXES'] },
+    'i'
+  >,
+  types: ('P' | 'U')[]
+) =>
+  eb.exists(
+    eb
+      .selectFrom('ALL_CONSTRAINTS as k')
+      .select(sql.lit(1).as('one'))
+      .whereRef('k.INDEX_OWNER', '=', 'i.OWNER')
+      .whereRef('k.INDEX_NAME', '=', 'i.INDEX_NAME')
+      .where('k.CONSTRAINT_TYPE', 'in', types)
+  )
 
 // A DESC key is stored as a function-based key on the quoted column, so the expression names the column.
 export const oracleIndexes = async (db: Kysely<OracleDatabase>) => {
@@ -23,21 +39,7 @@ export const oracleIndexes = async (db: Kysely<OracleDatabase>) => {
     )
     .select((eb) => {
       const enforces = (types: ('P' | 'U')[]) =>
-        eb
-          .case()
-          .when(
-            eb.exists(
-              eb
-                .selectFrom('ALL_CONSTRAINTS as k')
-                .select(sql.lit(1).as('one'))
-                .whereRef('k.INDEX_OWNER', '=', 'i.OWNER')
-                .whereRef('k.INDEX_NAME', '=', 'i.INDEX_NAME')
-                .where('k.CONSTRAINT_TYPE', 'in', types)
-            )
-          )
-          .then(1)
-          .else(0)
-          .end()
+        eb.case().when(backsConstraint(eb, types)).then(1).else(0).end()
 
       return [
         'i.TABLE_OWNER as schema',
@@ -82,7 +84,7 @@ export const oracleIndexes = async (db: Kysely<OracleDatabase>) => {
     .where('i.INDEX_NAME', 'not like', 'BIN$%')
     // Oracle generates indexes for its own storage too; only one backing a key is the user's.
     .where((eb) =>
-      eb.or([eb('i.GENERATED', '=', 'N'), eb('i.CONSTRAINT_INDEX', '=', 'YES')])
+      eb.or([eb('i.GENERATED', '=', 'N'), backsConstraint(eb, ['P', 'U'])])
     )
     .orderBy('ic.COLUMN_POSITION')
     .execute()

@@ -33,7 +33,8 @@ const connectionVersionQuery = createQuery({
     oracle: (db) =>
       db
         .selectFrom('PRODUCT_COMPONENT_VERSION')
-        .select('VERSION_FULL as version')
+        .select('VERSION as version')
+        .where('PRODUCT', 'like', 'Oracle%')
         .executeTakeFirstOrThrow(),
     postgres: readVersion(sql`current_setting('server_version')`),
     sqlite: readVersion(sql`sqlite_version()`),

@@ -29,6 +29,7 @@ export interface Index {
 export interface QueryParams {
   table: string
   schema: string
+  defaultSchema: string | null
   filters: ActiveFilter[]
   dialect: Dialect
 }
@@ -36,6 +37,7 @@ export interface QueryParams {
 export interface SchemaParams {
   table: string
   schema: string
+  defaultSchema: string | null
   columns: Column[]
   dialect: Dialect
   indexes?: Index[]
