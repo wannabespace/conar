@@ -35,7 +35,9 @@ export const PasswordForm = ({
       })
       void posthog.capture('share_unlocked', { success: !refused })
       if (!refused) {
-        queryClient.removeQueries({ queryKey: shareRowsQueryKey(shareId) })
+        await queryClient.invalidateQueries({
+          queryKey: shareRowsQueryKey(shareId),
+        })
         await router.invalidate()
       }
       return refused
