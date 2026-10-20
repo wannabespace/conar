@@ -10,11 +10,18 @@ import {
   EmptyTitle,
 } from '@tamery/ui/components/empty'
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import { createFileRoute, useRouterState } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
+import { useDeferredValue } from 'react'
 
 import { PasswordForm } from '~/components/password-form'
 import { ShareGrid, shareSearch } from '~/components/share-grid'
+import {
+  SHARE_HEADER_CLASS,
+  SHARE_PAGE_CLASS,
+  SHARE_TABLE_CLASS,
+  ShareSkeleton,
+} from '~/components/share-skeleton'
 import { StatusPage } from '~/components/status-page'
 import { TopBar } from '~/components/top-bar'
 import { shareRowsQueryOptions } from '~/lib/share-rows'
@@ -27,14 +34,12 @@ const toSort = ({ order, sort }: typeof shareSearch.infer) =>
 const SharePage = () => {
   const { shareId } = Route.useParams()
   const search = Route.useSearch()
+  const shownSearch = useDeferredValue(search)
   const { data, fetchNextPage, hasNextPage, isFetching } =
     useSuspenseInfiniteQuery(
-      shareRowsQueryOptions({ id: shareId, sort: toSort(search) })
+      shareRowsQueryOptions({ id: shareId, sort: toSort(shownSearch) })
     )
   const [first] = data.pages
-  const sorting = useRouterState({
-    select: (state) => state.status === 'pending',
-  })
 
   if (first?.status === 'locked') {
     return <PasswordForm shareId={shareId} message={first.message} />
@@ -52,9 +57,9 @@ const SharePage = () => {
   )
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 pt-4 pb-10 sm:px-6">
+    <div className={SHARE_PAGE_CLASS}>
       <TopBar />
-      <header className="flex shrink-0 flex-col gap-2 px-4">
+      <header className={SHARE_HEADER_CLASS}>
         <h1
           data-mask
           className="text-3xl font-semibold tracking-tight text-balance"
@@ -82,7 +87,7 @@ const SharePage = () => {
           </div>
         )}
       </header>
-      <main className="bg-background ring-foreground/4 relative flex min-h-0 flex-col overflow-hidden rounded-xl ring">
+      <main className={SHARE_TABLE_CLASS}>
         {rows.length === 0 ? (
           <Empty size="sm">
             <EmptyHeader>
@@ -106,7 +111,7 @@ const SharePage = () => {
             search={search}
           />
         )}
-        {sorting && (
+        {search !== shownSearch && (
           <div className="bg-background animate-in fade-in fill-mode-both absolute inset-0 delay-150 duration-150">
             <TableSkeleton selectable={false} />
           </div>
@@ -119,24 +124,11 @@ const SharePage = () => {
 export const Route = createFileRoute('/$shareId')({
   validateSearch: shareSearch,
   loaderDeps: ({ search }) => search,
-  loader: async ({ context, deps, params }) => {
-    const data = await context.queryClient.infiniteQuery({
-      ...shareRowsQueryOptions({ id: params.shareId, sort: toSort(deps) }),
-      staleTime: 'static',
-    })
-    return data.pages[0] ?? null
+  loader: ({ context, deps, params }) => {
+    void context.queryClient.ensureInfiniteQueryData(
+      shareRowsQueryOptions({ id: params.shareId, sort: toSort(deps) })
+    )
   },
-  head: ({ loaderData }) => ({
-    meta:
-      loaderData?.status === 'ready'
-        ? [
-            { title: `${loaderData.name} · Tamery` },
-            ...(loaderData.description
-              ? [{ content: loaderData.description, name: 'description' }]
-              : []),
-            { content: loaderData.name, property: 'og:title' },
-          ]
-        : [],
-  }),
+  pendingComponent: ShareSkeleton,
   component: SharePage,
 })
