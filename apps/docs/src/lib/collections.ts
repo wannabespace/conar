@@ -9,7 +9,13 @@ export const docs = defineDocs({
     async: true,
     files: ['**/*.mdx'],
     // Shiki output hides each fence's language class; the kit's CodeBlock highlights instead.
-    mdxOptions: applyMdxPreset({ rehypeCodeOptions: false }),
+    mdxOptions: applyMdxPreset({
+      rehypeCodeOptions: false,
+      // Without mdxJsxFlowElement: a `<Card href>` has no text, indexed it matches its href and shows as an empty result.
+      remarkStructureOptions: {
+        types: ['heading', 'paragraph', 'blockquote', 'table'],
+      },
+    }),
     schema: pageSchema.extend({
       sidebarTitle: z.string().optional(),
     }),
