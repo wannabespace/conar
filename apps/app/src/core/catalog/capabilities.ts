@@ -29,6 +29,16 @@ import {
 } from './capability-presets'
 import { COLUMN_TYPE_CAPABILITIES } from './column-types'
 
+const TIMESCALE_SCHEMAS = [
+  '_timescaledb_cache',
+  '_timescaledb_catalog',
+  '_timescaledb_config',
+  '_timescaledb_functions',
+  '_timescaledb_internal',
+  'timescaledb_experimental',
+  'timescaledb_information',
+]
+
 export type { ArrayType, SectionCapabilities } from './capability-presets'
 
 const capabilities: Record<Dialect, ConnectionCapabilities> = {
@@ -223,7 +233,7 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
       triggers: full,
     },
     setDefault: true,
-    systemSchemas: ['pg_catalog', 'information_schema'],
+    systemSchemas: ['pg_catalog', 'information_schema', ...TIMESCALE_SCHEMAS],
     triggers: {
       body: false,
       events: TRIGGER_EVENTS,
