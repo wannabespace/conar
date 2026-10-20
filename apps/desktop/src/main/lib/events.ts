@@ -12,7 +12,7 @@ import { connectionLinks } from './deep-link'
 import { deviceEncryption } from './device-encryption'
 import { mcp } from './mcp'
 import { notifyUnfocused } from './notify'
-import { queryProcessExecutor } from './query-process'
+import { queryProcess } from './query-process'
 import { pickSqliteFile } from './sqlite-file'
 import { pickSshKeyFile } from './ssh-key-file'
 import { autoUpdater } from './todesktop'
@@ -74,11 +74,11 @@ export const electron = {
   },
   openAtLogin,
   query: {
-    clickhouse: queryProcessExecutor(Dialect.ClickHouse),
-    mssql: queryProcessExecutor(Dialect.MSSQL),
-    mysql: queryProcessExecutor(Dialect.MySQL),
-    postgres: queryProcessExecutor(Dialect.Postgres),
-    sqlite: queryProcessExecutor(Dialect.SQLite),
+    clickhouse: queryProcess.executor(Dialect.ClickHouse),
+    mssql: queryProcess.executor(Dialect.MSSQL),
+    mysql: queryProcess.executor(Dialect.MySQL),
+    postgres: queryProcess.executor(Dialect.Postgres),
+    sqlite: queryProcess.executor(Dialect.SQLite),
   } satisfies Record<Dialect, QueryExecutor>,
   sqlite: {
     pickFile: pickSqliteFile,

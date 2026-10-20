@@ -13,7 +13,7 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { restoreMcpServer } from './lib/mcp'
 import { buildMenu } from './lib/menu'
-import { resetQueryTransactions } from './lib/query-process'
+import { queryProcess } from './lib/query-process'
 import { autoUpdater } from './lib/todesktop'
 
 const DEBUGGING_SWITCHES = ['remote-debugging-port', 'remote-debugging-pipe']
@@ -154,7 +154,7 @@ export const createWindow = (route?: string) => {
 
   win.webContents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) {
-      resetQueryTransactions()
+      queryProcess.resetTransactions()
     }
   })
 

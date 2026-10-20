@@ -12,19 +12,19 @@ const pending = new Map<number, PromiseWithResolvers<unknown>>()
 let nextId = 0
 let child: UtilityProcess | null = null
 
-const send = (queryProcess: UtilityProcess, request: QueryProcessRequest) =>
-  queryProcess.postMessage(request)
+const send = (forked: UtilityProcess, request: QueryProcessRequest) =>
+  forked.postMessage(request)
 
 const start = () => {
-  const queryProcess = utilityProcess.fork(
+  const forked = utilityProcess.fork(
     path.join(import.meta.dirname, './query.js'),
     [],
     { serviceName: 'Tamery Databases' }
   )
-  queryProcess.on('message', async (reply: QueryProcessReply) => {
+  forked.on('message', async (reply: QueryProcessReply) => {
     if (reply.type === 'hostKey') {
       const trusted = await confirmHostKey(reply.prompt)
-      send(queryProcess, {
+      send(forked, {
         hostKeyId: reply.hostKeyId,
         trusted,
         type: 'hostKey',
@@ -40,17 +40,17 @@ const start = () => {
     }
   })
   // Without a listener the emitter throws a fatal child error into main.
-  queryProcess.on('error', (type, location) => {
+  forked.on('error', (type, location) => {
     console.error('[Database process]', type, location)
   })
-  queryProcess.once('exit', () => {
+  forked.once('exit', () => {
     child = null
     for (const request of pending.values()) {
       request.reject(new Error('The database process stopped'))
     }
     pending.clear()
   })
-  return queryProcess
+  return forked
 }
 
 const call = <M extends keyof QueryExecutor>(
@@ -67,19 +67,20 @@ const call = <M extends keyof QueryExecutor>(
   return request.promise as ReturnType<QueryExecutor[M]>
 }
 
-export const queryProcessExecutor = (dialect: Dialect): QueryExecutor => ({
-  beginTransaction: (args) => call(dialect, 'beginTransaction', args),
-  cancel: (args) => call(dialect, 'cancel', args),
-  commitTransaction: (args) => call(dialect, 'commitTransaction', args),
-  execute: (args) => call(dialect, 'execute', args),
-  executeTransaction: (args) => call(dialect, 'executeTransaction', args),
-  openSession: (args) => call(dialect, 'openSession', args),
-  rollbackTransaction: (args) => call(dialect, 'rollbackTransaction', args),
-  transactionStatus: (args) => call(dialect, 'transactionStatus', args),
-})
-
-export const resetQueryTransactions = () => {
-  if (child) {
-    send(child, { type: 'resetTransactions' })
-  }
+export const queryProcess = {
+  executor: (dialect: Dialect): QueryExecutor => ({
+    beginTransaction: (args) => call(dialect, 'beginTransaction', args),
+    cancel: (args) => call(dialect, 'cancel', args),
+    commitTransaction: (args) => call(dialect, 'commitTransaction', args),
+    execute: (args) => call(dialect, 'execute', args),
+    executeTransaction: (args) => call(dialect, 'executeTransaction', args),
+    openSession: (args) => call(dialect, 'openSession', args),
+    rollbackTransaction: (args) => call(dialect, 'rollbackTransaction', args),
+    transactionStatus: (args) => call(dialect, 'transactionStatus', args),
+  }),
+  resetTransactions: () => {
+    if (child) {
+      send(child, { type: 'resetTransactions' })
+    }
+  },
 }
