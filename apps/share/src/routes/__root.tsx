@@ -10,6 +10,7 @@ import {
 import { MotionConfig } from 'motion/react'
 
 import { StatusPage } from '~/components/status-page'
+import { viewerQueryOptions } from '~/lib/viewer'
 
 import appCss from '~/styles.css?url'
 
@@ -32,6 +33,12 @@ const RootComponent = () => (
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
+    beforeLoad: async ({ context }) => ({
+      viewer: await context.queryClient.query({
+        ...viewerQueryOptions,
+        staleTime: 'static',
+      }),
+    }),
     component: RootComponent,
     errorComponent: () => <StatusPage status="unavailable" />,
     head: () => ({

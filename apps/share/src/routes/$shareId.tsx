@@ -1,7 +1,6 @@
 import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { shareRefreshLabels } from '@tamery/shared/enums/share-refresh'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { FilterChip } from '@tamery/ui/components/custom/filter-chip'
 import {
   Empty,
@@ -22,6 +21,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { PasswordForm } from '~/components/password-form'
 import { ShareGrid, shareSearch } from '~/components/share-grid'
 import { StatusPage } from '~/components/status-page'
+import { TopBar } from '~/components/top-bar'
 import { shareRowsQueryOptions } from '~/lib/share-rows'
 
 const toSort = ({ order, sort }: typeof shareSearch.infer) =>
@@ -54,7 +54,8 @@ const SharePage = () => {
   )
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6">
+    <div className="mx-auto flex h-dvh w-full max-w-5xl flex-col gap-6 px-4 pt-4 pb-10 sm:px-6">
+      <TopBar />
       <header className="flex shrink-0 flex-col gap-2 px-4">
         <h1
           data-mask
@@ -117,13 +118,6 @@ const SharePage = () => {
           <span className="tabular-nums">
             {hasNextPage ? `${rows.length}+ rows` : plural(rows.length, 'row')}
           </span>
-          <a
-            href={import.meta.env.VITE_PUBLIC_MAIN_URL}
-            className="text-muted-foreground hover:text-foreground ml-auto flex items-center gap-1.5"
-          >
-            <AppLogo className="size-3.5" />
-            Made with Tamery
-          </a>
         </footer>
       </main>
     </div>

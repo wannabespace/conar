@@ -27,6 +27,7 @@
     "@orpc/server": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tamery/api": "workspace:*",
     "@tamery/configs": "workspace:*",
     "@tamery/proxy": "workspace:*",
     "@tamery/query-proxy": "workspace:*",

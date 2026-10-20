@@ -7,6 +7,7 @@ import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 
 setupPortlessEnvs({
+  VITE_PUBLIC_API_URL: 'api.local.tamery',
   VITE_PUBLIC_MAIN_URL: 'main.local.tamery',
   VITE_PUBLIC_PROXY_URL: 'proxy.local.tamery',
 })
