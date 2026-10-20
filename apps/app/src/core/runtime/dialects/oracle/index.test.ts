@@ -47,19 +47,12 @@ test.each([
       .selectAll()
       .where('active', '=', sql.lit(true)),
   },
+  {
+    expected: 'alter table "users" add ("age" integer default 0 not null)',
+    query: db.schema
+      .alterTable('users')
+      .addColumn('age', 'integer', (col) => col.notNull().defaultTo(0)),
+  },
 ])('compiles what Oracle accepts: $expected', ({ expected, query }) => {
   expect(query.compile().sql).toBe(expected)
-})
-
-test('an ALTER TABLE lists its column clauses without commas', () => {
-  expect(
-    db.schema
-      .alterTable('users')
-      .addColumn('age', 'integer', (col) => col.notNull().defaultTo(0))
-      .alterColumn('name', (col) => col.setDataType(sql`varchar2(50)`))
-      .alterColumn('email', (col) => col.dropNotNull())
-      .compile().sql
-  ).toBe(
-    'alter table "users" add ("age" integer default 0 not null) modify ("name" varchar2(50)) modify ("email" null)'
-  )
 })

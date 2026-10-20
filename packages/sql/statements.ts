@@ -83,7 +83,6 @@ const CREATE_MODIFIERS = new Set([
   'NONEDITIONABLE',
 ])
 
-/** A PL/SQL unit carries semicolons of its own, so only a `/` line or the end of the text closes it. */
 const startsPlsqlUnit = (tokens: Token[], index: number) => {
   const [word, ...rest] = upperTexts(tokens.slice(index, index + 5))
   if (word === 'DECLARE' || word === 'BEGIN') {

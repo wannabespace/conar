@@ -2,6 +2,8 @@ import { type } from 'arktype'
 import type { Kysely, RawBuilder } from 'kysely'
 import { sql } from 'kysely'
 
+import type { Database as OracleDatabase } from '~/core/runtime/dialects/oracle/schema'
+
 import { mssqlQualified } from './sql-fragments'
 
 export const definitionType = type({ definition: 'string | null' }).pipe(
@@ -21,8 +23,7 @@ export const readDefinition =
 
 // Oracle commits each DDL statement, so only the object's saved DDL brings it back when its replacement fails.
 export const replaceWithSavedDdl = async (
-  // oxlint-disable-next-line ts/no-explicit-any
-  db: Kysely<any>,
+  db: Kysely<OracleDatabase>,
   {
     create,
     drop,

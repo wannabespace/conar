@@ -41,11 +41,7 @@ export const recreateFunctionQuery = ({
           .select('DEFINER')
           .where('ROUTINE_SCHEMA', '=', target.schema)
           .where('ROUTINE_NAME', '=', target.name)
-          .where(
-            'ROUTINE_TYPE',
-            '=',
-            target.kind === 'procedure' ? 'PROCEDURE' : 'FUNCTION'
-          )
+          .where('ROUTINE_TYPE', '=', routineType(target.kind))
           .executeTakeFirst()
         const column =
           target.kind === 'procedure' ? 'Create Procedure' : 'Create Function'

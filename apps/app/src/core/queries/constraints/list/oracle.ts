@@ -1,6 +1,7 @@
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { userSchemas } from '~/core/queries/shared/oracle-catalog'
 import type { Database as OracleDatabase } from '~/core/runtime/dialects/oracle/schema'
 
 import type { LISTED_CONSTRAINT_TYPES } from '../shape'
@@ -8,7 +9,6 @@ import type { LISTED_CONSTRAINT_TYPES } from '../shape'
 export const oracleConstraints = (db: Kysely<OracleDatabase>) =>
   db
     .selectFrom('ALL_CONSTRAINTS as c')
-    .innerJoin('ALL_USERS as u', 'u.USERNAME', 'c.OWNER')
     // A check naming no column has no ALL_CONS_COLUMNS row, and still lists.
     .leftJoin('ALL_CONS_COLUMNS as cc', (join) =>
       join
@@ -78,7 +78,7 @@ export const oracleConstraints = (db: Kysely<OracleDatabase>) =>
         ),
       ])
     )
-    .where('u.ORACLE_MAINTAINED', '=', 'N')
+    .where('c.OWNER', 'in', userSchemas(db))
     .where('c.TABLE_NAME', 'not like', 'BIN$%')
     .orderBy('cc.POSITION')
     .execute()

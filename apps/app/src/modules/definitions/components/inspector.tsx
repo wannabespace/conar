@@ -146,26 +146,28 @@ export const replaceWarning = ({
   dialect: Dialect
   name: string
   noun: string
-}): InspectorWarning | undefined => {
-  const { ddlRollback, replacesInPlace } = getCapabilities(dialect)
-  if (ddlRollback) {
-    return undefined
-  }
-  return {
-    action: `Replace ${noun}`,
-    description: (
-      <>
-        This database cannot roll DDL back, so{' '}
-        {replacesInPlace ? 'saving overwrites' : 'we drop'}{' '}
-        <span data-mask className="font-medium">
-          {name}
-        </span>{' '}
-        {replacesInPlace ? 'in place' : 'and create it again'}. If the new
-        statement fails, we recreate the old one from its saved definition.
-      </>
-    ),
-  }
-}
+}): InspectorWarning | undefined =>
+  getCapabilities(dialect).ddlRollback
+    ? undefined
+    : {
+        action: `Replace ${noun}`,
+        description: (
+          <>
+            This database cannot roll DDL back, so{' '}
+            {getCapabilities(dialect).replacesInPlace
+              ? 'saving overwrites'
+              : 'we drop'}{' '}
+            <span data-mask className="font-medium">
+              {name}
+            </span>{' '}
+            {getCapabilities(dialect).replacesInPlace
+              ? 'in place'
+              : 'and create it again'}
+            . If the new statement fails, we recreate the old one from its saved
+            definition.
+          </>
+        ),
+      }
 
 export const InspectorSection = ({
   action,

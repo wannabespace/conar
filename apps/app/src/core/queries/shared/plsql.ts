@@ -20,51 +20,26 @@ export const plsqlHeader = (source: string) => {
   return { name: tokens[2]?.text === '.' ? 3 : 1, tokens }
 }
 
-// Replaying the bare text would land in the session's schema.
-const qualify = (source: string, { name, schema, type }: PlsqlUnit) => {
-  const header = plsqlHeader(source)
-  const nameToken = header.tokens[header.name]
-
-  return nameToken
-    ? `CREATE OR REPLACE ${type} "${schema}"."${name}"${source.slice(nameToken.end)}`
-    : null
-}
-
-const definition = async (db: Kysely<OracleDatabase>, unit: PlsqlUnit) => {
+const definition = async (
+  db: Kysely<OracleDatabase>,
+  { name, schema, type }: PlsqlUnit
+) => {
   const lines = await db
     .selectFrom('ALL_SOURCE')
     .select('TEXT as text')
-    .where('OWNER', '=', unit.schema)
-    .where('NAME', '=', unit.name)
-    .where('TYPE', '=', unit.type)
+    .where('OWNER', '=', schema)
+    .where('NAME', '=', name)
+    .where('TYPE', '=', type)
     .orderBy('LINE')
     .execute()
+  const source = lines.map((line) => line.text ?? '').join('')
+  const header = plsqlHeader(source)
+  const nameToken = header.tokens[header.name]
 
-  return qualify(lines.map((line) => line.text ?? '').join(''), unit)
-}
-
-const compileErrors = async (
-  db: Kysely<OracleDatabase>,
-  unit: PlsqlUnit,
-  headerLines: number
-) => {
-  const errors = await db
-    .selectFrom('ALL_ERRORS')
-    .select(['LINE as line', 'TEXT as text'])
-    .where('OWNER', '=', unit.schema)
-    .where('NAME', '=', unit.name)
-    .where('TYPE', '=', unit.type)
-    .where('ATTRIBUTE', '=', 'ERROR')
-    .orderBy('SEQUENCE')
-    .execute()
-
-  return (
-    errors
-      .map(({ line, text }) =>
-        line > headerLines ? `Line ${line - headerLines}: ${text}` : text
-      )
-      .join('\n') || null
-  )
+  // Replaying the bare text would land in the session's schema.
+  return nameToken
+    ? `CREATE OR REPLACE ${type} "${schema}"."${name}"${source.slice(nameToken.end)}`
+    : null
 }
 
 const dropUnit = ({ name, schema, type }: PlsqlUnit) =>
@@ -125,15 +100,29 @@ export const plsqlUnit = {
     // ALL_ERRORS counts a trigger's lines from its PL/SQL block, a routine's from its header.
     const headerLines =
       unit.type === 'TRIGGER' ? 0 : lineCount(statement.sql) - lineCount(body)
-    const errors = await compileErrors(db, unit, headerLines)
+    const errors = await db
+      .selectFrom('ALL_ERRORS')
+      .select(['LINE as line', 'TEXT as text'])
+      .where('OWNER', '=', unit.schema)
+      .where('NAME', '=', unit.name)
+      .where('TYPE', '=', unit.type)
+      .where('ATTRIBUTE', '=', 'ERROR')
+      .orderBy('SEQUENCE')
+      .execute()
 
-    if (errors) {
+    if (errors.length > 0) {
       // Left in place, a broken unit makes the next save fail as a duplicate name, and an invalid trigger fails every write to its table.
       if (!inPlace) {
         await dropUnit(unit).execute(db)
       }
       await restore()
-      throw new Error(errors)
+      throw new Error(
+        errors
+          .map(({ line, text }) =>
+            line > headerLines ? `Line ${line - headerLines}: ${text}` : text
+          )
+          .join('\n')
+      )
     }
   },
 }

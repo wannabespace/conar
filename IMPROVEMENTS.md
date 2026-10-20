@@ -77,8 +77,6 @@ Suggested order: 5 → 1 → 3 → 2. Schema notes improve every AI feature at o
 
 ## Connections
 
-- **One unreadable connection row empties the list.** A synced row whose `type` or `provider` this build does not know (a newer client's engine, another branch on the shared dev database) fails the whole list's validation: every connection disappears behind "No connections yet" and a toast lists the bad indexes. Skipping and reporting the rows that fail would keep the rest usable.
-
 - **Say why a connection row won't open.** The row is clickable only through its overlay link, which renders only when the selected resource is in the synced resources collection and the connection can be queried (`connection-card.tsx`). Otherwise a click does nothing and nothing is shown — no hover, no reason. The row could fall back to opening the connection or show a tooltip saying why it can't.
 
 - **More connection types on borrowed dialects**, added the way `dialects.md` describes for MariaDB. Candidates by fit:

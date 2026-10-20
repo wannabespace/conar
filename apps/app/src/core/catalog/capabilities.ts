@@ -207,11 +207,8 @@ const capabilities: Record<Dialect, ConnectionCapabilities> = {
     fixedConstraintNames: {},
     foreignKeyOnUpdate: false,
     functions: {
+      ...noFunctions,
       argumentPlaceholder: 'p_id IN NUMBER, p_label OUT VARCHAR2',
-      behaviors: [],
-      languages: [],
-      schemaBinding: false,
-      securityDefiner: false,
     },
     ilike: false,
     indexes: btreeIndexes,

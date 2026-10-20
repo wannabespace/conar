@@ -29,7 +29,7 @@ export interface EngineFields {
   fixedHost?: string
   message: string
   rows: FieldRow[]
-  sshTunnel?: true
+  sshTunnel?: boolean
 }
 
 const serverFields = ({
@@ -38,7 +38,6 @@ const serverFields = ({
   sshTunnel = true,
   user,
 }: {
-  /** The placeholder of an optional Database row, or the engine's own row. */
   database: string | Omit<FieldRow, 'name'>
   options?: string
   sshTunnel?: boolean
@@ -65,7 +64,7 @@ const serverFields = ({
       : { ...database, name: 'database' },
     { label: 'Options', name: 'options', optional: true, placeholder: options },
   ],
-  ...(sshTunnel && { sshTunnel }),
+  sshTunnel,
 })
 
 const MYSQL_FIELDS = serverFields({

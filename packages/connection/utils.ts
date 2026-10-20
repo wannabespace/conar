@@ -34,7 +34,6 @@ const ENGINE_STRINGS: Record<ConnectionType | Provider, EngineString> = {
   [ConnectionType.MySQL]: SERVER_STRING,
   [ConnectionType.Oracle]: {
     ...SERVER_STRING,
-    // Oracle folds an unquoted login to upper case, and the login's schema carries that name.
     defaultSchema: (user) => user.toUpperCase(),
   },
   [ConnectionType.Postgres]: {
@@ -68,7 +67,7 @@ export const describeConnectionString = (connectionString: string) => {
   return {
     defaultResourceName:
       resource ?? (database || defaultDatabase?.(user) || null),
-    defaultSchema: (user && defaultSchema?.(user)) || null,
+    defaultSchema: defaultSchema?.(user) || null,
     displayUrl: label({
       address: new SafeURL(connectionString).host,
       database,

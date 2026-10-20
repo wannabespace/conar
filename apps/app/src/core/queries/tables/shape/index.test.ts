@@ -26,7 +26,8 @@ import {
 import { alterColumnStatement } from './alter-column'
 
 // The app's own cold dialects reach the browser runtime, so compiling here
-// stays on Kysely's own compilers; ClickHouse compiles through MySQL's.
+// stays on Kysely's own compilers; ClickHouse compiles through MySQL's, and
+// Oracle, which Kysely lacks, through the app's with its driver mocked.
 const cold = (
   adapter: () => DialectAdapter,
   queryCompiler: () => QueryCompiler

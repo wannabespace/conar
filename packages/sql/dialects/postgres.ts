@@ -2,7 +2,6 @@ import { spec } from '../dialect'
 
 export const postgres = spec({
   dollarQuotes: true,
-  nameCase: 'lower',
   functions: [
     'ARRAY_AGG',
     'CEIL',
@@ -40,5 +39,6 @@ export const postgres = spec({
     'VACUUM',
     'WINDOW',
   ],
+  nameCase: 'lower',
   types: ['BYTEA', 'INTERVAL', 'JSONB', 'SERIAL', 'TIMESTAMPTZ', 'UUID'],
 })

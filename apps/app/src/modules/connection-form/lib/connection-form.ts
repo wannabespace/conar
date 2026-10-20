@@ -1,7 +1,7 @@
 import type { ConnectionParts } from '@tamery/connection/connection-parts'
 import { connectionParts } from '@tamery/connection/connection-parts'
 import type { ConnectionPatch } from '@tamery/connection/diagnosis'
-import type { ConnectionGuess, GuessFormat } from '@tamery/connection/guess'
+import type { ConnectionGuess } from '@tamery/connection/guess'
 import { guessConnection } from '@tamery/connection/guess'
 import type { GuessedParts } from '@tamery/connection/guess/types'
 import { isLocalHost } from '@tamery/connection/hosts'
@@ -195,16 +195,13 @@ const getGuessedEngine = (
 
 const BARE_HOST = /^[\w.:%[\]-]+$/u
 
-// A URL spells out every option it has, so one without a query leaves no stale option behind.
-const WHOLE_OPTIONS_FORMATS = new Set<GuessFormat>(['jdbc', 'url'])
-
 const fill = (form: ConnectionForm, { format, parts }: ConnectionGuess) => {
   const { values } = form.state
   if (parts.host && BARE_HOST.test(values.host) && parts.host !== values.host) {
     clearFields(form)
   }
   switchEngine(form, getGuessedEngine(values, parts))
-  if (WHOLE_OPTIONS_FORMATS.has(format)) {
+  if (format === 'jdbc' || format === 'url') {
     form.setFieldValue('options', parts.options ?? '')
   }
   for (const field of SERVER_FIELDS) {

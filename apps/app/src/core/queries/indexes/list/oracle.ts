@@ -1,6 +1,7 @@
 import type { ExpressionBuilder, Kysely } from 'kysely'
 import { sql } from 'kysely'
 
+import { userSchemas } from '~/core/queries/shared/oracle-catalog'
 import type { Database as OracleDatabase } from '~/core/runtime/dialects/oracle/schema'
 
 const QUOTED_COLUMN = /^"(?<column>[^"]+)"$/u
@@ -25,7 +26,6 @@ const backsConstraint = (
 export const oracleIndexes = async (db: Kysely<OracleDatabase>) => {
   const rows = await db
     .selectFrom('ALL_INDEXES as i')
-    .innerJoin('ALL_USERS as u', 'u.USERNAME', 'i.TABLE_OWNER')
     .innerJoin('ALL_IND_COLUMNS as ic', (join) =>
       join
         .onRef('ic.INDEX_OWNER', '=', 'i.OWNER')
@@ -79,7 +79,7 @@ export const oracleIndexes = async (db: Kysely<OracleDatabase>) => {
       is_primary: 1 | 0
       is_unique: 1 | 0
     }>()
-    .where('u.ORACLE_MAINTAINED', '=', 'N')
+    .where('i.TABLE_OWNER', 'in', userSchemas(db))
     .where('i.INDEX_TYPE', '!=', 'LOB')
     .where('i.INDEX_NAME', 'not like', 'BIN$%')
     // Oracle generates indexes for its own storage too; only one backing a key is the user's.

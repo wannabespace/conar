@@ -43,12 +43,6 @@ const getDeclaredType = ({
   return scale === 0 ? `NUMBER(${precision})` : `NUMBER(${precision},${scale})`
 }
 
-// DATA_DEFAULT is the text after DEFAULT as typed, trailing whitespace included, and a dropped default reads NULL.
-const getDefault = (text: string | null) => {
-  const value = text?.trim() ?? null
-  return value?.toUpperCase() === 'NULL' ? null : value
-}
-
 export const oracleColumns = async (
   db: Kysely<OracleDatabase>,
   filter: ColumnsFilter
@@ -108,10 +102,15 @@ export const oracleColumns = async (
     }) => {
       const isIdentity = identityColumn === 'YES'
       const isVirtual = virtualColumn === 'YES'
+      // DATA_DEFAULT is the text after DEFAULT as typed, trailing whitespace included, and a dropped default reads NULL.
+      const defaultText = dataDefault?.trim() ?? null
       return {
         ...column,
         declaredType: getDeclaredType(column),
-        default: isIdentity || isVirtual ? null : getDefault(dataDefault),
+        default:
+          isIdentity || isVirtual || defaultText?.toUpperCase() === 'NULL'
+            ? null
+            : defaultText,
         editable: !isVirtual && generationType !== 'ALWAYS',
         isGenerated: isIdentity || isVirtual,
         isIdentity,

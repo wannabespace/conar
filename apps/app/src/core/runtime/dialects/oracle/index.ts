@@ -2,10 +2,8 @@ import { Dialect } from '@tamery/shared/enums/connection-type'
 import type {
   AddColumnNode,
   AliasNode,
-  AlterColumnNode,
   Dialect as KyselyDialect,
   LimitNode,
-  ModifyColumnNode,
   OffsetNode,
   OperationNode,
   SelectQueryNode,
@@ -62,8 +60,7 @@ class OracleQueryCompiler extends DefaultQueryCompiler {
 
   protected override visitOffset(node: OffsetNode) {
     const { limit } = this.parentNode as SelectQueryNode
-    this.append('offset ')
-    this.visitNode(node.offset)
+    super.visitOffset(node)
     this.append(' rows')
     if (limit) {
       this.append(' ')
@@ -81,42 +78,6 @@ class OracleQueryCompiler extends DefaultQueryCompiler {
     this.append('add (')
     this.visitNode(node.column)
     this.append(')')
-  }
-
-  protected override visitModifyColumn(node: ModifyColumnNode) {
-    this.append('modify (')
-    this.visitNode(node.column)
-    this.append(')')
-  }
-
-  protected override visitAlterColumn(node: AlterColumnNode) {
-    this.append('modify (')
-    this.visitNode(node.column)
-    if (node.dataType) {
-      this.append(' ')
-      this.visitNode(node.dataType)
-    }
-    if (node.setDefault) {
-      this.append(' default ')
-      this.visitNode(node.setDefault)
-    }
-    if (node.dropDefault) {
-      this.append(' default null')
-    }
-    if (node.setNotNull) {
-      this.append(' not null')
-    }
-    if (node.dropNotNull) {
-      this.append(' null')
-    }
-    this.append(')')
-  }
-
-  // Oracle lists an ALTER TABLE's column clauses one after another, without commas.
-  protected override compileColumnAlterations(
-    columnAlterations: readonly OperationNode[]
-  ) {
-    this.compileList(columnAlterations, ' ')
   }
 }
 
