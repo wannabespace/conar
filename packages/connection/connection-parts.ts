@@ -32,19 +32,13 @@ export const DEFAULT_PORTS: Record<ConnectionType, number | null> = {
   [ConnectionType.MySQL]: 3306,
   [ConnectionType.Postgres]: 5432,
   [ConnectionType.SQLite]: null,
-  [ConnectionType.Timescale]: 5432,
 }
 
-const TYPES_ON_ANOTHER_ENGINE = new Set([
-  ConnectionType.MariaDB,
-  ConnectionType.Timescale,
-])
-
-/** MariaDB and TimescaleDB share MySQL's and Postgres's ports, so a bare port names MySQL or Postgres. */
+/** MariaDB shares MySQL's port, so a bare port names MySQL. */
 export const TYPE_OF_DEFAULT_PORT: Record<string, ConnectionType> =
   Object.fromEntries(
     objectEntries(DEFAULT_PORTS)
-      .filter(([type, port]) => !TYPES_ON_ANOTHER_ENGINE.has(type) && port)
+      .filter(([type, port]) => type !== ConnectionType.MariaDB && port)
       .map(([type, port]) => [port, type])
   )
 
@@ -92,9 +86,6 @@ const TYPE_OF_NAME: Record<string, ConnectionType> = {
   sqlserver: ConnectionType.MSSQL,
   sqlsrv: ConnectionType.MSSQL,
   tedious: ConnectionType.MSSQL,
-  timescale: ConnectionType.Timescale,
-  timescaledb: ConnectionType.Timescale,
-  'timescaledb-ha': ConnectionType.Timescale,
   trilogy: ConnectionType.MySQL,
 }
 

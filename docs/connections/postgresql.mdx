@@ -36,12 +36,6 @@ With no SSL option, Tamery tries an encrypted connection without certificate ver
 
 ## TimescaleDB
 
-Choose **TimescaleDB** under **Engine**, or paste a connection string:
-
-```text
-timescale://user:password@localhost:5432/mydb
-```
-
-A Timescale Cloud connection string opens as TimescaleDB on its own, and so does a local `timescale/timescaledb` Docker container. Hypertables and continuous aggregates show up in the Navigator as tables and views. TimescaleDB's internal schemas, where chunks live, stay hidden.
+TimescaleDB is a Postgres extension, so connect to it as PostgreSQL: paste your Timescale Cloud connection string or fill in the fields. Hypertables and continuous aggregates show up in the Navigator as tables and views. TimescaleDB's internal schemas, where chunks live, stay hidden.
 
 For localhost in the web app, run the [local proxy](/cli/commands#tamery-proxy).

@@ -1,8 +1,4 @@
-import {
-  ConnectionType,
-  Dialect,
-  getDialect,
-} from '@tamery/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { ConnectionParts } from './connection-parts'
 import { NETWORK_RULES } from './diagnose-network'
@@ -40,10 +36,7 @@ const RULES: DiagnosisRule[] = [
         message
       )?.groups?.name
       // Postgres reads an empty database as the user's name, which rarely exists either.
-      const fallback =
-        parts.type && getDialect(parts.type) === Dialect.Postgres
-          ? 'postgres'
-          : ''
+      const fallback = parts.type === ConnectionType.Postgres ? 'postgres' : ''
       return {
         fix:
           parts.database === fallback

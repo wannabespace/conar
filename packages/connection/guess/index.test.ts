@@ -206,14 +206,6 @@ describe('guessConnection — snippets from configs and tools', () => {
         type: ConnectionType.SQLite,
       },
     ],
-    [
-      'postgres://tsdbadmin:pw@ab12cd34ef.k9x8y7z6.tsdb.cloud.timescale.com:34567/tsdb?sslmode=require',
-      {
-        host: 'ab12cd34ef.k9x8y7z6.tsdb.cloud.timescale.com',
-        port: '34567',
-        type: ConnectionType.Timescale,
-      },
-    ],
   ])('reads %p', (text, parts) => {
     expect(guessConnection(text)?.parts).toMatchObject(parts)
   })

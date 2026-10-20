@@ -6,7 +6,6 @@ import { MSSQLIcon } from '@tamery/ui/components/icons/mssql'
 import { MySQLIcon } from '@tamery/ui/components/icons/mysql'
 import { PostgresIcon } from '@tamery/ui/components/icons/postgres'
 import { SQLiteIcon } from '@tamery/ui/components/icons/sqlite'
-import { TimescaleIcon } from '@tamery/ui/components/icons/timescale'
 import { TursoIcon } from '@tamery/ui/components/icons/turso'
 import type { ComponentProps, ReactNode } from 'react'
 import { createElement } from 'react'
@@ -17,7 +16,6 @@ const iconMap: Record<
 > = {
   [ConnectionType.MariaDB]: MariaDBIcon,
   [ConnectionType.Postgres]: PostgresIcon,
-  [ConnectionType.Timescale]: TimescaleIcon,
   [ConnectionType.MySQL]: MySQLIcon,
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,

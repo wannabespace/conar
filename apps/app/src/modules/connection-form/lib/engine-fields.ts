@@ -69,12 +69,6 @@ const MYSQL_FIELDS = serverFields({
   user: 'e.g. root',
 })
 
-const POSTGRES_FIELDS = serverFields({
-  database: 'postgres',
-  options: 'e.g. sslmode=require',
-  user: 'e.g. postgres',
-})
-
 /** Only the fields an engine's rows show are saved, so nothing the form hides reaches the string. */
 const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
   [ConnectionType.ClickHouse]: serverFields({
@@ -88,13 +82,16 @@ const ENGINE_FIELDS: Record<ConnectionType | Provider, EngineFields> = {
     user: 'e.g. sa',
   }),
   [ConnectionType.MySQL]: MYSQL_FIELDS,
-  [ConnectionType.Postgres]: POSTGRES_FIELDS,
+  [ConnectionType.Postgres]: serverFields({
+    database: 'postgres',
+    options: 'e.g. sslmode=require',
+    user: 'e.g. postgres',
+  }),
   [ConnectionType.SQLite]: {
     field: 'database',
     message: 'Choose the database file',
     rows: [{ label: 'File', name: 'database', placeholder: '/path/to/app.db' }],
   },
-  [ConnectionType.Timescale]: POSTGRES_FIELDS,
   [Provider.CloudflareD1]: {
     field: 'database',
     fixedHost: D1_HOST,

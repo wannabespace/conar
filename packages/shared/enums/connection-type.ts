@@ -2,7 +2,6 @@ import { objectEntries } from '../utils'
 
 export enum ConnectionType {
   Postgres = 'postgres',
-  Timescale = 'timescale',
   MySQL = 'mysql',
   MariaDB = 'mariadb',
   MSSQL = 'mssql',
@@ -26,7 +25,6 @@ const DIALECT_OF_TYPE: Record<ConnectionType, Dialect> = {
   [ConnectionType.MySQL]: Dialect.MySQL,
   [ConnectionType.Postgres]: Dialect.Postgres,
   [ConnectionType.SQLite]: Dialect.SQLite,
-  [ConnectionType.Timescale]: Dialect.Postgres,
 }
 
 export const getDialect = (type: ConnectionType) => DIALECT_OF_TYPE[type]
@@ -38,7 +36,6 @@ export const connectionTypeLabels: Record<ConnectionType, string> = {
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.Postgres]: 'PostgreSQL',
   [ConnectionType.SQLite]: 'SQLite',
-  [ConnectionType.Timescale]: 'TimescaleDB',
 }
 
 export enum Provider {
