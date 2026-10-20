@@ -37,7 +37,7 @@ const SectionHeading = ({
     {children}
     <a
       aria-label="Link to this section"
-      className="text-muted-foreground hover:text-foreground focus-visible:focus-ring ml-2 inline-flex cursor-default rounded-sm align-middle opacity-0 transition-opacity group-hover/heading:opacity-100 focus-visible:opacity-100"
+      className="text-muted-foreground hover:text-foreground focus-visible:focus-ring ml-2 inline-flex rounded-sm align-middle opacity-0 transition-opacity group-hover/heading:opacity-100 focus-visible:opacity-100"
       href={`#${id}`}
     >
       <HugeiconsIcon className="size-4" icon={Link01Icon} strokeWidth={2} />
@@ -50,7 +50,7 @@ const Card = ({ href }: { href: string }) => {
 
   return (
     <Item
-      className="text-foreground group/card cursor-default"
+      className="text-foreground group/card"
       render={<DocsLink href={href} />}
       size="sm"
       variant="card"

@@ -30,8 +30,8 @@ const Neighbour = ({
     <Item
       className={
         direction === 'next'
-          ? 'text-foreground cursor-default sm:col-start-2'
-          : 'text-foreground cursor-default'
+          ? 'text-foreground sm:col-start-2'
+          : 'text-foreground'
       }
       render={<DocsLink href={page.href} />}
       size="sm"

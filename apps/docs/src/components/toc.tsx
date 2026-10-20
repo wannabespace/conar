@@ -23,7 +23,7 @@ const TocList = ({
       <li key={item.url} className="flex">
         <TOCItem
           className={cn(
-            'text-muted-foreground hover:text-foreground data-[active=true]:border-foreground data-[active=true]:text-foreground -ml-px cursor-default border-l border-transparent py-1 pr-2 transition-colors',
+            'text-muted-foreground hover:text-foreground data-[active=true]:border-foreground data-[active=true]:text-foreground -ml-px border-l border-transparent py-1 pr-2 transition-colors',
             item.depth > 2 ? 'pl-6' : 'pl-3'
           )}
           href={item.url}
