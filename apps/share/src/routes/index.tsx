@@ -24,8 +24,9 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useState } from 'react'
 
+import { SharesFrame } from '~/components/shares-frame'
+import { SharesSkeleton } from '~/components/shares-skeleton'
 import { StopSharingDialog } from '~/components/stop-sharing-dialog'
-import { TopBar } from '~/components/top-bar'
 import { getMyShares } from '~/lib/account'
 
 type Share = Awaited<ReturnType<typeof getMyShares>>[number]
@@ -45,23 +46,18 @@ const SharesPage = () => {
   const [stopping, setStopping] = useState<Share | null>(null)
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-6 px-4 pt-4 pb-10 sm:px-6">
-      <TopBar />
-      <header className="flex flex-col gap-2 px-3.5">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Your shared tables
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {viewer ? (
-            <>
-              Signed in as <span data-mask>{viewer.email}</span>. Change a share
-              from its table in Tamery.
-            </>
-          ) : (
-            'Sign in with your Tamery account to see the tables you share and stop sharing them.'
-          )}
-        </p>
-      </header>
+    <SharesFrame
+      description={
+        viewer ? (
+          <>
+            Signed in as <span data-mask>{viewer.email}</span>. Change a share
+            from its table in Tamery.
+          </>
+        ) : (
+          'Sign in with your Tamery account to see the tables you share and stop sharing them.'
+        )
+      }
+    >
       {shares && shares.length === 0 && (
         <SettingsGroup>
           <Empty size="sm">
@@ -139,12 +135,14 @@ const SharesPage = () => {
         </SettingsGroup>
       )}
       <StopSharingDialog share={stopping} onClose={() => setStopping(null)} />
-    </div>
+    </SharesFrame>
   )
 }
 
 export const Route = createFileRoute('/')({
   loader: ({ context }) => (context.viewer ? getMyShares() : null),
   head: () => ({ meta: [{ title: 'Your shared tables · Tamery' }] }),
+  pendingComponent: SharesSkeleton,
+  pendingMs: 150,
   component: SharesPage,
 })
