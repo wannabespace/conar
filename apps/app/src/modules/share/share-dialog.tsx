@@ -45,6 +45,7 @@ import { plural } from '~/utils/plural'
 import { ShareLinkActions } from './share-link'
 import type { Share } from './shares-query'
 import { sharesQueryOptions } from './shares-query'
+import { useTableShare } from './use-table-share'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -62,12 +63,16 @@ export type TableView = Omit<ShareView, 'schema' | 'table'>
 
 interface ShareTarget {
   schema: string
-  share: Share | null
   table: string
   view: TableView
 }
 
-const ShareForm = ({ schema, share, table, view }: ShareTarget) => {
+const ShareForm = ({
+  schema,
+  share,
+  table,
+  view,
+}: ShareTarget & { share: Share | null }) => {
   const { connectionResource, dialect } = useRouteContext()
   const { filters } = view
   const expiryItems: { label: string; value: Expiry }[] = [
@@ -311,18 +316,20 @@ export const ShareDialog = ({
 }: ShareTarget & {
   onOpenChange: (open: boolean) => void
   open: boolean
-}) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>
-          {target.share ? 'Shared table' : 'Share table'}
-        </DialogTitle>
-        <DialogDescription
-          data-mask
-        >{`${target.schema}.${target.table}`}</DialogDescription>
-      </DialogHeader>
-      <ShareForm {...target} />
-    </DialogContent>
-  </Dialog>
-)
+}) => {
+  const { share } = useTableShare(target.schema, target.table)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{share ? 'Shared table' : 'Share table'}</DialogTitle>
+          <DialogDescription data-mask>
+            {`${target.schema}.${target.table}`}
+          </DialogDescription>
+        </DialogHeader>
+        <ShareForm {...target} share={share} />
+      </DialogContent>
+    </Dialog>
+  )
+}

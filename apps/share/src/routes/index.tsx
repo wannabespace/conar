@@ -71,7 +71,9 @@ const SharesPage = () => {
               </EmptyMedia>
               <EmptyTitle>No shared tables</EmptyTitle>
               <EmptyDescription>
-                Share a table from the share button in its toolbar in Tamery.
+                Open a table and set up the filters and columns you want seen,
+                then choose Share in its ⋯ menu. Only connections synced with
+                Full can be shared.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

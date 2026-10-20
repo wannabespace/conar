@@ -32,7 +32,8 @@ import {
 import { resourceTablesAndSchemasQueryOptions } from '~/core/queries/tables/list'
 import { connectionResourceToQueryParams } from '~/core/runtime/query'
 import { useTableSessionStore } from '~/core/table/session'
-import { ShareButton } from '~/modules/share/share-button'
+import { ShareDialog } from '~/modules/share/share-dialog'
+import { ShareMenuItem } from '~/modules/share/share-menu-item'
 
 import { useTableColumnsContext } from '../../lib/columns'
 import { columnView, useTablePageStore } from '../../lib/store'
@@ -64,6 +65,7 @@ export const TableToolbar = ({
   const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
   const [codeOpen, setCodeOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource })
   )
@@ -167,21 +169,6 @@ export const TableToolbar = ({
         <ActionsOrder />
         <ActionsView />
         {isTable && <ActionsAdd onAddColumn={onAddColumn} />}
-        <ShareButton
-          schema={schema}
-          table={table}
-          view={{
-            columnTypes: columns.map(({ id, type: columnType }) => ({
-              id,
-              type: columnType ?? '',
-            })),
-            columns: columnView(columns, layout, true).visible.map(
-              ({ id }) => id
-            ),
-            filters,
-            orderBy,
-          }}
-        />
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
@@ -215,8 +202,30 @@ export const TableToolbar = ({
                 Code
               </DropdownMenuItem>
             )}
+            <ShareMenuItem
+              schema={schema}
+              table={table}
+              onOpen={() => setShareOpen(true)}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          schema={schema}
+          table={table}
+          view={{
+            columnTypes: columns.map(({ id, type: columnType }) => ({
+              id,
+              type: columnType ?? '',
+            })),
+            columns: columnView(columns, layout, true).visible.map(
+              ({ id }) => id
+            ),
+            filters,
+            orderBy,
+          }}
+        />
         {isTable && (
           <>
             <ActionsSeed
