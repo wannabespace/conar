@@ -1,22 +1,7 @@
 import docsConfig from '../../../../docs/docs.json'
 import { source } from './source'
 
-export interface NavPage {
-  href: string
-  title: string
-}
-
-export interface NavGroup {
-  pages: NavPage[]
-  title: string
-}
-
-export interface NavTab {
-  groups: NavGroup[]
-  label: string
-}
-
-const getNavPage = (path: string): NavPage => {
+const getNavPage = (path: string) => {
   const page = source.getPage(path.split('/'))
 
   return {
@@ -25,7 +10,7 @@ const getNavPage = (path: string): NavPage => {
   }
 }
 
-const tabs: NavTab[] = docsConfig.navigation.tabs.map((tab) => ({
+const tabs = docsConfig.navigation.tabs.map((tab) => ({
   groups: tab.groups
     ? tab.groups.map((group) => ({
         pages: group.pages.map(getNavPage),
